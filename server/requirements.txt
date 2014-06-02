@@ -1,0 +1,7 @@
+# Django 1.7 beta 4
+https://www.djangoproject.com/download/1.7.b4/tarball/
+MySQL-python==1.2.5
+python-dateutil==2.2
+django-jsonfield==0.9.12
+django-jenkins==0.15.0
+pytz==2014.3
