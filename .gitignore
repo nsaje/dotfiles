@@ -99,3 +99,6 @@ Session.vim
 
 # npm
 node_modules
+
+# Server Django project
+server/server/localsettings.py
