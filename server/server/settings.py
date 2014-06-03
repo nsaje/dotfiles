@@ -28,7 +28,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'dash'
+    'dash',
+    'django_extensions', # optional for visualizing models and other perks
 )
 
 MIDDLEWARE_CLASSES = (
