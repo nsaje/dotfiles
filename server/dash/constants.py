@@ -4,7 +4,7 @@ class ConstantBase(object):
         result = []
 
         for attr in vars(cls):
-            if attr[:2] != '__' and attr[-2:] != '__':
+            if attr[:1] != '_' and attr[:2] != '__' and attr[-2:] != '__':
                 candidate = getattr(cls, attr)
                 if not hasattr(candidate, '__call__'):
                     result.append(candidate)
@@ -13,32 +13,60 @@ class ConstantBase(object):
 
     @classmethod
     def get_choices(cls):
-        return ((id, cls.get_text(id)) for id in cls.get_all())
+        return ((cons, cls.get_text(cons)) for cons in cls.get_all())
+
+    @classmethod
+    def get_text(cls, cons):
+        return cls._VALUES.get(cons)
 
 
-class AdGroupSettingsStatus(ConstantBase):
+class AdNetwork(ConstantBase):
+    NRELATE = 'nrelate'
+    OUTBRAIN = 'outbrain'
+    TABOOLA = 'taboola'
+    YAHOO = 'yahoo'
+
+    _VALUES = {
+        NRELATE: 'nRelate',
+        OUTBRAIN: 'Outbrain',
+        TABOOLA: 'Taboola',
+        YAHOO: 'Yahoo',
+    }
+
+
+class AdGroupSettingsState(ConstantBase):
     ACTIVE = 1
     INACTIVE = 2
 
-    @classmethod
-    def get_text(cls, status):
-        if status == cls.ACTIVE:
-            return 'Active'
-        elif status == cls.INACTIVE:
-            return 'Inactive'
-        else:
-            raise Exception('Unknown campaign status %s.' % str(status))
+    _VALUES = {
+        ACTIVE: 'Active',
+        INACTIVE: 'Inactive'
+    }
 
 
-class AdGroupNetworkSettingsStatus(ConstantBase):
+class AdGroupNetworkSettingsState(ConstantBase):
     ACTIVE = 1
     INACTIVE = 2
 
-    @classmethod
-    def get_text(cls, status):
-        if status == cls.ACTIVE:
-            return 'Active'
-        elif status == cls.INACTIVE:
-            return 'Inactive'
-        else:
-            raise Exception('Unknown campaign status %s.' % str(status))
+    _VALUES = {
+        ACTIVE: 'Active',
+        INACTIVE: 'Inactive'
+    }
+
+
+class AdTargetCountry(ConstantBase):
+    AUSTRALIA = 'AU'
+    CANADA = 'CA'
+    IRELAND = 'IE'
+    NEW_ZAELAND = 'NZ'
+    UNITED_KINGDOM = 'UK'
+    UNITED_STATES = 'US'
+
+    _VALUES = {
+        AUSTRALIA: 'Australia',
+        CANADA: 'Canada',
+        IRELAND: 'Ireland',
+        NEW_ZAELAND: 'New Zealand',
+        UNITED_KINGDOM: 'United Kingdom',
+        UNITED_STATES: 'United States'
+    }
