@@ -1,26 +1,25 @@
 from django.contrib import admin
 from django.utils.translation import ugettext, ugettext_lazy as _
-from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.forms import UserChangeForm, UserCreationForm
+from django.contrib.auth import admin as authadmin, forms
 
 import models
 
-class CustomUserCreationForm(UserCreationForm):
+class UserCreationForm(forms.UserCreationForm):
     username = None
 
     class Meta:
-        model = models.CustomUser
+        model = models.User
         fields = ('email',)
 
-class CustomUserChangeForm(UserChangeForm):
+class UserChangeForm(forms.UserChangeForm):
     username = None 
 
-    class Meta(UserChangeForm.Meta):
-        model = models.CustomUser
+    class Meta(forms.UserChangeForm.Meta):
+        model = models.User
 
-class CustomUserAdmin(UserAdmin):
-    form = CustomUserChangeForm
-    add_form = CustomUserCreationForm
+class UserAdmin(authadmin.UserAdmin):
+    form = UserChangeForm
+    add_form = UserCreationForm
 
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
@@ -39,4 +38,4 @@ class CustomUserAdmin(UserAdmin):
 
     list_display = ('email', 'username', 'first_name', 'last_name', 'is_staff')
 
-admin.site.register(models.CustomUser, CustomUserAdmin)
+admin.site.register(models.User, UserAdmin)

@@ -68,6 +68,6 @@ STATIC_URL = '/static/'
 LOGIN_URL = '/signin'
 LOGIN_REDIRECT_URL = '/'
 
-AUTH_USER_MODEL = 'zemauth.CustomUser'
+AUTH_USER_MODEL = 'zemauth.User'
 
 from localsettings import *

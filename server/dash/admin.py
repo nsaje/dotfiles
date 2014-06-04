@@ -21,7 +21,6 @@ class AbstractUserForm(forms.ModelForm):
 
     first_name = forms.CharField(widget=StrWidget, label="First name")
     last_name = forms.CharField(widget=StrWidget, label="Last name")
-    email = forms.CharField(widget=StrWidget, label="E-mail", )
     link = forms.CharField(widget=StrWidget, label="Edit link", )
 
     def __init__(self, *args, **kwargs):
@@ -36,7 +35,6 @@ class AbstractUserForm(forms.ModelForm):
             self.fields["last_name"].initial = user.last_name
             self.fields['last_name'].widget.attrs['disabled'] = 'disabled'
             self.fields['last_name'].required = False
-            self.fields["email"].initial = user.email
             self.fields["link"].initial = u'<a href="/admin/auth/user/%i">Edit user</a>' % (user.id)
 
 
