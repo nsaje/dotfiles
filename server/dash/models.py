@@ -2,7 +2,7 @@ from django.contrib.auth import models as auth_models
 from django.db import models
 import jsonfield
 
-import constants
+from dash import constants
 
 
 class Account(models.Model):
