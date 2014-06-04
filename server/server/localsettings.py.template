@@ -12,6 +12,7 @@ DATABASES = {
 		'ENGINE': 'django.db.backends.mysql',
 		'NAME': '',
 		'USER': '',
-		'PASSWORD': ''
+		'PASSWORD': '',
+		'OPTIONS' : { 'init_command' : 'set storage_engine=INNODB' }
 	}
 }
