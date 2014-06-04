@@ -10,6 +10,7 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta:
         model = models.CustomUser
+        fields = ('email',)
 
 class CustomUserChangeForm(UserChangeForm):
     username = None 

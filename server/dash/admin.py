@@ -4,9 +4,6 @@ from django.utils.safestring import mark_safe
 
 import models
 
-<<<<<<< HEAD
-=======
-
 # Forms for inline user functionality.
 
 class StrWidget(forms.Widget):
@@ -68,7 +65,6 @@ class CampaignInline(admin.TabularInline):
     readonly_fields = ('created_dt', 'modified_dt')
 
 
->>>>>>> master
 class AccountAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = (

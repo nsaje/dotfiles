@@ -14,18 +14,12 @@ class Account(models.Model):
         blank=False,
         null=False
     )
-<<<<<<< HEAD
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
-    created_datetime = models.DateTimeField(auto_now_add=True)
-    modified_datetime = models.DateTimeField(auto_now=True)
-=======
-    users = models.ManyToManyField(auth_models.User)
     created_dt = models.DateTimeField(auto_now_add=True)
     modified_dt = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
         return self.name
->>>>>>> master
 
 
 class Campaign(models.Model):
@@ -37,18 +31,12 @@ class Campaign(models.Model):
         null=False
     )
     account = models.ForeignKey(Account)
-<<<<<<< HEAD
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
-    created_datetime = models.DateTimeField(auto_now_add=True)
-    modified_datetime = models.DateTimeField(auto_now=True)
-=======
-    users = models.ManyToManyField(auth_models.User)
     created_dt = models.DateTimeField(auto_now_add=True)
     modified_dt = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
         return self.name
->>>>>>> master
 
 
 class AdGroup(models.Model):
@@ -60,17 +48,11 @@ class AdGroup(models.Model):
         null=False
     )
     campaign = models.ForeignKey(Campaign)
-<<<<<<< HEAD
-    users = models.ManyToManyField(settings.AUTH_USER_MODEL)
-    created_datetime = models.DateTimeField(auto_now_add=True)
-    modified_datetime = models.DateTimeField(auto_now=True)
-=======
     created_dt = models.DateTimeField(auto_now_add=True)
     modified_dt = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
         return self.name
->>>>>>> master
 
 
 class Network(models.Model):
