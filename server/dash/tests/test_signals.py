@@ -12,7 +12,7 @@ class TestDashSignals(TestCase):
 
     def test_no_request_available(self):
         with self.assertRaises(IntegrityError):
-        dashmodels.Account(name='test account name').save()
+            dashmodels.Account(name='test account name').save()
 
     @mock.patch('dash.signals.get_request')
     def test_request_available(self, mock_get_request):
