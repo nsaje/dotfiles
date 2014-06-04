@@ -19,6 +19,6 @@ class TestDashSignals(TestCase):
         mock_request = mock.Mock()
         mock_request.user = User.objects.get(username='tomaz')
         mock_get_request.return_value = mock_request
-        raise Exception
+
         dashmodels.Account(name='test account name 2').save()
         self.assertEqual(dashmodels.Account.objects.get(name='test account name 2').changed_by.username,'tomaz')
