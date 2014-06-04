@@ -10,8 +10,7 @@ SECRET_KEY = '=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': '',
-        'TEST_NAME': 'circle_test',
+        'NAME': 'onedb',
         'USER': 'ubuntu',
         'PASSWORD': '',
         'OPTIONS' : { 'init_command' : 'set storage_engine=INNODB' }
