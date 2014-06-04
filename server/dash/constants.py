@@ -21,17 +21,11 @@ class ConstantBase(object):
 
 
 class AdNetwork(ConstantBase):
-    NRELATE = 'nrelate'
+    ADBLADE = 'adblade'
+    GRAVITY = 'gravity'
     OUTBRAIN = 'outbrain'
     TABOOLA = 'taboola'
     YAHOO = 'yahoo'
-
-    _VALUES = {
-        NRELATE: 'nRelate',
-        OUTBRAIN: 'Outbrain',
-        TABOOLA: 'Taboola',
-        YAHOO: 'Yahoo',
-    }
 
 
 class AdGroupSettingsState(ConstantBase):

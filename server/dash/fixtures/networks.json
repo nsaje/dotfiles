@@ -1,0 +1,52 @@
+[
+    {
+        "model": "dash.network",
+        "pk": 1,
+        "fields": {
+            "name": "AdBlade",
+            "slug": "adblade",
+	    "created_dt": "2014-06-04T00:00:00+00:00",
+	    "modified_dt": "2014-06-04T00:00:00+00:00"
+        }
+    },
+    {
+        "model": "dash.network",
+        "pk": 2,
+        "fields": {
+            "name": "Gravity",
+            "slug": "gravity",
+	    "created_dt": "2014-06-04T00:00:00+00:00",
+	    "modified_dt": "2014-06-04T00:00:00+00:00"
+        }
+    },
+    {
+        "model": "dash.network",
+        "pk": 3,
+        "fields": {
+            "name": "Outbrain",
+            "slug": "outbrain",
+	    "created_dt": "2014-06-04T00:00:00+00:00",
+	    "modified_dt": "2014-06-04T00:00:00+00:00"
+        }
+    },
+    {
+        "model": "dash.network",
+        "pk": 4,
+        "fields": {
+            "name": "Taboola",
+            "slug": "taboola",
+	    "created_dt": "2014-06-04T00:00:00+00:00",
+	    "modified_dt": "2014-06-04T00:00:00+00:00"
+        }
+    },
+    {
+        "model": "dash.network",
+        "pk": 5,
+        "fields": {
+            "name": "Yahoo",
+            "slug": "yahoo",
+	    "created_dt": "2014-06-04T00:00:00+00:00",
+	    "modified_dt": "2014-06-04T00:00:00+00:00"
+        }
+    }
+]

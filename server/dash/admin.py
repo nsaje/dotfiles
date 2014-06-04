@@ -111,14 +111,15 @@ class CampaignAdmin(admin.ModelAdmin):
     inlines = (CampaignUserInline, AdGroupInline)
 
 
-# class NetworkAdmin(admin.ModelAdmin):
-#     search_fields = ['name']
-#     list_display = (
-#         'name',
-#         'created_dt',
-#         'modified_dt'
-#     )
-#     readonly_fields = ('created_dt', 'modified_dt')
+class NetworkAdmin(admin.ModelAdmin):
+    search_fields = ['name']
+    list_display = (
+        'name',
+        'slug',
+        'created_dt',
+        'modified_dt'
+    )
+    readonly_fields = ('slug', 'created_dt', 'modified_dt')
 
 
 # Ad Group
@@ -155,5 +156,5 @@ class AdGroupAdmin(admin.ModelAdmin):
 
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
-# admin.site.register(models.Network, NetworkAdmin)
+admin.site.register(models.Network, NetworkAdmin)
 admin.site.register(models.AdGroup, AdGroupAdmin)
