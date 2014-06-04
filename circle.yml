@@ -1,0 +1,11 @@
+machine:
+    python:
+        version: 2.7.6
+
+dependencies:
+    override:
+        - pip install server/requirements.txt
+
+test:
+    override:
+        - python server/manage.py test
