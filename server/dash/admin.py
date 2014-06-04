@@ -19,7 +19,6 @@ class AbstractUserForm(forms.ModelForm):
     ''' Ugly hack to bring ManyToMany related object data into a "through" object inline
     WARNING: DOES NOT SAVE THE DATA
     '''
-    user = None
 
     first_name = forms.CharField(widget=StrWidget, label="First name")
     last_name = forms.CharField(widget=StrWidget, label="Last name")
@@ -28,23 +27,18 @@ class AbstractUserForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(AbstractUserForm, self).__init__(*args, **kwargs)
-        try:
-            self.user = self.instance.user
-            if not self.user:
-                return
-        except:
-            # TODO: figure out when/why this happens?
-            #traceback.print_exc()
-            return
 
-        self.fields["first_name"].initial = self.user.first_name
-        self.fields['first_name'].widget.attrs['disabled'] = 'disabled'
-        self.fields['first_name'].required = False
-        self.fields["last_name"].initial = self.user.last_name
-        self.fields['last_name'].widget.attrs['disabled'] = 'disabled'
-        self.fields['last_name'].required = False
-        self.fields["email"].initial = self.user.email
-        self.fields["link"].initial = u'<a href="/admin/auth/user/%i">Edit user</a>' % (self.user.id)
+        if hasattr(self.instance, 'user') and self.instance.user:
+            user = self.instance.user
+
+            self.fields["first_name"].initial = user.first_name
+            self.fields['first_name'].widget.attrs['disabled'] = 'disabled'
+            self.fields['first_name'].required = False
+            self.fields["last_name"].initial = user.last_name
+            self.fields['last_name'].widget.attrs['disabled'] = 'disabled'
+            self.fields['last_name'].required = False
+            self.fields["email"].initial = user.email
+            self.fields["link"].initial = u'<a href="/admin/auth/user/%i">Edit user</a>' % (user.id)
 
 
 # Account
