@@ -28,7 +28,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'dash'
+    'dash',
+    'zemauth'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -64,6 +65,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-AUTH_USER_MODEL = 'dash.CustomUser'
+AUTH_USER_MODEL = 'zemauth.CustomUser'
 
 from localsettings import *
