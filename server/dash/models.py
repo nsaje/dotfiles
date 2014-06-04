@@ -14,9 +14,18 @@ class Account(models.Model):
         blank=False,
         null=False
     )
+<<<<<<< HEAD
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
     created_datetime = models.DateTimeField(auto_now_add=True)
     modified_datetime = models.DateTimeField(auto_now=True)
+=======
+    users = models.ManyToManyField(auth_models.User)
+    created_dt = models.DateTimeField(auto_now_add=True)
+    modified_dt = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return self.name
+>>>>>>> master
 
 
 class Campaign(models.Model):
@@ -28,9 +37,18 @@ class Campaign(models.Model):
         null=False
     )
     account = models.ForeignKey(Account)
+<<<<<<< HEAD
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
     created_datetime = models.DateTimeField(auto_now_add=True)
     modified_datetime = models.DateTimeField(auto_now=True)
+=======
+    users = models.ManyToManyField(auth_models.User)
+    created_dt = models.DateTimeField(auto_now_add=True)
+    modified_dt = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return self.name
+>>>>>>> master
 
 
 class AdGroup(models.Model):
@@ -42,37 +60,54 @@ class AdGroup(models.Model):
         null=False
     )
     campaign = models.ForeignKey(Campaign)
+<<<<<<< HEAD
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
     created_datetime = models.DateTimeField(auto_now_add=True)
     modified_datetime = models.DateTimeField(auto_now=True)
+=======
+    created_dt = models.DateTimeField(auto_now_add=True)
+    modified_dt = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return self.name
+>>>>>>> master
 
 
 class Network(models.Model):
     id = models.AutoField(primary_key=True)
+    slug = models.SlugField(
+        max_length=127,
+        editable=False,
+        blank=False,
+        null=False
+    )
     name = models.CharField(
         max_length=127,
         editable=True,
         blank=False,
         null=False
     )
-    created_datetime = models.DateTimeField(auto_now_add=True)
-    modified_datetime = models.DateTimeField(auto_now=True)
+    created_dt = models.DateTimeField(auto_now_add=True)
+    modified_dt = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return self.name
 
 
 class AdGroupSettings(models.Model):
     id = models.AutoField(primary_key=True)
     ad_group = models.ForeignKey(AdGroup)
-    created_datetime = models.DateTimeField(auto_now_add=True)
-    status = models.IntegerField(
-        default=constants.AdGroupSettingsStatus.INACTIVE,
-        choices=constants.AdGroupSettingsStatus.get_choices()
+    created_dt = models.DateTimeField(auto_now_add=True)
+    state = models.IntegerField(
+        default=constants.AdGroupSettingsState.INACTIVE,
+        choices=constants.AdGroupSettingsState.get_choices()
     )
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     cpc_cc = models.DecimalField(default=0, max_digits=10, decimal_places=4)
-    budget_day_cc = models.DecimalField(default=0, max_digits=10, decimal_places=4)
-    target_devices = jsonfield.JSONField(blank=True)
-    target_regions = jsonfield.JSONField(blank=True)
+    daily_budget_cc = models.DecimalField(default=0, max_digits=10, decimal_places=4)
+    target_devices = jsonfield.JSONField(blank=True, default=[])
+    target_regions = jsonfield.JSONField(blank=True, default=[])
     tracking_code = models.TextField(blank=True)
 
 
@@ -80,10 +115,10 @@ class AdGroupNetworkSettings(models.Model):
     id = models.AutoField(primary_key=True)
     network = models.ForeignKey(Network)
     ad_group = models.ForeignKey(AdGroup)
-    created_datetime = models.DateTimeField(auto_now_add=True)
-    status = models.IntegerField(
-        default=constants.AdGroupNetworkSettingsStatus.INACTIVE,
-        choices=constants.AdGroupNetworkSettingsStatus.get_choices()
+    created_dt = models.DateTimeField(auto_now_add=True)
+    state = models.IntegerField(
+        default=constants.AdGroupNetworkSettingsState.INACTIVE,
+        choices=constants.AdGroupNetworkSettingsState.get_choices()
     )
     cpc_cc = models.DecimalField(default=0, max_digits=10, decimal_places=4)
-    budget_day_cc = models.DecimalField(default=0, max_digits=10, decimal_places=4)
+    daily_budget_cc = models.DecimalField(default=0, max_digits=10, decimal_places=4)

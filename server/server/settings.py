@@ -29,7 +29,11 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'dash',
+<<<<<<< HEAD
     'zemauth'
+=======
+    'django_extensions', # optional for visualizing models and other perks
+>>>>>>> master
 )
 
 MIDDLEWARE_CLASSES = (
