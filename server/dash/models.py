@@ -17,6 +17,7 @@ class Account(models.Model):
     users = models.ManyToManyField(auth_models.User)
     created_dt = models.DateTimeField(auto_now_add=True)
     modified_dt = models.DateTimeField(auto_now=True)
+    changed_by = models.ForeignKey(auth_models.User, related_name='+')
 
     def __unicode__(self):
         return self.name
@@ -34,6 +35,7 @@ class Campaign(models.Model):
     users = models.ManyToManyField(auth_models.User)
     created_dt = models.DateTimeField(auto_now_add=True)
     modified_dt = models.DateTimeField(auto_now=True)
+    changed_by = models.ForeignKey(auth_models.User, related_name='+')
 
     def __unicode__(self):
         return self.name
@@ -50,6 +52,7 @@ class AdGroup(models.Model):
     campaign = models.ForeignKey(Campaign)
     created_dt = models.DateTimeField(auto_now_add=True)
     modified_dt = models.DateTimeField(auto_now=True)
+    changed_by = models.ForeignKey(auth_models.User, related_name='+')
 
     def __unicode__(self):
         return self.name
