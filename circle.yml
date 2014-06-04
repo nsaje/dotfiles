@@ -8,7 +8,7 @@ dependencies:
 
 checkout:
     post:
-        - cp server/server/localsettings.py.circle-ci server/server/localsettings.py 
+        - cp ./server/server/localsettings.py.circle-ci ./server/server/localsettings.py 
 
 test:
     override:
