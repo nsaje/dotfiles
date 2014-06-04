@@ -55,19 +55,25 @@ class AdGroup(models.Model):
         return self.name
 
 
-# class Network(models.Model):
-#     id = models.AutoField(primary_key=True)
-#     name = models.CharField(
-#         max_length=127,
-#         editable=True,
-#         blank=False,
-#         null=False
-#     )
-#     created_dt = models.DateTimeField(auto_now_add=True)
-#     modified_dt = models.DateTimeField(auto_now=True)
-#
-#     def __unicode__(self):
-#         return self.name
+class Network(models.Model):
+    id = models.AutoField(primary_key=True)
+    slug = models.SlugField(
+        max_length=127,
+        editable=False,
+        blank=False,
+        null=False
+    )
+    name = models.CharField(
+        max_length=127,
+        editable=True,
+        blank=False,
+        null=False
+    )
+    created_dt = models.DateTimeField(auto_now_add=True)
+    modified_dt = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return self.name
 
 
 class AdGroupSettings(models.Model):
@@ -90,13 +96,13 @@ class AdGroupSettings(models.Model):
 class AdGroupNetworkSettings(models.Model):
     id = models.AutoField(primary_key=True)
     #: Ad network as defined in constants
-    network = models.CharField(
-        max_length=127,
-        choices=constants.AdNetwork.get_choices(),
-        blank=False,
-        null=False
-    )
-    #network = models.ForeignKey(Network)
+    # network = models.CharField(
+    #     max_length=127,
+    #     choices=constants.AdNetwork.get_choices(),
+    #     blank=False,
+    #     null=False
+    # )
+    network = models.ForeignKey(Network)
     ad_group = models.ForeignKey(AdGroup)
     created_dt = models.DateTimeField(auto_now_add=True)
     state = models.IntegerField(
