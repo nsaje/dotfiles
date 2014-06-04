@@ -4,8 +4,11 @@ from dash import models as dahsmodels
 
 
 def changed_by_pre_save_signal_handler(sender, instance, **kwargs):
-	request = get_request()
-	instance.changed_by = request.user
+	try:
+		request = get_request()
+		instance.changed_by = request.user
+	except IndexError:
+		pass
 
 pre_save.connect(changed_by_pre_save_signal_handler, sender=dahsmodels.Account)	
 pre_save.connect(changed_by_pre_save_signal_handler, sender=dahsmodels.Campaign)
