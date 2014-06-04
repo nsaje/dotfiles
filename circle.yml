@@ -4,7 +4,7 @@ machine:
 
 dependencies:
     override:
-        - pip install server/requirements.txt
+        - pip install -r server/requirements.txt
 
 test:
     override:
