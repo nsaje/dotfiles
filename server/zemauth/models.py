@@ -3,7 +3,6 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.core import validators
-import jsonfield
 
 class CustomUserManager(auth_models.BaseUserManager):
     def _create_user(self, email, password, is_staff, is_superuser, **extra_fields):
