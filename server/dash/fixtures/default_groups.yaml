@@ -1,0 +1,20 @@
+- fields:
+    name: dev
+    permissions: []
+  model: auth.group
+  pk: 1
+- fields:
+    name: alpha
+    permissions: []
+  model: auth.group
+  pk: 2
+- fields:
+    name: beta
+    permissions: []
+  model: auth.group
+  pk: 3
+- fields:
+    name: sales
+    permissions: []
+  model: auth.group
+  pk: 4
