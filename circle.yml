@@ -6,6 +6,10 @@ dependencies:
     override:
         - pip install -r server/requirements.txt
 
+checkout:
+    post:
+        - cp server/server/localsettings.py.circle-ci server/server/localsettings.py 
+
 test:
     override:
         - python manage.py test:
