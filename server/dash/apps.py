@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 
 class DashAppConfig(AppConfig):
-	name = 'dash'
+    name = 'dash'
 
-	def ready(self):
-		import dash.signals
+    def ready(self):
+        import dash.signals
