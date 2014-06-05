@@ -54,3 +54,31 @@ class TestDashSignals(TestCase):
         self.assertEqual(dashmodels.AdGroup.objects.get(name='test adgroup name 2').modified_by.username,'tomaz')
 
 
+    def test_adgroup_settings_no_request_available(self):
+        ad_group = dashmodels.AdGroup.objects.get(pk=1)
+        with self.assertRaises(IntegrityError):
+            dashmodels.AdGroupSettings(ad_group=ad_group).save()
+
+    @mock.patch('dash.signals.get_request')
+    def test_adgroup_settings_request_available(self, mock_get_request):
+        self._prepare_mock_get_request(mock_get_request)
+        ad_group = dashmodels.AdGroup.objects.get(pk=1)
+
+        settings = dashmodels.AdGroupSettings(ad_group=ad_group)
+        settings.save()
+        self.assertEqual(settings.created_by.username, 'tomaz')
+
+
+    def test_adgroup_network_settings_no_request_available(self):
+        ad_group = dashmodels.AdGroup.objects.get(pk=1)
+        with self.assertRaises(IntegrityError):
+            dashmodels.AdGroupNetworkSettings(ad_group=ad_group).save()
+
+    @mock.patch('dash.signals.get_request')
+    def test_adgroup_network_settings_request_available(self, mock_get_request):
+        self._prepare_mock_get_request(mock_get_request)
+        ad_group = dashmodels.AdGroup.objects.get(pk=1)
+
+        settings = dashmodels.AdGroupNetworkSettings(ad_group=ad_group)
+        settings.save()
+        self.assertEqual(settings.created_by.username, 'tomaz')
