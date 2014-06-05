@@ -102,3 +102,4 @@ node_modules
 
 # Server Django project
 server/server/localsettings.py
+server/static
