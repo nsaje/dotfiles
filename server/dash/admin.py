@@ -73,7 +73,7 @@ class AccountAdmin(admin.ModelAdmin):
         'created_dt',
         'modified_dt'
     )
-    readonly_fields = ('created_dt', 'modified_dt')
+    readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
     exclude = ('users',)
     inlines = (AccountUserInline, CampaignInline)
 
@@ -106,7 +106,7 @@ class CampaignAdmin(admin.ModelAdmin):
         'created_dt',
         'modified_dt'
     )
-    readonly_fields = ('created_dt', 'modified_dt')
+    readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
     exclude = ('users',)
     inlines = (CampaignUserInline, AdGroupInline)
 
@@ -151,7 +151,7 @@ class AdGroupAdmin(admin.ModelAdmin):
         'created_dt',
         'modified_dt'
     )
-    readonly_fields = ('created_dt', 'modified_dt')
+    readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
     inlines = (AdGroupSettingsInline, AdGroupNetworkSettingsInline)
 
 admin.site.register(models.Account, AccountAdmin)

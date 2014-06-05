@@ -40,6 +40,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
+    'gadjo.requestprovider.middleware.RequestProvider' # providing request object in model signals
 )
 
 ROOT_URLCONF = 'server.urls'
