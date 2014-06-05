@@ -6,7 +6,7 @@ from dash import models as dahsmodels
 def changed_by_pre_save_signal_handler(sender, instance, **kwargs):
     try:
         request = get_request()
-        instance.changed_by = request.user
+        instance.modified_by = request.user
     except IndexError:
         pass
 

@@ -14,19 +14,19 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='adgroup',
-            name='changed_by',
+            name='modified_by',
             field=models.ForeignKey(to=settings.AUTH_USER_MODEL, default=1, to_field='id'),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='campaign',
-            name='changed_by',
+            name='modified_by',
             field=models.ForeignKey(to=settings.AUTH_USER_MODEL, default=1, to_field='id'),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='account',
-            name='changed_by',
+            name='modified_by',
             field=models.ForeignKey(to=settings.AUTH_USER_MODEL, default=1, to_field='id'),
             preserve_default=False,
         ),
