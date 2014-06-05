@@ -83,6 +83,7 @@ class AdGroupSettings(models.Model):
     id = models.AutoField(primary_key=True)
     ad_group = models.ForeignKey(AdGroup)
     created_dt = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(auth_models.User, related_name='+')
     state = models.IntegerField(
         default=constants.AdGroupSettingsState.INACTIVE,
         choices=constants.AdGroupSettingsState.get_choices()
@@ -101,6 +102,7 @@ class AdGroupNetworkSettings(models.Model):
     network = models.ForeignKey(Network)
     ad_group = models.ForeignKey(AdGroup)
     created_dt = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(auth_models.User, related_name='+')
     state = models.IntegerField(
         default=constants.AdGroupNetworkSettingsState.INACTIVE,
         choices=constants.AdGroupNetworkSettingsState.get_choices()
