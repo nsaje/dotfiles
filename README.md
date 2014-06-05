@@ -25,6 +25,10 @@ Create virtualenv and install requirements with pip:
 pip install -r requirements.txt
 ```
 
+You can also install development requirements with additional tools useful during development:
+```bash
+pip install -r requirements_dev.txt
+```
 Copy server/localsettings.py.temlate to server/localsettings.py and adjust them accordingly.
 
 Create a database as specified in localsettings.py, eg. write something like this in mysql shell:
