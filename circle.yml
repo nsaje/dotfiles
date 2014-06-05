@@ -1,0 +1,17 @@
+machine:
+    python:
+        version: 2.7.6
+
+dependencies:
+    override:
+        - pip install -r server/requirements.txt
+
+checkout:
+    post:
+        - cp ./server/server/localsettings.py.circle-ci ./server/server/localsettings.py 
+
+test:
+    override:
+        - python manage.py test:
+            pwd: 
+                server
