@@ -30,7 +30,7 @@ STAGING_SERVERS = {
 }
 
 PRODUCTION_SERVERS = {
-    'one01': 'one@one.zemanta.com'
+    'knot01': 'one@knot01.zemanta.com'
 }
 
 GIT_REPOSITORY = 'git@github.com:Zemanta/zemanta-eins.git'
