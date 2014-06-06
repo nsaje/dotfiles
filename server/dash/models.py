@@ -40,6 +40,14 @@ class Campaign(models.Model):
     def __unicode__(self):
         return self.name
 
+    def admin_link(self):
+        if self.id:
+            return '<a href="/admin/dash/campaign/%d">Edit</a>' % self.id
+        else:
+            return 'N/A'
+
+    admin_link.allow_tags = True
+
 
 class AdGroup(models.Model):
     id = models.AutoField(primary_key=True)
@@ -56,6 +64,14 @@ class AdGroup(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    def admin_link(self):
+        if self.id:
+            return '<a href="/admin/dash/adgroup/%d">Edit</a>' % self.id
+        else:
+            return 'N/A'
+
+    admin_link.allow_tags = True
 
 
 class Network(models.Model):

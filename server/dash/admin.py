@@ -73,8 +73,9 @@ class CampaignInline(admin.TabularInline):
     model = models.Campaign
     extra = 0
     can_delete = False
+    exclude = ('users', 'created_dt', 'modified_dt', 'modified_by')
     ordering = ('-created_dt',)
-    readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
+    readonly_fields = ('admin_link',)
 
 
 class AccountAdmin(admin.ModelAdmin):
@@ -106,8 +107,9 @@ class AdGroupInline(admin.TabularInline):
     model = models.AdGroup
     extra = 0
     can_delete = False
+    exclude = ('users', 'created_dt', 'modified_dt', 'modified_by')
     ordering = ('-created_dt',)
-    readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
+    readonly_fields = ('admin_link',)
 
 
 class CampaignAdmin(admin.ModelAdmin):
