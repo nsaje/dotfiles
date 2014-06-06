@@ -63,7 +63,7 @@ class CampaignInline(admin.TabularInline):
     extra = 0
     can_delete = False
     ordering = ('-created_dt',)
-    readonly_fields = ('created_dt', 'modified_dt')
+    readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
 
 
 class AccountAdmin(admin.ModelAdmin):
@@ -96,7 +96,7 @@ class AdGroupInline(admin.TabularInline):
     extra = 0
     can_delete = False
     ordering = ('-created_dt',)
-    readonly_fields = ('created_dt', 'modified_dt')
+    readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
 
 
 class CampaignAdmin(admin.ModelAdmin):
@@ -131,7 +131,7 @@ class AdGroupSettingsInline(admin.TabularInline):
     extra = 0
     can_delete = False
     ordering = ('-created_dt',)
-    readonly_fields = ('created_dt',)
+    readonly_fields = ('created_dt', 'created_by')
 
 
 class AdGroupNetworkSettingsInline(admin.TabularInline):
@@ -141,7 +141,7 @@ class AdGroupNetworkSettingsInline(admin.TabularInline):
     extra = 0
     can_delete = False
     ordering = ('-created_dt',)
-    readonly_fields = ('created_dt',)
+    readonly_fields = ('created_dt', 'created_by')
 
 
 class AdGroupAdmin(admin.ModelAdmin):
