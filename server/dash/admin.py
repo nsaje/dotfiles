@@ -41,6 +41,17 @@ class AbstractUserForm(forms.ModelForm):
             self.fields["link"].initial = u'<a href="/admin/auth/user/%i">Edit user</a>' % (user.id)
 
 
+class PreventEditInlineForm(forms.BaseInlineFormSet):
+    def clean(self):
+        super(PreventEditInlineForm, self).clean()
+
+        for form in self.forms:
+            pk = form.cleaned_data.get('id')
+            print form.has_changed()
+            if pk and pk.id and form.has_changed():
+                raise forms.ValidationError('Editing is not allowed. Please add new entry instead.')
+
+
 # Account
 
 class AccountUserInline(admin.TabularInline):
@@ -63,7 +74,7 @@ class CampaignInline(admin.TabularInline):
     extra = 0
     can_delete = False
     ordering = ('-created_dt',)
-    readonly_fields = ('created_dt', 'modified_dt')
+    readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
 
 
 class AccountAdmin(admin.ModelAdmin):
@@ -73,7 +84,7 @@ class AccountAdmin(admin.ModelAdmin):
         'created_dt',
         'modified_dt'
     )
-    readonly_fields = ('created_dt', 'modified_dt')
+    readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
     exclude = ('users',)
     inlines = (AccountUserInline, CampaignInline)
 
@@ -96,7 +107,7 @@ class AdGroupInline(admin.TabularInline):
     extra = 0
     can_delete = False
     ordering = ('-created_dt',)
-    readonly_fields = ('created_dt', 'modified_dt')
+    readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
 
 
 class CampaignAdmin(admin.ModelAdmin):
@@ -106,7 +117,7 @@ class CampaignAdmin(admin.ModelAdmin):
         'created_dt',
         'modified_dt'
     )
-    readonly_fields = ('created_dt', 'modified_dt')
+    readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
     exclude = ('users',)
     inlines = (CampaignUserInline, AdGroupInline)
 
@@ -128,20 +139,22 @@ class AdGroupSettingsInline(admin.TabularInline):
     verbose_name = "Ad Group's Settings"
     verbose_name_plural = "Ad Group's Settings"
     model = models.AdGroupSettings
+    formset = PreventEditInlineForm
     extra = 0
     can_delete = False
     ordering = ('-created_dt',)
-    readonly_fields = ('created_dt',)
+    readonly_fields = ('created_dt', 'created_by')
 
 
 class AdGroupNetworkSettingsInline(admin.TabularInline):
     verbose_name = "Ad Group's Network Settings"
     verbose_name_plural = "Ad Group's Network Settings"
     model = models.AdGroupNetworkSettings
+    formset = PreventEditInlineForm
     extra = 0
     can_delete = False
     ordering = ('-created_dt',)
-    readonly_fields = ('created_dt',)
+    readonly_fields = ('created_dt', 'created_by')
 
 
 class AdGroupAdmin(admin.ModelAdmin):
@@ -151,7 +164,7 @@ class AdGroupAdmin(admin.ModelAdmin):
         'created_dt',
         'modified_dt'
     )
-    readonly_fields = ('created_dt', 'modified_dt')
+    readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
     inlines = (AdGroupSettingsInline, AdGroupNetworkSettingsInline)
 
 admin.site.register(models.Account, AccountAdmin)
