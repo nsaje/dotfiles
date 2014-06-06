@@ -90,8 +90,18 @@ class AdGroupSettings(models.Model):
     )
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
-    cpc_cc = models.DecimalField(default=0, max_digits=10, decimal_places=4)
-    daily_budget_cc = models.DecimalField(default=0, max_digits=10, decimal_places=4)
+    cpc_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True
+    )
+    daily_budget_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True
+    )
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
     tracking_code = models.TextField(blank=True)
@@ -107,5 +117,15 @@ class AdGroupNetworkSettings(models.Model):
         default=constants.AdGroupNetworkSettingsState.INACTIVE,
         choices=constants.AdGroupNetworkSettingsState.get_choices()
     )
-    cpc_cc = models.DecimalField(default=0, max_digits=10, decimal_places=4)
-    daily_budget_cc = models.DecimalField(default=0, max_digits=10, decimal_places=4)
+    cpc_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True
+    )
+    daily_budget_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True
+    )
