@@ -22,8 +22,8 @@ class AbstractUserForm(forms.ModelForm):
 
     first_name = forms.CharField(widget=StrWidget, label="First name")
     last_name = forms.CharField(widget=StrWidget, label="Last name")
-    email = forms.CharField(widget=StrWidget, label="E-mail", )
-    link = forms.CharField(widget=StrWidget, label="Edit link", )
+    email = forms.CharField(widget=StrWidget, label="E-mail")
+    link = forms.CharField(widget=StrWidget, label="Edit link")
 
     def __init__(self, *args, **kwargs):
         super(AbstractUserForm, self).__init__(*args, **kwargs)
@@ -47,7 +47,6 @@ class PreventEditInlineForm(forms.BaseInlineFormSet):
 
         for form in self.forms:
             pk = form.cleaned_data.get('id')
-            print form.has_changed()
             if pk and pk.id and form.has_changed():
                 raise forms.ValidationError('Editing is not allowed. Please add new entry instead.')
 
