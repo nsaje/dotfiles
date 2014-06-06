@@ -65,6 +65,9 @@ class AdGroup(models.Model):
     def __unicode__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return '/'
+
     def admin_link(self):
         if self.id:
             return '<a href="/admin/dash/adgroup/%d">Edit</a>' % self.id
