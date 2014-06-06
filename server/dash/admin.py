@@ -41,6 +41,17 @@ class AbstractUserForm(forms.ModelForm):
             self.fields["link"].initial = u'<a href="/admin/auth/user/%i">Edit user</a>' % (user.id)
 
 
+class PreventEditInlineForm(forms.BaseInlineFormSet):
+    def clean(self):
+        super(PreventEditInlineForm, self).clean()
+
+        for form in self.forms:
+            pk = form.cleaned_data.get('id')
+            print form.has_changed()
+            if pk and pk.id and form.has_changed():
+                raise forms.ValidationError('Editing is not allowed. Please add new entry instead.')
+
+
 # Account
 
 class AccountUserInline(admin.TabularInline):
@@ -128,6 +139,7 @@ class AdGroupSettingsInline(admin.TabularInline):
     verbose_name = "Ad Group's Settings"
     verbose_name_plural = "Ad Group's Settings"
     model = models.AdGroupSettings
+    formset = PreventEditInlineForm
     extra = 0
     can_delete = False
     ordering = ('-created_dt',)
@@ -138,6 +150,7 @@ class AdGroupNetworkSettingsInline(admin.TabularInline):
     verbose_name = "Ad Group's Network Settings"
     verbose_name_plural = "Ad Group's Network Settings"
     model = models.AdGroupNetworkSettings
+    formset = PreventEditInlineForm
     extra = 0
     can_delete = False
     ordering = ('-created_dt',)

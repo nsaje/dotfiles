@@ -13,8 +13,9 @@ def modified_by_pre_save_signal_handler(sender, instance, **kwargs):
 
 def created_by_pre_save_signal_handler(sender, instance, **kwargs):
     try:
-        request = get_request()
-        instance.created_by = request.user
+        if instance.pk is None:
+            request = get_request()
+            instance.created_by = request.user
     except IndexError:
         pass
 
