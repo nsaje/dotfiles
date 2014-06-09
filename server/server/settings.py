@@ -70,4 +70,8 @@ LOGIN_REDIRECT_URL = '/'
 
 AUTH_USER_MODEL = 'zemauth.User'
 
+AUTHENTICATION_BACKENDS = (
+    'zemauth.backends.EmailOrUsernameModelBackend',
+)
+
 from localsettings import *

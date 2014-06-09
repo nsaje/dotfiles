@@ -1,8 +1,15 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
+from django.contrib.auth import views as auth_views
 
 from dash import views as dash_views
 from zemauth.forms import AuthenticationForm
+
+import utils.statsd_helper
+
+# Decorators for auth views for statsd.
+auth_views.login = utils.statsd_helper.statsd_timer('one.auth')(auth_views.login)
+auth_views.logout_then_login = utils.statsd_helper.statsd_timer('one.auth')(auth_views.logout_then_login)
 
 urlpatterns = patterns(
     '',
