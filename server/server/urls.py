@@ -1,11 +1,14 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.decorators import login_required
 
 from dash import views as dash_views
 from zemauth.forms import AuthenticationForm
 
 import utils.statsd_helper
+
+admin.site.login = login_required(admin.site.login)
 
 # Decorators for auth views for statsd.
 auth_views.login = utils.statsd_helper.statsd_timer('one.auth')(auth_views.login)
