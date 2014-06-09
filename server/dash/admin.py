@@ -2,6 +2,7 @@ from django.contrib import admin
 from django import forms
 from django.utils.safestring import mark_safe
 
+import constants
 import models
 
 
@@ -41,14 +42,24 @@ class AbstractUserForm(forms.ModelForm):
             self.fields["link"].initial = u'<a href="/admin/auth/user/%i">Edit user</a>' % (user.id)
 
 
-class PreventEditInlineForm(forms.BaseInlineFormSet):
+class PreventEditInlineFormset(forms.BaseInlineFormSet):
     def clean(self):
-        super(PreventEditInlineForm, self).clean()
+        super(PreventEditInlineFormset, self).clean()
 
         for form in self.forms:
             pk = form.cleaned_data.get('id')
             if pk and pk.id and form.has_changed():
                 raise forms.ValidationError('Editing is not allowed. Please add new entry instead.')
+    # def save_existing(self, form, instance, commit=True):
+    #     raise forms.ValidationError('Editing is not allowed. Please add new entry instead.')
+
+
+class AdGroupSettingsForm(forms.ModelForm):
+    class Meta:
+        widgets = {
+            'target_devices': forms.SelectMultiple(choices=constants.AdTargetDevice.get_choices()),
+            'target_regions': forms.SelectMultiple(choices=constants.AdTargetCountry.get_choices())
+        }
 
 
 # Account
@@ -140,7 +151,8 @@ class AdGroupSettingsInline(admin.TabularInline):
     verbose_name = "Ad Group's Settings"
     verbose_name_plural = "Ad Group's Settings"
     model = models.AdGroupSettings
-    formset = PreventEditInlineForm
+    form = AdGroupSettingsForm
+    formset = PreventEditInlineFormset
     extra = 0
     can_delete = False
     ordering = ('-created_dt',)
@@ -151,7 +163,7 @@ class AdGroupNetworkSettingsInline(admin.TabularInline):
     verbose_name = "Ad Group's Network Settings"
     verbose_name_plural = "Ad Group's Network Settings"
     model = models.AdGroupNetworkSettings
-    formset = PreventEditInlineForm
+    formset = PreventEditInlineFormset
     extra = 0
     can_delete = False
     ordering = ('-created_dt',)

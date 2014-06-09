@@ -48,6 +48,18 @@ class AdGroupNetworkSettingsState(ConstantBase):
     }
 
 
+class AdTargetDevice(ConstantBase):
+    DESKTOP = 'desktop'
+    TABLET = 'tablet'
+    MOBILE = 'mobile'
+
+    _VALUES = {
+        DESKTOP: 'Destkop',
+        TABLET: 'Tablet',
+        MOBILE: 'Mobile'
+    }
+
+
 class AdTargetCountry(ConstantBase):
     AUSTRALIA = 'AU'
     CANADA = 'CA'
