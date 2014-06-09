@@ -1,0 +1,120 @@
+body {
+    margin: 0;
+    font-family: proxima-nova, sans-serif;
+    font-weight: 300;
+}
+
+header {
+    border-bottom: 1px solid #dadada;
+}
+
+.item.logo {
+    width: 90px;
+    padding-left: 30px;
+    padding: 21px;
+}
+
+.wf-loading .item.contact {
+    visibility: hidden;    
+}
+
+.item.contact {
+    text-decoration: none;
+    color: #313131;
+    float: right;
+    padding-right: 30px;
+    padding: 19px;
+}
+
+.wf-loading form {
+    visibility: hidden;
+}
+
+form {
+    width: 220px;
+    margin: 100px auto;
+}
+
+form .label.signin {
+    text-align: center;
+    font-size: 30px;
+    font-weight: 200;
+    margin: 20px 0;
+}
+
+form input {
+    width: 100%;
+    margin-bottom: 7px;
+    -moz-box-sizing: border-box;
+     box-sizing: border-box;
+}
+
+form input[name="username"],
+form input[name="password"] {
+    font-family: proxima-nova, sans-serif;
+    border: 1px solid #2fa8c7;
+    padding: 10px 12px;
+    font-size: 16px;
+    font-weight: 300;
+}
+
+
+/* placeholder text */
+
+form input[name="username"]::-webkit-input-placeholder,
+form input[name="password"]::-webkit-input-placeholder {
+    color: #777;    
+    font-family: proxima-nova, sans-serif;
+    font-weight: 300;
+
+}
+form input[name="username"]::-moz-placeholder,
+form input[name="password"]::-moz-placeholder {
+    color: #313131;    
+    font-family: proxima-nova, sans-serif;
+    font-weight: 300;
+}
+
+/* older versions of FF */
+form input[name="username"]:-moz-placeholder,
+form input[name="password"]:-moz-placeholder {
+    color: #313131;    
+    font-family: proxima-nova, sans-serif;
+    font-weight: 300;
+}
+
+form input[name="username"]:-ms-input-placeholder, 
+form input[name="password"]:-ms-input-placeholder {
+    color: #313131;    
+    font-family: proxima-nova, sans-serif;
+    font-weight: 300;
+}
+
+form input[type=submit] {
+    background-color: #F59017;
+    border: 0;
+    color: #fff;
+    font-size: 16px;
+    font-family: proxima-nova, sans-serif;
+    padding: 10px 0;
+    letter-spacing: 1px;
+}
+
+
+.support-text {
+    color: #313131;
+    font-weight: 100;
+    font-style: italic;
+    font-size: 13px;
+    margin: 5px 0;
+}
+
+.support-text .contact {
+    color: #2fa8c7;
+}
+
+.failure-text {
+    color: #EC0A0A;
+    font-weight: 400;
+    margin-top: 0;
+}
