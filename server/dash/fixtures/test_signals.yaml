@@ -14,7 +14,7 @@
     password: pbkdf2_sha256$12000$CWOT1c1UlFEr$GDTv3fbQ6bmJffEg1bvb+O49VfwD9Bg/DyylA3jcWvg=
     user_permissions: []
     username: tomaz
-  model: auth.user
+  model: zemauth.user
   pk: 1
 
 # test account
