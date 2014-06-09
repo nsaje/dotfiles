@@ -2,11 +2,14 @@ from django.forms import ValidationError
 from django.contrib.auth import backends
 from django.core.validators import validate_email
 
+from statsd.defaults.django import statsd
+
 from zemauth import models
 
 
 class EmailOrUsernameModelBackend(backends.ModelBackend):
     def authenticate(self, username=None, password=None):
+        statsd.incr('one.login_try')
         try:
             validate_email(username)
             kwargs = {'email': username}
@@ -16,9 +19,10 @@ class EmailOrUsernameModelBackend(backends.ModelBackend):
         try:
             user = models.User.objects.get(**kwargs)
             if user.check_password(password):
+                statsd.incr('one.login_success')
                 return user
 
-            return None                
+            return None
         except models.User.DoesNotExist:
             return None
 

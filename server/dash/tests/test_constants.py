@@ -1,4 +1,4 @@
-import unittest
+from django.test import TestCase
 
 from dash import constants
 
@@ -29,7 +29,7 @@ class TestConstantNoValues(constants.ConstantBase):
         return
 
 
-class ConstantsBaseTestCase(unittest.TestCase):
+class ConstantsBaseTestCase(TestCase):
     def test_get_all(self):
         constants = TestConstant.get_all()
         self.assertEqual(len(constants), 3)
