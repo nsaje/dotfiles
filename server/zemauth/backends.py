@@ -1,6 +1,9 @@
 from django.forms import ValidationError
-from django.contrib.auth import models, backends
+from django.contrib.auth import backends
 from django.core.validators import validate_email
+
+from zemauth import models
+
 
 class EmailOrUsernameModelBackend(backends.ModelBackend):
     def authenticate(self, username=None, password=None):
