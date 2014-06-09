@@ -155,7 +155,7 @@ class AdGroupSettingsInline(admin.TabularInline):
     formset = PreventEditInlineFormset
     extra = 0
     can_delete = False
-    ordering = ('-created_dt',)
+    ordering = ('created_dt',)
     readonly_fields = ('created_dt', 'created_by')
 
 
@@ -166,7 +166,7 @@ class AdGroupNetworkSettingsInline(admin.TabularInline):
     formset = PreventEditInlineFormset
     extra = 0
     can_delete = False
-    ordering = ('-created_dt',)
+    ordering = ('created_dt',)
     readonly_fields = ('created_dt', 'created_by')
 
 
