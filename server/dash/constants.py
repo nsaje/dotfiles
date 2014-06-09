@@ -33,8 +33,8 @@ class AdGroupSettingsState(ConstantBase):
     INACTIVE = 2
 
     _VALUES = {
-        ACTIVE: 'Active',
-        INACTIVE: 'Inactive'
+        ACTIVE: 'Enabled',
+        INACTIVE: 'Paused'
     }
 
 
@@ -43,8 +43,18 @@ class AdGroupNetworkSettingsState(ConstantBase):
     INACTIVE = 2
 
     _VALUES = {
-        ACTIVE: 'Active',
-        INACTIVE: 'Inactive'
+        ACTIVE: 'Enabled',
+        INACTIVE: 'Paused'
+    }
+
+
+class AdTargetDevice(ConstantBase):
+    DESKTOP = 'desktop'
+    MOBILE = 'mobile'
+
+    _VALUES = {
+        DESKTOP: 'Destkop',
+        MOBILE: 'Mobile'
     }
 
 

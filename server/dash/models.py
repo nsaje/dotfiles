@@ -15,8 +15,8 @@ class Account(models.Model):
         null=False
     )
     users = models.ManyToManyField(auth_models.User)
-    created_dt = models.DateTimeField(auto_now_add=True)
-    modified_dt = models.DateTimeField(auto_now=True)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(auth_models.User, related_name='+')
 
     def __unicode__(self):
@@ -33,8 +33,8 @@ class Campaign(models.Model):
     )
     account = models.ForeignKey(Account)
     users = models.ManyToManyField(auth_models.User)
-    created_dt = models.DateTimeField(auto_now_add=True)
-    modified_dt = models.DateTimeField(auto_now=True)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(auth_models.User, related_name='+')
 
     def __unicode__(self):
@@ -58,8 +58,8 @@ class AdGroup(models.Model):
         null=False
     )
     campaign = models.ForeignKey(Campaign)
-    created_dt = models.DateTimeField(auto_now_add=True)
-    modified_dt = models.DateTimeField(auto_now=True)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(auth_models.User, related_name='+')
 
     def __unicode__(self):
@@ -91,8 +91,8 @@ class Network(models.Model):
         blank=False,
         null=False
     )
-    created_dt = models.DateTimeField(auto_now_add=True)
-    modified_dt = models.DateTimeField(auto_now=True)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
 
     def __unicode__(self):
         return self.name
@@ -101,7 +101,7 @@ class Network(models.Model):
 class AdGroupSettings(models.Model):
     id = models.AutoField(primary_key=True)
     ad_group = models.ForeignKey(AdGroup)
-    created_dt = models.DateTimeField(auto_now_add=True)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(auth_models.User, related_name='+')
     state = models.IntegerField(
         default=constants.AdGroupSettingsState.INACTIVE,
@@ -113,13 +113,15 @@ class AdGroupSettings(models.Model):
         max_digits=10,
         decimal_places=4,
         blank=True,
-        null=True
+        null=True,
+        verbose_name='CPC'
     )
     daily_budget_cc = models.DecimalField(
         max_digits=10,
         decimal_places=4,
         blank=True,
-        null=True
+        null=True,
+        verbose_name='Daily budget'
     )
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
@@ -130,7 +132,7 @@ class AdGroupNetworkSettings(models.Model):
     id = models.AutoField(primary_key=True)
     network = models.ForeignKey(Network)
     ad_group = models.ForeignKey(AdGroup)
-    created_dt = models.DateTimeField(auto_now_add=True)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(auth_models.User, related_name='+')
     state = models.IntegerField(
         default=constants.AdGroupNetworkSettingsState.INACTIVE,
@@ -140,11 +142,13 @@ class AdGroupNetworkSettings(models.Model):
         max_digits=10,
         decimal_places=4,
         blank=True,
-        null=True
+        null=True,
+        verbose_name='CPC'
     )
     daily_budget_cc = models.DecimalField(
         max_digits=10,
         decimal_places=4,
         blank=True,
-        null=True
+        null=True,
+        verbose_name='Daily budget'
     )
