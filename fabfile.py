@@ -1,9 +1,11 @@
+import contextlib
 from datetime import datetime
 import httplib
 import os
 
 from fabric.api import abort, env, execute, cd, lcd, local, run, task, prefix, put, parallel, serial
 import fabric.colors
+import fabric.utils
 
 # Taken from ratel and modified.
 
@@ -40,6 +42,13 @@ DEFAULT_BRANCH = 'master'
 env.forward_agent = True
 if env.ssh_config_path and os.path.isfile(os.path.expanduser(env.ssh_config_path)):
     env.use_ssh_config = True
+
+
+@contextlib.contextmanager
+def virtualenv():
+    venv_prefix = '. /etc/bash_completion.d/virtualenvwrapper && workon %s' % env.venv_name
+    with prefix(venv_prefix):
+        yield
 
 
 ### SETTINGS
@@ -147,10 +156,10 @@ def pack(app, params):
 
 
 def create_virtualenv(app, params):
-    virtualenv_folder = '%s-%s-%s' % (app, params['timestamp'], params['commit_hash'])
-    run('. /etc/bash_completion.d/virtualenvwrapper && mkvirtualenv %s' % virtualenv_folder)
+    venv_name = '%s-%s-%s' % (app, params['timestamp'], params['commit_hash'])
+    run('. /etc/bash_completion.d/virtualenvwrapper && mkvirtualenv %s' % venv_name)
 
-    params['virtualenv_folder'] = virtualenv_folder
+    env.venv_name = venv_name
 
 
 def unpack(app, params):
@@ -168,7 +177,7 @@ def unpack(app, params):
 def install_dependencies(app, params):
     dest_folder = os.path.join(params['app_folder'], app)
     print dest_folder
-    with cd(dest_folder), prefix('. /etc/bash_completion.d/virtualenvwrapper && workon %s' % params['virtualenv_folder']):
+    with cd(dest_folder), virtualenv():
         run('pip install -U pip==1.4.1')
         run('pip install -r requirements.txt')
 
@@ -176,13 +185,13 @@ def install_dependencies(app, params):
 @serial
 def unittests(app, params):
     dest_folder = os.path.join(params['app_folder'], app)
-    with cd(dest_folder), prefix('. /etc/bash_completion.d/virtualenvwrapper && workon %s' % params['virtualenv_folder']):
+    with cd(dest_folder), virtualenv():
         run('python manage.py test')
 
 
 def manage_static(app, params):
     dest_folder = os.path.join(params['app_folder'], app)
-    with cd(dest_folder), prefix('. /etc/bash_completion.d/virtualenvwrapper && workon %s' % params['virtualenv_folder']):
+    with cd(dest_folder), virtualenv():
         run('python manage.py collectstatic --noinput')
 
 
@@ -191,7 +200,7 @@ def is_db_migrated(app, params):
 
     dest_folder = os.path.join(params['app_folder'], app)
 
-    with cd(dest_folder), prefix('. /etc/bash_completion.d/virtualenvwrapper && workon %s' % params['virtualenv_folder']):
+    with cd(dest_folder), virtualenv():
         unmigrated_count = run('python manage.py migrate --list | grep "\[ \]" | wc -l')
 
     return int(unmigrated_count) == 0
@@ -199,7 +208,7 @@ def is_db_migrated(app, params):
 
 def switch(app, params):
     with cd('~/.virtualenvs'):
-        virtualenv_folder = os.path.join('/home/one/.virtualenvs', params['virtualenv_folder'])
+        virtualenv_folder = os.path.join('/home/one/.virtualenvs', env.venv_name)
         run("ln -Tsf %s %s" % (virtualenv_folder, app))
 
     with cd("~/apps/"):
@@ -218,7 +227,7 @@ def tag_deploy(app, params):
 
 def run_migrate(app, params):
     dest_folder = os.path.join(params['app_folder'], app)
-    with cd(dest_folder), prefix('. /etc/bash_completion.d/virtualenvwrapper && workon %s' % params['virtualenv_folder']):
+    with cd(dest_folder), virtualenv():
         run('python manage.py migrate')
 
 
@@ -240,8 +249,7 @@ def real_deploy(app, params):
     unittests(app, params)
 
     if not is_db_migrated(app, params):
-        print error('Database is not migrated. Migrate it first before deploying again by running fabric migrate task.')
-        return
+        fabric.utils.abort(error('Database is not migrated. Migrate it first before deploying again by running fabric migrate task.'))
 
     print task("Switching to new code [%s@%s]" % (app, env.host))
     switch(app, params)
