@@ -6,6 +6,8 @@ python-dateutil==2.2
 pytz==2014.3
 PyYAML==3.11
 
+statsd==3.0
+
 # Tests
 mock==1.0.1
 django-jenkins==0.15.0
