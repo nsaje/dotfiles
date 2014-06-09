@@ -1,6 +1,6 @@
-# Zemanta One
+# Zemanta Eins
 
-A Demand Side Platform.
+Nachfrageseite-Plattform (en: **Zemanta One** - A Demand Side Platform.)
 
 ## Code Organization
 
@@ -25,6 +25,11 @@ Create virtualenv and install requirements with pip:
 pip install -r requirements.txt
 ```
 
+You can also install development requirements with additional tools useful during development:
+```bash
+pip install -r requirements_dev.txt
+```
+
 Copy server/localsettings.py.temlate to server/localsettings.py and adjust them accordingly.
 
 Create a database as specified in localsettings.py, eg. write something like this in mysql shell:
@@ -38,7 +43,6 @@ Initialize database:
 ```bash
 python manage.py migrate
 ```
-
 ### Visualize models
 ```bash
 python manage.py graph_models -a -g -o my_project_visualized.png

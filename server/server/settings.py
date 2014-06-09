@@ -41,6 +41,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
+    'gadjo.requestprovider.middleware.RequestProvider' # providing request object in model signals
 )
 
 ROOT_URLCONF = 'server.urls'
@@ -63,6 +65,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
+
+STATIC_ROOT = 'static'
 
 STATIC_URL = '/static/'
 LOGIN_URL = '/signin'
