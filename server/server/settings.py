@@ -78,4 +78,6 @@ AUTHENTICATION_BACKENDS = (
     'zemauth.backends.EmailOrUsernameModelBackend',
 )
 
+TEST_RUNNER = 'utils.test_runner.CustomDiscoverRunner'
+
 from localsettings import *
