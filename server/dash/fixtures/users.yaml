@@ -2,6 +2,6 @@
     email: one-test@zemanta.com
     password: pbkdf2_sha256$12000$rlp6AeDBOQtf$1b2Pt7OZoQM59iYkQWvuOnzU/5toZx4E9kmgsVafszs=
     date_joined: "2014-06-10T10:00:00Z"
-    is_staff: true
-    is_superuser: true
+    is_staff: false
+    is_superuser: false
   model: zemauth.user
