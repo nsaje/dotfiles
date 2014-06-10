@@ -16,3 +16,6 @@ DATABASES = {
         'OPTIONS' : { 'init_command' : 'set storage_engine=INNODB' }
     }
 }
+
+STATSD_HOST = 'localhost'
+STATSD_PORT = 8125

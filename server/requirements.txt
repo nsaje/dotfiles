@@ -8,6 +8,8 @@ PyYAML==3.11
 django-contrib-requestprovider==1.0.1
 gunicorn==18.0
 
+statsd==3.0
+
 # Tests
 mock==1.0.1
 django-jenkins==0.15.0

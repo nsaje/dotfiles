@@ -1,0 +1,42 @@
+<html>
+    <head>
+        {% load staticfiles %}
+        <link type="text/css" rel="stylesheet" href="{% static "css/style.css" %}">
+        <!-- TypeKit async code -->
+        <script type="text/javascript">
+            (function(d) {
+                var config = {
+                    kitId: 'lfx0xpc',
+                    scriptTimeout: 3000
+                },
+                    h=d.documentElement,t=setTimeout(function(){h.className=h.className.replace(/\bwf-loading\b/g,"")+" wf-inactive";},config.scriptTimeout),tk=d.createElement("script"),f=false,s=d.getElementsByTagName("script")[0],a;h.className+=" wf-loading";tk.src='//use.typekit.net/'+config.kitId+'.js';tk.async=true;tk.onload=tk.onreadystatechange=function(){a=this.readyState;if(f||a&&a!="complete"&&a!="loaded")return;f=true;clearTimeout(t);try{Typekit.load(config)}catch(e){}};s.parentNode.insertBefore(tk,s)
+            })(document);
+        </script>
+    </head>
+    <body>
+        <header>
+            <img class="item logo" src="{% static "img/logo_one.png" %}" alt="Zemanta Logo"/>
+            <a class="item contact" href="#">Contact Support</a>
+        </header>
+
+        <form method="post" action="{% url 'django.contrib.auth.views.login' %}">
+        {% csrf_token %}
+
+        <div class="label signin">Sign In</div>
+        {{ form.username }}
+        {{ form.password }}
+
+        <input type="submit" value="SIGN IN" />
+        <input type="hidden" name="next" value="{{ next }}" />
+
+        {% if form.errors %}
+        <p class="failure-text">Your email and password didn't match. Please try again.</p>
+        {% endif %}
+
+        <div class="support-text">
+            Contact <a class="contact" href="#">Zemanta client services</a> if you have trouble signing in.
+        </div>
+
+        </form>
+    </body>
+</html>

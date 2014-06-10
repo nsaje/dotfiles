@@ -30,6 +30,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'dash',
     'django_extensions', # optional for visualizing models and other perks
+    'zemauth'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -68,5 +69,13 @@ USE_TZ = True
 STATIC_ROOT = 'static'
 
 STATIC_URL = '/static/'
+LOGIN_URL = '/signin'
+LOGIN_REDIRECT_URL = '/'
+
+AUTH_USER_MODEL = 'zemauth.User'
+
+AUTHENTICATION_BACKENDS = (
+    'zemauth.backends.EmailOrUsernameModelBackend',
+)
 
 from localsettings import *

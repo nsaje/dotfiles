@@ -1,4 +1,4 @@
-from django.contrib.auth import models as auth_models
+from django.conf import settings
 from django.db import models
 import jsonfield
 
@@ -14,10 +14,10 @@ class Account(models.Model):
         blank=False,
         null=False
     )
-    users = models.ManyToManyField(auth_models.User)
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
-    modified_by = models.ForeignKey(auth_models.User, related_name='+')
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
 
     def __unicode__(self):
         return self.name
@@ -32,10 +32,10 @@ class Campaign(models.Model):
         null=False
     )
     account = models.ForeignKey(Account)
-    users = models.ManyToManyField(auth_models.User)
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
-    modified_by = models.ForeignKey(auth_models.User, related_name='+')
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
 
     def __unicode__(self):
         return self.name
@@ -60,7 +60,7 @@ class AdGroup(models.Model):
     campaign = models.ForeignKey(Campaign)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
-    modified_by = models.ForeignKey(auth_models.User, related_name='+')
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
 
     def __unicode__(self):
         return self.name
@@ -102,7 +102,7 @@ class AdGroupSettings(models.Model):
     id = models.AutoField(primary_key=True)
     ad_group = models.ForeignKey(AdGroup)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    created_by = models.ForeignKey(auth_models.User, related_name='+')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
     state = models.IntegerField(
         default=constants.AdGroupSettingsState.INACTIVE,
         choices=constants.AdGroupSettingsState.get_choices()
@@ -133,7 +133,7 @@ class AdGroupNetworkSettings(models.Model):
     network = models.ForeignKey(Network)
     ad_group = models.ForeignKey(AdGroup)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    created_by = models.ForeignKey(auth_models.User, related_name='+')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
     state = models.IntegerField(
         default=constants.AdGroupNetworkSettingsState.INACTIVE,
         choices=constants.AdGroupNetworkSettingsState.get_choices()

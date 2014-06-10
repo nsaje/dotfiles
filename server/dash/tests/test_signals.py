@@ -1,9 +1,9 @@
 import mock
 from django.db import IntegrityError
-from django.contrib.auth.models import User
 from django.test import TestCase
 
 from dash import models as dashmodels
+from zemauth.models import User
 
 
 class TestDashSignals(TestCase):
