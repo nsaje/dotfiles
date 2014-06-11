@@ -17,6 +17,8 @@ DATABASES = {
     }
 }
 
+ALLOWED_HOSTS = []
+
 STATSD_HOST = 'localhost'
 STATSD_PORT = 8125
 

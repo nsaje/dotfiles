@@ -2,7 +2,6 @@ import os
 import unittest
 
 from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from statsd.defaults.django import statsd
 
@@ -34,27 +33,24 @@ class LoginTestCase(unittest.TestCase):
         self.driver.quit()
 
     def test_login(self):
-        self.driver.get('https://one.zemanta.com/signin')
-
-        wait = WebDriverWait(self.driver, 10)
         try:
-            wait.until_not(lambda browser: browser.find_element_by_id('id_signin_btn'))
-        except TimeoutException:
-            statsd.incr('one.auth.login.health_check_err')
+            self.driver.get('https://one.zemanta.com/signin')
+
+            wait = WebDriverWait(self.driver, 10)
+            wait.until(lambda driver: driver.find_element_by_id('id_signin_btn'))
+
+            email_input = self.driver.find_element_by_id('id_username')
+            email_input.send_keys(LOGIN_TEST_USERNAME)
+
+            password_input = self.driver.find_element_by_id('id_password')
+            password_input.send_keys(LOGIN_TEST_PASSWORD)
+
+            signin_btn = self.driver.find_element_by_id('id_signin_btn')
+            signin_btn.submit()
+
+            expected_url = 'https://one.zemanta.com/'
+            wait.until(lambda driver: driver.current_url == expected_url)
+        except:
             self.fail('Could not sign in.')
 
-        email_input = self.driver.find_element_by_id('id_username')
-        email_input.send_keys(LOGIN_TEST_USERNAME)
-
-        password_input = self.driver.find_element_by_id('id_password')
-        password_input.send_keys(LOGIN_TEST_PASSWORD)
-
-        signin_btn = self.driver.find_element_by_id('id_signin_btn')
-        signin_btn.submit()
-
-        try:
-            expected_url = 'https://one.zemanta.com'
-            wait.until_not(lambda browser: browser.current_url == expected_url)
-        except TimeoutException:
-            statsd.incr('one.auth.login.health_check_err')
-            self.fail('Could not sign in.')
+        statsd.incr('one.auth.login.health_check_ok')
