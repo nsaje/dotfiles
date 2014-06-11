@@ -17,7 +17,7 @@
     <body>
         <header>
             <a href="http://www.zemanta.com"><img class="item logo" src="{% static "img/logo_one.png" %}" alt="Zemanta Logo"/></a>
-            <a class="item contact" href="mailto:help@zemanta.com?Subject={% block mailsubject %}Sign%20In%20Page%20Issue{% endblock %}">Contact Support</a>
+            <a class="item contact" href="mailto:help@zemanta.com{% block support_mail_extra %}{% endblock %}">Contact Support</a>
         </header>
 
         {% block content %}{% endblock %}

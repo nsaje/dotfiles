@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block support_mail_extra %}?Subject=Sign%20In%20Page%20Issue{% endblock %}
+
 {% block content %}
 <div id="signin" class="center-container">
     <form method="post" action="{% url 'django.contrib.auth.views.login' %}">
