@@ -10,7 +10,7 @@ def test_function():
     return 100
 
 
-class UserManagerTestCase(unittest.TestCase):
+class StatsdHelperTestCase(unittest.TestCase):
     fake_time_call_count = 1
     mock_called = False
 
