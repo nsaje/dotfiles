@@ -37,7 +37,7 @@ class LoginTestCase(unittest.TestCase):
             self.driver.get('https://one.zemanta.com/signin')
 
             wait = WebDriverWait(self.driver, 10)
-            wait.until_not(lambda browser: browser.find_element_by_id('id_signin_btn'))
+            wait.until(lambda driver: driver.find_element_by_id('id_signin_btn'))
 
             email_input = self.driver.find_element_by_id('id_username')
             email_input.send_keys(LOGIN_TEST_USERNAME)
@@ -48,8 +48,9 @@ class LoginTestCase(unittest.TestCase):
             signin_btn = self.driver.find_element_by_id('id_signin_btn')
             signin_btn.submit()
 
-            expected_url = 'https://one.zemanta.com'
-            wait.until_not(lambda browser: browser.current_url == expected_url)
+            expected_url = 'https://one.zemanta.com/'
+            wait.until(lambda driver: driver.current_url == expected_url)
         except:
-            statsd.incr('one.auth.login.health_check_err')
-            raise
+            self.fail('Could not sign in.')
+
+        statsd.incr('one.auth.login.health_check_ok')
