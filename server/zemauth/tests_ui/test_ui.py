@@ -2,7 +2,6 @@ import os
 import unittest
 
 from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from statsd.defaults.django import statsd
 
@@ -39,7 +38,7 @@ class LoginTestCase(unittest.TestCase):
         wait = WebDriverWait(self.driver, 10)
         try:
             wait.until_not(lambda browser: browser.find_element_by_id('id_signin_btn'))
-        except TimeoutException:
+        except:
             statsd.incr('one.auth.login.health_check_err')
             self.fail('Could not sign in.')
 
@@ -55,6 +54,6 @@ class LoginTestCase(unittest.TestCase):
         try:
             expected_url = 'https://one.zemanta.com'
             wait.until_not(lambda browser: browser.current_url == expected_url)
-        except TimeoutException:
+        except:
             statsd.incr('one.auth.login.health_check_err')
             self.fail('Could not sign in.')
