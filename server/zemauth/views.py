@@ -23,7 +23,7 @@ def login(request, *args, **kwargs):
     if 'extra_context' not in kwargs:
         kwargs['extra_context'] = {}
 
-    kwargs['extra_context']['google_auth_error'] = request.GET.get('oauth_error')
+    kwargs['extra_context']['gauth_error'] = request.GET.get('gauth_error')
 
     if settings.GOOGLE_OAUTH_ENABLED:
         kwargs['extra_context']['gauth_url'] = gauth.get_uri(request)
@@ -49,8 +49,8 @@ def google_callback(request, *args, **kwargs):
 
 
 def _fail_response(message='Google authentication failed.'):
-    url = reverse('reps.pdash.auth.views.login')
+    url = reverse('zemauth.views.login')
     if message:
-        message = urllib.urlencode({'oauth_error': message or ""})
+        message = urllib.urlencode({'gauth_error': message or ""})
         url += "?" + message
     return redirect(url)

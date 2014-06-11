@@ -5,7 +5,6 @@
         var $usernameInput = $('#id_username');
         var $passwordInput = $('#id_password');
         var $signInBtn = $('#id_signin_btn');
-        var $gauthBtn = $('#id_gauth_btn');
         var $signInForm = $('#signin_form');
         var gauthUrl = $('#signin').data('gauth-url');
         var gauthEnabled = !!gauthUrl;
@@ -14,19 +13,23 @@
             return gauthUrl + '&login_hint=' + encodeURIComponent(username);
         }
 
+        function isGauthEmail(email) {
+            if (!email) {
+                return false;
+            }
+
+            return email.match(/@zemanta.com$/);
+        }
+
         function handleForm() {
             if (gauthEnabled) {
                 var username = $usernameInput.val();
-                if (username.match(/@zemanta.com$/)) {
+                if (isGauthEmail(username)) {
                     $passwordInput.hide();
-                    $signInBtn.hide();
-                    $gauthBtn.show();
-                    $gauthBtn.prop('href', getPersonalizedGauthUrl(username));
+                    $signInBtn.val('Sign In With Google');
                 } else {
                     $passwordInput.show();
-                    $signInBtn.show();
-                    $gauthBtn.hide();
-                    $gauthBtn.prop('href', gauthUrl);
+                    $signInBtn.val('Sign In');
                 }
             }
         }
@@ -34,7 +37,7 @@
         $signInForm.on('submit', function (e) {
             if (gauthEnabled) {
                 var username = $usernameInput.val();
-                if (username.match(/@zemanta.com$/)) {
+                if (isGauthEmail(username)) {
                     e.preventDefault();
                     window.location.href = getPersonalizedGauthUrl(username);
                 }

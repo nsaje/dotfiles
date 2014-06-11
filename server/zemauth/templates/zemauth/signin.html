@@ -20,14 +20,14 @@
         {{ form.password }}
 
         <input id="id_signin_btn" type="submit" value="Sign In" />
-        {% if gauth_url %}
-        <a id="id_gauth_btn" class="btn" href="{{ gauth_url }}">Sign In with Google</a>
-        {% endif %}
-
         <input type="hidden" name="next" value="{{ next }}" />
 
         {% if form.errors %}
         <p class="failure-text">Your email and password didn't match. Please try again.</p>
+        {% endif %}
+
+        {% if gauth_error %}
+        <p class="failure-text">{{ gauth_error }}</p>
         {% endif %}
 
         <div class="support-text">

@@ -41,8 +41,6 @@ def authorize(request, flow=None):
             flow = get_flow(request)
 
         credentials = flow.step2_exchange(code)
-        headers = httplib2.Http()
-        user_data = credentials.authorize(headers)
 
         http = httplib2.Http()
         http = credentials.authorize(http)
