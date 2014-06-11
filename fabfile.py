@@ -9,7 +9,7 @@ import fabric.utils
 
 # Taken from ratel and modified.
 
-## Example usage:
+# Example usage:
 # List valid options:
 # > fab -l
 #
@@ -25,6 +25,7 @@ import fabric.utils
 # > fab production:all deploy:client
 # > fab staging:ovh01,ovh02 deploy:client
 
+
 APPS = ('server', 'client')
 
 STAGING_SERVERS = {
@@ -36,8 +37,8 @@ PRODUCTION_SERVERS = {
 }
 
 GIT_REPOSITORY = 'git@github.com:Zemanta/zemanta-eins.git'
-
 DEFAULT_BRANCH = 'master'
+
 
 env.forward_agent = True
 if env.ssh_config_path and os.path.isfile(os.path.expanduser(env.ssh_config_path)):
@@ -51,7 +52,7 @@ def virtualenv():
         yield
 
 
-### SETTINGS
+# SETTINGS
 @task
 def staging(*args):
     if args[0] == 'all':
@@ -120,15 +121,17 @@ def migrate(*args):
         execute(real_migrate, app, params)
 
 
-#### COMMON STUFF
+# COMMON STUFF
 def clone_code(params):
     timestamp = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')
+    repo_name = os.path.basename(GIT_REPOSITORY)
+    project_name = os.path.splitext(repo_name)[0]
 
-    tmp_folder = "/tmp/zemanta-eins-deploy-%s" % timestamp
+    tmp_folder = "/tmp/deploy-%s-%s" % (project_name, timestamp)
     os.makedirs(tmp_folder)
 
     with lcd(tmp_folder):
-        tmp_folder_git = os.path.join(tmp_folder, 'zemanta-eins.git')
+        tmp_folder_git = os.path.join(tmp_folder, repo_name)
 
         local('git clone --branch %s --depth 1 %s %s' % (DEFAULT_BRANCH, GIT_REPOSITORY, tmp_folder_git))
 
@@ -138,15 +141,15 @@ def clone_code(params):
         params['timestamp'] = timestamp
         params['commit_hash'] = commit_hash
         params['tmp_folder'] = tmp_folder
+        params['tmp_folder_git'] = tmp_folder_git
 
 
 def pack(app, params):
     tmp_folder = params['tmp_folder']
     timestamp = params['timestamp']
+    tmp_folder_git = params['tmp_folder_git']
 
     with lcd(params['tmp_folder']):
-        tmp_folder_git = os.path.join(tmp_folder, 'zemanta-eins.git')
-
         tmp_filename = os.path.join(tmp_folder, "%s-%s.tar" % (app, timestamp))
 
         app_folder = os.path.join(tmp_folder_git, app)
@@ -208,7 +211,7 @@ def is_db_migrated(app, params):
 
 def switch(app, params):
     with cd('~/.virtualenvs'):
-        virtualenv_folder = os.path.join('/home/one/.virtualenvs', env.venv_name)
+        virtualenv_folder = os.path.join('~/.virtualenvs', env.venv_name)
         run("ln -Tsf %s %s" % (virtualenv_folder, app))
 
     with cd("~/apps/"):
@@ -249,7 +252,9 @@ def real_deploy(app, params):
     unittests(app, params)
 
     if not is_db_migrated(app, params):
-        fabric.utils.abort(error('Database is not migrated. Migrate it first before deploying again by running fabric migrate task.'))
+        fabric.utils.abort(error(
+            'Database is not migrated. Migrate it before deploying again by running fabric migrate task.'
+        ))
 
     print task("Switching to new code [%s@%s]" % (app, env.host))
     switch(app, params)
@@ -303,7 +308,7 @@ def invalidate_cdn_cache(app):
         conn.close()
 
 
-#### PRINT STUFF
+# PRINT STUFF
 def header(txt):
     return fabric.colors.yellow(txt, True)
 
