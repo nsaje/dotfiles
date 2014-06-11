@@ -29,7 +29,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'dash',
-    'django_extensions', # optional for visualizing models and other perks
+    'django_extensions',  # optional for visualizing models and other perks
     'zemauth'
 )
 
@@ -41,8 +41,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
-    'gadjo.requestprovider.middleware.RequestProvider' # providing request object in model signals
+    'gadjo.requestprovider.middleware.RequestProvider'  # providing request object in model signals
 )
 
 ROOT_URLCONF = 'server.urls'
@@ -63,8 +62,12 @@ USE_L10N = True
 USE_TZ = True
 
 
+TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates'),)
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
+
+STATICFILES_DIRS = (os.path.join(BASE_DIR, 'common_static'),)
 
 STATIC_ROOT = 'static'
 

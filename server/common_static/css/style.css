@@ -4,6 +4,10 @@ body {
     font-weight: 300;
 }
 
+a {
+    text-decoration: none;
+}
+
 header {
     border-bottom: 1px solid #dadada;
 }
@@ -19,38 +23,38 @@ header {
 }
 
 .item.contact {
-    text-decoration: none;
     color: #313131;
     float: right;
     padding-right: 30px;
     padding: 19px;
 }
 
-.wf-loading form {
+.wf-loading .center-container {
     visibility: hidden;
 }
 
-form {
-    width: 220px;
+.center-container {
+    width: 230px;
     margin: 100px auto;
+    color: #313131;
 }
 
-form .label.signin {
+.center-container .label.signin {
     text-align: center;
     font-size: 30px;
     font-weight: 200;
     margin: 20px 0;
 }
 
-form input {
+.center-container input {
     width: 100%;
     margin-bottom: 7px;
     -moz-box-sizing: border-box;
      box-sizing: border-box;
 }
 
-form input[name="username"],
-form input[name="password"] {
+.center-container input[name="username"],
+.center-container input[name="password"] {
     font-family: proxima-nova, sans-serif;
     border: 1px solid #2fa8c7;
     padding: 10px 12px;
@@ -61,36 +65,36 @@ form input[name="password"] {
 
 /* placeholder text */
 
-form input[name="username"]::-webkit-input-placeholder,
-form input[name="password"]::-webkit-input-placeholder {
+.center-container input[name="username"]::-webkit-input-placeholder,
+.center-container input[name="password"]::-webkit-input-placeholder {
     color: #777;    
     font-family: proxima-nova, sans-serif;
     font-weight: 300;
 
 }
-form input[name="username"]::-moz-placeholder,
-form input[name="password"]::-moz-placeholder {
+.center-container input[name="username"]::-moz-placeholder,
+.center-container input[name="password"]::-moz-placeholder {
     color: #313131;    
     font-family: proxima-nova, sans-serif;
     font-weight: 300;
 }
 
 /* older versions of FF */
-form input[name="username"]:-moz-placeholder,
-form input[name="password"]:-moz-placeholder {
+.center-container input[name="username"]:-moz-placeholder,
+.center-container input[name="password"]:-moz-placeholder {
     color: #313131;    
     font-family: proxima-nova, sans-serif;
     font-weight: 300;
 }
 
-form input[name="username"]:-ms-input-placeholder, 
-form input[name="password"]:-ms-input-placeholder {
+.center-container input[name="username"]:-ms-input-placeholder, 
+.center-container input[name="password"]:-ms-input-placeholder {
     color: #313131;    
     font-family: proxima-nova, sans-serif;
     font-weight: 300;
 }
 
-form input[type=submit] {
+.center-container input[type=submit] {
     background-color: #F59017;
     border: 0;
     color: #fff;
@@ -102,7 +106,6 @@ form input[type=submit] {
 
 
 .support-text {
-    color: #313131;
     font-weight: 100;
     font-style: italic;
     font-size: 13px;
@@ -117,4 +120,31 @@ form input[type=submit] {
     color: #EC0A0A;
     font-weight: 400;
     margin-top: 0;
+}
+
+
+/* 404 */
+#error-box {
+    color: #777;
+    text-align: center;
+    font-size: 13px;
+    width: 300px;
+}
+
+#error-box .message {
+    margin-bottom: 13px;
+}
+
+#error-box .title {
+    color: #313131;
+    font-size: 30px;
+    margin-bottom: 20px;
+}
+
+#error-box .contact {
+    color: #777;
+}
+
+#error-box strong {
+    font-weight: 400;
 }
