@@ -78,7 +78,7 @@ def deploy(*args):
     apps = []
     if args[0] == 'all':
         apps = APPS
-    elif set(args) < set(APPS):
+    elif set(args) <= set(APPS):
         apps = args
     else:
         abort("Unknown apps!")
