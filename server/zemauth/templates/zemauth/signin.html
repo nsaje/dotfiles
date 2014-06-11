@@ -15,8 +15,8 @@
     </head>
     <body>
         <header>
-            <img class="item logo" src="{% static "img/logo_one.png" %}" alt="Zemanta Logo"/>
-            <a class="item contact" href="#">Contact Support</a>
+            <a href="http://www.zemanta.com"><img class="item logo" src="{% static "img/logo_one.png" %}" alt="Zemanta Logo"/></a>
+            <a class="item contact" href="mailto:help@zemanta.com?Subject=Sign%20In%20Page%20Issue">Contact Support</a>
         </header>
 
         <form method="post" action="{% url 'django.contrib.auth.views.login' %}">
@@ -34,7 +34,7 @@
         {% endif %}
 
         <div class="support-text">
-            Contact <a class="contact" href="#">Zemanta client services</a> if you have trouble signing in.
+            Contact <a class="contact" href="mailto:help@zemanta.com?Subject=Sign%20In%20Page%20Issue">Zemanta client services</a> if you have trouble signing in.
         </div>
 
         </form>
