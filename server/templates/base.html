@@ -16,7 +16,7 @@
     </head>
     <body>
         <header>
-            <a href="http://www.zemanta.com"><img class="item logo" src="{% static "img/logo_one.png" %}" alt="Zemanta Logo"/></a>
+            <a href="{% block header_logo_link %}/{% endblock %}"><img class="item logo" src="{% static "img/logo_one.png" %}" alt="Zemanta Logo"/></a>
             <a class="item contact" href="mailto:help@zemanta.com{% block support_mail_extra %}{% endblock %}">Contact Support</a>
         </header>
 
