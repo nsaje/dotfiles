@@ -34,6 +34,7 @@ def login(request, *args, **kwargs):
 def google_callback(request, *args, **kwargs):
     if 'error' in request.GET or 'code' not in request.GET:
         return _fail_response()
+
     user_data = gauth.authorize(request)
     if not user_data:
         return _fail_response()
@@ -42,7 +43,7 @@ def google_callback(request, *args, **kwargs):
 
     if user and user.is_active:
         auth.login(request, user)
-        return HttpResponseRedirect(reverse('reps.pdash.views.entry_view'))
+        return HttpResponseRedirect(reverse('dash.views.index'))
     else:
         return _fail_response('Your Google account is not connected with Zemanta.')
 
