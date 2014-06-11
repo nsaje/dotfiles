@@ -7,6 +7,8 @@ pytz==2014.3
 PyYAML==3.11
 django-contrib-requestprovider==1.0.1
 gunicorn==18.0
+httplib2==0.9
+oauth2client==1.2
 
 statsd==3.0
 
