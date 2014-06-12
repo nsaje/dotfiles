@@ -11,7 +11,6 @@ import utils.statsd_helper
 admin.site.login = login_required(admin.site.login)
 
 # Decorators for auth views for statsd.
-# auth_views.login = utils.statsd_helper.statsd_timer('one.auth')(auth_views.login)
 auth_views.logout_then_login = utils.statsd_helper.statsd_timer('one.auth')(auth_views.logout_then_login)
 
 urlpatterns = patterns(

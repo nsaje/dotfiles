@@ -24,13 +24,15 @@ class EmailOrUsernameModelBackend(backends.ModelBackend):
         try:
             user = models.User.objects.get(**kwargs)
 
-            if settings.GOOGLE_OAUTH_ENABLED:
+            # maticz: Internal users in this context are users with @zemanta.com emails.
+            # Checked and confirmed by product guys.
+            if settings.GOOGLE_OAUTH_ENABLED and user.email.endswith('@zemanta.com'):
                 if oauth_data and oauth_data['verified_email']:
+                    statsd.incr('one.login_success')
                     return user
-                if user.is_staff:
+                else:
                     return None
-
-            if user.check_password(password):
+            elif user.check_password(password):
                 statsd.incr('one.login_success')
                 return user
 

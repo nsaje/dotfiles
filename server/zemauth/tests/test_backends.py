@@ -1,10 +1,12 @@
-import unittest
+#import unittest
+from django import test
+import mock
 
 from zemauth import models
 from zemauth import backends
 
 
-class EmailOrUsernameModelBackendTestCase(unittest.TestCase):
+class EmailOrUsernameModelBackendTestCase(test.TestCase):
     def test_authenticate_email(self):
         email = 'foo@bar.com'
         password = '123'
@@ -16,8 +18,6 @@ class EmailOrUsernameModelBackendTestCase(unittest.TestCase):
         result = backend.authenticate(email, password)
 
         self.assertEqual(result, user)
-
-        user.delete()
 
     def test_authenticate_username(self):
         username = 'foo'
@@ -32,8 +32,6 @@ class EmailOrUsernameModelBackendTestCase(unittest.TestCase):
 
         self.assertEqual(result, user)
 
-        user.delete()
-
     def test_authenticate_wrong_password(self):
         email = 'foo@bar.com'
 
@@ -45,7 +43,60 @@ class EmailOrUsernameModelBackendTestCase(unittest.TestCase):
 
         self.assertIsNone(result)
 
-        user.delete()
+    def test_authenticate_oauth(self):
+        email = 'test.user@zemanta.com'
+
+        user = models.User.objects.create_user(email, password='123')
+        user.save()
+
+        oauth_data = {
+            u'family_name': u'',
+            u'name': u'',
+            u'picture': u'',
+            u'email': u'test.user@zemanta.com',
+            u'given_name': u'',
+            u'id': u'111111111111111111111',
+            u'hd': u'zemanta.com',
+            u'verified_email': True
+        }
+
+        with self.settings(GOOGLE_OAUTH_ENABLED=True):
+            backend = backends.EmailOrUsernameModelBackend()
+            result = backend.authenticate(oauth_data=oauth_data)
+            self.assertEqual(result, user)
+
+            unverified = oauth_data.copy()
+            unverified[u'verified_email'] = False
+            result = backend.authenticate(oauth_data=unverified)
+            self.assertIs(result, None)
+
+            wrong_email = oauth_data.copy()
+            wrong_email[u'email'] = u'non-existing@zemanta.com'
+            result = backend.authenticate(oauth_data=wrong_email)
+            self.assertIs(result, None)
+
+            user.email = 'user@not-zemanta.com'
+            user.save()
+            result = backend.authenticate(oauth_data=oauth_data)
+            self.assertEqual(result, None)
+
+    def test_authenticate_internal_user(self):
+        email = 'test.user@zemanta.com'
+
+        user = models.User.objects.create_user(email, password='123')
+        user.save()
+
+        with self.settings(GOOGLE_OAUTH_ENABLED=True):
+            backend = backends.EmailOrUsernameModelBackend()
+            result = backend.authenticate(
+                username='test.user@zemanta.com', password='123', oauth_data=None)
+            self.assertEqual(result, None)
+
+        with self.settings(GOOGLE_OAUTH_ENABLED=False):
+            backend = backends.EmailOrUsernameModelBackend()
+            result = backend.authenticate(
+                username='test.user@zemanta.com', password='123', oauth_data=None)
+            self.assertEqual(result, user)
 
     def test_authenticate_non_existing(self):
         backend = backends.EmailOrUsernameModelBackend()
@@ -65,8 +116,6 @@ class EmailOrUsernameModelBackendTestCase(unittest.TestCase):
         result = backend.get_user(user.pk)
 
         self.assertEqual(result, user)
-
-        user.delete()
 
     def test_get_user_non_existing(self):
         backend = backends.EmailOrUsernameModelBackend()
