@@ -8,13 +8,17 @@ from zemauth import models
 
 
 class EmailOrUsernameModelBackend(backends.ModelBackend):
-    def authenticate(self, username=None, password=None):
+    def authenticate(self, username=None, password=None, oauth_data=None):
         statsd.incr('one.login_try')
-        try:
-            validate_email(username)
-            kwargs = {'email': username}
-        except ValidationError:
-            kwargs = {'username': username}
+
+        if oauth_data:
+            kwargs = {'email': oauth_data['email']}
+        else:
+            try:
+                validate_email(username)
+                kwargs = {'email': username}
+            except ValidationError:
+                kwargs = {'username': username}
 
         try:
             user = models.User.objects.get(**kwargs)
