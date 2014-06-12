@@ -1,12 +1,12 @@
-import unittest
+from django import test
 
 from django.core import mail
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 
 from zemauth import models
 
 
-class UserManagerTestCase(unittest.TestCase):
+class UserManagerTestCase(test.TestCase):
     def test_create_user(self):
         email_lowercase = 'normal@normal.com'
         user = models.User.objects.create_user(email_lowercase, password='123')
@@ -16,16 +16,12 @@ class UserManagerTestCase(unittest.TestCase):
         self.assertFalse(user.is_staff)
         self.assertFalse(user.is_superuser)
 
-        user.delete()
-
     def test_create_superuser(self):
         email_lowercase = 'normal@normal.com'
         user = models.User.objects.create_superuser(email_lowercase, password='123')
         self.assertEqual(user.email, email_lowercase)
         self.assertIs(user.username, u'')
         self.assertTrue(user.has_usable_password())
-
-        user.delete()
 
     def test_create_user_email_domain_normalize_rfc3696(self):
         # According to  http://tools.ietf.org/html/rfc3696#section-3
@@ -49,8 +45,6 @@ class UserManagerTestCase(unittest.TestCase):
         user = models.User.objects.create_user(email_lowercase)
         self.assertFalse(user.has_usable_password())
 
-        user.delete()
-
         self.assertRaises(
             TypeError,
             models.User.objects.create_superuser,
@@ -58,7 +52,7 @@ class UserManagerTestCase(unittest.TestCase):
         )
 
 
-class UserTestCase(unittest.TestCase):
+class UserTestCase(test.TestCase):
     def test_email_user(self):
         kwargs = {
             "fail_silently": False,
@@ -94,13 +88,15 @@ class UserTestCase(unittest.TestCase):
 
     def test_unique_email(self):
         email = 'test@test.com'
-        user1 = models.User(email=email)
-        user1.save()
+        with transaction.atomic():
+            user1 = models.User(email=email)
+            user1.save()
 
-        user2 = models.User(email=email)
-        self.assertRaises(IntegrityError, user2.save)
+        with transaction.atomic():
+            self.assertEqual(len(models.User.objects.filter(email=email).all()), 1)
 
-        user1.delete()
+            user2 = models.User(email=email)
+            self.assertRaises(IntegrityError, user2.save)
 
     # def test_mandatory_email(self):
     #     user = models.User(first_name='Test')

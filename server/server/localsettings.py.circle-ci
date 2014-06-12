@@ -16,3 +16,19 @@ DATABASES = {
         'OPTIONS' : { 'init_command' : 'set storage_engine=INNODB' }
     }
 }
+
+# Path to log file
+LOG_FILE = '/home/ubuntu/zemanta-eins.server.log'
+
+# Metrics reporting
+STATSD_HOST = ''
+STATSD_PORT = 8125
+
+# Saucelabs
+SAUCELABS_USERNAME = ''
+SAUCELABS_ACCESS_KEY = ''
+
+# Auth
+GOOGLE_OAUTH_ENABLED = False
+GOOGLE_OAUTH_CLIENT_ID = ''
+GOOGLE_OAUTH_CLIENT_SECRET = ''
