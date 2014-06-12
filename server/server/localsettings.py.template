@@ -19,6 +19,9 @@ DATABASES = {
 
 ALLOWED_HOSTS = []
 
+# Path to log file
+LOG_FILE = '/path/to/log.log'
+
 STATSD_HOST = 'localhost'
 STATSD_PORT = 8125
 
