@@ -46,11 +46,13 @@ header {
     margin: 20px 0;
 }
 
-.center-container input {
+.center-container input,
+.center-container .btn {
     width: 100%;
     margin-bottom: 7px;
     -moz-box-sizing: border-box;
-     box-sizing: border-box;
+    box-sizing: border-box;
+    display: block;
 }
 
 .center-container input[name="username"],
@@ -94,7 +96,8 @@ header {
     font-weight: 300;
 }
 
-.center-container input[type=submit] {
+.center-container input[type=submit],
+.center-container .btn {
     background-color: #F59017;
     border: 0;
     color: #fff;
@@ -102,6 +105,8 @@ header {
     font-family: proxima-nova, sans-serif;
     padding: 10px 0;
     letter-spacing: 1px;
+    text-transform: uppercase;
+    text-align: center;
 }
 
 
