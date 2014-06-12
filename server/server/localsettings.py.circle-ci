@@ -18,7 +18,7 @@ DATABASES = {
 }
 
 # Path to log file
-LOG_FILE = '~/zemanta-eins.server.log'
+LOG_FILE = '/home/ubuntu/zemanta-eins.server.log'
 
 # Metrics reporting
 STATSD_HOST = ''
