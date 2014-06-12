@@ -1,6 +1,7 @@
-from django.forms import ValidationError
-from django.contrib.auth import backends
+from django.conf import settings
 from django.core.validators import validate_email
+from django.contrib.auth import backends
+from django.forms import ValidationError
 
 from statsd.defaults.django import statsd
 
@@ -22,6 +23,13 @@ class EmailOrUsernameModelBackend(backends.ModelBackend):
 
         try:
             user = models.User.objects.get(**kwargs)
+
+            if settings.GOOGLE_OAUTH_ENABLED:
+                if oauth_data and oauth_data['verified_email']:
+                    return user
+                if user.is_staff:
+                    return None
+
             if user.check_password(password):
                 statsd.incr('one.login_success')
                 return user
