@@ -10,13 +10,30 @@ def test_function():
     return 100
 
 
+@statsd_helper.statsd_timer('test', 'custom_name')
+def test_function2():
+    return 200
+
+
 class StatsdHelperTestCase(unittest.TestCase):
     fake_time_call_count = 1
     mock_called = False
 
+    def setUp(self):
+        self.socket_patcher = mock.patch('utils.statsd_helper.socket')
+        self.socket_mock = self.socket_patcher.start()
+
+        def fake_gethostname():
+            return 'testhost'
+
+        self.socket_mock.gethostname.side_effect = fake_gethostname
+
+    def tearDown(self):
+        self.socket_patcher.stop()
+
     @mock.patch('utils.statsd_helper.statsd.timing')
     @mock.patch('utils.statsd_helper.time')
-    def test_mandatory_email(self, time_mock, statsd_timing_mock):
+    def test_statsd_timer(self, time_mock, statsd_timing_mock):
         def fake_time():
             if self.fake_time_call_count == 1:
                 self.fake_time_call_count += 1
@@ -27,7 +44,7 @@ class StatsdHelperTestCase(unittest.TestCase):
         time_mock.time.side_effect = fake_time
 
         def statsd_timing(name, time_ms):
-            self.assertEqual(name, 'test.test_function')
+            self.assertEqual(name, 'one-testhost.test.test_function')
             self.assertEqual(time_ms, 400)
             self.mock_called = True
 
@@ -37,5 +54,50 @@ class StatsdHelperTestCase(unittest.TestCase):
 
         result = test_function()
         self.assertEqual(result, 100)
-
         self.assertTrue(self.mock_called)
+    
+    @mock.patch('utils.statsd_helper.statsd.timing')
+    @mock.patch('utils.statsd_helper.time')
+    def test_statsd_timer_custom_name(self, time_mock, statsd_timing_mock):
+        def fake_time():
+            if self.fake_time_call_count == 1:
+                self.fake_time_call_count += 1
+                return 1402523052.417958
+            elif self.fake_time_call_count == 2:
+                return 1402523052.818079
+
+        time_mock.time.side_effect = fake_time
+
+        def statsd_timing(name, time_ms):
+            self.assertEqual(name, 'one-testhost.test.custom_name')
+            self.assertEqual(time_ms, 400)
+            self.mock_called = True
+
+        statsd_timing_mock.side_effect = statsd_timing
+
+        self.assertFalse(statsd_timing_mock.called)
+
+        result = test_function2()
+        self.assertEqual(result, 200)
+        self.assertTrue(self.mock_called)
+
+    @mock.patch('utils.statsd_helper.statsd.incr')
+    def test_statsd_incr(self, statsd_incr_mock):
+        def fake_statsd_incr(name):
+            self.assertEqual(name, 'one-testhost.test.metric')
+            self.mock_called = True
+
+        statsd_incr_mock.side_effect = fake_statsd_incr
+
+        statsd_helper.statsd_incr('test.metric')
+        self.assertTrue(self.mock_called)
+
+    def test_get_source(self):
+        self.assertEqual(statsd_helper.get_source(), 'one-testhost')
+
+    def test_get_source_with_periods(self):
+        def fake_gethostname():
+            return 'tes.th.ost'
+        self.socket_mock.gethostname.side_effect = fake_gethostname
+
+        self.assertEqual(statsd_helper.get_source(), 'one-testhost')
