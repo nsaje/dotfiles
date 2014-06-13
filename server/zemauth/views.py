@@ -16,8 +16,6 @@ def login(request, *args, **kwargs):
     """Wraps login view and injects certain query string values into
     extra_context and passes it to django.contrib.auth.views.login.
     """
-    import time
-    time.sleep(1)
 
     if 'error' in request.GET:
         return _fail_response()
