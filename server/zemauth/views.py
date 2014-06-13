@@ -11,11 +11,13 @@ import gauth
 from utils import statsd_helper
 
 
-@statsd_helper.statsd_timer('one.auth')
+@statsd_helper.statsd_timer('auth', 'signin_response_time')
 def login(request, *args, **kwargs):
     """Wraps login view and injects certain query string values into
     extra_context and passes it to django.contrib.auth.views.login.
     """
+    import time
+    time.sleep(1)
 
     if 'error' in request.GET:
         return _fail_response()
