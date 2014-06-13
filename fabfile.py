@@ -7,6 +7,8 @@ from fabric.api import abort, env, execute, cd, lcd, local, run, task, prefix, p
 import fabric.colors
 import fabric.utils
 
+import yaml
+
 # Taken from ratel and modified.
 
 # Example usage:
@@ -198,6 +200,17 @@ def manage_static(app, params):
         run('python manage.py collectstatic --noinput')
 
 
+def create_cron_jobs(app, params):
+    with cd(params['app_folder']):
+        cron_yaml_path = os.path.join(params['tmp_folder_git'], 'cron.yaml')
+        with open(cron_yaml_path, 'r') as f:
+            cron_yaml = yaml.load(f)
+            jobs = [x['job'] for x in cron_yaml['cron'] if env.host in x.get('hosts', env.hosts)]
+            echo_cmd = 'echo "{0}" >> /tmp/cron_jobs'.format('\n'.join(jobs))
+            run(echo_cmd)
+            run('crontab /tmp/cron_jobs')
+
+
 def is_db_migrated(app, params):
     unmigrated_count = None
 
@@ -258,6 +271,9 @@ def real_deploy(app, params):
 
     print task("Switching to new code [%s@%s]" % (app, env.host))
     switch(app, params)
+
+    print task("Creating cron jobs [%s@%s]" % (app, env.host))
+    create_cron_jobs(app, params)
 
     # print task('Tagging successful deploy [%s@%s]' (app, env.hosts))
     # tag_deploy(app, params)
