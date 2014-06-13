@@ -211,7 +211,7 @@ def create_cron_jobs(app, params):
             jobs = [x['job'] for x in cron_yaml['cron'] if env.host in x.get('hosts', env.hosts)]
             temp_file = '/tmp/cron_jobs-{0}-{1}'.format(
                 params['timestamp'], params['commit_hash'])
-            echo_cmd = 'echo "{0}" > {1}'.format('\n'.join(jobs), temp_file)
+            echo_cmd = 'echo \'{0}\' > {1}'.format('\n'.join(jobs), temp_file)
             run(echo_cmd)
             run('crontab {0}'.format(temp_file))
 
