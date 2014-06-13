@@ -30,12 +30,14 @@ import yaml
 
 APPS = ('server', 'client')
 
-STAGING_SERVERS = {
-    'stadium01': 'one@stadium01.zemanta.com'
-}
+STAGING_USER = 'one'
+PRODUCTION_USER = STAGING_USER
 
+STAGING_SERVERS = {
+    'stadium01': 'stadium01.zemanta.com'
+}
 PRODUCTION_SERVERS = {
-    'knot01': 'one@knot01.zemanta.com'
+    'knot01': 'knot01.zemanta.com'
 }
 
 GIT_REPOSITORY = 'git@github.com:Zemanta/zemanta-eins.git'
@@ -57,6 +59,7 @@ def virtualenv():
 # SETTINGS
 @task
 def staging(*args):
+    env.user = STAGING_USER
     if args[0] == 'all':
         env.hosts = STAGING_SERVERS.values()
     elif set(args) < set(STAGING_SERVERS.keys()):
@@ -67,6 +70,7 @@ def staging(*args):
 
 @task
 def production(*args):
+    env.user = PRODUCTION_USER
     if args[0] == 'all':
         env.hosts = PRODUCTION_SERVERS.values()
     elif set(args) < set(PRODUCTION_SERVERS.keys()):
@@ -181,7 +185,6 @@ def unpack(app, params):
 @serial
 def install_dependencies(app, params):
     dest_folder = os.path.join(params['app_folder'], app)
-    print dest_folder
     with cd(dest_folder), virtualenv():
         run('pip install -U pip==1.4.1')
         run('pip install -r requirements.txt')
@@ -206,9 +209,11 @@ def create_cron_jobs(app, params):
         with open(cron_yaml_path, 'r') as f:
             cron_yaml = yaml.load(f)
             jobs = [x['job'] for x in cron_yaml['cron'] if env.host in x.get('hosts', env.hosts)]
-            echo_cmd = 'echo "{0}" >> /tmp/cron_jobs'.format('\n'.join(jobs))
+            temp_file = '/tmp/cron_jobs-{0}-{1}'.format(
+                params['timestamp'], params['commit_hash'])
+            echo_cmd = 'echo "{0}" >> {1}'.format('\n'.join(jobs), temp_file)
             run(echo_cmd)
-            run('crontab /tmp/cron_jobs')
+            run('crontab {0}'.format(temp_file))
 
 
 def is_db_migrated(app, params):
