@@ -11,15 +11,15 @@ import utils.statsd_helper
 admin.site.login = login_required(admin.site.login)
 
 # Decorators for auth views for statsd.
-auth_views.login = utils.statsd_helper.statsd_timer('auth', 'signin_response_time')(auth_views.login)
 auth_views.logout_then_login = utils.statsd_helper.statsd_timer('auth', 'signout_response_time')(auth_views.logout_then_login)
 
 urlpatterns = patterns(
     '',
     url(r'^$', dash_views.index, name='index'),
     url(r'^signin$',
-        'django.contrib.auth.views.login',
+        'zemauth.views.login',
         {'authentication_form': AuthenticationForm, 'template_name': 'zemauth/signin.html'}),
     url(r'^signout$', 'django.contrib.auth.views.logout_then_login'),
-    url(r'^admin/', include(admin.site.urls))
+    url(r'^admin/', include(admin.site.urls)),
+    url(r'^oauth2callback', 'zemauth.views.google_callback'),
 )

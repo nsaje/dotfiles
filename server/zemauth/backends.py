@@ -1,6 +1,7 @@
-from django.forms import ValidationError
-from django.contrib.auth import backends
+from django.conf import settings
 from django.core.validators import validate_email
+from django.contrib.auth import backends
+from django.forms import ValidationError
 
 from utils.statsd_helper import statsd_incr
 
@@ -8,17 +9,30 @@ from zemauth import models
 
 
 class EmailOrUsernameModelBackend(backends.ModelBackend):
-    def authenticate(self, username=None, password=None):
+    def authenticate(self, username=None, password=None, oauth_data=None):
         statsd_incr('signin_try')
-        try:
-            validate_email(username)
-            kwargs = {'email': username}
-        except ValidationError:
-            kwargs = {'username': username}
+
+        if oauth_data:
+            kwargs = {'email': oauth_data['email']}
+        else:
+            try:
+                validate_email(username)
+                kwargs = {'email': username}
+            except ValidationError:
+                kwargs = {'username': username}
 
         try:
             user = models.User.objects.get(**kwargs)
-            if user.check_password(password):
+
+            # maticz: Internal users in this context are users with @zemanta.com emails.
+            # Checked and confirmed by product guys.
+            if settings.GOOGLE_OAUTH_ENABLED and user.email.endswith('@zemanta.com'):
+                if oauth_data and oauth_data['verified_email']:
+                    statsd_incr('signin_success')
+                    return user
+                else:
+                    return None
+            elif user.check_password(password):
                 statsd_incr('signin_success')
                 return user
 

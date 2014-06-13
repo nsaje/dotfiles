@@ -15,7 +15,6 @@ def statsd_timer(path, name=None):
         def wrapper(*args, **kwargs):
             start = time.time()
             result = func(*args, **kwargs)
-
             new_name = '{0}.{1}.{2}'.format(get_source(), path, name or func.__name__)
             statsd.timing(new_name, int((time.time() - start) * 1000))
 

@@ -8,7 +8,7 @@ from statsd.defaults.django import statsd
 from django.conf import settings
 
 
-LOGIN_TEST_USERNAME = 'one-test@zemanta.com'
+LOGIN_TEST_USERNAME = 'one-test@zemanta-test.com'
 LOGIN_TEST_PASSWORD = 'thisISaT45est-passw0rd'
 
 
