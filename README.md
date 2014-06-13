@@ -12,13 +12,17 @@ Code is organized in two units:
 
 Server consists of a single Django app named dash. This app contains all the models needed for it to work correctly.
 
+### Client
+
+Client is a web client built on top of AngularJS. It uses Server API to communicate with backend.
+
 ## How To Setup
 
 ### Server
 
 In prodution, we use MySQL database so it is best to install it for development as well.
 
-All the command bellow assume that you are located in server subdirectory.
+All the commands bellow assume that you are located in server subdirectory.
 
 Create virtualenv and install requirements with pip:
 ```bash
@@ -46,4 +50,15 @@ python manage.py migrate
 ### Visualize models
 ```bash
 python manage.py graph_models -a -g -o my_project_visualized.png
+```
+
+### Client
+
+All the commands bellow assume that you are located in client subdirectory.
+
+Make sure that you have node.js, npm, grunt and grunt-cli installed.
+
+Install local development node modules:
+```bash
+npm install
 ```
