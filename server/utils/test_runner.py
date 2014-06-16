@@ -25,10 +25,10 @@ class CustomDiscoverRunner(runner.DiscoverRunner):
 
         super(CustomDiscoverRunner, self).__init__(*args, **kwargs)
 
-    def setup_databases(self, *args, **kwargs):
+    def setup_databases(self, **kwargs):
         if not self.health_check:
-            return super(CustomDiscoverRunner, self).setup_databases(*args, **kwargs)
+            return super(CustomDiscoverRunner, self).setup_databases(**kwargs)
 
-    def teardown_databases(self, *args, **kwargs):
+    def teardown_databases(self, old_config, **kwargs):
         if not self.health_check:
-            return super(CustomDiscoverRunner, self).teardown_databases(*args, **kwargs)
+            return super(CustomDiscoverRunner, self).teardown_databases(old_config, **kwargs)
