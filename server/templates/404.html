@@ -1,8 +1,9 @@
-{% extends "base.html" %}
+{% extends "header_base.html" %}
 
 {% block support_mail_extra %}?Subject=Help%20Needed{% endblock %}
 
 {% block content %}
+{{ block.super }}
 <div id="error-box" class="center-container">
     <div class="title">Oops.</div>
     <div class="message">

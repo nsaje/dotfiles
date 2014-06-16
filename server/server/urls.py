@@ -1,8 +1,8 @@
+from django.contrib.auth.decorators import login_required
+
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
-from django.contrib.auth.decorators import login_required
-
 from dash import views as dash_views
 from zemauth.forms import AuthenticationForm
 
