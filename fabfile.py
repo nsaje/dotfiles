@@ -7,6 +7,8 @@ from fabric.api import abort, env, execute, cd, lcd, local, run, task, prefix, p
 import fabric.colors
 import fabric.utils
 
+import yaml
+
 # Taken from ratel and modified.
 
 # Example usage:
@@ -28,12 +30,14 @@ import fabric.utils
 
 APPS = ('server', 'client')
 
-STAGING_SERVERS = {
-    'stadium01': 'one@stadium01.zemanta.com'
-}
+STAGING_USER = 'one'
+PRODUCTION_USER = STAGING_USER
 
+STAGING_SERVERS = {
+    'stadium01': 'stadium01.zemanta.com'
+}
 PRODUCTION_SERVERS = {
-    'knot01': 'one@knot01.zemanta.com'
+    'knot01': 'knot01.zemanta.com'
 }
 
 GIT_REPOSITORY = 'git@github.com:Zemanta/zemanta-eins.git'
@@ -55,6 +59,7 @@ def virtualenv():
 # SETTINGS
 @task
 def staging(*args):
+    env.user = STAGING_USER
     if args[0] == 'all':
         env.hosts = STAGING_SERVERS.values()
     elif set(args) < set(STAGING_SERVERS.keys()):
@@ -65,6 +70,7 @@ def staging(*args):
 
 @task
 def production(*args):
+    env.user = PRODUCTION_USER
     if args[0] == 'all':
         env.hosts = PRODUCTION_SERVERS.values()
     elif set(args) < set(PRODUCTION_SERVERS.keys()):
@@ -179,7 +185,6 @@ def unpack(app, params):
 @serial
 def install_dependencies(app, params):
     dest_folder = os.path.join(params['app_folder'], app)
-    print dest_folder
     with cd(dest_folder), virtualenv():
         run('pip install -U pip==1.4.1')
         run('pip install -r requirements.txt')
@@ -196,6 +201,19 @@ def manage_static(app, params):
     dest_folder = os.path.join(params['app_folder'], app)
     with cd(dest_folder), virtualenv():
         run('python manage.py collectstatic --noinput')
+
+
+def create_cron_jobs(app, params):
+    with cd(params['app_folder']):
+        cron_yaml_path = os.path.join(params['tmp_folder_git'], 'cron.yaml')
+        with open(cron_yaml_path, 'r') as f:
+            cron_yaml = yaml.load(f)
+            jobs = [x['job'] for x in cron_yaml['cron'] if env.host in x.get('hosts', env.hosts)]
+            temp_file = '/tmp/cron_jobs-{0}-{1}'.format(
+                params['timestamp'], params['commit_hash'])
+            echo_cmd = 'echo \'{0}\' > {1}'.format('\n'.join(jobs), temp_file)
+            run(echo_cmd)
+            run('crontab {0}'.format(temp_file))
 
 
 def is_db_migrated(app, params):
@@ -258,6 +276,9 @@ def real_deploy(app, params):
 
     print task("Switching to new code [%s@%s]" % (app, env.host))
     switch(app, params)
+
+    print task("Creating cron jobs [%s@%s]" % (app, env.host))
+    create_cron_jobs(app, params)
 
     # print task('Tagging successful deploy [%s@%s]' (app, env.hosts))
     # tag_deploy(app, params)
