@@ -12,7 +12,6 @@
 {% block support_mail_extra %}?Subject=Sign%20In%20Page%20Issue{% endblock %}
 
 {% block content %}
-{{ block.super }}
 <div id="signin" class="center-container" data-gauth-url="{{ gauth_url }}">
     <form id="signin_form" method="post" action="{% url 'zemauth.views.login' %}">
         {% csrf_token %}
