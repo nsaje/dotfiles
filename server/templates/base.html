@@ -3,7 +3,6 @@
     <head>
         {% load staticfiles %}
         <link rel="shortcut icon" href="{% static "img/favicon.ico" %}" />
-        <link type="text/css" rel="stylesheet" href="{% static "css/style.css" %}">
         <!-- TypeKit async code -->
         <script type="text/javascript">
             (function(d) {
@@ -14,15 +13,10 @@
                     h=d.documentElement,t=setTimeout(function(){h.className=h.className.replace(/\bwf-loading\b/g,"")+" wf-inactive";},config.scriptTimeout),tk=d.createElement("script"),f=false,s=d.getElementsByTagName("script")[0],a;h.className+=" wf-loading";tk.src='//use.typekit.net/'+config.kitId+'.js';tk.async=true;tk.onload=tk.onreadystatechange=function(){a=this.readyState;if(f||a&&a!="complete"&&a!="loaded")return;f=true;clearTimeout(t);try{Typekit.load(config)}catch(e){}};s.parentNode.insertBefore(tk,s)
             })(document);
         </script>
-		{% block head_extra %}{% endblock %}
+		{% block head_extra %}
+        {% endblock %}
     </head>
     <body>
-        <header>
-            <a href="{% block header_logo_link %}/{% endblock %}"><img class="item logo" src="{% static "img/logo_one.png" %}" alt="Zemanta Logo"/></a>
-            <a class="item contact" href="mailto:help@zemanta.com{% block support_mail_extra %}{% endblock %}">Contact Support</a>
-        </header>
-
         {% block content %}{% endblock %}
-
     </body>
 </html>
