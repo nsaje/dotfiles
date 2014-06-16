@@ -1,12 +1,18 @@
 {% extends "base.html" %}
 
 {% block head_extra %}
-<link type="text/css" rel="stylesheet" href="{{ staticUrl }}/css/zemanta-one.min.css">
-<script type="text/javascript" src="{{ staticUrl }}/js/zemanta-one.min.js">
+<link type="text/css" rel="stylesheet" href="{{ staticUrl }}/lib/components/bootstrap/dist/css/bootstrap.min.css" />
+<link type="text/css" rel="stylesheet" href="{{ staticUrl }}/dist/css/zemanta-one.min.css" />
+<script type="text/javascript" src="{{ staticUrl }}/lib/components/jquery/dist/jquery.min.js"></script>
+<script type="text/javascript" src="{{ staticUrl }}/lib/components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="{{ staticUrl }}/lib/components/angular/angular.min.js"></script>
+<script type="text/javascript" src="{{ staticUrl }}/lib/components/angular-route/angular-route.min.js"></script>
+<script type="text/javascript" src="{{ staticUrl }}/lib/components/angular-bootstrap/ui-bootstrap.min.js"></script>
+<script type="text/javascript" src="{{ staticUrl }}/dist/js/zemanta-one.min.js"></script>
 {% endblock %}
 
 {% block content %}
-<div ng-app="zemantaOne">
-
+<div ng-app="one">
+    <div ng-include src="'{{ staticUrl }}/partials/main.html'"></div>
 </div>
 {% endblock %} 

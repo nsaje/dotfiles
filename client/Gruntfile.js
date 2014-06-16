@@ -15,9 +15,9 @@ module.exports = function (grunt) {
                     }
                 },
                 src: [
+                    'app/js/*.js',
                     'app/js/directives/**/*.js',
-                    'app/js/controllers/**/*.js',
-                    'app/js/*.js'
+                    'app/js/controllers/**/*.js'
                 ],
                 dest: 'app/dist/js/zemanta-one.js'
             }
@@ -69,12 +69,22 @@ module.exports = function (grunt) {
             dev: {
                 options: {
                     port: 9999,
-                    base: 'app/dist/',
-                    directory: null,
+                    base: 'app/',
+                    directory: 'app/',
                     hostname: '*',
                     debug: true,
                     livereload: true,
-                    protocol: 'http'
+                    protocol: 'http', 
+                    middleware: function (connect, options) {
+                        return [
+                            function (req, res, next) {
+
+                                res.setHeader('Access-Control-Allow-Origin', '*');
+                                return next();
+                            },
+                        connect.static(require('path').resolve('app/'))
+                        ];
+                    }
                 }
             }
         }
