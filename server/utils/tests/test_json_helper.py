@@ -55,6 +55,7 @@ class JsonHelperTestCase(unittest.TestCase):
 
     def test_aware_date(self):
         test_datetime = datetime.datetime(2014, 11, 1, 18, 0, 0)
+        test_datetime = test_datetime.replace(tzinfo=pytz.utc)
         test_obj = {
             'id': 100,
             'test': 'something',
@@ -66,6 +67,7 @@ class JsonHelperTestCase(unittest.TestCase):
 
     def test_aware_time(self):
         test_datetime = datetime.datetime(2014, 11, 1, 18, 0, 0)
+        test_datetime = test_datetime.replace(tzinfo=pytz.utc)
         test_obj = {
             'id': 100,
             'test': 'something',
