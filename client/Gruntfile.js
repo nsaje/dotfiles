@@ -69,8 +69,8 @@ module.exports = function (grunt) {
             dev: {
                 options: {
                     port: 9999,
-                    base: '.',
-                    directory: '.',
+                    base: 'app/dist/',
+                    directory: null,
                     hostname: '*',
                     debug: true,
                     livereload: true,
