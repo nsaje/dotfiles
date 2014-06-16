@@ -82,7 +82,7 @@ module.exports = function (grunt) {
                                 res.setHeader('Access-Control-Allow-Origin', '*');
                                 return next();
                             },
-                        connect.static(require('path').resolve('app/'))
+                            connect.static(require('path').resolve('app/'))
                         ];
                     }
                 }
