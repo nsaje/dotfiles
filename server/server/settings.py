@@ -96,7 +96,7 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.handlers.WatchedFileHandler',
             'filename': LOG_FILE,
-			'formatter': 'standard'
+            'formatter': 'standard'
         },
         'console': {
             'level': 'DEBUG',
@@ -106,7 +106,7 @@ LOGGING = {
             'level': 'INFO',
             'class': 'logging.handlers.WatchedFileHandler',
             'filename': LOG_FILE,
-			'formatter': 'standard'
+            'formatter': 'standard'
         },
     },
     'loggers': {
