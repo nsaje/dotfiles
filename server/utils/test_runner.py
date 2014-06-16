@@ -18,9 +18,17 @@ class CustomDiscoverRunner(runner.DiscoverRunner):
     def __init__(self, health_check=None, *args, **kwargs):
 
         if health_check:
+            self.health_check = True
             os.environ['HEALTH_CHECK'] = '1'
+        else:
+            self.health_check = False
 
-        super(CustomDiscoverRunner, self).__init__(
-            *args,
-            **kwargs
-        )
+        super(CustomDiscoverRunner, self).__init__(*args, **kwargs)
+
+    def setup_databases(self, *args, **kwargs):
+        if not self.health_check:
+            return super(CustomDiscoverRunner, self).setup_databases(*args, **kwargs)
+
+    def teardown_databases(self, *args, **kwargs):
+        if not self.health_check:
+            return super(CustomDiscoverRunner, self).teardown_databases(*args, **kwargs)
