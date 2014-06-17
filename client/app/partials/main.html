@@ -1,1 +1,14 @@
-<div>Hello world</div>
+<div class="container-fluid" ng-controller="MainCtrl">
+    <div class="row">
+        <div class="col-xs-2">
+            <div>Hello world</div>
+        </div>
+        <div class="col-xs-10">
+            <tabset>
+                <tab ng-repeat="tab in tabs" heading="{{ tab.heading }}" select="selectTab(tab.route)" active="tab.active"></tab>
+            </tabset>
+
+            <div ui-view></div>
+        </div>
+    </div>
+</div>
