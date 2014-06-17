@@ -1,0 +1,52 @@
+import json
+import logging
+
+from django.http import HttpResponse
+from django.views.generic import View
+
+from utils import json_helper
+import exc
+
+logger = logging.getLogger(__name__)
+
+
+class BaseApiView(View):
+    def get_log_message(self, request, *args, **kwargs):
+        msg = 'GET: {0}\nPOST: {1}\nArgs:\n{2}\nKwargs:\n{3}'.format(
+            str(request.GET.items()),
+            str(request.POST.items()),
+            '\n'.join(str(x) for x in args),
+            '\n'.join('{0}: {1}'.format(k, str(v)) for k, v in kwargs.iteritems())
+        )
+
+        return msg
+
+    def create_api_response(self, data, success=True, status_code=200):
+        body = {'success': success, 'data': data}
+
+        response = HttpResponse(
+            content=json.dumps(body, cls=json_helper.JSONEncoder),
+            content_type='application/json',
+            status=status_code
+        )
+
+        return response
+
+    def get_exception_response(self, request, exception):
+        error = {}
+        if type(exception) in exc.custom_errors:
+            logger.warning(self.get_log_message(request, exception))
+
+            error["error_code"] = exception.error_code
+            error["message"] = exception.pretty_message or exception.message
+
+            status_code = exception.http_status_code
+        else:
+            logger.exception(self.get_log_message(request, exception))
+
+            error["error_code"] = "ServerError"
+            error["message"] = "An error occurred."
+
+            status_code = 500
+
+        return self.create_api_response(error, success=False, status_code=status_code)
