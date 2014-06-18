@@ -12,7 +12,8 @@ import utils.statsd_helper
 admin.site.login = login_required(admin.site.login)
 
 # Decorators for auth views for statsd.
-auth_views.logout_then_login = utils.statsd_helper.statsd_timer('auth', 'signout_response_time')(auth_views.logout_then_login)
+auth_views.logout_then_login = utils.statsd_helper.statsd_timer('auth', 'signout_response_time')(
+    auth_views.logout_then_login)
 
 urlpatterns = patterns(
     '',
@@ -31,5 +32,6 @@ urlpatterns += patterns(
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/settings/',
         dash.views.AdGroupSettings.as_view()
-    )
+    ),
+    url(r'^api/nav_data$', login_required(dash_views.NavigationDataView.as_view()))
 )

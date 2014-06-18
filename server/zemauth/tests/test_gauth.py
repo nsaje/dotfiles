@@ -8,7 +8,6 @@ SETTINGS = {
         'GOOGLE_OAUTH_CLIENT_SECRET': '111111111111111111111111'
 }
 
-
 class GauthTestCase(test.TestCase):
     def test_get_flow(self):
         with self.settings(**SETTINGS):
