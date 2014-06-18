@@ -1,8 +1,24 @@
 from django.conf import settings
+from django.contrib import auth
 from django.db import models
 import jsonfield
 
 from dash import constants
+
+
+class PermissionMixin(object):
+    USERS_FIELD = ''
+
+    def has_permission(self, user, permission=None):
+        try:
+            if user.is_superuser or (
+                    (not permission or user.has_perm(permission)) and
+                    getattr(self, self.USERS_FIELD).filter(id=user.id).exists()):
+                return True
+        except auth.get_user_model().DoesNotExist:
+            return False
+
+        return False
 
 
 class Account(models.Model):
@@ -23,7 +39,7 @@ class Account(models.Model):
         return self.name
 
 
-class Campaign(models.Model):
+class Campaign(models.Model, PermissionMixin):
     id = models.AutoField(primary_key=True)
     name = models.CharField(
         max_length=127,
@@ -37,6 +53,8 @@ class Campaign(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
 
+    USERS_FIELD = 'users'
+
     def __unicode__(self):
         return self.name
 
@@ -47,6 +65,15 @@ class Campaign(models.Model):
             return 'N/A'
 
     admin_link.allow_tags = True
+
+
+class UserAdGroupManager(models.Manager):
+    def get_for_user(self, user):
+        queryset = super(UserAdGroupManager, self).get_queryset()
+        if user.is_superuser:
+            return queryset
+        else:
+            return queryset.filter(models.Q(campaign__users__id=user.id) | models.Q(campaign__account__users__id=user.id))
 
 
 class AdGroup(models.Model):
@@ -61,6 +88,9 @@ class AdGroup(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
+
+    objects = models.Manager()
+    user_objects = UserAdGroupManager()
 
     def __unicode__(self):
         return self.name
