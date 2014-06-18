@@ -89,27 +89,8 @@ class AdGroup(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
 
+    objects = models.Manager()
     user_objects = UserAdGroupManager()
-
-    @classmethod
-    def get_for_user(cls, id, user):
-        sql = '''
-        SELECT dag.id, dag.name, dag.campaign_id, dag.created_dt, dag.modified_dt, dag.modified_by_id
-        FROM dash_adgroup AS dag
-        INNER JOIN dash_campaign AS dc ON dc.id = dag.campaign_id
-        LEFT JOIN dash_campaign_users AS dcu ON dcu.campaign_id = dc.id
-        LEFT JOIN dash_account_users AS dau ON dau.account_id = dc.account_id
-        WHERE dag.id = %(ad_group_id)s AND (dcu.user_id = %(user_id)s OR dau.user_id = %(user_id)s)
-        LIMIT 1
-        '''
-
-        ad_groups = cls.objects.raw(
-            sql, params={'ad_group_id': id, 'user_id': str(user.id)})
-
-        if not ad_groups:
-            return None
-
-        return ad_groups[0]
 
     def __unicode__(self):
         return self.name
