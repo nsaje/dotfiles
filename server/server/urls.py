@@ -6,6 +6,7 @@ from django.contrib.auth import views as auth_views
 from dash import views as dash_views
 from zemauth.forms import AuthenticationForm
 
+import dash.views
 import utils.statsd_helper
 
 admin.site.login = login_required(admin.site.login)
@@ -21,5 +22,14 @@ urlpatterns = patterns(
         {'authentication_form': AuthenticationForm, 'template_name': 'zemauth/signin.html'}),
     url(r'^signout$', 'django.contrib.auth.views.logout_then_login'),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^oauth2callback', 'zemauth.views.google_callback'),
+    url(r'^oauth2callback', 'zemauth.views.google_callback')
+)
+
+# Api
+urlpatterns += patterns(
+    '',
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/settings/',
+        dash.views.AdGroupSettings.as_view()
+    )
 )

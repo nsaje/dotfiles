@@ -4,8 +4,12 @@
             <div>Hello world</div>
         </div>
         <div class="col-xs-10">
-            <tabset>
-                <tab ng-repeat="tab in tabs" heading="{{ tab.heading }}" select="selectTab(tab.route)" active="tab.active"></tab>
+            <tabset class="zem-tabset">
+                <tab ng-repeat="tab in tabs" active="tab.active">
+                    <tab-heading>
+                        <a ui-sref="{{ tab.route }}">{{ tab.heading }}</a>
+                    </tab-heading>
+                </tab>
             </tabset>
 
             <div ui-view></div>
