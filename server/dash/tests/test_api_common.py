@@ -30,6 +30,7 @@ class BaseApiViewTestCase(test.TestCase):
     @mock.patch('dash.api_common.logger')
     def test_handle_custom_exception(self, logger_mock):
         request = http.HttpRequest()
+        request._body = ''
 
         error = exc.MissingDataError()
         response = api_common.BaseApiView().get_exception_response(request, error)
@@ -49,6 +50,7 @@ class BaseApiViewTestCase(test.TestCase):
     @mock.patch('dash.api_common.logger')
     def test_handle_unknown_exception(self, logger_mock):
         request = http.HttpRequest()
+        request._body = ''
         error = Exception()
         response = api_common.BaseApiView().get_exception_response(request, error)
 
@@ -59,16 +61,18 @@ class BaseApiViewTestCase(test.TestCase):
 
     def test_empty_log(self):
         request = http.HttpRequest()
+        request._body = ''
 
-        expected_msg = 'GET: []\nPOST: []\nArgs:\n\nKwargs:\n'
+        expected_msg = 'GET: []\nPOST: []\nBody: \nArgs:\n\nKwargs:\n'
         self.assertEqual(api_common.BaseApiView().get_log_message(request), expected_msg)
 
     def test_log(self):
         request = http.HttpRequest()
         request.GET = {'test_get': 'test_get_value'}
         request.POST = {'test_post': 'test_post_value'}
+        request._body = 'test'
 
-        expected_msg = "GET: [('test_get', 'test_get_value')]\nPOST: [('test_post', 'test_post_value')]\nArgs:\nTest\nKwargs:\nexc: Test2"
+        expected_msg = "GET: [('test_get', 'test_get_value')]\nPOST: [('test_post', 'test_post_value')]\nBody: test\nArgs:\nTest\nKwargs:\nexc: Test2"
 
         msg = api_common.BaseApiView().get_log_message(
             request, Exception('Test'), exc=Exception('Test2'))

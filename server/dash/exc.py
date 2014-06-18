@@ -31,9 +31,10 @@ class ValidationError(BaseError):
     '''
     Error thrown by validation methods.
     '''
-    def __init__(self, message=None, pretty_message=None):
+    def __init__(self, message=None, pretty_message=None, errors=None):
         super(ValidationError, self).__init__(message, pretty_message)
         self.http_status_code = 400
+        self.errors = errors
 
 
 class MissingDataError(BaseError):

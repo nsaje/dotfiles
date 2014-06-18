@@ -1,1 +1,108 @@
-<div style="padding-top:30px;">test</div>
+<div class="page page-ad-group-settings">
+    <form id="form-ad-group-settings" class="form-horizontal" ng-submit="saveSettings()">
+        <div class="form-group">
+            <div class="col-xs-4">
+                <div class="btn-group campaign-state-switch">
+                    <label class="btn btn-success" ng-model="settings.state" ng-repeat="state in options.adGroupSettingsStates" btn-radio="state.value" uncheckable>{{ state.name }}</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.name}">
+            <label for="name-input" class="col-xs-2 control-label">Name</label>
+            <div class="col-xs-3">
+                <input id="name-input" type="text" class="form-control" ng-model="settings.name">
+            </div>
+
+            <label ng-repeat="error in errors.name" class="control-label" for="name-input">{{ error }}</label>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.startDate}">
+            <label for="start-date-input" class="col-xs-2 control-label">Start date</label>
+            <div class="col-xs-2">
+                <input id="start-date-input" type="text" class="form-control" datepicker-popup="dd/MM/yyyy" ng-model="settings.startDate" is-open="isStartDatePickerOpen" ng-click="openDatePicker('startDate')">
+            </div>
+
+            <label ng-repeat="error in errors.startDate" class="control-label" for="start-date-input">{{ error }}</label>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.endDate}">
+            <label for="end-date-input" class="col-xs-2 control-label">End date</label>
+            <div class="col-xs-2">
+                <input id="end-date-input" type="text" class="form-control" datepicker-popup="dd/MM/yyyy" ng-model="settings.endDate" is-open="isEndDatePickerOpen" ng-click="openDatePicker('endDate')">
+            </div>
+
+            <div class="checkbox col-xs-2">
+                <label>
+                    <input type="checkbox" id="manual-stop-cb" ng-model="settings.manualStop"> I'll stop it myself
+                </label>
+            </div>
+
+            <label ng-repeat="error in errors.endDate" class="control-label" for="end-date-input">{{ error }}</label>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.dailyBudget}">
+            <label for="budget-input" class="col-xs-2 control-label">Budget</label>
+            <div class="col-xs-2">
+                <input id="budget-input" type="text" class="form-control" ng-model="settings.dailyBudget">
+            </div>
+
+            <label ng-repeat="error in errors.dailyBudget" class="control-label" for="buget-input">{{ error }}</label>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.cpc}">
+            <label for="cpc-input" class="col-xs-2 control-label">CPC</label>
+            <div class="col-xs-2">
+                <input id="cpc-input" type="text" class="form-control" ng-model="settings.cpc">
+            </div>
+
+            <label ng-repeat="error in errors.cpc" class="control-label" for="cpc-input">{{ error }}</label>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.targetDevices}">
+            <label class="col-xs-2 control-label">Device targeting</label>
+            <div class="col-xs-2">
+                <div class="checkbox" ng-repeat='device in settings.targetDevices'>
+                    <label>
+                        <input type="checkbox" ng-model="device.checked"> {{ device.name }}
+                    </label>
+                </div>
+            </div>
+
+            <label ng-repeat="error in errors.targetDevices" class="control-label">{{ error }}</label>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.targetRegions}">
+            <label class="col-xs-2 control-label">Geographical targeting</label>
+            <div class="col-xs-6">
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="geo-targeting-radio" value='worldwide' ng-model="settings.targetRegionsMode"> Worldwide
+                    </label>
+                </div>
+                <div class="geo-targeting-group">
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="geo-targeting-radio" value='custom'  ng-model="settings.targetRegionsMode"> Custom
+                        </label>
+                    </div>
+                    <select class="form-control" zem-multiselect multiple ng-model="settings.targetRegions"  ng-options="c.value as c.name for c in options.adTargetCountries">
+                    </select>
+                </div>
+            </div>
+
+            <label ng-repeat="error in errors.targetRegions" class="control-label">{{ error }}</label>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.trackingCode}">
+            <label for="tracking-input" class="col-xs-2 control-label">Tracking codes</label>
+            <div class="col-xs-4">
+                <textarea id="tracking-input" type="text" class="form-control" rows="4" ng-model="settings.trackingCode"></textarea>
+            </div>
+
+            <label ng-repeat="error in errors.trackingCode" class="control-label" for="tracking-input">{{ error }}</label>
+        </div>
+
+		<button type="submit" class="btn btn-default">Save</button>
+	</form>
+</div>
