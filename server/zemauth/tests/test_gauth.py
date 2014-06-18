@@ -11,7 +11,6 @@ SETTINGS = {
 
 class GauthTestCase(test.TestCase):
     def test_get_flow(self):
-        raise Exception
         with self.settings(**SETTINGS):
             request = mock.Mock()
             request.build_absolute_uri.return_value = 'http://test.zemanta.com/'
