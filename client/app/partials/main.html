@@ -6,14 +6,17 @@
     </div>
     <div class="row">
         <div class="col-xs-2">
-            <div class="nav">
+            <div id="nav">
                 <div ng-repeat="account in accounts">
                     <div class="account-name">{{ account.name }}</div>
                     <ul class="list-group">
                         <li class="list-group-item" ng-repeat="campaign in account.campaigns">
                             <div class="campaign-name">{{ campaign.name }}</div>
                             <ul class="list-group">
-                                <a class="ad-group-item list-group-item" ui-sref-active="active" ui-sref="adGroups.settings({ id: adGroup.id})" ng-repeat="adGroup in campaign.adGroups">{{ adGroup.name }}</a>
+                                <a class="ad-group-item list-group-item" ui-sref-active="active" ui-sref="adGroups.settings({ id: adGroup.id})" ng-repeat="adGroup in campaign.adGroups">
+                                    <img src="{{ config.static_url }}/img/campaign.svg">
+                                    <div class="ad-group-name">{{ adGroup.name }}</div>
+                                </a>
                             </ul>
                         </li>
                     </ul>

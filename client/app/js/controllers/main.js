@@ -10,11 +10,9 @@ oneApp.controller('MainCtrl', ['$scope', '$state', 'api', function ($scope, $sta
         $scope.tabs.forEach(function(tab) {
             tab.active = $state.is(tab.route);
         });
-        $scope.adGroupId = $state.params.id;
     });
 
     api.navData.list().then(function(data) {
         $scope.accounts = data;
-        $scope.adGroupId = $state.params.id;
     });
 }]);

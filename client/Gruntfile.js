@@ -15,7 +15,9 @@ module.exports = function (grunt) {
                     }
                 },
                 src: [
-                    'app/js/*.js',
+                    'app/js/config.js',
+                    'app/js/constants.js',
+                    'app/js/app.js',
                     'app/js/services/**/*.js',
                     'app/js/directives/**/*.js',
                     'app/js/services/**/*.js',
@@ -89,6 +91,25 @@ module.exports = function (grunt) {
                     }
                 }
             }
+        },
+        ngconstant: {
+            options: {
+                name: 'config',
+                dest: 'app/js/config.js',
+                constants: {
+                    config: {
+                        static_url: 'http://one.zemanta.com'    
+                    }
+                }
+            },
+            prod: {},
+            dev: {
+                constants: {
+                    config: {
+                        static_url: 'http://localhost:9999'
+                    }
+                }    
+            }
         }
     });
 
@@ -96,6 +117,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('dist-js', ['concat:dist', 'uglify:dist']);
     grunt.registerTask('dist-less', ['less:dist']);
-    grunt.registerTask('default', ['dist-js', 'dist-less']);
-    grunt.registerTask('dev', ['default', 'connect:dev', 'watch']);
+    grunt.registerTask('build', ['dist-js', 'dist-less'])
+    grunt.registerTask('default', ['ngconstant:prod', 'build']);
+    grunt.registerTask('dev', ['ngconstant:dev', 'build', 'connect:dev', 'watch']);
 };
