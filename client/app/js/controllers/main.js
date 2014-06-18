@@ -1,7 +1,5 @@
 /*globals oneApp*/
-oneApp.controller('MainCtrl', ['$scope', '$state', function ($scope, $state) {
-    $scope.adGroupId = 4;
-
+oneApp.controller('MainCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
     $scope.tabs = [
         { heading: 'Ads', route: 'adGroups.ads', active: false },
         { heading: 'Networks', route: 'adGroups.networks', active: false },
@@ -16,5 +14,11 @@ oneApp.controller('MainCtrl', ['$scope', '$state', function ($scope, $state) {
         $scope.tabs.forEach(function(tab) {
             tab.active = $state.is(tab.route);
         });
+        $scope.adGroupId = $state.params.id;
+    });
+
+    api.navData.list().then(function(data) {
+        $scope.accounts = data;
+        $scope.adGroupId = $state.params.id;
     });
 }]);

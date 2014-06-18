@@ -11,7 +11,8 @@ import utils.statsd_helper
 admin.site.login = login_required(admin.site.login)
 
 # Decorators for auth views for statsd.
-auth_views.logout_then_login = utils.statsd_helper.statsd_timer('auth', 'signout_response_time')(auth_views.logout_then_login)
+auth_views.logout_then_login = utils.statsd_helper.statsd_timer('auth', 'signout_response_time')(
+    auth_views.logout_then_login)
 
 urlpatterns = patterns(
     '',
@@ -22,4 +23,5 @@ urlpatterns = patterns(
     url(r'^signout$', 'django.contrib.auth.views.logout_then_login'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^oauth2callback', 'zemauth.views.google_callback'),
+    url(r'^api/nav_data$', login_required(dash_views.NavigationDataView.as_view()))
 )

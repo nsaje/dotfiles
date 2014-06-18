@@ -1,7 +1,24 @@
 <div class="container-fluid" ng-controller="MainCtrl">
+    <div class="row page-header">
+        <div class="col-xs-2">
+        HEADER
+        </div>
+    </div>
     <div class="row">
         <div class="col-xs-2">
-            <div>Hello world</div>
+            <div class="nav">
+                <div ng-repeat="account in accounts">
+                    <div class="account-name">{{ account.name }}</div>
+                    <ul class="list-group">
+                        <li class="list-group-item" ng-repeat="campaign in account.campaigns">
+                            <div class="campaign-name">{{ campaign.name }}</div>
+                            <ul class="list-group">
+                                <a class="ad-group-item list-group-item" ui-sref-active="active" ui-sref="adGroups.settings({ id: adGroup.id})" ng-repeat="adGroup in campaign.adGroups">{{ adGroup.name }}</a>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
         <div class="col-xs-10">
             <tabset>
