@@ -1,9 +1,14 @@
 /*global angular*/
 
-var oneApp = angular.module('one', ['ui.router', 'ui.bootstrap']);
+var oneApp = angular.module('one', ['ui.router', 'ui.bootstrap', 'ui.bootstrap.datetimepicker']);
 
 oneApp.config(['$sceDelegateProvider', function ($sceDelegateProvider) {
     $sceDelegateProvider.resourceUrlWhitelist(['self', 'http://localhost:9999/**']);
+}]);
+
+oneApp.config(['$httpProvider', function ($httpProvider) {
+    $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
+    $httpProvider.defaults.xsrfCookieName = 'csrftoken';
 }]);
 
 oneApp.config(['$stateProvider', '$urlRouterProvider', function ($stateProvider, $urlRouterProvider) {
@@ -30,6 +35,12 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', function ($stateProvider,
             templateUrl: 'http://localhost:9999/partials/ad_group_settings.html',
             controller: 'AdGroupSettingsCtrl'
         });
+}]);
+
+oneApp.config(['datepickerConfig', 'datepickerPopupConfig', function (datepickerConfig, datepickerPopupConfig) {
+  datepickerConfig.showWeeks = false;
+  datepickerConfig.formatDayHeader = 'EEE';
+  datepickerPopupConfig.showButtonBar = false;
 }]);
 
 // Fixes https://github.com/angular-ui/ui-router/issues/679

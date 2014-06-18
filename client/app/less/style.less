@@ -1,3 +1,180 @@
+// Variables
+
+@default-font-family: "proxima-nova", arial, sans-serif;
+
+// Mixins
+
+.box-shadow(@shadow) {
+    -webkit-box-shadow: @shadow;
+    box-shadow: @shadow;
+}
+
+.border-radius(@radius) {
+    border-radius: @radius;
+    -moz-border-radius: @radius;
+    -webkit-border-radius: @radius;
+}
+
+// HTML
+
+body {
+    font-family: @default-font-family
+}
+
+// Bootstrap styles
+
 .container-fluid {
-    min-width: 1170px;    
+    min-width: 1170px;
+}
+
+.form-group label.control-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #414141;
+}
+
+.form-control {
+    font-weight: lighter;
+    font-size: 14px;
+    color: #414141;
+    border-color: #d2d2d2;
+    .border-radius(0);
+    .box-shadow(none);
+}
+
+.btn {
+    .border-radius(0);
+}
+
+.btn-default,
+.btn-default:hover,
+.btn-default:focus,
+.btn-default:active,
+.btn-default.active,
+.open .dropdown-toggle.btn-default {
+    background-color: #2fa8c7;
+    border-color: #2fa8c7;
+    .box-shadow(none);
+    color: #fff;
+}
+
+.btn:focus,
+.btn:active:focus,
+.btn.active:focus {
+    outline: none;
+    outline-offset: 0;
+}
+
+.dropdown-menu {
+    margin-top: 1px;
+    border: 1px solid #d2d2d2;
+    .border-radius(0);
+    .box-shadow(none);
+}
+
+.zem-tabset .nav-tabs > li > a {
+    padding: 0px;
+
+    & > tab-heading > a {
+        display: block;
+        padding: 10px 15px;
+    }
+}
+
+.form-horizontal .control-label {
+    text-align:left;
+}
+
+.input-one-char {
+    width: 1em !important;
+}
+
+.input-mini {
+    width: 6em !important;
+}
+
+.input-small {
+    width: 9em !important;
+}
+
+.input-medium {
+    width: 15em !important;
+}
+
+.input-large {
+    width: 18em !important;
+}
+
+.page {
+    margin: 0px 0px 20px 0px;
+}
+
+.page-ad-group-settings {
+    .campaign-state-switch {
+        padding-top: 15px;
+        & > label {
+            border: 1px solid #d2d2d2;
+            background-color: #fff;
+            color: #d2d2d2;
+            font-weight: 600;
+            font-size: 13px;
+            .box-shadow(none);
+            .border-radius(0);
+            width: 120px;
+        }
+
+        & > label.active {
+            border: 1px solid #4fca32;
+            background-color: #4fca32;
+            color: #fff;
+        }
+
+        & > label:first-child.active {
+            border-color: #757575;
+            background-color: #757575;
+            color: #fff;
+        }
+    }
+    
+    .geo-targeting-group {
+        & > .radio,
+        & > .checkbox {
+            display: inline-block;
+            margin-top: 0;
+            margin-bottom: 0;
+            padding-left: 0;
+            vertical-align: middle;
+
+            input[type="radio"],
+            input[type="checkbox"] {
+                float: none;
+                margin-left: 0;
+                margin-right: 4px;
+            }
+        }
+
+        .btn-group {
+            margin-left: 1em;
+
+            button {
+                font-size: 14px;
+                font-weight: lighter;
+                color: #414141;
+            }
+            
+            &.open .dropdown-toggle {
+                .box-shadow(none);
+            }
+        }
+
+        .btn-default,
+        .btn-default:hover,
+        .btn-default:focus,
+        .btn-default:active,
+        .btn-default.active,
+        .open .dropdown-toggle.btn-default {
+            background-color: #fff;
+            border-color: #d2d2d2;
+        }
+    }
 }
