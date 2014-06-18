@@ -34,7 +34,7 @@ class AdGroupSettings(api_common.BaseApiView):
         else:
             settings = models.AdGroupSettings(
                 state=constants.AdGroupSettingsState.INACTIVE,
-
+                target_devices=constants.AdTargetDevice.get_all()
             )
 
         response = {
@@ -88,8 +88,8 @@ class AdGroupSettings(api_common.BaseApiView):
                 'state': settings.state,
                 'start_date': settings.start_date,
                 'end_date': settings.end_date,
-                'cpc_cc': settings.cpc_cc,
-                'daily_budget_cc': settings.daily_budget_cc,
+                'cpc_cc': '{:.2f}'.format(settings.cpc_cc),
+                'daily_budget_cc': '{:.2f}'.format(settings.daily_budget_cc),
                 'target_devices': settings.target_devices,
                 'target_regions': settings.target_regions,
                 'tracking_code': settings.tracking_code

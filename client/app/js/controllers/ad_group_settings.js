@@ -6,6 +6,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
     $scope.options = options;
     $scope.isStartDatePickerOpen = false;
     $scope.isEndDatePickerOpen = false;
+    $scope.datepickerMinDate = moment().add('days', 1).toDate();
 
     $scope.openDatePicker = function (type) {
         if (type === 'startDate') {
@@ -28,9 +29,9 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
     };
 
     $scope.saveSettings = function () {
-        $scope.errors = {};
         api.adGroupSettings.save($scope.settings).then(
             function (data) {
+                $scope.errors = {};
                 $scope.settings = data;
             },
             function (data) {
@@ -44,6 +45,20 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
             $scope.settings.targetRegionsMode = 'custom';
         }
     }, true);
+
+    $scope.$watch('settings.manualStop', function (newValue, oldValue) {
+        if (newValue) {
+            $scope.settings.endDate = null;
+        }
+    });
+
+    $scope.$watch('settings.endDate', function (newValue, oldValue) {
+        if (newValue) {
+            $scope.settings.manualStop = false;
+        } else {
+            $scope.settings.manualStop = true;
+        }
+    });
 
     $scope.getSettings($state.params.id);
 }]);

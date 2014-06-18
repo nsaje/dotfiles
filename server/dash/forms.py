@@ -29,7 +29,11 @@ class AdGroupSettingsForm(forms.Form):
         coerce=int,
         empty_value=None
     )
-    start_date = forms.DateField()
+    start_date = forms.DateField(
+        error_messages={
+            'required': 'Please provide start date.',
+        }
+    )
     end_date = forms.DateField(required=False)
     cpc_cc = forms.DecimalField(
         min_value=0.03,
@@ -50,7 +54,11 @@ class AdGroupSettingsForm(forms.Form):
         }
     )
     target_devices = forms.MultipleChoiceField(
-        choices=constants.AdTargetDevice.get_choices())
+        choices=constants.AdTargetDevice.get_choices(),
+        error_messages={
+            'required': 'Please select target devices.',
+        }
+    )
     target_regions = forms.MultipleChoiceField(
         required=False,
         choices=constants.AdTargetCountry.get_choices()
@@ -76,7 +84,7 @@ class AdGroupSettingsForm(forms.Form):
         # maticz: We deal with UTC dates even if a not-UTC date date was submitted from
         # user.
         # Product guys confirmed it.
-        if not start_date or not end_date or end_date <= start_date:
+        if not start_date and end_date and end_date <= start_date:
             raise forms.ValidationError('End date must not occur before start date.')
 
         return end_date

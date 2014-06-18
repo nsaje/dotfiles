@@ -10,6 +10,7 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
                 state: settings.state,
                 startDate: settings.start_date ? new Date(settings.start_date) : null,
                 endDate: settings.end_date ? new Date(settings.end_date) : null,
+                manualStop: !settings.end_date,
                 cpc: settings.cpc_cc,
                 dailyBudget: settings.daily_budget_cc,
                 targetDevices: options.adTargetDevices.map(function (item) {

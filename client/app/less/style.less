@@ -27,10 +27,55 @@ body {
     min-width: 1170px;
 }
 
-.form-group label.control-label {
-    font-size: 15px;
-    font-weight: 600;
-    color: #414141;
+.form-horizontal .form-vertical {
+    & .form-group {
+        & > label {
+            float: none;
+            width: 100%;
+
+            &.error {
+                float: left;
+                padding-left: 15px;
+            }
+        }
+
+        & .col {
+            float: left;
+            position: relative;
+            min-height: 1px;
+            padding-left: 45px;
+            padding-right: 15px;
+        }
+
+        input[type="text"],
+        textarea {
+            margin-top: 7px;
+        }
+    }
+}
+
+.form-horizontal .control-label {
+    text-align:left;
+}
+
+.form-group {
+    &.has-error {
+        .form-control,
+        .form-control:focus {
+            border-color: #c70000;
+            .box-shadow(none);
+        }
+
+        label.control-label {
+            color: #c70000;
+        }
+    }
+
+    label.control-label {
+        font-size: 15px;
+        font-weight: 600;
+        color: #414141;
+    }
 }
 
 .form-control {
@@ -40,6 +85,11 @@ body {
     border-color: #d2d2d2;
     .border-radius(0);
     .box-shadow(none);
+
+    &:focus {
+        border: 1px solid #2fa8c7;
+        .box-shadow(none);
+    }
 }
 
 .btn {
@@ -52,10 +102,10 @@ body {
 .btn-default:active,
 .btn-default.active,
 .open .dropdown-toggle.btn-default {
-    background-color: #2fa8c7;
+    background-color: #fff;
     border-color: #2fa8c7;
     .box-shadow(none);
-    color: #fff;
+    color: #2fa8c7;
 }
 
 .btn:focus,
@@ -81,8 +131,18 @@ body {
     }
 }
 
-.form-horizontal .control-label {
-    text-align:left;
+.input-group {
+    .input-group-addon {
+        background-color: transparent !important;
+        .border-radius(0);
+        font-weight: lighter;
+        font-size: 14px;
+        color: #414141;
+    }
+
+    .input-group-addon + .form-control {
+        border-left: 0px;    
+    }
 }
 
 .input-one-char {
@@ -103,6 +163,24 @@ body {
 
 .input-large {
     width: 18em !important;
+}
+
+div[datepicker] {
+    .btn {
+        border: 1px solid #fff;
+        color: #414141;
+
+        &.active {
+            border: 1px solid #2fa8c7;
+            background-color: #2fa8c7;
+            color: #fff;
+        }
+
+        .text-info {
+            color: #414141;
+            font-weight: 600;
+        }
+    }
 }
 
 .page {
@@ -176,5 +254,24 @@ body {
             background-color: #fff;
             border-color: #d2d2d2;
         }
+    }
+
+    .budget-error {
+        margin-left: 15px;
+    }
+
+    .input-group {
+        .input-group-addon {
+            padding-right: 0;
+        }
+        .input-group-addon + .form-control {
+            padding-left: 0;
+        }
+    }
+
+    .help-block {
+        display: inline-block;
+        /*margin-top: 6px;*/
+        /*margin-bottom: 9px;*/
     }
 }
