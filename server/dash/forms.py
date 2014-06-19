@@ -65,6 +65,11 @@ class AdGroupSettingsForm(forms.Form):
     )
     tracking_code = forms.CharField(required=False)
 
+    def __init__(self, current_settings, *args, **kwargs):
+        self.current_settings = current_settings
+
+        super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
+
     def clean_start_date(self):
         start_date = self.cleaned_data['start_date']
 
@@ -72,7 +77,8 @@ class AdGroupSettingsForm(forms.Form):
         # point of view but wa done in a different timezone (eg. client date is 14.3.2014
         # while on server it is already 15.3.2014).
         # Product guys confirmed it.
-        if start_date < datetime.datetime.utcnow().date():
+        if start_date != self.current_settings.start_date and \
+                start_date < datetime.datetime.utcnow().date():
             raise forms.ValidationError("Start date can't be set in past.")
 
         return start_date
@@ -84,7 +90,7 @@ class AdGroupSettingsForm(forms.Form):
         # maticz: We deal with UTC dates even if a not-UTC date date was submitted from
         # user.
         # Product guys confirmed it.
-        if not start_date and end_date and end_date <= start_date:
+        if start_date and end_date and end_date <= start_date:
             raise forms.ValidationError('End date must not occur before start date.')
 
         return end_date

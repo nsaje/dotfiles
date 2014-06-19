@@ -72,16 +72,7 @@ class AdGroupSettings(api_common.BaseApiView):
         except models.AdGroup.DoesNotExist:
             raise exc.MissingDataError('Ad Group does not exist')
 
-        settings = models.AdGroupSettings.objects.\
-            filter(ad_group=ad_group).\
-            order_by('-created_dt')
-        if settings:
-            settings = settings[0]
-        else:
-            settings = models.AdGroupSettings(
-                state=constants.AdGroupSettingsState.INACTIVE,
-                target_devices=constants.AdTargetDevice.get_all()
-            )
+        settings = self.get_current_settings(ad_group)
 
         response = {
             'settings': self.get_dict(settings, ad_group)
@@ -96,9 +87,13 @@ class AdGroupSettings(api_common.BaseApiView):
         except models.AdGroup.DoesNotExist:
             raise exc.MissingDataError('Ad Group does not exist')
 
+        current_settings = self.get_current_settings(ad_group)
+
         resource = json.loads(request.body)
 
-        form = forms.AdGroupSettingsForm(resource.get('settings', {}))
+        form = forms.AdGroupSettingsForm(
+            current_settings, resource.get('settings', {})
+        )
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
@@ -115,6 +110,20 @@ class AdGroupSettings(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
+
+    def get_current_settings(self, ad_group):
+        settings = models.AdGroupSettings.objects.\
+            filter(ad_group=ad_group).\
+            order_by('-created_dt')
+        if settings:
+            settings = settings[0]
+        else:
+            settings = models.AdGroupSettings(
+                state=constants.AdGroupSettingsState.INACTIVE,
+                target_devices=constants.AdTargetDevice.get_all()
+            )
+
+        return settings
 
     def get_dict(self, settings, ad_group):
         result = {}
