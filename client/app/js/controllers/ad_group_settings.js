@@ -7,6 +7,11 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
     $scope.isStartDatePickerOpen = false;
     $scope.isEndDatePickerOpen = false;
     $scope.datepickerMinDate = moment().add('days', 1).toDate();
+    $scope.alerts = [];
+
+    $scope.closeAlert = function(index) {
+        $scope.alerts.splice(index, 1);
+    };
 
     $scope.openDatePicker = function (type) {
         if (type === 'startDate') {
@@ -33,6 +38,10 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
             function (data) {
                 $scope.errors = {};
                 $scope.settings = data;
+                $scope.alerts = [{
+                    type: 'info',
+                    message: 'Settings changes are being propagated to external networks. The sync might take a few hours. If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.'
+                }];
             },
             function (data) {
                 $scope.errors = data;

@@ -1,6 +1,6 @@
 /*global angular*/
 
-var oneApp = angular.module('one', ['ui.router', 'ui.bootstrap', 'ui.bootstrap.datetimepicker', 'config']);
+var oneApp = angular.module('one', ['ngSanitize', 'ui.router', 'ui.bootstrap', 'ui.bootstrap.datetimepicker', 'config']);
 
 oneApp.config(['$sceDelegateProvider', 'config', function ($sceDelegateProvider, config) {
     $sceDelegateProvider.resourceUrlWhitelist(['self', config.static_url + '/**']);

@@ -21,6 +21,13 @@ body {
     font-family: @default-font-family
 }
 
+a,
+a:hover,
+a:active,
+a:visited {
+    color: #2fa8c7;
+}
+
 // Bootstrap styles
 
 .container-fluid {
@@ -122,12 +129,40 @@ body {
     .box-shadow(none);
 }
 
-.zem-tabset .nav-tabs > li > a {
-    padding: 0px;
+.zem-tabset .nav-tabs {
+    border-bottom: 1px solid #d2d2d2;
 
-    & > tab-heading > a {
-        display: block;
-        padding: 10px 15px;
+    & > li {
+        &.active {
+            & > a,
+            & > a:hover,
+            & > a:active,
+            & > a:visited {
+                border-top: 1px solid #d2d2d2;
+                border-left: 1px solid #d2d2d2;
+                border-right: 1px solid #d2d2d2;
+            }
+        }
+
+        & > a {
+            padding: 0px;
+
+            .border-radius(0);
+
+            & > tab-heading {
+                & > a,
+                & > a:hover,
+                & > a:active,
+                & > a:visited {
+                    display: block;
+                    padding: 10px 15px;
+                    text-decoration: none;
+                    font-weight: normal;
+                    font-size: 13px;
+                    color: #414141;
+                }
+            }
+        }
     }
 }
 
@@ -165,6 +200,20 @@ body {
     width: 18em !important;
 }
 
+.alert {
+    margin-bottom: 0;
+    .border-radius(0);
+
+    &.alert-info {
+        background-color: #fffee9;
+        border: 1px solid #ede652;
+        font-size: 12px;
+        font-weight: lighter;
+        font-color: #414141;
+        width: 700px;
+    }
+}
+
 div[datepicker] {
     .btn {
         border: 1px solid #fff;
@@ -184,7 +233,14 @@ div[datepicker] {
 }
 
 .page {
-    margin: 0px 0px 20px 0px;
+    padding: 20px 20px;
+    border-left: 1px solid #d2d2d2;
+    border-right: 1px solid #d2d2d2;
+    border-bottom: 1px solid #d2d2d2;
+
+    & > form:first-child > .form-group:first-child > div:first-child > .btn-group:first-child{
+        padding-top: 0;
+    }
 }
 
 .page-ad-group-settings {

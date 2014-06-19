@@ -1,4 +1,6 @@
 <div class="page page-ad-group-settings">
+    <alert ng-repeat="alert in alerts" type="{{ alert.type }}" close="closeAlert($index)" ng-bind-html="alert.message"></alert>
+
     <form id="form-ad-group-settings" class="form-horizontal" ng-submit="saveSettings()">
         <div class="form-group">
             <div class="col-xs-4">
