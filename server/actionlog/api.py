@@ -1,6 +1,7 @@
 import json
 
 from django.core.urlresolvers import reverse
+from django.db import transaction
 
 from . import models
 from . import constants
@@ -38,6 +39,7 @@ def _get_ad_group_networks(ad_group, network):
     return ad_group.adgroupnetwork_set.filter(network=network)
 
 
+@transaction.atomic
 def _init_stop_campaign(ad_group_network):
     network_campaign_key = json.loads(ad_group_network.network_campaign_key)
     action = models.ActionLog.objects.create(
@@ -62,6 +64,7 @@ def _init_stop_campaign(ad_group_network):
     zwei_actions.send(action)
 
 
+@transaction.atomic
 def _init_fetch_status(ad_group_network):
     network_campaign_key = json.loads(ad_group_network.network_campaign_key)
     action = models.ActionLog.objects.create(
@@ -86,6 +89,7 @@ def _init_fetch_status(ad_group_network):
     zwei_actions.send(action)
 
 
+@transaction.atomic
 def _init_fetch_reports(ad_group_network, date):
     network_campaign_key = json.loads(ad_group_network.network_campaign_key)
     action = models.ActionLog.objects.create(
@@ -111,6 +115,7 @@ def _init_fetch_reports(ad_group_network, date):
     zwei_actions.send(action)
 
 
+@transaction.atomic
 def _init_set_campaign_property(ad_group_network, prop):
     models.ActionLog.objects.create(
         action=constants.Action.FETCH_CAMPAIGN_STATUS,

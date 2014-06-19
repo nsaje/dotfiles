@@ -1,5 +1,6 @@
 import json
 
+from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
@@ -25,6 +26,7 @@ def zwei_callback(request, action_id):
     )
 
 
+@transaction.atomic
 def _process_zwei_response(action, data):
     if data['status'] != 'success':
         action.status = constants.ActionStatus.FAILED
