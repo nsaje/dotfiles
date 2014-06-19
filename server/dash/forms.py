@@ -40,8 +40,8 @@ class AdGroupSettingsForm(forms.Form):
         max_value=2,
         decimal_places=4,
         error_messages={
-            'required': 'Minimum CPC is $0.01.',
-            'min_value': 'Minimum CPC is $0.01.',
+            'required': 'Minimum CPC is $0.03.',
+            'min_value': 'Minimum CPC is $0.03.',
             'max_value': 'Maximum CPC is $2.00.'
         }
     )
