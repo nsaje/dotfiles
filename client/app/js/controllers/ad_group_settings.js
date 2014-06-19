@@ -1,4 +1,4 @@
-/*globals oneApp,constants,options*/
+/*globals oneApp,constants,options,moment*/
 oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
     $scope.settings = {};
     $scope.errors = {};

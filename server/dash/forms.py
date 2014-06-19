@@ -73,7 +73,7 @@ class AdGroupSettingsForm(forms.Form):
         # while on server it is already 15.3.2014).
         # Product guys confirmed it.
         if start_date < datetime.datetime.utcnow().date():
-            raise forms.ValidationError("Start date can't be set in past")
+            raise forms.ValidationError("Start date can't be set in past.")
 
         return start_date
 

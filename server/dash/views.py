@@ -157,35 +157,3 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
         settings.tracking_code = resource['tracking_code']
-
-    # def set_ad_group(self, ad_group, resource):
-    #     if 'name' in resource:
-    #         ad_group.name = resource['name']
-
-    # def set_settings(self, settings, ad_group_id, resource):
-    #     # settings.ad_group = ad_group
-    #     settings.ad_group_id = ad_group_id
-
-    #     if 'state' in resource:
-    #         settings.state = resource['state']
-
-    #     if 'start_date' in resource:
-    #         settings.state = resource['start_date']
-
-    #     if 'end_date' in resource:
-    #         settings.state = resource['end_date']
-
-    #     if 'cpc_cc' in resource:
-    #         settings.state = resource['cpc_cc']
-
-    #     if 'daily_budget_cc' in resource:
-    #         settings.state = resource['daily_budget_cc']
-
-    #     if 'target_devices' in resource:
-    #         settings.state = resource['target_devices']
-
-    #     if 'target_regions' in resource:
-    #         settings.state = resource['target_regions']
-
-    #     if 'tracking_code' in resource:
-    #         settings.state = resource['tracking_code']
