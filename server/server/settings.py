@@ -20,6 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 # Application definition
 
 INSTALLED_APPS = (
+    'actionlog',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -28,7 +29,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'dash',
     'django_extensions',  # optional for visualizing models and other perks
-    'zemauth'
+    'zemauth',
 )
 
 MIDDLEWARE_CLASSES = (

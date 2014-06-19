@@ -67,6 +67,27 @@ class Campaign(models.Model, PermissionMixin):
     admin_link.allow_tags = True
 
 
+class Network(models.Model):
+    id = models.AutoField(primary_key=True)
+    slug = models.SlugField(
+        max_length=127,
+        editable=False,
+        blank=False,
+        null=False
+    )
+    name = models.CharField(
+        max_length=127,
+        editable=True,
+        blank=False,
+        null=False
+    )
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+
+    def __unicode__(self):
+        return self.name
+
+
 class UserAdGroupManager(models.Manager):
     def get_for_user(self, user):
         queryset = super(UserAdGroupManager, self).get_queryset()
@@ -85,6 +106,7 @@ class AdGroup(models.Model):
         null=False
     )
     campaign = models.ForeignKey(Campaign)
+    networks = models.ManyToManyField(Network, through='AdGroupNetwork')
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
@@ -107,25 +129,11 @@ class AdGroup(models.Model):
     admin_link.allow_tags = True
 
 
-class Network(models.Model):
-    id = models.AutoField(primary_key=True)
-    slug = models.SlugField(
-        max_length=127,
-        editable=False,
-        blank=False,
-        null=False
-    )
-    name = models.CharField(
-        max_length=127,
-        editable=True,
-        blank=False,
-        null=False
-    )
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+class AdGroupNetwork(models.Model):
+    network = models.ForeignKey(Network)
+    ad_group = models.ForeignKey(AdGroup)
 
-    def __unicode__(self):
-        return self.name
+    network_campaign_key = jsonfield.JSONField(blank=True, default={})
 
 
 class AdGroupSettings(models.Model):
@@ -160,10 +168,13 @@ class AdGroupSettings(models.Model):
 
 class AdGroupNetworkSettings(models.Model):
     id = models.AutoField(primary_key=True)
-    network = models.ForeignKey(Network)
+
     ad_group = models.ForeignKey(AdGroup)
+    ad_group_network = models.ForeignKey(AdGroupNetwork, null=True)
+
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
+
     state = models.IntegerField(
         default=constants.AdGroupNetworkSettingsState.INACTIVE,
         choices=constants.AdGroupNetworkSettingsState.get_choices()
