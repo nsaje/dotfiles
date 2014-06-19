@@ -34,6 +34,14 @@ a:visited {
     min-width: 1170px;
 }
 
+.col {
+    float: left;
+    position: relative;
+    min-height: 1px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
 .form-horizontal .form-vertical {
     & .form-group {
         & > label {
@@ -206,7 +214,6 @@ a:visited {
         background-color: #fffee9;
         border: 1px solid #ede652;
         font-size: 12px;
-        font-weight: lighter;
         font-color: #414141;
         width: 700px;
     }
@@ -230,11 +237,69 @@ div[datepicker] {
     }
 }
 
+.breadcrumb {
+	display: inline-block;
+	background-color: transparent;
+	padding: 0px;
+	margin: 0px;
+
+    & > li+li:before {
+        content: ">";
+        font-size: 15px;
+        font-weight: normal;
+        color: #414141;
+    }
+
+    & > li {
+        font-size: 15px;
+        font-weight: normal;
+        color: #414141;
+
+        &.active {
+            font-size: 15px;
+            font-weight: normal;
+            color: #414141;
+		    font-weight: bold;
+        }
+	}
+}
+
+// Custom page styles
+
+.header {
+	padding-top: 15px;
+	padding-bottom: 15px;
+
+    .logo {
+        height: 20px;
+    }
+}
+
+.footer {
+    padding-bottom: 15px;
+    color: #414141;
+    text-align: center;
+
+    a,
+    a:hover,
+    a:active,
+    a:visited {
+        color: #414141;
+    }
+
+    .terms,
+    .copyright {
+        display: inline-block;
+        margin: 0px 15px;
+    }
+}
+
 .page {
     padding: 20px 20px;
     border-left: 1px solid #d2d2d2;
     border-right: 1px solid #d2d2d2;
     border-bottom: 1px solid #d2d2d2;
+    margin-bottom: 15px;
 
     & > form:first-child > .form-group:first-child > div:first-child > .btn-group:first-child{
         padding-top: 0;
@@ -331,58 +396,80 @@ div[datepicker] {
 }
 
 
-#nav {
-    .account-group {
-        padding-bottom: 10px;    
+.sidebar {
+    .affix-top {
+        position: fixed;
+        top: 51px;
+        bottom: 15px;
     }
 
-    border: 1px solid #d2d2d2;
-    padding: 5px;
+    .affix-bottom {
+        position: fixed;
+        top: 15px;
+        bottom: 50px;
+    }
 
-    .list-group {
-        margin-bottom: 0;
+    .affix {
+        top: 15px;
+        bottom: 15px;
+    }
 
-        &.ad-groups {
-            padding-left: 5px;    
+    #nav {
+        width: 200px;
+        height: 100%;
+
+        .account-group {
+            padding-bottom: 10px;    
         }
-    }
 
-    .list-group-item {
-        border: 0;   
-        padding: 3px;
+        border: 1px solid #d2d2d2;
+        padding: 5px;
 
-        &.active {
-            color: #414141;
-            background-color: #fff;    
+        .list-group {
+            margin-bottom: 0;
 
-            .ad-group-name {
-                font-weight: 600;
+            &.ad-groups {
+                padding-left: 5px;    
             }
         }
-    }
 
-    .account-name {
-        font-size: 16px;
-        font-weight: 600;
-        color: #f68620;
-    }
+        .list-group-item {
+            border: 0;   
+            padding: 3px;
 
-    .campaign-name {
-        font-size: 14px;
-        font-weight: 600;
-        color: #414141;
-    }
+            &.active {
+                color: #414141;
+                background-color: #fff;    
 
-    .ad-group-name {
-        font-size: 13px;
-        font-weight: 300;
-        color: #414141;
+                .ad-group-name {
+                    font-weight: 600;
+                }
+            }
+        }
+
+        .account-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #f68620;
+        }
+
+        .campaign-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #414141;
+        }
+
+        .ad-group-name {
+            font-size: 13px;
+            font-weight: 300;
+            color: #414141;
+        }
+        
+        .ad-group-item img {
+            position: relative;
+            bottom: 3px;
+            width: 25px;
+            margin: -7px;
+         }
     }
-    
-    .ad-group-item img {
-        position: relative;
-        bottom: 3px;
-        width: 25px;
-        margin: -7px;
-     }
 }
