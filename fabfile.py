@@ -262,6 +262,19 @@ def switch(app, params):
     run("supervisorctl restart %s" % app)
 
 
+@parallel
+def switchback(app):
+    with cd('~/.virtualenvs'):
+        run("cp -a {app}/previous {app}-reverting".format(app=app) )
+        run("rm -f {app} && mv {app}-reverting {app}".format(app=app) )
+    with cd("~/apps/"):
+        run("cp -a {app}/previous {app}-reverting".format(app=app) )
+        run("rm -f {app} && mv {app}-reverting {app}".format(app=app) )
+
+    print task("Restart service")
+    run("supervisorctl restart %s" % app)
+
+
 def tag_deploy(app, params):
     with cd(params['app_folder']):
         tag_name = '%s-%s-%s' % (app, params['timestamp'], params['commit_hash'])
