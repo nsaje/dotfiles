@@ -20,27 +20,29 @@ class ActionLog(models.Model):
         choices=constants.ActionType.get_choices()
     )
 
-    ad_group = models.ForeignKey(dash_models.AdGroup)
-    network = models.ForeignKey(dash_models.Network)
+    ad_group = models.ForeignKey('dash.AdGroup')
+    network = models.ForeignKey('dash.Network')
 
     payload = jsonfield.JSONField(blank=True, default=[])
 
     created_datetime = models.DateTimeField(
         auto_now_add=True,
         blank=True,
-        null=True
+        null=True,
+        verbose_name='Created at'
     )
     modified_datetime = models.DateTimeField(
         auto_now=True,
         blank=True,
-        null=True
+        null=True,
+        verbose_name='Modified at'
     )
 
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        verbose_name='Created at'
+        related_name='+'
     )
     modified_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        verbose_name='Modified at'
+        related_name='+'
     )
