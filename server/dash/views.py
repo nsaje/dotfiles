@@ -1,3 +1,4 @@
+import datetime
 import json
 
 from django.conf import settings
@@ -27,11 +28,17 @@ class NavigationDataView(BaseApiView):
     def get(self, request):
         user_id = request.user.id
 
-        ad_groups = (
-            models.AdGroup.objects
-            .select_related('campaign__account')
-            .filter(Q(campaign__users__in=[user_id]) | Q(campaign__account__users__in=[user_id]))
-        )
+        if request.user.is_superuser:
+            ad_groups = models.AdGroup.objects.\
+                select_related('campaign__account').\
+                all()
+
+        else:
+            ad_groups = (
+                models.AdGroup.objects
+                .select_related('campaign__account')
+                .filter(Q(campaign__users__in=[user_id]) | Q(campaign__account__users__in=[user_id]))
+            )
 
         accounts = {}
         for ad_group in ad_groups:
@@ -120,6 +127,9 @@ class AdGroupSettings(api_common.BaseApiView):
         else:
             settings = models.AdGroupSettings(
                 state=constants.AdGroupSettingsState.INACTIVE,
+                start_date=datetime.datetime.utcnow().date(),
+                cpc_cc=0.4000,
+                daily_budget_cc=10.0000,
                 target_devices=constants.AdTargetDevice.get_all()
             )
 
@@ -127,14 +137,6 @@ class AdGroupSettings(api_common.BaseApiView):
 
     def get_dict(self, settings, ad_group):
         result = {}
-
-        cpc_cc = settings.cpc_cc
-        if cpc_cc is not None:
-            cpc_cc = str(cpc_cc)
-
-        daily_budget_cc = settings.daily_budget_cc
-        if daily_budget_cc is not None:
-            daily_budget_cc = str(daily_budget_cc)
 
         if settings:
             result = {
