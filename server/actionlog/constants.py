@@ -24,7 +24,7 @@ class ActionStatus(ConstantBase):
     _VALUES = {
         FAILED: 'Failed',
         WAITING: 'Waiting',
-        SUCCESS: 'Executed',
+        SUCCESS: 'Success',
         ABORTED: 'Aborted',
     }
 

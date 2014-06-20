@@ -4,7 +4,6 @@ from django.db import models
 from django.conf import settings
 
 from . import constants
-from dash import models as dash_models
 
 
 class ActionLog(models.Model):
