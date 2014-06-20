@@ -127,6 +127,23 @@ def migrate(*args):
         execute(real_migrate, app, params)
 
 
+@task
+def revert(*args):
+    apps = []
+    if args[0] == 'all':
+        apps = APPS
+    elif set(args) < set(APPS):
+        apps = args
+    else:
+        print args
+        abort("Unknown apps!")
+
+    for app in apps:
+        print header("\n\n\t~~~~~~~~~~~~ Reverting %s@%s ~~~~~~~~~~~~" % (app, env.host))
+        print task("Revert [%s@%s]" % (app, env.host))
+        execute(switchback, app)
+
+
 # COMMON STUFF
 def clone_code(params):
     timestamp = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')
@@ -230,10 +247,29 @@ def is_db_migrated(app, params):
 def switch(app, params):
     with cd('~/.virtualenvs'):
         virtualenv_folder = os.path.join('~/.virtualenvs', env.venv_name)
+
+        # remember which was previous virtualenv release
+        run("cp -a ~/.virtualenvs/{app} {virtualenv_folder}/previous".format(app=app, virtualenv_folder=virtualenv_folder))
         run("ln -Tsf %s %s" % (virtualenv_folder, app))
 
     with cd("~/apps/"):
-        run("ln -Tsf %s %s" % (params['app_folder'], app))
+        # remember which was previous app release
+        run("cp -a {app} {folder}/previous".format(folder=params['app_folder'], app=app) )
+
+        run("ln -Tsf %s %s" % (params['app_folder'], app) )
+
+    print task("Restart service")
+    run("supervisorctl restart %s" % app)
+
+
+@parallel
+def switchback(app):
+    with cd('~/.virtualenvs'):
+        run("cp -a {app}/previous {app}-reverting".format(app=app) )
+        run("rm -f {app} && mv {app}-reverting {app}".format(app=app) )
+    with cd("~/apps/"):
+        run("cp -a {app}/previous {app}-reverting".format(app=app) )
+        run("rm -f {app} && mv {app}-reverting {app}".format(app=app) )
 
     print task("Restart service")
     run("supervisorctl restart %s" % app)
