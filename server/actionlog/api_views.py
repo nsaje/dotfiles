@@ -3,7 +3,7 @@ import json
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponse
+from django.http import JsonResponse
 
 from . import models
 from . import constants
@@ -20,10 +20,7 @@ def zwei_callback(request, action_id):
     _process_zwei_response(action, data)
 
     response_data = {'status': 'OK'}
-    return HttpResponse(
-        json.dumps(response_data),
-        content_type='application/json'
-    )
+    return JsonResponse(response_data)
 
 
 @transaction.atomic
