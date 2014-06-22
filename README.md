@@ -10,7 +10,9 @@ Code is organized in two units:
 
 ### Server
 
-Server consists of a single Django app named dash. This app contains all the models needed for it to work correctly.
+Server consists of the following Django apps:
+* zemauth: custom authentication app which allows for authentication with an e-mail and Google. It defines its own User model which is used in the project instead of django.contrib.auth.models.User. When referencing it as a relationship in your own models, use settings.AUTH_USER_MODEL instead.
+* dash: this app contains all the models and APIs for the dashboard.
 
 ### Client
 
