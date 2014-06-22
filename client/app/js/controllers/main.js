@@ -6,20 +6,11 @@ oneApp.controller('MainCtrl', ['$scope', '$state', 'api', function ($scope, $sta
         {heading: 'Settings', route: 'adGroups.settings', active: false}
     ];
     $scope.accounts = [];
+    $scope.user = null;
 
     $scope.breadcrumb = [];
-    
-    $scope.$on("$stateChangeSuccess", function() {
-        $scope.tabs.forEach(function(tab) {
-            tab.active = $state.is(tab.route);
-        });
-    });
 
-    api.navData.list().then(function (data) {
-        $scope.accounts = data;
-    });
-
-    $scope.$watch('accounts', function (newValue, oldValue) {
+    $scope.setBreadcrumb = function () {
         $scope.accounts.forEach(function (account) {
             account.campaigns.forEach(function (campaign) {
                 campaign.adGroups.forEach(function (adGroup) {
@@ -29,5 +20,24 @@ oneApp.controller('MainCtrl', ['$scope', '$state', 'api', function ($scope, $sta
                 });
             });
         });
+    };
+    
+    $scope.$on("$stateChangeSuccess", function() {
+        $scope.setBreadcrumb();
+        $scope.tabs.forEach(function(tab) {
+            tab.active = $state.is(tab.route);
+        });
+    });
+
+    api.navData.list().then(function (data) {
+        $scope.accounts = data;
+    });
+
+    api.user.get('current').then(function (data) {
+        $scope.user = data;
+    });
+
+    $scope.$watch('accounts', function (newValue, oldValue) {
+        $scope.setBreadcrumb();
     });
 }]);

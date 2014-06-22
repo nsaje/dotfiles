@@ -24,6 +24,27 @@ def index(request):
     return render(request, 'index.html', {'staticUrl': settings.CLIENT_STATIC_URL})
 
 
+class User(BaseApiView):
+    def get(self, request, user_id):
+        response = {}
+
+        if user_id == 'current':
+            response['user'] = self.get_dict(request.user)
+
+        return self.create_api_response(response)
+
+    def get_dict(self, user):
+        result = {}
+
+        if user:
+            result = {
+                'id': str(user.pk),
+                'email': user.email,
+            }
+
+        return result
+
+
 class NavigationDataView(BaseApiView):
     def get(self, request):
         user_id = request.user.id

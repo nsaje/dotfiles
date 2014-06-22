@@ -17,7 +17,8 @@
                     <a href class="dropdown-toggle">
                         <img ng-src="{{ config.static_url }}/img/human.svg">
                     </a>
-                    <ul class="dropdown-menu pull-right">
+                    <ul class="dropdown-menu dropdown-menu-right">
+                        <li class="dropdown-header">{{ user.email }}</li>
                         <li><a ng-href="/signout">Sign out</a></li>
                     </ul>
                 </span>
