@@ -79,6 +79,6 @@ class TestDashSignals(TestCase):
         self._prepare_mock_get_request(mock_get_request)
         ad_group = dashmodels.AdGroup.objects.get(pk=1)
 
-        settings = dashmodels.AdGroupNetworkSettings(ad_group=ad_group)
+        settings = dashmodels.AdGroupNetworkSettings(ad_group=ad_group, network_id=1)
         settings.save()
         self.assertEqual(settings.created_by.username, 'tomaz')

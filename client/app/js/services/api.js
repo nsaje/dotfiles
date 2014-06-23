@@ -24,6 +24,30 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
         };
     } 
 
+    function User() {
+        this.get = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/users/' + id + '/';
+            var config = {
+                params: {}
+            };
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    var resource;
+                    if (data && data.data) {
+                        resource = data.data.user;
+                    }
+                    deferred.resolve(resource);
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    } 
+
     function AdGroupSettings() {
         function convertFromApi(settings) {
             var result = {
@@ -32,6 +56,7 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
                 state: settings.state,
                 startDate: settings.start_date ? new Date(settings.start_date) : null,
                 endDate: settings.end_date ? new Date(settings.end_date) : null,
+                manualStop: !settings.end_date,
                 cpc: settings.cpc_cc,
                 dailyBudget: settings.daily_budget_cc,
                 targetDevices: options.adTargetDevices.map(function (item) {
@@ -150,6 +175,7 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
 
     return {
         navData: new NavData(),
+        user: new User(),
         adGroupSettings: new AdGroupSettings()
     };
 }]);

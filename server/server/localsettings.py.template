@@ -9,11 +9,10 @@ SECRET_KEY = '=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l'
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': '',
         'USER': '',
-        'PASSWORD': '',
-        'OPTIONS' : { 'init_command' : 'set storage_engine=INNODB' }
+        'PASSWORD': ''
     }
 }
 

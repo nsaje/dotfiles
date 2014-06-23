@@ -21,16 +21,86 @@ body {
     font-family: @default-font-family
 }
 
+.body {
+    position: relative;
+}
+
+a,
+a:hover,
+a:active,
+a:visited {
+    color: #2fa8c7;
+}
+
 // Bootstrap styles
 
 .container-fluid {
     min-width: 1170px;
 }
 
-.form-group label.control-label {
-    font-size: 15px;
-    font-weight: 600;
-    color: #414141;
+.col {
+    float: left;
+    position: relative;
+    min-height: 1px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.form-horizontal .form-vertical {
+    & .form-group {
+        & > label {
+            float: none;
+            width: 100%;
+
+            &.error {
+                float: left;
+                padding-left: 15px;
+            }
+        }
+
+        & .col {
+            float: left;
+            position: relative;
+            min-height: 1px;
+            padding-left: 45px;
+            padding-right: 15px;
+        }
+
+        input[type="text"],
+        textarea {
+            margin-top: 7px;
+        }
+
+        .multiselect-container {
+            input[type="text"] {
+                margin-top: 0;
+            }
+        }
+    }
+}
+
+.form-horizontal .control-label {
+    text-align:left;
+}
+
+.form-group {
+    &.has-error {
+        .form-control,
+        .form-control:focus {
+            border-color: #c70000;
+            .box-shadow(none);
+        }
+
+        label.control-label {
+            color: #c70000;
+        }
+    }
+
+    label.control-label {
+        font-size: 15px;
+        font-weight: 600;
+        color: #414141;
+    }
 }
 
 .form-control {
@@ -40,6 +110,11 @@ body {
     border-color: #d2d2d2;
     .border-radius(0);
     .box-shadow(none);
+
+    &:focus {
+        border: 1px solid #2fa8c7;
+        .box-shadow(none);
+    }
 }
 
 .btn {
@@ -52,10 +127,10 @@ body {
 .btn-default:active,
 .btn-default.active,
 .open .dropdown-toggle.btn-default {
-    background-color: #2fa8c7;
+    background-color: #fff;
     border-color: #2fa8c7;
     .box-shadow(none);
-    color: #fff;
+    color: #2fa8c7;
 }
 
 .btn:focus,
@@ -72,17 +147,53 @@ body {
     .box-shadow(none);
 }
 
-.zem-tabset .nav-tabs > li > a {
-    padding: 0px;
+.zem-tabset .nav-tabs {
+    border-bottom: 1px solid #d2d2d2;
 
-    & > tab-heading > a {
-        display: block;
-        padding: 10px 15px;
+    & > li {
+        & > a,
+        & > a:hover,
+        & > a:active,
+        & > a:visited {
+            border-top: 1px solid #d2d2d2;
+            border-left: 1px solid #d2d2d2;
+            border-right: 1px solid #d2d2d2;
+        }
+
+        & > a {
+            padding: 0px;
+
+            .border-radius(0);
+
+            & > tab-heading {
+                & > a,
+                & > a:hover,
+                & > a:active,
+                & > a:visited {
+                    display: block;
+                    padding: 10px 15px;
+                    text-decoration: none;
+                    font-weight: normal;
+                    font-size: 13px;
+                    color: #414141;
+                }
+            }
+        }
     }
 }
 
-.form-horizontal .control-label {
-    text-align:left;
+.input-group {
+    .input-group-addon {
+        /*background-color: transparent !important;*/
+        .border-radius(0);
+        font-weight: lighter;
+        font-size: 14px;
+        color: #414141;
+    }
+
+    /*.input-group-addon + .form-control {*/
+    /*    border-left: 0px;    */
+    /*}*/
 }
 
 .input-one-char {
@@ -105,8 +216,127 @@ body {
     width: 18em !important;
 }
 
+.alert {
+    margin-bottom: 0;
+    .border-radius(0);
+
+    &.alert-info {
+        background-color: #fffee9;
+        border: 1px solid #ede652;
+        font-size: 12px;
+        font-color: #414141;
+        width: 700px;
+    }
+}
+
+div[datepicker] {
+    .btn {
+        border: 1px solid #fff;
+        color: #414141;
+
+        &.active {
+            border: 1px solid #2fa8c7;
+            background-color: #2fa8c7;
+            color: #fff;
+        }
+
+        .text-info {
+            color: #414141;
+            font-weight: 600;
+        }
+    }
+}
+
+.breadcrumb {
+	display: inline-block;
+	background-color: transparent;
+	padding: 0px;
+	margin: 0px;
+
+    & > li+li:before {
+        content: ">";
+        font-size: 15px;
+        font-weight: normal;
+        color: #414141;
+    }
+
+    & > li {
+        font-size: 15px;
+        font-weight: normal;
+        color: #414141;
+
+        &.active {
+            font-size: 15px;
+            font-weight: normal;
+            color: #414141;
+		    font-weight: bold;
+        }
+	}
+}
+
+// Custom page styles
+
+.header {
+	/*padding-top: 15px;*/
+	/*padding-bottom: 15px;*/
+    height: 51px;
+    line-height: 51px;
+
+    .logo {
+        height: 20px;
+    }
+
+
+    .content {
+        float: right;
+
+        a.contact,
+        a.contact:hover,
+        a.contact:active,
+        a.contact:visited {
+            font-size: 15px;
+            font-weight: normal;
+            color: #414141;
+        }
+
+        .profile {
+            img {
+                height: 40px;
+                margin-top: -5px;
+            }
+        }
+    }
+}
+
+.footer {
+    padding-bottom: 15px;
+    color: #414141;
+    text-align: center;
+
+    a,
+    a:hover,
+    a:active,
+    a:visited {
+        color: #414141;
+    }
+
+    .terms,
+    .copyright {
+        display: inline-block;
+        margin: 0px 15px;
+    }
+}
+
 .page {
-    margin: 0px 0px 20px 0px;
+    padding: 20px 20px;
+    border-left: 1px solid #d2d2d2;
+    border-right: 1px solid #d2d2d2;
+    border-bottom: 1px solid #d2d2d2;
+    margin-bottom: 15px;
+
+    & > form:first-child > .form-group:first-child > div:first-child > .btn-group:first-child{
+        padding-top: 0;
+    }
 }
 
 .page-ad-group-settings {
@@ -177,61 +407,88 @@ body {
             border-color: #d2d2d2;
         }
     }
+
+    .budget-error {
+        margin-left: 15px;
+    }
+
+    /*.input-group {*/
+    /*    .input-group-addon {*/
+    /*        padding-right: 0;*/
+    /*    }*/
+    /*    .input-group-addon + .form-control {*/
+    /*        padding-left: 0;*/
+    /*    }*/
+    /*}*/
+
+    .help-block {
+        display: inline-block;
+        /*margin-top: 6px;*/
+        /*margin-bottom: 9px;*/
+    }
 }
 
 
-#nav {
-    .account-group {
-        padding-bottom: 10px;    
-    }
+.sidebar {
+    position: absolute;
+    top: 0px;
+    bottom: 15px;
 
-    border: 1px solid #d2d2d2;
-    padding: 5px;
+    #nav {
+        height: 100%;
+        border: 1px solid #d2d2d2;
+        padding: 5px;
+        overflow: scroll;
 
-    .list-group {
-        margin-bottom: 0;
-
-        &.ad-groups {
-            padding-left: 5px;    
+        .account-group {
+            padding-bottom: 10px;    
         }
-    }
 
-    .list-group-item {
-        border: 0;   
-        padding: 3px;
+        .list-group {
+            margin-bottom: 0;
 
-        &.active {
-            color: #414141;
-            background-color: #fff;    
-
-            .ad-group-name {
-                font-weight: 600;
+            &.ad-groups {
+                padding-left: 5px;    
             }
         }
-    }
 
-    .account-name {
-        font-size: 16px;
-        font-weight: 600;
-        color: #f68620;
-    }
+        .list-group-item {
+            border: 0;   
+            padding: 3px;
 
-    .campaign-name {
-        font-size: 14px;
-        font-weight: 600;
-        color: #414141;
-    }
+            &.active {
+                color: #414141;
+                background-color: #fff;    
 
-    .ad-group-name {
-        font-size: 13px;
-        font-weight: 300;
-        color: #414141;
+                .ad-group-name {
+                    font-weight: 600;
+                }
+            }
+        }
+
+        .account-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #f68620;
+        }
+
+        .campaign-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #414141;
+        }
+
+        .ad-group-name {
+            font-size: 13px;
+            font-weight: 300;
+            color: #414141;
+        }
+        
+        .ad-group-item img {
+            position: relative;
+            bottom: 3px;
+            width: 25px;
+            margin: -7px;
+         }
     }
-    
-    .ad-group-item img {
-        position: relative;
-        bottom: 3px;
-        width: 25px;
-        margin: -7px;
-     }
 }
