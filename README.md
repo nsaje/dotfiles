@@ -10,7 +10,9 @@ Code is organized in two units:
 
 ### Server
 
-Server consists of a single Django app named dash. This app contains all the models needed for it to work correctly.
+Server consists of the following Django apps:
+* zemauth: custom authentication app which allows for authentication with an e-mail and Google. It defines its own User model which is used in the project instead of django.contrib.auth.models.User. When referencing it as a relationship in your own models, use settings.AUTH_USER_MODEL instead.
+* dash: this app contains all the models and APIs for the dashboard.
 
 ### Client
 
@@ -54,6 +56,8 @@ python manage.py graph_models -a -g -o my_project_visualized.png
 
 ### Client
 
+We use Grunt for building the app and Bower for management of third-party components. Third-party components are part of the repository and are to be committed while node modules used with Grunt are only develoment dependencies and are not to be committed.
+
 All the commands bellow assume that you are located in client subdirectory.
 
 Make sure that you have node.js, npm, grunt and grunt-cli installed.
@@ -61,4 +65,21 @@ Make sure that you have node.js, npm, grunt and grunt-cli installed.
 Install local development node modules:
 ```bash
 npm install
+```
+
+Now you have grunt and all the development dependencies installed so you can run grunt in order to build it:
+```bash
+grunt
+```
+
+Built client app will be placed in dist directory.
+
+You can also run grunt watch to build it automatically while working on it:
+```bash
+grunt watch
+```
+
+For development, you can run grunt dev which also runs server on port 9999 and is reloaded after each change to source file:
+```bash
+grunt dev
 ```
