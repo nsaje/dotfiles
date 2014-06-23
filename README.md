@@ -50,7 +50,7 @@ Check /etc/postgresql/9.3/main/pg_hba.conf and change line "local all all peer" 
 
 Restart PostgreSQL:
 ```bash
-sudo /etc/init.d/postgresql-9.3 restart
+sudo /etc/init.d/postgresql restart
 ```
 
 Initialize database:
