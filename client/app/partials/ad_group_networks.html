@@ -1,0 +1,42 @@
+<div class="page page-ad-group-networks">
+    <div class="table-ad-group-networks">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Network</th>
+                    <th>Status</th>
+                    <th>Bid CPC</th>
+                    <th>Daily Budget</th>
+                    <th>Cost</th>
+                    <th>CPC</th>
+                    <th>Clicks</th>
+                    <th>Impressions</th>
+                    <th>CTR</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="network in networks">
+                    <td>{{ network.name }}</td>
+                    <td>{{ network.status }}</td>
+                    <td>{{ network.bid_cpc }}</td>
+                    <td>{{ network.daily_budget }}</td>
+                    <td>{{ network.cost }}</td>
+                    <td>{{ network.cpc }}</td>
+                    <td>{{ network.clicks }}</td>
+                    <td>{{ network.impressions }}</td>
+                    <td>{{ network.ctr }}</td>
+                </tr>
+                <tr>
+                    <td colspan="2">TOTALS</td>
+                    <td>{{ totals.bid_cpc }}</td>
+                    <td>{{ totals.daily_budget }}</td>
+                    <td>{{ totals.cost }}</td>
+                    <td>{{ totals.cpc }}</td>
+                    <td>{{ totals.clicks }}</td>
+                    <td>{{ totals.impressions }}</td>
+                    <td>{{ totals.ctr }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
