@@ -1,11 +1,33 @@
 <div class="container-fluid" ng-controller="MainCtrl">
-    <div class="row page-header">
+    <div class="row header">
         <div class="col-xs-2">
-        HEADER
+            <img class="logo" ng-src="{{ config.static_url }}/img/logo_one.png">
+        </div>
+        
+        <div class="col-xs-8">
+            <ol class="breadcrumb">
+                <li ng-repeat="path in breadcrumb" ng-class="{'active': $last}">{{ path }}</li>
+            </ol>
+        </div>
+
+        <div class="col-xs-2">
+            <div class="content">
+                <a href="mailto:help@zemanta.com" class="contact">Contact support</a>
+                <span class="profile dropdown">
+                    <a href class="dropdown-toggle">
+                        <img ng-src="{{ config.static_url }}/img/human.svg">
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                        <li class="dropdown-header">{{ user.email }}</li>
+                        <li><a ng-href="/signout">Sign out</a></li>
+                    </ul>
+                </span>
+            </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-xs-2">
+
+    <div class="row body">
+        <div class="col-xs-2 sidebar">
             <div id="nav">
                 <div class="account-group" ng-repeat="account in accounts">
                     <div class="account-name">{{ account.name }}</div>
@@ -14,7 +36,7 @@
                             <div class="campaign-name">{{ campaign.name }}</div>
                             <ul class="list-group ad-groups">
                                 <a class="ad-group-item list-group-item" ui-sref-active="active" ui-sref="adGroups.settings({ id: adGroup.id})" ng-repeat="adGroup in campaign.adGroups">
-                                    <img src="{{ config.static_url }}/img/campaign.svg">
+                                    <img ng-src="{{ config.static_url }}/img/ad_group.svg">
                                     <span class="ad-group-name">{{ adGroup.name }}</span>
                                 </a>
                             </ul>
@@ -23,7 +45,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-xs-10">
+        <div class="col-xs-offset-2 col-xs-10 content">
             <tabset class="zem-tabset">
                 <tab ng-repeat="tab in tabs" active="tab.active">
                     <tab-heading>
@@ -33,6 +55,13 @@
             </tabset>
 
             <div ui-view></div>
+        </div>
+    </div>
+
+    <div class="row footer">
+        <div class="col-xs-12">
+            <span class="terms"><a href="#">Terms Of Service</a></span>
+            <span class="copyright">All rights reserved &copy; <a href="http://www.zemanta.com">Zemanta.com</a></span>
         </div>
     </div>
 </div>

@@ -29,15 +29,19 @@ class AdGroupSettingsForm(forms.Form):
         coerce=int,
         empty_value=None
     )
-    start_date = forms.DateField()
+    start_date = forms.DateField(
+        error_messages={
+            'required': 'Please provide start date.',
+        }
+    )
     end_date = forms.DateField(required=False)
     cpc_cc = forms.DecimalField(
         min_value=0.03,
         max_value=2,
         decimal_places=4,
         error_messages={
-            'required': 'Minimum CPC is $0.01.',
-            'min_value': 'Minimum CPC is $0.01.',
+            'required': 'Minimum CPC is $0.03.',
+            'min_value': 'Minimum CPC is $0.03.',
             'max_value': 'Maximum CPC is $2.00.'
         }
     )
@@ -50,12 +54,21 @@ class AdGroupSettingsForm(forms.Form):
         }
     )
     target_devices = forms.MultipleChoiceField(
-        choices=constants.AdTargetDevice.get_choices())
+        choices=constants.AdTargetDevice.get_choices(),
+        error_messages={
+            'required': 'Please select target devices.',
+        }
+    )
     target_regions = forms.MultipleChoiceField(
         required=False,
         choices=constants.AdTargetCountry.get_choices()
     )
     tracking_code = forms.CharField(required=False)
+
+    def __init__(self, current_settings, *args, **kwargs):
+        self.current_settings = current_settings
+
+        super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
 
     def clean_start_date(self):
         start_date = self.cleaned_data['start_date']
@@ -64,8 +77,9 @@ class AdGroupSettingsForm(forms.Form):
         # point of view but wa done in a different timezone (eg. client date is 14.3.2014
         # while on server it is already 15.3.2014).
         # Product guys confirmed it.
-        if start_date < datetime.datetime.utcnow().date():
-            raise forms.ValidationError("Start date can't be set in past")
+        if start_date != self.current_settings.start_date and \
+                start_date < datetime.datetime.utcnow().date():
+            raise forms.ValidationError("Start date can't be set in past.")
 
         return start_date
 
@@ -76,7 +90,7 @@ class AdGroupSettingsForm(forms.Form):
         # maticz: We deal with UTC dates even if a not-UTC date date was submitted from
         # user.
         # Product guys confirmed it.
-        if not start_date or not end_date or end_date <= start_date:
+        if start_date and end_date and end_date <= start_date:
             raise forms.ValidationError('End date must not occur before start date.')
 
         return end_date
