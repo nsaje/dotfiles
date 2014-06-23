@@ -1,4 +1,4 @@
-/*globals oneApp*/
+/*globals oneApp,$*/
 'use strict';
 
 oneApp.directive('zemCurrencyInput', function() {
@@ -7,6 +7,7 @@ oneApp.directive('zemCurrencyInput', function() {
         restrict: 'A',
         link: function postLink(scope, element, attrs, controller) {
             var caretPos = 0;
+            var previousValue;
 
             function getCaretPos(element) {
                 var range;
@@ -110,6 +111,7 @@ oneApp.directive('zemCurrencyInput', function() {
                 var result = formatThousands(money);
 
                 result = [result, cents].join('.');
+                previousValue = result;
                 return result;
             }
 
@@ -117,13 +119,28 @@ oneApp.directive('zemCurrencyInput', function() {
                 var transformedValue;
                 var parts;
                 var caretExtraCount;
+                var thousandsPart;
 
                 if (!value) {
+                    previousValue = '';
                     return '';
                 }
 
                 transformedValue = value.replace(/[^\d\.]+/g, '');
                 parts = transformedValue.split('.');
+
+                // If there are more than one dot, only take the last one into
+                // account if it is set otherwise, use the second last (we take
+                // advantage of the fact, that there can never be more than 2 dots
+                // here).
+                if (parts.length > 2) {
+                    if (parts[parts.length - 1]) {
+                        thousandsPart = parts.splice(0, parts.length-1).join('');
+                    } else {
+                        thousandsPart = parts.splice(0, parts.length-2).join('');
+                    }
+                    parts = [thousandsPart, parts[0]];
+                }
 
                 if (parts.length > 0) {
                     parts[0] = formatThousands(parts[0]);
@@ -137,19 +154,13 @@ oneApp.directive('zemCurrencyInput', function() {
 
                 transformedValue = parts.join('.');
                 if (transformedValue !== value) {
-                    controller.$setViewValue(transformedValue);
-                    controller.$render();
+                    element.val(transformedValue);
 
-                    caretExtraCount = transformedValue.length - value.length;
-                    // TODO: Fix backspace deletion.
-                    if (caretExtraCount >= 0) {
-                        caretExtraCount += 1;
-                    } else {
-                        caretExtraCount -= 1;
-                    }
+                    caretExtraCount = transformedValue.length - previousValue.length;
 
                     setCaretPos(element[0], caretPos + caretExtraCount);
                 }
+                previousValue = transformedValue;
 
                 transformedValue = addCents(transformedValue);
 
@@ -162,12 +173,11 @@ oneApp.directive('zemCurrencyInput', function() {
                 return result;
             }
 
-            element.bind('blur', function() {
-                var value = controller.$viewValue;
+            element.bind('blur', function(e) {
+                var value = $(this).val();
                 var transformedValue = addCents(value);
                 if (transformedValue !== value) {
-                    controller.$setViewValue(transformedValue);
-                    controller.$render();
+                    element.val(transformedValue);
                 }
             });
 
