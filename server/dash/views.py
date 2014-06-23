@@ -10,12 +10,17 @@ from dash import exc
 from dash import forms
 from dash import models
 
+from reports import api
+
 import constants
 
 from django.db.models import Q
 
 from dash.api_common import BaseApiView
-from dash import models
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # Create your views here.
@@ -189,3 +194,67 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
         settings.tracking_code = resource['tracking_code']
+
+
+class AdGroupNetworks(api_common.BaseApiView):
+    def get(self, request, ad_group_id):
+        try:
+            ad_group = models.AdGroup.user_objects.get_for_user(request.user).\
+                filter(id=int(ad_group_id)).get()
+        except models.AdGroup.DoesNotExist:
+            raise exc.MissingDataError('Ad Group does not exist')
+
+        data = api.query(
+            datetime.date.min,
+            datetime.date.today(),
+            ['network'],
+            ad_group=int(ad_group_id)
+        )
+
+        network_settings = self.get_network_settings(ad_group, [item['network'] for item in data])
+
+        results = []
+
+        for item in data:
+            try:
+                settings = network_settings[item['network']]
+            except KeyError:
+                logger.error(
+                    'Missing ad group network settings for ad group %s and network %s' %
+                    (ad_group_id, item['network']))
+                continue
+
+            results.append({
+                'name': settings.network.name,
+                'status': constants.AdGroupNetworkSettingsState.get_text(settings.state),
+                # TODO bid_cpc
+                'daily_budget_cc': '{:.2f}'.format(settings.daily_budget_cc),
+                # TODO cost
+                'cpc_cc': '{:.2f}'.format(settings.cpc_cc),
+                'clicks': item['clicks'],
+                'impressions': item['impressions'],
+                'ctr': '{:.4f}'.format(item['ctr']),
+
+            })
+
+        # TODO add totals
+
+        return self.create_api_response(results)
+
+    def get_network_settings(self, ad_group, network_slugs):
+        network_settings = models.AdGroupNetworkSettings.objects.select_related('network').\
+            filter(network__slug__in=network_slugs).\
+            filter(ad_group=ad_group).\
+            order_by('-created_dt')
+
+        result = {}
+        for ns in network_settings:
+            if ns.network.slug in result:
+                continue
+
+            result[ns.network.slug] = ns
+
+            if len(result) == len(network_slugs):
+                break
+
+        return result
