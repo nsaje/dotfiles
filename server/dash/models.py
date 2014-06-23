@@ -171,6 +171,7 @@ class AdGroupNetworkSettings(models.Model):
 
     ad_group = models.ForeignKey(AdGroup)
     ad_group_network = models.ForeignKey(AdGroupNetwork, null=True)
+    network = models.ForeignKey(Network, null=True)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')

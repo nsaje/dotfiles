@@ -13,5 +13,5 @@ def send(action):
     response = urllib2.urlopen(request)
 
     if response.status_code != httplib.OK:
-        action.status = constants.ActionStatus.ERROR
+        action.status = constants.ActionStatus.FAILED
         action.save()

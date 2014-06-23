@@ -20,10 +20,10 @@ def fetch_ad_group_status(ad_group, network=None):
         _init_fetch_status(ad_group_network)
 
 
-def fetch_ad_group_reports(ad_group, network=None):
+def fetch_ad_group_reports(ad_group, network=None, date=None):
     ad_group_networks = _get_ad_group_networks(ad_group, network)
     for ad_group_network in ad_group_networks:
-        _init_fetch_reports(ad_group_network)
+        _init_fetch_reports(ad_group_network, date)
 
 
 def set_ad_group_property(ad_group, network=None, prop=None):
@@ -41,7 +41,6 @@ def _get_ad_group_networks(ad_group, network):
 
 def _init_stop_campaign(ad_group_network):
     with transaction.atomic():
-        network_campaign_key = json.loads(ad_group_network.network_campaign_key)
         action = models.ActionLog.objects.create(
             action=constants.Action.STOP_CAMPAIGN,
             action_type=constants.ActionType.AUTOMATIC,
@@ -51,7 +50,7 @@ def _init_stop_campaign(ad_group_network):
         payload = json.dumps({
             'network': ad_group_network.network.slug,
             'action': action.action,
-            'network_campaign_key': network_campaign_key,
+            'network_campaign_key': ad_group_network.network_campaign_key,
             'callback': reverse(
                 'actions.zwei_callback',
                 kwargs={'action_id': action.id},
@@ -66,9 +65,8 @@ def _init_stop_campaign(ad_group_network):
 
 def _init_fetch_status(ad_group_network):
     with transaction.atomic():
-        network_campaign_key = json.loads(ad_group_network.network_campaign_key)
         action = models.ActionLog.objects.create(
-            action=constants.Action.GET_CAMPAIGN_STATUS,
+            action=constants.Action.FETCH_CAMPAIGN_STATUS,
             action_type=constants.ActionType.AUTOMATIC,
             ad_group=ad_group_network.ad_group,
             network=ad_group_network.network,
@@ -76,7 +74,7 @@ def _init_fetch_status(ad_group_network):
         payload = json.dumps({
             'action': action.action,
             'network': ad_group_network.network.slug,
-            'network_campaign_key': network_campaign_key,
+            'network_campaign_key': ad_group_network.network_campaign_key,
             'callback': reverse(
                 'actions.zwei_callback',
                 kwargs={'action_id': action.id},
@@ -91,7 +89,6 @@ def _init_fetch_status(ad_group_network):
 
 def _init_fetch_reports(ad_group_network, date):
     with transaction.atomic():
-        network_campaign_key = json.loads(ad_group_network.network_campaign_key)
         action = models.ActionLog.objects.create(
             action=constants.Action.FETCH_REPORTS,
             action_type=constants.ActionType.AUTOMATIC,
@@ -100,9 +97,9 @@ def _init_fetch_reports(ad_group_network, date):
         )
         payload = json.dumps({
             'action': action.action,
-            'network': ad_group_network.slug,
-            'network_campaign_key': network_campaign_key,
-            'date': date,
+            'network': ad_group_network.network.slug,
+            'network_campaign_key': ad_group_network.network_campaign_key,
+            'date': date.strftime('%Y-%m-%d'),
             'callback': reverse(
                 'actions.zwei_callback',
                 kwargs={'action_id': action.id},
@@ -117,7 +114,7 @@ def _init_fetch_reports(ad_group_network, date):
 
 def _init_set_campaign_property(ad_group_network, prop):
     models.ActionLog.objects.create(
-        action=constants.Action.FETCH_CAMPAIGN_STATUS,
+        action=constants.Action.SET_PROPERTY,
         action_type=constants.ActionType.MANUAL,
         ad_group=ad_group_network.ad_group,
         network=ad_group_network.network,

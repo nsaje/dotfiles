@@ -8,14 +8,15 @@ from . import constants
 
 class ActionLog(models.Model):
     id = models.AutoField(primary_key=True)
-    action = models.IntegerField(
+    action = models.CharField(
+        max_length=100,
         choices=constants.Action.get_choices()
     )
-    status = models.IntegerField(
+    action_status = models.IntegerField(
         default=constants.ActionStatus.WAITING,
         choices=constants.ActionStatus.get_choices()
     )
-    type = models.IntegerField(
+    action_type = models.IntegerField(
         choices=constants.ActionType.get_choices()
     )
 
@@ -39,9 +40,13 @@ class ActionLog(models.Model):
 
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        related_name='+'
+        related_name='+',
+        null=True,
+        blank=True,
     )
     modified_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        related_name='+'
+        related_name='+',
+        null=True,
+        blank=True,
     )
