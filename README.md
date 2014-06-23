@@ -22,7 +22,7 @@ Client is a web client built on top of AngularJS. It uses Server API to communic
 
 ### Server
 
-In prodution, we use MySQL database so it is best to install it for development as well.
+In prodution, we use PostgreSQL 9.3 database so it is best to install it for development as well.
 
 All the commands bellow assume that you are located in server subdirectory.
 
@@ -38,17 +38,26 @@ pip install -r requirements_dev.txt
 
 Copy server/localsettings.py.temlate to server/localsettings.py and adjust them accordingly.
 
-Create a database as specified in localsettings.py, eg. write something like this in mysql shell:
+Create a database as specified in localsettings.py, eg. write something like this in postgresql shell:
 ```
-CREATE USER 'username'@'localhost' IDENTIFIED BY 'password';
-CREATE DATABASE databasename CHARACTER SET utf8 COLLATE utf8_general_ci;
-GRANT ALL ON databasename.* TO 'username'@'localhost';
+CREATE USER user_name WITH ENCRYPTED PASSWORD 'password';
+ALTER USER user_name CREATEDB;
+CREATE DATABASE database_name;
+GRANT ALL PRIVILEGES ON DATABASE database_name TO user_name;
+```
+
+Check /etc/postgresql/9.3/main/pg_hba.conf and change line "local all all peer" to "local all all md5".
+
+Restart PostgreSQL:
+```bash
+sudo /etc/init.d/postgresql-9.3 restart
 ```
 
 Initialize database:
 ```bash
 python manage.py migrate
 ```
+
 ### Visualize models
 ```bash
 python manage.py graph_models -a -g -o my_project_visualized.png
