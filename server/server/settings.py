@@ -28,7 +28,8 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'dash',
     'django_extensions',  # optional for visualizing models and other perks
-    'zemauth'
+    'zemauth',
+    'actionlog',
 )
 
 MIDDLEWARE_CLASSES = (

@@ -98,7 +98,7 @@ module.exports = function (grunt) {
                 dest: 'app/js/config.js',
                 constants: {
                     config: {
-                        static_url: 'http://one.zemanta.com'    
+                        static_url: '/client'    
                     }
                 }
             },

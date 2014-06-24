@@ -28,7 +28,7 @@ import yaml
 # > fab staging:ovh01,ovh02 deploy:client
 
 
-APPS = ('server', 'client')
+APPS = {'server': 'django', 'client': 'angular'}
 
 STAGING_USER = 'one'
 PRODUCTION_USER = STAGING_USER
@@ -50,8 +50,8 @@ if env.ssh_config_path and os.path.isfile(os.path.expanduser(env.ssh_config_path
 
 
 @contextlib.contextmanager
-def virtualenv():
-    venv_prefix = '. /etc/bash_completion.d/virtualenvwrapper && workon %s' % env.venv_name
+def virtualenv(params):
+    venv_prefix = '. /etc/bash_completion.d/virtualenvwrapper && workon %s' % params['venv_name']
     with prefix(venv_prefix):
         yield
 
@@ -84,23 +84,42 @@ def deploy(*args):
     apps = []
     if args[0] == 'all':
         apps = APPS
-    elif set(args) <= set(APPS):
-        apps = args
+    elif set(args) <= set(APPS.keys()):
+        apps = {k: v for k, v in APPS.iteritems() if k in args}
     else:
         abort("Unknown apps!")
 
     params = {}
     clone_code(params)
 
-    for app in apps:
-        print header("\n\n\t~~~~~~~~~~~~ Deploying %s@%s ~~~~~~~~~~~~" % (app, env.host))
+    all_apps_params = {}
 
+    # First deploy without switching on all the servers.
+    for app, app_type in apps.iteritems():
+        print header("\n\n\t~~~~~~~~~~~~ Deploying %s@%s ~~~~~~~~~~~~" % (app, env.host))
         print task("Prepare [%s@%s]" % (app, env.host))
+        if app_type == 'angular':
+            build_angular_app(app, params)
+
         pack(app, params)
 
-        execute(real_deploy, app, params)
+        if app_type == 'django':
+            all_apps_params[app] = execute(deploy_django_app, app, params).values()[0]
+        elif app_type == 'angular':
+            all_apps_params[app] = execute(deploy_angular_app, app, params).values()[0]
 
-        # invalidate_cdn_cache(app)
+    # If everything is ok so far, switch apps.
+    for app, app_type in apps.iteritems():
+        print task("Switching to new code [%s@%s]" % (app, env.host))
+
+        if app_type == 'django':
+            execute(switch_django_app, app, all_apps_params[app])
+        elif app_type == 'angular':
+            execute(switch_angular_app, app, all_apps_params[app])
+
+    # Install new cron jobs.
+    print task("Creating cron jobs [%s@%s]" % (app, env.host))
+    execute(deploy_cron_jobs, params)
 
 
 @task
@@ -108,8 +127,8 @@ def migrate(*args):
     apps = []
     if args[0] == 'all':
         apps = APPS
-    elif set(args) < set(APPS):
-        apps = args
+    elif set(args) <= set(APPS.keys()):
+        apps = {k: v for k, v in APPS.iteritems() if k in args}
     else:
         abort("Unknown apps!")
 
@@ -118,7 +137,10 @@ def migrate(*args):
 
     env.hosts = [env.hosts[0]]
 
-    for app in apps:
+    for app, app_type in apps.iteritems():
+        if app_type != 'django':
+            continue
+
         print header("\n\n\t~~~~~~~~~~~~ Migrating %s@%s ~~~~~~~~~~~~" % (app, env.host))
 
         print task("Prepare [%s@%s]" % (app, env.host))
@@ -132,16 +154,18 @@ def revert(*args):
     apps = []
     if args[0] == 'all':
         apps = APPS
-    elif set(args) < set(APPS):
-        apps = args
+    elif set(args) <= set(APPS.keys()):
+        apps = {k: v for k, v in APPS.iteritems() if k in args}
     else:
-        print args
         abort("Unknown apps!")
 
-    for app in apps:
+    for app, app_type in apps.iteritems():
         print header("\n\n\t~~~~~~~~~~~~ Reverting %s@%s ~~~~~~~~~~~~" % (app, env.host))
         print task("Revert [%s@%s]" % (app, env.host))
-        execute(switchback, app)
+        if app_type == 'django':
+            execute(switchback_django_app, app)
+        elif app_type == 'angular':
+            execute(switchback_angular_app, app)
 
 
 # COMMON STUFF
@@ -167,6 +191,14 @@ def clone_code(params):
         params['tmp_folder_git'] = tmp_folder_git
 
 
+def build_angular_app(app, params):
+    dest_folder = os.path.join(params['tmp_folder_git'], app)
+    with lcd(dest_folder):
+        local('npm install')
+        local('grunt')
+        local('rm -rf node_modules')
+
+
 def pack(app, params):
     tmp_folder = params['tmp_folder']
     timestamp = params['timestamp']
@@ -185,7 +217,7 @@ def create_virtualenv(app, params):
     venv_name = '%s-%s-%s' % (app, params['timestamp'], params['commit_hash'])
     run('. /etc/bash_completion.d/virtualenvwrapper && mkvirtualenv %s' % venv_name)
 
-    env.venv_name = venv_name
+    params['venv_name'] = venv_name
 
 
 def unpack(app, params):
@@ -194,15 +226,19 @@ def unpack(app, params):
     put(params['tmp_filename'], 'apps/')
     run("mkdir -p %s/%s" % (app_folder, app))
     run("tar -xf %s.tar -C  %s/%s/;" % (tar_name, app_folder, app))
-    run("cp ~/apps/config/%s-localsettings.py %s/%s/%s/localsettings.py" % (app, app_folder, app, app))
 
     params['app_folder'] = app_folder
+
+
+def copy_django_settings(app, params):
+    run("cp ~/apps/config/%s-localsettings.py %s/%s/%s/localsettings.py" % (
+        app, params['app_folder'], app, app))
 
 
 @serial
 def install_dependencies(app, params):
     dest_folder = os.path.join(params['app_folder'], app)
-    with cd(dest_folder), virtualenv():
+    with cd(dest_folder), virtualenv(params):
         run('pip install -U pip==1.4.1')
         run('pip install -r requirements.txt')
 
@@ -210,27 +246,14 @@ def install_dependencies(app, params):
 @serial
 def unittests(app, params):
     dest_folder = os.path.join(params['app_folder'], app)
-    with cd(dest_folder), virtualenv():
+    with cd(dest_folder), virtualenv(params):
         run('python manage.py test')
 
 
 def manage_static(app, params):
     dest_folder = os.path.join(params['app_folder'], app)
-    with cd(dest_folder), virtualenv():
+    with cd(dest_folder), virtualenv(params):
         run('python manage.py collectstatic --noinput')
-
-
-def create_cron_jobs(app, params):
-    with cd(params['app_folder']):
-        cron_yaml_path = os.path.join(params['tmp_folder_git'], 'cron.yaml')
-        with open(cron_yaml_path, 'r') as f:
-            cron_yaml = yaml.load(f)
-            jobs = [x['job'] for x in cron_yaml['cron'] if env.host in x.get('hosts', env.hosts)]
-            temp_file = '/tmp/cron_jobs-{0}-{1}'.format(
-                params['timestamp'], params['commit_hash'])
-            echo_cmd = 'echo \'{0}\' > {1}'.format('\n'.join(jobs), temp_file)
-            run(echo_cmd)
-            run('crontab {0}'.format(temp_file))
 
 
 def is_db_migrated(app, params):
@@ -238,15 +261,16 @@ def is_db_migrated(app, params):
 
     dest_folder = os.path.join(params['app_folder'], app)
 
-    with cd(dest_folder), virtualenv():
+    with cd(dest_folder), virtualenv(params):
         unmigrated_count = run('python manage.py migrate --list | grep "\[ \]" | wc -l')
 
     return int(unmigrated_count) == 0
 
 
-def switch(app, params):
+@parallel
+def switch_django_app(app, params):
     with cd('~/.virtualenvs'):
-        virtualenv_folder = os.path.join('~/.virtualenvs', env.venv_name)
+        virtualenv_folder = os.path.join('~/.virtualenvs', params['venv_name'])
 
         # remember which was previous virtualenv release
         run("cp -a ~/.virtualenvs/{app} {virtualenv_folder}/previous".format(app=app, virtualenv_folder=virtualenv_folder))
@@ -254,25 +278,43 @@ def switch(app, params):
 
     with cd("~/apps/"):
         # remember which was previous app release
-        run("cp -a {app} {folder}/previous".format(folder=params['app_folder'], app=app) )
+        run("cp -a {app} {folder}/previous".format(folder=params['app_folder'], app=app))
 
-        run("ln -Tsf %s %s" % (params['app_folder'], app) )
+        run("ln -Tsf %s %s" % (params['app_folder'], app))
 
     print task("Restart service")
     run("supervisorctl restart %s" % app)
 
 
 @parallel
-def switchback(app):
-    with cd('~/.virtualenvs'):
-        run("cp -a {app}/previous {app}-reverting".format(app=app) )
-        run("rm -f {app} && mv {app}-reverting {app}".format(app=app) )
+def switch_angular_app(app, params):
     with cd("~/apps/"):
-        run("cp -a {app}/previous {app}-reverting".format(app=app) )
-        run("rm -f {app} && mv {app}-reverting {app}".format(app=app) )
+        # remember which was previous app release
+        test_output = run('test -L {0}'.format(app), quiet=True)
+        if test_output.succeeded:
+            run("cp -a {app} {folder}/previous".format(folder=params['app_folder'], app=app))
+
+        run("ln -Tsf %s %s" % (params['app_folder'], app))
+
+
+@parallel
+def switchback_django_app(app):
+    with cd('~/.virtualenvs'):
+        run("cp -a {app}/previous {app}-reverting".format(app=app))
+        run("rm -f {app} && mv {app}-reverting {app}".format(app=app))
+    with cd("~/apps/"):
+        run("cp -a {app}/previous {app}-reverting".format(app=app))
+        run("rm -f {app} && mv {app}-reverting {app}".format(app=app))
 
     print task("Restart service")
     run("supervisorctl restart %s" % app)
+
+
+@parallel
+def switchback_angular_app(app):
+    with cd("~/apps/"):
+        run("cp -a {app}/previous {app}-reverting".format(app=app))
+        run("rm -f {app} && mv {app}-reverting {app}".format(app=app))
 
 
 def tag_deploy(app, params):
@@ -284,20 +326,26 @@ def tag_deploy(app, params):
 
 def run_migrate(app, params):
     dest_folder = os.path.join(params['app_folder'], app)
-    with cd(dest_folder), virtualenv():
+    with cd(dest_folder), virtualenv(params):
         run('python manage.py migrate')
 
 
 @parallel
-def real_deploy(app, params):
+def deploy_django_app(app, params):
     print task("Create virtualenv [%s@%s]" % (app, env.host))
     create_virtualenv(app, params)
 
     print task("Unpack [%s@%s]" % (app, env.host))
     unpack(app, params)
+    copy_django_settings(app, params)
 
     print task('Install dependencies [%s@%s]' % (app, env.host))
     install_dependencies(app, params)
+
+    if not is_db_migrated(app, params):
+        fabric.utils.abort(error(
+            'Database is not migrated. Migrate it before deploying again by running fabric migrate task.'
+        ))
 
     print task('Manage static files [%s@%s]' % (app, env.host))
     manage_static(app, params)
@@ -305,21 +353,33 @@ def real_deploy(app, params):
     print task("Unit test [%s@%s]" % (app, env.host))
     unittests(app, params)
 
-    if not is_db_migrated(app, params):
-        fabric.utils.abort(error(
-            'Database is not migrated. Migrate it before deploying again by running fabric migrate task.'
-        ))
+    print ok("%s successfully deployed at %s" % (app.capitalize(), env.host))
 
-    print task("Switching to new code [%s@%s]" % (app, env.host))
-    switch(app, params)
+    return params
 
-    print task("Creating cron jobs [%s@%s]" % (app, env.host))
-    create_cron_jobs(app, params)
 
-    # print task('Tagging successful deploy [%s@%s]' (app, env.hosts))
-    # tag_deploy(app, params)
+@parallel
+def deploy_angular_app(app, params):
+    print task("Unpack [%s@%s]" % (app, env.host))
+    unpack(app, params)
 
     print ok("%s successfully deployed at %s" % (app.capitalize(), env.host))
+
+    return params
+
+
+@parallel
+def deploy_cron_jobs(params):
+    # with cd(params['app_folder']):
+    cron_yaml_path = os.path.join(params['tmp_folder_git'], 'cron.yaml')
+    with open(cron_yaml_path, 'r') as f:
+        cron_yaml = yaml.load(f)
+        jobs = [x['job'] for x in cron_yaml['cron'] if env.host in x.get('hosts', env.hosts)]
+        temp_file = '/tmp/cron_jobs-{0}-{1}'.format(
+            params['timestamp'], params['commit_hash'])
+        echo_cmd = 'echo \'{0}\' > {1}'.format('\n'.join(jobs), temp_file)
+        run(echo_cmd)
+        run('crontab {0}'.format(temp_file))
 
 
 def real_migrate(app, params):
@@ -328,6 +388,7 @@ def real_migrate(app, params):
 
     print task("Unpack [%s@%s]" % (app, env.host))
     unpack(app, params)
+    copy_django_settings(app, params)
 
     print task('Install dependencies [%s@%s]' % (app, env.host))
     install_dependencies(app, params)
