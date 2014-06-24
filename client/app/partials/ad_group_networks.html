@@ -15,16 +15,16 @@
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="network in networks">
-                    <td>{{ network.name }}</td>
-                    <td>{{ network.status }}</td>
-                    <td>{{ network.bid_cpc }}</td>
-                    <td>{{ network.daily_budget }}</td>
-                    <td>{{ network.cost }}</td>
-                    <td>{{ network.cpc }}</td>
-                    <td>{{ network.clicks }}</td>
-                    <td>{{ network.impressions }}</td>
-                    <td>{{ network.ctr }}</td>
+                <tr ng-repeat="row in rows">
+                    <td>{{ row.name }}</td>
+                    <td>{{ row.status }}</td>
+                    <td>{{ row.bid_cpc }}</td>
+                    <td>{{ row.daily_budget }}</td>
+                    <td>{{ row.cost }}</td>
+                    <td>{{ row.cpc }}</td>
+                    <td>{{ row.clicks }}</td>
+                    <td>{{ row.impressions }}</td>
+                    <td>{{ row.ctr }}</td>
                 </tr>
                 <tr>
                     <td colspan="2">TOTALS</td>

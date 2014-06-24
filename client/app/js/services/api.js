@@ -48,6 +48,29 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
         };
     } 
 
+    function AdGroupNetworksTable() {
+        this.get = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + id + '/networks/table';
+            var config = {
+                params: {}
+            };
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    var resource;
+                    if (data && data.data) {
+                        deferred.resolve(data.data);
+                    }
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function AdGroupSettings() {
         function convertFromApi(settings) {
             var result = {
@@ -176,6 +199,7 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
     return {
         navData: new NavData(),
         user: new User(),
-        adGroupSettings: new AdGroupSettings()
+        adGroupSettings: new AdGroupSettings(),
+        adGroupNetworksTable: new AdGroupNetworksTable()
     };
 }]);
