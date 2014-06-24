@@ -4,6 +4,7 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from dash import views as dash_views
+from actionlog import api_views as actionlog_api_views
 from zemauth.forms import AuthenticationForm
 
 import dash.views
@@ -35,4 +36,14 @@ urlpatterns += patterns(
     ),
     url(r'^api/nav_data$', login_required(dash_views.NavigationDataView.as_view())),
     url(r'^api/users/(?P<user_id>(\d+|current))/$', login_required(dash.views.User.as_view()))
+)
+
+# Action Log
+urlpatterns += patterns(
+    '',
+    url(
+        r'^actions/zwei_callback/(?P<action_id>\d+)$',
+        actionlog_api_views.zwei_callback,
+        name='actions.zwei_callback',
+    )
 )
