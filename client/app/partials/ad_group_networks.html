@@ -5,38 +5,49 @@
                 <tr>
                     <th>Network</th>
                     <th>Status</th>
-                    <th>Bid CPC</th>
-                    <th>Daily Budget</th>
-                    <th>Cost</th>
-                    <th>CPC</th>
-                    <th>Clicks</th>
-                    <th>Impressions</th>
-                    <th>CTR</th>
+                    <th class="text-right">Bid CPC</th>
+                    <th class="text-right">Daily Budget</th>
+                    <th class="text-right">Cost</th>
+                    <th class="text-right">CPC</th>
+                    <th class="text-right">Clicks</th>
+                    <th class="text-right">Impressions</th>
+                    <th class="text-right">CTR</th>
                 </tr>
             </thead>
             <tbody>
+                <tr ng-if="loadRequestInProgress">
+                    <td colspan="9" class="loader-row">
+                        <img class="loader" ng-src="{{ config.static_url }}/img/loader.svg">
+                    </td>
+                </tr>
                 <tr ng-repeat="row in rows">
                     <td>{{ row.name }}</td>
-                    <td>{{ row.status }}</td>
-                    <td>{{ row.bid_cpc }}</td>
-                    <td>{{ row.daily_budget }}</td>
-                    <td>{{ row.cost }}</td>
-                    <td>{{ row.cpc }}</td>
-                    <td>{{ row.clicks }}</td>
-                    <td>{{ row.impressions }}</td>
-                    <td>{{ row.ctr }}</td>
-                </tr>
-                <tr>
-                    <td colspan="2">TOTALS</td>
-                    <td>{{ totals.bid_cpc }}</td>
-                    <td>{{ totals.daily_budget }}</td>
-                    <td>{{ totals.cost }}</td>
-                    <td>{{ totals.cpc }}</td>
-                    <td>{{ totals.clicks }}</td>
-                    <td>{{ totals.impressions }}</td>
-                    <td>{{ totals.ctr }}</td>
+                    <td ng-switch on="row.status">
+                        <div ng-switch-when="Enabled" class="play"></div>
+                        <div ng-switch-when="Paused" class="pause"></div>
+                        <div ng-switch-default>/</div>
+                    </td>
+                    <td class="text-right number">{{ row.bid_cpc | currency:"$" }}</td>
+                    <td class="text-right number">{{ row.daily_budget | currency:"$" }}</td>
+                    <td class="text-right number">{{ row.cost | currency:"$" }}</td>
+                    <td class="text-right number">{{ row.cpc | currency:"$" }}</td>
+                    <td class="text-right number">{{ row.clicks | number:0 }}</td>
+                    <td class="text-right number">{{ row.impressions | number:0 }}</td>
+                    <td class="text-right number">{{ row.ctr | number:2 }}%</td>
                 </tr>
             </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2">TOTALS</td>
+                    <td class="text-right number"></td>
+                    <td class="text-right number">{{ totals.daily_budget | currency:"$" }}</td>
+                    <td class="text-right number">{{ totals.cost | currency:"$" }}</td>
+                    <td class="text-right number">{{ totals.cpc | currency:"$" }}</td>
+                    <td class="text-right number">{{ totals.clicks | number:0 }}</td>
+                    <td class="text-right number">{{ totals.impressions | number:0 }}</td>
+                    <td class="text-right number">{{ totals.ctr | number:2 }}%</td>
+                </tr>
+            </tfoot>
         </table>
     </div>
 </div>

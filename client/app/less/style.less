@@ -430,7 +430,58 @@ div[datepicker] {
 
 .page-ad-group-networks {
     .table-ad-group-networks {
-    }    
+        color: #454545;
+        font-size: 13px;
+
+        thead, tfoot {
+            background-color: #f6f6f6;
+        }
+
+        tfoot {
+            font-weight: 600;
+
+            .number {
+                font-weight: 500;
+            }
+        }
+
+        thead > tr > th {
+            border-bottom: 0
+        }
+
+        th, td {
+            border-top: 1px solid #e3e3e3;
+
+            .text-right {
+                text-align: right;
+            }
+        }
+
+        td .pause {
+            margin: 3px 12px;
+            width: 11px;
+            height: 12px;
+            border-left: 5px solid #c00;
+            border-right: 5px solid #c00;
+        }
+
+        td .play {
+            margin: 4px 13px;
+            height: 0;
+            border-style: solid;
+            border-width: 5.5px 0 5.5px 9px;
+            border-color: transparent transparent transparent #0cc73e
+        }
+
+        .loader-row {
+            text-align: center; 
+        }
+
+        .number {
+            font-family: Helvetica Neue, sans-serif;
+            font-weight: 200;
+        }
+    }
 }
 
 .sidebar {
@@ -457,9 +508,7 @@ div[datepicker] {
         }
 
         .list-group-item {
-            border: 0;   
-            padding: 3px;
-
+            border: 0;   padding: 3px; 
             &.active {
                 color: #414141;
                 background-color: #fff;    
