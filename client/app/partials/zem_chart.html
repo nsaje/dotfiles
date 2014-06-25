@@ -1,0 +1,13 @@
+<div class="chart-container">
+    <div class="chart-selector">
+        <select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'metric1'}" ng-model="metric1" class="metric1 input-small">
+            <option ng-repeat="metric in metric1Values" value="{{ metric.value }}">{{ metric.name }}</option>
+        </select>
+
+        <select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'metric2'}" ng-model="metric2" class="metric2 input-small">
+            <option value="">None</option>
+            <option ng-repeat="metric in metric2Values" value="{{ metric.value }}">{{ metric.name }}</option>
+        </select>
+    </div>
+    <div highchart config="config" class="chart"></div>
+</div>

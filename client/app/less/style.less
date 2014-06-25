@@ -2,6 +2,9 @@
 
 @default-font-family: "proxima-nova", arial, sans-serif;
 
+@chart-metric1-color: #2fa8c7;
+@chart-metric2-color: #4bbc00;
+
 // Mixins
 
 .box-shadow(@shadow) {
@@ -248,10 +251,10 @@ div[datepicker] {
 }
 
 .breadcrumb {
-	display: inline-block;
-	background-color: transparent;
-	padding: 0px;
-	margin: 0px;
+    display: inline-block;
+    background-color: transparent;
+    padding: 0px;
+    margin: 0px;
 
     & > li+li:before {
         content: ">";
@@ -269,16 +272,100 @@ div[datepicker] {
             font-size: 15px;
             font-weight: normal;
             color: #414141;
-		    font-weight: bold;
+            font-weight: bold;
         }
-	}
+    }
+}
+
+.select2-container-active .select2-choice,
+.select2-container-active .select2-choices {
+    .box-shadow(none);
+}
+
+.chart-container {
+    .chart {
+        height: 250px;
+        margin-top: 30px;
+        margin-bottom: 26px;
+    }
+
+    .chart-selector {
+        .select2-container {
+            .select2-choice {
+                height: 34px;
+                line-height: 34px;
+                background-image: none;
+                border: 0px;
+                border-radius: 0px;
+                -webkit-border-radius: 0px;
+                color: #454545;
+
+                .select2-chosen {
+                    font-family: @default-font-family;
+                    padding-top: 0px;
+                    padding-right: 0px;
+                    margin-right: 26px;
+                }
+
+                .select2-arrow {
+                    color: #fff;
+                    border: 0px;
+                    padding-right: 0px;
+                    padding-top: 3px;
+                    box-sizing: border-box;
+                    -moz-box-sizing: border-box;
+                    -webkit-box-sizing: border-box;
+        
+                    background-image: none;
+                    background-color: transparent;
+                    border: 0px;
+                    line-height: 34px;
+
+                    b:before {
+                        font-size: 14px;
+                    }
+                }
+            }
+
+            &.metric1 {
+                margin-right: 1em;
+
+                .select2-choice {
+                    border: 1px solid @chart-metric1-color
+                }
+            }
+
+            &.metric2 .select2-choice {
+                border: 1px solid @chart-metric2-color
+            }
+        }
+
+        .select2-dropdown-open .select2-choice,
+        .select2-results .select2-no-results {
+            background-color: #fff;
+        }
+    } 
+}
+
+.select2-drop {
+    .border-radius(0);
+
+    &.metric1 {
+        border: 1px solid @chart-metric1-color;
+        border-top: 0;
+    }
+
+    &.metric2 {
+        border: 1px solid @chart-metric2-color;
+        border-top: 0;
+    }
 }
 
 // Custom page styles
 
 .header {
-	/*padding-top: 15px;*/
-	/*padding-bottom: 15px;*/
+    /*padding-top: 15px;*/
+    /*padding-bottom: 15px;*/
     height: 51px;
     line-height: 51px;
 
