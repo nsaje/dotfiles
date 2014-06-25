@@ -23,20 +23,17 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         .state('adGroups.ads', {
             url: '/ads',
             templateUrl: config.static_url + '/partials/ad_group_ads.html',
-            controller: 'AdGroupAdsCtrl',
-            reloadOnSearch: false
+            controller: 'AdGroupAdsCtrl'
         })
         .state('adGroups.networks', {
             url: '/networks',
             templateUrl: config.static_url + '/partials/ad_group_networks.html',
-            controller: 'AdGroupNetworksCtrl',
-            reloadOnSearch: false
+            controller: 'AdGroupNetworksCtrl'
         })
         .state('adGroups.settings', {
             url: '/settings',
             templateUrl: config.static_url + '/partials/ad_group_settings.html',
-            controller: 'AdGroupSettingsCtrl',
-            reloadOnSearch: false
+            controller: 'AdGroupSettingsCtrl'
         });
 }]);
 
