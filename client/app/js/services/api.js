@@ -77,9 +77,9 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
                 date: parseInt(moment.utc(data.date).format('XSSS'), 10),
                 clicks: data.clicks,
                 impressions: data.impressions,
-                ctr: parseFloat((data.ctr).toFixed(2)),
-                cpc: parseFloat((data.cpc).toFixed(2)),
-                cost: parseFloat((data.cost).toFixed(2))
+                ctr: data.ctr !== null ? parseFloat((data.ctr).toFixed(2)) : null,
+                cpc: data.cpc !== null ? parseFloat((data.cpc).toFixed(2)) : null,
+                cost: data.cost !== null ? parseFloat((data.cost).toFixed(2)) : null
             };
             return result;
         }
