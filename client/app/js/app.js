@@ -23,17 +23,20 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         .state('adGroups.ads', {
             url: '/ads',
             templateUrl: config.static_url + '/partials/ad_group_ads.html',
-            controller: 'AdGroupAdsCtrl'
+            controller: 'AdGroupAdsCtrl',
+            reloadOnSearch: false
         })
         .state('adGroups.networks', {
             url: '/networks',
             templateUrl: config.static_url + '/partials/ad_group_networks.html',
-            controller: 'AdGroupNetworksCtrl'
+            controller: 'AdGroupNetworksCtrl',
+            reloadOnSearch: false
         })
         .state('adGroups.settings', {
             url: '/settings',
             templateUrl: config.static_url + '/partials/ad_group_settings.html',
-            controller: 'AdGroupSettingsCtrl'
+            controller: 'AdGroupSettingsCtrl',
+            reloadOnSearch: false
         });
 }]);
 
@@ -43,7 +46,18 @@ oneApp.config(['datepickerConfig', 'datepickerPopupConfig', function (datepicker
   datepickerPopupConfig.showButtonBar = false;
 }]);
 
+var locationSearch;
 // Fixes https://github.com/angular-ui/ui-router/issues/679
-oneApp.run(['$state', '$rootScope', 'config', function($state, $rootScope, config){
+oneApp.run(['$state', '$rootScope', '$location', 'config', function($state, $rootScope, $location, config) {
     $rootScope.config = config;
+
+    $rootScope.$on('$stateChangeStart', function (e, toState, toParams, fromState, fromParams) {
+        // Save location.search so we can add it back after transition is done
+        locationSearch = $location.search();
+    });
+
+    $rootScope.$on('$stateChangeSuccess', function (e, toState, toParams, fromState, fromParams) {
+        // Restore all query string parameters back to $location.search
+        $location.search(locationSearch);
+    });
 }]);
