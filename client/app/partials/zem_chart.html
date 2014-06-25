@@ -4,6 +4,8 @@
             <option ng-repeat="metric in metric1Values" value="{{ metric.value }}">{{ metric.name }}</option>
         </select>
 
+        <span class="middle-text">VS.</span>
+
         <select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'metric2'}" ng-model="metric2" class="metric2 input-small">
             <option value="">None</option>
             <option ng-repeat="metric in metric2Values" value="{{ metric.value }}">{{ metric.name }}</option>

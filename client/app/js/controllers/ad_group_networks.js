@@ -7,6 +7,7 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
     $scope.chartMetric2 = constants.networkChartMetric.IMPRESSIONS;
     $scope.dailyStats = [];
     $scope.chartData = [];
+    $scope.isChartShown = true;
 
     $scope.setChartData = function () {
         var result = [[]];
@@ -48,6 +49,10 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
                 return;
             }
         );
+    };
+
+    $scope.toggleChart = function () {
+        $scope.isChartShown = !$scope.isChartShown;
     };
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {

@@ -328,21 +328,31 @@ div[datepicker] {
             }
 
             &.metric1 {
-                margin-right: 1em;
+                margin-right: 0.8em;
 
                 .select2-choice {
                     border: 1px solid @chart-metric1-color
                 }
             }
 
-            &.metric2 .select2-choice {
-                border: 1px solid @chart-metric2-color
+            &.metric2 {
+                margin-left: 0.5em;
+
+                .select2-choice {
+                    border: 1px solid @chart-metric2-color
+                }
             }
         }
 
         .select2-dropdown-open .select2-choice,
         .select2-results .select2-no-results {
             background-color: #fff;
+        }
+
+        .middle-text {
+            font-size: 13px;
+            line-height: 32px;
+            vertical-align: bottom;
         }
     } 
 }
