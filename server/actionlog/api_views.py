@@ -8,6 +8,8 @@ from django.http import JsonResponse
 from . import models
 from . import constants
 
+from reports import api as reportsapi
+
 
 @csrf_exempt
 def zwei_callback(request, action_id):
@@ -28,10 +30,10 @@ def _process_zwei_response(action, data):
     if data['status'] != 'success':
         action.status = constants.ActionStatus.FAILED
         action.save()
+        return
 
     if action.type == constants.ActionType.FETCH_REPORTS:
-        # TODO call reports handling function when available
-        return NotImplementedError
+        reportsapi.save_article_stats(data, action.ad_group, action.network)
     elif action.type == constants.ActionType.FETCH_CAMPAIGN_STATUS:
         # TODO call campaign status save function
         return NotImplementedError
