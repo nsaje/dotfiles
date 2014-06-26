@@ -267,7 +267,7 @@ class AdGroupNetworksTable(api_common.BaseApiView):
 
             rows.append({
                 'name': settings.network.name,
-                'status': constants.AdGroupNetworkSettingsState.get_text(settings.state),
+                'status': settings.state,
                 'bid_cpc': float(settings.cpc_cc),
                 'daily_budget': float(settings.daily_budget_cc),
                 'cost': item['cost'],

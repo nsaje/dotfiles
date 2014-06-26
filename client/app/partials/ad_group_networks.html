@@ -25,10 +25,9 @@
                 </tr>
                 <tr ng-repeat="row in rows">
                     <td>{{ row.name }}</td>
-                    <td ng-switch on="row.status">
-                        <div ng-switch-when="Enabled" class="play"></div>
-                        <div ng-switch-when="Paused" class="pause"></div>
-                        <div ng-switch-default>/</div>
+                    <td>
+                        <div ng-if="row.status == constants.adGroupSettingsState.ACTIVE" class="play"></div>
+                        <div ng-if="row.status == constants.adGroupSettingsState.INACTIVE" class="pause"></div>
                     </td>
                     <td class="text-right number">{{ row.bid_cpc | currency:"$" }}</td>
                     <td class="text-right number">{{ row.daily_budget | currency:"$" }}</td>
