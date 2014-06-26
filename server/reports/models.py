@@ -10,14 +10,10 @@ class Article(models.Model):
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
-    class Meta:
-
-        unique_together = ('url', 'title')
-
 
 class ArticleStats(models.Model):
 
-    date = models.DateTimeField()
+    datetime = models.DateTimeField()
 
     ad_group = models.ForeignKey('dash.AdGroup')
     article = models.ForeignKey('Article')
@@ -28,6 +24,8 @@ class ArticleStats(models.Model):
     cpc_cc = models.IntegerField(default=0, blank=False, null=False)
     cost_cc = models.IntegerField(default=0, blank=False, null=False)
 
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
     class Meta:
 
-        unique_together = ('date', 'ad_group', 'article', 'network')
+        unique_together = ('datetime', 'ad_group', 'article', 'network')

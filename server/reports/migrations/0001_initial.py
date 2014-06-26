@@ -21,7 +21,6 @@ class Migration(migrations.Migration):
                 ('created_dt', models.DateTimeField(auto_now_add=True, verbose_name=b'Created at')),
             ],
             options={
-                'unique_together': set([(b'url', b'title')]),
             },
             bases=(models.Model,),
         ),
