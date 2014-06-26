@@ -7,7 +7,7 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dash', '__first__'),
+        ('dash', '0003_adgroup'),
     ]
 
     operations = [
