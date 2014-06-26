@@ -45,7 +45,7 @@ class ActionLogApiTest(TestCase):
             payload = {
                 'network': network.slug,
                 'action': constants.Action.STOP_CAMPAIGN,
-                'network_campaign_key': ad_group_network.network_campaign_key,
+                'partner_campaign_id': ad_group_network.network_campaign_key,
                 'callback': reverse(
                     'actions.zwei_callback',
                     kwargs={'action_id': action.id}
@@ -76,7 +76,7 @@ class ActionLogApiTest(TestCase):
             payload = {
                 'network': network.slug,
                 'action': constants.Action.FETCH_CAMPAIGN_STATUS,
-                'network_campaign_key': ad_group_network.network_campaign_key,
+                'partner_campaign_id': ad_group_network.network_campaign_key,
                 'callback': reverse(
                     'actions.zwei_callback',
                     kwargs={'action_id': action.id}
@@ -106,7 +106,7 @@ class ActionLogApiTest(TestCase):
             payload = {
                 'network': network.slug,
                 'action': constants.Action.FETCH_REPORTS,
-                'network_campaign_key': ad_group_network.network_campaign_key,
+                'partner_campaign_ids': [ad_group_network.network_campaign_key],
                 'date': date.strftime('%Y-%m-%d'),
                 'callback': reverse(
                     'actions.zwei_callback',
