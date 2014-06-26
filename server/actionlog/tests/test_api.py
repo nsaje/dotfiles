@@ -6,7 +6,8 @@ from django.test import TestCase
 from django.core.urlresolvers import reverse
 
 from actionlog import api, constants, models
-from dash import models as dash_models
+from dash import models as dashmodels
+from dash import constants as dashconstants
 
 
 class ActionLogApiTest(TestCase):
@@ -26,11 +27,11 @@ class ActionLogApiTest(TestCase):
         self._prepare_mock_urlopen(mock_urlopen)
 
     def test_stop_ad_group(self):
-        ad_group = dash_models.AdGroup.objects.get(id=1)
+        ad_group = dashmodels.AdGroup.objects.get(id=1)
         api.stop_ad_group(ad_group)
 
         for network in ad_group.networks.all():
-            ad_group_network = dash_models.AdGroupNetwork.objects.get(
+            ad_group_network = dashmodels.AdGroupNetwork.objects.get(
                 network=network,
                 ad_group=ad_group
             )
@@ -39,13 +40,14 @@ class ActionLogApiTest(TestCase):
                 network=network
             )
 
-            self.assertEqual(action.action, constants.Action.STOP_CAMPAIGN)
+            self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
             self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
 
             payload = {
                 'network': network.type,
-                'action': constants.Action.STOP_CAMPAIGN,
+                'action': constants.Action.SET_CAMPAIGN_STATE,
                 'partner_campaign_id': ad_group_network.network_campaign_key,
+                'state': dashconstants.AdGroupNetworkSettingsState.INACTIVE,
                 'callback': reverse(
                     'actions.zwei_callback',
                     kwargs={'action_id': action.id}
@@ -54,11 +56,11 @@ class ActionLogApiTest(TestCase):
             self.assertEqual(action.payload, payload)
 
     def test_fetch_ad_group_status(self):
-        ad_group = dash_models.AdGroup.objects.get(id=1)
+        ad_group = dashmodels.AdGroup.objects.get(id=1)
         api.fetch_ad_group_status(ad_group)
 
         for network in ad_group.networks.all():
-            ad_group_network = dash_models.AdGroupNetwork.objects.get(
+            ad_group_network = dashmodels.AdGroupNetwork.objects.get(
                 network=network,
                 ad_group=ad_group
             )
@@ -86,12 +88,12 @@ class ActionLogApiTest(TestCase):
             self.assertEqual(action.payload, payload)
 
     def test_fetch_ad_group_reports(self):
-        ad_group = dash_models.AdGroup.objects.get(id=1)
+        ad_group = dashmodels.AdGroup.objects.get(id=1)
         date = datetime.date(2014, 6, 1)
         api.fetch_ad_group_reports(ad_group, date=date)
 
         for network in ad_group.networks.all():
-            ad_group_network = dash_models.AdGroupNetwork.objects.get(
+            ad_group_network = dashmodels.AdGroupNetwork.objects.get(
                 network=network,
                 ad_group=ad_group
             )
@@ -116,7 +118,7 @@ class ActionLogApiTest(TestCase):
             self.assertEqual(action.payload, payload)
 
     def test_set_ad_group_property(self):
-        ad_group = dash_models.AdGroup.objects.get(id=1)
+        ad_group = dashmodels.AdGroup.objects.get(id=1)
         prop = {
             'fake_property': 'fake_value',
         }

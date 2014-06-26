@@ -7,6 +7,8 @@ from . import models
 from . import constants
 from . import zwei_actions
 
+from dash import constants as dashconstants
+
 
 def stop_ad_group(ad_group, network=None):
     ad_group_networks = _get_ad_group_networks(ad_group, network)
@@ -42,7 +44,7 @@ def _get_ad_group_networks(ad_group, network):
 def _init_stop_campaign(ad_group_network):
     with transaction.atomic():
         action = models.ActionLog.objects.create(
-            action=constants.Action.STOP_CAMPAIGN,
+            action=constants.Action.SET_CAMPAIGN_STATE,
             action_type=constants.ActionType.AUTOMATIC,
             ad_group=ad_group_network.ad_group,
             network=ad_group_network.network,
@@ -51,6 +53,7 @@ def _init_stop_campaign(ad_group_network):
             'network': ad_group_network.network.type,
             'action': action.action,
             'partner_campaign_id': ad_group_network.network_campaign_key,
+            'state': dashconstants.AdGroupNetworkSettingsState.INACTIVE,
             'callback': reverse(
                 'actions.zwei_callback',
                 kwargs={'action_id': action.id},
