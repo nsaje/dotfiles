@@ -26,7 +26,11 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
         $scope.chartData = result;
     };
 
+    $scope.loadRequestInProgress = false;
+
     $scope.getTableData = function (id) {
+        $scope.loadRequestInProgress = true;
+
         api.adGroupNetworksTable.get(id).then(
             function (data) {
                 $scope.rows = data.rows;
@@ -36,7 +40,9 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
                 // error
                 return;
             }
-        );
+        ).finally(function () {
+            $scope.loadRequestInProgress = false;
+        });
     };
 
     $scope.getDailyStats = function (adGroupId) {
