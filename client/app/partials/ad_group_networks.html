@@ -41,7 +41,7 @@
                     <td class="text-right number">{{ row.cpc | currency:"$" }}</td>
                     <td class="text-right number">{{ row.clicks | number:0 }}</td>
                     <td class="text-right number">{{ row.impressions | number:0 }}</td>
-                    <td class="text-right number">{{ row.ctr | number:2 }}%</td>
+                    <td class="text-right number">{{ row.ctr | number:2 }}<span ng-show="row.ctr">%</span></td>
                 </tr>
             </tbody>
             <tfoot>
@@ -53,7 +53,7 @@
                     <td class="text-right number">{{ totals.cpc | currency:"$" }}</td>
                     <td class="text-right number">{{ totals.clicks | number:0 }}</td>
                     <td class="text-right number">{{ totals.impressions | number:0 }}</td>
-                    <td class="text-right number">{{ totals.ctr | number:2 }}%</td>
+                    <td class="text-right number">{{ totals.ctr | number:2 }}<span ng-show="totals.ctr">%</span></td>
                 </tr>
             </tfoot>
         </table>

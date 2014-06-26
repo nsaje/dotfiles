@@ -277,11 +277,11 @@ class AdGroupNetworksTable(api_common.BaseApiView):
                 'status': settings.state,
                 'bid_cpc': float(settings.cpc_cc),
                 'daily_budget': float(settings.daily_budget_cc),
-                'cost': network_data.get('cost', 0),
-                'cpc': network_data.get('cpc', 0),
-                'clicks': network_data.get('clicks', 0),
-                'impressions': network_data.get('impressions', 0),
-                'ctr': network_data.get('ctr', 0),
+                'cost': network_data.get('cost', None),
+                'cpc': network_data.get('cpc', None),
+                'clicks': network_data.get('clicks', None),
+                'impressions': network_data.get('impressions', None),
+                'ctr': network_data.get('ctr', None),
             })
 
         return rows
