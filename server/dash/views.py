@@ -230,7 +230,7 @@ class AdGroupNetworksTable(api_common.BaseApiView):
             ad_group=int(ad_group.id)
         )
 
-        network_settings = self.get_network_settings(ad_group, [item['network'] for item in networks_data])
+        network_settings = models.AdGroupNetworkSettings.get_current_settings(ad_group)
 
         totals_data = api.query(
             datetime.date.min,
@@ -256,46 +256,35 @@ class AdGroupNetworksTable(api_common.BaseApiView):
 
     def get_rows(self, ad_group, networks_data, network_settings):
         rows = []
-        for item in networks_data:
+        for nid in constants.AdNetwork.get_all():
             try:
-                settings = network_settings[item['network']]
+                settings = network_settings[nid]
             except KeyError:
                 logger.error(
                     'Missing ad group network settings for ad group %s and network %s' %
-                    (ad_group.id, item['network']))
+                    (ad_group.id, nid))
                 continue
+
+            # get network reports data
+            network_data = {}
+            for item in networks_data:
+                if item['network'] == nid:
+                    network_data = item
+                    break
 
             rows.append({
                 'name': settings.network.name,
                 'status': settings.state,
                 'bid_cpc': float(settings.cpc_cc),
                 'daily_budget': float(settings.daily_budget_cc),
-                'cost': item['cost'],
-                'cpc': item['cpc'],
-                'clicks': item['clicks'],
-                'impressions': item['impressions'],
-                'ctr': item['ctr'],
+                'cost': network_data.get('cost', 0),
+                'cpc': network_data.get('cpc', 0),
+                'clicks': network_data.get('clicks', 0),
+                'impressions': network_data.get('impressions', 0),
+                'ctr': network_data.get('ctr', 0),
             })
 
         return rows
-
-    def get_network_settings(self, ad_group, network_ids):
-        network_settings = models.AdGroupNetworkSettings.objects.select_related('network').\
-            filter(network__id__in=network_ids).\
-            filter(ad_group=ad_group).\
-            order_by('-created_dt')
-
-        result = {}
-        for ns in network_settings:
-            if ns.network.id in result:
-                continue
-
-            result[ns.network.id] = ns
-
-            if len(result) == len(network_ids):
-                break
-
-        return result
 
 
 class AdGroupNetworksDailyStats(api_common.BaseApiView):
