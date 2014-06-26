@@ -246,13 +246,12 @@ class AdGroupNetworksTable(api_common.BaseApiView):
 
     def get_totals(self, ad_group, totals_data, network_settings):
         return {
-            'bid_cpc': '{:.2f}'.format(sum(settings.cpc_cc for settings in network_settings.values())),
-            'daily_budget': '{:.2f}'.format(sum(settings.daily_budget_cc for settings in network_settings.values())),
-            'cost': '{:.2f}'.format(totals_data['cost']),
-            'cpc': '{:.2f}'.format(totals_data['cpc']),
+            'daily_budget': float(sum(settings.daily_budget_cc for settings in network_settings.values())),
+            'cost': totals_data['cost'],
+            'cpc': totals_data['cpc'],
             'clicks': totals_data['clicks'],
             'impressions': totals_data['impressions'],
-            'ctr': '{:.4f}'.format(totals_data['ctr']),
+            'ctr': totals_data['ctr'],
         }
 
     def get_rows(self, ad_group, networks_data, network_settings):
@@ -268,14 +267,14 @@ class AdGroupNetworksTable(api_common.BaseApiView):
 
             rows.append({
                 'name': settings.network.name,
-                'status': constants.AdGroupNetworkSettingsState.get_text(settings.state),
-                'bid_cpc': '{:.2f}'.format(settings.cpc_cc),
-                'daily_budget': '{:.2f}'.format(settings.daily_budget_cc),
-                'cost': '{:.2f}'.format(item['cost']),
-                'cpc': '{:.2f}'.format(item['cpc']),
+                'status': settings.state,
+                'bid_cpc': float(settings.cpc_cc),
+                'daily_budget': float(settings.daily_budget_cc),
+                'cost': item['cost'],
+                'cpc': item['cpc'],
                 'clicks': item['clicks'],
                 'impressions': item['impressions'],
-                'ctr': '{:.4f}'.format(item['ctr']),
+                'ctr': item['ctr'],
             })
 
         return rows
