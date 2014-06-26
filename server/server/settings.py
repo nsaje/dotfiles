@@ -30,6 +30,7 @@ INSTALLED_APPS = (
     'django_extensions',  # optional for visualizing models and other perks
     'zemauth',
     'actionlog',
+    'reports',
 )
 
 MIDDLEWARE_CLASSES = (
