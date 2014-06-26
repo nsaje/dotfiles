@@ -165,6 +165,7 @@ class AdGroupNetworkSettingsInline(admin.TabularInline):
     formset = PreventEditInlineFormset
     extra = 0
     can_delete = False
+    exclude = ('ad_group_network',)
     ordering = ('created_dt',)
     readonly_fields = ('created_dt', 'created_by')
 
