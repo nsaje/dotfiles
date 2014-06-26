@@ -1,7 +1,7 @@
 /*global $,oneApp*/
 "use strict";
 
-oneApp.directive("zemChart", function() {
+oneApp.directive('zemChart', ['config', function(config) {
     return {
         restrict: 'E',
         scope: {
@@ -11,7 +11,7 @@ oneApp.directive("zemChart", function() {
             metric2: '=zemMetric2',
             metric2Values: '=zemMetric2Values'
         },
-        templateUrl: 'http://localhost:9999/partials/zem_chart.html',
+        templateUrl: config.static_url + '/partials/zem_chart.html',
         controller: ['$scope', '$element', '$attrs', '$http', function ($scope, $element, $attrs, $http) {
 
             var colors = ['#2fa8c7', '#4bbc00'];
@@ -149,4 +149,4 @@ oneApp.directive("zemChart", function() {
             });
         }]
     };
-});
+}]);
