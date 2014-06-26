@@ -224,3 +224,14 @@ class AdGroupNetworkSettings(models.Model):
             )
 
         return result
+
+
+class Article(models.Model):
+
+    url = models.CharField(max_length=2048, editable=False, null=True)
+    title = models.CharField(max_length=256, editable=False, null=True)
+
+    ad_group = models.ForeignKey('AdGroup')
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
