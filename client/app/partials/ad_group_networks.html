@@ -34,26 +34,27 @@
                     <td>
                         <div ng-if="row.status == constants.adGroupSettingsState.ACTIVE" class="play"></div>
                         <div ng-if="row.status == constants.adGroupSettingsState.INACTIVE" class="pause"></div>
+                        <div ng-if="!row.status">N/A</div>
                     </td>
-                    <td class="text-right number">{{ row.bid_cpc | currency:"$" }}</td>
-                    <td class="text-right number">{{ row.daily_budget | currency:"$" }}</td>
-                    <td class="text-right number">{{ row.cost | currency:"$" }}</td>
-                    <td class="text-right number">{{ row.cpc | currency:"$" }}</td>
-                    <td class="text-right number">{{ row.clicks | number:0 }}</td>
-                    <td class="text-right number">{{ row.impressions | number:0 }}</td>
-                    <td class="text-right number">{{ row.ctr | number:2 }}<span ng-show="row.ctr">%</span></td>
+                    <td class="text-right number">{{ (row.bid_cpc | currency:"$") || 'N/A' }}</td>
+                    <td class="text-right number">{{ (row.daily_budget | currency:"$") || 'N/A' }}</td>
+                    <td class="text-right number">{{ (row.cost | currency:"$") || 'N/A' }}</td>
+                    <td class="text-right number">{{ (row.cpc | currency:"$") || 'N/A' }}</td>
+                    <td class="text-right number">{{ (row.clicks | number:0) || 'N/A' }}</td>
+                    <td class="text-right number">{{ (row.impressions | number:0) || 'N/A' }}</td>
+                    <td class="text-right number">{{ (row.ctr | number:2) || 'N/A' }}<span ng-show="row.ctr">%</span></td>
                 </tr>
             </tbody>
             <tfoot>
                 <tr>
                     <td colspan="2">TOTALS</td>
                     <td class="text-right number"></td>
-                    <td class="text-right number">{{ totals.daily_budget | currency:"$" }}</td>
-                    <td class="text-right number">{{ totals.cost | currency:"$" }}</td>
-                    <td class="text-right number">{{ totals.cpc | currency:"$" }}</td>
-                    <td class="text-right number">{{ totals.clicks | number:0 }}</td>
-                    <td class="text-right number">{{ totals.impressions | number:0 }}</td>
-                    <td class="text-right number">{{ totals.ctr | number:2 }}<span ng-show="totals.ctr">%</span></td>
+                    <td class="text-right number">{{ (totals.daily_budget | currency:"$") || 'N/A' }}</td>
+                    <td class="text-right number">{{ (totals.cost | currency:"$") || 'N/A' }}</td>
+                    <td class="text-right number">{{ (totals.cpc | currency:"$") || 'N/A' }}</td>
+                    <td class="text-right number">{{ (totals.clicks | number:0) || 'N/A' }}</td>
+                    <td class="text-right number">{{ (totals.impressions | number:0) || 'N/A' }}</td>
+                    <td class="text-right number">{{ (totals.ctr | number:2) || 'N/A' }}<span ng-show="totals.ctr">%</span></td>
                 </tr>
             </tfoot>
         </table>

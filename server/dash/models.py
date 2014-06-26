@@ -218,11 +218,9 @@ class AdGroupNetworkSettings(models.Model):
                 continue
 
             result[nid] = cls(
-                state=constants.AdGroupSettingsState.ACTIVE,
+                state=None,
                 ad_group=ad_group,
                 network=Network.objects.get(pk=nid),
-                cpc_cc=0,
-                daily_budget_cc=0
             )
 
         return result
