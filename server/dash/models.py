@@ -69,11 +69,10 @@ class Campaign(models.Model, PermissionMixin):
 
 class Network(models.Model):
     id = models.AutoField(primary_key=True)
-    slug = models.SlugField(
+    type = models.CharField(
         max_length=127,
-        editable=False,
-        blank=False,
-        null=False
+        blank=True,
+        null=True
     )
     name = models.CharField(
         max_length=127,

@@ -137,11 +137,10 @@ class NetworkAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'name',
-        'slug',
         'created_dt',
         'modified_dt'
     )
-    readonly_fields = ('slug', 'created_dt', 'modified_dt')
+    readonly_fields = ('created_dt', 'modified_dt')
 
 
 # Ad Group

@@ -2,11 +2,11 @@ from utils.constant_base import ConstantBase
 
 
 class AdNetwork(ConstantBase):
-    ADBLADE = 'adblade'
-    GRAVITY = 'gravity'
-    OUTBRAIN = 'outbrain'
-    TABOOLA = 'taboola'
-    YAHOO = 'yahoo'
+    ADBLADE = 1
+    GRAVITY = 2
+    OUTBRAIN = 3
+    YAHOO = 4
+    ZEMANTA = 5
 
 
 class AdGroupSettingsState(ConstantBase):
