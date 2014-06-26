@@ -8,6 +8,7 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
     $scope.dailyStats = [];
     $scope.chartData = [];
     $scope.isChartShown = true;
+    $scope.chartBtnTitle = 'Hide chart';
 
     $scope.setChartData = function () {
         var result = [[]];
@@ -53,6 +54,8 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
 
     $scope.toggleChart = function () {
         $scope.isChartShown = !$scope.isChartShown;
+        $scope.chartBtnTitle = $scope.isChartShown ? 'Hide chart' : 'Show chart';
+        $location.search('chart_hidden', !$scope.isChartShown ? '1' : null);
     };
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
@@ -72,6 +75,7 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
     $scope.$on("$stateChangeSuccess", function() {
         var chartMetric1 = $location.search().chart_metric1;
         var chartMetric2 = $location.search().chart_metric2;
+        var chartHidden = $location.search().chart_hidden;
         var changed = false;
 
         if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
@@ -82,6 +86,10 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
         if (chartMetric2 !== undefined && $scope.chartMetric2 !== chartMetric2) {
             $scope.chartMetric2 = chartMetric2;
             changed = true;
+        }
+
+        if (chartHidden) {
+            $scope.isChartShown = false;
         }
 
         if (changed) {
