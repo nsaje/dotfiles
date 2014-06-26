@@ -4,13 +4,13 @@ from utils.constant_base import ConstantBase
 class Action(ConstantBase):
     FETCH_REPORTS = 'get_reports'
     FETCH_CAMPAIGN_STATUS = 'get_campaign_status'
-    STOP_CAMPAIGN = 'stop_campaign'
+    SET_CAMPAIGN_STATE = 'set_campaign_state'
     SET_PROPERTY = 'set_property'
 
     _VALUES = {
         FETCH_REPORTS: 'Get reports',
         FETCH_CAMPAIGN_STATUS: 'Get campaign status',
-        STOP_CAMPAIGN: 'Stop campaign',
+        SET_CAMPAIGN_STATE: 'Stop campaign',
         SET_PROPERTY: 'Set property',
     }
 
