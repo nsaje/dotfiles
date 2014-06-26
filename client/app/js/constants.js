@@ -14,6 +14,12 @@ var constants = {
         NEW_ZAELAND: 'NZ',
         UNITED_KINGDOM: 'UK',
         UNITED_STATES: 'US'
+    },
+    networkChartMetric: {
+        CLICKS: 'clicks',
+        IMPRESSIONS: 'impressions',
+        CTR: 'ctr',
+        COST: 'cost'
     }
 };
 
@@ -33,5 +39,11 @@ var options = {
         {name: 'New Zealand', value: constants.adTargetCountry.NEW_ZAELAND},
         {name: 'United Kingdom', value: constants.adTargetCountry.UNITED_KINGDOM},
         {name: 'United States', value: constants.adTargetCountry.UNITED_STATES}
+    ],
+    networkChartMetrics: [
+        {name: 'Clicks', value: constants.networkChartMetric.CLICKS},
+        {name: 'Impressions', value: constants.networkChartMetric.IMPRESSIONS},
+        {name: 'CTR', value: constants.networkChartMetric.CTR},
+        {name: 'Cost', value: constants.networkChartMetric.COST}
     ]
 };

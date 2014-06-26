@@ -1,7 +1,7 @@
 /*globals oneApp*/
 oneApp.controller('MainCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
     $scope.tabs = [
-        {heading: 'Ads', route: 'adGroups.ads', active: true},
+        {heading: 'Content Ads', route: 'adGroups.ads', active: true},
         {heading: 'Networks', route: 'adGroups.networks', active: false},
         {heading: 'Settings', route: 'adGroups.settings', active: false}
     ];

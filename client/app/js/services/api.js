@@ -1,4 +1,4 @@
-/*globals angular,oneApp,options*/
+/*globals angular,oneApp,options,moment*/
 "use strict";
 
 oneApp.factory("api", ["$http", "$q", function($http, $q) {
@@ -62,6 +62,45 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
                     if (data && data.data) {
                         deferred.resolve(data.data);
                     }
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    function AdGroupNetworksDailyStats() {
+        function convertFromApi(data) {
+            var result = {
+                date: parseInt(moment.utc(data.date).format('XSSS'), 10),
+                clicks: data.clicks,
+                impressions: data.impressions,
+                ctr: data.ctr !== null ? parseFloat((data.ctr).toFixed(2)) : null,
+                cpc: data.cpc !== null ? parseFloat((data.cpc).toFixed(2)) : null,
+                cost: data.cost !== null ? parseFloat((data.cost).toFixed(2)) : null
+            };
+            return result;
+        }
+
+        this.list = function (adGroupId) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/networks/daily_stats';
+            var config = {
+                params: {}
+            };
+
+            $http.get(url, config).
+                success(function (response, status) {
+                    var resource;
+                    if (response && response.data && response.data.stats) {
+                        resource = response.data.stats;
+                        resource = response.data.stats.map(function (x) {
+                            return convertFromApi(x);
+                        });
+                    }
+                    deferred.resolve(resource);
                 }).
                 error(function(data, status, headers, config) {
                     deferred.reject(data);
@@ -200,6 +239,7 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
         navData: new NavData(),
         user: new User(),
         adGroupSettings: new AdGroupSettings(),
-        adGroupNetworksTable: new AdGroupNetworksTable()
+        adGroupNetworksTable: new AdGroupNetworksTable(),
+        adGroupNetworksDailyStats: new AdGroupNetworksDailyStats()
     };
 }]);
