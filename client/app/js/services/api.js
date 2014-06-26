@@ -51,7 +51,7 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
     function AdGroupNetworksTable() {
         this.get = function (id) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + id + '/networks/table';
+            var url = '/api/ad_groups/' + id + '/networks/table/';
             var config = {
                 params: {}
             };
@@ -86,7 +86,7 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
 
         this.list = function (adGroupId) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/networks/daily_stats';
+            var url = '/api/ad_groups/' + adGroupId + '/networks/daily_stats/';
             var config = {
                 params: {}
             };
