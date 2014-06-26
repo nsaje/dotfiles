@@ -43,7 +43,7 @@ class ActionLogApiTest(TestCase):
             self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
 
             payload = {
-                'network': network.slug,
+                'network': network.type,
                 'action': constants.Action.STOP_CAMPAIGN,
                 'partner_campaign_id': ad_group_network.network_campaign_key,
                 'callback': reverse(
@@ -74,7 +74,7 @@ class ActionLogApiTest(TestCase):
             self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
 
             payload = {
-                'network': network.slug,
+                'network': network.type,
                 'action': constants.Action.FETCH_CAMPAIGN_STATUS,
                 'partner_campaign_id': ad_group_network.network_campaign_key,
                 'callback': reverse(
@@ -104,7 +104,7 @@ class ActionLogApiTest(TestCase):
             self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
 
             payload = {
-                'network': network.slug,
+                'network': network.type,
                 'action': constants.Action.FETCH_REPORTS,
                 'partner_campaign_ids': [ad_group_network.network_campaign_key],
                 'date': date.strftime('%Y-%m-%d'),

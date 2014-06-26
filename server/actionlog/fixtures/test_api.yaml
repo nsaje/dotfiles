@@ -43,7 +43,7 @@
         created_dt: '2014-06-04T00:00:00Z'
         modified_dt: '2014-06-04T00:00:00Z'
         name: AdBlade
-        slug: adblade
+        type: adblade
     model: dash.network
     pk: 1
 
@@ -51,7 +51,7 @@
         created_dt: '2014-06-04T00:00:00Z'
         modified_dt: '2014-06-04T00:00:00Z'
         name: Gravity
-        slug: gravity
+        type: gravity
     model: dash.network
     pk: 2
 
@@ -59,7 +59,7 @@
         created_dt: '2014-06-04T00:00:00Z'
         modified_dt: '2014-06-04T00:00:00Z'
         name: Outbrain
-        slug: outbrain
+        type: outbrain
     model: dash.network
     pk: 3
 
@@ -67,7 +67,7 @@
         created_dt: '2014-06-04T00:00:00Z'
         modified_dt: '2014-06-04T00:00:00Z'
         name: Taboola
-        slug: taboola
+        type: taboola
     model: dash.network
     pk: 4
 
@@ -75,7 +75,7 @@
         created_dt: '2014-06-04T00:00:00Z'
         modified_dt: '2014-06-04T00:00:00Z'
         name: Yahoo
-        slug: yahoo
+        type: yahoo
     model: dash.network
     pk: 5
 
