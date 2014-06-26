@@ -1,8 +1,12 @@
 import datetime
 import json
+import logging
+
+import dateutil.parser
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.shortcuts import render
 
 from dash import api_common
@@ -14,13 +18,28 @@ from reports import api
 
 import constants
 
-from django.db.models import Q
-
-from dash.api_common import BaseApiView
-
-import logging
-
 logger = logging.getLogger(__name__)
+
+STATS_START_DELTA = 30
+STATS_END_DELTA = 1
+
+
+def get_stats_start_date(start_date):
+    if start_date:
+        date = dateutil.parser.parse(start_date)
+    else:
+        date = datetime.datetime.utcnow() - datetime.timedelta(days=STATS_START_DELTA)
+
+    return date.date()
+
+
+def get_stats_end_date(end_time):
+    if end_time:
+        date = dateutil.parser.parse(end_time)
+    else:
+        date = datetime.datetime.utcnow() - datetime.timedelta(days=STATS_END_DELTA)
+
+    return date.date()
 
 
 # Create your views here.
@@ -29,7 +48,7 @@ def index(request):
     return render(request, 'index.html', {'staticUrl': settings.CLIENT_STATIC_URL})
 
 
-class User(BaseApiView):
+class User(api_common.BaseApiView):
     def get(self, request, user_id):
         response = {}
 
@@ -50,7 +69,7 @@ class User(BaseApiView):
         return result
 
 
-class NavigationDataView(BaseApiView):
+class NavigationDataView(api_common.BaseApiView):
     def get(self, request):
         user_id = request.user.id
 
@@ -277,3 +296,33 @@ class AdGroupNetworksTable(api_common.BaseApiView):
                 break
 
         return result
+
+
+class AdGroupNetworksDailyStats(api_common.BaseApiView):
+    def get(self, request, ad_group_id):
+        try:
+            ad_group = models.AdGroup.user_objects.get_for_user(request.user).\
+                filter(id=int(ad_group_id)).get()
+        except models.AdGroup.DoesNotExist:
+            raise exc.MissingDataError('Ad Group does not exist')
+
+        stats = api.query(
+            get_stats_start_date(request.GET.get('start_date')),
+            get_stats_end_date(request.GET.get('end_date')),
+            ['date'],
+            ad_group=int(ad_group.id)
+        )
+
+        return self.create_api_response({
+            'stats': stats
+        })
+
+    # def get_dict(self, stat):
+    #     return {
+    #         stat['date'].isoformat(): {
+    #             'clicks': stat.get('clicks', 0),
+    #             'impressions': stat.get('impressions', 0),
+    #             'ctr': stat.get('ctr', 0),
+    #             'cost': stat.get('cost', 0)
+    #         }
+    #     }

@@ -38,6 +38,10 @@ urlpatterns += patterns(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/networks/table/',
         login_required(dash.views.AdGroupNetworksTable.as_view())
     ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/networks/daily_stats/',
+        login_required(dash.views.AdGroupNetworksDailyStats.as_view())
+    ),
     url(r'^api/nav_data$', login_required(dash_views.NavigationDataView.as_view())),
     url(r'^api/users/(?P<user_id>(\d+|current))/$', login_required(dash.views.User.as_view()))
 )

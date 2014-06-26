@@ -1,6 +1,6 @@
 /*global angular*/
 
-var oneApp = angular.module('one', ['ngSanitize', 'ui.router', 'ui.bootstrap', 'ui.bootstrap.datetimepicker', 'config']);
+var oneApp = angular.module('one', ['ngSanitize', 'ui.router', 'ui.bootstrap', 'ui.bootstrap.datetimepicker', 'ui.select2', 'highcharts-ng', 'config']);
 
 oneApp.config(['$sceDelegateProvider', 'config', function ($sceDelegateProvider, config) {
     $sceDelegateProvider.resourceUrlWhitelist(['self', config.static_url + '/**']);
@@ -43,7 +43,18 @@ oneApp.config(['datepickerConfig', 'datepickerPopupConfig', function (datepicker
   datepickerPopupConfig.showButtonBar = false;
 }]);
 
+var locationSearch;
 // Fixes https://github.com/angular-ui/ui-router/issues/679
-oneApp.run(['$state', '$rootScope', 'config', function($state, $rootScope, config){
+oneApp.run(['$state', '$rootScope', '$location', 'config', function($state, $rootScope, $location, config) {
     $rootScope.config = config;
+
+    $rootScope.$on('$stateChangeStart', function (e, toState, toParams, fromState, fromParams) {
+        // Save location.search so we can add it back after transition is done
+        locationSearch = $location.search();
+    });
+
+    $rootScope.$on('$stateChangeSuccess', function (e, toState, toParams, fromState, fromParams) {
+        // Restore all query string parameters back to $location.search
+        $location.search(locationSearch);
+    });
 }]);
