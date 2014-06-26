@@ -12,7 +12,7 @@ oneApp.config(['$httpProvider', function ($httpProvider) {
 }]);
 
 oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stateProvider, $urlRouterProvider, config) {
-    $urlRouterProvider.otherwise('/');
+    $urlRouterProvider.otherwise('/ad_groups');
 
     $stateProvider
         .state('adGroups', {

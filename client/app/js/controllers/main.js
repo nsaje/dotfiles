@@ -31,6 +31,12 @@ oneApp.controller('MainCtrl', ['$scope', '$state', 'api', function ($scope, $sta
 
     api.navData.list().then(function (data) {
         $scope.accounts = data;
+
+        if ($state.current.abstract) {
+            if ($scope.accounts && $scope.accounts.length) {
+                $state.go('adGroups.ads', {id: $scope.accounts[0].campaigns[0].adGroups[0].id});
+            }
+        }
     });
 
     api.user.get('current').then(function (data) {
