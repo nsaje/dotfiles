@@ -50,7 +50,7 @@ def _init_stop_campaign(ad_group_network):
         payload = json.dumps({
             'network': ad_group_network.network.slug,
             'action': action.action,
-            'network_campaign_key': ad_group_network.network_campaign_key,
+            'partner_campaign_id': ad_group_network.network_campaign_key,
             'callback': reverse(
                 'actions.zwei_callback',
                 kwargs={'action_id': action.id},
@@ -74,7 +74,7 @@ def _init_fetch_status(ad_group_network):
         payload = json.dumps({
             'action': action.action,
             'network': ad_group_network.network.slug,
-            'network_campaign_key': ad_group_network.network_campaign_key,
+            'partner_campaign_id': ad_group_network.network_campaign_key,
             'callback': reverse(
                 'actions.zwei_callback',
                 kwargs={'action_id': action.id},
@@ -98,7 +98,7 @@ def _init_fetch_reports(ad_group_network, date):
         payload = json.dumps({
             'action': action.action,
             'network': ad_group_network.network.slug,
-            'network_campaign_key': ad_group_network.network_campaign_key,
+            'partner_campaign_ids': [ad_group_network.network_campaign_key],
             'date': date.strftime('%Y-%m-%d'),
             'callback': reverse(
                 'actions.zwei_callback',
