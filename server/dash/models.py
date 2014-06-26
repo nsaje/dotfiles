@@ -193,3 +193,36 @@ class AdGroupNetworkSettings(models.Model):
         null=True,
         verbose_name='Daily budget'
     )
+
+    @classmethod
+    def get_current_settings(cls, ad_group):
+        network_ids = constants.AdNetwork.get_all()
+
+        network_settings = cls.objects.select_related('network').\
+            filter(network__id__in=network_ids).\
+            filter(ad_group=ad_group).\
+            order_by('-created_dt')
+
+        result = {}
+        for ns in network_settings:
+            if ns.network.id in result:
+                continue
+
+            result[ns.network.id] = ns
+
+            if len(result) == len(network_ids):
+                break
+
+        for nid in network_ids:
+            if nid in result:
+                continue
+
+            result[nid] = cls(
+                state=constants.AdGroupSettingsState.INACTIVE,
+                ad_group=ad_group,
+                network=Network.objects.get(pk=nid),
+                cpc_cc=0,
+                daily_budget_cc=0
+            )
+
+        return result
