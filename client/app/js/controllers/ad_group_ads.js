@@ -26,6 +26,27 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', 'api', fun
         $scope.chartData = result;
     };
 
+    $scope.loadRequestInProgress = false;
+
+    $scope.getTableData = function (id, page, size) {
+        $scope.loadRequestInProgress = true;
+
+        api.adGroupAdsTable.get(id, page, size).then(
+            function (data) {
+                $scope.rows = data.rows;
+                $scope.totals = data.totals;
+
+                $scope.pagination = data.pagination;
+            },
+            function (data) {
+                // error
+                return;
+            }
+        ).finally(function () {
+            $scope.loadRequestInProgress = false;
+        });
+    };
+
     $scope.getDailyStats = function (adGroupId) {
         api.adGroupNetworksDailyStats.list(adGroupId).then(
             function (data) {
@@ -83,6 +104,20 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', 'api', fun
             $scope.setChartData();
         }
     });
+    
+    // pagination
+    $scope.sizeRange = new Array(10);
 
+    $scope.loadPage = function(page) {
+        if(page) {
+            $scope.pagination.currentPage = page;
+        }
+
+        if ($scope.pagination.currentPage && $scope.pagination.size) {
+            $scope.getTableData($state.params.id, $scope.pagination.currentPage, $scope.pagination.size);
+        }
+    }
+
+    $scope.getTableData($state.params.id, 1, 5);
     $scope.getDailyStats($state.params.id);
 }]);

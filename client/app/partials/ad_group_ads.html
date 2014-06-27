@@ -1,10 +1,71 @@
-<div class="page page-ad-group-networks">
+<div class="page page-ad-group-ads">
     <div class="section" ng-show="isChartShown">
         <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric1-values="options.networkChartMetrics" zem-metric2-values="options.networkChartMetrics"></zem-chart>
     </div>
 
-    <div class="section">
+    <div class="section table-ad-group-ads">
+        <div class="button-bar">
         <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/img/chart.svg"></a>
         <div class="clearfix"></div>
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th colspan="2">Title</th>
+                    <th class="text-right">Cost</th>
+                    <th class="text-right">CPC</th>
+                    <th class="text-right">Clicks</th>
+                    <th class="text-right">Impressions</th>
+                    <th class="text-right">CTR</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-if="loadRequestInProgress">
+                    <td colspan="7" class="loader-row">
+                        <img class="loader" ng-src="{{ config.static_url }}/img/loader.svg">
+                    </td>
+                </tr>
+                <tr ng-show="!rows && !loadRequestInProgress">
+                    <td class="no-data" colspan="7">No data available.</td>
+                </tr>
+                <tr ng-repeat="row in rows">
+                    <td colspan="2">{{ row.title }}</td>
+                    <td class="text-right number">{{ (row.cost | currency:"$") || 'N/A' }}</td>
+                    <td class="text-right number">{{ (row.cpc | currency:"$") || 'N/A' }}</td>
+                    <td class="text-right number">{{ (row.clicks | number:0) || 'N/A' }}</td>
+                    <td class="text-right number">{{ (row.impressions | number:0) || 'N/A' }}</td>
+                    <td class="text-right number">{{ (row.ctr | number:2) || 'N/A' }}<span ng-show="row.ctr">%</span></td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2">TOTALS</td>
+                    <td class="text-right number">{{ (totals.cost | currency:"$") || 'N/A' }}</td>
+                    <td class="text-right number">{{ (totals.cpc | currency:"$") || 'N/A' }}</td>
+                    <td class="text-right number">{{ (totals.clicks | number:0) || 'N/A' }}</td>
+                    <td class="text-right number">{{ (totals.impressions | number:0) || 'N/A' }}</td>
+                    <td class="text-right number">{{ (totals.ctr | number:2) || 'N/A' }}<span ng-show="totals.ctr">%</span></td>
+                </tr>
+            </tfoot>
+        </table>
+        
+        <div class="pagination" ng-show="rows">
+            <span>Go to page</span>
+            <form ng-submit="loadPage()">
+                <input class="page-num form-control" type="number" min="1" max="{{ pagination.numPages }}" ng-model="pagination.currentPage">
+            </form>
+
+            <span>Show rows</span>
+            <select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'show-rows'}" class="show-rows" ng-model="pagination.size" ng-change="loadPage()">
+                <option ng-repeat="n in sizeRange track by $index" value="{{ $index+1 }}">{{ $index+1 }}</option>
+            </select>
+
+            <div class="button" ng-click="loadPage(1)"><img ng-src="{{ config.static_url }}/img/arrow-first.svg"></div>
+            <div class="button" ng-click="loadPage(pagination.currentPage - 1)"><img ng-src="{{ config.static_url }}/img/arrow-prev.svg"></div>
+            <span class="current-rows">{{ pagination.startIndex}} - {{ pagination.endIndex }} of {{ pagination.count }}</span>
+            <div class="button" ng-click="loadPage(pagination.currentPage + 1)"><img ng-src="{{ config.static_url }}/img/arrow-next.svg"></div>
+            <div class="button" ng-click="loadPage(pagination.numPages)"><img ng-src="{{ config.static_url }}/img/arrow-last.svg"></div>
+        </pagination>
     </div>
 </div>
