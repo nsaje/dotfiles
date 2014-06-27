@@ -122,8 +122,8 @@ def _reconcile_article(raw_url, title, ad_group):
 
     if url:
         kwargs['url'] = url
-    else:
-        kwargs['title'] = title
+
+    kwargs['title'] = title
 
     try:
         article = dashmodels.Article.objects.get(**kwargs)
@@ -133,10 +133,6 @@ def _reconcile_article(raw_url, title, ad_group):
         raise exc.ArticleReconciliationException(
             'Mutlitple objects returned for arguments: {kwargs}.'.format(kwargs=kwargs)
         )
-
-    if title and title != article.title:
-        article.title = title
-        article.save()
 
     return article
 
