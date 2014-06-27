@@ -1,4 +1,6 @@
 import datetime
+import urlparse
+import urllib
 
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db import transaction
@@ -12,7 +14,7 @@ from dash import models as dashmodels
 DIMENSIONS = ['date', 'article', 'ad_group', 'network']
 METRICS = ['impressions', 'clicks', 'cost', 'cpc']
 COMPUTED_METRICS = {
-    'ctr': lambda row: float(row['clicks'])/row['impressions'] if row['impressions'] > 0 else 0
+    'ctr': lambda row: float(row['clicks']) / row['impressions'] if row['impressions'] > 0 else 0
 }
 
 
@@ -113,13 +115,15 @@ def save_article_stats(rows, ad_group, network, date):
 # helpers
 
 @transaction.atomic
-def _reconcile_article(url, title, ad_group):
-    if not (url or title):
+def _reconcile_article(raw_url, title, ad_group):
+    if not (raw_url or title):
         raise exc.ArticleReconciliationException('Missing both URL and title.')
 
     kwargs = {
         'ad_group': ad_group
     }
+
+    url = _clean_url(raw_url)
 
     if url:
         kwargs['url'] = url
@@ -135,11 +139,28 @@ def _reconcile_article(url, title, ad_group):
             'Mutlitple objects returned for arguments: {kwargs}.'.format(kwargs=kwargs)
         )
 
-    if title:
+    if title and title != article.title:
         article.title = title
         article.save()
 
     return article
+
+
+def _clean_url(raw_url):
+    '''
+    Removes all utm_* params with values starting with zemantaone
+    '''
+    split_url = list(urlparse.urlsplit(raw_url))
+    query_parameters = urlparse.parse_qsl(split_url[3], keep_blank_values=True)
+
+    cleaned_query_parameters = filter(
+        lambda (attr, value): not attr.startswith('utm_') or not value.startswith('zemantaone'),
+        query_parameters
+    )
+
+    split_url[3] = urllib.urlencode(cleaned_query_parameters)
+
+    return urlparse.urlunsplit(split_url)
 
 
 def _satisfies_constraints(row, constraints):
