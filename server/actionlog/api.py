@@ -24,7 +24,7 @@ def fetch_ad_group_status(ad_group, network=None):
         _init_fetch_status(ad_group_network)
 
 
-def fetch_ad_group_reports(ad_group, network=None, date=None):
+def fetch_ad_group_reports(ad_group, date, network=None):
     ad_group_networks = _get_ad_group_networks(ad_group, network)
     for ad_group_network in ad_group_networks:
         _init_fetch_reports(ad_group_network, date)

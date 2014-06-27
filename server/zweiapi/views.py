@@ -30,9 +30,8 @@ def zwei_callback(request, action_id):
 
 @transaction.atomic
 def _process_zwei_response(action, data):
-    import ipdb; ipdb.set_trace();
     if action.action_status != actionlogconstants.ActionStatus.WAITING:
-        logger.warning('Action not waiting for a response. Action: %s, data: %s', action, data)
+        logger.warning('Action not waiting for a response. Action: %s, response: %s', action, data)
         return
 
     if data['status'] != 'success':
@@ -40,9 +39,10 @@ def _process_zwei_response(action, data):
         action.save()
         return
 
-    if action.action_type == actionlogconstants.ActionType.FETCH_REPORTS:
-        reportsapi.upsert(data, action.ad_group, action.network)
-    elif action.action_type == actionlogconstants.ActionType.FETCH_CAMPAIGN_STATUS:
+    if action.action == actionlogconstants.Action.FETCH_REPORTS:
+        date = action.payload['args']['date']
+        reportsapi.upsert(data['data'], date)
+    elif action.action == actionlogconstants.Action.FETCH_CAMPAIGN_STATUS:
         # TODO call campaign status save function
         return NotImplementedError
 

@@ -1,3 +1,5 @@
+from __future__ import division
+
 import datetime
 import urlparse
 import urllib
@@ -76,39 +78,39 @@ def query(start_date, end_date, breakdown=[], **constraints):
     return result
 
 
-def upsert(row):
+@transaction.atomic
+def upsert(data, date):
     '''
     looks for the article stats with dimensions specified in this row
     if it does not find, it adds the row
     if it does find, it updates the metrics of the existing row
     '''
-    data = _find_row(row)
-    print data
-    if not data:
-        # data with this dimensions does not exist, we insert it
-        DATA.append(row)
-    else:
-        # data with this dimensions already exists, we update the metrics
-        for metric in METRICS:
-            data[metric] = row[metric]
+    for network_campaign_key, rows in data:
+        ad_group_network = dashmodels.AdGroupNetwork.objects.get(network_campaign_key=network_campaign_key)
+        ad_group = ad_group_network.ad_group
+        network = ad_group_network.network
 
-
-def save_article_stats(rows, ad_group, network, date):
-    for row in rows:
-        with transaction.atomic():
+        for row in rows:
             article = _reconcile_article(row.get('url'), row.get('title'), ad_group)
 
             try:
                 article_stats = models.ArticleStats.objects.get(datetime=date, article=article,
-                                                                adgroup=ad_group, network=network)
+                                                                ad_group=ad_group, network=network)
             except ObjectDoesNotExist:
-                article_stats = models.ArticlesStats(datetime=date, article=article,
+                article_stats = models.ArticleStats(datetime=date, article=article,
                                                      ad_group=ad_group, network=network)
+
+            if 'cpc_cc' not in row:
+                row['cpc_cc'] = int(round(row['cost_cc'] / row['clicks']))
+
+            if 'cost_cc' not in row:
+                row['cost_cc'] = row['cpc_cc'] * row['clicks']
 
             article_stats.impressions = row['impressions']
             article_stats.clicks = row['clicks']
-            article_stats.cpc = row['cpc_cc'] / 10000
-            article_stats.cost = row['cost_cc'] / 10000
+            article_stats.cpc_cc = row['cpc_cc']
+            article_stats.cost_cc = row['cost_cc']
+
             article_stats.save()
 
 
@@ -133,7 +135,7 @@ def _reconcile_article(raw_url, title, ad_group):
     try:
         article = dashmodels.Article.objects.get(**kwargs)
     except ObjectDoesNotExist:
-        article = dashmodels.Article.create(ad_group=ad_group, url=url, title=title)
+        article = dashmodels.Article.objects.create(ad_group=ad_group, url=url, title=title)
     except MultipleObjectsReturned:
         raise exc.ArticleReconciliationException(
             'Mutlitple objects returned for arguments: {kwargs}.'.format(kwargs=kwargs)
