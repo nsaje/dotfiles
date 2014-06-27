@@ -1,11 +1,13 @@
 import json
+import urlparse
 
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import transaction
 
 from . import models
 from . import constants
-from . import zwei_actions
+from zweiapi import zwei_actions
 
 from dash import constants as dashconstants
 
@@ -22,7 +24,7 @@ def fetch_ad_group_status(ad_group, network=None):
         _init_fetch_status(ad_group_network)
 
 
-def fetch_ad_group_reports(ad_group, network=None, date=None):
+def fetch_ad_group_reports(ad_group, date, network=None):
     ad_group_networks = _get_ad_group_networks(ad_group, network)
     for ad_group_network in ad_group_networks:
         _init_fetch_reports(ad_group_network, date)
@@ -49,15 +51,18 @@ def _init_stop_campaign(ad_group_network):
             ad_group=ad_group_network.ad_group,
             network=ad_group_network.network,
         )
+
+        callback = urlparse.urljoin(
+            settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
+        )
         payload = json.dumps({
             'network': ad_group_network.network.type,
             'action': action.action,
-            'partner_campaign_id': ad_group_network.network_campaign_key,
-            'state': dashconstants.AdGroupNetworkSettingsState.INACTIVE,
-            'callback': reverse(
-                'actions.zwei_callback',
-                kwargs={'action_id': action.id},
-            ),
+            'args': {
+                'partner_campaign_id': ad_group_network.network_campaign_key,
+                'state': dashconstants.AdGroupNetworkSettingsState.INACTIVE,
+            },
+            'callback_url': callback,
         })
 
         action.payload = payload
@@ -74,14 +79,17 @@ def _init_fetch_status(ad_group_network):
             ad_group=ad_group_network.ad_group,
             network=ad_group_network.network,
         )
+
+        callback = urlparse.urljoin(
+            settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
+        )
         payload = json.dumps({
             'action': action.action,
             'network': ad_group_network.network.type,
-            'partner_campaign_id': ad_group_network.network_campaign_key,
-            'callback': reverse(
-                'actions.zwei_callback',
-                kwargs={'action_id': action.id},
-            ),
+            'args': {
+                'partner_campaign_id': ad_group_network.network_campaign_key
+            },
+            'callback_url': callback,
         })
 
         action.payload = payload
@@ -98,15 +106,18 @@ def _init_fetch_reports(ad_group_network, date):
             ad_group=ad_group_network.ad_group,
             network=ad_group_network.network,
         )
+
+        callback = urlparse.urljoin(
+            settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
+        )
         payload = json.dumps({
             'action': action.action,
             'network': ad_group_network.network.type,
-            'partner_campaign_ids': [ad_group_network.network_campaign_key],
-            'date': date.strftime('%Y-%m-%d'),
-            'callback': reverse(
-                'actions.zwei_callback',
-                kwargs={'action_id': action.id},
-            ),
+            'args': {
+                'partner_campaign_ids': [ad_group_network.network_campaign_key],
+                'date': date.strftime('%Y-%m-%d'),
+            },
+            'callback_url': callback,
         })
 
         action.payload = payload

@@ -35,5 +35,8 @@ GOOGLE_OAUTH_CLIENT_SECRET = ''
 # Client static files
 CLIENT_STATIC_URL = ''
 
+# Eins host
+EINS_HOST = ''
+
 # Zwei API
-ZWEI_API_HOST = ''
+ZWEI_API_URL = ''

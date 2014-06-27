@@ -4,7 +4,7 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from dash import views as dash_views
-from actionlog import api_views as actionlog_api_views
+from zweiapi import views as zweiapiviews
 from zemauth.forms import AuthenticationForm
 
 import dash.views
@@ -54,8 +54,8 @@ urlpatterns += patterns(
 urlpatterns += patterns(
     '',
     url(
-        r'^actions/zwei_callback/(?P<action_id>\d+)$',
-        actionlog_api_views.zwei_callback,
-        name='actions.zwei_callback',
+        r'^api/zwei_callback/(?P<action_id>\d+)$',
+        zweiapiviews.zwei_callback,
+        name='api.zwei_callback',
     )
 )
