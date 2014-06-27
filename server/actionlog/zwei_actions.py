@@ -1,17 +1,21 @@
-import httplib
+import json
+import logging
 import urllib2
-import urlparse
 
 from django.conf import settings
 
 from . import constants
 
+logger = logging.getLogger(__name__)
+
 
 def send(action):
-    url = urlparse.urljoin(settings.ZWEI_API_HOST, 'task')
-    request = urllib2.Request(url, action.payload)
-    response = urllib2.urlopen(request)
+    data = json.dumps(action.payload)
+    request = urllib2.Request(settings.ZWEI_API_URL, data)
 
-    if response.status_code != httplib.OK:
-        action.status = constants.ActionStatus.FAILED
+    try:
+        urllib2.urlopen(request)
+    except urllib2.HTTPError as e:
+        logger.error('Zwei host connection error: %s', str(e))
+        action.action_status = constants.ActionStatus.FAILED
         action.save()

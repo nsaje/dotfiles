@@ -1,8 +1,10 @@
 import datetime
 import httplib
+import urlparse
 
 from mock import patch, Mock
 from django.test import TestCase
+from django.conf import settings
 from django.core.urlresolvers import reverse
 
 from actionlog import api, constants, models
@@ -43,15 +45,17 @@ class ActionLogApiTest(TestCase):
             self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
             self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
 
+            callback = urlparse.urljoin(
+                settings.EINS_HOST, reverse('actions.zwei_callback', kwargs={'action_id': action.id})
+            )
             payload = {
                 'network': network.type,
                 'action': constants.Action.SET_CAMPAIGN_STATE,
-                'partner_campaign_id': ad_group_network.network_campaign_key,
-                'state': dashconstants.AdGroupNetworkSettingsState.INACTIVE,
-                'callback': reverse(
-                    'actions.zwei_callback',
-                    kwargs={'action_id': action.id}
-                )
+                'args': {
+                    'partner_campaign_id': ad_group_network.network_campaign_key,
+                    'state': dashconstants.AdGroupNetworkSettingsState.INACTIVE,
+                },
+                'callback_url': callback,
             }
             self.assertEqual(action.payload, payload)
 
@@ -75,14 +79,16 @@ class ActionLogApiTest(TestCase):
             )
             self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
 
+            callback = urlparse.urljoin(
+                settings.EINS_HOST, reverse('actions.zwei_callback', kwargs={'action_id': action.id})
+            )
             payload = {
                 'network': network.type,
                 'action': constants.Action.FETCH_CAMPAIGN_STATUS,
-                'partner_campaign_id': ad_group_network.network_campaign_key,
-                'callback': reverse(
-                    'actions.zwei_callback',
-                    kwargs={'action_id': action.id}
-                )
+                'args': {
+                    'partner_campaign_id': ad_group_network.network_campaign_key,
+                },
+                'callback_url': callback,
             }
 
             self.assertEqual(action.payload, payload)
@@ -105,15 +111,17 @@ class ActionLogApiTest(TestCase):
             self.assertEqual(action.action, constants.Action.FETCH_REPORTS)
             self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
 
+            callback = urlparse.urljoin(
+                settings.EINS_HOST, reverse('actions.zwei_callback', kwargs={'action_id': action.id})
+            )
             payload = {
                 'network': network.type,
                 'action': constants.Action.FETCH_REPORTS,
-                'partner_campaign_ids': [ad_group_network.network_campaign_key],
-                'date': date.strftime('%Y-%m-%d'),
-                'callback': reverse(
-                    'actions.zwei_callback',
-                    kwargs={'action_id': action.id}
-                )
+                'args': {
+                    'partner_campaign_ids': [ad_group_network.network_campaign_key],
+                    'date': date.strftime('%Y-%m-%d'),
+                },
+                'callback_url': callback
             }
             self.assertEqual(action.payload, payload)
 
