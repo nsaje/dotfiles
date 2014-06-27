@@ -22,7 +22,7 @@ class ActionLogApiTest(TestCase):
         mock_urlopen.return_value = mock_request
 
     def setUp(self):
-        patcher_urlopen = patch('actionlog.zwei_actions.urllib2.urlopen')
+        patcher_urlopen = patch('zweiapi.zwei_actions.urllib2.urlopen')
         self.addCleanup(patcher_urlopen.stop)
 
         mock_urlopen = patcher_urlopen.start()
