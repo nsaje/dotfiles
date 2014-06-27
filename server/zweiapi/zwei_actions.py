@@ -4,7 +4,7 @@ import urllib2
 
 from django.conf import settings
 
-from . import constants
+from actionlog import constants as actionlogconstants
 
 logger = logging.getLogger(__name__)
 
@@ -17,5 +17,5 @@ def send(action):
         urllib2.urlopen(request)
     except urllib2.HTTPError as e:
         logger.error('Zwei host connection error: %s', str(e))
-        action.action_status = constants.ActionStatus.FAILED
+        action.action_status = actionlogconstants.ActionStatus.FAILED
         action.save()

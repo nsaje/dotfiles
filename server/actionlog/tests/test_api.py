@@ -46,7 +46,7 @@ class ActionLogApiTest(TestCase):
             self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
 
             callback = urlparse.urljoin(
-                settings.EINS_HOST, reverse('actions.zwei_callback', kwargs={'action_id': action.id})
+                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
             payload = {
                 'network': network.type,
@@ -80,7 +80,7 @@ class ActionLogApiTest(TestCase):
             self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
 
             callback = urlparse.urljoin(
-                settings.EINS_HOST, reverse('actions.zwei_callback', kwargs={'action_id': action.id})
+                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
             payload = {
                 'network': network.type,
@@ -112,7 +112,7 @@ class ActionLogApiTest(TestCase):
             self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
 
             callback = urlparse.urljoin(
-                settings.EINS_HOST, reverse('actions.zwei_callback', kwargs={'action_id': action.id})
+                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
             payload = {
                 'network': network.type,

@@ -6,8 +6,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 
-from . import models
-from . import constants
+from actionlog import models as actionlogmodels
+from actionlog import constants as actionlogconstants
 
 from reports import api as reportsapi
 
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 @csrf_exempt
 def zwei_callback(request, action_id):
     try:
-        action = models.ActionLog.objects.get(id=action_id)
+        action = actionlogmodels.ActionLog.objects.get(id=action_id)
     except ObjectDoesNotExist:
         raise Exception('Invalid action_id in callback')
 
@@ -30,20 +30,21 @@ def zwei_callback(request, action_id):
 
 @transaction.atomic
 def _process_zwei_response(action, data):
-    if action.action_status != constants.ActionStatus.WAITING:
+    import ipdb; ipdb.set_trace();
+    if action.action_status != actionlogconstants.ActionStatus.WAITING:
         logger.warning('Action not waiting for a response. Action: %s, data: %s', action, data)
         return
 
     if data['status'] != 'success':
-        action.action_status = constants.ActionStatus.FAILED
+        action.action_status = actionlogconstants.ActionStatus.FAILED
         action.save()
         return
 
-    if action.action_type == constants.ActionType.FETCH_REPORTS:
+    if action.action_type == actionlogconstants.ActionType.FETCH_REPORTS:
         reportsapi.upsert(data, action.ad_group, action.network)
-    elif action.action_type == constants.ActionType.FETCH_CAMPAIGN_STATUS:
+    elif action.action_type == actionlogconstants.ActionType.FETCH_CAMPAIGN_STATUS:
         # TODO call campaign status save function
         return NotImplementedError
 
-    action.status = constants.ActionStatus.SUCCESS
+    action.status = actionlogconstants.ActionStatus.SUCCESS
     action.save()

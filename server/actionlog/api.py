@@ -7,7 +7,7 @@ from django.db import transaction
 
 from . import models
 from . import constants
-from . import zwei_actions
+from zweiapi import zwei_actions
 
 from dash import constants as dashconstants
 
@@ -53,7 +53,7 @@ def _init_stop_campaign(ad_group_network):
         )
 
         callback = urlparse.urljoin(
-            settings.EINS_HOST, reverse('actions.zwei_callback', kwargs={'action_id': action.id})
+            settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
         )
         payload = json.dumps({
             'network': ad_group_network.network.type,
@@ -81,7 +81,7 @@ def _init_fetch_status(ad_group_network):
         )
 
         callback = urlparse.urljoin(
-            settings.EINS_HOST, reverse('actions.zwei_callback', kwargs={'action_id': action.id})
+            settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
         )
         payload = json.dumps({
             'action': action.action,
@@ -108,7 +108,7 @@ def _init_fetch_reports(ad_group_network, date):
         )
 
         callback = urlparse.urljoin(
-            settings.EINS_HOST, reverse('actions.zwei_callback', kwargs={'action_id': action.id})
+            settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
         )
         payload = json.dumps({
             'action': action.action,
