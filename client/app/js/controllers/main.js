@@ -72,7 +72,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', 'api', function 
 			dateRange.endDate = moment(endDate);
         }
 
-        if (!$.isEmptyObject($scope.dateRange)) {
+        if (!$.isEmptyObject(dateRange)) {
             $scope.dateRange = dateRange;
         }
     });
@@ -96,7 +96,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', 'api', function 
     });
 
     $scope.$watch('dateRange', function (newValue, oldValue) {
-        if (newValue.startDate.valueOf() !== oldValue.startDate.valueOf() || newValue.endDate.valueOf() !== oldValue.endDate.valueOf()) {
+        if (!$.isEmptyObject(newValue) && !$.isEmptyObject(oldValue) &&  (newValue.startDate.valueOf() !== oldValue.startDate.valueOf() || newValue.endDate.valueOf() !== oldValue.endDate.valueOf())) {
             $location.search('start_date', $scope.dateRange.startDate ? $scope.dateRange.startDate.format() : null);
             $location.search('end_date', $scope.dateRange.endDate ? $scope.dateRange.endDate.format() : null);
         }
