@@ -2,14 +2,20 @@
 function getDateRanges() {
     var result = {};
     var i = 0;
-    var monthsCount = 5;
+    var monthsCount = 3;
     var formatStr = 'MMMM YYYY';
 
+    result['Yesterday'] = [moment().subtract('days', 1).startOf('day'), moment().endOf('day')];
+    result['This week'] = [moment().startOf('week'), moment()];
+    result['Previous week'] = [moment().subtract('days', 7).startOf('week'), moment().subtract('days', 7).endOf('week')];
+    result['Last 14 days'] = [moment().subtract('days', 14), moment()];
+    result['This month'] = [moment().startOf('month'), moment()];
     result['Last 30 Days'] = [moment().subtract('days', 29), moment()];
-    result[moment().format(formatStr) + ' (Current month)'] = [moment().startOf('month'), moment().endOf('month')];
+
     for (i = 0; i < monthsCount; i++) {
         result[moment().subtract('month', i+1).format(formatStr)] = [moment().subtract('month', i+1).startOf('month'), moment().subtract('month', i+1).endOf('month')];
     }
+
     result['Year to date'] = [moment().startOf('year'), moment()];
     
     return result;

@@ -26,14 +26,14 @@ def query(start_date, end_date, breakdown=[], **constraints):
     '''
     api function to query reports data
     start_date = starting date, inclusive
-    end_date = end date, exclusive
+    end_date = end date, inclusive
     breakdown = list of dimensions by which to group
     constraints = constraints on the dimension values (e.g. network=x, ad_group=y, etc.)
     '''
     grouped_data = {}
 
     for row in DATA:
-        if row['date'] >= start_date and row['date'] < end_date:
+        if row['date'] >= start_date and row['date'] <= end_date:
             if _satisfies_constraints(row, constraints):
 
                 key = _get_group_tuple(row, breakdown)
