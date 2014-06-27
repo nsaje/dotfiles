@@ -145,6 +145,13 @@ class NetworkAdmin(admin.ModelAdmin):
 
 # Ad Group
 
+class AdGroupNetworksInline(admin.TabularInline):
+    verbose_name = "Ad Group's Network"
+    verbose_name_plural = "Ad Group's Networks"
+    model = models.AdGroup.networks.through
+    extra = 0
+
+
 class AdGroupSettingsInline(admin.TabularInline):
     verbose_name = "Ad Group's Settings"
     verbose_name_plural = "Ad Group's Settings"
@@ -177,7 +184,11 @@ class AdGroupAdmin(admin.ModelAdmin):
         'modified_dt'
     )
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
-    inlines = (AdGroupSettingsInline, AdGroupNetworkSettingsInline)
+    inlines = (
+        AdGroupSettingsInline,
+        AdGroupNetworkSettingsInline,
+        AdGroupNetworksInline,
+    )
 
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
