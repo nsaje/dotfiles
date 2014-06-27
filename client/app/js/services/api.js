@@ -49,16 +49,23 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
     } 
 
     function AdGroupNetworksTable() {
-        this.get = function (id) {
+        this.get = function (id, startDate, endDate) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/networks/table/';
             var config = {
                 params: {}
             };
 
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
+
             $http.get(url, config).
                 success(function (data, status) {
-                    var resource;
                     if (data && data.data) {
                         deferred.resolve(data.data);
                     }

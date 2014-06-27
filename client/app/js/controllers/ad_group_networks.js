@@ -31,7 +31,7 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
     $scope.getTableData = function (id) {
         $scope.loadRequestInProgress = true;
 
-        api.adGroupNetworksTable.get(id).then(
+        api.adGroupNetworksTable.get(id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
@@ -81,6 +81,7 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
     // From parent scope (mainCtrl).
     $scope.$watch('dateRange', function (newValue, oldValue) {
         $scope.getDailyStats($state.params.id);
+        $scope.getTableData($state.params.id);
     });
 
     $scope.$on("$stateChangeSuccess", function() {
