@@ -1,28 +1,26 @@
-import datetime
+import decimal
+
+from django.db.models import Avg, Sum
+
+import models
 
 from fakedata import DATA
 
 DIMENSIONS = ['date', 'article', 'ad_group', 'network']
 METRICS = ['impressions', 'clicks', 'cost', 'cpc']
-COMPUTED_METRICS = {
-    'ctr': lambda row: float(row['clicks'])/row['impressions'] if row['impressions'] > 0 else 0
-}
 
-def average(vals):
-    return float(sum(vals)) / len(vals) if len(vals) > 0 else 0
 
-AGGREGATIONS = {
-    'impressions': sum,
-    'clicks': sum,
-    'cost': sum,
-    'cpc': average,
-    #'ctr': average,
-}
+class ReportsQueryError(Exception):
+    '''
+    Base error. If implementing custom errors, subclass this error.
+    '''
+    def __init__(self, message=None):
+        super(ReportsQueryError, self).__init__(message)
 
 
 # API functions
 
-def query(start_date, end_date, breakdown=[], **constraints):
+def query(start_date, end_date, breakdown=None, **constraints):
     '''
     api function to query reports data
     start_date = starting date, inclusive
@@ -30,40 +28,46 @@ def query(start_date, end_date, breakdown=[], **constraints):
     breakdown = list of dimensions by which to group
     constraints = constraints on the dimension values (e.g. network=x, ad_group=y, etc.)
     '''
-    grouped_data = {}
+    if not breakdown:
+        breakdown = []
 
-    for row in DATA:
-        if row['date'] >= start_date and row['date'] < end_date:
-            if _satisfies_constraints(row, constraints):
+    if not (set(breakdown) <= set(DIMENSIONS)):
+        raise ReportsQueryError('Invalid value for breakdown.')
 
-                key = _get_group_tuple(row, breakdown)
-                if key not in grouped_data:
-                    grouped_data[key] = {metric:[] for metric in METRICS}
-                # add metrics
-                for metric in METRICS:
-                    grouped_data[key][metric].append(row[metric])
+    if 'date' not in breakdown:
+        breakdown.insert(0, 'datetime')
+    else:
+        for i, field in enumerate(breakdown):
+            if field == 'date':
+                breakdown[i] = 'datetime'
+                break
 
-    aggregated_data = {}
-    for group_key, metricvals in grouped_data.iteritems():
-        agg_metrics = {}
-        for metric, values in metricvals.iteritems():
-            agg_metrics[metric] = AGGREGATIONS[metric](values)
-        aggregated_data[group_key] = agg_metrics
+    for k, v in constraints.items():
+        if isinstance(v, (list, tuple)):
+            new_k = '{0}__in'.format(k)
+            constraints[new_k] = v
+            del constraints[k]
 
-    result = []
-    for group_key in sorted(aggregated_data.keys()):
-        agg_metrics = aggregated_data[group_key]
-        row = {}
-        for dimension, val in zip(breakdown, group_key):
-            row[dimension] = val
-        for metric, val in agg_metrics.iteritems():
-            row[metric] = val
-        # add computed metrics
-        for metric, fun in COMPUTED_METRICS.iteritems():
-            row[metric] = fun(row) 
-        result.append(row)
+    stats = models.ArticleStats.objects.\
+            values(*breakdown).\
+            filter(**constraints).\
+            annotate(
+                cpc_cc=Avg('cpc_cc'),
+                cost_cc=Avg('cost_cc'),
+                impressions=Sum('impressions'),
+                clicks=Sum('clicks')
+            ).\
+            order_by(*breakdown)
 
-    return result
+    stats = list(stats)
+
+    for stat in stats:
+        stat['date'] = stat.pop('datetime').date()
+        stat['ctr'] = float(stat['clicks']) / stat['impressions'] if stat['impressions'] > 0 else None
+        stat['cost'] = float(decimal.Decimal(round(stat.pop('cost_cc'))) / decimal.Decimal(10000))
+        stat['cpc'] = float(decimal.Decimal(round(stat.pop('cpc_cc'))) / decimal.Decimal(10000))
+
+    return stats
 
 
 def upsert(row):
@@ -85,16 +89,6 @@ def upsert(row):
 
 # helpers
 
-def _satisfies_constraints(row, constraints):
-    for dimension, value in constraints.iteritems():
-        if row[dimension] != value:
-            return False
-    return True
-
-def _get_group_tuple(row, breakdown):
-    dimvals = [row[dimension] for dimension in breakdown]
-    return tuple(dimvals)
-
 def _find_row(row):
     for data in DATA:
         found = True
@@ -105,26 +99,3 @@ def _find_row(row):
         if found:
             return data
     return None
-
-
-if __name__ == '__main__':
-    # breakdown by date
-    rows = query(datetime.date(2014,6,1), datetime.date(2014,6,11), breakdown=['date'], ad_group=3, network=2)
-    print '\n\nresults for:' + "query(datetime.date(2014,6,1), datetime.date(2014,6,11), breakdown=['date'], ad_group=3, network=2)"
-    for row in rows: print row
-
-    # breakdown by date and by network
-    rows = query(datetime.date(2014,6,1), datetime.date(2014,6,11), breakdown=['date', 'network'], ad_group=3)
-    print '\n\nresults for:' + "query(datetime.date(2014,6,1), datetime.date(2014,6,11), breakdown=['date', 'network'], ad_group=3)"
-    for row in rows: print row
-
-    # breakdown by date
-    rows = query(datetime.date(2014,6,1), datetime.date(2014,6,11), breakdown=['network'], ad_group=1)
-    print '\n\nresults for:' + "query(datetime.date(2014,6,1), datetime.date(2014,6,11), breakdown=['network'], ad_group=1)"
-    for row in rows: print row
-
-    # no breakdown, total values
-    rows = query(datetime.date(2014,6,1), datetime.date(2014,6,11), breakdown=[], ad_group=1)
-    print '\n\nresults for:' + "query(datetime.date(2014,6,1), datetime.date(2014,6,11), breakdown=[], ad_group=1)"
-    for row in rows: print row
-
