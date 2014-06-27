@@ -24,7 +24,7 @@ def query(start_date, end_date, breakdown=None, **constraints):
     '''
     api function to query reports data
     start_date = starting date, inclusive
-    end_date = end date, exclusive
+    end_date = end date, inclusive
     breakdown = list of dimensions by which to group
     constraints = constraints on the dimension values (e.g. network=x, ad_group=y, etc.)
     '''
