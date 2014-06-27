@@ -8,6 +8,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import render
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from dash import api_common
 from dash import exc
@@ -283,6 +284,79 @@ class AdGroupNetworksTable(api_common.BaseApiView):
                 'clicks': network_data.get('clicks', None),
                 'impressions': network_data.get('impressions', None),
                 'ctr': network_data.get('ctr', None),
+            })
+
+        return rows
+
+
+class AdGroupAdsTable(api_common.BaseApiView):
+    def get(self, request, ad_group_id, page):
+        try:
+            ad_group = models.AdGroup.user_objects.get_for_user(request.user).\
+                filter(id=int(ad_group_id)).get()
+        except models.AdGroup.DoesNotExist:
+            raise exc.MissingDataError('Ad Group does not exist')
+
+        article_list = models.Article.objects.filter(ad_group=ad_group).order_by('title')
+        paginator = Paginator(article_list, 10)
+
+        try:
+            articles = paginator.page(page)
+        except PageNotAnInteger:
+            articles = paginator.page(1)
+        except EmptyPage:
+            articles = paginator.page(paginator.num_pages)
+
+        article_data = [
+            {'ad_group': 1, 'cost': 0.05441137311908372, 'network': 4, 'impressions': 138, 'date': datetime.date(2014, 5, 12), 'article': 1, 'cpc': 0.05441137311908372, 'clicks': 1, 'ctr': 0.0023}
+        ]
+        # article_data = api.query(
+        #     datetime.date.min,
+        #     datetime.date.today(),
+        #     ['network'],
+        #     ad_group=int(ad_group.id),
+        #     article=[article.id for article in articles]
+        # )
+
+        totals_data = {'ad_group': 1, 'cost': 0.05441137311908372, 'network': 4, 'impressions': 138, 'date': datetime.date(2014, 5, 12), 'cpc': 0.05441137311908372, 'clicks': 1, 'ctr': 0.0023}
+        # totals_data = api.query(
+        #     datetime.date.min,
+        #     datetime.date.today(),
+        #     [],
+        #     ad_group=int(ad_group.id)
+        # )[0]
+
+        return self.create_api_response({
+            'rows': self.get_rows(ad_group, article_data, articles),
+            'totals': self.get_totals(totals_data)
+        })
+
+    def get_totals(self, totals_data):
+        return {
+            'cost': totals_data['cost'],
+            'cpc': totals_data['cpc'],
+            'clicks': totals_data['clicks'],
+            'impressions': totals_data['impressions'],
+            'ctr': totals_data['ctr'],
+        }
+
+    def get_rows(self, ad_group, article_data, articles):
+        rows = []
+        for article in articles:
+            data = {}
+            for item in article_data:
+                if item['article'] == article.id:
+                    data = item
+                    break
+
+            rows.append({
+                'url': article.url,
+                'title': article.title,
+                'cost': data.get('cost', None),
+                'cpc': data.get('cpc', None),
+                'clicks': data.get('clicks', None),
+                'impressions': data.get('impressions', None),
+                'ctr': data.get('ctr', None),
             })
 
         return rows
