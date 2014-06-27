@@ -46,7 +46,7 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
     };
 
     $scope.getDailyStats = function (adGroupId) {
-        api.adGroupNetworksDailyStats.list(adGroupId).then(
+        api.adGroupNetworksDailyStats.list(adGroupId, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
             function (data) {
                 $scope.dailyStats = data;
                 $scope.setChartData();
@@ -76,6 +76,11 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
             $scope.setChartData();
             $location.search('chart_metric2', $scope.chartMetric2);
         }
+    });
+
+    // From parent scope (mainCtrl).
+    $scope.$watch('dateRange', function (newValue, oldValue) {
+        $scope.getDailyStats($state.params.id);
     });
 
     $scope.$on("$stateChangeSuccess", function() {
