@@ -134,6 +134,10 @@ class AdGroupNetwork(models.Model):
 
     network_campaign_key = jsonfield.JSONField(blank=True, default={})
 
+    class Meta:
+
+        unique_together = ('network', 'network_campaign_key')
+
 
 class AdGroupSettings(models.Model):
     id = models.AutoField(primary_key=True)
