@@ -303,7 +303,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
         start_date = get_stats_start_date(request.GET.get('start_date'))
         end_date = get_stats_end_date(request.GET.get('end_date'))
 
-        size = max(min(int(size or 5), 10), 1)
+        size = max(min(int(size or 5), 50), 1)
 
         article_list = models.Article.objects.filter(ad_group=ad_group).order_by('title')
         paginator = Paginator(article_list, size)

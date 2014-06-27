@@ -58,7 +58,7 @@
 
             <span>Show rows</span>
             <select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'show-rows'}" class="show-rows" ng-model="pagination.size" ng-change="loadPage()">
-                <option ng-repeat="n in sizeRange track by $index" value="{{ $index+1 }}">{{ $index+1 }}</option>
+                <option ng-repeat="number in sizeRange" value="{{ number }}">{{ number }}</option>
             </select>
 
             <div class="button" ng-click="loadPage(1)"><img ng-src="{{ config.static_url }}/img/arrow-first.svg"></div>
