@@ -1,3 +1,5 @@
+import decimal
+
 from django.db.models import Avg, Sum
 
 import models
@@ -50,8 +52,8 @@ def query(start_date, end_date, breakdown=None, **constraints):
             values(*breakdown).\
             filter(**constraints).\
             annotate(
-                cpc=Avg('cpc'),
-                cost=Avg('cost'),
+                cpc_cc=Avg('cpc_cc'),
+                cost_cc=Avg('cost_cc'),
                 impressions=Sum('impressions'),
                 clicks=Sum('clicks')
             ).\
@@ -62,6 +64,9 @@ def query(start_date, end_date, breakdown=None, **constraints):
     for stat in stats:
         stat['date'] = stat.pop('datetime').date()
         stat['ctr'] = float(stat['clicks']) / stat['impressions'] if stat['impressions'] > 0 else None
+        print stat['cost_cc']
+        stat['cost'] = float(decimal.Decimal(round(stat.pop('cost_cc'))) / decimal.Decimal(10000))
+        stat['cpc'] = float(decimal.Decimal(round(stat.pop('cpc_cc'))) / decimal.Decimal(10000))
 
     return stats
 

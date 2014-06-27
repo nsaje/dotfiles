@@ -1,17 +1,20 @@
 import models
+from dash import models as dm
 
 import fakedata
 
 articles = []
 
-### Run like this: ./manage.py shell < reports/insert_fakedata.py
+### Run like this:
+### ./manage.py shell
+### import reports.insert_fakedata
 
 # Make sure you have ad groups with ids from 1 to 7 in db.
 
 for i, d in enumerate(fakedata.DATA):
     if d['ad_group'] in (4, 5, 6):
         if d['article'] not in articles:
-            article = models.Article(
+            article = dm.Article(
                 pk=d['article'],
                 url='http://test{}.com'.format(i),
                 title='Test Article {0}'.format(i),
@@ -27,7 +30,7 @@ for i, d in enumerate(fakedata.DATA):
             network_id=d['network'],
             impressions=d['impressions'],
             clicks=d['clicks'],
-            cpc=d['cpc'],
-            cost=d['cost']
+            cpc_cc=int(d['cpc'] * 10000),
+            cost_cc=int(d['cost'] * 10000)
         )
         article_stats.save()
