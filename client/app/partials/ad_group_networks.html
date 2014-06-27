@@ -29,6 +29,9 @@
                         <img class="loader" ng-src="{{ config.static_url }}/img/loader.svg">
                     </td>
                 </tr>
+                <tr ng-show="!rows && !loadRequestInProgress">
+                    <td class="no-data" colspan="9">No data available.</td>
+                </tr>
                 <tr ng-repeat="row in rows">
                     <td>{{ row.name }}</td>
                     <td>

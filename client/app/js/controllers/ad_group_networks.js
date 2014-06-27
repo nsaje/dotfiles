@@ -28,10 +28,10 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
 
     $scope.loadRequestInProgress = false;
 
-    $scope.getTableData = function (id) {
+    $scope.getTableData = function () {
         $scope.loadRequestInProgress = true;
 
-        api.adGroupNetworksTable.get(id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
+        api.adGroupNetworksTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
@@ -45,8 +45,8 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
         });
     };
 
-    $scope.getDailyStats = function (adGroupId) {
-        api.adGroupNetworksDailyStats.list(adGroupId, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
+    $scope.getDailyStats = function () {
+        api.adGroupNetworksDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
             function (data) {
                 $scope.dailyStats = data;
                 $scope.setChartData();
@@ -80,8 +80,8 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
 
     // From parent scope (mainCtrl).
     $scope.$watch('dateRange', function (newValue, oldValue) {
-        $scope.getDailyStats($state.params.id);
-        $scope.getTableData($state.params.id);
+        $scope.getDailyStats();
+        $scope.getTableData();
     });
 
     $scope.$on("$stateChangeSuccess", function() {
@@ -108,7 +108,4 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
             $scope.setChartData();
         }
     });
-
-    $scope.getTableData($state.params.id);
-    $scope.getDailyStats($state.params.id);
 }]);

@@ -77,15 +77,15 @@ def query(start_date, end_date, breakdown=None, **constraints):
         else:
             stat['ctr'] = None
 
-        if stat['cost_cc'] is None:
-            stat['cost'] = stat.pop('cost_cc')
-        else:
-            stat['cost'] = float(decimal.Decimal(round(stat.pop('cost_cc'))) / decimal.Decimal(10000))
-
         if stat['cost_cc'] is not None and stat['clicks'] > 0:
             stat['cpc'] = float((decimal.Decimal(stat['cost_cc']) / decimal.Decimal(stat['clicks'])) / decimal.Decimal(10000))
         else:
             stat['cpc'] = None
+
+        if stat['cost_cc'] is None:
+            stat['cost'] = stat.pop('cost_cc')
+        else:
+            stat['cost'] = float(decimal.Decimal(round(stat.pop('cost_cc'))) / decimal.Decimal(10000))
 
     return stats
 

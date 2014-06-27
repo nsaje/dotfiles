@@ -78,6 +78,45 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
         };
     }
 
+    function AdGroupAdsTable() {
+        this.get = function (id, page, size, startDate, endDate) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + id + '/ads/table/';
+            var config = {
+                params: {}
+            };
+
+            if (page) {
+                config.params.page = page;
+            }
+
+            if (size) {
+                config.params.size = size;
+            }
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    var resource;
+                    if (data && data.data) {
+                        deferred.resolve(data.data);
+                    }
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function AdGroupNetworksDailyStats() {
         function convertFromApi(data) {
             var result = {
@@ -255,6 +294,7 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
         user: new User(),
         adGroupSettings: new AdGroupSettings(),
         adGroupNetworksTable: new AdGroupNetworksTable(),
+        adGroupAdsTable: new AdGroupAdsTable(),
         adGroupNetworksDailyStats: new AdGroupNetworksDailyStats()
     };
 }]);

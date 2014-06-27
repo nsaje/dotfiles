@@ -12,7 +12,7 @@ articles = []
 # Make sure you have ad groups with ids from 1 to 7 in db.
 
 for i, d in enumerate(fakedata.DATA):
-    if d['ad_group'] in (4, 5, 6):
+    if d['ad_group'] in (4,5,6,):
         if d['article'] not in articles:
             article = dm.Article(
                 pk=d['article'],
