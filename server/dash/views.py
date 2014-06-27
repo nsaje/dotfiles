@@ -227,8 +227,8 @@ class AdGroupNetworksTable(api_common.BaseApiView):
             raise exc.MissingDataError('Ad Group does not exist')
 
         networks_data = api.query(
-            datetime.date.min,
-            datetime.date.today(),
+            get_stats_start_date(request.GET.get('start_date')),
+            get_stats_end_date(request.GET.get('end_date')),
             ['network'],
             ad_group=int(ad_group.id)
         )
@@ -236,8 +236,8 @@ class AdGroupNetworksTable(api_common.BaseApiView):
         network_settings = models.AdGroupNetworkSettings.get_current_settings(ad_group)
 
         totals_data = api.query(
-            datetime.date.min,
-            datetime.date.today(),
+            get_stats_start_date(request.GET.get('start_date')),
+            get_stats_end_date(request.GET.get('end_date')),
             [],
             ad_group=int(ad_group.id)
         )[0]

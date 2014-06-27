@@ -46,6 +46,13 @@
             </div>
         </div>
         <div class="col-xs-offset-2 col-xs-10 content">
+            <form class="form-horizontal pull-right" role="form" ng-show="currentRoute.name !== 'adGroups.settings'">
+                <div class="input-group calendar">
+                    <i class="input-group-addon"><img ng-src="{{ config.static_url }}/img/calendar.svg"></i>
+                    <input type="daterange" class="form-control" ng-model="dateRange" max-date="{{ maxDateStr }}" format="{{ inputDateFormat }}" ranges="{{ dateRanges }}" opens="left">
+                </div>
+            </form>
+
             <tabset class="zem-tabset">
                 <tab ng-repeat="tab in tabs" active="tab.active">
                     <tab-heading>

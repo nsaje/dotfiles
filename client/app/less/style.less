@@ -251,6 +251,92 @@ div[datepicker] {
     }
 }
 
+.calendar.input-group {
+    width: 14em;
+
+    i {
+        padding: 0;
+
+        img {
+            height: 30px;
+        }
+    }
+
+    .input-group-addon {
+        border: 1px solid #2fa8c7;
+        border-right: 0;
+        background-color: transparent;
+    }
+
+    input {
+        border: 1px solid #2fa8c7;
+        border-left: 0;
+        padding-left: 0;
+    }
+}
+
+.daterangepicker {
+    padding-left: 0;
+    padding-right: 0;
+
+    &.dropdown-menu {
+        border: 1px solid #2fa8c7;
+    }
+
+    &.opensleft {
+        .ranges {
+            margin-left: 0;
+            margin-right: 0;
+        }
+    }
+
+    &.opensleft:before {
+        content: none;
+    }
+    &.opensleft:after {
+        content: none;
+    }
+
+    .ranges {
+        width: 240px;
+
+        li {
+            background-color: transparent;
+            border: 1px solid transparent;
+            color: #2fa8c7;
+
+            &:hover {
+                border: 1px solid transparent;
+                background-color: #2fa8c7;
+                .border-radius(0);
+            }
+
+            &.active {
+                border: 1px solid transparent;
+                background-color: #2fa8c7;
+                .border-radius(0);
+            }
+        }
+
+        .applyBtn {
+            margin-left: 12px;
+        }
+    }
+
+    .daterangepicker_start_input,
+    .daterangepicker_end_input {
+        display: none;
+    }
+
+    .calendar {
+        td.active {
+            border: 1px solid transparent;
+            background-color: #2fa8c7;
+            .border-radius(0);
+        }
+    }
+}
+
 .breadcrumb {
     display: inline-block;
     background-color: transparent;
