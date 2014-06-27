@@ -34,7 +34,6 @@ class ArticleStats(models.Model):
         decimal_places=4,
         blank=False,
         null=False
-   
     )
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
