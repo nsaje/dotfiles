@@ -30,7 +30,7 @@
                     <td class="no-data" colspan="7">No data available.</td>
                 </tr>
                 <tr ng-repeat="row in rows">
-                    <td colspan="2">{{ row.title }}</td>
+                    <td colspan="2"><a href="{{ row.url }}">{{ row.title }}</a></td>
                     <td class="text-right number">{{ (row.cost | currency:"$") || 'N/A' }}</td>
                     <td class="text-right number">{{ (row.cpc | currency:"$") || 'N/A' }}</td>
                     <td class="text-right number">{{ (row.clicks | number:0) || 'N/A' }}</td>
