@@ -34,13 +34,10 @@ def query(start_date, end_date, breakdown=None, **constraints):
     if not (set(breakdown) <= set(DIMENSIONS)):
         raise ReportsQueryError('Invalid value for breakdown.')
 
-    if 'date' not in breakdown:
-        breakdown.insert(0, 'datetime')
-    else:
-        for i, field in enumerate(breakdown):
-            if field == 'date':
-                breakdown[i] = 'datetime'
-                break
+    for i, field in enumerate(breakdown):
+        if field == 'date':
+            breakdown[i] = 'datetime'
+            break
 
     for k, v in constraints.items():
         if isinstance(v, (list, tuple)):
@@ -48,7 +45,8 @@ def query(start_date, end_date, breakdown=None, **constraints):
             constraints[new_k] = v
             del constraints[k]
 
-    stats = models.ArticleStats.objects.\
+    if breakdown:
+        stats = models.ArticleStats.objects.\
             values(*breakdown).\
             filter(**constraints).\
             filter(datetime__gte=start_date, datetime__lte=end_date).\
@@ -60,13 +58,37 @@ def query(start_date, end_date, breakdown=None, **constraints):
             ).\
             order_by(*breakdown)
 
-    stats = list(stats)
+        stats = list(stats)
+    else:
+        stats = models.ArticleStats.objects.\
+            filter(**constraints).\
+            filter(datetime__gte=start_date, datetime__lte=end_date).\
+            aggregate(
+                cpc_cc=Avg('cpc_cc'),
+                cost_cc=Avg('cost_cc'),
+                impressions=Sum('impressions'),
+                clicks=Sum('clicks')
+            )
+        stats = [stats]
 
     for stat in stats:
-        stat['date'] = stat.pop('datetime').date()
-        stat['ctr'] = float(stat['clicks']) / stat['impressions'] * 100 if stat['impressions'] > 0 else None
-        stat['cost'] = float(decimal.Decimal(round(stat.pop('cost_cc'))) / decimal.Decimal(10000))
-        stat['cpc'] = float(decimal.Decimal(round(stat.pop('cpc_cc'))) / decimal.Decimal(10000))
+        if 'datetime' in stat:
+            stat['date'] = stat.pop('datetime').date()
+
+        if stat['clicks'] is not None and stat['impressions'] > 0:
+            stat['ctr'] = float(stat['clicks']) / stat['impressions'] * 100
+        else:
+            stat['ctr'] = None
+
+        if stat['cost_cc'] is None:
+            stat['cost'] = stat.pop('cost_cc')
+        else:
+            stat['cost'] = float(decimal.Decimal(round(stat.pop('cost_cc'))) / decimal.Decimal(10000))
+
+        if stat['cpc_cc'] is None:
+            stat['cpc'] = stat.pop('cpc_cc')
+        else:
+            stat['cpc'] = float(decimal.Decimal(round(stat.pop('cpc_cc'))) / decimal.Decimal(10000))
 
     return stats
 
