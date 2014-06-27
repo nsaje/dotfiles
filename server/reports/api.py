@@ -51,6 +51,7 @@ def query(start_date, end_date, breakdown=None, **constraints):
     stats = models.ArticleStats.objects.\
             values(*breakdown).\
             filter(**constraints).\
+            filter(datetime__gte=start_date, datetime__lte=end_date).\
             annotate(
                 cpc_cc=Avg('cpc_cc'),
                 cost_cc=Avg('cost_cc'),
