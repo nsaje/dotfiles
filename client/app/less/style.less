@@ -700,6 +700,7 @@ div[datepicker] {
     color: #454545;
     text-align: center;
     width: 100%;
+    position: relative;
     
     form {
         display: inline-block;
@@ -725,6 +726,7 @@ div[datepicker] {
         border: 1px solid @default-color;
         line-height: 32px;
         padding: 0 10px;
+        cursor: pointer;
 
         img {
             height: 14px;
@@ -735,6 +737,9 @@ div[datepicker] {
         margin: 0 10px;
     }
 
+    .loader {
+        position: absolute;
+    }
 }
 
 /* pagination select */

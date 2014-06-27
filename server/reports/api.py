@@ -54,7 +54,7 @@ def query(start_date, end_date, breakdown=None, **constraints):
             filter(datetime__gte=start_date, datetime__lte=end_date).\
             annotate(
                 cpc_cc=Avg('cpc_cc'),
-                cost_cc=Avg('cost_cc'),
+                cost_cc=Sum('cost_cc'),
                 impressions=Sum('impressions'),
                 clicks=Sum('clicks')
             ).\

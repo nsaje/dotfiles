@@ -21,7 +21,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr ng-if="loadRequestInProgress">
+                <tr ng-if="loadRequestInProgress && !rows">
                     <td colspan="7" class="loader-row">
                         <img class="loader" ng-src="{{ config.static_url }}/img/loader.svg">
                     </td>
@@ -66,6 +66,7 @@
             <span class="current-rows">{{ pagination.startIndex}} - {{ pagination.endIndex }} of {{ pagination.count }}</span>
             <div class="button" ng-click="loadPage(pagination.currentPage + 1)"><img ng-src="{{ config.static_url }}/img/arrow-next.svg"></div>
             <div class="button" ng-click="loadPage(pagination.numPages)"><img ng-src="{{ config.static_url }}/img/arrow-last.svg"></div>
+            <img ng-if="loadRequestInProgress && rows" class="loader" ng-src="{{ config.static_url }}/img/loader.svg">
         </pagination>
     </div>
 </div>

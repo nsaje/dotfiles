@@ -238,7 +238,6 @@ class AdGroupNetworksTable(api_common.BaseApiView):
         totals_data = api.query(
             get_stats_start_date(request.GET.get('start_date')),
             get_stats_end_date(request.GET.get('end_date')),
-            [],
             ad_group=int(ad_group.id)
         )[0]
 
@@ -301,16 +300,10 @@ class AdGroupAdsTable(api_common.BaseApiView):
 
         page = request.GET.get('page')
         size = request.GET.get('size')
+        start_date = get_stats_start_date(request.GET.get('start_date'))
+        end_date = get_stats_end_date(request.GET.get('end_date'))
 
-        # validate size
-        try:
-            validate_integer(size)
-        except ValidationError:
-            size = 5
-
-        size = int(size)
-        if size < 1 or size > 10:
-            size = 5
+        size = max(min(int(size or 5), 10), 1)
 
         article_list = models.Article.objects.filter(ad_group=ad_group).order_by('title')
         paginator = Paginator(article_list, size)
@@ -322,24 +315,19 @@ class AdGroupAdsTable(api_common.BaseApiView):
         except EmptyPage:
             articles = paginator.page(paginator.num_pages)
 
-        article_data = [
-            {'ad_group': 1, 'cost': 0.05441137311908372, 'network': 4, 'impressions': 138, 'date': datetime.date(2014, 5, 12), 'article': 1, 'cpc': 0.05441137311908372, 'clicks': 1, 'ctr': 0.0023}
-        ]
-        # article_data = api.query(
-        #     datetime.date.min,
-        #     datetime.date.today(),
-        #     ['network'],
-        #     ad_group=int(ad_group.id),
-        #     article=[article.id for article in articles]
-        # )
+        article_data = api.query(
+            start_date,
+            end_date,
+            ['article'],
+            ad_group=int(ad_group.id),
+            article=[article.id for article in articles]
+        )
 
-        totals_data = {'ad_group': 0, 'cost': 0.05441137311908372, 'network': 4, 'impressions': 138, 'date': datetime.date(2014, 5, 12), 'cpc': 0.05441137311908372, 'clicks': 1, 'ctr': 0.0023}
-        # totals_data = api.query(
-        #     datetime.date.min,
-        #     datetime.date.today(),
-        #     [],
-        #     ad_group=int(ad_group.id)
-        # )[0]
+        totals_data = api.query(
+            start_date,
+            end_date,
+            ad_group=int(ad_group.id)
+        )[0]
 
         return self.create_api_response({
             'rows': self.get_rows(ad_group, article_data, articles),

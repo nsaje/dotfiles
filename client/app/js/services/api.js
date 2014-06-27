@@ -79,7 +79,7 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
     }
 
     function AdGroupAdsTable() {
-        this.get = function (id, page, size) {
+        this.get = function (id, page, size, startDate, endDate) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/ads/table/';
             var config = {
@@ -92,6 +92,14 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
 
             if (size) {
                 config.params.size = size;
+            }
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
             }
 
             $http.get(url, config).
