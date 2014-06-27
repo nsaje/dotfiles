@@ -64,7 +64,6 @@ def query(start_date, end_date, breakdown=None, **constraints):
     for stat in stats:
         stat['date'] = stat.pop('datetime').date()
         stat['ctr'] = float(stat['clicks']) / stat['impressions'] if stat['impressions'] > 0 else None
-        print stat['cost_cc']
         stat['cost'] = float(decimal.Decimal(round(stat.pop('cost_cc'))) / decimal.Decimal(10000))
         stat['cpc'] = float(decimal.Decimal(round(stat.pop('cpc_cc'))) / decimal.Decimal(10000))
 
