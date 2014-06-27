@@ -42,7 +42,7 @@ def query(start_date, end_date, breakdown=None, **constraints):
                 breakdown[i] = 'datetime'
                 break
 
-    for k, v in constraints.iteritems():
+    for k, v in constraints.items():
         if isinstance(v, (list, tuple)):
             new_k = '{0}__in'.format(k)
             constraints[new_k] = v
