@@ -246,7 +246,8 @@ class AdGroupNetworksTable(api_common.BaseApiView):
 
     def get_totals(self, ad_group, totals_data, network_settings):
         return {
-            'daily_budget': float(sum(settings.daily_budget_cc for settings in network_settings.values())),
+            'daily_budget': float(sum(settings.daily_budget_cc for settings in network_settings.values()
+                                      if settings.daily_budget_cc is not None)),
             'cost': totals_data['cost'],
             'cpc': totals_data['cpc'],
             'clicks': totals_data['clicks'],
@@ -275,13 +276,13 @@ class AdGroupNetworksTable(api_common.BaseApiView):
             rows.append({
                 'name': settings.network.name,
                 'status': settings.state,
-                'bid_cpc': float(settings.cpc_cc),
-                'daily_budget': float(settings.daily_budget_cc),
-                'cost': network_data.get('cost', 0),
-                'cpc': network_data.get('cpc', 0),
-                'clicks': network_data.get('clicks', 0),
-                'impressions': network_data.get('impressions', 0),
-                'ctr': network_data.get('ctr', 0),
+                'bid_cpc': float(settings.cpc_cc) if settings.cpc_cc is not None else None,
+                'daily_budget': float(settings.daily_budget_cc) if settings.daily_budget_cc is not None else None,
+                'cost': network_data.get('cost', None),
+                'cpc': network_data.get('cpc', None),
+                'clicks': network_data.get('clicks', None),
+                'impressions': network_data.get('impressions', None),
+                'ctr': network_data.get('ctr', None),
             })
 
         return rows

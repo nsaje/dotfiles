@@ -218,11 +218,20 @@ class AdGroupNetworkSettings(models.Model):
                 continue
 
             result[nid] = cls(
-                state=constants.AdGroupSettingsState.INACTIVE,
+                state=None,
                 ad_group=ad_group,
                 network=Network.objects.get(pk=nid),
-                cpc_cc=0,
-                daily_budget_cc=0
             )
 
         return result
+
+
+class Article(models.Model):
+
+    url = models.CharField(max_length=2048, editable=False, null=True)
+    title = models.CharField(max_length=256, editable=False, null=True)
+
+    ad_group = models.ForeignKey('AdGroup')
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
