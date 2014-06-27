@@ -8,6 +8,9 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import render
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.validators import validate_integer
+from django.forms import ValidationError
 
 from dash import api_common
 from dash import exc
@@ -235,7 +238,6 @@ class AdGroupNetworksTable(api_common.BaseApiView):
         totals_data = api.query(
             get_stats_start_date(request.GET.get('start_date')),
             get_stats_end_date(request.GET.get('end_date')),
-            [],
             ad_group=int(ad_group.id)
         )[0]
 
@@ -283,6 +285,89 @@ class AdGroupNetworksTable(api_common.BaseApiView):
                 'clicks': network_data.get('clicks', None),
                 'impressions': network_data.get('impressions', None),
                 'ctr': network_data.get('ctr', None),
+            })
+
+        return rows
+
+
+class AdGroupAdsTable(api_common.BaseApiView):
+    def get(self, request, ad_group_id):
+        try:
+            ad_group = models.AdGroup.user_objects.get_for_user(request.user).\
+                filter(id=int(ad_group_id)).get()
+        except models.AdGroup.DoesNotExist:
+            raise exc.MissingDataError('Ad Group does not exist')
+
+        page = request.GET.get('page')
+        size = request.GET.get('size')
+        start_date = get_stats_start_date(request.GET.get('start_date'))
+        end_date = get_stats_end_date(request.GET.get('end_date'))
+
+        size = max(min(int(size or 5), 50), 1)
+
+        article_list = models.Article.objects.filter(ad_group=ad_group).order_by('title')
+        paginator = Paginator(article_list, size)
+
+        try:
+            articles = paginator.page(page)
+        except PageNotAnInteger:
+            articles = paginator.page(1)
+        except EmptyPage:
+            articles = paginator.page(paginator.num_pages)
+
+        article_data = api.query(
+            start_date,
+            end_date,
+            ['article'],
+            ad_group=int(ad_group.id),
+            article=[article.id for article in articles]
+        )
+
+        totals_data = api.query(
+            start_date,
+            end_date,
+            ad_group=int(ad_group.id)
+        )[0]
+
+        return self.create_api_response({
+            'rows': self.get_rows(ad_group, article_data, articles),
+            'totals': self.get_totals(totals_data),
+            'pagination': {
+                'currentPage': articles.number,
+                'numPages': articles.paginator.num_pages,
+                'count': articles.paginator.count,
+                'startIndex': articles.start_index(),
+                'endIndex': articles.end_index(),
+                'size': size
+            }
+        })
+
+    def get_totals(self, totals_data):
+        return {
+            'cost': totals_data['cost'],
+            'cpc': totals_data['cpc'],
+            'clicks': totals_data['clicks'],
+            'impressions': totals_data['impressions'],
+            'ctr': totals_data['ctr'],
+        }
+
+    def get_rows(self, ad_group, article_data, articles):
+        rows = []
+        for article in articles:
+            data = {}
+            for item in article_data:
+                if item['article'] == article.id:
+                    data = item
+                    break
+
+            rows.append({
+                'url': article.url,
+                'title': article.title,
+                'cost': data.get('cost', None),
+                'cpc': data.get('cpc', None),
+                'clicks': data.get('clicks', None),
+                'impressions': data.get('impressions', None),
+                'ctr': data.get('ctr', None),
             })
 
         return rows

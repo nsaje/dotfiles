@@ -50,7 +50,6 @@ def query(start_date, end_date, breakdown=None, **constraints):
             filter(**constraints).\
             filter(datetime__gte=start_date, datetime__lte=end_date).\
             annotate(
-                cpc_cc=Avg('cpc_cc'),
                 cost_cc=Avg('cost_cc'),
                 impressions=Sum('impressions'),
                 clicks=Sum('clicks')
@@ -63,7 +62,6 @@ def query(start_date, end_date, breakdown=None, **constraints):
             filter(**constraints).\
             filter(datetime__gte=start_date, datetime__lte=end_date).\
             aggregate(
-                cpc_cc=Avg('cpc_cc'),
                 cost_cc=Avg('cost_cc'),
                 impressions=Sum('impressions'),
                 clicks=Sum('clicks')
@@ -75,19 +73,19 @@ def query(start_date, end_date, breakdown=None, **constraints):
             stat['date'] = stat.pop('datetime').date()
 
         if stat['clicks'] is not None and stat['impressions'] > 0:
-            stat['ctr'] = float(stat['clicks']) / stat['impressions'] * 100
+            stat['ctr'] = stat['clicks'] / stat['impressions'] * 100
         else:
             stat['ctr'] = None
+
+        if stat['cost_cc'] is not None and stat['clicks'] > 0:
+            stat['cpc'] = float((decimal.Decimal(stat['cost_cc']) / decimal.Decimal(stat['clicks'])) / decimal.Decimal(10000))
+        else:
+            stat['cpc'] = None
 
         if stat['cost_cc'] is None:
             stat['cost'] = stat.pop('cost_cc')
         else:
             stat['cost'] = float(decimal.Decimal(round(stat.pop('cost_cc'))) / decimal.Decimal(10000))
-
-        if stat['cpc_cc'] is None:
-            stat['cpc'] = stat.pop('cpc_cc')
-        else:
-            stat['cpc'] = float(decimal.Decimal(round(stat.pop('cpc_cc'))) / decimal.Decimal(10000))
 
     return stats
 
@@ -114,15 +112,11 @@ def upsert(data, date):
                 article_stats = models.ArticleStats(datetime=date, article=article,
                                                     ad_group=ad_group, network=network)
 
-            if 'cpc_cc' not in row:
-                row['cpc_cc'] = int(round(row['cost_cc'] / row['clicks']))
-
-            if 'cost_cc' not in row:
+            if 'cost_cc' not in row or row['cost_cc'] is None:
                 row['cost_cc'] = row['cpc_cc'] * row['clicks']
 
             article_stats.impressions = row['impressions']
             article_stats.clicks = row['clicks']
-            article_stats.cpc_cc = row['cpc_cc']
             article_stats.cost_cc = row['cost_cc']
 
             article_stats.save()

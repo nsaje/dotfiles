@@ -9,6 +9,10 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', 'api', fun
     $scope.chartData = [];
     $scope.isChartShown = true;
     $scope.chartBtnTitle = 'Hide chart';
+    $scope.pagination = {
+        currentPage: 1,
+        numPages: 5
+    };
 
     $scope.setChartData = function () {
         var result = [[]];
@@ -26,8 +30,29 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', 'api', fun
         $scope.chartData = result;
     };
 
-    $scope.getDailyStats = function (adGroupId) {
-        api.adGroupNetworksDailyStats.list(adGroupId, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
+    $scope.loadRequestInProgress = false;
+
+    $scope.getTableData = function () {
+        $scope.loadRequestInProgress = true;
+
+        api.adGroupAdsTable.get($state.params.id, $scope.pagination.currentPage, $scope.pagination.size, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
+            function (data) {
+                $scope.rows = data.rows;
+                $scope.totals = data.totals;
+
+                $scope.pagination = data.pagination;
+            },
+            function (data) {
+                // error
+                return;
+            }
+        ).finally(function () {
+            $scope.loadRequestInProgress = false;
+        });
+    };
+
+    $scope.getDailyStats = function () {
+        api.adGroupNetworksDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
             function (data) {
                 $scope.dailyStats = data;
                 $scope.setChartData();
@@ -61,33 +86,65 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', 'api', fun
 
     // From parent scope (mainCtrl).
     $scope.$watch('dateRange', function (newValue, oldValue) {
-        $scope.getDailyStats($state.params.id);
+        $scope.getDailyStats();
+        $scope.getTableData();
     });
 
     $scope.$on("$stateChangeSuccess", function() {
         var chartMetric1 = $location.search().chart_metric1;
         var chartMetric2 = $location.search().chart_metric2;
         var chartHidden = $location.search().chart_hidden;
-        var changed = false;
+        var chartChanged = false;
 
         if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
             $scope.chartMetric1 = chartMetric1;
-            changed = true;
+            chartChanged = true;
         }
 
         if (chartMetric2 !== undefined && $scope.chartMetric2 !== chartMetric2) {
             $scope.chartMetric2 = chartMetric2;
-            changed = true;
+            chartChanged = true;
         }
 
         if (chartHidden) {
             $scope.isChartShown = false;
         }
 
-        if (changed) {
+        if (chartChanged) {
             $scope.setChartData();
         }
-    });
 
-    $scope.getDailyStats($state.params.id);
+        var page = $location.search().page;
+        var size = $location.search().size;
+        var tableChanged = false;
+
+        if (page !== undefined && $scope.pagination.currentPage !== page) {
+            $scope.pagination.currentPage = page;
+            tableChanged = true;
+        }
+
+        if (size !== undefined && $scope.pagination.size !== size) {
+            $scope.pagination.size = size;
+            tableChanged = true;
+        }
+        
+        if (tableChanged) {
+            $scope.loadPage();
+        }
+    });
+    
+    // pagination
+    $scope.sizeRange = [5, 10, 20, 50];
+
+    $scope.loadPage = function(page) {
+        if(page) {
+            $scope.pagination.currentPage = page;
+        }
+
+        if ($scope.pagination.currentPage && $scope.pagination.size) {
+            $location.search('page', $scope.pagination.currentPage);
+            $location.search('size', $scope.pagination.size);
+            $scope.getTableData();
+        }
+    }
 }]);
