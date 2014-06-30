@@ -10,6 +10,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
     $scope.alerts = [];
     $scope.saveRequestInProgress = false;
     $scope.saved = null;
+    $scope.discarded = null;
 
     $scope.closeAlert = function(index) {
         $scope.alerts.splice(index, 1);
