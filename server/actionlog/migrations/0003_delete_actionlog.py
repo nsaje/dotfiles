@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('actionlog', '0002_auto_20140626_1615'),
-        ('dash', '__first__'),
+        ('dash', '0009_auto_20140627_1507'),
     ]
 
     operations = [
