@@ -87,6 +87,27 @@ class Network(models.Model):
         return self.name
 
 
+class NetworkCredentials(models.Model):
+    id = models.AutoField(primary_key=True)
+    network = models.ForeignKey(Network)
+    name = models.CharField(
+        max_length=127,
+        editable=True,
+        blank=False,
+        null=False
+    )
+    credentials = jsonfield.JSONField(default={})
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+
+    class Meta:
+        verbose_name_plural = "Network Credentials"
+
+    def __unicode__(self):
+        return self.name
+
+
 class UserAdGroupManager(models.Manager):
     def get_for_user(self, user):
         queryset = super(UserAdGroupManager, self).get_queryset()
@@ -131,6 +152,7 @@ class AdGroup(models.Model):
 class AdGroupNetwork(models.Model):
     network = models.ForeignKey(Network)
     ad_group = models.ForeignKey(AdGroup)
+    credentials = models.ForeignKey(NetworkCredentials, null=True)
 
     network_campaign_key = jsonfield.JSONField(blank=True, default={})
 
