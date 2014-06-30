@@ -152,8 +152,8 @@ class AdGroup(models.Model):
 class AdGroupNetwork(models.Model):
     network = models.ForeignKey(Network)
     ad_group = models.ForeignKey(AdGroup)
-    credentials = models.ForeignKey(NetworkCredentials, null=True)
 
+    network_credentials = models.ForeignKey(NetworkCredentials, null=True)
     network_campaign_key = jsonfield.JSONField(blank=True, default={})
 
     class Meta:

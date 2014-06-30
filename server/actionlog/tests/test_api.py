@@ -51,6 +51,7 @@ class ActionLogApiTest(TestCase):
             payload = {
                 'network': network.type,
                 'action': constants.Action.SET_CAMPAIGN_STATE,
+                'credentials': ad_group_network.network_credentials.credentials,
                 'args': {
                     'partner_campaign_id': ad_group_network.network_campaign_key,
                     'state': dashconstants.AdGroupNetworkSettingsState.INACTIVE,
@@ -85,6 +86,7 @@ class ActionLogApiTest(TestCase):
             payload = {
                 'network': network.type,
                 'action': constants.Action.FETCH_CAMPAIGN_STATUS,
+                'credentials': ad_group_network.network_credentials.credentials,
                 'args': {
                     'partner_campaign_id': ad_group_network.network_campaign_key,
                 },
@@ -117,6 +119,7 @@ class ActionLogApiTest(TestCase):
             payload = {
                 'network': network.type,
                 'action': constants.Action.FETCH_REPORTS,
+                'credentials': ad_group_network.network_credentials.credentials,
                 'args': {
                     'partner_campaign_ids': [ad_group_network.network_campaign_key],
                     'date': date.strftime('%Y-%m-%d'),

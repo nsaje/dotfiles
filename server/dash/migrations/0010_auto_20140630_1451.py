@@ -16,19 +16,20 @@ class Migration(migrations.Migration):
             name='NetworkCredentials',
             fields=[
                 ('id', models.AutoField(serialize=False, primary_key=True)),
+                ('network', models.ForeignKey(to='dash.Network', to_field=b'id')),
                 ('name', models.CharField(max_length=127)),
                 ('credentials', jsonfield.fields.JSONField(default={})),
-                ('network', models.ForeignKey(to='dash.Network', to_field=b'id')),
                 ('created_dt', models.DateTimeField(auto_now_add=True, verbose_name=b'Created at')),
                 ('modified_dt', models.DateTimeField(auto_now=True, verbose_name=b'Modified at')),
             ],
             options={
+                'verbose_name_plural': b'Network Credentials',
             },
             bases=(models.Model,),
         ),
         migrations.AddField(
             model_name='adgroupnetwork',
-            name='credentials',
+            name='network_credentials',
             field=models.ForeignKey(to='dash.NetworkCredentials', to_field=b'id', null=True),
             preserve_default=True,
         ),
