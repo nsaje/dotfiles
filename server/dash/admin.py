@@ -143,12 +143,26 @@ class NetworkAdmin(admin.ModelAdmin):
     readonly_fields = ('created_dt', 'modified_dt')
 
 
+class NetworkCredentialsAdmin(admin.ModelAdmin):
+    verbose_name = "Network Credentials"
+    verbose_name_plural = "Network Credentials"
+    search_fields = ['name', 'network']
+    list_display = (
+        'name',
+        'network',
+        'credentials',
+        'created_dt',
+        'modified_dt',
+    )
+    readonly_fields = ('created_dt', 'modified_dt')
+
+
 # Ad Group
 
 class AdGroupNetworksInline(admin.TabularInline):
     verbose_name = "Ad Group's Network"
     verbose_name_plural = "Ad Group's Networks"
-    model = models.AdGroup.networks.through
+    model = models.AdGroupNetwork
     extra = 0
 
 
@@ -185,12 +199,13 @@ class AdGroupAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
     inlines = (
+        AdGroupNetworksInline,
         AdGroupSettingsInline,
         AdGroupNetworkSettingsInline,
-        AdGroupNetworksInline,
     )
 
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
 admin.site.register(models.Network, NetworkAdmin)
 admin.site.register(models.AdGroup, AdGroupAdmin)
+admin.site.register(models.NetworkCredentials, NetworkCredentialsAdmin)

@@ -58,6 +58,7 @@ def _init_stop_campaign(ad_group_network):
         payload = json.dumps({
             'network': ad_group_network.network.type,
             'action': action.action,
+            'credentials': ad_group_network.credentials,
             'args': {
                 'partner_campaign_id': ad_group_network.network_campaign_key,
                 'state': dashconstants.AdGroupNetworkSettingsState.INACTIVE,
@@ -86,6 +87,7 @@ def _init_fetch_status(ad_group_network):
         payload = json.dumps({
             'action': action.action,
             'network': ad_group_network.network.type,
+            'credentials': ad_group_network.credentials,
             'args': {
                 'partner_campaign_id': ad_group_network.network_campaign_key
             },
@@ -113,6 +115,7 @@ def _init_fetch_reports(ad_group_network, date):
         payload = json.dumps({
             'action': action.action,
             'network': ad_group_network.network.type,
+            'credentials': ad_group_network.credentials,
             'args': {
                 'partner_campaign_ids': [ad_group_network.network_campaign_key],
                 'date': date.strftime('%Y-%m-%d'),
