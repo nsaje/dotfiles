@@ -61,11 +61,11 @@
                 <option ng-repeat="number in sizeRange" value="{{ number }}">{{ number }}</option>
             </select>
 
-            <div ng-class="{ disabled: pagination.currentPage == 1 }" class="button btn-default" ng-click="loadPage(1)"><img ng-src="{{ config.static_url }}/img/arrow-first.svg"></div>
-            <div ng-class="{ disabled: pagination.currentPage == 1 }" class="button btn-default" ng-click="loadPage(pagination.currentPage - 1)"><img ng-src="{{ config.static_url }}/img/arrow-prev.svg"></div>
+            <div ng-disabled="pagination.currentPage == 1" class="btn btn-default" ng-click="loadPage(1)"><img ng-src="{{ config.static_url }}/img/arrow-first.svg"></div>
+            <div ng-disabled="pagination.currentPage == 1" class="btn btn-default" ng-click="loadPage(pagination.currentPage - 1)"><img ng-src="{{ config.static_url }}/img/arrow-prev.svg"></div>
             <span class="current-rows">{{ pagination.startIndex}} - {{ pagination.endIndex }} of {{ pagination.count }}</span>
-            <div ng-class="{ disabled: pagination.currentPage == pagination.numPages }" class="button btn-default" ng-click="loadPage(pagination.currentPage + 1)"><img ng-src="{{ config.static_url }}/img/arrow-next.svg"></div>
-            <div ng-class="{ disabled: pagination.currentPage == pagination.numPages }" class="button btn-default" ng-click="loadPage(pagination.numPages)"><img ng-src="{{ config.static_url }}/img/arrow-last.svg"></div>
+            <div ng-disabled="pagination.currentPage == pagination.numPages" class="btn btn-default" ng-click="loadPage(pagination.currentPage + 1)"><img ng-src="{{ config.static_url }}/img/arrow-next.svg"></div>
+            <div ng-disabled="pagination.currentPage == pagination.numPages" class="btn btn-default" ng-click="loadPage(pagination.numPages)"><img ng-src="{{ config.static_url }}/img/arrow-last.svg"></div>
             <img ng-if="loadRequestInProgress && rows" class="loader" ng-src="{{ config.static_url }}/img/loader.svg">
         </pagination>
     </div>
