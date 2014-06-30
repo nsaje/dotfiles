@@ -1,9 +1,12 @@
+import jsonfield
+import binascii
+
 from django.conf import settings
 from django.contrib import auth
 from django.db import models
-import jsonfield
 
 from dash import constants
+from utils import encryption_helpers
 
 
 class PermissionMixin(object):
@@ -96,7 +99,7 @@ class NetworkCredentials(models.Model):
         blank=False,
         null=False
     )
-    credentials = jsonfield.JSONField(default={})
+    credentials = models.TextField(blank=True, null=False)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
@@ -106,6 +109,15 @@ class NetworkCredentials(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        encrypted_credentials = encryption_helpers.aes_encrypt(
+            self.credentials,
+            settings.CREDENTIALS_ENCRYPTION_KEY
+        )
+
+        self.credentials = binascii.b2a_base64(encrypted_credentials)
+        super(NetworkCredentials, self).save(*args, **kwargs)
 
 
 class UserAdGroupManager(models.Manager):

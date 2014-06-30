@@ -28,6 +28,12 @@ class ActionLogApiTest(TestCase):
         mock_urlopen = patcher_urlopen.start()
         self._prepare_mock_urlopen(mock_urlopen)
 
+        self.credentials_encription_key = settings.CREDENTIALS_ENCRYPTION_KEY
+        settings.CREDENTIALS_ENCRYPTION_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+    def tearDown(self):
+        settings.CREDENTIALS_ENCRYPTION_KEY = self.credentials_encription_key
+
     def test_stop_ad_group(self):
         ad_group = dashmodels.AdGroup.objects.get(id=1)
         api.stop_ad_group(ad_group)
@@ -51,7 +57,10 @@ class ActionLogApiTest(TestCase):
             payload = {
                 'network': network.type,
                 'action': constants.Action.SET_CAMPAIGN_STATE,
-                'credentials': ad_group_network.network_credentials.credentials,
+                'credentials': {
+                    'username': 'test',
+                    'password': 'test'
+                },
                 'args': {
                     'partner_campaign_id': ad_group_network.network_campaign_key,
                     'state': dashconstants.AdGroupNetworkSettingsState.INACTIVE,
@@ -86,7 +95,10 @@ class ActionLogApiTest(TestCase):
             payload = {
                 'network': network.type,
                 'action': constants.Action.FETCH_CAMPAIGN_STATUS,
-                'credentials': ad_group_network.network_credentials.credentials,
+                'credentials': {
+                    'username': 'test',
+                    'password': 'test'
+                },
                 'args': {
                     'partner_campaign_id': ad_group_network.network_campaign_key,
                 },
@@ -119,7 +131,10 @@ class ActionLogApiTest(TestCase):
             payload = {
                 'network': network.type,
                 'action': constants.Action.FETCH_REPORTS,
-                'credentials': ad_group_network.network_credentials.credentials,
+                'credentials': {
+                    'username': 'test',
+                    'password': 'test'
+                },
                 'args': {
                     'partner_campaign_ids': [ad_group_network.network_campaign_key],
                     'date': date.strftime('%Y-%m-%d'),

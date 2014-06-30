@@ -139,9 +139,7 @@
         modified_dt: '2014-06-04T00:00:00Z'
         network: 1
         name: 'Test credentials 1'
-        credentials:
-            username: 'test'
-            password: 'test'
+        credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
     model: dash.networkcredentials
     pk: 1
 
@@ -150,9 +148,7 @@
         modified_dt: '2014-06-04T00:00:00Z'
         network: 2
         name: 'Test credentials 2'
-        credentials:
-            username: 'test'
-            password: 'test'
+        credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
     model: dash.networkcredentials
     pk: 2
 
@@ -161,9 +157,7 @@
         modified_dt: '2014-06-04T00:00:00Z'
         network: 3
         name: 'Test credentials 3'
-        credentials:
-            username: 'test'
-            password: 'test'
+        credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
     model: dash.networkcredentials
     pk: 3
 
@@ -172,9 +166,7 @@
         modified_dt: '2014-06-04T00:00:00Z'
         network: 4
         name: 'Test credentials 4'
-        credentials:
-            username: 'test'
-            password: 'test'
+        credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
     model: dash.networkcredentials
     pk: 4
 
@@ -183,8 +175,6 @@
         modified_dt: '2014-06-04T00:00:00Z'
         network: 5
         name: 'Test credentials 5'
-        credentials:
-            username: 'test'
-            password: 'test'
+        credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
     model: dash.networkcredentials
     pk: 5

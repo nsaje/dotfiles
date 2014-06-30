@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import jsonfield.fields
 
 
 class Migration(migrations.Migration):
@@ -18,7 +17,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(serialize=False, primary_key=True)),
                 ('network', models.ForeignKey(to='dash.Network', to_field=b'id')),
                 ('name', models.CharField(max_length=127)),
-                ('credentials', jsonfield.fields.JSONField(default={})),
+                ('credentials', models.TextField(blank=True)),
                 ('created_dt', models.DateTimeField(auto_now_add=True, verbose_name=b'Created at')),
                 ('modified_dt', models.DateTimeField(auto_now=True, verbose_name=b'Modified at')),
             ],
