@@ -50,8 +50,7 @@ def _init_stop_campaign(ad_group_network):
         action = models.ActionLog.objects.create(
             action=constants.Action.SET_CAMPAIGN_STATE,
             action_type=constants.ActionType.AUTOMATIC,
-            ad_group=ad_group_network.ad_group,
-            network=ad_group_network.network,
+            ad_group_network=ad_group_network,
         )
 
         callback = urlparse.urljoin(
@@ -85,8 +84,7 @@ def _init_fetch_status(ad_group_network):
         action = models.ActionLog.objects.create(
             action=constants.Action.FETCH_CAMPAIGN_STATUS,
             action_type=constants.ActionType.AUTOMATIC,
-            ad_group=ad_group_network.ad_group,
-            network=ad_group_network.network,
+            ad_group_network=ad_group_network,
         )
 
         callback = urlparse.urljoin(
@@ -119,8 +117,7 @@ def _init_fetch_reports(ad_group_network, date):
         action = models.ActionLog.objects.create(
             action=constants.Action.FETCH_REPORTS,
             action_type=constants.ActionType.AUTOMATIC,
-            ad_group=ad_group_network.ad_group,
-            network=ad_group_network.network,
+            ad_group_network=ad_group_network,
         )
 
         callback = urlparse.urljoin(
@@ -153,8 +150,7 @@ def _init_set_campaign_property(ad_group_network, prop):
     models.ActionLog.objects.create(
         action=constants.Action.SET_PROPERTY,
         action_type=constants.ActionType.MANUAL,
-        ad_group=ad_group_network.ad_group,
-        network=ad_group_network.network,
+        ad_group_network=ad_group_network,
         payload=json.dumps({
             'property': prop,
         })

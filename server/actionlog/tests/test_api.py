@@ -36,16 +36,12 @@ class ActionLogApiTest(TestCase):
 
     def test_stop_ad_group(self):
         ad_group = dashmodels.AdGroup.objects.get(id=1)
+        ad_group_networks = dashmodels.AdGroupNetwork.objects.filter(ad_group=ad_group)
         api.stop_ad_group(ad_group)
 
-        for network in ad_group.networks.all():
-            ad_group_network = dashmodels.AdGroupNetwork.objects.get(
-                network=network,
-                ad_group=ad_group
-            )
+        for ad_group_network in ad_group_networks.all():
             action = models.ActionLog.objects.get(
-                ad_group=ad_group,
-                network=network
+                ad_group_network=ad_group_network,
             )
 
             self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
@@ -55,7 +51,7 @@ class ActionLogApiTest(TestCase):
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
             payload = {
-                'network': network.type,
+                'network': ad_group_network.network.type,
                 'action': constants.Action.SET_CAMPAIGN_STATE,
                 'credentials': {
                     'username': 'test',
@@ -71,16 +67,12 @@ class ActionLogApiTest(TestCase):
 
     def test_fetch_ad_group_status(self):
         ad_group = dashmodels.AdGroup.objects.get(id=1)
+        ad_group_networks = dashmodels.AdGroupNetwork.objects.filter(ad_group=ad_group)
         api.fetch_ad_group_status(ad_group)
 
-        for network in ad_group.networks.all():
-            ad_group_network = dashmodels.AdGroupNetwork.objects.get(
-                network=network,
-                ad_group=ad_group
-            )
+        for ad_group_network in ad_group_networks.all():
             action = models.ActionLog.objects.get(
-                ad_group=ad_group,
-                network=network
+                ad_group_network=ad_group_network,
             )
 
             self.assertEqual(
@@ -93,7 +85,7 @@ class ActionLogApiTest(TestCase):
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
             payload = {
-                'network': network.type,
+                'network': ad_group_network.network.type,
                 'action': constants.Action.FETCH_CAMPAIGN_STATUS,
                 'credentials': {
                     'username': 'test',
@@ -109,17 +101,13 @@ class ActionLogApiTest(TestCase):
 
     def test_fetch_ad_group_reports(self):
         ad_group = dashmodels.AdGroup.objects.get(id=1)
+        ad_group_networks = dashmodels.AdGroupNetwork.objects.filter(ad_group=ad_group)
         date = datetime.date(2014, 6, 1)
         api.fetch_ad_group_reports(ad_group, date=date)
 
-        for network in ad_group.networks.all():
-            ad_group_network = dashmodels.AdGroupNetwork.objects.get(
-                network=network,
-                ad_group=ad_group
-            )
+        for ad_group_network in ad_group_networks.all():
             action = models.ActionLog.objects.get(
-                ad_group=ad_group,
-                network=network
+                ad_group_network=ad_group_network,
             )
 
             self.assertEqual(action.action, constants.Action.FETCH_REPORTS)
@@ -129,7 +117,7 @@ class ActionLogApiTest(TestCase):
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
             payload = {
-                'network': network.type,
+                'network': ad_group_network.network.type,
                 'action': constants.Action.FETCH_REPORTS,
                 'credentials': {
                     'username': 'test',
@@ -145,15 +133,16 @@ class ActionLogApiTest(TestCase):
 
     def test_set_ad_group_property(self):
         ad_group = dashmodels.AdGroup.objects.get(id=1)
+        ad_group_networks = dashmodels.AdGroupNetwork.objects.filter(ad_group=ad_group)
+
         prop = {
             'fake_property': 'fake_value',
         }
         api.set_ad_group_property(ad_group, prop=prop)
 
-        for network in ad_group.networks.all():
+        for ad_group_network in ad_group_networks.all():
             action = models.ActionLog.objects.get(
-                ad_group=ad_group,
-                network=network
+                ad_group_network=ad_group_network,
             )
 
             self.assertEqual(action.action, constants.Action.SET_PROPERTY)

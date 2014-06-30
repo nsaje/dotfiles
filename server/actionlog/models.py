@@ -20,8 +20,7 @@ class ActionLog(models.Model):
         choices=constants.ActionType.get_choices()
     )
 
-    ad_group = models.ForeignKey('dash.AdGroup')
-    network = models.ForeignKey('dash.Network')
+    ad_group_network = models.ForeignKey('dash.AdGroupNetwork')
 
     payload = jsonfield.JSONField(blank=True, default=[])
 

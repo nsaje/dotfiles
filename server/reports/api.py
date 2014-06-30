@@ -6,7 +6,7 @@ import urllib
 
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db import transaction
-from django.db.models import Avg, Sum
+from django.db.models import Sum
 
 from . import exc
 from . import models

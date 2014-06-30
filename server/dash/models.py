@@ -206,12 +206,17 @@ class AdGroupSettings(models.Model):
 class AdGroupNetworkSettings(models.Model):
     id = models.AutoField(primary_key=True)
 
-    ad_group = models.ForeignKey(AdGroup)
-    ad_group_network = models.ForeignKey(AdGroupNetwork, null=True)
-    network = models.ForeignKey(Network, null=True)
+    ad_group_network = models.ForeignKey(AdGroupNetwork, null=True, related_name='settings')
+    ad_group = models.ForeignKey(AdGroup)  # used for admin
+    network = models.ForeignKey(Network, null=True)  # used for admin
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='+',
+        null=True,
+        blank=True,
+    )
 
     state = models.IntegerField(
         default=constants.AdGroupNetworkSettingsState.INACTIVE,
@@ -231,6 +236,9 @@ class AdGroupNetworkSettings(models.Model):
         null=True,
         verbose_name='Daily budget'
     )
+
+    class Meta:
+        get_latest_by = 'created_dt'
 
     @classmethod
     def get_current_settings(cls, ad_group):

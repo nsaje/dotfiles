@@ -10,6 +10,7 @@ from actionlog import models as actionlogmodels
 from actionlog import constants as actionlogconstants
 
 from reports import api as reportsapi
+from dash import api as dashapi
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,8 @@ def zwei_callback(request, action_id):
 
 @transaction.atomic
 def _process_zwei_response(action, data):
+    logger.info('Processing Action Response: %s, response: %s', action, data)
+
     if action.action_status != actionlogconstants.ActionStatus.WAITING:
         logger.warning('Action not waiting for a response. Action: %s, response: %s', action, data)
         return
@@ -43,8 +46,9 @@ def _process_zwei_response(action, data):
         date = action.payload['args']['date']
         reportsapi.upsert(data['data'], date)
     elif action.action == actionlogconstants.Action.FETCH_CAMPAIGN_STATUS:
-        # TODO call campaign status save function
-        return NotImplementedError
+        dashapi.campaign_status_upsert(action.ad_group_network, data['data'])
+    elif action.action == actionlogconstants.Action.FETCH_CAMPAIGN_STATUS:
+        raise NotImplementedError
 
     action.status = actionlogconstants.ActionStatus.SUCCESS
     action.save()
