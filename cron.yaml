@@ -5,4 +5,7 @@ cron:
 - hosts: [knot01.zemanta.com]
   job: '0 2 * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py fetch_reports > /dev/null 2>&1'
 
+- hosts: [knot01.zemanta.com]
+  job: '0 * * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py fetch_status > /dev/null 2>&1'
+
 - job: '0 0 * * * mv ~/log/zemanta-eins.server.log ~/log/zemanta-eins.server.$(date +\%Y-\%m-\%d --date="1 day ago").log > /dev/null 2>&1'
