@@ -1,11 +1,11 @@
 <div class="page page-ad-group-settings">
     <alert ng-repeat="alert in alerts" type="{{ alert.type }}" close="closeAlert($index)" ng-bind-html="alert.message"></alert>
 
-    <form id="form-ad-group-settings" class="form-horizontal" ng-submit="saveSettings()">
+    <form id="form-ad-group-settings" class="form-horizontal">
         <div class="form-group">
             <div class="col-xs-4">
                 <div class="btn-group campaign-state-switch">
-                    <label class="btn btn-success" ng-model="settings.state" ng-repeat="state in options.adGroupSettingsStates" btn-radio="state.value" uncheckable>{{ state.name }}</label>
+                    <label class="btn btn-success" ng-model="settings.state" ng-repeat="state in options.adGroupSettingsStates" btn-radio="state.value">{{ state.name }}</label>
                 </div>
             </div>
         </div>
@@ -114,7 +114,11 @@
             </div>
         </div>
 
-		<button type="submit" class="btn btn-default">Save</button>
-        <img class="loader" ng-src="{{ config.static_url }}/img/loader.svg" ng-if="saveRequestInProgress">
+		<button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
+		<button type="button" class="btn btn-default" ng-click="discardSettings()">Discard</button>
+        <img class="loader" ng-src="{{ config.static_url }}/img/loader.svg" ng-show="saveRequestInProgress">
+        <span ng-show="saved" class="success">Your updates have been saved.</span>
+        <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
+        <span ng-show="discarded" class="success">Your updates have been discarded.</span>
 	</form>
 </div>

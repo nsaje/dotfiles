@@ -1,3 +1,4 @@
+import datetime
 import models
 from dash import models as dm
 
@@ -18,7 +19,8 @@ for i, d in enumerate(fakedata.DATA):
                 pk=d['article'],
                 url='http://test{}.com'.format(i),
                 title='Test Article {0}'.format(i),
-                ad_group_id=d['ad_group']
+                ad_group_id=d['ad_group'],
+                created_dt=datetime.datetime.utcnow()
             )
             article.save()
             articles.append(article.pk)
@@ -30,7 +32,6 @@ for i, d in enumerate(fakedata.DATA):
             network_id=d['network'],
             impressions=d['impressions'],
             clicks=d['clicks'],
-            cpc_cc=int(d['cpc'] * 10000),
-            cost_cc=int(d['cost'] * 10000)
+            cost_cc=int(d['cost'] * 10000),
         )
         article_stats.save()

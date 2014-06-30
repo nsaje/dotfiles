@@ -120,20 +120,49 @@ a:visited {
     }
 }
 
+.success {
+    color: #4fca32;
+}
+
+.error {
+    color: #c70000;
+}
+
 .btn {
     .border-radius(0);
 }
 
+.btn-primary,
+.btn-primary:focus,
+.btn-primary:hover,
+.btn-primary:active,
+.btn-primary.active {
+    background-color: #2fa8c7;
+    border-color: #2fa8c7;
+    color: #fff;
+    .box-shadow(none);
+
+    &:hover {
+        background-color: #2b9cb9;
+        border-color: #2488a1;
+    }
+}
+
 .btn-default,
-.btn-default:hover,
 .btn-default:focus,
+.btn-default:hover,
 .btn-default:active,
 .btn-default.active,
 .open .dropdown-toggle.btn-default {
     background-color: #fff;
     border-color: #2fa8c7;
-    .box-shadow(none);
     color: #2fa8c7;
+    .box-shadow(none);
+
+    &:hover {
+        border-color: #2488a1;
+        color: #2488a1;
+    }
 }
 
 .btn:focus,
@@ -234,7 +263,8 @@ a:visited {
 }
 
 div[datepicker] {
-    .btn {
+    .btn,
+    .btn:hover {
         border: 1px solid #fff;
         color: #414141;
 
@@ -561,18 +591,30 @@ div[datepicker] {
             .box-shadow(none);
             .border-radius(0);
             width: 120px;
+
+            &:hover {
+                border-color: #4fca32;
+                color: #4fca32;
+            }
+
+            &.active {
+                border: 1px solid #4fca32;
+                background-color: #4fca32;
+                color: #fff;
+            }
         }
 
-        & > label.active {
-            border: 1px solid #4fca32;
-            background-color: #4fca32;
-            color: #fff;
-        }
+        & > label:first-child {
+            &:hover {
+                border-color: #c70000;
+                color: #c70000;
+            }
 
-        & > label:first-child.active {
-            border-color: #757575;
-            background-color: #757575;
-            color: #fff;
+            &.active {
+                border-color: #c70000;
+                background-color: #c70000;
+                color: #fff;
+            }
         }
     }
     
@@ -756,7 +798,7 @@ div[datepicker] {
         height: 100%;
         border: 1px solid #d2d2d2;
         padding: 5px;
-        overflow: scroll;
+        overflow: auto;
 
         .account-group {
             padding-bottom: 10px;    
