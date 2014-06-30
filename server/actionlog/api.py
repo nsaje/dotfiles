@@ -36,6 +36,16 @@ def set_ad_group_property(ad_group, network=None, prop=None):
         _init_set_campaign_property(ad_group_network, prop)
 
 
+def is_waiting(ad_group):
+    actions = (constants.Action.SET_CAMPAIGN_STATE, constants.Action.SET_PROPERTY)
+    statuses = (constants.ActionStatus.FAILED, constants.ActionStatus.WAITING)
+    exists = models.ActionLog.objects.\
+        filter(action__in=actions, action_status__in=statuses).\
+        exists()
+
+    return exists
+
+
 def _get_ad_group_networks(ad_group, network):
     if not network:
         return ad_group.adgroupnetwork_set.all()

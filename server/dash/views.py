@@ -6,12 +6,12 @@ import dateutil.parser
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.core.validators import validate_integer
-from django.forms import ValidationError
 
+from actionlog import api as actionlog_api
 from dash import api_common
 from dash import exc
 from dash import forms
@@ -130,7 +130,8 @@ class AdGroupSettings(api_common.BaseApiView):
         settings = self.get_current_settings(ad_group)
 
         response = {
-            'settings': self.get_dict(settings, ad_group)
+            'settings': self.get_dict(settings, ad_group),
+            'action_is_waiting': actionlog_api.is_waiting(ad_group)
         }
 
         return self.create_api_response(response)
@@ -148,6 +149,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         form = forms.AdGroupSettingsForm(
             current_settings, resource.get('settings', {})
+            # initial=current_settings
         )
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
@@ -157,11 +159,17 @@ class AdGroupSettings(api_common.BaseApiView):
         settings = models.AdGroupSettings()
         self.set_settings(settings, ad_group, form.cleaned_data)
 
-        ad_group.save()
-        settings.save()
+        with transaction.atomic():
+            ad_group.save()
+            settings.save()
+
+        if settings.state == constants.AdGroupSettingsState.INACTIVE and \
+                settings.state != current_settings.state:
+            actionlog_api.stop_ad_group(ad_group)
 
         response = {
-            'settings': self.get_dict(settings, ad_group)
+            'settings': self.get_dict(settings, ad_group),
+            'action_is_waiting': actionlog_api.is_waiting(ad_group)
         }
 
         return self.create_api_response(response)

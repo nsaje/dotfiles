@@ -1,5 +1,8 @@
 <div class="page page-ad-group-settings">
     <alert ng-repeat="alert in alerts" type="{{ alert.type }}" close="closeAlert($index)" ng-bind-html="alert.message"></alert>
+    <alert type="info" ng-show="actionIsWaiting">
+        Settings changes are being propagated to external networks. The sync might take a few hours. If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
+    </alert>
 
     <form id="form-ad-group-settings" class="form-horizontal">
         <div class="form-group">
