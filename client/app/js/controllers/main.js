@@ -34,6 +34,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', 'api', function 
     $scope.maxDate = moment().subtract('days', 1);
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
     $scope.dateRanges = getDateRanges();
+
     $scope.dateRange = {
         startDate: moment().subtract('day', 61).hours(0).minutes(0).seconds(0).milliseconds(0),
         endDate: moment().subtract('day', 1).hours(0).minutes(0).seconds(0).milliseconds(0)
@@ -51,6 +52,21 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', 'api', function 
                 });
             });
         });
+    };
+
+    $scope.getCurrentParams = function () {
+        var str = [];
+        var params = $location.search();
+
+        for (var p in params) {
+            if (params.hasOwnProperty(p)) {
+                str.push(encodeURIComponent(p) + "=" + encodeURIComponent(params[p]));
+            }
+        }
+
+        if (str.length > 0) {
+            return '?' + str.join("&");    
+        } 
     };
     
     $scope.$on("$stateChangeSuccess", function() {

@@ -47,6 +47,7 @@ var locationSearch;
 // Fixes https://github.com/angular-ui/ui-router/issues/679
 oneApp.run(['$state', '$rootScope', '$location', 'config', function($state, $rootScope, $location, config) {
     $rootScope.config = config;
+    $rootScope.$state = $state;
 
     $rootScope.$on('$stateChangeStart', function (e, toState, toParams, fromState, fromParams) {
         // Save location.search so we can add it back after transition is done
