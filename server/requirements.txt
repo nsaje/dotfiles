@@ -1,5 +1,5 @@
 # Django 1.7 beta 4
-https://www.djangoproject.com/download/1.7.b4/tarball/
+https://www.djangoproject.com/download/1.7c1/tarball/
 django-jsonfield==0.9.12
 # Depends on: postgresql-server-dev-9.3
 psycopg2==2.5.3
