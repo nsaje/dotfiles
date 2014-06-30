@@ -9,6 +9,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
     $scope.datepickerMinDate = moment().add('days', 1).toDate();
     $scope.alerts = [];
     $scope.saveRequestInProgress = false;
+    $scope.saved = null;
 
     $scope.closeAlert = function(index) {
         $scope.alerts.splice(index, 1);
@@ -34,7 +35,28 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
         );
     };
 
+    $scope.discardSettings = function () {
+        $scope.saved = null;
+        $scope.discarded = null;
+        $scope.saveRequestInProgress = true;
+        $scope.errors = {};
+        api.adGroupSettings.get($state.params.id).then(
+            function (data) {
+                $scope.settings = data;
+                $scope.saveRequestInProgress = false;
+                $scope.discarded = true;
+            },
+            function (data) {
+                // error
+                $scope.saveRequestInProgress = false;
+                return;
+            }
+        );
+    };
+
     $scope.saveSettings = function () {
+        $scope.saved = null;
+        $scope.discarded = null;
         $scope.saveRequestInProgress = true;
         api.adGroupSettings.save($scope.settings).then(
             function (data) {
@@ -44,11 +66,15 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
                     type: 'info',
                     message: 'Settings changes are being propagated to external networks. The sync might take a few hours. If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.'
                 }];
+                $scope.updateAccounts($state.params.id, data.name);
+                $scope.setBreadcrumb();
                 $scope.saveRequestInProgress = false;
+                $scope.saved = true;
             },
             function (data) {
                 $scope.errors = data;
                 $scope.saveRequestInProgress = false;
+                $scope.saved = false;
             }
         );
     };

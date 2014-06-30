@@ -52,6 +52,20 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', 'api', function 
             });
         });
     };
+
+    $scope.updateAccounts = function (adGroupId, newAdGroupName) {
+        if (adGroupId && newAdGroupName) {
+            $scope.accounts.forEach(function (account) {
+                account.campaigns.forEach(function (campaign) {
+                    campaign.adGroups.forEach(function (adGroup) {
+                        if (adGroup.id.toString() === adGroupId.toString()) {
+                            adGroup.name = newAdGroupName;
+                        }
+                    });
+                });
+            });
+        }
+    };
     
     $scope.$on("$stateChangeSuccess", function() {
         $scope.currentRoute = $state.current;

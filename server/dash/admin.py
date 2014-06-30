@@ -161,7 +161,7 @@ class AdGroupSettingsInline(admin.TabularInline):
     extra = 0
     can_delete = False
     ordering = ('created_dt',)
-    readonly_fields = ('created_dt', 'created_by')
+    readonly_fields = ('created_dt', 'created_by', 'state', 'start_date', 'end_date', 'cpc_cc', 'daily_budget_cc', 'target_devices', 'target_regions', 'tracking_code')
 
 
 class AdGroupNetworkSettingsInline(admin.TabularInline):

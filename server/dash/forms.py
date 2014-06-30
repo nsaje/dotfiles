@@ -56,7 +56,7 @@ class AdGroupSettingsForm(forms.Form):
     target_devices = forms.MultipleChoiceField(
         choices=constants.AdTargetDevice.get_choices(),
         error_messages={
-            'required': 'Please select target devices.',
+            'required': 'Please select at least one target device.',
         }
     )
     target_regions = forms.MultipleChoiceField(
@@ -90,7 +90,7 @@ class AdGroupSettingsForm(forms.Form):
         # maticz: We deal with UTC dates even if a not-UTC date date was submitted from
         # user.
         # Product guys confirmed it.
-        if start_date and end_date and end_date <= start_date:
+        if start_date and end_date and end_date < start_date:
             raise forms.ValidationError('End date must not occur before start date.')
 
         return end_date
@@ -115,4 +115,4 @@ class AdGroupSettingsForm(forms.Form):
             except ValueError:
                 raise forms.ValidationError(err_msg)
 
-        return tracking_code
+        return self.cleaned_data.get('tracking_code')
