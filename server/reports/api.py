@@ -127,28 +127,28 @@ def upsert(data, date):
 
 @transaction.atomic
 def _reconcile_article(raw_url, title, ad_group):
-    if not (raw_url or title):
-        raise exc.ArticleReconciliationException('Missing both URL and title.')
+    if not ad_group:
+        raise exc.ArticleReconciliationException('Missing ad group.')
+
+    if not title:
+        raise exc.ArticleReconciliationException('Missing article title.')
 
     kwargs = {
         'ad_group': ad_group
     }
 
-    url = _clean_url(raw_url)
-
-    if url:
+    url = None
+    if raw_url:
+        url = _clean_url(raw_url)
         kwargs['url'] = url
 
     kwargs['title'] = title
 
-    try:
-        article = dashmodels.Article.objects.get(**kwargs)
-    except ObjectDoesNotExist:
+    articles = dashmodels.Article.objects.filter(**kwargs)
+    if articles:
+        article = articles.latest()
+    else:
         article = dashmodels.Article.objects.create(ad_group=ad_group, url=url, title=title)
-    except MultipleObjectsReturned:
-        raise exc.ArticleReconciliationException(
-            'Mutlitple objects returned for arguments: {kwargs}.'.format(kwargs=kwargs)
-        )
 
     return article
 
