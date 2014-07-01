@@ -100,6 +100,9 @@ Session.vim
 # npm
 node_modules
 
+# bower
+client/app/lib/components/angular-mocks
+
 # Server Django project
 server/server/localsettings.py
 server/static
