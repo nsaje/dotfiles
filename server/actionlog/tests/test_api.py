@@ -1,6 +1,7 @@
 import datetime
 import httplib
 import urlparse
+import urllib2
 
 from mock import patch, Mock
 from django.test import TestCase
@@ -12,21 +13,65 @@ from dash import models as dashmodels
 from dash import constants as dashconstants
 
 
-class ActionLogApiTest(TestCase):
+def _prepare_mock_urlopen(mock_urlopen, exception=None):
+    if exception:
+        mock_urlopen.side_effect = exception
+        return
+
+    mock_request = Mock()
+    mock_request.status_code = httplib.OK
+    mock_urlopen.return_value = mock_request
+
+
+class ZweiActionsTestCase(TestCase):
 
     fixtures = ['test_api.yaml']
 
-    def _prepare_mock_urlopen(self, mock_urlopen):
-        mock_request = Mock()
-        mock_request.status_code = httplib.OK
-        mock_urlopen.return_value = mock_request
+    @patch('actionlog.zwei_actions.urllib2.urlopen')
+    def test_log_encrypted_credentials_on_conneciton_success(self, mock_urlopen):
+        _prepare_mock_urlopen(mock_urlopen)
+        ad_group_network = dashmodels.AdGroupNetwork.objects.get(id=1)
+
+        api.fetch_ad_group_status(ad_group_network.ad_group, ad_group_network.network)
+        action = models.ActionLog.objects.latest('created_dt')
+
+        self.assertEqual(action.ad_group_network, ad_group_network)
+        self.assertEqual(action.action, constants.Action.FETCH_CAMPAIGN_STATUS)
+        self.assertEqual(action.action_status, constants.ActionStatus.WAITING)
+
+        self.assertEqual(
+            action.payload['credentials'],
+            ad_group_network.network_credentials.credentials
+        )
+
+    @patch('actionlog.zwei_actions.urllib2.urlopen')
+    def test_log_encrypted_credentials_on_conneciton_fail(self, mock_urlopen):
+        exception = urllib2.HTTPError(settings.ZWEI_API_URL, 500, "Server is down.", None, None)
+        _prepare_mock_urlopen(mock_urlopen, exception=exception)
+        ad_group_network = dashmodels.AdGroupNetwork.objects.get(id=1)
+
+        api.fetch_ad_group_status(ad_group_network.ad_group, ad_group_network.network)
+        action = models.ActionLog.objects.latest('created_dt')
+
+        self.assertEqual(action.ad_group_network, ad_group_network)
+        self.assertEqual(action.action, constants.Action.FETCH_CAMPAIGN_STATUS)
+        self.assertEqual(action.action_status, constants.ActionStatus.FAILED)
+
+        self.assertEqual(
+            action.payload['credentials'],
+            ad_group_network.network_credentials.credentials
+        )
+
+class ActionLogApiTestCase(TestCase):
+
+    fixtures = ['test_api.yaml']
 
     def setUp(self):
-        patcher_urlopen = patch('zweiapi.zwei_actions.urllib2.urlopen')
+        patcher_urlopen = patch('actionlog.zwei_actions.urllib2.urlopen')
         self.addCleanup(patcher_urlopen.stop)
 
         mock_urlopen = patcher_urlopen.start()
-        self._prepare_mock_urlopen(mock_urlopen)
+        _prepare_mock_urlopen(mock_urlopen)
 
         self.credentials_encription_key = settings.CREDENTIALS_ENCRYPTION_KEY
         settings.CREDENTIALS_ENCRYPTION_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
@@ -53,10 +98,7 @@ class ActionLogApiTest(TestCase):
             payload = {
                 'network': ad_group_network.network.type,
                 'action': constants.Action.SET_CAMPAIGN_STATE,
-                'credentials': {
-                    'username': 'test',
-                    'password': 'test'
-                },
+                'credentials': ad_group_network.network_credentials.credentials,
                 'args': {
                     'partner_campaign_id': ad_group_network.network_campaign_key,
                     'state': dashconstants.AdGroupNetworkSettingsState.INACTIVE,
@@ -87,10 +129,7 @@ class ActionLogApiTest(TestCase):
             payload = {
                 'network': ad_group_network.network.type,
                 'action': constants.Action.FETCH_CAMPAIGN_STATUS,
-                'credentials': {
-                    'username': 'test',
-                    'password': 'test'
-                },
+                'credentials': ad_group_network.network_credentials.credentials,
                 'args': {
                     'partner_campaign_id': ad_group_network.network_campaign_key,
                 },
@@ -119,10 +158,7 @@ class ActionLogApiTest(TestCase):
             payload = {
                 'network': ad_group_network.network.type,
                 'action': constants.Action.FETCH_REPORTS,
-                'credentials': {
-                    'username': 'test',
-                    'password': 'test'
-                },
+                'credentials': ad_group_network.network_credentials.credentials,
                 'args': {
                     'partner_campaign_ids': [ad_group_network.network_campaign_key],
                     'date': date.strftime('%Y-%m-%d'),
