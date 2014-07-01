@@ -25,13 +25,13 @@ class ActionLog(models.Model):
 
     payload = jsonfield.JSONField(blank=True, default=[])
 
-    created_datetime = models.DateTimeField(
+    created_dt = models.DateTimeField(
         auto_now_add=True,
         blank=True,
         null=True,
         verbose_name='Created at'
     )
-    modified_datetime = models.DateTimeField(
+    modified_dt = models.DateTimeField(
         auto_now=True,
         blank=True,
         null=True,
