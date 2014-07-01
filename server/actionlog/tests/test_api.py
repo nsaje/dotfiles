@@ -27,6 +27,13 @@ class ZweiActionsTestCase(TestCase):
 
     fixtures = ['test_api.yaml']
 
+    def setUp(self):
+        self.credentials_encription_key = settings.CREDENTIALS_ENCRYPTION_KEY
+        settings.CREDENTIALS_ENCRYPTION_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+    def tearDown(self):
+        settings.CREDENTIALS_ENCRYPTION_KEY = self.credentials_encription_key
+
     @patch('actionlog.zwei_actions.urllib2.urlopen')
     def test_log_encrypted_credentials_on_conneciton_success(self, mock_urlopen):
         _prepare_mock_urlopen(mock_urlopen)
