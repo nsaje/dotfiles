@@ -1,3 +1,4 @@
+import binascii
 import json
 import urlparse
 
@@ -10,6 +11,7 @@ from . import constants
 from zweiapi import zwei_actions
 
 from dash import constants as dashconstants
+from utils import encryption_helpers
 
 
 def stop_ad_group(ad_group, network=None):
@@ -55,9 +57,16 @@ def _init_stop_campaign(ad_group_network):
         callback = urlparse.urljoin(
             settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
         )
+        credentials = json.loads(encryption_helpers.aes_decrypt(
+            binascii.a2b_base64(
+                ad_group_network.network_credentials.credentials
+            ),
+            settings.CREDENTIALS_ENCRYPTION_KEY
+        ))
         payload = json.dumps({
-            'network': ad_group_network.network.type,
             'action': action.action,
+            'network': ad_group_network.network.type,
+            'credentials': credentials,
             'args': {
                 'partner_campaign_id': ad_group_network.network_campaign_key,
                 'state': dashconstants.AdGroupNetworkSettingsState.INACTIVE,
@@ -83,9 +92,16 @@ def _init_fetch_status(ad_group_network):
         callback = urlparse.urljoin(
             settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
         )
+        credentials = json.loads(encryption_helpers.aes_decrypt(
+            binascii.a2b_base64(
+                ad_group_network.network_credentials.credentials
+            ),
+            settings.CREDENTIALS_ENCRYPTION_KEY
+        ))
         payload = json.dumps({
             'action': action.action,
             'network': ad_group_network.network.type,
+            'credentials': credentials,
             'args': {
                 'partner_campaign_id': ad_group_network.network_campaign_key
             },
@@ -110,9 +126,16 @@ def _init_fetch_reports(ad_group_network, date):
         callback = urlparse.urljoin(
             settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
         )
+        credentials = json.loads(encryption_helpers.aes_decrypt(
+            binascii.a2b_base64(
+                ad_group_network.network_credentials.credentials
+            ),
+            settings.CREDENTIALS_ENCRYPTION_KEY
+        ))
         payload = json.dumps({
             'action': action.action,
             'network': ad_group_network.network.type,
+            'credentials': credentials,
             'args': {
                 'partner_campaign_ids': [ad_group_network.network_campaign_key],
                 'date': date.strftime('%Y-%m-%d'),

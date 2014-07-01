@@ -1,9 +1,12 @@
+import jsonfield
+import binascii
+
 from django.conf import settings
 from django.contrib import auth
 from django.db import models
-import jsonfield
 
 from dash import constants
+from utils import encryption_helpers
 
 
 class PermissionMixin(object):
@@ -87,6 +90,36 @@ class Network(models.Model):
         return self.name
 
 
+class NetworkCredentials(models.Model):
+    id = models.AutoField(primary_key=True)
+    network = models.ForeignKey(Network)
+    name = models.CharField(
+        max_length=127,
+        editable=True,
+        blank=False,
+        null=False
+    )
+    credentials = models.TextField(blank=True, null=False)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+
+    class Meta:
+        verbose_name_plural = "Network Credentials"
+
+    def __unicode__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        encrypted_credentials = encryption_helpers.aes_encrypt(
+            self.credentials,
+            settings.CREDENTIALS_ENCRYPTION_KEY
+        )
+
+        self.credentials = binascii.b2a_base64(encrypted_credentials)
+        super(NetworkCredentials, self).save(*args, **kwargs)
+
+
 class UserAdGroupManager(models.Manager):
     def get_for_user(self, user):
         queryset = super(UserAdGroupManager, self).get_queryset()
@@ -132,6 +165,7 @@ class AdGroupNetwork(models.Model):
     network = models.ForeignKey(Network)
     ad_group = models.ForeignKey(AdGroup)
 
+    network_credentials = models.ForeignKey(NetworkCredentials, null=True)
     network_campaign_key = jsonfield.JSONField(blank=True, default={})
 
     class Meta:
