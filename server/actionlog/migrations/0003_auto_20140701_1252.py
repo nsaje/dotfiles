@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import models, migrations
+from django.db import migrations
 
 
 class Migration(migrations.Migration):
@@ -11,14 +11,4 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RenameField(
-            model_name='actionlog',
-            old_name='created_datetime',
-            new_name='created_dt',
-        ),
-        migrations.RenameField(
-            model_name='actionlog',
-            old_name='modified_datetime',
-            new_name='modified_dt',
-        ),
     ]
