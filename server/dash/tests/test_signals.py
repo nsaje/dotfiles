@@ -65,15 +65,13 @@ class TestDashSignals(TestCase):
         self.assertEqual(settings.created_by.username, 'tomaz')
 
     def test_adgroup_network_settings_no_request_available(self):
-        ad_group = dashmodels.AdGroup.objects.get(pk=1)
-        dashmodels.AdGroupNetworkSettings(ad_group=ad_group).save()
+        dashmodels.AdGroupNetworkSettings().save()
         self.assertEqual(dashmodels.AdGroupNetworkSettings.objects.latest().created_by, None)
 
     @mock.patch('dash.signals.get_request')
     def test_adgroup_network_settings_request_available(self, mock_get_request):
         self._prepare_mock_get_request(mock_get_request)
-        ad_group = dashmodels.AdGroup.objects.get(pk=1)
 
-        settings = dashmodels.AdGroupNetworkSettings(ad_group=ad_group, network_id=1)
+        settings = dashmodels.AdGroupNetworkSettings()
         settings.save()
         self.assertEqual(settings.created_by.username, 'tomaz')

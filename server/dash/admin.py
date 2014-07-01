@@ -1,6 +1,9 @@
+import urllib
+
 from django.contrib import admin
 from django import forms
 from django.utils.safestring import mark_safe
+from django.core.urlresolvers import reverse
 
 import constants
 import models
@@ -198,30 +201,20 @@ class AdGroupNetworksInline(admin.TabularInline):
     verbose_name_plural = "Ad Group's Networks"
     model = models.AdGroupNetwork
     extra = 0
+    readonly_fields = ('settings_',)
 
-
-class AdGroupSettingsInline(admin.TabularInline):
-    verbose_name = "Ad Group's Settings"
-    verbose_name_plural = "Ad Group's Settings"
-    model = models.AdGroupSettings
-    form = AdGroupSettingsForm
-    formset = PreventEditInlineFormset
-    extra = 0
-    can_delete = False
-    ordering = ('-created_dt',)
-    readonly_fields = ('created_dt', 'created_by', 'state', 'start_date', 'end_date', 'cpc_cc', 'daily_budget_cc', 'target_devices', 'target_regions', 'tracking_code')
-
-
-class AdGroupNetworkSettingsInline(admin.TabularInline):
-    verbose_name = "Ad Group's Network Settings"
-    verbose_name_plural = "Ad Group's Network Settings"
-    model = models.AdGroupNetworkSettings
-    formset = PreventEditInlineFormset
-    extra = 0
-    can_delete = False
-    exclude = ('ad_group_network',)
-    ordering = ('created_dt',)
-    readonly_fields = ('created_dt', 'created_by')
+    def settings_(self, obj):
+        return '<a href="{admin_url}">List ({num_settings})</a>'.format(
+            admin_url='{}?{}'.format(
+                reverse('admin:dash_adgroupnetworksettings_changelist'),
+                urllib.urlencode({
+                    'ad_group': obj.ad_group.id,
+                    'network': obj.network.id,
+                })
+            ),
+            num_settings=obj.settings.count()
+        )
+    settings_.allow_tags = True
 
 
 class AdGroupAdmin(admin.ModelAdmin):
@@ -229,17 +222,45 @@ class AdGroupAdmin(admin.ModelAdmin):
     list_display = (
         'name',
         'created_dt',
-        'modified_dt'
+        'modified_dt',
+        'settings_',
     )
-    readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
+    readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'settings_')
     inlines = (
         AdGroupNetworksInline,
-        AdGroupSettingsInline,
-        AdGroupNetworkSettingsInline,
     )
+
+    def settings_(self, obj):
+        return '<a href="{admin_url}">List ({num_settings})</a>'.format(
+            admin_url='{}?{}'.format(
+                reverse('admin:dash_adgroupsettings_changelist'),
+                urllib.urlencode({'ad_group': obj.id})
+            ),
+            num_settings=obj.settings.count()
+        )
+    settings_.allow_tags = True
+
+
+class AdGroupSettingsAdmin(admin.ModelAdmin):
+    search_fields = ['ad_group']
+    list_display = (
+        'ad_group',
+        'created_dt',
+    )
+
+
+class AdGroupNetworkSettingsAdmin(admin.ModelAdmin):
+    search_fields = ['ad_group']
+    list_display = (
+        'ad_group_network',
+        'created_dt',
+    )
+
 
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
 admin.site.register(models.Network, NetworkAdmin)
 admin.site.register(models.AdGroup, AdGroupAdmin)
+admin.site.register(models.AdGroupSettings, AdGroupSettingsAdmin)
+admin.site.register(models.AdGroupNetworkSettings, AdGroupNetworkSettingsAdmin)
 admin.site.register(models.NetworkCredentials, NetworkCredentialsAdmin)

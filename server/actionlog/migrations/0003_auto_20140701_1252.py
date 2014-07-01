@@ -7,7 +7,7 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('actionlog', '0002_auto_20140626_1615'),
+        ('actionlog', '0003_delete_actionlog'),
     ]
 
     operations = [
