@@ -172,6 +172,11 @@ a:visited {
     outline-offset: 0;
 }
 
+.btn[disabled] {
+    opacity: 0.3;
+    cursor: default;
+}
+
 .dropdown-menu {
     margin-top: 1px;
     border: 1px solid #d2d2d2;
@@ -763,7 +768,7 @@ div[datepicker] {
         }
     }
 
-    .button {
+    .btn {
         display: inline-block;
         border: 1px solid @default-color;
         line-height: 32px;

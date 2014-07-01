@@ -25,7 +25,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.startDate}">
             <label for="start-date-input" class="col-xs-2 control-label">Start date</label>
             <div class="col-xs-2">
-                <input id="start-date-input" type="text" class="form-control" datepicker-popup="dd/MM/yyyy" ng-model="settings.startDate" min-date="datepickerMinDate" is-open="isStartDatePickerOpen" ng-click="openDatePicker('startDate')">
+                <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="settings.startDate" min-date="datepickerMinDate" is-open="isStartDatePickerOpen" ng-click="openDatePicker('startDate')">
             </div>
 
             <label ng-repeat="error in errors.startDate" class="control-label error" for="start-date-input">{{ error }}</label>
@@ -34,7 +34,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.endDate}">
             <label for="end-date-input" class="col-xs-2 control-label">End date</label>
             <div class="col-xs-2">
-                <input id="end-date-input" type="text" class="form-control" datepicker-popup="dd/MM/yyyy" ng-model="settings.endDate" min-date="datepickerMinDate" is-open="isEndDatePickerOpen" ng-click="openDatePicker('endDate')">
+                <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="settings.endDate" min-date="datepickerMinDate" is-open="isEndDatePickerOpen" ng-click="openDatePicker('endDate')">
             </div>
 
             <div class="checkbox col-xs-2">

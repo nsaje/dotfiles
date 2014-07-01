@@ -137,7 +137,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', 'api', fun
     $scope.sizeRange = [5, 10, 20, 50];
 
     $scope.loadPage = function(page) {
-        if(page) {
+        if(page && page > 0 && page <= $scope.pagination.numPages) {
             $scope.pagination.currentPage = page;
         }
 

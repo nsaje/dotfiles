@@ -96,6 +96,7 @@
         network: 1
         ad_group: 1
         network_campaign_key: '["fake"]'
+        network_credentials: 1
     model: dash.adgroupnetwork
     pk: 1
 
@@ -103,6 +104,7 @@
         network: 2
         ad_group: 1
         network_campaign_key: '["fake"]'
+        network_credentials: 2
     model: dash.adgroupnetwork
     pk: 2
 
@@ -110,6 +112,7 @@
         network: 3
         ad_group: 1
         network_campaign_key: '["fake"]'
+        network_credentials: 3
     model: dash.adgroupnetwork
     pk: 3
 
@@ -117,6 +120,7 @@
         network: 4
         ad_group: 1
         network_campaign_key: '["fake"]'
+        network_credentials: 4
     model: dash.adgroupnetwork
     pk: 4
 
@@ -124,5 +128,53 @@
         network: 5
         ad_group: 1
         network_campaign_key: '["fake"]'
+        network_credentials: 5
     model: dash.adgroupnetwork
+    pk: 5
+
+# test ad group network credentials
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00Z'
+        modified_dt: '2014-06-04T00:00:00Z'
+        network: 1
+        name: 'Test credentials 1'
+        credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
+    model: dash.networkcredentials
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00Z'
+        modified_dt: '2014-06-04T00:00:00Z'
+        network: 2
+        name: 'Test credentials 2'
+        credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
+    model: dash.networkcredentials
+    pk: 2
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00Z'
+        modified_dt: '2014-06-04T00:00:00Z'
+        network: 3
+        name: 'Test credentials 3'
+        credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
+    model: dash.networkcredentials
+    pk: 3
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00Z'
+        modified_dt: '2014-06-04T00:00:00Z'
+        network: 4
+        name: 'Test credentials 4'
+        credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
+    model: dash.networkcredentials
+    pk: 4
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00Z'
+        modified_dt: '2014-06-04T00:00:00Z'
+        network: 5
+        name: 'Test credentials 5'
+        credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
+    model: dash.networkcredentials
     pk: 5

@@ -4,6 +4,7 @@ from django.utils.safestring import mark_safe
 
 import constants
 import models
+import json
 
 
 # Forms for inline user functionality.
@@ -59,6 +60,39 @@ class AdGroupSettingsForm(forms.ModelForm):
             'target_devices': forms.SelectMultiple(choices=constants.AdTargetDevice.get_choices()),
             'target_regions': forms.SelectMultiple(choices=constants.AdTargetCountry.get_choices())
         }
+
+
+# Always empty form for network credentials
+
+class NetworkCredentialsForm(forms.ModelForm):
+    credentials = forms.CharField(
+        label='Credentials',
+        required=False,
+        widget=forms.Textarea(
+            attrs={'rows': 15, 'cols': 60})
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(NetworkCredentialsForm, self).__init__(*args, **kwargs)
+        self.initial['credentials'] = ''
+        self.fields['credentials'].help_text = \
+            'The value in this field is automatically encrypted upon saving '\
+            'for security purposes and is hidden from the interface. The '\
+            'value can be changed and has to be in valid JSON format. '\
+            'Leaving the field empty won\'t change the stored value.'
+
+    def clean_credentials(self):
+        if self.cleaned_data['credentials'] != '':
+            try:
+                json.loads(self.cleaned_data['credentials'])
+            except ValueError:
+                raise forms.ValidationError('JSON format expected.')
+        return self.cleaned_data['credentials']
+
+    def clean(self, *args, **kwargs):
+        super(NetworkCredentialsForm, self).clean(*args, **kwargs)
+        if self.cleaned_data['credentials'] == '':
+            del self.cleaned_data['credentials']
 
 
 # Account
@@ -143,12 +177,26 @@ class NetworkAdmin(admin.ModelAdmin):
     readonly_fields = ('created_dt', 'modified_dt')
 
 
+class NetworkCredentialsAdmin(admin.ModelAdmin):
+    form = NetworkCredentialsForm
+    verbose_name = "Network Credentials"
+    verbose_name_plural = "Network Credentials"
+    search_fields = ['name', 'network']
+    list_display = (
+        'name',
+        'network',
+        'created_dt',
+        'modified_dt',
+    )
+    readonly_fields = ('created_dt', 'modified_dt')
+
+
 # Ad Group
 
 class AdGroupNetworksInline(admin.TabularInline):
     verbose_name = "Ad Group's Network"
     verbose_name_plural = "Ad Group's Networks"
-    model = models.AdGroup.networks.through
+    model = models.AdGroupNetwork
     extra = 0
 
 
@@ -185,12 +233,13 @@ class AdGroupAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
     inlines = (
+        AdGroupNetworksInline,
         AdGroupSettingsInline,
         AdGroupNetworkSettingsInline,
-        AdGroupNetworksInline,
     )
 
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
 admin.site.register(models.Network, NetworkAdmin)
 admin.site.register(models.AdGroup, AdGroupAdmin)
+admin.site.register(models.NetworkCredentials, NetworkCredentialsAdmin)

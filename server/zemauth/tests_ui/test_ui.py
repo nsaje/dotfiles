@@ -1,4 +1,3 @@
-import os
 import unittest
 
 from selenium import webdriver
@@ -7,12 +6,14 @@ from statsd.defaults.django import statsd
 
 from django.conf import settings
 
+from utils import test_decorators
+
 
 LOGIN_TEST_USERNAME = 'one-test@zemanta-test.com'
 LOGIN_TEST_PASSWORD = 'thisISaT45est-passw0rd'
 
 
-@unittest.skipIf(os.environ.get('HEALTH_CHECK', '0') == '0', 'Skipping health check tests.')
+@test_decorators.health_check
 class LoginTestCase(unittest.TestCase):
     def setUp(self):
         desired_capabilities = webdriver.DesiredCapabilities.CHROME

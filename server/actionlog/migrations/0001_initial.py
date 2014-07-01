@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('dash', '__first__'),
+        ('dash', '0003_adgroup'),
     ]
 
     operations = [
