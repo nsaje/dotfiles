@@ -44,7 +44,7 @@ class ZweiActionsTestCase(TestCase):
 
         self.assertEqual(action.ad_group_network, ad_group_network)
         self.assertEqual(action.action, constants.Action.FETCH_CAMPAIGN_STATUS)
-        self.assertEqual(action.action_status, constants.ActionStatus.WAITING)
+        self.assertEqual(action.state, constants.ActionState.WAITING)
 
         self.assertEqual(
             action.payload['credentials'],
@@ -62,7 +62,7 @@ class ZweiActionsTestCase(TestCase):
 
         self.assertEqual(action.ad_group_network, ad_group_network)
         self.assertEqual(action.action, constants.Action.FETCH_CAMPAIGN_STATUS)
-        self.assertEqual(action.action_status, constants.ActionStatus.FAILED)
+        self.assertEqual(action.state, constants.ActionState.FAILED)
 
         self.assertEqual(
             action.payload['credentials'],

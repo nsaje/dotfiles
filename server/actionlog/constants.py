@@ -15,7 +15,7 @@ class Action(ConstantBase):
     }
 
 
-class ActionStatus(ConstantBase):
+class ActionState(ConstantBase):
     FAILED = -1
     WAITING = 1
     SUCCESS = 2

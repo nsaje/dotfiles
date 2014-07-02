@@ -12,9 +12,9 @@ class ActionLog(models.Model):
         max_length=100,
         choices=constants.Action.get_choices()
     )
-    action_status = models.IntegerField(
-        default=constants.ActionStatus.WAITING,
-        choices=constants.ActionStatus.get_choices()
+    state = models.IntegerField(
+        default=constants.ActionState.WAITING,
+        choices=constants.ActionState.get_choices()
     )
     action_type = models.IntegerField(
         choices=constants.ActionType.get_choices()

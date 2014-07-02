@@ -38,9 +38,9 @@ def set_ad_group_property(ad_group, network=None, prop=None):
 
 def is_waiting(ad_group):
     actions = (constants.Action.SET_CAMPAIGN_STATE, constants.Action.SET_PROPERTY)
-    statuses = (constants.ActionStatus.FAILED, constants.ActionStatus.WAITING)
+    states = (constants.ActionState.FAILED, constants.ActionState.WAITING)
     exists = models.ActionLog.objects.\
-        filter(action__in=actions, action_status__in=statuses).\
+        filter(action__in=actions, state__in=states).\
         exists()
 
     return exists

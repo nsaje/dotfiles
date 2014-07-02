@@ -38,5 +38,5 @@ def send(action):
         urllib2.urlopen(request)
     except urllib2.HTTPError as e:
         logger.error('Zwei host connection error: %s', str(e))
-        action.action_status = constants.ActionStatus.FAILED
+        action.state = constants.ActionState.FAILED
         action.save()

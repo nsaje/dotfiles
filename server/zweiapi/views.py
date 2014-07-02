@@ -33,12 +33,12 @@ def zwei_callback(request, action_id):
 def _process_zwei_response(action, data):
     logger.info('Processing Action Response: %s, response: %s', action, data)
 
-    if action.action_status != actionlogconstants.ActionStatus.WAITING:
+    if action.state != actionlogconstants.ActionState.WAITING:
         logger.warning('Action not waiting for a response. Action: %s, response: %s', action, data)
         return
 
     if data['status'] != 'success':
-        action.action_status = actionlogconstants.ActionStatus.FAILED
+        action.state = actionlogconstants.ActionState.FAILED
         action.save()
         return
 
@@ -50,5 +50,5 @@ def _process_zwei_response(action, data):
     elif action.action == actionlogconstants.Action.FETCH_CAMPAIGN_STATUS:
         raise NotImplementedError
 
-    action.status = actionlogconstants.ActionStatus.SUCCESS
+    action.state = actionlogconstants.ActionState.SUCCESS
     action.save()
