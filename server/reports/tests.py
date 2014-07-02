@@ -1,5 +1,7 @@
+from django.db import IntegrityError
 from django.test import TestCase
 from django.core.exceptions import ObjectDoesNotExist
+from mock import patch, Mock
 
 from . import api
 from . import exc
@@ -58,6 +60,17 @@ class ApiTestCase(TestCase):
 
         second_article_without_url = api._reconcile_article(None, title, ad_group)
         self.assertEqual(article_with_url, second_article_without_url)
+
+    @patch('dash.models.Article.objects.create', side_effect=IntegrityError)
+    def test_retry_reconcile_article(self, mock_create):
+        ad_group = dashmodels.AdGroup(id=1)
+        raw_url = 'http://sd.domain.com/path/to'
+        title = 'Example title'
+
+        with self.assertRaises(exc.ArticleReconciliationException):
+            api._reconcile_article(raw_url, title, ad_group)
+
+        self.assertEqual(mock_create.call_count, api.MAX_RECONCILIATION_RETRIES)
 
     def test_clean_url(self):
 
