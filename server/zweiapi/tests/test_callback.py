@@ -3,14 +3,11 @@ import json
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.test.client import RequestFactory
-
-from utils import test_decorators
+from django.test.client import Client
 
 from dash.models import AdGroupNetwork
 from actionlog.models import ActionLog
 from actionlog import constants
-
-from zweiapi.views import zwei_callback
 
 
 class CampaignStatusTest(TestCase):
@@ -20,7 +17,6 @@ class CampaignStatusTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
 
-    @test_decorators.integration_test
     def test_update_status(self):
         zwei_response_data = {
             'status': 'success',
@@ -41,13 +37,12 @@ class CampaignStatusTest(TestCase):
         )
         action_log.save()
 
-        request = self.factory.post(
+        c = Client()
+        response = c.post(
             reverse('api.zwei_callback', kwargs={'action_id': action_log.id}),
             content_type='application/json',
             data=json.dumps(zwei_response_data)
         )
-
-        response = zwei_callback(request, action_log.id)
 
         self.assertEqual(response.status_code, 200)
         self.assertNotEqual(ad_group_network.settings.latest(), current_settings)
