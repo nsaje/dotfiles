@@ -15,7 +15,7 @@ from zweiapi.views import zwei_callback
 
 class CampaignStatusTest(TestCase):
 
-    fixtures = ['test_api.yaml']
+    fixtures = ['test_zwei_api.yaml']
 
     def setUp(self):
         self.factory = RequestFactory()
