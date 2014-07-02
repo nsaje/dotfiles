@@ -1,14 +1,16 @@
 machine:
     python:
         version: 2.7.6
+    node:
+        version: v0.10.22
 
 dependencies:
     override:
         - pip install -r server/requirements.txt
-        - npm install
+        - npm install:
             pwd:
                 client
-        - bower install
+        - bower install:
             pwd:
                 client
 
@@ -20,8 +22,8 @@ checkout:
 test:
     override:
         - python manage.py test:
-            pwd: 
+            pwd:
                 server
-        - grunt karma:sauce
+        - grunt karma:sauce:
             pwd:
                 client
