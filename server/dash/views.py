@@ -201,8 +201,12 @@ class AdGroupSettings(api_common.BaseApiView):
                 'state': settings.state,
                 'start_date': settings.start_date,
                 'end_date': settings.end_date,
-                'cpc_cc': '{:.2f}'.format(settings.cpc_cc),
-                'daily_budget_cc': '{:.2f}'.format(settings.daily_budget_cc),
+                'cpc_cc':
+                    '{:.2f}'.format(settings.cpc_cc)
+                    if settings.cpc_cc is not None else '',
+                'daily_budget_cc':
+                    '{:.2f}'.format(settings.daily_budget_cc)
+                    if settings.daily_budget_cc is not None else '',
                 'target_devices': settings.target_devices,
                 'target_regions': settings.target_regions,
                 'tracking_code': settings.tracking_code
@@ -284,7 +288,7 @@ class AdGroupNetworksTable(api_common.BaseApiView):
                     break
 
             rows.append({
-                'name': settings.network.name,
+                'name': settings.ad_group_network.network.name,
                 'status': settings.state,
                 'bid_cpc': float(settings.cpc_cc) if settings.cpc_cc is not None else None,
                 'daily_budget': float(settings.daily_budget_cc) if settings.daily_budget_cc is not None else None,

@@ -168,6 +168,9 @@ class AdGroupNetwork(models.Model):
     network_credentials = models.ForeignKey(NetworkCredentials, null=True)
     network_campaign_key = jsonfield.JSONField(blank=True, default={})
 
+    def __unicode__(self):
+        return '%s - %s' % (self.ad_group, self.network)
+
     class Meta:
 
         unique_together = ('network', 'network_campaign_key')
@@ -175,7 +178,7 @@ class AdGroupNetwork(models.Model):
 
 class AdGroupSettings(models.Model):
     id = models.AutoField(primary_key=True)
-    ad_group = models.ForeignKey(AdGroup)
+    ad_group = models.ForeignKey(AdGroup, related_name='settings')
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
     state = models.IntegerField(
@@ -202,16 +205,22 @@ class AdGroupSettings(models.Model):
     target_regions = jsonfield.JSONField(blank=True, default=[])
     tracking_code = models.TextField(blank=True)
 
+    class Meta:
+        ordering = ('-created_dt',)
+
 
 class AdGroupNetworkSettings(models.Model):
     id = models.AutoField(primary_key=True)
 
-    ad_group = models.ForeignKey(AdGroup)
-    ad_group_network = models.ForeignKey(AdGroupNetwork, null=True)
-    network = models.ForeignKey(Network, null=True)
+    ad_group_network = models.ForeignKey(AdGroupNetwork, null=True, related_name='settings')
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='+',
+        null=True,
+        blank=True,
+    )
 
     state = models.IntegerField(
         default=constants.AdGroupNetworkSettingsState.INACTIVE,
@@ -232,21 +241,26 @@ class AdGroupNetworkSettings(models.Model):
         verbose_name='Daily budget'
     )
 
+    class Meta:
+        get_latest_by = 'created_dt'
+        ordering = ('-created_dt',)
+
     @classmethod
     def get_current_settings(cls, ad_group):
         network_ids = constants.AdNetwork.get_all()
 
-        network_settings = cls.objects.select_related('network').\
-            filter(network__id__in=network_ids).\
-            filter(ad_group=ad_group).\
-            order_by('-created_dt')
+        network_settings = cls.objects.filter(
+            ad_group_network__ad_group=ad_group,
+        ).order_by('-created_dt')
 
         result = {}
         for ns in network_settings:
-            if ns.network.id in result:
+            network = ns.ad_group_network.network
+
+            if network.id in result:
                 continue
 
-            result[ns.network.id] = ns
+            result[network.id] = ns
 
             if len(result) == len(network_ids):
                 break
@@ -257,8 +271,10 @@ class AdGroupNetworkSettings(models.Model):
 
             result[nid] = cls(
                 state=None,
-                ad_group=ad_group,
-                network=Network.objects.get(pk=nid),
+                ad_group_network=AdGroupNetwork(
+                    ad_group=ad_group,
+                    network=Network.objects.get(pk=nid)
+                )
             )
 
         return result
@@ -273,3 +289,5 @@ class Article(models.Model):
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
+    class Meta:
+        get_latest_by = 'created_dt'

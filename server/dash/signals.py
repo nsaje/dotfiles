@@ -19,6 +19,7 @@ def created_by_pre_save_signal_handler(sender, instance, **kwargs):
     except IndexError:
         pass
 
+
 pre_save.connect(modified_by_pre_save_signal_handler, sender=dahsmodels.Account)
 pre_save.connect(modified_by_pre_save_signal_handler, sender=dahsmodels.Campaign)
 pre_save.connect(modified_by_pre_save_signal_handler, sender=dahsmodels.AdGroup)
