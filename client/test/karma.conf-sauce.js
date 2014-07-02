@@ -1,9 +1,10 @@
 var fs = require('fs');
+var path = require('path');
 
 module.exports = function(config) {
 
     if (!process.env.SAUCE_USERNAME) {
-        if (!fs.existsSync('sauce.json')) {
+        if (!fs.existsSync(path.join(__dirname, 'sauce.json'))) {
             console.log('Create a sauce.json with your credentials based on the sauce-sample.json file.');
             process.exit(1);
         } else {
@@ -23,7 +24,13 @@ module.exports = function(config) {
             browserName: 'firefox',
             version: '30'
         },
-        sl_safari: {
+        sl_safari_6: {
+            base: 'SauceLabs',
+            browserName: 'safari',
+            platform: 'OS X 10.8',
+            version: '6'
+        },
+        sl_safari_7: {
             base: 'SauceLabs',
             browserName: 'safari',
             platform: 'OS X 10.9',
@@ -107,9 +114,13 @@ module.exports = function(config) {
         // Continuous Integration mode
         // if true, Karma captures browsers, runs the tests and exits
         singleRun: true,
-    
+
+        captureTimeout: 300000,
+
+        browserNoActivityTimeout: 60000,
+
         sauceLabs: {
-            testName: 'Zemanta One Client'        
+            testName: 'Zemanta One Client'
         }, 
     
         customLaunchers: customLaunchers

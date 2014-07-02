@@ -128,5 +128,7 @@ module.exports = function (grunt) {
     grunt.registerTask('dist-less', ['less:dist']);
     grunt.registerTask('build', ['dist-js', 'dist-less'])
     grunt.registerTask('default', ['ngconstant:prod', 'build']);
+    grunt.registerTask('test', ['default', 'karma:local']);
+    grunt.registerTask('test-sauce', ['default', 'karma:sauce']);
     grunt.registerTask('dev', ['ngconstant:dev', 'build', 'connect:dev', 'watch']);
 };

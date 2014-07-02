@@ -17,13 +17,12 @@ dependencies:
 checkout:
     post:
         - cp ./server/server/localsettings.py.circle-ci ./server/server/localsettings.py 
-        - cp ./client/test/sauce.json.circle-ci ./client/test/sauce.json
 
 test:
     override:
         - python manage.py test:
             pwd:
                 server
-        - grunt karma:sauce:
+        - grunt test-sauce:
             pwd:
                 client
