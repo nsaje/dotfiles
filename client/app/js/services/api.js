@@ -132,7 +132,7 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
 
         this.list = function (adGroupId, startDate, endDate) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/networks/daily_stats/';
+            var url = '/api/ad_groups/' + adGroupId + '/daily_stats/';
             var config = {
                 params: {}
             };

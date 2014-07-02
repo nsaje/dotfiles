@@ -16,8 +16,8 @@ from dash import api_common
 from dash import exc
 from dash import forms
 from dash import models
-
 from reports import api
+from utils import statsd_helper
 
 import constants
 
@@ -45,13 +45,14 @@ def get_stats_end_date(end_time):
     return date.date()
 
 
-# Create your views here.
+@statsd_helper.statsd_timer('dash', 'index')
 @login_required
 def index(request):
     return render(request, 'index.html', {'staticUrl': settings.CLIENT_STATIC_URL})
 
 
 class User(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'user_get')
     def get(self, request, user_id):
         response = {}
 
@@ -73,6 +74,7 @@ class User(api_common.BaseApiView):
 
 
 class NavigationDataView(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'navigation_data_view_get')
     def get(self, request):
         user_id = request.user.id
 
@@ -120,6 +122,7 @@ class NavigationDataView(api_common.BaseApiView):
 
 
 class AdGroupSettings(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_get')
     def get(self, request, ad_group_id):
         try:
             ad_group = models.AdGroup.user_objects.get_for_user(request.user).\
@@ -135,6 +138,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_put')
     def put(self, request, ad_group_id):
         try:
             ad_group = models.AdGroup.user_objects.get_for_user(request.user).\
@@ -223,6 +227,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
 
 class AdGroupNetworksTable(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_networks_table_get')
     def get(self, request, ad_group_id):
         try:
             ad_group = models.AdGroup.user_objects.get_for_user(request.user).\
@@ -295,6 +300,7 @@ class AdGroupNetworksTable(api_common.BaseApiView):
 
 
 class AdGroupAdsTable(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_table_get')
     def get(self, request, ad_group_id):
         try:
             ad_group = models.AdGroup.user_objects.get_for_user(request.user).\
@@ -377,7 +383,8 @@ class AdGroupAdsTable(api_common.BaseApiView):
         return rows
 
 
-class AdGroupNetworksDailyStats(api_common.BaseApiView):
+class AdGroupDailyStats(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_daily_stats_get')
     def get(self, request, ad_group_id):
         try:
             ad_group = models.AdGroup.user_objects.get_for_user(request.user).\
@@ -395,13 +402,3 @@ class AdGroupNetworksDailyStats(api_common.BaseApiView):
         return self.create_api_response({
             'stats': stats
         })
-
-    # def get_dict(self, stat):
-    #     return {
-    #         stat['date'].isoformat(): {
-    #             'clicks': stat.get('clicks', 0),
-    #             'impressions': stat.get('impressions', 0),
-    #             'ctr': stat.get('ctr', 0),
-    #             'cost': stat.get('cost', 0)
-    #         }
-    #     }
