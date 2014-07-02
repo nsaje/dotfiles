@@ -4,15 +4,12 @@ import dateutil.parser
 from dash.models import AdGroup
 
 
-def yesterday():
-    return datetime.date.today() - datetime.timedelta(days=1)
-
-
 def last_n_days(n):
     '''
     Returns last n days including today.
     '''
-    return [datetime.date.today() - datetime.timedelta(days=x) for x in xrange(n)]
+    today = datetime.datetime.utcnow().date()
+    return [today - datetime.timedelta(days=x) for x in xrange(n)]
 
 
 def get_ad_groups(ad_group_ids=None):
