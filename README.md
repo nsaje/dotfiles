@@ -92,3 +92,29 @@ For development, you can run grunt dev which also runs server on port 9999 and i
 ```bash
 grunt dev
 ```
+
+#### Testing
+
+We use Jasmine as testing framework and Karma as test runner. Before running tests, make sure you have karma installed. Karma is integrated with Grunt, so tests can be run with:
+```bash
+grunt test
+```
+
+This will run tests in local Chrome browser.
+
+Tests can also be run in SauceLabs cloud. First, copy the sauce.json template:
+```bash
+cp test/sauce.json.template test/sauce.json
+```
+
+and change it as needed. Then run:
+```bash
+grunt test-sauce
+```
+
+In this case tests are executed in 7 browsers, defined in test/karma.conf-sauce.js.
+
+Karma can also auto-watch files and run test on every change:
+```bash
+karma start test/karma.conf.js
+```
