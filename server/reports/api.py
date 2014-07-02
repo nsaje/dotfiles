@@ -3,9 +3,10 @@ from __future__ import division
 import decimal
 import urlparse
 import urllib
+import logging
 
-from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
-from django.db import transaction
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction, IntegrityError
 from django.db.models import Sum
 
 from . import exc
@@ -13,8 +14,12 @@ from . import models
 
 from dash import models as dashmodels
 
+logger = logging.getLogger(__name__)
+
 DIMENSIONS = ['date', 'article', 'ad_group', 'network']
 METRICS = ['impressions', 'clicks', 'cost', 'cpc']
+
+MAX_RECONCILIATION_RETRIES = 10
 
 
 # API functions
@@ -125,7 +130,6 @@ def upsert(data, date):
 # helpers
 
 
-@transaction.atomic
 def _reconcile_article(raw_url, title, ad_group):
     if not ad_group:
         raise exc.ArticleReconciliationException('Missing ad group.')
@@ -133,22 +137,44 @@ def _reconcile_article(raw_url, title, ad_group):
     if not title:
         raise exc.ArticleReconciliationException('Missing article title.')
 
-    kwargs = {
-        'ad_group': ad_group
-    }
+    article_reconciled, retries = False, 0
+    while not article_reconciled and retries < MAX_RECONCILIATION_RETRIES:
+        retries += 1
 
-    url = None
-    if raw_url:
-        url = _clean_url(raw_url)
-        kwargs['url'] = url
+        kwargs = {
+            'ad_group': ad_group
+        }
 
-    kwargs['title'] = title
+        url = None
+        if raw_url:
+            url = _clean_url(raw_url)
+            kwargs['url'] = url
 
-    articles = dashmodels.Article.objects.filter(**kwargs)
-    if articles:
-        article = articles.latest()
-    else:
-        article = dashmodels.Article.objects.create(ad_group=ad_group, url=url, title=title)
+        kwargs['title'] = title
+
+        articles = dashmodels.Article.objects.filter(**kwargs)
+        if articles:
+            article = articles.latest()
+        else:
+            try:
+                with transaction.atomic():
+                    article = dashmodels.Article.objects.create(ad_group=ad_group, url=url, title=title)
+            except IntegrityError:
+                logger.info(
+                    'IntegrityError upon saving new article. url: {url}, '
+                    'title: {title}, ad_group_id: {ad_group_id}, # of attempts: '.format(
+                        url=url,
+                        title=title,
+                        ad_group_id=ad_group.id,
+                        retries=retries,
+                    )
+                )
+                continue
+
+        article_reconciled = True
+
+    if not article_reconciled:
+        raise exc.ArticleReconciliationException('Couldn\'t reconcile article')
 
     return article
 
