@@ -1,14 +1,14 @@
 # test user
 
 -   fields:
-        date_joined: '2014-06-16T12:21:29Z'
+        date_joined: '2014-06-16T12:21:29'
         email: luka.silovinac@zemanta.com
         first_name: ''
         groups: []
         is_active: true
         is_staff: true
         is_superuser: true
-        last_login: '2014-06-16T12:21:29Z'
+        last_login: '2014-06-16T12:21:29'
         last_name: ''
         password: pbkdf2_sha256$12000$ekG2j1OyTgy0$dzdTxiFUkB0uQXWdvV4enBMdOs/8D/J7Jl5zDtKsMZA=
         user_permissions: []
@@ -19,8 +19,8 @@
 # test account
 
 -   fields:
-        created_dt: '2014-06-04T09:58:21Z'
-        modified_dt: '2014-06-04T09:58:21Z'
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         name: 'test account 1'
     model: dash.account
@@ -29,8 +29,8 @@
 # test campaign
 
 -   fields:
-        created_dt: '2014-06-04T09:58:21Z'
-        modified_dt: '2014-06-04T09:58:21Z'
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         account: 1 # test account 1
         name: 'test campaign 1'
@@ -40,40 +40,40 @@
 # networks
 
 -   fields:
-        created_dt: '2014-06-04T00:00:00Z'
-        modified_dt: '2014-06-04T00:00:00Z'
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
         name: AdBlade
         type: adblade
     model: dash.network
     pk: 1
 
 -   fields:
-        created_dt: '2014-06-04T00:00:00Z'
-        modified_dt: '2014-06-04T00:00:00Z'
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
         name: Gravity
         type: gravity
     model: dash.network
     pk: 2
 
 -   fields:
-        created_dt: '2014-06-04T00:00:00Z'
-        modified_dt: '2014-06-04T00:00:00Z'
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
         name: Outbrain
         type: outbrain
     model: dash.network
     pk: 3
 
 -   fields:
-        created_dt: '2014-06-04T00:00:00Z'
-        modified_dt: '2014-06-04T00:00:00Z'
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
         name: Taboola
         type: taboola
     model: dash.network
     pk: 4
 
 -   fields:
-        created_dt: '2014-06-04T00:00:00Z'
-        modified_dt: '2014-06-04T00:00:00Z'
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
         name: Yahoo
         type: yahoo
     model: dash.network
@@ -82,8 +82,8 @@
 # test adgroup
 
 -   fields:
-        created_dt: '2014-06-04T09:58:21Z'
-        modified_dt: '2014-06-04T09:58:21Z'
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         campaign: 1
         name: 'test adgroup 1'
@@ -135,8 +135,8 @@
 # test ad group network credentials
 
 -   fields:
-        created_dt: '2014-06-04T00:00:00Z'
-        modified_dt: '2014-06-04T00:00:00Z'
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
         network: 1
         name: 'Test credentials 1'
         credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
@@ -144,8 +144,8 @@
     pk: 1
 
 -   fields:
-        created_dt: '2014-06-04T00:00:00Z'
-        modified_dt: '2014-06-04T00:00:00Z'
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
         network: 2
         name: 'Test credentials 2'
         credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
@@ -153,8 +153,8 @@
     pk: 2
 
 -   fields:
-        created_dt: '2014-06-04T00:00:00Z'
-        modified_dt: '2014-06-04T00:00:00Z'
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
         network: 3
         name: 'Test credentials 3'
         credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
@@ -162,8 +162,8 @@
     pk: 3
 
 -   fields:
-        created_dt: '2014-06-04T00:00:00Z'
-        modified_dt: '2014-06-04T00:00:00Z'
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
         network: 4
         name: 'Test credentials 4'
         credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
@@ -171,8 +171,8 @@
     pk: 4
 
 -   fields:
-        created_dt: '2014-06-04T00:00:00Z'
-        modified_dt: '2014-06-04T00:00:00Z'
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
         network: 5
         name: 'Test credentials 5'
         credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'

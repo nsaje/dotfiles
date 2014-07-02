@@ -1,13 +1,13 @@
 # Users
 - fields:
-    date_joined: '2014-06-04T09:58:21Z'
+    date_joined: '2014-06-04T09:58:21'
     email: ''
     first_name: ''
     groups: []
     is_active: true
     is_staff: true
     is_superuser: true
-    last_login: '2014-06-04T12:20:46Z'
+    last_login: '2014-06-04T12:20:46'
     last_name: ''
     password: pbkdf2_sha256$12000$CWOT1c1UlFEr$GDTv3fbQ6bmJffEg1bvb+O49VfwD9Bg/DyylA3jcWvg=
     user_permissions: []
@@ -17,8 +17,8 @@
 
 # Accounts
 - fields:
-    created_dt: '2014-06-04T09:58:21Z'
-    modified_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     name: 'Test Account 1'
   model: dash.account
@@ -26,8 +26,8 @@
 
 # Campaigns
 - fields:
-    created_dt: '2014-06-04T09:58:21Z'
-    modified_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     account: 1
     name: 'Test Campaign 1'
@@ -36,8 +36,8 @@
 
 # Ad Groups
 - fields:
-    created_dt: '2014-06-04T09:58:21Z'
-    modified_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 1
     name: 'Test AdGroup 1'
@@ -45,8 +45,8 @@
   pk: 1
 
 - fields:
-    created_dt: '2014-06-04T09:58:21Z'
-    modified_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 1
     name: 'Test AdGroup 2'
@@ -57,16 +57,16 @@
 - fields:
     type: 'test'
     name: 'Test 1'
-    created_dt: '2014-06-04T09:58:21Z'
-    modified_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
   model: dash.network
   pk: 1
 
 - fields:
     type: 'test'
     name: 'Test 2'
-    created_dt: '2014-06-04T09:58:21Z'
-    modified_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
   model: dash.network
   pk: 2
 
@@ -75,7 +75,7 @@
     url: 'http://test1.com'
     title: 'Test Article 1'
     ad_group: 1
-    created_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
   model: dash.article
   pk: 1
 
@@ -83,7 +83,7 @@
     url: 'http://test2.com'
     title: 'Test Article 2'
     ad_group: 1
-    created_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
   model: dash.article
   pk: 2
 
@@ -91,7 +91,7 @@
     url: 'http://test3.com'
     title: 'Test Article 3'
     ad_group: 2
-    created_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
   model: dash.article
   pk: 3
 
@@ -99,7 +99,7 @@
     url: 'http://test4.com'
     title: 'Test Article 4'
     ad_group: 2
-    created_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
   model: dash.article
   pk: 4
 
@@ -107,148 +107,148 @@
 
 # ... for Test Article 1
 - fields:
-    datetime: '2014-06-04T00:00:00Z'
+    datetime: '2014-06-04T00:00:00'
     ad_group: 1
     article: 1
     network: 1
     impressions: 1264
     clicks: 21
     cost_cc: 11426
-    created_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 1
 
 - fields:
-    datetime: '2014-06-05T00:00:00Z'
+    datetime: '2014-06-05T00:00:00'
     ad_group: 1
     article: 1
     network: 1
     impressions: 178
     clicks: 0
     cost_cc: 0
-    created_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 2
 
 - fields:
-    datetime: '2014-06-06T00:00:00Z'
+    datetime: '2014-06-06T00:00:00'
     ad_group: 1
     article: 1
     network: 1
     impressions: 1859
     clicks: 20
     cost_cc: 10882
-    created_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 3
  
 # ... for Test Article 2
 - fields:
-    datetime: '2014-06-04T00:00:00Z'
+    datetime: '2014-06-04T00:00:00'
     ad_group: 1
     article: 2
     network: 1
     impressions: 1037
     clicks: 17
     cost_cc: 7617
-    created_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 4
 
 - fields:
-    datetime: '2014-06-05T00:00:00Z'
+    datetime: '2014-06-05T00:00:00'
     ad_group: 1
     article: 2
     network: 1
     impressions: 1216
     clicks: 16
     cost_cc: 5441
-    created_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 5
 
 - fields:
-    datetime: '2014-06-06T00:00:00Z'
+    datetime: '2014-06-06T00:00:00'
     ad_group: 1
     article: 2
     network: 1
     impressions: 443
     clicks: 4
     cost_cc: 2176
-    created_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 6
 
 # ... for Test Article 3
 - fields:
-    datetime: '2014-06-04T00:00:00Z'
+    datetime: '2014-06-04T00:00:00'
     ad_group: 2
     article: 3
     network: 2
     impressions: 4870
     clicks: 67
     cost_cc: 36455
-    created_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 7
 
 - fields:
-    datetime: '2014-06-05T00:00:00Z'
+    datetime: '2014-06-05T00:00:00'
     ad_group: 2
     article: 3
     network: 2
     impressions: 1640
     clicks: 21
     cost_cc: 11426
-    created_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 8
 
 - fields:
-    datetime: '2014-06-06T00:00:00Z'
+    datetime: '2014-06-06T00:00:00'
     ad_group: 2
     article: 3
     network: 2
     impressions: 123
     clicks: 1
     cost_cc: 544
-    created_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 9
 
 # ... for Test Article 4
 - fields:
-    datetime: '2014-06-04T00:00:00Z'
+    datetime: '2014-06-04T00:00:00'
     ad_group: 2
     article: 4
     network: 2
     impressions: 1168
     clicks: 13
     cost_cc: 7073
-    created_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 10
 
 - fields:
-    datetime: '2014-06-05T00:00:00Z'
+    datetime: '2014-06-05T00:00:00'
     ad_group: 2
     article: 4
     network: 2
     impressions: 1477
     clicks: 8
     cost_cc: 4352
-    created_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 11
 
 - fields:
-    datetime: '2014-06-06T00:00:00Z'
+    datetime: '2014-06-06T00:00:00'
     ad_group: 2
     article: 4
     network: 2
     impressions: 2175
     clicks: 39
     cost_cc: 21220
-    created_dt: '2014-06-04T09:58:21Z'
+    created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 12
