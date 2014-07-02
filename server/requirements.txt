@@ -17,7 +17,6 @@ statsd==3.0
 
 # Tests
 mock==1.0.1
-django-jenkins==0.15.0
 selenium==2.42.1
 
 # for visualizing project models
