@@ -38,6 +38,7 @@ def _process_zwei_response(action, data):
         return
 
     if data['status'] != 'success':
+        logger.warning('Action failed. Action: %s, response: %s', action, data)
         action.state = actionlogconstants.ActionState.FAILED
         action.save()
         return
@@ -47,8 +48,6 @@ def _process_zwei_response(action, data):
         reportsapi.upsert(data['data'], date)
     elif action.action == actionlogconstants.Action.FETCH_CAMPAIGN_STATUS:
         dashapi.campaign_status_upsert(action.ad_group_network, data['data'])
-    elif action.action == actionlogconstants.Action.FETCH_CAMPAIGN_STATUS:
-        raise NotImplementedError
 
     action.state = actionlogconstants.ActionState.SUCCESS
     action.save()

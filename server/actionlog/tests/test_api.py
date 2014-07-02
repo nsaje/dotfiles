@@ -69,6 +69,7 @@ class ZweiActionsTestCase(TestCase):
             ad_group_network.network_credentials.credentials
         )
 
+
 class ActionLogApiTestCase(TestCase):
 
     fixtures = ['test_api.yaml']
