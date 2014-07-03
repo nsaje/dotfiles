@@ -53,10 +53,10 @@ class ActionLog(models.Model):
     )
 
     def __str__(self):
-        return '{cn}(action={action}, action_status={status}, ad_group_network={agn}, id={id})'.format(
+        return '{cn}(action={action}, state={state}, ad_group_network={agn}, id={id})'.format(
             cn=self.__class__.__name__,
             action=self.action,
-            status=self.action_status,
+            status=self.state,
             agn=self.ad_group_network,
             id=self.id,
         )
