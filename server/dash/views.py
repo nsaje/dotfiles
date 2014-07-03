@@ -3,14 +3,15 @@ import json
 import logging
 
 import dateutil.parser
+from collections import OrderedDict
+import unicodecsv
+from xlwt import Workbook
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.core.validators import validate_integer
-from django.forms import ValidationError
 
 from dash import api_common
 from dash import exc
@@ -18,6 +19,7 @@ from dash import forms
 from dash import models
 from reports import api
 from utils import statsd_helper
+import excel_styles
 
 import constants
 
@@ -297,6 +299,94 @@ class AdGroupNetworksTable(api_common.BaseApiView):
             })
 
         return rows
+
+
+class AdGroupNetworksExport(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_networks_csv_get')
+    def get(self, request, ad_group_id):
+        try:
+            ad_group = models.AdGroup.user_objects.get_for_user(request.user).\
+                filter(id=int(ad_group_id)).get()
+        except models.AdGroup.DoesNotExist:
+            raise exc.MissingDataError('Ad Group does not exist')
+
+        start_date = get_stats_start_date(request.GET.get('start_date'))
+        end_date = get_stats_end_date(request.GET.get('end_date'))
+
+        networks_data = api.query(
+            start_date,
+            end_date,
+            ['network', 'date'],
+            ad_group=int(ad_group.id)
+        )
+
+        network_names = {network.id: network.name for network in models.Network.objects.all()}
+
+        for item in networks_data:
+            item['network'] = network_names[item['network']]
+
+        filename = 'networks_report_%s_%s' % (start_date, end_date)
+
+        if request.GET.get('type') == 'excel':
+            return self.create_excel_response(networks_data, filename)
+        else:
+            return self.create_csv_response(networks_data, filename)
+
+    def create_csv_response(self, data, filename):
+        response = self.create_file_response('text/csv', '%s.csv' % filename)
+
+        fieldnames = OrderedDict([
+            ('network', 'Network'),
+            ('date', 'Date'),
+            ('cost', 'Cost'),
+            ('cpc', 'CPC'),
+            ('clicks', 'Clicks'),
+            ('impressions', 'Date'),
+            ('ctr', 'CTR')
+        ])
+
+        writer = unicodecsv.DictWriter(response, fieldnames)
+
+        # header
+        writer.writerow(fieldnames)
+
+        for item in data:
+            writer.writerow(item)
+
+        return response
+
+    def create_excel_response(self, data, filename):
+        response = self.create_file_response('application/octet-stream', '%s.xlsx' % filename)
+
+        workbook = Workbook()
+        worksheet = workbook.add_sheet('Networks Report')
+
+        worksheet.col(5).width = 3000
+        worksheet.panes_frozen = True
+        row = 0
+
+        worksheet.write(row, 0, 'Network')
+        worksheet.write(row, 1, 'Date')
+        worksheet.write(row, 2, 'Cost')
+        worksheet.write(row, 3, 'CPC')
+        worksheet.write(row, 4, 'Clicks')
+        worksheet.write(row, 5, 'Impressions')
+        worksheet.write(row, 6, 'CTR')
+
+        for item in data:
+            row += 1
+
+            worksheet.write(row, 0, item['network'])
+            worksheet.write(row, 1, item['date'], excel_styles.style_date)
+            worksheet.write(row, 2, item['cost'], excel_styles.style_usd)
+            worksheet.write(row, 3, item['cpc'], excel_styles.style_usd)
+            worksheet.write(row, 4, item['clicks'])
+            worksheet.write(row, 5, item['impressions'])
+            worksheet.write(row, 6, item['ctr'] / 100, excel_styles.style_percent)
+
+        workbook.save(response)
+
+        return response
 
 
 class AdGroupAdsTable(api_common.BaseApiView):

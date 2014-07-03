@@ -33,6 +33,16 @@ class BaseApiView(View):
 
         return response
 
+    def create_file_response(self, content_type, filename, status_code=200):
+        response = HttpResponse(
+            content_type=content_type,
+            status=status_code
+        )
+
+        response['Content-Disposition'] = 'attachment; filename=%s' % filename
+
+        return response
+
     def get_exception_response(self, request, exception):
         error = {}
         if type(exception) in exc.custom_errors:
