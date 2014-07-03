@@ -48,10 +48,10 @@ def fetch_ad_group_reports(ad_group, date, network=None, order=None):
         _init_fetch_reports(ad_group_network, date, order)
 
 
-def set_ad_group_property(ad_group, network=None, prop=None, order=None):
+def set_ad_group_property(ad_group, network=None, prop=None, value=None, order=None):
     ad_group_networks = _get_ad_group_networks(ad_group, network)
     for ad_group_network in ad_group_networks:
-        _init_set_campaign_property(ad_group_network, prop, order)
+        _init_set_campaign_property(ad_group_network, prop, value, order)
 
 
 def is_waiting_for_set_actions(ad_group):

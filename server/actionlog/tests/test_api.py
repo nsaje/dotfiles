@@ -179,10 +179,10 @@ class ActionLogApiTestCase(TestCase):
         ad_group = dashmodels.AdGroup.objects.get(id=1)
         ad_group_networks = dashmodels.AdGroupNetwork.objects.filter(ad_group=ad_group)
 
-        prop = {
-            'fake_property': 'fake_value',
-        }
-        api.set_ad_group_property(ad_group, prop=prop)
+        prop = 'fake_property'
+        value = 'fake_value'
+
+        api.set_ad_group_property(ad_group, prop=prop, value=value)
 
         for ad_group_network in ad_group_networks.all():
             action = models.ActionLog.objects.get(
@@ -193,7 +193,8 @@ class ActionLogApiTestCase(TestCase):
             self.assertEqual(action.action_type, constants.ActionType.MANUAL)
 
             payload = {
-                'property': prop
+                'property': prop,
+                'value': value
             }
             self.assertEqual(action.payload, payload)
 
