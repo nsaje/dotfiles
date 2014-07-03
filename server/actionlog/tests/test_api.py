@@ -205,7 +205,7 @@ class SetCampaignPropertyTestCase(TestCase):
     def test_actionlog_added(self):
         ad_group_network = dashmodels.AdGroupNetwork.objects.get(pk=1)
         now = datetime.datetime.now()
-        api._init_set_campaign_property(ad_group_network, 'test_property', 'test_value')
+        api._init_set_campaign_property(ad_group_network, 'test_property', 'test_value', None)
         # check if a new action log object was added
         alogs = models.ActionLog.objects.filter(
             action=constants.Action.SET_PROPERTY,
@@ -223,11 +223,11 @@ class SetCampaignPropertyTestCase(TestCase):
     def test_abort_waiting_actionlog(self):
         ad_group_network = dashmodels.AdGroupNetwork.objects.get(pk=1)
         now = datetime.datetime.now()
-        api._init_set_campaign_property(ad_group_network, 'test_property', 'test_value_1')
+        api._init_set_campaign_property(ad_group_network, 'test_property', 'test_value_1', None)
         # insert a new action
         # if the ad_group_network and property are the same
         # the old one should be set to aborted and the new one should be set to waiting
-        api._init_set_campaign_property(ad_group_network, 'test_property', 'test_value_2')
+        api._init_set_campaign_property(ad_group_network, 'test_property', 'test_value_2', None)
         # old action is aborted
         alogs = models.ActionLog.objects.filter(
             action=constants.Action.SET_PROPERTY,
