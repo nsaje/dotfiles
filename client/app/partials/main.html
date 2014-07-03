@@ -6,7 +6,7 @@
         
         <div class="col-xs-8">
             <ol class="breadcrumb">
-                <li ng-repeat="path in breadcrumb" ng-class="{'active': $last}">{{ path }}</li>
+                <li ng-repeat="path in breadcrumb track by $index" ng-class="{'active': $last}">{{ path }}</li>
             </ol>
         </div>
 
