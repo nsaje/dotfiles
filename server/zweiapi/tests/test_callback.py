@@ -31,7 +31,7 @@ class CampaignStatusTest(TestCase):
         current_settings = ad_group_network.settings.latest()
         action_log = ActionLog(
             action=constants.Action.FETCH_CAMPAIGN_STATUS,
-            action_status=constants.ActionStatus.WAITING,
+            state=constants.ActionState.WAITING,
             action_type=constants.ActionType.AUTOMATIC,
             ad_group_network=ad_group_network,
         )

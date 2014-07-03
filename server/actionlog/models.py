@@ -12,15 +12,17 @@ class ActionLog(models.Model):
         max_length=100,
         choices=constants.Action.get_choices()
     )
-    action_status = models.IntegerField(
-        default=constants.ActionStatus.WAITING,
-        choices=constants.ActionStatus.get_choices()
+    state = models.IntegerField(
+        default=constants.ActionState.WAITING,
+        choices=constants.ActionState.get_choices()
     )
     action_type = models.IntegerField(
         choices=constants.ActionType.get_choices()
     )
 
     ad_group_network = models.ForeignKey('dash.AdGroupNetwork')
+
+    message = models.TextField(blank=True)
 
     payload = jsonfield.JSONField(blank=True, default=[])
 
@@ -51,10 +53,10 @@ class ActionLog(models.Model):
     )
 
     def __str__(self):
-        return '{cn}(action={action}, action_status={status}, ad_group_network={agn}, id={id})'.format(
+        return '{cn}(action={action}, state={state}, ad_group_network={agn}, id={id})'.format(
             cn=self.__class__.__name__,
             action=self.action,
-            status=self.action_status,
+            status=self.state,
             agn=self.ad_group_network,
             id=self.id,
         )
