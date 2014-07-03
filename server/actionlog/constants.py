@@ -37,3 +37,23 @@ class ActionType(ConstantBase):
         AUTOMATIC: 'Automatic',
         MANUAL: 'Manual',
     }
+
+
+class ActionLogOrderState(ConstantBase):
+    FAILED = -1
+    WAITING = 1
+    SUCCESS = 2
+
+    _VALUES = {
+        FAILED: 'Failed',
+        WAITING: 'Waiting',
+        SUCCESS: 'Success'
+    }
+
+
+class ActionLogOrderType(ConstantBase):
+    FETCH_ALL = 1
+
+    _VALUES = {
+        FETCH_ALL: 'Fetch all'
+    }

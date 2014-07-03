@@ -1,5 +1,5 @@
 from django.db.models.signals import pre_save
-from dash import models as dahsmodels
+from . import models
 from gadjo.requestprovider.signals import get_request
 
 
@@ -20,5 +20,7 @@ def created_by_pre_save_signal_handler(sender, instance, **kwargs):
         instance.created_by = None
 
 
-pre_save.connect(modified_by_pre_save_signal_handler, sender=dahsmodels.ActionLog)
-pre_save.connect(created_by_pre_save_signal_handler, sender=dahsmodels.ActionLog)
+pre_save.connect(modified_by_pre_save_signal_handler, sender=models.ActionLog)
+pre_save.connect(created_by_pre_save_signal_handler, sender=models.ActionLog)
+pre_save.connect(modified_by_pre_save_signal_handler, sender=models.ActionLogOrder)
+pre_save.connect(created_by_pre_save_signal_handler, sender=models.ActionLogOrder)
