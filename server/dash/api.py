@@ -27,7 +27,7 @@ def campaign_status_upsert(ad_group_network, data):
     except AdGroupNetworkSettings.DoesNotExist:
         current_settings = None
 
-    if current_settings is None or (
+    if current_settings is not None and (
         current_settings.state == new_state and
         current_settings.cpc_cc == new_cpc and
         current_settings.daily_budget_cc == new_daily_budget
