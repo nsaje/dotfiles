@@ -29,6 +29,19 @@ def zwei_callback(request, action_id):
     return JsonResponse(response_data)
 
 
+def _get_error_message(data):
+    if not data.get('error'):
+        return ''
+
+    message = []
+    if data['error'].get('error'):
+        message.append(data['error']['error'])
+    if data['error'].get('message'):
+        message.append(data['error']['message'])
+
+    return '\n'.join(message)
+
+
 @transaction.atomic
 def _process_zwei_response(action, data):
     logger.info('Processing Action Response: %s, response: %s', action, data)
@@ -39,8 +52,11 @@ def _process_zwei_response(action, data):
 
     if data['status'] != 'success':
         logger.warning('Action failed. Action: %s, response: %s', action, data)
+
         action.state = actionlogconstants.ActionState.FAILED
+        action.message = _get_error_message(data)
         action.save()
+
         return
 
     if action.action == actionlogconstants.Action.FETCH_REPORTS:

@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def _decrypt_payload_credentials(action):
     payload = copy.deepcopy(action.payload)
-    if 'credentials' not in payload:
+    if not payload.get('credentials'):
         return payload
 
     payload['credentials'] = json.loads(
