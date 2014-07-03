@@ -85,7 +85,7 @@ class NetworkCredentialsForm(forms.ModelForm):
             'Leaving the field empty won\'t change the stored value.'
 
     def clean_credentials(self):
-        if self.cleaned_data['credentials'] != '':
+        if self.cleaned_data['credentials'] != '' or not self.instance.id:
             try:
                 json.loads(self.cleaned_data['credentials'])
             except ValueError:
@@ -94,7 +94,7 @@ class NetworkCredentialsForm(forms.ModelForm):
 
     def clean(self, *args, **kwargs):
         super(NetworkCredentialsForm, self).clean(*args, **kwargs)
-        if self.cleaned_data['credentials'] == '':
+        if 'credentials' in self.cleaned_data and self.cleaned_data['credentials'] == '':
             del self.cleaned_data['credentials']
 
 
