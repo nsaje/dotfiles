@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.core.urlresolvers import reverse
 
 from actionlog import models
 from actionlog import constants
@@ -8,7 +9,7 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
     search_fields = ('action', 'ad_group_network')
     list_filter = ('ad_group_network__network', 'state', 'action', 'action_type')
 
-    list_display = ('action', 'ad_group_network', 'created_dt', 'action_type', 'state_')
+    list_display = ('action', 'ad_group_network_', 'created_dt', 'action_type', 'state_')
 
     fields = (
         'action', 'ad_group_network', 'state_', 'action_type',
@@ -39,6 +40,14 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
     def message_(self, obj):
         return '<div style="overflow: hidden"><pre style="color: #000;">{}</pre></div>'.format(obj.message)
     message_.allow_tags = True
+
+    def ad_group_network_(self, obj):
+        return '<a href="{ad_group_url}">{ad_group}</a>: {network}'.format(
+            ad_group_url=reverse('admin:dash_adgroup_change', args=(obj.ad_group_network.ad_group.id,)),
+            ad_group=obj.ad_group_network.ad_group,
+            network=obj.ad_group_network.network,
+        )
+    ad_group_network_.allow_tags = True
 
 
 admin.site.register(models.ActionLog, ActionLogAdminAdmin)
