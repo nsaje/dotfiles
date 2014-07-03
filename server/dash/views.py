@@ -29,6 +29,14 @@ STATS_START_DELTA = 30
 STATS_END_DELTA = 1
 
 
+def get_ad_group(user, ad_group_id):
+    try:
+        return models.AdGroup.user_objects.get_for_user(user).\
+            filter(id=int(ad_group_id)).get()
+    except models.AdGroup.DoesNotExist:
+        raise exc.MissingDataError('Ad Group does not exist')
+
+
 def get_stats_start_date(start_date):
     if start_date:
         date = dateutil.parser.parse(start_date)
@@ -126,11 +134,7 @@ class NavigationDataView(api_common.BaseApiView):
 class AdGroupSettings(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_get')
     def get(self, request, ad_group_id):
-        try:
-            ad_group = models.AdGroup.user_objects.get_for_user(request.user).\
-                filter(id=int(ad_group_id)).get()
-        except models.AdGroup.DoesNotExist:
-            raise exc.MissingDataError('Ad Group does not exist')
+        ad_group = get_ad_group(request.user, ad_group_id)
 
         settings = self.get_current_settings(ad_group)
 
@@ -142,11 +146,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_put')
     def put(self, request, ad_group_id):
-        try:
-            ad_group = models.AdGroup.user_objects.get_for_user(request.user).\
-                filter(id=int(ad_group_id)).get()
-        except models.AdGroup.DoesNotExist:
-            raise exc.MissingDataError('Ad Group does not exist')
+        ad_group = get_ad_group(request.user, ad_group_id)
 
         current_settings = self.get_current_settings(ad_group)
 
@@ -231,11 +231,7 @@ class AdGroupSettings(api_common.BaseApiView):
 class AdGroupNetworksTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_networks_table_get')
     def get(self, request, ad_group_id):
-        try:
-            ad_group = models.AdGroup.user_objects.get_for_user(request.user).\
-                filter(id=int(ad_group_id)).get()
-        except models.AdGroup.DoesNotExist:
-            raise exc.MissingDataError('Ad Group does not exist')
+        ad_group = get_ad_group(request.user, ad_group_id)
 
         networks_data = api.query(
             get_stats_start_date(request.GET.get('start_date')),
@@ -304,11 +300,7 @@ class AdGroupNetworksTable(api_common.BaseApiView):
 class AdGroupNetworksExport(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_networks_csv_get')
     def get(self, request, ad_group_id):
-        try:
-            ad_group = models.AdGroup.user_objects.get_for_user(request.user).\
-                filter(id=int(ad_group_id)).get()
-        except models.AdGroup.DoesNotExist:
-            raise exc.MissingDataError('Ad Group does not exist')
+        ad_group = get_ad_group(request.user, ad_group_id)
 
         start_date = get_stats_start_date(request.GET.get('start_date'))
         end_date = get_stats_end_date(request.GET.get('end_date'))
@@ -341,11 +333,11 @@ class AdGroupNetworksExport(api_common.BaseApiView):
             ('cost', 'Cost'),
             ('cpc', 'CPC'),
             ('clicks', 'Clicks'),
-            ('impressions', 'Date'),
+            ('impressions', 'Impressions'),
             ('ctr', 'CTR')
         ])
 
-        writer = unicodecsv.DictWriter(response, fieldnames)
+        writer = unicodecsv.DictWriter(response, fieldnames, lineterminator='\n')
 
         # header
         writer.writerow(fieldnames)
@@ -392,11 +384,7 @@ class AdGroupNetworksExport(api_common.BaseApiView):
 class AdGroupAdsTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_table_get')
     def get(self, request, ad_group_id):
-        try:
-            ad_group = models.AdGroup.user_objects.get_for_user(request.user).\
-                filter(id=int(ad_group_id)).get()
-        except models.AdGroup.DoesNotExist:
-            raise exc.MissingDataError('Ad Group does not exist')
+        ad_group = get_ad_group(request.user, ad_group_id)
 
         page = request.GET.get('page')
         size = request.GET.get('size')
@@ -476,11 +464,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
 class AdGroupDailyStats(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_daily_stats_get')
     def get(self, request, ad_group_id):
-        try:
-            ad_group = models.AdGroup.user_objects.get_for_user(request.user).\
-                filter(id=int(ad_group_id)).get()
-        except models.AdGroup.DoesNotExist:
-            raise exc.MissingDataError('Ad Group does not exist')
+        ad_group = get_ad_group(request.user, ad_group_id)
 
         stats = api.query(
             get_stats_start_date(request.GET.get('start_date')),
