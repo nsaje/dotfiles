@@ -26,10 +26,6 @@ def campaign_status_upsert(ad_group_network, data):
         'daily_budget_cc': cc_to_decimal(data.get('daily_budget_cc')),
     }
 
-    for key, val in new_settings.iteritems():
-        if val is None:
-            raise AttributeError('Missing network settings data for %s', key)
-
     try:
         current_settings = ad_group_network.settings.latest()
     except AdGroupNetworkSettings.DoesNotExist:
