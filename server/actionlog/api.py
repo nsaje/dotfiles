@@ -44,7 +44,11 @@ def is_waiting(ad_group):
     actions = (constants.Action.SET_CAMPAIGN_STATE, constants.Action.SET_PROPERTY)
     states = (constants.ActionState.FAILED, constants.ActionState.WAITING)
     exists = models.ActionLog.objects.\
-        filter(action__in=actions, state__in=states).\
+        filter(
+            action__in=actions,
+            state__in=states,
+            ad_group_network__ad_group_id=ad_group.id
+        ).\
         exists()
 
     return exists
