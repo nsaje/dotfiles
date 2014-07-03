@@ -24,10 +24,10 @@ def run_fetch_all_order(dates):
     )
 
     for ad_group in ad_groups:
-        fetch_ad_group_status(ad_group, order)
+        fetch_ad_group_status(ad_group, order=order)
 
         for date in dates:
-            fetch_ad_group_reports(ad_group, date, order)
+            fetch_ad_group_reports(ad_group, date, order=order)
 
 
 def stop_ad_group(ad_group, network=None, order=None):
