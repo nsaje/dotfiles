@@ -137,46 +137,31 @@ def _reconcile_article(raw_url, title, ad_group):
     if not title:
         raise exc.ArticleReconciliationException('Missing article title.')
 
-    article_reconciled, retries = False, 0
-    while not article_reconciled and retries < MAX_RECONCILIATION_RETRIES:
-        retries += 1
+    kwargs = {
+        'ad_group': ad_group
+    }
 
-        kwargs = {
-            'ad_group': ad_group
-        }
+    url = None
+    if raw_url:
+        url = _clean_url(raw_url)
+        kwargs['url'] = url
 
-        url = None
-        if raw_url:
-            url = _clean_url(raw_url)
-            kwargs['url'] = url
+    kwargs['title'] = title
 
-        kwargs['title'] = title
+    try:
+        return dashmodels.Article.objects.filter(**kwargs).latest()
+    except dashmodels.Article.DoesNotExist:
+        pass
 
-        articles = dashmodels.Article.objects.filter(**kwargs)
-        if articles:
-            article = articles.latest()
-        else:
-            try:
-                with transaction.atomic():
-                    article = dashmodels.Article.objects.create(ad_group=ad_group, url=url, title=title)
-            except IntegrityError:
-                logger.info(
-                    'IntegrityError upon saving new article. url: {url}, '
-                    'title: {title}, ad_group_id: {ad_group_id}, # of attempts: '.format(
-                        url=url,
-                        title=title,
-                        ad_group_id=ad_group.id,
-                        retries=retries,
-                    )
-                )
-                continue
-
-        article_reconciled = True
-
-    if not article_reconciled:
-        raise exc.ArticleReconciliationException('Couldn\'t reconcile article')
-
-    return article
+    try:
+        with transaction.atomic():
+            return dashmodels.Article.objects.create(ad_group=ad_group, url=url, title=title)
+    except IntegrityError:
+        logger.info(
+            'Failed to insert article: title = {title}, url = {url}, ad group id = {ad_group_id}. '.
+            format(title=title, url=url, ad_group_id=ad_group.id)
+        )
+        return dashmodels.Article.objects.filter(**kwargs).latest()
 
 
 def _clean_url(raw_url):
