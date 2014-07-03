@@ -56,7 +56,7 @@ class ActionLog(models.Model):
         return '{cn}(action={action}, state={state}, ad_group_network={agn}, id={id})'.format(
             cn=self.__class__.__name__,
             action=self.action,
-            status=self.state,
+            state=self.state,
             agn=self.ad_group_network,
             id=self.id,
         )
