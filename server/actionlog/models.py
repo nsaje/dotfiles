@@ -22,6 +22,8 @@ class ActionLog(models.Model):
 
     ad_group_network = models.ForeignKey('dash.AdGroupNetwork')
 
+    message = models.TextField(blank=True)
+
     payload = jsonfield.JSONField(blank=True, default=[])
 
     created_dt = models.DateTimeField(
