@@ -180,12 +180,32 @@ def _init_fetch_reports(ad_group_network, date):
         _handle_error(action, e)
 
 
-def _init_set_campaign_property(ad_group_network, prop):
-    models.ActionLog.objects.create(
+def _init_set_campaign_property(ad_group_network, prop, value):
+    # check if there already is a waiting action for this prop in this ad_group_network
+    existing_actions = models.ActionLog.objects.filter(
+        ad_group_network=ad_group_network,
+        action=constants.Action.SET_PROPERTY,
+        state=constants.ActionState.WAITING,
+        action_type=constants.ActionType.MANUAL
+    )
+
+    existing_actions = [a for a in existing_actions if a.payload['property'] == prop]
+
+    # set the actions to ABORTED before adding the new action
+    if existing_actions:
+        for a in existing_actions:
+            a.state = constants.ActionState.ABORTED
+            a.save()
+
+    # create a new action
+    action = models.ActionLog.objects.create(
         action=constants.Action.SET_PROPERTY,
         action_type=constants.ActionType.MANUAL,
+        state=constants.ActionState.WAITING,
         ad_group_network=ad_group_network,
         payload=json.dumps({
             'property': prop,
+            'value': value,
         })
     )
+    action.save()
