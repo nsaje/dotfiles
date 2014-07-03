@@ -39,8 +39,8 @@ urlpatterns += patterns(
         login_required(dash.views.AdGroupNetworksTable.as_view())
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/networks/export/',
-        login_required(dash.views.AdGroupNetworksExport.as_view())
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/ads/export/',
+        login_required(dash.views.AdGroupAdsExport.as_view())
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/ads/table/',

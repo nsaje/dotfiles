@@ -7,11 +7,11 @@ import xlrd
 from dash import views
 
 
-@patch('dash.views.models.Network.objects')
+@patch('dash.views.models')
 @patch('dash.views.api')
 @patch('dash.views.get_ad_group')
-class AdGroupNetworksExportTestCase(test.TestCase):
-    def test_get_csv(self, mock_get_ad_group, mock_api, mock_network_objects):
+class AdGroupAdsExportTestCase(test.TestCase):
+    def test_get_csv(self, mock_get_ad_group, mock_api, mock_models):
         ad_group_id = 1
 
         mock_ad_group = Mock()
@@ -21,7 +21,12 @@ class AdGroupNetworksExportTestCase(test.TestCase):
         mock_network = Mock()
         mock_network.id = 1
         mock_network.name = 'Test Network'
-        mock_network_objects.all.return_value = [mock_network]
+        mock_models.Network.objects.all.return_value = [mock_network]
+
+        mock_article = Mock()
+        mock_article.id = 1
+        mock_article.title = 'Test Article'
+        mock_models.Article.objects.all.return_value = [mock_article]
 
         request = http.HttpRequest()
         request.GET['type'] = 'csv'
@@ -30,6 +35,7 @@ class AdGroupNetworksExportTestCase(test.TestCase):
         request.user = Mock()
 
         mock_api.query.return_value = [{
+            'article': 1,
             'network': 1,
             'date': '2014-07-01',
             'cost': 1000,
@@ -39,10 +45,10 @@ class AdGroupNetworksExportTestCase(test.TestCase):
             'ctr': 1.03
         }]
 
-        response = views.AdGroupNetworksExport().get(request, ad_group_id)
+        response = views.AdGroupAdsExport().get(request, ad_group_id)
 
-        expected_content = '''Network,Date,Cost,CPC,Clicks,Impressions,CTR
-Test Network,2014-07-01,1000,10,103,100000,1.03
+        expected_content = '''"Article","Network","Date","Cost","CPC","Clicks","Impressions","CTR"
+"Test Article","Test Network","2014-07-01",1000,10,103,100000,1.03
 '''
 
         self.assertEqual(response['Content-Type'], 'text/csv')
@@ -52,7 +58,7 @@ Test Network,2014-07-01,1000,10,103,100000,1.03
         )
         self.assertEqual(response.content, expected_content)
 
-    def test_get_excel(self, mock_get_ad_group, mock_api, mock_network_objects):
+    def test_get_excel(self, mock_get_ad_group, mock_api, mock_models):
         ad_group_id = 1
 
         mock_ad_group = Mock()
@@ -62,7 +68,12 @@ Test Network,2014-07-01,1000,10,103,100000,1.03
         mock_network = Mock()
         mock_network.id = 1
         mock_network.name = 'Test Network'
-        mock_network_objects.all.return_value = [mock_network]
+        mock_models.Network.objects.all.return_value = [mock_network]
+
+        mock_article = Mock()
+        mock_article.id = 1
+        mock_article.title = 'Test Article'
+        mock_models.Article.objects.all.return_value = [mock_article]
 
         request = http.HttpRequest()
         request.GET['type'] = 'excel'
@@ -71,6 +82,7 @@ Test Network,2014-07-01,1000,10,103,100000,1.03
         request.user = Mock()
 
         mock_api.query.return_value = [{
+            'article': 1,
             'network': 1,
             'date': '2014-07-01',
             'cost': 1000,
@@ -80,7 +92,7 @@ Test Network,2014-07-01,1000,10,103,100000,1.03
             'ctr': 1.03
         }]
 
-        response = views.AdGroupNetworksExport().get(request, ad_group_id)
+        response = views.AdGroupAdsExport().get(request, ad_group_id)
 
         self.assertEqual(response['Content-Type'], 'application/octet-stream')
         self.assertEqual(
@@ -94,18 +106,20 @@ Test Network,2014-07-01,1000,10,103,100000,1.03
         worksheet = workbook.sheet_by_name('Networks Report')
         self.assertIsNotNone(worksheet)
 
-        self.assertEqual(worksheet.cell_value(0, 0), 'Network')
-        self.assertEqual(worksheet.cell_value(0, 1), 'Date')
-        self.assertEqual(worksheet.cell_value(0, 2), 'Cost')
-        self.assertEqual(worksheet.cell_value(0, 3), 'CPC')
-        self.assertEqual(worksheet.cell_value(0, 4), 'Clicks')
-        self.assertEqual(worksheet.cell_value(0, 5), 'Impressions')
-        self.assertEqual(worksheet.cell_value(0, 6), 'CTR')
+        self.assertEqual(worksheet.cell_value(0, 0), 'Article')
+        self.assertEqual(worksheet.cell_value(0, 1), 'Network')
+        self.assertEqual(worksheet.cell_value(0, 2), 'Date')
+        self.assertEqual(worksheet.cell_value(0, 3), 'Cost')
+        self.assertEqual(worksheet.cell_value(0, 4), 'CPC')
+        self.assertEqual(worksheet.cell_value(0, 5), 'Clicks')
+        self.assertEqual(worksheet.cell_value(0, 6), 'Impressions')
+        self.assertEqual(worksheet.cell_value(0, 7), 'CTR')
 
-        self.assertEqual(worksheet.cell_value(1, 0), 'Test Network')
-        self.assertEqual(worksheet.cell_value(1, 1), '2014-07-01')
-        self.assertEqual(worksheet.cell_value(1, 2), 1000)
-        self.assertEqual(worksheet.cell_value(1, 3), 10)
-        self.assertEqual(worksheet.cell_value(1, 4), 103)
-        self.assertEqual(worksheet.cell_value(1, 5), 100000)
-        self.assertEqual(worksheet.cell_value(1, 6), 0.0103)
+        self.assertEqual(worksheet.cell_value(1, 0), 'Test Article')
+        self.assertEqual(worksheet.cell_value(1, 1), 'Test Network')
+        self.assertEqual(worksheet.cell_value(1, 2), '2014-07-01')
+        self.assertEqual(worksheet.cell_value(1, 3), 1000)
+        self.assertEqual(worksheet.cell_value(1, 4), 10)
+        self.assertEqual(worksheet.cell_value(1, 5), 103)
+        self.assertEqual(worksheet.cell_value(1, 6), 100000)
+        self.assertEqual(worksheet.cell_value(1, 7), 0.0103)

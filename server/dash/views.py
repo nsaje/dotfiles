@@ -297,7 +297,7 @@ class AdGroupNetworksTable(api_common.BaseApiView):
         return rows
 
 
-class AdGroupNetworksExport(api_common.BaseApiView):
+class AdGroupAdsExport(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_networks_csv_get')
     def get(self, request, ad_group_id):
         ad_group = get_ad_group(request.user, ad_group_id)
@@ -308,14 +308,16 @@ class AdGroupNetworksExport(api_common.BaseApiView):
         networks_data = api.query(
             start_date,
             end_date,
-            ['network', 'date'],
+            ['network', 'article', 'date'],
             ad_group=int(ad_group.id)
         )
 
         network_names = {network.id: network.name for network in models.Network.objects.all()}
+        article_names = {article.id: article.title for article in models.Article.objects.all()}
 
         for item in networks_data:
             item['network'] = network_names[item['network']]
+            item['article'] = article_names[item['article']]
 
         filename = 'networks_report_%s_%s' % (start_date, end_date)
 
@@ -328,6 +330,7 @@ class AdGroupNetworksExport(api_common.BaseApiView):
         response = self.create_file_response('text/csv', '%s.csv' % filename)
 
         fieldnames = OrderedDict([
+            ('article', 'Article'),
             ('network', 'Network'),
             ('date', 'Date'),
             ('cost', 'Cost'),
@@ -337,7 +340,12 @@ class AdGroupNetworksExport(api_common.BaseApiView):
             ('ctr', 'CTR')
         ])
 
-        writer = unicodecsv.DictWriter(response, fieldnames, lineterminator='\n')
+        writer = unicodecsv.DictWriter(
+            response,
+            fieldnames,
+            quoting=unicodecsv.QUOTE_NONNUMERIC,
+            lineterminator='\n'
+        )
 
         # header
         writer.writerow(fieldnames)
@@ -353,28 +361,32 @@ class AdGroupNetworksExport(api_common.BaseApiView):
         workbook = Workbook()
         worksheet = workbook.add_sheet('Networks Report')
 
-        worksheet.col(5).width = 3000
+        worksheet.col(0).width = 6000
+        worksheet.col(1).width = 4000
+        worksheet.col(6).width = 3000
         worksheet.panes_frozen = True
         row = 0
 
-        worksheet.write(row, 0, 'Network')
-        worksheet.write(row, 1, 'Date')
-        worksheet.write(row, 2, 'Cost')
-        worksheet.write(row, 3, 'CPC')
-        worksheet.write(row, 4, 'Clicks')
-        worksheet.write(row, 5, 'Impressions')
-        worksheet.write(row, 6, 'CTR')
+        worksheet.write(row, 0, 'Article')
+        worksheet.write(row, 1, 'Network')
+        worksheet.write(row, 2, 'Date')
+        worksheet.write(row, 3, 'Cost')
+        worksheet.write(row, 4, 'CPC')
+        worksheet.write(row, 5, 'Clicks')
+        worksheet.write(row, 6, 'Impressions')
+        worksheet.write(row, 7, 'CTR')
 
         for item in data:
             row += 1
 
-            worksheet.write(row, 0, item['network'])
-            worksheet.write(row, 1, item['date'], excel_styles.style_date)
-            worksheet.write(row, 2, item['cost'], excel_styles.style_usd)
-            worksheet.write(row, 3, item['cpc'], excel_styles.style_usd)
-            worksheet.write(row, 4, item['clicks'])
-            worksheet.write(row, 5, item['impressions'])
-            worksheet.write(row, 6, item['ctr'] / 100, excel_styles.style_percent)
+            worksheet.write(row, 0, item['article'])
+            worksheet.write(row, 1, item['network'])
+            worksheet.write(row, 2, item['date'], excel_styles.style_date)
+            worksheet.write(row, 3, item['cost'], excel_styles.style_usd)
+            worksheet.write(row, 4, item['cpc'], excel_styles.style_usd)
+            worksheet.write(row, 5, item['clicks'])
+            worksheet.write(row, 6, item['impressions'])
+            worksheet.write(row, 7, item['ctr'] / 100, excel_styles.style_percent)
 
         workbook.save(response)
 
