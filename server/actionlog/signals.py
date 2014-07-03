@@ -22,5 +22,3 @@ def created_by_pre_save_signal_handler(sender, instance, **kwargs):
 
 pre_save.connect(modified_by_pre_save_signal_handler, sender=models.ActionLog)
 pre_save.connect(created_by_pre_save_signal_handler, sender=models.ActionLog)
-pre_save.connect(modified_by_pre_save_signal_handler, sender=models.ActionLogOrder)
-pre_save.connect(created_by_pre_save_signal_handler, sender=models.ActionLogOrder)
