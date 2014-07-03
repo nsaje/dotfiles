@@ -6,7 +6,6 @@ import urllib2
 
 from django.conf import settings
 
-from . import constants
 from utils import encryption_helpers
 
 logger = logging.getLogger(__name__)
@@ -34,9 +33,4 @@ def send(action):
     data = json.dumps(payload)
     request = urllib2.Request(settings.ZWEI_API_URL, data)
 
-    try:
-        urllib2.urlopen(request)
-    except urllib2.HTTPError as e:
-        logger.error('Zwei host connection error: %s', str(e))
-        action.state = constants.ActionState.FAILED
-        action.save()
+    urllib2.urlopen(request)

@@ -40,7 +40,7 @@ def set_ad_group_property(ad_group, network=None, prop=None):
         _init_set_campaign_property(ad_group_network, prop)
 
 
-def is_waiting(ad_group):
+def is_waiting_for_set_actions(ad_group):
     actions = (constants.Action.SET_CAMPAIGN_STATE, constants.Action.SET_PROPERTY)
     states = (constants.ActionState.FAILED, constants.ActionState.WAITING)
     exists = models.ActionLog.objects.\
