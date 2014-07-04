@@ -179,10 +179,10 @@ class ActionLogApiTestCase(TestCase):
         ad_group = dashmodels.AdGroup.objects.get(id=1)
         ad_group_networks = dashmodels.AdGroupNetwork.objects.filter(ad_group=ad_group)
 
-        prop = {
-            'fake_property': 'fake_value',
-        }
-        api.set_ad_group_property(ad_group, prop=prop)
+        prop = 'fake_property'
+        value = 'fake_value'
+
+        api.set_ad_group_property(ad_group, prop=prop, value=value)
 
         for ad_group_network in ad_group_networks.all():
             action = models.ActionLog.objects.get(
@@ -193,6 +193,65 @@ class ActionLogApiTestCase(TestCase):
             self.assertEqual(action.action_type, constants.ActionType.MANUAL)
 
             payload = {
-                'property': prop
+                'property': prop,
+                'value': value
             }
             self.assertEqual(action.payload, payload)
+
+
+class SetCampaignPropertyTestCase(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def test_actionlog_added(self):
+        ad_group_network = dashmodels.AdGroupNetwork.objects.get(pk=1)
+        now = datetime.datetime.now()
+        api._init_set_campaign_property(ad_group_network, 'test_property', 'test_value', None)
+        # check if a new action log object was added
+        alogs = models.ActionLog.objects.filter(
+            action=constants.Action.SET_PROPERTY,
+            state=constants.ActionState.WAITING,
+            action_type=constants.ActionType.MANUAL,
+            ad_group_network=ad_group_network,
+            created_dt__gt=now
+        )
+        self.assertEqual(len(alogs) == 1, True)
+        self.assertEqual(alogs[0].payload['property'], 'test_property')
+        self.assertEqual(alogs[0].payload['value'], 'test_value')
+        for alog in alogs: 
+            alog.delete()
+
+    def test_abort_waiting_actionlog(self):
+        ad_group_network = dashmodels.AdGroupNetwork.objects.get(pk=1)
+        now = datetime.datetime.now()
+        api._init_set_campaign_property(ad_group_network, 'test_property', 'test_value_1', None)
+        # insert a new action
+        # if the ad_group_network and property are the same
+        # the old one should be set to aborted and the new one should be set to waiting
+        api._init_set_campaign_property(ad_group_network, 'test_property', 'test_value_2', None)
+        # old action is aborted
+        alogs = models.ActionLog.objects.filter(
+            action=constants.Action.SET_PROPERTY,
+            state=constants.ActionState.ABORTED,
+            action_type=constants.ActionType.MANUAL,
+            ad_group_network=ad_group_network,
+            created_dt__gt=now
+        )
+        self.assertEqual(len(alogs) == 1, True)
+        self.assertEqual(alogs[0].payload['property'], 'test_property')
+        self.assertEqual(alogs[0].payload['value'], 'test_value_1')
+        for alog in alogs:
+            alog.delete()
+        #new action is waiting
+        alogs = models.ActionLog.objects.filter(
+            action=constants.Action.SET_PROPERTY,
+            state=constants.ActionState.WAITING,
+            action_type=constants.ActionType.MANUAL,
+            ad_group_network=ad_group_network,
+            created_dt__gt=now
+        )
+        self.assertEqual(len(alogs) == 1, True)
+        self.assertEqual(alogs[0].payload['property'], 'test_property')
+        self.assertEqual(alogs[0].payload['value'], 'test_value_2')
+        for alog in alogs:
+            alog.delete()
