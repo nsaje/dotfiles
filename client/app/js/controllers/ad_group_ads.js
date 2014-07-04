@@ -1,6 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-
-oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', 'api', function ($scope, $state, $location, $window, api) {
+oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', 'api', 'zemCustomTableColsService', function ($scope, $state, $location, $window, api, zemCustomTableColsService) {
     $scope.constants = constants;
     $scope.options = options;
     $scope.chartMetric1 = constants.networkChartMetric.CLICKS;
@@ -13,6 +12,45 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         currentPage: 1,
         numPages: 5
     };
+    $scope.columns = [
+        {
+            name: 'Cost',
+            field: 'cost',
+            checked: true,
+            type: 'currency'
+        },
+        {
+            name: 'CPC',
+            field: 'cpc',
+            checked: true,
+            type: 'currency'
+        },
+        {
+            name: 'Clicks',
+            field: 'clicks',
+            checked: true,
+            type: 'number'
+        },
+        {
+            name: 'Impressions',
+            field: 'impressions',
+            checked: true,
+            type: 'number'
+
+        },
+        {
+            name: 'CTR',
+            field: 'ctr',
+            checked: true,
+            type: 'percent'
+
+        }
+    ];
+
+    zemCustomTableColsService.load('adGroupAdsCols', $scope.columns);
+    $scope.$watch('columns', function (newValue, oldValue) {
+        zemCustomTableColsService.save('adGroupAdsCols', newValue);
+    }, true);
 
     $scope.setChartData = function () {
         var result = {

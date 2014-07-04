@@ -30,7 +30,7 @@ def login(request, *args, **kwargs):
 
     return auth_views.login(request, *args, **kwargs)
 
-
+@statsd_helper.statsd_timer('auth', 'google_callback')
 def google_callback(request, *args, **kwargs):
     if 'error' in request.GET or 'code' not in request.GET:
         return _fail_response()
