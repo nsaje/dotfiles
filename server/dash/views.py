@@ -315,7 +315,7 @@ class AdGroupNetworksTable(api_common.BaseApiView):
 
 
 class AdGroupAdsExport(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_networks_csv_get')
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_export_get')
     def get(self, request, ad_group_id):
         ad_group = get_ad_group(request.user, ad_group_id)
 
@@ -333,14 +333,11 @@ class AdGroupAdsExport(api_common.BaseApiView):
         article_names = {article.id: article.title for article in models.Article.objects.filter(ad_group=ad_group.id)}
 
         result = []
-        row = 0
         for date in daterange(start_date, end_date):
             for article_id in article_names:
                 for network_id in network_names:
                     # Find item if exists
                     for item in data:
-                        row += 1
-
                         if item['network'] != network_id:
                             continue
 
@@ -392,7 +389,7 @@ class AdGroupAdsExport(api_common.BaseApiView):
         writer = unicodecsv.DictWriter(
             response,
             fieldnames,
-            quoting=unicodecsv.QUOTE_NONNUMERIC,
+            quoting=unicodecsv.QUOTE_ALL,
             lineterminator='\n'
         )
 
@@ -400,6 +397,14 @@ class AdGroupAdsExport(api_common.BaseApiView):
         writer.writerow(fieldnames)
 
         for item in data:
+            # Format
+            for key in ['cost', 'cpc', 'ctr']:
+                val = item[key]
+                if not isinstance(val, float):
+                    val = 0
+
+                item[key] = '{:.2f}'.format(val)
+
             writer.writerow(item)
 
         return response
@@ -407,11 +412,11 @@ class AdGroupAdsExport(api_common.BaseApiView):
     def create_excel_response(self, data, filename):
         response = self.create_file_response('application/octet-stream', '%s.xlsx' % filename)
 
-        workbook = Workbook()
+        workbook = Workbook(encoding='UTF-8')
         worksheet = workbook.add_sheet('Networks Report')
 
-        worksheet.col(1).width = 4000
-        worksheet.col(2).width = 6000
+        worksheet.col(1).width = 6000
+        worksheet.col(2).width = 4000
         worksheet.col(6).width = 3000
         worksheet.panes_frozen = True
         row = 0
@@ -431,11 +436,11 @@ class AdGroupAdsExport(api_common.BaseApiView):
             worksheet.write(row, 0, item['date'], excel_styles.style_date)
             worksheet.write(row, 1, item['article'])
             worksheet.write(row, 2, item['network'])
-            worksheet.write(row, 3, item['cost'], excel_styles.style_usd)
-            worksheet.write(row, 4, item['cpc'], excel_styles.style_usd)
-            worksheet.write(row, 5, item['clicks'])
-            worksheet.write(row, 6, item['impressions'])
-            worksheet.write(row, 7, item['ctr'] / 100, excel_styles.style_percent)
+            worksheet.write(row, 3, item['cost'] or 0, excel_styles.style_usd)
+            worksheet.write(row, 4, item['cpc'] or 0, excel_styles.style_usd)
+            worksheet.write(row, 5, item['clicks'] or 0)
+            worksheet.write(row, 6, item['impressions'] or 0)
+            worksheet.write(row, 7, (item['ctr'] or 0) / 100, excel_styles.style_percent)
 
         workbook.save(response)
 

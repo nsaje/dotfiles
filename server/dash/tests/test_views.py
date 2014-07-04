@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 from mock import patch, Mock
 import datetime
 
@@ -36,15 +38,15 @@ class AdGroupAdsExportTestCase(test.TestCase):
 
         self.mock_article = Mock()
         self.mock_article.id = 1
-        self.mock_article.title = 'Test Article'
+        self.mock_article.title = u'Test Article with unicode Čžš'
         self.mock_models.Article.objects.filter.return_value = [self.mock_article]
 
         self.mock_api.query.return_value = [{
             'article': 1,
             'network': 1,
             'date': datetime.date(2014, 7, 1),
-            'cost': 1000,
-            'cpc': 10,
+            'cost': 1000.123242,
+            'cpc': 10.2334,
             'clicks': 103,
             'impressions': 100000,
             'ctr': 1.031231231
@@ -65,10 +67,10 @@ class AdGroupAdsExportTestCase(test.TestCase):
         response = views.AdGroupAdsExport().get(request, self.ad_group_id)
 
         expected_content = '''"Date","Article","Network","Cost","CPC","Clicks","Impressions","CTR"
-"2014-06-30","Test Article","Test Network 1",0,0,0,0,0
-"2014-06-30","Test Article","Test Network 2",0,0,0,0,0
-"2014-07-01","Test Article","Test Network 1",1000,10,103,100000,1.031231231
-"2014-07-01","Test Article","Test Network 2",0,0,0,0,0
+"2014-06-30","Test Article with unicode Čžš","Test Network 1","0.00","0.00","0","0","0.00"
+"2014-06-30","Test Article with unicode Čžš","Test Network 2","0.00","0.00","0","0","0.00"
+"2014-07-01","Test Article with unicode Čžš","Test Network 1","1000.12","10.23","103","100000","1.03"
+"2014-07-01","Test Article with unicode Čžš","Test Network 2","0.00","0.00","0","0","0.00"
 '''
 
         self.assertEqual(response['Content-Type'], 'text/csv')
@@ -109,7 +111,7 @@ class AdGroupAdsExportTestCase(test.TestCase):
         self.assertEqual(worksheet.cell_value(0, 7), 'CTR')
 
         self.assertEqual(worksheet.cell_value(1, 0), 41820.0)
-        self.assertEqual(worksheet.cell_value(1, 1), 'Test Article')
+        self.assertEqual(worksheet.cell_value(1, 1), u'Test Article with unicode Čžš')
         self.assertEqual(worksheet.cell_value(1, 2), 'Test Network 1')
         self.assertEqual(worksheet.cell_value(1, 3), 0)
         self.assertEqual(worksheet.cell_value(1, 4), 0)
@@ -118,7 +120,7 @@ class AdGroupAdsExportTestCase(test.TestCase):
         self.assertEqual(worksheet.cell_value(1, 7), 0)
 
         self.assertEqual(worksheet.cell_value(2, 0), 41820.0)
-        self.assertEqual(worksheet.cell_value(2, 1), 'Test Article')
+        self.assertEqual(worksheet.cell_value(2, 1), u'Test Article with unicode Čžš')
         self.assertEqual(worksheet.cell_value(2, 2), 'Test Network 2')
         self.assertEqual(worksheet.cell_value(2, 3), 0)
         self.assertEqual(worksheet.cell_value(2, 4), 0)
@@ -127,16 +129,16 @@ class AdGroupAdsExportTestCase(test.TestCase):
         self.assertEqual(worksheet.cell_value(2, 7), 0)
 
         self.assertEqual(worksheet.cell_value(3, 0), 41821.0)
-        self.assertEqual(worksheet.cell_value(3, 1), 'Test Article')
+        self.assertEqual(worksheet.cell_value(3, 1), u'Test Article with unicode Čžš')
         self.assertEqual(worksheet.cell_value(3, 2), 'Test Network 1')
-        self.assertEqual(worksheet.cell_value(3, 3), 1000)
-        self.assertEqual(worksheet.cell_value(3, 4), 10)
+        self.assertEqual(worksheet.cell_value(3, 3), 1000.123242)
+        self.assertEqual(worksheet.cell_value(3, 4), 10.2334)
         self.assertEqual(worksheet.cell_value(3, 5), 103)
         self.assertEqual(worksheet.cell_value(3, 6), 100000)
         self.assertEqual(worksheet.cell_value(3, 7), 0.01031231231)
 
         self.assertEqual(worksheet.cell_value(4, 0), 41821.0)
-        self.assertEqual(worksheet.cell_value(4, 1), 'Test Article')
+        self.assertEqual(worksheet.cell_value(4, 1), u'Test Article with unicode Čžš')
         self.assertEqual(worksheet.cell_value(4, 2), 'Test Network 2')
         self.assertEqual(worksheet.cell_value(4, 3), 0)
         self.assertEqual(worksheet.cell_value(4, 4), 0)
