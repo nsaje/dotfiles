@@ -3,6 +3,8 @@ import logging
 import traceback
 import urlparse
 
+from datetime import datetime, timedelta
+
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import transaction
@@ -15,6 +17,8 @@ from dash import constants as dashconstants
 from dash import models as dashmodels
 
 logger = logging.getLogger(__name__)
+
+NUM_RECENT_HOURS = 6
 
 
 def run_fetch_all_order(dates):
@@ -66,6 +70,36 @@ def is_waiting_for_set_actions(ad_group):
         exists()
 
     return exists
+
+
+def is_fetch_all_data_recent():
+    check_from_hour = datetime.utcnow() - timedelta(hours=NUM_RECENT_HOURS)
+    recent_fetch_all_orders = models.ActionLogOrder.objects.filter(
+        order_type=constants.ActionLogOrderType.FETCH_ALL,
+        created_dt__gte=check_from_hour
+    ).order_by('-created_dt')
+
+    for order in recent_fetch_all_orders:
+        if _is_fetch_all_order_successful(order):
+            return True
+
+    return False
+
+
+def get_last_successful_fetch_all_order():
+    fetch_all_orders = models.ActionLogOrder.objects.filter(
+        order_type=constants.ActionLogOrderType.FETCH_ALL
+    ).order_by('-created_dt')
+
+    for order in fetch_all_orders:
+        if _is_fetch_all_order_successful(order):
+            return order
+
+    return None
+
+
+def _is_fetch_all_order_successful(order):
+    return not order.actionlog_set.exclude(state=constants.ActionState.SUCCESS).exists()
 
 
 def _handle_error(action, e):

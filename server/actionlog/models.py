@@ -8,10 +8,7 @@ from . import constants
 
 class ActionLogOrder(models.Model):
     id = models.AutoField(primary_key=True)
-    state = models.IntegerField(
-        default=constants.ActionLogOrderState.WAITING,
-        choices=constants.ActionLogOrderState.get_choices()
-    )
+
     order_type = models.IntegerField(
         choices=constants.ActionLogOrderType.get_choices()
     )
@@ -21,25 +18,6 @@ class ActionLogOrder(models.Model):
         blank=True,
         null=True,
         verbose_name='Created at'
-    )
-    modified_dt = models.DateTimeField(
-        auto_now_add=True,
-        blank=True,
-        null=True,
-        verbose_name='Modified at'
-    )
-
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        related_name='+',
-        null=True,
-        blank=True
-    )
-    modified_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        related_name='+',
-        null=True,
-        blank=True
     )
 
 
