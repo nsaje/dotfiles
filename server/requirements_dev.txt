@@ -1,1 +1,2 @@
 pygraphviz==1.2    # make sure to install $ sudo apt-get install libgraphviz-dev graphviz
+Fabric==1.9.0
