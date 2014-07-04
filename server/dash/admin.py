@@ -244,6 +244,11 @@ class AdGroupSettingsAdmin(admin.ModelAdmin):
     search_fields = ['ad_group']
     list_display = (
         'ad_group',
+        'state',
+        'cpc_cc',
+        'daily_budget_cc',
+        'start_date',
+        'end_date',
         'created_dt',
     )
 
@@ -252,6 +257,9 @@ class AdGroupNetworkSettingsAdmin(admin.ModelAdmin):
     search_fields = ['ad_group']
     list_display = (
         'ad_group_network',
+        'state',
+        'cpc_cc',
+        'daily_budget_cc',
         'created_dt',
     )
 
