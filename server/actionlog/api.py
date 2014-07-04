@@ -24,10 +24,10 @@ def run_fetch_all_order(dates):
     )
 
     for ad_group in ad_groups:
-        fetch_ad_group_status(ad_group, order)
+        fetch_ad_group_status(ad_group, order=order)
 
         for date in dates:
-            fetch_ad_group_reports(ad_group, date, order)
+            fetch_ad_group_reports(ad_group, date, order=order)
 
 
 def stop_ad_group(ad_group, network=None, order=None):
@@ -105,7 +105,9 @@ def _init_stop_campaign(ad_group_network, order):
             payload = {
                 'action': action.action,
                 'network': ad_group_network.network.type,
-                'credentials': ad_group_network.network_credentials.credentials,
+                'credentials':
+                    ad_group_network.network_credentials and
+                    ad_group_network.network_credentials.credentials,
                 'args': {
                     'partner_campaign_id': ad_group_network.network_campaign_key,
                     'state': dashconstants.AdGroupNetworkSettingsState.INACTIVE,
@@ -143,7 +145,9 @@ def _init_fetch_status(ad_group_network, order):
             payload = {
                 'action': action.action,
                 'network': ad_group_network.network.type,
-                'credentials': ad_group_network.network_credentials.credentials,
+                'credentials':
+                    ad_group_network.network_credentials and
+                    ad_group_network.network_credentials.credentials,
                 'args': {
                     'partner_campaign_id': ad_group_network.network_campaign_key
                 },
@@ -181,7 +185,9 @@ def _init_fetch_reports(ad_group_network, date, order):
             payload = {
                 'action': action.action,
                 'network': ad_group_network.network.type,
-                'credentials': ad_group_network.network_credentials.credentials,
+                'credentials':
+                    ad_group_network.network_credentials and
+                    ad_group_network.network_credentials.credentials,
                 'args': {
                     'partner_campaign_ids': [ad_group_network.network_campaign_key],
                     'date': date.strftime('%Y-%m-%d'),

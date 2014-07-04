@@ -65,7 +65,8 @@ class ActionLog(models.Model):
 
     order = models.ForeignKey(
         ActionLogOrder,
-        null=True
+        null=True,
+        blank=True,
     )
 
     created_dt = models.DateTimeField(
@@ -102,3 +103,6 @@ class ActionLog(models.Model):
             agn=self.ad_group_network,
             id=self.id,
         )
+
+    class Meta:
+        ordering = ('-created_dt',)
