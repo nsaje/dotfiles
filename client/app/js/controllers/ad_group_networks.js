@@ -1,6 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$filter', 'api', 'zemCustomTableColsService', function ($scope, $state, $location, $filter, api, zemCustomTableColsService) {
+oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api', 'zemCustomTableColsService', function ($scope, $state, $location, api, zemCustomTableColsService) {
     $scope.constants = constants;
     $scope.options = options;
     $scope.chartMetric1 = constants.networkChartMetric.CLICKS;
