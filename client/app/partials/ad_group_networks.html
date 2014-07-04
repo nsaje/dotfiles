@@ -55,7 +55,8 @@
             <tfoot>
                 <tr>
                     <td colspan="2">TOTALS</td>
-                    <td class="text-right number" ng-repeat="col in columns | filter: {checked: true}">
+                    <td class="text-right number"></td>
+                    <td class="text-right number" ng-repeat="col in columns | filter: {checked: true, field: '!bid_cpc'}">
                         <span ng-switch="col.type">
                             <span ng-switch-when="currency">
                                 {{ (totals[col.field] | currency:"$") || 'N/A' }}
