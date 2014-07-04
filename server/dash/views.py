@@ -37,6 +37,11 @@ def get_ad_group(user, ad_group_id):
         raise exc.MissingDataError('Ad Group does not exist')
 
 
+def daterange(start_date, end_date):
+    for n in range(int((end_date - start_date).days) + 1):
+        yield start_date + datetime.timedelta(n)
+
+
 def get_stats_start_date(start_date):
     if start_date:
         date = dateutil.parser.parse(start_date)
@@ -305,7 +310,7 @@ class AdGroupAdsExport(api_common.BaseApiView):
         start_date = get_stats_start_date(request.GET.get('start_date'))
         end_date = get_stats_end_date(request.GET.get('end_date'))
 
-        networks_data = api.query(
+        data = api.query(
             start_date,
             end_date,
             ['network', 'article', 'date'],
@@ -313,26 +318,58 @@ class AdGroupAdsExport(api_common.BaseApiView):
         )
 
         network_names = {network.id: network.name for network in models.Network.objects.all()}
-        article_names = {article.id: article.title for article in models.Article.objects.all()}
+        article_names = {article.id: article.title for article in models.Article.objects.filter(ad_group=ad_group.id)}
 
-        for item in networks_data:
-            item['network'] = network_names[item['network']]
-            item['article'] = article_names[item['article']]
+        result = []
+        row = 0
+        for date in daterange(start_date, end_date):
+            for article_id in article_names:
+                for network_id in network_names:
+                    # Find item if exists
+                    for item in data:
+                        row += 1
+
+                        if item['network'] != network_id:
+                            continue
+
+                        if item['article'] != article_id:
+                            continue
+
+                        if item['date'] != date:
+                            continue
+
+                        item['network'] = network_names[item['network']]
+                        item['article'] = article_names[item['article']]
+
+                        result.append(item)
+
+                        break
+                    else:
+                        result.append({
+                            'article': article_names[article_id],
+                            'network': network_names[network_id],
+                            'date': date,
+                            'cost': 0,
+                            'cpc': 0,
+                            'clicks': 0,
+                            'impressions': 0,
+                            'ctr': 0
+                        })
 
         filename = 'networks_report_%s_%s' % (start_date, end_date)
 
         if request.GET.get('type') == 'excel':
-            return self.create_excel_response(networks_data, filename)
+            return self.create_excel_response(result, filename)
         else:
-            return self.create_csv_response(networks_data, filename)
+            return self.create_csv_response(result, filename)
 
     def create_csv_response(self, data, filename):
         response = self.create_file_response('text/csv', '%s.csv' % filename)
 
         fieldnames = OrderedDict([
+            ('date', 'Date'),
             ('article', 'Article'),
             ('network', 'Network'),
-            ('date', 'Date'),
             ('cost', 'Cost'),
             ('cpc', 'CPC'),
             ('clicks', 'Clicks'),
@@ -361,15 +398,15 @@ class AdGroupAdsExport(api_common.BaseApiView):
         workbook = Workbook()
         worksheet = workbook.add_sheet('Networks Report')
 
-        worksheet.col(0).width = 6000
         worksheet.col(1).width = 4000
+        worksheet.col(2).width = 6000
         worksheet.col(6).width = 3000
         worksheet.panes_frozen = True
         row = 0
 
-        worksheet.write(row, 0, 'Article')
-        worksheet.write(row, 1, 'Network')
-        worksheet.write(row, 2, 'Date')
+        worksheet.write(row, 0, 'Date')
+        worksheet.write(row, 1, 'Article')
+        worksheet.write(row, 2, 'Network')
         worksheet.write(row, 3, 'Cost')
         worksheet.write(row, 4, 'CPC')
         worksheet.write(row, 5, 'Clicks')
@@ -379,9 +416,9 @@ class AdGroupAdsExport(api_common.BaseApiView):
         for item in data:
             row += 1
 
-            worksheet.write(row, 0, item['article'])
-            worksheet.write(row, 1, item['network'])
-            worksheet.write(row, 2, item['date'], excel_styles.style_date)
+            worksheet.write(row, 0, item['date'], excel_styles.style_date)
+            worksheet.write(row, 1, item['article'])
+            worksheet.write(row, 2, item['network'])
             worksheet.write(row, 3, item['cost'], excel_styles.style_usd)
             worksheet.write(row, 4, item['cpc'], excel_styles.style_usd)
             worksheet.write(row, 5, item['clicks'])
