@@ -6,7 +6,6 @@ import urllib2
 
 from django.conf import settings
 
-from . import constants
 from utils import encryption_helpers
 
 logger = logging.getLogger(__name__)
@@ -14,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def _decrypt_payload_credentials(action):
     payload = copy.deepcopy(action.payload)
-    if 'credentials' not in payload:
+    if not payload.get('credentials'):
         return payload
 
     payload['credentials'] = json.loads(
@@ -34,9 +33,4 @@ def send(action):
     data = json.dumps(payload)
     request = urllib2.Request(settings.ZWEI_API_URL, data)
 
-    try:
-        urllib2.urlopen(request)
-    except urllib2.HTTPError as e:
-        logger.error('Zwei host connection error: %s', str(e))
-        action.action_status = constants.ActionStatus.FAILED
-        action.save()
+    urllib2.urlopen(request)

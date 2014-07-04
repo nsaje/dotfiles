@@ -2,6 +2,8 @@ import datetime
 
 from django import test
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import IntegrityError
+from mock import patch
 
 from dash import models as dashmodels
 from reports import api
@@ -204,6 +206,38 @@ class QueryTestCase(test.TestCase):
 
 class ApiTestCase(test.TestCase):
 
+    def test_clean_url(self):
+
+        url_normal = 'http://sd.domain.com/path/to?attr1=1&attr2=&attr1=123i#uff'
+        self.assertEqual(url_normal, api._clean_url(url_normal))
+
+        url_with_non_zemanta_utm = 'http://sd.domain.com/path/to?attr1=1&utm_source=nonzemanta'
+        self.assertEqual(url_with_non_zemanta_utm, api._clean_url(url_with_non_zemanta_utm))
+
+        url_with_zemanta_but_no_utm = 'http://sd.domain.com/path/to?attr1=1&source=zemantaone'
+        self.assertEqual(url_with_zemanta_but_no_utm, api._clean_url(url_with_zemanta_but_no_utm))
+
+        url_with_zemanta_and_utm = 'http://sd.domain.com/path/to?attr1=1&utm_source=zemantaone'
+        url_with_zemanta_and_utm_cleaned = 'http://sd.domain.com/path/to?attr1=1'
+        self.assertEqual(url_with_zemanta_and_utm_cleaned, api._clean_url(url_with_zemanta_and_utm))
+
+
+class ArticleReconciliationTestCase(test.TestCase):
+
+    def _mocked_create(url, title, ad_group):
+        dashmodels.Article(url=url, title=title, ad_group=ad_group).save()
+        raise IntegrityError
+
+    @patch('dash.models.Article.objects.create', _mocked_create)
+    @patch('reports.api.transaction.atomic')
+    def test_retry_on_integrity_error(self, atomic_mock):
+        ad_group = dashmodels.AdGroup(id=1)
+        raw_url = 'http://sd.domain.com/path/to'
+        title = 'Example title'
+
+        self.assertSequenceEqual(dashmodels.Article.objects.all(), [])
+        api._reconcile_article(raw_url, title, ad_group)
+
     def test_reconcile_article(self):
         ad_group = dashmodels.AdGroup(id=1)
         raw_url = 'http://sd.domain.com/path/to'
@@ -254,18 +288,3 @@ class ApiTestCase(test.TestCase):
 
         second_article_without_url = api._reconcile_article(None, title, ad_group)
         self.assertEqual(article_with_url, second_article_without_url)
-
-    def test_clean_url(self):
-
-        url_normal = 'http://sd.domain.com/path/to?attr1=1&attr2=&attr1=123i#uff'
-        self.assertEqual(url_normal, api._clean_url(url_normal))
-
-        url_with_non_zemanta_utm = 'http://sd.domain.com/path/to?attr1=1&utm_source=nonzemanta'
-        self.assertEqual(url_with_non_zemanta_utm, api._clean_url(url_with_non_zemanta_utm))
-
-        url_with_zemanta_but_no_utm = 'http://sd.domain.com/path/to?attr1=1&source=zemantaone'
-        self.assertEqual(url_with_zemanta_but_no_utm, api._clean_url(url_with_zemanta_but_no_utm))
-
-        url_with_zemanta_and_utm = 'http://sd.domain.com/path/to?attr1=1&utm_source=zemantaone'
-        url_with_zemanta_and_utm_cleaned = 'http://sd.domain.com/path/to?attr1=1'
-        self.assertEqual(url_with_zemanta_and_utm_cleaned, api._clean_url(url_with_zemanta_and_utm))

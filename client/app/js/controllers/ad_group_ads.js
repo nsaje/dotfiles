@@ -6,7 +6,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', 'api', fun
     $scope.chartMetric1 = constants.networkChartMetric.CLICKS;
     $scope.chartMetric2 = constants.networkChartMetric.IMPRESSIONS;
     $scope.dailyStats = [];
-    $scope.chartData = [];
+    $scope.chartData = {};
     $scope.isChartShown = true;
     $scope.chartBtnTitle = 'Hide chart';
     $scope.pagination = {
@@ -15,16 +15,31 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', 'api', fun
     };
 
     $scope.setChartData = function () {
-        var result = [[]];
+        var result = {
+            formats: [],
+            data: [[]]
+        };
         var i;
+
+        result.formats = [$scope.chartMetric1, $scope.chartMetric2].map(function (x) {
+            var format = null;
+            if (x === constants.networkChartMetric.COST) {
+                format = 'currency';
+            } else if (x === constants.networkChartMetric.CTR) {
+                format = 'percent';
+            }
+
+            return format;
+        });
+        
         for (i = 0; i < $scope.dailyStats.length; i++) {
-            result[0].push([$scope.dailyStats[i].date, $scope.dailyStats[i][$scope.chartMetric1]]);
+            result.data[0].push([$scope.dailyStats[i].date, $scope.dailyStats[i][$scope.chartMetric1]]);
             
             if ($scope.chartMetric2 && $scope.chartMetric2 !== $scope.chartMetric1) {
-                if (!result[1]) {
-                    result[1] = [];
+                if (!result.data[1]) {
+                    result.data[1] = [];
                 }
-                result[1].push([$scope.dailyStats[i].date, $scope.dailyStats[i][$scope.chartMetric2]]);
+                result.data[1].push([$scope.dailyStats[i].date, $scope.dailyStats[i][$scope.chartMetric2]]);
             }
         }
         $scope.chartData = result;

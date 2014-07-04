@@ -1,5 +1,6 @@
 from optparse import make_option
 import os
+import logging
 
 from django.test import runner
 
@@ -31,6 +32,8 @@ class CustomDiscoverRunner(runner.DiscoverRunner):
 
     def __init__(self, integration_tests=None, ui_tests=None, health_check=None, *args, **kwargs):
         self.skip_db = False
+
+        logging.disable(logging.CRITICAL)
 
         if integration_tests:
             os.environ['INTEGRATION_TESTS'] = '1'

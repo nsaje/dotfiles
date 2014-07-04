@@ -78,9 +78,13 @@ oneApp.directive('zemChart', ['config', function(config) {
             };
 
             $scope.$watch('data', function(newValue, oldValue) {
-                var i = 0,
-                    j = 0,
-                    metrics = [];
+                var i = 0;
+                var j = 0;
+                var metrics = [];
+                var data = [];
+                var valuePrefix = null;
+                var valueSuffix = null;
+                var axisFormat = null;
 
                 hasData = false;
             
@@ -108,14 +112,32 @@ oneApp.directive('zemChart', ['config', function(config) {
                         }
                     }
 
-                    for (i = 0; i < newValue.length; i++) {
+                    data = newValue.data;
+                    for (i = 0; i < data.length; i++) {
+                        valuePrefix = null;
+                        valueSuffix = null;
+                        axisFormat = null;
+
+                        if (newValue.formats[i] === 'currency') {
+                            valuePrefix = '$';
+                            axisFormat = '${value}';
+                        } else if (newValue.formats[i] === 'percent') {
+                            valueSuffix = '%';
+                            axisFormat = '{value}%';
+                        }
+                        
+                        $scope.config.options.yAxis[i].labels = {
+                            format: axisFormat
+                        };
+
                         $scope.config.series.push({
                             name: metrics[i],
                             color: colors[i],
                             yAxis: i,
-                            data: newValue[i],
+                            data: data[i],
                             tooltip: {
-                                valueSuffix: null
+                                valueSuffix: valueSuffix,
+                                valuePrefix: valuePrefix
                             },
                             marker: {
                                 radius: 2,
@@ -125,8 +147,8 @@ oneApp.directive('zemChart', ['config', function(config) {
                                 lineColor: null
                             }
                         });
-                        for (j = 0; j < newValue[i].length; j++) {
-                            if ((!Array.isArray(newValue[i][j]) && newValue[i][j]) || newValue[i][j][newValue[i][j].length-1]) {
+                        for (j = 0; j < data[i].length; j++) {
+                            if ((!Array.isArray(data[i][j]) && data[i][j]) || data[i][j][data[i][j].length-1]) {
                                 hasData = true;
                                 break;
                             }

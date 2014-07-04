@@ -249,7 +249,10 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
                     if (data && data.data && data.data.settings) {
                         resource = convertFromApi(data.data.settings);
                     }
-                    deferred.resolve(resource);
+                    deferred.resolve({
+                        settings: resource,
+                        actionIsWaiting: data.data.action_is_waiting
+                    });
                 }).
                 error(function(data, status, headers, config) {
                     deferred.reject(data);
@@ -275,7 +278,10 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
                     if (data && data.data && data.data.settings) {
                         resource = convertFromApi(data.data.settings);
                     }
-                    deferred.resolve(resource);
+                    deferred.resolve({
+                        settings: resource,
+                        actionIsWaiting: data.data.action_is_waiting
+                    });
                 }).
                 error(function(data, status, headers, config) {
                     var resource;

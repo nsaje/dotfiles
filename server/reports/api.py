@@ -3,9 +3,10 @@ from __future__ import division
 import decimal
 import urlparse
 import urllib
+import logging
 
-from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
-from django.db import transaction
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction, IntegrityError
 from django.db.models import Sum
 
 from . import exc
@@ -13,8 +14,12 @@ from . import models
 
 from dash import models as dashmodels
 
+logger = logging.getLogger(__name__)
+
 DIMENSIONS = ['date', 'article', 'ad_group', 'network']
 METRICS = ['impressions', 'clicks', 'cost', 'cpc']
+
+MAX_RECONCILIATION_RETRIES = 10
 
 
 # API functions
@@ -125,7 +130,6 @@ def upsert(data, date):
 # helpers
 
 
-@transaction.atomic
 def _reconcile_article(raw_url, title, ad_group):
     if not ad_group:
         raise exc.ArticleReconciliationException('Missing ad group.')
@@ -144,13 +148,20 @@ def _reconcile_article(raw_url, title, ad_group):
 
     kwargs['title'] = title
 
-    articles = dashmodels.Article.objects.filter(**kwargs)
-    if articles:
-        article = articles.latest()
-    else:
-        article = dashmodels.Article.objects.create(ad_group=ad_group, url=url, title=title)
+    try:
+        return dashmodels.Article.objects.filter(**kwargs).latest()
+    except dashmodels.Article.DoesNotExist:
+        pass
 
-    return article
+    try:
+        with transaction.atomic():
+            return dashmodels.Article.objects.create(ad_group=ad_group, url=url, title=title)
+    except IntegrityError:
+        logger.info(
+            'Failed to insert article: title = {title}, url = {url}, ad group id = {ad_group_id}. '.
+            format(title=title, url=url, ad_group_id=ad_group.id)
+        )
+        return dashmodels.Article.objects.filter(**kwargs).latest()
 
 
 def _clean_url(raw_url):

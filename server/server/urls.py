@@ -24,7 +24,8 @@ urlpatterns = patterns(
         {'authentication_form': AuthenticationForm, 'template_name': 'zemauth/signin.html'}),
     url(r'^signout$', 'django.contrib.auth.views.logout_then_login'),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^oauth2callback', 'zemauth.views.google_callback')
+    url(r'^oauth2callback', 'zemauth.views.google_callback'),
+    url(r'^test_latency/$', dash_views.test_latency)
 )
 
 # Api

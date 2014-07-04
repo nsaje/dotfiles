@@ -290,4 +290,6 @@ class Article(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
     class Meta:
+
         get_latest_by = 'created_dt'
+        unique_together = ('url', 'title')

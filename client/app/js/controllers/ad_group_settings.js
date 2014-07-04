@@ -1,6 +1,7 @@
 /*globals oneApp,constants,options,moment*/
 oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
     $scope.settings = {};
+    $scope.actionIsWaiting = false;
     $scope.errors = {};
     $scope.constants = constants;
     $scope.options = options;
@@ -27,7 +28,8 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
     $scope.getSettings = function (id) {
         api.adGroupSettings.get(id).then(
             function (data) {
-                $scope.settings = data;
+                $scope.settings = data.settings;
+                $scope.actionIsWaiting = data.actionIsWaiting;
             },
             function (data) {
                 // error
@@ -43,7 +45,8 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
         $scope.errors = {};
         api.adGroupSettings.get($state.params.id).then(
             function (data) {
-                $scope.settings = data;
+                $scope.settings = data.settings;
+                $scope.actionIsWaiting = data.actionIsWaiting;
                 $scope.saveRequestInProgress = false;
                 $scope.discarded = true;
             },
@@ -62,11 +65,12 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
         api.adGroupSettings.save($scope.settings).then(
             function (data) {
                 $scope.errors = {};
-                $scope.settings = data;
-                $scope.alerts = [{
-                    type: 'info',
-                    message: 'Settings changes are being propagated to external networks. The sync might take a few hours. If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.'
-                }];
+                $scope.settings = data.settings;
+                $scope.actionIsWaiting = data.actionIsWaiting;
+                // $scope.alerts = [{
+                //     type: 'info',
+                //     message: 'Settings changes are being propagated to external networks. The sync might take a few hours. If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.'
+                // }];
                 $scope.updateAccounts($state.params.id, data.name);
                 $scope.setBreadcrumb();
                 $scope.saveRequestInProgress = false;
