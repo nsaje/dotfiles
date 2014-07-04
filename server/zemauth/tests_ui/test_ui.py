@@ -1,4 +1,5 @@
 import unittest
+import re
 
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -49,9 +50,8 @@ class LoginTestCase(unittest.TestCase):
             signin_btn = self.driver.find_element_by_id('id_signin_btn')
             signin_btn.submit()
 
-            expected_url = 'https://one.zemanta.com/'
-            wait.until(lambda driver: driver.current_url == expected_url)
+            wait.until(lambda driver: re.match(r'^https://one.zemanta.com/#/ad_groups/\d/ads',driver.current_url))
         except:
             self.fail('Could not sign in.')
-
+            
         statsd.incr('one.auth.login.health_check_ok')
