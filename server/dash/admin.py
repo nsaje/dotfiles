@@ -208,8 +208,7 @@ class AdGroupNetworksInline(admin.TabularInline):
             admin_url='{}?{}'.format(
                 reverse('admin:dash_adgroupnetworksettings_changelist'),
                 urllib.urlencode({
-                    'ad_group': obj.ad_group.id,
-                    'network': obj.network.id,
+                    'ad_group_network': obj.id,
                 })
             ),
             num_settings=obj.settings.count()
@@ -245,6 +244,11 @@ class AdGroupSettingsAdmin(admin.ModelAdmin):
     search_fields = ['ad_group']
     list_display = (
         'ad_group',
+        'state',
+        'cpc_cc',
+        'daily_budget_cc',
+        'start_date',
+        'end_date',
         'created_dt',
     )
 
@@ -253,6 +257,9 @@ class AdGroupNetworkSettingsAdmin(admin.ModelAdmin):
     search_fields = ['ad_group']
     list_display = (
         'ad_group_network',
+        'state',
+        'cpc_cc',
+        'daily_budget_cc',
         'created_dt',
     )
 

@@ -6,6 +6,43 @@ from django.conf import settings
 from . import constants
 
 
+class ActionLogOrder(models.Model):
+    id = models.AutoField(primary_key=True)
+    state = models.IntegerField(
+        default=constants.ActionLogOrderState.WAITING,
+        choices=constants.ActionLogOrderState.get_choices()
+    )
+    order_type = models.IntegerField(
+        choices=constants.ActionLogOrderType.get_choices()
+    )
+
+    created_dt = models.DateTimeField(
+        auto_now_add=True,
+        blank=True,
+        null=True,
+        verbose_name='Created at'
+    )
+    modified_dt = models.DateTimeField(
+        auto_now_add=True,
+        blank=True,
+        null=True,
+        verbose_name='Modified at'
+    )
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='+',
+        null=True,
+        blank=True
+    )
+    modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='+',
+        null=True,
+        blank=True
+    )
+
+
 class ActionLog(models.Model):
     id = models.AutoField(primary_key=True)
     action = models.CharField(
@@ -25,6 +62,12 @@ class ActionLog(models.Model):
     message = models.TextField(blank=True)
 
     payload = jsonfield.JSONField(blank=True, default=[])
+
+    order = models.ForeignKey(
+        ActionLogOrder,
+        null=True,
+        blank=True,
+    )
 
     created_dt = models.DateTimeField(
         auto_now_add=True,
@@ -60,3 +103,6 @@ class ActionLog(models.Model):
             agn=self.ad_group_network,
             id=self.id,
         )
+
+    class Meta:
+        ordering = ('-created_dt',)
