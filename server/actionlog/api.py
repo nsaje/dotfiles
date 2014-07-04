@@ -1,13 +1,13 @@
-import datetime
 import json
 import logging
 import traceback
 import urlparse
 
+from datetime import datetime, timedelta
+
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.db.models import Q
 
 from . import models
 from . import constants
@@ -18,7 +18,7 @@ from dash import models as dashmodels
 
 logger = logging.getLogger(__name__)
 
-NUM_HOURS_RECENT = 6
+NUM_RECENT_HOURS = 6
 
 
 def run_fetch_all_order(dates):
@@ -73,10 +73,11 @@ def is_waiting_for_set_actions(ad_group):
 
 
 def is_fetch_all_data_recent():
-    check_from_hour = datetime.datetime.utcnow() - datetime.timedelta(hours=NUM_HOURS_RECENT)
-    recent_fetch_all_orders = models.ActionLogOrder.filter(
+    check_from_hour = datetime.utcnow() - timedelta(hours=NUM_RECENT_HOURS)
+    recent_fetch_all_orders = models.ActionLogOrder.objects.filter(
+        order_type=constants.ActionLogOrderType.FETCH_ALL,
         created_dt__gte=check_from_hour
-    )
+    ).order_by('-created_dt')
 
     for order in recent_fetch_all_orders:
         if _is_fetch_all_order_successful(order):
@@ -85,9 +86,9 @@ def is_fetch_all_data_recent():
     return False
 
 
-def last_successful_fetch_all_order():
-    fetch_all_orders = models.AcitonLogOrder.objects.filter(
-        order_type=constants.AcitonLogOrderType.FETCH_ALL
+def get_last_successful_fetch_all_order():
+    fetch_all_orders = models.ActionLogOrder.objects.filter(
+        order_type=constants.ActionLogOrderType.FETCH_ALL
     ).order_by('-created_dt')
 
     for order in fetch_all_orders:
@@ -98,7 +99,7 @@ def last_successful_fetch_all_order():
 
 
 def _is_fetch_all_order_successful(order):
-    return not order.actionlog_set.exists(~Q(state=constants.ActionState.SUCCESS))
+    return not order.actionlog_set.exclude(state=constants.ActionState.SUCCESS).exists()
 
 
 def _handle_error(action, e):
