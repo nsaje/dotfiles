@@ -1,6 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', 'api', function ($scope, $state, $location, api) {
+oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', 'api', function ($scope, $state, $location, $window, api) {
     $scope.constants = constants;
     $scope.options = options;
     $scope.chartMetric1 = constants.networkChartMetric.CLICKS;
@@ -161,5 +161,12 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', 'api', fun
             $location.search('size', $scope.pagination.size);
             $scope.getTableData();
         }
-    }
+    };
+
+    // export
+    $scope.downloadReport = function() {
+        console.log($scope.exportType);
+        $window.open('api/ad_groups/' + $state.params.id + '/ads/export/?type=' + $scope.exportType, '_blank');
+        $scope.exportType = '';
+    };
 }]);
