@@ -5,19 +5,17 @@
 
     <div class="section table-ad-group-ads">
         <div class="button-bar">
-        <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/img/chart.svg"></a>
-        <div class="clearfix"></div>
+
+            <zem-custom-table-cols class='pull-right' columns='columns'></zem-custom-table-cols>
+            <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/img/chart.svg"></a>
+            <div class="clearfix"></div>
         </div>
 
         <table class="table">
             <thead>
                 <tr>
                     <th colspan="2">Title</th>
-                    <th class="text-right">Cost</th>
-                    <th class="text-right">CPC</th>
-                    <th class="text-right">Clicks</th>
-                    <th class="text-right">Impressions</th>
-                    <th class="text-right">CTR</th>
+                    <th class="text-right" ng-repeat="col in columns | filter: {checked: true}">{{ col.name }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -31,21 +29,37 @@
                 </tr>
                 <tr ng-repeat="row in rows">
                     <td colspan="2"><a href="{{ row.url }}">{{ row.title }}</a></td>
-                    <td class="text-right number">{{ (row.cost | currency:"$") || 'N/A' }}</td>
-                    <td class="text-right number">{{ (row.cpc | currency:"$") || 'N/A' }}</td>
-                    <td class="text-right number">{{ (row.clicks | number:0) || 'N/A' }}</td>
-                    <td class="text-right number">{{ (row.impressions | number:0) || 'N/A' }}</td>
-                    <td class="text-right number">{{ (row.ctr | number:2) || '0.0' }}%</td>
+                    <td class="text-right number" ng-repeat="col in columns | filter: {checked: true}">
+                        <span ng-switch="col.type">
+                            <span ng-switch-when="currency">
+                                {{ (row[col.field] | currency:"$") || 'N/A' }}
+                            </span>
+                            <span ng-switch-when="percent">
+                                {{ (row[col.field] | number:2) || '0.0' }}%
+                            </span>
+                            <span ng-switch-when="number">
+                                {{ (row[col.field] | number:0) || 'N/A' }}
+                            </span>
+                        </span>
+                    </td>
                 </tr>
             </tbody>
             <tfoot>
                 <tr>
                     <td colspan="2">TOTALS</td>
-                    <td class="text-right number">{{ (totals.cost | currency:"$") || 'N/A' }}</td>
-                    <td class="text-right number">{{ (totals.cpc | currency:"$") || 'N/A' }}</td>
-                    <td class="text-right number">{{ (totals.clicks | number:0) || 'N/A' }}</td>
-                    <td class="text-right number">{{ (totals.impressions | number:0) || 'N/A' }}</td>
-                    <td class="text-right number">{{ (totals.ctr | number:2) || '0.0' }}%</td>
+                    <td class="text-right number" ng-repeat="col in columns | filter: {checked: true}">
+                        <span ng-switch="col.type">
+                            <span ng-switch-when="currency">
+                                {{ (totals[col.field] | currency:"$") || 'N/A' }}
+                            </span>
+                            <span ng-switch-when="percent">
+                                {{ (totals[col.field] | number:2) || '0.0' }}%
+                            </span>
+                            <span ng-switch-when="number">
+                                {{ (totals[col.field] | number:0) || 'N/A' }}
+                            </span>
+                        </span>
+                    </td>
                 </tr>
             </tfoot>
         </table>

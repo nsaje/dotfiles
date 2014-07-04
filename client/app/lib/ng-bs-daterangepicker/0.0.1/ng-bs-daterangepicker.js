@@ -23,7 +23,7 @@ angular.module('ngBootstrap', []).directive('input', function ($compile, $parse)
             options.maxDate = $attributes.maxDate && moment($attributes.maxDate);
             options.dateLimit = $attributes.limit && moment.duration.apply(this, $attributes.limit.split(' ').map(function (elem, index) { return index === 0 && parseInt(elem, 10) || elem; }) );
             options.ranges = $attributes.ranges && $parse($attributes.ranges)($scope);
-            options.applyClass = 'btn-default';
+            options.applyClass = 'btn-primary';
             options.opens = 'left';
 
             function format(date) {
