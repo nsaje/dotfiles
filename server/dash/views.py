@@ -2,6 +2,10 @@ import datetime
 import json
 import logging
 import dateutil.parser
+from collections import OrderedDict
+import unicodecsv
+from xlwt import Workbook
+import slugify
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -9,7 +13,6 @@ from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import HttpResponse
 
 from actionlog import api as actionlog_api
 from dash import api_common
@@ -18,6 +21,7 @@ from dash import forms
 from dash import models
 from reports import api
 from utils import statsd_helper
+import excel_styles
 
 import constants
 
@@ -25,6 +29,19 @@ logger = logging.getLogger(__name__)
 
 STATS_START_DELTA = 30
 STATS_END_DELTA = 1
+
+
+def get_ad_group(user, ad_group_id):
+    try:
+        return models.AdGroup.user_objects.get_for_user(user).\
+            filter(id=int(ad_group_id)).get()
+    except models.AdGroup.DoesNotExist:
+        raise exc.MissingDataError('Ad Group does not exist')
+
+
+def daterange(start_date, end_date):
+    for n in range(int((end_date - start_date).days) + 1):
+        yield start_date + datetime.timedelta(n)
 
 
 def get_stats_start_date(start_date):
@@ -124,11 +141,7 @@ class NavigationDataView(api_common.BaseApiView):
 class AdGroupSettings(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_get')
     def get(self, request, ad_group_id):
-        try:
-            ad_group = models.AdGroup.user_objects.get_for_user(request.user).\
-                filter(id=int(ad_group_id)).get()
-        except models.AdGroup.DoesNotExist:
-            raise exc.MissingDataError('Ad Group does not exist')
+        ad_group = get_ad_group(request.user, ad_group_id)
 
         settings = self.get_current_settings(ad_group)
 
@@ -141,11 +154,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_put')
     def put(self, request, ad_group_id):
-        try:
-            ad_group = models.AdGroup.user_objects.get_for_user(request.user).\
-                filter(id=int(ad_group_id)).get()
-        except models.AdGroup.DoesNotExist:
-            raise exc.MissingDataError('Ad Group does not exist')
+        ad_group = get_ad_group(request.user, ad_group_id)
 
         current_settings = self.get_current_settings(ad_group)
 
@@ -237,11 +246,7 @@ class AdGroupSettings(api_common.BaseApiView):
 class AdGroupNetworksTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_networks_table_get')
     def get(self, request, ad_group_id):
-        try:
-            ad_group = models.AdGroup.user_objects.get_for_user(request.user).\
-                filter(id=int(ad_group_id)).get()
-        except models.AdGroup.DoesNotExist:
-            raise exc.MissingDataError('Ad Group does not exist')
+        ad_group = get_ad_group(request.user, ad_group_id)
 
         networks_data = api.query(
             get_stats_start_date(request.GET.get('start_date')),
@@ -307,14 +312,154 @@ class AdGroupNetworksTable(api_common.BaseApiView):
         return rows
 
 
+class AdGroupAdsExport(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_export_get')
+    def get(self, request, ad_group_id):
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        start_date = get_stats_start_date(request.GET.get('start_date'))
+        end_date = get_stats_end_date(request.GET.get('end_date'))
+
+        data = api.query(
+            start_date,
+            end_date,
+            ['network', 'article', 'date'],
+            ad_group=int(ad_group.id)
+        )
+
+        network_names = {network.id: network.name for network in models.Network.objects.all()}
+        articles = {article.id: article for article in models.Article.objects.filter(ad_group=ad_group.id)}
+
+        result = []
+        for date in daterange(start_date, end_date):
+            for article_id in articles:
+                for network_id in network_names:
+                    # Find item if exists
+                    for item in data:
+                        if item['network'] != network_id:
+                            continue
+
+                        if item['article'] != article_id:
+                            continue
+
+                        if item['date'] != date:
+                            continue
+
+                        item['network'] = network_names[network_id]
+                        item['article'] = articles[article_id].title
+                        item['url'] = articles[article_id].url
+
+                        result.append(item)
+
+                        break
+                    else:
+                        result.append({
+                            'article': articles[article_id].title,
+                            'url': articles[article_id].url,
+                            'network': network_names[network_id],
+                            'date': date,
+                            'cost': 0,
+                            'cpc': 0,
+                            'clicks': 0,
+                            'impressions': 0,
+                            'ctr': 0
+                        })
+
+        filename = '%s_report_%s_%s' % (slugify.slugify(ad_group.name), start_date, end_date)
+
+        if request.GET.get('type') == 'excel':
+            return self.create_excel_response(result, filename)
+        else:
+            return self.create_csv_response(result, filename)
+
+    def create_csv_response(self, data, filename):
+        response = self.create_file_response('text/csv; name="%s.csv"' % filename, '%s.csv' % filename)
+
+        fieldnames = OrderedDict([
+            ('date', '"Date"'),
+            ('article', '"Article"'),
+            ('url', '"URL"'),
+            ('network', '"Network"'),
+            ('cost', '"Cost"'),
+            ('cpc', '"CPC"'),
+            ('clicks', '"Clicks"'),
+            ('impressions', '"Impressions"'),
+            ('ctr', '"CTR"')
+        ])
+
+        writer = unicodecsv.DictWriter(
+            response,
+            fieldnames,
+            quoting=unicodecsv.QUOTE_NONE,
+            lineterminator='\n',
+            quotechar=''
+        )
+
+        # header
+        writer.writerow(fieldnames)
+
+        for item in data:
+            # Format
+            for key in ['cost', 'cpc', 'ctr']:
+                val = item[key]
+                if not isinstance(val, float):
+                    val = 0
+
+                item[key] = '{:.2f}'.format(val)
+
+            # Quote string
+            for key in ['article', 'url', 'network']:
+                item[key] = '"%s"' % item[key]
+
+            writer.writerow(item)
+
+        return response
+
+    def create_excel_response(self, data, filename):
+        response = self.create_file_response('application/octet-stream', '%s.xls' % filename)
+
+        workbook = Workbook(encoding='UTF-8')
+        worksheet = workbook.add_sheet('Report')
+
+        worksheet.col(1).width = 6000
+        worksheet.col(2).width = 8000
+        worksheet.col(3).width = 4000
+        worksheet.col(7).width = 3000
+        worksheet.panes_frozen = True
+        row = 0
+
+        worksheet.write(row, 0, 'Date')
+        worksheet.write(row, 1, 'Article')
+        worksheet.write(row, 2, 'URL')
+        worksheet.write(row, 3, 'Network')
+        worksheet.write(row, 4, 'Cost')
+        worksheet.write(row, 5, 'CPC')
+        worksheet.write(row, 6, 'Clicks')
+        worksheet.write(row, 7, 'Impressions')
+        worksheet.write(row, 8, 'CTR')
+
+        for item in data:
+            row += 1
+
+            worksheet.write(row, 0, item['date'], excel_styles.style_date)
+            worksheet.write(row, 1, item['article'])
+            worksheet.write(row, 2, item['url'])
+            worksheet.write(row, 3, item['network'])
+            worksheet.write(row, 4, item['cost'] or 0, excel_styles.style_usd)
+            worksheet.write(row, 5, item['cpc'] or 0, excel_styles.style_usd)
+            worksheet.write(row, 6, item['clicks'] or 0)
+            worksheet.write(row, 7, item['impressions'] or 0)
+            worksheet.write(row, 8, (item['ctr'] or 0) / 100, excel_styles.style_percent)
+
+        workbook.save(response)
+
+        return response
+
+
 class AdGroupAdsTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_table_get')
     def get(self, request, ad_group_id):
-        try:
-            ad_group = models.AdGroup.user_objects.get_for_user(request.user).\
-                filter(id=int(ad_group_id)).get()
-        except models.AdGroup.DoesNotExist:
-            raise exc.MissingDataError('Ad Group does not exist')
+        ad_group = get_ad_group(request.user, ad_group_id)
 
         page = request.GET.get('page')
         size = request.GET.get('size')
@@ -394,11 +539,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
 class AdGroupDailyStats(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_daily_stats_get')
     def get(self, request, ad_group_id):
-        try:
-            ad_group = models.AdGroup.user_objects.get_for_user(request.user).\
-                filter(id=int(ad_group_id)).get()
-        except models.AdGroup.DoesNotExist:
-            raise exc.MissingDataError('Ad Group does not exist')
+        ad_group = get_ad_group(request.user, ad_group_id)
 
         stats = api.query(
             get_stats_start_date(request.GET.get('start_date')),

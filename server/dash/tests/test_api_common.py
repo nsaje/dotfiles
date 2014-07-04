@@ -27,6 +27,20 @@ class BaseApiViewTestCase(test.TestCase):
         self.assertEqual(response.status_code, 500)
         self.assertEqual(response.content, expected_content)
 
+    def test_create_file_response(self):
+        content_type = 'text/csv'
+        filename = 'test.csv'
+
+        response = api_common.BaseApiView().create_file_response(content_type, filename)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], content_type)
+        self.assertEqual(response['Content-Disposition'], 'attachment; filename="%s"' % filename)
+
+        response = api_common.BaseApiView().create_file_response(content_type, filename, 500)
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response['Content-Type'], content_type)
+        self.assertEqual(response['Content-Disposition'], 'attachment; filename="%s"' % filename)
+
     @mock.patch('dash.api_common.logger')
     def test_handle_custom_exception(self, logger_mock):
         request = http.HttpRequest()
