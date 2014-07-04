@@ -39,7 +39,7 @@ class BaseApiView(View):
             status=status_code
         )
 
-        response['Content-Disposition'] = 'attachment; filename=%s' % filename
+        response['Content-Disposition'] = 'attachment; filename="%s"' % filename
 
         return response
 

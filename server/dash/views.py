@@ -330,11 +330,11 @@ class AdGroupAdsExport(api_common.BaseApiView):
         )
 
         network_names = {network.id: network.name for network in models.Network.objects.all()}
-        article_names = {article.id: article.title for article in models.Article.objects.filter(ad_group=ad_group.id)}
+        articles = {article.id: article for article in models.Article.objects.filter(ad_group=ad_group.id)}
 
         result = []
         for date in daterange(start_date, end_date):
-            for article_id in article_names:
+            for article_id in articles:
                 for network_id in network_names:
                     # Find item if exists
                     for item in data:
@@ -347,15 +347,17 @@ class AdGroupAdsExport(api_common.BaseApiView):
                         if item['date'] != date:
                             continue
 
-                        item['network'] = network_names[item['network']]
-                        item['article'] = article_names[item['article']]
+                        item['network'] = network_names[network_id]
+                        item['article'] = articles[article_id].title
+                        item['url'] = articles[article_id].url
 
                         result.append(item)
 
                         break
                     else:
                         result.append({
-                            'article': article_names[article_id],
+                            'article': articles[article_id].title,
+                            'url': articles[article_id].url,
                             'network': network_names[network_id],
                             'date': date,
                             'cost': 0,
@@ -365,7 +367,7 @@ class AdGroupAdsExport(api_common.BaseApiView):
                             'ctr': 0
                         })
 
-        filename = 'networks_report_%s_%s' % (start_date, end_date)
+        filename = '%s_report_%s_%s' % (ad_group.name, start_date, end_date)
 
         if request.GET.get('type') == 'excel':
             return self.create_excel_response(result, filename)
@@ -373,24 +375,26 @@ class AdGroupAdsExport(api_common.BaseApiView):
             return self.create_csv_response(result, filename)
 
     def create_csv_response(self, data, filename):
-        response = self.create_file_response('text/csv', '%s.csv' % filename)
+        response = self.create_file_response('text/csv; name="%s.csv"' % filename, '%s.csv' % filename)
 
         fieldnames = OrderedDict([
-            ('date', 'Date'),
-            ('article', 'Article'),
-            ('network', 'Network'),
-            ('cost', 'Cost'),
-            ('cpc', 'CPC'),
-            ('clicks', 'Clicks'),
-            ('impressions', 'Impressions'),
-            ('ctr', 'CTR')
+            ('date', '"Date"'),
+            ('article', '"Article"'),
+            ('url', '"URL"'),
+            ('network', '"Network"'),
+            ('cost', '"Cost"'),
+            ('cpc', '"CPC"'),
+            ('clicks', '"Clicks"'),
+            ('impressions', '"Impressions"'),
+            ('ctr', '"CTR"')
         ])
 
         writer = unicodecsv.DictWriter(
             response,
             fieldnames,
-            quoting=unicodecsv.QUOTE_ALL,
-            lineterminator='\n'
+            quoting=unicodecsv.QUOTE_NONE,
+            lineterminator='\n',
+            quotechar=''
         )
 
         # header
@@ -405,42 +409,49 @@ class AdGroupAdsExport(api_common.BaseApiView):
 
                 item[key] = '{:.2f}'.format(val)
 
+            # Quote string
+            for key in ['article', 'url', 'network']:
+                item[key] = '"%s"' % item[key]
+
             writer.writerow(item)
 
         return response
 
     def create_excel_response(self, data, filename):
-        response = self.create_file_response('application/octet-stream', '%s.xlsx' % filename)
+        response = self.create_file_response('application/octet-stream', '%s.xls' % filename)
 
         workbook = Workbook(encoding='UTF-8')
         worksheet = workbook.add_sheet('Networks Report')
 
         worksheet.col(1).width = 6000
-        worksheet.col(2).width = 4000
-        worksheet.col(6).width = 3000
+        worksheet.col(2).width = 8000
+        worksheet.col(3).width = 4000
+        worksheet.col(7).width = 3000
         worksheet.panes_frozen = True
         row = 0
 
         worksheet.write(row, 0, 'Date')
         worksheet.write(row, 1, 'Article')
-        worksheet.write(row, 2, 'Network')
-        worksheet.write(row, 3, 'Cost')
-        worksheet.write(row, 4, 'CPC')
-        worksheet.write(row, 5, 'Clicks')
-        worksheet.write(row, 6, 'Impressions')
-        worksheet.write(row, 7, 'CTR')
+        worksheet.write(row, 2, 'URL')
+        worksheet.write(row, 3, 'Network')
+        worksheet.write(row, 4, 'Cost')
+        worksheet.write(row, 5, 'CPC')
+        worksheet.write(row, 6, 'Clicks')
+        worksheet.write(row, 7, 'Impressions')
+        worksheet.write(row, 8, 'CTR')
 
         for item in data:
             row += 1
 
             worksheet.write(row, 0, item['date'], excel_styles.style_date)
             worksheet.write(row, 1, item['article'])
-            worksheet.write(row, 2, item['network'])
-            worksheet.write(row, 3, item['cost'] or 0, excel_styles.style_usd)
-            worksheet.write(row, 4, item['cpc'] or 0, excel_styles.style_usd)
-            worksheet.write(row, 5, item['clicks'] or 0)
-            worksheet.write(row, 6, item['impressions'] or 0)
-            worksheet.write(row, 7, (item['ctr'] or 0) / 100, excel_styles.style_percent)
+            worksheet.write(row, 2, item['url'])
+            worksheet.write(row, 3, item['network'])
+            worksheet.write(row, 4, item['cost'] or 0, excel_styles.style_usd)
+            worksheet.write(row, 5, item['cpc'] or 0, excel_styles.style_usd)
+            worksheet.write(row, 6, item['clicks'] or 0)
+            worksheet.write(row, 7, item['impressions'] or 0)
+            worksheet.write(row, 8, (item['ctr'] or 0) / 100, excel_styles.style_percent)
 
         workbook.save(response)
 

@@ -21,9 +21,11 @@ class AdGroupAdsExportTestCase(test.TestCase):
         self.mock_models = self.models_patcher.start()
 
         self.ad_group_id = 1
+        self.ad_group_name = 'Test Ad Group'
 
         self.mock_ad_group = Mock()
         self.mock_ad_group.id = self.ad_group_id
+        self.mock_ad_group.name = self.ad_group_name
         self.mock_get_ad_group.return_value = self.mock_ad_group
 
         self.mock_network1 = Mock()
@@ -39,6 +41,7 @@ class AdGroupAdsExportTestCase(test.TestCase):
         self.mock_article = Mock()
         self.mock_article.id = 1
         self.mock_article.title = u'Test Article with unicode Čžš'
+        self.mock_article.url = 'http://www.example.com'
         self.mock_models.Article.objects.filter.return_value = [self.mock_article]
 
         self.mock_api.query.return_value = [{
@@ -66,17 +69,20 @@ class AdGroupAdsExportTestCase(test.TestCase):
 
         response = views.AdGroupAdsExport().get(request, self.ad_group_id)
 
-        expected_content = '''"Date","Article","Network","Cost","CPC","Clicks","Impressions","CTR"
-"2014-06-30","Test Article with unicode Čžš","Test Network 1","0.00","0.00","0","0","0.00"
-"2014-06-30","Test Article with unicode Čžš","Test Network 2","0.00","0.00","0","0","0.00"
-"2014-07-01","Test Article with unicode Čžš","Test Network 1","1000.12","10.23","103","100000","1.03"
-"2014-07-01","Test Article with unicode Čžš","Test Network 2","0.00","0.00","0","0","0.00"
+        expected_content = '''"Date","Article","URL","Network","Cost","CPC","Clicks","Impressions","CTR"
+2014-06-30,"Test Article with unicode Čžš","http://www.example.com","Test Network 1",0.00,0.00,0,0,0.00
+2014-06-30,"Test Article with unicode Čžš","http://www.example.com","Test Network 2",0.00,0.00,0,0,0.00
+2014-07-01,"Test Article with unicode Čžš","http://www.example.com","Test Network 1",1000.12,10.23,103,100000,1.03
+2014-07-01,"Test Article with unicode Čžš","http://www.example.com","Test Network 2",0.00,0.00,0,0,0.00
 '''
 
-        self.assertEqual(response['Content-Type'], 'text/csv')
+        self.assertEqual(
+            response['Content-Type'],
+            'text/csv; name="%s_report_2014-06-30_2014-07-01.csv"' % self.ad_group_name
+        )
         self.assertEqual(
             response['Content-Disposition'],
-            'attachment; filename=networks_report_2014-06-30_2014-07-01.csv'
+            'attachment; filename="%s_report_2014-06-30_2014-07-01.csv"' % self.ad_group_name
         )
         self.assertEqual(response.content, expected_content)
 
@@ -92,7 +98,7 @@ class AdGroupAdsExportTestCase(test.TestCase):
         self.assertEqual(response['Content-Type'], 'application/octet-stream')
         self.assertEqual(
             response['Content-Disposition'],
-            'attachment; filename=networks_report_2014-06-30_2014-07-01.xlsx'
+            'attachment; filename="%s_report_2014-06-30_2014-07-01.xls"' % self.ad_group_name
         )
 
         workbook = xlrd.open_workbook(file_contents=response.content)
@@ -103,45 +109,50 @@ class AdGroupAdsExportTestCase(test.TestCase):
 
         self.assertEqual(worksheet.cell_value(0, 0), 'Date')
         self.assertEqual(worksheet.cell_value(0, 1), 'Article')
-        self.assertEqual(worksheet.cell_value(0, 2), 'Network')
-        self.assertEqual(worksheet.cell_value(0, 3), 'Cost')
-        self.assertEqual(worksheet.cell_value(0, 4), 'CPC')
-        self.assertEqual(worksheet.cell_value(0, 5), 'Clicks')
-        self.assertEqual(worksheet.cell_value(0, 6), 'Impressions')
-        self.assertEqual(worksheet.cell_value(0, 7), 'CTR')
+        self.assertEqual(worksheet.cell_value(0, 2), 'URL')
+        self.assertEqual(worksheet.cell_value(0, 3), 'Network')
+        self.assertEqual(worksheet.cell_value(0, 4), 'Cost')
+        self.assertEqual(worksheet.cell_value(0, 5), 'CPC')
+        self.assertEqual(worksheet.cell_value(0, 6), 'Clicks')
+        self.assertEqual(worksheet.cell_value(0, 7), 'Impressions')
+        self.assertEqual(worksheet.cell_value(0, 8), 'CTR')
 
         self.assertEqual(worksheet.cell_value(1, 0), 41820.0)
         self.assertEqual(worksheet.cell_value(1, 1), u'Test Article with unicode Čžš')
-        self.assertEqual(worksheet.cell_value(1, 2), 'Test Network 1')
-        self.assertEqual(worksheet.cell_value(1, 3), 0)
+        self.assertEqual(worksheet.cell_value(1, 2), 'http://www.example.com')
+        self.assertEqual(worksheet.cell_value(1, 3), 'Test Network 1')
         self.assertEqual(worksheet.cell_value(1, 4), 0)
         self.assertEqual(worksheet.cell_value(1, 5), 0)
         self.assertEqual(worksheet.cell_value(1, 6), 0)
         self.assertEqual(worksheet.cell_value(1, 7), 0)
+        self.assertEqual(worksheet.cell_value(1, 8), 0)
 
         self.assertEqual(worksheet.cell_value(2, 0), 41820.0)
         self.assertEqual(worksheet.cell_value(2, 1), u'Test Article with unicode Čžš')
-        self.assertEqual(worksheet.cell_value(2, 2), 'Test Network 2')
-        self.assertEqual(worksheet.cell_value(2, 3), 0)
+        self.assertEqual(worksheet.cell_value(2, 2), 'http://www.example.com')
+        self.assertEqual(worksheet.cell_value(2, 3), 'Test Network 2')
         self.assertEqual(worksheet.cell_value(2, 4), 0)
         self.assertEqual(worksheet.cell_value(2, 5), 0)
         self.assertEqual(worksheet.cell_value(2, 6), 0)
         self.assertEqual(worksheet.cell_value(2, 7), 0)
+        self.assertEqual(worksheet.cell_value(2, 8), 0)
 
         self.assertEqual(worksheet.cell_value(3, 0), 41821.0)
         self.assertEqual(worksheet.cell_value(3, 1), u'Test Article with unicode Čžš')
-        self.assertEqual(worksheet.cell_value(3, 2), 'Test Network 1')
-        self.assertEqual(worksheet.cell_value(3, 3), 1000.123242)
-        self.assertEqual(worksheet.cell_value(3, 4), 10.2334)
-        self.assertEqual(worksheet.cell_value(3, 5), 103)
-        self.assertEqual(worksheet.cell_value(3, 6), 100000)
-        self.assertEqual(worksheet.cell_value(3, 7), 0.01031231231)
+        self.assertEqual(worksheet.cell_value(3, 2), 'http://www.example.com')
+        self.assertEqual(worksheet.cell_value(3, 3), 'Test Network 1')
+        self.assertEqual(worksheet.cell_value(3, 4), 1000.123242)
+        self.assertEqual(worksheet.cell_value(3, 5), 10.2334)
+        self.assertEqual(worksheet.cell_value(3, 6), 103)
+        self.assertEqual(worksheet.cell_value(3, 7), 100000)
+        self.assertEqual(worksheet.cell_value(3, 8), 0.01031231231)
 
         self.assertEqual(worksheet.cell_value(4, 0), 41821.0)
         self.assertEqual(worksheet.cell_value(4, 1), u'Test Article with unicode Čžš')
-        self.assertEqual(worksheet.cell_value(4, 2), 'Test Network 2')
-        self.assertEqual(worksheet.cell_value(4, 3), 0)
+        self.assertEqual(worksheet.cell_value(4, 2), 'http://www.example.com')
+        self.assertEqual(worksheet.cell_value(4, 3), 'Test Network 2')
         self.assertEqual(worksheet.cell_value(4, 4), 0)
         self.assertEqual(worksheet.cell_value(4, 5), 0)
         self.assertEqual(worksheet.cell_value(4, 6), 0)
         self.assertEqual(worksheet.cell_value(4, 7), 0)
+        self.assertEqual(worksheet.cell_value(4, 8), 0)
