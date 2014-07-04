@@ -23,6 +23,6 @@ test:
         - python manage.py test:
             pwd:
                 server
-        - grunt test-sauce:
+        - grunt test:
             pwd:
                 client
