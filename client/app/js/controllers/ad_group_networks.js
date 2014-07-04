@@ -1,6 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api', function ($scope, $state, $location, api) {
+oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$filter', 'api', 'zemCustomTableColsService', function ($scope, $state, $location, $filter, api, zemCustomTableColsService) {
     $scope.constants = constants;
     $scope.options = options;
     $scope.chartMetric1 = constants.networkChartMetric.CLICKS;
@@ -9,6 +9,55 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
     $scope.chartData = [];
     $scope.isChartShown = true;
     $scope.chartBtnTitle = 'Hide chart';
+    $scope.columns = [
+        {
+            name: 'Bid CPC',
+            field: 'bid_cpc',
+            checked: true,
+            type: 'currency'
+        },
+        {
+            name: 'Daily Budget',
+            field: 'daily_budget',
+            checked: true,
+            type: 'currency'
+        },
+        {
+            name: 'Cost',
+            field: 'cost',
+            checked: true,
+            type: 'currency'
+        },
+        {
+            name: 'CPC',
+            field: 'cpc',
+            checked: true,
+            type: 'currency'
+        },
+        {
+            name: 'Clicks',
+            field: 'clicks',
+            checked: true,
+            type: 'number'
+        },
+        {
+            name: 'Impressions',
+            field: 'impressions',
+            checked: true,
+            type: 'number'
+        },
+        {
+            name: 'CTR',
+            field: 'ctr',
+            checked: true,
+            type: 'percent'
+        }
+    ];
+
+    zemCustomTableColsService.load('adGroupNetworksCols', $scope.columns);
+    $scope.$watch('columns', function (newValue, oldValue) {
+        zemCustomTableColsService.save('adGroupNetworksCols', newValue);
+    }, true);
 
     $scope.setChartData = function () {
         var result = {
