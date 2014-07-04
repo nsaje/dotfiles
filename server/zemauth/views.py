@@ -28,10 +28,9 @@ def login(request, *args, **kwargs):
     if settings.GOOGLE_OAUTH_ENABLED:
         kwargs['extra_context']['gauth_url'] = gauth.get_uri(request)
 
-
     return auth_views.login(request, *args, **kwargs)
 
-
+@statsd_helper.statsd_timer('auth', 'google_callback')
 def google_callback(request, *args, **kwargs):
     if 'error' in request.GET or 'code' not in request.GET:
         return _fail_response()
