@@ -1,6 +1,4 @@
 import urllib
-import random
-import time
 
 from django.conf import settings
 from django.contrib import auth
@@ -30,8 +28,6 @@ def login(request, *args, **kwargs):
     if settings.GOOGLE_OAUTH_ENABLED:
         kwargs['extra_context']['gauth_url'] = gauth.get_uri(request)
 
-    milis = random.randrange(0,100) * 0.001
-    time.sleep(milis)
 
     return auth_views.login(request, *args, **kwargs)
 
