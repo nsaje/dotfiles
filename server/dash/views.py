@@ -11,13 +11,15 @@ from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponse
 
-from actionlog import api as actionlog_api
+from utils import statsd_helper
+import actionlog.api
+import reports.api
+
 from dash import api_common
 from dash import exc
 from dash import forms
 from dash import models
-from reports import api
-from utils import statsd_helper
+from dash import api
 
 import constants
 
@@ -134,7 +136,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group)
+            'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group)
         }
 
         return self.create_api_response(response)
@@ -167,13 +169,11 @@ class AdGroupSettings(api_common.BaseApiView):
             ad_group.save()
             settings.save()
 
-        if settings.state == constants.AdGroupSettingsState.INACTIVE and \
-                settings.state != current_settings.state:
-            actionlog_api.stop_ad_group(ad_group)
+        api.order_ad_group_settings_update(ad_group, current_settings, settings)
 
         response = {
             'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group)
+            'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group)
         }
 
         return self.create_api_response(response)
@@ -243,7 +243,7 @@ class AdGroupNetworksTable(api_common.BaseApiView):
         except models.AdGroup.DoesNotExist:
             raise exc.MissingDataError('Ad Group does not exist')
 
-        networks_data = api.query(
+        networks_data = reports.api.query(
             get_stats_start_date(request.GET.get('start_date')),
             get_stats_end_date(request.GET.get('end_date')),
             ['network'],
@@ -252,7 +252,7 @@ class AdGroupNetworksTable(api_common.BaseApiView):
 
         network_settings = models.AdGroupNetworkSettings.get_current_settings(ad_group)
 
-        totals_data = api.query(
+        totals_data = reports.api.query(
             get_stats_start_date(request.GET.get('start_date')),
             get_stats_end_date(request.GET.get('end_date')),
             ad_group=int(ad_group.id)
@@ -296,7 +296,10 @@ class AdGroupNetworksTable(api_common.BaseApiView):
                 'name': settings.ad_group_network.network.name,
                 'status': settings.state,
                 'bid_cpc': float(settings.cpc_cc) if settings.cpc_cc is not None else None,
-                'daily_budget': float(settings.daily_budget_cc) if settings.daily_budget_cc is not None else None,
+                'daily_budget':
+                    float(settings.daily_budget_cc)
+                    if settings.daily_budget_cc is not None
+                    else None,
                 'cost': network_data.get('cost', None),
                 'cpc': network_data.get('cpc', None),
                 'clicks': network_data.get('clicks', None),
@@ -333,7 +336,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
         except EmptyPage:
             articles = paginator.page(paginator.num_pages)
 
-        article_data = api.query(
+        article_data = reports.api.query(
             start_date,
             end_date,
             ['article'],
@@ -341,7 +344,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
             article=[article.id for article in articles]
         )
 
-        totals_data = api.query(
+        totals_data = reports.api.query(
             start_date,
             end_date,
             ad_group=int(ad_group.id)
@@ -400,7 +403,7 @@ class AdGroupDailyStats(api_common.BaseApiView):
         except models.AdGroup.DoesNotExist:
             raise exc.MissingDataError('Ad Group does not exist')
 
-        stats = api.query(
+        stats = reports.api.query(
             get_stats_start_date(request.GET.get('start_date')),
             get_stats_end_date(request.GET.get('end_date')),
             ['date'],
@@ -410,5 +413,3 @@ class AdGroupDailyStats(api_common.BaseApiView):
         return self.create_api_response({
             'stats': stats
         })
-
-

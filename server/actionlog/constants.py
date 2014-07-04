@@ -41,7 +41,9 @@ class ActionType(ConstantBase):
 
 class ActionLogOrderType(ConstantBase):
     FETCH_ALL = 1
+    AD_GROUP_SETTINGS_UPDATE = 2
 
     _VALUES = {
-        FETCH_ALL: 'Fetch all'
+        FETCH_ALL: 'Fetch all',
+        AD_GROUP_SETTINGS_UPDATE: 'AdGroup Settings Update',
     }

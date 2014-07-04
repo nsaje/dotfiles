@@ -126,7 +126,10 @@ class UserAdGroupManager(models.Manager):
         if user.is_superuser:
             return queryset
         else:
-            return queryset.filter(models.Q(campaign__users__id=user.id) | models.Q(campaign__account__users__id=user.id))
+            return queryset.filter(
+                models.Q(campaign__users__id=user.id) |
+                models.Q(campaign__account__users__id=user.id)
+            )
 
 
 class AdGroup(models.Model):
@@ -177,10 +180,22 @@ class AdGroupNetwork(models.Model):
 
 
 class AdGroupSettings(models.Model):
+    _settings_fields = [
+        'state',
+        'start_date',
+        'end_date',
+        'cpc_cc',
+        'daily_budget_cc',
+        'target_devices',
+        'target_regions',
+        'tracking_code',
+    ]
+
     id = models.AutoField(primary_key=True)
     ad_group = models.ForeignKey(AdGroup, related_name='settings')
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
+
     state = models.IntegerField(
         default=constants.AdGroupSettingsState.INACTIVE,
         choices=constants.AdGroupSettingsState.get_choices()
@@ -207,6 +222,13 @@ class AdGroupSettings(models.Model):
 
     class Meta:
         ordering = ('-created_dt',)
+
+    @classmethod
+    def get_settings_fields(cls):
+        return cls._settings_fields
+
+    def get_settings_dict(self):
+        return {settings_key: getattr(self, settings_key) for settings_key in self._settings_fields}
 
 
 class AdGroupNetworkSettings(models.Model):

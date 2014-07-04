@@ -238,7 +238,8 @@ def _init_fetch_reports(ad_group_network, date, order):
 
 
 def _init_set_campaign_property(ad_group_network, prop, value, order):
-    msg = '_init_set_campaign_property started: ad_group_network.id: {}, prop: {}, value: {}, order.id: {}'.format(
+    msg = "_init_set_campaign_property started:"
+    "ad_group_network.id: {}, prop: {}, value: {}, order.id: {}".format(
         ad_group_network.id,
         prop,
         value,
@@ -247,24 +248,15 @@ def _init_set_campaign_property(ad_group_network, prop, value, order):
     logger.info(msg)
 
     try:
-        # check if there already is a waiting action for this prop in this ad_group_network
         existing_actions = models.ActionLog.objects.filter(
             ad_group_network=ad_group_network,
             action=constants.Action.SET_PROPERTY,
             state=constants.ActionState.WAITING,
             action_type=constants.ActionType.MANUAL
         )
-
         existing_actions = [a for a in existing_actions if a.payload['property'] == prop]
 
-        # set the actions to ABORTED before adding the new action
-        if existing_actions:
-            for a in existing_actions:
-                a.state = constants.ActionState.ABORTED
-                a.save()
-
-        # create a new action
-        action = models.ActionLog.objects.create(
+        action = models.ActionLog(
             action=constants.Action.SET_PROPERTY,
             action_type=constants.ActionType.MANUAL,
             state=constants.ActionState.WAITING,
@@ -276,5 +268,11 @@ def _init_set_campaign_property(ad_group_network, prop, value, order):
             order=order
         )
         action.save()
+
+        if existing_actions:
+            for a in existing_actions:
+                a.state = constants.ActionState.ABORTED
+                a.save()
+
     except Exception as e:
         _handle_error(action, e)
