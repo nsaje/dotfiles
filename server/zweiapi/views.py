@@ -38,6 +38,8 @@ def _get_error_message(data):
         message.append(data['error']['error'])
     if data['error'].get('message'):
         message.append(data['error']['message'])
+    if data['error'].get('traceback'):
+        message.append(data['error']['traceback'])
 
     return '\n'.join(message)
 

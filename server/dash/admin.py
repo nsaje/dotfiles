@@ -208,8 +208,7 @@ class AdGroupNetworksInline(admin.TabularInline):
             admin_url='{}?{}'.format(
                 reverse('admin:dash_adgroupnetworksettings_changelist'),
                 urllib.urlencode({
-                    'ad_group': obj.ad_group.id,
-                    'network': obj.network.id,
+                    'ad_group_network': obj.id,
                 })
             ),
             num_settings=obj.settings.count()
