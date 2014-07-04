@@ -1,8 +1,6 @@
 import datetime
 import json
 import logging
-import time
-import random
 import dateutil.parser
 
 from django.conf import settings
@@ -413,9 +411,4 @@ class AdGroupDailyStats(api_common.BaseApiView):
             'stats': stats
         })
 
-@statsd_helper.statsd_timer('dash', 'test_latency')
-def test_latency(request):
-    milis = random.randrange(0,100) * 0.001
-    time.sleep(milis)
-    return HttpResponse(unicode(milis)) 
 
