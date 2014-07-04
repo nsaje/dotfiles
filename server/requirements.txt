@@ -15,6 +15,7 @@ pycrypto==2.6.1
 unicodecsv==0.9.4
 xlwt==0.7.5
 xlrd==0.9.3
+unicode-slugify==0.1.1
 
 statsd==3.0
 

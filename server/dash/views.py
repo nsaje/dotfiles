@@ -5,6 +5,7 @@ import dateutil.parser
 from collections import OrderedDict
 import unicodecsv
 from xlwt import Workbook
+import slugify
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -12,7 +13,6 @@ from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import HttpResponse
 
 from actionlog import api as actionlog_api
 from dash import api_common
@@ -365,7 +365,7 @@ class AdGroupAdsExport(api_common.BaseApiView):
                             'ctr': 0
                         })
 
-        filename = '%s_report_%s_%s' % (ad_group.name, start_date, end_date)
+        filename = '%s_report_%s_%s' % (slugify.slugify(ad_group.name), start_date, end_date)
 
         if request.GET.get('type') == 'excel':
             return self.create_excel_response(result, filename)
@@ -419,7 +419,7 @@ class AdGroupAdsExport(api_common.BaseApiView):
         response = self.create_file_response('application/octet-stream', '%s.xls' % filename)
 
         workbook = Workbook(encoding='UTF-8')
-        worksheet = workbook.add_sheet('Networks Report')
+        worksheet = workbook.add_sheet('Report')
 
         worksheet.col(1).width = 6000
         worksheet.col(2).width = 8000

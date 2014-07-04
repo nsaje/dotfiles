@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from mock import patch, Mock
 import datetime
+import slugify
 
 from django import test
 from django import http
@@ -78,11 +79,11 @@ class AdGroupAdsExportTestCase(test.TestCase):
 
         self.assertEqual(
             response['Content-Type'],
-            'text/csv; name="%s_report_2014-06-30_2014-07-01.csv"' % self.ad_group_name
+            'text/csv; name="%s_report_2014-06-30_2014-07-01.csv"' % slugify.slugify(self.ad_group_name)
         )
         self.assertEqual(
             response['Content-Disposition'],
-            'attachment; filename="%s_report_2014-06-30_2014-07-01.csv"' % self.ad_group_name
+            'attachment; filename="%s_report_2014-06-30_2014-07-01.csv"' % slugify.slugify(self.ad_group_name)
         )
         self.assertEqual(response.content, expected_content)
 
@@ -98,13 +99,13 @@ class AdGroupAdsExportTestCase(test.TestCase):
         self.assertEqual(response['Content-Type'], 'application/octet-stream')
         self.assertEqual(
             response['Content-Disposition'],
-            'attachment; filename="%s_report_2014-06-30_2014-07-01.xls"' % self.ad_group_name
+            'attachment; filename="%s_report_2014-06-30_2014-07-01.xls"' % slugify.slugify(self.ad_group_name)
         )
 
         workbook = xlrd.open_workbook(file_contents=response.content)
         self.assertIsNotNone(workbook)
 
-        worksheet = workbook.sheet_by_name('Networks Report')
+        worksheet = workbook.sheet_by_name('Report')
         self.assertIsNotNone(worksheet)
 
         self.assertEqual(worksheet.cell_value(0, 0), 'Date')
