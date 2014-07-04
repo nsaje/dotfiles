@@ -58,13 +58,13 @@
                     <td class="text-right number" ng-repeat="col in columns | filter: {checked: true}">
                         <span ng-switch="col.type">
                             <span ng-switch-when="currency">
-                                {{ (row[col.field] | currency:"$") || 'N/A' }}
+                                {{ (totals[col.field] | currency:"$") || 'N/A' }}
                             </span>
                             <span ng-switch-when="percent">
-                                {{ (row[col.field] | number:2) || '0.0' }}%
+                                {{ (totals[col.field] | number:2) || '0.0' }}%
                             </span>
                             <span ng-switch-when="number">
-                                {{ (row[col.field] | number:0) || 'N/A' }}
+                                {{ (totals[col.field] | number:0) || 'N/A' }}
                             </span>
                         </span>
                     </td>
