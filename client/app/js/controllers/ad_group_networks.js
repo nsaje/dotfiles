@@ -1,6 +1,7 @@
 /*globals oneApp,moment,constants,options*/
 
 oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api', 'zemCustomTableColsService', function ($scope, $state, $location, api, zemCustomTableColsService) {
+    $scope.isSyncRecent = true;
     $scope.constants = constants;
     $scope.options = options;
     $scope.chartMetric1 = constants.networkChartMetric.CLICKS;
@@ -99,6 +100,8 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
+                $scope.lastSyncDate = moment(data.last_sync);
+                $scope.isSyncRecent = data.is_sync_recent;
             },
             function (data) {
                 // error

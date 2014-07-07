@@ -62,6 +62,16 @@ def get_stats_end_date(end_time):
     return date.date()
 
 
+def get_last_sucessful_sync_date():
+    last_successful_order = actionlog_api.get_last_successful_fetch_all_order()
+    if last_successful_order:
+        last_sync = last_successful_order.created_dt
+    else:
+        last_sync = None
+
+    return last_sync
+
+
 @statsd_helper.statsd_timer('dash', 'index')
 @login_required
 def index(request):
@@ -265,7 +275,9 @@ class AdGroupNetworksTable(api_common.BaseApiView):
 
         return self.create_api_response({
             'rows': self.get_rows(ad_group, networks_data, network_settings),
-            'totals': self.get_totals(ad_group, totals_data, network_settings)
+            'totals': self.get_totals(ad_group, totals_data, network_settings),
+            'last_sync': get_last_sucessful_sync_date(),
+            'is_sync_recent': actionlog_api.is_fetch_all_data_recent(),
         })
 
     def get_totals(self, ad_group, totals_data, network_settings):
@@ -484,6 +496,8 @@ class AdGroupAdsTable(api_common.BaseApiView):
         return self.create_api_response({
             'rows': self.get_rows(ad_group, article_data, articles),
             'totals': self.get_totals(totals_data),
+            'last_sync': get_last_sucessful_sync_date(),
+            'is_sync_recent': actionlog_api.is_fetch_all_data_recent(),
             'pagination': {
                 'currentPage': articles.number,
                 'numPages': articles.paginator.num_pages,

@@ -15,6 +15,10 @@
             <div class="clearfix"></div>
         </div>
 
+        <alert type="info" class="alert-sync" ng-show="!isSyncRecent">
+            We are experiencing a delay synchronizing reporting metrics. The last successful sync took place {{ lastSyncDate.fromNow() }}. If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
+        </alert>
+
         <table class="table">
             <thead>
                 <tr>
@@ -67,6 +71,8 @@
                 </tr>
             </tfoot>
         </table>
+
+        <div class="last-sync">* Reporting metrics synced {{ lastSyncDate.fromNow() }}.</div>
         
         <div class="pagination" ng-show="rows">
             <span>Go to page</span>
