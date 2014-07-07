@@ -63,6 +63,60 @@ def get_stats_end_date(end_time):
     return date.date()
 
 
+def generate_rows(dimensions, ad_group_id, start_date, end_date):
+    data = api.query(
+        start_date,
+        end_date,
+        dimensions[:],  # necessery because api.query() changes input list
+        ad_group=int(ad_group_id)
+    )
+
+    lists = []
+    for dimension in dimensions:
+        lists.append({
+            'date': daterange(start_date, end_date),
+            'network': models.Network.objects.all(),
+            'article': models.Article.objects.filter(ad_group=ad_group_id)
+        }[dimension])
+
+    results = []
+    for combination in itertools.product(*lists):
+        values = dict(zip(dimensions, combination))
+
+        result = None
+        for item in data:
+            if 'network' in dimensions and item['network'] != values['network'].id:
+                continue
+
+            if 'article' in dimensions and item['article'] != values['article'].id:
+                continue
+
+            if 'date' in dimensions and item['date'] != values['date']:
+                continue
+
+            result = item
+            break
+        else:
+            result = {
+                'date': values['date'],
+                'cost': 0,
+                'cpc': 0,
+                'clicks': 0,
+                'impressions': 0,
+                'ctr': 0
+            }
+
+        if 'network' in values:
+            result['network'] = values['network'].name
+        if 'article' in values:
+            result['article'] = values['article'].title
+            result['url'] = values['article'].url
+
+        results.append(result)
+
+    return results
+
+
 @statsd_helper.statsd_timer('dash', 'index')
 @login_required
 def index(request):
@@ -323,14 +377,7 @@ class AdGroupAdsExport(api_common.BaseApiView):
 
         filename = '%s_detailed_report_%s_%s' % (slugify.slugify(ad_group.name), start_date, end_date)
 
-        data = api.query(
-            start_date,
-            end_date,
-            ['date', 'article'],
-            ad_group=int(ad_group.id)
-        )
-        ads_results = self.generate_rows(
-            data,
+        ads_results = generate_rows(
             ['date', 'article'],
             ad_group.id,
             start_date,
@@ -338,16 +385,9 @@ class AdGroupAdsExport(api_common.BaseApiView):
         )
 
         if request.GET.get('type') == 'excel':
-            data = api.query(
-                start_date,
-                end_date,
+            networks_results = generate_rows(
                 ['date', 'network', 'article'],
-                ad_group=int(ad_group.id)
-            )
-            networks_results = self.generate_rows(
-                data,
-                ['date', 'network', 'article'],
-                ad_group.id,
+                ad_group_id,
                 start_date,
                 end_date
             )
@@ -355,53 +395,6 @@ class AdGroupAdsExport(api_common.BaseApiView):
             return self.create_excel_response(ads_results, networks_results, filename)
         else:
             return self.create_csv_response(ads_results, filename)
-
-    def generate_rows(self, data, dimensions, ad_group_id, start_date, end_date):
-        lists = []
-
-        for dimension in dimensions:
-            lists.append({
-                'date': daterange(start_date, end_date),
-                'network': models.Network.objects.all(),
-                'article': models.Article.objects.filter(ad_group=ad_group_id)
-            }[dimension])
-
-        results = []
-        for combination in itertools.product(*lists):
-            values = dict(zip(dimensions, combination))
-
-            result = None
-            for item in data:
-                if 'network' in dimensions and item['network'] != values['network'].id:
-                    continue
-
-                if 'article' in dimensions and item['article'] != values['article'].id:
-                    continue
-
-                if 'date' in dimensions and item['date'] != values['date']:
-                    continue
-
-                result = item
-                break
-            else:
-                result = {
-                    'date': values['date'],
-                    'cost': 0,
-                    'cpc': 0,
-                    'clicks': 0,
-                    'impressions': 0,
-                    'ctr': 0
-                }
-
-            if 'network' in values:
-                result['network'] = values['network'].name
-            if 'article' in values:
-                result['article'] = values['article'].title
-                result['url'] = values['article'].url
-
-            results.append(result)
-
-        return results
 
     def create_csv_response(self, data, filename):
         response = self.create_file_response('text/csv; name="%s.csv"' % filename, '%s.csv' % filename)
@@ -499,6 +492,90 @@ class AdGroupAdsExport(api_common.BaseApiView):
             worksheet.write(row, 6, item['clicks'] or 0)
             worksheet.write(row, 7, item['impressions'] or 0)
             worksheet.write(row, 8, (item['ctr'] or 0) / 100, excel_styles.style_percent)
+
+        workbook.save(response)
+        return response
+
+
+class AdGroupNetworksExport(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_networks_export_get')
+    def get(self, request, ad_group_id):
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        start_date = get_stats_start_date(request.GET.get('start_date'))
+        end_date = get_stats_end_date(request.GET.get('end_date'))
+
+        filename = '%s_per_networks_report_%s_%s' % (slugify.slugify(ad_group.name), start_date, end_date)
+
+        results = generate_rows(
+            ['date', 'network'],
+            ad_group.id,
+            start_date,
+            end_date
+        )
+
+        if request.GET.get('type') == 'excel':
+            return self.create_excel_response(results, filename)
+        else:
+            return self.create_csv_response(results, filename)
+
+    def create_csv_response(self, data, filename):
+        response = self.create_file_response('text/csv; name="%s.csv"' % filename, '%s.csv' % filename)
+
+        fieldnames = OrderedDict([
+            ('date', 'Date'),
+            ('network', 'Network'),
+            ('cost', 'Cost'),
+            ('cpc', 'CPC'),
+            ('clicks', 'Clicks'),
+            ('impressions', 'Impressions'),
+            ('ctr', 'CTR')
+        ])
+
+        writer = unicodecsv.DictWriter(response, fieldnames, encoding='utf-8', dialect='excel')
+
+        # header
+        writer.writerow(fieldnames)
+
+        for item in data:
+            # Format
+            for key in ['cost', 'cpc', 'ctr']:
+                val = item[key]
+                if not isinstance(val, float):
+                    val = 0
+                item[key] = '{:.2f}'.format(val)
+
+            writer.writerow(item)
+
+        return response
+
+    def create_excel_response(self, data, filename):
+        response = self.create_file_response('application/octet-stream', '%s.xls' % filename)
+
+        workbook = Workbook(encoding='UTF-8')
+        worksheet = workbook.add_sheet('Per-Network Report')
+
+        worksheet.col(1).width = 6000
+        worksheet.col(4).width = 3000
+        worksheet.panes_frozen = True
+        row = 0
+
+        worksheet.write(row, 0, 'Date')
+        worksheet.write(row, 1, 'Cost')
+        worksheet.write(row, 2, 'CPC')
+        worksheet.write(row, 3, 'Clicks')
+        worksheet.write(row, 4, 'Impressions')
+        worksheet.write(row, 5, 'CTR')
+
+        for item in data:
+            row += 1
+
+            worksheet.write(row, 0, item['date'], excel_styles.style_date)
+            worksheet.write(row, 1, item['cost'] or 0, excel_styles.style_usd)
+            worksheet.write(row, 2, item['cpc'] or 0, excel_styles.style_usd)
+            worksheet.write(row, 3, item['clicks'] or 0)
+            worksheet.write(row, 4, item['impressions'] or 0)
+            worksheet.write(row, 5, (item['ctr'] or 0) / 100, excel_styles.style_percent)
 
         workbook.save(response)
         return response
