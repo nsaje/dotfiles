@@ -18,7 +18,7 @@ from dash import models as dashmodels
 
 logger = logging.getLogger(__name__)
 
-NUM_RECENT_HOURS = 6
+NUM_RECENT_HOURS = 2
 
 
 def run_fetch_all_order(dates):

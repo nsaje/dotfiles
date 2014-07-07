@@ -1,16 +1,16 @@
 <div class="container-fluid" ng-controller="MainCtrl">
     <div class="row header">
-        <div class="col-xs-2">
+        <div class="logo-container">
             <a ng-href="/"><img class="logo" ng-src="{{ config.static_url }}/img/logo_one.png"></a>
         </div>
         
-        <div class="col-xs-8">
+        <div class="breadcrumb-container">
             <ol class="breadcrumb">
                 <li ng-repeat="path in breadcrumb track by $index" ng-class="{'active': $last}">{{ path }}</li>
             </ol>
         </div>
 
-        <div class="col-xs-2">
+        <div class="profile-container">
             <div class="content">
                 <a href="mailto:help@zemanta.com" class="contact">Contact support</a>
                 <span class="profile dropdown">
@@ -27,7 +27,7 @@
     </div>
 
     <div class="row body">
-        <div class="col-xs-2 sidebar">
+        <div class="sidebar">
             <div id="nav">
                 <div class="account-group" ng-repeat="account in accounts">
                     <div class="account-name">{{ account.name }}</div>
@@ -45,7 +45,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-xs-offset-2 col-xs-10 content">
+        <div class="content">
             <form class="form-horizontal pull-right" role="form" ng-show="currentRoute.name !== 'adGroups.settings'">
                 <div class="input-group calendar">
                     <i class="input-group-addon"><img ng-src="{{ config.static_url }}/img/calendar.svg"></i>

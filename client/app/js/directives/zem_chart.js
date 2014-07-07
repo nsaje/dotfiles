@@ -15,7 +15,7 @@ oneApp.directive('zemChart', ['config', function(config) {
         controller: ['$scope', '$element', '$attrs', '$http', function ($scope, $element, $attrs, $http) {
 
             var colors = ['#2fa8c7', '#4bbc00'];
-            var hasData = false;
+            $scope.hasData = true;
 
             $scope.config = {
                 options: {
@@ -86,7 +86,13 @@ oneApp.directive('zemChart', ['config', function(config) {
                 var valueSuffix = null;
                 var axisFormat = null;
 
-                hasData = false;
+                $scope.hasData = false;
+
+                // Undefined means that no data has been assigned yet but will be.
+                if (newValue === undefined) {
+                    $scope.hasData = true;
+                    return;
+                }
             
                 if (newValue && Object.keys(newValue).length) {
                     // if (newValue.xType !== 'categories') {
@@ -149,7 +155,7 @@ oneApp.directive('zemChart', ['config', function(config) {
                         });
                         for (j = 0; j < data[i].length; j++) {
                             if ((!Array.isArray(data[i][j]) && data[i][j]) || data[i][j][data[i][j].length-1]) {
-                                hasData = true;
+                                $scope.hasData = true;
                                 break;
                             }
                         }
@@ -159,7 +165,7 @@ oneApp.directive('zemChart', ['config', function(config) {
                 // HACK: we need this in order to force the chart to display
                 // x axis with value 0 on the bottom of the graph if there is
                 // no data to be displayed (or is always 0).
-                if (!hasData) {
+                if (!$scope.hasData) {
                     for (i = 0; i < $scope.config.options.yAxis.length; i++) {
                         $scope.config.options.yAxis[i].max = 10;
                     }
