@@ -36,6 +36,7 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
             state=obj.get_state_display(),
         )
     state_.allow_tags = True
+    state_.admin_order_field = 'state'
 
     def message_(self, obj):
         return '<div style="overflow: hidden"><pre style="color: #000;">{}</pre></div>'.format(obj.message)
@@ -48,6 +49,19 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
             network=obj.ad_group_network.network,
         )
     ad_group_network_.allow_tags = True
+    ad_group_network_.admin_order_field = 'ad_group_network'
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def get_actions(self, request):
+        actions = super(ActionLogAdminAdmin, self).get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
 
 
 admin.site.register(models.ActionLog, ActionLogAdminAdmin)

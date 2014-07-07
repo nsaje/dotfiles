@@ -1,6 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-
-oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', 'api', 'zemCustomTableColsService', function ($scope, $state, $location, api, zemCustomTableColsService) {
+oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', 'api', 'zemCustomTableColsService', function ($scope, $state, $location, $window, api, zemCustomTableColsService) {
     $scope.constants = constants;
     $scope.options = options;
     $scope.chartMetric1 = constants.networkChartMetric.CLICKS;
@@ -200,5 +199,12 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', 'api', 'ze
             $location.search('size', $scope.pagination.size);
             $scope.getTableData();
         }
-    }
+    };
+
+    // export
+    $scope.downloadReport = function() {
+        console.log($scope.exportType);
+        $window.open('api/ad_groups/' + $state.params.id + '/ads/export/?type=' + $scope.exportType, '_blank');
+        $scope.exportType = '';
+    };
 }]);

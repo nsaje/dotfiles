@@ -96,35 +96,34 @@ def query(start_date, end_date, breakdown=None, **constraints):
 
 
 @transaction.atomic
-def upsert(data, date):
+def upsert_report(ad_group_network, rows, date):
     '''
     looks for the article stats with dimensions specified in this row
     if it does not find, it adds the row
     if it does find, it updates the metrics of the existing row
     '''
-    for network_campaign_key, rows in data:
-        ad_group_network = dashmodels.AdGroupNetwork.objects.get(network_campaign_key=network_campaign_key)
-        ad_group = ad_group_network.ad_group
-        network = ad_group_network.network
 
-        for row in rows:
-            article = _reconcile_article(row.get('url'), row.get('title'), ad_group)
+    ad_group = ad_group_network.ad_group
+    network = ad_group_network.network
 
-            try:
-                article_stats = models.ArticleStats.objects.get(datetime=date, article=article,
-                                                                ad_group=ad_group, network=network)
-            except ObjectDoesNotExist:
-                article_stats = models.ArticleStats(datetime=date, article=article,
-                                                    ad_group=ad_group, network=network)
+    for row in rows:
+        article = _reconcile_article(row.get('url'), row.get('title'), ad_group)
 
-            if 'cost_cc' not in row or row['cost_cc'] is None:
-                row['cost_cc'] = row['cpc_cc'] * row['clicks']
+        try:
+            article_stats = models.ArticleStats.objects.get(datetime=date, article=article,
+                                                            ad_group=ad_group, network=network)
+        except ObjectDoesNotExist:
+            article_stats = models.ArticleStats(datetime=date, article=article,
+                                                ad_group=ad_group, network=network)
 
-            article_stats.impressions = row['impressions']
-            article_stats.clicks = row['clicks']
-            article_stats.cost_cc = row['cost_cc']
+        if 'cost_cc' not in row or row['cost_cc'] is None:
+            row['cost_cc'] = row['cpc_cc'] * row['clicks']
 
-            article_stats.save()
+        article_stats.impressions = row['impressions']
+        article_stats.clicks = row['clicks']
+        article_stats.cost_cc = row['cost_cc']
+
+        article_stats.save()
 
 
 # helpers
@@ -158,7 +157,8 @@ def _reconcile_article(raw_url, title, ad_group):
             return dashmodels.Article.objects.create(ad_group=ad_group, url=url, title=title)
     except IntegrityError:
         logger.info(
-            'Failed to insert article: title = {title}, url = {url}, ad group id = {ad_group_id}. '.
+            'Integrity error upon inserting article: title = {title}, url = {url}, ad group id = {ad_group_id}. '
+            'Using existing article.'.
             format(title=title, url=url, ad_group_id=ad_group.id)
         )
         return dashmodels.Article.objects.filter(**kwargs).latest()

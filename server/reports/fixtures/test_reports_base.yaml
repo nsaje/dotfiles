@@ -1,0 +1,124 @@
+# Users
+
+- fields:
+    date_joined: '2014-06-04T09:58:21'
+    email: ''
+    first_name: ''
+    groups: []
+    is_active: true
+    is_staff: true
+    is_superuser: true
+    last_login: '2014-06-04T12:20:46'
+    last_name: ''
+    password: pbkdf2_sha256$12000$CWOT1c1UlFEr$GDTv3fbQ6bmJffEg1bvb+O49VfwD9Bg/DyylA3jcWvg=
+    user_permissions: []
+    username: test_user
+  model: zemauth.user
+  pk: 1
+
+# Accounts
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    name: 'Test Account 1'
+  model: dash.account
+  pk: 1
+
+# Campaigns
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    account: 1
+    name: 'Test Campaign 1'
+  model: dash.campaign
+  pk: 1
+
+# Ad Groups
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 1
+    name: 'Test AdGroup 1'
+  model: dash.adgroup
+  pk: 1
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 1
+    name: 'Test AdGroup 2'
+  model: dash.adgroup
+  pk: 2
+
+# Networks
+- fields:
+    type: 'test'
+    name: 'Test 1'
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+  model: dash.network
+  pk: 1
+
+- fields:
+    type: 'test'
+    name: 'Test 2'
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+  model: dash.network
+  pk: 2
+
+# Network credentials
+- fields:
+    created_dt: '2014-06-04T00:00:00'
+    modified_dt: '2014-06-04T00:00:00'
+    network: 1
+    name: 'Test credentials 1'
+    credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
+  model: dash.networkcredentials
+  pk: 1
+
+- fields:
+    created_dt: '2014-06-04T00:00:00'
+    modified_dt: '2014-06-04T00:00:00'
+    network: 2
+    name: 'Test credentials 2'
+    credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
+  model: dash.networkcredentials
+  pk: 2
+
+# Ad group networks
+- fields:
+    ad_group: 1
+    network: 1
+    network_credentials: 1
+    network_campaign_key: '["fake11"]'
+  model: dash.adgroupnetwork
+  pk: 1
+
+- fields:
+    ad_group: 1
+    network: 2
+    network_credentials: 2
+    network_campaign_key: '["fake12"]'
+  model: dash.adgroupnetwork
+  pk: 2
+
+- fields:
+    ad_group: 2
+    network: 1
+    network_credentials: 1
+    network_campaign_key: '["fake21"]'
+  model: dash.adgroupnetwork
+  pk: 3
+
+- fields:
+    ad_group: 2
+    network: 2
+    network_credentials: 2
+    network_campaign_key: '["fake22"]'
+  model: dash.adgroupnetwork
+  pk: 4

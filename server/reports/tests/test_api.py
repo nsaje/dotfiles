@@ -8,10 +8,11 @@ from mock import patch
 from dash import models as dashmodels
 from reports import api
 from reports import exc
+from reports import models
 
 
 class QueryTestCase(test.TestCase):
-    fixtures = ['test_article_stats.yaml']
+    fixtures = ['test_reports_base.yaml', 'test_article_stats.yaml']
 
     def test_date_breakdown(self):
         start = datetime.date(2014, 6, 4)
@@ -220,6 +221,131 @@ class ApiTestCase(test.TestCase):
         url_with_zemanta_and_utm = 'http://sd.domain.com/path/to?attr1=1&utm_source=zemantaone'
         url_with_zemanta_and_utm_cleaned = 'http://sd.domain.com/path/to?attr1=1'
         self.assertEqual(url_with_zemanta_and_utm_cleaned, api._clean_url(url_with_zemanta_and_utm))
+
+
+class UpsertReportsTestCase(test.TestCase):
+
+    fixtures = ['test_reports_base.yaml']
+
+    def test_upsert_reports(self):
+        date1 = datetime.date(2014, 7, 1)
+        date2 = datetime.date(2014, 7, 2)
+
+        agn1 = dashmodels.AdGroupNetwork.objects.get(id=1)
+        rows_agn1_date1 = [
+            {
+                'title': 'Test Article 1',
+                'url': 'http://example.com/',
+                'impressions': 50,
+                'clicks': 2,
+                'cost_cc': 2800,
+                'cpc_cc': None
+            },
+            {
+                'title': 'Test Article 2',
+                'url': 'http://example.com/',
+                'impressions': 40,
+                'clicks': 1,
+                'cost_cc': 900,
+                'cpc_cc': None
+            },
+        ]
+        rows_agn2_date1 = [
+            {
+                'title': 'Test Article 1',
+                'url': None,
+                'impressions': 50,
+                'clicks': 2,
+                'cost_cc': None,
+                'cpc_cc': 1400
+            },
+            {
+                'title': 'Test Article 2',
+                'url': None,
+                'impressions': 40,
+                'clicks': 1,
+                'cost_cc': None,
+                'cpc_cc': 900
+            },
+        ]
+
+        agn2 = dashmodels.AdGroupNetwork.objects.get(id=1)
+        rows_agn1_date2 = [
+            {
+                'title': 'Test Article 1',
+                'url': 'http://example.com/',
+                'impressions': 50,
+                'clicks': 2,
+                'cost_cc': 2800,
+                'cpc_cc': None
+            },
+            {
+                'title': 'Test Article 2',
+                'url': 'http://example.com/',
+                'impressions': 40,
+                'clicks': 1,
+                'cost_cc': 900,
+                'cpc_cc': None
+            },
+        ]
+        rows_agn2_date2 = [
+            {
+                'title': 'Test Article 1',
+                'url': None,
+                'impressions': 50,
+                'clicks': 2,
+                'cost_cc': None,
+                'cpc_cc': 1400
+            },
+            {
+                'title': 'Test Article 2',
+                'url': None,
+                'impressions': 40,
+                'clicks': 1,
+                'cost_cc': None,
+                'cpc_cc': 900
+            },
+        ]
+
+        self.assertTrue(len(models.ArticleStats.objects.all()) == 0)
+
+        api.upsert_report(agn1, rows_agn1_date1, date1)
+        for row in rows_agn1_date1:
+            article = dashmodels.Article.objects.get(title=row['title'], url=row['url'])
+            stats = models.ArticleStats.objects.get(
+                article=article,
+                ad_group=agn1.ad_group,
+                network=agn1.network,
+                datetime=date1
+            )
+            self.assertEqual(stats.impressions, row['impressions'])
+            self.assertEqual(stats.clicks, row['clicks'])
+            self.assertEqual(stats.cost_cc, row['cost_cc'])
+
+        api.upsert_report(agn2, rows_agn2_date1, date1)
+        for row in rows_agn2_date1:
+            article = dashmodels.Article.objects.get(title=row['title'])
+            stats = models.ArticleStats.objects.get(
+                article=article,
+                ad_group=agn2.ad_group,
+                network=agn2.network,
+                datetime=date1
+            )
+            self.assertEqual(stats.impressions, row['impressions'])
+            self.assertEqual(stats.clicks, row['clicks'])
+            self.assertEqual(stats.cost_cc, row['cpc_cc'] * row['clicks'])
+
+        api.upsert_report(agn1, rows_agn1_date2, date2)
+        api.upsert_report(agn2, rows_agn2_date2, date2)
+
+        articles_agn1 = dashmodels.Article.objects.order_by('title')
+        articles_agn2 = dashmodels.Article.objects.order_by('title')
+
+        self.assertEqual(len(articles_agn1), 2)
+        self.assertEqual(len(articles_agn2), 2)
+
+        for article1, article2 in zip(articles_agn1, articles_agn2):
+            self.assertEqual(article1, article2)
 
 
 class ArticleReconciliationTestCase(test.TestCase):
