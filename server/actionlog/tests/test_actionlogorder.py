@@ -104,10 +104,11 @@ class RefreshOrdersTestCase(test.TestCase):
 
         last_successful_order = api.get_last_successful_fetch_all_order()
 
-        hours_since = 2
-        td = datetime.timedelta(hours=hours_since)
-        refresh_orders.datetime.utcnow = classmethod(lambda cls: last_successful_order.created_dt + td)
-        refresh_orders.refresh_fetch_all_orders()
+        # make sure it can handle both hours in last day and in more days
+        for hours_since in (2, 74):
+            td = datetime.timedelta(hours=hours_since)
+            refresh_orders.datetime.utcnow = classmethod(lambda cls: last_successful_order.created_dt + td)
+            refresh_orders.refresh_fetch_all_orders()
 
-        self.assertTrue(self.mock_gauge_called)
-        self.assertEqual(self.mock_gauge_value, hours_since)
+            self.assertTrue(self.mock_gauge_called)
+            self.assertEqual(self.mock_gauge_value, hours_since)
