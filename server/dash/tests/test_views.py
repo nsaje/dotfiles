@@ -70,20 +70,21 @@ class AdGroupAdsExportTestCase(test.TestCase):
 
         response = views.AdGroupAdsExport().get(request, self.ad_group_id)
 
-        expected_content = '''"Date","Article","URL","Network","Cost","CPC","Clicks","Impressions","CTR"
-2014-06-30,"Test Article with unicode Čžš","http://www.example.com","Test Network 1",0.00,0.00,0,0,0.00
-2014-06-30,"Test Article with unicode Čžš","http://www.example.com","Test Network 2",0.00,0.00,0,0,0.00
-2014-07-01,"Test Article with unicode Čžš","http://www.example.com","Test Network 1",1000.12,10.23,103,100000,1.03
-2014-07-01,"Test Article with unicode Čžš","http://www.example.com","Test Network 2",0.00,0.00,0,0,0.00
+        expected_content = '''Date,Title,URL,Network,Cost,CPC,Clicks,Impressions,CTR\r
+2014-06-30,Test Article with unicode Čžš,http://www.example.com,Test Network 1,0.00,0.00,0,0,0.00\r
+2014-06-30,Test Article with unicode Čžš,http://www.example.com,Test Network 2,0.00,0.00,0,0,0.00\r
+2014-07-01,Test Article with unicode Čžš,http://www.example.com,Test Network 1,1000.12,10.23,103,100000,1.03\r
+2014-07-01,Test Article with unicode Čžš,http://www.example.com,Test Network 2,0.00,0.00,0,0,0.00\r
 '''
+        filename = '%s_detailed_report_2014-06-30_2014-07-01.csv' % slugify.slugify(self.ad_group_name)
 
         self.assertEqual(
             response['Content-Type'],
-            'text/csv; name="%s_report_2014-06-30_2014-07-01.csv"' % slugify.slugify(self.ad_group_name)
+            'text/csv; name="%s"' % filename
         )
         self.assertEqual(
             response['Content-Disposition'],
-            'attachment; filename="%s_report_2014-06-30_2014-07-01.csv"' % slugify.slugify(self.ad_group_name)
+            'attachment; filename="%s"' % filename
         )
         self.assertEqual(response.content, expected_content)
 
@@ -96,20 +97,22 @@ class AdGroupAdsExportTestCase(test.TestCase):
 
         response = views.AdGroupAdsExport().get(request, self.ad_group_id)
 
+        filename = '%s_detailed_report_2014-06-30_2014-07-01.xls' % slugify.slugify(self.ad_group_name)
+
         self.assertEqual(response['Content-Type'], 'application/octet-stream')
         self.assertEqual(
             response['Content-Disposition'],
-            'attachment; filename="%s_report_2014-06-30_2014-07-01.xls"' % slugify.slugify(self.ad_group_name)
+            'attachment; filename="%s"' % filename
         )
 
         workbook = xlrd.open_workbook(file_contents=response.content)
         self.assertIsNotNone(workbook)
 
-        worksheet = workbook.sheet_by_name('Report')
+        worksheet = workbook.sheet_by_name('Detailed Report')
         self.assertIsNotNone(worksheet)
 
         self.assertEqual(worksheet.cell_value(0, 0), 'Date')
-        self.assertEqual(worksheet.cell_value(0, 1), 'Article')
+        self.assertEqual(worksheet.cell_value(0, 1), 'Title')
         self.assertEqual(worksheet.cell_value(0, 2), 'URL')
         self.assertEqual(worksheet.cell_value(0, 3), 'Network')
         self.assertEqual(worksheet.cell_value(0, 4), 'Cost')

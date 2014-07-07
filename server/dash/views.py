@@ -365,7 +365,7 @@ class AdGroupAdsExport(api_common.BaseApiView):
                             'ctr': 0
                         })
 
-        filename = '%s_report_%s_%s' % (slugify.slugify(ad_group.name), start_date, end_date)
+        filename = '%s_detailed_report_%s_%s' % (slugify.slugify(ad_group.name), start_date, end_date)
 
         if request.GET.get('type') == 'excel':
             return self.create_excel_response(result, filename)
@@ -376,24 +376,18 @@ class AdGroupAdsExport(api_common.BaseApiView):
         response = self.create_file_response('text/csv; name="%s.csv"' % filename, '%s.csv' % filename)
 
         fieldnames = OrderedDict([
-            ('date', '"Date"'),
-            ('article', '"Article"'),
-            ('url', '"URL"'),
-            ('network', '"Network"'),
-            ('cost', '"Cost"'),
-            ('cpc', '"CPC"'),
-            ('clicks', '"Clicks"'),
-            ('impressions', '"Impressions"'),
-            ('ctr', '"CTR"')
+            ('date', 'Date'),
+            ('article', 'Title'),
+            ('url', 'URL'),
+            ('network', 'Network'),
+            ('cost', 'Cost'),
+            ('cpc', 'CPC'),
+            ('clicks', 'Clicks'),
+            ('impressions', 'Impressions'),
+            ('ctr', 'CTR')
         ])
 
-        writer = unicodecsv.DictWriter(
-            response,
-            fieldnames,
-            quoting=unicodecsv.QUOTE_NONE,
-            lineterminator='\n',
-            quotechar=''
-        )
+        writer = unicodecsv.DictWriter(response, fieldnames, encoding='utf-8', dialect='excel')
 
         # header
         writer.writerow(fieldnames)
@@ -404,12 +398,7 @@ class AdGroupAdsExport(api_common.BaseApiView):
                 val = item[key]
                 if not isinstance(val, float):
                     val = 0
-
                 item[key] = '{:.2f}'.format(val)
-
-            # Quote string
-            for key in ['article', 'url', 'network']:
-                item[key] = '"%s"' % item[key]
 
             writer.writerow(item)
 
@@ -419,7 +408,7 @@ class AdGroupAdsExport(api_common.BaseApiView):
         response = self.create_file_response('application/octet-stream', '%s.xls' % filename)
 
         workbook = Workbook(encoding='UTF-8')
-        worksheet = workbook.add_sheet('Report')
+        worksheet = workbook.add_sheet('Detailed Report')
 
         worksheet.col(1).width = 6000
         worksheet.col(2).width = 8000
@@ -429,7 +418,7 @@ class AdGroupAdsExport(api_common.BaseApiView):
         row = 0
 
         worksheet.write(row, 0, 'Date')
-        worksheet.write(row, 1, 'Article')
+        worksheet.write(row, 1, 'Title')
         worksheet.write(row, 2, 'URL')
         worksheet.write(row, 3, 'Network')
         worksheet.write(row, 4, 'Cost')
