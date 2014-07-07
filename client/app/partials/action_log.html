@@ -11,7 +11,19 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>State</th>
+                    <th>
+                        State
+                        <div class="btn-group" dropdown is-open="dropdownIsOpen">
+                            <button type="button" class="btn btn-default btn-xs dropdown-toggle">
+                                {{filterSelected.state[1]}} <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu filter-dropdown" role="menu">
+                                <li ng-repeat="choice in filterItems.state">
+                                    <a href="" ng-click="updateFilter('state', choice)">{{choice[1]}}</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </th>
                     <th>Action</th>
                     <th>Ad Group Network</th>
                     <th>Created</th>
@@ -21,15 +33,15 @@
                 </tr>
             </thead>
             <tbody>
-                <tr ng-if="loadRequestInProgress && !actionLog.length">
+                <tr ng-if="loadRequestInProgress && !actionLogItems.length">
                     <td colspan="7" class="loader-row">
                         <img class="loader" ng-src="{{ config.static_url }}/img/loader.svg">
                     </td>
                 </tr>
-                <tr ng-show="!actionLog.length && !loadRequestInProgress">
+                <tr ng-show="!actionLogItems.length && !loadRequestInProgress">
                     <td class="no-data" colspan="7">No data available.</td>
                 </tr>
-                <tr ng-repeat="log in actionLog">
+                <tr ng-repeat="log in actionLogItems">
                     <td class="status {{log.state[0] | lowercase}}">{{log.state[0]}}</td>
                     <td>{{log.take_action}}</td>
                     <td>{{log.ad_group_network[0]}}</td>

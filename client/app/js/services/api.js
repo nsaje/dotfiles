@@ -297,18 +297,20 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
 
     function ActionLog() {
-        this.get = function () {
+        this.list = function (filters) {
             var deferred = $q.defer();
             var url = '/action_log/api/';
             var config = {
-                params: {}
+                params: {
+                    filters: filters
+                }
             };
 
             $http.get(url, config).
                 success(function (data, status) {
                     var resource;
                     if (data && data.data) {
-                        resource = data.data.all_actions;
+                        resource = data.data;
                     }
                     deferred.resolve(resource);
                 }).

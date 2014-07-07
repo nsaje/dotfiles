@@ -23,11 +23,23 @@ class ActionLogApiView(api_common.BaseApiView):
     def get(self, request):
         response = {}
 
-        response['all_actions'] = self.get_actions()
+        response['actionLogItems'] = self._get_actions(request)
+        response['filters'] = self._get_filters(request)
 
         return self.create_api_response(response)
 
-    def get_take_action(self, action):
+    def _get_filters(self, request):
+        unfiltered = (0, 'All')
+
+        filter_choices = lambda x: [unfiltered] + list(x)
+
+        state_items = filter_choices(constants.ActionState.get_choices())
+
+        return {
+            'state': state_items,
+        }
+
+    def _get_take_action(self, action):
         if action.action == constants.Action.SET_PROPERTY:
             prop = action.payload.get('property')
             val = action.payload.get('value')
@@ -41,10 +53,19 @@ class ActionLogApiView(api_common.BaseApiView):
         else:
             raise Exception('Unsupported action %s' % action.action)
 
-    def get_actions(self):
-        all_actions = models.ActionLog.objects.filter(
+    def _get_actions(self, request):
+        actions = models.ActionLog.objects.filter(
             action_type=constants.ActionType.MANUAL,
         )
+
+        try:
+            filters = json.loads(request.GET.get('filters', ''))
+        except ValueError:
+            filters = {}
+
+        if filters.get('state'):
+            actions = actions.filter(state=filters['state'])
+
         return [
             {
                 'action': action.action,
@@ -60,8 +81,8 @@ class ActionLogApiView(api_common.BaseApiView):
 
                 'order': action.order and action.order.id,
 
-                'take_action': self.get_take_action(action),
-            } for action in all_actions
+                'take_action': self._get_take_action(action),
+            } for action in actions
         ]
 
     @method_decorator(permission_required('actionlog.manual_acknowledge'))
