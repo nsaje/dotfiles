@@ -107,7 +107,7 @@ a:visited {
     font-size: 14px;
     color: #414141;
     border-color: #d2d2d2;
-    .border-radius(0);
+    .border-radius(2px);
     .box-shadow(none);
 
     &:focus {
@@ -125,7 +125,8 @@ a:visited {
 }
 
 .btn {
-    .border-radius(0);
+    .border-radius(2px);
+    .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
 }
 
 .btn-primary,
@@ -136,7 +137,7 @@ a:visited {
     background-color: #2fa8c7;
     border-color: #2fa8c7;
     color: #fff;
-    .box-shadow(none);
+    .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
 
     &:hover {
         background-color: #2b9cb9;
@@ -153,7 +154,7 @@ a:visited {
     background-color: #fff;
     border-color: #2fa8c7;
     color: #2fa8c7;
-    .box-shadow(none);
+    .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
 
     &:hover {
         border-color: #2488a1;
@@ -176,8 +177,8 @@ a:visited {
 .dropdown-menu {
     margin-top: 1px;
     border: 1px solid #d2d2d2;
-    .border-radius(0);
-    .box-shadow(none);
+    .border-radius(2px);
+    .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
 }
 
 .zem-tabset .nav-tabs {
@@ -196,7 +197,7 @@ a:visited {
         & > a {
             padding: 0px;
 
-            .border-radius(0);
+            .border-radius(2px);
 
             & > tab-heading {
                 & > a,
@@ -219,7 +220,7 @@ a:visited {
 .input-group {
     .input-group-addon {
         /*background-color: transparent !important;*/
-        .border-radius(0);
+        .border-radius(2px 0 0 2px);
         font-weight: lighter;
         font-size: 14px;
         color: #414141;
@@ -268,6 +269,8 @@ div[datepicker] {
     .btn:hover {
         border: 1px solid #fff;
         color: #414141;
+        .border-radius(0);
+        .box-shadow(none);
 
         &.active {
             border: 1px solid #2fa8c7;
@@ -284,6 +287,7 @@ div[datepicker] {
 
 .calendar.input-group {
     width: 14em;
+    .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
 
     i {
         padding: 0;
@@ -373,6 +377,11 @@ div[datepicker] {
             .border-radius(0);
         }
     }
+    
+    td,
+    th {
+        .border-radius(0);
+    }
 }
 
 .breadcrumb {
@@ -402,9 +411,10 @@ div[datepicker] {
     }
 }
 
+.select2-choice,
 .select2-container-active .select2-choice,
 .select2-container-active .select2-choices {
-    .box-shadow(none);
+    .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
 }
 
 .select2-chosen {
@@ -463,6 +473,14 @@ div[datepicker] {
     border: 1px solid @chart-metric2-color;
 }
 
+.select2-container.select2-dropdown-open .select2-choice {
+    .border-radius(2px 2px 0 0);
+}
+
+.select2-container.select2-drop-above.select2-dropdown-open .select2-choice {
+    .border-radius(0 0 2px 2px);
+}
+
 .select2-container,
 .select2-container.select2-drop-above {
     .select2-choice {
@@ -470,8 +488,7 @@ div[datepicker] {
         line-height: 34px;
         background-image: none;
         border: 1px solid @default-color;
-        border-radius: 0px;
-        -webkit-border-radius: 0px;
+        .border-radius(2px);
         color: #454545;
 
         .select2-chosen {
@@ -510,15 +527,16 @@ div[datepicker] {
 
 .select2-drop,
 .select2-drop.select2-drop-above {
-    .border-radius(0);
     border: 1px solid @default-color;
 }
 
 .select2-drop:not(.select2-drop-above) {
+    .border-radius(0 0 2px 2px);
     border-top: 0;
 }
 
 .select2-drop.select2-drop-above {
+    .border-radius(2px 2px 0 0);
     border-bottom: 0;
 }
 
@@ -603,6 +621,7 @@ div[datepicker] {
             border: 1px solid #d2d2d2;
             padding: 5px;
             overflow: auto;
+            .border-radius(2px);
 
             .account-group {
                 padding-bottom: 10px;    
@@ -667,6 +686,7 @@ div[datepicker] {
     border-right: 1px solid #d2d2d2;
     border-bottom: 1px solid #d2d2d2;
     margin-bottom: 15px;
+    .border-radius(0 0 2px 2px);
 
     & > form:first-child > .form-group:first-child > div:first-child > .btn-group:first-child{
         padding-top: 0;
@@ -707,7 +727,7 @@ div[datepicker] {
             font-weight: 600;
             font-size: 13px;
             .box-shadow(none);
-            .border-radius(0);
+            .border-radius(0 2px 2px 0);
             width: 120px;
 
             &:hover {
@@ -723,6 +743,7 @@ div[datepicker] {
         }
 
         & > label:first-child {
+            .border-radius(2px 0 0 2px);
             &:hover {
                 border-color: #c70000;
                 color: #c70000;
