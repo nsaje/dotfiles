@@ -52,6 +52,12 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
             field: 'ctr',
             checked: true,
             type: 'percent'
+        },
+        {
+            name: 'Last Sync',
+            field: 'last_sync',
+            checked: false,
+            type: 'datetime'
         }
     ];
 
