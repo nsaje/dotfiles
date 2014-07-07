@@ -1,8 +1,5 @@
 cron:
 - hosts: [knot01.zemanta.com]
-  job: '*/5 * * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py test --health-check zemauth.tests_ui.test_ui.LoginTestCase.test_login > /dev/null 2>&1'
-
-- hosts: [knot01.zemanta.com]
   job: '0 */1 * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py fetch_all_order > /dev/null 2>&1'
 
 - hosts: [knot01.zemanta.com]
