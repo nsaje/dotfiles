@@ -27,7 +27,7 @@ def zwei_callback(request, action_id):
         _process_zwei_response(action, data)
     except Exception as e:
         msg = 'Zwei callback failed for action: {action_id}. Error: {error}, message: {message}'\
-              .format(action_id=action.id, error=e.__class_.__name__, message=repr(e.message))
+              .format(action_id=action.id, error=e.__class__.__name__, message=repr(e.message))
         logger.warning(msg)
 
         action.state = actionlogconstants.ActionState.FAILED
