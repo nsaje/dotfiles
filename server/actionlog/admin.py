@@ -9,18 +9,18 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
     search_fields = ('action', 'ad_group_network')
     list_filter = ('ad_group_network__network', 'state', 'action', 'action_type')
 
-    list_display = ('action', 'ad_group_network_', 'created_dt', 'action_type', 'state_')
+    list_display = ('action_', 'ad_group_network_', 'created_dt', 'action_type', 'state_')
 
     fields = (
-        'action', 'ad_group_network', 'state_', 'action_type',
+        'action_', 'ad_group_network', 'state_', 'action_type',
         'created_by', 'created_dt', 'modified_by', 'modified_dt',
-        'message_',
+        'payload', 'message_',
     )
 
     readonly_fields = (
-        'action', 'ad_group_network', 'state_', 'action_type',
+        'action_', 'ad_group_network', 'state_', 'action_type',
         'created_by', 'created_dt', 'modified_by', 'modified_dt',
-        'message_',
+        'payload', 'message_',
     )
 
     display_state_colors = {
@@ -48,6 +48,22 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
             network=obj.ad_group_network.network,
         )
     ad_group_network_.allow_tags = True
+
+    def action_(self, obj):
+        if obj.action == constants.Action.FETCH_REPORTS:
+            description = 'for {}'.format(obj.payload.get('args', {}).get('date'))
+        elif obj.action == constants.Action.SET_PROPERTY:
+            description = '{} to {}'.format(obj.payload.get('property'), obj.payload.get('value'))
+        elif obj.action == constants.Action.SET_CAMPAIGN_STATE:
+            description = 'to {}'.format(obj.payload.get('args', {}).get('state'))
+        else:
+            return obj.action
+
+        return '{action} <span style="color: #999;">{description}</span>'.format(
+            action=obj.action,
+            description=description,
+        )
+    action_.allow_tags = True
 
 
 admin.site.register(models.ActionLog, ActionLogAdminAdmin)
