@@ -403,7 +403,6 @@ class AdGroupAdsExport(api_common.BaseApiView):
             ('date', 'Date'),
             ('article', 'Title'),
             ('url', 'URL'),
-            ('network', 'Network'),
             ('cost', 'Cost'),
             ('cpc', 'CPC'),
             ('clicks', 'Clicks'),
