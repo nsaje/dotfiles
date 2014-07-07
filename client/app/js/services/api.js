@@ -1,7 +1,7 @@
 /*globals angular,oneApp,options,moment*/
 "use strict";
 
-oneApp.factory("api", ["$http", "$q", function($http, $q) {
+angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) {
     function NavData() {
         this.list = function () {
             var deferred = $q.defer();
@@ -46,7 +46,7 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
 
             return deferred.promise;
         };
-    } 
+    }
 
     function AdGroupNetworksTable() {
         this.get = function (id, startDate, endDate) {
@@ -295,12 +295,38 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
         };
     }
 
+
+    function ActionLog() {
+        this.get = function () {
+            var deferred = $q.defer();
+            var url = '/action_log/api/';
+            var config = {
+                params: {}
+            };
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    var resource;
+                    if (data && data.data) {
+                        resource = data.data.all_actions;
+                    }
+                    deferred.resolve(resource);
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     return {
         navData: new NavData(),
         user: new User(),
         adGroupSettings: new AdGroupSettings(),
         adGroupNetworksTable: new AdGroupNetworksTable(),
         adGroupAdsTable: new AdGroupAdsTable(),
-        adGroupNetworksDailyStats: new AdGroupNetworksDailyStats()
+        adGroupNetworksDailyStats: new AdGroupNetworksDailyStats(),
+        actionLog: new ActionLog()
     };
 }]);

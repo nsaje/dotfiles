@@ -4,8 +4,8 @@ from django import test
 from django import http
 import mock
 
-from dash import api_common
-from dash import exc
+from utils import api_common
+from utils import exc
 
 
 class BaseApiViewTestCase(test.TestCase):
@@ -27,7 +27,7 @@ class BaseApiViewTestCase(test.TestCase):
         self.assertEqual(response.status_code, 500)
         self.assertEqual(response.content, expected_content)
 
-    @mock.patch('dash.api_common.logger')
+    @mock.patch('utils.api_common.logger')
     def test_handle_custom_exception(self, logger_mock):
         request = http.HttpRequest()
         request._body = ''
@@ -47,7 +47,7 @@ class BaseApiViewTestCase(test.TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.content, expected_content)
 
-    @mock.patch('dash.api_common.logger')
+    @mock.patch('utils.api_common.logger')
     def test_handle_unknown_exception(self, logger_mock):
         request = http.HttpRequest()
         request._body = ''

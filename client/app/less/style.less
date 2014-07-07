@@ -519,13 +519,14 @@ div[datepicker] {
     .content {
         float: right;
 
-        a.contact,
-        a.contact:hover,
-        a.contact:active,
-        a.contact:visited {
+        a.header-link,
+        a.header-link:hover,
+        a.header-link:active,
+        a.header-link:visited {
             font-size: 15px;
             font-weight: normal;
             color: #414141;
+            margin-left: 10px;
         }
 
         .profile {
@@ -881,5 +882,20 @@ div[datepicker] {
         .checkbox {
             margin: 3px 20px
         }
+    }
+}
+
+.action-log-list {
+    .status.success {
+        color: #5cb85c;
+    }
+    .status.failed {
+        color: #d9534f;
+    }
+    .status.aborted {
+        color: #777;
+    }
+    .status.waiting {
+        color: #428bca;
     }
 }

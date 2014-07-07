@@ -9,14 +9,13 @@ from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import HttpResponse
 
 from utils import statsd_helper
+from utils import api_common
+from utils import exc
 import actionlog.api
 import reports.api
 
-from dash import api_common
-from dash import exc
 from dash import forms
 from dash import models
 from dash import api
@@ -70,6 +69,9 @@ class User(api_common.BaseApiView):
             result = {
                 'id': str(user.pk),
                 'email': user.email,
+                'permissions': {
+                    'actionlog_manual_view': user.has_perm('actionlog.manual_view'),
+                }
             }
 
         return result
