@@ -195,12 +195,22 @@ a:visited {
         }
 
         &.active > a {
+            &,
+            &:hover,
+            &:active,
+            &:visited {
+                border-top: 2px solid #2fa8c7;
+            }
+
             & > tab-heading {
                 & > a,
                 & > a:hover,
                 & > a:active,
                 & > a:visited {
                     font-weight: bold;
+                    margin-bottom: -1px;
+                    padding-top: 9px;
+                    padding-bottom: 11px;
                 }
             }
         }
@@ -208,7 +218,7 @@ a:visited {
         & > a {
             padding: 0px;
 
-            .border-radius(2px);
+            .border-radius(2px 2px 0 0);
 
             & > tab-heading {
                 & > a,
@@ -271,7 +281,6 @@ a:visited {
         border: 1px solid #ede652;
         font-size: 12px;
         font-color: #414141;
-        width: 700px;
     }
 }
 
@@ -729,6 +738,10 @@ div[datepicker] {
 }
 
 .page-ad-group-settings {
+    .alert-info {
+        width: 700px;
+    }
+
     .campaign-state-switch {
         padding-top: 15px;
         & > label {
@@ -827,6 +840,19 @@ div[datepicker] {
         display: inline-block;
         /*margin-top: 6px;*/
         /*margin-bottom: 9px;*/
+    }
+}
+
+.page-ad-group-ads,
+.page-ad-group-networks {
+    .alert-sync {
+        margin-bottom: 10px;
+    }
+
+    .last-sync {
+        text-align: center;
+        font-size: 12px;
+        color: #737373;
     }
 }
 
