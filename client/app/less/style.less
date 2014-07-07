@@ -24,10 +24,6 @@ body {
     font-family: @default-font-family
 }
 
-.body {
-    position: relative;
-}
-
 a,
 a:hover,
 a:active,
@@ -316,12 +312,14 @@ div[datepicker] {
 
     &.dropdown-menu {
         border: 1px solid #2fa8c7;
+        padding-top: 0;
     }
 
     &.opensleft {
         .ranges {
             margin-left: 0;
             margin-right: 0;
+            margin-top: 0;
         }
     }
 
@@ -410,6 +408,23 @@ div[datepicker] {
 }
 
 .chart-container {
+    position: relative;
+    .no-data {
+        position: absolute;
+        left: 0px;
+        right: 0px;
+        top: 148px;
+        z-index: 2;
+        text-align: center;
+        color: #2fa8c7;
+        font-size: 20px;
+        vertical-align: middle;
+
+        span {
+            background-color: #fff;
+        }
+    }
+
     .chart {
         height: 250px;
         margin-top: 5px;
@@ -506,32 +521,45 @@ div[datepicker] {
 // Custom page styles
 
 .header {
-    /*padding-top: 15px;*/
-    /*padding-bottom: 15px;*/
     height: 51px;
     line-height: 51px;
 
-    .logo {
-        height: 20px;
+    .logo-container {
+        width: 205px;
+        padding-left: 15px;
+        float: left;
+        .logo {
+            height: 20px;
+        }
     }
 
+    .breadcrumb-container {
+        float: left;
+        margin-left: 5px;
+    }
 
-    .content {
+    .profile-container {
         float: right;
+        padding-left: 15px;
+        padding-right: 15px;
 
-        a.contact,
-        a.contact:hover,
-        a.contact:active,
-        a.contact:visited {
-            font-size: 15px;
-            font-weight: normal;
-            color: #414141;
-        }
+        .content {
+            float: right;
 
-        .profile {
-            img {
-                height: 40px;
-                margin-top: -5px;
+            a.contact,
+            a.contact:hover,
+            a.contact:active,
+            a.contact:visited {
+                font-size: 15px;
+                font-weight: normal;
+                color: #414141;
+            }
+
+            .profile {
+                img {
+                    height: 40px;
+                    margin-top: -5px;
+                }
             }
         }
     }
@@ -553,6 +581,79 @@ div[datepicker] {
     .copyright {
         display: inline-block;
         margin: 0px 15px;
+    }
+}
+
+.body {
+    position: relative;
+
+    .sidebar {
+        position: absolute;
+        top: 0px;
+        bottom: 15px;
+        width: 205px;
+        padding-left: 15px;
+
+        #nav {
+            height: 100%;
+            border: 1px solid #d2d2d2;
+            padding: 5px;
+            overflow: auto;
+
+            .account-group {
+                padding-bottom: 10px;    
+            }
+
+            .list-group {
+                margin-bottom: 0;
+
+                &.ad-groups {
+                    padding-left: 5px;    
+                }
+            }
+
+            .list-group-item {
+                border: 0;   padding: 3px; 
+                &.active {
+                    color: #414141;
+                    background-color: #fff;    
+
+                    .ad-group-name {
+                        font-weight: 600;
+                    }
+                }
+            }
+
+            .account-name {
+                font-size: 16px;
+                font-weight: 600;
+                color: #f68620;
+            }
+
+            .campaign-name {
+                font-size: 14px;
+                font-weight: 600;
+                color: #414141;
+            }
+
+            .ad-group-name {
+                font-size: 13px;
+                font-weight: 300;
+                color: #414141;
+            }
+            
+            .ad-group-item img {
+                position: relative;
+                bottom: 3px;
+                width: 25px;
+                margin: -7px;
+             }
+        }
+    }
+
+    .content {
+        margin-left: 210px;
+        padding-right: 15px;
     }
 }
 
@@ -725,8 +826,8 @@ div[datepicker] {
         margin: 3px 12px;
         width: 11px;
         height: 12px;
-        border-left: 5px solid #c00;
-        border-right: 5px solid #c00;
+        border-left: 5px solid #b10000;
+        border-right: 5px solid #b10000;
     }
 
     td .play {
@@ -734,7 +835,7 @@ div[datepicker] {
         height: 0;
         border-style: solid;
         border-width: 5.5px 0 5.5px 9px;
-        border-color: transparent transparent transparent #0cc73e
+        border-color: transparent transparent transparent #219514
     }
 
     .loader-row {
@@ -800,68 +901,6 @@ div[datepicker] {
 /* pagination select */
 .select2-drop.select2-drop-above {
     font-weight: 300;
-}
-
-.sidebar {
-    position: absolute;
-    top: 0px;
-    bottom: 15px;
-
-    #nav {
-        height: 100%;
-        border: 1px solid #d2d2d2;
-        padding: 5px;
-        overflow: auto;
-
-        .account-group {
-            padding-bottom: 10px;    
-        }
-
-        .list-group {
-            margin-bottom: 0;
-
-            &.ad-groups {
-                padding-left: 5px;    
-            }
-        }
-
-        .list-group-item {
-            border: 0;   padding: 3px; 
-            &.active {
-                color: #414141;
-                background-color: #fff;    
-
-                .ad-group-name {
-                    font-weight: 600;
-                }
-            }
-        }
-
-        .account-name {
-            font-size: 16px;
-            font-weight: 600;
-            color: #f68620;
-        }
-
-        .campaign-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: #414141;
-        }
-
-        .ad-group-name {
-            font-size: 13px;
-            font-weight: 300;
-            color: #414141;
-        }
-        
-        .ad-group-item img {
-            position: relative;
-            bottom: 3px;
-            width: 25px;
-            margin: -7px;
-         }
-    }
 }
 
 .custom-cols.dropdown {

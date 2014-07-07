@@ -6,7 +6,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', 'api', 'ze
     $scope.chartMetric1 = constants.networkChartMetric.CLICKS;
     $scope.chartMetric2 = constants.networkChartMetric.IMPRESSIONS;
     $scope.dailyStats = [];
-    $scope.chartData = {};
+    $scope.chartData = undefined;
     $scope.isChartShown = true;
     $scope.chartBtnTitle = 'Hide chart';
     $scope.pagination = {

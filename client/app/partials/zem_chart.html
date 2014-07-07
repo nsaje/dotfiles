@@ -11,5 +11,6 @@
             <option ng-repeat="metric in metric2Values" value="{{ metric.value }}">{{ metric.name }}</option>
         </select>
     </div>
+    <div class="no-data" ng-show="!hasData"><span>No data</span></div>
     <div highchart config="config" class="chart"></div>
 </div>
