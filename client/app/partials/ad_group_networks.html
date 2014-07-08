@@ -25,7 +25,7 @@
             <thead>
                 <tr>
                     <th>Network</th>
-                    <th>Status</th>
+                    <th class="text-center">Status</th>
                     <th class="text-right" ng-repeat="col in columns | filter: {checked: true}">{{ col.name }}</th>
                 </tr>
             </thead>
@@ -40,7 +40,7 @@
                 </tr>
                 <tr ng-repeat="row in rows">
                     <td>{{ row.name }}</td>
-                    <td>
+                    <td class="text-center">
                         <div ng-if="row.status == constants.adGroupSettingsState.ACTIVE" class="play"></div>
                         <div ng-if="row.status == constants.adGroupSettingsState.INACTIVE" class="pause"></div>
                         <div ng-if="!row.status">N/A</div>
