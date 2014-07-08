@@ -120,7 +120,11 @@ def get_last_succesfull_fetch_all_networks_dates(ad_group):
 
 
 def _is_fetch_all_order_successful(order):
-    return not order.actionlog_set.exclude(state=constants.ActionState.SUCCESS).exists()
+    result = order.actionlog_set.\
+        exclude(state=constants.ActionState.SUCCESS).\
+        filter(ad_group_network__network__maintenance=False).\
+        exists()
+    return not result
 
 
 def _handle_error(action, e):
