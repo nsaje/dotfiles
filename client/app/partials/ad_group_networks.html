@@ -13,7 +13,7 @@
         </div>
 
         <alert type="info" class="alert-sync" ng-show="!isSyncRecent">
-            We are experiencing a delay synchronizing reporting metrics. The last successful sync took place {{ lastSyncDate.fromNow() }}. If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
+            We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">The last successful sync took place {{ lastSyncDate.fromNow() }}.</span> If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
         </alert>
 
         <table class="table">
@@ -85,6 +85,15 @@
             </tfoot>
         </table>
 
-        <div class="last-sync">* Reporting metrics synced {{ lastSyncDate.fromNow() }}.</div>
+        <div class="last-sync">
+            <span ng-switch="lastSyncDate">
+                <span ng-switch-when="null">
+                    * Reporting metrics haven't been synced yet.
+                </span>
+                <span ng-switch-default>
+                    * Reporting metrics synced {{ lastSyncDate.fromNow() }}.
+                </span>
+            </span>
+        </div>
     </div>
 </div>

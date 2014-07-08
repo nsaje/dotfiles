@@ -93,7 +93,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
-                $scope.lastSyncDate = moment(data.last_sync);
+                $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
                 $scope.isSyncRecent = data.is_sync_recent;
 
                 $scope.pagination = data.pagination;
