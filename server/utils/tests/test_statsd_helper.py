@@ -92,6 +92,20 @@ class StatsdHelperTestCase(unittest.TestCase):
         statsd_helper.statsd_incr('test.metric')
         self.assertTrue(self.mock_called)
 
+    @mock.patch('utils.statsd_helper.statsd.gauge')
+    def test_statsd_gauge(self, statsd_gauge_mock):
+        def fake_statsd_gauge(name, value):
+            self.assertEqual(name, 'one-testhost.test.metric')
+            self.mock_called = True
+            self.mock_value = value
+
+        statsd_gauge_mock.side_effect = fake_statsd_gauge
+
+        mock_value = 5
+        statsd_helper.statsd_gauge('test.metric', mock_value)
+        self.assertTrue(self.mock_called)
+        self.assertTrue(self.mock_value, mock_value)
+
     def test_get_source(self):
         self.assertEqual(statsd_helper.get_source(), 'one-testhost')
 

@@ -24,15 +24,17 @@ NUM_RECENT_HOURS = 2
 
 def run_fetch_all_order(dates):
     ad_groups = dashmodels.AdGroup.objects.all()
-    order = models.ActionLogOrder.objects.create(
-        order_type=constants.ActionLogOrderType.FETCH_ALL
-    )
 
-    for ad_group in ad_groups:
-        fetch_ad_group_status(ad_group, order=order)
+    with transaction.atomic():
+        order = models.ActionLogOrder.objects.create(
+            order_type=constants.ActionLogOrderType.FETCH_ALL
+        )
 
-        for date in dates:
-            fetch_ad_group_reports(ad_group, date, order=order)
+        for ad_group in ad_groups:
+            fetch_ad_group_status(ad_group, order=order)
+
+            for date in dates:
+                fetch_ad_group_reports(ad_group, date, order=order)
 
 
 def stop_ad_group(ad_group, network=None, order=None):
@@ -158,6 +160,7 @@ def _init_stop_campaign(ad_group_network, order):
             payload = {
                 'action': action.action,
                 'network': ad_group_network.network.type,
+                'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_network.network_credentials and
                     ad_group_network.network_credentials.credentials,
@@ -198,6 +201,7 @@ def _init_fetch_status(ad_group_network, order):
             payload = {
                 'action': action.action,
                 'network': ad_group_network.network.type,
+                'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_network.network_credentials and
                     ad_group_network.network_credentials.credentials,
@@ -238,6 +242,7 @@ def _init_fetch_reports(ad_group_network, date, order):
             payload = {
                 'action': action.action,
                 'network': ad_group_network.network.type,
+                'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_network.network_credentials and
                     ad_group_network.network_credentials.credentials,
@@ -286,6 +291,7 @@ def _init_set_campaign_property(ad_group_network, prop, value, order):
         action = models.ActionLog.objects.create(
             action=constants.Action.SET_PROPERTY,
             action_type=constants.ActionType.MANUAL,
+            expiration_dt=None,
             state=constants.ActionState.WAITING,
             ad_group_network=ad_group_network,
             payload=json.dumps({
