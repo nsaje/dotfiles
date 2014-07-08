@@ -326,8 +326,6 @@ class AdGroupNetworksTable(api_common.BaseApiView):
         last_success_actions = \
             actionlog_api.get_last_succesfull_fetch_all_networks_dates(ad_group)
 
-        print last_success_actions
-
         return self.create_api_response({
             'rows': self.get_rows(
                 ad_group,
