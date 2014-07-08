@@ -229,23 +229,34 @@ class ActionLogApiCancelExpiredTestCase(TestCase):
     fixtures = ['test_api.yaml', 'test_actionlog.yaml']
 
     @patch('actionlog.api.datetime', MockDateTime)
-    @patch('actionlog.models.ActionLog.save')
-    def test_cancel_expired_actionlogs(self, mock_save):
+    def test_cancel_expired_actionlogs(self):
 
-        self.num_calls = 0
-
-        def fake_save():
-            self.num_calls += 1
-
-        mock_save.side_effect = fake_save
+        waiting_actionlogs_before = models.ActionLog.objects.filter(
+            state=constants.ActionState.WAITING
+        )
+        self.assertEqual(len(waiting_actionlogs_before), 10)
 
         api.datetime.utcnow = classmethod(lambda cls: datetime.datetime(2014, 7, 3, 18, 15, 0))
         api.cancel_expired_actionlogs()
-        self.assertEqual(self.num_calls, 0)
+        waiting_actionlogs_after = models.ActionLog.objects.filter(
+            state=constants.ActionState.WAITING
+        )
+        self.assertEqual(len(waiting_actionlogs_after), 10)
+        self.assertSequenceEqual(
+            [action.id for action in waiting_actionlogs_before],
+            [action.id for action in waiting_actionlogs_after]
+        )
 
         api.datetime.utcnow = classmethod(lambda cls: datetime.datetime(2014, 7, 3, 18, 45, 0))
         api.cancel_expired_actionlogs()
-        self.assertEqual(self.num_calls, 10)
+        failed_actionlogs = models.ActionLog.objects.filter(
+            state=constants.ActionState.FAILED
+        )
+        self.assertEqual(len(failed_actionlogs), 10)
+        self.assertEqual(
+            [action.id for action in failed_actionlogs],
+            [action.id for action in waiting_actionlogs_after]
+        )
 
 
 class SetCampaignPropertyTestCase(TestCase):
