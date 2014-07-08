@@ -12,6 +12,8 @@ from actionlog import constants as actionlogconstants
 from reports import api as reportsapi
 from dash import api as dashapi
 
+from dash import models as dashmodels
+
 logger = logging.getLogger(__name__)
 
 
@@ -81,6 +83,11 @@ def _process_zwei_response(action, data):
         reportsapi.upsert_report(action.ad_group_network, rows, date)
     elif action.action == actionlogconstants.Action.FETCH_CAMPAIGN_STATUS:
         dashapi.campaign_status_upsert(action.ad_group_network, data['data'])
+    elif action.action == actionlogconstants.Action.SET_CAMPAIGN_STATE:
+        if 'args' in action.payload and 'state' in action.payload['args']:
+            state = action.payload['args']['state']
+            dashapi.update_campaign_state(action.ad_group_network, state)
+
 
     action.state = actionlogconstants.ActionState.SUCCESS
     action.save()
