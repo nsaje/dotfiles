@@ -5,6 +5,11 @@
 
     <div class="section table-ad-group-networks">
         <div class="button-bar">
+            <select ui-select2="{minimumResultsForSearch: -1}" ng-model="exportType" ng-change="downloadReport()" data-placeholder="Download Report" class="export">
+                <option value=""></option>
+                <option value="csv">CSV by day</option>
+                <option value="excel">Excel by day</option>
+            </select>
             <zem-custom-table-cols class='pull-right' columns='columns'></zem-custom-table-cols>
 
             <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/img/chart.svg"></a>
