@@ -70,6 +70,12 @@ def cancel_expired_actionlogs():
         )
 
     for actionlog in waiting_actionlogs:
+        logger.info(
+            'Actionlog %s has expired. Updating state to: %s.',
+            actionlog,
+            constants.ActionState.WAITING
+        )
+
         actionlog.state = constants.ActionState.WAITING
         actionlog.save()
 
