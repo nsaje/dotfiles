@@ -224,6 +224,30 @@ class ActionLogApiTestCase(TestCase):
             self.assertEqual(action.payload, payload)
 
 
+class ActionLogApiCancelExpiredTestCase(TestCase):
+
+    fixtures = ['test_api.yaml', 'test_actionlog.yaml']
+
+    @patch('actionlog.api.datetime', MockDateTime)
+    @patch('actionlog.models.ActionLog.save')
+    def test_cancel_expired_actionlogs(self, mock_save):
+
+        self.num_calls = 0
+
+        def fake_save():
+            self.num_calls += 1
+
+        mock_save.side_effect = fake_save
+
+        api.datetime.utcnow = classmethod(lambda cls: datetime.datetime(2014, 7, 3, 18, 15, 0))
+        api.cancel_expired_actionlogs()
+        self.assertEqual(self.num_calls, 0)
+
+        api.datetime.utcnow = classmethod(lambda cls: datetime.datetime(2014, 7, 3, 18, 45, 0))
+        api.cancel_expired_actionlogs()
+        self.assertEqual(self.num_calls, 10)
+
+
 class SetCampaignPropertyTestCase(TestCase):
 
     fixtures = ['test_api.yaml']

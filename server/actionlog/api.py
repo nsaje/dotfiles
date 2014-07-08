@@ -61,6 +61,19 @@ def set_ad_group_property(ad_group, network=None, prop=None, value=None, order=N
         _init_set_campaign_property(ad_group_network, prop, value, order)
 
 
+@transaction.atomic
+def cancel_expired_actionlogs():
+    waiting_actionlogs = models.ActionLog.objects.\
+        filter(
+            state=constants.ActionState.WAITING,
+            expiration_dt__lt=datetime.utcnow()
+        )
+
+    for actionlog in waiting_actionlogs:
+        actionlog.state = constants.ActionState.WAITING
+        actionlog.save()
+
+
 def is_waiting_for_set_actions(ad_group):
     actions = (constants.Action.SET_CAMPAIGN_STATE, constants.Action.SET_PROPERTY)
     states = (constants.ActionState.FAILED, constants.ActionState.WAITING)
