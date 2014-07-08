@@ -80,7 +80,6 @@ def is_waiting_for_set_actions(ad_group):
     except ObjectDoesNotExist:
         return False
     # check whether there are unsuccessful actions in this order
-    #filed_states = (constants.ActionState.FAILED, constants.ActionState.WAITING)
     is_fail_in_latest_group = models.ActionLog.objects.\
         filter(
             action__in=action_types,
