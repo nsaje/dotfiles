@@ -90,7 +90,6 @@ class AdGroupAdsExportTestCase(test.TestCase):
         response = views.AdGroupAdsExport().get(request, self.ad_group_id)
 
         expected_content = '''Date,Title,URL,Cost,CPC,Clicks,Impressions,CTR\r
-2014-06-30,Test Article with unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://www.example.com,0.00,0.00,0,0,0.00\r
 2014-07-01,Test Article with unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://www.example.com,1000.12,10.23,103,100000,1.03\r
 '''
 
@@ -132,10 +131,7 @@ class AdGroupAdsExportTestCase(test.TestCase):
 
         self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'])
 
-        self._assert_row(worksheet, 1, [41820.0, u'Test Article with unicode Čžš', 'http://www.example.com',
-            0, 0, 0, 0, 0])
-
-        self._assert_row(worksheet, 2, [41821.0, u'Test Article with unicode Čžš', 'http://www.example.com', 
+        self._assert_row(worksheet, 1, [41821.0, u'Test Article with unicode Čžš', 'http://www.example.com',
             1000.123242, 10.2334, 103, 100000, 0.01031231231])
 
         worksheet = workbook.sheet_by_name('Per Network Report')
@@ -143,14 +139,5 @@ class AdGroupAdsExportTestCase(test.TestCase):
 
         self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Network', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'])
 
-        self._assert_row(worksheet, 1, [41820.0, u'Test Article with unicode Čžš', 'http://www.example.com',
-            'Test Network 1', 0, 0, 0, 0, 0])
-        
-        self._assert_row(worksheet, 2, [41820.0, u'Test Article with unicode Čžš', 'http://www.example.com', 
-            'Test Network 2', 0, 0, 0, 0, 0])
-
-        self._assert_row(worksheet, 3, [41821.0, u'Test Article with unicode Čžš', 'http://www.example.com', 'Test Network 1',
+        self._assert_row(worksheet, 1, [41821.0, u'Test Article with unicode Čžš', 'http://www.example.com', 'Test Network 1',
             1000.123242, 10.2334, 103, 100000, 0.01031231231])
-
-        self._assert_row(worksheet, 4, [41821.0, u'Test Article with unicode Čžš', 'http://www.example.com', 
-            'Test Network 2', 0, 0, 0, 0, 0])

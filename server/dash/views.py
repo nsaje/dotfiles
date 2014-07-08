@@ -71,56 +71,20 @@ def generate_rows(dimensions, ad_group_id, start_date, end_date):
         ad_group=int(ad_group_id)
     )
 
-    # create lists of all dimension values
-    lists = []
-    for dimension in dimensions:
-        lists.append({
-            'date': daterange(start_date, end_date),
-            'network': models.Network.objects.all(),
-            'article': models.Article.objects.filter(ad_group=ad_group_id)
-        }[dimension])
+    if 'network' in dimensions:
+        networks = {network.id: network for network in models.Network.objects.all()}
+    if 'article' in dimensions:
+        articles = {article.id: article for article in models.Article.objects.filter(ad_group=ad_group_id)}
 
-    results = []
-
-    # iterate through all possible combinations of dimension values
-    # and generate a row for each (with actual data or default values)
-    for combination in itertools.product(*lists):
-        values = dict(zip(dimensions, combination))
-        results.append(get_row_data(values, data))
-
-    return results
-
-
-def get_row_data(values, data):
     for item in data:
-        if 'network' in values and item['network'] != values['network'].id:
-            continue
+        if 'network' in dimensions:
+            item['network'] = networks[item['network']].name
+        if 'article' in dimensions:
+            article = articles[item['article']]
+            item['article'] = article.title
+            item['url'] = article.url
 
-        if 'article' in values and item['article'] != values['article'].id:
-            continue
-
-        if 'date' in values and item['date'] != values['date']:
-            continue
-
-        result = item
-        break
-    else:
-        result = {
-            'date': values['date'],
-            'cost': 0,
-            'cpc': 0,
-            'clicks': 0,
-            'impressions': 0,
-            'ctr': 0
-        }
-
-    if 'network' in values:
-        result['network'] = values['network'].name
-    if 'article' in values:
-        result['article'] = values['article'].title
-        result['url'] = values['article'].url
-
-    return result
+    return data
 
 
 def write_excel_row(worksheet, row_index, column_data):
