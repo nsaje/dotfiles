@@ -12,7 +12,6 @@ from actionlog import constants as actionlogconstants
 from reports import api as reportsapi
 from dash import api as dashapi
 
-from dash import models as dashmodels
 
 logger = logging.getLogger(__name__)
 
