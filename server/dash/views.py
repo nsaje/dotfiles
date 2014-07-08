@@ -4,8 +4,9 @@ import logging
 import dateutil.parser
 from collections import OrderedDict
 import unicodecsv
-from xlwt import Workbook
+from xlwt import Workbook, Style
 import slugify
+import itertools
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -60,6 +61,65 @@ def get_stats_end_date(end_time):
         date = datetime.datetime.utcnow() - datetime.timedelta(days=STATS_END_DELTA)
 
     return date.date()
+
+
+def generate_rows(dimensions, ad_group_id, start_date, end_date):
+    data = api.query(
+        start_date,
+        end_date,
+        dimensions,
+        ad_group=int(ad_group_id)
+    )
+
+    if 'network' in dimensions:
+        networks = {network.id: network for network in models.Network.objects.all()}
+    if 'article' in dimensions:
+        articles = {article.id: article for article in models.Article.objects.filter(ad_group=ad_group_id)}
+
+    for item in data:
+        if 'network' in dimensions:
+            item['network'] = networks[item['network']].name
+        if 'article' in dimensions:
+            article = articles[item['article']]
+            item['article'] = article.title
+            item['url'] = article.url
+
+    return data
+
+
+def write_excel_row(worksheet, row_index, column_data):
+    for column_index, column_value in enumerate(column_data):
+        worksheet.write(
+            row_index,
+            column_index,
+            column_value[0],
+            column_value[1] if len(column_value) > 1 else Style.default_style
+        )
+
+
+def create_excel_worksheet(workbook, name, widths, header_names, data, transform_func):
+    worksheet = workbook.add_sheet(name)
+
+    for index, width in widths:
+        worksheet.col(index).width = width
+
+    worksheet.panes_frozen = True
+
+    for index, name in enumerate(header_names):
+        worksheet.write(0, index, name)
+
+    for index, item in enumerate(data):
+        write_excel_row(worksheet, index + 1, transform_func(item))
+
+
+def get_last_sucessful_sync_date():
+    last_successful_order = actionlog_api.get_last_successful_fetch_all_order()
+    if last_successful_order:
+        last_sync = last_successful_order.created_dt
+    else:
+        last_sync = None
+
+    return last_sync
 
 
 @statsd_helper.statsd_timer('dash', 'index')
@@ -263,9 +323,21 @@ class AdGroupNetworksTable(api_common.BaseApiView):
             ad_group=int(ad_group.id)
         )[0]
 
+        last_success_actions = \
+            actionlog_api.get_last_succesfull_fetch_all_networks_dates(ad_group)
+
+        print last_success_actions
+
         return self.create_api_response({
-            'rows': self.get_rows(ad_group, networks_data, network_settings),
-            'totals': self.get_totals(ad_group, totals_data, network_settings)
+            'rows': self.get_rows(
+                ad_group,
+                networks_data,
+                network_settings,
+                last_success_actions
+            ),
+            'totals': self.get_totals(ad_group, totals_data, network_settings),
+            'last_sync': get_last_sucessful_sync_date(),
+            'is_sync_recent': actionlog_api.is_fetch_all_data_recent(),
         })
 
     def get_totals(self, ad_group, totals_data, network_settings):
@@ -279,7 +351,7 @@ class AdGroupNetworksTable(api_common.BaseApiView):
             'ctr': totals_data['ctr'],
         }
 
-    def get_rows(self, ad_group, networks_data, network_settings):
+    def get_rows(self, ad_group, networks_data, network_settings, last_actions):
         rows = []
         for nid in constants.AdNetwork.get_all():
             try:
@@ -307,6 +379,7 @@ class AdGroupNetworksTable(api_common.BaseApiView):
                 'clicks': network_data.get('clicks', None),
                 'impressions': network_data.get('impressions', None),
                 'ctr': network_data.get('ctr', None),
+                'last_sync': last_actions.get(nid)
             })
 
         return rows
@@ -320,57 +393,26 @@ class AdGroupAdsExport(api_common.BaseApiView):
         start_date = get_stats_start_date(request.GET.get('start_date'))
         end_date = get_stats_end_date(request.GET.get('end_date'))
 
-        data = api.query(
-            start_date,
-            end_date,
-            ['network', 'article', 'date'],
-            ad_group=int(ad_group.id)
-        )
-
-        network_names = {network.id: network.name for network in models.Network.objects.all()}
-        articles = {article.id: article for article in models.Article.objects.filter(ad_group=ad_group.id)}
-
-        result = []
-        for date in daterange(start_date, end_date):
-            for article_id in articles:
-                for network_id in network_names:
-                    # Find item if exists
-                    for item in data:
-                        if item['network'] != network_id:
-                            continue
-
-                        if item['article'] != article_id:
-                            continue
-
-                        if item['date'] != date:
-                            continue
-
-                        item['network'] = network_names[network_id]
-                        item['article'] = articles[article_id].title
-                        item['url'] = articles[article_id].url
-
-                        result.append(item)
-
-                        break
-                    else:
-                        result.append({
-                            'article': articles[article_id].title,
-                            'url': articles[article_id].url,
-                            'network': network_names[network_id],
-                            'date': date,
-                            'cost': 0,
-                            'cpc': 0,
-                            'clicks': 0,
-                            'impressions': 0,
-                            'ctr': 0
-                        })
-
         filename = '%s_detailed_report_%s_%s' % (slugify.slugify(ad_group.name), start_date, end_date)
 
+        ads_results = generate_rows(
+            ['date', 'article'],
+            ad_group.id,
+            start_date,
+            end_date
+        )
+
         if request.GET.get('type') == 'excel':
-            return self.create_excel_response(result, filename)
+            networks_results = generate_rows(
+                ['date', 'network', 'article'],
+                ad_group_id,
+                start_date,
+                end_date
+            )
+
+            return self.create_excel_response(ads_results, networks_results, filename)
         else:
-            return self.create_csv_response(result, filename)
+            return self.create_csv_response(ads_results, filename)
 
     def create_csv_response(self, data, filename):
         response = self.create_file_response('text/csv; name="%s.csv"' % filename, '%s.csv' % filename)
@@ -379,6 +421,103 @@ class AdGroupAdsExport(api_common.BaseApiView):
             ('date', 'Date'),
             ('article', 'Title'),
             ('url', 'URL'),
+            ('cost', 'Cost'),
+            ('cpc', 'CPC'),
+            ('clicks', 'Clicks'),
+            ('impressions', 'Impressions'),
+            ('ctr', 'CTR')
+        ])
+
+        writer = unicodecsv.DictWriter(response, fieldnames, encoding='utf-8', dialect='excel')
+
+        # header
+        writer.writerow(fieldnames)
+
+        for item in data:
+            # Format
+            for key in ['cost', 'cpc', 'ctr']:
+                val = item[key]
+                if not isinstance(val, float):
+                    val = 0
+                item[key] = '{:.2f}'.format(val)
+
+            writer.writerow(item)
+
+        return response
+
+    def create_excel_response(self, ads_data, networks_data, filename):
+        response = self.create_file_response('application/octet-stream', '%s.xls' % filename)
+
+        workbook = Workbook(encoding='UTF-8')
+
+        create_excel_worksheet(
+            workbook,
+            'Detailed Report',
+            [(1, 6000), (2, 8000), (6, 3000)],
+            ['Date', 'Title', 'URL', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'],
+            ads_data,
+            lambda item: [
+                (item['date'], excel_styles.style_date),
+                (item['article'],),
+                (item['url'],),
+                (item['cost'] or 0, excel_styles.style_usd),
+                (item['cpc'] or 0, excel_styles.style_usd),
+                (item['clicks'] or 0,),
+                (item['impressions'] or 0,),
+                ((item['ctr'] or 0) / 100, excel_styles.style_percent)
+            ]
+        )
+
+        create_excel_worksheet(
+            workbook,
+            'Per Network Report',
+            [(1, 6000), (2, 8000), (3, 4000), (7, 3000)],
+            ['Date', 'Title', 'URL', 'Network', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'],
+            networks_data,
+            lambda item: [
+                (item['date'], excel_styles.style_date),
+                (item['article'],),
+                (item['url'],),
+                (item['network'],),
+                (item['cost'] or 0, excel_styles.style_usd),
+                (item['cpc'] or 0, excel_styles.style_usd),
+                (item['clicks'] or 0,),
+                (item['impressions'] or 0,),
+                ((item['ctr'] or 0) / 100, excel_styles.style_percent)
+            ]
+        )
+
+        workbook.save(response)
+        return response
+
+
+class AdGroupNetworksExport(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_networks_export_get')
+    def get(self, request, ad_group_id):
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        start_date = get_stats_start_date(request.GET.get('start_date'))
+        end_date = get_stats_end_date(request.GET.get('end_date'))
+
+        filename = '%s_per_networks_report_%s_%s' % (slugify.slugify(ad_group.name), start_date, end_date)
+
+        results = generate_rows(
+            ['date', 'network'],
+            ad_group.id,
+            start_date,
+            end_date
+        )
+
+        if request.GET.get('type') == 'excel':
+            return self.create_excel_response(results, filename)
+        else:
+            return self.create_csv_response(results, filename)
+
+    def create_csv_response(self, data, filename):
+        response = self.create_file_response('text/csv; name="%s.csv"' % filename, '%s.csv' % filename)
+
+        fieldnames = OrderedDict([
+            ('date', 'Date'),
             ('network', 'Network'),
             ('cost', 'Cost'),
             ('cpc', 'CPC'),
@@ -408,40 +547,25 @@ class AdGroupAdsExport(api_common.BaseApiView):
         response = self.create_file_response('application/octet-stream', '%s.xls' % filename)
 
         workbook = Workbook(encoding='UTF-8')
-        worksheet = workbook.add_sheet('Detailed Report')
 
-        worksheet.col(1).width = 6000
-        worksheet.col(2).width = 8000
-        worksheet.col(3).width = 4000
-        worksheet.col(7).width = 3000
-        worksheet.panes_frozen = True
-        row = 0
-
-        worksheet.write(row, 0, 'Date')
-        worksheet.write(row, 1, 'Title')
-        worksheet.write(row, 2, 'URL')
-        worksheet.write(row, 3, 'Network')
-        worksheet.write(row, 4, 'Cost')
-        worksheet.write(row, 5, 'CPC')
-        worksheet.write(row, 6, 'Clicks')
-        worksheet.write(row, 7, 'Impressions')
-        worksheet.write(row, 8, 'CTR')
-
-        for item in data:
-            row += 1
-
-            worksheet.write(row, 0, item['date'], excel_styles.style_date)
-            worksheet.write(row, 1, item['article'])
-            worksheet.write(row, 2, item['url'])
-            worksheet.write(row, 3, item['network'])
-            worksheet.write(row, 4, item['cost'] or 0, excel_styles.style_usd)
-            worksheet.write(row, 5, item['cpc'] or 0, excel_styles.style_usd)
-            worksheet.write(row, 6, item['clicks'] or 0)
-            worksheet.write(row, 7, item['impressions'] or 0)
-            worksheet.write(row, 8, (item['ctr'] or 0) / 100, excel_styles.style_percent)
+        create_excel_worksheet(
+            workbook,
+            'Per-Network Report',
+            [(1, 6000), (5, 3000)],
+            ['Date', 'Network', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'],
+            data,
+            lambda item: [
+                (item['date'], excel_styles.style_date),
+                (item['network'],),
+                (item['cost'] or 0, excel_styles.style_usd),
+                (item['cpc'] or 0, excel_styles.style_usd),
+                (item['clicks'] or 0,),
+                (item['impressions'] or 0,),
+                ((item['ctr'] or 0) / 100, excel_styles.style_percent)
+            ]
+        )
 
         workbook.save(response)
-
         return response
 
 
@@ -484,6 +608,8 @@ class AdGroupAdsTable(api_common.BaseApiView):
         return self.create_api_response({
             'rows': self.get_rows(ad_group, article_data, articles),
             'totals': self.get_totals(totals_data),
+            'last_sync': get_last_sucessful_sync_date(),
+            'is_sync_recent': actionlog_api.is_fetch_all_data_recent(),
             'pagination': {
                 'currentPage': articles.number,
                 'numPages': articles.paginator.num_pages,
@@ -540,5 +666,3 @@ class AdGroupDailyStats(api_common.BaseApiView):
         return self.create_api_response({
             'stats': stats
         })
-
-

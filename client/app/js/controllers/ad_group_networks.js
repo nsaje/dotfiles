@@ -1,6 +1,7 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api', 'zemCustomTableColsService', function ($scope, $state, $location, api, zemCustomTableColsService) {
+oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$window', 'api', 'zemCustomTableColsService', function ($scope, $state, $location, $window, api, zemCustomTableColsService) {
+    $scope.isSyncRecent = true;
     $scope.constants = constants;
     $scope.options = options;
     $scope.chartMetric1 = constants.networkChartMetric.CLICKS;
@@ -51,6 +52,12 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
             field: 'ctr',
             checked: true,
             type: 'percent'
+        },
+        {
+            name: 'Last Sync',
+            field: 'last_sync',
+            checked: false,
+            type: 'datetime'
         }
     ];
 
@@ -99,6 +106,8 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
+                $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
+                $scope.isSyncRecent = data.is_sync_recent;
             },
             function (data) {
                 // error
@@ -172,4 +181,10 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', 'api'
             $scope.setChartData();
         }
     });
+
+    // export
+    $scope.downloadReport = function() {
+        $window.open('api/ad_groups/' + $state.params.id + '/networks/export/?type=' + $scope.exportType + '&start_date=' + $scope.dateRange.startDate.format() + '&end_date=' + $scope.dateRange.endDate.format(), '_blank');
+        $scope.exportType = '';
+    };
 }]);

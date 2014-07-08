@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Max
 
 from . import models
 from . import constants
@@ -24,15 +25,17 @@ NUM_RECENT_HOURS = 2
 
 def run_fetch_all_order(dates):
     ad_groups = dashmodels.AdGroup.objects.all()
-    order = models.ActionLogOrder.objects.create(
-        order_type=constants.ActionLogOrderType.FETCH_ALL
-    )
 
-    for ad_group in ad_groups:
-        fetch_ad_group_status(ad_group, order=order)
+    with transaction.atomic():
+        order = models.ActionLogOrder.objects.create(
+            order_type=constants.ActionLogOrderType.FETCH_ALL
+        )
 
-        for date in dates:
-            fetch_ad_group_reports(ad_group, date, order=order)
+        for ad_group in ad_groups:
+            fetch_ad_group_status(ad_group, order=order)
+
+            for date in dates:
+                fetch_ad_group_reports(ad_group, date, order=order)
 
 
 def stop_ad_group(ad_group, network=None, order=None):
@@ -116,6 +119,24 @@ def get_last_successful_fetch_all_order():
     return None
 
 
+def get_last_succesfull_fetch_all_networks_dates(ad_group):
+    actions = (constants.Action.FETCH_REPORTS, constants.Action.FETCH_CAMPAIGN_STATUS)
+
+    actionlogs = models.ActionLog.objects.\
+        values('ad_group_network__network_id').\
+        filter(ad_group_network__ad_group_id=ad_group.id).\
+        filter(state=constants.ActionState.SUCCESS).\
+        filter(action__in=actions).\
+        annotate(created_dt=Max('created_dt'))
+
+    result = {}
+
+    for log in list(actionlogs):
+        result[log['ad_group_network__network_id']] = log['created_dt']
+
+    return result
+
+
 def _is_fetch_all_order_successful(order):
     return not order.actionlog_set.exclude(state=constants.ActionState.SUCCESS).exists()
 
@@ -157,6 +178,7 @@ def _init_stop_campaign(ad_group_network, order):
             payload = {
                 'action': action.action,
                 'network': ad_group_network.network.type,
+                'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_network.network_credentials and
                     ad_group_network.network_credentials.credentials,
@@ -197,6 +219,7 @@ def _init_fetch_status(ad_group_network, order):
             payload = {
                 'action': action.action,
                 'network': ad_group_network.network.type,
+                'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_network.network_credentials and
                     ad_group_network.network_credentials.credentials,
@@ -237,6 +260,7 @@ def _init_fetch_reports(ad_group_network, date, order):
             payload = {
                 'action': action.action,
                 'network': ad_group_network.network.type,
+                'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_network.network_credentials and
                     ad_group_network.network_credentials.credentials,
@@ -285,6 +309,7 @@ def _init_set_campaign_property(ad_group_network, prop, value, order):
         action = models.ActionLog.objects.create(
             action=constants.Action.SET_PROPERTY,
             action_type=constants.ActionType.MANUAL,
+            expiration_dt=None,
             state=constants.ActionState.WAITING,
             ad_group_network=ad_group_network,
             payload=json.dumps({

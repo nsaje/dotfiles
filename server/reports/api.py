@@ -34,6 +34,8 @@ def query(start_date, end_date, breakdown=None, **constraints):
     '''
     if not breakdown:
         breakdown = []
+    else:
+        breakdown = breakdown[:]  # create a copy to ensure that input list is not changed
 
     if not (set(breakdown) <= set(DIMENSIONS)):
         raise exc.ReportsQueryError('Invalid value for breakdown.')
