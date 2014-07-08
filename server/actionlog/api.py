@@ -80,17 +80,25 @@ def is_waiting_for_set_actions(ad_group):
     except ObjectDoesNotExist:
         return False
     # check whether there are unsuccessful actions in this order
-    unsuccessful_states = (constants.ActionState.FAILED, constants.ActionState.WAITING)
-    exists = models.ActionLog.objects.\
+    #filed_states = (constants.ActionState.FAILED, constants.ActionState.WAITING)
+    is_fail_in_latest_group = models.ActionLog.objects.\
         filter(
             action__in=action_types,
-            state__in=unsuccessful_states,
+            state=constants.ActionState.FAILED,
             ad_group_network__ad_group_id=ad_group.id,
             order=latest_action.order
         ).\
         exists()
 
-    return exists
+    is_any_waiting_action = models.ActionLog.objects.\
+        filter(
+            action__in=action_types,
+            state=constants.ActionState.WAITING,
+            ad_group_network__ad_group_id=ad_group.id,
+        ).\
+        exists()
+
+    return is_fail_in_latest_group or is_any_waiting_action
 
 
 def is_fetch_all_data_recent():
