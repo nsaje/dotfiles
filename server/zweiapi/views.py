@@ -83,9 +83,8 @@ def _process_zwei_response(action, data):
     elif action.action == actionlogconstants.Action.FETCH_CAMPAIGN_STATUS:
         dashapi.campaign_status_upsert(action.ad_group_network, data['data'])
     elif action.action == actionlogconstants.Action.SET_CAMPAIGN_STATE:
-        if 'args' in action.payload and 'state' in action.payload['args']:
-            state = action.payload['args']['state']
-            dashapi.update_campaign_state(action.ad_group_network, state)
+        state = action.payload['args']['state']
+        dashapi.update_campaign_state(action.ad_group_network, state)
 
 
     action.state = actionlogconstants.ActionState.SUCCESS
