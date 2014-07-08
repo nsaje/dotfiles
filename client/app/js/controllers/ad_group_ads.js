@@ -1,6 +1,8 @@
 /*globals oneApp,moment,constants,options*/
 oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', 'api', 'zemCustomTableColsService', function ($scope, $state, $location, $window, api, zemCustomTableColsService) {
     $scope.isSyncRecent = true;
+	$scope.selectedArticleIds = [];
+    $scope.selectedArticleTotals = true;
     $scope.constants = constants;
     $scope.options = options;
     $scope.chartMetric1 = constants.networkChartMetric.CLICKS;
@@ -97,6 +99,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
                 $scope.isSyncRecent = data.is_sync_recent;
 
                 $scope.pagination = data.pagination;
+
+                $scope.selectRows();
             },
             function (data) {
                 // error
@@ -108,7 +112,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     };
 
     $scope.getDailyStats = function () {
-        api.adGroupNetworksDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
+        api.adGroupNetworksDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedArticleIds).then(
             function (data) {
                 $scope.dailyStats = data;
                 $scope.setChartData();
@@ -119,6 +123,36 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             }
         );
     };
+
+	$scope.selectedArticlesChanged = function (articleId) {
+		var i = 0;
+		if (articleId) {
+			i = $scope.selectedArticleIds.indexOf(articleId);
+			if (i > -1) {
+				$scope.selectedArticleIds.splice(i, 1);
+			} else {
+				$scope.selectedArticleIds.push(articleId);
+			}
+
+			if ($scope.selectedArticleIds.length) {
+				$scope.selectedArticleTotals = false;
+			} else {
+				$scope.selectedArticleTotals = true;
+			}
+
+            $location.search('article_ids', $scope.selectedArticleIds.join(','));
+		} else {
+			$scope.selectedArticleIds = [];
+			$scope.rows.map(function (x) {x.checked = false;});
+			if (!$scope.selectedArticleTotals && !$scope.selectedArticleIds.length) {
+				$scope.selectedArticleTotals = true;
+			}
+
+            $location.search('article_ids', null);
+		}
+
+        $scope.getDailyStats();
+	};
 
     $scope.toggleChart = function () {
         $scope.isChartShown = !$scope.isChartShown;
@@ -146,6 +180,14 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         $scope.getTableData();
     });
 
+    $scope.selectRows = function () {
+        $scope.rows.forEach(function (x) {
+            if ($scope.selectedArticleIds.indexOf(x.id) > -1) {
+                x.checked = true;
+            }
+        });
+    };
+
     $scope.$on("$stateChangeSuccess", function() {
         var chartMetric1 = $location.search().chart_metric1;
         var chartMetric2 = $location.search().chart_metric2;
@@ -172,6 +214,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
 
         var page = $location.search().page;
         var size = $location.search().size;
+        var articleIds = $location.search().article_ids;
         var tableChanged = false;
 
         if (page !== undefined && $scope.pagination.currentPage !== page) {
@@ -186,6 +229,18 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         
         if (tableChanged) {
             $scope.loadPage();
+        }
+
+        if (articleIds) {
+            $scope.selectedArticleIds = articleIds.split(',');
+
+			if ($scope.selectedArticleIds) {
+				$scope.selectedArticleTotals = false;
+			}
+
+            if ($scope.rows) {
+                $scope.selectRows();
+            }
         }
     });
     

@@ -639,6 +639,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
                     break
 
             rows.append({
+                'id': str(article.pk),
                 'url': article.url,
                 'title': article.title,
                 'cost': data.get('cost', None),
@@ -656,11 +657,18 @@ class AdGroupDailyStats(api_common.BaseApiView):
     def get(self, request, ad_group_id):
         ad_group = get_ad_group(request.user, ad_group_id)
 
+        article_ids = request.GET.getlist('article_ids')
+
+        extra_kwargs = {}
+        if article_ids:
+            extra_kwargs['article_id'] = [int(x) for x in article_ids]
+
         stats = api.query(
             get_stats_start_date(request.GET.get('start_date')),
             get_stats_end_date(request.GET.get('end_date')),
             ['date'],
-            ad_group=int(ad_group.id)
+            ad_group=int(ad_group.id),
+            **extra_kwargs
         )
 
         return self.create_api_response({

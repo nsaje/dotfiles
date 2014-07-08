@@ -22,6 +22,7 @@
         <table class="table">
             <thead>
                 <tr>
+                    <th></th>
                     <th colspan="2">Title</th>
                     <th class="text-right" ng-repeat="col in columns | filter: {checked: true}">{{ col.name }}</th>
                 </tr>
@@ -36,6 +37,7 @@
                     <td class="no-data" colspan="7">No data</td>
                 </tr>
                 <tr ng-repeat="row in rows">
+                    <td class="input-one-char"><input type="checkbox" data-ng-model="row.checked" data-ng-change="selectedArticlesChanged(row.id)"/></td>
                     <td colspan="2"><a href="{{ row.url }}">{{ row.title }}</a></td>
                     <td class="text-right number" ng-repeat="col in columns | filter: {checked: true}">
                         <span ng-switch="col.type">
@@ -54,6 +56,7 @@
             </tbody>
             <tfoot>
                 <tr>
+                    <td class="input-one-char"><input type="checkbox" data-ng-model="selectedArticleTotals" data-ng-change="selectedArticlesChanged(null)"/></td>
                     <td colspan="2">TOTALS</td>
                     <td class="text-right number" ng-repeat="col in columns | filter: {checked: true}">
                         <span ng-switch="col.type">
