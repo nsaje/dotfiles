@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import transaction
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Max
 
 from . import models
@@ -42,6 +43,12 @@ def stop_ad_group(ad_group, network=None, order=None):
     for ad_group_network in ad_group_networks:
         _init_stop_campaign(ad_group_network, order)
 
+def stop_ad_group_order(ad_group, network=None):
+    order = models.ActionLogOrder.objects.create(
+        order_type=constants.ActionLogOrderType.STOP_ALL
+    )
+    stop_ad_group(ad_group, network, order)
+
 
 def fetch_ad_group_status(ad_group, network=None, order=None):
     ad_group_networks = _get_ad_group_networks(ad_group, network)
@@ -61,18 +68,55 @@ def set_ad_group_property(ad_group, network=None, prop=None, value=None, order=N
         _init_set_campaign_property(ad_group_network, prop, value, order)
 
 
-def is_waiting_for_set_actions(ad_group):
-    actions = (constants.Action.SET_CAMPAIGN_STATE, constants.Action.SET_PROPERTY)
-    states = (constants.ActionState.FAILED, constants.ActionState.WAITING)
-    exists = models.ActionLog.objects.\
+@transaction.atomic
+def cancel_expired_actionlogs():
+    waiting_actionlogs = models.ActionLog.objects.\
         filter(
-            action__in=actions,
-            state__in=states,
-            ad_group_network__ad_group_id=ad_group.id
+            state=constants.ActionState.WAITING,
+            expiration_dt__lt=datetime.utcnow()
+        )
+
+    for actionlog in waiting_actionlogs:
+        logger.info(
+            'Actionlog %s has expired. Updating state to: %s.',
+            actionlog,
+            constants.ActionState.FAILED
+        )
+
+        actionlog.state = constants.ActionState.FAILED
+        actionlog.save()
+
+
+def is_waiting_for_set_actions(ad_group):
+    action_types = (constants.Action.SET_CAMPAIGN_STATE, constants.Action.SET_PROPERTY)
+    # get latest action for ad_group where order != null
+    try:
+        latest_action = models.ActionLog.objects.filter(
+            action__in=action_types,
+            ad_group_network__ad_group_id=ad_group.id,
+            order__isnull=False
+        ).latest('created_dt')
+    except ObjectDoesNotExist:
+        return False
+    # check whether there are unsuccessful actions in this order
+    is_fail_in_latest_group = models.ActionLog.objects.\
+        filter(
+            action__in=action_types,
+            state=constants.ActionState.FAILED,
+            ad_group_network__ad_group_id=ad_group.id,
+            order=latest_action.order
         ).\
         exists()
 
-    return exists
+    is_any_waiting_action = models.ActionLog.objects.\
+        filter(
+            action__in=action_types,
+            state=constants.ActionState.WAITING,
+            ad_group_network__ad_group_id=ad_group.id,
+        ).\
+        exists()
+
+    return is_fail_in_latest_group or is_any_waiting_action
 
 
 def is_fetch_all_data_recent():

@@ -9,18 +9,18 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
     search_fields = ('action', 'ad_group_network')
     list_filter = ('ad_group_network__network', 'state', 'action', 'action_type')
 
-    list_display = ('action', 'ad_group_network_', 'created_dt', 'action_type', 'state_')
+    list_display = ('action', 'ad_group_network_', 'created_dt', 'action_type', 'state_', 'order_')
 
     fields = (
-        'action', 'ad_group_network', 'state_', 'action_type',
+        'action', 'ad_group_network', 'state', 'action_type',
         'created_by', 'created_dt', 'modified_by', 'modified_dt',
-        'message_',
+        'message_', 'order_',
     )
 
     readonly_fields = (
-        'action', 'ad_group_network', 'state_', 'action_type',
+        'action', 'ad_group_network', 'action_type',
         'created_by', 'created_dt', 'modified_by', 'modified_dt',
-        'message_',
+        'message_', 'order_',
     )
 
     display_state_colors = {
@@ -41,6 +41,12 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
     def message_(self, obj):
         return '<div style="overflow: hidden"><pre style="color: #000;">{}</pre></div>'.format(obj.message)
     message_.allow_tags = True
+
+    def order_(self, obj):
+        if obj.order is not None:
+            return obj.order.id
+        else:
+            return 'n/a'
 
     def ad_group_network_(self, obj):
         return '<a href="{ad_group_url}">{ad_group}</a>: {network}'.format(

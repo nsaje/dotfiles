@@ -69,3 +69,16 @@ class CampaignStatusApiTest(TestCase):
             self.ad_group_network.settings.latest().daily_budget_cc,
             decimal.Decimal(new_daily_budget_cc) / 10000
         )
+
+    def test_update_campaign_state_unmodified(self):
+        current_settings = self.ad_group_network.settings.latest()
+        state = current_settings.state
+        api.update_campaign_state(self.ad_group_network, state)
+        self.assertEqual(current_settings, self.ad_group_network.settings.latest())
+
+    def test_update_campaign_state_modified(self):
+        current_settings = self.ad_group_network.settings.latest()
+        new_state = current_settings.state % 2 + 1
+        api.update_campaign_state(self.ad_group_network, new_state)
+        self.assertNotEqual(current_settings, self.ad_group_network.settings.latest())
+        self.assertEqual(self.ad_group_network.settings.latest().state, new_state)
