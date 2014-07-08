@@ -370,6 +370,7 @@ class AdGroupNetworksTable(api_common.BaseApiView):
                     break
 
             rows.append({
+                'id': str(nid),
                 'name': settings.ad_group_network.network.name,
                 'status': settings.state,
                 'bid_cpc': float(settings.cpc_cc) if settings.cpc_cc is not None else None,
@@ -658,10 +659,14 @@ class AdGroupDailyStats(api_common.BaseApiView):
         ad_group = get_ad_group(request.user, ad_group_id)
 
         article_ids = request.GET.getlist('article_ids')
+        network_ids = request.GET.getlist('network_ids')
 
         extra_kwargs = {}
         if article_ids:
             extra_kwargs['article_id'] = [int(x) for x in article_ids]
+
+        if network_ids:
+            extra_kwargs['network_id'] = [int(x) for x in network_ids]
 
         stats = api.query(
             get_stats_start_date(request.GET.get('start_date')),

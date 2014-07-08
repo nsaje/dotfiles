@@ -130,7 +130,7 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
             return result;
         }
 
-        this.list = function (adGroupId, startDate, endDate, articleIds) {
+        this.list = function (adGroupId, startDate, endDate, articleIds, networkIds) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/daily_stats/';
             var config = {
@@ -147,6 +147,10 @@ oneApp.factory("api", ["$http", "$q", function($http, $q) {
 
             if (articleIds) {
                 config.params.article_ids = articleIds;
+            }
+
+            if (networkIds) {
+                config.params.network_ids = networkIds;
             }
 
             $http.get(url, config).

@@ -2,6 +2,8 @@
 
 oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$window', 'api', 'zemCustomTableColsService', function ($scope, $state, $location, $window, api, zemCustomTableColsService) {
     $scope.isSyncRecent = true;
+    $scope.selectedNetworkIds = [];
+    $scope.selectedNetworkTotals = true;
     $scope.constants = constants;
     $scope.options = options;
     $scope.chartMetric1 = constants.networkChartMetric.CLICKS;
@@ -108,6 +110,8 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
                 $scope.totals = data.totals;
                 $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
                 $scope.isSyncRecent = data.is_sync_recent;
+
+                $scope.selectNetworks();
             },
             function (data) {
                 // error
@@ -119,7 +123,7 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
     };
 
     $scope.getDailyStats = function () {
-        api.adGroupNetworksDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
+        api.adGroupNetworksDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, $scope.selectedNetworkIds).then(
             function (data) {
                 $scope.dailyStats = data;
                 $scope.setChartData();
@@ -129,6 +133,37 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
                 return;
             }
         );
+    };
+
+    $scope.selectedNetworksChanged = function (networkId) {
+        console.log("net");
+        var i = 0;
+        if (networkId) {
+            i = $scope.selectedNetworkIds.indexOf(networkId);
+            if (i > -1) {
+                $scope.selectedNetworkIds.splice(i, 1);
+            } else {
+                $scope.selectedNetworkIds.push(networkId);
+            }
+
+            if ($scope.selectedNetworkIds.length) {
+                $scope.selectedNetworkTotals = false;
+            } else {
+                $scope.selectedNetworkTotals = true;
+            }
+
+            $location.search('network_ids', $scope.selectedNetworkIds.join(','));
+        } else {
+            $scope.selectedNetworkIds = [];
+            $scope.rows.map(function (x) {x.checked = false;});
+            if (!$scope.selectedNetworkTotals && !$scope.selectedNetworkIds.length) {
+                $scope.selectedNetworkTotals = true;
+            }
+
+            $location.search('network_ids', null);
+        }
+
+        $scope.getDailyStats();
     };
 
     $scope.toggleChart = function () {
@@ -157,10 +192,19 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
         $scope.getTableData();
     });
 
+    $scope.selectNetworks = function () {
+        $scope.rows.forEach(function (x) {
+            if ($scope.selectedNetworkIds.indexOf(x.id) > -1) {
+                x.checked = true;
+            }
+        });
+    };
+
     $scope.$on("$stateChangeSuccess", function() {
         var chartMetric1 = $location.search().chart_metric1;
         var chartMetric2 = $location.search().chart_metric2;
         var chartHidden = $location.search().chart_hidden;
+        var networkIds = $location.search().network_ids;
         var changed = false;
 
         if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
@@ -175,6 +219,18 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
 
         if (chartHidden) {
             $scope.isChartShown = false;
+        }
+
+        if (networkIds) {
+            $scope.selectedNetworkIds = networkIds.split(',');
+
+            if ($scope.selectedNetworkIds) {
+                $scope.selectedNetworkTotals = false;
+            }
+
+            if ($scope.rows) {
+                $scope.selectNetworks();
+            }
         }
 
         if (changed) {
