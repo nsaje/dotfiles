@@ -1,9 +1,17 @@
 import jsonfield
 
+from datetime import datetime, timedelta
+
 from django.db import models
 from django.conf import settings
 
 from . import constants
+
+ACTION_TIMEOUT_MINUTES = 30
+
+
+def _due_date_default():
+    return datetime.utcnow() + timedelta(minutes=ACTION_TIMEOUT_MINUTES)
 
 
 class ActionLogOrder(models.Model):
@@ -45,6 +53,12 @@ class ActionLog(models.Model):
         ActionLogOrder,
         null=True,
         blank=True,
+    )
+
+    expiration_dt = models.DateTimeField(
+        null=True,
+        blank=True,
+        default=_due_date_default,
     )
 
     created_dt = models.DateTimeField(

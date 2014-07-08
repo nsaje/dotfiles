@@ -25,3 +25,7 @@ def statsd_timer(path, name=None):
 
 def statsd_incr(name):
     statsd.incr('{0}.{1}'.format(get_source(), name))
+
+
+def statsd_gauge(name, value):
+    statsd.gauge('{0}.{1}'.format(get_source(), name), value)
