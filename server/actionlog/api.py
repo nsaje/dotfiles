@@ -68,6 +68,25 @@ def set_ad_group_property(ad_group, network=None, prop=None, value=None, order=N
         _init_set_campaign_property(ad_group_network, prop, value, order)
 
 
+@transaction.atomic
+def cancel_expired_actionlogs():
+    waiting_actionlogs = models.ActionLog.objects.\
+        filter(
+            state=constants.ActionState.WAITING,
+            expiration_dt__lt=datetime.utcnow()
+        )
+
+    for actionlog in waiting_actionlogs:
+        logger.info(
+            'Actionlog %s has expired. Updating state to: %s.',
+            actionlog,
+            constants.ActionState.FAILED
+        )
+
+        actionlog.state = constants.ActionState.FAILED
+        actionlog.save()
+
+
 def is_waiting_for_set_actions(ad_group):
     action_types = (constants.Action.SET_CAMPAIGN_STATE, constants.Action.SET_PROPERTY)
     # get latest action for ad_group where order != null
