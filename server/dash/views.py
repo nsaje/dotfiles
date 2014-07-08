@@ -67,10 +67,11 @@ def generate_rows(dimensions, ad_group_id, start_date, end_date):
     data = api.query(
         start_date,
         end_date,
-        dimensions[:],  # necessery because api.query() changes input list
+        dimensions,
         ad_group=int(ad_group_id)
     )
 
+    # create lists of all dimension values
     lists = []
     for dimension in dimensions:
         lists.append({
@@ -80,41 +81,46 @@ def generate_rows(dimensions, ad_group_id, start_date, end_date):
         }[dimension])
 
     results = []
+
+    # iterate through all possible combinations of dimension values
+    # and generate a row for each (with actual data or default values)
     for combination in itertools.product(*lists):
         values = dict(zip(dimensions, combination))
-
-        result = None
-        for item in data:
-            if 'network' in dimensions and item['network'] != values['network'].id:
-                continue
-
-            if 'article' in dimensions and item['article'] != values['article'].id:
-                continue
-
-            if 'date' in dimensions and item['date'] != values['date']:
-                continue
-
-            result = item
-            break
-        else:
-            result = {
-                'date': values['date'],
-                'cost': 0,
-                'cpc': 0,
-                'clicks': 0,
-                'impressions': 0,
-                'ctr': 0
-            }
-
-        if 'network' in values:
-            result['network'] = values['network'].name
-        if 'article' in values:
-            result['article'] = values['article'].title
-            result['url'] = values['article'].url
-
-        results.append(result)
+        results.append(get_row_data(values, data))
 
     return results
+
+
+def get_row_data(values, data):
+    for item in data:
+        if 'network' in values and item['network'] != values['network'].id:
+            continue
+
+        if 'article' in values and item['article'] != values['article'].id:
+            continue
+
+        if 'date' in values and item['date'] != values['date']:
+            continue
+
+        result = item
+        break
+    else:
+        result = {
+            'date': values['date'],
+            'cost': 0,
+            'cpc': 0,
+            'clicks': 0,
+            'impressions': 0,
+            'ctr': 0
+        }
+
+    if 'network' in values:
+        result['network'] = values['network'].name
+    if 'article' in values:
+        result['article'] = values['article'].title
+        result['url'] = values['article'].url
+
+    return result
 
 
 def write_excel_row(worksheet, row_index, column_data):
@@ -581,7 +587,7 @@ class AdGroupNetworksExport(api_common.BaseApiView):
         create_excel_worksheet(
             workbook,
             'Per-Network Report',
-            [(1, 6000), (4, 3000)],
+            [(1, 6000), (5, 3000)],
             ['Date', 'Network', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'],
             data,
             lambda item: [
