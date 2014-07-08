@@ -15,11 +15,11 @@
                         State
                         <div class="btn-group" dropdown is-open="dropdownIsOpen">
                             <button type="button" class="btn btn-default btn-xs dropdown-toggle">
-                                {{filterSelected.state[1]}} <span class="caret"></span>
+                                {{filters.selected.state[1]}} <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu filter-dropdown" role="menu">
-                                <li ng-repeat="choice in filterItems.state">
-                                    <a href="" ng-click="updateFilter('state', choice)">{{choice[1]}}</a>
+                                <li ng-repeat="choice in filters.items.state">
+                                    <a href="" ng-click="filters.update('state', choice)">{{choice[1]}}</a>
                                 </li>
                             </ul>
                         </div>

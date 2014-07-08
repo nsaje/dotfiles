@@ -11,6 +11,7 @@ oneActionLogApp.config(['$httpProvider', function ($httpProvider) {
     $httpProvider.defaults.xsrfCookieName = 'csrftoken';
 }]);
 
+var locationSearch;
 oneActionLogApp.run(['$state', '$rootScope', '$location', 'config', function($state, $rootScope, $location, config) {
     $rootScope.config = config;
     $rootScope.$state = $state;
