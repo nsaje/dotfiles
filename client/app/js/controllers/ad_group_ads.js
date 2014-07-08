@@ -1,7 +1,7 @@
 /*globals oneApp,moment,constants,options*/
 oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', 'api', 'zemCustomTableColsService', function ($scope, $state, $location, $window, api, zemCustomTableColsService) {
     $scope.isSyncRecent = true;
-	$scope.selectedArticleIds = [];
+    $scope.selectedArticleIds = [];
     $scope.selectedArticleTotals = true;
     $scope.constants = constants;
     $scope.options = options;
@@ -124,35 +124,35 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         );
     };
 
-	$scope.selectedArticlesChanged = function (articleId) {
-		var i = 0;
-		if (articleId) {
-			i = $scope.selectedArticleIds.indexOf(articleId);
-			if (i > -1) {
-				$scope.selectedArticleIds.splice(i, 1);
-			} else {
-				$scope.selectedArticleIds.push(articleId);
-			}
+    $scope.selectedArticlesChanged = function (articleId) {
+        var i = 0;
+        if (articleId) {
+            i = $scope.selectedArticleIds.indexOf(articleId);
+            if (i > -1) {
+                $scope.selectedArticleIds.splice(i, 1);
+            } else {
+                $scope.selectedArticleIds.push(articleId);
+            }
 
-			if ($scope.selectedArticleIds.length) {
-				$scope.selectedArticleTotals = false;
-			} else {
-				$scope.selectedArticleTotals = true;
-			}
+            if ($scope.selectedArticleIds.length) {
+                $scope.selectedArticleTotals = false;
+            } else {
+                $scope.selectedArticleTotals = true;
+            }
 
             $location.search('article_ids', $scope.selectedArticleIds.join(','));
-		} else {
-			$scope.selectedArticleIds = [];
-			$scope.rows.map(function (x) {x.checked = false;});
-			if (!$scope.selectedArticleTotals && !$scope.selectedArticleIds.length) {
-				$scope.selectedArticleTotals = true;
-			}
+        } else {
+            $scope.selectedArticleIds = [];
+            $scope.rows.map(function (x) {x.checked = false;});
+            if (!$scope.selectedArticleTotals && !$scope.selectedArticleIds.length) {
+                $scope.selectedArticleTotals = true;
+            }
 
             $location.search('article_ids', null);
-		}
+        }
 
         $scope.getDailyStats();
-	};
+    };
 
     $scope.toggleChart = function () {
         $scope.isChartShown = !$scope.isChartShown;
@@ -234,9 +234,9 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         if (articleIds) {
             $scope.selectedArticleIds = articleIds.split(',');
 
-			if ($scope.selectedArticleIds) {
-				$scope.selectedArticleTotals = false;
-			}
+            if ($scope.selectedArticleIds) {
+                $scope.selectedArticleTotals = false;
+            }
 
             if ($scope.rows) {
                 $scope.selectRows();
