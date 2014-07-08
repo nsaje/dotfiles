@@ -100,7 +100,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
 
                 $scope.pagination = data.pagination;
 
-                $scope.selectRows();
+                $scope.selectArticles();
             },
             function (data) {
                 // error
@@ -180,7 +180,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         $scope.getTableData();
     });
 
-    $scope.selectRows = function () {
+    $scope.selectArticles = function () {
         $scope.rows.forEach(function (x) {
             if ($scope.selectedArticleIds.indexOf(x.id) > -1) {
                 x.checked = true;
@@ -239,7 +239,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             }
 
             if ($scope.rows) {
-                $scope.selectRows();
+                $scope.selectArticles();
             }
         }
     });
