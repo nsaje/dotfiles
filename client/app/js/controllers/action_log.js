@@ -97,6 +97,25 @@ oneActionLogApp.controller('ActionLogCtrl', ['$scope', '$state', '$location', 'a
         }
     };
 
+    $scope.$watch('actionLogItems', function (newVal, oldVal) {
+        if (!newVal) {
+            return;
+        }
+
+        var orderPrevious = null, orderClassVal = 0;
+        var getOrderClass = function (log) {
+            if (log.order !== orderPrevious) {
+                orderPrevious = log.order;
+                orderClassVal ^= 1;
+            }
+            return 'order-class-' + orderClassVal;
+        };
+
+        newVal.map(function (log) {
+            log.orderClass = getOrderClass(log);
+        });
+    });
+
     var updateActionLog = function () {
         var query_filters = $scope.filters.getSearchFilters();
 

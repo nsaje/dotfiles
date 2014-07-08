@@ -43,10 +43,10 @@
                 <tr ng-show="!actionLogItems.length && !loadRequestInProgress">
                     <td class="no-data" colspan="7">No data available.</td>
                 </tr>
-                <tr ng-repeat="log in actionLogItems">
+                <tr ng-repeat="log in actionLogItems" ng-class="log.orderClass">
                     <td>
                         <div class="btn-group">
-                            <label ng-repeat="state in states" ng-click="updateState(log, state)" class="btn btn-default btn-xs {{stateClass(log, state)}}">{{state[0]}}</label>
+                            <label ng-repeat="state in states" ng-click="updateState(log, state)" class="btn btn-default btn-xs" ng-class="stateClass(log, state)">{{state[0]}}</label>
                         </div>
                     </td>
                     <td><strong>{{log.take_action}}</strong></td>
