@@ -98,6 +98,25 @@ class NetworkCredentialsForm(forms.ModelForm):
             del self.cleaned_data['credentials']
 
 
+class AdGroupNetworkForm(forms.ModelForm):
+
+    def clean(self):
+
+        # This is a hack to bypass a bug in django-jsonfield which doesn't
+        # handle unique constraints on models very well. The unique field
+        # in this case should actually be removed, but the current Django
+        # version we are using (1.7 RC1) has a bug that crashes the
+        # application when trying to remove the unique constraints.
+        #
+        # When a more stable version of Django is used, this should be
+        # removed, along with the unique constraint in the models on
+        # network_id and network_campaign_key
+        if 'network_campaign_key' in self.cleaned_data:
+            self.cleaned_data['network_campaign_key'] = json.dumps(self.cleaned_data['network_campaign_key'])
+
+        return self.cleaned_data
+
+
 # Account
 
 class AccountUserInline(admin.TabularInline):
@@ -197,6 +216,7 @@ class NetworkCredentialsAdmin(admin.ModelAdmin):
 # Ad Group
 
 class AdGroupNetworksInline(admin.TabularInline):
+    form = AdGroupNetworkForm
     verbose_name = "Ad Group's Network"
     verbose_name_plural = "Ad Group's Networks"
     model = models.AdGroupNetwork

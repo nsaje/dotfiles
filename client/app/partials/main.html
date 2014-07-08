@@ -56,6 +56,7 @@
             <tabset class="zem-tabset">
                 <tab ng-repeat="tab in tabs" active="tab.active">
                     <tab-heading>
+                        <div class="tab-top"></div>
                         <a ng-click="$state.go(tab.route, { id: $state.params.id })" ng-href="{{ $state.href(tab.route, { id: $state.params.id }) + getCurrentParams() }}">{{ tab.heading }}</a>
                     </tab-heading>
                 </tab>

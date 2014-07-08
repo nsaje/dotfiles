@@ -142,6 +142,16 @@ def create_excel_worksheet(workbook, name, widths, header_names, data, transform
         write_excel_row(worksheet, index + 1, transform_func(item))
 
 
+def get_last_sucessful_sync_date():
+    last_successful_order = actionlog_api.get_last_successful_fetch_all_order()
+    if last_successful_order:
+        last_sync = last_successful_order.created_dt
+    else:
+        last_sync = None
+
+    return last_sync
+
+
 @statsd_helper.statsd_timer('dash', 'index')
 @login_required
 def index(request):
@@ -343,9 +353,21 @@ class AdGroupNetworksTable(api_common.BaseApiView):
             ad_group=int(ad_group.id)
         )[0]
 
+        last_success_actions = \
+            actionlog_api.get_last_succesfull_fetch_all_networks_dates(ad_group)
+
+        print last_success_actions
+
         return self.create_api_response({
-            'rows': self.get_rows(ad_group, networks_data, network_settings),
-            'totals': self.get_totals(ad_group, totals_data, network_settings)
+            'rows': self.get_rows(
+                ad_group,
+                networks_data,
+                network_settings,
+                last_success_actions
+            ),
+            'totals': self.get_totals(ad_group, totals_data, network_settings),
+            'last_sync': get_last_sucessful_sync_date(),
+            'is_sync_recent': actionlog_api.is_fetch_all_data_recent(),
         })
 
     def get_totals(self, ad_group, totals_data, network_settings):
@@ -359,7 +381,7 @@ class AdGroupNetworksTable(api_common.BaseApiView):
             'ctr': totals_data['ctr'],
         }
 
-    def get_rows(self, ad_group, networks_data, network_settings):
+    def get_rows(self, ad_group, networks_data, network_settings, last_actions):
         rows = []
         for nid in constants.AdNetwork.get_all():
             try:
@@ -387,6 +409,7 @@ class AdGroupNetworksTable(api_common.BaseApiView):
                 'clicks': network_data.get('clicks', None),
                 'impressions': network_data.get('impressions', None),
                 'ctr': network_data.get('ctr', None),
+                'last_sync': last_actions.get(nid)
             })
 
         return rows
@@ -615,6 +638,8 @@ class AdGroupAdsTable(api_common.BaseApiView):
         return self.create_api_response({
             'rows': self.get_rows(ad_group, article_data, articles),
             'totals': self.get_totals(totals_data),
+            'last_sync': get_last_sucessful_sync_date(),
+            'is_sync_recent': actionlog_api.is_fetch_all_data_recent(),
             'pagination': {
                 'currentPage': articles.number,
                 'numPages': articles.paginator.num_pages,

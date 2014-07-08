@@ -17,6 +17,10 @@
             <div class="clearfix"></div>
         </div>
 
+        <alert type="info" class="alert-sync" ng-show="!isSyncRecent">
+            We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">The last successful sync took place {{ lastSyncDate.fromNow() }}.</span> If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
+        </alert>
+
         <table class="table">
             <thead>
                 <tr>
@@ -53,6 +57,9 @@
                             <span ng-switch-when="number">
                                 {{ (row[col.field] | number:0) || 'N/A' }}
                             </span>
+                            <span ng-switch-when="datetime">
+                                {{ (row[col.field] | date:'M/d/yyyy h:mm a') || 'N/A' }}
+                            </span>
                         </span>
                     </td>
                 </tr>
@@ -63,19 +70,35 @@
                     <td class="text-right number"></td>
                     <td class="text-right number" ng-repeat="col in columns | filter: {checked: true, field: '!bid_cpc'}">
                         <span ng-switch="col.type">
-                            <span ng-switch-when="currency">
-                                {{ (totals[col.field] | currency:"$") || 'N/A' }}
-                            </span>
-                            <span ng-switch-when="percent">
-                                {{ (totals[col.field] | number:2) || '0.0' }}%
-                            </span>
-                            <span ng-switch-when="number">
-                                {{ (totals[col.field] | number:0) || 'N/A' }}
+                            <span ng-if="col.field != 'last_sync'">
+                                <span ng-switch-when="currency">
+                                    {{ (totals[col.field] | currency:"$") || 'N/A' }}
+                                </span>
+                                <span ng-switch-when="percent">
+                                    {{ (totals[col.field] | number:2) || '0.0' }}%
+                                </span>
+                                <span ng-switch-when="number">
+                                    {{ (totals[col.field] | number:0) || 'N/A' }}
+                                </span>
+                                <span ng-switch-when="datetime">
+                                    {{ (row[col.field] | date:'M/d/yyyy h:mm a') || 'N/A' }}
+                                </span>
                             </span>
                         </span>
                     </td>
                 </tr>
             </tfoot>
         </table>
+
+        <div class="last-sync">
+            <span ng-switch="lastSyncDate">
+                <span ng-switch-when="null">
+                    * Reporting metrics haven't been synced yet.
+                </span>
+                <span ng-switch-default>
+                    * Reporting metrics synced {{ lastSyncDate.fromNow() }}.
+                </span>
+            </span>
+        </div>
     </div>
 </div>
