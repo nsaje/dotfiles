@@ -178,7 +178,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         if settings.state == constants.AdGroupSettingsState.INACTIVE and \
                 settings.state != current_settings.state:
-            actionlog_api.stop_ad_group(ad_group)
+            actionlog_api.stop_ad_group_order(ad_group)
 
         response = {
             'settings': self.get_dict(settings, ad_group),

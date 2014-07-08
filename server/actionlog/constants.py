@@ -41,7 +41,9 @@ class ActionType(ConstantBase):
 
 class ActionLogOrderType(ConstantBase):
     FETCH_ALL = 1
+    STOP_ALL = 2
 
     _VALUES = {
-        FETCH_ALL: 'Fetch all'
+        FETCH_ALL: 'Fetch all',
+        STOP_ALL: 'Stop all',
     }
