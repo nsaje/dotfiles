@@ -886,20 +886,43 @@ div[datepicker] {
 }
 
 .action-log-list {
-    .status.success {
+    .btn-success {
         color: #5cb85c;
+        border-color: #5cb85c;
     }
-    .status.failed {
+    .btn-failed {
         color: #d9534f;
+        border-color: #d9534f;
     }
-    .status.aborted {
+    .btn-aborted {
         color: #777;
+        border-color: #777;
     }
-    .status.waiting {
+    .btn-waiting {
         color: #428bca;
+        border-color: #428bca;
     }
 
-    .filter-dropdown {
-
+    .state-selected {
+        &.btn-success {
+            background-color: #5cb85c;
+            border-color: #5cb85c;
+            color: #fff;
+        }
+        &.btn-failed {
+            background-color: #d9534f;
+            border-color: #d9534f;
+            color: #fff;
+        }
+        &.btn-aborted {
+            background-color: #777;
+            border-color: #777;
+            color: #fff;
+        }
+        &.btn-waiting {
+            background-color: #428bca;
+            border-color: #428bca;
+            color: #fff;
+        }
     }
 }

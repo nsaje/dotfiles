@@ -3,6 +3,28 @@ oneActionLogApp.controller('ActionLogCtrl', ['$scope', '$state', '$location', 'a
     $scope.user = null;
     $scope.actionLogItems = null;
 
+    $scope.states = [
+        ['Failed', -1],
+        ['Waiting', 1],
+        ['Success', 2],
+        ['Aborted', 3]
+    ];
+    $scope.stateClass = function (log, state) {
+        var cls = 'btn-' + state[0].toLowerCase();
+
+        if (log.state[1] === state[1]) {
+            cls += ' state-selected';
+        }
+        return cls;
+    };
+    $scope.updateState = function (log, state) {
+        api.actionLog.save_state(log.id, state[1]).then(function (data) {
+            log.state = data.actionLogItem.state;
+            log.modified_dt = data.actionLogItem.modified_dt;
+            log.modified_by = data.actionLogItem.modified_by;
+        });
+    };
+
     $scope.filters = {
         items: {},
 
@@ -67,7 +89,6 @@ oneActionLogApp.controller('ActionLogCtrl', ['$scope', '$state', '$location', 'a
         },
 
         update: function (filter, choice) {
-            $scope.dropdownIsOpen = false;
             $scope.filters.selected[filter] = choice;
 
             $scope.filters.updateSearchFilters();

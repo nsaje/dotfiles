@@ -13,19 +13,21 @@
                 <tr>
                     <th>
                         State
-                        <div class="btn-group" dropdown is-open="dropdownIsOpen">
-                            <button type="button" class="btn btn-default btn-xs dropdown-toggle">
-                                {{filters.selected.state[1]}} <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu filter-dropdown" role="menu">
-                                <li ng-repeat="choice in filters.items.state">
-                                    <a href="" ng-click="filters.update('state', choice)">{{choice[1]}}</a>
-                                </li>
-                            </ul>
-                        </div>
+                        <zem-action-log-filter field="'state'" filters="filters" />
                     </th>
                     <th>Action</th>
-                    <th>Ad Group Network</th>
+                    <th>
+                        Network
+                        <zem-action-log-filter field="'network'" filters="filters" />
+                    </th>
+                    <th>Account
+                        <zem-action-log-filter field="'account'" filters="filters" />
+                    </th>
+                    <th>
+                        Campaign
+                        <zem-action-log-filter field="'campaign'" filters="filters" />
+                    </th>
+                    <th>Ad Group</th>
                     <th>Created</th>
                     <th>Created By</th>
                     <th>Modified</th>
@@ -42,12 +44,19 @@
                     <td class="no-data" colspan="7">No data available.</td>
                 </tr>
                 <tr ng-repeat="log in actionLogItems">
-                    <td class="status {{log.state[0] | lowercase}}">{{log.state[0]}}</td>
-                    <td>{{log.take_action}}</td>
-                    <td>{{log.ad_group_network[0]}}</td>
-                    <td>{{log.created_dt}}</td>
+                    <td>
+                        <div class="btn-group">
+                            <label ng-repeat="state in states" ng-click="updateState(log, state)" class="btn btn-default btn-xs {{stateClass(log, state)}}">{{state[0]}}</label>
+                        </div>
+                    </td>
+                    <td><strong>{{log.take_action}}</strong></td>
+                    <td>{{log.account[0]}}</td>
+                    <td>{{log.network[0]}}</td>
+                    <td>{{log.campaign[0]}}</td>
+                    <td>{{log.ad_group[0]}}</td>
+                    <td>{{log.created_dt | date:'M/d/yyyy h:mm a'}}</td>
                     <td>{{log.created_by[0]}}</td>
-                    <td>{{log.modified_dt}}</td>
+                    <td>{{log.modified_dt | date:'M/d/yyyy h:mm a'}}</td>
                     <td>{{log.modified_by[0]}}</td>
                 </tr>
             </tbody>

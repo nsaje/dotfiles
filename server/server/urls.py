@@ -60,9 +60,14 @@ urlpatterns += patterns(
         name='action_log_view',
     ),
     url(
-        r'^action_log/api/?$',
+        r'^action_log/api/$',
         login_required(actionlog.views.ActionLogApiView.as_view()),
         name='action_log_api',
+    ),
+    url(
+        r'^action_log/api/(?P<action_log_id>\d+)/$',
+        login_required(actionlog.views.ActionLogApiView.as_view()),
+        name='action_log_api_put',
     ),
 )
 

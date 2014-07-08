@@ -320,6 +320,32 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             return deferred.promise;
         };
+
+        this.save_state = function (action_id, new_state) {
+            var deferred = $q.defer();
+            var url = '/action_log/api/' + action_id + '/';
+            var config = {
+                params: {}
+            };
+
+            var data = {
+                state: new_state
+            };
+
+            $http.put(url, data, config).
+                success(function (data, status) {
+                    var resource;
+                    if (data && data.data) {
+                        resource = data.data;
+                    }
+                    deferred.resolve(resource);
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
     }
 
     return {
