@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='actionlog',
-            name='due_dt',
+            name='expiration_dt',
             field=models.DateTimeField(default=actionlog.models._due_date_default, null=True, blank=True),
             preserve_default=True,
         ),

@@ -141,7 +141,7 @@ def _init_stop_campaign(ad_group_network, order):
             payload = {
                 'action': action.action,
                 'network': ad_group_network.network.type,
-                'due_dt': action.due_dt,
+                'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_network.network_credentials and
                     ad_group_network.network_credentials.credentials,
@@ -182,7 +182,7 @@ def _init_fetch_status(ad_group_network, order):
             payload = {
                 'action': action.action,
                 'network': ad_group_network.network.type,
-                'due_dt': action.due_dt,
+                'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_network.network_credentials and
                     ad_group_network.network_credentials.credentials,
@@ -223,7 +223,7 @@ def _init_fetch_reports(ad_group_network, date, order):
             payload = {
                 'action': action.action,
                 'network': ad_group_network.network.type,
-                'due_dt': action.due_dt,
+                'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_network.network_credentials and
                     ad_group_network.network_credentials.credentials,
@@ -272,7 +272,7 @@ def _init_set_campaign_property(ad_group_network, prop, value, order):
         action = models.ActionLog.objects.create(
             action=constants.Action.SET_PROPERTY,
             action_type=constants.ActionType.MANUAL,
-            due_dt=None,
+            expiration_dt=None,
             state=constants.ActionState.WAITING,
             ad_group_network=ad_group_network,
             payload=json.dumps({

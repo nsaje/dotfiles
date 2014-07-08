@@ -55,7 +55,7 @@ class ActionLog(models.Model):
         blank=True,
     )
 
-    due_dt = models.DateTimeField(
+    expiration_dt = models.DateTimeField(
         null=True,
         blank=True,
         default=_due_date_default,

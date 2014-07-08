@@ -107,14 +107,14 @@ class ActionLogApiTestCase(TestCase):
             self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
             self.assertEqual(action.state, constants.ActionState.WAITING)
 
-            due_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S')
+            expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S')
             callback = urlparse.urljoin(
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
             payload = {
                 'network': ad_group_network.network.type,
                 'action': constants.Action.SET_CAMPAIGN_STATE,
-                'due_dt': due_dt,
+                'expiration_dt': expiration_dt,
                 'credentials': ad_group_network.network_credentials.credentials,
                 'args': {
                     'partner_campaign_id': ad_group_network.network_campaign_key,
@@ -146,14 +146,14 @@ class ActionLogApiTestCase(TestCase):
             self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
             self.assertEqual(action.state, constants.ActionState.WAITING)
 
-            due_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S')
+            expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S')
             callback = urlparse.urljoin(
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
             payload = {
                 'network': ad_group_network.network.type,
                 'action': constants.Action.FETCH_CAMPAIGN_STATUS,
-                'due_dt': due_dt,
+                'expiration_dt': expiration_dt,
                 'credentials': ad_group_network.network_credentials.credentials,
                 'args': {
                     'partner_campaign_id': ad_group_network.network_campaign_key,
@@ -183,14 +183,14 @@ class ActionLogApiTestCase(TestCase):
             self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
             self.assertEqual(action.state, constants.ActionState.WAITING)
 
-            due_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S')
+            expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S')
             callback = urlparse.urljoin(
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
             payload = {
                 'network': ad_group_network.network.type,
                 'action': constants.Action.FETCH_REPORTS,
-                'due_dt': due_dt,
+                'expiration_dt': expiration_dt,
                 'credentials': ad_group_network.network_credentials.credentials,
                 'args': {
                     'partner_campaign_ids': [ad_group_network.network_campaign_key],
