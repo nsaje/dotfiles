@@ -7,12 +7,7 @@ from django.conf import settings
 
 from actionlog import api, constants, models, refresh_orders
 from dash import models as dashmodels
-
-
-class MockDateTime(datetime.datetime):
-    def __new__(cls, *args, **kwargs):
-        return datetime.datetime.__new__(cls, *args, **kwargs)
-
+from utils.test_helper import MockDateTime
 
 class ActionLogOrderApiTestCase(test.TestCase):
 

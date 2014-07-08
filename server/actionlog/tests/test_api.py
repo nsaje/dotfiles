@@ -11,6 +11,7 @@ from django.core.urlresolvers import reverse
 from actionlog import api, constants, models
 from dash import models as dashmodels
 from dash import constants as dashconstants
+from utils.test_helper import MockDateTime
 
 
 def _prepare_mock_urlopen(mock_urlopen, exception=None):
@@ -87,7 +88,12 @@ class ActionLogApiTestCase(TestCase):
     def tearDown(self):
         settings.CREDENTIALS_ENCRYPTION_KEY = self.credentials_encription_key
 
+    @patch('actionlog.models.datetime', MockDateTime)
     def test_stop_ad_group(self):
+
+        utcnow = datetime.datetime.utcnow()
+        models.datetime.utcnow = classmethod(lambda cls: utcnow)
+
         ad_group = dashmodels.AdGroup.objects.get(id=1)
         ad_group_networks = dashmodels.AdGroupNetwork.objects.filter(ad_group=ad_group)
         api.stop_ad_group(ad_group)
@@ -99,13 +105,16 @@ class ActionLogApiTestCase(TestCase):
 
             self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
             self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
+            self.assertEqual(action.state, constants.ActionState.WAITING)
 
+            due_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S')
             callback = urlparse.urljoin(
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
             payload = {
                 'network': ad_group_network.network.type,
                 'action': constants.Action.SET_CAMPAIGN_STATE,
+                'due_dt': due_dt,
                 'credentials': ad_group_network.network_credentials.credentials,
                 'args': {
                     'partner_campaign_id': ad_group_network.network_campaign_key,
@@ -115,7 +124,12 @@ class ActionLogApiTestCase(TestCase):
             }
             self.assertEqual(action.payload, payload)
 
+    @patch('actionlog.models.datetime', MockDateTime)
     def test_fetch_ad_group_status(self):
+
+        utcnow = datetime.datetime.utcnow()
+        models.datetime.utcnow = classmethod(lambda cls: utcnow)
+
         ad_group = dashmodels.AdGroup.objects.get(id=1)
         ad_group_networks = dashmodels.AdGroupNetwork.objects.filter(ad_group=ad_group)
         api.fetch_ad_group_status(ad_group)
@@ -130,13 +144,16 @@ class ActionLogApiTestCase(TestCase):
                 constants.Action.FETCH_CAMPAIGN_STATUS
             )
             self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
+            self.assertEqual(action.state, constants.ActionState.WAITING)
 
+            due_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S')
             callback = urlparse.urljoin(
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
             payload = {
                 'network': ad_group_network.network.type,
                 'action': constants.Action.FETCH_CAMPAIGN_STATUS,
+                'due_dt': due_dt,
                 'credentials': ad_group_network.network_credentials.credentials,
                 'args': {
                     'partner_campaign_id': ad_group_network.network_campaign_key,
@@ -146,7 +163,12 @@ class ActionLogApiTestCase(TestCase):
 
             self.assertEqual(action.payload, payload)
 
+    @patch('actionlog.models.datetime', MockDateTime)
     def test_fetch_ad_group_reports(self):
+
+        utcnow = datetime.datetime.utcnow()
+        models.datetime.utcnow = classmethod(lambda cls: utcnow)
+
         ad_group = dashmodels.AdGroup.objects.get(id=1)
         ad_group_networks = dashmodels.AdGroupNetwork.objects.filter(ad_group=ad_group)
         date = datetime.date(2014, 6, 1)
@@ -159,13 +181,16 @@ class ActionLogApiTestCase(TestCase):
 
             self.assertEqual(action.action, constants.Action.FETCH_REPORTS)
             self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
+            self.assertEqual(action.state, constants.ActionState.WAITING)
 
+            due_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S')
             callback = urlparse.urljoin(
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
             payload = {
                 'network': ad_group_network.network.type,
                 'action': constants.Action.FETCH_REPORTS,
+                'due_dt': due_dt,
                 'credentials': ad_group_network.network_credentials.credentials,
                 'args': {
                     'partner_campaign_ids': [ad_group_network.network_campaign_key],
