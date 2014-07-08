@@ -4,7 +4,7 @@ import logging
 import dateutil.parser
 from collections import OrderedDict
 import unicodecsv
-from xlwt import Workbook
+from xlwt import Workbook, Style
 import slugify
 import itertools
 
@@ -115,6 +115,31 @@ def generate_rows(dimensions, ad_group_id, start_date, end_date):
         results.append(result)
 
     return results
+
+
+def write_excel_row(worksheet, row_index, column_data):
+    for column_index, column_value in enumerate(column_data):
+        worksheet.write(
+            row_index,
+            column_index,
+            column_value[0],
+            column_value[1] if len(column_value) > 1 else Style.default_style
+        )
+
+
+def create_excel_worksheet(workbook, name, widths, header_names, data, transform_func):
+    worksheet = workbook.add_sheet(name)
+
+    for index, width in widths:
+        worksheet.col(index).width = width
+
+    worksheet.panes_frozen = True
+
+    for index, name in enumerate(header_names):
+        worksheet.write(0, index, name)
+
+    for index, item in enumerate(data):
+        write_excel_row(worksheet, index + 1, transform_func(item))
 
 
 @statsd_helper.statsd_timer('dash', 'index')
@@ -431,66 +456,43 @@ class AdGroupAdsExport(api_common.BaseApiView):
         response = self.create_file_response('application/octet-stream', '%s.xls' % filename)
 
         workbook = Workbook(encoding='UTF-8')
-        worksheet = workbook.add_sheet('Detailed Report')
 
-        worksheet.col(1).width = 6000
-        worksheet.col(2).width = 8000
-        worksheet.col(6).width = 3000
-        worksheet.panes_frozen = True
-        row = 0
+        create_excel_worksheet(
+            workbook,
+            'Detailed Report',
+            [(1, 6000), (2, 8000), (6, 3000)],
+            ['Date', 'Title', 'URL', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'],
+            ads_data,
+            lambda item: [
+                (item['date'], excel_styles.style_date),
+                (item['article'],),
+                (item['url'],),
+                (item['cost'] or 0, excel_styles.style_usd),
+                (item['cpc'] or 0, excel_styles.style_usd),
+                (item['clicks'] or 0,),
+                (item['impressions'] or 0,),
+                ((item['ctr'] or 0) / 100, excel_styles.style_percent)
+            ]
+        )
 
-        worksheet.write(row, 0, 'Date')
-        worksheet.write(row, 1, 'Title')
-        worksheet.write(row, 2, 'URL')
-        worksheet.write(row, 3, 'Cost')
-        worksheet.write(row, 4, 'CPC')
-        worksheet.write(row, 5, 'Clicks')
-        worksheet.write(row, 6, 'Impressions')
-        worksheet.write(row, 7, 'CTR')
-
-        for item in ads_data:
-            row += 1
-
-            worksheet.write(row, 0, item['date'], excel_styles.style_date)
-            worksheet.write(row, 1, item['article'])
-            worksheet.write(row, 2, item['url'])
-            worksheet.write(row, 3, item['cost'] or 0, excel_styles.style_usd)
-            worksheet.write(row, 4, item['cpc'] or 0, excel_styles.style_usd)
-            worksheet.write(row, 5, item['clicks'] or 0)
-            worksheet.write(row, 6, item['impressions'] or 0)
-            worksheet.write(row, 7, (item['ctr'] or 0) / 100, excel_styles.style_percent)
-
-        worksheet = workbook.add_sheet('Per Networks Report')
-
-        worksheet.col(1).width = 6000
-        worksheet.col(2).width = 8000
-        worksheet.col(3).width = 4000
-        worksheet.col(7).width = 3000
-        worksheet.panes_frozen = True
-        row = 0
-
-        worksheet.write(row, 0, 'Date')
-        worksheet.write(row, 1, 'Title')
-        worksheet.write(row, 2, 'URL')
-        worksheet.write(row, 3, 'Network')
-        worksheet.write(row, 4, 'Cost')
-        worksheet.write(row, 5, 'CPC')
-        worksheet.write(row, 6, 'Clicks')
-        worksheet.write(row, 7, 'Impressions')
-        worksheet.write(row, 8, 'CTR')
-
-        for item in networks_data:
-            row += 1
-
-            worksheet.write(row, 0, item['date'], excel_styles.style_date)
-            worksheet.write(row, 1, item['article'])
-            worksheet.write(row, 2, item['url'])
-            worksheet.write(row, 3, item['network'])
-            worksheet.write(row, 4, item['cost'] or 0, excel_styles.style_usd)
-            worksheet.write(row, 5, item['cpc'] or 0, excel_styles.style_usd)
-            worksheet.write(row, 6, item['clicks'] or 0)
-            worksheet.write(row, 7, item['impressions'] or 0)
-            worksheet.write(row, 8, (item['ctr'] or 0) / 100, excel_styles.style_percent)
+        create_excel_worksheet(
+            workbook,
+            'Per Network Report',
+            [(1, 6000), (2, 8000), (3, 4000), (7, 3000)],
+            ['Date', 'Title', 'URL', 'Network', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'],
+            networks_data,
+            lambda item: [
+                (item['date'], excel_styles.style_date),
+                (item['article'],),
+                (item['url'],),
+                (item['network'],),
+                (item['cost'] or 0, excel_styles.style_usd),
+                (item['cpc'] or 0, excel_styles.style_usd),
+                (item['clicks'] or 0,),
+                (item['impressions'] or 0,),
+                ((item['ctr'] or 0) / 100, excel_styles.style_percent)
+            ]
+        )
 
         workbook.save(response)
         return response
@@ -552,29 +554,23 @@ class AdGroupNetworksExport(api_common.BaseApiView):
         response = self.create_file_response('application/octet-stream', '%s.xls' % filename)
 
         workbook = Workbook(encoding='UTF-8')
-        worksheet = workbook.add_sheet('Per-Network Report')
 
-        worksheet.col(1).width = 6000
-        worksheet.col(4).width = 3000
-        worksheet.panes_frozen = True
-        row = 0
-
-        worksheet.write(row, 0, 'Date')
-        worksheet.write(row, 1, 'Cost')
-        worksheet.write(row, 2, 'CPC')
-        worksheet.write(row, 3, 'Clicks')
-        worksheet.write(row, 4, 'Impressions')
-        worksheet.write(row, 5, 'CTR')
-
-        for item in data:
-            row += 1
-
-            worksheet.write(row, 0, item['date'], excel_styles.style_date)
-            worksheet.write(row, 1, item['cost'] or 0, excel_styles.style_usd)
-            worksheet.write(row, 2, item['cpc'] or 0, excel_styles.style_usd)
-            worksheet.write(row, 3, item['clicks'] or 0)
-            worksheet.write(row, 4, item['impressions'] or 0)
-            worksheet.write(row, 5, (item['ctr'] or 0) / 100, excel_styles.style_percent)
+        create_excel_worksheet(
+            workbook,
+            'Per-Network Report',
+            [(1, 6000), (4, 3000)],
+            ['Date', 'Network', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'],
+            data,
+            lambda item: [
+                (item['date'], excel_styles.style_date),
+                (item['network'],),
+                (item['cost'] or 0, excel_styles.style_usd),
+                (item['cpc'] or 0, excel_styles.style_usd),
+                (item['clicks'] or 0,),
+                (item['impressions'] or 0,),
+                ((item['ctr'] or 0) / 100, excel_styles.style_percent)
+            ]
+        )
 
         workbook.save(response)
         return response
@@ -675,5 +671,3 @@ class AdGroupDailyStats(api_common.BaseApiView):
         return self.create_api_response({
             'stats': stats
         })
-
-

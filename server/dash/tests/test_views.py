@@ -46,6 +46,28 @@ class AdGroupAdsExportTestCase(test.TestCase):
         self.mock_article.url = 'http://www.example.com'
         self.mock_models.Article.objects.filter.return_value = [self.mock_article]
 
+        self.mock_api.query.side_effect = [
+            [{
+                'article': 1,
+                'date': datetime.date(2014, 7, 1),
+                'cost': 1000.123242,
+                'cpc': 10.2334,
+                'clicks': 103,
+                'impressions': 100000,
+                'ctr': 1.031231231
+            }],
+            [{
+                'article': 1,
+                'network': 1,
+                'date': datetime.date(2014, 7, 1),
+                'cost': 1000.123242,
+                'cpc': 10.2334,
+                'clicks': 103,
+                'impressions': 100000,
+                'ctr': 1.031231231
+            }]
+        ]
+
 
     def tearDown(self):
         self.get_ad_group_patcher.stop()
@@ -54,7 +76,7 @@ class AdGroupAdsExportTestCase(test.TestCase):
 
 
     def _assert_row(self, worksheet, row_num, row_cell_list):
-        for cell_num, cell_value in enumerate(row_cells_list):
+        for cell_num, cell_value in enumerate(row_cell_list):
             self.assertEqual(worksheet.cell_value(row_num, cell_num), cell_value)
 
 
@@ -64,16 +86,6 @@ class AdGroupAdsExportTestCase(test.TestCase):
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
         request.user = Mock()
-
-        self.mock_api.query.return_value = [{
-            'article': 1,
-            'date': datetime.date(2014, 7, 1),
-            'cost': 1000.123242,
-            'cpc': 10.2334,
-            'clicks': 103,
-            'impressions': 100000,
-            'ctr': 1.031231231
-        }]
 
         response = views.AdGroupAdsExport().get(request, self.ad_group_id)
 
@@ -101,16 +113,6 @@ class AdGroupAdsExportTestCase(test.TestCase):
         request.GET['end_date'] = '2014-07-01'
         request.user = Mock()
 
-        self.mock_api.query.return_value = [{
-           'article': 1,
-           'date': datetime.date(2014, 7, 1),
-           'cost': 1000.123242,
-           'cpc': 10.2334,
-           'clicks': 103,
-           'impressions': 100000,
-           'ctr': 1.031231231
-        }]
-
         response = views.AdGroupAdsExport().get(request, self.ad_group_id)
 
         filename = '%s_detailed_report_2014-06-30_2014-07-01.xls' % slugify.slugify(self.ad_group_name)
@@ -127,6 +129,17 @@ class AdGroupAdsExportTestCase(test.TestCase):
         worksheet = workbook.sheet_by_name('Detailed Report')
         self.assertIsNotNone(worksheet)
 
+
+        self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'])
+
+        self._assert_row(worksheet, 1, [41820.0, u'Test Article with unicode Čžš', 'http://www.example.com',
+            0, 0, 0, 0, 0])
+
+        self._assert_row(worksheet, 2, [41821.0, u'Test Article with unicode Čžš', 'http://www.example.com', 
+            1000.123242, 10.2334, 103, 100000, 0.01031231231])
+
+        worksheet = workbook.sheet_by_name('Per Network Report')
+        self.assertIsNotNone(worksheet)
 
         self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Network', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'])
 
