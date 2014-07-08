@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import transaction
+from django.db.models import Max
 
 from . import models
 from . import constants
@@ -96,6 +97,24 @@ def get_last_successful_fetch_all_order():
             return order
 
     return None
+
+
+def get_last_succesfull_fetch_all_networks_dates(ad_group):
+    actions = (constants.Action.FETCH_REPORTS, constants.Action.FETCH_CAMPAIGN_STATUS)
+
+    actionlogs = models.ActionLog.objects.\
+        values('ad_group_network__network_id').\
+        filter(ad_group_network__ad_group_id=ad_group.id).\
+        filter(state=constants.ActionState.SUCCESS).\
+        filter(action__in=actions).\
+        annotate(created_dt=Max('created_dt'))
+
+    result = {}
+
+    for log in list(actionlogs):
+        result[log['ad_group_network__network_id']] = log['created_dt']
+
+    return result
 
 
 def _is_fetch_all_order_successful(order):
