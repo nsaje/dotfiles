@@ -6,7 +6,8 @@ class AdNetwork(ConstantBase):
     GRAVITY = 2
     OUTBRAIN = 3
     YAHOO = 4
-    ZEMANTA = 5
+    INFOLINKS = 5
+    ENGAGEYA = 6
 
 
 class AdGroupSettingsState(ConstantBase):
