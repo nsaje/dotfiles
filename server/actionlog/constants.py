@@ -42,7 +42,7 @@ class ActionType(ConstantBase):
 class ActionLogOrderType(ConstantBase):
     FETCH_ALL = 1
     STOP_ALL = 2
-    AD_GROUP_SETTINGS_UPDATE = 2
+    AD_GROUP_SETTINGS_UPDATE = 3
 
     _VALUES = {
         FETCH_ALL: 'Fetch all',
