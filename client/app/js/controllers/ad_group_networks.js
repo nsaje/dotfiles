@@ -139,7 +139,6 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
     };
 
     $scope.selectedNetworksChanged = function (networkId) {
-        console.log("net");
         var i = 0;
         if (networkId) {
             i = $scope.selectedNetworkIds.indexOf(networkId);

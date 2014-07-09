@@ -3,7 +3,12 @@ import logging
 
 from django.db import transaction
 
-from dash.models import AdGroupNetworkSettings
+import actionlog.api
+import actionlog.models
+import actionlog.constants
+
+from dash import models
+from dash import constants
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +33,7 @@ def campaign_status_upsert(ad_group_network, data):
 
     try:
         current_settings = ad_group_network.settings.latest()
-    except AdGroupNetworkSettings.DoesNotExist:
+    except models.AdGroupNetworkSettings.DoesNotExist:
         current_settings = None
 
     if current_settings is not None and (
@@ -49,7 +54,7 @@ def update_campaign_state(ad_group_network, state):
     '''
     try:
         current_settings = ad_group_network.settings.latest()
-    except AdGroupNetworkSettings.DoesNotExist:
+    except models.AdGroupNetworkSettings.DoesNotExist:
         current_settings = None
 
     if current_settings is not None:
@@ -57,8 +62,36 @@ def update_campaign_state(ad_group_network, state):
             logger.info('Campaign settings for ad_group_network %s unmodified', ad_group_network)
             return
         else:
-            current_settings.pk = None # create a new settings object as a copy of the old one
+            current_settings.pk = None  # create a new settings object as a copy of the old one
             current_settings.state = state
             current_settings.save()
 
 
+def order_ad_group_settings_update(ad_group, current_settings, new_settings):
+    changes = _get_setting_changes(current_settings, new_settings)
+
+    if not changes:
+        return
+
+    order = actionlog.models.ActionLogOrder.objects.create(
+        order_type=actionlog.constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE,
+    )
+
+    for field_name, field_value in changes.iteritems():
+        if field_name == 'state' and field_value == constants.AdGroupSettingsState.INACTIVE:
+            actionlog.api.stop_ad_group(ad_group, order=order)
+        else:
+            actionlog.api.set_ad_group_property(ad_group, prop=field_name, value=field_value, order=order)
+
+
+def _get_setting_changes(current_settings, new_settings):
+    changes = {}
+
+    current_settings_dict = current_settings.get_settings_dict()
+    new_settings_dict = new_settings.get_settings_dict()
+
+    for field_name in models.AdGroupSettings.get_settings_fields():
+        if current_settings_dict[field_name] != new_settings_dict[field_name]:
+            changes[field_name] = new_settings_dict[field_name]
+
+    return changes

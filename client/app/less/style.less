@@ -928,7 +928,7 @@ div[datepicker] {
     text-align: center;
     width: 100%;
     position: relative;
-    
+
     form {
         display: inline-block;
         margin-right: 20px;
@@ -957,7 +957,7 @@ div[datepicker] {
 
         img {
             height: 14px;
-        } 
+        }
     }
 
     .current-rows {
@@ -972,6 +972,68 @@ div[datepicker] {
 /* pagination select */
 .select2-drop.select2-drop-above {
     font-weight: 300;
+}
+
+.sidebar {
+    position: absolute;
+    top: 0px;
+    bottom: 15px;
+
+    #nav {
+        height: 100%;
+        border: 1px solid #d2d2d2;
+        padding: 5px;
+        overflow: auto;
+
+        .account-group {
+            padding-bottom: 10px;
+        }
+
+        .list-group {
+            margin-bottom: 0;
+
+            &.ad-groups {
+                padding-left: 5px;
+            }
+        }
+
+        .list-group-item {
+            border: 0;   padding: 3px;
+            &.active {
+                color: #414141;
+                background-color: #fff;
+
+                .ad-group-name {
+                    font-weight: 600;
+                }
+            }
+        }
+
+        .account-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #f68620;
+        }
+
+        .campaign-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #414141;
+        }
+
+        .ad-group-name {
+            font-size: 13px;
+            font-weight: 300;
+            color: #414141;
+        }
+
+        .ad-group-item img {
+            position: relative;
+            bottom: 3px;
+            width: 25px;
+            margin: -7px;
+         }
+    }
 }
 
 .custom-cols.dropdown {
@@ -991,5 +1053,51 @@ div[datepicker] {
         .checkbox {
             margin: 3px 20px
         }
+    }
+}
+
+.action-log-list {
+    .btn-success {
+        color: #5cb85c;
+        border-color: #5cb85c;
+    }
+    .btn-failed {
+        color: #d9534f;
+        border-color: #d9534f;
+    }
+    .btn-aborted {
+        color: #777;
+        border-color: #777;
+    }
+    .btn-waiting {
+        color: #428bca;
+        border-color: #428bca;
+    }
+
+    .state-selected {
+        &.btn-success {
+            background-color: #5cb85c;
+            border-color: #5cb85c;
+            color: #fff;
+        }
+        &.btn-failed {
+            background-color: #d9534f;
+            border-color: #d9534f;
+            color: #fff;
+        }
+        &.btn-aborted {
+            background-color: #777;
+            border-color: #777;
+            color: #fff;
+        }
+        &.btn-waiting {
+            background-color: #428bca;
+            border-color: #428bca;
+            color: #fff;
+        }
+    }
+
+    .order-class-0 {
+        background-color: #fcfcfc;
     }
 }

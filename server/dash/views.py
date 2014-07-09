@@ -6,7 +6,7 @@ from collections import OrderedDict
 import unicodecsv
 from xlwt import Workbook, Style
 import slugify
-import itertools
+import excel_styles
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -14,15 +14,17 @@ from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import HttpResponse
 
-from actionlog import api as actionlog_api
-from dash import api_common
-from dash import exc
+from utils import statsd_helper
+from utils import api_common
+from utils import exc
+import actionlog.api
+import reports.api
+
 from dash import forms
 from dash import models
-from reports import api
-from utils import statsd_helper
-import excel_styles
+from dash import api
 
 import constants
 
@@ -64,7 +66,7 @@ def get_stats_end_date(end_time):
 
 
 def generate_rows(dimensions, ad_group_id, start_date, end_date):
-    data = api.query(
+    data = reports.api.query(
         start_date,
         end_date,
         dimensions,
@@ -113,7 +115,7 @@ def create_excel_worksheet(workbook, name, widths, header_names, data, transform
 
 
 def get_last_sucessful_sync_date():
-    last_successful_order = actionlog_api.get_last_successful_fetch_all_order()
+    last_successful_order = actionlog.api.get_last_successful_fetch_all_order()
     if last_successful_order:
         last_sync = last_successful_order.created_dt
     else:
@@ -145,6 +147,9 @@ class User(api_common.BaseApiView):
             result = {
                 'id': str(user.pk),
                 'email': user.email,
+                'permissions': {
+                    'actionlog_manual_view': user.has_perm('actionlog.manual_view'),
+                }
             }
 
         return result
@@ -207,7 +212,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group)
+            'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group)
         }
 
         return self.create_api_response(response)
@@ -236,13 +241,11 @@ class AdGroupSettings(api_common.BaseApiView):
             ad_group.save()
             settings.save()
 
-        if settings.state == constants.AdGroupSettingsState.INACTIVE and \
-                settings.state != current_settings.state:
-            actionlog_api.stop_ad_group_order(ad_group)
+        api.order_ad_group_settings_update(ad_group, current_settings, settings)
 
         response = {
             'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group)
+            'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group)
         }
 
         return self.create_api_response(response)
@@ -308,7 +311,7 @@ class AdGroupNetworksTable(api_common.BaseApiView):
     def get(self, request, ad_group_id):
         ad_group = get_ad_group(request.user, ad_group_id)
 
-        networks_data = api.query(
+        networks_data = reports.api.query(
             get_stats_start_date(request.GET.get('start_date')),
             get_stats_end_date(request.GET.get('end_date')),
             ['network'],
@@ -317,14 +320,14 @@ class AdGroupNetworksTable(api_common.BaseApiView):
 
         network_settings = models.AdGroupNetworkSettings.get_current_settings(ad_group)
 
-        totals_data = api.query(
+        totals_data = reports.api.query(
             get_stats_start_date(request.GET.get('start_date')),
             get_stats_end_date(request.GET.get('end_date')),
             ad_group=int(ad_group.id)
         )[0]
 
         last_success_actions = \
-            actionlog_api.get_last_succesfull_fetch_all_networks_dates(ad_group)
+            actionlog.api.get_last_succesfull_fetch_all_networks_dates(ad_group)
 
         return self.create_api_response({
             'rows': self.get_rows(
@@ -335,7 +338,7 @@ class AdGroupNetworksTable(api_common.BaseApiView):
             ),
             'totals': self.get_totals(ad_group, totals_data, network_settings),
             'last_sync': get_last_sucessful_sync_date(),
-            'is_sync_recent': actionlog_api.is_fetch_all_data_recent(),
+            'is_sync_recent': actionlog.api.is_fetch_all_data_recent(),
         })
 
     def get_totals(self, ad_group, totals_data, network_settings):
@@ -372,7 +375,10 @@ class AdGroupNetworksTable(api_common.BaseApiView):
                 'name': settings.ad_group_network.network.name,
                 'status': settings.state,
                 'bid_cpc': float(settings.cpc_cc) if settings.cpc_cc is not None else None,
-                'daily_budget': float(settings.daily_budget_cc) if settings.daily_budget_cc is not None else None,
+                'daily_budget':
+                    float(settings.daily_budget_cc)
+                    if settings.daily_budget_cc is not None
+                    else None,
                 'cost': network_data.get('cost', None),
                 'cpc': network_data.get('cpc', None),
                 'clicks': network_data.get('clicks', None),
@@ -590,7 +596,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
         except EmptyPage:
             articles = paginator.page(paginator.num_pages)
 
-        article_data = api.query(
+        article_data = reports.api.query(
             start_date,
             end_date,
             ['article'],
@@ -598,7 +604,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
             article=[article.id for article in articles]
         )
 
-        totals_data = api.query(
+        totals_data = reports.api.query(
             start_date,
             end_date,
             ad_group=int(ad_group.id)
@@ -608,7 +614,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
             'rows': self.get_rows(ad_group, article_data, articles),
             'totals': self.get_totals(totals_data),
             'last_sync': get_last_sucessful_sync_date(),
-            'is_sync_recent': actionlog_api.is_fetch_all_data_recent(),
+            'is_sync_recent': actionlog.api.is_fetch_all_data_recent(),
             'pagination': {
                 'currentPage': articles.number,
                 'numPages': articles.paginator.num_pages,
@@ -666,7 +672,7 @@ class AdGroupDailyStats(api_common.BaseApiView):
         if network_ids:
             extra_kwargs['network_id'] = [int(x) for x in network_ids]
 
-        stats = api.query(
+        stats = reports.api.query(
             get_stats_start_date(request.GET.get('start_date')),
             get_stats_end_date(request.GET.get('end_date')),
             ['date'],
@@ -677,3 +683,8 @@ class AdGroupDailyStats(api_common.BaseApiView):
         return self.create_api_response({
             'stats': stats
         })
+
+
+@statsd_helper.statsd_timer('dash', 'healthcheck')
+def healthcheck(request):
+    return HttpResponse('OK')
