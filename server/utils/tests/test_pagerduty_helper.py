@@ -8,6 +8,7 @@ from utils import pagerduty_helper
 
 @override_settings(
     HOSTNAME='testhost',
+    PAGER_DUTY_ENABLED=True,
     PAGER_DUTY_URL='http://pagerduty.example.com',
     PAGER_DUTY_SERVICE_KEY='123abc'
 )
