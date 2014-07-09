@@ -2,12 +2,12 @@ oneActionLogApp.controller('ActionLogCtrl', ['$scope', '$state', '$location', 'a
 
     $scope.user = null;
     $scope.actionLogItems = null;
+    $scope.actionLogItemsMax = null;
 
     $scope.states = [
         ['Failed', -1],
         ['Waiting', 1],
         ['Success', 2],
-        ['Aborted', 3]
     ];
     $scope.stateClass = function (log, state) {
         var cls = 'btn-' + state[0].toLowerCase();
@@ -121,6 +121,7 @@ oneActionLogApp.controller('ActionLogCtrl', ['$scope', '$state', '$location', 'a
 
         api.actionLog.list(query_filters).then(function (data) {
             $scope.actionLogItems = data.actionLogItems;
+            $scope.actionLogItemsMax = data.actionLogItemsMax;
             $scope.filters.items = data.filters;
 
             angular.forEach(data.filters, function (items, filter) {

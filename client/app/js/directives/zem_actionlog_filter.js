@@ -9,7 +9,7 @@ oneActionLogApp.directive('zemActionLogFilter', function() {
             filters: '=filters',
         },
         template:
-            '<div class="btn-group pull-right" dropdown>' +
+            '<div class="btn-group actionlog-filter" dropdown>' +
                 '<button type="button" class="btn btn-default btn-xs dropdown-toggle">' +
                     '{{filters.selected[field][1]}} <span class="caret"></span>' +
                 '</button>' +
