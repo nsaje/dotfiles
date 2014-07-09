@@ -50,9 +50,12 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         }
     ];
 
-    zemCustomTableColsService.load('adGroupAdsCols', $scope.columns);
+    var cols = zemCustomTableColsService.load('adGroupAdsCols', $scope.columns);
+    $scope.selectedColumnsCount = cols.length;
+
     $scope.$watch('columns', function (newValue, oldValue) {
-        zemCustomTableColsService.save('adGroupAdsCols', newValue);
+        cols = zemCustomTableColsService.save('adGroupAdsCols', newValue);
+        $scope.selectedColumnsCount = cols.length;
     }, true);
 
     $scope.setChartData = function () {

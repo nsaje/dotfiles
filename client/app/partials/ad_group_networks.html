@@ -32,12 +32,12 @@
             </thead>
             <tbody>
                 <tr ng-if="loadRequestInProgress">
-                    <td colspan="9" class="loader-row">
+                    <td colspan="{{ selectedColumnsCount + 3}}" class="loader-row">
                         <img class="loader" ng-src="{{ config.static_url }}/img/loader.svg">
                     </td>
                 </tr>
                 <tr ng-show="!rows && !loadRequestInProgress">
-                    <td class="no-data" colspan="9">No data</td>
+                    <td class="no-data" colspan="{{ selectedColumnsCount + 3}}">No data</td>
                 </tr>
                 <tr ng-repeat="row in rows">
                     <td class="input-one-char"><input type="checkbox" data-ng-model="row.checked" data-ng-change="selectedNetworksChanged(row.id)"/></td>
