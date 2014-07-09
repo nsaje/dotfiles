@@ -65,7 +65,7 @@ def get_stats_end_date(end_time):
 
 
 def generate_rows(dimensions, ad_group_id, start_date, end_date):
-    data = api.query(
+    data = reports.api.query(
         start_date,
         end_date,
         dimensions,
