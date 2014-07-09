@@ -88,3 +88,13 @@ urlpatterns += patterns(
         name='api.zwei_callback',
     )
 )
+
+# Health Check
+urlpatterns += patterns(
+    '',
+    url(
+        r'^healthcheck$',
+        dash.views.healthcheck,
+        name='healthcheck',
+    )
+)

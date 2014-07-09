@@ -14,6 +14,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import HttpResponse
 
 from utils import statsd_helper
 from utils import api_common
@@ -682,3 +683,8 @@ class AdGroupDailyStats(api_common.BaseApiView):
         return self.create_api_response({
             'stats': stats
         })
+
+
+@statsd_helper.statsd_timer('dash', 'healthcheck')
+def healthcheck(request):
+    return HttpResponse('OK')
