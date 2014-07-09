@@ -30,7 +30,7 @@ def zwei_callback(request, action_id):
     except Exception as e:
         tb = traceback.format_exc()
         msg = 'Zwei callback failed for action: {action_id}. Error: {error}, message: {message}, traceback: {traceback}'\
-              .format(action_id=action.id, error=e.__class__.__name__, message=repr(e.message), traceback=repr(tb))
+              .format(action_id=action.id, error=e.__class__.__name__, message=repr(e.message), traceback=tb)
         logger.error(msg)
 
         action.state = actionlogconstants.ActionState.FAILED
