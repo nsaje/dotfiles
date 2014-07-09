@@ -1,4 +1,3 @@
-import json
 import logging
 import traceback
 import urlparse
@@ -42,6 +41,7 @@ def stop_ad_group(ad_group, network=None, order=None):
     ad_group_networks = _get_ad_group_networks(ad_group, network)
     for ad_group_network in ad_group_networks:
         _init_stop_campaign(ad_group_network, order)
+
 
 def stop_ad_group_order(ad_group, network=None):
     order = models.ActionLogOrder.objects.create(
@@ -334,10 +334,10 @@ def _init_set_campaign_property(ad_group_network, prop, value, order):
             expiration_dt=None,
             state=constants.ActionState.WAITING,
             ad_group_network=ad_group_network,
-            payload=json.dumps({
+            payload={
                 'property': prop,
                 'value': value,
-            }),
+            },
             order=order
         )
         action.save()
