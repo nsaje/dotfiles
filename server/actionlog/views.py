@@ -85,8 +85,11 @@ class ActionLogApiView(api_common.BaseApiView):
         except ValueError:
             filters = {}
 
-        if filters.get('state'):
+        if filters.get('state') in ACTION_LOG_STATE_OPTIONS:
             actions = actions.filter(state=filters['state'])
+        else:
+            actions = actions.filter(state__in=ACTION_LOG_STATE_OPTIONS)
+
         if filters.get('network'):
             actions = actions.filter(ad_group_network__network=filters['network'])
         if filters.get('ad_group'):
