@@ -30,6 +30,8 @@ def _decrypt_payload_credentials(payload):
 
 
 def send(action):
+    # Decrypt has to be the last thing to happen before sending to zwei.
+    # Payload with decrypted credentials should never be logged.
     payload = _decrypt_payload_credentials(action.payload)
     data = json.dumps(payload, cls=json_helper.JSONEncoder)
     request = urllib2.Request(settings.ZWEI_API_URL, data)
