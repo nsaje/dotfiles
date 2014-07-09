@@ -63,9 +63,12 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
         }
     ];
 
-    zemCustomTableColsService.load('adGroupNetworksCols', $scope.columns);
+    var cols = zemCustomTableColsService.load('adGroupNetworksCols', $scope.columns);
+    $scope.selectedColumnsCount = cols.length;
+
     $scope.$watch('columns', function (newValue, oldValue) {
-        zemCustomTableColsService.save('adGroupNetworksCols', newValue);
+        cols = zemCustomTableColsService.save('adGroupNetworksCols', newValue);
+        $scope.selectedColumnsCount = cols.length;
     }, true);
 
     $scope.setChartData = function () {

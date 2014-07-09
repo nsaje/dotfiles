@@ -4,8 +4,9 @@
 oneApp.factory("zemCustomTableColsService", function() {
     function load(key, columns) {
         var columnsCache = localStorage[key];
+        var cols = [];
         if (columnsCache) {
-            var cols = JSON.parse(columnsCache);
+            cols = JSON.parse(columnsCache);
             columns.forEach(function (x) {
                 if (cols.indexOf(x.field) > -1) {
                     x.checked = true;
@@ -14,6 +15,8 @@ oneApp.factory("zemCustomTableColsService", function() {
                 }
             });
         }
+
+        return cols;
     }
 
     function save(key, columns) {
@@ -24,6 +27,8 @@ oneApp.factory("zemCustomTableColsService", function() {
             }
         });
         localStorage[key] = JSON.stringify(cols);
+
+        return cols;
     }
 
     return {
