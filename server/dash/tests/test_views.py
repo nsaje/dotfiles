@@ -15,7 +15,7 @@ class AdGroupAdsExportTestCase(test.TestCase):
 
     def setUp(self):
         self.get_ad_group_patcher = patch('dash.views.get_ad_group')
-        self.api_patcher = patch('dash.views.api')
+        self.api_patcher = patch('dash.views.reports.api')
         self.models_patcher = patch('dash.views.models')
 
         self.mock_get_ad_group = self.get_ad_group_patcher.start()
