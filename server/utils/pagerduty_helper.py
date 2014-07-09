@@ -2,21 +2,25 @@ import json
 import urllib2
 
 from django.conf import settings
+from django.core import urlresolvers
 
 
-def trigger_event(ad_group_id, network_id):
+def trigger_event(action_log_id):
     if not settings.PAGER_DUTY_ENABLED:
         return
 
+    # Base URL is hardcoded for a lack of better alternatives
+    admin_url = 'https://one.zemanta.com{0}'.format(
+        urlresolvers.reverse('admin:actionlog_actionlog_change', args=(action_log_id,)))
+
     data = {
-        'service_key': '0261faf28efa4fc8884ae0cffa768013',
+        'service_key': settings.PAGER_DUTY_SERVICE_KEY,
         'incident_key': 'adgroup_stop_failed',
         'event_type': 'trigger',
         'description': 'Adgroup stop action failed',
-        'client': 'Zemanta One',
+        'client': 'Zemanta One - {0}'.format(settings.HOSTNAME),
         'details': {
-            'ad_group_id': ad_group_id,
-            'network_id': network_id
+            'action_log_admin_url': admin_url,
         }
     }
 

@@ -32,9 +32,5 @@ def created_by_pre_save_signal_handler(sender, instance, **kwargs):
 def trigger_alert_pre_save_signal_handler(sender, instance, **kwargs):
     if (instance.state == constants.ActionState.FAILED and
            instance.action_type == constants.ActionType.AUTOMATIC and
-           instance.action == constants.Action.SET_CAMPAIGN_STATE and
-           instance.order.order_type == constants.ActionLogOrderType.STOP_ALL):
-        pagerduty_helper.trigger_event(
-            instance.ad_group_network.ad_group.id,
-            instance.ad_group.network.network.id
-        )
+           instance.action == constants.Action.SET_CAMPAIGN_STATE):
+        pagerduty_helper.trigger_event(instance.id)
