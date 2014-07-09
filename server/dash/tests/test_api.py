@@ -1,9 +1,10 @@
 import decimal
+import datetime
 
 from django.test import TestCase
 
-from dash import models as dashmodels
-from dash import constants as dashconstants
+from dash import models
+from dash import constants
 from dash import api
 
 
@@ -12,7 +13,7 @@ class CampaignStatusApiTest(TestCase):
     fixtures = ['test_api.yaml']
 
     def setUp(self):
-        self.ad_group_network = dashmodels.AdGroupNetwork.objects.get(id=1)
+        self.ad_group_network = models.AdGroupNetwork.objects.get(id=1)
 
     def test_upsert_unmodified(self):
         current_settings = self.ad_group_network.settings.latest()
@@ -28,7 +29,7 @@ class CampaignStatusApiTest(TestCase):
     def test_upsert_modified_state(self):
         current_settings = self.ad_group_network.settings.latest()
 
-        new_state = dashconstants.AdGroupNetworkSettingsState.INACTIVE
+        new_state = constants.AdGroupNetworkSettingsState.INACTIVE
 
         api.campaign_status_upsert(self.ad_group_network, {
             'cpc_cc': int(current_settings.cpc_cc * 10000),
@@ -82,3 +83,40 @@ class CampaignStatusApiTest(TestCase):
         api.update_campaign_state(self.ad_group_network, new_state)
         self.assertNotEqual(current_settings, self.ad_group_network.settings.latest())
         self.assertEqual(self.ad_group_network.settings.latest().state, new_state)
+
+
+class AdGroupSettingsOrderTest(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.ad_group_network = models.AdGroupNetwork.objects.get(id=1)
+
+    def test_settings_changes(self):
+
+        set1 = models.AdGroupSettings(
+            created_dt=datetime.date.today(),
+
+            state=1,
+            start_date=datetime.date.today(),
+            end_date=datetime.date.today(),
+            cpc_cc=decimal.Decimal('0.1'),
+            daily_budget_cc=decimal.Decimal('50.'),
+        )
+
+        set2 = models.AdGroupSettings(
+            created_dt=datetime.date.today() - datetime.timedelta(days=1),
+
+            state=2,
+            start_date=datetime.date.today(),
+            end_date=datetime.date.today(),
+            cpc_cc=decimal.Decimal('0.2'),
+            daily_budget_cc=decimal.Decimal('50.'),
+        )
+
+        self.assertEqual(api._get_setting_changes(set1, set1), {})
+
+        self.assertEqual(
+            api._get_setting_changes(set1, set2),
+            {'state': 2, 'cpc_cc': decimal.Decimal('0.2')},
+        )
