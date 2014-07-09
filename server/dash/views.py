@@ -371,6 +371,10 @@ class AdGroupNetworksTable(api_common.BaseApiView):
                     network_data = item
                     break
 
+            last_sync = last_actions.get(nid)
+            if last_sync:
+                last_sync = pytz.utc.localize(last_sync)
+
             rows.append({
                 'id': str(nid),
                 'name': settings.ad_group_network.network.name,
@@ -385,7 +389,7 @@ class AdGroupNetworksTable(api_common.BaseApiView):
                 'clicks': network_data.get('clicks', None),
                 'impressions': network_data.get('impressions', None),
                 'ctr': network_data.get('ctr', None),
-                'last_sync': last_actions.get(nid)
+                'last_sync': last_sync
             })
 
         return rows
