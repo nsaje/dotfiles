@@ -125,7 +125,11 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 impressions: data.impressions,
                 ctr: data.ctr !== null ? parseFloat((data.ctr).toFixed(2)) : null,
                 cpc: data.cpc !== null ? parseFloat((data.cpc).toFixed(2)) : null,
-                cost: data.cost !== null ? parseFloat((data.cost).toFixed(2)) : null
+                cost: data.cost !== null ? parseFloat((data.cost).toFixed(2)) : null,
+                articleId: data.article || null,
+                articleTitle: data.article_title || null,
+                networkId: data.network || null,
+                networkName: data.network_name || null
             };
             return result;
         }

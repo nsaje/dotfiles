@@ -14,6 +14,7 @@ oneApp.directive('zemChart', ['config', function(config) {
         templateUrl: config.static_url + '/partials/zem_chart.html',
         controller: ['$scope', '$element', '$attrs', '$http', function ($scope, $element, $attrs, $http) {
 
+            var markerSymbols = ["circle", "square", "diamond", "triangle", "triangle-down"];
             var colors = ['#2fa8c7', '#4bbc00'];
             $scope.hasData = true;
 
@@ -80,11 +81,13 @@ oneApp.directive('zemChart', ['config', function(config) {
             $scope.$watch('data', function(newValue, oldValue) {
                 var i = 0;
                 var j = 0;
+                var k = 0;
                 var metrics = [];
                 var data = [];
                 var valuePrefix = null;
                 var valueSuffix = null;
                 var axisFormat = null;
+                var name = null;
 
                 $scope.hasData = false;
 
@@ -120,43 +123,50 @@ oneApp.directive('zemChart', ['config', function(config) {
 
                     data = newValue.data;
                     for (i = 0; i < data.length; i++) {
-                        valuePrefix = null;
-                        valueSuffix = null;
-                        axisFormat = null;
-
-                        if (newValue.formats[i] === 'currency') {
-                            valuePrefix = '$';
-                            axisFormat = '${value}';
-                        } else if (newValue.formats[i] === 'percent') {
-                            valueSuffix = '%';
-                            axisFormat = '{value}%';
-                        }
-                        
-                        $scope.config.options.yAxis[i].labels = {
-                            format: axisFormat
-                        };
-
-                        $scope.config.series.push({
-                            name: metrics[i],
-                            color: colors[i],
-                            yAxis: i,
-                            data: data[i],
-                            tooltip: {
-                                valueSuffix: valueSuffix,
-                                valuePrefix: valuePrefix
-                            },
-                            marker: {
-                                radius: 2,
-                                symbol: 'circle',
-                                fillColor: '#fff',
-                                lineWidth: 2,
-                                lineColor: null
-                            }
-                        });
                         for (j = 0; j < data[i].length; j++) {
-                            if ((!Array.isArray(data[i][j]) && data[i][j]) || data[i][j][data[i][j].length-1]) {
-                                $scope.hasData = true;
-                                break;
+                            valuePrefix = null;
+                            valueSuffix = null;
+                            axisFormat = null;
+
+                            if (newValue.formats[j] === 'currency') {
+                                valuePrefix = '$';
+                                axisFormat = '${value}';
+                            } else if (newValue.formats[j] === 'percent') {
+                                valueSuffix = '%';
+                                axisFormat = '{value}%';
+                            }
+                            
+                            $scope.config.options.yAxis[j].labels = {
+                                format: axisFormat
+                            };
+
+                            name = metrics[j];
+                            if (newValue.names.length) {
+                                name = newValue.names[i] + ', ' + name;
+                            }
+
+                            $scope.config.series.push({
+                                name: name,
+                                color: colors[j],
+                                yAxis: j,
+                                data: data[i][j],
+                                tooltip: {
+                                    valueSuffix: valueSuffix,
+                                    valuePrefix: valuePrefix
+                                },
+                                marker: {
+                                    radius: 2,
+                                    symbol: markerSymbols[i % markerSymbols.length],
+                                    fillColor: '#fff',
+                                    lineWidth: 2,
+                                    lineColor: null
+                                }
+                            });
+                            for (k = 0; k < data[i][j].length; k++) {
+                                if ((!Array.isArray(data[i][j][k]) && data[i][j][k]) || data[i][j][k][data[i][j][k].length-1]) {
+                                    $scope.hasData = true;
+                                    break;
+                                }
                             }
                         }
                     }

@@ -61,9 +61,9 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     $scope.setChartData = function () {
         var result = {
             formats: [],
-            data: [[]]
+            data: [],
+            names: []
         };
-        var i;
 
         result.formats = [$scope.chartMetric1, $scope.chartMetric2].map(function (x) {
             var format = null;
@@ -75,17 +75,31 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
 
             return format;
         });
-        
-        for (i = 0; i < $scope.dailyStats.length; i++) {
-            result.data[0].push([$scope.dailyStats[i].date, $scope.dailyStats[i][$scope.chartMetric1]]);
-            
-            if ($scope.chartMetric2 && $scope.chartMetric2 !== $scope.chartMetric1) {
-                if (!result.data[1]) {
-                    result.data[1] = [];
-                }
-                result.data[1].push([$scope.dailyStats[i].date, $scope.dailyStats[i][$scope.chartMetric2]]);
+
+        var temp = {};
+        $scope.dailyStats.forEach(function (stat) {
+            if (!temp.hasOwnProperty(stat.articleId)) {
+                temp[stat.articleId] = {
+                    name: stat.articleTitle,
+                    data: [[]]
+                };
             }
-        }
+
+            temp[stat.articleId].data[0].push([stat.date, stat[$scope.chartMetric1]]);
+
+            if ($scope.chartMetric2 && $scope.chartMetric2 !== $scope.chartMetric1) {
+                if (!temp[stat.articleId].data[1]) {
+                    temp[stat.articleId].data[1] = [];
+                }
+                temp[stat.articleId].data[1].push([stat.date, stat[$scope.chartMetric2]]);
+            }
+        });
+
+        Object.keys(temp).forEach(function (articleId) {
+            result.data.push(temp[articleId].data);
+            result.names.push(temp[articleId].name);
+        });
+
         $scope.chartData = result;
     };
 
