@@ -45,3 +45,7 @@ ZWEI_API_URL = ''
 
 # Network credentials encryption key
 CREDENTIALS_ENCRYPTION_KEY = ''  # has to be 32 bytes
+
+# Pagerduty settings
+PAGER_DUTY_ENABLED = False
+PAGER_DUTY_URL = ''
