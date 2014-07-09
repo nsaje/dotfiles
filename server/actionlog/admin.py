@@ -11,9 +11,10 @@ class ActionLogAdminForm(forms.ModelForm):
 
     def clean_state(self):
         if self.has_changed():
-            if self.instance.state == constants.ActionState.WAITING:
+            if self.instance.state == constants.ActionState.WAITING \
+            and self.instance.action_type == constants.ActionType.AUTOMATIC:
                 raise ValidationError(
-                    'Can\'t change the state of a waiting task', 
+                    'Can\'t change the state of an automatic task which is waiting', 
                     code='invalid'
                 )
         
