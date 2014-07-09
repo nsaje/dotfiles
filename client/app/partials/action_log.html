@@ -1,12 +1,6 @@
 <div class="container-fluid" ng-controller="ActionLogCtrl">
     <div class="row header" ng-include src="config.static_url + '/partials/header.html'"></div>
 
-    <div class="row body">
-        <div class="col-xs-12 content">
-            <div ui-view></div>
-        </div>
-    </div>
-
     <div class="section action-log-list">
         <table class="table">
             <thead>
@@ -20,18 +14,13 @@
                         Network
                         <zem-action-log-filter field="'network'" filters="filters" />
                     </th>
-                    <th>Account
-                        <zem-action-log-filter field="'account'" filters="filters" />
-                    </th>
                     <th>
-                        Campaign
-                        <zem-action-log-filter field="'campaign'" filters="filters" />
+                        Ad Group
+                        <zem-action-log-filter field="'ad_group'" filters="filters" />
                     </th>
-                    <th>Ad Group</th>
                     <th>Created</th>
                     <th>Created By</th>
                     <th>Modified</th>
-                    <th>Modified By</th>
                 </tr>
             </thead>
             <tbody>
@@ -51,16 +40,14 @@
                     </td>
                     <td><strong>{{log.take_action}}</strong></td>
                     <td>{{log.network[0]}}</td>
-                    <td>{{log.account[0]}}</td>
-                    <td>{{log.campaign[0]}}</td>
                     <td>{{log.ad_group[0]}}</td>
                     <td>{{log.created_dt | date:'M/d/yyyy h:mm a'}}</td>
                     <td>{{log.created_by[0]}}</td>
-                    <td>{{log.modified_dt | date:'M/d/yyyy h:mm a'}}</td>
-                    <td>{{log.modified_by[0]}}</td>
+                    <td title="{{log.modified_by[0]}}">{{log.modified_dt | date:'M/d/yyyy h:mm a'}}</td>
                 </tr>
             </tbody>
         </table>
+        <alert ng-show="actionLogItems.length >= actionLogItemsMax" type="danger">Only {{actionLogItemsMax}} action can be displayed. There are more actions hidden.</alert>
     </div>
 
     <div class="row footer" ng-include src="config.static_url + '/partials/footer.html'"></div>

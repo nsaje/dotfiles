@@ -1,7 +1,7 @@
-import json
 import logging
 import traceback
 import urlparse
+import time
 
 from datetime import datetime, timedelta
 
@@ -9,7 +9,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Max
+from django.db.models import Max, Min
 
 from . import models
 from . import constants
@@ -42,6 +42,7 @@ def stop_ad_group(ad_group, network=None, order=None):
     ad_group_networks = _get_ad_group_networks(ad_group, network)
     for ad_group_network in ad_group_networks:
         _init_stop_campaign(ad_group_network, order)
+
 
 def stop_ad_group_order(ad_group, network=None):
     order = models.ActionLogOrder.objects.create(
@@ -161,6 +162,52 @@ def get_last_succesfull_fetch_all_networks_dates(ad_group):
         result[log['ad_group_network__network_id']] = log['created_dt']
 
     return result
+
+
+def count_waiting_manual_actions():
+    result = -1
+    try:
+        result = models.ActionLog.objects.filter(
+            action_type=constants.ActionType.MANUAL,
+            state=constants.ActionState.WAITING
+        ).count()
+    except Exception as e:
+        msg = traceback.format_exc(e)
+        logger.error(msg)
+    return result
+
+
+def count_failed_manual_actions():
+    result = -1
+    try:
+        result = models.ActionLog.objects.filter(
+            action_type=constants.ActionType.MANUAL,
+            state=constants.ActionState.FAILED
+        ).count()
+    except Exception as e:
+        msg = traceback.format_exc(e)
+        logger.error(msg)
+    return result
+
+
+def age_oldest_waiting_action():
+    n_hours = -1
+    try:
+        result = models.ActionLog.objects.filter(
+            action_type=constants.ActionType.MANUAL,
+            state=constants.ActionState.WAITING
+        ).aggregate(Min('created_dt'))
+        
+        if result.get('created_dt__min') is None:
+            n_hours = 0
+        else:
+            t_now = time.mktime(datetime.utcnow().timetuple())
+            t_created = time.mktime(result['created_dt__min'].timetuple())
+            n_hours = int((t_now - t_created)/3600)
+    except Exception as e:
+        msg = traceback.format_exc(e)
+        logger.error(msg)
+    return n_hours
 
 
 def _is_fetch_all_order_successful(order):
@@ -334,10 +381,10 @@ def _init_set_campaign_property(ad_group_network, prop, value, order):
             expiration_dt=None,
             state=constants.ActionState.WAITING,
             ad_group_network=ad_group_network,
-            payload=json.dumps({
+            payload={
                 'property': prop,
                 'value': value,
-            }),
+            },
             order=order
         )
         action.save()

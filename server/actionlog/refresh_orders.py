@@ -12,4 +12,4 @@ def refresh_fetch_all_orders():
 def _hours_since_statsd_ping(last_successful_order):
     if last_successful_order is not None:
         hours_since = (datetime.utcnow() - last_successful_order.created_dt).total_seconds() // 3600
-        statsd_helper.statsd_gauge('hours_since_last_successful_fetch_all', hours_since)
+        statsd_helper.statsd_gauge('actionlog.hours_since_last_sync', hours_since)

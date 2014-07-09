@@ -4,6 +4,7 @@ import httplib
 import os
 
 from fabric.api import abort, env, execute, cd, lcd, local, run, task, prefix, put, parallel, serial
+from fabric.contrib.files import exists
 import fabric.colors
 import fabric.utils
 
@@ -34,10 +35,11 @@ STAGING_USER = 'one'
 PRODUCTION_USER = STAGING_USER
 
 STAGING_SERVERS = {
-    'stadium01': 'stadium01.zemanta.com'
+    'stadium01': 'stadium01.zemanta.com',
 }
 PRODUCTION_SERVERS = {
-    'knot01': 'knot01.zemanta.com'
+    'knot01': 'knot01.zemanta.com',
+    'knot02': 'knot02.zemanta.com',
 }
 
 GIT_REPOSITORY = 'git@github.com:Zemanta/zemanta-eins.git'
@@ -273,12 +275,14 @@ def switch_django_app(app, params):
         virtualenv_folder = os.path.join('~/.virtualenvs', params['venv_name'])
 
         # remember which was previous virtualenv release
-        run("cp -a ~/.virtualenvs/{app} {virtualenv_folder}/previous".format(app=app, virtualenv_folder=virtualenv_folder))
+        if exists(app):
+            run("cp -a ~/.virtualenvs/{app} {virtualenv_folder}/previous".format(app=app, virtualenv_folder=virtualenv_folder))
         run("ln -Tsf %s %s" % (virtualenv_folder, app))
 
     with cd("~/apps/"):
         # remember which was previous app release
-        run("cp -a {app} {folder}/previous".format(folder=params['app_folder'], app=app))
+        if exists(app):
+            run("cp -a {app} {folder}/previous".format(folder=params['app_folder'], app=app))
 
         run("ln -Tsf %s %s" % (params['app_folder'], app))
 

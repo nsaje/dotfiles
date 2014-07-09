@@ -1,26 +1,44 @@
 from django.contrib import admin
 from django.core.urlresolvers import reverse
+from django.core.exceptions import ValidationError
+from django import forms
 
 from actionlog import models
 from actionlog import constants
 
 
+class ActionLogAdminForm(forms.ModelForm):
+
+    def clean_state(self):
+        if self.has_changed():
+            if self.instance.state == constants.ActionState.WAITING \
+            and self.instance.action_type == constants.ActionType.AUTOMATIC:
+                raise ValidationError(
+                    'Can\'t change the state of an automatic task which is waiting', 
+                    code='invalid'
+                )
+        
+        return self.cleaned_data['state']
+
+
 class ActionLogAdminAdmin(admin.ModelAdmin):
+    form = ActionLogAdminForm
+
     search_fields = ('action', 'ad_group_network')
     list_filter = ('ad_group_network__network', 'state', 'action', 'action_type')
 
-    list_display = ('action_', 'ad_group_network_', 'created_dt', 'action_type', 'state_')
+    list_display = ('action_', 'ad_group_network_', 'created_dt', 'action_type', 'state_', 'order_')
 
     fields = (
-        'action_', 'ad_group_network', 'state_', 'action_type',
+        'action_', 'ad_group_network', 'state', 'action_type',
         'created_by', 'created_dt', 'modified_by', 'modified_dt',
-        'payload', 'message_',
+        'payload', 'message_', 'order_'
     )
 
     readonly_fields = (
-        'action_', 'ad_group_network', 'state_', 'action_type',
+        'action_', 'ad_group_network', 'action_type',
         'created_by', 'created_dt', 'modified_by', 'modified_dt',
-        'payload', 'message_',
+        'payload', 'message_', 'order_'
     )
 
     display_state_colors = {
