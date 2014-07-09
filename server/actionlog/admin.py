@@ -1,11 +1,28 @@
 from django.contrib import admin
 from django.core.urlresolvers import reverse
+from django.core.exceptions import ValidationError
+from django import forms
 
 from actionlog import models
 from actionlog import constants
 
 
+class ActionLogAdminForm(forms.ModelForm):
+
+    def clean_state(self):
+        if self.has_changed():
+            if self.instance.state == constants.ActionState.WAITING:
+                raise ValidationError(
+                    'Can\'t change the state of a waiting task', 
+                    code='invalid'
+                )
+        
+        return self.cleaned_data['state']
+
+
 class ActionLogAdminAdmin(admin.ModelAdmin):
+    form = ActionLogAdminForm
+
     search_fields = ('action', 'ad_group_network')
     list_filter = ('ad_group_network__network', 'state', 'action', 'action_type')
 
