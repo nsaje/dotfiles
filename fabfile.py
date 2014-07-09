@@ -34,10 +34,11 @@ STAGING_USER = 'one'
 PRODUCTION_USER = STAGING_USER
 
 STAGING_SERVERS = {
-    'stadium01': 'stadium01.zemanta.com'
+    'stadium01': 'stadium01.zemanta.com',
 }
 PRODUCTION_SERVERS = {
-    'knot01': 'knot01.zemanta.com'
+    'knot01': 'knot01.zemanta.com',
+    'knot02': 'knot02.zemanta.com',
 }
 
 GIT_REPOSITORY = 'git@github.com:Zemanta/zemanta-eins.git'
