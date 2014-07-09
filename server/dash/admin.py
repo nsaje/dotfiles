@@ -193,8 +193,9 @@ class NetworkAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'name',
+        'maintenance',
         'created_dt',
-        'modified_dt'
+        'modified_dt',
     )
     readonly_fields = ('created_dt', 'modified_dt')
 

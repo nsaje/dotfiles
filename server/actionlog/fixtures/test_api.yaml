@@ -44,6 +44,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: AdBlade
         type: adblade
+        maintenance: false
     model: dash.network
     pk: 1
 
