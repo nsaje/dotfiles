@@ -18,6 +18,7 @@ module.exports = function (grunt) {
                     'app/js/config.js',
                     'app/js/constants.js',
                     'app/js/app.js',
+                    'app/js/app_actionlog.js',
                     'app/js/services/**/*.js',
                     'app/js/directives/**/*.js',
                     'app/js/services/**/*.js',

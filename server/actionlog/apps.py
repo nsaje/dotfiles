@@ -1,5 +1,6 @@
 from django.apps import AppConfig
 
+
 class ActionLogAppConfig(AppConfig):
     name = 'actionlog'
 

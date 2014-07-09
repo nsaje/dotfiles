@@ -172,7 +172,7 @@
         message: ''
         payload: ''
         order: 2
-        expiration_dt: '2014-07-03T18:30:00Z'
+        expiration_dt: '2014-07-03T18:30:00'
         created_dt: '2014-07-03T18:00:00'
         modified_dt: '2014-07-03T18:00:00'
         created_by: null
@@ -188,7 +188,7 @@
         message: ''
         payload: ''
         order: 2
-        expiration_dt: '2014-07-03T18:30:00Z'
+        expiration_dt: '2014-07-03T18:30:00'
         created_dt: '2014-07-03T18:00:00'
         modified_dt: '2014-07-03T18:00:00'
         created_by: null
@@ -204,7 +204,7 @@
         message: ''
         payload: ''
         order: 2
-        expiration_dt: '2014-07-03T18:30:00Z'
+        expiration_dt: '2014-07-03T18:30:00'
         created_dt: '2014-07-03T18:00:00'
         modified_dt: '2014-07-03T18:00:00'
         created_by: null
@@ -220,7 +220,7 @@
         message: ''
         payload: ''
         order: 2
-        expiration_dt: '2014-07-03T18:30:00Z'
+        expiration_dt: '2014-07-03T18:30:00'
         created_dt: '2014-07-03T18:00:00'
         modified_dt: '2014-07-03T18:00:00'
         created_by: null
@@ -236,7 +236,7 @@
         message: ''
         payload: ''
         order: 2
-        expiration_dt: '2014-07-03T18:30:00Z'
+        expiration_dt: '2014-07-03T18:30:00'
         created_dt: '2014-07-03T18:00:00'
         modified_dt: '2014-07-03T18:00:00'
         created_by: null
@@ -252,7 +252,7 @@
         message: ''
         payload: ''
         order: 2
-        expiration_dt: '2014-07-03T18:30:00Z'
+        expiration_dt: '2014-07-03T18:30:00'
         created_dt: '2014-07-03T18:00:00'
         modified_dt: '2014-07-03T18:00:00'
         created_by: null
@@ -268,7 +268,7 @@
         message: ''
         payload: ''
         order: 2
-        expiration_dt: '2014-07-03T18:30:00Z'
+        expiration_dt: '2014-07-03T18:30:00'
         created_dt: '2014-07-03T18:00:00'
         modified_dt: '2014-07-03T18:00:00'
         created_by: null
@@ -284,7 +284,7 @@
         message: ''
         payload: ''
         order: 2
-        expiration_dt: '2014-07-03T18:30:00Z'
+        expiration_dt: '2014-07-03T18:30:00'
         created_dt: '2014-07-03T18:00:00'
         modified_dt: '2014-07-03T18:00:00'
         created_by: null
@@ -300,7 +300,7 @@
         message: ''
         payload: ''
         order: 2
-        expiration_dt: '2014-07-03T18:30:00Z'
+        expiration_dt: '2014-07-03T18:30:00'
         created_dt: '2014-07-03T18:00:00'
         modified_dt: '2014-07-03T18:00:00'
         created_by: null
@@ -316,7 +316,7 @@
         message: ''
         payload: ''
         order: 2
-        expiration_dt: '2014-07-03T18:30:00Z'
+        expiration_dt: '2014-07-03T18:30:00'
         created_dt: '2014-07-03T18:00:00'
         modified_dt: '2014-07-03T18:00:00'
         created_by: null

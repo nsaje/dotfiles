@@ -1,0 +1,68 @@
+<div class="container-fluid" ng-controller="ActionLogCtrl">
+    <div class="row header" ng-include src="config.static_url + '/partials/header.html'"></div>
+
+    <div class="row body">
+        <div class="col-xs-12 content">
+            <div ui-view></div>
+        </div>
+    </div>
+
+    <div class="section action-log-list">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        State
+                        <zem-action-log-filter field="'state'" filters="filters" />
+                    </th>
+                    <th>Action</th>
+                    <th>
+                        Network
+                        <zem-action-log-filter field="'network'" filters="filters" />
+                    </th>
+                    <th>Account
+                        <zem-action-log-filter field="'account'" filters="filters" />
+                    </th>
+                    <th>
+                        Campaign
+                        <zem-action-log-filter field="'campaign'" filters="filters" />
+                    </th>
+                    <th>Ad Group</th>
+                    <th>Created</th>
+                    <th>Created By</th>
+                    <th>Modified</th>
+                    <th>Modified By</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-if="loadRequestInProgress && !actionLogItems.length">
+                    <td colspan="7" class="loader-row">
+                        <img class="loader" ng-src="{{ config.static_url }}/img/loader.svg">
+                    </td>
+                </tr>
+                <tr ng-show="!actionLogItems.length && !loadRequestInProgress">
+                    <td class="no-data" colspan="7">No data available.</td>
+                </tr>
+                <tr ng-repeat="log in actionLogItems" ng-class="log.orderClass">
+                    <td>
+                        <div class="btn-group">
+                            <label ng-repeat="state in states" ng-click="updateState(log, state)" class="btn btn-default btn-xs" ng-class="stateClass(log, state)">{{state[0]}}</label>
+                        </div>
+                    </td>
+                    <td><strong>{{log.take_action}}</strong></td>
+                    <td>{{log.network[0]}}</td>
+                    <td>{{log.account[0]}}</td>
+                    <td>{{log.campaign[0]}}</td>
+                    <td>{{log.ad_group[0]}}</td>
+                    <td>{{log.created_dt | date:'M/d/yyyy h:mm a'}}</td>
+                    <td>{{log.created_by[0]}}</td>
+                    <td>{{log.modified_dt | date:'M/d/yyyy h:mm a'}}</td>
+                    <td>{{log.modified_by[0]}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row footer" ng-include src="config.static_url + '/partials/footer.html'"></div>
+</div>
+
