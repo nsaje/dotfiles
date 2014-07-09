@@ -74,9 +74,9 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
     $scope.setChartData = function () {
         var result = {
             formats: [],
-            data: [[]]
+            data: [],
+            names: []
         };
-        var i;
 
         result.formats = [$scope.chartMetric1, $scope.chartMetric2].map(function (x) {
             var format = null;
@@ -88,17 +88,31 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
 
             return format;
         });
-        
-        for (i = 0; i < $scope.dailyStats.length; i++) {
-            result.data[0].push([$scope.dailyStats[i].date, $scope.dailyStats[i][$scope.chartMetric1]]);
-            
-            if ($scope.chartMetric2 && $scope.chartMetric2 !== $scope.chartMetric1) {
-                if (!result.data[1]) {
-                    result.data[1] = [];
-                }
-                result.data[1].push([$scope.dailyStats[i].date, $scope.dailyStats[i][$scope.chartMetric2]]);
+
+        var temp = {};
+        $scope.dailyStats.forEach(function (stat) {
+            if (!temp.hasOwnProperty(stat.networkId)) {
+                temp[stat.networkId] = {
+                    name: stat.networkName,
+                    data: [[]]
+                };
             }
-        }
+
+            temp[stat.networkId].data[0].push([stat.date, stat[$scope.chartMetric1]]);
+
+            if ($scope.chartMetric2 && $scope.chartMetric2 !== $scope.chartMetric1) {
+                if (!temp[stat.networkId].data[1]) {
+                    temp[stat.networkId].data[1] = [];
+                }
+                temp[stat.networkId].data[1].push([stat.date, stat[$scope.chartMetric2]]);
+            }
+        });
+
+        Object.keys(temp).forEach(function (networkId) {
+            result.data.push(temp[networkId].data);
+            result.names.push(temp[networkId].name);
+        });
+
         $scope.chartData = result;
     };
 
