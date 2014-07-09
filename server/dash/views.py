@@ -15,6 +15,7 @@ from django.db.models import Q
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponse
+import pytz
 
 from utils import statsd_helper
 from utils import api_common
@@ -117,7 +118,7 @@ def create_excel_worksheet(workbook, name, widths, header_names, data, transform
 def get_last_sucessful_sync_date():
     last_successful_order = actionlog.api.get_last_successful_fetch_all_order()
     if last_successful_order:
-        last_sync = last_successful_order.created_dt
+        last_sync = pytz.utc.localize(last_successful_order.created_dt)
     else:
         last_sync = None
 
