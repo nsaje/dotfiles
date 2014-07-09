@@ -6,7 +6,6 @@ from collections import OrderedDict
 import unicodecsv
 from xlwt import Workbook, Style
 import slugify
-import itertools
 import excel_styles
 
 from django.conf import settings
@@ -19,7 +18,6 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from utils import statsd_helper
 from utils import api_common
 from utils import exc
-from utils import statsd_helper
 import actionlog.api
 import reports.api
 
@@ -116,7 +114,7 @@ def create_excel_worksheet(workbook, name, widths, header_names, data, transform
 
 
 def get_last_sucessful_sync_date():
-    last_successful_order = actionlog_api.get_last_successful_fetch_all_order()
+    last_successful_order = actionlog.api.get_last_successful_fetch_all_order()
     if last_successful_order:
         last_sync = last_successful_order.created_dt
     else:
@@ -328,7 +326,7 @@ class AdGroupNetworksTable(api_common.BaseApiView):
         )[0]
 
         last_success_actions = \
-            actionlog_api.get_last_succesfull_fetch_all_networks_dates(ad_group)
+            actionlog.api.get_last_succesfull_fetch_all_networks_dates(ad_group)
 
         return self.create_api_response({
             'rows': self.get_rows(
@@ -339,7 +337,7 @@ class AdGroupNetworksTable(api_common.BaseApiView):
             ),
             'totals': self.get_totals(ad_group, totals_data, network_settings),
             'last_sync': get_last_sucessful_sync_date(),
-            'is_sync_recent': actionlog_api.is_fetch_all_data_recent(),
+            'is_sync_recent': actionlog.api.is_fetch_all_data_recent(),
         })
 
     def get_totals(self, ad_group, totals_data, network_settings):
@@ -615,7 +613,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
             'rows': self.get_rows(ad_group, article_data, articles),
             'totals': self.get_totals(totals_data),
             'last_sync': get_last_sucessful_sync_date(),
-            'is_sync_recent': actionlog_api.is_fetch_all_data_recent(),
+            'is_sync_recent': actionlog.api.is_fetch_all_data_recent(),
             'pagination': {
                 'currentPage': articles.number,
                 'numPages': articles.paginator.num_pages,
