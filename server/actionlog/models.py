@@ -47,7 +47,7 @@ class ActionLog(models.Model):
 
     message = models.TextField(blank=True)
 
-    payload = jsonfield.JSONField(blank=True, default=[])
+    payload = jsonfield.JSONField(blank=True, default={})
 
     order = models.ForeignKey(
         ActionLogOrder,

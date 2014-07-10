@@ -139,15 +139,14 @@ def _reconcile_article(raw_url, title, ad_group):
         raise exc.ArticleReconciliationException('Missing article title.')
 
     kwargs = {
-        'ad_group': ad_group
+        'ad_group': ad_group,
+        'title': title
     }
 
     url = None
     if raw_url:
         url = _clean_url(raw_url)
         kwargs['url'] = url
-
-    kwargs['title'] = title
 
     try:
         return dashmodels.Article.objects.filter(**kwargs).latest()

@@ -250,6 +250,9 @@ class AdGroupAdmin(admin.ModelAdmin):
         AdGroupNetworksInline,
     )
 
+    def view_on_site(self, obj):
+        return '/#/ad_groups/{}/ads'.format(obj.id)
+
     def settings_(self, obj):
         return '<a href="{admin_url}">List ({num_settings})</a>'.format(
             admin_url='{}?{}'.format(
