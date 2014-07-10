@@ -1,0 +1,36 @@
+from mock import Mock, patch
+
+from django.test import TestCase
+
+from utils import signal_handlers
+from actionlog import constants
+
+
+@patch('utils.signal_handlers.pagerduty_helper.trigger_event')
+class SignalHandlersTestCase(TestCase):
+    def test_trigger_alert_pre_save_signal_handler(self, mock_trigger_event):
+        instance_id = 1
+        mock_instance = self._get_instance_mock(instance_id)
+
+        signal_handlers.trigger_alert_pre_save_signal_handler(None, mock_instance)
+
+        mock_trigger_event.assert_called_with(instance_id)
+
+    def test_trigger_alert_pre_save_signal_handler_no_action(self, mock_trigger_event):
+        instance_id = 1
+        mock_instance = self._get_instance_mock(instance_id)
+
+        mock_instance.action_type = constants.ActionType.MANUAL
+
+        signal_handlers.trigger_alert_pre_save_signal_handler(None, mock_instance)
+
+        assert not mock_trigger_event.called, 'event should not be triggered'
+
+    def _get_instance_mock(self, instance_id):
+        mock_instance = Mock()
+        mock_instance.id = instance_id
+        mock_instance.state = constants.ActionState.FAILED
+        mock_instance.action_type = constants.ActionType.AUTOMATIC
+        mock_instance.action = constants.Action.SET_CAMPAIGN_STATE
+
+        return mock_instance

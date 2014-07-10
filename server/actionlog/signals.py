@@ -7,3 +7,4 @@ from actionlog import models
 
 pre_save.connect(signal_handlers.modified_by_pre_save_signal_handler, sender=models.ActionLog)
 pre_save.connect(signal_handlers.created_by_pre_save_signal_handler, sender=models.ActionLog)
+pre_save.connect(signal_handlers.trigger_alert_pre_save_signal_handler, sender=models.ActionLog)
