@@ -11,26 +11,33 @@ class ActionLogAdminForm(forms.ModelForm):
 
     def clean_state(self):
         if self.has_changed():
-            if self.instance.state == constants.ActionState.WAITING \
-            and self.instance.action_type == constants.ActionType.AUTOMATIC:
+            if self.instance.state == constants.ActionState.WAITING and \
+            self.instance.action_type == constants.ActionType.AUTOMATIC:
                 msg = ['Can\'t change the state of an automatic task which is waiting.']
                 if self.instance.expiration_dt:
                     msg.append(
                         'The task will fail automatically\
-                         if it doesn\'t finish by {}'.format(self.instance.expiration_dt.isoformat()) 
+                         if it doesn\'t finish by {}'.format(self.instance.expiration_dt.isoformat())
                     )
                 raise ValidationError(
-                    '\n'.join(msg), 
+                    '\n'.join(msg),
                     code='invalid'
                 )
-        
+
         return self.cleaned_data['state']
 
 
 class ActionLogAdminAdmin(admin.ModelAdmin):
     form = ActionLogAdminForm
 
-    search_fields = ('action', 'ad_group_network')
+    search_fields = (
+        'action',
+        'ad_group_network__ad_group__name',
+        'ad_group_network__ad_group__campaign__name',
+        'ad_group_network__ad_group__campaign__account__name',
+        'ad_group_network__network__name',
+    )
+
     list_filter = ('ad_group_network__network', 'state', 'action', 'action_type')
 
     list_display = ('action_', 'ad_group_network_', 'created_dt', 'action_type', 'state_', 'order_')
@@ -95,11 +102,18 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
 
     def action_(self, obj):
         if obj.action == constants.Action.FETCH_REPORTS:
-            description = 'for {}'.format(obj.payload.get('args', {}).get('date'))
+            description = 'for {}'.format(
+                obj.payload and obj.payload.get('args', {}).get('date') or '\(O_o)/',
+            )
         elif obj.action == constants.Action.SET_PROPERTY:
-            description = '{} to {}'.format(obj.payload.get('property'), obj.payload.get('value'))
+            description = '{} to {}'.format(
+                obj.payload and obj.payload.get('property') or '\(O_o)/',
+                obj.payload and obj.payload.get('value') or '\(O_o)/',
+            )
         elif obj.action == constants.Action.SET_CAMPAIGN_STATE:
-            description = 'to {}'.format(obj.payload.get('args', {}).get('state'))
+            description = 'to {}'.format(
+                obj.payload and obj.payload.get('args', {}).get('state') or '\(O_o)/',
+            )
         else:
             return obj.action
 
