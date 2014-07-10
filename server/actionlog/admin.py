@@ -13,8 +13,14 @@ class ActionLogAdminForm(forms.ModelForm):
         if self.has_changed():
             if self.instance.state == constants.ActionState.WAITING \
             and self.instance.action_type == constants.ActionType.AUTOMATIC:
+                msg = ['Can\'t change the state of an automatic task which is waiting.']
+                if self.instance.expiration_dt:
+                    msg.append(
+                        'The task will fail automatically\
+                         if it doesn\'t finish by {}'.format(self.instance.expiration_dt.isoformat()) 
+                    )
                 raise ValidationError(
-                    'Can\'t change the state of an automatic task which is waiting', 
+                    '\n'.join(msg), 
                     code='invalid'
                 )
         
