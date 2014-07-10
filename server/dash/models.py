@@ -315,4 +315,4 @@ class Article(models.Model):
     class Meta:
 
         get_latest_by = 'created_dt'
-        unique_together = ('url', 'title')
+        unique_together = ('ad_group', 'url', 'title')
