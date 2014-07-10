@@ -7,9 +7,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 
+from django.conf import settings
+
+from utils import request_signer
 from actionlog import models as actionlogmodels
 from actionlog import constants as actionlogconstants
-
 from reports import api as reportsapi
 from dash import api as dashapi
 
@@ -19,6 +21,8 @@ logger = logging.getLogger(__name__)
 
 @csrf_exempt
 def zwei_callback(request, action_id):
+    request_signer.verify(request, settings.ZWEI_API_SIGN_KEY)
+
     try:
         action = actionlogmodels.ActionLog.objects.get(id=action_id)
     except ObjectDoesNotExist:
