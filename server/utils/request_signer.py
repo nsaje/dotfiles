@@ -61,8 +61,14 @@ def sign(urllib_request, secret_key):
     urllib_request.add_header(SIGNATURE_HEADER, signature)
 
 
+def _get_wsgi_header_field(header):
+    return 'HTTP_{}'.format(header.upper().replace('-', '_'))
+
+
 def verify(wsgi_request, secret_key):
-    header_signature = wsgi_request.META.get(SIGNATURE_HEADER.upper())
+    header_signature = wsgi_request.META.get(
+        _get_wsgi_header_field(SIGNATURE_HEADER.upper())
+    )
     if not header_signature:
         raise SignatureError('Missing signature')
 

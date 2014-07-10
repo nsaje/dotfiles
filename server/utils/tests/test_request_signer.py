@@ -50,11 +50,15 @@ class EncryptionHelperTestCase(unittest.TestCase):
             request_signer.sign(request, 'short')
 
     def test_verify(self):
+        header_key = request_signer._get_wsgi_header_field(
+            request_signer.SIGNATURE_HEADER,
+        )
+
         request = self.factory.post(
             self.url,
             data=self.data,
             content_type='application/json',
-            **{request_signer.SIGNATURE_HEADER.upper(): self.signature}
+            **{header_key: self.signature}
         )
 
         request_signer.verify(request, self.secret_key)
