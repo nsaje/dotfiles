@@ -88,6 +88,7 @@ oneApp.directive('zemChart', ['config', function(config) {
                 var valueSuffix = null;
                 var axisFormat = null;
                 var name = null;
+                var markerRadius = 2;
 
                 $scope.hasData = false;
 
@@ -155,7 +156,7 @@ oneApp.directive('zemChart', ['config', function(config) {
                                     valuePrefix: valuePrefix
                                 },
                                 marker: {
-                                    radius: 2,
+                                    radius: markerRadius,
                                     symbol: markerSymbols[i % markerSymbols.length],
                                     fillColor: '#fff',
                                     lineWidth: 2,
@@ -168,6 +169,12 @@ oneApp.directive('zemChart', ['config', function(config) {
                                     break;
                                 }
                             }
+                        }
+
+                        // When we run out of marker symbols, start increasing their
+                        // sizes so that user can distinguish between them.
+                        if (i > 0 && i % markerSymbols.length === 0) {
+                            markerRadius += 2;
                         }
                     }
                 }
