@@ -16,6 +16,20 @@ oneApp.directive('zemChart', ['config', function(config) {
 
             var markerSymbols = ["circle", "square", "diamond", "triangle", "triangle-down"];
             var colors = ['#2fa8c7', '#4bbc00'];
+            var dashStyles = [
+                'Solid',
+                'ShortDash',
+                'ShortDot',
+                'ShortDashDot',
+                'ShortDashDotDot',
+                'Dot',
+                'Dash',
+                'LongDash',
+                'DashDot',
+                'LongDashDot',
+                'LongDashDotDot'
+            ];
+
             $scope.hasData = true;
 
             $scope.config = {
@@ -151,6 +165,7 @@ oneApp.directive('zemChart', ['config', function(config) {
                                 color: colors[j],
                                 yAxis: j,
                                 data: data[i][j],
+                                dashStyle: dashStyles[i % dashStyles.length],
                                 tooltip: {
                                     valueSuffix: valueSuffix,
                                     valuePrefix: valuePrefix
