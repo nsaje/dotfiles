@@ -105,6 +105,14 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', 'api', function 
         if (!$.isEmptyObject(dateRange)) {
             $scope.dateRange = dateRange;
         }
+
+        if (!$scope.stateChanged) {
+            $scope.stateChanged = true;
+        } else {
+            $location.search('article_ids', null);
+            $location.search('network_ids', null);
+            $location.search('totals', null);
+        }
     });
 
     api.navData.list().then(function (data) {
