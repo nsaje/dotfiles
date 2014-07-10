@@ -11,28 +11,7 @@ from actionlog import constants
 import dash.constants
 
 
-class ActionLogAdminForm(forms.ModelForm):
-
-    def clean_state(self):
-        if self.has_changed():
-            if self.instance.state == constants.ActionState.WAITING and \
-            self.instance.action_type == constants.ActionType.AUTOMATIC:
-                msg = ['Can\'t change the state of an automatic task which is waiting.']
-                if self.instance.expiration_dt:
-                    msg.append(
-                        'The task will fail automatically\
-                         if it doesn\'t finish by {}'.format(self.instance.expiration_dt.isoformat())
-                    )
-                raise ValidationError(
-                    '\n'.join(msg),
-                    code='invalid'
-                )
-
-        return self.cleaned_data['state']
-
-
 class ActionLogAdminAdmin(admin.ModelAdmin):
-    form = ActionLogAdminForm
 
     search_fields = (
         'action',
@@ -82,6 +61,8 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
             return obj.order.id
         else:
             return 'n/a'
+    order_.admin_order_field = 'order'
+    order_.short_description = 'Order ID'
 
     def ad_group_network_(self, obj):
         return '<a href="{ad_group_url}">{ad_group}</a>: <a href="{network_url}">{network}</a>'.format(
@@ -127,6 +108,7 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
             description=description,
         )
     action_.allow_tags = True
+    action_.admin_order_field = 'action'
 
     def payload_(self, obj):
         return self._wrap_preformatted_text(json.dumps(obj.payload, indent=4))
