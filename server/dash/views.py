@@ -669,12 +669,27 @@ class AdGroupDailyStats(api_common.BaseApiView):
 
         article_ids = request.GET.getlist('article_ids')
         network_ids = request.GET.getlist('network_ids')
+        totals = request.GET.get('totals')
+
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+
+        breakdown = ['date']
+
+        totals_stats = []
+        if totals:
+            totals_stats = reports.api.query(
+                get_stats_start_date(start_date),
+                get_stats_end_date(end_date),
+                breakdown,
+                ad_group=int(ad_group.id)
+            )
 
         articles = None
         networks = None
-
-        breakdown = ['date']
+        breakdown_stats = []
         extra_kwargs = {}
+
         if article_ids:
             ids = [int(x) for x in article_ids]
             extra_kwargs['article_id'] = ids
@@ -687,16 +702,17 @@ class AdGroupDailyStats(api_common.BaseApiView):
             breakdown.append('network')
             networks = models.Network.objects.filter(pk__in=ids)
 
-        stats = reports.api.query(
-            get_stats_start_date(request.GET.get('start_date')),
-            get_stats_end_date(request.GET.get('end_date')),
-            breakdown,
-            ad_group=int(ad_group.id),
-            **extra_kwargs
-        )
+        if 'article' in breakdown or 'network' in breakdown:
+            breakdown_stats = reports.api.query(
+                get_stats_start_date(start_date),
+                get_stats_end_date(end_date),
+                breakdown,
+                ad_group=int(ad_group.id),
+                **extra_kwargs
+            )
 
         return self.create_api_response({
-            'stats': self.get_dict(stats, articles, networks)
+            'stats': self.get_dict(breakdown_stats + totals_stats, articles, networks)
         })
 
     def get_dict(self, stats, articles, networks):

@@ -134,7 +134,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             return result;
         }
 
-        this.list = function (adGroupId, startDate, endDate, articleIds, networkIds) {
+        this.list = function (adGroupId, startDate, endDate, articleIds, networkIds, totals) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/daily_stats/';
             var config = {
@@ -155,6 +155,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             if (networkIds) {
                 config.params.network_ids = networkIds;
+            }
+
+            if (totals) {
+                config.params.totals = totals;
             }
 
             $http.get(url, config).

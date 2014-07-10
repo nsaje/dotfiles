@@ -140,7 +140,7 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
     };
 
     $scope.getDailyStats = function () {
-        api.adGroupNetworksDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, $scope.selectedNetworkIds).then(
+        api.adGroupNetworksDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, $scope.selectedNetworkIds, $scope.selectedNetworkTotals).then(
             function (data) {
                 $scope.dailyStats = data;
                 $scope.setChartData();
@@ -161,23 +161,14 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
             } else {
                 $scope.selectedNetworkIds.push(networkId);
             }
-
-            if ($scope.selectedNetworkIds.length) {
-                $scope.selectedNetworkTotals = false;
-            } else {
-                $scope.selectedNetworkTotals = true;
-            }
-
-            $location.search('network_ids', $scope.selectedNetworkIds.join(','));
-        } else {
-            $scope.selectedNetworkIds = [];
-            $scope.rows.map(function (x) {x.checked = false;});
-            if (!$scope.selectedNetworkTotals && !$scope.selectedNetworkIds.length) {
-                $scope.selectedNetworkTotals = true;
-            }
-
-            $location.search('network_ids', null);
         }
+
+        if (!$scope.selectedNetworkTotals && !$scope.selectedNetworkIds.length) {
+            $scope.selectedNetworkTotals = true;
+        }
+
+        $location.search('network_ids', $scope.selectedNetworkIds.join(','));
+        $location.search('totals', $scope.selectedNetworkTotals || null);
 
         $scope.getDailyStats();
     };
@@ -221,6 +212,7 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
         var chartMetric2 = $location.search().chart_metric2;
         var chartHidden = $location.search().chart_hidden;
         var networkIds = $location.search().network_ids;
+        var networkTotals = $location.search().totals;
         var changed = false;
 
         if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
@@ -240,14 +232,12 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
         if (networkIds) {
             $scope.selectedNetworkIds = networkIds.split(',');
 
-            if ($scope.selectedNetworkIds) {
-                $scope.selectedNetworkTotals = false;
-            }
-
             if ($scope.rows) {
                 $scope.selectNetworks();
             }
         }
+
+        $scope.selectedNetworkTotals = !$scope.selectedNetworkIds.length || networkTotals;
 
         if (changed) {
             $scope.setChartData();
