@@ -21,7 +21,15 @@ logger = logging.getLogger(__name__)
 
 @csrf_exempt
 def zwei_callback(request, action_id):
-    request_signer.verify(request, settings.ZWEI_API_SIGN_KEY)
+    try:
+        request_signer.verify(request, settings.ZWEI_API_SIGN_KEY)
+    except request_signer.SignatureError as e:
+        logger.exception('Invalid zwei callback signature.')
+
+        msg = 'Zwei callback failed for action: {action_id}. Error: {error}'.format(
+            action_id=action_id, error=repr(e.message)
+        )
+        logger.error(msg)
 
     try:
         action = actionlogmodels.ActionLog.objects.get(id=action_id)
