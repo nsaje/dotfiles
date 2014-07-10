@@ -2,7 +2,7 @@
     <div class="row header" ng-include src="config.static_url + '/partials/header.html'"></div>
 
     <div class="row body">
-        <div class="sidebar">
+        <div class="sidebar" ng-show="accounts">
             <div id="nav">
                 <div class="account-group" ng-repeat="account in accounts">
                     <div class="account-name">{{ account.name }}</div>
@@ -20,7 +20,7 @@
                 </div>
             </div>
         </div>
-        <div class="content">
+            <div class="content" ng-show="accounts">
             <form class="form-horizontal pull-right" role="form" ng-show="currentRoute.name !== 'adGroups.settings'">
                 <div class="input-group calendar">
                     <i class="input-group-addon"><img ng-src="{{ config.static_url }}/img/calendar.svg"></i>
@@ -39,6 +39,9 @@
 
             <div ui-view></div>
         </div>
+
+        <div ng-show="!!accounts && !accounts.length" ng-include src="config.static_url + '/partials/403.html'"></div>
+
     </div>
 
     <div class="row footer" ng-include src="config.static_url + '/partials/footer.html'"></div>
