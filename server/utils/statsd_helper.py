@@ -1,12 +1,12 @@
 import functools
 import time
-import socket
 
 from statsd.defaults.django import statsd
+from django.conf import settings
 
 
 def get_source():
-    return 'one-%s' % socket.gethostname().replace('.', '')
+    return 'one-%s' % settings.HOSTNAME.replace('.', '')
 
 
 def statsd_timer(path, name=None):

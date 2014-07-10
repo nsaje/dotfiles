@@ -1,6 +1,5 @@
-import unittest
-
 import mock
+from django.test import TestCase, override_settings
 
 from utils import statsd_helper
 
@@ -15,21 +14,10 @@ def test_function2():
     return 200
 
 
-class StatsdHelperTestCase(unittest.TestCase):
+@override_settings(HOSTNAME='testhost')
+class StatsdHelperTestCase(TestCase):
     fake_time_call_count = 1
     mock_called = False
-
-    def setUp(self):
-        self.socket_patcher = mock.patch('utils.statsd_helper.socket')
-        self.socket_mock = self.socket_patcher.start()
-
-        def fake_gethostname():
-            return 'testhost'
-
-        self.socket_mock.gethostname.side_effect = fake_gethostname
-
-    def tearDown(self):
-        self.socket_patcher.stop()
 
     @mock.patch('utils.statsd_helper.statsd.timing')
     @mock.patch('utils.statsd_helper.time')
@@ -109,9 +97,6 @@ class StatsdHelperTestCase(unittest.TestCase):
     def test_get_source(self):
         self.assertEqual(statsd_helper.get_source(), 'one-testhost')
 
+    @override_settings(HOSTNAME='tes.th.ost')
     def test_get_source_with_periods(self):
-        def fake_gethostname():
-            return 'tes.th.ost'
-        self.socket_mock.gethostname.side_effect = fake_gethostname
-
         self.assertEqual(statsd_helper.get_source(), 'one-testhost')
