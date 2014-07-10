@@ -93,7 +93,7 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
         $scope.dailyStats.forEach(function (stat) {
             if (!temp.hasOwnProperty(stat.networkId)) {
                 temp[stat.networkId] = {
-                    name: stat.networkName,
+                    name: stat.networkName || 'Totals',
                     data: [[]]
                 };
             }

@@ -80,7 +80,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         $scope.dailyStats.forEach(function (stat) {
             if (!temp.hasOwnProperty(stat.articleId)) {
                 temp[stat.articleId] = {
-                    name: stat.articleTitle,
+                    name: stat.articleTitle || 'Totals',
                     data: [[]]
                 };
             }
