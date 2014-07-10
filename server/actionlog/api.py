@@ -146,6 +146,27 @@ def get_last_successful_fetch_all_order():
     return None
 
 
+# def get_last_succesfull_fetch_all_networks_dates(ad_group):
+#     actionlogs = models.ActionLog.objects.\
+#         values('ad_group_network__network_id', 'order__pk').\
+#         annotate(created_dt=Max('created_dt')).\
+#         annotate(max_state=Max('state')).\
+#         annotate(min_state=Min('state')).\
+#         filter(ad_group_network__ad_group_id=ad_group.id).\
+#         filter(order__order_type=constants.ActionLogOrderType.FETCH_ALL).\
+#         filter(max_state=2).\
+#         filter(min_state=2)
+#     print actionlogs.query
+#     print actionlogs
+#
+#     result = {}
+#
+#     for log in list(actionlogs):
+#         result[log['ad_group_network__network_id']] = log['created_dt']
+#
+#     return result
+
+
 def get_last_succesfull_fetch_all_networks_dates(ad_group):
     result = {}
     for network in dashconstants.AdNetwork.get_all():
@@ -156,8 +177,9 @@ def get_last_succesfull_fetch_all_networks_dates(ad_group):
             annotate(min_state=Min('state')).\
             filter(ad_group_network__ad_group_id=ad_group.id).\
             filter(ad_group_network__network_id=network).\
-            filter(state=constants.ActionState.SUCCESS).\
             filter(order__order_type=constants.ActionLogOrderType.FETCH_ALL).\
+            filter(max_state=2).\
+            filter(min_state=2).\
             order_by('-created_dt').\
             first()
 
