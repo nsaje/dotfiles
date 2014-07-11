@@ -19,7 +19,8 @@ var constants = {
         CLICKS: 'clicks',
         IMPRESSIONS: 'impressions',
         CTR: 'ctr',
-        COST: 'cost'
+        COST: 'cost',
+        CPC: 'cpc'
     }
 };
 
@@ -44,6 +45,7 @@ var options = {
         {name: 'Clicks', value: constants.networkChartMetric.CLICKS},
         {name: 'Impressions', value: constants.networkChartMetric.IMPRESSIONS},
         {name: 'CTR', value: constants.networkChartMetric.CTR},
-        {name: 'Cost', value: constants.networkChartMetric.COST}
+        {name: 'Cost', value: constants.networkChartMetric.COST},
+        {name: 'CPC', value: constants.networkChartMetric.CPC}
     ]
 };
