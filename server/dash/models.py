@@ -130,7 +130,7 @@ class UserAdGroupManager(models.Manager):
             return queryset.filter(
                 models.Q(campaign__users__id=user.id) |
                 models.Q(campaign__account__users__id=user.id)
-            )
+            ).distinct('id')
 
 
 class AdGroup(models.Model):
