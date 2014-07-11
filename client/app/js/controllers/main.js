@@ -83,7 +83,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', 'api', function 
         }
     };
     
-    $scope.$on("$stateChangeSuccess", function() {
+    $scope.$on("$stateChangeSuccess", function(event, toState, toParams, fromState, fromParams) {
         $scope.currentRoute = $state.current;
         $scope.setBreadcrumb();
         $scope.tabs.forEach(function(tab) {
@@ -106,12 +106,11 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', 'api', function 
             $scope.dateRange = dateRange;
         }
 
-        if (!$scope.stateChanged) {
-            $scope.stateChanged = true;
-        } else {
+        if (fromParams.id && fromParams.id !== toParams.id) {
             $location.search('article_ids', null);
             $location.search('network_ids', null);
-            $location.search('totals', null);
+            $location.search('article_totals', null);
+            $location.search('network_totals', null);
         }
     });
 

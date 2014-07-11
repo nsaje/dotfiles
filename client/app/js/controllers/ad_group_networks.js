@@ -168,7 +168,7 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
         }
 
         $location.search('network_ids', $scope.selectedNetworkIds.join(','));
-        $location.search('totals', $scope.selectedNetworkTotals || null);
+        $location.search('network_totals', $scope.selectedNetworkTotals || null);
 
         $scope.getDailyStats();
     };
@@ -212,7 +212,7 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
         var chartMetric2 = $location.search().chart_metric2;
         var chartHidden = $location.search().chart_hidden;
         var networkIds = $location.search().network_ids;
-        var networkTotals = $location.search().totals;
+        var networkTotals = $location.search().network_totals;
         var changed = false;
 
         if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {

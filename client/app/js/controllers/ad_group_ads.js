@@ -157,7 +157,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         }
 
         $location.search('article_ids', $scope.selectedArticleIds.join(','));
-        $location.search('totals', $scope.selectedArticleTotals || null);
+        $location.search('article_totals', $scope.selectedArticleTotals || null);
 
         $scope.getDailyStats();
     };
@@ -223,7 +223,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         var page = $location.search().page;
         var size = $location.search().size;
         var articleIds = $location.search().article_ids;
-        var articleTotals = $location.search().totals;
+        var articleTotals = $location.search().article_totals;
         var tableChanged = false;
 
         if (page !== undefined && $scope.pagination.currentPage !== page) {
