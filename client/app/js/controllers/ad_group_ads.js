@@ -64,6 +64,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             data: [],
             names: []
         };
+        var temp = {};
 
         result.formats = [$scope.chartMetric1, $scope.chartMetric2].map(function (x) {
             var format = null;
@@ -76,7 +77,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             return format;
         });
 
-        var temp = {};
         $scope.dailyStats.forEach(function (stat) {
             if (!temp.hasOwnProperty(stat.articleId)) {
                 temp[stat.articleId] = {

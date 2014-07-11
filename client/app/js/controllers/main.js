@@ -31,13 +31,13 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', 'api', function 
     $scope.user = null;
     $scope.currentRoute = $scope.current;
     $scope.inputDateFormat = 'M/D/YYYY';
-    $scope.maxDate = moment().subtract('days', 1);
+    $scope.maxDate = moment();
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
     $scope.dateRanges = getDateRanges();
 
     $scope.dateRange = {
-        startDate: moment().subtract('day', 61).hours(0).minutes(0).seconds(0).milliseconds(0),
-        endDate: moment().subtract('day', 1).hours(0).minutes(0).seconds(0).milliseconds(0)
+        startDate: moment().subtract('day', 30).hours(0).minutes(0).seconds(0).milliseconds(0),
+        endDate: moment().hours(0).minutes(0).seconds(0).milliseconds(0)
     };
 
     $scope.breadcrumb = [];
