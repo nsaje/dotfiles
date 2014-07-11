@@ -7,9 +7,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 
+from django.conf import settings
+
+from utils import request_signer
 from actionlog import models as actionlogmodels
 from actionlog import constants as actionlogconstants
-
 from reports import api as reportsapi
 from dash import api as dashapi
 
@@ -20,6 +22,16 @@ logger = logging.getLogger(__name__)
 @csrf_exempt
 def zwei_callback(request, action_id):
     try:
+        request_signer.verify(request, settings.ZWEI_API_SIGN_KEY)
+    except request_signer.SignatureError as e:
+        logger.exception('Invalid zwei callback signature.')
+
+        msg = 'Zwei callback failed for action: {action_id}. Error: {error}'.format(
+            action_id=action_id, error=repr(e.message)
+        )
+        logger.error(msg)
+
+    try:
         action = actionlogmodels.ActionLog.objects.get(id=action_id)
     except ObjectDoesNotExist:
         raise Exception('Invalid action_id in callback')
@@ -29,7 +41,8 @@ def zwei_callback(request, action_id):
         _process_zwei_response(action, data)
     except Exception as e:
         tb = traceback.format_exc()
-        msg = 'Zwei callback failed for action: {action_id}. Error: {error}, message: {message}, traceback: {traceback}'\
+        msg = 'Zwei callback failed for action: {action_id}. Error: {error}, message: {message}.'\
+              '\n\nTraceback: {traceback}'\
               .format(action_id=action.id, error=e.__class__.__name__, message=repr(e.message), traceback=tb)
         logger.error(msg)
 

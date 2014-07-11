@@ -112,12 +112,18 @@ class NetworkCredentials(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        encrypted_credentials = encryption_helpers.aes_encrypt(
-            self.credentials,
-            settings.CREDENTIALS_ENCRYPTION_KEY
-        )
+        try:
+            existing_instance = NetworkCredentials.objects.get(id=self.id)
+        except NetworkCredentials.DoesNotExist:
+            existing_instance = None
 
-        self.credentials = binascii.b2a_base64(encrypted_credentials)
+        if existing_instance and existing_instance.credentials != self.credentials:
+            encrypted_credentials = encryption_helpers.aes_encrypt(
+                self.credentials,
+                settings.CREDENTIALS_ENCRYPTION_KEY
+            )
+            self.credentials = binascii.b2a_base64(encrypted_credentials)
+
         super(NetworkCredentials, self).save(*args, **kwargs)
 
 

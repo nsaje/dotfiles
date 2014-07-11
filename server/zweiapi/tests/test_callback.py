@@ -1,5 +1,6 @@
 import datetime
 import json
+import mock
 
 from django.test import TestCase
 from django.core.urlresolvers import reverse
@@ -19,7 +20,8 @@ class CampaignStatusTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
 
-    def test_update_status(self):
+    @mock.patch('utils.request_signer.verify')
+    def test_update_status(self, _):
         zwei_response_data = {
             'status': 'success',
             'data': {
@@ -57,7 +59,8 @@ class FetchReportsTestCase(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
 
-    def test_fetch_reports(self):
+    @mock.patch('utils.request_signer.verify')
+    def test_fetch_reports(self, _):
         article_row = {
             'title': 'Article 1',
             'url': 'http://example.com',

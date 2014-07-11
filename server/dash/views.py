@@ -669,25 +669,68 @@ class AdGroupDailyStats(api_common.BaseApiView):
 
         article_ids = request.GET.getlist('article_ids')
         network_ids = request.GET.getlist('network_ids')
+        totals = request.GET.get('totals')
 
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+
+        breakdown = ['date']
+
+        totals_stats = []
+        if totals:
+            totals_stats = reports.api.query(
+                get_stats_start_date(start_date),
+                get_stats_end_date(end_date),
+                breakdown,
+                ad_group=int(ad_group.id)
+            )
+
+        articles = None
+        networks = None
+        breakdown_stats = []
         extra_kwargs = {}
+
         if article_ids:
-            extra_kwargs['article_id'] = [int(x) for x in article_ids]
+            ids = [int(x) for x in article_ids]
+            extra_kwargs['article_id'] = ids
+            breakdown.append('article')
+            articles = models.Article.objects.filter(pk__in=ids)
 
         if network_ids:
-            extra_kwargs['network_id'] = [int(x) for x in network_ids]
+            ids = [int(x) for x in network_ids]
+            extra_kwargs['network_id'] = ids
+            breakdown.append('network')
+            networks = models.Network.objects.filter(pk__in=ids)
 
-        stats = reports.api.query(
-            get_stats_start_date(request.GET.get('start_date')),
-            get_stats_end_date(request.GET.get('end_date')),
-            ['date'],
-            ad_group=int(ad_group.id),
-            **extra_kwargs
-        )
+        if 'article' in breakdown or 'network' in breakdown:
+            breakdown_stats = reports.api.query(
+                get_stats_start_date(start_date),
+                get_stats_end_date(end_date),
+                breakdown,
+                ad_group=int(ad_group.id),
+                **extra_kwargs
+            )
 
         return self.create_api_response({
-            'stats': stats
+            'stats': self.get_dict(breakdown_stats + totals_stats, articles, networks)
         })
+
+    def get_dict(self, stats, articles, networks):
+        articles_dict = {}
+        if articles:
+            articles_dict = {x.pk: x.title for x in articles}
+
+        networks_dict = {}
+        if networks:
+            networks_dict = {x.pk: x.name for x in networks}
+
+        for stat in stats:
+            if 'article' in stat:
+                stat['article_title'] = articles_dict[stat['article']]
+            if 'network' in stat:
+                stat['network_name'] = networks_dict[stat['network']]
+
+        return stats
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')
