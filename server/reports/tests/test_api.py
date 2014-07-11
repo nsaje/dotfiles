@@ -227,7 +227,7 @@ class UpsertReportsTestCase(test.TestCase):
 
     fixtures = ['test_reports_base.yaml']
 
-    def test_upsert_reports(self):
+    def test_save_reports(self):
         date1 = datetime.date(2014, 7, 1)
         date2 = datetime.date(2014, 7, 2)
 
@@ -309,7 +309,7 @@ class UpsertReportsTestCase(test.TestCase):
 
         self.assertTrue(len(models.ArticleStats.objects.all()) == 0)
 
-        api.upsert_report(agn1, rows_agn1_date1, date1)
+        api.save_report(agn1.ad_group, agn1.network, rows_agn1_date1, date1)
         for row in rows_agn1_date1:
             article = dashmodels.Article.objects.get(title=row['title'], url=row['url'])
             stats = models.ArticleStats.objects.get(
@@ -322,7 +322,7 @@ class UpsertReportsTestCase(test.TestCase):
             self.assertEqual(stats.clicks, row['clicks'])
             self.assertEqual(stats.cost_cc, row['cost_cc'])
 
-        api.upsert_report(agn2, rows_agn2_date1, date1)
+        api.save_report(agn2.ad_group, agn2.network, rows_agn2_date1, date1)
         for row in rows_agn2_date1:
             article = dashmodels.Article.objects.get(title=row['title'])
             stats = models.ArticleStats.objects.get(
@@ -335,8 +335,8 @@ class UpsertReportsTestCase(test.TestCase):
             self.assertEqual(stats.clicks, row['clicks'])
             self.assertEqual(stats.cost_cc, row['cpc_cc'] * row['clicks'])
 
-        api.upsert_report(agn1, rows_agn1_date2, date2)
-        api.upsert_report(agn2, rows_agn2_date2, date2)
+        api.save_report(agn1.ad_group, agn1.network, rows_agn1_date2, date2)
+        api.save_report(agn2.ad_group, agn2.network, rows_agn2_date2, date2)
 
         articles_agn1 = dashmodels.Article.objects.order_by('title')
         articles_agn2 = dashmodels.Article.objects.order_by('title')
@@ -346,6 +346,114 @@ class UpsertReportsTestCase(test.TestCase):
 
         for article1, article2 in zip(articles_agn1, articles_agn2):
             self.assertEqual(article1, article2)
+
+    def test_save_reports_reinsert(self):
+        rows = [
+            {
+                'title': 'Test Article 1',
+                'url': 'http://example.com/',
+                'impressions': 50,
+                'clicks': 2,
+                'cost_cc': 2800,
+                'cpc_cc': None
+            },
+            {
+                'title': 'Test Article 2',
+                'url': 'http://example.com/',
+                'impressions': 40,
+                'clicks': 1,
+                'cost_cc': 900,
+                'cpc_cc': None
+            },
+        ]
+
+        rows_new_title = [
+            {
+                'title': 'Test Article 1 New',
+                'url': 'http://example.com/',
+                'impressions': 100,
+                'clicks': 4,
+                'cost_cc': 5600,
+                'cpc_cc': None
+            },
+            {
+                'title': 'Test Article 2 New',
+                'url': 'http://example.com/',
+                'impressions': 80,
+                'clicks': 2,
+                'cost_cc': 1800,
+                'cpc_cc': None
+            },
+        ]
+
+        rows_new_url = [
+            {
+                'title': 'Test Article 1 New',
+                'url': 'http://example.com/new',
+                'impressions': 200,
+                'clicks': 8,
+                'cost_cc': 11200,
+                'cpc_cc': None
+            },
+            {
+                'title': 'Test Article 2 New',
+                'url': 'http://example.com/new',
+                'impressions': 160,
+                'clicks': 4,
+                'cost_cc': 3600,
+                'cpc_cc': None
+            },
+        ]
+
+        agn = dashmodels.AdGroupNetwork.objects.get(id=1)
+        date = datetime.date(2014, 7, 10)
+
+        stats = models.ArticleStats.objects.filter(ad_group=agn.ad_group, network=agn.network, datetime=date)
+        self.assertEqual(len(stats), 0)
+
+        api.save_report(agn.ad_group, agn.network, rows, date)
+        stats = models.ArticleStats.objects.filter(ad_group=agn.ad_group, network=agn.network, datetime=date)
+        self.assertEqual(len(stats), 2)
+        for row in rows:
+            article = dashmodels.Article.objects.get(title=row['title'], url=row['url'], ad_group=agn.ad_group)
+            article_stats = models.ArticleStats.objects.get(
+                article=article,
+                ad_group=agn.ad_group,
+                network=agn.network,
+                datetime=date
+            )
+            self.assertEqual(article_stats.impressions, row['impressions'])
+            self.assertEqual(article_stats.clicks, row['clicks'])
+            self.assertEqual(article_stats.cost_cc, row['cost_cc'])
+
+        api.save_report(agn.ad_group, agn.network, rows_new_title, date)
+        stats = models.ArticleStats.objects.filter(ad_group=agn.ad_group, network=agn.network, datetime=date)
+        self.assertEqual(len(stats), 2)
+        for row in rows_new_title:
+            article = dashmodels.Article.objects.get(title=row['title'], url=row['url'], ad_group=agn.ad_group)
+            article_stats = models.ArticleStats.objects.get(
+                article=article,
+                ad_group=agn.ad_group,
+                network=agn.network,
+                datetime=date
+            )
+            self.assertEqual(article_stats.impressions, row['impressions'])
+            self.assertEqual(article_stats.clicks, row['clicks'])
+            self.assertEqual(article_stats.cost_cc, row['cost_cc'])
+
+        api.save_report(agn.ad_group, agn.network, rows_new_url, date)
+        self.assertEqual(len(stats), 2)
+        for row in rows_new_url:
+            article = dashmodels.Article.objects.get(title=row['title'], url=row['url'], ad_group=agn.ad_group)
+            article_stats = models.ArticleStats.objects.get(
+                article=article,
+                ad_group=agn.ad_group,
+                network=agn.network,
+                datetime=date
+            )
+            self.assertEqual(article_stats.impressions, row['impressions'])
+            self.assertEqual(article_stats.clicks, row['clicks'])
+            self.assertEqual(article_stats.cost_cc, row['cost_cc'])
 
 
 class ArticleReconciliationTestCase(test.TestCase):
