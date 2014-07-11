@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 @csrf_exempt
 def zwei_callback(request, action_id):
     try:
-        request_signer.verify(request, settings.ZWEI_API_SIGN_KEY)
+        request_signer.verify_wsgi_request(request, settings.ZWEI_API_SIGN_KEY)
     except request_signer.SignatureError as e:
         logger.exception('Invalid zwei callback signature.')
 
