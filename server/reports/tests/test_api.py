@@ -253,7 +253,7 @@ class UpsertReportsTestCase(test.TestCase):
         rows_agn2_date1 = [
             {
                 'title': 'Test Article 1',
-                'url': None,
+                'url': 'http://example.com/',
                 'impressions': 50,
                 'clicks': 2,
                 'cost_cc': None,
@@ -261,7 +261,7 @@ class UpsertReportsTestCase(test.TestCase):
             },
             {
                 'title': 'Test Article 2',
-                'url': None,
+                'url': 'http://example.com/',
                 'impressions': 40,
                 'clicks': 1,
                 'cost_cc': None,
@@ -291,7 +291,7 @@ class UpsertReportsTestCase(test.TestCase):
         rows_agn2_date2 = [
             {
                 'title': 'Test Article 1',
-                'url': None,
+                'url': 'http://example.com/',
                 'impressions': 50,
                 'clicks': 2,
                 'cost_cc': None,
@@ -299,7 +299,7 @@ class UpsertReportsTestCase(test.TestCase):
             },
             {
                 'title': 'Test Article 2',
-                'url': None,
+                'url': 'http://example.com/',
                 'impressions': 40,
                 'clicks': 1,
                 'cost_cc': None,
@@ -483,6 +483,9 @@ class ArticleReconciliationTestCase(test.TestCase):
         with self.assertRaises(exc.ArticleReconciliationException):
             api._reconcile_article(raw_url, None, ad_group)
 
+        with self.assertRaises(exc.ArticleReconciliationException):
+            api._reconcile_article(None, title, ad_group)
+
         cleaned_url = api._clean_url(raw_url)
         with self.assertRaises(ObjectDoesNotExist):
             article = dashmodels.Article.objects.get(url=cleaned_url, title=title, ad_group=ad_group)
@@ -494,31 +497,3 @@ class ArticleReconciliationTestCase(test.TestCase):
 
         same_article = api._reconcile_article(raw_url, title, ad_group)
         self.assertEqual(article, same_article)
-
-        title = 'Five most disturbing article titles you would never dare believe to exist'
-        with self.assertRaises(ObjectDoesNotExist):
-            article = dashmodels.Article.objects.get(url=cleaned_url, title=title, ad_group=ad_group)
-
-        article_new = api._reconcile_article(raw_url, title, ad_group)
-        self.assertNotEqual(article, article_new)
-
-        db_article_new = dashmodels.Article.objects.get(url=cleaned_url, title=title, ad_group=ad_group)
-        self.assertEqual(article_new, db_article_new)
-
-        article_new_same = api._reconcile_article(None, title, ad_group)
-        self.assertEqual(article_new, article_new_same)
-
-        title = 'Ten articles that at one point didn\'t have URL'
-        with self.assertRaises(ObjectDoesNotExist):
-            article = dashmodels.Article.objects.get(url=None, title=title, ad_group=ad_group)
-
-        article_without_url = api._reconcile_article(None, title, ad_group)
-        article_without_url_same = api._reconcile_article(None, title, ad_group)
-        self.assertEqual(article_without_url, article_without_url_same)
-
-        article_with_url = api._reconcile_article(raw_url, title, ad_group)
-        db_article_with_url = dashmodels.Article.objects.get(url=cleaned_url, title=title, ad_group=ad_group)
-        self.assertEqual(article_with_url, db_article_with_url)
-
-        second_article_without_url = api._reconcile_article(None, title, ad_group)
-        self.assertEqual(article_with_url, second_article_without_url)
