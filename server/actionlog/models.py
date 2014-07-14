@@ -43,7 +43,7 @@ class ActionLog(models.Model):
         choices=constants.ActionType.get_choices()
     )
 
-    ad_group_network = models.ForeignKey('dash.AdGroupNetwork')
+    ad_group_network = models.ForeignKey('dash.AdGroupNetwork', on_delete=models.PROTECT)
 
     message = models.TextField(blank=True)
 
@@ -53,6 +53,7 @@ class ActionLog(models.Model):
         ActionLogOrder,
         null=True,
         blank=True,
+        on_delete=models.PROTECT
     )
 
     expiration_dt = models.DateTimeField(
@@ -79,12 +80,14 @@ class ActionLog(models.Model):
         related_name='+',
         null=True,
         blank=True,
+        on_delete=models.PROTECT,
     )
     modified_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name='+',
         null=True,
         blank=True,
+        on_delete=models.PROTECT,
     )
 
     def __str__(self):

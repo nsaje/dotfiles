@@ -36,7 +36,7 @@ class Account(models.Model):
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
-    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
 
     def __unicode__(self):
         return self.name
@@ -50,11 +50,11 @@ class Campaign(models.Model, PermissionMixin):
         blank=False,
         null=False
     )
-    account = models.ForeignKey(Account)
+    account = models.ForeignKey(Account, on_delete=models.PROTECT)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
-    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
 
     USERS_FIELD = 'users'
 
@@ -93,7 +93,7 @@ class Network(models.Model):
 
 class NetworkCredentials(models.Model):
     id = models.AutoField(primary_key=True)
-    network = models.ForeignKey(Network)
+    network = models.ForeignKey(Network, on_delete=models.PROTECT)
     name = models.CharField(
         max_length=127,
         editable=True,
@@ -147,11 +147,11 @@ class AdGroup(models.Model):
         blank=False,
         null=False
     )
-    campaign = models.ForeignKey(Campaign)
+    campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT)
     networks = models.ManyToManyField(Network, through='AdGroupNetwork')
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
-    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
 
     objects = models.Manager()
     user_objects = UserAdGroupManager()
@@ -175,7 +175,7 @@ class AdGroupNetwork(models.Model):
     network = models.ForeignKey(Network, on_delete=models.PROTECT)
     ad_group = models.ForeignKey(AdGroup, on_delete=models.PROTECT)
 
-    network_credentials = models.ForeignKey(NetworkCredentials, null=True)
+    network_credentials = models.ForeignKey(NetworkCredentials, null=True, on_delete=models.PROTECT)
     network_campaign_key = jsonfield.JSONField(blank=True, default={})
 
     def __unicode__(self):
@@ -201,8 +201,7 @@ class AdGroupSettings(models.Model):
     id = models.AutoField(primary_key=True)
     ad_group = models.ForeignKey(AdGroup, related_name='settings', on_delete=models.PROTECT)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
-
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
     state = models.IntegerField(
         default=constants.AdGroupSettingsState.INACTIVE,
         choices=constants.AdGroupSettingsState.get_choices()
@@ -241,7 +240,12 @@ class AdGroupSettings(models.Model):
 class AdGroupNetworkSettings(models.Model):
     id = models.AutoField(primary_key=True)
 
-    ad_group_network = models.ForeignKey(AdGroupNetwork, null=True, related_name='settings', on_delete=models.PROTECT)
+    ad_group_network = models.ForeignKey(
+        AdGroupNetwork,
+        null=True,
+        related_name='settings',
+        on_delete=models.PROTECT
+    )
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(
@@ -249,6 +253,7 @@ class AdGroupNetworkSettings(models.Model):
         related_name='+',
         null=True,
         blank=True,
+        on_delete=models.PROTECT
     )
 
     state = models.IntegerField(
