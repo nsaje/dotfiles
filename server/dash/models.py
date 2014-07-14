@@ -316,8 +316,8 @@ class AdGroupNetworkSettings(models.Model):
 
 class Article(models.Model):
 
-    url = models.CharField(max_length=2048, editable=False, null=True)
-    title = models.CharField(max_length=256, editable=False, null=True)
+    url = models.CharField(max_length=2048, editable=False)
+    title = models.CharField(max_length=256, editable=False)
 
     ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT)
 
