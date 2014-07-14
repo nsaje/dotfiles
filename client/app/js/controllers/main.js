@@ -34,7 +34,13 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', 'api', function 
     $scope.maxDate = moment().subtract('days', 1);
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
     $scope.dateRanges = getDateRanges();
-    $scope.selectedRowsData = {};
+    $scope.adGroupData = {};
+
+    $scope.setAdGroupData = function (key, value) {
+        var data = $scope.adGroupData[$state.params.id] || {};
+        data[key] = value;
+        $scope.adGroupData[$state.params.id] = data;
+    };
 
     $scope.dateRange = {
         startDate: moment().subtract('day', 61).hours(0).minutes(0).seconds(0).milliseconds(0),
@@ -109,12 +115,14 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', 'api', function 
 
         if (fromParams.id && fromParams.id !== toParams.id) {
             // On ad group switch, get previous selected rows
-            var data = $scope.selectedRowsData[$state.params.id] || {};
+            var data = $scope.adGroupData[$state.params.id] || {};
 
             $location.search('network_ids', data.networkIds && data.networkIds.join(','));
             $location.search('network_totals', data.networkTotals ? 1 : null);
             $location.search('article_ids', data.articleIds && data.articleIds.join(','));
             $location.search('article_totals', data.articleTotals ? 1 : null);
+
+            $location.search('page', data.page)
         }
     });
 

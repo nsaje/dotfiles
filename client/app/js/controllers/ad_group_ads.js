@@ -165,12 +165,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     };
 
     $scope.updateSelectedRowsData = function () {
-        var data = $scope.selectedRowsData[$state.params.id] || {};
-
-        data.articleIds = $scope.selectedArticleIds;
-        data.articleTotals = $scope.selectedArticleTotals;
-
-        $scope.selectedRowsData[$state.params.id] = data;
+        $scope.setAdGroupData('articleIds', $scope.selectedArticleIds);
+        $scope.setAdGroupData('articleTotals', $scope.selectedArticleTotals);
     };
 
     $scope.toggleChart = function () {
@@ -237,6 +233,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
 
         if (page !== undefined && $scope.pagination.currentPage !== page) {
             $scope.pagination.currentPage = page;
+            $scope.setAdGroupData('page', page);
             tableChanged = true;
         }
 
@@ -253,11 +250,10 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         var articleIds = $location.search().article_ids;
         var articleTotals = !!$location.search().article_totals;
 
-        var data = $scope.selectedRowsData[$state.params.id] || {};
 
         if (articleIds) {
             $scope.selectedArticleIds = articleIds.split(',');
-            data.articleIds = $scope.selectedArticleIds;
+            $scope.setAdGroupData('articleIds', $scope.selectedArticleIds);
 
             if ($scope.rows) {
                 $scope.selectArticles();
@@ -265,9 +261,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         }
 
         $scope.selectedArticleTotals = !$scope.selectedArticleIds.length || articleTotals;
-        data.articleTotals = $scope.selectedArticleTotals;
-
-        $scope.selectedRowsData[$state.params.id] = data;
+        $scope.setAdGroupData('articleTotals', $scope.selectedArticleTotals);
     });
     
     // pagination
@@ -281,6 +275,9 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         if ($scope.pagination.currentPage && $scope.pagination.size) {
             $location.search('page', $scope.pagination.currentPage);
             $location.search('size', $scope.pagination.size);
+
+            $scope.setAdGroupData('page', $scope.pagination.currentPage);
+
             $scope.getTableData();
         }
     };
