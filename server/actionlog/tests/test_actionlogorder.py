@@ -21,7 +21,7 @@ class ActionLogOrderApiTestCase(test.TestCase):
     def tearDown(self):
         settings.CREDENTIALS_ENCRYPTION_KEY = self.credentials_encription_key
 
-    @mock.patch('actionlog.zwei_actions.urllib2.urlopen')
+    @mock.patch('utils.request_signer._secure_opener.open')
     def test_run_fetch_all_order(self, mock_urlopen):
         mock_request = mock.Mock()
         mock_request.status_code = httplib.OK
