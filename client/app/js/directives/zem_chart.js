@@ -34,12 +34,6 @@ oneApp.directive('zemChart', ['config', function(config) {
 
             $scope.hasData = true;
 
-            Highcharts.setOptions({
-                global: {
-                    useUTC: true
-                }
-            });
-
             $scope.config = {
                 options: {
                     title: {
