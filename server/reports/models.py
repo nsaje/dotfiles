@@ -5,9 +5,9 @@ class ArticleStats(models.Model):
 
     datetime = models.DateTimeField()
 
-    ad_group = models.ForeignKey('dash.AdGroup')
-    article = models.ForeignKey('dash.Article')
-    network = models.ForeignKey('dash.Network')
+    ad_group = models.ForeignKey('dash.AdGroup', on_delete=models.PROTECT)
+    article = models.ForeignKey('dash.Article', on_delete=models.PROTECT)
+    network = models.ForeignKey('dash.Network', on_delete=models.PROTECT)
 
     impressions = models.IntegerField(default=0, blank=False, null=False)
     clicks = models.IntegerField(default=0, blank=False, null=False)

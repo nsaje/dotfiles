@@ -172,8 +172,8 @@ class AdGroup(models.Model):
 
 
 class AdGroupNetwork(models.Model):
-    network = models.ForeignKey(Network)
-    ad_group = models.ForeignKey(AdGroup)
+    network = models.ForeignKey(Network, on_delete=models.PROTECT)
+    ad_group = models.ForeignKey(AdGroup, on_delete=models.PROTECT)
 
     network_credentials = models.ForeignKey(NetworkCredentials, null=True)
     network_campaign_key = jsonfield.JSONField(blank=True, default={})
@@ -199,7 +199,7 @@ class AdGroupSettings(models.Model):
     ]
 
     id = models.AutoField(primary_key=True)
-    ad_group = models.ForeignKey(AdGroup, related_name='settings')
+    ad_group = models.ForeignKey(AdGroup, related_name='settings', on_delete=models.PROTECT)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
 
@@ -241,7 +241,7 @@ class AdGroupSettings(models.Model):
 class AdGroupNetworkSettings(models.Model):
     id = models.AutoField(primary_key=True)
 
-    ad_group_network = models.ForeignKey(AdGroupNetwork, null=True, related_name='settings')
+    ad_group_network = models.ForeignKey(AdGroupNetwork, null=True, related_name='settings', on_delete=models.PROTECT)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(
@@ -314,7 +314,7 @@ class Article(models.Model):
     url = models.CharField(max_length=2048, editable=False, null=True)
     title = models.CharField(max_length=256, editable=False, null=True)
 
-    ad_group = models.ForeignKey('AdGroup')
+    ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
