@@ -265,6 +265,9 @@ class AdGroupAdmin(admin.ModelAdmin):
 
 
 class AdGroupSettingsAdmin(admin.ModelAdmin):
+
+    actions = None
+
     search_fields = ['ad_group']
     list_display = (
         'ad_group',
@@ -275,6 +278,9 @@ class AdGroupSettingsAdmin(admin.ModelAdmin):
         'end_date',
         'created_dt',
     )
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class AdGroupNetworkSettingsAdmin(admin.ModelAdmin):
