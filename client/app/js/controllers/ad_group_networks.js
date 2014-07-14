@@ -176,12 +176,8 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
     };
 
     $scope.updateSelectedRowsData = function () {
-        var data = $scope.selectedRowsData[$state.params.id] || {};
-
-        data.networkIds = $scope.selectedNetworkIds;
-        data.networkTotals = $scope.selectedNetworkTotals;
-
-        $scope.selectedRowsData[$state.params.id] = data;
+        $scope.setAdGroupData('networkIds', $scope.selectedNetworkIds);
+        $scope.setAdGroupData('networkTotals', $scope.selectedNetworkTotals);
     };
 
     $scope.toggleChart = function () {
@@ -246,11 +242,9 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
         var networkIds = $location.search().network_ids;
         var networkTotals = !!$location.search().network_totals;
 
-        var data = $scope.selectedRowsData[$state.params.id] || {};
-
         if (networkIds) {
             $scope.selectedNetworkIds = networkIds.split(',');
-            data.networkIds = $scope.selectedNetworkIds;
+            $scope.setAdGroupData('networkIds', $scope.selectedNetworkIds);
 
             if ($scope.rows) {
                 $scope.selectNetworks();
@@ -258,9 +252,7 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
         }
 
         $scope.selectedNetworkTotals = !$scope.selectedNetworkIds.length || networkTotals;
-        data.networkTotals = $scope.selectedNetworkTotals;
-
-        $scope.selectedRowsData[$state.params.id] = data;
+        $scope.setAdGroupData('networkTotals', $scope.selectedNetworkTotals);
     });
 
     // export
