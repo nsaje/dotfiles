@@ -43,8 +43,8 @@
                     <td class="input-one-char"><input type="checkbox" data-ng-model="row.checked" ng-disabled="!row.checked && selectedNetworkIds.length === 3" data-ng-change="selectedNetworksChanged(row.id)"/></td>
                     <td>{{ row.name }}</td>
                     <td class="text-center">
-                        <div ng-if="row.status == constants.adGroupSettingsState.ACTIVE" class="play"></div>
-                        <div ng-if="row.status == constants.adGroupSettingsState.INACTIVE" class="pause"></div>
+                        <div ng-if="row.status == constants.adGroupSettingsState.ACTIVE">Enabled</div>
+                        <div ng-if="row.status == constants.adGroupSettingsState.INACTIVE">Paused</div>
                         <div ng-if="!row.status">N/A</div>
                     </td>
 
