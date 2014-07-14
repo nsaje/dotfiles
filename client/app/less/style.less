@@ -182,9 +182,11 @@ a:visited {
 }
 
 .zem-tabset .nav-tabs {
-    border-bottom: 1px solid #d2d2d2;
+    /*border-bottom: 1px solid #d2d2d2;*/
 
     & > li {
+        margin-bottom: 0;
+
         & > a,
         & > a:hover,
         & > a:active,
@@ -192,6 +194,7 @@ a:visited {
             border-top: 1px solid #d2d2d2;
             border-left: 1px solid #d2d2d2;
             border-right: 1px solid #d2d2d2;
+            border-bottom: 0;
         }
 
         &.active > a {
