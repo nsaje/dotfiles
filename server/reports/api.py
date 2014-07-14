@@ -4,6 +4,7 @@ import decimal
 import urlparse
 import urllib
 import logging
+import sys
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction, IntegrityError
@@ -130,7 +131,20 @@ def save_report(ad_group, network, rows, date):
         else:
             article_stats.cost_cc = row['cost_cc']
 
-        article_stats.save()
+        try:
+            article_stats.save()
+        except IntegrityError:
+            raise exc.ReportsSaveError(
+                'Article article_id={article_id}, url={url} and title={title} appeared twice '
+                'for datetime={datetime}, ad_group_id={ad_group_id}, network_id={network_id}.'.format(
+                    article_id=article.id,
+                    url=article.url,
+                    title=article.title,
+                    datetime=date,
+                    ad_group_id=ad_group.id,
+                    network_id=network.id
+                )
+            )
 
 
 # helpers
