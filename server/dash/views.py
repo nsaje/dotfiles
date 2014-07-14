@@ -403,7 +403,12 @@ class AdGroupAdsExport(api_common.BaseApiView):
         start_date = get_stats_start_date(request.GET.get('start_date'))
         end_date = get_stats_end_date(request.GET.get('end_date'))
 
-        filename = '%s_detailed_report_%s_%s' % (slugify.slugify(ad_group.name), start_date, end_date)
+        filename = '{0}_{1}_detailed_report_{2}_{3}'.format(
+            slugify.slugify(ad_group.campaign.account.name),
+            slugify.slugify(ad_group.name),
+            start_date,
+            end_date
+        )
 
         ads_results = generate_rows(
             ['date', 'article'],
@@ -509,7 +514,12 @@ class AdGroupNetworksExport(api_common.BaseApiView):
         start_date = get_stats_start_date(request.GET.get('start_date'))
         end_date = get_stats_end_date(request.GET.get('end_date'))
 
-        filename = '%s_per_networks_report_%s_%s' % (slugify.slugify(ad_group.name), start_date, end_date)
+        filename = '{0}_{1}_per_networks_report_{2}_{3}'.format(
+            slugify.slugify(ad_group.campaign.account.name),
+            slugify.slugify(ad_group.name),
+            start_date,
+            end_date
+        )
 
         results = generate_rows(
             ['date', 'network'],
