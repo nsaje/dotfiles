@@ -24,10 +24,12 @@ class AdGroupAdsExportTestCase(test.TestCase):
 
         self.ad_group_id = 1
         self.ad_group_name = 'Test Ad Group'
+        self.account_name = 'Test Account 1'
 
         self.mock_ad_group = Mock()
         self.mock_ad_group.id = self.ad_group_id
         self.mock_ad_group.name = self.ad_group_name
+        self.mock_ad_group.campaign.account.name = self.account_name
         self.mock_get_ad_group.return_value = self.mock_ad_group
 
         self.mock_network1 = Mock()
@@ -93,7 +95,10 @@ class AdGroupAdsExportTestCase(test.TestCase):
 2014-07-01,Test Article with unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://www.example.com,1000.12,10.23,103,100000,1.03\r
 '''
 
-        filename = '%s_detailed_report_2014-06-30_2014-07-01.csv' % slugify.slugify(self.ad_group_name)
+        filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.csv'.format(
+            slugify.slugify(self.account_name),
+            slugify.slugify(self.ad_group_name)
+        )
 
         self.assertEqual(
             response['Content-Type'],
@@ -114,7 +119,10 @@ class AdGroupAdsExportTestCase(test.TestCase):
 
         response = views.AdGroupAdsExport().get(request, self.ad_group_id)
 
-        filename = '%s_detailed_report_2014-06-30_2014-07-01.xls' % slugify.slugify(self.ad_group_name)
+        filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.xls'.format(
+            slugify.slugify(self.account_name),
+            slugify.slugify(self.ad_group_name)
+        )
 
         self.assertEqual(response['Content-Type'], 'application/octet-stream')
         self.assertEqual(
