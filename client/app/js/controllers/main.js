@@ -5,7 +5,8 @@ function getDateRanges() {
     var monthsCount = 3;
     var formatStr = 'MMMM YYYY';
 
-    result['Yesterday'] = [moment().subtract('days', 1).startOf('day'), moment().endOf('day')];
+    result['Today'] = [moment().startOf('day'), moment().endOf('day')];
+    result['Yesterday'] = [moment().subtract('days', 1).startOf('day'), moment().subtract('days', 1).endOf('day')];
     result['This week'] = [moment().startOf('week'), moment()];
     result['Previous week'] = [moment().subtract('days', 7).startOf('week'), moment().subtract('days', 7).endOf('week')];
     result['Last 14 days'] = [moment().subtract('days', 14), moment()];
@@ -31,7 +32,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
     $scope.user = null;
     $scope.currentRoute = $scope.current;
     $scope.inputDateFormat = 'M/D/YYYY';
-    $scope.maxDate = moment().subtract('days', 1);
+    $scope.maxDate = moment();
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
     $scope.dateRanges = getDateRanges();
     $scope.adGroupData = {};
@@ -43,8 +44,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
     };
 
     $scope.dateRange = {
-        startDate: moment().subtract('day', 61).hours(0).minutes(0).seconds(0).milliseconds(0),
-        endDate: moment().subtract('day', 1).hours(0).minutes(0).seconds(0).milliseconds(0)
+        startDate: moment().subtract('day', 30).hours(0).minutes(0).seconds(0).milliseconds(0),
+        endDate: moment().hours(0).minutes(0).seconds(0).milliseconds(0)
     };
 
     $scope.breadcrumb = [];

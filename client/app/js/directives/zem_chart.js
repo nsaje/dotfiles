@@ -1,4 +1,4 @@
-/*global $,oneApp*/
+/*global $,oneApp,moment*/
 "use strict";
 
 oneApp.directive('zemChart', ['config', function(config) {
@@ -9,7 +9,9 @@ oneApp.directive('zemChart', ['config', function(config) {
             metric1: '=zemMetric1',
             metric1Values: '=zemMetric1Values',
             metric2: '=zemMetric2',
-            metric2Values: '=zemMetric2Values'
+            metric2Values: '=zemMetric2Values',
+            minDate: '=zemMinDate',
+            maxDate: '=zemMaxDate'
         },
         templateUrl: config.static_url + '/partials/zem_chart.html',
         controller: ['$scope', '$element', '$attrs', '$http', function ($scope, $element, $attrs, $http) {
@@ -32,6 +34,12 @@ oneApp.directive('zemChart', ['config', function(config) {
 
             $scope.hasData = true;
 
+            Highcharts.setOptions({
+                global: {
+                    useUTC: true
+                }
+            });
+
             $scope.config = {
                 options: {
                     title: {
@@ -39,7 +47,8 @@ oneApp.directive('zemChart', ['config', function(config) {
                     },
                     colors: colors,
                     xAxis: {
-                        type: 'datetime'
+                        type: 'datetime',
+                        minTickInterval: 24 * 3600 * 1000
                         /* categories: [] */
                     },
                     yAxis: [{
@@ -110,6 +119,17 @@ oneApp.directive('zemChart', ['config', function(config) {
                 if (newValue === undefined) {
                     $scope.hasData = true;
                     return;
+                }
+
+                // Set min and max only if start date and end date are different. If
+                // they are the sime, let charts figure it out because otherwise it
+                // renders strangely.
+                if ($scope.minDate.valueOf() !== $scope.maxDate.valueOf()) {
+                    $scope.config.options.xAxis.min = moment($scope.minDate).add('minutes', $scope.minDate.zone()).valueOf();
+                    $scope.config.options.xAxis.max = moment($scope.maxDate).subtract('minutes', $scope.maxDate.zone()).valueOf();
+                } else {
+                    $scope.config.options.xAxis.min = null;
+                    $scope.config.options.xAxis.max = null;
                 }
             
                 if (newValue && Object.keys(newValue).length) {
