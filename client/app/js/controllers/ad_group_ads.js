@@ -157,9 +157,20 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         }
 
         $location.search('article_ids', $scope.selectedArticleIds.join(','));
-        $location.search('article_totals', $scope.selectedArticleTotals || null);
+        $location.search('article_totals', $scope.selectedArticleTotals ? 1 : null);
+
+        $scope.updateSelectedRowsData();
 
         $scope.getDailyStats();
+    };
+
+    $scope.updateSelectedRowsData = function () {
+        var data = $scope.selectedRowsData[$state.params.id] || {};
+
+        data.articleIds = $scope.selectedArticleIds;
+        data.articleTotals = $scope.selectedArticleTotals;
+
+        $scope.selectedRowsData[$state.params.id] = data;
     };
 
     $scope.toggleChart = function () {
@@ -222,8 +233,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
 
         var page = $location.search().page;
         var size = $location.search().size;
-        var articleIds = $location.search().article_ids;
-        var articleTotals = $location.search().article_totals;
         var tableChanged = false;
 
         if (page !== undefined && $scope.pagination.currentPage !== page) {
@@ -240,8 +249,15 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             $scope.loadPage();
         }
 
+        // selected rows
+        var articleIds = $location.search().article_ids;
+        var articleTotals = !!$location.search().article_totals;
+
+        var data = $scope.selectedRowsData[$state.params.id] || {};
+
         if (articleIds) {
             $scope.selectedArticleIds = articleIds.split(',');
+            data.articleIds = $scope.selectedArticleIds;
 
             if ($scope.rows) {
                 $scope.selectArticles();
@@ -249,6 +265,9 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         }
 
         $scope.selectedArticleTotals = !$scope.selectedArticleIds.length || articleTotals;
+        data.articleTotals = $scope.selectedArticleTotals;
+
+        $scope.selectedRowsData[$state.params.id] = data;
     });
     
     // pagination
