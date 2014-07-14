@@ -5,7 +5,8 @@ function getDateRanges() {
     var monthsCount = 3;
     var formatStr = 'MMMM YYYY';
 
-    result['Yesterday'] = [moment().subtract('days', 1).startOf('day'), moment().endOf('day')];
+    result['Today'] = [moment().startOf('day'), moment().endOf('day')];
+    result['Yesterday'] = [moment().subtract('days', 1).startOf('day'), moment().subtract('days', 1).endOf('day')];
     result['This week'] = [moment().startOf('week'), moment()];
     result['Previous week'] = [moment().subtract('days', 7).startOf('week'), moment().subtract('days', 7).endOf('week')];
     result['Last 14 days'] = [moment().subtract('days', 14), moment()];
