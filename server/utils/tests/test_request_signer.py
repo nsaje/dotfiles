@@ -5,6 +5,7 @@ import unittest
 from django.test.client import RequestFactory
 
 from utils import request_signer
+from utils.test_decorators import integration_test
 
 
 class EncryptionHelperTestCase(unittest.TestCase):
@@ -19,38 +20,38 @@ class EncryptionHelperTestCase(unittest.TestCase):
 
     def test_sign(self):
         request = urllib2.Request(self.url, self.data)
-        request_signer.sign(request, self.secret_key)
+        request_signer.sign_urllib2_request(request, self.secret_key)
         self.assertEqual(request.headers[request_signer.SIGNATURE_HEADER], self.signature)
 
     def test_sign_invalid_protocol(self):
         request = urllib2.Request('http://example.com', self.data)
         with self.assertRaises(request_signer.SignatureError):
-            request_signer.sign(request, self.secret_key)
+            request_signer.sign_urllib2_request(request, self.secret_key)
 
     def test_sign_invalid_method(self):
         request = urllib2.Request(self.url)
         with self.assertRaises(request_signer.SignatureError):
-            request_signer.sign(request, self.secret_key)
+            request_signer.sign_urllib2_request(request, self.secret_key)
 
     def test_sign_invalid_key(self):
         request = urllib2.Request(self.url, self.data)
 
-        request_signer.sign(request, self.secret_key)
+        request_signer.sign_urllib2_request(request, self.secret_key)
 
         with self.assertRaises(request_signer.SignatureError):
-            request_signer.sign(request, None)
+            request_signer.sign_urllib2_request(request, None)
 
         with self.assertRaises(request_signer.SignatureError):
-            request_signer.sign(request, '')
+            request_signer.sign_urllib2_request(request, '')
 
         with self.assertRaises(request_signer.SignatureError):
-            request_signer.sign(request, 1234)
+            request_signer.sign_urllib2_request(request, 1234)
 
         with self.assertRaises(request_signer.SignatureError):
-            request_signer.sign(request, 'short')
+            request_signer.sign_urllib2_request(request, 'short')
 
     def test_verify(self):
-        header_key = request_signer._get_wsgi_header_field(
+        header_key = request_signer._get_wsgi_header_field_name(
             request_signer.SIGNATURE_HEADER,
         )
 
@@ -61,7 +62,7 @@ class EncryptionHelperTestCase(unittest.TestCase):
             **{header_key: self.signature}
         )
 
-        request_signer.verify(request, self.secret_key)
+        request_signer.verify_wsgi_request(request, self.secret_key)
 
     def test_missing_signature(self):
         request = self.factory.post(
@@ -71,7 +72,7 @@ class EncryptionHelperTestCase(unittest.TestCase):
         )
 
         with self.assertRaises(request_signer.SignatureError):
-            request_signer.verify(request, self.secret_key)
+            request_signer.verify_wsgi_request(request, self.secret_key)
 
     def test_verify_invalid_signature(self):
         new_secret_key = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
@@ -84,4 +85,16 @@ class EncryptionHelperTestCase(unittest.TestCase):
         )
 
         with self.assertRaises(request_signer.SignatureError):
-            request_signer.verify(request, new_secret_key)
+            request_signer.verify_wsgi_request(request, new_secret_key)
+
+    @integration_test
+    def test_secure_open(self):
+        request = urllib2.Request('https://one.zemanta.com', self.data)
+        # one.zemanta.com returns 403 for post requests
+        with self.assertRaises(urllib2.HTTPError):
+            request_signer.urllib2_secure_open(request, self.secret_key)
+
+        request = urllib2.Request('https://google.com', self.data)
+        # certificate verify failed is url error
+        with self.assertRaises(urllib2.URLError):
+            request_signer.urllib2_secure_open(request, self.secret_key)

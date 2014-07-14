@@ -157,9 +157,16 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         }
 
         $location.search('article_ids', $scope.selectedArticleIds.join(','));
-        $location.search('totals', $scope.selectedArticleTotals || null);
+        $location.search('article_totals', $scope.selectedArticleTotals ? 1 : null);
+
+        $scope.updateSelectedRowsData();
 
         $scope.getDailyStats();
+    };
+
+    $scope.updateSelectedRowsData = function () {
+        $scope.setAdGroupData('articleIds', $scope.selectedArticleIds);
+        $scope.setAdGroupData('articleTotals', $scope.selectedArticleTotals);
     };
 
     $scope.toggleChart = function () {
@@ -222,12 +229,11 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
 
         var page = $location.search().page;
         var size = $location.search().size;
-        var articleIds = $location.search().article_ids;
-        var articleTotals = $location.search().totals;
         var tableChanged = false;
 
         if (page !== undefined && $scope.pagination.currentPage !== page) {
             $scope.pagination.currentPage = page;
+            $scope.setAdGroupData('page', page);
             tableChanged = true;
         }
 
@@ -240,8 +246,14 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             $scope.loadPage();
         }
 
+        // selected rows
+        var articleIds = $location.search().article_ids;
+        var articleTotals = !!$location.search().article_totals;
+
+
         if (articleIds) {
             $scope.selectedArticleIds = articleIds.split(',');
+            $scope.setAdGroupData('articleIds', $scope.selectedArticleIds);
 
             if ($scope.rows) {
                 $scope.selectArticles();
@@ -249,6 +261,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         }
 
         $scope.selectedArticleTotals = !$scope.selectedArticleIds.length || articleTotals;
+        $scope.setAdGroupData('articleTotals', $scope.selectedArticleTotals);
     });
     
     // pagination
@@ -262,6 +275,9 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         if ($scope.pagination.currentPage && $scope.pagination.size) {
             $location.search('page', $scope.pagination.currentPage);
             $location.search('size', $scope.pagination.size);
+
+            $scope.setAdGroupData('page', $scope.pagination.currentPage);
+
             $scope.getTableData();
         }
     };

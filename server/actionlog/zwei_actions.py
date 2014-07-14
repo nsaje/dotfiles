@@ -37,6 +37,4 @@ def send(action):
     data = json.dumps(payload, cls=json_helper.JSONEncoder)
     request = urllib2.Request(settings.ZWEI_API_URL, data)
 
-    request_signer.sign(request, settings.ZWEI_API_SIGN_KEY)
-
-    urllib2.urlopen(request)
+    request_signer.urllib2_secure_open(request, settings.ZWEI_API_SIGN_KEY)

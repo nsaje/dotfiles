@@ -97,33 +97,38 @@ def query(start_date, end_date, breakdown=None, **constraints):
     return stats
 
 
+def _delete_existing_stats(ad_group, network, date):
+    existing_stats = models.ArticleStats.objects.filter(ad_group=ad_group, network=network, datetime=date)
+    if existing_stats:
+        logger.info(
+            'Deleting {num} old article statistics. Ad_group: {ad_group}, Network: {network}, datetime: {datetime}'
+            .format(num=len(existing_stats), ad_group=ad_group, network=network, datetime=date)
+        )
+        existing_stats.delete()
+
+
 @transaction.atomic
-def upsert_report(ad_group_network, rows, date):
+def save_report(ad_group, network, rows, date):
     '''
     looks for the article stats with dimensions specified in this row
     if it does not find, it adds the row
     if it does find, it updates the metrics of the existing row
     '''
 
-    ad_group = ad_group_network.ad_group
-    network = ad_group_network.network
+    _delete_existing_stats(ad_group, network, date)
 
     for row in rows:
         article = _reconcile_article(row.get('url'), row.get('title'), ad_group)
 
-        try:
-            article_stats = models.ArticleStats.objects.get(datetime=date, article=article,
-                                                            ad_group=ad_group, network=network)
-        except ObjectDoesNotExist:
-            article_stats = models.ArticleStats(datetime=date, article=article,
-                                                ad_group=ad_group, network=network)
-
-        if 'cost_cc' not in row or row['cost_cc'] is None:
-            row['cost_cc'] = row['cpc_cc'] * row['clicks']
+        article_stats = models.ArticleStats(datetime=date, article=article, ad_group=ad_group, network=network)
 
         article_stats.impressions = row['impressions']
         article_stats.clicks = row['clicks']
-        article_stats.cost_cc = row['cost_cc']
+
+        if 'cost_cc' not in row or row['cost_cc'] is None:
+            article_stats.cost_cc = row['cpc_cc'] * row['clicks']
+        else:
+            article_stats.cost_cc = row['cost_cc']
 
         article_stats.save()
 

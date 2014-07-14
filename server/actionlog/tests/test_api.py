@@ -35,7 +35,7 @@ class ZweiActionsTestCase(TestCase):
     def tearDown(self):
         settings.CREDENTIALS_ENCRYPTION_KEY = self.credentials_encription_key
 
-    @patch('actionlog.zwei_actions.urllib2.urlopen')
+    @patch('utils.request_signer._secure_opener.open')
     def test_log_encrypted_credentials_on_conneciton_success(self, mock_urlopen):
         _prepare_mock_urlopen(mock_urlopen)
         ad_group_network = dashmodels.AdGroupNetwork.objects.get(id=1)
@@ -52,7 +52,7 @@ class ZweiActionsTestCase(TestCase):
             ad_group_network.network_credentials.credentials
         )
 
-    @patch('actionlog.zwei_actions.urllib2.urlopen')
+    @patch('utils.request_signer._secure_opener.open')
     def test_log_encrypted_credentials_on_conneciton_fail(self, mock_urlopen):
         exception = urllib2.HTTPError(settings.ZWEI_API_URL, 500, "Server is down.", None, None)
         _prepare_mock_urlopen(mock_urlopen, exception=exception)
@@ -76,7 +76,7 @@ class ActionLogApiTestCase(TestCase):
     fixtures = ['test_api.yaml']
 
     def setUp(self):
-        patcher_urlopen = patch('actionlog.zwei_actions.urllib2.urlopen')
+        patcher_urlopen = patch('utils.request_signer._secure_opener.open')
         self.addCleanup(patcher_urlopen.stop)
 
         mock_urlopen = patcher_urlopen.start()

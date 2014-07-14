@@ -20,7 +20,7 @@ class CampaignStatusTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
 
-    @mock.patch('utils.request_signer.verify')
+    @mock.patch('utils.request_signer.verify_wsgi_request')
     def test_update_status(self, _):
         zwei_response_data = {
             'status': 'success',
@@ -59,7 +59,7 @@ class FetchReportsTestCase(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
 
-    @mock.patch('utils.request_signer.verify')
+    @mock.patch('utils.request_signer.verify_wsgi_request')
     def test_fetch_reports(self, _):
         article_row = {
             'title': 'Article 1',

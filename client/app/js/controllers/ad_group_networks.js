@@ -168,9 +168,16 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
         }
 
         $location.search('network_ids', $scope.selectedNetworkIds.join(','));
-        $location.search('totals', $scope.selectedNetworkTotals || null);
+        $location.search('network_totals', $scope.selectedNetworkTotals ? 1 : null);
+
+        $scope.updateSelectedRowsData();
 
         $scope.getDailyStats();
+    };
+
+    $scope.updateSelectedRowsData = function () {
+        $scope.setAdGroupData('networkIds', $scope.selectedNetworkIds);
+        $scope.setAdGroupData('networkTotals', $scope.selectedNetworkTotals);
     };
 
     $scope.toggleChart = function () {
@@ -211,8 +218,6 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
         var chartMetric1 = $location.search().chart_metric1;
         var chartMetric2 = $location.search().chart_metric2;
         var chartHidden = $location.search().chart_hidden;
-        var networkIds = $location.search().network_ids;
-        var networkTotals = $location.search().totals;
         var changed = false;
 
         if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
@@ -229,8 +234,17 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
             $scope.isChartShown = false;
         }
 
+        if (changed) {
+            $scope.setChartData();
+        }
+
+        // selected rows
+        var networkIds = $location.search().network_ids;
+        var networkTotals = !!$location.search().network_totals;
+
         if (networkIds) {
             $scope.selectedNetworkIds = networkIds.split(',');
+            $scope.setAdGroupData('networkIds', $scope.selectedNetworkIds);
 
             if ($scope.rows) {
                 $scope.selectNetworks();
@@ -238,10 +252,7 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
         }
 
         $scope.selectedNetworkTotals = !$scope.selectedNetworkIds.length || networkTotals;
-
-        if (changed) {
-            $scope.setChartData();
-        }
+        $scope.setAdGroupData('networkTotals', $scope.selectedNetworkTotals);
     });
 
     // export
