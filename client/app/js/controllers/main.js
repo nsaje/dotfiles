@@ -21,7 +21,7 @@ function getDateRanges() {
     return result;
 }
 
-oneApp.controller('MainCtrl', ['$scope', '$state', '$location', 'api', function ($scope, $state, $location, api) {
+oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'api', function ($scope, $state, $location, $document, api) {
     $scope.tabs = [
         {heading: 'Content Ads', route: 'adGroups.ads', active: true},
         {heading: 'Networks', route: 'adGroups.networks', active: false},
@@ -55,6 +55,9 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', 'api', function 
                 campaign.adGroups.forEach(function (adGroup) {
                     if (adGroup.id.toString() === $state.params.id) {
                         $scope.breadcrumb = [account.name, campaign.name, adGroup.name];
+
+                        // set page title
+                        $document.prop('title', adGroup.name + ' | Zemanta');
                     }
                 });
             });
