@@ -214,7 +214,7 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
         });
     };
 
-    $scope.$on("$stateChangeSuccess", function() {
+    $scope.init = function() {
         var chartMetric1 = $location.search().chart_metric1;
         var chartMetric2 = $location.search().chart_metric2;
         var chartHidden = $location.search().chart_hidden;
@@ -253,11 +253,13 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
 
         $scope.selectedNetworkTotals = !$scope.selectedNetworkIds.length || networkTotals;
         $scope.setAdGroupData('networkTotals', $scope.selectedNetworkTotals);
-    });
+    };
 
     // export
     $scope.downloadReport = function() {
         $window.open('api/ad_groups/' + $state.params.id + '/networks/export/?type=' + $scope.exportType + '&start_date=' + $scope.dateRange.startDate.format() + '&end_date=' + $scope.dateRange.endDate.format(), '_blank');
         $scope.exportType = '';
     };
+
+    $scope.init();
 }]);

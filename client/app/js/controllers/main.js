@@ -28,7 +28,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
         {heading: 'Networks', route: 'adGroups.networks', active: false},
         {heading: 'Settings', route: 'adGroups.settings', active: false}
     ];
-    $scope.accounts = [];
+    $scope.accounts = null;
     $scope.user = null;
     $scope.currentRoute = $scope.current;
     $scope.inputDateFormat = 'M/D/YYYY';
@@ -51,6 +51,10 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
     $scope.breadcrumb = [];
 
     $scope.setBreadcrumb = function () {
+        if (!$scope.accounts) {
+            return;
+        }
+
         $scope.accounts.forEach(function (account) {
             account.campaigns.forEach(function (campaign) {
                 campaign.adGroups.forEach(function (adGroup) {
@@ -81,20 +85,26 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
     };
 
     $scope.updateAccounts = function (adGroupId, newAdGroupName) {
-        if (adGroupId && newAdGroupName) {
-            $scope.accounts.forEach(function (account) {
-                account.campaigns.forEach(function (campaign) {
-                    campaign.adGroups.forEach(function (adGroup) {
-                        if (adGroup.id.toString() === adGroupId.toString()) {
-                            adGroup.name = newAdGroupName;
-                        }
-                    });
+        if (!$scope.accounts || !adGroupId || !newAdGroupName) {
+            return;
+        }
+
+        $scope.accounts.forEach(function (account) {
+            account.campaigns.forEach(function (campaign) {
+                campaign.adGroups.forEach(function (adGroup) {
+                    if (adGroup.id.toString() === adGroupId.toString()) {
+                        adGroup.name = newAdGroupName;
+                    }
                 });
             });
-        }
+        });
     };
     
-    $scope.$on("$stateChangeSuccess", function(event, toState, toParams, fromState, fromParams) {
+    $scope.$on("$stateChangeSuccess", $scope.stateChangeHandler);
+
+    $scope.stateChangeHandler = function (event, toState, toParams, fromState, fromParams) {
+        $scope.stateChangeHandlerCalled = true;
+
         $scope.currentRoute = $state.current;
         $scope.setBreadcrumb();
         $scope.tabs.forEach(function(tab) {
@@ -117,7 +127,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
             $scope.dateRange = dateRange;
         }
 
-        if (fromParams.id && fromParams.id !== toParams.id) {
+        if (fromParams && fromParams.id && toParams && fromParams.id !== toParams.id) {
             // On ad group switch, get previous selected rows
             var data = $scope.adGroupData[$state.params.id] || {};
 
@@ -128,7 +138,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
 
             $location.search('page', data.page)
         }
-    });
+    };
 
     api.navData.list().then(function (data) {
         $scope.accounts = data;
@@ -154,4 +164,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
             $location.search('end_date', $scope.dateRange.endDate ? $scope.dateRange.endDate.format() : null);
         }
     });
+
+    if (!$scope.stateChangeHandlerCalled) {
+        $scope.stateChangeHandler();     
+    }
 }]);

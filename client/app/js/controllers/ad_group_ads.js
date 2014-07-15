@@ -203,7 +203,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         });
     };
 
-    $scope.$on("$stateChangeSuccess", function() {
+    $scope.init = function() {
         var chartMetric1 = $location.search().chart_metric1;
         var chartMetric2 = $location.search().chart_metric2;
         var chartHidden = $location.search().chart_hidden;
@@ -262,7 +262,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
 
         $scope.selectedArticleTotals = !$scope.selectedArticleIds.length || articleTotals;
         $scope.setAdGroupData('articleTotals', $scope.selectedArticleTotals);
-    });
+    };
     
     // pagination
     $scope.sizeRange = [5, 10, 20, 50];
@@ -287,4 +287,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         $window.open('api/ad_groups/' + $state.params.id + '/ads/export/?type=' + $scope.exportType + '&start_date=' + $scope.dateRange.startDate.format() + '&end_date=' + $scope.dateRange.endDate.format(), '_blank');
         $scope.exportType = '';
     };
+
+    $scope.init();
 }]);
