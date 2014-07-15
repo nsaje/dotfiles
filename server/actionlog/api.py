@@ -20,8 +20,6 @@ from dash import models as dashmodels
 
 logger = logging.getLogger(__name__)
 
-NUM_RECENT_HOURS = 2
-
 
 def init_fetch_all_order(dates):
     ad_groups = dashmodels.AdGroup.objects.all()
@@ -196,7 +194,9 @@ def is_waiting_for_set_actions(ad_group):
 
 
 def is_fetch_all_data_recent(ad_group=None):
-    check_from_hour = datetime.utcnow() - timedelta(hours=NUM_RECENT_HOURS)
+    check_from_hour = datetime.utcnow() - timedelta(
+        hours=settings.ACTIONLOG_RECENT_HOURS)
+
     recent_fetch_all_orders = models.ActionLogOrder.objects.filter(
         order_type=constants.ActionLogOrderType.FETCH_ALL,
         created_dt__gte=check_from_hour
