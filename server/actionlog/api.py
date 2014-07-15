@@ -219,6 +219,7 @@ def get_last_successful_fetch_all_order(ad_group=None):
         annotate(max_state=Max('actionlog__state')).\
         annotate(min_state=Min('actionlog__state')).\
         filter(order_type=constants.ActionLogOrderType.FETCH_ALL).\
+        filter(actionlog__ad_group_network__network__maintenance=False).\
         filter(max_state=constants.ActionState.SUCCESS).\
         filter(min_state=constants.ActionState.SUCCESS).\
         order_by('-created_dt')
