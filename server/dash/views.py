@@ -34,6 +34,8 @@ logger = logging.getLogger(__name__)
 STATS_START_DELTA = 30
 STATS_END_DELTA = 1
 
+NUM_ACTIONLOG_RECENT_HOURS = 2
+
 
 def get_ad_group(user, ad_group_id):
     try:
@@ -330,6 +332,10 @@ class AdGroupNetworksTable(api_common.BaseApiView):
         last_success_actions = \
             actionlog.api.get_last_succesfull_fetch_all_networks_dates(ad_group)
 
+        last_sync = get_last_sucessful_sync_date(ad_group)
+        is_sync_recent = last_sync >= last_sync + datetime.timedelta(
+            hours=NUM_ACTIONLOG_RECENT_HOURS)
+
         return self.create_api_response({
             'rows': self.get_rows(
                 ad_group,
@@ -338,8 +344,8 @@ class AdGroupNetworksTable(api_common.BaseApiView):
                 last_success_actions
             ),
             'totals': self.get_totals(ad_group, totals_data, network_settings),
-            'last_sync': get_last_sucessful_sync_date(ad_group),
-            'is_sync_recent': actionlog.api.is_fetch_all_data_recent(ad_group),
+            'last_sync': last_sync,
+            'is_sync_recent': is_sync_recent,
         })
 
     def get_totals(self, ad_group, totals_data, network_settings):
@@ -625,11 +631,15 @@ class AdGroupAdsTable(api_common.BaseApiView):
             ad_group=int(ad_group.id)
         )[0]
 
+        last_sync = get_last_sucessful_sync_date(ad_group)
+        is_sync_recent = last_sync >= last_sync + datetime.timedelta(
+            hours=NUM_ACTIONLOG_RECENT_HOURS)
+
         return self.create_api_response({
             'rows': self.get_rows(ad_group, article_data, articles),
             'totals': self.get_totals(totals_data),
-            'last_sync': get_last_sucessful_sync_date(ad_group),
-            'is_sync_recent': actionlog.api.is_fetch_all_data_recent(ad_group),
+            'last_sync': last_sync,
+            'is_sync_recent': is_sync_recent,
             'pagination': {
                 'currentPage': articles.number,
                 'numPages': articles.paginator.num_pages,
