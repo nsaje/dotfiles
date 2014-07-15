@@ -128,8 +128,12 @@ def is_fetch_all_data_recent(ad_group=None):
         created_dt__gte=check_from_hour
     ).order_by('-created_dt')
 
+    if ad_group:
+        recent_fetch_all_orders = recent_fetch_all_orders.filter(
+            actionlog__ad_group_network__ad_group=ad_group)
+
     for order in recent_fetch_all_orders:
-        if _is_fetch_all_order_successful(order, ad_group):
+        if _is_fetch_all_order_successful(order):
             return True
 
     return False
@@ -140,32 +144,15 @@ def get_last_successful_fetch_all_order(ad_group=None):
         order_type=constants.ActionLogOrderType.FETCH_ALL
     ).order_by('-created_dt')
 
+    if ad_group:
+        fetch_all_orders = fetch_all_orders.filter(
+            actionlog__ad_group_network__ad_group=ad_group)
+
     for order in fetch_all_orders:
-        if _is_fetch_all_order_successful(order, ad_group):
+        if _is_fetch_all_order_successful(order):
             return order
 
     return None
-
-
-# def get_last_succesfull_fetch_all_networks_dates(ad_group):
-#     actionlogs = models.ActionLog.objects.\
-#         values('ad_group_network__network_id', 'order__pk').\
-#         annotate(created_dt=Max('created_dt')).\
-#         annotate(max_state=Max('state')).\
-#         annotate(min_state=Min('state')).\
-#         filter(ad_group_network__ad_group_id=ad_group.id).\
-#         filter(order__order_type=constants.ActionLogOrderType.FETCH_ALL).\
-#         filter(max_state=2).\
-#         filter(min_state=2)
-#     print actionlogs.query
-#     print actionlogs
-#
-#     result = {}
-#
-#     for log in list(actionlogs):
-#         result[log['ad_group_network__network_id']] = log['created_dt']
-#
-#     return result
 
 
 def get_last_succesfull_fetch_all_networks_dates(ad_group):
@@ -236,15 +223,12 @@ def age_oldest_waiting_action():
     return n_hours
 
 
-def _is_fetch_all_order_successful(order, ad_group=None):
-    q = order.actionlog_set.\
+def _is_fetch_all_order_successful(order):
+    result = order.actionlog_set.\
         exclude(state=constants.ActionState.SUCCESS).\
-        filter(ad_group_network__network__maintenance=False)
+        filter(ad_group_network__network__maintenance=False).\
+        exists()
 
-    if ad_group:
-        q = q.filter(ad_group_network__ad_group=ad_group)
-
-    result = q.exists()
     return not result
 
 
