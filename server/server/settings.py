@@ -137,3 +137,6 @@ LOGGING = {
     }
 }
 
+
+# App specific
+ACTIONLOG_RECENT_HOURS = 2
