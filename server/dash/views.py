@@ -115,8 +115,8 @@ def create_excel_worksheet(workbook, name, widths, header_names, data, transform
         write_excel_row(worksheet, index + 1, transform_func(item))
 
 
-def get_last_sucessful_sync_date():
-    last_successful_order = actionlog.api.get_last_successful_fetch_all_order()
+def get_last_sucessful_sync_date(ad_group):
+    last_successful_order = actionlog.api.get_last_successful_fetch_all_order(ad_group)
     if last_successful_order:
         last_sync = pytz.utc.localize(last_successful_order.created_dt)
     else:
@@ -338,8 +338,8 @@ class AdGroupNetworksTable(api_common.BaseApiView):
                 last_success_actions
             ),
             'totals': self.get_totals(ad_group, totals_data, network_settings),
-            'last_sync': get_last_sucessful_sync_date(),
-            'is_sync_recent': actionlog.api.is_fetch_all_data_recent(),
+            'last_sync': get_last_sucessful_sync_date(ad_group),
+            'is_sync_recent': actionlog.api.is_fetch_all_data_recent(ad_group),
         })
 
     def get_totals(self, ad_group, totals_data, network_settings):
@@ -628,8 +628,8 @@ class AdGroupAdsTable(api_common.BaseApiView):
         return self.create_api_response({
             'rows': self.get_rows(ad_group, article_data, articles),
             'totals': self.get_totals(totals_data),
-            'last_sync': get_last_sucessful_sync_date(),
-            'is_sync_recent': actionlog.api.is_fetch_all_data_recent(),
+            'last_sync': get_last_sucessful_sync_date(ad_group),
+            'is_sync_recent': actionlog.api.is_fetch_all_data_recent(ad_group),
             'pagination': {
                 'currentPage': articles.number,
                 'numPages': articles.paginator.num_pages,

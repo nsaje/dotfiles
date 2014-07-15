@@ -121,12 +121,16 @@ def is_waiting_for_set_actions(ad_group):
     return is_fail_in_latest_group or is_any_waiting_action
 
 
-def is_fetch_all_data_recent():
+def is_fetch_all_data_recent(ad_group=None):
     check_from_hour = datetime.utcnow() - timedelta(hours=NUM_RECENT_HOURS)
     recent_fetch_all_orders = models.ActionLogOrder.objects.filter(
         order_type=constants.ActionLogOrderType.FETCH_ALL,
         created_dt__gte=check_from_hour
     ).order_by('-created_dt')
+
+    if ad_group:
+        recent_fetch_all_orders = recent_fetch_all_orders.filter(
+            actionlog__ad_group_network__ad_group=ad_group)
 
     for order in recent_fetch_all_orders:
         if _is_fetch_all_order_successful(order):
@@ -135,37 +139,20 @@ def is_fetch_all_data_recent():
     return False
 
 
-def get_last_successful_fetch_all_order():
+def get_last_successful_fetch_all_order(ad_group=None):
     fetch_all_orders = models.ActionLogOrder.objects.filter(
         order_type=constants.ActionLogOrderType.FETCH_ALL
     ).order_by('-created_dt')
+
+    if ad_group:
+        fetch_all_orders = fetch_all_orders.filter(
+            actionlog__ad_group_network__ad_group=ad_group)
 
     for order in fetch_all_orders:
         if _is_fetch_all_order_successful(order):
             return order
 
     return None
-
-
-# def get_last_succesfull_fetch_all_networks_dates(ad_group):
-#     actionlogs = models.ActionLog.objects.\
-#         values('ad_group_network__network_id', 'order__pk').\
-#         annotate(created_dt=Max('created_dt')).\
-#         annotate(max_state=Max('state')).\
-#         annotate(min_state=Min('state')).\
-#         filter(ad_group_network__ad_group_id=ad_group.id).\
-#         filter(order__order_type=constants.ActionLogOrderType.FETCH_ALL).\
-#         filter(max_state=2).\
-#         filter(min_state=2)
-#     print actionlogs.query
-#     print actionlogs
-#
-#     result = {}
-#
-#     for log in list(actionlogs):
-#         result[log['ad_group_network__network_id']] = log['created_dt']
-#
-#     return result
 
 
 def get_last_succesfull_fetch_all_networks_dates(ad_group):
@@ -223,13 +210,13 @@ def age_oldest_waiting_action():
             action_type=constants.ActionType.MANUAL,
             state=constants.ActionState.WAITING
         ).aggregate(Min('created_dt'))
-        
+
         if result.get('created_dt__min') is None:
             n_hours = 0
         else:
             t_now = time.mktime(datetime.utcnow().timetuple())
             t_created = time.mktime(result['created_dt__min'].timetuple())
-            n_hours = int((t_now - t_created)/3600)
+            n_hours = int((t_now - t_created) / 3600)
     except Exception as e:
         msg = traceback.format_exc(e)
         logger.error(msg)
@@ -241,6 +228,7 @@ def _is_fetch_all_order_successful(order):
         exclude(state=constants.ActionState.SUCCESS).\
         filter(ad_group_network__network__maintenance=False).\
         exists()
+
     return not result
 
 
