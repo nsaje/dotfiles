@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 NUM_RECENT_HOURS = 2
 
 
-def run_fetch_all_order(dates):
+def init_fetch_all_order(dates):
     ad_groups = dashmodels.AdGroup.objects.all()
 
     with transaction.atomic():
@@ -31,36 +31,110 @@ def run_fetch_all_order(dates):
             order_type=constants.ActionLogOrderType.FETCH_ALL
         )
 
+        actionlogs = []
         for ad_group in ad_groups:
-            fetch_ad_group_status(ad_group, order=order)
+            actionlogs += fetch_ad_group_status(ad_group, order=order, commit=False)
 
             for date in dates:
-                fetch_ad_group_reports(ad_group, date, order=order)
+                actionlogs += fetch_ad_group_reports(ad_group, date, order=order, commit=False)
+
+    zwei_actions.send_multiple(actionlogs)
 
 
-def stop_ad_group(ad_group, network=None, order=None):
+def init_fetch_reports_order(dates, ad_groups=None):
+    if ad_groups is None:
+        ad_groups = dashmodels.AdGroup.objects.all()
+
+    if not ad_groups:
+        return
+
+    with transaction.atomic():
+        order = models.ActionLogOrder.objects.create(
+            order_type=constants.ActionLogOrderType.FETCH_REPORTS
+        )
+
+        actionlogs = []
+        for ad_group in ad_groups:
+            for date in dates:
+                actionlogs += fetch_ad_group_reports(ad_group, date, order=order, commit=False)
+
+    zwei_actions.send_multiple(actionlogs)
+
+
+def init_fetch_status_order(ad_groups=None):
+    if ad_groups is None:
+        ad_groups = dashmodels.AdGroup.objects.all()
+
+    if not ad_groups:
+        return
+
+    with transaction.atomic():
+        order = models.ActionLogOrder.objects.create(
+            order_type=constants.ActionLogOrderType.FETCH_STATUS
+        )
+
+        actionlogs = []
+        for ad_group in ad_groups:
+            actionlogs += fetch_ad_group_status(ad_group, order=order, commit=False)
+
+    zwei_actions.send_multiple(actionlogs)
+
+
+def init_stop_ad_group_order(ad_group, network=None):
+    with transaction.atomic():
+        order = models.ActionLogOrder.objects.create(
+            order_type=constants.ActionLogOrderType.STOP_ALL
+        )
+        actionlogs = stop_ad_group(ad_group, network, order, commit=False)
+
+    zwei_actions.send_multiple(actionlogs)
+
+
+def init_set_ad_group_property_order(ad_group, network=None):
+    with transaction.atomic():
+        order = models.ActionLogOrder.objects.create(
+            order_type=constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
+        )
+        set_ad_group_property(ad_group, network, order, commit=False)
+
+
+def stop_ad_group(ad_group, network=None, order=None, commit=True):
     ad_group_networks = _get_ad_group_networks(ad_group, network)
+
+    actionlogs = []
     for ad_group_network in ad_group_networks:
-        _init_stop_campaign(ad_group_network, order)
+        actionlogs.append(_init_stop_campaign(ad_group_network, order))
+
+    if commit:
+        zwei_actions.send_multiple(actionlogs)
+
+    return actionlogs
 
 
-def stop_ad_group_order(ad_group, network=None):
-    order = models.ActionLogOrder.objects.create(
-        order_type=constants.ActionLogOrderType.STOP_ALL
-    )
-    stop_ad_group(ad_group, network, order)
-
-
-def fetch_ad_group_status(ad_group, network=None, order=None):
+def fetch_ad_group_status(ad_group, network=None, order=None, commit=True):
     ad_group_networks = _get_ad_group_networks(ad_group, network)
+
+    actionlogs = []
     for ad_group_network in ad_group_networks:
-        _init_fetch_status(ad_group_network, order)
+        actionlogs.append(_init_fetch_status(ad_group_network, order))
+
+    if commit:
+        zwei_actions.send_multiple(actionlogs)
+
+    return actionlogs
 
 
-def fetch_ad_group_reports(ad_group, date, network=None, order=None):
+def fetch_ad_group_reports(ad_group, date, network=None, order=None, commit=True):
     ad_group_networks = _get_ad_group_networks(ad_group, network)
+
+    actionlogs = []
     for ad_group_network in ad_group_networks:
-        _init_fetch_reports(ad_group_network, date, order)
+        actionlogs.append(_init_fetch_reports(ad_group_network, date, order))
+
+    if commit:
+        zwei_actions.send_multiple(actionlogs)
+
+    return actionlogs
 
 
 def set_ad_group_property(ad_group, network=None, prop=None, value=None, order=None):
@@ -295,9 +369,10 @@ def _init_stop_campaign(ad_group_network, order):
             action.payload = payload
             action.save()
 
-        zwei_actions.send(action)
     except Exception as e:
         _handle_error(action, e)
+
+    return action
 
 
 def _init_fetch_status(ad_group_network, order):
@@ -335,9 +410,10 @@ def _init_fetch_status(ad_group_network, order):
             action.payload = payload
             action.save()
 
-        zwei_actions.send(action)
     except Exception as e:
         _handle_error(action, e)
+
+    return action
 
 
 def _init_fetch_reports(ad_group_network, date, order):
@@ -377,9 +453,10 @@ def _init_fetch_reports(ad_group_network, date, order):
             action.payload = payload
             action.save()
 
-        zwei_actions.send(action)
     except Exception as e:
         _handle_error(action, e)
+
+    return action
 
 
 def _init_set_campaign_property(ad_group_network, prop, value, order):

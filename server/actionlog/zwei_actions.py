@@ -2,15 +2,27 @@ import binascii
 import copy
 import json
 import logging
+import traceback
 import urllib2
 
 from django.conf import settings
 
+from actionlog import constants
 from utils import encryption_helpers
 from utils import json_helper
 from utils import request_signer
 
 logger = logging.getLogger(__name__)
+
+
+def _handle_error(action, e):
+    msg = traceback.format_exc(e)
+
+    logger.error(msg)
+
+    action.state = constants.ActionState.FAILED
+    action.message = msg
+    action.save()
 
 
 def _decrypt_payload_credentials(payload):
@@ -30,11 +42,19 @@ def _decrypt_payload_credentials(payload):
     return payload
 
 
-def send(action):
-    # Decrypt has to be the last thing to happen before sending to zwei.
-    # Payload with decrypted credentials should never be logged.
-    payload = _decrypt_payload_credentials(action.payload)
-    data = json.dumps(payload, cls=json_helper.JSONEncoder)
-    request = urllib2.Request(settings.ZWEI_API_URL, data)
+def _send(action):
+    try:
+        # Decrypt has to be the last thing to happen before sending to zwei.
+        # Payload with decrypted credentials should never be logged.
+        payload = _decrypt_payload_credentials(action.payload)
+        data = json.dumps(payload, cls=json_helper.JSONEncoder)
+        request = urllib2.Request(settings.ZWEI_API_URL, data)
 
-    request_signer.urllib2_secure_open(request, settings.ZWEI_API_SIGN_KEY)
+        request_signer.urllib2_secure_open(request, settings.ZWEI_API_SIGN_KEY)
+    except Exception as e:
+        _handle_error(action, e)
+
+
+def send_multiple(actionlogs):
+    for actionlog in actionlogs:
+        _send(actionlog)
