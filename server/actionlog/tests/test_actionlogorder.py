@@ -22,13 +22,13 @@ class ActionLogOrderApiTestCase(test.TestCase):
         settings.CREDENTIALS_ENCRYPTION_KEY = self.credentials_encription_key
 
     @mock.patch('utils.request_signer._secure_opener.open')
-    def test_run_fetch_all_order(self, mock_urlopen):
+    def test_init_fetch_all_order(self, mock_urlopen):
         mock_request = mock.Mock()
         mock_request.status_code = httplib.OK
         mock_urlopen.return_value = mock_request
 
         dates = [datetime.date.today()]
-        api.run_fetch_all_order(dates)
+        api.init_fetch_all_order(dates)
 
         order = models.ActionLogOrder.objects.order_by('-created_dt').first()
         self.assertEqual(

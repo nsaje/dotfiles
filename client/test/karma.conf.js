@@ -15,6 +15,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
+        'app/lib/components/jquery/dist/jquery.min.js',
         'app/lib/components/angular/angular.js',
         'app/lib/components/moment/min/moment.min.js',
         'app/lib/ng-bs-daterangepicker/0.0.1/ng-bs-daterangepicker.js',
