@@ -214,19 +214,26 @@ def is_fetch_all_data_recent(ad_group=None):
 
 
 def get_last_successful_fetch_all_order(ad_group=None):
-    fetch_all_orders = models.ActionLogOrder.objects.filter(
-        order_type=constants.ActionLogOrderType.FETCH_ALL
-    ).order_by('-created_dt')
+    q_id = models.ActionLogOrder.objects.\
+        values('pk').\
+        annotate(max_state=Max('actionlog__state')).\
+        annotate(min_state=Min('actionlog__state')).\
+        filter(order_type=constants.ActionLogOrderType.FETCH_ALL).\
+        filter(actionlog__ad_group_network__network__maintenance=False).\
+        filter(max_state=constants.ActionState.SUCCESS).\
+        filter(min_state=constants.ActionState.SUCCESS).\
+        order_by('-created_dt')
 
     if ad_group:
-        fetch_all_orders = fetch_all_orders.filter(
-            actionlog__ad_group_network__ad_group=ad_group)
+        q_id = q_id.filter(actionlog__ad_group_network__ad_group_id=ad_group.id)
 
-    for order in fetch_all_orders:
-        if _is_fetch_all_order_successful(order):
-            return order
+    q_id_result = q_id.first()
+    if q_id_result:
+        order = models.ActionLogOrder.objects.get(pk=q_id_result['pk'])
+    else:
+        order = None
 
-    return None
+    return order
 
 
 def get_last_succesfull_fetch_all_networks_dates(ad_group):
@@ -240,8 +247,8 @@ def get_last_succesfull_fetch_all_networks_dates(ad_group):
             filter(ad_group_network__ad_group_id=ad_group.id).\
             filter(ad_group_network__network_id=network).\
             filter(order__order_type=constants.ActionLogOrderType.FETCH_ALL).\
-            filter(max_state=2).\
-            filter(min_state=2).\
+            filter(max_state=constants.ActionState.SUCCESS).\
+            filter(min_state=constants.ActionState.SUCCESS).\
             order_by('-created_dt').\
             first()
 
