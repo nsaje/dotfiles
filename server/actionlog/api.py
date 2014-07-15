@@ -121,7 +121,7 @@ def is_waiting_for_set_actions(ad_group):
     return is_fail_in_latest_group or is_any_waiting_action
 
 
-def is_fetch_all_data_recent():
+def is_fetch_all_data_recent(ad_group=None):
     check_from_hour = datetime.utcnow() - timedelta(hours=NUM_RECENT_HOURS)
     recent_fetch_all_orders = models.ActionLogOrder.objects.filter(
         order_type=constants.ActionLogOrderType.FETCH_ALL,
@@ -129,19 +129,19 @@ def is_fetch_all_data_recent():
     ).order_by('-created_dt')
 
     for order in recent_fetch_all_orders:
-        if _is_fetch_all_order_successful(order):
+        if _is_fetch_all_order_successful(order, ad_group):
             return True
 
     return False
 
 
-def get_last_successful_fetch_all_order():
+def get_last_successful_fetch_all_order(ad_group=None):
     fetch_all_orders = models.ActionLogOrder.objects.filter(
         order_type=constants.ActionLogOrderType.FETCH_ALL
     ).order_by('-created_dt')
 
     for order in fetch_all_orders:
-        if _is_fetch_all_order_successful(order):
+        if _is_fetch_all_order_successful(order, ad_group):
             return order
 
     return None
@@ -223,24 +223,28 @@ def age_oldest_waiting_action():
             action_type=constants.ActionType.MANUAL,
             state=constants.ActionState.WAITING
         ).aggregate(Min('created_dt'))
-        
+
         if result.get('created_dt__min') is None:
             n_hours = 0
         else:
             t_now = time.mktime(datetime.utcnow().timetuple())
             t_created = time.mktime(result['created_dt__min'].timetuple())
-            n_hours = int((t_now - t_created)/3600)
+            n_hours = int((t_now - t_created) / 3600)
     except Exception as e:
         msg = traceback.format_exc(e)
         logger.error(msg)
     return n_hours
 
 
-def _is_fetch_all_order_successful(order):
-    result = order.actionlog_set.\
+def _is_fetch_all_order_successful(order, ad_group):
+    q = order.actionlog_set.\
         exclude(state=constants.ActionState.SUCCESS).\
-        filter(ad_group_network__network__maintenance=False).\
-        exists()
+        filter(ad_group_network__network__maintenance=False)
+
+    if ad_group:
+        q = q.filter(ad_group_network__ad_group=ad_group)
+
+    result = q.exists()
     return not result
 
 
