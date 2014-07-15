@@ -76,11 +76,13 @@ class ActionLogOrderApiTestCase(test.TestCase):
 
         last_successful_order = api.get_last_successful_fetch_all_order()
 
-        including_timedelta = datetime.timedelta(hours=api.NUM_RECENT_HOURS-1)
+        including_timedelta = datetime.timedelta(
+            hours=settings.ACTIONLOG_RECENT_HOURS - 1)
         api.datetime.utcnow = classmethod(lambda cls: last_successful_order.created_dt + including_timedelta)
         self.assertTrue(api.is_fetch_all_data_recent())
 
-        excluding_timedelta = datetime.timedelta(hours=api.NUM_RECENT_HOURS+1)
+        excluding_timedelta = datetime.timedelta(
+            hours=settings.ACTIONLOG_RECENT_HOURS + 1)
         api.datetime.utcnow = classmethod(lambda cls: last_successful_order.created_dt + excluding_timedelta)
         self.assertFalse(api.is_fetch_all_data_recent())
 
