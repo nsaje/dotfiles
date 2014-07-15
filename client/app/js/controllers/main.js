@@ -100,11 +100,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
         });
     };
     
-    $scope.$on("$stateChangeSuccess", $scope.stateChangeHandler);
-
     $scope.stateChangeHandler = function (event, toState, toParams, fromState, fromParams) {
-        $scope.stateChangeHandlerCalled = true;
-
         $scope.currentRoute = $state.current;
         $scope.setBreadcrumb();
         $scope.tabs.forEach(function(tab) {
@@ -140,6 +136,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
         }
     };
 
+    $scope.$on("$stateChangeSuccess", $scope.stateChangeHandler);
+
     api.navData.list().then(function (data) {
         $scope.accounts = data;
 
@@ -165,7 +163,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
         }
     });
 
-    if (!$scope.stateChangeHandlerCalled) {
+    if ($scope.stateChangeFired) {
         $scope.stateChangeHandler();     
     }
 }]);

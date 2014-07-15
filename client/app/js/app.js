@@ -57,5 +57,6 @@ oneApp.run(['$state', '$rootScope', '$location', 'config', function($state, $roo
     $rootScope.$on('$stateChangeSuccess', function (e, toState, toParams, fromState, fromParams) {
         // Restore all query string parameters back to $location.search
         $location.search(locationSearch);
+        $rootScope.stateChangeFired = true;
     });
 }]);
