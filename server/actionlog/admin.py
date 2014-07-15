@@ -92,17 +92,24 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
                 obj.payload and obj.payload.get('args', {}).get('date') or '\(O_o)/',
             )
         elif obj.action == constants.Action.SET_PROPERTY:
-            value = obj.payload and obj.payload.get('value') or '\(O_o)/'
-            value = dash.constants.AdGroupNetworkSettingsState.get_text(value) or value
+            prop = obj.payload and obj.payload.get('property')
+            value = obj.payload and obj.payload.get('value')
+
+            if prop == 'state':
+                value = dash.constants.AdGroupNetworkSettingsState.get_text(value)
+            elif isinstance(value, list):
+                value = ', '.join(value)
 
             description = '{} to {}'.format(
-                obj.payload and obj.payload.get('property') or '\(O_o)/',
-                value
+                prop or '\(O_o)/',
+                value or '\(O_o)/'
             )
         elif obj.action == constants.Action.SET_CAMPAIGN_STATE:
-            state = obj.payload.get('args', {}).get('state') or '\(O_o)/'
-            state = dash.constants.AdGroupSettingsState.get_text(state) or state
-            description = 'to {}'.format(state)
+            state = dash.constants.AdGroupSettingsState.get_text(
+                obj.payload.get('args', {}).get('state')
+            )
+
+            description = 'to {}'.format(state or '\(O_o)/')
         else:
             return obj.action
 
