@@ -236,7 +236,7 @@ def age_oldest_waiting_action():
     return n_hours
 
 
-def _is_fetch_all_order_successful(order, ad_group):
+def _is_fetch_all_order_successful(order, ad_group=None):
     q = order.actionlog_set.\
         exclude(state=constants.ActionState.SUCCESS).\
         filter(ad_group_network__network__maintenance=False)
