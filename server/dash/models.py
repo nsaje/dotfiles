@@ -124,7 +124,8 @@ class NetworkCredentials(models.Model):
                 settings.CREDENTIALS_ENCRYPTION_KEY
             )
             self.credentials = binascii.b2a_base64(encrypted_credentials)
-            super(NetworkCredentials, self).save(*args, **kwargs)
+
+        super(NetworkCredentials, self).save(*args, **kwargs)
 
 
 class UserAdGroupManager(models.Manager):
