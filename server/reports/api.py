@@ -119,7 +119,7 @@ def save_report(ad_group, network, rows, date):
     _delete_existing_stats(ad_group, network, date)
 
     for row in rows:
-        article = _reconcile_article(row.get('url'), row.get('title'), ad_group)
+        article = _reconcile_article(row['url'], row['title'], ad_group)
 
         article_stats = models.ArticleStats(datetime=date, article=article, ad_group=ad_group, network=network)
 
@@ -157,18 +157,13 @@ def _reconcile_article(raw_url, title, ad_group):
     if not title:
         raise exc.ArticleReconciliationException('Missing article title.')
 
-    kwargs = {
-        'ad_group': ad_group,
-        'title': title
-    }
+    if not raw_url:
+        raise exc.ArticleReconciliationException('Missing article url.')
 
-    url = None
-    if raw_url:
-        url = _clean_url(raw_url)
-        kwargs['url'] = url
+    url = _clean_url(raw_url)
 
     try:
-        return dashmodels.Article.objects.filter(**kwargs).latest()
+        return dashmodels.Article.objects.get(ad_group=ad_group, title=title, url=url)
     except dashmodels.Article.DoesNotExist:
         pass
 
@@ -181,7 +176,7 @@ def _reconcile_article(raw_url, title, ad_group):
             'Using existing article.'.
             format(title=title, url=url, ad_group_id=ad_group.id)
         )
-        return dashmodels.Article.objects.filter(**kwargs).latest()
+        return dashmodels.Article.objects.get(ad_group=ad_group, url=url, title=title)
 
 
 def _clean_url(raw_url):
