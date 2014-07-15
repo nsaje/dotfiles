@@ -11,6 +11,6 @@ describe('MainCtrl', function () {
     }));
 
     it('should init accounts to empty array', function () {
-        expect(scope.accounts).toEqual([]);
+        expect(scope.accounts).toBe(null);
     });
 });
