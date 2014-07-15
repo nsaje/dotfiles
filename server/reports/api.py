@@ -4,9 +4,7 @@ import decimal
 import urlparse
 import urllib
 import logging
-import sys
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction, IntegrityError
 from django.db.models import Sum
 
