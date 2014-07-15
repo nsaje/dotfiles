@@ -24,4 +24,4 @@ class Command(BaseCommand):
             dates = last_n_days(3)
 
         logger.info('Fetching status and reports for dates: %s for all ad groups.', dates)
-        api.run_fetch_all_order(dates)
+        api.init_fetch_all_order(dates)

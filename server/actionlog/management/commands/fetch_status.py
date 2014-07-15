@@ -21,5 +21,4 @@ class Command(BaseCommand):
         logger.info('Fetching status for ad_groups: %s', ad_group_ids or 'all')
 
         ad_groups = get_ad_groups(ad_group_ids)
-        for ad_group in ad_groups:
-            api.fetch_ad_group_status(ad_group)
+        api.init_fetch_status_order(ad_groups)

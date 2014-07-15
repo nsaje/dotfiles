@@ -28,7 +28,4 @@ class Command(BaseCommand):
         logger.info('Fetching report for dates: %s, ad_groups: %s', dates, ad_group_ids or 'all')
 
         ad_groups = get_ad_groups(ad_group_ids)
-
-        for date in dates:
-            for ad_group in ad_groups:
-                api.fetch_ad_group_reports(ad_group, date)
+        api.init_fetch_reports_order(dates, ad_groups)
