@@ -73,15 +73,11 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings):
     if not changes:
         return
 
-    order = actionlog.models.ActionLogOrder.objects.create(
-        order_type=actionlog.constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE,
-    )
-
     for field_name, field_value in changes.iteritems():
         if field_name == 'state' and field_value == constants.AdGroupSettingsState.INACTIVE:
-            actionlog.api.stop_ad_group(ad_group, order=order)
+            actionlog.api.init_stop_ad_group_order(ad_group)
         else:
-            actionlog.api.set_ad_group_property(ad_group, prop=field_name, value=field_value, order=order)
+            actionlog.api.init_set_ad_group_property_order(ad_group, prop=field_name, value=field_value)
 
 
 def _get_setting_changes(current_settings, new_settings):
