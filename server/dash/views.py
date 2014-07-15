@@ -34,8 +34,6 @@ logger = logging.getLogger(__name__)
 STATS_START_DELTA = 30
 STATS_END_DELTA = 1
 
-NUM_ACTIONLOG_RECENT_HOURS = 2
-
 
 def get_ad_group(user, ad_group_id):
     try:
@@ -125,6 +123,16 @@ def get_last_sucessful_sync_date(ad_group):
         last_sync = None
 
     return last_sync
+
+
+def is_sync_recent(last_sync_datetime):
+    min_sync_date = datetime.datetime.utcnow() - datetime.timedelta(
+        hours=settings.ACTIONLOG_RECENT_HOURS
+    )
+    result = last_sync_datetime and (
+        last_sync_datetime >= pytz.utc.localize(min_sync_date))
+
+    return result
 
 
 @statsd_helper.statsd_timer('dash', 'index')
@@ -333,8 +341,6 @@ class AdGroupNetworksTable(api_common.BaseApiView):
             actionlog.api.get_last_succesfull_fetch_all_networks_dates(ad_group)
 
         last_sync = get_last_sucessful_sync_date(ad_group)
-        is_sync_recent = last_sync >= last_sync + datetime.timedelta(
-            hours=NUM_ACTIONLOG_RECENT_HOURS)
 
         return self.create_api_response({
             'rows': self.get_rows(
@@ -345,7 +351,7 @@ class AdGroupNetworksTable(api_common.BaseApiView):
             ),
             'totals': self.get_totals(ad_group, totals_data, network_settings),
             'last_sync': last_sync,
-            'is_sync_recent': is_sync_recent,
+            'is_sync_recent': is_sync_recent(last_sync),
         })
 
     def get_totals(self, ad_group, totals_data, network_settings):
@@ -632,14 +638,12 @@ class AdGroupAdsTable(api_common.BaseApiView):
         )[0]
 
         last_sync = get_last_sucessful_sync_date(ad_group)
-        is_sync_recent = last_sync >= last_sync + datetime.timedelta(
-            hours=NUM_ACTIONLOG_RECENT_HOURS)
 
         return self.create_api_response({
             'rows': self.get_rows(ad_group, article_data, articles),
             'totals': self.get_totals(totals_data),
             'last_sync': last_sync,
-            'is_sync_recent': is_sync_recent,
+            'is_sync_recent': is_sync_recent(last_sync),
             'pagination': {
                 'currentPage': articles.number,
                 'numPages': articles.paginator.num_pages,
