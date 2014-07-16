@@ -116,9 +116,9 @@ def create_excel_worksheet(workbook, name, widths, header_names, data, transform
 
 
 def get_last_sucessful_sync_date(ad_group):
-    last_successful_order = actionlog.api.get_last_successful_fetch_all_order(ad_group)
-    if last_successful_order:
-        last_sync = pytz.utc.localize(last_successful_order.created_dt)
+    networks_syncs = actionlog.api.get_last_succesfull_fetch_all_networks_dates(ad_group)
+    if networks_syncs:
+        last_sync = pytz.utc.localize(min(networks_syncs.values()))
     else:
         last_sync = None
 
