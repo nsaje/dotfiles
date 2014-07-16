@@ -5,8 +5,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     $scope.selectedArticleTotals = true;
     $scope.constants = constants;
     $scope.options = options;
-    $scope.chartMetric1 = constants.networkChartMetric.CLICKS;
-    $scope.chartMetric2 = constants.networkChartMetric.IMPRESSIONS;
+    $scope.chartMetric1 = constants.sourceChartMetric.CLICKS;
+    $scope.chartMetric2 = constants.sourceChartMetric.IMPRESSIONS;
     $scope.dailyStats = [];
     $scope.chartData = undefined;
     $scope.isChartShown = true;
@@ -68,9 +68,9 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
 
         result.formats = [$scope.chartMetric1, $scope.chartMetric2].map(function (x) {
             var format = null;
-            if (x === constants.networkChartMetric.COST) {
+            if (x === constants.sourceChartMetric.COST) {
                 format = 'currency';
-            } else if (x === constants.networkChartMetric.CTR) {
+            } else if (x === constants.sourceChartMetric.CTR) {
                 format = 'percent';
             }
 
@@ -129,7 +129,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     };
 
     $scope.getDailyStats = function () {
-        api.adGroupNetworksDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedArticleIds, null, $scope.selectedArticleTotals).then(
+        api.adGroupSourcesDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedArticleIds, null, $scope.selectedArticleTotals).then(
             function (data) {
                 $scope.dailyStats = data;
                 $scope.setChartData();

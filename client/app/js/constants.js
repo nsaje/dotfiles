@@ -15,7 +15,7 @@ var constants = {
         UNITED_KINGDOM: 'UK',
         UNITED_STATES: 'US'
     },
-    networkChartMetric: {
+    sourceChartMetric: {
         CLICKS: 'clicks',
         IMPRESSIONS: 'impressions',
         CTR: 'ctr',
@@ -41,11 +41,11 @@ var options = {
         {name: 'United Kingdom', value: constants.adTargetCountry.UNITED_KINGDOM},
         {name: 'United States', value: constants.adTargetCountry.UNITED_STATES}
     ],
-    networkChartMetrics: [
-        {name: 'Clicks', value: constants.networkChartMetric.CLICKS},
-        {name: 'Impressions', value: constants.networkChartMetric.IMPRESSIONS},
-        {name: 'CTR', value: constants.networkChartMetric.CTR},
-        {name: 'Cost', value: constants.networkChartMetric.COST},
-        {name: 'CPC', value: constants.networkChartMetric.CPC}
+    sourceChartMetrics: [
+        {name: 'Clicks', value: constants.sourceChartMetric.CLICKS},
+        {name: 'Impressions', value: constants.sourceChartMetric.IMPRESSIONS},
+        {name: 'CTR', value: constants.sourceChartMetric.CTR},
+        {name: 'Cost', value: constants.sourceChartMetric.COST},
+        {name: 'CPC', value: constants.sourceChartMetric.CPC}
     ]
 };

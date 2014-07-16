@@ -69,7 +69,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
                 $scope.actionIsWaiting = data.actionIsWaiting;
                 // $scope.alerts = [{
                 //     type: 'info',
-                //     message: 'Settings changes are being propagated to external networks. The sync might take a few hours. If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.'
+                //     message: 'Settings changes are being propagated to external sources. The sync might take a few hours. If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.'
                 // }];
                 $scope.updateAccounts($state.params.id, data.name);
                 $scope.setBreadcrumb();
