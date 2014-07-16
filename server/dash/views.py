@@ -115,9 +115,9 @@ def create_excel_worksheet(workbook, name, widths, header_names, data, transform
         write_excel_row(worksheet, index + 1, transform_func(item))
 
 
-def get_last_sucessful_sync_date(ad_group):
+def get_last_sucessful_sync_date(ad_group, networks):
     networks_syncs = actionlog.api.get_last_succesfull_fetch_all_networks_dates(ad_group)
-    if networks_syncs:
+    if networks_syncs and set([x.id for x in networks]) <= set(networks_syncs.keys()):
         last_sync = pytz.utc.localize(min(networks_syncs.values()))
     else:
         last_sync = None
@@ -343,7 +343,8 @@ class AdGroupNetworksTable(api_common.BaseApiView):
         last_success_actions = \
             actionlog.api.get_last_succesfull_fetch_all_networks_dates(ad_group)
 
-        last_sync = get_last_sucessful_sync_date(ad_group)
+        networks = ad_group.networks.all()
+        last_sync = get_last_sucessful_sync_date(ad_group, networks)
 
         return self.create_api_response({
             'rows': self.get_rows(
@@ -640,7 +641,8 @@ class AdGroupAdsTable(api_common.BaseApiView):
             ad_group=int(ad_group.id)
         )[0]
 
-        last_sync = get_last_sucessful_sync_date(ad_group)
+        networks = ad_group.networks.all()
+        last_sync = get_last_sucessful_sync_date(ad_group, networks)
 
         return self.create_api_response({
             'rows': self.get_rows(ad_group, article_data, articles),
