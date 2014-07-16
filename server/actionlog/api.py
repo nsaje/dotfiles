@@ -220,17 +220,27 @@ def get_last_successful_fetch_all_order(ad_group=None):
         INNER JOIN actionlog_actionlog AS al ON alo.id=al.order_id
         INNER JOIN dash_adgroupnetwork AS agn ON al.ad_group_network_id=agn.id
         INNER JOIN dash_network AS n ON agn.network_id=n.id
-        WHERE (alo.order_type=1 AND n.maintenance=False AND (1=%s OR agn.ad_group_id=%s))
+        WHERE alo.order_type=%s AND n.maintenance=False AND (1=%s OR agn.ad_group_id=%s)
         GROUP BY alo.id, alo.created_dt
-        HAVING EVERY(al.state=2)
+        HAVING EVERY(al.state=%s)
         ORDER BY alo.created_dt DESC
         LIMIT 1
     '''
 
     if ad_group:
-        params = [0, ad_group.pk]
+        params = [
+            constants.ActionLogOrderType.FETCH_ALL,
+            0,
+            ad_group.pk,
+            constants.ActionState.SUCCESS
+        ]
     else:
-        params = [1, None]
+        params = [
+            constants.ActionLogOrderType.FETCH_ALL,
+            1,
+            None,
+            constants.ActionState.SUCCESS
+        ]
 
     orders = models.ActionLogOrder.objects.raw(q, params)
     if list(orders):
