@@ -11,6 +11,11 @@ oneApp.config(['$httpProvider', function ($httpProvider) {
     $httpProvider.defaults.xsrfCookieName = 'csrftoken';
 }]);
 
+oneApp.config(["$locationProvider", function($locationProvider) {
+    $locationProvider.html5Mode(true);
+    $locationProvider.hashPrefix('!');
+}]);
+
 oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stateProvider, $urlRouterProvider, config) {
     $urlRouterProvider.otherwise('/ad_groups');
 

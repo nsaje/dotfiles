@@ -19,7 +19,6 @@ auth_views.logout_then_login = utils.statsd_helper.statsd_timer('auth', 'signout
 
 urlpatterns = patterns(
     '',
-    url(r'^$', dash.views.index, name='index'),
     url(r'^signin$',
         'zemauth.views.login',
         {'authentication_form': AuthenticationForm, 'template_name': 'zemauth/signin.html'}),
@@ -97,4 +96,9 @@ urlpatterns += patterns(
         dash.views.healthcheck,
         name='healthcheck',
     )
+)
+
+urlpatterns += patterns(
+    '',
+    url(r'^', dash.views.index, name='index')
 )
