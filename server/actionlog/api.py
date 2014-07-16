@@ -7,9 +7,9 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.db import transaction
+from django.db import connection, transaction
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Max, Min
+from django.db.models import Min
 
 from . import models
 from . import constants
@@ -252,23 +252,40 @@ def get_last_successful_fetch_all_order(ad_group=None):
 
 
 def get_last_succesfull_fetch_all_networks_dates(ad_group):
-    result = {}
-    for network in dashconstants.AdNetwork.get_all():
-        actionlog = models.ActionLog.objects.\
-            values('ad_group_network__network_id', 'order__pk').\
-            annotate(created_dt=Max('created_dt')).\
-            annotate(max_state=Max('state')).\
-            annotate(min_state=Min('state')).\
-            filter(ad_group_network__ad_group_id=ad_group.id).\
-            filter(ad_group_network__network_id=network).\
-            filter(order__order_type=constants.ActionLogOrderType.FETCH_ALL).\
-            filter(max_state=constants.ActionState.SUCCESS).\
-            filter(min_state=constants.ActionState.SUCCESS).\
-            order_by('-created_dt').\
-            first()
+    q = '''
+        SELECT t.network_id, MAX(t.created_dt)
+        FROM (
+            SELECT agn.network_id, alo.created_dt
+            FROM actionlog_actionlog AS al
+            INNER JOIN actionlog_actionlogorder AS alo ON al.order_id=alo.id
+            INNER JOIN dash_adgroupnetwork AS agn ON al.ad_group_network_id=agn.id
+            INNER JOIN dash_network AS n ON agn.network_id=n.id
+            WHERE alo.order_type=%s AND n.maintenance=False AND (1=%s OR agn.ad_group_id=%s)
+            GROUP BY agn.network_id, alo.created_dt
+            HAVING EVERY(al.state=%s)
+        ) AS t
+        GROUP BY t.network_id;
+    '''
 
-        if actionlog:
-            result[network] = actionlog['created_dt']
+    if ad_group:
+        params = [
+            constants.ActionLogOrderType.FETCH_ALL,
+            0,
+            ad_group.pk,
+            constants.ActionState.SUCCESS
+        ]
+    else:
+        params = [
+            constants.ActionLogOrderType.FETCH_ALL,
+            1,
+            None,
+            constants.ActionState.SUCCESS
+        ]
+
+    result = {}
+    with connection.cursor() as c:
+        c.execute(q, params)
+        result = dict(c.fetchall())
 
     return result
 
