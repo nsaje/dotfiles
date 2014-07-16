@@ -15,13 +15,13 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
 
     search_fields = (
         'action',
-        'ad_group_network__ad_group__name',
-        'ad_group_network__ad_group__campaign__name',
-        'ad_group_network__ad_group__campaign__account__name',
-        'ad_group_network__network__name',
+        'ad_group_source__ad_group__name',
+        'ad_group_source__ad_group__campaign__name',
+        'ad_group_source__ad_group__campaign__account__name',
+        'ad_group_source__source__name',
     )
 
-    list_filter = ('ad_group_network__network', 'state', 'action', 'action_type')
+    list_filter = ('ad_group_source__source', 'state', 'action', 'action_type')
 
     list_display = ('action_', 'ad_group_source_', 'created_dt', 'action_type', 'state_', 'order_')
 

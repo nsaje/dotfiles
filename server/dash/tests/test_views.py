@@ -147,5 +147,5 @@ class AdGroupAdsExportTestCase(test.TestCase):
 
         self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Source', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'])
 
-        self._assert_row(worksheet, 1, [41821.0, u'Test Article with unicode Čžš', 'http://www.example.com', 'Test Sourceg 1',
+        self._assert_row(worksheet, 1, [41821.0, u'Test Article with unicode Čžš', 'http://www.example.com', 'Test Source 1',
             1000.123242, 10.2334, 103, 100000, 0.01031231231])
