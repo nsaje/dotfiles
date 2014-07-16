@@ -23,16 +23,16 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
 
     list_filter = ('ad_group_network__network', 'state', 'action', 'action_type')
 
-    list_display = ('action_', 'ad_group_network_', 'created_dt', 'action_type', 'state_', 'order_')
+    list_display = ('action_', 'ad_group_source_', 'created_dt', 'action_type', 'state_', 'order_')
 
     fields = (
-        'action_', 'ad_group_network_', 'state', 'action_type',
+        'action_', 'ad_group_source_', 'state', 'action_type',
         'created_by', 'created_dt', 'modified_by', 'modified_dt',
         'payload_', 'message_', 'order_'
     )
 
     readonly_fields = (
-        'action_', 'ad_group_network_', 'action_type',
+        'action_', 'ad_group_source_', 'action_type',
         'created_by', 'created_dt', 'modified_by', 'modified_dt',
         'payload_', 'message_', 'order_'
     )
@@ -64,15 +64,15 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
     order_.admin_order_field = 'order'
     order_.short_description = 'Order ID'
 
-    def ad_group_network_(self, obj):
-        return '<a href="{ad_group_url}">{ad_group}</a>: <a href="{network_url}">{network}</a>'.format(
-            ad_group_url=reverse('admin:dash_adgroup_change', args=(obj.ad_group_network.ad_group.id,)),
-            ad_group=obj.ad_group_network.ad_group,
-            network_url=reverse('admin:dash_network_change', args=(obj.ad_group_network.network.id,)),
-            network=obj.ad_group_network.network,
+    def ad_group_source_(self, obj):
+        return '<a href="{ad_group_url}">{ad_group}</a>: <a href="{source_url}">{source}</a>'.format(
+            ad_group_url=reverse('admin:dash_adgroup_change', args=(obj.ad_group_source.ad_group.id,)),
+            ad_group=obj.ad_group_source.ad_group,
+            source_url=reverse('admin:dash_source_change', args=(obj.ad_group_source.source.id,)),
+            source=obj.ad_group_source.source,
         )
-    ad_group_network_.allow_tags = True
-    ad_group_network_.admin_order_field = 'ad_group_network'
+    ad_group_source_.allow_tags = True
+    ad_group_source_.admin_order_field = 'ad_group_source'
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -96,7 +96,7 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
             value = obj.payload and obj.payload.get('value')
 
             if prop == 'state':
-                value = dash.constants.AdGroupNetworkSettingsState.get_text(value)
+                value = dash.constants.AdGroupSourceSettingsState.get_text(value)
             elif isinstance(value, list):
                 value = ', '.join(value)
 

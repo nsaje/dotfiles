@@ -91,6 +91,27 @@ class Network(models.Model):
         return self.name
 
 
+class Source(models.Model):
+    id = models.AutoField(primary_key=True)
+    type = models.CharField(
+        max_length=127,
+        blank=True,
+        null=True
+    )
+    name = models.CharField(
+        max_length=127,
+        editable=True,
+        blank=False,
+        null=False
+    )
+    maintenance = models.BooleanField(default=True)
+    created_dt = models.DateTimeField(auto_now_add=False, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=False, verbose_name='Modified at')
+
+    def __unicode__(self):
+        return self.name
+
+
 class NetworkCredentials(models.Model):
     id = models.AutoField(primary_key=True)
     network = models.ForeignKey(Network, on_delete=models.PROTECT)
@@ -128,6 +149,43 @@ class NetworkCredentials(models.Model):
         super(NetworkCredentials, self).save(*args, **kwargs)
 
 
+class SourceCredentials(models.Model):
+    id = models.AutoField(primary_key=True)
+    source = models.ForeignKey(Source, on_delete=models.PROTECT)
+    name = models.CharField(
+        max_length=127,
+        editable=True,
+        blank=False,
+        null=False
+    )
+    credentials = models.TextField(blank=True, null=False)
+
+    created_dt = models.DateTimeField(auto_now_add=False, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=False, verbose_name='Modified at')
+
+    class Meta:
+        verbose_name_plural = "Source Credentials"
+
+    def __unicode__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        try:
+            existing_instance = SourceCredentials.objects.get(id=self.id)
+        except SourceCredentials.DoesNotExist:
+            existing_instance = None
+
+        if (not existing_instance) or\
+           (existing_instance and existing_instance.credentials != self.credentials):
+            encrypted_credentials = encryption_helpers.aes_encrypt(
+                self.credentials,
+                settings.CREDENTIALS_ENCRYPTION_KEY
+            )
+            self.credentials = binascii.b2a_base64(encrypted_credentials)
+
+        super(SourceCredentials, self).save(*args, **kwargs)
+
+
 class UserAdGroupManager(models.Manager):
     def get_for_user(self, user):
         queryset = super(UserAdGroupManager, self).get_queryset()
@@ -150,8 +208,9 @@ class AdGroup(models.Model):
     )
     campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT)
     networks = models.ManyToManyField(Network, through='AdGroupNetwork')
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+    sources = models.ManyToManyField(Source, through='AdGroupSource')
+    created_dt = models.DateTimeField(auto_now_add=False, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=False, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
 
     objects = models.Manager()
@@ -185,6 +244,17 @@ class AdGroupNetwork(models.Model):
     class Meta:
 
         unique_together = ('network', 'network_campaign_key')
+
+
+class AdGroupSource(models.Model):
+    source = models.ForeignKey(Source, on_delete=models.PROTECT)
+    ad_group = models.ForeignKey(AdGroup, on_delete=models.PROTECT)
+
+    source_credentials = models.ForeignKey(SourceCredentials, null=True, on_delete=models.PROTECT)
+    source_campaign_key = jsonfield.JSONField(blank=True, default={})
+
+    def __unicode__(self):
+        return '%s - %s' % (self.ad_group, self.source)
 
 
 class AdGroupSettings(models.Model):
@@ -309,6 +379,83 @@ class AdGroupNetworkSettings(models.Model):
                 ad_group_network=AdGroupNetwork(
                     ad_group=ad_group,
                     network=Network.objects.get(pk=nid)
+                )
+            )
+
+        return result
+
+
+class AdGroupSourceSettings(models.Model):
+    id = models.AutoField(primary_key=True)
+
+    ad_group_source = models.ForeignKey(
+        AdGroupSource,
+        null=True,
+        related_name='settings',
+        on_delete=models.PROTECT
+    )
+
+    created_dt = models.DateTimeField(auto_now_add=False, verbose_name='Created at')
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='+',
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT
+    )
+
+    state = models.IntegerField(
+        default=constants.AdGroupSourceSettingsState.INACTIVE,
+        choices=constants.AdGroupSourceSettingsState.get_choices()
+    )
+    cpc_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='CPC'
+    )
+    daily_budget_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Daily budget'
+    )
+
+    class Meta:
+        get_latest_by = 'created_dt'
+        ordering = ('-created_dt',)
+
+    @classmethod
+    def get_current_settings(cls, ad_group):
+        source_ids = constants.AdSource.get_all()
+
+        source_settings = cls.objects.filter(
+            ad_group_source__ad_group=ad_group,
+        ).order_by('-created_dt')
+
+        result = {}
+        for ns in source_settings:
+            source = ns.ad_group_source.source
+
+            if source.id in result:
+                continue
+
+            result[source.id] = ns
+
+            if len(result) == len(source_ids):
+                break
+
+        for nid in source_ids:
+            if nid in result:
+                continue
+
+            result[nid] = cls(
+                state=None,
+                ad_group_source=AdGroupSource(
+                    ad_group=ad_group,
+                    source=Source.objects.get(pk=nid)
                 )
             )
 
