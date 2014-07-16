@@ -214,22 +214,37 @@ def is_fetch_all_data_recent(ad_group=None):
 
 
 def get_last_successful_fetch_all_order(ad_group=None):
-    q_id = models.ActionLogOrder.objects.\
-        values('pk').\
-        annotate(max_state=Max('actionlog__state')).\
-        annotate(min_state=Min('actionlog__state')).\
-        filter(order_type=constants.ActionLogOrderType.FETCH_ALL).\
-        filter(actionlog__ad_group_network__network__maintenance=False).\
-        filter(max_state=constants.ActionState.SUCCESS).\
-        filter(min_state=constants.ActionState.SUCCESS).\
-        order_by('-created_dt')
+    q = '''
+        SELECT alo.*
+        FROM actionlog_actionlogorder AS alo
+        INNER JOIN actionlog_actionlog AS al ON alo.id=al.order_id
+        INNER JOIN dash_adgroupnetwork AS agn ON al.ad_group_network_id=agn.id
+        INNER JOIN dash_network AS n ON agn.network_id=n.id
+        WHERE alo.order_type=%s AND n.maintenance=False AND (1=%s OR agn.ad_group_id=%s)
+        GROUP BY alo.id
+        HAVING EVERY(al.state=%s)
+        ORDER BY alo.created_dt DESC
+        LIMIT 1
+    '''
 
     if ad_group:
-        q_id = q_id.filter(actionlog__ad_group_network__ad_group_id=ad_group.id)
+        params = [
+            constants.ActionLogOrderType.FETCH_ALL,
+            0,
+            ad_group.pk,
+            constants.ActionState.SUCCESS
+        ]
+    else:
+        params = [
+            constants.ActionLogOrderType.FETCH_ALL,
+            1,
+            None,
+            constants.ActionState.SUCCESS
+        ]
 
-    q_id_result = q_id.first()
-    if q_id_result:
-        order = models.ActionLogOrder.objects.get(pk=q_id_result['pk'])
+    orders = models.ActionLogOrder.objects.raw(q, params)
+    if list(orders):
+        order = orders[0]
     else:
         order = None
 
