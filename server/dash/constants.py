@@ -1,15 +1,6 @@
 from utils.constant_base import ConstantBase
 
 
-class AdNetwork(ConstantBase):
-    ADBLADE = 1
-    GRAVITY = 2
-    OUTBRAIN = 3
-    YAHOO = 4
-    INFOLINKS = 5
-    ENGAGEYA = 6
-
-
 class AdGroupSettingsState(ConstantBase):
     ACTIVE = 1
     INACTIVE = 2
