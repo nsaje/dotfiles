@@ -281,8 +281,8 @@ class AdGroupNetworkSettings(models.Model):
         ordering = ('-created_dt',)
 
     @classmethod
-    def get_current_settings(cls, ad_group):
-        network_ids = constants.AdNetwork.get_all()
+    def get_current_settings(cls, ad_group, networks):
+        network_ids = [x.pk for x in networks]
 
         network_settings = cls.objects.filter(
             ad_group_network__ad_group=ad_group,

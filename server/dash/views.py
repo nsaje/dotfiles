@@ -332,7 +332,9 @@ class AdGroupNetworksTable(api_common.BaseApiView):
             ad_group=int(ad_group.id)
         )
 
-        network_settings = models.AdGroupNetworkSettings.get_current_settings(ad_group)
+        networks = ad_group.networks.all()
+        network_settings = models.AdGroupNetworkSettings.get_current_settings(
+            ad_group, networks)
 
         totals_data = reports.api.query(
             get_stats_start_date(request.GET.get('start_date')),
@@ -343,12 +345,12 @@ class AdGroupNetworksTable(api_common.BaseApiView):
         last_success_actions = \
             actionlog.api.get_last_succesfull_fetch_all_networks_dates(ad_group)
 
-        networks = ad_group.networks.all()
         last_sync = get_last_sucessful_sync_date(ad_group, networks)
 
         return self.create_api_response({
             'rows': self.get_rows(
                 ad_group,
+                networks,
                 networks_data,
                 network_settings,
                 last_success_actions
@@ -369,9 +371,10 @@ class AdGroupNetworksTable(api_common.BaseApiView):
             'ctr': totals_data['ctr'],
         }
 
-    def get_rows(self, ad_group, networks_data, network_settings, last_actions):
+    def get_rows(self, ad_group, networks, networks_data, network_settings, last_actions):
         rows = []
-        for nid in constants.AdNetwork.get_all():
+        for network in networks:
+            nid = network.pk
             try:
                 settings = network_settings[nid]
             except KeyError:
