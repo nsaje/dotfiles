@@ -332,7 +332,7 @@ class AdGroupNetworksTable(api_common.BaseApiView):
             ad_group=int(ad_group.id)
         )
 
-        networks = ad_group.networks.all()
+        networks = ad_group.networks.all().order_by('name')
         network_settings = models.AdGroupNetworkSettings.get_current_settings(
             ad_group, networks)
 
