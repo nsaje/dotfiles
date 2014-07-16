@@ -221,7 +221,7 @@ def get_last_successful_fetch_all_order(ad_group=None):
         INNER JOIN dash_adgroupnetwork AS agn ON al.ad_group_network_id=agn.id
         INNER JOIN dash_network AS n ON agn.network_id=n.id
         WHERE alo.order_type=%s AND n.maintenance=False AND (1=%s OR agn.ad_group_id=%s)
-        GROUP BY alo.id, alo.created_dt
+        GROUP BY alo.id
         HAVING EVERY(al.state=%s)
         ORDER BY alo.created_dt DESC
         LIMIT 1
