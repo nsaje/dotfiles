@@ -15,7 +15,7 @@ from dash import models as dashmodels
 
 logger = logging.getLogger(__name__)
 
-DIMENSIONS = ['date', 'article', 'ad_group', 'network']
+DIMENSIONS = ['date', 'article', 'ad_group', 'source']
 METRICS = ['impressions', 'clicks', 'cost', 'cpc']
 
 MAX_RECONCILIATION_RETRIES = 10
@@ -29,7 +29,7 @@ def query(start_date, end_date, breakdown=None, **constraints):
     start_date = starting date, inclusive
     end_date = end date, inclusive
     breakdown = list of dimensions by which to group
-    constraints = constraints on the dimension values (e.g. network=x, ad_group=y, etc.)
+    constraints = constraints on the dimension values (e.g. source=x, ad_group=y, etc.)
     '''
     if not breakdown:
         breakdown = []
@@ -96,30 +96,30 @@ def query(start_date, end_date, breakdown=None, **constraints):
     return stats
 
 
-def _delete_existing_stats(ad_group, network, date):
-    existing_stats = models.ArticleStats.objects.filter(ad_group=ad_group, network=network, datetime=date)
+def _delete_existing_stats(ad_group, source, date):
+    existing_stats = models.ArticleStats.objects.filter(ad_group=ad_group, source=source, datetime=date)
     if existing_stats:
         logger.info(
-            'Deleting {num} old article statistics. Ad_group: {ad_group}, Network: {network}, datetime: {datetime}'
-            .format(num=len(existing_stats), ad_group=ad_group, network=network, datetime=date)
+            'Deleting {num} old article statistics. Ad_group: {ad_group}, Source: {source}, datetime: {datetime}'
+            .format(num=len(existing_stats), ad_group=ad_group, source=source, datetime=date)
         )
         existing_stats.delete()
 
 
 @transaction.atomic
-def save_report(ad_group, network, rows, date):
+def save_report(ad_group, source, rows, date):
     '''
     looks for the article stats with dimensions specified in this row
     if it does not find, it adds the row
     if it does find, it updates the metrics of the existing row
     '''
 
-    _delete_existing_stats(ad_group, network, date)
+    _delete_existing_stats(ad_group, source, date)
 
     for row in rows:
         article = _reconcile_article(row['url'], row['title'], ad_group)
 
-        article_stats = models.ArticleStats(datetime=date, article=article, ad_group=ad_group, network=network)
+        article_stats = models.ArticleStats(datetime=date, article=article, ad_group=ad_group, source=source)
 
         article_stats.impressions = row['impressions']
         article_stats.clicks = row['clicks']
@@ -134,13 +134,13 @@ def save_report(ad_group, network, rows, date):
         except IntegrityError:
             raise exc.ReportsSaveError(
                 'Article article_id={article_id}, url={url} and title={title} appeared more than once '
-                'for datetime={datetime}, ad_group_id={ad_group_id}, network_id={network_id}.'.format(
+                'for datetime={datetime}, ad_group_id={ad_group_id}, source_id={source_id}.'.format(
                     article_id=article.id,
                     url=article.url,
                     title=article.title,
                     datetime=date,
                     ad_group_id=ad_group.id,
-                    network_id=network.id
+                    source_id=source.id
                 )
             )
 

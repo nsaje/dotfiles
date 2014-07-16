@@ -32,15 +32,15 @@ class AdGroupAdsExportTestCase(test.TestCase):
         self.mock_ad_group.campaign.account.name = self.account_name
         self.mock_get_ad_group.return_value = self.mock_ad_group
 
-        self.mock_network1 = Mock()
-        self.mock_network1.id = 1
-        self.mock_network1.name = 'Test Network 1'
+        self.mock_source1 = Mock()
+        self.mock_source1.id = 1
+        self.mock_source1.name = 'Test Source 1'
 
-        self.mock_network2 = Mock()
-        self.mock_network2.id = 2
-        self.mock_network2.name = 'Test Network 2'
+        self.mock_source2 = Mock()
+        self.mock_source2.id = 2
+        self.mock_source2.name = 'Test Source 2'
 
-        self.mock_models.Network.objects.all.return_value = [self.mock_network1, self.mock_network2]
+        self.mock_models.Source.objects.all.return_value = [self.mock_source1, self.mock_source2]
 
         self.mock_article = Mock()
         self.mock_article.id = 1
@@ -60,7 +60,7 @@ class AdGroupAdsExportTestCase(test.TestCase):
             }],
             [{
                 'article': 1,
-                'network': 1,
+                'source': 1,
                 'date': datetime.date(2014, 7, 1),
                 'cost': 1000.123242,
                 'cpc': 10.2334,
@@ -142,10 +142,10 @@ class AdGroupAdsExportTestCase(test.TestCase):
         self._assert_row(worksheet, 1, [41821.0, u'Test Article with unicode Čžš', 'http://www.example.com',
             1000.123242, 10.2334, 103, 100000, 0.01031231231])
 
-        worksheet = workbook.sheet_by_name('Per Network Report')
+        worksheet = workbook.sheet_by_name('Per Source Report')
         self.assertIsNotNone(worksheet)
 
-        self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Network', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'])
+        self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Source', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'])
 
-        self._assert_row(worksheet, 1, [41821.0, u'Test Article with unicode Čžš', 'http://www.example.com', 'Test Network 1',
+        self._assert_row(worksheet, 1, [41821.0, u'Test Article with unicode Čžš', 'http://www.example.com', 'Test Sourceg 1',
             1000.123242, 10.2334, 103, 100000, 0.01031231231])

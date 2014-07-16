@@ -38,36 +38,36 @@ class ZweiActionsTestCase(TestCase):
     @patch('utils.request_signer._secure_opener.open')
     def test_log_encrypted_credentials_on_conneciton_success(self, mock_urlopen):
         _prepare_mock_urlopen(mock_urlopen)
-        ad_group_network = dashmodels.AdGroupNetwork.objects.get(id=1)
+        ad_group_source = dashmodels.AdGroupSource.objects.get(id=1)
 
-        api.fetch_ad_group_status(ad_group_network.ad_group, ad_group_network.network)
+        api.fetch_ad_group_status(ad_group_source.ad_group, ad_group_source.source)
         action = models.ActionLog.objects.latest('created_dt')
 
-        self.assertEqual(action.ad_group_network, ad_group_network)
+        self.assertEqual(action.ad_group_source, ad_group_source)
         self.assertEqual(action.action, constants.Action.FETCH_CAMPAIGN_STATUS)
         self.assertEqual(action.state, constants.ActionState.WAITING)
 
         self.assertEqual(
             action.payload['credentials'],
-            ad_group_network.network_credentials.credentials
+            ad_group_source.source_credentials.credentials
         )
 
     @patch('utils.request_signer._secure_opener.open')
     def test_log_encrypted_credentials_on_conneciton_fail(self, mock_urlopen):
         exception = urllib2.HTTPError(settings.ZWEI_API_URL, 500, "Server is down.", None, None)
         _prepare_mock_urlopen(mock_urlopen, exception=exception)
-        ad_group_network = dashmodels.AdGroupNetwork.objects.get(id=1)
+        ad_group_source = dashmodels.AdGroupSource.objects.get(id=1)
 
-        api.fetch_ad_group_status(ad_group_network.ad_group, ad_group_network.network)
+        api.fetch_ad_group_status(ad_group_source.ad_group, ad_group_source.source)
         action = models.ActionLog.objects.latest('created_dt')
 
-        self.assertEqual(action.ad_group_network, ad_group_network)
+        self.assertEqual(action.ad_group_source, ad_group_source)
         self.assertEqual(action.action, constants.Action.FETCH_CAMPAIGN_STATUS)
         self.assertEqual(action.state, constants.ActionState.FAILED)
 
         self.assertEqual(
             action.payload['credentials'],
-            ad_group_network.network_credentials.credentials
+            ad_group_source.source_credentials.credentials
         )
 
 
@@ -95,12 +95,12 @@ class ActionLogApiTestCase(TestCase):
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
 
         ad_group = dashmodels.AdGroup.objects.get(id=1)
-        ad_group_networks = dashmodels.AdGroupNetwork.objects.filter(ad_group=ad_group)
+        ad_group_sources = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group)
         api.stop_ad_group(ad_group)
 
-        for ad_group_network in ad_group_networks.all():
+        for ad_group_source in ad_group_sources.all():
             action = models.ActionLog.objects.get(
-                ad_group_network=ad_group_network,
+                ad_group_source=ad_group_source,
             )
 
             self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
@@ -112,13 +112,13 @@ class ActionLogApiTestCase(TestCase):
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
             payload = {
-                'network': ad_group_network.network.type,
+                'source': ad_group_source.source.type,
                 'action': constants.Action.SET_CAMPAIGN_STATE,
                 'expiration_dt': expiration_dt,
-                'credentials': ad_group_network.network_credentials.credentials,
+                'credentials': ad_group_source.source_credentials.credentials,
                 'args': {
-                    'partner_campaign_id': ad_group_network.network_campaign_key,
-                    'state': dashconstants.AdGroupNetworkSettingsState.INACTIVE,
+                    'partner_campaign_id': ad_group_source.source_campaign_key,
+                    'state': dashconstants.AdGroupSourceSettingsState.INACTIVE,
                 },
                 'callback_url': callback,
             }
@@ -131,12 +131,12 @@ class ActionLogApiTestCase(TestCase):
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
 
         ad_group = dashmodels.AdGroup.objects.get(id=1)
-        ad_group_networks = dashmodels.AdGroupNetwork.objects.filter(ad_group=ad_group)
+        ad_group_sources = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group)
         api.fetch_ad_group_status(ad_group)
 
-        for ad_group_network in ad_group_networks.all():
+        for ad_group_source in ad_group_sources.all():
             action = models.ActionLog.objects.get(
-                ad_group_network=ad_group_network,
+                ad_group_source=ad_group_source,
             )
 
             self.assertEqual(
@@ -151,12 +151,12 @@ class ActionLogApiTestCase(TestCase):
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
             payload = {
-                'network': ad_group_network.network.type,
+                'source': ad_group_source.source.type,
                 'action': constants.Action.FETCH_CAMPAIGN_STATUS,
                 'expiration_dt': expiration_dt,
-                'credentials': ad_group_network.network_credentials.credentials,
+                'credentials': ad_group_source.source_credentials.credentials,
                 'args': {
-                    'partner_campaign_id': ad_group_network.network_campaign_key,
+                    'partner_campaign_id': ad_group_source.source_campaign_key,
                 },
                 'callback_url': callback,
             }
@@ -170,13 +170,13 @@ class ActionLogApiTestCase(TestCase):
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
 
         ad_group = dashmodels.AdGroup.objects.get(id=1)
-        ad_group_networks = dashmodels.AdGroupNetwork.objects.filter(ad_group=ad_group)
+        ad_group_sources = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group)
         date = datetime.date(2014, 6, 1)
         api.fetch_ad_group_reports(ad_group, date=date)
 
-        for ad_group_network in ad_group_networks.all():
+        for ad_group_source in ad_group_sources.all():
             action = models.ActionLog.objects.get(
-                ad_group_network=ad_group_network,
+                ad_group_source=ad_group_source,
             )
 
             self.assertEqual(action.action, constants.Action.FETCH_REPORTS)
@@ -188,12 +188,12 @@ class ActionLogApiTestCase(TestCase):
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
             payload = {
-                'network': ad_group_network.network.type,
+                'source': ad_group_source.source.type,
                 'action': constants.Action.FETCH_REPORTS,
                 'expiration_dt': expiration_dt,
-                'credentials': ad_group_network.network_credentials.credentials,
+                'credentials': ad_group_source.source_credentials.credentials,
                 'args': {
-                    'partner_campaign_ids': [ad_group_network.network_campaign_key],
+                    'partner_campaign_ids': [ad_group_source.source_campaign_key],
                     'date': date.strftime('%Y-%m-%d'),
                 },
                 'callback_url': callback
@@ -202,16 +202,16 @@ class ActionLogApiTestCase(TestCase):
 
     def test_set_ad_group_property(self):
         ad_group = dashmodels.AdGroup.objects.get(id=1)
-        ad_group_networks = dashmodels.AdGroupNetwork.objects.filter(ad_group=ad_group)
+        ad_group_sources = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group)
 
         prop = 'fake_property'
         value = 'fake_value'
 
         api.set_ad_group_property(ad_group, prop=prop, value=value)
 
-        for ad_group_network in ad_group_networks.all():
+        for ad_group_source in ad_group_sources.all():
             action = models.ActionLog.objects.get(
-                ad_group_network=ad_group_network,
+                ad_group_source=ad_group_source,
             )
 
             self.assertEqual(action.action, constants.Action.SET_PROPERTY)
@@ -264,15 +264,15 @@ class SetCampaignPropertyTestCase(TestCase):
     fixtures = ['test_api.yaml']
 
     def test_actionlog_added(self):
-        ad_group_network = dashmodels.AdGroupNetwork.objects.get(pk=1)
+        ad_group_source = dashmodels.AdGroupSource.objects.get(pk=1)
         now = datetime.datetime.now()
-        api._init_set_campaign_property(ad_group_network, 'test_property', 'test_value', None)
+        api._init_set_campaign_property(ad_group_source, 'test_property', 'test_value', None)
         # check if a new action log object was added
         alogs = models.ActionLog.objects.filter(
             action=constants.Action.SET_PROPERTY,
             state=constants.ActionState.WAITING,
             action_type=constants.ActionType.MANUAL,
-            ad_group_network=ad_group_network,
+            ad_group_source=ad_group_source,
             created_dt__gt=now
         )
         self.assertEqual(len(alogs) == 1, True)
@@ -282,19 +282,19 @@ class SetCampaignPropertyTestCase(TestCase):
             alog.delete()
 
     def test_abort_waiting_actionlog(self):
-        ad_group_network = dashmodels.AdGroupNetwork.objects.get(pk=1)
+        ad_group_source = dashmodels.AdGroupSource.objects.get(pk=1)
         now = datetime.datetime.now()
-        api._init_set_campaign_property(ad_group_network, 'test_property', 'test_value_1', None)
+        api._init_set_campaign_property(ad_group_source, 'test_property', 'test_value_1', None)
         # insert a new action
-        # if the ad_group_network and property are the same
+        # if the ad_group_source and property are the same
         # the old one should be set to aborted and the new one should be set to waiting
-        api._init_set_campaign_property(ad_group_network, 'test_property', 'test_value_2', None)
+        api._init_set_campaign_property(ad_group_source, 'test_property', 'test_value_2', None)
         # old action is aborted
         alogs = models.ActionLog.objects.filter(
             action=constants.Action.SET_PROPERTY,
             state=constants.ActionState.ABORTED,
             action_type=constants.ActionType.MANUAL,
-            ad_group_network=ad_group_network,
+            ad_group_source=ad_group_source,
             created_dt__gt=now
         )
         self.assertEqual(len(alogs) == 1, True)
@@ -307,7 +307,7 @@ class SetCampaignPropertyTestCase(TestCase):
             action=constants.Action.SET_PROPERTY,
             state=constants.ActionState.WAITING,
             action_type=constants.ActionType.MANUAL,
-            ad_group_network=ad_group_network,
+            ad_group_source=ad_group_source,
             created_dt__gt=now
         )
         self.assertEqual(len(alogs) == 1, True)

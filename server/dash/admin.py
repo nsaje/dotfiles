@@ -65,9 +65,9 @@ class AdGroupSettingsForm(forms.ModelForm):
         }
 
 
-# Always empty form for network credentials
+# Always empty form for source credentials
 
-class NetworkCredentialsForm(forms.ModelForm):
+class SourceCredentialsForm(forms.ModelForm):
     credentials = forms.CharField(
         label='Credentials',
         required=False,
@@ -76,7 +76,7 @@ class NetworkCredentialsForm(forms.ModelForm):
     )
 
     def __init__(self, *args, **kwargs):
-        super(NetworkCredentialsForm, self).__init__(*args, **kwargs)
+        super(SourceCredentialsForm, self).__init__(*args, **kwargs)
         self.initial['credentials'] = ''
         self.fields['credentials'].help_text = \
             'The value in this field is automatically encrypted upon saving '\
@@ -93,12 +93,12 @@ class NetworkCredentialsForm(forms.ModelForm):
         return self.cleaned_data['credentials']
 
     def clean(self, *args, **kwargs):
-        super(NetworkCredentialsForm, self).clean(*args, **kwargs)
+        super(SourceCredentialsForm, self).clean(*args, **kwargs)
         if 'credentials' in self.cleaned_data and self.cleaned_data['credentials'] == '':
             del self.cleaned_data['credentials']
 
 
-class AdGroupNetworkForm(forms.ModelForm):
+class AdGroupSourceForm(forms.ModelForm):
 
     def clean(self):
 
@@ -110,9 +110,9 @@ class AdGroupNetworkForm(forms.ModelForm):
         #
         # When a more stable version of Django is used, this should be
         # removed, along with the unique constraint in the models on
-        # network_id and network_campaign_key
-        if 'network_campaign_key' in self.cleaned_data:
-            self.cleaned_data['network_campaign_key'] = json.dumps(self.cleaned_data['network_campaign_key'])
+        # source_id and source_campaign_key
+        if 'source_campaign_key' in self.cleaned_data:
+            self.cleaned_data['source_campaign_key'] = json.dumps(self.cleaned_data['source_campaign_key'])
 
         return self.cleaned_data
 
@@ -189,7 +189,7 @@ class CampaignAdmin(admin.ModelAdmin):
     inlines = (CampaignUserInline, AdGroupInline)
 
 
-class NetworkAdmin(admin.ModelAdmin):
+class SourceAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'name',
@@ -200,14 +200,14 @@ class NetworkAdmin(admin.ModelAdmin):
     readonly_fields = ('created_dt', 'modified_dt')
 
 
-class NetworkCredentialsAdmin(admin.ModelAdmin):
-    form = NetworkCredentialsForm
-    verbose_name = "Network Credentials"
-    verbose_name_plural = "Network Credentials"
-    search_fields = ['name', 'network']
+class SourceCredentialsAdmin(admin.ModelAdmin):
+    form = SourceCredentialsForm
+    verbose_name = "Source Credentials"
+    verbose_name_plural = "Source Credentials"
+    search_fields = ['name', 'source']
     list_display = (
         'name',
-        'network',
+        'source',
         'created_dt',
         'modified_dt',
     )
@@ -216,20 +216,20 @@ class NetworkCredentialsAdmin(admin.ModelAdmin):
 
 # Ad Group
 
-class AdGroupNetworksInline(admin.TabularInline):
-    form = AdGroupNetworkForm
-    verbose_name = "Ad Group's Network"
-    verbose_name_plural = "Ad Group's Networks"
-    model = models.AdGroupNetwork
+class AdGroupSourcesInline(admin.TabularInline):
+    form = AdGroupSourceForm
+    verbose_name = "Ad Group's Source"
+    verbose_name_plural = "Ad Group's Sources"
+    model = models.AdGroupSource
     extra = 0
     readonly_fields = ('settings_',)
 
     def settings_(self, obj):
         return '<a href="{admin_url}">List ({num_settings})</a>'.format(
             admin_url='{}?{}'.format(
-                reverse('admin:dash_adgroupnetworksettings_changelist'),
+                reverse('admin:dash_adgroupsourcesettings_changelist'),
                 urllib.urlencode({
-                    'ad_group_network': obj.id,
+                    'ad_group_source': obj.id,
                 })
             ),
             num_settings=obj.settings.count()
@@ -247,7 +247,7 @@ class AdGroupAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'settings_')
     inlines = (
-        AdGroupNetworksInline,
+        AdGroupSourcesInline,
     )
 
     def view_on_site(self, obj):
@@ -283,10 +283,10 @@ class AdGroupSettingsAdmin(admin.ModelAdmin):
         return False
 
 
-class AdGroupNetworkSettingsAdmin(admin.ModelAdmin):
+class AdGroupSourceSettingsAdmin(admin.ModelAdmin):
     search_fields = ['ad_group']
     list_display = (
-        'ad_group_network',
+        'ad_group_source',
         'state',
         'cpc_cc',
         'daily_budget_cc',
@@ -296,8 +296,8 @@ class AdGroupNetworkSettingsAdmin(admin.ModelAdmin):
 
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
-admin.site.register(models.Network, NetworkAdmin)
+admin.site.register(models.Source, SourceAdmin)
 admin.site.register(models.AdGroup, AdGroupAdmin)
 admin.site.register(models.AdGroupSettings, AdGroupSettingsAdmin)
-admin.site.register(models.AdGroupNetworkSettings, AdGroupNetworkSettingsAdmin)
-admin.site.register(models.NetworkCredentials, NetworkCredentialsAdmin)
+admin.site.register(models.AdGroupSourceSettings, AdGroupSourceSettingsAdmin)
+admin.site.register(models.SourceCredentials, SourceCredentialsAdmin)

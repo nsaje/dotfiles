@@ -74,14 +74,14 @@ def generate_rows(dimensions, ad_group_id, start_date, end_date):
         ad_group=int(ad_group_id)
     )
 
-    if 'network' in dimensions:
-        networks = {network.id: network for network in models.Network.objects.all()}
+    if 'source' in dimensions:
+        sources = {source.id: source for source in models.Source.objects.all()}
     if 'article' in dimensions:
         articles = {article.id: article for article in models.Article.objects.filter(ad_group=ad_group_id)}
 
     for item in data:
-        if 'network' in dimensions:
-            item['network'] = networks[item['network']].name
+        if 'source' in dimensions:
+            item['source'] = sources[item['source']].name
         if 'article' in dimensions:
             article = articles[item['article']]
             item['article'] = article.title
@@ -317,19 +317,19 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.tracking_code = resource['tracking_code']
 
 
-class AdGroupNetworksTable(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_networks_table_get')
+class AdGroupSourcesTable(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_table_get')
     def get(self, request, ad_group_id):
         ad_group = get_ad_group(request.user, ad_group_id)
 
-        networks_data = reports.api.query(
+        sources_data = reports.api.query(
             get_stats_start_date(request.GET.get('start_date')),
             get_stats_end_date(request.GET.get('end_date')),
-            ['network'],
+            ['source'],
             ad_group=int(ad_group.id)
         )
 
-        network_settings = models.AdGroupNetworkSettings.get_current_settings(ad_group)
+        source_settings = models.AdGroupSourceSettings.get_current_settings(ad_group)
 
         totals_data = reports.api.query(
             get_stats_start_date(request.GET.get('start_date')),
@@ -338,25 +338,25 @@ class AdGroupNetworksTable(api_common.BaseApiView):
         )[0]
 
         last_success_actions = \
-            actionlog.api.get_last_succesfull_fetch_all_networks_dates(ad_group)
+            actionlog.api.get_last_succesfull_fetch_all_sources_dates(ad_group)
 
         last_sync = get_last_sucessful_sync_date(ad_group)
 
         return self.create_api_response({
             'rows': self.get_rows(
                 ad_group,
-                networks_data,
-                network_settings,
+                sources_data,
+                source_settings,
                 last_success_actions
             ),
-            'totals': self.get_totals(ad_group, totals_data, network_settings),
+            'totals': self.get_totals(ad_group, totals_data, source_settings),
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
         })
 
-    def get_totals(self, ad_group, totals_data, network_settings):
+    def get_totals(self, ad_group, totals_data, source_settings):
         return {
-            'daily_budget': float(sum(settings.daily_budget_cc for settings in network_settings.values()
+            'daily_budget': float(sum(settings.daily_budget_cc for settings in source_settings.values()
                                       if settings.daily_budget_cc is not None)),
             'cost': totals_data['cost'],
             'cpc': totals_data['cpc'],
@@ -365,22 +365,22 @@ class AdGroupNetworksTable(api_common.BaseApiView):
             'ctr': totals_data['ctr'],
         }
 
-    def get_rows(self, ad_group, networks_data, network_settings, last_actions):
+    def get_rows(self, ad_group, sources_data, source_settings, last_actions):
         rows = []
-        for nid in constants.AdNetwork.get_all():
+        for nid in constants.AdSource.get_all():
             try:
-                settings = network_settings[nid]
+                settings = source_settings[nid]
             except KeyError:
                 logger.error(
-                    'Missing ad group network settings for ad group %s and network %s' %
+                    'Missing ad group source settings for ad group %s and source %s' %
                     (ad_group.id, nid))
                 continue
 
-            # get network reports data
-            network_data = {}
-            for item in networks_data:
-                if item['network'] == nid:
-                    network_data = item
+            # get source reports data
+            source_data = {}
+            for item in sources_data:
+                if item['source'] == nid:
+                    source_data = item
                     break
 
             last_sync = last_actions.get(nid)
@@ -389,18 +389,18 @@ class AdGroupNetworksTable(api_common.BaseApiView):
 
             rows.append({
                 'id': str(nid),
-                'name': settings.ad_group_network.network.name,
+                'name': settings.ad_group_source.source.name,
                 'status': settings.state,
                 'bid_cpc': float(settings.cpc_cc) if settings.cpc_cc is not None else None,
                 'daily_budget':
                     float(settings.daily_budget_cc)
                     if settings.daily_budget_cc is not None
                     else None,
-                'cost': network_data.get('cost', None),
-                'cpc': network_data.get('cpc', None),
-                'clicks': network_data.get('clicks', None),
-                'impressions': network_data.get('impressions', None),
-                'ctr': network_data.get('ctr', None),
+                'cost': source_data.get('cost', None),
+                'cpc': source_data.get('cpc', None),
+                'clicks': source_data.get('clicks', None),
+                'impressions': source_data.get('impressions', None),
+                'ctr': source_data.get('ctr', None),
                 'last_sync': last_sync
             })
 
@@ -430,14 +430,14 @@ class AdGroupAdsExport(api_common.BaseApiView):
         )
 
         if request.GET.get('type') == 'excel':
-            networks_results = generate_rows(
-                ['date', 'network', 'article'],
+            sources_results = generate_rows(
+                ['date', 'source', 'article'],
                 ad_group_id,
                 start_date,
                 end_date
             )
 
-            return self.create_excel_response(ads_results, networks_results, filename)
+            return self.create_excel_response(ads_results, sources_results, filename)
         else:
             return self.create_csv_response(ads_results, filename)
 
@@ -472,7 +472,7 @@ class AdGroupAdsExport(api_common.BaseApiView):
 
         return response
 
-    def create_excel_response(self, ads_data, networks_data, filename):
+    def create_excel_response(self, ads_data, sources_data, filename):
         response = self.create_file_response('application/octet-stream', '%s.xls' % filename)
 
         workbook = Workbook(encoding='UTF-8')
@@ -497,15 +497,15 @@ class AdGroupAdsExport(api_common.BaseApiView):
 
         create_excel_worksheet(
             workbook,
-            'Per Network Report',
+            'Per Source Report',
             [(1, 6000), (2, 8000), (3, 4000), (7, 3000)],
-            ['Date', 'Title', 'URL', 'Network', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'],
-            networks_data,
+            ['Date', 'Title', 'URL', 'Source', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'],
+            sources_data,
             lambda item: [
                 (item['date'], excel_styles.style_date),
                 (item['article'],),
                 (item['url'],),
-                (item['network'],),
+                (item['source'],),
                 (item['cost'] or 0, excel_styles.style_usd),
                 (item['cpc'] or 0, excel_styles.style_usd),
                 (item['clicks'] or 0,),
@@ -518,15 +518,15 @@ class AdGroupAdsExport(api_common.BaseApiView):
         return response
 
 
-class AdGroupNetworksExport(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_networks_export_get')
+class AdGroupSourcesExport(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_export_get')
     def get(self, request, ad_group_id):
         ad_group = get_ad_group(request.user, ad_group_id)
 
         start_date = get_stats_start_date(request.GET.get('start_date'))
         end_date = get_stats_end_date(request.GET.get('end_date'))
 
-        filename = '{0}_{1}_per_networks_report_{2}_{3}'.format(
+        filename = '{0}_{1}_per_sources_report_{2}_{3}'.format(
             slugify.slugify(ad_group.campaign.account.name),
             slugify.slugify(ad_group.name),
             start_date,
@@ -534,7 +534,7 @@ class AdGroupNetworksExport(api_common.BaseApiView):
         )
 
         results = generate_rows(
-            ['date', 'network'],
+            ['date', 'source'],
             ad_group.id,
             start_date,
             end_date
@@ -550,7 +550,7 @@ class AdGroupNetworksExport(api_common.BaseApiView):
 
         fieldnames = OrderedDict([
             ('date', 'Date'),
-            ('network', 'Network'),
+            ('source', 'Source'),
             ('cost', 'Cost'),
             ('cpc', 'CPC'),
             ('clicks', 'Clicks'),
@@ -582,13 +582,13 @@ class AdGroupNetworksExport(api_common.BaseApiView):
 
         create_excel_worksheet(
             workbook,
-            'Per-Network Report',
+            'Per-Source Report',
             [(1, 6000), (5, 3000)],
-            ['Date', 'Network', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'],
+            ['Date', 'Source', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'],
             data,
             lambda item: [
                 (item['date'], excel_styles.style_date),
-                (item['network'],),
+                (item['source'],),
                 (item['cost'] or 0, excel_styles.style_usd),
                 (item['cpc'] or 0, excel_styles.style_usd),
                 (item['clicks'] or 0,),
@@ -692,7 +692,7 @@ class AdGroupDailyStats(api_common.BaseApiView):
         ad_group = get_ad_group(request.user, ad_group_id)
 
         article_ids = request.GET.getlist('article_ids')
-        network_ids = request.GET.getlist('network_ids')
+        source_ids = request.GET.getlist('source_ids')
         totals = request.GET.get('totals')
 
         start_date = request.GET.get('start_date')
@@ -710,7 +710,7 @@ class AdGroupDailyStats(api_common.BaseApiView):
             )
 
         articles = None
-        networks = None
+        sources = None
         breakdown_stats = []
         extra_kwargs = {}
 
@@ -720,13 +720,13 @@ class AdGroupDailyStats(api_common.BaseApiView):
             breakdown.append('article')
             articles = models.Article.objects.filter(pk__in=ids)
 
-        if network_ids:
-            ids = [int(x) for x in network_ids]
-            extra_kwargs['network_id'] = ids
-            breakdown.append('network')
-            networks = models.Network.objects.filter(pk__in=ids)
+        if source_ids:
+            ids = [int(x) for x in source_ids]
+            extra_kwargs['source_id'] = ids
+            breakdown.append('source')
+            sources = models.Source.objects.filter(pk__in=ids)
 
-        if 'article' in breakdown or 'network' in breakdown:
+        if 'article' in breakdown or 'source' in breakdown:
             breakdown_stats = reports.api.query(
                 get_stats_start_date(start_date),
                 get_stats_end_date(end_date),
@@ -736,23 +736,23 @@ class AdGroupDailyStats(api_common.BaseApiView):
             )
 
         return self.create_api_response({
-            'stats': self.get_dict(breakdown_stats + totals_stats, articles, networks)
+            'stats': self.get_dict(breakdown_stats + totals_stats, articles, sources)
         })
 
-    def get_dict(self, stats, articles, networks):
+    def get_dict(self, stats, articles, sources):
         articles_dict = {}
         if articles:
             articles_dict = {x.pk: x.title for x in articles}
 
-        networks_dict = {}
-        if networks:
-            networks_dict = {x.pk: x.name for x in networks}
+        sources_dict = {}
+        if sources:
+            sources_dict = {x.pk: x.name for x in sources}
 
         for stat in stats:
             if 'article' in stat:
                 stat['article_title'] = articles_dict[stat['article']]
-            if 'network' in stat:
-                stat['network_name'] = networks_dict[stat['network']]
+            if 'source' in stat:
+                stat['source_name'] = sources_dict[stat['source']]
 
         return stats
 

@@ -54,13 +54,13 @@
   model: dash.adgroup
   pk: 2
 
-# Networks
+# Sources
 - fields:
     type: 'test'
     name: 'Test 1'
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
-  model: dash.network
+  model: dash.source
   pk: 1
 
 - fields:
@@ -68,57 +68,57 @@
     name: 'Test 2'
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
-  model: dash.network
+  model: dash.source
   pk: 2
 
-# Network credentials
+# Source credentials
 - fields:
     created_dt: '2014-06-04T00:00:00'
     modified_dt: '2014-06-04T00:00:00'
-    network: 1
+    source: 1
     name: 'Test credentials 1'
     credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
-  model: dash.networkcredentials
+  model: dash.sourcecredentials
   pk: 1
 
 - fields:
     created_dt: '2014-06-04T00:00:00'
     modified_dt: '2014-06-04T00:00:00'
-    network: 2
+    source: 2
     name: 'Test credentials 2'
     credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
-  model: dash.networkcredentials
+  model: dash.sourcecredentials
   pk: 2
 
-# Ad group networks
+# Ad group sources
 - fields:
     ad_group: 1
-    network: 1
-    network_credentials: 1
-    network_campaign_key: '["fake11"]'
-  model: dash.adgroupnetwork
+    source: 1
+    source_credentials: 1
+    source_campaign_key: '["fake11"]'
+  model: dash.adgroupsource
   pk: 1
 
 - fields:
     ad_group: 1
-    network: 2
-    network_credentials: 2
-    network_campaign_key: '["fake12"]'
-  model: dash.adgroupnetwork
+    source: 2
+    source_credentials: 2
+    source_campaign_key: '["fake12"]'
+  model: dash.adgroupsource
   pk: 2
 
 - fields:
     ad_group: 2
-    network: 1
-    network_credentials: 1
-    network_campaign_key: '["fake21"]'
-  model: dash.adgroupnetwork
+    source: 1
+    source_credentials: 1
+    source_campaign_key: '["fake21"]'
+  model: dash.adgroupsource
   pk: 3
 
 - fields:
     ad_group: 2
-    network: 2
-    network_credentials: 2
-    network_campaign_key: '["fake22"]'
-  model: dash.adgroupnetwork
+    source: 2
+    source_credentials: 2
+    source_campaign_key: '["fake22"]'
+  model: dash.adgroupsource
   pk: 4

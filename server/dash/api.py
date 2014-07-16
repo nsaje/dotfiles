@@ -20,9 +20,9 @@ def cc_to_decimal(val_cc):
 
 
 @transaction.atomic
-def campaign_status_upsert(ad_group_network, data):
+def campaign_status_upsert(ad_group_source, data):
     '''
-    Creates new AdGroupNetworkSettings if settings are modified.
+    Creates new AdGroupSourceSettings if settings are modified.
     '''
 
     new_settings = {
@@ -32,8 +32,8 @@ def campaign_status_upsert(ad_group_network, data):
     }
 
     try:
-        current_settings = ad_group_network.settings.latest()
-    except models.AdGroupNetworkSettings.DoesNotExist:
+        current_settings = ad_group_source.settings.latest()
+    except models.AdGroupSourceSettings.DoesNotExist:
         current_settings = None
 
     if current_settings is not None and (
@@ -41,25 +41,25 @@ def campaign_status_upsert(ad_group_network, data):
         current_settings.cpc_cc == new_settings['cpc_cc'] and
         current_settings.daily_budget_cc == new_settings['daily_budget_cc']
     ):
-        logger.info('Campaign settings for ad_group_network %s unmodified', ad_group_network)
+        logger.info('Campaign settings for ad_group_source %s unmodified', ad_group_source)
         return
 
-    ad_group_network.settings.create(**new_settings)
+    ad_group_source.settings.create(**new_settings)
 
 
 @transaction.atomic
-def update_campaign_state(ad_group_network, state):
+def update_campaign_state(ad_group_source, state):
     '''
-    Creates new AdGroupNetworkSettings if settings are modified.
+    Creates new AdGroupSourceSettings if settings are modified.
     '''
     try:
-        current_settings = ad_group_network.settings.latest()
-    except models.AdGroupNetworkSettings.DoesNotExist:
+        current_settings = ad_group_source.settings.latest()
+    except models.AdGroupSourceSettings.DoesNotExist:
         current_settings = None
 
     if current_settings is not None:
         if state == current_settings.state:
-            logger.info('Campaign settings for ad_group_network %s unmodified', ad_group_network)
+            logger.info('Campaign settings for ad_group_source %s unmodified', ad_group_source)
             return
         else:
             current_settings.pk = None  # create a new settings object as a copy of the old one
