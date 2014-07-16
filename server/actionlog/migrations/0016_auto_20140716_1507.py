@@ -9,6 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('actionlog', '0015_auto_20140714_1305'),
+        ('dash', '0020_auto_20140716_1507'),
     ]
 
     operations = [
@@ -17,6 +18,11 @@ class Migration(migrations.Migration):
             name='ad_group_source',
             field=models.ForeignKey(to='dash.AdGroupSource', on_delete=django.db.models.deletion.PROTECT, null=True),
             preserve_default=True,
+        ),
+        migrations.AlterField(
+            model_name='actionlog',
+            name='ad_group_network',
+            field=models.ForeignKey(to='dash.AdGroupNetwork', on_delete=django.db.models.deletion.PROTECT, null=True),
         ),
         migrations.AlterField(
             model_name='actionlog',

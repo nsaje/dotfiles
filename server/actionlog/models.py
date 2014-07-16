@@ -43,7 +43,7 @@ class ActionLog(models.Model):
         choices=constants.ActionType.get_choices()
     )
 
-    ad_group_network = models.ForeignKey('dash.AdGroupNetwork', on_delete=models.PROTECT)
+    ad_group_network = models.ForeignKey('dash.AdGroupNetwork', on_delete=models.PROTECT, null=True)
     ad_group_source = models.ForeignKey('dash.AdGroupSource', on_delete=models.PROTECT, null=True)
 
     message = models.TextField(blank=True)

@@ -7,7 +7,7 @@ class ArticleStats(models.Model):
 
     ad_group = models.ForeignKey('dash.AdGroup', on_delete=models.PROTECT)
     article = models.ForeignKey('dash.Article', on_delete=models.PROTECT)
-    network = models.ForeignKey('dash.Network', on_delete=models.PROTECT)
+    network = models.ForeignKey('dash.Network', on_delete=models.PROTECT, null=True)
     source = models.ForeignKey('dash.Source', on_delete=models.PROTECT, null=True)
 
     impressions = models.IntegerField(default=0, blank=False, null=False)

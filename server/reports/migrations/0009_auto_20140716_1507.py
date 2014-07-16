@@ -9,6 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('reports', '0008_merge'),
+        ('dash', '0020_auto_20140716_1507'),
     ]
 
     operations = [
@@ -22,6 +23,11 @@ class Migration(migrations.Migration):
             model_name='articlestats',
             name='created_dt',
             field=models.DateTimeField(verbose_name=b'Created at'),
+        ),
+        migrations.AlterField(
+            model_name='articlestats',
+            name='network',
+            field=models.ForeignKey(to='dash.Network', on_delete=django.db.models.deletion.PROTECT, null=True),
         ),
         migrations.AlterUniqueTogether(
             name='articlestats',
