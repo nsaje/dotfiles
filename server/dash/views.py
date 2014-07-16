@@ -129,8 +129,11 @@ def is_sync_recent(last_sync_datetime):
     min_sync_date = datetime.datetime.utcnow() - datetime.timedelta(
         hours=settings.ACTIONLOG_RECENT_HOURS
     )
-    result = last_sync_datetime and (
-        last_sync_datetime >= pytz.utc.localize(min_sync_date))
+
+    if not last_sync_datetime:
+        return None
+
+    result = last_sync_datetime >= pytz.utc.localize(min_sync_date)
 
     return result
 
