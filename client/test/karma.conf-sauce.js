@@ -79,6 +79,7 @@ module.exports = function(config) {
             'app/lib/components/angular-ui-select2/src/select2.js',
             'app/lib/components/highcharts-ng/dist/highcharts-ng.min.js',
             'app/lib/components/angular-sanitize/angular-sanitize.min.js',
+            'app/lib/components/angular-local-storage/angular-local-storage.min.js',
             'app/lib/components/angular-mocks/angular-mocks.js',
             'app/js/**/*.js',
             'test/**/*.js'
