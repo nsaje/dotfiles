@@ -253,7 +253,7 @@ class AdGroupAdmin(admin.ModelAdmin):
     )
 
     def view_on_site(self, obj):
-        return '/#/ad_groups/{}/ads'.format(obj.id)
+        return '/ad_groups/{}/ads'.format(obj.id)
 
     def settings_(self, obj):
         return '<a href="{admin_url}">List ({num_settings})</a>'.format(
