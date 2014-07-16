@@ -235,7 +235,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             tableChanged = true;
         }
 
-        var size = $location.search().size || localStorageService.get('paginationSize');
+        var size = $location.search().size || localStorageService.get('paginationSize') || $scope.sizeRange[0];
         if (size !== undefined && $scope.pagination.size !== size) {
             $scope.pagination.size = size;
             tableChanged = true;
