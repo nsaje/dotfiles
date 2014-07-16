@@ -62,7 +62,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
                         $scope.breadcrumb = [account.name, campaign.name, adGroup.name];
 
                         // set page title
-                        $document.prop('title', adGroup.name + ' | Zemanta');
+                        $document.prop('title', adGroup.name + ' - ' + campaign.name + ' | Zemanta');
                     }
                 });
             });
