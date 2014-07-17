@@ -63,7 +63,7 @@ class Campaign(models.Model, PermissionMixin):
 
     def admin_link(self):
         if self.id:
-            return '<a href="/admin/dash/campaign/%d">Edit</a>' % self.id
+            return '<a href="/admin/dash/campaign/%d/">Edit</a>' % self.id
         else:
             return 'N/A'
 
