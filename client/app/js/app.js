@@ -30,10 +30,10 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             templateUrl: config.static_url + '/partials/ad_group_ads.html',
             controller: 'AdGroupAdsCtrl'
         })
-        .state('adGroups.networks', {
-            url: '/networks',
-            templateUrl: config.static_url + '/partials/ad_group_networks.html',
-            controller: 'AdGroupNetworksCtrl'
+        .state('adGroups.sources', {
+            url: '/sources',
+            templateUrl: config.static_url + '/partials/ad_group_sources.html',
+            controller: 'AdGroupSourcesCtrl'
         })
         .state('adGroups.settings', {
             url: '/settings',

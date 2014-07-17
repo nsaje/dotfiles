@@ -9,4 +9,4 @@ pre_save.connect(signal_handlers.modified_by_pre_save_signal_handler, sender=dah
 pre_save.connect(signal_handlers.modified_by_pre_save_signal_handler, sender=dahsmodels.Campaign)
 pre_save.connect(signal_handlers.modified_by_pre_save_signal_handler, sender=dahsmodels.AdGroup)
 pre_save.connect(signal_handlers.created_by_pre_save_signal_handler, sender=dahsmodels.AdGroupSettings)
-pre_save.connect(signal_handlers.created_by_pre_save_signal_handler, sender=dahsmodels.AdGroupNetworkSettings)
+pre_save.connect(signal_handlers.created_by_pre_save_signal_handler, sender=dahsmodels.AdGroupSourceSettings)

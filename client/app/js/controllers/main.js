@@ -25,7 +25,7 @@ function getDateRanges() {
 oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'api', function ($scope, $state, $location, $document, api) {
     $scope.tabs = [
         {heading: 'Content Ads', route: 'adGroups.ads', active: true},
-        {heading: 'Networks', route: 'adGroups.networks', active: false},
+        {heading: 'Sources', route: 'adGroups.sources', active: false},
         {heading: 'Settings', route: 'adGroups.settings', active: false}
     ];
     $scope.accounts = null;
@@ -127,8 +127,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
             // On ad group switch, get previous selected rows
             var data = $scope.adGroupData[$state.params.id] || {};
 
-            $location.search('network_ids', data.networkIds && data.networkIds.join(','));
-            $location.search('network_totals', data.networkTotals ? 1 : null);
+            $location.search('source_ids', data.sourceIds && data.sourceIds.join(','));
+            $location.search('source_totals', data.sourceTotals ? 1 : null);
             $location.search('article_ids', data.articleIds && data.articleIds.join(','));
             $location.search('article_totals', data.articleTotals ? 1 : null);
 

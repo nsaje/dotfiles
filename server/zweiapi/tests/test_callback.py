@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.test.client import RequestFactory
 from django.test.client import Client
 
-from dash.models import AdGroupNetwork, Article
+from dash.models import AdGroupSource, Article
 from actionlog.models import ActionLog
 from actionlog import constants
 from reports.models import ArticleStats
@@ -31,13 +31,13 @@ class CampaignStatusTest(TestCase):
             }
         }
 
-        ad_group_network = AdGroupNetwork.objects.get(id=1)
-        current_settings = ad_group_network.settings.latest()
+        ad_group_source = AdGroupSource.objects.get(id=1)
+        current_settings = ad_group_source.settings.latest()
         action_log = ActionLog(
             action=constants.Action.FETCH_CAMPAIGN_STATUS,
             state=constants.ActionState.WAITING,
             action_type=constants.ActionType.AUTOMATIC,
-            ad_group_network=ad_group_network,
+            ad_group_source=ad_group_source,
         )
         action_log.save()
 
@@ -49,7 +49,7 @@ class CampaignStatusTest(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertNotEqual(ad_group_network.settings.latest(), current_settings)
+        self.assertNotEqual(ad_group_source.settings.latest(), current_settings)
 
 
 class FetchReportsTestCase(TestCase):
@@ -73,15 +73,15 @@ class FetchReportsTestCase(TestCase):
             'data': [[["fake"], [article_row]]]
         }
 
-        ad_group_network = AdGroupNetwork.objects.get(id=1)
+        ad_group_source = AdGroupSource.objects.get(id=1)
         action_log = ActionLog(
             action=constants.Action.FETCH_REPORTS,
             state=constants.ActionState.WAITING,
             action_type=constants.ActionType.AUTOMATIC,
-            ad_group_network=ad_group_network,
+            ad_group_source=ad_group_source,
             payload={
                 'action': constants.Action.FETCH_REPORTS,
-                'network': ad_group_network.network.type,
+                'source': ad_group_source.source.type,
                 'args': {
                     'partner_campaign_id': '"[fake]"',
                     'date': datetime.date(2014, 7, 1)
@@ -101,8 +101,8 @@ class FetchReportsTestCase(TestCase):
         article = Article.objects.get(title=article_row['title'], url=article_row['url'])
         article_stats = ArticleStats.objects.get(
             article=article,
-            ad_group=ad_group_network.ad_group,
-            network=ad_group_network.network
+            ad_group=ad_group_source.ad_group,
+            source=ad_group_source.source
         )
 
         self.assertEqual(article_stats.impressions, article_row['impressions'])

@@ -33,11 +33,11 @@ class ActionLogOrderApiTestCase(test.TestCase):
         order = models.ActionLogOrder.objects.order_by('-created_dt').first()
         self.assertEqual(
             len(order.actionlog_set.filter(action=constants.Action.FETCH_REPORTS)),
-            len(dashmodels.AdGroupNetwork.objects.all())
+            len(dashmodels.AdGroupSource.objects.all())
         )
         self.assertEqual(
             len(order.actionlog_set.filter(action=constants.Action.FETCH_REPORTS)),
-            len(dashmodels.AdGroupNetwork.objects.all())
+            len(dashmodels.AdGroupSource.objects.all())
         )
 
         for action in order.actionlog_set.all():

@@ -45,19 +45,19 @@ class ActionLogApiView(api_common.BaseApiView):
             choice for choice in constants.ActionState.get_choices() if choice[0] in ACTION_LOG_STATE_OPTIONS
         )
 
-        ad_groups = dash.models.AdGroup.objects.filter(adgroupnetwork__actionlog__in=actions).distinct()
+        ad_groups = dash.models.AdGroup.objects.filter(adgroupsource__actionlog__in=actions).distinct()
         ad_group_items = filter_choices(
             (ad_group.id, self._get_ad_group_full_name(ad_group)) for ad_group in ad_groups
         )
 
-        networks = dash.models.Network.objects.filter(adgroupnetwork__actionlog__in=actions).distinct()
-        network_items = filter_choices(
-            (network.id, str(network)) for network in networks
+        sources = dash.models.Source.objects.filter(adgroupsource__actionlog__in=actions).distinct()
+        source_items = filter_choices(
+            (source.id, str(source)) for source in sources
         )
 
         return {
             'state': state_items,
-            'network': network_items,
+            'source': source_items,
             'ad_group': ad_group_items,
         }
 
@@ -67,7 +67,7 @@ class ActionLogApiView(api_common.BaseApiView):
             val = action.payload.get('value')
 
             if prop == 'state':
-                val = dash.constants.AdGroupNetworkSettingsState.get_text(val)
+                val = dash.constants.AdGroupSourceSettingsState.get_text(val)
             else:
                 val = json.dumps(val)
 
@@ -90,10 +90,10 @@ class ActionLogApiView(api_common.BaseApiView):
         else:
             actions = actions.filter(state__in=ACTION_LOG_STATE_OPTIONS)
 
-        if filters.get('network'):
-            actions = actions.filter(ad_group_network__network=filters['network'])
+        if filters.get('source'):
+            actions = actions.filter(ad_group_source__source=filters['source'])
         if filters.get('ad_group'):
-            actions = actions.filter(ad_group_network__ad_group=filters['ad_group'])
+            actions = actions.filter(ad_group_source__ad_group=filters['ad_group'])
 
         return actions
 
@@ -119,18 +119,18 @@ class ActionLogApiView(api_common.BaseApiView):
                 action.state
             ],
 
-            'ad_group_network': [
-                str(action.ad_group_network),
-                action.ad_group_network.id,
+            'ad_group_source': [
+                str(action.ad_group_source),
+                action.ad_group_source.id,
             ],
 
             'ad_group': [
-                self._get_ad_group_full_name(action.ad_group_network.ad_group),
-                action.ad_group_network.ad_group.id,
+                self._get_ad_group_full_name(action.ad_group_source.ad_group),
+                action.ad_group_source.ad_group.id,
             ],
-            'network': [
-                str(action.ad_group_network.network),
-                action.ad_group_network.network.id,
+            'source': [
+                str(action.ad_group_source.source),
+                action.ad_group_source.source.id,
             ],
 
             'created_dt': action.created_dt,

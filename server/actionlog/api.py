@@ -78,30 +78,30 @@ def init_fetch_status_order(ad_groups=None):
     zwei_actions.send_multiple(actionlogs)
 
 
-def init_stop_ad_group_order(ad_group, network=None):
+def init_stop_ad_group_order(ad_group, source=None):
     with transaction.atomic():
         order = models.ActionLogOrder.objects.create(
             order_type=constants.ActionLogOrderType.STOP_ALL
         )
-        actionlogs = stop_ad_group(ad_group, network, order, commit=False)
+        actionlogs = stop_ad_group(ad_group, source, order, commit=False)
 
     zwei_actions.send_multiple(actionlogs)
 
 
-def init_set_ad_group_property_order(ad_group, network=None):
+def init_set_ad_group_property_order(ad_group, source=None):
     with transaction.atomic():
         order = models.ActionLogOrder.objects.create(
             order_type=constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
         )
-        set_ad_group_property(ad_group, network, order, commit=False)
+        set_ad_group_property(ad_group, source, order, commit=False)
 
 
-def stop_ad_group(ad_group, network=None, order=None, commit=True):
-    ad_group_networks = _get_ad_group_networks(ad_group, network)
+def stop_ad_group(ad_group, source=None, order=None, commit=True):
+    ad_group_sources = _get_ad_group_sources(ad_group, source)
 
     actionlogs = []
-    for ad_group_network in ad_group_networks:
-        actionlogs.append(_init_stop_campaign(ad_group_network, order))
+    for ad_group_source in ad_group_sources:
+        actionlogs.append(_init_stop_campaign(ad_group_source, order))
 
     if commit:
         zwei_actions.send_multiple(actionlogs)
@@ -109,12 +109,12 @@ def stop_ad_group(ad_group, network=None, order=None, commit=True):
     return actionlogs
 
 
-def fetch_ad_group_status(ad_group, network=None, order=None, commit=True):
-    ad_group_networks = _get_ad_group_networks(ad_group, network)
+def fetch_ad_group_status(ad_group, source=None, order=None, commit=True):
+    ad_group_sources = _get_ad_group_sources(ad_group, source)
 
     actionlogs = []
-    for ad_group_network in ad_group_networks:
-        actionlogs.append(_init_fetch_status(ad_group_network, order))
+    for ad_group_source in ad_group_sources:
+        actionlogs.append(_init_fetch_status(ad_group_source, order))
 
     if commit:
         zwei_actions.send_multiple(actionlogs)
@@ -122,12 +122,12 @@ def fetch_ad_group_status(ad_group, network=None, order=None, commit=True):
     return actionlogs
 
 
-def fetch_ad_group_reports(ad_group, date, network=None, order=None, commit=True):
-    ad_group_networks = _get_ad_group_networks(ad_group, network)
+def fetch_ad_group_reports(ad_group, date, source=None, order=None, commit=True):
+    ad_group_sources = _get_ad_group_sources(ad_group, source)
 
     actionlogs = []
-    for ad_group_network in ad_group_networks:
-        actionlogs.append(_init_fetch_reports(ad_group_network, date, order))
+    for ad_group_source in ad_group_sources:
+        actionlogs.append(_init_fetch_reports(ad_group_source, date, order))
 
     if commit:
         zwei_actions.send_multiple(actionlogs)
@@ -135,10 +135,10 @@ def fetch_ad_group_reports(ad_group, date, network=None, order=None, commit=True
     return actionlogs
 
 
-def set_ad_group_property(ad_group, network=None, prop=None, value=None, order=None):
-    ad_group_networks = _get_ad_group_networks(ad_group, network)
-    for ad_group_network in ad_group_networks:
-        _init_set_campaign_property(ad_group_network, prop, value, order)
+def set_ad_group_property(ad_group, source=None, prop=None, value=None, order=None):
+    ad_group_sources = _get_ad_group_sources(ad_group, source)
+    for ad_group_source in ad_group_sources:
+        _init_set_campaign_property(ad_group_source, prop, value, order)
 
 
 @transaction.atomic
@@ -167,7 +167,7 @@ def is_waiting_for_set_actions(ad_group):
     try:
         latest_action = models.ActionLog.objects.filter(
             action__in=action_types,
-            ad_group_network__ad_group_id=ad_group.id,
+            ad_group_source__ad_group_id=ad_group.id,
             order__isnull=False
         ).latest('created_dt')
     except ObjectDoesNotExist:
@@ -177,7 +177,7 @@ def is_waiting_for_set_actions(ad_group):
         filter(
             action__in=action_types,
             state=constants.ActionState.FAILED,
-            ad_group_network__ad_group_id=ad_group.id,
+            ad_group_source__ad_group_id=ad_group.id,
             order=latest_action.order
         ).\
         exists()
@@ -186,7 +186,7 @@ def is_waiting_for_set_actions(ad_group):
         filter(
             action__in=action_types,
             state=constants.ActionState.WAITING,
-            ad_group_network__ad_group_id=ad_group.id,
+            ad_group_source__ad_group_id=ad_group.id,
         ).\
         exists()
 
@@ -204,7 +204,7 @@ def is_fetch_all_data_recent(ad_group=None):
 
     if ad_group:
         recent_fetch_all_orders = recent_fetch_all_orders.filter(
-            actionlog__ad_group_network__ad_group=ad_group)
+            actionlog__ad_group_source__ad_group=ad_group)
 
     for order in recent_fetch_all_orders:
         if _is_fetch_all_order_successful(order):
@@ -218,8 +218,8 @@ def get_last_successful_fetch_all_order(ad_group=None):
         SELECT alo.*
         FROM actionlog_actionlogorder AS alo
         INNER JOIN actionlog_actionlog AS al ON alo.id=al.order_id
-        INNER JOIN dash_adgroupnetwork AS agn ON al.ad_group_network_id=agn.id
-        INNER JOIN dash_network AS n ON agn.network_id=n.id
+        INNER JOIN dash_adgroupsource AS agn ON al.ad_group_source_id=agn.id
+        INNER JOIN dash_source AS n ON agn.source_id=n.id
         WHERE alo.order_type=%s AND n.maintenance=False AND (1=%s OR agn.ad_group_id=%s)
         GROUP BY alo.id
         HAVING EVERY(al.state=%s)
@@ -251,20 +251,20 @@ def get_last_successful_fetch_all_order(ad_group=None):
     return order
 
 
-def get_last_succesfull_fetch_all_networks_dates(ad_group):
+def get_last_succesfull_fetch_all_sources_dates(ad_group):
     q = '''
-        SELECT t.network_id, MAX(t.created_dt)
+        SELECT t.source_id, MAX(t.created_dt)
         FROM (
-            SELECT agn.network_id, alo.created_dt
+            SELECT agn.source_id, alo.created_dt
             FROM actionlog_actionlog AS al
             INNER JOIN actionlog_actionlogorder AS alo ON al.order_id=alo.id
-            INNER JOIN dash_adgroupnetwork AS agn ON al.ad_group_network_id=agn.id
-            INNER JOIN dash_network AS n ON agn.network_id=n.id
+            INNER JOIN dash_adgroupsource AS agn ON al.ad_group_source_id=agn.id
+            INNER JOIN dash_source AS n ON agn.source_id=n.id
             WHERE alo.order_type=%s AND n.maintenance=False AND (1=%s OR agn.ad_group_id=%s)
-            GROUP BY agn.network_id, alo.created_dt
+            GROUP BY agn.source_id, alo.created_dt
             HAVING EVERY(al.state=%s)
         ) AS t
-        GROUP BY t.network_id;
+        GROUP BY t.source_id;
     '''
 
     if ad_group:
@@ -339,7 +339,7 @@ def age_oldest_waiting_action():
 def _is_fetch_all_order_successful(order):
     result = order.actionlog_set.\
         exclude(state=constants.ActionState.SUCCESS).\
-        filter(ad_group_network__network__maintenance=False).\
+        filter(ad_group_source__source__maintenance=False).\
         exists()
 
     return not result
@@ -355,21 +355,21 @@ def _handle_error(action, e):
     action.save()
 
 
-def _get_ad_group_networks(ad_group, network):
-    if not network:
-        return ad_group.adgroupnetwork_set.all()
+def _get_ad_group_sources(ad_group, source):
+    if not source:
+        return ad_group.adgroupsource_set.all()
 
-    return ad_group.adgroupnetwork_set.filter(network=network)
+    return ad_group.adgroupsource_set.filter(source=source)
 
 
-def _init_stop_campaign(ad_group_network, order):
-    msg = '_init_stop started: ad_group_network.id: {}'.format(ad_group_network.id)
+def _init_stop_campaign(ad_group_source, order):
+    msg = '_init_stop started: ad_group_source.id: {}'.format(ad_group_source.id)
     logger.info(msg)
 
     action = models.ActionLog.objects.create(
         action=constants.Action.SET_CAMPAIGN_STATE,
         action_type=constants.ActionType.AUTOMATIC,
-        ad_group_network=ad_group_network,
+        ad_group_source=ad_group_source,
         order=order
     )
 
@@ -381,14 +381,14 @@ def _init_stop_campaign(ad_group_network, order):
 
             payload = {
                 'action': action.action,
-                'network': ad_group_network.network.type,
+                'source': ad_group_source.source.type,
                 'expiration_dt': action.expiration_dt,
                 'credentials':
-                    ad_group_network.network_credentials and
-                    ad_group_network.network_credentials.credentials,
+                    ad_group_source.source_credentials and
+                    ad_group_source.source_credentials.credentials,
                 'args': {
-                    'partner_campaign_id': ad_group_network.network_campaign_key,
-                    'state': dashconstants.AdGroupNetworkSettingsState.INACTIVE,
+                    'source_campaign_key': ad_group_source.source_campaign_key,
+                    'state': dashconstants.AdGroupSourceSettingsState.INACTIVE,
                 },
                 'callback_url': callback,
             }
@@ -402,16 +402,16 @@ def _init_stop_campaign(ad_group_network, order):
     return action
 
 
-def _init_fetch_status(ad_group_network, order):
-    msg = '_init_fetch_status started: ad_group_network.id: {}'.format(
-        ad_group_network.id
+def _init_fetch_status(ad_group_source, order):
+    msg = '_init_fetch_status started: ad_group_source.id: {}'.format(
+        ad_group_source.id
     )
     logger.info(msg)
 
     action = models.ActionLog.objects.create(
         action=constants.Action.FETCH_CAMPAIGN_STATUS,
         action_type=constants.ActionType.AUTOMATIC,
-        ad_group_network=ad_group_network,
+        ad_group_source=ad_group_source,
         order=order
     )
 
@@ -423,13 +423,13 @@ def _init_fetch_status(ad_group_network, order):
 
             payload = {
                 'action': action.action,
-                'network': ad_group_network.network.type,
+                'source': ad_group_source.source.type,
                 'expiration_dt': action.expiration_dt,
                 'credentials':
-                    ad_group_network.network_credentials and
-                    ad_group_network.network_credentials.credentials,
+                    ad_group_source.source_credentials and
+                    ad_group_source.source_credentials.credentials,
                 'args': {
-                    'partner_campaign_id': ad_group_network.network_campaign_key
+                    'source_campaign_key': ad_group_source.source_campaign_key
                 },
                 'callback_url': callback,
             }
@@ -443,9 +443,9 @@ def _init_fetch_status(ad_group_network, order):
     return action
 
 
-def _init_fetch_reports(ad_group_network, date, order):
-    msg = '_init_fetch_reports started: ad_group_network.id: {}, date: {}'.format(
-        ad_group_network.id,
+def _init_fetch_reports(ad_group_source, date, order):
+    msg = '_init_fetch_reports started: ad_group_source.id: {}, date: {}'.format(
+        ad_group_source.id,
         repr(date)
     )
     logger.info(msg)
@@ -453,7 +453,7 @@ def _init_fetch_reports(ad_group_network, date, order):
     action = models.ActionLog.objects.create(
         action=constants.Action.FETCH_REPORTS,
         action_type=constants.ActionType.AUTOMATIC,
-        ad_group_network=ad_group_network,
+        ad_group_source=ad_group_source,
         order=order
     )
 
@@ -465,13 +465,13 @@ def _init_fetch_reports(ad_group_network, date, order):
 
             payload = {
                 'action': action.action,
-                'network': ad_group_network.network.type,
+                'source': ad_group_source.source.type,
                 'expiration_dt': action.expiration_dt,
                 'credentials':
-                    ad_group_network.network_credentials and
-                    ad_group_network.network_credentials.credentials,
+                    ad_group_source.source_credentials and
+                    ad_group_source.source_credentials.credentials,
                 'args': {
-                    'partner_campaign_ids': [ad_group_network.network_campaign_key],
+                    'source_campaign_keys': [ad_group_source.source_campaign_key],
                     'date': date.strftime('%Y-%m-%d'),
                 },
                 'callback_url': callback,
@@ -486,10 +486,10 @@ def _init_fetch_reports(ad_group_network, date, order):
     return action
 
 
-def _init_set_campaign_property(ad_group_network, prop, value, order):
+def _init_set_campaign_property(ad_group_source, prop, value, order):
     msg = "_init_set_campaign_property started:"
-    "ad_group_network.id: {}, prop: {}, value: {}, order.id: {}".format(
-        ad_group_network.id,
+    "ad_group_source.id: {}, prop: {}, value: {}, order.id: {}".format(
+        ad_group_source.id,
         prop,
         value,
         order.id if order else order
@@ -498,7 +498,7 @@ def _init_set_campaign_property(ad_group_network, prop, value, order):
 
     try:
         existing_actions = models.ActionLog.objects.filter(
-            ad_group_network=ad_group_network,
+            ad_group_source=ad_group_source,
             action=constants.Action.SET_PROPERTY,
             state=constants.ActionState.WAITING,
             action_type=constants.ActionType.MANUAL
@@ -510,7 +510,7 @@ def _init_set_campaign_property(ad_group_network, prop, value, order):
             action_type=constants.ActionType.MANUAL,
             expiration_dt=None,
             state=constants.ActionState.WAITING,
-            ad_group_network=ad_group_network,
+            ad_group_source=ad_group_source,
             payload={
                 'property': prop,
                 'value': value,

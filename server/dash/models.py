@@ -70,7 +70,7 @@ class Campaign(models.Model, PermissionMixin):
     admin_link.allow_tags = True
 
 
-class Network(models.Model):
+class Source(models.Model):
     id = models.AutoField(primary_key=True)
     type = models.CharField(
         max_length=127,
@@ -91,9 +91,9 @@ class Network(models.Model):
         return self.name
 
 
-class NetworkCredentials(models.Model):
+class SourceCredentials(models.Model):
     id = models.AutoField(primary_key=True)
-    network = models.ForeignKey(Network, on_delete=models.PROTECT)
+    source = models.ForeignKey(Source, on_delete=models.PROTECT)
     name = models.CharField(
         max_length=127,
         editable=True,
@@ -106,15 +106,15 @@ class NetworkCredentials(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
 
     class Meta:
-        verbose_name_plural = "Network Credentials"
+        verbose_name_plural = "Source Credentials"
 
     def __unicode__(self):
         return self.name
 
     def save(self, *args, **kwargs):
         try:
-            existing_instance = NetworkCredentials.objects.get(id=self.id)
-        except NetworkCredentials.DoesNotExist:
+            existing_instance = SourceCredentials.objects.get(id=self.id)
+        except SourceCredentials.DoesNotExist:
             existing_instance = None
 
         if (not existing_instance) or\
@@ -125,7 +125,7 @@ class NetworkCredentials(models.Model):
             )
             self.credentials = binascii.b2a_base64(encrypted_credentials)
 
-        super(NetworkCredentials, self).save(*args, **kwargs)
+        super(SourceCredentials, self).save(*args, **kwargs)
 
 
 class UserAdGroupManager(models.Manager):
@@ -149,7 +149,7 @@ class AdGroup(models.Model):
         null=False
     )
     campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT)
-    networks = models.ManyToManyField(Network, through='AdGroupNetwork')
+    sources = models.ManyToManyField(Source, through='AdGroupSource')
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
@@ -172,19 +172,15 @@ class AdGroup(models.Model):
     admin_link.allow_tags = True
 
 
-class AdGroupNetwork(models.Model):
-    network = models.ForeignKey(Network, on_delete=models.PROTECT)
+class AdGroupSource(models.Model):
+    source = models.ForeignKey(Source, on_delete=models.PROTECT)
     ad_group = models.ForeignKey(AdGroup, on_delete=models.PROTECT)
 
-    network_credentials = models.ForeignKey(NetworkCredentials, null=True, on_delete=models.PROTECT)
-    network_campaign_key = jsonfield.JSONField(blank=True, default={})
+    source_credentials = models.ForeignKey(SourceCredentials, null=True, on_delete=models.PROTECT)
+    source_campaign_key = jsonfield.JSONField(blank=True, default={})
 
     def __unicode__(self):
-        return '%s - %s' % (self.ad_group, self.network)
-
-    class Meta:
-
-        unique_together = ('network', 'network_campaign_key')
+        return '%s - %s' % (self.ad_group, self.source)
 
 
 class AdGroupSettings(models.Model):
@@ -238,11 +234,11 @@ class AdGroupSettings(models.Model):
         return {settings_key: getattr(self, settings_key) for settings_key in self._settings_fields}
 
 
-class AdGroupNetworkSettings(models.Model):
+class AdGroupSourceSettings(models.Model):
     id = models.AutoField(primary_key=True)
 
-    ad_group_network = models.ForeignKey(
-        AdGroupNetwork,
+    ad_group_source = models.ForeignKey(
+        AdGroupSource,
         null=True,
         related_name='settings',
         on_delete=models.PROTECT
@@ -258,8 +254,8 @@ class AdGroupNetworkSettings(models.Model):
     )
 
     state = models.IntegerField(
-        default=constants.AdGroupNetworkSettingsState.INACTIVE,
-        choices=constants.AdGroupNetworkSettingsState.get_choices()
+        default=constants.AdGroupSourceSettingsState.INACTIVE,
+        choices=constants.AdGroupSourceSettingsState.get_choices()
     )
     cpc_cc = models.DecimalField(
         max_digits=10,
@@ -281,34 +277,34 @@ class AdGroupNetworkSettings(models.Model):
         ordering = ('-created_dt',)
 
     @classmethod
-    def get_current_settings(cls, ad_group, networks):
-        network_ids = [x.pk for x in networks]
+    def get_current_settings(cls, ad_group, sources):
+        source_ids = [x.pk for x in sources]
 
-        network_settings = cls.objects.filter(
-            ad_group_network__ad_group=ad_group,
+        source_settings = cls.objects.filter(
+            ad_group_source__ad_group=ad_group,
         ).order_by('-created_dt')
 
         result = {}
-        for ns in network_settings:
-            network = ns.ad_group_network.network
+        for ns in source_settings:
+            source = ns.ad_group_source.source
 
-            if network.id in result:
+            if source.id in result:
                 continue
 
-            result[network.id] = ns
+            result[source.id] = ns
 
-            if len(result) == len(network_ids):
+            if len(result) == len(source_ids):
                 break
 
-        for nid in network_ids:
+        for nid in source_ids:
             if nid in result:
                 continue
 
             result[nid] = cls(
                 state=None,
-                ad_group_network=AdGroupNetwork(
+                ad_group_source=AdGroupSource(
                     ad_group=ad_group,
-                    network=Network.objects.get(pk=nid)
+                    source=Source.objects.get(pk=nid)
                 )
             )
 

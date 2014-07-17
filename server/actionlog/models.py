@@ -43,7 +43,7 @@ class ActionLog(models.Model):
         choices=constants.ActionType.get_choices()
     )
 
-    ad_group_network = models.ForeignKey('dash.AdGroupNetwork', on_delete=models.PROTECT)
+    ad_group_source = models.ForeignKey('dash.AdGroupSource', on_delete=models.PROTECT)
 
     message = models.TextField(blank=True)
 
@@ -91,11 +91,11 @@ class ActionLog(models.Model):
     )
 
     def __str__(self):
-        return '{cn}(action={action}, state={state}, ad_group_network={agn}, id={id})'.format(
+        return '{cn}(action={action}, state={state}, ad_group_source={ags}, id={id})'.format(
             cn=self.__class__.__name__,
             action=self.action,
             state=self.state,
-            agn=self.ad_group_network,
+            ags=self.ad_group_source,
             id=self.id,
         )
 

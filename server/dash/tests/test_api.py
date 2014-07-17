@@ -13,76 +13,76 @@ class CampaignStatusApiTest(TestCase):
     fixtures = ['test_api.yaml']
 
     def setUp(self):
-        self.ad_group_network = models.AdGroupNetwork.objects.get(id=1)
+        self.ad_group_source = models.AdGroupSource.objects.get(id=1)
 
     def test_upsert_unmodified(self):
-        current_settings = self.ad_group_network.settings.latest()
+        current_settings = self.ad_group_source.settings.latest()
 
-        api.campaign_status_upsert(self.ad_group_network, {
+        api.campaign_status_upsert(self.ad_group_source, {
             'cpc_cc': int(current_settings.cpc_cc * 10000),
             'daily_budget_cc': int(current_settings.daily_budget_cc * 10000),
             'state': current_settings.state,
         })
 
-        self.assertEqual(current_settings, self.ad_group_network.settings.latest())
+        self.assertEqual(current_settings, self.ad_group_source.settings.latest())
 
     def test_upsert_modified_state(self):
-        current_settings = self.ad_group_network.settings.latest()
+        current_settings = self.ad_group_source.settings.latest()
 
-        new_state = constants.AdGroupNetworkSettingsState.INACTIVE
+        new_state = constants.AdGroupSourceSettingsState.INACTIVE
 
-        api.campaign_status_upsert(self.ad_group_network, {
+        api.campaign_status_upsert(self.ad_group_source, {
             'cpc_cc': int(current_settings.cpc_cc * 10000),
             'daily_budget_cc': int(current_settings.daily_budget_cc * 10000),
             'state': new_state,
         })
 
-        self.assertNotEqual(current_settings, self.ad_group_network.settings.latest())
-        self.assertEqual(self.ad_group_network.settings.latest().state, new_state)
+        self.assertNotEqual(current_settings, self.ad_group_source.settings.latest())
+        self.assertEqual(self.ad_group_source.settings.latest().state, new_state)
 
     def test_upsert_modified_cpc(self):
-        current_settings = self.ad_group_network.settings.latest()
+        current_settings = self.ad_group_source.settings.latest()
 
         new_cpc_cc = 1234
 
-        api.campaign_status_upsert(self.ad_group_network, {
+        api.campaign_status_upsert(self.ad_group_source, {
             'cpc_cc': new_cpc_cc,
             'daily_budget_cc': int(current_settings.daily_budget_cc * 10000),
             'state': current_settings.state,
         })
 
-        self.assertNotEqual(current_settings, self.ad_group_network.settings.latest())
-        self.assertEqual(self.ad_group_network.settings.latest().cpc_cc, decimal.Decimal(new_cpc_cc) / 10000)
+        self.assertNotEqual(current_settings, self.ad_group_source.settings.latest())
+        self.assertEqual(self.ad_group_source.settings.latest().cpc_cc, decimal.Decimal(new_cpc_cc) / 10000)
 
     def test_upsert_modified_daily_budget(self):
-        current_settings = self.ad_group_network.settings.latest()
+        current_settings = self.ad_group_source.settings.latest()
 
         new_daily_budget_cc = 1234
 
-        api.campaign_status_upsert(self.ad_group_network, {
+        api.campaign_status_upsert(self.ad_group_source, {
             'cpc_cc': int(current_settings.cpc_cc * 10000),
             'daily_budget_cc': new_daily_budget_cc,
             'state': current_settings.state,
         })
 
-        self.assertNotEqual(current_settings, self.ad_group_network.settings.latest())
+        self.assertNotEqual(current_settings, self.ad_group_source.settings.latest())
         self.assertEqual(
-            self.ad_group_network.settings.latest().daily_budget_cc,
+            self.ad_group_source.settings.latest().daily_budget_cc,
             decimal.Decimal(new_daily_budget_cc) / 10000
         )
 
     def test_update_campaign_state_unmodified(self):
-        current_settings = self.ad_group_network.settings.latest()
+        current_settings = self.ad_group_source.settings.latest()
         state = current_settings.state
-        api.update_campaign_state(self.ad_group_network, state)
-        self.assertEqual(current_settings, self.ad_group_network.settings.latest())
+        api.update_campaign_state(self.ad_group_source, state)
+        self.assertEqual(current_settings, self.ad_group_source.settings.latest())
 
     def test_update_campaign_state_modified(self):
-        current_settings = self.ad_group_network.settings.latest()
+        current_settings = self.ad_group_source.settings.latest()
         new_state = current_settings.state % 2 + 1
-        api.update_campaign_state(self.ad_group_network, new_state)
-        self.assertNotEqual(current_settings, self.ad_group_network.settings.latest())
-        self.assertEqual(self.ad_group_network.settings.latest().state, new_state)
+        api.update_campaign_state(self.ad_group_source, new_state)
+        self.assertNotEqual(current_settings, self.ad_group_source.settings.latest())
+        self.assertEqual(self.ad_group_source.settings.latest().state, new_state)
 
 
 class AdGroupSettingsOrderTest(TestCase):
@@ -90,7 +90,7 @@ class AdGroupSettingsOrderTest(TestCase):
     fixtures = ['test_api.yaml']
 
     def setUp(self):
-        self.ad_group_network = models.AdGroupNetwork.objects.get(id=1)
+        self.ad_group_source = models.AdGroupSource.objects.get(id=1)
 
     def test_settings_changes(self):
 
