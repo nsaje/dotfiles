@@ -102,6 +102,21 @@
                     * Reporting metrics synced {{ lastSyncDate.fromNow() }}.
                 </span>
             </span>
+            <span ng-switch="isSyncInProgress">
+                <span ng-switch-when="true">
+                    A sync is in progress at the moment.
+                </span>
+                <span ng-switch-when="false">
+                    <span ng-switch="triggerSyncFailed">
+                        <span ng-switch-when="false">
+                            <a ng-click="triggerSync()">Click here to trigger synch now.</a>
+                        </span>
+                        <span ng-switch-when="true">
+                            Sorry, failed to trigger sync, please try again later.
+                        </span>
+                    </span>
+                </span>
+            </span>
         </div>
     </div>
 </div>

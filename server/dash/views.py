@@ -20,6 +20,7 @@ import pytz
 from utils import statsd_helper
 from utils import api_common
 from utils import exc
+from utils.command_helpers import last_n_days
 import actionlog.api
 import reports.api
 
@@ -357,6 +358,7 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             'totals': self.get_totals(ad_group, totals_data, source_settings),
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
+            'is_sync_in_progress': actionlog.api.is_sync_in_progress(ad_group),
         })
 
     def get_totals(self, ad_group, totals_data, source_settings):
@@ -607,6 +609,18 @@ class AdGroupSourcesExport(api_common.BaseApiView):
         return response
 
 
+class AdGroupSync(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_sync')
+    def get(self, request, ad_group_id):
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        if not actionlog.api.is_sync_in_progress(ad_group):
+            actionlog.api.init_fetch_reports_order(last_n_days(3), [ad_group])
+            actionlog.api.init_fetch_status_order([ad_group])
+
+        return self.create_api_response({})
+
+
 class AdGroupAdsTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_table_get')
     def get(self, request, ad_group_id):
@@ -651,6 +665,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
             'totals': self.get_totals(totals_data),
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
+            'is_sync_in_progress': actionlog.api.is_sync_in_progress(ad_group),
             'pagination': {
                 'currentPage': articles.number,
                 'numPages': articles.paginator.num_pages,

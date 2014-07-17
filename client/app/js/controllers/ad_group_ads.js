@@ -1,6 +1,8 @@
 /*globals oneApp,moment,constants,options*/
 oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', 'api', 'zemCustomTableColsService', 'localStorageService', function ($scope, $state, $location, $window, api, zemCustomTableColsService, localStorageService) {
     $scope.isSyncRecent = true;
+    $scope.isSyncInProgress = false;
+    $scope.triggerSyncFailed = false;
     $scope.selectedArticleIds = [];
     $scope.selectedArticleTotals = true;
     $scope.constants = constants;
@@ -114,6 +116,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
                 $scope.totals = data.totals;
                 $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
                 $scope.isSyncRecent = data.is_sync_recent;
+                $scope.isSyncInProgress = data.is_sync_in_progress;
 
                 $scope.pagination = data.pagination;
 
@@ -296,6 +299,19 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         $window.open('api/ad_groups/' + $state.params.id + '/ads/export/?type=' + $scope.exportType + '&start_date=' + $scope.dateRange.startDate.format() + '&end_date=' + $scope.dateRange.endDate.format(), '_blank');
         $scope.exportType = '';
     };
+
+    // trigger sync
+    $scope.triggerSync = function() {
+        api.adGroupSync.get($state.params.id).then(
+            function () {
+                $scope.isSyncInProgress = true;
+            },
+            function () {
+                // error
+                $scope.triggerSyncFailed = true;
+            }
+        );
+    }
 
     $scope.init();
 }]);
