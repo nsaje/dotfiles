@@ -2926,6 +2926,11 @@ function $StateRefDirective($state, $timeout) {
         element[0][attr] = newHref;
       };
 
+      attrs.$observe('uiSref', function(newVal) {
+          ref = parseStateRef(newVal);
+          update();
+      });
+
       if (ref.paramExpr) {
         scope.$watch(ref.paramExpr, function(newVal, oldVal) {
           if (newVal !== params) update(newVal);
