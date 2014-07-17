@@ -80,7 +80,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
         result.formats = [$scope.chartMetric1, $scope.chartMetric2].map(function (x) {
             var format = null;
-            if (x === constants.sourceChartMetric.COST) {
+            if (x === constants.sourceChartMetric.COST ||
+                x === constants.sourceChartMetric.CPC) {
                 format = 'currency';
             } else if (x === constants.sourceChartMetric.CTR) {
                 format = 'percent';
