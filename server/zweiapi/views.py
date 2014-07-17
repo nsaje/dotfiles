@@ -89,21 +89,21 @@ def _process_zwei_response(action, data):
         return
 
     if action.action == actionlogconstants.Action.FETCH_REPORTS:
-        for network_campaign_key, data_rows in data['data']:
-            if network_campaign_key == action.ad_group_network.network_campaign_key:
+        for source_campaign_key, data_rows in data['data']:
+            if source_campaign_key == action.ad_group_source.source_campaign_key:
                 rows = data_rows
                 break
         else:
-            raise Exception('Network campaign key not in results.')
+            raise Exception('Source campaign key not in results.')
         date = action.payload['args']['date']
-        ad_group = action.ad_group_network.ad_group
-        network = action.ad_group_network.network
-        reportsapi.save_report(ad_group, network, rows, date)
+        ad_group = action.ad_group_source.ad_group
+        source = action.ad_group_source.source
+        reportsapi.save_report(ad_group, source, rows, date)
     elif action.action == actionlogconstants.Action.FETCH_CAMPAIGN_STATUS:
-        dashapi.campaign_status_upsert(action.ad_group_network, data['data'])
+        dashapi.campaign_status_upsert(action.ad_group_source, data['data'])
     elif action.action == actionlogconstants.Action.SET_CAMPAIGN_STATE:
         state = action.payload['args']['state']
-        dashapi.update_campaign_state(action.ad_group_network, state)
+        dashapi.update_campaign_state(action.ad_group_source, state)
 
     action.state = actionlogconstants.ActionState.SUCCESS
     action.save()

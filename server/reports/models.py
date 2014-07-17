@@ -7,7 +7,7 @@ class ArticleStats(models.Model):
 
     ad_group = models.ForeignKey('dash.AdGroup', on_delete=models.PROTECT)
     article = models.ForeignKey('dash.Article', on_delete=models.PROTECT)
-    network = models.ForeignKey('dash.Network', on_delete=models.PROTECT)
+    source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)
 
     impressions = models.IntegerField(default=0, blank=False, null=False)
     clicks = models.IntegerField(default=0, blank=False, null=False)
@@ -16,4 +16,6 @@ class ArticleStats(models.Model):
 
     class Meta:
 
-        unique_together = ('datetime', 'ad_group', 'article', 'network')
+        unique_together = (
+            ('datetime', 'ad_group', 'article', 'source'),
+        )

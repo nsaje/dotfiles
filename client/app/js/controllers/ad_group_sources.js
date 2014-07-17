@@ -1,13 +1,13 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$window', 'api', 'zemCustomTableColsService', function ($scope, $state, $location, $window, api, zemCustomTableColsService) {
+oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$window', 'api', 'zemCustomTableColsService', function ($scope, $state, $location, $window, api, zemCustomTableColsService) {
     $scope.isSyncRecent = true;
-    $scope.selectedNetworkIds = [];
-    $scope.selectedNetworkTotals = true;
+    $scope.selectedSourceIds = [];
+    $scope.selectedSourceTotals = true;
     $scope.constants = constants;
     $scope.options = options;
-    $scope.chartMetric1 = constants.networkChartMetric.CLICKS;
-    $scope.chartMetric2 = constants.networkChartMetric.IMPRESSIONS;
+    $scope.chartMetric1 = constants.sourceChartMetric.CLICKS;
+    $scope.chartMetric2 = constants.sourceChartMetric.IMPRESSIONS;
     $scope.dailyStats = [];
     $scope.chartData = undefined;
     $scope.isChartShown = true;
@@ -63,11 +63,11 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
         }
     ];
 
-    var cols = zemCustomTableColsService.load('adGroupNetworksCols', $scope.columns);
+    var cols = zemCustomTableColsService.load('adGroupSourcesCols', $scope.columns);
     $scope.selectedColumnsCount = cols.length;
 
     $scope.$watch('columns', function (newValue, oldValue) {
-        cols = zemCustomTableColsService.save('adGroupNetworksCols', newValue);
+        cols = zemCustomTableColsService.save('adGroupSourcesCols', newValue);
         $scope.selectedColumnsCount = cols.length;
     }, true);
 
@@ -80,9 +80,9 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
 
         result.formats = [$scope.chartMetric1, $scope.chartMetric2].map(function (x) {
             var format = null;
-            if (x === constants.networkChartMetric.COST) {
+            if (x === constants.sourceChartMetric.COST) {
                 format = 'currency';
-            } else if (x === constants.networkChartMetric.CTR) {
+            } else if (x === constants.sourceChartMetric.CTR) {
                 format = 'percent';
             }
 
@@ -91,26 +91,26 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
 
         var temp = {};
         $scope.dailyStats.forEach(function (stat) {
-            if (!temp.hasOwnProperty(stat.networkId)) {
-                temp[stat.networkId] = {
-                    name: stat.networkName || 'Totals',
+            if (!temp.hasOwnProperty(stat.sourceId)) {
+                temp[stat.sourceId] = {
+                    name: stat.sourceName || 'Totals',
                     data: [[]]
                 };
             }
 
-            temp[stat.networkId].data[0].push([stat.date, stat[$scope.chartMetric1]]);
+            temp[stat.sourceId].data[0].push([stat.date, stat[$scope.chartMetric1]]);
 
             if ($scope.chartMetric2 && $scope.chartMetric2 !== $scope.chartMetric1) {
-                if (!temp[stat.networkId].data[1]) {
-                    temp[stat.networkId].data[1] = [];
+                if (!temp[stat.sourceId].data[1]) {
+                    temp[stat.sourceId].data[1] = [];
                 }
-                temp[stat.networkId].data[1].push([stat.date, stat[$scope.chartMetric2]]);
+                temp[stat.sourceId].data[1].push([stat.date, stat[$scope.chartMetric2]]);
             }
         });
 
-        Object.keys(temp).forEach(function (networkId) {
-            result.data.push(temp[networkId].data);
-            result.names.push(temp[networkId].name);
+        Object.keys(temp).forEach(function (sourceId) {
+            result.data.push(temp[sourceId].data);
+            result.names.push(temp[sourceId].name);
         });
 
         $scope.chartData = result;
@@ -121,14 +121,14 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
     $scope.getTableData = function () {
         $scope.loadRequestInProgress = true;
 
-        api.adGroupNetworksTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
+        api.adGroupSourcesTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
                 $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
                 $scope.isSyncRecent = data.is_sync_recent;
 
-                $scope.selectNetworks();
+                $scope.selectSources();
             },
             function (data) {
                 // error
@@ -140,7 +140,7 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
     };
 
     $scope.getDailyStats = function () {
-        api.adGroupNetworksDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, $scope.selectedNetworkIds, $scope.selectedNetworkTotals).then(
+        api.adGroupSourcesDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, $scope.selectedSourceIds, $scope.selectedSourceTotals).then(
             function (data) {
                 $scope.dailyStats = data;
                 $scope.setChartData();
@@ -152,23 +152,23 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
         );
     };
 
-    $scope.selectedNetworksChanged = function (networkId) {
+    $scope.selectedSourcesChanged = function (sourceId) {
         var i = 0;
-        if (networkId) {
-            i = $scope.selectedNetworkIds.indexOf(networkId);
+        if (sourceId) {
+            i = $scope.selectedSourceIds.indexOf(sourceId);
             if (i > -1) {
-                $scope.selectedNetworkIds.splice(i, 1);
+                $scope.selectedSourceIds.splice(i, 1);
             } else {
-                $scope.selectedNetworkIds.push(networkId);
+                $scope.selectedSourceIds.push(sourceId);
             }
         }
 
-        if (!$scope.selectedNetworkTotals && !$scope.selectedNetworkIds.length) {
-            $scope.selectedNetworkTotals = true;
+        if (!$scope.selectedSourceTotals && !$scope.selectedSourceIds.length) {
+            $scope.selectedSourceTotals = true;
         }
 
-        $location.search('network_ids', $scope.selectedNetworkIds.join(','));
-        $location.search('network_totals', $scope.selectedNetworkTotals ? 1 : null);
+        $location.search('source_ids', $scope.selectedSourceIds.join(','));
+        $location.search('source_totals', $scope.selectedSourceTotals ? 1 : null);
 
         $scope.updateSelectedRowsData();
 
@@ -176,8 +176,8 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
     };
 
     $scope.updateSelectedRowsData = function () {
-        $scope.setAdGroupData('networkIds', $scope.selectedNetworkIds);
-        $scope.setAdGroupData('networkTotals', $scope.selectedNetworkTotals);
+        $scope.setAdGroupData('sourceIds', $scope.selectedSourceIds);
+        $scope.setAdGroupData('sourceTotals', $scope.selectedSourceTotals);
     };
 
     $scope.toggleChart = function () {
@@ -206,9 +206,9 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
         $scope.getTableData();
     });
 
-    $scope.selectNetworks = function () {
+    $scope.selectSources = function () {
         $scope.rows.forEach(function (x) {
-            if ($scope.selectedNetworkIds.indexOf(x.id) > -1) {
+            if ($scope.selectedSourceIds.indexOf(x.id) > -1) {
                 x.checked = true;
             }
         });
@@ -239,25 +239,25 @@ oneApp.controller('AdGroupNetworksCtrl', ['$scope', '$state', '$location', '$win
         }
 
         // selected rows
-        var networkIds = $location.search().network_ids;
-        var networkTotals = !!$location.search().network_totals;
+        var sourceIds = $location.search().source_ids;
+        var sourceTotals = !!$location.search().source_totals;
 
-        if (networkIds) {
-            $scope.selectedNetworkIds = networkIds.split(',');
-            $scope.setAdGroupData('networkIds', $scope.selectedNetworkIds);
+        if (sourceIds) {
+            $scope.selectedSourceIds = sourceIds.split(',');
+            $scope.setAdGroupData('sourceIds', $scope.selectedSourceIds);
 
             if ($scope.rows) {
-                $scope.selectNetworks();
+                $scope.selectSources();
             }
         }
 
-        $scope.selectedNetworkTotals = !$scope.selectedNetworkIds.length || networkTotals;
-        $scope.setAdGroupData('networkTotals', $scope.selectedNetworkTotals);
+        $scope.selectedSourceTotals = !$scope.selectedSourceIds.length || sourceTotals;
+        $scope.setAdGroupData('sourceTotals', $scope.selectedSourceTotals);
     };
 
     // export
     $scope.downloadReport = function() {
-        $window.open('api/ad_groups/' + $state.params.id + '/networks/export/?type=' + $scope.exportType + '&start_date=' + $scope.dateRange.startDate.format() + '&end_date=' + $scope.dateRange.endDate.format(), '_blank');
+        $window.open('api/ad_groups/' + $state.params.id + '/sources/export/?type=' + $scope.exportType + '&start_date=' + $scope.dateRange.startDate.format() + '&end_date=' + $scope.dateRange.endDate.format(), '_blank');
         $scope.exportType = '';
     };
 

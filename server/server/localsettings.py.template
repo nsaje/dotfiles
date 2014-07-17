@@ -44,7 +44,7 @@ EINS_HOST = ''
 ZWEI_API_URL = ''
 ZWEI_API_SIGN_KEY = ''
 
-# Network credentials encryption key
+# Source credentials encryption key
 CREDENTIALS_ENCRYPTION_KEY = ''  # has to be 32 bytes
 
 # Pagerduty settings

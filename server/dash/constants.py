@@ -11,7 +11,7 @@ class AdGroupSettingsState(ConstantBase):
     }
 
 
-class AdGroupNetworkSettingsState(ConstantBase):
+class AdGroupSourceSettingsState(ConstantBase):
     # keep in sync with zwei
     ACTIVE = 1
     INACTIVE = 2

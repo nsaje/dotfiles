@@ -37,14 +37,14 @@
     model: dash.campaign
     pk: 1
 
-# networks
+# sources
 
 -   fields:
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: AdBlade
         type: adblade
-    model: dash.network
+    model: dash.source
     pk: 1
 
 # test adgroup
@@ -75,22 +75,22 @@
     model: dash.adgroupsettings
     pk: 1
 
-# test adgroupnetwork
+# test adgroupsource
 
 -   fields:
-        network: 1
+        source: 1
         ad_group: 1
-        network_campaign_key: '["fake"]'
-    model: dash.adgroupnetwork
+        source_campaign_key: '["fake"]'
+    model: dash.adgroupsource
     pk: 1
 
-# test adgroupnetworksettings
+# test adgroupsourcesettings
 
 -   fields:
         created_dt: '2014-06-04T09:58:21'
-        ad_group_network: 1
+        ad_group_source: 1
         cpc_cc: '0.12'
         daily_budget_cc: '50.'
         state: 1
-    model: dash.adgroupnetworksettings
+    model: dash.adgroupsourcesettings
     pk: 1

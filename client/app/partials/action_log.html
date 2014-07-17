@@ -11,8 +11,8 @@
                     </th>
                     <th>Action</th>
                     <th>
-                        Network
-                        <zem-action-log-filter field="'network'" filters="filters" />
+                        Source
+                        <zem-action-log-filter field="'source'" filters="filters" />
                     </th>
                     <th>
                         Ad Group
@@ -39,7 +39,7 @@
                         </div>
                     </td>
                     <td><strong>{{log.take_action}}</strong></td>
-                    <td>{{log.network[0]}}</td>
+                    <td>{{log.source[0]}}</td>
                     <td>{{log.ad_group[0]}}</td>
                     <td>{{log.created_dt | date:'M/d/yyyy h:mm a'}}</td>
                     <td>{{log.created_by[0]}}</td>

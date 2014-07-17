@@ -48,10 +48,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
-    function AdGroupNetworksTable() {
+    function AdGroupSourcesTable() {
         this.get = function (id, startDate, endDate) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + id + '/networks/table/';
+            var url = '/api/ad_groups/' + id + '/sources/table/';
             var config = {
                 params: {}
             };
@@ -117,7 +117,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
-    function AdGroupNetworksDailyStats() {
+    function AdGroupSourcesDailyStats() {
         function convertFromApi(data) {
             var result = {
                 date: parseInt(moment.utc(data.date).format('XSSS'), 10),
@@ -128,13 +128,13 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 cost: data.cost !== null ? parseFloat((data.cost).toFixed(2)) : null,
                 articleId: data.article || null,
                 articleTitle: data.article_title || null,
-                networkId: data.network || null,
-                networkName: data.network_name || null
+                sourceId: data.source || null,
+                sourceName: data.source_name || null
             };
             return result;
         }
 
-        this.list = function (adGroupId, startDate, endDate, articleIds, networkIds, totals) {
+        this.list = function (adGroupId, startDate, endDate, articleIds, sourceIds, totals) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/daily_stats/';
             var config = {
@@ -153,8 +153,8 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 config.params.article_ids = articleIds;
             }
 
-            if (networkIds) {
-                config.params.network_ids = networkIds;
+            if (sourceIds) {
+                config.params.source_ids = sourceIds;
             }
 
             if (totals) {
@@ -368,9 +368,9 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         navData: new NavData(),
         user: new User(),
         adGroupSettings: new AdGroupSettings(),
-        adGroupNetworksTable: new AdGroupNetworksTable(),
+        adGroupSourcesTable: new AdGroupSourcesTable(),
         adGroupAdsTable: new AdGroupAdsTable(),
-        adGroupNetworksDailyStats: new AdGroupNetworksDailyStats(),
+        adGroupSourcesDailyStats: new AdGroupSourcesDailyStats(),
         actionLog: new ActionLog()
     };
 }]);

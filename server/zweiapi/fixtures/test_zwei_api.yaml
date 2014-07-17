@@ -37,14 +37,14 @@
     model: dash.campaign
     pk: 1
 
-# networks
+# sources
 
 -   fields:
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: AdBlade
         type: adblade
-    model: dash.network
+    model: dash.source
     pk: 1
 
 -   fields:
@@ -52,7 +52,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Gravity
         type: gravity
-    model: dash.network
+    model: dash.source
     pk: 2
 
 -   fields:
@@ -60,7 +60,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Outbrain
         type: outbrain
-    model: dash.network
+    model: dash.source
     pk: 3
 
 -   fields:
@@ -68,7 +68,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Taboola
         type: taboola
-    model: dash.network
+    model: dash.source
     pk: 4
 
 -   fields:
@@ -76,7 +76,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Yahoo
         type: yahoo
-    model: dash.network
+    model: dash.source
     pk: 5
 
 # test adgroup
@@ -90,50 +90,50 @@
     model: dash.adgroup
     pk: 1
 
-# test adgroupnetwork
+# test adgroupsource
 
 -   fields:
-        network: 1
+        source: 1
         ad_group: 1
-        network_campaign_key: '["fake"]'
-    model: dash.adgroupnetwork
+        source_campaign_key: '["fake"]'
+    model: dash.adgroupsource
     pk: 1
 
 -   fields:
-        network: 2
+        source: 2
         ad_group: 1
-        network_campaign_key: '["fake"]'
-    model: dash.adgroupnetwork
+        source_campaign_key: '["fake"]'
+    model: dash.adgroupsource
     pk: 2
 
 -   fields:
-        network: 3
+        source: 3
         ad_group: 1
-        network_campaign_key: '["fake"]'
-    model: dash.adgroupnetwork
+        source_campaign_key: '["fake"]'
+    model: dash.adgroupsource
     pk: 3
 
 -   fields:
-        network: 4
+        source: 4
         ad_group: 1
-        network_campaign_key: '["fake"]'
-    model: dash.adgroupnetwork
+        source_campaign_key: '["fake"]'
+    model: dash.adgroupsource
     pk: 4
 
 -   fields:
-        network: 5
+        source: 5
         ad_group: 1
-        network_campaign_key: '["fake"]'
-    model: dash.adgroupnetwork
+        source_campaign_key: '["fake"]'
+    model: dash.adgroupsource
     pk: 5
 
-# test adgroupnetworksettings
+# test adgroupsourcesettings
 
 -   fields:
         created_dt: '2014-06-04T09:58:21'
-        ad_group_network: 1
+        ad_group_source: 1
         cpc_cc: '0.12'
         daily_budget_cc: '50.'
         state: 1
-    model: dash.adgroupnetworksettings
+    model: dash.adgroupsourcesettings
     pk: 1
