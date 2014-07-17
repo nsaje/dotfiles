@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', 'api', 'zemCustomTableColsService', 'localStorageService', function ($scope, $state, $location, $window, api, zemCustomTableColsService, localStorageService) {
+oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', 'api', 'zemCustomTableColsService', 'localStorageService', 'zemChartService', function ($scope, $state, $location, $window, api, zemCustomTableColsService, localStorageService, zemChartService) {
     $scope.isSyncRecent = true;
     $scope.selectedArticleIds = [];
     $scope.selectedArticleTotals = true;
@@ -9,7 +9,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     $scope.chartMetric2 = constants.sourceChartMetric.IMPRESSIONS;
     $scope.dailyStats = [];
     $scope.chartData = undefined;
-    $scope.isChartShown = true;
+    $scope.isChartShown = zemChartService.load('zemChart');
     $scope.chartBtnTitle = 'Hide chart';
     $scope.pagination = {
         currentPage: 1,
@@ -56,6 +56,10 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         cols = zemCustomTableColsService.save('adGroupAdsCols', newValue);
         $scope.selectedColumnsCount = cols.length;
     }, true);
+
+    $scope.$watch('isChartShown', function (newValue, oldValue) {
+        zemChartService.save('zemChart', newValue);
+    });
 
     $scope.setChartData = function () {
         var result = {

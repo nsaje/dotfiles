@@ -1,6 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$window', 'api', 'zemCustomTableColsService', function ($scope, $state, $location, $window, api, zemCustomTableColsService) {
+oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$window', 'api', 'zemCustomTableColsService', 'zemChartService', function ($scope, $state, $location, $window, api, zemCustomTableColsService, zemChartService) {
     $scope.isSyncRecent = true;
     $scope.selectedSourceIds = [];
     $scope.selectedSourceTotals = true;
@@ -10,7 +10,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     $scope.chartMetric2 = constants.sourceChartMetric.IMPRESSIONS;
     $scope.dailyStats = [];
     $scope.chartData = undefined;
-    $scope.isChartShown = true;
+    $scope.isChartShown = zemChartService.load('zemChart');
     $scope.chartBtnTitle = 'Hide chart';
     $scope.columns = [
         {
@@ -70,6 +70,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         cols = zemCustomTableColsService.save('adGroupSourcesCols', newValue);
         $scope.selectedColumnsCount = cols.length;
     }, true);
+
+    $scope.$watch('isChartShown', function (newValue, oldValue) {
+        zemChartService.save('zemChart', newValue);
+    });
 
     $scope.setChartData = function () {
         var result = {
