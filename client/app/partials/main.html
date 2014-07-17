@@ -10,7 +10,7 @@
                         <li class="campaign-group list-group-item" ng-repeat="campaign in account.campaigns">
                             <div class="campaign-name">{{ campaign.name }}</div>
                             <ul class="list-group ad-groups">
-                                <a class="ad-group-item list-group-item" ng-class="{'active': $state.includes('adGroups', { id: adGroup.id.toString() }) }" ui-sref="/" ng-click="$state.go($state.current.name, { id: adGroup.id })" ng-href="{{ $state.href($state.current.name, { id: adGroup.id }) + getCurrentParams() }}" ng-repeat="adGroup in campaign.adGroups">
+                                <a class="ad-group-item list-group-item" ng-class="{'active': $state.includes('adGroups', { id: adGroup.id.toString() }) }" ui-sref="{{ $state.current.name || 'adGroups.ads' }}({ id: adGroup.id })" ng-repeat="adGroup in campaign.adGroups">
                                     <img ng-src="{{ config.static_url }}/img/ad_group.svg">
                                     <span class="ad-group-name">{{ adGroup.name }}</span>
                                 </a>
@@ -32,7 +32,7 @@
                 <tab ng-repeat="tab in tabs" active="tab.active">
                     <tab-heading>
                         <div class="tab-top"></div>
-                        <a ng-click="$state.go(tab.route, { id: $state.params.id })" ng-href="{{ $state.href(tab.route, { id: $state.params.id }) + getCurrentParams() }}">{{ tab.heading }}</a>
+                        <a ui-sref="{{ tab.route }}({ id: $state.params.id })">{{ tab.heading }}</a>
                     </tab-heading>
                 </tab>
             </tabset>
