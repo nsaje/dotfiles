@@ -285,26 +285,26 @@ class AdGroupSourceSettings(models.Model):
         ).order_by('-created_dt')
 
         result = {}
-        for ns in source_settings:
-            source = ns.ad_group_source.source
+        for s in source_settings:
+            source = s.ad_group_source.source
 
             if source.id in result:
                 continue
 
-            result[source.id] = ns
+            result[source.id] = s
 
             if len(result) == len(source_ids):
                 break
 
-        for nid in source_ids:
-            if nid in result:
+        for sid in source_ids:
+            if sid in result:
                 continue
 
-            result[nid] = cls(
+            result[sid] = cls(
                 state=None,
                 ad_group_source=AdGroupSource(
                     ad_group=ad_group,
-                    source=Source.objects.get(pk=nid)
+                    source=Source.objects.get(pk=sid)
                 )
             )
 
