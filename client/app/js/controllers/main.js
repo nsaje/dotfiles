@@ -25,7 +25,7 @@ function getDateRanges() {
 oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'api', function ($scope, $state, $location, $document, api) {
     $scope.tabs = [
         {heading: 'Content Ads', route: 'adGroups.ads', active: true},
-        {heading: 'Media Source', route: 'adGroups.sources', active: false},
+        {heading: 'Media Sources', route: 'adGroups.sources', active: false},
         {heading: 'Settings', route: 'adGroups.settings', active: false}
     ];
     $scope.accounts = null;
