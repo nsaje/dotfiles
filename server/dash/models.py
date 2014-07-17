@@ -165,7 +165,7 @@ class AdGroup(models.Model):
 
     def admin_link(self):
         if self.id:
-            return '<a href="/admin/dash/adgroup/%d">Edit</a>' % self.id
+            return '<a href="/admin/dash/adgroup/%d/">Edit</a>' % self.id
         else:
             return 'N/A'
 

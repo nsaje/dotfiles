@@ -42,7 +42,7 @@ class AbstractUserForm(forms.ModelForm):
             self.fields["last_name"].initial = user.last_name
             self.fields['last_name'].widget.attrs['disabled'] = 'disabled'
             self.fields['last_name'].required = False
-            self.fields["link"].initial = u'<a href="/admin/zemauth/user/%i">Edit user</a>' % (user.id)
+            self.fields["link"].initial = u'<a href="/admin/zemauth/user/%i/">Edit user</a>' % (user.id)
 
 
 class PreventEditInlineFormset(forms.BaseInlineFormSet):
