@@ -115,10 +115,10 @@ def create_excel_worksheet(workbook, name, widths, header_names, data, transform
         write_excel_row(worksheet, index + 1, transform_func(item))
 
 
-def get_last_sucessful_sync_date(ad_group):
-    last_successful_order = actionlog.api.get_last_successful_fetch_all_order(ad_group)
-    if last_successful_order:
-        last_sync = pytz.utc.localize(last_successful_order.created_dt)
+def get_last_sucessful_sync_date(ad_group, sources):
+    sources_syncs = actionlog.api.get_last_succesfull_fetch_all_sources_dates(ad_group)
+    if sources_syncs and set([x.id for x in sources]) <= set(sources_syncs.keys()):
+        last_sync = pytz.utc.localize(min(sources_syncs.values()))
     else:
         last_sync = None
 
@@ -129,8 +129,11 @@ def is_sync_recent(last_sync_datetime):
     min_sync_date = datetime.datetime.utcnow() - datetime.timedelta(
         hours=settings.ACTIONLOG_RECENT_HOURS
     )
-    result = last_sync_datetime and (
-        last_sync_datetime >= pytz.utc.localize(min_sync_date))
+
+    if not last_sync_datetime:
+        return None
+
+    result = last_sync_datetime >= pytz.utc.localize(min_sync_date)
 
     return result
 
@@ -328,8 +331,9 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             ['source'],
             ad_group=int(ad_group.id)
         )
-
-        source_settings = models.AdGroupSourceSettings.get_current_settings(ad_group)
+        sources = ad_group.sources.all().order_by('name')
+        source_settings = models.AdGroupSourceSettings.get_current_settings(
+            ad_group, sources)
 
         totals_data = reports.api.query(
             get_stats_start_date(request.GET.get('start_date')),
@@ -340,11 +344,12 @@ class AdGroupSourcesTable(api_common.BaseApiView):
         last_success_actions = \
             actionlog.api.get_last_succesfull_fetch_all_sources_dates(ad_group)
 
-        last_sync = get_last_sucessful_sync_date(ad_group)
+        last_sync = get_last_sucessful_sync_date(ad_group, sources)
 
         return self.create_api_response({
             'rows': self.get_rows(
                 ad_group,
+                sources,
                 sources_data,
                 source_settings,
                 last_success_actions
@@ -365,9 +370,10 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             'ctr': totals_data['ctr'],
         }
 
-    def get_rows(self, ad_group, sources_data, source_settings, last_actions):
+    def get_rows(self, ad_group, sources, sources_data, source_settings, last_actions):
         rows = []
-        for nid in constants.AdSource.get_all():
+        for source in sources:
+            nid = source.pk
             try:
                 settings = source_settings[nid]
             except KeyError:
@@ -637,7 +643,8 @@ class AdGroupAdsTable(api_common.BaseApiView):
             ad_group=int(ad_group.id)
         )[0]
 
-        last_sync = get_last_sucessful_sync_date(ad_group)
+        sources = ad_group.sources.all()
+        last_sync = get_last_sucessful_sync_date(ad_group, sources)
 
         return self.create_api_response({
             'rows': self.get_rows(ad_group, article_data, articles),

@@ -15,7 +15,7 @@
             <div class="clearfix"></div>
         </div>
 
-        <alert type="info" class="alert-sync" ng-show="!isSyncRecent">
+        <alert type="info" class="alert-sync" ng-show="isSyncRecent === false">
         We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">The last successful sync took place {{ lastSyncDate.fromNow() }}.</span> If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
         </alert>
 
@@ -95,7 +95,8 @@
             </form>
 
             <span>Show rows</span>
-            <select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'show-rows'}" class="show-rows" ng-model="pagination.size" ng-change="loadPage()">
+            <select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'show-rows'}" class="show-rows" ng-model="pagination.sizeTemp" ng-change="changePaginationSize()" data-placeholder="{{ pagination.size }}">
+                <option value=""></option>
                 <option ng-repeat="number in sizeRange" value="{{ number }}">{{ number }}</option>
             </select>
 

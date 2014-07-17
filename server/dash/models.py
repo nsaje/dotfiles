@@ -165,7 +165,7 @@ class AdGroup(models.Model):
 
     def admin_link(self):
         if self.id:
-            return '<a href="/admin/dash/adgroup/%d">Edit</a>' % self.id
+            return '<a href="/admin/dash/adgroup/%d/">Edit</a>' % self.id
         else:
             return 'N/A'
 
@@ -277,8 +277,8 @@ class AdGroupSourceSettings(models.Model):
         ordering = ('-created_dt',)
 
     @classmethod
-    def get_current_settings(cls, ad_group):
-        source_ids = constants.AdSource.get_all()
+    def get_current_settings(cls, ad_group, sources):
+        source_ids = [x.pk for x in sources]
 
         source_settings = cls.objects.filter(
             ad_group_source__ad_group=ad_group,

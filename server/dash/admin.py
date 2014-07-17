@@ -42,7 +42,7 @@ class AbstractUserForm(forms.ModelForm):
             self.fields["last_name"].initial = user.last_name
             self.fields['last_name'].widget.attrs['disabled'] = 'disabled'
             self.fields['last_name'].required = False
-            self.fields["link"].initial = u'<a href="/admin/zemauth/user/%i">Edit user</a>' % (user.id)
+            self.fields["link"].initial = u'<a href="/admin/zemauth/user/%i/">Edit user</a>' % (user.id)
 
 
 class PreventEditInlineFormset(forms.BaseInlineFormSet):
@@ -241,6 +241,8 @@ class AdGroupAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'name',
+        'campaign_',
+        'account_',
         'created_dt',
         'modified_dt',
         'settings_',
@@ -251,7 +253,7 @@ class AdGroupAdmin(admin.ModelAdmin):
     )
 
     def view_on_site(self, obj):
-        return '/#/ad_groups/{}/ads'.format(obj.id)
+        return '/ad_groups/{}/ads'.format(obj.id)
 
     def settings_(self, obj):
         return '<a href="{admin_url}">List ({num_settings})</a>'.format(
@@ -262,6 +264,22 @@ class AdGroupAdmin(admin.ModelAdmin):
             num_settings=obj.settings.count()
         )
     settings_.allow_tags = True
+
+    def account_(self, obj):
+        return '<a href="{account_url}">{account}</a>'.format(
+            account_url=reverse('admin:dash_account_change', args=(obj.campaign.account.id,)),
+            account=obj.campaign.account
+        )
+    account_.allow_tags = True
+    account_.admin_order_field = 'campaign__account'
+
+    def campaign_(self, obj):
+        return '<a href="{campaign_url}">{campaign}</a>'.format(
+            campaign_url=reverse('admin:dash_campaign_change', args=(obj.campaign.id,)),
+            campaign=obj.campaign
+        )
+    campaign_.allow_tags = True
+    campaign_.admin_order_field = 'campaign'
 
 
 class AdGroupSettingsAdmin(admin.ModelAdmin):

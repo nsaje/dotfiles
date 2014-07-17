@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
+from django.views.generic import RedirectView
 
 import utils.statsd_helper
 
@@ -19,11 +20,11 @@ auth_views.logout_then_login = utils.statsd_helper.statsd_timer('auth', 'signout
 
 urlpatterns = patterns(
     '',
-    url(r'^$', dash.views.index, name='index'),
     url(r'^signin$',
         'zemauth.views.login',
         {'authentication_form': AuthenticationForm, 'template_name': 'zemauth/signin.html'}),
     url(r'^signout$', 'django.contrib.auth.views.logout_then_login'),
+    url(r'^admin$', RedirectView.as_view(url='/admin/')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^oauth2callback', 'zemauth.views.google_callback'),
 )
@@ -97,4 +98,9 @@ urlpatterns += patterns(
         dash.views.healthcheck,
         name='healthcheck',
     )
+)
+
+urlpatterns += patterns(
+    '',
+    url(r'^', dash.views.index, name='index')
 )

@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', 'api', 'zemCustomTableColsService', function ($scope, $state, $location, $window, api, zemCustomTableColsService) {
+oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', 'api', 'zemCustomTableColsService', 'localStorageService', function ($scope, $state, $location, $window, api, zemCustomTableColsService, localStorageService) {
     $scope.isSyncRecent = true;
     $scope.selectedArticleIds = [];
     $scope.selectedArticleTotals = true;
@@ -13,7 +13,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     $scope.chartBtnTitle = 'Hide chart';
     $scope.pagination = {
         currentPage: 1,
-        numPages: 5
     };
     $scope.columns = [
         {
@@ -227,16 +226,16 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             $scope.setChartData();
         }
 
-        var page = $location.search().page;
-        var size = $location.search().size;
         var tableChanged = false;
 
+        var page = $location.search().page;
         if (page !== undefined && $scope.pagination.currentPage !== page) {
             $scope.pagination.currentPage = page;
             $scope.setAdGroupData('page', page);
             tableChanged = true;
         }
 
+        var size = $location.search().size || localStorageService.get('paginationSize') || $scope.sizeRange[0];
         if (size !== undefined && $scope.pagination.size !== size) {
             $scope.pagination.size = size;
             tableChanged = true;
@@ -274,12 +273,21 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
 
         if ($scope.pagination.currentPage && $scope.pagination.size) {
             $location.search('page', $scope.pagination.currentPage);
-            $location.search('size', $scope.pagination.size);
-
             $scope.setAdGroupData('page', $scope.pagination.currentPage);
 
             $scope.getTableData();
         }
+    };
+
+    $scope.changePaginationSize = function() {
+        // Here we use additional scope variable pagination.sizeTemp
+        // to allow repeated selection of already selected options
+        $scope.pagination.size = $scope.pagination.sizeTemp;
+        $scope.pagination.sizeTemp = '';
+
+        $location.search('size', $scope.pagination.size);
+        localStorageService.set('paginationSize', $scope.pagination.size);
+        $scope.loadPage();
     };
 
     // export
