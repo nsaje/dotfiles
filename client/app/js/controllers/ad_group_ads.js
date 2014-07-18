@@ -16,6 +16,12 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     };
     $scope.columns = [
         {
+            name: 'URL',
+            field: 'url',
+            checked: true,
+            type: 'url'
+        },
+        {
             name: 'Cost',
             field: 'cost',
             checked: true,
