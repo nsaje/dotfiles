@@ -47,6 +47,10 @@
             handleForm();
         });
 
+        $usernameInput.on('input', function (e) {
+            handleForm();
+        });
+
         handleForm();
 
         $usernameInput.placeholder();
