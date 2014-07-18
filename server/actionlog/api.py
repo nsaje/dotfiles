@@ -93,7 +93,7 @@ def init_set_ad_group_property_order(ad_group, source=None, prop=None, value=Non
         order = models.ActionLogOrder.objects.create(
             order_type=constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
         )
-        set_ad_group_property(ad_group, source=source, prop=prop, value=value, order=order, commit=False)
+        set_ad_group_property(ad_group, source=source, prop=prop, value=value, order=order)
 
 
 def stop_ad_group(ad_group, source=None, order=None, commit=True):
