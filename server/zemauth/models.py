@@ -4,6 +4,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.core import validators
+from django.core.exceptions import ValidationError
 
 
 class UserManager(auth_models.BaseUserManager):
@@ -31,6 +32,11 @@ class UserManager(auth_models.BaseUserManager):
 
 
 class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
+    ''' Describes custom Zemanta user.
+
+    IMPORTANT: Default unique constraint on the email created by Django is deleted and
+    replaced by case-insensitive unique index created by one of migrations.
+    '''
     email = models.EmailField(_('email address'), max_length=255, unique=True)
     username = models.CharField(
         _('username'),
@@ -86,3 +92,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
 
     def __unicode__(self):
         return self.email
+
+    def clean(self):
+        if self.__class__.objects.filter(email=self.email.lower).exists():
+            raise ValidationError({'email': 'User with this e-mail already exists.'})
