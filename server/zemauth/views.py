@@ -5,7 +5,6 @@ from django.contrib import auth
 from django.contrib.auth import views as auth_views
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
-from django.http import HttpResponseRedirect
 
 import gauth
 from utils import statsd_helper
@@ -43,7 +42,7 @@ def google_callback(request, *args, **kwargs):
 
     if user and user.is_active:
         auth.login(request, user)
-        return HttpResponseRedirect(reverse('dash.views.index'))
+        return auth_views.login(request, *args, **kwargs)
     else:
         return _fail_response('Your Google account is not connected with Zemanta.')
 
