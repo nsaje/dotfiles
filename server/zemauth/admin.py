@@ -1,8 +1,9 @@
 from django.contrib import admin
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import admin as authadmin, forms
 
 import models
+
 
 class UserCreationForm(forms.UserCreationForm):
     username = None
@@ -11,11 +12,13 @@ class UserCreationForm(forms.UserCreationForm):
         model = models.User
         fields = ('email',)
 
+
 class UserChangeForm(forms.UserChangeForm):
-    username = None 
+    username = None
 
     class Meta(forms.UserChangeForm.Meta):
         model = models.User
+
 
 class UserAdmin(authadmin.UserAdmin):
     form = UserChangeForm

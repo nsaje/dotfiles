@@ -98,6 +98,10 @@ class UserTestCase(test.TestCase):
             user2 = models.User(email=email)
             self.assertRaises(IntegrityError, user2.save)
 
+        with transaction.atomic():
+            user2 = models.User(email='TEST@test.com')
+            self.assertRaises(IntegrityError, user2.save)
+
     # def test_mandatory_email(self):
     #     user = models.User(first_name='Test')
     #     user.save()
