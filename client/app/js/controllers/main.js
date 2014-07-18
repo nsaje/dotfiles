@@ -35,6 +35,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
     $scope.maxDate = moment();
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
     $scope.dateRanges = getDateRanges();
+
     $scope.adGroupData = {};
 
     $scope.setAdGroupData = function (key, value) {
@@ -67,21 +68,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
                 });
             });
         });
-    };
-
-    $scope.getCurrentParams = function () {
-        var str = [];
-        var params = $location.search();
-
-        for (var p in params) {
-            if (params.hasOwnProperty(p)) {
-                str.push(encodeURIComponent(p) + "=" + encodeURIComponent(params[p]));
-            }
-        }
-
-        if (str.length > 0) {
-            return '?' + str.join("&");    
-        } 
     };
 
     $scope.updateAccounts = function (adGroupId, newAdGroupName) {
