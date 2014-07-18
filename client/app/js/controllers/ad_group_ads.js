@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', 'api', 'zemCustomTableColsService', 'localStorageService', 'zemChartService', function ($scope, $state, $location, $window, api, zemCustomTableColsService, localStorageService, zemChartService) {
+oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'zemCustomTableColsService', 'localStorageService', 'zemChartService', function ($scope, $state, $location, $window, $timeout, api, zemCustomTableColsService, localStorageService, zemChartService) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.triggerSyncFailed = false;
@@ -196,6 +196,12 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         }
     });
 
+    $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
+        if(newValue === true && oldValue === false){
+            pollSyncStatus();
+        }
+    });
+
     // From parent scope (mainCtrl).
     $scope.$watch('dateRange', function (newValue, oldValue) {
         $scope.getDailyStats();
@@ -303,6 +309,34 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         $window.open('api/ad_groups/' + $state.params.id + '/ads/export/?type=' + $scope.exportType + '&start_date=' + $scope.dateRange.startDate.format() + '&end_date=' + $scope.dateRange.endDate.format(), '_blank');
         $scope.exportType = '';
     };
+
+    
+    var pollSyncStatus = function() {
+        if($scope.isSyncInProgress){
+            $timeout(function() {
+                api.checkSyncProgress.get($state.params.id).then(
+                    function(data) {
+                        $scope.isSyncInProgress = data.is_sync_in_progress;
+
+                        if($scope.isSyncInProgress == false){
+                            // we found out that the sync is no longer in progress
+                            // time to reload the data
+                            $scope.getTableData();
+                        }
+                    },
+                    function(data) {
+                        // error
+                        $scope.triggerSyncFailed = true;
+                        $scope.isSyncInProgress = false;
+                    }
+                ).finally(function() {
+                    pollSyncStatus();
+                });
+            }, 1000);
+        }
+    }
+
+    pollSyncStatus();
 
     // trigger sync
     $scope.triggerSync = function() {

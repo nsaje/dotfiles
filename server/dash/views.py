@@ -621,6 +621,16 @@ class AdGroupSync(api_common.BaseApiView):
         return self.create_api_response({})
 
 
+class AdGroupCheckSyncProgress(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_is_sync_in_progress')
+    def get(self, request, ad_group_id):
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        in_progress = actionlog.api.is_sync_in_progress(ad_group)
+
+        return self.create_api_response({'is_sync_in_progress': in_progress})
+
+
 class AdGroupAdsTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_table_get')
     def get(self, request, ad_group_id):

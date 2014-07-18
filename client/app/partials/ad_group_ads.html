@@ -10,8 +10,22 @@
                 <option value="csv">CSV by day</option>
                 <option value="excel">Excel by day</option>
             </select>
+
             <zem-custom-table-cols class='pull-right' columns='columns'></zem-custom-table-cols>
+
             <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/img/chart.svg"></a>
+
+            <span ng-switch="isSyncInProgress">
+                <span ng-switch-when="false">
+                    <a ng-click="triggerSync()" ng-show="!triggerSyncFailed" id="resync-btn" class="btn btn-default pull-right"><img ng-src="{{ config.static_url }}/img/refresh.svg"></a>
+                </span>
+                <span ng-switch-when="true">
+                    <a id="resync-loader" class="pull-right"><img ng-src="{{ config.static_url }}/img/loader.svg"></a>
+                </span>
+            </span>
+
+            <span ng-show="triggerSyncFailed" class="pull-right error">An error has occured while triggering resync</span>
+
             <div class="clearfix"></div>
         </div>
 
@@ -84,21 +98,6 @@
                 </span>
                 <span ng-switch-default>
                     * Reporting metrics synced {{ lastSyncDate.fromNow() }}.
-                </span>
-            </span>
-            <span ng-switch="isSyncInProgress">
-                <span ng-switch-when="true">
-                    A sync is in progress at the moment.
-                </span>
-                <span ng-switch-when="false">
-                    <span ng-switch="triggerSyncFailed">
-                        <span ng-switch-when="false">
-                            <a ng-click="triggerSync()">Click here to trigger synch now.</a>
-                        </span>
-                        <span ng-switch-when="true">
-                            Sorry, failed to trigger sync, please try again later.
-                        </span>
-                    </span>
                 </span>
             </span>
         </div>

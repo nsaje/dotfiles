@@ -57,6 +57,10 @@ urlpatterns += patterns(
         login_required(dash.views.AdGroupSync.as_view()),
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/check_sync_progress/',
+        login_required(dash.views.AdGroupCheckSyncProgress.as_view()),
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/daily_stats/',
         login_required(dash.views.AdGroupDailyStats.as_view()),
     ),
