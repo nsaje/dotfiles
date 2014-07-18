@@ -18,13 +18,16 @@ SCOPE = ''
 def get_flow(request):
     url = request.build_absolute_uri(reverse('zemauth.views.google_callback'))
     url = url.replace('http://', 'https://')
-    url += '?next={}'.format(request.GET.get('next'))
+
+    next_url = request.GET.get('next')
+    kwargs = {'state': next_url} if next_url is not None else {}
 
     flow = OAuth2WebServerFlow(client_id=settings.GOOGLE_OAUTH_CLIENT_ID,
                                client_secret=settings.GOOGLE_OAUTH_CLIENT_SECRET,
                                scope='email',
                                access_type='online',
-                               redirect_uri=url)
+                               redirect_uri=url,
+                               **kwargs)
     return flow
 
 
