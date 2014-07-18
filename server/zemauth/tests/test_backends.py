@@ -15,9 +15,12 @@ class EmailOrUsernameModelBackendTestCase(test.TestCase):
         user.save()
 
         backend = backends.EmailOrUsernameModelBackend()
-        result = backend.authenticate(email, password)
 
+        result = backend.authenticate(email, password)
         self.assertEqual(result, user)
+
+        result2 = backend.authenticate('FOO@bar.com', password)
+        self.assertEqual(result2, user)
 
     def test_authenticate_username(self):
         username = 'foo'
@@ -28,9 +31,12 @@ class EmailOrUsernameModelBackendTestCase(test.TestCase):
         user.save()
 
         backend = backends.EmailOrUsernameModelBackend()
-        result = backend.authenticate(username, password)
 
+        result = backend.authenticate(username, password)
         self.assertEqual(result, user)
+
+        result2 = backend.authenticate('FOO', password)
+        self.assertIs(result2, None)
 
     def test_authenticate_wrong_password(self):
         email = 'foo@bar.com'

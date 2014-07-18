@@ -13,11 +13,11 @@ class EmailOrUsernameModelBackend(backends.ModelBackend):
         statsd_incr('signin_try')
 
         if oauth_data:
-            kwargs = {'email': oauth_data['email']}
+            kwargs = {'email__iexact': oauth_data['email']}
         else:
             try:
                 validate_email(username)
-                kwargs = {'email': username}
+                kwargs = {'email__iexact': username}
             except ValidationError:
                 kwargs = {'username': username}
 
