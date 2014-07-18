@@ -3,7 +3,6 @@
 (function () {
     function init() {
         var $usernameInput = $('#id_username');
-        var $passwordInput = $('#id_password');
         var $signInBtn = $('#id_signin_btn');
         var $signInForm = $('#signin_form');
         var gauthUrl = $('#signin').data('gauth-url');
@@ -25,10 +24,10 @@
             if (gauthEnabled) {
                 var username = $usernameInput.val();
                 if (isGauthEmail(username)) {
-                    $passwordInput.hide();
+                    $('#id_password').hide();
                     $signInBtn.val('Sign In With Google');
                 } else {
-                    $passwordInput.show();
+                    $('#id_password').show();
                     $signInBtn.val('Sign In');
                 }
             }
@@ -44,11 +43,14 @@
             }
         });
 
-        $usernameInput.on('input', function (e) {
+        $usernameInput.keyup(function (e) {
             handleForm();
         });
 
         handleForm();
+
+        $usernameInput.placeholder();
+        $('#id_password').placeholder();
     }
 
     $(document).ready(function (e) {
