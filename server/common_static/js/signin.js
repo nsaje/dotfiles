@@ -18,7 +18,7 @@
                 return false;
             }
 
-            return email.match(/@zemanta.com$/);
+            return email.match(/@zemanta.com$/i);
         }
 
         function handleForm() {
