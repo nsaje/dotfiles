@@ -17,7 +17,7 @@ class GauthTestCase(test.TestCase):
 
             flow = gauth.get_flow(request)
 
-            expected = 'https://accounts.google.com/o/oauth2/auth?scope=email&redirect_uri=https%3A%2F%2Ftest.zemanta.com%2F%3Fnext%3D%2Fad_groups%2F1%2Fads%253Fpage%253D1&response_type=code&client_id=1111.apps.googleusercontent.com&access_type=online'
+            expected = 'https://accounts.google.com/o/oauth2/auth?state=%2Fad_groups%2F1%2Fads%253Fpage%253D1&redirect_uri=https%3A%2F%2Ftest.zemanta.com%2F&response_type=code&client_id=1111.apps.googleusercontent.com&scope=email&access_type=online'
             self.assertEqual(flow.step1_get_authorize_url(), expected)
 
     def test_get_uri(self):
@@ -28,5 +28,5 @@ class GauthTestCase(test.TestCase):
 
             flow = gauth.get_flow(request)
 
-            expected = 'https://accounts.google.com/o/oauth2/auth?scope=email&redirect_uri=https%3A%2F%2Ftest.zemanta.com%2F%3Fnext%3D%2Fad_groups%2F1%2Fads%253Fpage%253D1&response_type=code&client_id=1111.apps.googleusercontent.com&access_type=online'
+            expected = 'https://accounts.google.com/o/oauth2/auth?state=%2Fad_groups%2F1%2Fads%253Fpage%253D1&redirect_uri=https%3A%2F%2Ftest.zemanta.com%2F&response_type=code&client_id=1111.apps.googleusercontent.com&scope=email&access_type=online'
             self.assertEqual(gauth.get_uri(request, flow), expected)
