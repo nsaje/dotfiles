@@ -8,6 +8,10 @@ a {
     text-decoration: none;
 }
 
+a img {
+    border: 0;
+}
+
 header {
     border-bottom: 1px solid #dadada;
 }
@@ -55,6 +59,7 @@ header {
     display: block;
 }
 
+.center-container .placeholder,
 .center-container input[name="username"],
 .center-container input[name="password"] {
     font-family: proxima-nova, sans-serif;
@@ -63,7 +68,6 @@ header {
     font-size: 16px;
     font-weight: 300;
 }
-
 
 /* placeholder text */
 
