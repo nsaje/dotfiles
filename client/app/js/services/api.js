@@ -126,15 +126,13 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 ctr: data.ctr !== null ? parseFloat((data.ctr).toFixed(2)) : null,
                 cpc: data.cpc !== null ? parseFloat((data.cpc).toFixed(2)) : null,
                 cost: data.cost !== null ? parseFloat((data.cost).toFixed(2)) : null,
-                articleId: data.article || null,
-                articleTitle: data.article_title || null,
                 sourceId: data.source || null,
                 sourceName: data.source_name || null
             };
             return result;
         }
 
-        this.list = function (adGroupId, startDate, endDate, articleIds, sourceIds, totals) {
+        this.list = function (adGroupId, startDate, endDate, sourceIds, totals) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/daily_stats/';
             var config = {
@@ -147,10 +145,6 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             if (endDate) {
                 config.params.end_date = endDate.format();
-            }
-
-            if (articleIds) {
-                config.params.article_ids = articleIds;
             }
 
             if (sourceIds) {

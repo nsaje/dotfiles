@@ -115,8 +115,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
 
             $location.search('source_ids', data.sourceIds && data.sourceIds.join(','));
             $location.search('source_totals', data.sourceTotals ? 1 : null);
-            $location.search('article_ids', data.articleIds && data.articleIds.join(','));
-            $location.search('article_totals', data.articleTotals ? 1 : null);
 
             $location.search('page', data.page)
         }

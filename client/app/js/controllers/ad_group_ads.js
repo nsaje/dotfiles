@@ -1,8 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', 'api', 'zemCustomTableColsService', 'localStorageService', 'zemChartService', function ($scope, $state, $location, $window, api, zemCustomTableColsService, localStorageService, zemChartService) {
     $scope.isSyncRecent = true;
-    $scope.selectedArticleIds = [];
-    $scope.selectedArticleTotals = true;
     $scope.constants = constants;
     $scope.options = options;
     $scope.chartMetric1 = constants.sourceChartMetric.CLICKS;
@@ -18,39 +16,33 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         {
             name: 'URL',
             field: 'url',
-            checked: true,
             type: 'url'
         },
         {
             name: 'Cost',
             field: 'cost',
-            checked: true,
             type: 'currency'
         },
         {
             name: 'CPC',
             field: 'cpc',
-            checked: true,
             type: 'currency',
             fractionSize: 3
         },
         {
             name: 'Clicks',
             field: 'clicks',
-            checked: true,
             type: 'number'
         },
         {
             name: 'Impressions',
             field: 'impressions',
-            checked: true,
             type: 'number'
 
         },
         {
             name: 'CTR',
             field: 'ctr',
-            checked: true,
             type: 'percent'
 
         }
@@ -69,12 +61,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     });
 
     $scope.setChartData = function () {
-        var result = {
-            formats: [],
-            data: [],
-            names: []
-        };
-        var temp = {};
+        var result = {};
 
         result.formats = [$scope.chartMetric1, $scope.chartMetric2].map(function (x) {
             var format = null;
@@ -88,28 +75,20 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             return format;
         });
 
+        var data = [[]];
         $scope.dailyStats.forEach(function (stat) {
-            if (!temp.hasOwnProperty(stat.articleId)) {
-                temp[stat.articleId] = {
-                    name: stat.articleTitle || 'Totals',
-                    data: [[]]
-                };
-            }
-
-            temp[stat.articleId].data[0].push([stat.date, stat[$scope.chartMetric1]]);
+            data[0].push([stat.date, stat[$scope.chartMetric1]]);
 
             if ($scope.chartMetric2 && $scope.chartMetric2 !== $scope.chartMetric1) {
-                if (!temp[stat.articleId].data[1]) {
-                    temp[stat.articleId].data[1] = [];
+                if (!data[1]) {
+                    data[1] = [];
                 }
-                temp[stat.articleId].data[1].push([stat.date, stat[$scope.chartMetric2]]);
+                data[1].push([stat.date, stat[$scope.chartMetric2]]);
             }
         });
 
-        Object.keys(temp).forEach(function (articleId) {
-            result.data.push(temp[articleId].data);
-            result.names.push(temp[articleId].name);
-        });
+        result.names = ['Totals'];
+        result.data = [data];
 
         $scope.chartData = result;
     };
@@ -127,8 +106,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
                 $scope.isSyncRecent = data.is_sync_recent;
 
                 $scope.pagination = data.pagination;
-
-                $scope.selectArticles();
             },
             function (data) {
                 // error
@@ -140,7 +117,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     };
 
     $scope.getDailyStats = function () {
-        api.adGroupSourcesDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedArticleIds, null, $scope.selectedArticleTotals).then(
+        api.adGroupSourcesDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true).then(
             function (data) {
                 $scope.dailyStats = data;
                 $scope.setChartData();
@@ -150,34 +127,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
                 return;
             }
         );
-    };
-
-    $scope.selectedArticlesChanged = function (articleId) {
-        var i = 0;
-        if (articleId) {
-            i = $scope.selectedArticleIds.indexOf(articleId);
-            if (i > -1) {
-                $scope.selectedArticleIds.splice(i, 1);
-            } else {
-                $scope.selectedArticleIds.push(articleId);
-            }
-        }
-
-        if (!$scope.selectedArticleTotals && !$scope.selectedArticleIds.length) {
-            $scope.selectedArticleTotals = true;
-        }
-
-        $location.search('article_ids', $scope.selectedArticleIds.join(','));
-        $location.search('article_totals', $scope.selectedArticleTotals ? 1 : null);
-
-        $scope.updateSelectedRowsData();
-
-        $scope.getDailyStats();
-    };
-
-    $scope.updateSelectedRowsData = function () {
-        $scope.setAdGroupData('articleIds', $scope.selectedArticleIds);
-        $scope.setAdGroupData('articleTotals', $scope.selectedArticleTotals);
     };
 
     $scope.toggleChart = function () {
@@ -205,14 +154,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         $scope.getDailyStats();
         $scope.getTableData();
     });
-
-    $scope.selectArticles = function () {
-        $scope.rows.forEach(function (x) {
-            if ($scope.selectedArticleIds.indexOf(x.id) > -1) {
-                x.checked = true;
-            }
-        });
-    };
 
     $scope.init = function() {
         var chartMetric1 = $location.search().chart_metric1;
@@ -256,23 +197,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         if (tableChanged) {
             $scope.loadPage();
         }
-
-        // selected rows
-        var articleIds = $location.search().article_ids;
-        var articleTotals = !!$location.search().article_totals;
-
-
-        if (articleIds) {
-            $scope.selectedArticleIds = articleIds.split(',');
-            $scope.setAdGroupData('articleIds', $scope.selectedArticleIds);
-
-            if ($scope.rows) {
-                $scope.selectArticles();
-            }
-        }
-
-        $scope.selectedArticleTotals = !$scope.selectedArticleIds.length || articleTotals;
-        $scope.setAdGroupData('articleTotals', $scope.selectedArticleTotals);
     };
     
     // pagination
