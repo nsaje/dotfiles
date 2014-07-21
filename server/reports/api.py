@@ -133,8 +133,8 @@ def save_report(ad_group, source, rows, date):
             article_stats.save()
         except IntegrityError:
             raise exc.ReportsSaveError(
-                'Article article_id={article_id}, url={url} and title={title} appeared more than once '
-                'for datetime={datetime}, ad_group_id={ad_group_id}, source_id={source_id}.'.format(
+                'Article article_id={article_id} appeared more than once for datetime={datetime}, '
+                'ad_group_id={ad_group_id}, source_id={source_id}. Article title={title} and url={url}.'.format(
                     article_id=article.id,
                     url=article.url,
                     title=article.title,
