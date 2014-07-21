@@ -22,7 +22,8 @@ module.exports = function (grunt) {
                     'app/js/services/**/*.js',
                     'app/js/directives/**/*.js',
                     'app/js/services/**/*.js',
-                    'app/js/controllers/**/*.js'
+                    'app/js/controllers/**/*.js',
+                    'app/js/filters/**/*.js'
                 ],
                 dest: 'app/dist/js/zemanta-one.js'
             }

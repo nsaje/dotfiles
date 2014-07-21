@@ -31,7 +31,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             name: 'CPC',
             field: 'cpc',
             checked: true,
-            type: 'currency'
+            type: 'currency',
+            fractionSize: 3
         },
         {
             name: 'Clicks',
