@@ -132,7 +132,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         } else {
             $scope.sorting = '-' + col;
         }
-        $scope.getTableData(false);
+        $scope.getTableData();
     };
 
     $scope.getHeaderClasses = function (col) {
@@ -154,11 +154,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     };
 
     $scope.getTableData = function (showWaiting) {
-        showWaiting = typeof showWaiting !== 'undefined' ? showWaiting : true;
-
-        if (showWaiting) {
-            $scope.loadRequestInProgress = true;
-        }
+        $scope.loadRequestInProgress = true;
 
         api.adGroupSourcesTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.sorting).then(
             function (data) {
