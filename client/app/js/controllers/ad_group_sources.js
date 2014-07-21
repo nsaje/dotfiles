@@ -134,6 +134,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         } else {
             $scope.order = '-' + col;
         }
+
+        $location.search('order', $scope.order);
         $scope.getTableData();
     };
 
@@ -288,6 +290,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             }
         }
 
+
+        $scope.order = $location.search().order || $scope.order;
         $scope.selectedSourceTotals = !$scope.selectedSourceIds.length || sourceTotals;
         $scope.setAdGroupData('sourceTotals', $scope.selectedSourceTotals);
     };
