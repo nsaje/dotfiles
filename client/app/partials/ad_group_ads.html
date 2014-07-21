@@ -23,8 +23,8 @@
             <thead>
                 <tr>
                     <th></th>
-                    <th>Title</th>
-                    <th ng-class="{'text-right': col.type !== 'url'}" ng-repeat="col in columns | filter: {checked: true}">{{ col.name }}</th>
+                    <th><a href="" ng-click="sortTableData('title')">Title</a></th>
+                    <th ng-class="{'text-right': col.type !== 'url'}" ng-repeat="col in columns | filter: {checked: true}"><a href="" ng-click="sortTableData(col.field)">{{ col.name }}</a></th>
                 </tr>
             </thead>
             <tbody>

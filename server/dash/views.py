@@ -72,7 +72,7 @@ def generate_rows(dimensions, ad_group_id, start_date, end_date):
         end_date,
         dimensions,
         ad_group=int(ad_group_id)
-    )
+    )[0]
 
     if 'source' in dimensions:
         sources = {source.id: source for source in models.Source.objects.all()}
@@ -330,7 +330,7 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             get_stats_end_date(request.GET.get('end_date')),
             ['source'],
             ad_group=int(ad_group.id)
-        )
+        )[0]
         sources = ad_group.sources.all().order_by('name')
         source_settings = models.AdGroupSourceSettings.get_current_settings(
             ad_group, sources)
@@ -339,7 +339,7 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             get_stats_start_date(request.GET.get('start_date')),
             get_stats_end_date(request.GET.get('end_date')),
             ad_group=int(ad_group.id)
-        )[0]
+        )[0][0]
 
         last_success_actions = \
             actionlog.api.get_last_succesfull_fetch_all_sources_dates(ad_group)
@@ -608,6 +608,20 @@ class AdGroupSourcesExport(api_common.BaseApiView):
 
 
 class AdGroupAdsTable(api_common.BaseApiView):
+    ARTICLE_ORDERS = ('title', '-title', 'url', '-url')
+    STATS_ORDERS = (
+        'cost',
+        '-cost',
+        'cpc',
+        '-cpc',
+        'clicks',
+        '-clicks',
+        'impressions',
+        '-impressions',
+        'ctr',
+        '-ctr'
+    )
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_table_get')
     def get(self, request, ad_group_id):
         ad_group = get_ad_group(request.user, ad_group_id)
@@ -616,50 +630,106 @@ class AdGroupAdsTable(api_common.BaseApiView):
         size = request.GET.get('size')
         start_date = get_stats_start_date(request.GET.get('start_date'))
         end_date = get_stats_end_date(request.GET.get('end_date'))
+        order = request.GET.get('order') or '-clicks'
 
         size = max(min(int(size or 5), 50), 1)
 
-        article_list = models.Article.objects.filter(ad_group=ad_group).order_by('title')
-        paginator = Paginator(article_list, size)
-
-        try:
-            articles = paginator.page(page)
-        except PageNotAnInteger:
-            articles = paginator.page(1)
-        except EmptyPage:
-            articles = paginator.page(paginator.num_pages)
-
-        article_data = reports.api.query(
-            start_date,
-            end_date,
-            ['article'],
-            ad_group=int(ad_group.id),
-            article=[article.id for article in articles]
-        )
+        rows, current_page, num_pages, count, start_index, end_index = \
+            self.get_articles_data(ad_group, page, size, start_date, end_date, order)
 
         totals_data = reports.api.query(
             start_date,
             end_date,
             ad_group=int(ad_group.id)
-        )[0]
+        )[0][0]
 
         sources = ad_group.sources.all()
         last_sync = get_last_sucessful_sync_date(ad_group, sources)
 
         return self.create_api_response({
-            'rows': self.get_rows(ad_group, article_data, articles),
+            'rows': rows,
             'totals': self.get_totals(totals_data),
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
+            'order': order,
             'pagination': {
-                'currentPage': articles.number,
-                'numPages': articles.paginator.num_pages,
-                'count': articles.paginator.count,
-                'startIndex': articles.start_index(),
-                'endIndex': articles.end_index(),
+                'currentPage': current_page,
+                'numPages': num_pages,
+                'count': count,
+                'startIndex': start_index,
+                'endIndex': end_index,
                 'size': size
             }
         })
+
+    def get_articles_data(self, ad_group, page, size, start_date, end_date, order):
+        if order in self.ARTICLE_ORDERS:
+            articles, current_page, num_pages, count, start_index, end_index = \
+                self.get_articles(ad_group, page, size, order)
+            stats = reports.api.query(
+                start_date,
+                end_date,
+                ['article'],
+                ad_group=int(ad_group.id),
+                article=[article.id for article in articles]
+            )[0]
+
+            rows = []
+            for article in articles:
+                for stat in stats:
+                    if stat['article'] == article.pk:
+                        break
+
+                rows.append(self.get_row_dict(ad_group, stat, article))
+        elif order in self.STATS_ORDERS:
+            stats, current_page, num_pages, count, start_index, end_index = \
+                reports.api.query(
+                    start_date,
+                    end_date,
+                    ['article'],
+                    order=order,
+                    page=page,
+                    page_size=size,
+                    ad_group=int(ad_group.id)
+                )
+            articles = models.Article.objects.filter(
+                pk__in=[x['article'] for x in stats])
+
+            rows = []
+            for stat in stats:
+                for article in articles:
+                    if article.pk == stat['article']:
+                        break
+
+                rows.append(self.get_row_dict(ad_group, stat, article))
+        else:
+            raise exc.ValidationError('Invalid order.')
+
+        return rows, current_page, num_pages, count, start_index, end_index
+
+    def get_articles(self, ad_group, page, size, order):
+        q = models.Article.objects.filter(ad_group=ad_group)
+
+        if order:
+            q = q.order_by(order)
+
+        if page and size:
+            paginator = Paginator(q, size)
+            try:
+                articles = paginator.page(page)
+            except PageNotAnInteger:
+                articles = paginator.page(1)
+            except EmptyPage:
+                articles = paginator.page(paginator.num_pages)
+
+        return (
+            articles,
+            articles.number,
+            articles.paginator.num_pages if articles.paginator else None,
+            articles.paginator.count if articles.paginator else None,
+            articles.start_index(),
+            articles.end_index()
+        )
 
     def get_totals(self, totals_data):
         return {
@@ -670,27 +740,19 @@ class AdGroupAdsTable(api_common.BaseApiView):
             'ctr': totals_data['ctr'],
         }
 
-    def get_rows(self, ad_group, article_data, articles):
-        rows = []
-        for article in articles:
-            data = {}
-            for item in article_data:
-                if item['article'] == article.id:
-                    data = item
-                    break
+    def get_row_dict(self, ad_group, stat, article):
+        result = {
+            'id': str(article.pk),
+            'url': article.url,
+            'title': article.title,
+            'cost': stat.get('cost', None),
+            'cpc': stat.get('cpc', None),
+            'clicks': stat.get('clicks', None),
+            'impressions': stat.get('impressions', None),
+            'ctr': stat.get('ctr', None),
+        }
 
-            rows.append({
-                'id': str(article.pk),
-                'url': article.url,
-                'title': article.title,
-                'cost': data.get('cost', None),
-                'cpc': data.get('cpc', None),
-                'clicks': data.get('clicks', None),
-                'impressions': data.get('impressions', None),
-                'ctr': data.get('ctr', None),
-            })
-
-        return rows
+        return result
 
 
 class AdGroupDailyStats(api_common.BaseApiView):
@@ -714,7 +776,7 @@ class AdGroupDailyStats(api_common.BaseApiView):
                 get_stats_end_date(end_date),
                 breakdown,
                 ad_group=int(ad_group.id)
-            )
+            )[0]
 
         articles = None
         sources = None
@@ -740,7 +802,7 @@ class AdGroupDailyStats(api_common.BaseApiView):
                 breakdown,
                 ad_group=int(ad_group.id),
                 **extra_kwargs
-            )
+            )[0]
 
         return self.create_api_response({
             'stats': self.get_dict(breakdown_stats + totals_stats, articles, sources)

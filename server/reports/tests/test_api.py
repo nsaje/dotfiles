@@ -19,37 +19,45 @@ class QueryTestCase(test.TestCase):
         end = datetime.date(2014, 6, 8)
 
         expected = [{
-            'ctr': 1.6514558887440245,
-            'cpc': 0.050113157894736846,
+            'ctr': 1.65145588874402,
+            'cpc': 0.0501131578947368,
             'cost': 1.9043,
             'date': datetime.date(2014, 6, 4),
             'impressions': 2301,
             'clicks': 38
         }, {
-            'ctr': 1.1477761836441895,
+            'ctr': 1.14777618364419,
             'cpc': 0.03400625,
             'cost': 0.5441,
             'date': datetime.date(2014, 6, 5),
             'impressions': 1394,
             'clicks': 16
         }, {
-            'ctr': 1.0425716768027802,
-            'cpc': 0.054408333333333336,
+            'ctr': 1.04257167680278,
+            'cpc': 0.0544083333333333,
             'cost': 1.3058,
             'date': datetime.date(2014, 6, 6),
             'impressions': 2302,
             'clicks': 24
         }]
 
-        result = api.query(start, end, ['date'], ad_group=1)
+        result = api.query(start, end, ['date'], ad_group=1)[0]
 
         self.assertEqual(result, expected)
+
+    def test_breakdown_copy(self):
+        start = datetime.date(2014, 6, 10)
+        end = datetime.date(2014, 6, 12)
+
+        breakdown = ['date', 'source']
+        api.query(start, end, breakdown, ad_group=1)[0]
+        self.assertEqual(breakdown, ['date', 'source'])
 
     def test_non_exisiting_date_breakdown(self):
         start = datetime.date(2014, 6, 10)
         end = datetime.date(2014, 6, 12)
 
-        result = api.query(start, end, ['date'], ad_group=1)
+        result = api.query(start, end, ['date'], ad_group=1)[0]
 
         self.assertEqual(result, [])
 
@@ -65,7 +73,7 @@ class QueryTestCase(test.TestCase):
             'impressions': None
         }]
 
-        result = api.query(start, end, [], ad_group=1)
+        result = api.query(start, end, [], ad_group=1)[0]
 
         self.assertEqual(result, expected)
 
@@ -75,14 +83,14 @@ class QueryTestCase(test.TestCase):
 
         expected = [{
             'source': 1,
-            'ctr': 1.3006503251625814,
-            'cpc': 0.048130769230769234,
+            'ctr': 1.3006503251625798,
+            'cpc': 0.0481307692307692,
             'cost': 3.7542,
             'impressions': 5997,
             'clicks': 78
         }]
 
-        result = api.query(start, end, ['source'], ad_group=1)
+        result = api.query(start, end, ['source'], ad_group=1)[0]
 
         self.assertEqual(result, expected)
 
@@ -94,11 +102,11 @@ class QueryTestCase(test.TestCase):
             'impressions': 5997,
             'cost': 3.7542,
             'clicks': 78,
-            'ctr': 1.3006503251625814,
-            'cpc': 0.048130769230769234
+            'ctr': 1.3006503251625798,
+            'cpc': 0.0481307692307692
         }]
 
-        result = api.query(start, end, [], ad_group=1)
+        result = api.query(start, end, [], ad_group=1)[0]
 
         self.assertEqual(result, expected)
 
@@ -107,40 +115,40 @@ class QueryTestCase(test.TestCase):
         end = datetime.date(2014, 6, 5)
 
         expected = [{
-            'ctr': 1.661392405063291,
-            'cpc': 0.05440952380952381,
+            'ctr': 1.66139240506329,
+            'cpc': 0.054409523809523797,
             'cost': 1.1426,
-            'article': 1,
-            'date': datetime.date(2014, 6, 4),
             'impressions': 1264,
+            'date': datetime.date(2014, 6, 4),
+            'article': 1,
             'clicks': 21
         }, {
-            'ctr': 1.639344262295082,
-            'cpc': 0.044805882352941175,
+            'ctr': 1.63934426229508,
+            'cpc': 0.0448058823529412,
             'cost': 0.7617,
-            'article': 2,
-            'date': datetime.date(2014, 6, 4),
             'impressions': 1037,
+            'date': datetime.date(2014, 6, 4),
+            'article': 2,
             'clicks': 17
         }, {
             'ctr': 0.0,
             'cpc': None,
             'cost': 0.0,
-            'article': 1,
-            'date': datetime.date(2014, 6, 5),
             'impressions': 178,
+            'date': datetime.date(2014, 6, 5),
+            'article': 1,
             'clicks': 0
         }, {
-            'ctr': 1.3157894736842104,
+            'ctr': 1.31578947368421,
             'cpc': 0.03400625,
             'cost': 0.5441,
-            'article': 2,
-            'date': datetime.date(2014, 6, 5),
             'impressions': 1216,
+            'date': datetime.date(2014, 6, 5),
+            'article': 2,
             'clicks': 16
         }]
 
-        result = api.query(start, end, ['date', 'article'], ad_group=1)
+        result = api.query(start, end, ['date', 'article'], ad_group=1)[0]
 
         self.assertEqual(result, expected)
 
@@ -149,36 +157,36 @@ class QueryTestCase(test.TestCase):
         end = datetime.date(2014, 6, 8)
 
         expected = [{
-            'ctr': 1.2420478642835504,
-            'cpc': 0.05440975609756098,
+            'ctr': 1.24204786428355,
+            'cpc': 0.054409756097561,
             'cost': 2.2308,
             'impressions': 3301,
             'article': 1,
             'clicks': 41
         }, {
-            'ctr': 1.3724035608308605,
-            'cpc': 0.041172972972972975,
+            'ctr': 1.37240356083086,
+            'cpc': 0.041172972972973,
             'cost': 1.5234,
             'impressions': 2696,
             'article': 2,
             'clicks': 37
         }, {
             'ctr': 1.3417759686416402,
-            'cpc': 0.05441011235955056,
+            'cpc': 0.0544101123595506,
             'cost': 4.8425,
             'impressions': 6633,
             'article': 3,
             'clicks': 89
         }, {
-            'ctr': 1.2448132780082988,
-            'cpc': 0.054408333333333336,
+            'ctr': 1.2448132780083,
+            'cpc': 0.0544083333333333,
             'cost': 3.2645,
             'impressions': 4820,
             'article': 4,
             'clicks': 60
         }]
 
-        result = api.query(start, end, ['article'], article=[1, 2, 3, 4, 5])
+        result = api.query(start, end, ['article'], article=[1, 2, 3, 4, 5])[0]
 
         self.assertEqual(result, expected)
 
@@ -203,6 +211,52 @@ class QueryTestCase(test.TestCase):
             ['date', 'impressions'],
             ad_group=1
         )
+
+    def test_order(self):
+        start = datetime.date(2014, 6, 4)
+        end = datetime.date(2014, 6, 5)
+
+        expected = [{
+            'ctr': 1.31578947368421,
+            'cpc': 0.03400625,
+            'cost': 0.5441,
+            'impressions': 1216,
+            'date': datetime.date(2014, 6, 5),
+            'article': 2,
+            'clicks': 16
+        }, {
+            'ctr': 1.63934426229508,
+            'cpc': 0.0448058823529412,
+            'cost': 0.7617,
+            'impressions': 1037,
+            'date': datetime.date(2014, 6, 4),
+            'article': 2,
+            'clicks': 17
+        }, {
+            'ctr': 1.66139240506329,
+            'cpc': 0.054409523809523797,
+            'cost': 1.1426,
+            'impressions': 1264,
+            'date': datetime.date(2014, 6, 4),
+            'article': 1,
+            'clicks': 21
+        }, {
+            'ctr': 0.0,
+            'cpc': None,
+            'cost': 0.0,
+            'impressions': 178,
+            'date': datetime.date(2014, 6, 5),
+            'article': 1,
+            'clicks': 0
+        }]
+
+        result = api.query(start, end, ['date', 'article'], order='cpc', ad_group=1)[0]
+        self.assertEqual(result, expected)
+
+        result = api.query(start, end, ['date', 'article'], order='-cpc', ad_group=1)[0]
+
+        desc_expected = list(reversed(expected))
+        self.assertEqual(result, desc_expected)
 
 
 class ApiTestCase(test.TestCase):
