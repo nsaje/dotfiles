@@ -18,7 +18,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             name: 'Bid CPC',
             field: 'bid_cpc',
             checked: true,
-            type: 'currency'
+            type: 'currency',
+            fractionSize: 3
         },
         {
             name: 'Daily Budget',
@@ -36,7 +37,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             name: 'CPC',
             field: 'cpc',
             checked: true,
-            type: 'currency'
+            type: 'currency',
+            fractionSize: 3
         },
         {
             name: 'Clicks',
