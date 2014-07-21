@@ -42,7 +42,7 @@ def _decrypt_payload_credentials(payload):
     return payload
 
 
-def _send(action):
+def send(action):
     try:
         # Decrypt has to be the last thing to happen before sending to zwei.
         # Payload with decrypted credentials should never be logged.
@@ -57,4 +57,4 @@ def _send(action):
 
 def send_multiple(actionlogs):
     for actionlog in actionlogs:
-        _send(actionlog)
+        send(actionlog)

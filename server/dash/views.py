@@ -21,6 +21,7 @@ from utils import statsd_helper
 from utils import api_common
 from utils import exc
 import actionlog.api
+import actionlog.sync
 import reports.api
 
 from dash import forms
@@ -115,14 +116,12 @@ def create_excel_worksheet(workbook, name, widths, header_names, data, transform
         write_excel_row(worksheet, index + 1, transform_func(item))
 
 
-def get_last_sucessful_sync_date(ad_group, sources):
-    sources_syncs = actionlog.api.get_last_succesfull_fetch_all_sources_dates(ad_group)
-    if sources_syncs and set([x.id for x in sources]) <= set(sources_syncs.keys()):
-        last_sync = pytz.utc.localize(min(sources_syncs.values()))
-    else:
-        last_sync = None
-
-    return last_sync
+def get_last_successful_source_sync_dates(ad_group):
+    ag_sync = actionlog.sync.AdGroupSync(ad_group)
+    result = {}
+    for c in ag_sync.get_components():
+        result[c.ad_group_source.source_id] = c.get_latest_success()
+    return result
 
 
 def is_sync_recent(last_sync_datetime):
@@ -341,10 +340,11 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             ad_group=int(ad_group.id)
         )[0]
 
-        last_success_actions = \
-            actionlog.api.get_last_succesfull_fetch_all_sources_dates(ad_group)
+        last_success_actions = get_last_successful_source_sync_dates(ad_group)
 
-        last_sync = get_last_sucessful_sync_date(ad_group, sources)
+        last_sync = None
+        if last_success_actions.values() and None not in last_success_actions.values():
+            last_sync = pytz.utc.localize(min(last_success_actions.values()))
 
         return self.create_api_response({
             'rows': self.get_rows(
@@ -643,8 +643,9 @@ class AdGroupAdsTable(api_common.BaseApiView):
             ad_group=int(ad_group.id)
         )[0]
 
-        sources = ad_group.sources.all()
-        last_sync = get_last_sucessful_sync_date(ad_group, sources)
+        last_sync = actionlog.sync.AdGroupSync(ad_group).get_latest_success()
+        if last_sync:
+            last_sync = pytz.utc.localize(last_sync)
 
         return self.create_api_response({
             'rows': self.get_rows(ad_group, article_data, articles),
