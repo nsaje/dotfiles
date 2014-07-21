@@ -885,7 +885,7 @@ div[datepicker] {
     }
 
     thead > tr > th {
-        border-bottom: 0
+        border-bottom: 0;
     }
 
     th, td {
@@ -901,7 +901,7 @@ div[datepicker] {
     }
 
     .loader-row {
-        text-align: center; 
+        text-align: center;
     }
 
     .no-data {
@@ -911,6 +911,69 @@ div[datepicker] {
     .number {
         font-family: Helvetica Neue, sans-serif;
         font-weight: 200;
+    }
+
+    .arrow-placeholder() {
+        content: "";
+        display: inline-block;
+        position: relative;
+        top: 1px;
+        width: 10px;
+        height: 8px;
+        visibility: hidden;
+    }
+
+    .arrow-down() {
+        .arrow-placeholder();
+        background: url('/lib/components/select2/select2.png') -4px -10px;
+        visibility: visible;
+    }
+
+    .arrow-up() {
+        .arrow-placeholder();
+        background: url('/lib/components/select2/select2.png') -22px -10px;
+        visibility: visible;
+    }
+
+    .arrow-right-offset() {
+        right: -5px;
+    }
+
+    thead > tr > th.arrow-right::after {
+        .arrow-placeholder();
+        .arrow-right-offset();
+    }
+
+    thead > tr > th.arrow-right.sorted::after {
+        .arrow-down();
+        .arrow-right-offset();
+    }
+
+    thead > tr > th.arrow-right.sorted-reverse::after {
+        .arrow-up();
+        .arrow-right-offset();
+    }
+
+    thead > tr > th.arrow-left::before {
+        .arrow-placeholder();
+    }
+
+    thead > tr > th.arrow-left.sorted::before {
+        .arrow-down();
+    }
+
+    thead > tr > th.arrow-left.sorted-reverse::before {
+        .arrow-up();
+    }
+
+    thead > tr > th.text-right.arrow-right {
+        position: relative;
+        right: -10px;
+    }
+
+    thead > tr > th.text-center.arrow-right {
+        position: relative;
+        right: -5px;
     }
 }
 

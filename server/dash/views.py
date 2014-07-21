@@ -352,7 +352,8 @@ class AdGroupSourcesTable(api_common.BaseApiView):
                 sources,
                 sources_data,
                 source_settings,
-                last_success_actions
+                last_success_actions,
+                sorting=request.GET.get('sorting', None)
             ),
             'totals': self.get_totals(ad_group, totals_data, source_settings),
             'last_sync': last_sync,
@@ -370,31 +371,31 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             'ctr': totals_data['ctr'],
         }
 
-    def get_rows(self, ad_group, sources, sources_data, source_settings, last_actions):
+    def get_rows(self, ad_group, sources, sources_data, source_settings, last_actions, sorting=None):
         rows = []
         for source in sources:
-            nid = source.pk
+            sid = source.pk
             try:
-                settings = source_settings[nid]
+                settings = source_settings[sid]
             except KeyError:
                 logger.error(
                     'Missing ad group source settings for ad group %s and source %s' %
-                    (ad_group.id, nid))
+                    (ad_group.id, sid))
                 continue
 
             # get source reports data
             source_data = {}
             for item in sources_data:
-                if item['source'] == nid:
+                if item['source'] == sid:
                     source_data = item
                     break
 
-            last_sync = last_actions.get(nid)
+            last_sync = last_actions.get(sid)
             if last_sync:
                 last_sync = pytz.utc.localize(last_sync)
 
             rows.append({
-                'id': str(nid),
+                'id': str(sid),
                 'name': settings.ad_group_source.source.name,
                 'status': settings.state,
                 'bid_cpc': float(settings.cpc_cc) if settings.cpc_cc is not None else None,
@@ -409,6 +410,14 @@ class AdGroupSourcesTable(api_common.BaseApiView):
                 'ctr': source_data.get('ctr', None),
                 'last_sync': last_sync
             })
+
+        if sorting:
+            reverse = False
+            if sorting.startswith('-'):
+                reverse = True
+                sorting = sorting[1:]
+
+            rows = sorted(rows, key=lambda x: x.get(sorting, None), reverse=reverse)
 
         return rows
 

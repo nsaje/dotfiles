@@ -25,9 +25,9 @@
             <thead>
                 <tr>
                     <th></th>
-                    <th>Media Source</th>
-                    <th class="text-center">Status</th>
-                    <th class="text-right" ng-repeat="col in columns | filter: {checked: true}">{{ col.name }}</th>
+                    <th class="sort" ng-class="getHeaderClasses('name')"><a href ng-click="sortRows('name')">Media Source</a></th>
+                    <th class="text-center sort" ng-class="getHeaderClasses('status')"><a href ng-click="sortRows('status')">Status</a></th>
+                    <th class="text-right" ng-class="getHeaderClasses(col.field)" ng-repeat="col in columns | filter: {checked: true}"><a href ng-click="sortRows(col.field)">{{ col.name }}</a></th>
                 </tr>
             </thead>
             <tbody>
