@@ -49,14 +49,14 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AdGroupSourcesTable() {
-        this.get = function (id, startDate, endDate, sorting) {
+        this.get = function (id, startDate, endDate, order) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/sources/table/';
             var config = {
                 params: {}
             };
 
-            config.params.sorting = sorting;
+            config.params.order = order;
 
             if (startDate) {
                 config.params.start_date = startDate.format();

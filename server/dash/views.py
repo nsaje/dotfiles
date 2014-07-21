@@ -353,7 +353,7 @@ class AdGroupSourcesTable(api_common.BaseApiView):
                 sources_data,
                 source_settings,
                 last_success_actions,
-                sorting=request.GET.get('sorting', None)
+                order=request.GET.get('order', None)
             ),
             'totals': self.get_totals(ad_group, totals_data, source_settings),
             'last_sync': last_sync,
@@ -371,7 +371,7 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             'ctr': totals_data['ctr'],
         }
 
-    def get_rows(self, ad_group, sources, sources_data, source_settings, last_actions, sorting=None):
+    def get_rows(self, ad_group, sources, sources_data, source_settings, last_actions, order=None):
         rows = []
         for source in sources:
             sid = source.pk
@@ -411,13 +411,13 @@ class AdGroupSourcesTable(api_common.BaseApiView):
                 'last_sync': last_sync
             })
 
-        if sorting:
+        if order:
             reverse = False
-            if sorting.startswith('-'):
+            if order.startswith('-'):
                 reverse = True
-                sorting = sorting[1:]
+                order = order[1:]
 
-            rows = sorted(rows, key=lambda x: x.get(sorting, None), reverse=reverse)
+            rows = sorted(rows, key=lambda x: x.get(order, None), reverse=reverse)
 
         return rows
 

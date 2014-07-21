@@ -12,7 +12,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     $scope.chartData = undefined;
     $scope.isChartShown = zemChartService.load('zemChart');
     $scope.chartBtnTitle = 'Hide chart';
-    $scope.sorting = '-clicks';
+    $scope.order = '-clicks';
     $scope.columns = [
         {
             name: 'Bid CPC',
@@ -124,13 +124,13 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
     $scope.loadRequestInProgress = false;
 
-    $scope.sortRows = function (col) {
-        if ($scope.sorting.indexOf(col) === 1) {
-            $scope.sorting = col;
-        } else if ($scope.sorting.indexOf(col) === -1 && col === 'name') {
-            $scope.sorting = col;
+    $scope.orderRows = function (col) {
+        if ($scope.order.indexOf(col) === 1) {
+            $scope.order = col;
+        } else if ($scope.order.indexOf(col) === -1 && col === 'name') {
+            $scope.order = col;
         } else {
-            $scope.sorting = '-' + col;
+            $scope.order = '-' + col;
         }
         $scope.getTableData();
     };
@@ -138,10 +138,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     $scope.getHeaderClasses = function (col) {
         var classes = [];
 
-        if ($scope.sorting.indexOf(col) === 0) {
-            classes.push("sorted-reverse");
-        } else if ($scope.sorting.indexOf(col) === 1) {
-            classes.push("sorted");
+        if ($scope.order.indexOf(col) === 0) {
+            classes.push("ordered-reverse");
+        } else if ($scope.order.indexOf(col) === 1) {
+            classes.push("ordered");
         }
 
         if (col === $scope.columns[$scope.columns.length-1].field) {
@@ -156,7 +156,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     $scope.getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
-        api.adGroupSourcesTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.sorting).then(
+        api.adGroupSourcesTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
