@@ -42,7 +42,7 @@
                     <td class="" ng-class="{number: col.type !== 'url', 'text-right': col.type !== 'url'}" ng-repeat="col in columns | filter: {checked: true}">
                         <span ng-switch="col.type">
                             <span ng-switch-when="currency">
-                                {{ (row[col.field] | currency:"$") || 'N/A' }}
+                                {{ (row[col.field] | decimalCurrency:"$":col.fractionSize) || 'N/A' }}
                             </span>
                             <span ng-switch-when="percent">
                                 {{ (row[col.field] | number:2) || '0.0' }}%
@@ -64,7 +64,7 @@
                     <td class="text-right number" ng-repeat="col in columns | filter: {checked: true}">
                         <span ng-switch="col.type">
                             <span ng-switch-when="currency">
-                                {{ (totals[col.field] | currency:"$") || 'N/A' }}
+                                {{ (totals[col.field] | decimalCurrency:"$":col.fractionSize) || 'N/A' }}
                             </span>
                             <span ng-switch-when="percent">
                                 {{ (totals[col.field] | number:2) || '0.0' }}%
