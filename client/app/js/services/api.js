@@ -81,7 +81,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AdGroupAdsTable() {
-        this.get = function (id, page, size, startDate, endDate) {
+        this.get = function (id, page, size, startDate, endDate, order) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/contentads/table/';
             var config = {
@@ -102,6 +102,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             if (endDate) {
                 config.params.end_date = endDate.format();
+            }
+
+            if (order) {
+                config.params.order = order;
             }
 
             $http.get(url, config).

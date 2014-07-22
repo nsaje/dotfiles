@@ -3,6 +3,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     $scope.isSyncRecent = true;
     $scope.selectedArticleIds = [];
     $scope.selectedArticleTotals = true;
+    $scope.order = '-clicks';
     $scope.constants = constants;
     $scope.options = options;
     $scope.chartMetric1 = constants.sourceChartMetric.CLICKS;
@@ -119,13 +120,14 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     $scope.getTableData = function () {
         $scope.loadRequestInProgress = true;
 
-        api.adGroupAdsTable.get($state.params.id, $scope.pagination.currentPage, $scope.pagination.size, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
+        api.adGroupAdsTable.get($state.params.id, $scope.pagination.currentPage, $scope.pagination.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
                 $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
                 $scope.isSyncRecent = data.is_sync_recent;
 
+                $scope.order = data.order;
                 $scope.pagination = data.pagination;
 
                 $scope.selectArticles();
@@ -137,6 +139,27 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         ).finally(function () {
             $scope.loadRequestInProgress = false;
         });
+    };
+
+    $scope.orderTableData = function(field) {
+        // Title and URL are sorted ascending by default while everything else
+        // is descending.
+        if (field === 'title' || field === 'url') {
+            if ($scope.order === field) {
+                $scope.order = '-' + field;
+            } else {
+                $scope.order = field;
+            }
+        } else {
+            if ($scope.order === '-' + field) {
+                $scope.order = field;
+            } else {
+                $scope.order = '-' + field;
+            }
+        }
+
+        $location.search('order', $scope.order);
+        $scope.getTableData();
     };
 
     $scope.getDailyStats = function () {
@@ -271,6 +294,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             }
         }
 
+        $scope.order = $location.search().order || $scope.order;
         $scope.selectedArticleTotals = !$scope.selectedArticleIds.length || articleTotals;
         $scope.setAdGroupData('articleTotals', $scope.selectedArticleTotals);
     };
