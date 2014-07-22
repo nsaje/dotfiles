@@ -94,5 +94,5 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
         return self.email
 
     def clean(self):
-        if self.__class__.objects.filter(email=self.email.lower).exists():
+        if not self.pk and self.__class__.objects.filter(email=self.email.lower).exists():
             raise ValidationError({'email': 'User with this e-mail already exists.'})
