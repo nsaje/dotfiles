@@ -91,7 +91,7 @@ def query(start_date, end_date, breakdown=None, order=None, page=None, page_size
             ordering = [order_prop_null, order_mapping[order]]
             annotate_kwargs = {}
             if order_prop == 'cost':
-                annotate_kwargs['cost_null'] = db_aggregates.IsSumNull('cost')
+                annotate_kwargs['cost_null'] = db_aggregates.IsSumNull('cost_cc')
             elif order_prop == 'impressions':
                 annotate_kwargs['impressions_null'] = \
                     db_aggregates.IsSumNull('impressions')
