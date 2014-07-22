@@ -61,6 +61,14 @@ oneApp.directive('zemChart', ['config', function(config) {
                         }],
                         opposite: true
                     }],
+                    tooltip: {
+                        shared: true,
+                        useHTML: true,
+                        headerFormat: '<div class="tooltip-header">{point.key}</div>',
+                        backgroundColor: '#fff',
+                        borderColor: '#d2d2d2',
+                        shadow: false,
+                    },
                     legend: {
                         enabled: false
                     },
@@ -176,7 +184,7 @@ oneApp.directive('zemChart', ['config', function(config) {
                             }
 
                             $scope.config.series.push({
-                                name: name + ', ' + metrics[j],
+                                name: name + ' (' + metrics[j] + ')',
                                 color: color,
                                 yAxis: j,
                                 data: data[i][j],
