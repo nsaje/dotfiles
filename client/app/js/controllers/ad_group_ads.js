@@ -158,6 +158,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             }
         }
 
+        $location.search('order', $scope.order);
         $scope.getTableData();
     };
 
@@ -293,6 +294,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             }
         }
 
+        $scope.order = $location.search().order || $scope.order;
         $scope.selectedArticleTotals = !$scope.selectedArticleIds.length || articleTotals;
         $scope.setAdGroupData('articleTotals', $scope.selectedArticleTotals);
     };
