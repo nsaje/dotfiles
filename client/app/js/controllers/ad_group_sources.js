@@ -134,25 +134,19 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         } else {
             $scope.order = '-' + col;
         }
+
+        $location.search('order', $scope.order);
         $scope.getTableData();
     };
 
-    $scope.getHeaderClasses = function (col) {
-        var classes = [];
-
+    $scope.getIsOrderedByClass = function (col) {
         if ($scope.order.indexOf(col) === 0) {
-            classes.push("ordered-reverse");
+            return "ordered-reverse";
         } else if ($scope.order.indexOf(col) === 1) {
-            classes.push("ordered");
+            return "ordered";
         }
 
-        if (col === $scope.columns[$scope.columns.length-1].field) {
-            classes.push("arrow-left");
-        } else {
-            classes.push("arrow-right");
-        }
-
-        return classes;
+        return "";
     };
 
     $scope.getTableData = function (showWaiting) {
@@ -288,6 +282,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             }
         }
 
+
+        $scope.order = $location.search().order || $scope.order;
         $scope.selectedSourceTotals = !$scope.selectedSourceIds.length || sourceTotals;
         $scope.setAdGroupData('sourceTotals', $scope.selectedSourceTotals);
     };
