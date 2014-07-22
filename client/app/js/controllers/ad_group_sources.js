@@ -141,17 +141,14 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
     $scope.getHeaderClasses = function (col) {
         var classes = [];
+        var checkedColumns = $scope.columns.filter(function (el, i, arr) {
+            return el.checked;
+        });
 
         if ($scope.order.indexOf(col) === 0) {
             classes.push("ordered-reverse");
         } else if ($scope.order.indexOf(col) === 1) {
             classes.push("ordered");
-        }
-
-        if (col === $scope.columns[$scope.columns.length-1].field) {
-            classes.push("arrow-left");
-        } else {
-            classes.push("arrow-right");
         }
 
         return classes;

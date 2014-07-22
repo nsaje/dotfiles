@@ -888,6 +888,10 @@ div[datepicker] {
         border-bottom: 0;
     }
 
+    th:last-child, td:last-child {
+        padding-right: 20px;
+    }
+
     th, td {
         border-top: 1px solid #e3e3e3;
 
@@ -942,48 +946,36 @@ div[datepicker] {
         background-repeat: no-repeat;
 
         @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-resolution: 192dpi) {
-            background: url('../../img/select2x2.png') -24px -8px;
+            background: url('../../img/select2x2.png') -22px -8px;
             background-size: 60px 40px;
         }
     }
 
-    .arrow-right-offset() {
+    .arrow-offset() {
         right: -5px;
     }
 
-    thead > tr > th.arrow-right::after {
+    thead > tr > th.arrow a::after {
         .arrow-placeholder();
-        .arrow-right-offset();
+        .arrow-offset();
     }
 
-    thead > tr > th.arrow-right.ordered::after {
+    thead > tr > th.arrow.ordered a::after {
         .arrow-down();
-        .arrow-right-offset();
+        .arrow-offset();
     }
 
-    thead > tr > th.arrow-right.ordered-reverse::after {
+    thead > tr > th.arrow.ordered-reverse a::after {
         .arrow-up();
-        .arrow-right-offset();
+        .arrow-offset();
     }
 
-    thead > tr > th.arrow-left::before {
-        .arrow-placeholder();
-    }
-
-    thead > tr > th.arrow-left.ordered::before {
-        .arrow-down();
-    }
-
-    thead > tr > th.arrow-left.ordered-reverse::before {
-        .arrow-up();
-    }
-
-    thead > tr > th.text-right.arrow-right {
+    thead > tr >  th.text-right.arrow a {
         position: relative;
         right: -10px;
     }
 
-    thead > tr > th.text-center.arrow-right {
+    thead > tr > th.text-center.arrow a {
         position: relative;
         right: -5px;
     }
