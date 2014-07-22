@@ -83,7 +83,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     function AdGroupAdsTable() {
         this.get = function (id, page, size, startDate, endDate) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + id + '/ads/table/';
+            var url = '/api/ad_groups/' + id + '/contentads/table/';
             var config = {
                 params: {}
             };

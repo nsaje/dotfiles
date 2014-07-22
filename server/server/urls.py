@@ -41,7 +41,7 @@ urlpatterns += patterns(
         login_required(dash.views.AdGroupSourcesTable.as_view()),
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/ads/export/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/',
         login_required(dash.views.AdGroupAdsExport.as_view())
     ),
     url(
@@ -49,7 +49,7 @@ urlpatterns += patterns(
         login_required(dash.views.AdGroupSourcesExport.as_view())
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/ads/table/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/table/',
         login_required(dash.views.AdGroupAdsTable.as_view()),
     ),
     url(
