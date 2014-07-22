@@ -139,19 +139,14 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $scope.getTableData();
     };
 
-    $scope.getHeaderClasses = function (col) {
-        var classes = [];
-        var checkedColumns = $scope.columns.filter(function (el, i, arr) {
-            return el.checked;
-        });
-
+    $scope.getIsOrderedByClass = function (col) {
         if ($scope.order.indexOf(col) === 0) {
-            classes.push("ordered-reverse");
+            return "ordered-reverse";
         } else if ($scope.order.indexOf(col) === 1) {
-            classes.push("ordered");
+            return "ordered";
         }
 
-        return classes;
+        return "";
     };
 
     $scope.getTableData = function (showWaiting) {
