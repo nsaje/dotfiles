@@ -164,6 +164,7 @@ class User(api_common.BaseApiView):
                 'email': user.email,
                 'permissions': {
                     'actionlog_manual_view': user.has_perm('actionlog.manual_view'),
+                    'dash_settings_view': user.has_perm('dash.settings_view'),
                 }
             }
 
@@ -221,6 +222,9 @@ class NavigationDataView(api_common.BaseApiView):
 class AdGroupSettings(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_get')
     def get(self, request, ad_group_id):
+        if not request.user.has_perm('dash.settings_view'):
+            raise exc.MissingDataError()
+
         ad_group = get_ad_group(request.user, ad_group_id)
 
         settings = self.get_current_settings(ad_group)
@@ -234,6 +238,9 @@ class AdGroupSettings(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_put')
     def put(self, request, ad_group_id):
+        if not request.user.has_perm('dash.settings_view'):
+            raise exc.MissingDataError()
+
         ad_group = get_ad_group(request.user, ad_group_id)
 
         current_settings = self.get_current_settings(ad_group)
