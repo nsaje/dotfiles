@@ -100,7 +100,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $scope.dailyStats.forEach(function (stat) {
             if (!temp.hasOwnProperty(stat.sourceId)) {
                 temp[stat.sourceId] = {
-                    name: stat.sourceName || 'Totals',
+                    name: stat.sourceName,
                     data: [[]]
                 };
             }

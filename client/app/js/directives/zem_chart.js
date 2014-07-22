@@ -16,21 +16,14 @@ oneApp.directive('zemChart', ['config', function(config) {
         templateUrl: config.static_url + '/partials/zem_chart.html',
         controller: ['$scope', '$element', '$attrs', '$http', function ($scope, $element, $attrs, $http) {
 
-            var markerSymbols = ["circle", "square", "diamond", "triangle", "triangle-down"];
-            var colors = ['#2fa8c7', '#4bbc00'];
-            var dashStyles = [
-                'Solid',
-                'ShortDash',
-                'ShortDot',
-                'ShortDashDot',
-                'ShortDashDotDot',
-                'Dot',
-                'Dash',
-                'LongDash',
-                'DashDot',
-                'LongDashDot',
-                'LongDashDotDot'
+            var totalsColor = ['#009db2', '#c9eaef'];
+            var colors = [
+                ['#d35400', '#eebe9e'],
+                ['#1abc9c', '#d6f3ed'],
+                ['#34495e', '#d6dbdf'],
+                ['#f39c12', '#fdebd0']
             ];
+            var nameColors = {};
 
             $scope.hasData = true;
 
@@ -39,7 +32,6 @@ oneApp.directive('zemChart', ['config', function(config) {
                     title: {
                         text: null
                     },
-                    colors: colors,
                     xAxis: {
                         type: 'datetime',
                         minTickInterval: 24 * 3600 * 1000
@@ -50,7 +42,7 @@ oneApp.directive('zemChart', ['config', function(config) {
                             text: null
                         },
                         min: 0,
-                        lineColor: colors[0],
+                        lineColor: null,
                         lineWidth: 2,
                         plotLines: [{
                             value: 0,
@@ -61,7 +53,7 @@ oneApp.directive('zemChart', ['config', function(config) {
                             text: null
                         },
                         min: 0,
-                        lineColor: colors[1],
+                        lineColor: null,
                         lineWidth: 2,
                         plotLines: [{
                             value: 0,
@@ -75,37 +67,25 @@ oneApp.directive('zemChart', ['config', function(config) {
                     credits: {
                         enabled: false
                     }
-                },
-                series: [{
-                    name: null,
-                    color: colors[0],
-                    yAxis: 0,
-                    data: [],
-                    tooltip: {
-                        valueSuffix: null
-                    }
-                }, {
-                    name: null,
-                    color: colors[1],
-                    yAxis: 1,
-                    data: [],
-                    tooltip: {
-                        valueSuffix: null
-                    }
-                }]
+                }
             };
 
             $scope.$watch('data', function(newValue, oldValue) {
                 var i = 0;
                 var j = 0;
                 var k = 0;
+                var ci = 0;
                 var metrics = [];
                 var data = [];
                 var valuePrefix = null;
                 var valueSuffix = null;
                 var axisFormat = null;
                 var name = null;
-                var markerRadius = 2;
+                var color = null;
+                var usedColors = [];
+                var colorIndex = 0;
+                var tempNameColors = {};
+                var key = null;
 
                 $scope.hasData = false;
 
@@ -127,11 +107,6 @@ oneApp.directive('zemChart', ['config', function(config) {
                 }
             
                 if (newValue && Object.keys(newValue).length) {
-                    // if (newValue.xType !== 'categories') {
-                    //     $scope.config.options.xAxis.type = newValue.xType;
-                    // } else {
-                    //     $scope.config.options.xAxis.categories = newValue.x;
-                    // }
                     $scope.config.series = [];
 
                     for (i = 0; i < $scope.metric1Values.length; i++) {
@@ -149,6 +124,16 @@ oneApp.directive('zemChart', ['config', function(config) {
                             }
                         }
                     }
+
+                    for (key in nameColors) {
+                        if (nameColors.hasOwnProperty(key) && newValue.names.indexOf(key) !== -1) {
+                            colorIndex = nameColors[key];
+
+                            usedColors.push(colorIndex);
+                            tempNameColors[key] = colorIndex;
+                        }
+                    }
+                    nameColors = tempNameColors;
 
                     data = newValue.data;
                     for (i = 0; i < data.length; i++) {
@@ -169,25 +154,40 @@ oneApp.directive('zemChart', ['config', function(config) {
                                 format: axisFormat
                             };
 
-                            name = metrics[j];
                             if (newValue.names.length) {
-                                name = newValue.names[i] + ', ' + name;
+                                name = newValue.names[i];
+                            }
+
+                            if (name === null || name == undefined) {
+                                name = 'Totals';
+                                color = totalsColor[j];
+                            } else {
+                                if (nameColors[name] === undefined) {
+                                    for (ci = 0; ci < colors.length; ci++) {
+                                        if (usedColors.indexOf(ci) === -1) {
+                                            nameColors[name] = ci;
+                                            usedColors.push(ci);
+                                            break;
+                                        }
+                                    }   
+                                }
+
+                                color = colors[nameColors[name]][j];
                             }
 
                             $scope.config.series.push({
-                                name: name,
-                                color: colors[j],
+                                name: name + ', ' + metrics[j],
+                                color: color,
                                 yAxis: j,
                                 data: data[i][j],
-                                dashStyle: dashStyles[i % dashStyles.length],
                                 tooltip: {
                                     valueSuffix: valueSuffix,
                                     valuePrefix: valuePrefix
                                 },
                                 marker: {
-                                    radius: markerRadius,
-                                    symbol: markerSymbols[i % markerSymbols.length],
-                                    fillColor: '#fff',
+                                    radius: 3,
+                                    symbol: 'square',
+                                    fillColor: color,
                                     lineWidth: 2,
                                     lineColor: null
                                 }
@@ -198,12 +198,6 @@ oneApp.directive('zemChart', ['config', function(config) {
                                     break;
                                 }
                             }
-                        }
-
-                        // When we run out of marker symbols, start increasing their
-                        // sizes so that user can distinguish between them.
-                        if (i > 0 && i % markerSymbols.length === 0) {
-                            markerRadius += 2;
                         }
                     }
                 }

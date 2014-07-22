@@ -87,7 +87,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             }
         });
 
-        result.names = ['Totals'];
+        result.names = [null];
         result.data = [data];
 
         $scope.chartData = result;
