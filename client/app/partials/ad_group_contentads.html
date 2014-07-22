@@ -23,8 +23,8 @@
             <thead>
                 <tr>
                     <th></th>
-                    <th class="arrow-right" ng-class="{ordered: order === '-title', 'ordered-reverse': order === 'title'}"><a href="" ng-click="orderTableData('title')">Title</a></th>
-                    <th class="arrow-right" ng-class="{'text-right': col.type !== 'url', ordered: order === '-' + col.field, 'ordered-reverse': order === col.field}" ng-repeat="col in columns | filter: {checked: true}"><a href="" ng-click="orderTableData(col.field)">{{ col.name }}</a></th>
+                    <th class="arrow" ng-class="{ordered: order === '-title', 'ordered-reverse': order === 'title'}"><a href="" ng-click="orderTableData('title')">Title</a></th>
+                    <th class="arrow" ng-class="{'text-right': col.type !== 'url', ordered: order === '-' + col.field, 'ordered-reverse': order === col.field}" ng-repeat="col in columns | filter: {checked: true}"><a href="" ng-click="orderTableData(col.field)">{{ col.name }}</a></th>
                 </tr>
             </thead>
             <tbody>
