@@ -921,34 +921,28 @@ div[datepicker] {
         content: "";
         display: inline-block;
         position: relative;
-        top: 1px;
         width: 10px;
-        height: 8px;
+        height: 10px;
         visibility: hidden;
-    }
-
-    .arrow-down() {
-        .arrow-placeholder();
-        background: url('../../img/select2.png') -4px -10px;
-        visibility: visible;
-        background-repeat: no-repeat;
-
-        @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-resolution: 192dpi) {
-            background: url('../../img/select2x2.png') -4px -10px;
-            background-size: 60px 40px;
-        }
     }
 
     .arrow-up() {
         .arrow-placeholder();
-        background: url('../../img/select2.png') -22px -10px;
+        background: url('../../img/arrow-up.svg');
         visibility: visible;
-        background-repeat: no-repeat;
+        background-size: 10px 10px;
+    }
 
-        @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-resolution: 192dpi) {
-            background: url('../../img/select2x2.png') -22px -8px;
-            background-size: 60px 40px;
-        }
+    .arrow-down() {
+        .arrow-placeholder();
+        background: url('../../img/arrow-up.svg');
+        visibility: visible;
+        background-size: 10px 10px;
+	-webkit-transform: rotate(180deg);
+	-moz-transform: rotate(180deg);
+	-ms-transform: rotate(180deg);
+	-o-transform: rotate(180deg);
+	transform: rotate(180deg);
     }
 
     .arrow-offset() {
