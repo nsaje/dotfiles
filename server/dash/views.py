@@ -1,3 +1,4 @@
+
 import datetime
 import json
 import logging
@@ -417,7 +418,8 @@ class AdGroupSourcesTable(api_common.BaseApiView):
                 reverse = True
                 order = order[1:]
 
-            rows = sorted(rows, key=lambda x: x.get(order, None), reverse=reverse)
+            # Sort should always put Nones at the end
+            rows = sorted(rows, key=lambda x: (x.get(order) is None or reverse, x.get(order)), reverse=reverse)
 
         return rows
 
