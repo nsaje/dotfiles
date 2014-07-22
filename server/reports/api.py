@@ -56,25 +56,55 @@ def query(start_date, end_date, breakdown=None, order=None, page=None, page_size
             constraints[new_k] = v
             del constraints[k]
 
-    order_mapping = {
-        'cost': 'cost_cc_sum',
-        '-cost': '-cost_cc_sum',
-        'impressions': 'impressions_sum',
-        '-impressions': '-impressions_sum',
-        'clicks': 'clicks_sum',
-        '-clicks': '-clicks_sum'
-    }
-
-    order = order_mapping.get(order) or order
-
     current_page = None
     num_pages = None
     count = None
     start_index = None
     end_index = None
 
+    annotate_kwargs = {}
+    ordering = breakdown
+    order_prop_null = None
+
     if breakdown:
-        ordering = [order] if order else breakdown
+        order_mapping = {
+            'cost': 'cost_cc_sum',
+            '-cost': '-cost_cc_sum',
+            'impressions': 'impressions_sum',
+            '-impressions': '-impressions_sum',
+            'clicks': 'clicks_sum',
+            '-clicks': '-clicks_sum',
+            'ctr': 'ctr',
+            '-ctr': '-ctr',
+            'cpc': 'cpc',
+            '-cpc': '-cpc'
+        }
+
+        if order:
+            if order not in (order_mapping.keys()):
+                raise exc.ReportsQueryError('Invalid value for order.')
+
+            order_prop = order[1:] if order.startswith('-') else order
+            # Name of the temporary null property used when ordering to make sure
+            # that NULLs alre always at the bottom.
+            order_prop_null = '{}_null'.format(order_prop)
+            ordering = [order_prop_null, order_mapping[order]]
+            annotate_kwargs = {}
+            if order_prop == 'cost':
+                annotate_kwargs['cost_null'] = db_aggregates.IsSumNull('cost')
+            elif order_prop == 'impressions':
+                annotate_kwargs['impressions_null'] = \
+                    db_aggregates.IsSumNull('impressions')
+            elif order_prop == 'clicks':
+                annotate_kwargs['clicks_null'] = \
+                    db_aggregates.IsSumNull('clicks')
+            elif order_prop == 'ctr':
+                annotate_kwargs['ctr_null'] = \
+                    db_aggregates.IsSumDivisionNull('clicks', divisor='impressions')
+            elif order_prop == 'cpc':
+                annotate_kwargs['cpc_null'] = \
+                    db_aggregates.IsSumDivisionNull('cost_cc', divisor='clicks')
+
         stats = models.ArticleStats.objects.\
             values(*breakdown).\
             annotate(
@@ -83,6 +113,7 @@ def query(start_date, end_date, breakdown=None, order=None, page=None, page_size
                 clicks_sum=Sum('clicks'),
                 ctr=db_aggregates.SumDivision('clicks', divisor='impressions'),
                 cpc=db_aggregates.SumDivision('cost_cc', divisor='clicks'),
+                **annotate_kwargs
             ).\
             filter(**constraints).\
             filter(datetime__gte=start_date, datetime__lte=end_date).\
@@ -135,6 +166,9 @@ def query(start_date, end_date, breakdown=None, order=None, page=None, page_size
 
         stat['impressions'] = stat.pop('impressions_sum')
         stat['clicks'] = stat.pop('clicks_sum')
+
+        if order_prop_null and order_prop_null in stat:
+            del stat[order_prop_null]
 
     return stats, current_page, num_pages, count, start_index, end_index
 

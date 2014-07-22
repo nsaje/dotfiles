@@ -255,8 +255,97 @@ class QueryTestCase(test.TestCase):
 
         result = api.query(start, end, ['date', 'article'], order='-cpc', ad_group=1)[0]
 
-        desc_expected = list(reversed(expected))
+        desc_expected = [expected[2], expected[1], expected[0], expected[3]]
         self.assertEqual(result, desc_expected)
+
+    def test_pagination(self):
+        start = datetime.date(2014, 6, 4)
+        end = datetime.date(2014, 6, 5)
+
+        expected = [{
+            'ctr': 1.31578947368421,
+            'cpc': 0.03400625,
+            'cost': 0.5441,
+            'impressions': 1216,
+            'date': datetime.date(2014, 6, 5),
+            'article': 2,
+            'clicks': 16
+        }, {
+            'ctr': 1.63934426229508,
+            'cpc': 0.0448058823529412,
+            'cost': 0.7617,
+            'impressions': 1037,
+            'date': datetime.date(2014, 6, 4),
+            'article': 2,
+            'clicks': 17
+        }]
+
+        result = api.query(
+            start,
+            end,
+            ['date', 'article'],
+            order='cpc',
+            page=1,
+            page_size=2,
+            ad_group=1
+        )
+        self.assertEqual(result[0], expected)
+        self.assertEqual(result[1], 1)
+        self.assertEqual(result[2], 2)
+        self.assertEqual(result[3], 4)
+        self.assertEqual(result[4], 1)
+        self.assertEqual(result[5], 2)
+
+        expected = [{
+            'ctr': 1.66139240506329,
+            'cpc': 0.054409523809523797,
+            'cost': 1.1426,
+            'impressions': 1264,
+            'date': datetime.date(2014, 6, 4),
+            'article': 1,
+            'clicks': 21
+        }, {
+            'ctr': 0.0,
+            'cpc': None,
+            'cost': 0.0,
+            'impressions': 178,
+            'date': datetime.date(2014, 6, 5),
+            'article': 1,
+            'clicks': 0
+        }]
+
+        result = api.query(
+            start,
+            end,
+            ['date', 'article'],
+            order='cpc',
+            page=2,
+            page_size=2,
+            ad_group=1
+        )
+        self.assertEqual(result[0], expected)
+        self.assertEqual(result[1], 2)
+        self.assertEqual(result[2], 2)
+        self.assertEqual(result[3], 4)
+        self.assertEqual(result[4], 3)
+        self.assertEqual(result[5], 4)
+
+        # Should be the same page as page 2
+        result = api.query(
+            start,
+            end,
+            ['date', 'article'],
+            order='cpc',
+            page=3,
+            page_size=2,
+            ad_group=1
+        )
+        self.assertEqual(result[0], expected)
+        self.assertEqual(result[1], 2)
+        self.assertEqual(result[2], 2)
+        self.assertEqual(result[3], 4)
+        self.assertEqual(result[4], 3)
+        self.assertEqual(result[5], 4)
 
 
 class ApiTestCase(test.TestCase):

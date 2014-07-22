@@ -141,7 +141,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         });
     };
 
-    $scope.sortTableData = function(field) {
+    $scope.orderTableData = function(field) {
         // Title and URL are sorted ascending by default while everything else
         // is descending.
         if (field === 'title' || field === 'url') {
@@ -172,24 +172,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
                 return;
             }
         );
-    };
-
-    $scope.getHeaderClasses = function (col) {
-        var classes = [];
-
-        if ($scope.sorting.indexOf(col) === 0) {
-            classes.push("sorted-reverse");
-        } else if ($scope.sorting.indexOf(col) === 1) {
-            classes.push("sorted");
-        }
-
-        if (col === $scope.columns[$scope.columns.length-1].field) {
-            classes.push("arrow-left");
-        } else {
-            classes.push("arrow-right");
-        }
-
-        return classes;
     };
 
     $scope.selectedArticlesChanged = function (articleId) {
