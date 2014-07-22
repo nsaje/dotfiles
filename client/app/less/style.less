@@ -955,6 +955,15 @@ div[datepicker] {
         right: -5px;
     }
 
+    thead > tr > th {
+        & a,
+        & a:hover,
+        & a:active,
+        & a:visited {
+            color: #454545;
+        }
+    }
+
     thead > tr > th.arrow a::after {
         .arrow-placeholder();
         .arrow-offset();
@@ -1021,9 +1030,19 @@ div[datepicker] {
     .current-rows {
         margin: 0 10px;
     }
+}
 
-    .loader {
+.loader-container {
+    position: relative;
+
+    & > .loader {
         position: absolute;
+        top: 0px;
+        bottom: 0px;
+        left: 0px;
+        right: 0px;
+	    background: rgba(255, 255, 255, 0.4) url('../../img/loader.svg') no-repeat center center;
+        z-index: 1;
     }
 }
 
