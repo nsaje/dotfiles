@@ -904,6 +904,11 @@ div[datepicker] {
         }
     }
 
+    &.table-hover tbody tr:hover td,
+    &.table-hover tbody tr:hover th {
+        background-color: rgba(246, 246, 246, 0.5);
+    }
+
     .loader-row {
         text-align: center;
     }
@@ -982,6 +987,17 @@ div[datepicker] {
         position: relative;
         right: -5px;
     }
+
+    thead > tr > th.trimmed-currency a {
+        display: inline-block;
+        margin-right: 1ex;
+    }
+
+    tr > td .currency-3 {
+        display: inline-block;
+        min-width: 6ex;
+        text-align: left;
+    }
 }
 
 .pagination {
@@ -1043,6 +1059,12 @@ div[datepicker] {
 /* pagination select */
 .select2-drop.select2-drop-above {
     font-weight: 300;
+}
+
+.currency {
+    display: inline-block;
+    min-width: 5em;
+    text-align: right;
 }
 
 .custom-cols.dropdown {
