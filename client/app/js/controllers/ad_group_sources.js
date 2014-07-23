@@ -36,7 +36,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             type: 'currency'
         },
         {
-            name: 'CPC',
+            name: 'Avg. CPC',
             field: 'cpc',
             checked: true,
             type: 'currency',
@@ -139,16 +139,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
         $location.search('order', $scope.order);
         $scope.getTableData();
-    };
-
-    $scope.getIsOrderedByClass = function (col) {
-        if ($scope.order.indexOf(col) === 0) {
-            return "ordered-reverse";
-        } else if ($scope.order.indexOf(col) === 1) {
-            return "ordered";
-        }
-
-        return "";
     };
 
     $scope.getTableData = function (showWaiting) {

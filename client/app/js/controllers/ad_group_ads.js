@@ -29,7 +29,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             type: 'currency'
         },
         {
-            name: 'CPC',
+            name: 'Avg. CPC',
             field: 'cpc',
             checked: true,
             type: 'currency',

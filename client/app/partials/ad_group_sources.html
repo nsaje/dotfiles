@@ -34,13 +34,13 @@
 
         <div class="loader-container">
             <div class="loader" ng-show="rows.length && loadRequestInProgress"></div>
-            <table class="table">
+            <table class="table table-hover">
                 <thead>
                     <tr>
                         <th></th>
-                        <th class="arrow" ng-class="getIsOrderedByClass('name')"><a href ng-click="orderRows('name')">Media Source</a></th>
-                        <th class="text-center arrow" ng-class="getIsOrderedByClass('status')"><a href ng-click="orderRows('status')">Status</a></th>
-                        <th class="text-right arrow" ng-class="getIsOrderedByClass(col.field)" ng-repeat="col in columns | filter: {checked: true}"><a href ng-click="orderRows(col.field)">{{ col.name }}</a></th>
+                        <th class="arrow" ng-class="{ordered: order === '-name', 'ordered-reverse': order === 'name'}"><a href ng-click="orderRows('name')">Media Source</a></th>
+                        <th class="text-center arrow" ng-class="{ordered: order === '-status', 'ordered-reverse': order === 'status'}"><a href ng-click="orderRows('status')">Status</a></th>
+                        <th class="text-right arrow" ng-class="{'text-right': col.type !== 'url', ordered: order === '-' + col.field, 'ordered-reverse': order === col.field, 'trimmed-currency': (col.type === 'currency' && col.fractionSize > 2)}" ng-repeat="col in columns | filter: {checked: true}"><a href ng-click="orderRows(col.field)">{{ col.name }}</a></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -64,7 +64,9 @@
                         <td class="text-right number" ng-repeat="col in columns | filter: {checked: true}">
                             <span ng-switch="col.type">
                                 <span ng-switch-when="currency">
-                                    {{ (row[col.field] | decimalCurrency:"$":col.fractionSize) || 'N/A' }}
+                                    <span ng-class="{'currency-3': col.fractionSize === 3}">
+                                        {{ (row[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
+                                    </span>
                                 </span>
                                 <span ng-switch-when="percent">
                                     {{ (row[col.field] | number:2) || '0.0' }}%
@@ -88,7 +90,9 @@
                             <span ng-switch="col.type">
                                 <span ng-if="col.field != 'last_sync'">
                                     <span ng-switch-when="currency">
-                                        {{ (totals[col.field] | decimalCurrency:"$":col.fractionSize) || 'N/A' }}
+                                        <span ng-class="{'currency-3': col.fractionSize === 3}">
+                                            {{ (row[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
+                                        </span>
                                     </span>
                                     <span ng-switch-when="percent">
                                         {{ (totals[col.field] | number:2) || '0.0' }}%
