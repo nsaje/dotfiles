@@ -69,6 +69,17 @@ oneApp.directive('zemChart', ['config', function(config) {
                         borderColor: '#d2d2d2',
                         shadow: false,
                     },
+                    plotOptions: {
+                        series: {
+                            marker: {
+                                states: {
+                                    hover: {
+                                        radius: 3
+                                    }
+                                }
+                            }
+                        }
+                    },
                     legend: {
                         enabled: false
                     },
