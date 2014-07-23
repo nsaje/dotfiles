@@ -8,7 +8,7 @@ from django.test import TestCase
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
-from actionlog import api, constants, models
+from actionlog import api, constants, models, sync
 from dash import models as dashmodels
 from dash import constants as dashconstants
 from utils.test_helper import MockDateTime
@@ -40,7 +40,7 @@ class ZweiActionsTestCase(TestCase):
         _prepare_mock_urlopen(mock_urlopen)
         ad_group_source = dashmodels.AdGroupSource.objects.get(id=1)
 
-        api.fetch_ad_group_status(ad_group_source.ad_group, ad_group_source.source)
+        sync.AdGroupSourceSync(ad_group_source).trigger_status()
         action = models.ActionLog.objects.latest('created_dt')
 
         self.assertEqual(action.ad_group_source, ad_group_source)
@@ -58,7 +58,7 @@ class ZweiActionsTestCase(TestCase):
         _prepare_mock_urlopen(mock_urlopen, exception=exception)
         ad_group_source = dashmodels.AdGroupSource.objects.get(id=1)
 
-        api.fetch_ad_group_status(ad_group_source.ad_group, ad_group_source.source)
+        sync.AdGroupSourceSync(ad_group_source).trigger_status()
         action = models.ActionLog.objects.latest('created_dt')
 
         self.assertEqual(action.ad_group_source, ad_group_source)
@@ -132,7 +132,7 @@ class ActionLogApiTestCase(TestCase):
 
         ad_group = dashmodels.AdGroup.objects.get(id=1)
         ad_group_sources = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group)
-        api.fetch_ad_group_status(ad_group)
+        sync.AdGroupSync(ad_group).trigger_status()
 
         for ad_group_source in ad_group_sources.all():
             action = models.ActionLog.objects.get(
@@ -172,7 +172,7 @@ class ActionLogApiTestCase(TestCase):
         ad_group = dashmodels.AdGroup.objects.get(id=1)
         ad_group_sources = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group)
         date = datetime.date(2014, 6, 1)
-        api.fetch_ad_group_reports(ad_group, date=date)
+        sync.AdGroupSync(ad_group).trigger_reports([date])
 
         for ad_group_source in ad_group_sources.all():
             action = models.ActionLog.objects.get(
@@ -315,3 +315,29 @@ class SetCampaignPropertyTestCase(TestCase):
         self.assertEqual(alogs[0].payload['value'], 'test_value_2')
         for alog in alogs:
             alog.delete()
+
+
+class SyncInProgressTestCase(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def test_sync_in_progress(self):
+        ad_group = dashmodels.AdGroup.objects.get(pk=1)
+
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source__ad_group=ad_group).count(), 0)
+
+        self.assertEqual(api.is_sync_in_progress(ad_group), False)
+
+        alog = models.ActionLog(
+            action=constants.Action.FETCH_REPORTS,
+            action_type=constants.ActionType.AUTOMATIC,
+            ad_group_source=dashmodels.AdGroupSource.objects.get(pk=1),
+        )
+        alog.save()
+
+        self.assertEqual(api.is_sync_in_progress(ad_group), True)
+
+        alog.state = constants.ActionState.SUCCESS
+        alog.save()
+
+        self.assertEqual(api.is_sync_in_progress(ad_group), False)

@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 
 from utils.command_helpers import last_n_days, parse_date, parse_ad_group_ids, get_ad_groups
 
-from actionlog import api
+from actionlog import sync
 
 logger = logging.getLogger(__name__)
 
@@ -28,4 +28,5 @@ class Command(BaseCommand):
         logger.info('Fetching report for dates: %s, ad_groups: %s', dates, ad_group_ids or 'all')
 
         ad_groups = get_ad_groups(ad_group_ids)
-        api.init_fetch_reports_order(dates, ad_groups)
+        for ad_group in ad_groups:
+            sync.AdGroupSync(ad_group).trigger_reports(dates)
