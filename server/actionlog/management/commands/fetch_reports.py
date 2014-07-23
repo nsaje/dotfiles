@@ -29,4 +29,6 @@ class Command(BaseCommand):
 
         ad_groups = get_ad_groups(ad_group_ids)
         for ad_group in ad_groups:
-            sync.AdGroupSync(ad_group).trigger_reports(dates)
+            ad_group_sync = sync.AdGroupSync(ad_group)
+            for ad_group_source_sync in ad_group_sync.get_components():
+                ad_group_source_sync.trigger_reports_for_dates(dates)

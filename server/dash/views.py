@@ -633,8 +633,7 @@ class AdGroupSync(api_common.BaseApiView):
         ad_group = get_ad_group(request.user, ad_group_id)
 
         if not actionlog.api.is_sync_in_progress(ad_group):
-            actionlog.sync.AdGroupSync(ad_group).trigger_all(last_n_days(3))
-            #actionlog.api.init_fetch_status_order([ad_group])
+            actionlog.sync.AdGroupSync(ad_group).trigger_all()
 
         return self.create_api_response({})
 
