@@ -46,6 +46,6 @@ var options = {
         {name: 'Impressions', value: constants.sourceChartMetric.IMPRESSIONS},
         {name: 'CTR', value: constants.sourceChartMetric.CTR},
         {name: 'Cost', value: constants.sourceChartMetric.COST},
-        {name: 'CPC', value: constants.sourceChartMetric.CPC}
+        {name: 'Avg. CPC', value: constants.sourceChartMetric.CPC}
     ]
 };
