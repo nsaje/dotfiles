@@ -17,33 +17,39 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         {
             name: 'URL',
             field: 'url',
+            checked: true,
             type: 'url'
         },
         {
             name: 'Cost',
             field: 'cost',
+            checked: true,
             type: 'currency'
         },
         {
             name: 'CPC',
             field: 'cpc',
+            checked: true,
             type: 'currency',
             fractionSize: 3
         },
         {
             name: 'Clicks',
             field: 'clicks',
+            checked: true,
             type: 'number'
         },
         {
             name: 'Impressions',
             field: 'impressions',
+            checked: true,
             type: 'number'
 
         },
         {
             name: 'CTR',
             field: 'ctr',
+            checked: true,
             type: 'percent'
 
         }
