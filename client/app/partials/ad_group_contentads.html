@@ -39,7 +39,6 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th></th>
                         <th class="arrow" ng-class="{ordered: order === '-title', 'ordered-reverse': order === 'title'}"><a href="" ng-click="orderTableData('title')">Title</a></th>
                         <th class="arrow" ng-class="{'text-right': col.type !== 'url', ordered: order === '-' + col.field, 'ordered-reverse': order === col.field, 'trimmed-currency': (col.type === 'currency' && col.fractionSize > 2)}" ng-repeat="col in columns | filter: {checked: true}"><a href="" ng-click="orderTableData(col.field)">{{ col.name }}</a></th>
                     </tr>
@@ -54,7 +53,6 @@
                         <td class="no-data" colspan="{{ selectedColumnsCount + 2}}">No data</td>
                     </tr>
                     <tr ng-repeat="row in rows">
-                        <td class="input-one-char"><input type="checkbox" data-ng-model="row.checked" ng-disabled="!row.checked && selectedArticleIds.length === 3" data-ng-change="selectedArticlesChanged(row.id)"/></td>
                         <td><a href="{{ row.url }}" target="_blank">{{ row.title }}</a></td>
                         <td class="" ng-class="{number: col.type !== 'url', 'text-right': col.type !== 'url'}" ng-repeat="col in columns | filter: {checked: true}">
                             <span ng-switch="col.type">
@@ -78,7 +76,6 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td class="input-one-char"><input type="checkbox" data-ng-model="selectedArticleTotals" data-ng-change="selectedArticlesChanged(null)"/></td>
                         <td>TOTALS</td>
                         <td class="text-right number" ng-repeat="col in columns | filter: {checked: true}">
                             <span ng-switch="col.type">

@@ -103,7 +103,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $scope.dailyStats.forEach(function (stat) {
             if (!temp.hasOwnProperty(stat.sourceId)) {
                 temp[stat.sourceId] = {
-                    name: stat.sourceName || 'Totals',
+                    name: stat.sourceName,
                     data: [[]]
                 };
             }
@@ -164,7 +164,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     };
 
     $scope.getDailyStats = function () {
-        api.adGroupSourcesDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, $scope.selectedSourceIds, $scope.selectedSourceTotals).then(
+        api.adGroupSourcesDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedSourceTotals).then(
             function (data) {
                 $scope.dailyStats = data;
                 $scope.setChartData();

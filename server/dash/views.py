@@ -804,7 +804,6 @@ class AdGroupDailyStats(api_common.BaseApiView):
     def get(self, request, ad_group_id):
         ad_group = get_ad_group(request.user, ad_group_id)
 
-        article_ids = request.GET.getlist('article_ids')
         source_ids = request.GET.getlist('source_ids')
         totals = request.GET.get('totals')
 
@@ -822,16 +821,9 @@ class AdGroupDailyStats(api_common.BaseApiView):
                 ad_group=int(ad_group.id)
             )[0]
 
-        articles = None
         sources = None
         breakdown_stats = []
         extra_kwargs = {}
-
-        if article_ids:
-            ids = [int(x) for x in article_ids]
-            extra_kwargs['article_id'] = ids
-            breakdown.append('article')
-            articles = models.Article.objects.filter(pk__in=ids)
 
         if source_ids:
             ids = [int(x) for x in source_ids]
@@ -839,7 +831,6 @@ class AdGroupDailyStats(api_common.BaseApiView):
             breakdown.append('source')
             sources = models.Source.objects.filter(pk__in=ids)
 
-        if 'article' in breakdown or 'source' in breakdown:
             breakdown_stats = reports.api.query(
                 get_stats_start_date(start_date),
                 get_stats_end_date(end_date),
@@ -849,21 +840,15 @@ class AdGroupDailyStats(api_common.BaseApiView):
             )[0]
 
         return self.create_api_response({
-            'stats': self.get_dict(breakdown_stats + totals_stats, articles, sources)
+            'stats': self.get_dict(breakdown_stats + totals_stats, sources)
         })
 
-    def get_dict(self, stats, articles, sources):
-        articles_dict = {}
-        if articles:
-            articles_dict = {x.pk: x.title for x in articles}
-
+    def get_dict(self, stats, sources):
         sources_dict = {}
         if sources:
             sources_dict = {x.pk: x.name for x in sources}
 
         for stat in stats:
-            if 'article' in stat:
-                stat['article_title'] = articles_dict[stat['article']]
             if 'source' in stat:
                 stat['source_name'] = sources_dict[stat['source']]
 
