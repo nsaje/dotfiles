@@ -84,7 +84,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         var result = {
             formats: [],
             data: [],
-            names: []
+            names: [],
+            ids: []
         };
 
         result.formats = [$scope.chartMetric1, $scope.chartMetric2].map(function (x) {
@@ -104,6 +105,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             if (!temp.hasOwnProperty(stat.sourceId)) {
                 temp[stat.sourceId] = {
                     name: stat.sourceName,
+                    id: stat.sourceId,
                     data: [[]]
                 };
             }
@@ -120,7 +122,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
         Object.keys(temp).forEach(function (sourceId) {
             result.data.push(temp[sourceId].data);
-            result.names.push(temp[sourceId].name);
+            result.names.push(temp[sourceId].name),
+            result.ids.push(temp[sourceId].id);
         });
 
         $scope.chartData = result;
@@ -176,17 +179,35 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         );
     };
 
-    $scope.selectedSourcesChanged = function (sourceId) {
-        var i = 0;
+    $scope.updateSelectedSources = function (sourceId) {
+        var i = $scope.selectedSourceIds.indexOf(sourceId);
+        if (i > -1) {
+            $scope.selectedSourceIds.splice(i, 1);
+        } else {
+            $scope.selectedSourceIds.push(sourceId);
+        }
+    };
+
+    $scope.selectedSourceRemoved = function (sourceId) {
         if (sourceId) {
-            i = $scope.selectedSourceIds.indexOf(sourceId);
-            if (i > -1) {
-                $scope.selectedSourceIds.splice(i, 1);
-            } else {
-                $scope.selectedSourceIds.push(sourceId);
-            }
+            $scope.updateSelectedSources(String(sourceId));
+        } else {
+            $scope.selectedSourceTotals = false;
         }
 
+        $scope.selectSources();
+        $scope.updateSelectedRowsData();
+    };
+
+    $scope.selectedSourcesChanged = function (sourceId) {
+        if (sourceId) {
+            $scope.updateSelectedSources(sourceId);
+        } 
+        
+        $scope.updateSelectedRowsData();
+    };
+
+    $scope.updateSelectedRowsData = function () {
         if (!$scope.selectedSourceTotals && !$scope.selectedSourceIds.length) {
             $scope.selectedSourceTotals = true;
         }
@@ -194,14 +215,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $location.search('source_ids', $scope.selectedSourceIds.join(','));
         $location.search('source_totals', $scope.selectedSourceTotals ? 1 : null);
 
-        $scope.updateSelectedRowsData();
-
-        $scope.getDailyStats();
-    };
-
-    $scope.updateSelectedRowsData = function () {
         $scope.setAdGroupData('sourceIds', $scope.selectedSourceIds);
         $scope.setAdGroupData('sourceTotals', $scope.selectedSourceTotals);
+
+        $scope.getDailyStats();
     };
 
     $scope.toggleChart = function () {
@@ -238,9 +255,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
     $scope.selectSources = function () {
         $scope.rows.forEach(function (x) {
-            if ($scope.selectedSourceIds.indexOf(x.id) > -1) {
-                x.checked = true;
-            }
+            x.checked = $scope.selectedSourceIds.indexOf(x.id) > -1;
         });
     };
 
