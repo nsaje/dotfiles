@@ -21,7 +21,9 @@ import pytz
 from utils import statsd_helper
 from utils import api_common
 from utils import exc
+from utils.command_helpers import last_n_days
 import actionlog.api
+import actionlog.sync
 import reports.api
 
 from dash import forms
@@ -116,14 +118,12 @@ def create_excel_worksheet(workbook, name, widths, header_names, data, transform
         write_excel_row(worksheet, index + 1, transform_func(item))
 
 
-def get_last_sucessful_sync_date(ad_group, sources):
-    sources_syncs = actionlog.api.get_last_succesfull_fetch_all_sources_dates(ad_group)
-    if sources_syncs and set([x.id for x in sources]) <= set(sources_syncs.keys()):
-        last_sync = pytz.utc.localize(min(sources_syncs.values()))
-    else:
-        last_sync = None
-
-    return last_sync
+def get_last_successful_source_sync_dates(ad_group):
+    ag_sync = actionlog.sync.AdGroupSync(ad_group)
+    result = {}
+    for c in ag_sync.get_components():
+        result[c.ad_group_source.source_id] = c.get_latest_success()
+    return result
 
 
 def is_sync_recent(last_sync_datetime):
@@ -349,10 +349,11 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             ad_group=int(ad_group.id)
         )[0][0]
 
-        last_success_actions = \
-            actionlog.api.get_last_succesfull_fetch_all_sources_dates(ad_group)
+        last_success_actions = get_last_successful_source_sync_dates(ad_group)
 
-        last_sync = get_last_sucessful_sync_date(ad_group, sources)
+        last_sync = None
+        if last_success_actions.values() and None not in last_success_actions.values():
+            last_sync = pytz.utc.localize(min(last_success_actions.values()))
 
         return self.create_api_response({
             'rows': self.get_rows(
@@ -366,6 +367,7 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             'totals': self.get_totals(ad_group, totals_data, source_settings),
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
+            'is_sync_in_progress': actionlog.api.is_sync_in_progress(ad_group),
         })
 
     def get_totals(self, ad_group, totals_data, source_settings):
@@ -625,6 +627,28 @@ class AdGroupSourcesExport(api_common.BaseApiView):
         return response
 
 
+class AdGroupSync(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_sync')
+    def get(self, request, ad_group_id):
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        if not actionlog.api.is_sync_in_progress(ad_group):
+            actionlog.sync.AdGroupSync(ad_group).trigger_all(last_n_days(3))
+            #actionlog.api.init_fetch_status_order([ad_group])
+
+        return self.create_api_response({})
+
+
+class AdGroupCheckSyncProgress(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_is_sync_in_progress')
+    def get(self, request, ad_group_id):
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        in_progress = actionlog.api.is_sync_in_progress(ad_group)
+
+        return self.create_api_response({'is_sync_in_progress': in_progress})
+
+
 class AdGroupAdsTable(api_common.BaseApiView):
     ARTICLE_ORDERS = ('title', '-title', 'url', '-url')
     STATS_ORDERS = (
@@ -661,14 +685,16 @@ class AdGroupAdsTable(api_common.BaseApiView):
             ad_group=int(ad_group.id)
         )[0][0]
 
-        sources = ad_group.sources.all()
-        last_sync = get_last_sucessful_sync_date(ad_group, sources)
+        last_sync = actionlog.sync.AdGroupSync(ad_group).get_latest_success()
+        if last_sync:
+            last_sync = pytz.utc.localize(last_sync)
 
         return self.create_api_response({
             'rows': rows,
             'totals': self.get_totals(totals_data),
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
+            'is_sync_in_progress': actionlog.api.is_sync_in_progress(ad_group),
             'order': order,
             'pagination': {
                 'currentPage': current_page,

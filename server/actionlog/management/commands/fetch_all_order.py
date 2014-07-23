@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 
 from utils.command_helpers import last_n_days, parse_date
 
-from actionlog import api
+from actionlog import sync
 
 logger = logging.getLogger(__name__)
 
@@ -24,4 +24,4 @@ class Command(BaseCommand):
             dates = last_n_days(3)
 
         logger.info('Fetching status and reports for dates: %s for all ad groups.', dates)
-        api.init_fetch_all_order(dates)
+        sync.GlobalSync().trigger_all(dates)

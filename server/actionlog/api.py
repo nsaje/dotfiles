@@ -3,11 +3,11 @@ import traceback
 import urlparse
 import time
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.db import connection, transaction
+from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Min
 
@@ -16,66 +16,8 @@ from . import constants
 from . import zwei_actions
 
 from dash import constants as dashconstants
-from dash import models as dashmodels
 
 logger = logging.getLogger(__name__)
-
-
-def init_fetch_all_order(dates):
-    ad_groups = dashmodels.AdGroup.objects.all()
-
-    with transaction.atomic():
-        order = models.ActionLogOrder.objects.create(
-            order_type=constants.ActionLogOrderType.FETCH_ALL
-        )
-
-        actionlogs = []
-        for ad_group in ad_groups:
-            actionlogs += fetch_ad_group_status(ad_group, order=order, commit=False)
-
-            for date in dates:
-                actionlogs += fetch_ad_group_reports(ad_group, date, order=order, commit=False)
-
-    zwei_actions.send_multiple(actionlogs)
-
-
-def init_fetch_reports_order(dates, ad_groups=None):
-    if ad_groups is None:
-        ad_groups = dashmodels.AdGroup.objects.all()
-
-    if not ad_groups:
-        return
-
-    with transaction.atomic():
-        order = models.ActionLogOrder.objects.create(
-            order_type=constants.ActionLogOrderType.FETCH_REPORTS
-        )
-
-        actionlogs = []
-        for ad_group in ad_groups:
-            for date in dates:
-                actionlogs += fetch_ad_group_reports(ad_group, date, order=order, commit=False)
-
-    zwei_actions.send_multiple(actionlogs)
-
-
-def init_fetch_status_order(ad_groups=None):
-    if ad_groups is None:
-        ad_groups = dashmodels.AdGroup.objects.all()
-
-    if not ad_groups:
-        return
-
-    with transaction.atomic():
-        order = models.ActionLogOrder.objects.create(
-            order_type=constants.ActionLogOrderType.FETCH_STATUS
-        )
-
-        actionlogs = []
-        for ad_group in ad_groups:
-            actionlogs += fetch_ad_group_status(ad_group, order=order, commit=False)
-
-    zwei_actions.send_multiple(actionlogs)
 
 
 def init_stop_ad_group_order(ad_group, source=None):
@@ -102,32 +44,6 @@ def stop_ad_group(ad_group, source=None, order=None, commit=True):
     actionlogs = []
     for ad_group_source in ad_group_sources:
         actionlogs.append(_init_stop_campaign(ad_group_source, order))
-
-    if commit:
-        zwei_actions.send_multiple(actionlogs)
-
-    return actionlogs
-
-
-def fetch_ad_group_status(ad_group, source=None, order=None, commit=True):
-    ad_group_sources = _get_ad_group_sources(ad_group, source)
-
-    actionlogs = []
-    for ad_group_source in ad_group_sources:
-        actionlogs.append(_init_fetch_status(ad_group_source, order))
-
-    if commit:
-        zwei_actions.send_multiple(actionlogs)
-
-    return actionlogs
-
-
-def fetch_ad_group_reports(ad_group, date, source=None, order=None, commit=True):
-    ad_group_sources = _get_ad_group_sources(ad_group, source)
-
-    actionlogs = []
-    for ad_group_source in ad_group_sources:
-        actionlogs.append(_init_fetch_reports(ad_group_source, date, order))
 
     if commit:
         zwei_actions.send_multiple(actionlogs)
@@ -193,103 +109,6 @@ def is_waiting_for_set_actions(ad_group):
     return is_fail_in_latest_group or is_any_waiting_action
 
 
-def is_fetch_all_data_recent(ad_group=None):
-    check_from_hour = datetime.utcnow() - timedelta(
-        hours=settings.ACTIONLOG_RECENT_HOURS)
-
-    recent_fetch_all_orders = models.ActionLogOrder.objects.filter(
-        order_type=constants.ActionLogOrderType.FETCH_ALL,
-        created_dt__gte=check_from_hour
-    ).order_by('-created_dt')
-
-    if ad_group:
-        recent_fetch_all_orders = recent_fetch_all_orders.filter(
-            actionlog__ad_group_source__ad_group=ad_group)
-
-    for order in recent_fetch_all_orders:
-        if _is_fetch_all_order_successful(order):
-            return True
-
-    return False
-
-
-def get_last_successful_fetch_all_order(ad_group=None):
-    q = '''
-        SELECT alo.*
-        FROM actionlog_actionlogorder AS alo
-        INNER JOIN actionlog_actionlog AS al ON alo.id=al.order_id
-        INNER JOIN dash_adgroupsource AS agn ON al.ad_group_source_id=agn.id
-        INNER JOIN dash_source AS n ON agn.source_id=n.id
-        WHERE alo.order_type=%s AND n.maintenance=False AND (1=%s OR agn.ad_group_id=%s)
-        GROUP BY alo.id
-        HAVING EVERY(al.state=%s)
-        ORDER BY alo.created_dt DESC
-        LIMIT 1
-    '''
-
-    if ad_group:
-        params = [
-            constants.ActionLogOrderType.FETCH_ALL,
-            0,
-            ad_group.pk,
-            constants.ActionState.SUCCESS
-        ]
-    else:
-        params = [
-            constants.ActionLogOrderType.FETCH_ALL,
-            1,
-            None,
-            constants.ActionState.SUCCESS
-        ]
-
-    orders = models.ActionLogOrder.objects.raw(q, params)
-    if list(orders):
-        order = orders[0]
-    else:
-        order = None
-
-    return order
-
-
-def get_last_succesfull_fetch_all_sources_dates(ad_group):
-    q = '''
-        SELECT t.source_id, MAX(t.created_dt)
-        FROM (
-            SELECT agn.source_id, alo.created_dt
-            FROM actionlog_actionlog AS al
-            INNER JOIN actionlog_actionlogorder AS alo ON al.order_id=alo.id
-            INNER JOIN dash_adgroupsource AS agn ON al.ad_group_source_id=agn.id
-            INNER JOIN dash_source AS n ON agn.source_id=n.id
-            WHERE alo.order_type=%s AND n.maintenance=False AND (1=%s OR agn.ad_group_id=%s)
-            GROUP BY agn.source_id, alo.created_dt
-            HAVING EVERY(al.state=%s)
-        ) AS t
-        GROUP BY t.source_id;
-    '''
-
-    if ad_group:
-        params = [
-            constants.ActionLogOrderType.FETCH_ALL,
-            0,
-            ad_group.pk,
-            constants.ActionState.SUCCESS
-        ]
-    else:
-        params = [
-            constants.ActionLogOrderType.FETCH_ALL,
-            1,
-            None,
-            constants.ActionState.SUCCESS
-        ]
-
-    result = {}
-    with connection.cursor() as c:
-        c.execute(q, params)
-        result = dict(c.fetchall())
-
-    return result
-
-
 def count_waiting_manual_actions():
     result = -1
     try:
@@ -334,6 +153,24 @@ def age_oldest_waiting_action():
         msg = traceback.format_exc(e)
         logger.error(msg)
     return n_hours
+
+
+def is_sync_in_progress(ad_group):
+    '''
+    sync is in progress if one of the following is true:
+    - a get reports action for this ad_group is in 'waiting' state
+    - a fetch status action for this ad_group is in 'waiting' state
+    '''
+
+    waiting_actions = models.ActionLog.objects.filter(
+        ad_group_source__ad_group=ad_group,
+        state=constants.ActionState.WAITING,
+        action_type=constants.ActionType.AUTOMATIC,
+        action__in=(constants.Action.FETCH_REPORTS,
+            constants.Action.FETCH_CAMPAIGN_STATUS)
+    ).exists()
+
+    return waiting_actions
 
 
 def _is_fetch_all_order_successful(order):
