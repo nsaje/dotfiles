@@ -84,7 +84,7 @@
                             <span ng-switch="col.type">
                                 <span ng-switch-when="currency">
                                     <span ng-class="{'currency-3': col.fractionSize === 3}">
-                                        {{ (row[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
+                                        {{ (totals[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
                                     </span>
                                 </span>
                                 <span ng-switch-when="percent">
