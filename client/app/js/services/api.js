@@ -49,12 +49,14 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AdGroupSourcesTable() {
-        this.get = function (id, startDate, endDate) {
+        this.get = function (id, startDate, endDate, order) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/sources/table/';
             var config = {
                 params: {}
             };
+
+            config.params.order = order;
 
             if (startDate) {
                 config.params.start_date = startDate.format();
@@ -79,9 +81,9 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AdGroupAdsTable() {
-        this.get = function (id, page, size, startDate, endDate) {
+        this.get = function (id, page, size, startDate, endDate, order) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + id + '/ads/table/';
+            var url = '/api/ad_groups/' + id + '/contentads/table/';
             var config = {
                 params: {}
             };
@@ -100,6 +102,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             if (endDate) {
                 config.params.end_date = endDate.format();
+            }
+
+            if (order) {
+                config.params.order = order;
             }
 
             $http.get(url, config).

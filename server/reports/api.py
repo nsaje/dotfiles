@@ -5,6 +5,7 @@ import urlparse
 import urllib
 import logging
 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction, IntegrityError
 from django.db.models import Sum
 
@@ -12,6 +13,7 @@ from . import exc
 from . import models
 
 from dash import models as dashmodels
+from utils import db_aggregates
 
 logger = logging.getLogger(__name__)
 
@@ -22,19 +24,23 @@ MAX_RECONCILIATION_RETRIES = 10
 
 
 # API functions
-
-def query(start_date, end_date, breakdown=None, **constraints):
+def query(start_date, end_date, breakdown=None, order=None, page=None, page_size=None, **constraints):
     '''
     api function to query reports data
     start_date = starting date, inclusive
     end_date = end date, inclusive
+    order = order by field (eg. 'cpc', '-cpc')
     breakdown = list of dimensions by which to group
     constraints = constraints on the dimension values (e.g. source=x, ad_group=y, etc.)
     '''
+    if (page and not page_size) or (page_size and not page):
+        raise exc.ReportsQueryError('Missing page or page_size for pagination.')
+
     if not breakdown:
         breakdown = []
     else:
-        breakdown = breakdown[:]  # create a copy to ensure that input list is not changed
+        # create a copy to ensure that input list is not changed
+        breakdown = breakdown[:]
 
     if not (set(breakdown) <= set(DIMENSIONS)):
         raise exc.ReportsQueryError('Invalid value for breakdown.')
@@ -50,17 +56,84 @@ def query(start_date, end_date, breakdown=None, **constraints):
             constraints[new_k] = v
             del constraints[k]
 
+    current_page = None
+    num_pages = None
+    count = None
+    start_index = None
+    end_index = None
+
+    annotate_kwargs = {}
+    ordering = breakdown
+    order_prop_null = None
+
     if breakdown:
+        order_mapping = {
+            'cost': 'cost_cc_sum',
+            '-cost': '-cost_cc_sum',
+            'impressions': 'impressions_sum',
+            '-impressions': '-impressions_sum',
+            'clicks': 'clicks_sum',
+            '-clicks': '-clicks_sum',
+            'ctr': 'ctr',
+            '-ctr': '-ctr',
+            'cpc': 'cpc',
+            '-cpc': '-cpc'
+        }
+
+        if order:
+            if order not in (order_mapping.keys()):
+                raise exc.ReportsQueryError('Invalid value for order.')
+
+            order_prop = order[1:] if order.startswith('-') else order
+            # Name of the temporary null property used when ordering to make sure
+            # that NULLs alre always at the bottom.
+            order_prop_null = '{}_null'.format(order_prop)
+            ordering = [order_prop_null, order_mapping[order]]
+            annotate_kwargs = {}
+            if order_prop == 'cost':
+                annotate_kwargs['cost_null'] = db_aggregates.IsSumNull('cost_cc')
+            elif order_prop == 'impressions':
+                annotate_kwargs['impressions_null'] = \
+                    db_aggregates.IsSumNull('impressions')
+            elif order_prop == 'clicks':
+                annotate_kwargs['clicks_null'] = \
+                    db_aggregates.IsSumNull('clicks')
+            elif order_prop == 'ctr':
+                annotate_kwargs['ctr_null'] = \
+                    db_aggregates.IsSumDivisionNull('clicks', divisor='impressions')
+            elif order_prop == 'cpc':
+                annotate_kwargs['cpc_null'] = \
+                    db_aggregates.IsSumDivisionNull('cost_cc', divisor='clicks')
+
         stats = models.ArticleStats.objects.\
             values(*breakdown).\
+            annotate(
+                cost_cc_sum=Sum('cost_cc'),
+                impressions_sum=Sum('impressions'),
+                clicks_sum=Sum('clicks'),
+                ctr=db_aggregates.SumDivision('clicks', divisor='impressions'),
+                cpc=db_aggregates.SumDivision('cost_cc', divisor='clicks'),
+                **annotate_kwargs
+            ).\
             filter(**constraints).\
             filter(datetime__gte=start_date, datetime__lte=end_date).\
-            annotate(
-                cost_cc=Sum('cost_cc'),
-                impressions=Sum('impressions'),
-                clicks=Sum('clicks')
-            ).\
-            order_by(*breakdown)
+            order_by(*ordering)
+
+        if page and page_size:
+            paginator = Paginator(stats, page_size)
+
+            try:
+                stats = paginator.page(page)
+            except PageNotAnInteger:
+                stats = paginator.page(1)
+            except EmptyPage:
+                stats = paginator.page(paginator.num_pages)
+
+            current_page = stats.number
+            num_pages = stats.paginator.num_pages
+            count = stats.paginator.count
+            start_index = stats.start_index()
+            end_index = stats.end_index()
 
         stats = list(stats)
     else:
@@ -68,9 +141,11 @@ def query(start_date, end_date, breakdown=None, **constraints):
             filter(**constraints).\
             filter(datetime__gte=start_date, datetime__lte=end_date).\
             aggregate(
-                cost_cc=Sum('cost_cc'),
-                impressions=Sum('impressions'),
-                clicks=Sum('clicks')
+                cost_cc_sum=Sum('cost_cc'),
+                impressions_sum=Sum('impressions'),
+                clicks_sum=Sum('clicks'),
+                ctr=db_aggregates.SumDivision('clicks', divisor='impressions'),
+                cpc=db_aggregates.SumDivision('cost_cc', divisor='clicks'),
             )
         stats = [stats]
 
@@ -78,22 +153,24 @@ def query(start_date, end_date, breakdown=None, **constraints):
         if 'datetime' in stat:
             stat['date'] = stat.pop('datetime').date()
 
-        if stat['clicks'] is not None and stat['impressions'] > 0:
-            stat['ctr'] = stat['clicks'] / stat['impressions'] * 100
+        if stat['cost_cc_sum'] is None:
+            stat['cost'] = stat.pop('cost_cc_sum')
         else:
-            stat['ctr'] = None
+            stat['cost'] = float(decimal.Decimal(round(stat.pop('cost_cc_sum'))) / decimal.Decimal(10000))
 
-        if stat['cost_cc'] is not None and stat['clicks'] > 0:
-            stat['cpc'] = float((decimal.Decimal(stat['cost_cc']) / decimal.Decimal(stat['clicks'])) / decimal.Decimal(10000))
-        else:
-            stat['cpc'] = None
+        if stat['ctr']:
+            stat['ctr'] *= 100
 
-        if stat['cost_cc'] is None:
-            stat['cost'] = stat.pop('cost_cc')
-        else:
-            stat['cost'] = float(decimal.Decimal(round(stat.pop('cost_cc'))) / decimal.Decimal(10000))
+        if stat['cpc']:
+            stat['cpc'] = float((decimal.Decimal(stat['cpc']) / decimal.Decimal(10000)))
 
-    return stats
+        stat['impressions'] = stat.pop('impressions_sum')
+        stat['clicks'] = stat.pop('clicks_sum')
+
+        if order_prop_null and order_prop_null in stat:
+            del stat[order_prop_null]
+
+    return stats, current_page, num_pages, count, start_index, end_index
 
 
 def _delete_existing_stats(ad_group, source, date):
@@ -133,8 +210,8 @@ def save_report(ad_group, source, rows, date):
             article_stats.save()
         except IntegrityError:
             raise exc.ReportsSaveError(
-                'Article article_id={article_id}, url={url} and title={title} appeared more than once '
-                'for datetime={datetime}, ad_group_id={ad_group_id}, source_id={source_id}.'.format(
+                'Article article_id={article_id} appeared more than once for datetime={datetime}, '
+                'ad_group_id={ad_group_id}, source_id={source_id}. Article title={title} and url={url}.'.format(
                     article_id=article.id,
                     url=article.url,
                     title=article.title,

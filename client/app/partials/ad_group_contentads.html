@@ -1,0 +1,116 @@
+<div class="page page-ad-group-ads">
+    <div class="section" ng-class="{'height-hidden': !isChartShown}">
+        <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric1-values="options.sourceChartMetrics" zem-metric2-values="options.sourceChartMetrics" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate"></zem-chart>
+    </div>
+
+    <div class="section table-ad-group-ads">
+        <div class="button-bar">
+            <select ui-select2="{minimumResultsForSearch: -1}" ng-model="exportType" ng-change="downloadReport()" data-placeholder="Download Report" class="export">
+                <option value=""></option>
+                <option value="csv">CSV by day</option>
+                <option value="excel">Excel by day</option>
+            </select>
+            <zem-custom-table-cols class='pull-right' columns='columns'></zem-custom-table-cols>
+            <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/img/chart.svg"></a>
+            <div class="clearfix"></div>
+        </div>
+
+        <alert type="info" class="alert-sync" ng-show="isSyncRecent === false">
+        We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">The last successful sync took place {{ lastSyncDate.fromNow() }}.</span> If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
+        </alert>
+
+        <div class="loader-container">
+            <div class="loader" ng-show="rows.length && loadRequestInProgress"></div>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th class="arrow" ng-class="{ordered: order === '-title', 'ordered-reverse': order === 'title'}"><a href="" ng-click="orderTableData('title')">Title</a></th>
+                        <th class="arrow" ng-class="{'text-right': col.type !== 'url', ordered: order === '-' + col.field, 'ordered-reverse': order === col.field}" ng-repeat="col in columns | filter: {checked: true}"><a href="" ng-click="orderTableData(col.field)">{{ col.name }}</a></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-if="loadRequestInProgress && !rows.length">
+                        <td colspan="{{ selectedColumnsCount + 2}}" class="loader-row">
+                            <img class="loader" ng-src="{{ config.static_url }}/img/loader.svg">
+                        </td>
+                    </tr>
+                    <tr ng-show="!rows.length && !loadRequestInProgress">
+                        <td class="no-data" colspan="{{ selectedColumnsCount + 2}}">No data</td>
+                    </tr>
+                    <tr ng-repeat="row in rows">
+                        <td class="input-one-char"><input type="checkbox" data-ng-model="row.checked" ng-disabled="!row.checked && selectedArticleIds.length === 3" data-ng-change="selectedArticlesChanged(row.id)"/></td>
+                        <td><a href="{{ row.url }}" target="_blank">{{ row.title }}</a></td>
+                        <td class="" ng-class="{number: col.type !== 'url', 'text-right': col.type !== 'url'}" ng-repeat="col in columns | filter: {checked: true}">
+                            <span ng-switch="col.type">
+                                <span ng-switch-when="currency">
+                                    {{ (row[col.field] | decimalCurrency:"$":col.fractionSize) || 'N/A' }}
+                                </span>
+                                <span ng-switch-when="percent">
+                                    {{ (row[col.field] | number:2) || '0.0' }}%
+                                </span>
+                                <span ng-switch-when="number">
+                                    {{ (row[col.field] | number:0) || 'N/A' }}
+                                </span>
+                                <span ng-switch-when="url">
+                                    <a href="{{ row.url }}" title="{{ row.url }}" target="_blank">{{ row.url | limitTo:30 }}<span ng-if="row.url.length > 30">...</span></a>
+                                </span>
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td class="input-one-char"><input type="checkbox" data-ng-model="selectedArticleTotals" data-ng-change="selectedArticlesChanged(null)"/></td>
+                        <td>TOTALS</td>
+                        <td class="text-right number" ng-repeat="col in columns | filter: {checked: true}">
+                            <span ng-switch="col.type">
+                                <span ng-switch-when="currency">
+                                    {{ (totals[col.field] | decimalCurrency:"$":col.fractionSize) || 'N/A' }}
+                                </span>
+                                <span ng-switch-when="percent">
+                                    {{ (totals[col.field] | number:2) || '0.0' }}%
+                                </span>
+                                <span ng-switch-when="number">
+                                    {{ (totals[col.field] | number:0) || 'N/A' }}
+                                </span>
+                                <span ng-switch-when="url"></span>
+                            </span>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="last-sync">
+            <span ng-switch="lastSyncDate">
+                <span ng-switch-when="null">
+                    * Reporting metrics haven't been synced yet.
+                </span>
+                <span ng-switch-default>
+                    * Reporting metrics synced {{ lastSyncDate.fromNow() }}.
+                </span>
+            </span>
+        </div>
+        
+        <div class="pagination" ng-show="rows">
+            <span>Go to page</span>
+            <form ng-submit="loadPage()">
+                <input class="page-num form-control" type="number" min="1" max="{{ pagination.numPages }}" ng-model="pagination.currentPage">
+            </form>
+
+            <span>Show rows</span>
+            <select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'show-rows'}" class="show-rows" ng-model="pagination.sizeTemp" ng-change="changePaginationSize()" data-placeholder="{{ pagination.size }}">
+                <option value=""></option>
+                <option ng-repeat="number in sizeRange" value="{{ number }}">{{ number }}</option>
+            </select>
+
+            <div ng-disabled="pagination.currentPage == 1" class="btn btn-default" ng-click="loadPage(1)"><img ng-src="{{ config.static_url }}/img/arrow-first.svg"></div>
+            <div ng-disabled="pagination.currentPage == 1" class="btn btn-default" ng-click="loadPage(pagination.currentPage - 1)"><img ng-src="{{ config.static_url }}/img/arrow-prev.svg"></div>
+            <span class="current-rows">{{ pagination.startIndex}} - {{ pagination.endIndex }} of {{ pagination.count }}</span>
+            <div ng-disabled="pagination.currentPage == pagination.numPages" class="btn btn-default" ng-click="loadPage(pagination.currentPage + 1)"><img ng-src="{{ config.static_url }}/img/arrow-next.svg"></div>
+            <div ng-disabled="pagination.currentPage == pagination.numPages" class="btn btn-default" ng-click="loadPage(pagination.numPages)"><img ng-src="{{ config.static_url }}/img/arrow-last.svg"></div>
+        </pagination>
+    </div>
+</div>

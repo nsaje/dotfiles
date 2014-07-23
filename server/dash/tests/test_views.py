@@ -49,7 +49,7 @@ class AdGroupAdsExportTestCase(test.TestCase):
         self.mock_models.Article.objects.filter.return_value = [self.mock_article]
 
         self.mock_api.query.side_effect = [
-            [{
+            ([{
                 'article': 1,
                 'date': datetime.date(2014, 7, 1),
                 'cost': 1000.123242,
@@ -57,8 +57,8 @@ class AdGroupAdsExportTestCase(test.TestCase):
                 'clicks': 103,
                 'impressions': 100000,
                 'ctr': 1.031231231
-            }],
-            [{
+            }],),
+            ([{
                 'article': 1,
                 'source': 1,
                 'date': datetime.date(2014, 7, 1),
@@ -67,7 +67,7 @@ class AdGroupAdsExportTestCase(test.TestCase):
                 'clicks': 103,
                 'impressions': 100000,
                 'ctr': 1.031231231
-            }]
+            }],)
         ]
 
 

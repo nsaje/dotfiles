@@ -576,7 +576,6 @@ div[datepicker] {
 // Custom page styles
 
 .header {
-    height: 51px;
     line-height: 51px;
 
     .logo-container {
@@ -902,7 +901,11 @@ div[datepicker] {
     }
 
     thead > tr > th {
-        border-bottom: 0
+        border-bottom: 0;
+    }
+
+    th:last-child, td:last-child {
+        padding-right: 20px;
     }
 
     th, td {
@@ -918,7 +921,7 @@ div[datepicker] {
     }
 
     .loader-row {
-        text-align: center; 
+        text-align: center;
     }
 
     .no-data {
@@ -928,6 +931,72 @@ div[datepicker] {
     .number {
         font-family: Helvetica Neue, sans-serif;
         font-weight: 200;
+    }
+
+    .arrow-placeholder() {
+        content: "";
+        display: inline-block;
+        position: relative;
+        width: 10px;
+        height: 10px;
+        visibility: hidden;
+    }
+
+    .arrow-up() {
+        .arrow-placeholder();
+        background: url('../../img/arrow-up.svg');
+        visibility: visible;
+        background-size: 10px 10px;
+    }
+
+    .arrow-down() {
+        .arrow-placeholder();
+        background: url('../../img/arrow-up.svg');
+        visibility: visible;
+        background-size: 10px 10px;
+	-webkit-transform: rotate(180deg);
+	-moz-transform: rotate(180deg);
+	-ms-transform: rotate(180deg);
+	-o-transform: rotate(180deg);
+	transform: rotate(180deg);
+    }
+
+    .arrow-offset() {
+        right: -5px;
+    }
+
+    thead > tr > th {
+        & a,
+        & a:hover,
+        & a:active,
+        & a:visited {
+            color: #454545;
+        }
+    }
+
+    thead > tr > th.arrow a::after {
+        .arrow-placeholder();
+        .arrow-offset();
+    }
+
+    thead > tr > th.arrow.ordered a::after {
+        .arrow-down();
+        .arrow-offset();
+    }
+
+    thead > tr > th.arrow.ordered-reverse a::after {
+        .arrow-up();
+        .arrow-offset();
+    }
+
+    thead > tr >  th.text-right.arrow a {
+        position: relative;
+        right: -10px;
+    }
+
+    thead > tr > th.text-center.arrow a {
+        position: relative;
+        right: -5px;
     }
 }
 
@@ -971,77 +1040,25 @@ div[datepicker] {
     .current-rows {
         margin: 0 10px;
     }
+}
 
-    .loader {
+.loader-container {
+    position: relative;
+
+    & > .loader {
         position: absolute;
+        top: 0px;
+        bottom: 0px;
+        left: 0px;
+        right: 0px;
+	    background: rgba(255, 255, 255, 0.4) url('../../img/loader.svg') no-repeat center center;
+        z-index: 1;
     }
 }
 
 /* pagination select */
 .select2-drop.select2-drop-above {
     font-weight: 300;
-}
-
-.sidebar {
-    position: absolute;
-    top: 0px;
-    bottom: 15px;
-
-    #nav {
-        height: 100%;
-        border: 1px solid #d2d2d2;
-        padding: 5px;
-        overflow: auto;
-
-        .account-group {
-            padding-bottom: 10px;
-        }
-
-        .list-group {
-            margin-bottom: 0;
-
-            &.ad-groups {
-                padding-left: 5px;
-            }
-        }
-
-        .list-group-item {
-            border: 0;   padding: 3px;
-            &.active {
-                color: #414141;
-                background-color: #fff;
-
-                .ad-group-name {
-                    font-weight: 600;
-                }
-            }
-        }
-
-        .account-name {
-            font-size: 16px;
-            font-weight: 600;
-            color: #f68620;
-        }
-
-        .campaign-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: #414141;
-        }
-
-        .ad-group-name {
-            font-size: 13px;
-            font-weight: 300;
-            color: #414141;
-        }
-
-        .ad-group-item img {
-            position: relative;
-            bottom: 3px;
-            width: 25px;
-            margin: -7px;
-         }
-    }
 }
 
 .custom-cols.dropdown {
