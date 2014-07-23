@@ -242,9 +242,9 @@ class ActionLogApiCancelExpiredTestCase(TestCase):
             state=constants.ActionState.WAITING
         )
         self.assertEqual(len(waiting_actionlogs_after), 10)
-        self.assertSequenceEqual(
-            [action.id for action in waiting_actionlogs_before],
-            [action.id for action in waiting_actionlogs_after]
+        self.assertEqual(
+            {action.id for action in waiting_actionlogs_before},
+            {action.id for action in waiting_actionlogs_after}
         )
 
         api.datetime.utcnow = classmethod(lambda cls: datetime.datetime(2014, 7, 3, 18, 45, 0))
@@ -254,8 +254,8 @@ class ActionLogApiCancelExpiredTestCase(TestCase):
         )
         self.assertEqual(len(failed_actionlogs), 10)
         self.assertEqual(
-            [action.id for action in failed_actionlogs],
-            [action.id for action in waiting_actionlogs_after]
+            {action.id for action in failed_actionlogs},
+            {action.id for action in waiting_actionlogs_after}
         )
 
 
