@@ -25,8 +25,7 @@ function getDateRanges() {
 oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'api', function ($scope, $state, $location, $document, api) {
     $scope.tabs = [
         {heading: 'Content Ads', route: 'adGroups.ads', active: true},
-        {heading: 'Media Sources', route: 'adGroups.sources', active: false},
-        {heading: 'Settings', route: 'adGroups.settings', active: false}
+        {heading: 'Media Sources', route: 'adGroups.sources', active: false}
     ];
     $scope.accounts = null;
     $scope.user = null;
@@ -136,6 +135,17 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
 
     api.user.get('current').then(function (data) {
         $scope.user = data;
+        if ($scope.user.permissions.dash_settings_view) {
+            $scope.tabs.push({
+                heading: 'Settings',
+                route: 'adGroups.settings',
+                active: false
+            });
+
+            $scope.tabs.forEach(function(tab) {
+                tab.active = $state.is(tab.route);
+            });
+        }
     });
 
     $scope.$watch('accounts', function (newValue, oldValue) {
