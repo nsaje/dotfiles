@@ -315,3 +315,29 @@ class SetCampaignPropertyTestCase(TestCase):
         self.assertEqual(alogs[0].payload['value'], 'test_value_2')
         for alog in alogs:
             alog.delete()
+
+
+class SyncInProgressTestCase(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def test_sync_in_progress(self):
+        ad_group = dashmodels.AdGroup.objects.get(pk=1)
+
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source__ad_group=ad_group).count(), 0)
+
+        self.assertEqual(api.is_sync_in_progress(ad_group), False)
+
+        alog = models.ActionLog(
+            action=constants.Action.FETCH_REPORTS,
+            action_type=constants.ActionType.AUTOMATIC,
+            ad_group_source=dashmodels.AdGroupSource.objects.get(pk=1),
+        )
+        alog.save()
+
+        self.assertEqual(api.is_sync_in_progress(ad_group), True)
+
+        alog.state = constants.ActionState.SUCCESS
+        alog.save()
+
+        self.assertEqual(api.is_sync_in_progress(ad_group), False)
