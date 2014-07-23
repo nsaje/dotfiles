@@ -27,7 +27,7 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         })
         .state('adGroups.ads', {
             url: '/ads',
-            templateUrl: config.static_url + '/partials/ad_group_ads.html',
+            templateUrl: config.static_url + '/partials/ad_group_contentads.html',
             controller: 'AdGroupAdsCtrl'
         })
         .state('adGroups.sources', {

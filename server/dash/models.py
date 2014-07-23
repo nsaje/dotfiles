@@ -226,6 +226,10 @@ class AdGroupSettings(models.Model):
     class Meta:
         ordering = ('-created_dt',)
 
+        permissions = (
+            ("settings_view", "Can view settings in dashboard."),
+        )
+
     @classmethod
     def get_settings_fields(cls):
         return cls._settings_fields

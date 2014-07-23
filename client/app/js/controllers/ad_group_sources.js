@@ -12,6 +12,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     $scope.chartData = undefined;
     $scope.isChartShown = zemChartService.load('zemChart');
     $scope.chartBtnTitle = 'Hide chart';
+    $scope.order = '-clicks';
     $scope.columns = [
         {
             name: 'Bid CPC',
@@ -125,10 +126,33 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
     $scope.loadRequestInProgress = false;
 
-    $scope.getTableData = function () {
+    $scope.orderRows = function (col) {
+        if ($scope.order.indexOf(col) === 1) {
+            $scope.order = col;
+        } else if ($scope.order.indexOf(col) === -1 && col === 'name') {
+            $scope.order = col;
+        } else {
+            $scope.order = '-' + col;
+        }
+
+        $location.search('order', $scope.order);
+        $scope.getTableData();
+    };
+
+    $scope.getIsOrderedByClass = function (col) {
+        if ($scope.order.indexOf(col) === 0) {
+            return "ordered-reverse";
+        } else if ($scope.order.indexOf(col) === 1) {
+            return "ordered";
+        }
+
+        return "";
+    };
+
+    $scope.getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
-        api.adGroupSourcesTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
+        api.adGroupSourcesTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
@@ -258,6 +282,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             }
         }
 
+
+        $scope.order = $location.search().order || $scope.order;
         $scope.selectedSourceTotals = !$scope.selectedSourceIds.length || sourceTotals;
         $scope.setAdGroupData('sourceTotals', $scope.selectedSourceTotals);
     };
