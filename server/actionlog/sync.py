@@ -173,7 +173,7 @@ class AdGroupSourceSync(BaseSync):
             start_dt = latest_report_sync_dt.date() - datetime.timedelta(days=settings.LAST_N_DAY_REPORTS - 1)
         else:
             if self.ad_group_source.ad_group.created_dt is not None:
-                start_dt = self.ad_group_source.ad_group.created_dt
+                start_dt = self.ad_group_source.ad_group.created_dt.date()
             else:
                 return last_n_days(settings.LAST_N_DAY_REPORTS)
         dates = [start_dt]
