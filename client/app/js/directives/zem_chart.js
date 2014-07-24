@@ -12,8 +12,7 @@ oneApp.directive('zemChart', ['config', function(config) {
             metric2Values: '=zemMetric2Values',
             minDate: '=zemMinDate',
             maxDate: '=zemMaxDate',
-            onRemove: '&zemOnRemove',
-            legendEnabled: '@zemLegendEnabled'
+            onRemove: '&zemOnRemove'
         },
         templateUrl: config.static_url + '/partials/zem_chart.html',
         controller: ['$scope', '$element', '$attrs', '$http', function ($scope, $element, $attrs, $http) {
@@ -199,7 +198,7 @@ oneApp.directive('zemChart', ['config', function(config) {
                             })
                         }
 
-                        for (j = 0; j < data[i].length; j++) {
+                        for (j = data[i].length - 1; j >= 0; j--) {
                             valuePrefix = null;
                             valueSuffix = null;
                             axisFormat = null;

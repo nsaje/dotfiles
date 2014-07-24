@@ -11,7 +11,7 @@
             <option ng-repeat="metric in metric2Values" value="{{ metric.value }}">{{ metric.name }}</option>
         </select>
     </div>
-    <ul class="chart-legend" ng-if="legendEnabled">
+    <ul class="chart-legend">
         <li ng-repeat="item in legendItems">
             <div class="legend-item" style="background-color: {{ item.color1 }}; border: 1px solid {{ item.color1 }}">
                 <div class="btn-remove" ng-class="{disabled: item.id === null && legendItems.length === 1}" ng-click="onRemove({id: item.id})">
