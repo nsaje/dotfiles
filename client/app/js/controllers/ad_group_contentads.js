@@ -96,6 +96,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             }
         });
 
+        result.ids = [null];
         result.names = [null];
         result.data = [data];
 

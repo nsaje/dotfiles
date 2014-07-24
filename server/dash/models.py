@@ -171,6 +171,11 @@ class AdGroup(models.Model):
 
     admin_link.allow_tags = True
 
+    class Meta:
+        permissions = (
+            ("chart_legend_view", "Can view chart legend in Media Sources tab."),
+        )
+
 
 class AdGroupSource(models.Model):
     source = models.ForeignKey(Source, on_delete=models.PROTECT)

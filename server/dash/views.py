@@ -162,10 +162,7 @@ class User(api_common.BaseApiView):
             result = {
                 'id': str(user.pk),
                 'email': user.email,
-                'permissions': {
-                    'actionlog_manual_view': user.has_perm('actionlog.manual_view'),
-                    'dash_settings_view': user.has_perm('dash.settings_view'),
-                }
+                'permissions': list(user.get_all_permissions())
             }
 
         return result

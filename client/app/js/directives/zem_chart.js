@@ -11,7 +11,9 @@ oneApp.directive('zemChart', ['config', function(config) {
             metric2: '=zemMetric2',
             metric2Values: '=zemMetric2Values',
             minDate: '=zemMinDate',
-            maxDate: '=zemMaxDate'
+            maxDate: '=zemMaxDate',
+            onRemove: '&zemOnRemove',
+            legendEnabled: '@zemLegendEnabled'
         },
         templateUrl: config.static_url + '/partials/zem_chart.html',
         controller: ['$scope', '$element', '$attrs', '$http', function ($scope, $element, $attrs, $http) {
@@ -26,6 +28,10 @@ oneApp.directive('zemChart', ['config', function(config) {
             var nameColors = {};
 
             $scope.hasData = true;
+
+            $scope.legendItems = [];
+
+            $scope.appConfig = config;
 
             $scope.config = {
                 options: {
@@ -99,6 +105,7 @@ oneApp.directive('zemChart', ['config', function(config) {
                 var valuePrefix = null;
                 var valueSuffix = null;
                 var axisFormat = null;
+                var id = null;
                 var name = null;
                 var color = null;
                 var usedColors = [];
@@ -107,6 +114,7 @@ oneApp.directive('zemChart', ['config', function(config) {
                 var key = null;
 
                 $scope.hasData = false;
+                $scope.legendItems = [];
 
                 // Undefined means that no data has been assigned yet but will be.
                 if (newValue === undefined) {
@@ -156,6 +164,41 @@ oneApp.directive('zemChart', ['config', function(config) {
 
                     data = newValue.data;
                     for (i = 0; i < data.length; i++) {
+                        id = newValue.ids[i];
+                        name = newValue.names[i];
+
+                        if (id === null || id === undefined) {
+                            // Totals
+                            name = 'Totals';
+                            color = totalsColor;
+
+                            $scope.legendItems.unshift({
+                                id: id,
+                                name: name,
+                                color1: color[0],
+                                color2: color[1]
+                            })
+                        } else {
+                            if (nameColors[name] === undefined) {
+                                for (ci = 0; ci < colors.length; ci++) {
+                                    if (usedColors.indexOf(ci) === -1) {
+                                        nameColors[name] = ci;
+                                        usedColors.push(ci);
+                                        break;
+                                    }
+                                }
+                            }
+
+                            color = colors[nameColors[name]];
+
+                            $scope.legendItems.push({
+                                id: id,
+                                name: name,
+                                color1: color[0],
+                                color2: color[1]
+                            })
+                        }
+
                         for (j = 0; j < data[i].length; j++) {
                             valuePrefix = null;
                             valueSuffix = null;
@@ -173,30 +216,9 @@ oneApp.directive('zemChart', ['config', function(config) {
                                 format: axisFormat
                             };
 
-                            if (newValue.names.length) {
-                                name = newValue.names[i];
-                            }
-
-                            if (name === null || name == undefined) {
-                                name = 'Totals';
-                                color = totalsColor[j];
-                            } else {
-                                if (nameColors[name] === undefined) {
-                                    for (ci = 0; ci < colors.length; ci++) {
-                                        if (usedColors.indexOf(ci) === -1) {
-                                            nameColors[name] = ci;
-                                            usedColors.push(ci);
-                                            break;
-                                        }
-                                    }   
-                                }
-
-                                color = colors[nameColors[name]][j];
-                            }
-
                             $scope.config.series.push({
                                 name: name + ' (' + metrics[j] + ')',
-                                color: color,
+                                color: color[j],
                                 yAxis: j,
                                 data: data[i][j],
                                 tooltip: {
@@ -206,7 +228,7 @@ oneApp.directive('zemChart', ['config', function(config) {
                                 marker: {
                                     radius: 3,
                                     symbol: 'square',
-                                    fillColor: color,
+                                    fillColor: color[j],
                                     lineWidth: 2,
                                     lineColor: null
                                 }
