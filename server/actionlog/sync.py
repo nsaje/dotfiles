@@ -18,9 +18,9 @@ class BaseSync(object):
 
     def get_latest_success(self):
         child_syncs = self.get_components()
-        if not child_syncs:
-            return datetime.datetime.utcnow()
         child_sync_times = [child_sync.get_latest_success() for child_sync in child_syncs]
+        if not child_sync_times:
+            return datetime.datetime.utcnow()
         if None in child_sync_times:
             return None
         return min(child_sync_times)
