@@ -428,7 +428,14 @@ class AdGroupSourcesTable(api_common.BaseApiView):
                 order = order[1:]
 
             # Sort should always put Nones at the end
-            rows = sorted(rows, key=lambda x: (x.get(order) is None or reverse, x.get(order)), reverse=reverse)
+            def _sort(item):
+                value = item.get(order)
+                if order == 'last_sync' and not value:
+                    value = datetime.datetime(datetime.MINYEAR, 1, 1)
+
+                return (item.get(order) is None or reverse, value)
+
+            rows = sorted(rows, key=_sort, reverse=reverse)
 
         return rows
 
