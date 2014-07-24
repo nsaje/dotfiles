@@ -39,6 +39,6 @@ class UserAdmin(authadmin.UserAdmin):
         }),
     )
 
-    list_display = ('email', 'username', 'first_name', 'last_name', 'is_staff')
+    list_display = ('email', 'username', 'first_name', 'last_name', 'is_staff', 'last_login')
 
 admin.site.register(models.User, UserAdmin)
