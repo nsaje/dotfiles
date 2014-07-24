@@ -37,6 +37,10 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
 
     $scope.adGroupData = {};
 
+    $scope.hasPermission = function (permission) {
+        return $scope.user.permissions.indexOf(permission) >= 0;
+    }
+
     $scope.setAdGroupData = function (key, value) {
         var data = $scope.adGroupData[$state.params.id] || {};
         data[key] = value;
@@ -133,7 +137,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
 
     api.user.get('current').then(function (data) {
         $scope.user = data;
-        if ($scope.user.permissions.dash_settings_view) {
+        if ($scope.hasPermission('dash.settings_view')) {
             $scope.tabs.push({
                 heading: 'Settings',
                 route: 'adGroups.settings',

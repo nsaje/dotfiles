@@ -12,7 +12,8 @@ oneApp.directive('zemChart', ['config', function(config) {
             metric2Values: '=zemMetric2Values',
             minDate: '=zemMinDate',
             maxDate: '=zemMaxDate',
-            onRemove: '&zemOnRemove'
+            onRemove: '&zemOnRemove',
+            legendEnabled: '@zemLegendEnabled'
         },
         templateUrl: config.static_url + '/partials/zem_chart.html',
         controller: ['$scope', '$element', '$attrs', '$http', function ($scope, $element, $attrs, $http) {
@@ -172,9 +173,9 @@ oneApp.directive('zemChart', ['config', function(config) {
                             color = totalsColor;
 
                             $scope.legendItems.unshift({
-                                id: id, 
-                                name: name, 
-                                color1: color[0], 
+                                id: id,
+                                name: name,
+                                color1: color[0],
                                 color2: color[1]
                             })
                         } else {
@@ -185,15 +186,15 @@ oneApp.directive('zemChart', ['config', function(config) {
                                         usedColors.push(ci);
                                         break;
                                     }
-                                }   
+                                }
                             }
 
                             color = colors[nameColors[name]];
 
                             $scope.legendItems.push({
-                                id: id, 
-                                name: name, 
-                                color1: color[0], 
+                                id: id,
+                                name: name,
+                                color1: color[0],
                                 color2: color[1]
                             })
                         }

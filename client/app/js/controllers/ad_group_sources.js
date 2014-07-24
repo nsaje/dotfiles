@@ -202,8 +202,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     $scope.selectedSourcesChanged = function (sourceId) {
         if (sourceId) {
             $scope.updateSelectedSources(sourceId);
-        } 
-        
+        }
+
         $scope.updateSelectedRowsData();
     };
 
