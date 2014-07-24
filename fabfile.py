@@ -46,6 +46,9 @@ GIT_REPOSITORY = 'git@github.com:Zemanta/zemanta-eins.git'
 DEFAULT_BRANCH = 'master'
 
 
+selected_hosts = []
+
+
 env.forward_agent = True
 if env.ssh_config_path and os.path.isfile(os.path.expanduser(env.ssh_config_path)):
     env.use_ssh_config = True
@@ -61,28 +64,34 @@ def virtualenv(params):
 # SETTINGS
 @task
 def staging(*args):
+    global selected_hosts
+
     env.user = STAGING_USER
     if args[0] == 'all':
-        env.hosts = STAGING_SERVERS.values()
+        selected_hosts = STAGING_SERVERS.values()
     elif set(args) < set(STAGING_SERVERS.keys()):
-        env.hosts = [STAGING_SERVERS[host] for host in set(args)]
+        selected_hosts = [STAGING_SERVERS[host] for host in set(args)]
     else:
         abort("Unknown hosts!")
 
 
 @task
 def production(*args):
+    global selected_hosts
+
     env.user = PRODUCTION_USER
     if args[0] == 'all':
-        env.hosts = PRODUCTION_SERVERS.values()
+        selected_hosts = PRODUCTION_SERVERS.values()
     elif set(args) < set(PRODUCTION_SERVERS.keys()):
-        env.hosts = [PRODUCTION_SERVERS[host] for host in set(args)]
+        selected_hosts = [PRODUCTION_SERVERS[host] for host in set(args)]
     else:
         abort("Unknown hosts!")
 
 
 @task
 def deploy(*args):
+    env.hosts = selected_hosts
+
     apps = []
     if args[0] == 'all':
         apps = APPS
@@ -126,6 +135,8 @@ def deploy(*args):
 
 @task
 def migrate(*args):
+    env.hosts = selected_hosts
+
     apps = []
     if args[0] == 'all':
         apps = APPS
@@ -153,6 +164,8 @@ def migrate(*args):
 
 @task
 def revert(*args):
+    env.hosts = selected_hosts
+
     apps = []
     if args[0] == 'all':
         apps = APPS
