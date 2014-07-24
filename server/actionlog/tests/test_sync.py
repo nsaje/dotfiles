@@ -1,5 +1,6 @@
 import httplib
 import mock
+import datetime
 
 import dash.models
 import actionlog.models
@@ -114,19 +115,17 @@ class ActionLogTriggerSyncTestCase(TestCase):
         ags_sync = sync.AdGroupSourceSync(
             dash.models.AdGroupSource.objects.get(pk=6)
         )
-        ags_sync.trigger_reports(dates)
+        ags_sync.trigger_reports_for_dates(dates)
 
-        order = actionlog.models.ActionLogOrder.objects.order_by('-created_dt').first()
-        self.assertEqual(
-            len(order.actionlog_set.filter(action=constants.Action.FETCH_REPORTS)),
-            3
-        )
-        self.assertEqual(
-            len(order.actionlog_set.filter(action=constants.Action.FETCH_REPORTS)),
-            3
-        )
+        actions = actionlog.models.ActionLog.objects.filter(
+            created_dt__isnull=False).order_by('-created_dt')
+        actions = list(actions)
 
-        for action in order.actionlog_set.all():
+        self.assertEqual(len(actions) > 3, True)
+        self.assertEqual(actions[0].created_dt.date() == actions[1].created_dt.date() == actions[2].created_dt.date(), True)
+        self.assertEqual(actions[3].created_dt.date() < actions[2].created_dt.date(), True)
+
+        for action in actions[:3]:
             self.assertEqual(action.state, constants.ActionState.WAITING)
             self.assertIn(
                 action.action,
@@ -159,3 +158,20 @@ class ActionLogTriggerSyncTestCase(TestCase):
         self.assertEqual(alog.state, constants.ActionState.WAITING)
         self.assertEqual(alog.action, constants.Action.FETCH_CAMPAIGN_STATUS)
         self.assertEqual(alog.action_type, constants.ActionType.AUTOMATIC)
+
+    def test_ad_group_source_get_dates_to_sync_reports(self):
+        ags_sync = sync.AdGroupSourceSync(
+            dash.models.AdGroupSource.objects.get(pk=5)
+        )
+
+        dates = ags_sync.get_dates_to_sync_reports()
+        dates = list(dates)
+
+        self.assertEqual(dates[0], datetime.datetime.utcnow().date())
+        self.assertEqual(dates[-1], datetime.date(2014, 7, 1) - datetime.timedelta(days=settings.LAST_N_DAY_REPORTS - 1))
+        self.assertEqual(
+            len(dates), 
+            (datetime.datetime.utcnow().date() - (
+                    datetime.date(2014, 7, 1) - datetime.timedelta(days=settings.LAST_N_DAY_REPORTS - 1)
+                )).days + 1
+        )

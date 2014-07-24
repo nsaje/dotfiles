@@ -1,5 +1,4 @@
-
-
+import datetime
 import dash.models
 import actionlog.models
 import actionlog.constants
@@ -20,19 +19,21 @@ class BaseSync(object):
     def get_latest_success(self):
         child_syncs = self.get_components()
         child_sync_times = [child_sync.get_latest_success() for child_sync in child_syncs]
-        if not child_sync_times or None in child_sync_times:
+        if not child_sync_times:
+            return datetime.datetime.utcnow()
+        if None in child_sync_times:
             return None
         return min(child_sync_times)
 
-    def trigger_all(self, dates=[]):
+    def trigger_all(self):
         child_syncs = self.get_components()
         for child_sync in child_syncs:
-            child_sync.trigger_all(dates)
+            child_sync.trigger_all()
 
-    def trigger_reports(self, dates=[]):
+    def trigger_reports(self):
         child_syncs = self.get_components()
         for child_sync in child_syncs:
-            child_sync.trigger_reports(dates)
+            child_sync.trigger_reports()
 
     def trigger_status(self):
         child_syncs = self.get_components()
@@ -98,7 +99,7 @@ class AdGroupSourceSync(BaseSync):
         # - we count how many successes there are and compare it to the total number of rows (therefore the CAST)
         # - finally we join with the actionlog_actionlogorder table to get the 'created_dt'
         sql = '''
-        SELECT ord.id, ord.created_dt, action, order_id, n_success, tot
+        SELECT ord.id, ord.created_dt, ord.order_type, action, order_id, n_success, tot
         FROM (
             SELECT action, order_id,
                 SUM(CAST(state=2 AS INTEGER)) AS n_success, count(*) AS tot
@@ -110,10 +111,15 @@ class AdGroupSourceSync(BaseSync):
         actionlog_actionlogorder AS ord
         WHERE n_success = tot
         AND ord.id = order_id
+        AND ord.order_type = %s
         ORDER BY ord.created_dt DESC
         LIMIT 1
         '''
-        params = [actionlog.constants.Action.FETCH_REPORTS, self.ad_group_source.id]
+        params = [
+            actionlog.constants.Action.FETCH_REPORTS, 
+            self.ad_group_source.id,
+            actionlog.constants.ActionLogOrderType.FETCH_REPORTS
+        ]
         results = actionlog.models.ActionLogOrder.objects.raw(sql, params)
 
         if list(results):
@@ -133,9 +139,9 @@ class AdGroupSourceSync(BaseSync):
         except:
             return None
 
-    def trigger_all(self, dates):
+    def trigger_all(self):
         self.trigger_status()
-        self.trigger_reports(dates)
+        self.trigger_reports()
 
     def trigger_status(self):
         order = actionlog.models.ActionLogOrder.objects.create(
@@ -144,17 +150,35 @@ class AdGroupSourceSync(BaseSync):
         action = _init_fetch_status(self.ad_group_source, order)
         zwei_actions.send(action)
 
-    def trigger_reports(self, dates):
-        if not dates:
-            dates = last_n_days(settings.LAST_N_DAY_REPORTS)
+    def trigger_reports(self):
+        dates = self.get_dates_to_sync_reports()
+        self.trigger_reports_for_dates(dates, actionlog.constants.ActionLogOrderType.FETCH_REPORTS)
 
+    def trigger_reports_for_dates(self, dates, order_type=None):
         actions = []
         with transaction.atomic():
-            order = actionlog.models.ActionLogOrder.objects.create(
-                order_type=actionlog.constants.ActionLogOrderType.FETCH_REPORTS
-            )
+            order = None
+            if order_type is not None:
+                order = actionlog.models.ActionLogOrder.objects.create(order_type=order_type)
             for date in dates:
                 action = _init_fetch_reports(self.ad_group_source, date, order)
                 actions.append(action)
 
         zwei_actions.send_multiple(actions)
+
+    def get_dates_to_sync_reports(self):
+        start_dt = None
+        latest_report_sync_dt = self.get_latest_report_sync()
+        if latest_report_sync_dt:
+            start_dt = latest_report_sync_dt.date() - datetime.timedelta(days=settings.LAST_N_DAY_REPORTS - 1)
+        else:
+            if self.ad_group_source.ad_group.created_dt is not None:
+                start_dt = self.ad_group_source.ad_group.created_dt.date()
+            else:
+                return last_n_days(settings.LAST_N_DAY_REPORTS)
+        dates = [start_dt]
+        today = datetime.datetime.utcnow().date()
+        while dates[-1] < today:
+            dates.append(dates[-1] + datetime.timedelta(days=1))
+        assert(dates[-1] == today)
+        return reversed(dates)

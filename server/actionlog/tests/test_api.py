@@ -172,7 +172,10 @@ class ActionLogApiTestCase(TestCase):
         ad_group = dashmodels.AdGroup.objects.get(id=1)
         ad_group_sources = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group)
         date = datetime.date(2014, 6, 1)
-        sync.AdGroupSync(ad_group).trigger_reports([date])
+        
+        ad_group_sync = sync.AdGroupSync(ad_group)
+        for ad_group_source_sync in ad_group_sync.get_components():
+            ad_group_source_sync.trigger_reports_for_dates([date])
 
         for ad_group_source in ad_group_sources.all():
             action = models.ActionLog.objects.get(
