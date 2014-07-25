@@ -67,13 +67,4 @@ describe('MainCtrl', function () {
             });
         });
     });
-
-    describe('dateRange', function () {
-        it('should represent last 30 days', function () {
-            expect($scope.dateRange.startDate).toBeDefined();
-            expect($scope.dateRange.startDate.isSame('2013-01-09T00:00:00+01:00')).toBe(true);
-            expect($scope.dateRange.endDate).toBeDefined();
-            expect($scope.dateRange.endDate.isSame('2013-02-08T00:00:00+01:00')).toBe(true);
-        });
-    });
 });
