@@ -285,6 +285,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
                             // we found out that the sync is no longer in progress
                             // time to reload the data
                             $scope.getTableData();
+                            $scope.getDailyStats();
                         }
                     },
                     function(data) {
