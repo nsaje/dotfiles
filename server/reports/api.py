@@ -196,30 +196,30 @@ def save_report(ad_group, source, rows, date):
     for row in rows:
         article = _reconcile_article(row['url'], row['title'], ad_group)
 
-        article_stats = models.ArticleStats(datetime=date, article=article, ad_group=ad_group, source=source)
+        try:
+            article_stats = models.ArticleStats.objects.get(
+                datetime=date,
+                article=article,
+                ad_group=ad_group,
+                source=source
+            )
+        except models.ArticleStats.DoesNotExist:
+            article_stats = models.ArticleStats(
+                datetime=date, 
+                article=article, 
+                ad_group=ad_group, 
+                source=source
+            )
 
-        article_stats.impressions = row['impressions']
-        article_stats.clicks = row['clicks']
+        article_stats.impressions += row['impressions']
+        article_stats.clicks += row['clicks']
 
         if 'cost_cc' not in row or row['cost_cc'] is None:
-            article_stats.cost_cc = row['cpc_cc'] * row['clicks']
+            article_stats.cost_cc += row['cpc_cc'] * row['clicks']
         else:
-            article_stats.cost_cc = row['cost_cc']
+            article_stats.cost_cc += row['cost_cc']
 
-        try:
-            article_stats.save()
-        except IntegrityError:
-            raise exc.ReportsSaveError(
-                'Article article_id={article_id} appeared more than once for datetime={datetime}, '
-                'ad_group_id={ad_group_id}, source_id={source_id}. Article title={title} and url={url}.'.format(
-                    article_id=article.id,
-                    url=article.url,
-                    title=article.title,
-                    datetime=date,
-                    ad_group_id=ad_group.id,
-                    source_id=source.id
-                )
-            )
+        article_stats.save()
 
 
 # helpers
