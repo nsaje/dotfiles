@@ -30,6 +30,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
             function (data) {
                 $scope.settings = data.settings;
                 $scope.actionIsWaiting = data.actionIsWaiting;
+                $scope.setAdGroupPaused($scope.settings.state == 2);
             },
             function (data) {
                 // error
@@ -62,6 +63,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
         $scope.saved = null;
         $scope.discarded = null;
         $scope.saveRequestInProgress = true;
+
         api.adGroupSettings.save($scope.settings).then(
             function (data) {
                 $scope.errors = {};
@@ -75,6 +77,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
                 $scope.setBreadcrumb();
                 $scope.saveRequestInProgress = false;
                 $scope.saved = true;
+                $scope.setAdGroupPaused($scope.settings.state == 2)
             },
             function (data) {
                 $scope.errors = data;

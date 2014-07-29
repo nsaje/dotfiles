@@ -10,6 +10,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
     $scope.inputDateFormat = 'M/D/YYYY';
     $scope.maxDate = zemMoment();
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
+    $scope.isAdGroupPaused = false;
 
     $scope.getDateRanges = function () {
         var result = {};
@@ -33,6 +34,11 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
 
         return result;
     };
+
+    // this function is used by ad_grou_ conrollers to set $scope.$scope.isAdGroupPaused
+    $scope.setAdGroupPaused = function(val) {
+        $scope.isAdGroupPaused = val;
+    }
 
     $scope.dateRanges = $scope.getDateRanges();
 
