@@ -834,11 +834,7 @@ div[datepicker] {
     }
 
     #resync-loader {
-        padding: 2px;
-        img {
-            width: 28px;
-            height: 28px;
-        }
+        padding: 6px 6px 5px 6px;
     }
 }
 
@@ -1136,16 +1132,29 @@ div[datepicker] {
     }
 }
 
+.loader {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background: transparent url('../../img/loader.gif') no-repeat center center;
+    background-size: cover;
+    vertical-align: middle;
+}
+
 .loader-container {
     position: relative;
 
     & > .loader {
+        display: block;
         position: absolute;
         top: 0px;
         bottom: 0px;
         left: 0px;
         right: 0px;
-	    background: rgba(255, 255, 255, 0.4) url('../../img/loader.svg') no-repeat center center;
+        width: auto;
+        height: auto;
+        background: rgba(255, 255, 255, 0.4) url('../../img/loader.gif') no-repeat center center;
+        background-size: 20px auto;
         z-index: 1;
     }
 }

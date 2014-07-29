@@ -119,7 +119,7 @@
 
 		<button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
 		<button type="button" class="btn btn-default" ng-click="discardSettings()">Discard</button>
-        <img class="loader" ng-src="{{ config.static_url }}/img/loader.svg" ng-show="saveRequestInProgress">
+        <div class="loader" ng-show="saveRequestInProgress"></div>
         <span ng-show="saved" class="success">Your updates have been saved.</span>
         <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
         <span ng-show="discarded" class="success">Your updates have been discarded.</span>
