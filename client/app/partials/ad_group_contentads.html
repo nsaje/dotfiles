@@ -19,7 +19,7 @@
                     <a ng-click="triggerSync()" ng-show="!triggerSyncFailed" id="resync-btn" class="btn btn-default pull-right" title="Sync reporting metrics"><img ng-src="{{ config.static_url }}/img/refresh.svg"></a>
                 </span>
                 <span ng-switch-when="true">
-                    <a id="resync-loader" class="pull-right"><img ng-src="{{ config.static_url }}/img/loader.svg"></a>
+                    <a id="resync-loader" class="pull-right"><div class="loader"></div></a>
                 </span>
             </span>
 
@@ -46,7 +46,7 @@
                 <tbody>
                     <tr ng-if="loadRequestInProgress && !rows.length">
                         <td colspan="{{ selectedColumnsCount + 2}}" class="loader-row">
-                            <img class="loader" ng-src="{{ config.static_url }}/img/loader.svg">
+                            <div class="loader"></div>
                         </td>
                     </tr>
                     <tr ng-show="!rows.length && !loadRequestInProgress">
