@@ -598,6 +598,80 @@ class UpsertReportsTestCase(test.TestCase):
             self.assertEqual(article_stats.clicks, row['clicks'])
             self.assertEqual(article_stats.cost_cc, row['cost_cc'])
 
+    def test_save_reports_duplicate(self):
+        date1 = datetime.date(2014, 7, 10)
+
+        ags1 = dashmodels.AdGroupSource.objects.get(id=1)
+
+        title, url = 'Test Article 1', 'http://example.com/'
+        title_other, url_other = 'Test Article 2', 'http://example.com/'
+
+        rows_duplicate = [
+            {
+                'title': title,
+                'url': url,
+                'impressions': 50,
+                'clicks': 2,
+                'cost_cc': 2800,
+                'cpc_cc': None
+            },
+            {
+                'title': title,
+                'url': url,
+                'impressions': 30,
+                'clicks': 3,
+                'cost_cc': 2200,
+                'cpc_cc': None
+            },
+            {
+                'title': title,
+                'url': url,
+                'impressions': 40,
+                'clicks': 7,
+                'cost_cc': 3000,
+                'cpc_cc': None
+            },
+        ]
+
+        rows_other = [
+            {
+                'title': title_other,
+                'url': url_other,
+                'impressions': 100,
+                'clicks': 5,
+                'cost_cc': 4444,
+                'cpc_cc': None
+            }
+        ]
+
+        rows = rows_duplicate + rows_other
+
+        api.save_report(ags1.ad_group, ags1.source, rows, date1)
+
+        article = dashmodels.Article.objects.get(title=title, url=url)
+        stats = models.ArticleStats.objects.get(
+            article=article,
+            ad_group=ags1.ad_group,
+            source=ags1.source,
+            datetime=date1
+        )
+
+        article_other = dashmodels.Article.objects.get(title=title_other, url=url_other)
+        stats_other = models.ArticleStats.objects.get(
+            article=article_other,
+            ad_group=ags1.ad_group,
+            source=ags1.source,
+            datetime=date1
+        )
+
+        self.assertEqual(stats.impressions, sum(r['impressions'] for r in rows_duplicate))
+        self.assertEqual(stats.clicks, sum(r['clicks'] for r in rows_duplicate))
+        self.assertEqual(stats.cost_cc, sum(r['cost_cc'] for r in rows_duplicate))
+
+        self.assertEqual(stats_other.impressions, rows_other[0]['impressions'])
+        self.assertEqual(stats_other.clicks, rows_other[0]['clicks'])
+        self.assertEqual(stats_other.cost_cc, rows_other[0]['cost_cc'])
+
 
 class ArticleReconciliationTestCase(test.TestCase):
 

@@ -33,14 +33,17 @@ class ActionLog(models.Model):
     id = models.AutoField(primary_key=True)
     action = models.CharField(
         max_length=100,
-        choices=constants.Action.get_choices()
+        choices=constants.Action.get_choices(),
+        db_index=True,
     )
     state = models.IntegerField(
         default=constants.ActionState.WAITING,
-        choices=constants.ActionState.get_choices()
+        choices=constants.ActionState.get_choices(),
+        db_index=True,
     )
     action_type = models.IntegerField(
-        choices=constants.ActionType.get_choices()
+        choices=constants.ActionType.get_choices(),
+        db_index=True,
     )
 
     ad_group_source = models.ForeignKey('dash.AdGroupSource', on_delete=models.PROTECT)

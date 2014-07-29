@@ -1,28 +1,5 @@
-/*globals oneApp,moment,$*/
-function getDateRanges() {
-    var result = {};
-    var i = 0;
-    var monthsCount = 3;
-    var formatStr = 'MMMM YYYY';
-
-    result['Today'] = [moment().startOf('day'), moment().endOf('day')];
-    result['Yesterday'] = [moment().subtract('days', 1).startOf('day'), moment().subtract('days', 1).endOf('day')];
-    result['This week'] = [moment().startOf('week'), moment()];
-    result['Previous week'] = [moment().subtract('days', 7).startOf('week'), moment().subtract('days', 7).endOf('week')];
-    result['Last 14 days'] = [moment().subtract('days', 14), moment()];
-    result['This month'] = [moment().startOf('month'), moment()];
-    result['Last 30 Days'] = [moment().subtract('days', 29), moment()];
-
-    for (i = 0; i < monthsCount; i++) {
-        result[moment().subtract('month', i+1).format(formatStr)] = [moment().subtract('month', i+1).startOf('month'), moment().subtract('month', i+1).endOf('month')];
-    }
-
-    result['Year to date'] = [moment().startOf('year'), moment()];
-    
-    return result;
-}
-
-oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'api', function ($scope, $state, $location, $document, api) {
+/*globals oneApp,$*/
+oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'api', 'zemMoment', function ($scope, $state, $location, $document, api, zemMoment) {
     $scope.tabs = [
         {heading: 'Content Ads', route: 'adGroups.ads', active: true},
         {heading: 'Media Sources', route: 'adGroups.sources', active: false}
@@ -31,15 +8,39 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
     $scope.user = null;
     $scope.currentRoute = $scope.current;
     $scope.inputDateFormat = 'M/D/YYYY';
-    $scope.maxDate = moment();
+    $scope.maxDate = zemMoment();
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
-    $scope.dateRanges = getDateRanges();
+
+    $scope.getDateRanges = function () {
+        var result = {};
+        var i = 0;
+        var monthsCount = 3;
+        var formatStr = 'MMMM YYYY';
+
+        result['Today'] = [zemMoment().startOf('day'), zemMoment().endOf('day')];
+        result['Yesterday'] = [zemMoment().subtract('days', 1).startOf('day'), zemMoment().subtract('days', 1).endOf('day')];
+        result['This week'] = [zemMoment().startOf('week'), zemMoment()];
+        result['Previous week'] = [zemMoment().subtract('days', 7).startOf('week'), zemMoment().subtract('days', 7).endOf('week')];
+        result['Last 14 days'] = [zemMoment().subtract('days', 14), zemMoment()];
+        result['This month'] = [zemMoment().startOf('month'), zemMoment()];
+        result['Last 30 Days'] = [zemMoment().subtract('days', 29), zemMoment()];
+
+        for (i = 0; i < monthsCount; i++) {
+            result[zemMoment().subtract('month', i+1).format(formatStr)] = [zemMoment().subtract('month', i+1).startOf('month'), zemMoment().subtract('month', i+1).endOf('month')];
+        }
+
+        result['Year to date'] = [zemMoment().startOf('year'), zemMoment()];
+
+        return result;
+    };
+
+    $scope.dateRanges = $scope.getDateRanges();
 
     $scope.adGroupData = {};
 
     $scope.hasPermission = function (permission) {
         return $scope.user.permissions.indexOf(permission) >= 0;
-    }
+    };
 
     $scope.setAdGroupData = function (key, value) {
         var data = $scope.adGroupData[$state.params.id] || {};
@@ -48,8 +49,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
     };
 
     $scope.dateRange = {
-        startDate: moment().subtract('day', 30).hours(0).minutes(0).seconds(0).milliseconds(0),
-        endDate: moment().hours(0).minutes(0).seconds(0).milliseconds(0)
+        startDate: zemMoment().subtract('day', 30).hours(0).minutes(0).seconds(0).milliseconds(0),
+        endDate: zemMoment().hours(0).minutes(0).seconds(0).milliseconds(0)
     };
 
     $scope.breadcrumb = [];
