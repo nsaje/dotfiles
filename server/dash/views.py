@@ -755,10 +755,18 @@ class AdGroupAdsTable(api_common.BaseApiView):
         return rows, current_page, num_pages, count, start_index, end_index
 
     def get_articles(self, ad_group, start_date, end_date, page, size, order):
-        q = models.Article.objects.\
-            filter(ad_group=ad_group).\
-            filter(articlestats__datetime__gte=start_date).\
-            filter(articlestats__datetime__lte=end_date)
+        q = models.Article.objects.filter(ad_group=ad_group)
+
+        if start_date and end_date:
+            dates = []
+            current_date = start_date
+            while current_date <= end_date:
+                dates.append(current_date)
+                current_date += datetime.timedelta(days=1)
+
+            # I had to use IN otherwise Django generated two the same joins which slowed
+            # down this query significantly.
+            q = q.filter(articlestats__datetime__in=dates)
 
         if order:
             order_field = order[1:] if order.startswith('-') else order
