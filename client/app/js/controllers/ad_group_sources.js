@@ -144,6 +144,17 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $scope.getTableData();
     };
 
+    $scope.getAdGroupState = function() {
+        api.adGroupSettings.get($state.params.id).then(
+            function(data) {
+                $scope.setAdGroupPaused(data.settings.state === 2);
+            },
+            function(){
+                // error
+            }
+        );
+    };
+
     $scope.getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
@@ -300,6 +311,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $scope.order = $location.search().order || $scope.order;
         $scope.selectedSourceTotals = !$scope.selectedSourceIds.length || sourceTotals;
         $scope.setAdGroupData('sourceTotals', $scope.selectedSourceTotals);
+
+        $scope.getAdGroupState();
     };
 
     // export

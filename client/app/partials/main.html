@@ -35,6 +35,7 @@
                         <a ui-sref="{{ tab.route }}({ id: $state.params.id })">{{ tab.heading }}</a>
                     </tab-heading>
                 </tab>
+                <span ng-show="isAdGroupPaused"><span class="little-red-square"></span><span class="warning-paused">This Ad Group is currently not running.</span></span>
             </tabset>
 
             <div ui-view></div>
