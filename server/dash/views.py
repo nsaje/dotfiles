@@ -712,7 +712,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
     def get_articles_data(self, ad_group, page, size, start_date, end_date, order):
         if order in self.ARTICLE_ORDERS:
             articles, current_page, num_pages, count, start_index, end_index = \
-                self.get_articles(ad_group, page, size, order)
+                self.get_articles(ad_group, start_date, end_date, page, size, order)
             stats = reports.api.query(
                 start_date,
                 end_date,
@@ -754,11 +754,17 @@ class AdGroupAdsTable(api_common.BaseApiView):
 
         return rows, current_page, num_pages, count, start_index, end_index
 
-    def get_articles(self, ad_group, page, size, order):
-        q = models.Article.objects.filter(ad_group=ad_group)
+    def get_articles(self, ad_group, start_date, end_date, page, size, order):
+        q = models.Article.objects.\
+            filter(ad_group=ad_group).\
+            filter(articlestats__datetime__gte=start_date).\
+            filter(articlestats__datetime__lte=end_date)
 
         if order:
-            q = q.order_by(order)
+            order_field = order[1:] if order.startswith('-') else order
+            q = q.distinct(order_field, 'pk').order_by(order, 'pk')
+        else:
+            q = q.distinct('pk')
 
         if page and size:
             paginator = Paginator(q, size)
