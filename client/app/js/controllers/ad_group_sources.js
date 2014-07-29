@@ -147,7 +147,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     $scope.getAdGroupState = function() {
         api.adGroupSettings.get($state.params.id).then(
             function(data) {
-                $scope.setAdGroupPaused(data.settings.state == 2);
+                $scope.setAdGroupPaused(data.settings.state === 2);
             },
             function(){
                 // error

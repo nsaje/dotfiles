@@ -30,7 +30,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
             function (data) {
                 $scope.settings = data.settings;
                 $scope.actionIsWaiting = data.actionIsWaiting;
-                $scope.setAdGroupPaused($scope.settings.state == 2);
+                $scope.setAdGroupPaused($scope.settings.state === 2);
             },
             function (data) {
                 // error
