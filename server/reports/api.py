@@ -4,6 +4,7 @@ import decimal
 import urlparse
 import urllib
 import logging
+import collections
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction, IntegrityError
@@ -17,160 +18,133 @@ from utils import db_aggregates
 
 logger = logging.getLogger(__name__)
 
-DIMENSIONS = ['date', 'article', 'ad_group', 'source']
-METRICS = ['impressions', 'clicks', 'cost', 'cpc']
-
 MAX_RECONCILIATION_RETRIES = 10
 
+AGGREGATE_FIELDS = dict(
+    clicks_sum=Sum('clicks'),
+    impressions_sum=Sum('impressions'),
+    cost_cc_sum=Sum('cost_cc'),
+    ctr=db_aggregates.SumDivision('clicks', 'impressions'),
+    cpc_cc=db_aggregates.SumDivision('cost_cc', 'clicks')
+)
 
-# API functions
-def query(start_date, end_date, breakdown=None, order=None, page=None, page_size=None, **constraints):
-    '''
-    api function to query reports data
-    start_date = starting date, inclusive
-    end_date = end date, inclusive
-    order = order by field (eg. 'cpc', '-cpc')
-    breakdown = list of dimensions by which to group
-    constraints = constraints on the dimension values (e.g. source=x, ad_group=y, etc.)
-    '''
-    if (page and not page_size) or (page_size and not page):
-        raise exc.ReportsQueryError('Missing page or page_size for pagination.')
 
-    if not breakdown:
-        breakdown = []
-    else:
-        # create a copy to ensure that input list is not changed
-        breakdown = breakdown[:]
+def _preprocess_constraints(constraints):
+    result = {}
+    for k, v in constraints.iteritems():
+        if isinstance(v, collections.Sequence):
+            result['{0}__in'.format(k)] = v
+        else:
+            result[k] = v
+    return result
 
-    if not (set(breakdown) <= set(DIMENSIONS)):
-        raise exc.ReportsQueryError('Invalid value for breakdown.')
 
-    for i, field in enumerate(breakdown):
-        if field == 'date':
-            breakdown[i] = 'datetime'
-            break
+def _preprocess_order(order):
+    order_field_translate = {
+        'title': 'article__title',
+        'cost': 'cost_cc_sum',
+        'cpc': 'cpc_cc',
+        'clicks': 'clicks_sum',
+        'impressions': 'impressions_sum',
+        'ctr': 'ctr',
+        'date': 'datetime',
+    }
+    order = [] if order is None else order[:]
+    result = []
+    for x in order:
+        is_reverse = False
+        if x.startswith('-'):
+            is_reverse = True
+            x = x[1:]
+        new_order_name = order_field_translate.get(x, x)
+        if is_reverse:
+            new_order_name = '-' + new_order_name
+        result.append(new_order_name)
+    return result
 
-    for k, v in constraints.items():
-        if isinstance(v, (list, tuple)):
-            new_k = '{0}__in'.format(k)
-            constraints[new_k] = v
-            del constraints[k]
 
-    current_page = None
-    num_pages = None
-    count = None
-    start_index = None
-    end_index = None
+def _preprocess_breakdown(breakdown):
+    breakdown_field_translate = {'date': 'datetime'}
+    fields = [] if breakdown is None else breakdown[:]
+    return [breakdown_field_translate.get(field, field) for field in fields]
 
-    annotate_kwargs = {}
-    ordering = breakdown
-    order_prop_null = None
+
+def query(start_date, end_date, breakdown=None, order=None, **constraints):
+    breakdown = _preprocess_breakdown(breakdown)
+    order = _preprocess_order(order)
+    constraints = _preprocess_constraints(constraints)
+
+    qs = models.ArticleStats.objects
+
+    if 'article' in breakdown:
+        breakdown.extend(['article__title', 'article__url'])
+        qs = qs.select_related('article')
+
+    qs = qs.filter(datetime__gte=start_date, datetime__lte=end_date)
+    if constraints:
+        qs = qs.filter(**constraints)
 
     if breakdown:
-        order_mapping = {
-            'cost': 'cost_cc_sum',
-            '-cost': '-cost_cc_sum',
-            'impressions': 'impressions_sum',
-            '-impressions': '-impressions_sum',
-            'clicks': 'clicks_sum',
-            '-clicks': '-clicks_sum',
-            'ctr': 'ctr',
-            '-ctr': '-ctr',
-            'cpc': 'cpc',
-            '-cpc': '-cpc'
-        }
-
-        if order:
-            if order not in (order_mapping.keys()):
-                raise exc.ReportsQueryError('Invalid value for order.')
-
-            order_prop = order[1:] if order.startswith('-') else order
-            # Name of the temporary null property used when ordering to make sure
-            # that NULLs alre always at the bottom.
-            order_prop_null = '{}_null'.format(order_prop)
-            ordering = [order_prop_null, order_mapping[order]]
-            annotate_kwargs = {}
-            if order_prop == 'cost':
-                annotate_kwargs['cost_null'] = db_aggregates.IsSumNull('cost_cc')
-            elif order_prop == 'impressions':
-                annotate_kwargs['impressions_null'] = \
-                    db_aggregates.IsSumNull('impressions')
-            elif order_prop == 'clicks':
-                annotate_kwargs['clicks_null'] = \
-                    db_aggregates.IsSumNull('clicks')
-            elif order_prop == 'ctr':
-                annotate_kwargs['ctr_null'] = \
-                    db_aggregates.IsSumDivisionNull('clicks', divisor='impressions')
-            elif order_prop == 'cpc':
-                annotate_kwargs['cpc_null'] = \
-                    db_aggregates.IsSumDivisionNull('cost_cc', divisor='clicks')
-
-        stats = models.ArticleStats.objects.\
-            values(*breakdown).\
-            annotate(
-                cost_cc_sum=Sum('cost_cc'),
-                impressions_sum=Sum('impressions'),
-                clicks_sum=Sum('clicks'),
-                ctr=db_aggregates.SumDivision('clicks', divisor='impressions'),
-                cpc=db_aggregates.SumDivision('cost_cc', divisor='clicks'),
-                **annotate_kwargs
-            ).\
-            filter(**constraints).\
-            filter(datetime__gte=start_date, datetime__lte=end_date).\
-            order_by(*ordering)
-
-        if page and page_size:
-            paginator = Paginator(stats, page_size)
-
-            try:
-                stats = paginator.page(page)
-            except PageNotAnInteger:
-                stats = paginator.page(1)
-            except EmptyPage:
-                stats = paginator.page(paginator.num_pages)
-
-            current_page = stats.number
-            num_pages = stats.paginator.num_pages
-            count = stats.paginator.count
-            start_index = stats.start_index()
-            end_index = stats.end_index()
-
-        stats = list(stats)
+        qs = qs.values(*breakdown)
+        qs = qs.annotate(**AGGREGATE_FIELDS)
     else:
-        stats = models.ArticleStats.objects.\
-            filter(**constraints).\
-            filter(datetime__gte=start_date, datetime__lte=end_date).\
-            aggregate(
-                cost_cc_sum=Sum('cost_cc'),
-                impressions_sum=Sum('impressions'),
-                clicks_sum=Sum('clicks'),
-                ctr=db_aggregates.SumDivision('clicks', divisor='impressions'),
-                cpc=db_aggregates.SumDivision('cost_cc', divisor='clicks'),
-            )
-        stats = [stats]
+        return qs.aggregate(**AGGREGATE_FIELDS)
 
-    for stat in stats:
-        if 'datetime' in stat:
-            stat['date'] = stat.pop('datetime').date()
+    if order:
+        qs = qs.order_by(*order)
 
-        if stat['cost_cc_sum'] is None:
-            stat['cost'] = stat.pop('cost_cc_sum')
-        else:
-            stat['cost'] = float(decimal.Decimal(round(stat.pop('cost_cc_sum'))) / decimal.Decimal(10000))
+    return qs
 
-        if stat['ctr']:
-            stat['ctr'] *= 100
 
-        if stat['cpc']:
-            stat['cpc'] = float((decimal.Decimal(stat['cpc']) / decimal.Decimal(10000)))
+def paginate(qs, page, page_size):
+    paginator = Paginator(qs, page_size)
 
-        stat['impressions'] = stat.pop('impressions_sum')
-        stat['clicks'] = stat.pop('clicks_sum')
+    try:
+        qs_pg = paginator.page(page)
+    except PageNotAnInteger:
+        qs_pg = paginator.page(1)
+    except EmptyPage:
+        qs_pg = paginator.page(paginator.num_pages)
 
-        if order_prop_null and order_prop_null in stat:
-            del stat[order_prop_null]
+    return (
+        qs_pg,
+        qs_pg.number,
+        qs_pg.paginator.num_pages,
+        qs_pg.paginator.count,
+        qs_pg.start_index(),
+        qs_pg.end_index()
+    )
 
-    return stats, current_page, num_pages, count, start_index, end_index
+
+def collect_results(qs):
+    col_name_translate = {
+        'clicks_sum': 'clicks',
+        'impressions_sum': 'impressions',
+        'cost_cc_sum': 'cost',
+        'cpc_cc': 'cpc',
+        'datetime': 'date',
+        'article__title': 'title',
+        'article__url': 'url',
+    }
+
+    col_val_transform = {
+        'cost_cc_sum': lambda x: None if x is None else float(decimal.Decimal(round(x)) / decimal.Decimal(10000)),
+        'cpc_cc': lambda x: None if x is None else float(decimal.Decimal(round(x)) / decimal.Decimal(10000)),
+        'ctr': lambda x: None if x is None else x * 100,
+    }
+
+    def collect_row(row):
+        new_row = {}
+        for col_name, col_val in dict(row).items():
+            new_col_val = col_val_transform.get(col_name, lambda x: x)(col_val)
+            new_col_name = col_name_translate.get(col_name, col_name)
+            new_row[new_col_name] = new_col_val
+        return new_row
+
+    if isinstance(qs, dict):
+        return collect_row(qs)
+    else:
+        return [collect_row(row) for row in qs]
 
 
 def _delete_existing_stats(ad_group, source, date):
@@ -205,9 +179,9 @@ def save_report(ad_group, source, rows, date):
             )
         except models.ArticleStats.DoesNotExist:
             article_stats = models.ArticleStats(
-                datetime=date, 
-                article=article, 
-                ad_group=ad_group, 
+                datetime=date,
+                article=article,
+                ad_group=ad_group,
                 source=source
             )
 

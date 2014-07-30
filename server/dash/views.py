@@ -14,14 +14,12 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponse
 import pytz
 
 from utils import statsd_helper
 from utils import api_common
 from utils import exc
-from utils.command_helpers import last_n_days
 import actionlog.api
 import actionlog.sync
 import reports.api
@@ -70,25 +68,22 @@ def get_stats_end_date(end_time):
 
 
 def generate_rows(dimensions, ad_group_id, start_date, end_date):
+    ordering = ['date'] if 'date' in dimensions else []
     data = reports.api.query(
         start_date,
         end_date,
         dimensions,
+        ordering,
         ad_group=int(ad_group_id)
-    )[0]
+    )
+    data = reports.api.collect_results(data)
 
     if 'source' in dimensions:
         sources = {source.id: source for source in models.Source.objects.all()}
-    if 'article' in dimensions:
-        articles = {article.id: article for article in models.Article.objects.filter(ad_group=ad_group_id)}
 
     for item in data:
         if 'source' in dimensions:
             item['source'] = sources[item['source']].name
-        if 'article' in dimensions:
-            article = articles[item['article']]
-            item['article'] = article.title
-            item['url'] = article.url
 
     return data
 
@@ -313,7 +308,6 @@ class AdGroupSettings(api_common.BaseApiView):
         ad_group.name = resource['name']
 
     def set_settings(self, settings, ad_group, resource):
-        # settings.ad_group = ad_group
         settings.ad_group = ad_group
         settings.state = resource['state']
         settings.start_date = resource['start_date']
@@ -335,7 +329,9 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             get_stats_end_date(request.GET.get('end_date')),
             ['source'],
             ad_group=int(ad_group.id)
-        )[0]
+        )
+        sources_data = reports.api.collect_results(sources_data)
+
         sources = ad_group.sources.all().order_by('name')
         source_settings = models.AdGroupSourceSettings.get_current_settings(
             ad_group, sources)
@@ -344,7 +340,8 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             get_stats_start_date(request.GET.get('start_date')),
             get_stats_end_date(request.GET.get('end_date')),
             ad_group=int(ad_group.id)
-        )[0][0]
+        )
+        totals_data = reports.api.collect_results(totals_data)
 
         last_success_actions = get_last_successful_source_sync_dates(ad_group)
 
@@ -476,7 +473,7 @@ class AdGroupAdsExport(api_common.BaseApiView):
 
         fieldnames = OrderedDict([
             ('date', 'Date'),
-            ('article', 'Title'),
+            ('title', 'Title'),
             ('url', 'URL'),
             ('cost', 'Cost'),
             ('cpc', 'CPC'),
@@ -492,13 +489,16 @@ class AdGroupAdsExport(api_common.BaseApiView):
 
         for item in data:
             # Format
+            row = {}
             for key in ['cost', 'cpc', 'ctr']:
                 val = item[key]
                 if not isinstance(val, float):
                     val = 0
-                item[key] = '{:.2f}'.format(val)
+                row[key] = '{:.2f}'.format(val)
+            for key in fieldnames:
+                row[key] = item[key]
 
-            writer.writerow(item)
+            writer.writerow(row)
 
         return response
 
@@ -653,19 +653,6 @@ class AdGroupCheckSyncProgress(api_common.BaseApiView):
 
 
 class AdGroupAdsTable(api_common.BaseApiView):
-    ARTICLE_ORDERS = ('title', '-title', 'url', '-url')
-    STATS_ORDERS = (
-        'cost',
-        '-cost',
-        'cpc',
-        '-cpc',
-        'clicks',
-        '-clicks',
-        'impressions',
-        '-impressions',
-        'ctr',
-        '-ctr'
-    )
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_table_get')
     def get(self, request, ad_group_id):
@@ -679,14 +666,20 @@ class AdGroupAdsTable(api_common.BaseApiView):
 
         size = max(min(int(size or 5), 50), 1)
 
-        rows, current_page, num_pages, count, start_index, end_index = \
-            self.get_articles_data(ad_group, page, size, start_date, end_date, order)
+        qs = reports.api.query(
+                start_date=start_date,
+                end_date=end_date,
+                breakdown=['article'],
+                order=[order],
+                ad_group=ad_group.id
+        )
 
-        totals_data = reports.api.query(
-            start_date,
-            end_date,
-            ad_group=int(ad_group.id)
-        )[0][0]
+        qs_pg, current_page, num_pages, count, start_index, end_index = reports.api.paginate(qs, page, size)
+
+        rows = reports.api.collect_results(qs_pg)
+
+        totals_data = reports.api.query(start_date, end_date, ad_group=int(ad_group.id))
+        totals_data = reports.api.collect_results(totals_data)
 
         last_sync = actionlog.sync.AdGroupSync(ad_group).get_latest_success()
         if last_sync:
@@ -694,7 +687,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
 
         return self.create_api_response({
             'rows': rows,
-            'totals': self.get_totals(totals_data),
+            'totals': totals_data,
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(ad_group),
@@ -708,112 +701,6 @@ class AdGroupAdsTable(api_common.BaseApiView):
                 'size': size
             }
         })
-
-    def get_articles_data(self, ad_group, page, size, start_date, end_date, order):
-        if order in self.ARTICLE_ORDERS:
-            articles, current_page, num_pages, count, start_index, end_index = \
-                self.get_articles(ad_group, start_date, end_date, page, size, order)
-            stats = reports.api.query(
-                start_date,
-                end_date,
-                ['article'],
-                ad_group=int(ad_group.id),
-                article=[article.id for article in articles]
-            )[0]
-
-            rows = []
-            for article in articles:
-                for stat in stats:
-                    if stat['article'] == article.pk:
-                        break
-
-                rows.append(self.get_row_dict(ad_group, stat, article))
-        elif order in self.STATS_ORDERS:
-            stats, current_page, num_pages, count, start_index, end_index = \
-                reports.api.query(
-                    start_date,
-                    end_date,
-                    ['article'],
-                    order=order,
-                    page=page,
-                    page_size=size,
-                    ad_group=int(ad_group.id)
-                )
-            articles = models.Article.objects.filter(
-                pk__in=[x['article'] for x in stats])
-
-            rows = []
-            for stat in stats:
-                for article in articles:
-                    if article.pk == stat['article']:
-                        break
-
-                rows.append(self.get_row_dict(ad_group, stat, article))
-        else:
-            raise exc.ValidationError('Invalid order.')
-
-        return rows, current_page, num_pages, count, start_index, end_index
-
-    def get_articles(self, ad_group, start_date, end_date, page, size, order):
-        q = models.Article.objects.filter(ad_group=ad_group)
-
-        if start_date and end_date:
-            dates = []
-            current_date = start_date
-            while current_date <= end_date:
-                dates.append(current_date)
-                current_date += datetime.timedelta(days=1)
-
-            # I had to use IN otherwise Django generated two the same joins which slowed
-            # down this query significantly.
-            q = q.filter(articlestats__datetime__in=dates)
-
-        if order:
-            order_field = order[1:] if order.startswith('-') else order
-            q = q.distinct(order_field, 'pk').order_by(order, 'pk')
-        else:
-            q = q.distinct('pk')
-
-        if page and size:
-            paginator = Paginator(q, size)
-            try:
-                articles = paginator.page(page)
-            except PageNotAnInteger:
-                articles = paginator.page(1)
-            except EmptyPage:
-                articles = paginator.page(paginator.num_pages)
-
-        return (
-            articles,
-            articles.number,
-            articles.paginator.num_pages if articles.paginator else None,
-            articles.paginator.count if articles.paginator else None,
-            articles.start_index(),
-            articles.end_index()
-        )
-
-    def get_totals(self, totals_data):
-        return {
-            'cost': totals_data['cost'],
-            'cpc': totals_data['cpc'],
-            'clicks': totals_data['clicks'],
-            'impressions': totals_data['impressions'],
-            'ctr': totals_data['ctr'],
-        }
-
-    def get_row_dict(self, ad_group, stat, article):
-        result = {
-            'id': str(article.pk),
-            'url': article.url,
-            'title': article.title,
-            'cost': stat.get('cost', None),
-            'cpc': stat.get('cpc', None),
-            'clicks': stat.get('clicks', None),
-            'impressions': stat.get('impressions', None),
-            'ctr': stat.get('ctr', None),
-        }
-
-        return result
 
 
 class AdGroupDailyStats(api_common.BaseApiView):
@@ -835,8 +722,10 @@ class AdGroupDailyStats(api_common.BaseApiView):
                 get_stats_start_date(start_date),
                 get_stats_end_date(end_date),
                 breakdown,
+                ['date'],
                 ad_group=int(ad_group.id)
-            )[0]
+            )
+            totals_stats = reports.api.collect_results(totals_stats)
 
         sources = None
         breakdown_stats = []
@@ -852,9 +741,11 @@ class AdGroupDailyStats(api_common.BaseApiView):
                 get_stats_start_date(start_date),
                 get_stats_end_date(end_date),
                 breakdown,
+                ['date'],
                 ad_group=int(ad_group.id),
                 **extra_kwargs
-            )[0]
+            )
+            breakdown_stats = reports.api.collect_results(breakdown_stats)
 
         return self.create_api_response({
             'stats': self.get_dict(breakdown_stats + totals_stats, sources)
