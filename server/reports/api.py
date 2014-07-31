@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
 
 MAX_RECONCILIATION_RETRIES = 10
 
+DIMENSIONS = set(['article', 'ad_group', 'date', 'source'])
+
 AGGREGATE_FIELDS = dict(
     clicks_sum=Sum('clicks'),
     impressions_sum=Sum('impressions'),
@@ -48,6 +50,7 @@ def _preprocess_order(order):
         'impressions': 'impressions_sum',
         'ctr': 'ctr',
         'date': 'datetime',
+        'url': 'article__url'
     }
     order = [] if order is None else order[:]
     result = []
@@ -65,8 +68,33 @@ def _preprocess_order(order):
 
 def _preprocess_breakdown(breakdown):
     breakdown_field_translate = {'date': 'datetime'}
-    fields = [] if breakdown is None else breakdown[:]
-    return [breakdown_field_translate.get(field, field) for field in fields]
+    breakdown = [] if breakdown is None else breakdown[:]
+    if len(set(breakdown) - DIMENSIONS) != 0:
+        raise exc.ReportsQueryError('Invalid breakdown')
+    fields = [breakdown_field_translate.get(field, field) for field in breakdown]
+    return fields
+
+
+def _add_helper_order_aggregate_fields(agg_fields, order):
+    more_agg_fields = {k:v for k,v in agg_fields.items()}
+    null_order_fields = []
+    for order_field in order:
+        if 'clicks_sum' in order_field:
+            more_agg_fields['clicks_sum_null'] = db_aggregates.IsSumNull('clicks')
+            null_order_fields.append('clicks_sum_null')
+        if 'impressions_sum' in order_field:
+            more_agg_fields['impressions_sum_null'] = db_aggregates.IsSumNull('impressions')
+            null_order_fields.append('impressions_sum_null')
+        if 'cost_cc_sum' in order_field:
+            more_agg_fields['cost_cc_sum_null'] = db_aggregates.IsSumNull('cost_cc')
+            null_order_fields.append('cost_cc_sum_null')
+        if 'ctr' in order_field:
+            more_agg_fields['ctr_null'] = db_aggregates.IsSumDivisionNull('clicks', 'impressions')
+            null_order_fields.append('ctr_null')
+        if 'cpc_cc' in order_field:
+            more_agg_fields['cpc_cc_null'] = db_aggregates.IsSumDivisionNull('cost_cc', 'clicks')
+            null_order_fields.append('cpc_cc_null')
+    return more_agg_fields, null_order_fields + order
 
 
 def query(start_date, end_date, breakdown=None, order=None, **constraints):
@@ -86,7 +114,8 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
 
     if breakdown:
         qs = qs.values(*breakdown)
-        qs = qs.annotate(**AGGREGATE_FIELDS)
+        agg_fields, order = _add_helper_order_aggregate_fields(AGGREGATE_FIELDS, order)
+        qs = qs.annotate(**agg_fields)
     else:
         return qs.aggregate(**AGGREGATE_FIELDS)
 
@@ -131,11 +160,14 @@ def collect_results(qs):
         'cost_cc_sum': lambda x: None if x is None else float(decimal.Decimal(round(x)) / decimal.Decimal(10000)),
         'cpc_cc': lambda x: None if x is None else float(decimal.Decimal(round(x)) / decimal.Decimal(10000)),
         'ctr': lambda x: None if x is None else x * 100,
+        'datetime': lambda dt: dt.date(),
     }
 
     def collect_row(row):
         new_row = {}
         for col_name, col_val in dict(row).items():
+            if col_name.endswith('_null'):
+                continue
             new_col_val = col_val_transform.get(col_name, lambda x: x)(col_val)
             new_col_name = col_name_translate.get(col_name, col_name)
             new_row[new_col_name] = new_col_val

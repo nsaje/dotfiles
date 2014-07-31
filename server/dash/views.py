@@ -515,7 +515,7 @@ class AdGroupAdsExport(api_common.BaseApiView):
             ads_data,
             lambda item: [
                 (item['date'], excel_styles.style_date),
-                (item['article'],),
+                (item['title'],),
                 (item['url'],),
                 (item['cost'] or 0, excel_styles.style_usd),
                 (item['cpc'] or 0, excel_styles.style_usd),
@@ -533,7 +533,7 @@ class AdGroupAdsExport(api_common.BaseApiView):
             sources_data,
             lambda item: [
                 (item['date'], excel_styles.style_date),
-                (item['article'],),
+                (item['title'],),
                 (item['url'],),
                 (item['source'],),
                 (item['cost'] or 0, excel_styles.style_usd),

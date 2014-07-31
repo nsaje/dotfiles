@@ -42,32 +42,58 @@ class AdGroupAdsExportTestCase(test.TestCase):
 
         self.mock_models.Source.objects.all.return_value = [self.mock_source1, self.mock_source2]
 
-        self.mock_article = Mock()
-        self.mock_article.id = 1
-        self.mock_article.title = u'Test Article with unicode Čžš'
-        self.mock_article.url = 'http://www.example.com'
-        self.mock_models.Article.objects.filter.return_value = [self.mock_article]
+        # self.mock_article = Mock()
+        # self.mock_article.id = 1
+        # self.mock_article.title = u'Test Article with unicode Čžš'
+        # self.mock_article.url = 'http://www.example.com'
+        # self.mock_models.Article.objects.filter.return_value = [self.mock_article]
 
-        self.mock_api.query.side_effect = [
-            ([{
+        # self.mock_api.query.side_effect = [
+        #     ([{
+        #         'article': 1,
+        #         'date': datetime.date(2014, 7, 1),
+        #         'cost': 1000.123242,
+        #         'cpc': 10.2334,
+        #         'clicks': 103,
+        #         'impressions': 100000,
+        #         'ctr': 1.031231231
+        #     }],),
+        #     ([{
+        #         'article': 1,
+        #         'source': 1,
+        #         'date': datetime.date(2014, 7, 1),
+        #         'cost': 1000.123242,
+        #         'cpc': 10.2334,
+        #         'clicks': 103,
+        #         'impressions': 100000,
+        #         'ctr': 1.031231231
+        #     }],)
+        # ]
+
+        self.mock_api.collect_results.side_effect = [
+            [{
                 'article': 1,
                 'date': datetime.date(2014, 7, 1),
-                'cost': 1000.123242,
-                'cpc': 10.2334,
+                'cost': 1000.12,
+                'cpc': 10.23,
                 'clicks': 103,
                 'impressions': 100000,
-                'ctr': 1.031231231
-            }],),
-            ([{
+                'ctr': 1.03,
+                'title': u'Test Article with unicode Čžš',
+                'url': 'http://www.example.com'
+            }],
+            [{
                 'article': 1,
                 'source': 1,
                 'date': datetime.date(2014, 7, 1),
-                'cost': 1000.123242,
-                'cpc': 10.2334,
+                'cost': 1000.12,
+                'cpc': 10.23,
                 'clicks': 103,
                 'impressions': 100000,
-                'ctr': 1.031231231
-            }],)
+                'ctr': 1.03,
+                'title': u'Test Article with unicode Čžš',
+                'url': 'http://www.example.com'
+            }]
         ]
 
 
@@ -90,6 +116,8 @@ class AdGroupAdsExportTestCase(test.TestCase):
         request.user = Mock()
 
         response = views.AdGroupAdsExport().get(request, self.ad_group_id)
+
+        #print response.content
 
         expected_content = '''Date,Title,URL,Cost,CPC,Clicks,Impressions,CTR\r
 2014-07-01,Test Article with unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://www.example.com,1000.12,10.23,103,100000,1.03\r
@@ -140,7 +168,7 @@ class AdGroupAdsExportTestCase(test.TestCase):
         self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'])
 
         self._assert_row(worksheet, 1, [41821.0, u'Test Article with unicode Čžš', 'http://www.example.com',
-            1000.123242, 10.2334, 103, 100000, 0.01031231231])
+            1000.12, 10.23, 103, 100000, 0.0103])
 
         worksheet = workbook.sheet_by_name('Per Source Report')
         self.assertIsNotNone(worksheet)
@@ -148,4 +176,4 @@ class AdGroupAdsExportTestCase(test.TestCase):
         self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Source', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'])
 
         self._assert_row(worksheet, 1, [41821.0, u'Test Article with unicode Čžš', 'http://www.example.com', 'Test Source 1',
-            1000.123242, 10.2334, 103, 100000, 0.01031231231])
+            1000.12, 10.23, 103, 100000, 0.0103])
