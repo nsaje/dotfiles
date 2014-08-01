@@ -336,7 +336,10 @@ class AdGroupSourcesTable(api_common.BaseApiView):
         source_settings = models.AdGroupSourceSettings.get_current_settings(
             ad_group, sources)
 
-        yesterday_cost = reports.api.get_yesterday_cost(ad_group)
+        if request.user.has_perm('reports.yesterday_spend_view'):
+            yesterday_cost = reports.api.get_yesterday_cost(ad_group)
+        else:
+            yesterday_cost = {}
 
         totals_data = reports.api.query(
             get_stats_start_date(request.GET.get('start_date')),

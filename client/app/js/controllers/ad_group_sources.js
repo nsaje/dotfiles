@@ -30,12 +30,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             type: 'currency'
         },
         {
-            name: 'Yesterday Spend',
-            field: 'yesterday_cost',
-            checked: false,
-            type: 'currency'
-        },
-        {
             name: 'Cost',
             field: 'cost',
             checked: true,
@@ -74,13 +68,29 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         }
     ];
 
-    var cols = zemCustomTableColsService.load('adGroupSourcesCols', $scope.columns);
-    $scope.selectedColumnsCount = cols.length;
+    $scope.$watch('user', function (newValue, oldValue) {
+        var cols;
 
-    $scope.$watch('columns', function (newValue, oldValue) {
-        cols = zemCustomTableColsService.save('adGroupSourcesCols', newValue);
-        $scope.selectedColumnsCount = cols.length;
-    }, true);
+        if (newValue) {
+            if ($scope.hasPermission('reports.yesterday_spend_view')) {
+                $scope.columns.splice(2, 0, {
+                    name: 'Yesterday Spend',
+                    field: 'yesterday_cost',
+                    checked: false,
+                    type: 'currency'
+                });
+            }
+
+            cols = zemCustomTableColsService.load('adGroupSourcesCols', $scope.columns);
+            $scope.selectedColumnsCount = cols.length;
+
+            $scope.$watch('columns', function (newValue, oldValue) {
+                cols = zemCustomTableColsService.save('adGroupSourcesCols', newValue);
+                $scope.selectedColumnsCount = cols.length;
+            }, true);
+
+        }
+    });
 
     $scope.$watch('isChartShown', function (newValue, oldValue) {
         zemChartService.save('zemChart', newValue);
