@@ -30,6 +30,12 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             type: 'currency'
         },
         {
+            name: 'Yesterday Spend',
+            field: 'yesterday_cost',
+            checked: false,
+            type: 'currency'
+        },
+        {
             name: 'Cost',
             field: 'cost',
             checked: true,

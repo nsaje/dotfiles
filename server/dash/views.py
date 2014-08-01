@@ -336,6 +336,8 @@ class AdGroupSourcesTable(api_common.BaseApiView):
         source_settings = models.AdGroupSourceSettings.get_current_settings(
             ad_group, sources)
 
+        yesterday_cost = reports.api.get_yesterday_cost(ad_group)
+
         totals_data = reports.api.query(
             get_stats_start_date(request.GET.get('start_date')),
             get_stats_end_date(request.GET.get('end_date')),
@@ -356,6 +358,7 @@ class AdGroupSourcesTable(api_common.BaseApiView):
                 sources_data,
                 source_settings,
                 last_success_actions,
+                yesterday_cost,
                 order=request.GET.get('order', None)
             ),
             'totals': self.get_totals(ad_group, totals_data, source_settings),
@@ -375,7 +378,7 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             'ctr': totals_data['ctr'],
         }
 
-    def get_rows(self, ad_group, sources, sources_data, source_settings, last_actions, order=None):
+    def get_rows(self, ad_group, sources, sources_data, source_settings, last_actions, yesterday_cost, order=None):
         rows = []
         for source in sources:
             sid = source.pk
@@ -412,7 +415,8 @@ class AdGroupSourcesTable(api_common.BaseApiView):
                 'clicks': source_data.get('clicks', None),
                 'impressions': source_data.get('impressions', None),
                 'ctr': source_data.get('ctr', None),
-                'last_sync': last_sync
+                'last_sync': last_sync,
+                'yesterday_cost': yesterday_cost.get(sid)
             })
 
         if order:
