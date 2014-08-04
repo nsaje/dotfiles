@@ -185,18 +185,13 @@ def get_yesterday_cost(ad_group):
     today = datetime.datetime(today.year, today.month, today.day)
     yesterday = today - datetime.timedelta(days=1)
 
-    qs = models.ArticleStats.objects.\
-        values('source').\
-        annotate(Sum('cost_cc')).\
-        filter(ad_group=ad_group, datetime__gte=yesterday, datetime__lt=today)
-
-    result = {}
-    for row in qs:
-        cost = None
-        if row['cost_cc__sum'] is not None:
-            cost = float(decimal.Decimal(round(row['cost_cc__sum'])) / decimal.Decimal(10000))
-
-        result[row['source']] = cost
+    qs = query(
+        start_date=yesterday,
+        end_date=yesterday,
+        breakdown=['source'],
+        ad_group=ad_group
+    )
+    result = {row['source']: row['cost'] for row in collect_results(qs)}
 
     return result
 
