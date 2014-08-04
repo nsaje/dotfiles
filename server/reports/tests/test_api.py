@@ -3,7 +3,9 @@ import datetime
 from django import test
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
+from django.db.models.query import QuerySet
 from mock import patch
+from collections import Sequence
 
 from dash import models as dashmodels
 from reports import api
@@ -375,6 +377,17 @@ class QueryTestCase(test.TestCase):
         self.assertEqual(result[3], 4)
         self.assertEqual(result[4], 3)
         self.assertEqual(result[5], 4)
+
+    def test_return_type(self):
+        start = datetime.date(2014, 6, 4)
+        end = datetime.date(2014, 6, 5)
+
+        result = api.query(start, end, ['article'], ['clicks'], ad_group=1)
+        self.assertEqual(isinstance(result, Sequence), True)
+
+        result = api.query(start, end, ['source'], ['clicks'], ad_group=1)
+        self.assertEqual(isinstance(result, QuerySet), True)
+        self.assertEqual(isinstance(result, Sequence), False)
 
 
 class YesterdayCostTestCase(test.TestCase):

@@ -98,55 +98,91 @@ def _add_helper_order_aggregate_fields(agg_fields, order):
     return more_agg_fields, null_order_fields + order
 
 
+def _get_own_order(order):
+    '''
+    returns order_by criteria which apply only to ArticleStats
+    '''
+    own_order_fields = DIMENSIONS.union(set(['cost_cc_sum', 'cpc_cc', 'clicks_sum', 'impressions_sum', 'ctr', 'datetime']))
+    null_helpers = set(['{0}_null'.format(x) for x in own_order_fields])
+    own_order_fields = own_order_fields.union(null_helpers)
+    result = []
+    for x in order:
+        colname = x
+        if x.startswith('-'):
+            colname = x[1:]
+        if colname in own_order_fields:
+            result.append(x)
+    return result
+
+
+def _include_article_data(rows, order):
+    rows = list(rows)
+    article_ids = [row['article'] for row in rows]
+    article_lookup = {a.pk:a for a in dashmodels.Article.objects.filter(pk__in=article_ids)}
+    for row in rows:
+        a = article_lookup[row['article']]
+        row['article__title'] = a.title
+        row['article__url'] = a.url
+    article_order = [x for x in order if 'article__title' in x or 'article__url' in x]
+    for x in article_order:
+        is_reverse = False
+        field = x
+        if x.startswith('-'):
+            field = x[1:]
+            is_reverse = True
+        rows = sorted(rows, key=lambda row: row[field], reverse=is_reverse)
+    return rows
+
+
 def query(start_date, end_date, breakdown=None, order=None, **constraints):
     breakdown = _preprocess_breakdown(breakdown)
     order = _preprocess_order(order)
     constraints = _preprocess_constraints(constraints)
 
-    qs = models.ArticleStats.objects
+    result = models.ArticleStats.objects
 
-    if 'article' in breakdown:
-        breakdown.extend(['article__title', 'article__url'])
-        qs = qs.select_related('article')
-
-    qs = qs.filter(datetime__gte=start_date, datetime__lte=end_date)
+    result = result.filter(datetime__gte=start_date, datetime__lte=end_date)
     if constraints:
-        qs = qs.filter(**constraints)
+        result = result.filter(**constraints)
 
     if breakdown:
-        qs = qs.values(*breakdown)
+        result = result.values(*breakdown)
         agg_fields, order = _add_helper_order_aggregate_fields(AGGREGATE_FIELDS, order)
-        qs = qs.annotate(**agg_fields)
+        result = result.annotate(**agg_fields)
     else:
-        return qs.aggregate(**AGGREGATE_FIELDS)
+        return result.aggregate(**AGGREGATE_FIELDS)
 
     if order:
-        qs = qs.order_by(*order)
+        # only order by fields that are columns in ArticleStats table
+        result = result.order_by(*_get_own_order(order))
 
-    return qs
+    if 'article' in breakdown:
+        result = _include_article_data(result, order)    # much faster than doing the join
+
+    return result
 
 
-def paginate(qs, page, page_size):
-    paginator = Paginator(qs, page_size)
+def paginate(result, page, page_size):
+    paginator = Paginator(result, page_size)
 
     try:
-        qs_pg = paginator.page(page)
+        result_pg = paginator.page(page)
     except PageNotAnInteger:
-        qs_pg = paginator.page(1)
+        result_pg = paginator.page(1)
     except EmptyPage:
-        qs_pg = paginator.page(paginator.num_pages)
+        result_pg = paginator.page(paginator.num_pages)
 
     return (
-        qs_pg,
-        qs_pg.number,
-        qs_pg.paginator.num_pages,
-        qs_pg.paginator.count,
-        qs_pg.start_index(),
-        qs_pg.end_index()
+        result_pg,
+        result_pg.number,
+        result_pg.paginator.num_pages,
+        result_pg.paginator.count,
+        result_pg.start_index(),
+        result_pg.end_index()
     )
 
 
-def collect_results(qs):
+def collect_results(result):
     col_name_translate = {
         'clicks_sum': 'clicks',
         'impressions_sum': 'impressions',
@@ -174,10 +210,10 @@ def collect_results(qs):
             new_row[new_col_name] = new_col_val
         return new_row
 
-    if isinstance(qs, dict):
-        return collect_row(qs)
+    if isinstance(result, dict):
+        return collect_row(result)
     else:
-        return [collect_row(row) for row in qs]
+        return [collect_row(row) for row in result]
 
 
 def get_yesterday_cost(ad_group):
