@@ -666,7 +666,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
 
         size = max(min(int(size or 5), 50), 1)
 
-        qs = reports.api.query(
+        result = reports.api.query(
                 start_date=start_date,
                 end_date=end_date,
                 breakdown=['article'],
@@ -674,9 +674,9 @@ class AdGroupAdsTable(api_common.BaseApiView):
                 ad_group=ad_group.id
         )
 
-        qs_pg, current_page, num_pages, count, start_index, end_index = reports.api.paginate(qs, page, size)
+        result_pg, current_page, num_pages, count, start_index, end_index = reports.api.paginate(result, page, size)
 
-        rows = reports.api.collect_results(qs_pg)
+        rows = reports.api.collect_results(result_pg)
 
         totals_data = reports.api.query(start_date, end_date, ad_group=int(ad_group.id))
         totals_data = reports.api.collect_results(totals_data)

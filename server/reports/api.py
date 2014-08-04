@@ -161,27 +161,27 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
     return result
 
 
-def paginate(qs, page, page_size):
-    paginator = Paginator(qs, page_size)
+def paginate(result, page, page_size):
+    paginator = Paginator(result, page_size)
 
     try:
-        qs_pg = paginator.page(page)
+        result_pg = paginator.page(page)
     except PageNotAnInteger:
-        qs_pg = paginator.page(1)
+        result_pg = paginator.page(1)
     except EmptyPage:
-        qs_pg = paginator.page(paginator.num_pages)
+        result_pg = paginator.page(paginator.num_pages)
 
     return (
-        qs_pg,
-        qs_pg.number,
-        qs_pg.paginator.num_pages,
-        qs_pg.paginator.count,
-        qs_pg.start_index(),
-        qs_pg.end_index()
+        result_pg,
+        result_pg.number,
+        result_pg.paginator.num_pages,
+        result_pg.paginator.count,
+        result_pg.start_index(),
+        result_pg.end_index()
     )
 
 
-def collect_results(qs):
+def collect_results(result):
     col_name_translate = {
         'clicks_sum': 'clicks',
         'impressions_sum': 'impressions',
@@ -209,10 +209,10 @@ def collect_results(qs):
             new_row[new_col_name] = new_col_val
         return new_row
 
-    if isinstance(qs, dict):
-        return collect_row(qs)
+    if isinstance(result, dict):
+        return collect_row(result)
     else:
-        return [collect_row(row) for row in qs]
+        return [collect_row(row) for row in result]
 
 
 def _delete_existing_stats(ad_group, source, date):
