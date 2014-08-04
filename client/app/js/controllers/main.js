@@ -17,20 +17,34 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
         var i = 0;
         var monthsCount = 3;
         var formatStr = 'MMMM YYYY';
+        var currentMonth = null;
 
-        result['Today'] = [zemMoment().startOf('day'), zemMoment().endOf('day')];
-        result['Yesterday'] = [zemMoment().subtract('days', 1).startOf('day'), zemMoment().subtract('days', 1).endOf('day')];
-        result['This week'] = [zemMoment().startOf('week'), zemMoment()];
-        result['Previous week'] = [zemMoment().subtract('days', 7).startOf('week'), zemMoment().subtract('days', 7).endOf('week')];
-        result['Last 14 days'] = [zemMoment().subtract('days', 14), zemMoment()];
-        result['This month'] = [zemMoment().startOf('month'), zemMoment()];
-        result['Last 30 Days'] = [zemMoment().subtract('days', 29), zemMoment()];
+        if (false) {
+            result['Today'] = [zemMoment().startOf('day'), zemMoment().endOf('day')];
+            result['Yesterday'] = [zemMoment().subtract('days', 1).startOf('day'), zemMoment().subtract('days', 1).endOf('day')];
+            result['This week'] = [zemMoment().startOf('week'), zemMoment()];
+            result['Previous week'] = [zemMoment().subtract('days', 7).startOf('week'), zemMoment().subtract('days', 7).endOf('week')];
+            result['Last 14 days'] = [zemMoment().subtract('days', 14), zemMoment()];
+            result['This month'] = [zemMoment().startOf('month'), zemMoment()];
+            result['Last 30 Days'] = [zemMoment().subtract('days', 29), zemMoment()];
 
-        for (i = 0; i < monthsCount; i++) {
-            result[zemMoment().subtract('month', i+1).format(formatStr)] = [zemMoment().subtract('month', i+1).startOf('month'), zemMoment().subtract('month', i+1).endOf('month')];
+            for (i = 0; i < monthsCount; i++) {
+                result[zemMoment().subtract('month', i+1).format(formatStr)] = [zemMoment().subtract('month', i+1).startOf('month'), zemMoment().subtract('month', i+1).endOf('month')];
+            }
+
+            result['Year to date'] = [zemMoment().startOf('year'), zemMoment()];
+        } else {
+            result['Yesterday'] = [zemMoment().subtract('days', 1).startOf('day'), zemMoment().subtract('days', 1).endOf('day')];
+            currentMonth = zemMoment().startOf('month');
+            result[currentMonth.format('MMMM')] = [currentMonth, zemMoment()];
+            result['Last 30 Days'] = [zemMoment().subtract('days', 29), zemMoment()];
+
+            for (i = 0; i < monthsCount; i++) {
+                result[zemMoment().subtract('month', i+1).format(formatStr)] = [zemMoment().subtract('month', i+1).startOf('month'), zemMoment().subtract('month', i+1).endOf('month')];
+            }
+
+            result['Year to date'] = [zemMoment().startOf('year'), zemMoment()];
         }
-
-        result['Year to date'] = [zemMoment().startOf('year'), zemMoment()];
 
         return result;
     };
@@ -38,7 +52,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
     // this function is used by ad_grou_ conrollers to set $scope.$scope.isAdGroupPaused
     $scope.setAdGroupPaused = function(val) {
         $scope.isAdGroupPaused = val;
-    }
+    };
 
     $scope.dateRanges = $scope.getDateRanges();
 
@@ -108,11 +122,11 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
         var dateRange = {};
 
         if (startDate !== undefined && $scope.startDate !== startDate) {
-			dateRange.startDate = moment(startDate);
+            dateRange.startDate = moment(startDate);
         }
 
         if (endDate !== undefined && $scope.endDate !== endDate) {
-			dateRange.endDate = moment(endDate);
+            dateRange.endDate = moment(endDate);
         }
 
         if (!$.isEmptyObject(dateRange)) {
