@@ -1,5 +1,6 @@
 from __future__ import division
 
+import datetime
 import decimal
 import urlparse
 import urllib
@@ -213,6 +214,22 @@ def collect_results(result):
         return collect_row(result)
     else:
         return [collect_row(row) for row in result]
+
+
+def get_yesterday_cost(ad_group):
+    today = datetime.datetime.utcnow()
+    today = datetime.datetime(today.year, today.month, today.day)
+    yesterday = today - datetime.timedelta(days=1)
+
+    qs = query(
+        start_date=yesterday,
+        end_date=yesterday,
+        breakdown=['source'],
+        ad_group=ad_group
+    )
+    result = {row['source']: row['cost'] for row in collect_results(qs)}
+
+    return result
 
 
 def _delete_existing_stats(ad_group, source, date):

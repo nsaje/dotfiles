@@ -15,7 +15,10 @@ class ArticleStats(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
     class Meta:
-
         unique_together = (
             ('datetime', 'ad_group', 'article', 'source'),
+        )
+
+        permissions = (
+            ("yesterday_spend_view", "Can view yesterday spend column."),
         )

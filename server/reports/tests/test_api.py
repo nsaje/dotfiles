@@ -390,6 +390,36 @@ class QueryTestCase(test.TestCase):
         self.assertEqual(isinstance(result, Sequence), False)
 
 
+class YesterdayCostTestCase(test.TestCase):
+    fixtures = ['test_reports_base.yaml', 'test_article_stats.yaml']
+
+    @patch('reports.api.datetime')
+    def test_get_yesterday_cost(self, datetime_mock):
+        class DatetimeMock(datetime.datetime):
+            @classmethod
+            def utcnow(cls):
+                return datetime.datetime(2014, 6, 5, 13, 22, 23)
+
+        datetime_mock.datetime = DatetimeMock
+        datetime_mock.timedelta = datetime.timedelta
+
+        result = api.get_yesterday_cost(1)
+        self.assertEqual(result, {1: 1.9043})
+
+    @patch('reports.api.datetime')
+    def test_non_existing_yesterday_cost(self, datetime_mock):
+        class DatetimeMock(datetime.datetime):
+            @classmethod
+            def utcnow(cls):
+                return datetime.datetime(2014, 6, 10, 13, 22, 23)
+
+        datetime_mock.datetime = DatetimeMock
+        datetime_mock.timedelta = datetime.timedelta
+
+        result = api.get_yesterday_cost(1)
+        self.assertEqual(result, {})
+
+
 class ApiTestCase(test.TestCase):
 
     def test_clean_url(self):
