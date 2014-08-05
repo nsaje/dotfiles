@@ -21,4 +21,5 @@ class ArticleStats(models.Model):
 
         permissions = (
             ("yesterday_spend_view", "Can view yesterday spend column."),
+            ("fewer_daterange_options", "Has fewer options available in daterange picker.")
         )
