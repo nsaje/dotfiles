@@ -336,10 +336,12 @@ class AdGroupSourcesTable(api_common.BaseApiView):
         source_settings = models.AdGroupSourceSettings.get_current_settings(
             ad_group, sources)
 
+        yesterday_cost = {}
+        yesterday_total_cost = None
         if request.user.has_perm('reports.yesterday_spend_view'):
             yesterday_cost = reports.api.get_yesterday_cost(ad_group)
-        else:
-            yesterday_cost = {}
+            if yesterday_cost:
+                yesterday_total_cost = sum(yesterday_cost.values())
 
         totals_data = reports.api.query(
             get_stats_start_date(request.GET.get('start_date')),
@@ -364,13 +366,18 @@ class AdGroupSourcesTable(api_common.BaseApiView):
                 yesterday_cost,
                 order=request.GET.get('order', None)
             ),
-            'totals': self.get_totals(ad_group, totals_data, source_settings),
+            'totals': self.get_totals(
+                ad_group,
+                totals_data,
+                source_settings,
+                yesterday_total_cost
+            ),
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(ad_group),
         })
 
-    def get_totals(self, ad_group, totals_data, source_settings):
+    def get_totals(self, ad_group, totals_data, source_settings, yesterday_cost):
         return {
             'daily_budget': float(sum(settings.daily_budget_cc for settings in source_settings.values()
                                       if settings.daily_budget_cc is not None)),
@@ -379,6 +386,7 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             'clicks': totals_data['clicks'],
             'impressions': totals_data['impressions'],
             'ctr': totals_data['ctr'],
+            'yesterday_cost': yesterday_cost
         }
 
     def get_rows(self, ad_group, sources, sources_data, source_settings, last_actions, yesterday_cost, order=None):
