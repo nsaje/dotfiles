@@ -3,6 +3,7 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
+from django.views.generic import TemplateView
 
 import utils.statsd_helper
 
@@ -106,6 +107,12 @@ urlpatterns += patterns(
         dash.views.healthcheck,
         name='healthcheck',
     )
+)
+
+# TOS
+urlpatterns +=  patterns(
+    '',
+    url(r'^tos/$', TemplateView.as_view(template_name='tos.html')),
 )
 
 urlpatterns += patterns(
