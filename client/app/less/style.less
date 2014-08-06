@@ -849,6 +849,31 @@ div[datepicker] {
     }
 }
 
+
+.page-ad-group-ads,
+.page-ad-group-sources {
+    .alert-sync {
+        margin-bottom: 10px;
+    }
+
+    .last-sync {
+        text-align: center;
+        font-size: 12px;
+        color: #737373;
+    }
+}
+
+.page-ad-group-ads {
+    .ads-table {
+        .title {
+            max-width: 50ex;
+        }
+        .url {
+            max-width: 30ex;
+        }
+    }
+}
+
 .page-ad-group-settings {
     .alert-info {
         width: 700px;
@@ -952,19 +977,6 @@ div[datepicker] {
         display: inline-block;
         /*margin-top: 6px;*/
         /*margin-bottom: 9px;*/
-    }
-}
-
-.page-ad-group-ads,
-.page-ad-group-sources {
-    .alert-sync {
-        margin-bottom: 10px;
-    }
-
-    .last-sync {
-        text-align: center;
-        font-size: 12px;
-        color: #737373;
     }
 }
 
@@ -1093,10 +1105,18 @@ div[datepicker] {
         margin-right: 1ex;
     }
 
-    tr > td .currency-3 {
-        display: inline-block;
-        min-width: 6ex;
-        text-align: left;
+    tr > td {
+        & .currency-3 {
+            display: inline-block;
+            min-width: 6ex;
+            text-align: left;
+        }
+
+        &.trimmed {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
     }
 }
 

@@ -36,7 +36,7 @@
         <div class="loader-container">
             <div class="loader" ng-show="rows.length && loadRequestInProgress"></div>
 
-            <table class="table table-hover">
+            <table class="table table-hover ads-table">
                 <thead>
                     <tr>
                         <th class="arrow" ng-class="{ordered: order === '-title', 'ordered-reverse': order === 'title'}"><a href="" ng-click="orderTableData('title')">Title</a></th>
@@ -53,8 +53,8 @@
                         <td class="no-data" colspan="{{ selectedColumnsCount + 2}}">No data</td>
                     </tr>
                     <tr ng-repeat="row in rows">
-                        <td><a href="{{ row.url }}" target="_blank">{{ row.title }}</a></td>
-                        <td class="" ng-class="{number: col.type !== 'url', 'text-right': col.type !== 'url'}" ng-repeat="col in columns | filter: {checked: true}">
+                        <td class="trimmed title"><a href="{{ row.url }}" title="{{ row.title }}" target="_blank">{{ row.title }}</a></td>
+                        <td class="" ng-class="{number: col.type !== 'url', 'text-right': col.type !== 'url', trimmed: col.type === 'url', url: col.type === 'url'}" ng-repeat="col in columns | filter: {checked: true}">
                             <span ng-switch="col.type">
                                 <span ng-switch-when="currency">
                                     <span ng-class="{'currency-3': col.fractionSize === 3}">
@@ -68,7 +68,7 @@
                                     {{ (row[col.field] | number:0) || 'N/A' }}
                                 </span>
                                 <span ng-switch-when="url">
-                                    <a href="{{ row.url }}" title="{{ row.url }}" target="_blank">{{ row.url | limitTo:30 }}<span ng-if="row.url.length > 30">...</span></a>
+                                    <a href="{{ row.url }}" title="{{ row.url }}" target="_blank">{{ row.url }}</a>
                                 </span>
                             </span>
                         </td>
