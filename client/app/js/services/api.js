@@ -170,7 +170,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 clicks: data.clicks,
                 impressions: data.impressions,
                 ctr: data.ctr !== null ? parseFloat((data.ctr).toFixed(2)) : null,
-                cpc: data.cpc !== null ? parseFloat((data.cpc).toFixed(2)) : null,
+                cpc: data.cpc !== null ? parseFloat((data.cpc).toFixed(3)) : null,
                 cost: data.cost !== null ? parseFloat((data.cost).toFixed(2)) : null,
                 sourceId: data.source || null,
                 sourceName: data.source_name || null
