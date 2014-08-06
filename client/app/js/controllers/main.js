@@ -1,4 +1,4 @@
-/*globals oneApp,$*/
+/*globals oneApp,$,moment*/
 oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'api', 'zemMoment', function ($scope, $state, $location, $document, api, zemMoment) {
     $scope.tabs = [
         {heading: 'Content Ads', route: 'adGroups.ads', active: true},
@@ -17,20 +17,34 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
         var i = 0;
         var monthsCount = 3;
         var formatStr = 'MMMM YYYY';
+        var currentMonth = null;
 
-        result['Today'] = [zemMoment().startOf('day'), zemMoment().endOf('day')];
-        result['Yesterday'] = [zemMoment().subtract('days', 1).startOf('day'), zemMoment().subtract('days', 1).endOf('day')];
-        result['This week'] = [zemMoment().startOf('week'), zemMoment()];
-        result['Previous week'] = [zemMoment().subtract('days', 7).startOf('week'), zemMoment().subtract('days', 7).endOf('week')];
-        result['Last 14 days'] = [zemMoment().subtract('days', 14), zemMoment()];
-        result['This month'] = [zemMoment().startOf('month'), zemMoment()];
-        result['Last 30 Days'] = [zemMoment().subtract('days', 29), zemMoment()];
+        if ($scope.hasPermission('reports.fewer_daterange_options')) {
+            result['Yesterday'] = [zemMoment().subtract('days', 1).startOf('day'), zemMoment().subtract('days', 1).endOf('day')];
+            currentMonth = zemMoment().startOf('month');
+            result[currentMonth.format('MMMM')] = [currentMonth, zemMoment().subtract('days', 1)];
+            result['Last 30 Days'] = [zemMoment().subtract('days', 29), zemMoment().subtract('days', 1)];
 
-        for (i = 0; i < monthsCount; i++) {
-            result[zemMoment().subtract('month', i+1).format(formatStr)] = [zemMoment().subtract('month', i+1).startOf('month'), zemMoment().subtract('month', i+1).endOf('month')];
+            for (i = 0; i < monthsCount; i++) {
+                result[zemMoment().subtract('month', i+1).format(formatStr)] = [zemMoment().subtract('month', i+1).startOf('month'), zemMoment().subtract('month', i+1).endOf('month')];
+            }
+
+            result['Year to date'] = [zemMoment().startOf('year'), zemMoment().subtract('days', 1)];
+        } else {
+            result['Today'] = [zemMoment().startOf('day'), zemMoment().endOf('day')];
+            result['Yesterday'] = [zemMoment().subtract('days', 1).startOf('day'), zemMoment().subtract('days', 1).endOf('day')];
+            result['This week'] = [zemMoment().startOf('week'), zemMoment()];
+            result['Previous week'] = [zemMoment().subtract('days', 7).startOf('week'), zemMoment().subtract('days', 7).endOf('week')];
+            result['Last 14 days'] = [zemMoment().subtract('days', 14), zemMoment()];
+            result['This month'] = [zemMoment().startOf('month'), zemMoment()];
+            result['Last 30 Days'] = [zemMoment().subtract('days', 29), zemMoment()];
+
+            for (i = 0; i < monthsCount; i++) {
+                result[zemMoment().subtract('month', i+1).format(formatStr)] = [zemMoment().subtract('month', i+1).startOf('month'), zemMoment().subtract('month', i+1).endOf('month')];
+            }
+
+            result['Year to date'] = [zemMoment().startOf('year'), $scope.maxDate];
         }
-
-        result['Year to date'] = [zemMoment().startOf('year'), zemMoment()];
 
         return result;
     };
@@ -38,9 +52,46 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
     // this function is used by ad_grou_ conrollers to set $scope.$scope.isAdGroupPaused
     $scope.setAdGroupPaused = function(val) {
         $scope.isAdGroupPaused = val;
-    }
+    };
 
-    $scope.dateRanges = $scope.getDateRanges();
+    $scope.setDateRangeFromSearch = function () {
+        var startDate = $location.search().start_date;
+        var endDate = $location.search().end_date;
+        var dateRange = {};
+
+        if (startDate !== undefined && $scope.startDate !== startDate) {
+            dateRange.startDate = moment(startDate);
+        }
+
+        if (endDate !== undefined && $scope.endDate !== endDate) {
+            dateRange.endDate = moment(endDate);
+        }
+
+        if (!$.isEmptyObject(dateRange)) {
+            $scope.dateRange = dateRange;
+        }
+    };
+
+    $scope.$watch('user', function (newValue, oldValue) {
+        if (newValue) {
+            if ($scope.hasPermission('reports.fewer_daterange_options')) {
+                $scope.maxDate = zemMoment().subtract('day', 1);
+                $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
+                $scope.dateRange = {
+                    startDate: zemMoment().subtract('day', 29).hours(0).minutes(0).seconds(0).milliseconds(0),
+                    endDate: zemMoment().subtract('day', 1).endOf('day')
+                };
+            } else {
+                $scope.dateRange = {
+                    startDate: zemMoment().subtract('day', 30).hours(0).minutes(0).seconds(0).milliseconds(0),
+                    endDate: zemMoment().hours(0).minutes(0).seconds(0).milliseconds(0)
+                };
+            }
+
+            $scope.setDateRangeFromSearch();
+            $scope.dateRanges = $scope.getDateRanges();
+        }
+    });
 
     $scope.adGroupData = {};
 
@@ -52,11 +103,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
         var data = $scope.adGroupData[$state.params.id] || {};
         data[key] = value;
         $scope.adGroupData[$state.params.id] = data;
-    };
-
-    $scope.dateRange = {
-        startDate: zemMoment().subtract('day', 30).hours(0).minutes(0).seconds(0).milliseconds(0),
-        endDate: zemMoment().hours(0).minutes(0).seconds(0).milliseconds(0)
     };
 
     $scope.breadcrumb = [];
@@ -103,21 +149,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
             tab.active = $state.is(tab.route);
         });
 
-        var startDate = $location.search().start_date;
-        var endDate = $location.search().end_date;
-        var dateRange = {};
-
-        if (startDate !== undefined && $scope.startDate !== startDate) {
-			dateRange.startDate = moment(startDate);
-        }
-
-        if (endDate !== undefined && $scope.endDate !== endDate) {
-			dateRange.endDate = moment(endDate);
-        }
-
-        if (!$.isEmptyObject(dateRange)) {
-            $scope.dateRange = dateRange;
-        }
+        $scope.setDateRangeFromSearch();
 
         if (fromParams && fromParams.id && toParams && fromParams.id !== toParams.id) {
             // On ad group switch, get previous selected rows
@@ -126,7 +158,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
             $location.search('source_ids', data.sourceIds && data.sourceIds.join(','));
             $location.search('source_totals', data.sourceTotals ? 1 : null);
 
-            $location.search('page', data.page)
+            $location.search('page', data.page);
         }
     };
 
