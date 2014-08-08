@@ -39,8 +39,8 @@
             <table class="table table-hover ads-table">
                 <thead>
                     <tr>
-                        <th class="arrow" ng-class="{ordered: order === '-title', 'ordered-reverse': order === 'title'}"><a href="" ng-click="orderTableData('title')">Title</a></th>
-                        <th class="arrow" ng-class="{'text-right': col.type !== 'url', ordered: order === '-' + col.field, 'ordered-reverse': order === col.field, 'trimmed-currency': (col.type === 'currency' && col.fractionSize > 2)}" ng-repeat="col in columns | filter: {checked: true}"><a href="" ng-click="orderTableData(col.field)">{{ col.name }}</a></th>
+                        <th class="arrow" ng-class="{ordered: order === '-title', 'ordered-reverse': order === 'title'}"><a href="" class="order" ng-click="orderTableData('title')">Title</a><zem-help-popover content="The title of the content ad as provided by media source. There might be multiple content ads if different title is set with different media sources."></zem-help-popover></th>
+                        <th class="arrow" ng-class="{'text-right': col.type !== 'url', ordered: order === '-' + col.field, 'ordered-reverse': order === col.field, 'trimmed-currency': (col.type === 'currency' && col.fractionSize > 2)}" ng-repeat="col in columns | filter: {checked: true}"><a href="" class="order" ng-click="orderTableData(col.field)">{{ col.name }}</a><zem-help-popover ng-if="col.help" content="{{ col.help }}"></zem-help-popover></th>
                     </tr>
                 </thead>
                 <tbody>

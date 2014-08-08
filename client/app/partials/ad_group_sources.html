@@ -38,9 +38,9 @@
                 <thead>
                     <tr>
                         <th></th>
-                        <th class="arrow" ng-class="{ordered: order === '-name', 'ordered-reverse': order === 'name'}"><a href ng-click="orderRows('name')">Media Source</a></th>
-                        <th class="text-center arrow" ng-class="{ordered: order === '-status', 'ordered-reverse': order === 'status'}"><a href ng-click="orderRows('status')">Status</a></th>
-                        <th class="text-right arrow" ng-class="{'text-right': col.type !== 'url', ordered: order === '-' + col.field, 'ordered-reverse': order === col.field, 'trimmed-currency': (col.type === 'currency' && col.fractionSize > 2)}" ng-repeat="col in columns | filter: {checked: true}"><a href ng-click="orderRows(col.field)">{{ col.name }}</a></th>
+                        <th class="arrow" ng-class="{ordered: order === '-name', 'ordered-reverse': order === 'name'}"><a href class="order" ng-click="orderRows('name')">Media Source</a><zem-help-popover content="Media source is a vendor providing traffic through relationships with publishers. "></zem-help-popover></th>
+                        <th class="text-center arrow" ng-class="{ordered: order === '-status', 'ordered-reverse': order === 'status'}"><a class="order" href ng-click="orderRows('status')">Status</a><zem-help-popover content="The status shows if the ad group is enabled on this media source or it is paused."></zem-help-popover></th>
+                        <th class="text-right arrow" ng-class="{'text-right': col.type !== 'url', ordered: order === '-' + col.field, 'ordered-reverse': order === col.field, 'trimmed-currency': (col.type === 'currency' && col.fractionSize > 2)}" ng-repeat="col in columns | filter: {checked: true}"><a href class="order" ng-click="orderRows(col.field)">{{ col.name }}</a><zem-help-popover ng-if="col.help" content="{{ col.help }}"></zem-help-popover></th>
                     </tr>
                 </thead>
                 <tbody>

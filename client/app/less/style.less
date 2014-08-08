@@ -318,6 +318,40 @@ a:visited {
     }
 }
 
+.popover {
+    .border-radius(0);
+    .box-shadow(none);
+    border: none;
+    padding: 0px;
+
+    &:before {
+        content: "";
+        display: block;
+        height: 2px;
+        background-color: #2fa8c7;
+        .border-radius(2px 2px 0px 0px);
+    }
+    
+    .popover-inner {
+        background-color: #fff;
+        color: #414141;
+        font-weight: 300;
+        border: 1px solid #d2d2d2;
+        border-top: 0px;
+        .border-radius(0px 0px 2px 2px);
+        .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
+    }
+
+    &.top > .arrow {
+        border-top-color: #d2d2d2;
+        bottom: -10px;
+    }
+
+    &.left > .arrow {
+        right: -10px;
+    }
+}
+
 div[datepicker] {
     .btn,
     .btn:hover {
@@ -668,6 +702,27 @@ div[datepicker] {
 
 // Custom page styles
 
+
+a.help-popover,
+a.help-popover:hover,
+a.help-popover:active,
+a.help-popover:visited {
+    display: inline-block;
+    border: 1px solid #d2d2d2;
+    .border-radius(2px);
+    padding: 0px 2px 0px 3px;;
+    font-size: 10px;
+    line-height: 10px;
+    text-align: center;
+    text-decoration: none;
+    vertical-align: middle;
+    &:after {
+        color: #d2d2d2;
+        font-weight: 300;
+        content: "?";
+    }
+}
+
 .header {
     line-height: 51px;
 
@@ -818,7 +873,7 @@ div[datepicker] {
     }
 
     .section {
-	    clear: both;
+        clear: both;
 
         &:first-child {
             margin-top: 0;
@@ -1060,11 +1115,11 @@ div[datepicker] {
         background: url('../../img/arrow-up.svg');
         visibility: visible;
         background-size: 10px 10px;
-	-webkit-transform: rotate(180deg);
-	-moz-transform: rotate(180deg);
-	-ms-transform: rotate(180deg);
-	-o-transform: rotate(180deg);
-	transform: rotate(180deg);
+        -webkit-transform: rotate(180deg);
+        -moz-transform: rotate(180deg);
+        -ms-transform: rotate(180deg);
+        -o-transform: rotate(180deg);
+        transform: rotate(180deg);
     }
 
     .arrow-offset() {
@@ -1080,17 +1135,17 @@ div[datepicker] {
         }
     }
 
-    thead > tr > th.arrow a::after {
+    thead > tr > th.arrow a.order::after {
         .arrow-placeholder();
         .arrow-offset();
     }
 
-    thead > tr > th.arrow.ordered a::after {
+    thead > tr > th.arrow.ordered a.order::after {
         .arrow-down();
         .arrow-offset();
     }
 
-    thead > tr > th.arrow.ordered-reverse a::after {
+    thead > tr > th.arrow.ordered-reverse a.order::after {
         .arrow-up();
         .arrow-offset();
     }

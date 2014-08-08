@@ -14,7 +14,10 @@
         </div>
 
         <div class="form-group" ng-class="{'has-error': !!errors.name}">
-            <label for="name-input" class="col-xs-1 control-label">Name</label>
+            <label for="name-input" class="col-xs-1 control-label">
+                Name
+                <zem-help-popover content="The name of the ad group."></zem-help-popover>
+            </label>
             <div class="col-xs-3">
                 <input id="name-input" type="text" class="form-control" ng-model="settings.name">
             </div>
@@ -23,7 +26,10 @@
         </div>
 
         <div class="form-group" ng-class="{'has-error': !!errors.startDate}">
-            <label for="start-date-input" class="col-xs-2 control-label">Start date</label>
+            <label for="start-date-input" class="col-xs-2 control-label">
+                Start date
+                <zem-help-popover content="The date when promotion of content ads within this ad group has started."></zem-help-popover>
+            </label>
             <div class="col-xs-2">
                 <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="settings.startDate" min-date="datepickerMinDate" is-open="isStartDatePickerOpen" ng-click="openDatePicker('startDate')">
             </div>
@@ -32,7 +38,10 @@
         </div>
 
         <div class="form-group" ng-class="{'has-error': !!errors.endDate}">
-            <label for="end-date-input" class="col-xs-2 control-label">End date</label>
+            <label for="end-date-input" class="col-xs-2 control-label">
+                End date
+                <zem-help-popover content="The date when promotion of content ads within this ad group should end. "></zem-help-popover>
+            </label>
             <div class="col-xs-2">
                 <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="settings.endDate" min-date="datepickerMinDate" is-open="isEndDatePickerOpen" ng-click="openDatePicker('endDate')">
             </div>
@@ -47,7 +56,10 @@
         </div>
 
         <div class="form-group" ng-class="{'has-error': !!errors.dailyBudget}">
-            <label for="budget-input" class="col-xs-2 control-label">Daily budget</label>
+            <label for="budget-input" class="col-xs-2 control-label">
+                Daily budget
+                <zem-help-popover content="Approximate amount that should be spent per day on this media source."></zem-help-popover>
+            </label>
             <div class="col-xs-2">
                 <div class="input-group">
                     <span class="input-group-addon">$</span>
@@ -60,7 +72,10 @@
         </div>
 
         <div class="form-group" ng-class="{'has-error': !!errors.cpc}">
-            <label for="cpc-input" class="col-xs-2 control-label">CPC</label>
+            <label for="cpc-input" class="col-xs-2 control-label">
+                Max bid
+                <zem-help-popover content="Maximum acceptable bid (in dollars) for promoting content ads of this ad group on this media source."></zem-help-popover>
+            </label>
             <div class="col-xs-2">
                 <div class="input-group">
                     <span class="input-group-addon">$</span>
@@ -73,7 +88,10 @@
 
         <div class="form-vertical">
             <div class="form-group" ng-class="{'has-error': !!errors.targetDevices}">
-                <label class="col-xs-2 control-label">Device targeting</label>
+                <label class="col-xs-2 control-label">
+                    Device targeting
+                    <zem-help-popover content="The devices on which your content ads should be shown."></zem-help-popover>
+                </label>
                 <div class="col">
                     <div class="checkbox" ng-repeat='device in settings.targetDevices'>
                         <label>
@@ -86,7 +104,10 @@
             </div>
 
             <div class="form-group" ng-class="{'has-error': !!errors.targetRegions}">
-                <label class="col-xs-2 control-label">Geographical targeting</label>
+                <label class="col-xs-2 control-label">
+                    Geographical targeting
+                    <zem-help-popover content="Countries where your content ads should be shown."></zem-help-popover>
+                </label>
                 <div class="col">
                     <div class="radio">
                         <label>
@@ -108,7 +129,10 @@
             </div>
 
             <div class="form-group" ng-class="{'has-error': !!errors.trackingCode}">
-                <label for="tracking-input" class="col-xs-2 control-label">Tracking codes</label>
+                <label for="tracking-input" class="col-xs-2 control-label">
+                    Tracking codes
+                    <zem-help-popover content="The tracking codes that should be used in order for the traffic to be visible in Google Analytics. Please contact your account manager for setting this field."></zem-help-popover>
+                </label>
                 <div class="col-xs-4">
                     <textarea id="tracking-input" type="text" class="form-control" rows="4" ng-model="settings.trackingCode"></textarea>
                 </div>
