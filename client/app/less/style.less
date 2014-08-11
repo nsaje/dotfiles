@@ -711,6 +711,7 @@ a.help-popover:visited {
     border: 1px solid #d2d2d2;
     .border-radius(2px);
     padding: 0px 2px 0px 3px;;
+    margin-left: 5px;
     font-size: 10px;
     line-height: 10px;
     text-align: center;
@@ -1096,34 +1097,30 @@ a.help-popover:visited {
 
     .arrow-placeholder() {
         content: "";
-        display: inline-block;
         position: relative;
         width: 10px;
         height: 10px;
-        visibility: hidden;
+        display: none;
+        margin-left: 5px;
     }
 
     .arrow-up() {
         .arrow-placeholder();
         background: url('../../img/arrow-up.svg');
-        visibility: visible;
+        display: inline-block;
         background-size: 10px 10px;
     }
 
     .arrow-down() {
         .arrow-placeholder();
         background: url('../../img/arrow-up.svg');
-        visibility: visible;
+        display: inline-block;
         background-size: 10px 10px;
         -webkit-transform: rotate(180deg);
         -moz-transform: rotate(180deg);
         -ms-transform: rotate(180deg);
         -o-transform: rotate(180deg);
         transform: rotate(180deg);
-    }
-
-    .arrow-offset() {
-        right: -5px;
     }
 
     thead > tr > th {
@@ -1137,27 +1134,14 @@ a.help-popover:visited {
 
     thead > tr > th.arrow a.order::after {
         .arrow-placeholder();
-        .arrow-offset();
     }
 
     thead > tr > th.arrow.ordered a.order::after {
         .arrow-down();
-        .arrow-offset();
     }
 
     thead > tr > th.arrow.ordered-reverse a.order::after {
         .arrow-up();
-        .arrow-offset();
-    }
-
-    thead > tr >  th.text-right.arrow a {
-        position: relative;
-        right: -10px;
-    }
-
-    thead > tr > th.text-center.arrow a {
-        position: relative;
-        right: -5px;
     }
 
     thead > tr > th.trimmed-currency a {
