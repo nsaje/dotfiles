@@ -1,4 +1,3 @@
-
 import datetime
 import json
 import logging
@@ -578,7 +577,7 @@ class AdGroupSourcesExport(api_common.BaseApiView):
             end_date
         )
 
-        results = generate_rows(
+        date_source_results = generate_rows(
             ['date', 'source'],
             ad_group.id,
             start_date,
@@ -586,9 +585,21 @@ class AdGroupSourcesExport(api_common.BaseApiView):
         )
 
         if request.GET.get('type') == 'excel':
-            return self.create_excel_response(results, filename)
+            date_results = generate_rows(
+                ['date'],
+                ad_group.id,
+                start_date,
+                end_date
+            )
+
+            return self.create_excel_response(
+                date_results,
+                date_source_results,
+                filename,
+                request.user.has_perm('reports.per_day_sheet_source_export')
+            )
         else:
-            return self.create_csv_response(results, filename)
+            return self.create_csv_response(date_source_results, filename)
 
     def create_csv_response(self, data, filename):
         response = self.create_file_response('text/csv; name="%s.csv"' % filename, '%s.csv' % filename)
@@ -620,17 +631,34 @@ class AdGroupSourcesExport(api_common.BaseApiView):
 
         return response
 
-    def create_excel_response(self, data, filename):
+    def create_excel_response(self, date_data, date_source_data, filename, include_per_day=False):
         response = self.create_file_response('application/octet-stream', '%s.xls' % filename)
 
         workbook = Workbook(encoding='UTF-8')
+
+        if include_per_day:
+            create_excel_worksheet(
+                workbook,
+                'Per-Day Report',
+                [],
+                ['Date', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'],
+                date_data,
+                lambda item: [
+                    (item['date'], excel_styles.style_date),
+                    (item['cost'] or 0, excel_styles.style_usd),
+                    (item['cpc'] or 0, excel_styles.style_usd),
+                    (item['clicks'] or 0,),
+                    (item['impressions'] or 0,),
+                    ((item['ctr'] or 0) / 100, excel_styles.style_percent)
+                ]
+            )
 
         create_excel_worksheet(
             workbook,
             'Per-Source Report',
             [(1, 6000), (5, 3000)],
             ['Date', 'Source', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'],
-            data,
+            date_source_data,
             lambda item: [
                 (item['date'], excel_styles.style_date),
                 (item['source'],),
