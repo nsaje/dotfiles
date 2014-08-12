@@ -32,7 +32,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             help: 'Approximate amount that should be spent per day on this media source.'
         },
         {
-            name: 'Cost',
+            name: 'Spend',
             field: 'cost',
             checked: true,
             type: 'currency',
