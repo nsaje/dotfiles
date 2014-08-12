@@ -1,16 +1,21 @@
-/*globals oneApp,$,moment*/
-oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'api', 'zemMoment', function ($scope, $state, $location, $document, api, zemMoment) {
-    $scope.tabs = [
-        {heading: 'Content Ads', route: 'adGroups.ads', active: true},
-        {heading: 'Media Sources', route: 'adGroups.sources', active: false}
-    ];
-    $scope.accounts = null;
-    $scope.user = null;
+/*globals oneApp,$*/
+oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'api', 'zemMoment', 'user', 'accounts', function ($scope, $state, $location, $document, api, zemMoment, user, accounts) {
+    $scope.accounts = accounts;
+    $scope.user = user;
     $scope.currentRoute = $scope.current;
     $scope.inputDateFormat = 'M/D/YYYY';
     $scope.maxDate = zemMoment();
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
-    $scope.isAdGroupPaused = false;
+
+    $scope.adGroupData = {};
+
+    if (!$state.params.id && $scope.accounts && $scope.accounts.length) {
+        $state.go('main.adGroups.ads', {id: $scope.accounts[0].campaigns[0].adGroups[0].id});
+    }
+
+    $scope.hasPermission = function (permission) {
+        return $scope.user.permissions.indexOf(permission) >= 0;
+    };
 
     $scope.getDateRanges = function () {
         var result = {};
@@ -49,22 +54,17 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
         return result;
     };
 
-    // this function is used by ad_grou_ conrollers to set $scope.$scope.isAdGroupPaused
-    $scope.setAdGroupPaused = function(val) {
-        $scope.isAdGroupPaused = val;
-    };
-
     $scope.setDateRangeFromSearch = function () {
         var startDate = $location.search().start_date;
         var endDate = $location.search().end_date;
         var dateRange = {};
 
         if (startDate !== undefined && $scope.startDate !== startDate) {
-            dateRange.startDate = moment(startDate);
+            dateRange.startDate = zemMoment(startDate);
         }
 
         if (endDate !== undefined && $scope.endDate !== endDate) {
-            dateRange.endDate = moment(endDate);
+            dateRange.endDate = zemMoment(endDate);
         }
 
         if (!$.isEmptyObject(dateRange)) {
@@ -72,38 +72,22 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
         }
     };
 
-    $scope.$watch('user', function (newValue, oldValue) {
-        if (newValue) {
-            if ($scope.hasPermission('reports.fewer_daterange_options')) {
-                $scope.maxDate = zemMoment().subtract('day', 1);
-                $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
-                $scope.dateRange = {
-                    startDate: zemMoment().subtract('day', 29).hours(0).minutes(0).seconds(0).milliseconds(0),
-                    endDate: zemMoment().subtract('day', 1).endOf('day')
-                };
-            } else {
-                $scope.dateRange = {
-                    startDate: zemMoment().subtract('day', 30).hours(0).minutes(0).seconds(0).milliseconds(0),
-                    endDate: zemMoment().hours(0).minutes(0).seconds(0).milliseconds(0)
-                };
-            }
+    if ($scope.hasPermission('reports.fewer_daterange_options')) {
+        $scope.maxDate = zemMoment().subtract('day', 1);
+        $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
+        $scope.dateRange = {
+            startDate: zemMoment().subtract('day', 29).hours(0).minutes(0).seconds(0).milliseconds(0),
+            endDate: zemMoment().subtract('day', 1).endOf('day')
+        };
+    } else {
+        $scope.dateRange = {
+            startDate: zemMoment().subtract('day', 30).hours(0).minutes(0).seconds(0).milliseconds(0),
+            endDate: zemMoment().hours(0).minutes(0).seconds(0).milliseconds(0)
+        };
+    }
 
-            $scope.setDateRangeFromSearch();
-            $scope.dateRanges = $scope.getDateRanges();
-        }
-    });
-
-    $scope.adGroupData = {};
-
-    $scope.hasPermission = function (permission) {
-        return $scope.user.permissions.indexOf(permission) >= 0;
-    };
-
-    $scope.setAdGroupData = function (key, value) {
-        var data = $scope.adGroupData[$state.params.id] || {};
-        data[key] = value;
-        $scope.adGroupData[$state.params.id] = data;
-    };
+    $scope.setDateRangeFromSearch();
+    $scope.dateRanges = $scope.getDateRanges();
 
     $scope.breadcrumb = [];
 
@@ -141,52 +125,11 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
             });
         });
     };
-    
-    $scope.stateChangeHandler = function (event, toState, toParams, fromState, fromParams) {
+
+    $scope.$on("$stateChangeSuccess", function (event, toState, toParams, fromState, fromParams) {
         $scope.currentRoute = $state.current;
         $scope.setBreadcrumb();
-        $scope.tabs.forEach(function(tab) {
-            tab.active = $state.is(tab.route);
-        });
-
         $scope.setDateRangeFromSearch();
-
-        if (fromParams && fromParams.id && toParams && fromParams.id !== toParams.id) {
-            // On ad group switch, get previous selected rows
-            var data = $scope.adGroupData[$state.params.id] || {};
-
-            $location.search('source_ids', data.sourceIds && data.sourceIds.join(','));
-            $location.search('source_totals', data.sourceTotals ? 1 : null);
-
-            $location.search('page', data.page);
-        }
-    };
-
-    $scope.$on("$stateChangeSuccess", $scope.stateChangeHandler);
-
-    api.navData.list().then(function (data) {
-        $scope.accounts = data;
-
-        if ($state.current.abstract) {
-            if ($scope.accounts && $scope.accounts.length) {
-                $state.go('adGroups.ads', {id: $scope.accounts[0].campaigns[0].adGroups[0].id});
-            }
-        }
-    });
-
-    api.user.get('current').then(function (data) {
-        $scope.user = data;
-        if ($scope.hasPermission('dash.settings_view')) {
-            $scope.tabs.push({
-                heading: 'Settings',
-                route: 'adGroups.settings',
-                active: false
-            });
-
-            $scope.tabs.forEach(function(tab) {
-                tab.active = $state.is(tab.route);
-            });
-        }
     });
 
     $scope.$watch('accounts', function (newValue, oldValue) {
@@ -199,8 +142,4 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
             $location.search('end_date', $scope.dateRange.endDate ? $scope.dateRange.endDate.format() : null);
         }
     });
-
-    if ($scope.stateChangeFired) {
-        $scope.stateChangeHandler();     
-    }
 }]);
