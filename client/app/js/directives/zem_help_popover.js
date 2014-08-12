@@ -5,8 +5,9 @@ oneApp.directive('zemHelpPopover', function(config) {
     return {
         restrict: 'E',
         scope: {
-            content: '@'
+            content: '@',
+            placement: '@'
         },
-        template: '<a href="" class="help-popover" popover="{{ content }}" popover-placement="top" popover-trigger="mouseenter"></a>'
+        template: '<a href="" class="help-popover" popover="{{ content }}" popover-placement="{{ placement }}" popover-trigger="mouseenter" popover-append-to-body="true"></a>'
     };
 });
