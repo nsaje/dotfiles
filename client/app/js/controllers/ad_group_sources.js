@@ -85,7 +85,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                     name: 'Yesterday Spend',
                     field: 'yesterday_cost',
                     checked: false,
-                    type: 'currency'
+                    type: 'currency',
+                    help: 'Amount that you have spent yesterday for promotion on specific media source.'
                 });
             }
 
