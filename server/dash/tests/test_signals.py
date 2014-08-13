@@ -1,4 +1,6 @@
 import mock
+
+from django.contrib.auth import models as authmodels
 from django.db import IntegrityError
 from django.test import TestCase
 
@@ -87,3 +89,30 @@ class TestDashSignals(TestCase):
         settings = dashmodels.AdGroupSourceSettings()
         settings.save()
         self.assertEqual(settings.created_by.username, 'tomaz')
+
+    @mock.patch('utils.signal_handlers.get_request')
+    def test_group_account_automatically_add(self, mock_get_request):
+        self._prepare_mock_get_request(mock_get_request)
+
+        perm = authmodels.Permission.objects.get(
+            codename='group_account_automatically_add')
+        group = authmodels.Group.objects.get(pk=1)
+        group.permissions.add(perm)
+        group.save()
+
+        # This is here just to make sure that there are at least 2 groups in the database
+        # because only 1 will have access to the new account.
+        group2 = authmodels.Group.objects.get(pk=2)
+        self.assertTrue(group2)
+
+        account = dashmodels.Account(name='New Account')
+        account.save()
+
+        self.assertEqual([x.pk for x in account.groups.all()], [1])
+
+        # Make sure that existing accounts are not automatically added to the group.
+        existing_account = dashmodels.Account.objects.get(pk=1)
+        existing_account.name = 'existing test account 1'
+        existing_account.save()
+
+        self.assertEqual([x.pk for x in existing_account.groups.all()], [])
