@@ -109,3 +109,10 @@ class TestDashSignals(TestCase):
         account.save()
 
         self.assertEqual([x.pk for x in account.groups.all()], [1])
+
+        # Make sure that existing accounts are not automatically added to the group.
+        existing_account = dashmodels.Account.objects.get(pk=1)
+        existing_account.name = 'existing test account 1'
+        existing_account.save()
+
+        self.assertEqual([x.pk for x in existing_account.groups.all()], [])
