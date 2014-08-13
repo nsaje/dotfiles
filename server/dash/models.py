@@ -34,9 +34,17 @@ class Account(models.Model):
         null=False
     )
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
+    groups = models.ManyToManyField(auth.models.Group)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+
+    class Meta:
+        ordering = ('-created_dt',)
+
+        permissions = (
+            ('group_account_automatically_add', 'All new accounts are automatically added to group.'),
+        )
 
     def __unicode__(self):
         return self.name
@@ -52,6 +60,7 @@ class Campaign(models.Model, PermissionMixin):
     )
     account = models.ForeignKey(Account, on_delete=models.PROTECT)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
+    groups = models.ManyToManyField(auth.models.Group)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
@@ -136,7 +145,9 @@ class UserAdGroupManager(models.Manager):
         else:
             return queryset.filter(
                 models.Q(campaign__users__id=user.id) |
-                models.Q(campaign__account__users__id=user.id)
+                models.Q(campaign__groups__user__id=user.id) |
+                models.Q(campaign__account__users__id=user.id) |
+                models.Q(campaign__account__groups__user__id=user.id)
             ).distinct('id')
 
 

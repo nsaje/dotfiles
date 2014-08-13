@@ -132,13 +132,18 @@ class AccountUserInline(admin.TabularInline):
         return self.name
 
 
+class AccountGroupInline(admin.TabularInline):
+    model = models.Account.groups.through
+    extra = 0
+
+
 class CampaignInline(admin.TabularInline):
     verbose_name = "Campaign"
     verbose_name_plural = "Campaigns"
     model = models.Campaign
     extra = 0
     can_delete = False
-    exclude = ('users', 'created_dt', 'modified_dt', 'modified_by')
+    exclude = ('users', 'groups', 'created_dt', 'modified_dt', 'modified_by')
     ordering = ('-created_dt',)
     readonly_fields = ('admin_link',)
 
@@ -151,8 +156,8 @@ class AccountAdmin(admin.ModelAdmin):
         'modified_dt'
     )
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
-    exclude = ('users',)
-    inlines = (AccountUserInline, CampaignInline)
+    exclude = ('users', 'groups')
+    inlines = (AccountUserInline, AccountGroupInline, CampaignInline)
 
 
 # Campaign
@@ -164,6 +169,11 @@ class CampaignUserInline(admin.TabularInline):
 
     def __unicode__(self):
         return self.name
+
+
+class CampaignGroupInline(admin.TabularInline):
+    model = models.Campaign.groups.through
+    extra = 0
 
 
 class AdGroupInline(admin.TabularInline):
@@ -185,8 +195,8 @@ class CampaignAdmin(admin.ModelAdmin):
         'modified_dt'
     )
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
-    exclude = ('users',)
-    inlines = (CampaignUserInline, AdGroupInline)
+    exclude = ('users', 'groups')
+    inlines = (CampaignUserInline, CampaignGroupInline, AdGroupInline)
 
 
 class SourceAdmin(admin.ModelAdmin):

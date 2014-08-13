@@ -1,3 +1,13 @@
+# test groups
+- fields:
+    name: 'Test Group'
+  model: auth.Group
+  pk: 1
+
+- fields:
+    name: 'Test Group 2'
+  model: auth.Group
+  pk: 2
 
 # test user
 
@@ -5,7 +15,7 @@
     date_joined: '2014-06-04T09:58:21'
     email: ''
     first_name: ''
-    groups: []
+    groups: [1]
     is_active: true
     is_staff: true
     is_superuser: true
