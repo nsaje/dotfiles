@@ -37,10 +37,18 @@ STATS_END_DELTA = 1
 
 def get_ad_group(user, ad_group_id):
     try:
-        return models.AdGroup.user_objects.get_for_user(user).\
+        return models.AdGroup.objects.get_for_user(user).\
             filter(id=int(ad_group_id)).get()
     except models.AdGroup.DoesNotExist:
         raise exc.MissingDataError('Ad Group does not exist')
+
+
+def get_campaign(user, campaign_id):
+    try:
+        return models.Campaign.objects.get_for_user(user).\
+            filter(id=int(campaign_id)).get()
+    except models.Campaign.DoesNotExist:
+        raise exc.MissingDataError('Campaign does not exist')
 
 
 def daterange(start_date, end_date):
@@ -208,6 +216,106 @@ class NavigationDataView(api_common.BaseApiView):
             data.append(account)
 
         return self.create_api_response(data)
+
+
+class CampaignSettings(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_settings_get')
+    def get(self, request, campaign_id):
+        if not request.user.has_perm('dash.campaign_settings_view'):
+            raise exc.MissingDataError()
+
+        campaign = get_campaign(request.user, campaign_id)
+
+        settings = self.get_current_settings(campaign)
+
+        response = {
+            'settings': self.get_dict(settings, campaign),
+        }
+
+        return self.create_api_response(response)
+
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_put')
+    def put(self, request, ad_group_id):
+        if not request.user.has_perm('dash.settings_view'):
+            raise exc.MissingDataError()
+
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        current_settings = self.get_current_settings(ad_group)
+
+        resource = json.loads(request.body)
+
+        form = forms.AdGroupSettingsForm(
+            current_settings, resource.get('settings', {})
+            # initial=current_settings
+        )
+        if not form.is_valid():
+            raise exc.ValidationError(errors=dict(form.errors))
+
+        self.set_ad_group(ad_group, form.cleaned_data)
+
+        settings = models.AdGroupSettings()
+        self.set_settings(settings, ad_group, form.cleaned_data)
+
+        with transaction.atomic():
+            ad_group.save()
+            settings.save()
+
+        api.order_ad_group_settings_update(ad_group, current_settings, settings)
+
+        response = {
+            'settings': self.get_dict(settings, ad_group),
+            'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group)
+        }
+
+        return self.create_api_response(response)
+
+    def get_current_settings(self, campaign):
+        settings = models.CampaignSettings.objects.\
+            filter(campaign=campaign).\
+            order_by('-created_dt')
+        if settings:
+            settings = settings[0]
+        else:
+            settings = models.CampaignSettings()
+
+        return settings
+
+    def get_dict(self, settings, campaign):
+        result = {}
+
+        if settings:
+            result = {
+                'id': str(campaign.pk),
+                'name': campaign.name,
+                'account_manager':
+                    settings.account_manager.get_full_name()
+                    if settings.account_manager is not None else '',
+                'sales_representative':
+                    settings.sales_representative.get_full_name()
+                    if settings.sales_representative is not None else '',
+                'service_fee':
+                    '{:.2f}'.format(settings.service_fee)
+                    if settings.service_fee is not None else '',
+                'iab_category': settings.iab_category,
+                'promotion_goal': settings.promotion_goal
+            }
+
+        return result
+
+    def set_ad_group(self, ad_group, resource):
+        ad_group.name = resource['name']
+
+    def set_settings(self, settings, ad_group, resource):
+        settings.ad_group = ad_group
+        settings.state = resource['state']
+        settings.start_date = resource['start_date']
+        settings.end_date = resource['end_date']
+        settings.cpc_cc = resource['cpc_cc']
+        settings.daily_budget_cc = resource['daily_budget_cc']
+        settings.target_devices = resource['target_devices']
+        settings.target_regions = resource['target_regions']
+        settings.tracking_code = resource['tracking_code']
 
 
 class AdGroupSettings(api_common.BaseApiView):

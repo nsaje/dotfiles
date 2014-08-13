@@ -42,6 +42,24 @@ class Account(models.Model):
         return self.name
 
 
+class UserAuthorizationManager(models.Manager):
+    def get_for_user(self, user):
+        queryset = super(UserAuthorizationManager, self).get_queryset()
+        if user.is_superuser:
+            return queryset
+        elif queryset.model is Campaign:
+            return queryset.filter(
+                models.Q(users__id=user.id) |
+                models.Q(account__users__id=user.id)
+            ).distinct('id')
+        else:
+            # AdGroup
+            return queryset.filter(
+                models.Q(campaign__users__id=user.id) |
+                models.Q(campaign__account__users__id=user.id)
+            ).distinct('id')
+
+
 class Campaign(models.Model, PermissionMixin):
     id = models.AutoField(primary_key=True)
     name = models.CharField(
@@ -58,6 +76,8 @@ class Campaign(models.Model, PermissionMixin):
 
     USERS_FIELD = 'users'
 
+    objects = UserAuthorizationManager()
+
     def __unicode__(self):
         return self.name
 
@@ -68,6 +88,52 @@ class Campaign(models.Model, PermissionMixin):
             return 'N/A'
 
     admin_link.allow_tags = True
+
+
+class CampaignSettings(models.Model):
+    _settings_fields = [
+        'account_manager',
+        'sales_representative',
+        'service_fee',
+        'iab_category',
+        'promotion_goal'
+    ]
+
+    id = models.AutoField(primary_key=True)
+    campaign = models.ForeignKey(Campaign, related_name='settings', on_delete=models.PROTECT)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    account_manager = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name="+", on_delete=models.PROTECT)
+    sales_representative = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name="+", on_delete=models.PROTECT)
+    service_fee = models.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        blank=False,
+        null=False,
+        verbose_name='Service Fee'
+    )
+    iab_category = models.IntegerField(
+        default=constants.IABCategory.IAB_24,
+        choices=constants.IABCategory.get_choices()
+    )
+    promotion_goal = models.IntegerField(
+        default=constants.PromotionGoal.BRAND_BUILDING,
+        choices=constants.PromotionGoal.get_choices()
+    )
+
+    class Meta:
+        ordering = ('-created_dt',)
+
+        permissions = (
+            ("campaign_settings_view", "Can view campaign settings in dashboard."),
+        )
+
+    @classmethod
+    def get_settings_fields(cls):
+        return cls._settings_fields
+
+    def get_settings_dict(self):
+        return {settings_key: getattr(self, settings_key) for settings_key in self._settings_fields}
 
 
 class Source(models.Model):
@@ -128,18 +194,6 @@ class SourceCredentials(models.Model):
         super(SourceCredentials, self).save(*args, **kwargs)
 
 
-class UserAdGroupManager(models.Manager):
-    def get_for_user(self, user):
-        queryset = super(UserAdGroupManager, self).get_queryset()
-        if user.is_superuser:
-            return queryset
-        else:
-            return queryset.filter(
-                models.Q(campaign__users__id=user.id) |
-                models.Q(campaign__account__users__id=user.id)
-            ).distinct('id')
-
-
 class AdGroup(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(
@@ -154,8 +208,7 @@ class AdGroup(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
 
-    objects = models.Manager()
-    user_objects = UserAdGroupManager()
+    objects = UserAuthorizationManager()
 
     def __unicode__(self):
         return self.name

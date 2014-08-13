@@ -1,1 +1,42 @@
-HELLO
+<div class="page page-ad-group-settings">
+    <alert ng-repeat="alert in alerts" type="{{ alert.type }}" close="closeAlert($index)" ng-bind-html="alert.message"></alert>
+    <alert type="info" ng-show="actionIsWaiting">
+        Settings changes are being propagated to external sources. The sync might take a few hours. If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
+    </alert>
+
+    <form id="form-ad-group-settings" class="form-horizontal">
+        <div class="form-group">
+            <div class="col-xs-4">
+                <div class="btn-group campaign-state-switch">
+                    <label class="btn btn-success" ng-model="settings.state" ng-repeat="state in options.adGroupSettingsStates" btn-radio="state.value">{{ state.name }}</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.name}">
+            <label for="name-input" class="col-xs-1 control-label">Name</label>
+            <div class="col-xs-3">
+                <input id="name-input" type="text" class="form-control" ng-model="settings.name">
+            </div>
+
+            <label ng-repeat="error in errors.name" class="control-label error" for="name-input">{{ error }}</label>
+        </div>
+
+
+        <div class="form-group" ng-class="{'has-error': !!errors.startDate}">
+            <label for="start-date-input" class="col-xs-2 control-label">Account Manager</label>
+            <div class="col-xs-2">
+                <select class="form-control" zem-multiselect multiple ng-model="settings.accountManager"  ng-options="c.value as c.name for c in options.adTargetCountries">
+            </div>
+
+            <label ng-repeat="error in errors.startDate" class="control-label error" for="start-date-input">{{ error }}</label>
+        </div>
+
+		<button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
+		<button type="button" class="btn btn-default" ng-click="discardSettings()">Discard</button>
+        <div class="loader" ng-show="saveRequestInProgress"></div>
+        <span ng-show="saved" class="success">Your updates have been saved.</span>
+        <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
+        <span ng-show="discarded" class="success">Your updates have been discarded.</span>
+	</form>
+</div>
