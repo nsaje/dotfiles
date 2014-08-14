@@ -5,6 +5,8 @@ from django import forms
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
 
+from zemauth.models import User as ZemUser
+
 import constants
 import models
 import json
@@ -214,7 +216,38 @@ class SourceCredentialsAdmin(admin.ModelAdmin):
     readonly_fields = ('created_dt', 'modified_dt')
 
 
+class CampaignSettingsAdmin(admin.ModelAdmin):
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'account_manager':
+            kwargs['queryset'] = ZemUser.objects.get_users_with_perm(
+                'campaign_settings_account_manager'
+            ).order_by('last_name')
+        elif db_field.name == 'sales_representative':
+            kwargs['queryset'] = ZemUser.objects.get_users_with_perm(
+                'campaign_settings_sales_rep'
+            ).order_by('last_name')
+
+        return super(CampaignSettingsAdmin, self).\
+            formfield_for_foreignkey(db_field, request, **kwargs)
+
+    actions = None
+
+    search_fields = ['campaign__name']
+    list_display = (
+        'campaign',
+        'account_manager',
+        'sales_representative',
+        'service_fee',
+        'iab_category',
+        'promotion_goal',
+        'created_dt',
+    )
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 # Ad Group
+
 
 class AdGroupSourcesInline(admin.TabularInline):
     form = AdGroupSourceForm
@@ -286,7 +319,7 @@ class AdGroupSettingsAdmin(admin.ModelAdmin):
 
     actions = None
 
-    search_fields = ['ad_group']
+    search_fields = ['ad_group__name']
     list_display = (
         'ad_group',
         'state',
@@ -314,6 +347,7 @@ class AdGroupSourceSettingsAdmin(admin.ModelAdmin):
 
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
+admin.site.register(models.CampaignSettings, CampaignSettingsAdmin)
 admin.site.register(models.Source, SourceAdmin)
 admin.site.register(models.AdGroup, AdGroupAdmin)
 admin.site.register(models.AdGroupSettings, AdGroupSettingsAdmin)

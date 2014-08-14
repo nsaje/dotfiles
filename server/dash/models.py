@@ -1,5 +1,6 @@
 import jsonfield
 import binascii
+from decimal import Decimal
 
 from django.conf import settings
 from django.contrib import auth
@@ -103,14 +104,29 @@ class CampaignSettings(models.Model):
     campaign = models.ForeignKey(Campaign, related_name='settings', on_delete=models.PROTECT)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
-    account_manager = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name="+", on_delete=models.PROTECT)
-    sales_representative = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name="+", on_delete=models.PROTECT)
+    account_manager = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        related_name="+",
+        on_delete=models.PROTECT
+    )
+    sales_representative = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        related_name="+",
+        on_delete=models.PROTECT
+    )
     service_fee = models.DecimalField(
-        max_digits=4,
-        decimal_places=2,
-        blank=False,
-        null=False,
-        verbose_name='Service Fee'
+        decimal_places=4,
+        max_digits=5,
+        default=0.2,
+        choices=(
+            (Decimal('0.15'), '15%'),
+            (Decimal('0.2'), '20%'),
+            (Decimal('0.205'), '20.5%'),
+            (Decimal('0.2233'), '22.33%'),
+            (Decimal('0.25'), '25%')
+        )
     )
     iab_category = models.IntegerField(
         default=constants.IABCategory.IAB_24,
@@ -123,10 +139,6 @@ class CampaignSettings(models.Model):
 
     class Meta:
         ordering = ('-created_dt',)
-
-        permissions = (
-            ("campaign_settings_view", "Can view campaign settings in dashboard."),
-        )
 
     @classmethod
     def get_settings_fields(cls):

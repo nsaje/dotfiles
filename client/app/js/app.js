@@ -43,7 +43,8 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         })
         .state('main.campaigns.agency', {
             url: '/agency',
-            templateUrl: config.static_url + '/partials/campaign_agency.html'
+            templateUrl: config.static_url + '/partials/campaign_agency.html',
+            controller: 'CampaignAgencyCtrl'
         });
 
 

@@ -599,12 +599,14 @@ div[datepicker] {
     border: 1px solid @default-color;
 }
 
-.select2-container.select2-dropdown-open .select2-choice {
-    .border-radius(2px 2px 0 0);
-}
-
-.select2-container.select2-drop-above.select2-dropdown-open .select2-choice {
-    .border-radius(0 0 2px 2px);
+.select2-container {
+    &.select2-dropdown-open .select2-choice {
+        .border-radius(2px 2px 0 0);
+    }
+    
+    &.select2-drop-above.select2-dropdown-open .select2-choice {
+        .border-radius(0 0 2px 2px);
+    }
 }
 
 .select2-container,
@@ -664,6 +666,17 @@ div[datepicker] {
 .select2-drop.select2-drop-above {
     .border-radius(2px 2px 0 0);
     border-bottom: 0;
+}
+
+// form dropdowns
+.form-control.select2-container {
+    &.select2-dropdown-open {
+        border-color: @default-color;
+    }
+
+    .select2-choice {
+        border: 0;    
+    }
 }
 
 // Custom page styles
@@ -783,6 +796,10 @@ div[datepicker] {
                 font-weight: 600;
                 color: #414141;
                 cursor: pointer;
+
+                &.active {
+                    text-decoration: underline;
+                }
             }
 
             .ad-group-name {

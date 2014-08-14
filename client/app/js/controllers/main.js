@@ -91,23 +91,9 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
 
     $scope.breadcrumb = [];
 
-    $scope.setBreadcrumb = function () {
-        if (!$scope.accounts) {
-            return;
-        }
-
-        $scope.accounts.forEach(function (account) {
-            account.campaigns.forEach(function (campaign) {
-                campaign.adGroups.forEach(function (adGroup) {
-                    if (adGroup.id.toString() === $state.params.id) {
-                        $scope.breadcrumb = [account.name, campaign.name, adGroup.name];
-
-                        // set page title
-                        $document.prop('title', adGroup.name + ' - ' + campaign.name + ' | Zemanta');
-                    }
-                });
-            });
-        });
+    $scope.setBreadcrumbAndTitle = function (breadcrumb, title) {
+        $scope.breadcrumb = breadcrumb;
+        $document.prop('title', title + ' | Zemanta');
     };
 
     $scope.updateAccounts = function (adGroupId, newAdGroupName) {
@@ -128,12 +114,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
 
     $scope.$on("$stateChangeSuccess", function (event, toState, toParams, fromState, fromParams) {
         $scope.currentRoute = $state.current;
-        $scope.setBreadcrumb();
         $scope.setDateRangeFromSearch();
-    });
-
-    $scope.$watch('accounts', function (newValue, oldValue) {
-        $scope.setBreadcrumb();
     });
 
     $scope.$watch('dateRange', function (newValue, oldValue) {

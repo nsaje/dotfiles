@@ -19,6 +19,25 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', function ($sc
         $scope.adGroupData[$state.params.id] = data;
     };
 
+    $scope.updateBreadcrumbAndTitle = function () {
+        if (!$scope.accounts) {
+            return;
+        }
+
+        $scope.accounts.forEach(function (account) {
+            account.campaigns.forEach(function (campaign) {
+                campaign.adGroups.forEach(function (adGroup) {
+                    if (adGroup.id.toString() === $state.params.id) {
+                        $scope.$parent.setBreadcrumbAndTitle(
+                            [account.name, campaign.name, adGroup.name],
+                            adGroup.name + ' - ' + campaign.name
+                        );
+                    }
+                });
+            });
+        });
+    };
+
     $scope.tabs.forEach(function(tab) {
         tab.active = $state.is(tab.route);
     });
@@ -31,4 +50,6 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', function ($sc
         $location.search('source_totals', data && data.sourceTotals ? 1 : null);
         $location.search('page', data && data.page);
     }
+
+    $scope.updateBreadcrumbAndTitle();
 }]);

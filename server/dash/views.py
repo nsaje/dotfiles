@@ -27,6 +27,8 @@ from dash import forms
 from dash import models
 from dash import api
 
+from zemauth.models import User as ZemUser
+
 import constants
 
 logger = logging.getLogger(__name__)
@@ -226,10 +228,12 @@ class CampaignSettings(api_common.BaseApiView):
 
         campaign = get_campaign(request.user, campaign_id)
 
-        settings = self.get_current_settings(campaign)
+        campaign_settings = self.get_current_settings(campaign)
 
         response = {
-            'settings': self.get_dict(settings, campaign),
+            'settings': self.get_dict(campaign_settings, campaign),
+            'account_managers': self.get_user_list('campaign_settings_account_manager'),
+            'sales_reps': self.get_user_list('campaign_settings_sales_rep')
         }
 
         return self.create_api_response(response)
@@ -289,14 +293,12 @@ class CampaignSettings(api_common.BaseApiView):
                 'id': str(campaign.pk),
                 'name': campaign.name,
                 'account_manager':
-                    settings.account_manager.get_full_name()
-                    if settings.account_manager is not None else '',
+                    settings.account_manager.id
+                    if settings.account_manager is not None else None,
                 'sales_representative':
-                    settings.sales_representative.get_full_name()
-                    if settings.sales_representative is not None else '',
-                'service_fee':
-                    '{:.2f}'.format(settings.service_fee)
-                    if settings.service_fee is not None else '',
+                    settings.sales_representative.id
+                    if settings.sales_representative is not None else None,
+                'service_fee': settings.service_fee,
                 'iab_category': settings.iab_category,
                 'promotion_goal': settings.promotion_goal
             }
@@ -316,6 +318,10 @@ class CampaignSettings(api_common.BaseApiView):
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
         settings.tracking_code = resource['tracking_code']
+
+    def get_user_list(self, perm_name):
+        users = ZemUser.objects.get_users_with_perm(perm_name).order_by('last_name')
+        return [{'id': user.id, 'name': user.get_full_name()} for user in users]
 
 
 class AdGroupSettings(api_common.BaseApiView):

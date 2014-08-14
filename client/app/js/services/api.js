@@ -222,7 +222,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
     function AdGroupSettings() {
         function convertFromApi(settings) {
-            var result = {
+            return {
                 id: settings.id,
                 name: settings.name,
                 state: settings.state,
@@ -248,8 +248,6 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 targetRegions: settings.target_regions,
                 trackingCode: settings.tracking_code
             };
-
-            return result;
         }
 
         function convertToApi(settings) {
@@ -351,6 +349,43 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
+    function CampaignSettings() {
+        function convertFromApi(settings) {
+            return {
+                id: settings.id,
+                name: settings.name,
+                accountManager: settings.account_manager,
+                salesRepresentative: settings.sales_representative,
+                serviceFee: settings.service_fee,
+                IABCategory: settings.iab_category,
+                promotionGoal: settings.promotion_goal
+            };
+        }
+
+        this.get = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/campaigns/' + id + '/settings/';
+
+            $http.get(url).
+                success(function (data, status) {
+                    var resource;
+                    if (data && data.data && data.data.settings) {
+                        resource = convertFromApi(data.data.settings);
+                    }
+                    deferred.resolve({
+                        settings: resource,
+                        accountManagers: data.data.account_managers,
+                        salesReps: data.data.sales_reps
+                    });
+                }).
+                error(function(data, status, headers) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
 
     function ActionLog() {
         this.list = function (filters) {
@@ -411,6 +446,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         adGroupSourcesTable: new AdGroupSourcesTable(),
         adGroupAdsTable: new AdGroupAdsTable(),
         adGroupSync: new AdGroupSync(),
+        campaignSettings: new CampaignSettings(),
         checkSyncProgress: new CheckSyncProgress(),
         adGroupSourcesDailyStats: new AdGroupSourcesDailyStats(),
         actionLog: new ActionLog()
