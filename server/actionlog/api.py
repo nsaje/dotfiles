@@ -20,6 +20,14 @@ from dash import constants as dashconstants
 logger = logging.getLogger(__name__)
 
 
+class InsertActionException(Exception):
+    pass
+
+
+class InsertCreateCampaignActionException(InsertActionException):
+    pass
+
+
 def init_stop_ad_group_order(ad_group, source=None):
     with transaction.atomic():
         order = models.ActionLogOrder.objects.create(
@@ -55,6 +63,11 @@ def set_ad_group_property(ad_group, source=None, prop=None, value=None, order=No
     ad_group_sources = _get_ad_group_sources(ad_group, source)
     for ad_group_source in ad_group_sources:
         _init_set_campaign_property(ad_group_source, prop, value, order)
+
+
+def create_campaign(ad_group_source, name):
+    action = _init_create_campaign(ad_group_source, name)
+    zwei_actions.send(action)
 
 
 @transaction.atomic
@@ -167,19 +180,10 @@ def is_sync_in_progress(ad_group):
         state=constants.ActionState.WAITING,
         action_type=constants.ActionType.AUTOMATIC,
         action__in=(constants.Action.FETCH_REPORTS,
-            constants.Action.FETCH_CAMPAIGN_STATUS)
+                    constants.Action.FETCH_CAMPAIGN_STATUS)
     ).exists()
 
     return waiting_actions
-
-
-def _is_fetch_all_order_successful(order):
-    result = order.actionlog_set.\
-        exclude(state=constants.ActionState.SUCCESS).\
-        filter(ad_group_source__source__maintenance=False).\
-        exists()
-
-    return not result
 
 
 def _handle_error(action, e):
@@ -363,3 +367,54 @@ def _init_set_campaign_property(ad_group_source, prop, value, order):
 
     except Exception as e:
         _handle_error(action, e)
+
+
+def _init_create_campaign(ad_group_source, name):
+    if ad_group_source.source_campaign_key:
+        msg = 'Unable to create external campaign for AdGroupSource with existing connection'\
+              'ad_group_source.id={ad_group_source_id}, name={name}, order.id={order_id}'.format(
+                  ad_group_source_id=ad_group_source.id,
+                  name=name,
+              )
+        logger.error(msg)
+
+        raise InsertCreateCampaignActionException(msg)
+
+    msg = "_init_create_campaign started: ad_group_source.id: {}, name: {}".format(
+        ad_group_source.id,
+        name,
+    )
+    logger.info(msg)
+
+    action = models.ActionLog.objects.create(
+        action=constants.Action.CREATE_CAMPAIGN,
+        action_type=constants.ActionType.AUTOMATIC,
+        ad_group_source=ad_group_source,
+    )
+
+    try:
+        with transaction.atomic():
+            callback = urlparse.urljoin(
+                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
+            )
+
+            payload = {
+                'action': action.action,
+                'source': ad_group_source.source.type,
+                'expiration_dt': action.expiration_dt,
+                'credentials':
+                    ad_group_source.source_credentials and
+                    ad_group_source.source_credentials.credentials,
+                'args': {
+                    'name': name,
+                },
+                'callback_url': callback,
+            }
+
+            action.payload = payload
+            action.save()
+
+    except Exception as e:
+        _handle_error(action, e)
+
+    return action
