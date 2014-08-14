@@ -298,10 +298,10 @@ class CampaignSettings(api_common.BaseApiView):
                 'id': str(campaign.pk),
                 'name': campaign.name,
                 'account_manager':
-                    settings.account_manager.id
+                    str(settings.account_manager.id)
                     if settings.account_manager is not None else None,
                 'sales_representative':
-                    settings.sales_representative.id
+                    str(settings.sales_representative.id)
                     if settings.sales_representative is not None else None,
                 'service_fee': settings.service_fee,
                 'iab_category': settings.iab_category,
@@ -326,7 +326,7 @@ class CampaignSettings(api_common.BaseApiView):
 
     def get_user_list(self, perm_name):
         users = ZemUser.objects.get_users_with_perm(perm_name).order_by('last_name')
-        return [{'id': user.id, 'name': user.get_full_name()} for user in users]
+        return [{'id': str(user.id), 'name': user.get_full_name()} for user in users]
 
 
 class AdGroupSettings(api_common.BaseApiView):

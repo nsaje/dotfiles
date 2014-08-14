@@ -7,6 +7,9 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', function ($sc
     ];
 
     $scope.isAdGroupPaused = false;
+    $scope.account = null;
+    $scope.campaign = null;
+    $scope.adGroup = null;
 
     // this function is used by ad_grou_ conrollers to set $scope.$scope.isAdGroupPaused
     $scope.setAdGroupPaused = function(val) {
@@ -19,23 +22,35 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', function ($sc
         $scope.adGroupData[$state.params.id] = data;
     };
 
-    $scope.updateBreadcrumbAndTitle = function () {
-        if (!$scope.accounts) {
-            return;
-        }
-
+    $scope.getModels = function () {
         $scope.accounts.forEach(function (account) {
             account.campaigns.forEach(function (campaign) {
                 campaign.adGroups.forEach(function (adGroup) {
-                    if (adGroup.id.toString() === $state.params.id) {
-                        $scope.$parent.setBreadcrumbAndTitle(
-                            [account.name, campaign.name, adGroup.name],
-                            adGroup.name + ' - ' + campaign.name
-                        );
+                    if (adGroup.id.toString() === $state.params.id.toString()) {
+                        $scope.account  = account;
+                        $scope.campaign = campaign;
+                        $scope.adGroup = adGroup;
                     }
                 });
             });
         });
+    };
+
+    $scope.updateAccounts = function (newAdGroupName) {
+        if (!$scope.accounts || !newAdGroupName) {
+            return;
+        }
+        $scope.adGroup.name = newAdGroupName;
+    };
+
+    $scope.updateBreadcrumbAndTitle = function () {
+        if (!$scope.accounts) {
+            return;
+        }
+        $scope.setBreadcrumbAndTitle(
+            [$scope.account.name, $scope.campaign.name, $scope.adGroup.name],
+            $scope.adGroup.name + ' - ' + $scope.campaign.name
+        );
     };
 
     $scope.tabs.forEach(function(tab) {
@@ -51,5 +66,6 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', function ($sc
         $location.search('page', data && data.page);
     }
 
+    $scope.getModels();
     $scope.updateBreadcrumbAndTitle();
 }]);

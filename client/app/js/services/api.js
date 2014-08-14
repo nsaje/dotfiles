@@ -362,6 +362,33 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             };
         }
 
+        function convertToApi(settings) {
+            return {
+                id: settings.id,
+                name: settings.name,
+                account_manager: settings.accountManager,
+                sales_representative: settings.salesRepresentative,
+                service_fee: settings.serviceFee,
+                iab_ategory: settings.IABCategory,
+                promotion_goal: settings.promotionGoal
+            };
+        }
+
+        function convertValidationErrorFromApi(errors) {
+            var result = {
+                id: errors.id,
+                name: errors.name,
+                accountManager: errors.account_manager,
+                salesRepresentative: errors.sales_representative,
+                serviceFee: errors.service_fee,
+                IABCategory: errors.iab_category,
+                promotionGoal: errors.promotion_goal
+            };
+
+            return result;
+        }
+
+
         this.get = function (id) {
             var deferred = $q.defer();
             var url = '/api/campaigns/' + id + '/settings/';
@@ -380,6 +407,38 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 }).
                 error(function(data, status, headers) {
                     deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.save = function (settings) {
+            var deferred = $q.defer();
+            var url = '/api/campaigns/' + settings.id + '/settings/';
+            var config = {
+                params: {}
+            };
+
+            var data = {
+                'settings': convertToApi(settings)
+            };
+
+            $http.put(url, data, config).
+                success(function (data, status) {
+                    var resource;
+                    if (data && data.data && data.data.settings) {
+                        resource = convertFromApi(data.data.settings);
+                    }
+                    deferred.resolve({
+                        settings: resource
+                    });
+                }).
+                error(function(data, status, headers, config) {
+                    var resource;
+                    if (status === 400 && data && data.data.error_code === 'ValidationError') {
+                        resource = convertValidationErrorFromApi(data.data.errors);
+                    }
+                    deferred.reject(resource);
                 });
 
             return deferred.promise;

@@ -96,22 +96,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
         $document.prop('title', title + ' | Zemanta');
     };
 
-    $scope.updateAccounts = function (adGroupId, newAdGroupName) {
-        if (!$scope.accounts || !adGroupId || !newAdGroupName) {
-            return;
-        }
-
-        $scope.accounts.forEach(function (account) {
-            account.campaigns.forEach(function (campaign) {
-                campaign.adGroups.forEach(function (adGroup) {
-                    if (adGroup.id.toString() === adGroupId.toString()) {
-                        adGroup.name = newAdGroupName;
-                    }
-                });
-            });
-        });
-    };
-
     $scope.$on("$stateChangeSuccess", function (event, toState, toParams, fromState, fromParams) {
         $scope.currentRoute = $state.current;
         $scope.setDateRangeFromSearch();

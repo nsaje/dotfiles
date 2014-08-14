@@ -80,11 +80,11 @@ var options = {
         {name: 'Avg. CPC', value: constants.sourceChartMetric.CPC}
     ],
     serviceFees: [
-        {name: '15%', value: 0.15},
-        {name: '20%', value: 0.20},
-        {name: '20.5%', value: 0.205},
-        {name: '22.33%', value: 0.2233},
-        {name: '25%', value: 0.25},
+        {name: '15%', value: '0.1500'},
+        {name: '20%', value: '0.2000'},
+        {name: '20.5%', value: '0.2050'},
+        {name: '22.33%', value: '0.2233'},
+        {name: '25%', value: '0.2500'},
     ],
     iabCategories: [
         {name: 'Arts & Entertainment', value: constants.iabCategory.IAB_1},

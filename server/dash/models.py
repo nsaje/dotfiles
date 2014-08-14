@@ -134,11 +134,11 @@ class CampaignSettings(models.Model):
         max_digits=5,
         default=0.2,
         choices=(
-            (Decimal('0.15'), '15%'),
-            (Decimal('0.2'), '20%'),
-            (Decimal('0.205'), '20.5%'),
+            (Decimal('0.1500'), '15%'),
+            (Decimal('0.2000'), '20%'),
+            (Decimal('0.2050'), '20.5%'),
             (Decimal('0.2233'), '22.33%'),
-            (Decimal('0.25'), '25%')
+            (Decimal('0.2500'), '25%')
         )
     )
     iab_category = models.IntegerField(

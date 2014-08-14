@@ -12,17 +12,28 @@ describe('AdGroupCtrl', function () {
                 return true;
             };
             $scope.adGroupData = {};
+            $scope.accounts = [{
+                id: 1,
+                campaigns: [{
+                    id: 1,
+                    adGroups: [{
+                        id: 1
+                    }]
+                }]
+            }];
+
+            $scope.setBreadcrumbAndTitle = function () {
+                return;
+            }
 
             $state = _$state_;
+            $state.params.id = 1;
+
             ctrl = $controller('AdGroupCtrl', {$scope: $scope, $state: $state});
         });
     });
 
     describe('setAdGroupData', function () {
-        beforeEach(function () {
-            $state.params.id = 1;
-        });
-
         it('should add key-value pair for the current ad group', function () {
             $scope.adGroupData = { 1: { key1: 'value1' } };
             $scope.setAdGroupData('key2', 'value2');
