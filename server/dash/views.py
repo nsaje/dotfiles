@@ -186,7 +186,12 @@ class NavigationDataView(api_common.BaseApiView):
             ad_groups = (
                 models.AdGroup.objects
                 .select_related('campaign__account')
-                .filter(Q(campaign__users__in=[user_id]) | Q(campaign__account__users__in=[user_id]))
+                .filter(
+                    Q(campaign__users__in=[user_id]) |
+                    Q(campaign__groups__user__id=user_id) |
+                    Q(campaign__account__users__in=[user_id]) |
+                    Q(campaign__account__groups__user__id=user_id)
+                )
             ).distinct('id')
 
         accounts = {}

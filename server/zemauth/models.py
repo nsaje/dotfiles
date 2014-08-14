@@ -85,6 +85,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('campaign_settings_view', 'Can view campaign settings in dashboard.'),
             ('campaign_settings_account_manager', 'Can be chosen as account manager.'),
             ('campaign_settings_sales_rep', 'Can be chosen as sales representative.'),
+            ('help_view', 'Can view help popovers.')
         )
 
     def get_full_name(self):

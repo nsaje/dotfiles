@@ -20,40 +20,45 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             name: 'URL',
             field: 'url',
             checked: true,
-            type: 'url'
+            type: 'url',
+            help: 'Web address of the content.'
         },
         {
-            name: 'Cost',
+            name: 'Spend',
             field: 'cost',
             checked: true,
-            type: 'currency'
+            type: 'currency',
+            help: "Amount that you've been charged for promotion of your content ad."
         },
         {
             name: 'Avg. CPC',
             field: 'cpc',
             checked: true,
             type: 'currency',
-            fractionSize: 3
+            fractionSize: 3,
+            help: "Average cost-per-click (CPC) is the average amount that you've been charged for a click on your content ad. "
         },
         {
             name: 'Clicks',
             field: 'clicks',
             checked: true,
-            type: 'number'
+            type: 'number',
+            help: 'A click is when a user interacts with your content ad by clicking on it and you get a new user on your web site.'
         },
         {
             name: 'Impressions',
             field: 'impressions',
             checked: true,
-            type: 'number'
+            type: 'number',
+            help: 'Impressions indicate how often your content ad has been displayed to the user.'
 
         },
         {
             name: 'CTR',
             field: 'ctr',
             checked: true,
-            type: 'percent'
-
+            type: 'percent',
+            help: 'Clickthrough rate (CTR) is the number of clicks your content ad receives divided by the number of times your content ad has been displayed.'
         }
     ];
 
