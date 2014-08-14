@@ -12,7 +12,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Q
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 import pytz
 
@@ -21,6 +21,7 @@ from utils import api_common
 from utils import exc
 import actionlog.api
 import actionlog.sync
+import actionlog.zwei_actions
 import reports.api
 
 from dash import forms
@@ -137,6 +138,39 @@ def is_sync_recent(last_sync_datetime):
 @login_required
 def index(request):
     return render(request, 'index.html', {'staticUrl': settings.CLIENT_STATIC_URL})
+
+
+@statsd_helper.statsd_timer('dash', 'supply_dash_redirect')
+@login_required
+def supply_dash_redirect(request):
+    # We do not authorization validation here since it only redirects to third-party
+    # dashboards and if user can't access them, there is no harm done.
+    ad_group_id = request.GET.get('ad_group_id')
+    source_id = request.GET.get('source_id')
+
+    validation_errors = {}
+    if not ad_group_id:
+        validation_errors['ad_group_id'] = 'Missing param ad_group_id.'
+
+    if not source_id:
+        validation_errors['source_id'] = 'Missing param source_id.'
+
+    if validation_errors:
+        raise exc.ValidationError(errors=validation_errors)
+
+    try:
+        ad_group_source = models.AdGroupSource.objects.get(
+            ad_group__id=int(ad_group_id), source__id=int(source_id))
+    except models.AdGroupSource.DoesNotExist:
+        raise exc.MissingDataError()
+
+    credentials = ad_group_source.source_credentials and \
+        ad_group_source.source_credentials.credentials
+
+    url_response = actionlog.zwei_actions.get_supply_dash_url(
+        ad_group_source.source.type, credentials, ad_group_source.source_campaign_key)
+
+    return redirect(url_response['url'])
 
 
 class User(api_common.BaseApiView):
