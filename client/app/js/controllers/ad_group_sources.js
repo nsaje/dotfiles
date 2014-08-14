@@ -17,6 +17,12 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     $scope.order = '-clicks';
     $scope.columns = [
         {
+            name: 'Link',
+            field: 'supply_dash_url',
+            checked: false,
+            type: 'link'
+        },
+        {
             name: 'Bid CPC',
             field: 'bid_cpc',
             checked: true,

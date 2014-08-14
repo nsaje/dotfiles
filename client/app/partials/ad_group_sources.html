@@ -77,6 +77,9 @@
                                 <span ng-switch-when="datetime">
                                     {{ (row[col.field] | date:'M/d/yyyy h:mm a') || 'N/A' }}
                                 </span>
+                                <span ng-switch-when="link">
+                                    <a ng-href="{{ row[col.field] }}" target="_blank"><img ng-src="{{ config.static_url }}/img/link.svg" class="link-img"></a>
+                                </span>
                             </span>
                         </td>
                     </tr>

@@ -10,6 +10,7 @@ import excel_styles
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core import urlresolvers
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render, redirect
@@ -450,6 +451,9 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             if last_sync:
                 last_sync = pytz.utc.localize(last_sync)
 
+            supply_dash_url = urlresolvers.reverse('dash.views.supply_dash_redirect')
+            supply_dash_url += '?ad_group_id={}&source_id={}'.format(ad_group.pk, sid)
+
             rows.append({
                 'id': str(sid),
                 'name': settings.ad_group_source.source.name,
@@ -465,7 +469,8 @@ class AdGroupSourcesTable(api_common.BaseApiView):
                 'impressions': source_data.get('impressions', None),
                 'ctr': source_data.get('ctr', None),
                 'last_sync': last_sync,
-                'yesterday_cost': yesterday_cost.get(sid)
+                'yesterday_cost': yesterday_cost.get(sid),
+                'supply_dash_url': supply_dash_url
             })
 
         if order:
