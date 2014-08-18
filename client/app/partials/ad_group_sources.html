@@ -77,7 +77,9 @@
                                         {{ (row[col.field] | number:0) || 'N/A' }}
                                     </span>
                                     <span ng-switch-when="datetime">
-                                        {{ (row[col.field] | date:'M/d/yyyy h:mm a') || 'N/A' }}
+                                        <span class="datetime">
+                                            {{ (row[col.field] | date:'M/d/yyyy h:mm a') || 'N/A' }}
+                                        </span>
                                     </span>
                                 </span>
                             </td>
