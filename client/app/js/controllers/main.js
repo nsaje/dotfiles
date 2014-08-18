@@ -21,9 +21,9 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
 
         if ($scope.hasPermission('reports.fewer_daterange_options')) {
             result['Yesterday'] = [zemMoment().subtract('days', 1).startOf('day'), zemMoment().subtract('days', 1).endOf('day')];
-            currentMonth = zemMoment().startOf('month');
-            result[currentMonth.format('MMMM')] = [currentMonth, zemMoment().subtract('days', 1)];
             result['Last 30 Days'] = [zemMoment().subtract('days', 29), zemMoment().subtract('days', 1)];
+            currentMonth = zemMoment().startOf('month');
+            result[currentMonth.format(formatStr)] = [currentMonth, zemMoment().subtract('days', 1)];
 
             for (i = 0; i < monthsCount; i++) {
                 result[zemMoment().subtract('month', i+1).format(formatStr)] = [zemMoment().subtract('month', i+1).startOf('month'), zemMoment().subtract('month', i+1).endOf('month')];
