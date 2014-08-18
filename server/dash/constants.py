@@ -1,3 +1,4 @@
+from decimal import Decimal
 from utils.constant_base import ConstantBase
 
 
@@ -47,6 +48,22 @@ class AdTargetCountry(ConstantBase):
         NEW_ZAELAND: 'New Zealand',
         UNITED_KINGDOM: 'United Kingdom',
         UNITED_STATES: 'United States'
+    }
+
+
+class ServiceFee(ConstantBase):
+    FEE_1500 = Decimal('0.1500')
+    FEE_2000 = Decimal('0.2000')
+    FEE_2050 = Decimal('0.2050')
+    FEE_2233 = Decimal('0.2233')
+    FEE_2500 = Decimal('0.2500')
+
+    _VALUES = {
+        FEE_1500: '15%',
+        FEE_2000: '20%',
+        FEE_2050: '20.5%',
+        FEE_2233: '22.33%',
+        FEE_2500: '25%'
     }
 
 

@@ -22,6 +22,13 @@ var constants = {
         COST: 'cost',
         CPC: 'cpc'
     },
+    serviceFee: {
+        FEE_1500: '0.1500',
+        FEE_2000: '0.2000',
+        FEE_2050: '0.2050',
+        FEE_2233: '0.2233',
+        FEE_2500: '0.2500'
+    },
     iabCategory: {
         IAB_1: 1,
         IAB_2: 2,
@@ -80,11 +87,11 @@ var options = {
         {name: 'Avg. CPC', value: constants.sourceChartMetric.CPC}
     ],
     serviceFees: [
-        {name: '15%', value: '0.1500'},
-        {name: '20%', value: '0.2000'},
-        {name: '20.5%', value: '0.2050'},
-        {name: '22.33%', value: '0.2233'},
-        {name: '25%', value: '0.2500'},
+        {name: '15%', value: constants.servicefee.fee_1500},
+        {name: '20%', value: constants.servicefee.fee_2000},
+        {name: '20.5%', value: constants.servicefee.fee_2050},
+        {name: '22.33%', value: constants.servicefee.fee_2233},
+        {name: '25%', value: constants.servicefee.fee_2500},
     ],
     iabCategories: [
         {name: 'Arts & Entertainment', value: constants.iabCategory.IAB_1},

@@ -238,10 +238,58 @@ class CampaignSettings(api_common.BaseApiView):
         response = {
             'settings': self.get_dict(campaign_settings, campaign),
             'account_managers': self.get_user_list('campaign_settings_account_manager'),
-            'sales_reps': self.get_user_list('campaign_settings_sales_rep')
+            'sales_reps': self.get_user_list('campaign_settings_sales_rep'),
+            'history': self.get_history(campaign)
         }
 
         return self.create_api_response(response)
+
+    def get_history(self, campaign):
+        settings = models.CampaignSettings.objects.\
+            filter(campaign=campaign).\
+            order_by('created_dt')
+
+        history = []
+        for i in range(0, len(settings) - 1):
+            old_settings = settings[i]
+            new_settings = settings[i + 1]
+
+            changes = old_settings.get_setting_changes(new_settings)
+
+            if not changes:
+                continue
+
+            history.append({
+                'datetime': new_settings.created_dt,
+                'changed_by': new_settings.created_by.email,
+                'changes_text': self.convert_changes_to_string(changes)
+            })
+
+        return history
+
+    def convert_changes_to_string(self, changes):
+        change_strings = []
+
+        for key, value in changes.items():
+            if key == 'account_manager':
+                key = 'Account Manager'
+                value = value.get_full_name().encode('utf-8')
+            elif key == 'sales_representative':
+                key = 'Sales Representative'
+                value = value.get_full_name().encode('utf-8')
+            elif key == 'service_fee':
+                key = 'Service Fee'
+                value = constants.ServiceFee.get_text(value)
+            elif key == 'iab_category':
+                key = 'IAB Category'
+                value = constants.IABCategory.get_text(value)
+            elif key == 'promotion_goal':
+                key = 'Promotion Goal'
+                value = constants.PromotionGoal.get_text(value)
+
+            change_strings.append('{} set to "{}"'.format(key, value))
+
+        return ', '.join(change_strings)
 
     @statsd_helper.statsd_timer('dash.api', 'ad_campaign_settings_put')
     def put(self, request, campaign_id):
@@ -249,8 +297,6 @@ class CampaignSettings(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         campaign = get_campaign(request.user, campaign_id)
-
-        current_settings = self.get_current_settings(campaign)
 
         resource = json.loads(request.body)
 

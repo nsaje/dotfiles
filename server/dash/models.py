@@ -104,7 +104,33 @@ class Campaign(models.Model, PermissionMixin):
     admin_link.allow_tags = True
 
 
-class CampaignSettings(models.Model):
+class SettingsBase(models.Model):
+    _settings_fields = None
+
+    @classmethod
+    def get_settings_fields(cls):
+        return cls._settings_fields
+
+    def get_settings_dict(self):
+        return {settings_key: getattr(self, settings_key) for settings_key in self._settings_fields}
+
+    def get_setting_changes(self, new_settings):
+        changes = {}
+
+        current_settings_dict = self.get_settings_dict()
+        new_settings_dict = new_settings.get_settings_dict()
+
+        for field_name in self._settings_fields:
+            if current_settings_dict[field_name] != new_settings_dict[field_name]:
+                changes[field_name] = new_settings_dict[field_name]
+
+        return changes
+
+    class Meta:
+        abstract = True
+
+
+class CampaignSettings(SettingsBase):
     _settings_fields = [
         'account_manager',
         'sales_representative',
@@ -133,13 +159,7 @@ class CampaignSettings(models.Model):
         decimal_places=4,
         max_digits=5,
         default=Decimal('0.2000'),
-        choices=(
-            (Decimal('0.1500'), '15%'),
-            (Decimal('0.2000'), '20%'),
-            (Decimal('0.2050'), '20.5%'),
-            (Decimal('0.2233'), '22.33%'),
-            (Decimal('0.2500'), '25%')
-        )
+        choices=constants.ServiceFee.get_choices()
     )
     iab_category = models.IntegerField(
         default=constants.IABCategory.IAB_24,
@@ -152,13 +172,6 @@ class CampaignSettings(models.Model):
 
     class Meta:
         ordering = ('-created_dt',)
-
-    @classmethod
-    def get_settings_fields(cls):
-        return cls._settings_fields
-
-    def get_settings_dict(self):
-        return {settings_key: getattr(self, settings_key) for settings_key in self._settings_fields}
 
 
 class Source(models.Model):
@@ -261,7 +274,7 @@ class AdGroupSource(models.Model):
         return '%s - %s' % (self.ad_group, self.source)
 
 
-class AdGroupSettings(models.Model):
+class AdGroupSettings(SettingsBase):
     _settings_fields = [
         'state',
         'start_date',
@@ -307,13 +320,6 @@ class AdGroupSettings(models.Model):
         permissions = (
             ("settings_view", "Can view settings in dashboard."),
         )
-
-    @classmethod
-    def get_settings_fields(cls):
-        return cls._settings_fields
-
-    def get_settings_dict(self):
-        return {settings_key: getattr(self, settings_key) for settings_key in self._settings_fields}
 
 
 class AdGroupSourceSettings(models.Model):

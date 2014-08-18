@@ -68,7 +68,7 @@ def update_campaign_state(ad_group_source, state):
 
 
 def order_ad_group_settings_update(ad_group, current_settings, new_settings):
-    changes = _get_setting_changes(current_settings, new_settings)
+    changes = current_settings.get_setting_changes(new_settings)
 
     if not changes:
         return
@@ -78,16 +78,3 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings):
             actionlog.api.init_stop_ad_group_order(ad_group)
         else:
             actionlog.api.init_set_ad_group_property_order(ad_group, prop=field_name, value=field_value)
-
-
-def _get_setting_changes(current_settings, new_settings):
-    changes = {}
-
-    current_settings_dict = current_settings.get_settings_dict()
-    new_settings_dict = new_settings.get_settings_dict()
-
-    for field_name in models.AdGroupSettings.get_settings_fields():
-        if current_settings_dict[field_name] != new_settings_dict[field_name]:
-            changes[field_name] = new_settings_dict[field_name]
-
-    return changes

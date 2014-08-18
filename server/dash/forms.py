@@ -135,13 +135,7 @@ class CampaignSettingsForm(forms.Form):
         queryset=ZemUser.objects.get_users_with_perm('campaign_settings_sales_rep')
     )
     service_fee = forms.TypedChoiceField(
-        choices=(
-            (Decimal('0.1500'), '15%'),
-            (Decimal('0.2000'), '20%'),
-            (Decimal('0.2050'), '20.5%'),
-            (Decimal('0.2233'), '22.33%'),
-            (Decimal('0.2500'), '25%')
-        ),
+        choices=constants.ServiceFee.get_choices(),
         coerce=Decimal,
         empty_value=None
     )
