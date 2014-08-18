@@ -132,7 +132,7 @@ class CampaignSettings(models.Model):
     service_fee = models.DecimalField(
         decimal_places=4,
         max_digits=5,
-        default=0.2,
+        default=Decimal('0.2000'),
         choices=(
             (Decimal('0.1500'), '15%'),
             (Decimal('0.2000'), '20%'),

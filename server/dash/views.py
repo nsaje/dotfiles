@@ -243,38 +243,32 @@ class CampaignSettings(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_put')
-    def put(self, request, ad_group_id):
+    @statsd_helper.statsd_timer('dash.api', 'ad_campaign_settings_put')
+    def put(self, request, campaign_id):
         if not request.user.has_perm('dash.settings_view'):
             raise exc.MissingDataError()
 
-        ad_group = get_ad_group(request.user, ad_group_id)
+        campaign = get_campaign(request.user, campaign_id)
 
-        current_settings = self.get_current_settings(ad_group)
+        current_settings = self.get_current_settings(campaign)
 
         resource = json.loads(request.body)
 
-        form = forms.AdGroupSettingsForm(
-            current_settings, resource.get('settings', {})
-            # initial=current_settings
-        )
+        form = forms.CampaignSettingsForm(resource.get('settings', {}))
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        self.set_ad_group(ad_group, form.cleaned_data)
+        self.set_campaign(campaign, form.cleaned_data)
 
-        settings = models.AdGroupSettings()
-        self.set_settings(settings, ad_group, form.cleaned_data)
+        settings = models.CampaignSettings()
+        self.set_settings(settings, campaign, form.cleaned_data)
 
         with transaction.atomic():
-            ad_group.save()
+            campaign.save()
             settings.save()
 
-        api.order_ad_group_settings_update(ad_group, current_settings, settings)
-
         response = {
-            'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group)
+            'settings': self.get_dict(settings, campaign),
         }
 
         return self.create_api_response(response)
@@ -310,19 +304,16 @@ class CampaignSettings(api_common.BaseApiView):
 
         return result
 
-    def set_ad_group(self, ad_group, resource):
-        ad_group.name = resource['name']
+    def set_campaign(self, campaign, resource):
+        campaign.name = resource['name']
 
-    def set_settings(self, settings, ad_group, resource):
-        settings.ad_group = ad_group
-        settings.state = resource['state']
-        settings.start_date = resource['start_date']
-        settings.end_date = resource['end_date']
-        settings.cpc_cc = resource['cpc_cc']
-        settings.daily_budget_cc = resource['daily_budget_cc']
-        settings.target_devices = resource['target_devices']
-        settings.target_regions = resource['target_regions']
-        settings.tracking_code = resource['tracking_code']
+    def set_settings(self, settings, campaign, resource):
+        settings.campaign = campaign
+        settings.account_manager = resource['account_manager']
+        settings.sales_representative = resource['sales_representative']
+        settings.service_fee = resource['service_fee']
+        settings.iab_category = resource['iab_category']
+        settings.promotion_goal = resource['promotion_goal']
 
     def get_user_list(self, perm_name):
         users = ZemUser.objects.get_users_with_perm(perm_name).order_by('last_name')

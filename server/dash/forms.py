@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 
 import dateutil.parser
 import rfc3987
@@ -6,6 +7,7 @@ import rfc3987
 from django import forms
 
 from dash import constants
+from zemauth.models import User as ZemUser
 
 
 class BaseApiForm(forms.Form):
@@ -22,7 +24,7 @@ class AdGroupSettingsForm(forms.Form):
     id = forms.IntegerField()
     name = forms.CharField(
         max_length=127,
-        error_messages={'required': 'Please specify campaign name.'}
+        error_messages={'required': 'Please specify ad group name.'}
     )
     state = forms.TypedChoiceField(
         choices=constants.AdGroupSettingsState.get_choices(),
@@ -118,3 +120,38 @@ class AdGroupSettingsForm(forms.Form):
                 raise forms.ValidationError(err_msg)
 
         return self.cleaned_data.get('tracking_code')
+
+
+class CampaignSettingsForm(forms.Form):
+    id = forms.IntegerField()
+    name = forms.CharField(
+        max_length=127,
+        error_messages={'required': 'Please specify campaign name.'}
+    )
+    account_manager = forms.ModelChoiceField(
+        queryset=ZemUser.objects.get_users_with_perm('campaign_settings_account_manager')
+    )
+    sales_representative = forms.ModelChoiceField(
+        queryset=ZemUser.objects.get_users_with_perm('campaign_settings_sales_rep')
+    )
+    service_fee = forms.TypedChoiceField(
+        choices=(
+            (Decimal('0.1500'), '15%'),
+            (Decimal('0.2000'), '20%'),
+            (Decimal('0.2050'), '20.5%'),
+            (Decimal('0.2233'), '22.33%'),
+            (Decimal('0.2500'), '25%')
+        ),
+        coerce=Decimal,
+        empty_value=None
+    )
+    iab_category = forms.TypedChoiceField(
+        choices=constants.IABCategory.get_choices(),
+        coerce=int,
+        empty_value=None
+    )
+    promotion_goal = forms.TypedChoiceField(
+        choices=constants.PromotionGoal.get_choices(),
+        coerce=int,
+        empty_value=None
+    )

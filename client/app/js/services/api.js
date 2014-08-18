@@ -369,7 +369,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 account_manager: settings.accountManager,
                 sales_representative: settings.salesRepresentative,
                 service_fee: settings.serviceFee,
-                iab_ategory: settings.IABCategory,
+                iab_category: settings.IABCategory,
                 promotion_goal: settings.promotionGoal
             };
         }
