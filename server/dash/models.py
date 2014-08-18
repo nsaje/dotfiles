@@ -140,11 +140,9 @@ class SourceCredentials(models.Model):
         if not self.id or not self.credentials:
             return self.credentials
 
-        return binascii.a2b_base64(
-            encryption_helpers.aes_decrypt(
-                self.credentials,
-                settings.CREDENTIALS_ENCRYPTION_KEY
-            )
+        return encryption_helpers.aes_decrypt(
+            binascii.a2b_base64(self.credentials),
+            settings.CREDENTIALS_ENCRYPTION_KEY
         )
 
 
