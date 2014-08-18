@@ -7,12 +7,14 @@ import unicodecsv
 from xlwt import Workbook, Style
 import slugify
 import excel_styles
+from oauth2client.client import OAuth2WebServerFlow
+import cPickle as pickle
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Q
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 import pytz
 
@@ -814,3 +816,60 @@ class AdGroupDailyStats(api_common.BaseApiView):
 @statsd_helper.statsd_timer('dash', 'healthcheck')
 def healthcheck(request):
     return HttpResponse('OK')
+
+
+@login_required
+def oauth_authorize(request):
+    credentials_id = request.GET.get('credentials_id')
+    source_name = request.GET.get('source_name')
+
+    if not source_name:
+        # TODO: Raise exception - invalid source name
+        raise NotImplementedError
+
+    try:
+        credentials = models.SourceCredentials.objects.get(id=credentials_id) if credentials_id else None
+    except models.SourceCredentials.DoesNotExist:
+        credentials = None
+
+    if not credentials:
+        # TODO: Raise exception - wrong credentials_id
+        raise NotImplementedError
+
+    decrypted = credentials.decrypt()
+    if 'client_id' not in decrypted:
+        # TODO: Raise exception - Oauth credenetials missing
+        raise NotImplementedError
+
+    state = {
+        'credentials_id': credentials_id,
+    }
+
+    flow = OAuth2WebServerFlow(
+        client_id=credentials.client_id,
+        client_secret=credentials.client_secret,
+        redirect_uri='https://one.zemanta.com/source/oauth/{source_name}'.format(source_name=source_name),
+        state=json.dumps(state)
+    )
+
+    url = flow.step1_get_authorize_url()
+    return redirect(url)
+
+
+def oauth_redirect(request):
+    code = request.GET.get('code')
+    state = json.loads(request.GET.get('state'))
+
+    credentials = models.SourceCredentials.objects.get(id=state['credentials_id'])
+    decrypted = credentials.decrypt()
+
+    flow = OAuth2WebServerFlow(
+        client_id=credentials.client_id,
+        client_secret=credentials.client_secret
+    )
+
+    decrypted['oauth_credentials'] = pickle.dumps(flow.step2_exchange(code))
+    credentials.credentials = decrypted
+    credentials.save()
+
+    return redirect('index')

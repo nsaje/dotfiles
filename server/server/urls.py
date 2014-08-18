@@ -99,6 +99,21 @@ urlpatterns += patterns(
     )
 )
 
+# Source OAuth
+urlpatterns += patterns(
+    '',
+    url(
+        r'^source/oauth/authorize',
+        dash.views.oauth_authorize,
+        name='dash.source_oauth_authorize',
+    ),
+    url(
+        r'^source/oauth/(?P<source_name>yahoo)',
+        dash.views.oauth_redirect,
+        name='dash.oauth_redirect'
+    )
+)
+
 # Health Check
 urlpatterns += patterns(
     '',
@@ -110,7 +125,7 @@ urlpatterns += patterns(
 )
 
 # TOS
-urlpatterns +=  patterns(
+urlpatterns += patterns(
     '',
     url(r'^tos/$', TemplateView.as_view(template_name='tos.html')),
 )
