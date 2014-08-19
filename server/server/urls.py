@@ -103,14 +103,14 @@ urlpatterns += patterns(
 urlpatterns += patterns(
     '',
     url(
-        r'^source/oauth/authorize',
+        r'^source/oauth/authorize/(?P<source_name>yahoo)',
         dash.views.oauth_authorize,
-        name='dash.source_oauth_authorize',
+        name='source.oauth.authorize',
     ),
     url(
         r'^source/oauth/(?P<source_name>yahoo)',
         dash.views.oauth_redirect,
-        name='dash.oauth_redirect'
+        name='source.oauth.redirect'
     )
 )
 

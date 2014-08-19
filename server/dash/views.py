@@ -7,11 +7,14 @@ import unicodecsv
 from xlwt import Workbook, Style
 import slugify
 import excel_styles
-from oauth2client.client import OAuth2WebServerFlow
-import cPickle as pickle
+import base64
+import httplib
+import urllib
+import urllib2
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render, redirect
@@ -35,6 +38,13 @@ logger = logging.getLogger(__name__)
 
 STATS_START_DELTA = 30
 STATS_END_DELTA = 1
+
+OAUTH_URIS = {
+    'yahoo': {
+        'auth_uri': 'https://api.login.yahoo.com/oauth2/request_auth',
+        'token_uri': 'https://api.login.yahoo.com/oauth2/get_token',
+    }
+}
 
 
 def get_ad_group(user, ad_group_id):
@@ -717,11 +727,11 @@ class AdGroupAdsTable(api_common.BaseApiView):
         size = max(min(int(size or 5), 50), 1)
 
         result = reports.api.query(
-                start_date=start_date,
-                end_date=end_date,
-                breakdown=['article'],
-                order=[order],
-                ad_group=ad_group.id
+            start_date=start_date,
+            end_date=end_date,
+            breakdown=['article'],
+            order=[order],
+            ad_group=ad_group.id
         )
 
         result_pg, current_page, num_pages, count, start_index, end_index = reports.api.paginate(result, page, size)
@@ -819,57 +829,79 @@ def healthcheck(request):
 
 
 @login_required
-def oauth_authorize(request):
+def oauth_authorize(request, source_name):
     credentials_id = request.GET.get('credentials_id')
-    source_name = request.GET.get('source_name')
 
-    if not source_name:
-        # TODO: Raise exception - invalid source name
-        raise NotImplementedError
+    if not credentials_id:
+        logger.warning('Missing credentials id')
+        return reverse('index')
 
-    try:
-        credentials = models.SourceCredentials.objects.get(id=credentials_id) if credentials_id else None
-    except models.SourceCredentials.DoesNotExist:
-        credentials = None
+    credentials = models.SourceCredentials.objects.get(id=credentials_id)
+    decrypted = json.loads(credentials.decrypt())
 
-    if not credentials:
-        # TODO: Raise exception - wrong credentials_id
-        raise NotImplementedError
-
-    decrypted = credentials.decrypt()
-    if 'client_id' not in decrypted:
-        # TODO: Raise exception - Oauth credenetials missing
-        raise NotImplementedError
+    if 'client_id' not in decrypted or 'client_secret' not in decrypted:
+        logger.error('client_id and/or client_secret not in credentials')
+        return reverse('index')
 
     state = {
         'credentials_id': credentials_id,
     }
 
-    flow = OAuth2WebServerFlow(
-        client_id=credentials.client_id,
-        client_secret=credentials.client_secret,
-        redirect_uri='https://one.zemanta.com/source/oauth/{source_name}'.format(source_name=source_name),
-        state=json.dumps(state)
-    )
+    redirect_uri = request.build_absolute_uri(reverse('source.oauth.redirect', kwargs={'source_name': source_name}))
+    redirect_uri = redirect_uri.replace('http://', 'https://')
 
-    url = flow.step1_get_authorize_url()
+    params = {
+        'client_id': decrypted['client_id'],
+        'redirect_uri': redirect_uri,
+        'response_type': 'code',
+        'state': urllib.quote(json.dumps(state))
+    }
+
+    url = OAUTH_URIS[source_name]['auth_uri'] + '?' + urllib.urlencode(params)
     return redirect(url)
 
 
-def oauth_redirect(request):
+def oauth_redirect(request, source_name):
+    # Token requests are implemented using urllib2 requests because Yahoo only supports credentials in
+    # Authorization header while oauth2client sends it in reqeust body (for get_token calls, after that
+    # it puts access token into header).
+
     code = request.GET.get('code')
-    state = json.loads(request.GET.get('state'))
+    state = request.GET.get('state')
+
+    if not state or 'credentials_id' not in state:
+        logger.error('Missing state in OAuth2 redirect')
+        return reverse('index')
+
+    try:
+        state = json.loads(state)
+    except (TypeError, ValueError):
+        logger.error('Invalid state in OAuth2 redirect')
+        return reverse('index')
 
     credentials = models.SourceCredentials.objects.get(id=state['credentials_id'])
-    decrypted = credentials.decrypt()
+    decrypted = json.loads(credentials.decrypt())
 
-    flow = OAuth2WebServerFlow(
-        client_id=credentials.client_id,
-        client_secret=credentials.client_secret
-    )
+    redirect_uri = request.build_absolute_uri(reverse('source.oauth.redirect', kwargs={'source_name': source_name}))
+    redirect_uri = redirect_uri.replace('http://', 'https://')
 
-    decrypted['oauth_credentials'] = pickle.dumps(flow.step2_exchange(code))
-    credentials.credentials = decrypted
-    credentials.save()
+    headers = {
+        'Authorization': 'Basic {}'.format(base64.b64encode(decrypted['client_id'] + ':' + decrypted['client_secret']))
+    }
+
+    data = {
+        'redirect_uri': redirect_uri,
+        'code': code,
+        'grant_type': 'authorization_code'
+    }
+
+    req = urllib2.Request(OAUTH_URIS[source_name]['token_uri'], data=urllib.urlencode(data), headers=headers)
+    r = urllib2.urlopen(req)
+
+    if r.getcode() == httplib.OK:
+        decrypted['oauth_tokens'] = json.loads(r.read())
+        decrypted['oauth_created_dt'] = datetime.datetime.utcnow().isoformat()
+        credentials.credentials = json.dumps(decrypted)
+        credentials.save()
 
     return redirect('index')
