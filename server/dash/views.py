@@ -268,6 +268,7 @@ class CampaignSettings(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(settings, campaign),
+            'history': self.get_history(campaign)
         }
 
         return self.create_api_response(response)

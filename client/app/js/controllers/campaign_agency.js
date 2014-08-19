@@ -1,6 +1,7 @@
 /*globals oneApp,constants,options,moment*/
 oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
     $scope.settings = {};
+    $scope.history = [];
     $scope.accountManagers = [];
     $scope.salesReps = [];
     $scope.errors = {};
@@ -8,6 +9,8 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', 'api', function ($s
     $scope.requestInProgress = false;
     $scope.saved = null;
     $scope.discarded = null;
+    $scope.orderField = 'datetime';
+    $scope.orderReverse = true;
 
     $scope.getSettings = function (discarded) {
         $scope.saved = null;
@@ -17,6 +20,7 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', 'api', function ($s
         api.campaignSettings.get($state.params.id).then(
             function (data) {
                 $scope.settings = data.settings;
+                $scope.history = data.history;
 
                 if (discarded) {
                     $scope.discarded = true;
@@ -41,6 +45,7 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', 'api', function ($s
 
         api.campaignSettings.save($scope.settings).then(
             function (data) {
+                $scope.history = data.history;
                 $scope.errors = {};
                 $scope.settings = data.settings;
                 $scope.updateAccounts(data.settings.name);

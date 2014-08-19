@@ -350,7 +350,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function CampaignSettings() {
-        function convertFromApi(settings) {
+        function convertSettingsFromApi(settings) {
             return {
                 id: settings.id,
                 name: settings.name,
@@ -362,7 +362,18 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             };
         }
 
-        function convertToApi(settings) {
+        function convertHistoryFromApi(history) {
+            return history.map(function (item) {
+                return {
+                    changedBy: item.changed_by,
+                    changesText: item.changes_text,
+                    settings: item.settings,
+                    datetime: item.datetime
+                };
+            }); 
+        }
+
+        function convertSettingsToApi(settings) {
             return {
                 id: settings.id,
                 name: settings.name,
@@ -395,14 +406,14 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             $http.get(url).
                 success(function (data, status) {
-                    var resource;
-                    if (data && data.data && data.data.settings) {
-                        resource = convertFromApi(data.data.settings);
+                    if (!data || !data.data) {
+                        deferred.reject(data);
                     }
                     deferred.resolve({
-                        settings: resource,
+                        settings: convertSettingsFromApi(data.data.settings),
                         accountManagers: data.data.account_managers,
-                        salesReps: data.data.sales_reps
+                        salesReps: data.data.sales_reps,
+                        history: convertHistoryFromApi(data.data.history)
                     });
                 }).
                 error(function(data, status, headers) {
@@ -420,17 +431,17 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             };
 
             var data = {
-                'settings': convertToApi(settings)
+                'settings': convertSettingsToApi(settings)
             };
 
             $http.put(url, data, config).
                 success(function (data, status) {
-                    var resource;
-                    if (data && data.data && data.data.settings) {
-                        resource = convertFromApi(data.data.settings);
+                    if (!data || !data.data) {
+                        deferred.reject(data);
                     }
                     deferred.resolve({
-                        settings: resource
+                        settings: convertSettingsFromApi(data.data.settings),
+                        history: convertHistoryFromApi(data.data.history)
                     });
                 }).
                 error(function(data, status, headers, config) {
