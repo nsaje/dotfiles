@@ -903,13 +903,13 @@ def oauth_redirect(request, source_name):
 
     if not state or 'credentials_id' not in state:
         logger.error('Missing state in OAuth2 redirect')
-        return reverse('index')
+        return redirect('index')
 
     try:
         state = json.loads(state)
     except (TypeError, ValueError):
         logger.error('Invalid state in OAuth2 redirect')
-        return reverse('index')
+        return redirect('index')
 
     credentials = models.SourceCredentials.objects.get(id=state['credentials_id'])
     decrypted = json.loads(credentials.decrypt())
