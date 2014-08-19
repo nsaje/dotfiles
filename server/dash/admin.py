@@ -74,7 +74,8 @@ class AdGroupSettingsForm(forms.ModelForm):
         }
 
 
-# Always empty form for source credentials
+# Always empty form for source credentials and a link for refresing OAuth credentials for
+# sources that use them
 
 class SourceCredentialsForm(forms.ModelForm):
     credentials = forms.CharField(
