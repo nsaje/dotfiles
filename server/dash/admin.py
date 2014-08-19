@@ -227,6 +227,12 @@ class SourceCredentialsAdmin(admin.ModelAdmin):
 
 
 class CampaignSettingsAdmin(admin.ModelAdmin):
+    def get_readonly_fields(self, request, obj=None):
+        return list(set(
+            [field.name for field in self.opts.local_fields] +
+            [field.name for field in self.opts.local_many_to_many]
+        ))
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'account_manager':
             kwargs['queryset'] = ZemUser.objects.get_users_with_perm(

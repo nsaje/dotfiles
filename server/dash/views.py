@@ -300,6 +300,10 @@ class CampaignSettings(api_common.BaseApiView):
 
     def convert_settings_to_dict(self, settings):
         return OrderedDict([
+            ('name', {
+                'name': 'Name',
+                'value': settings.name.encode('utf-8')
+            }),
             ('account_manager', {
                 'name': 'Account Manager',
                 'value': settings.account_manager.get_full_name().encode('utf-8')
@@ -322,11 +326,11 @@ class CampaignSettings(api_common.BaseApiView):
             })
         ])
 
-    def convert_changes_to_string(self, changes, settings):
+    def convert_changes_to_string(self, changes, settings_dict):
         change_strings = []
 
         for key in changes:
-            setting = settings[key]
+            setting = settings_dict[key]
             change_strings.append(
                 '{} set to "{}"'.format(setting['name'], setting['value'])
             )
@@ -369,6 +373,7 @@ class CampaignSettings(api_common.BaseApiView):
 
     def set_settings(self, settings, campaign, resource):
         settings.campaign = campaign
+        settings.name = resource['name']
         settings.account_manager = resource['account_manager']
         settings.sales_representative = resource['sales_representative']
         settings.service_fee = resource['service_fee']

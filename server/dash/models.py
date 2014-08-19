@@ -132,6 +132,7 @@ class SettingsBase(models.Model):
 
 class CampaignSettings(SettingsBase):
     _settings_fields = [
+        'name',
         'account_manager',
         'sales_representative',
         'service_fee',
@@ -140,6 +141,11 @@ class CampaignSettings(SettingsBase):
     ]
 
     id = models.AutoField(primary_key=True)
+    name = models.CharField(
+        max_length=127,
+        blank=False,
+        null=False
+    )
     campaign = models.ForeignKey(Campaign, related_name='settings', on_delete=models.PROTECT)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
