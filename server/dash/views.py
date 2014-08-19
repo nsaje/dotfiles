@@ -244,6 +244,34 @@ class CampaignSettings(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
+    @statsd_helper.statsd_timer('dash.api', 'ad_campaign_settings_put')
+    def put(self, request, campaign_id):
+        if not request.user.has_perm('dash.settings_view'):
+            raise exc.MissingDataError()
+
+        campaign = get_campaign(request.user, campaign_id)
+
+        resource = json.loads(request.body)
+
+        form = forms.CampaignSettingsForm(resource.get('settings', {}))
+        if not form.is_valid():
+            raise exc.ValidationError(errors=dict(form.errors))
+
+        self.set_campaign(campaign, form.cleaned_data)
+
+        settings = models.CampaignSettings()
+        self.set_settings(settings, campaign, form.cleaned_data)
+
+        with transaction.atomic():
+            campaign.save()
+            settings.save()
+
+        response = {
+            'settings': self.get_dict(settings, campaign),
+        }
+
+        return self.create_api_response(response)
+
     def get_history(self, campaign):
         settings = models.CampaignSettings.objects.\
             filter(campaign=campaign).\
@@ -290,34 +318,6 @@ class CampaignSettings(api_common.BaseApiView):
             change_strings.append('{} set to "{}"'.format(key, value))
 
         return ', '.join(change_strings)
-
-    @statsd_helper.statsd_timer('dash.api', 'ad_campaign_settings_put')
-    def put(self, request, campaign_id):
-        if not request.user.has_perm('dash.settings_view'):
-            raise exc.MissingDataError()
-
-        campaign = get_campaign(request.user, campaign_id)
-
-        resource = json.loads(request.body)
-
-        form = forms.CampaignSettingsForm(resource.get('settings', {}))
-        if not form.is_valid():
-            raise exc.ValidationError(errors=dict(form.errors))
-
-        self.set_campaign(campaign, form.cleaned_data)
-
-        settings = models.CampaignSettings()
-        self.set_settings(settings, campaign, form.cleaned_data)
-
-        with transaction.atomic():
-            campaign.save()
-            settings.save()
-
-        response = {
-            'settings': self.get_dict(settings, campaign),
-        }
-
-        return self.create_api_response(response)
 
     def get_current_settings(self, campaign):
         settings = models.CampaignSettings.objects.\

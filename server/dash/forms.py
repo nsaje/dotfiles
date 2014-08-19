@@ -128,12 +128,8 @@ class CampaignSettingsForm(forms.Form):
         max_length=127,
         error_messages={'required': 'Please specify campaign name.'}
     )
-    account_manager = forms.ModelChoiceField(
-        queryset=ZemUser.objects.get_users_with_perm('campaign_settings_account_manager')
-    )
-    sales_representative = forms.ModelChoiceField(
-        queryset=ZemUser.objects.get_users_with_perm('campaign_settings_sales_rep')
-    )
+    account_manager = forms.IntegerField()
+    sales_representative = forms.IntegerField()
     service_fee = forms.TypedChoiceField(
         choices=constants.ServiceFee.get_choices(),
         coerce=Decimal,
@@ -149,3 +145,31 @@ class CampaignSettingsForm(forms.Form):
         coerce=int,
         empty_value=None
     )
+
+    def clean_account_manager(self):
+        account_manager_id = self.cleaned_data.get('account_manager')
+
+        err_msg = 'Invalid account manager.'
+
+        try:
+            account_manager = ZemUser.objects.\
+                get_users_with_perm('campaign_settings_account_manager').\
+                get(pk=account_manager_id)
+        except ZemUser.DoesNotExist:
+            raise forms.ValidationError(err_msg)
+
+        return account_manager
+
+    def clean_sales_representative(self):
+        sales_representative_id = self.cleaned_data.get('sales_representative')
+
+        err_msg = 'Invalid sales representative.'
+
+        try:
+            sales_representative = ZemUser.objects.\
+                get_users_with_perm('campaign_settings_sales_rep').\
+                get(pk=sales_representative_id)
+        except ZemUser.DoesNotExist:
+            raise forms.ValidationError(err_msg)
+
+        return sales_representative
