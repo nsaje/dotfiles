@@ -287,35 +287,49 @@ class CampaignSettings(api_common.BaseApiView):
             if not changes:
                 continue
 
+            settings_dict = self.convert_settings_to_dict(new_settings)
+
             history.append({
                 'datetime': new_settings.created_dt,
                 'changed_by': new_settings.created_by.email,
-                'changes_text': self.convert_changes_to_string(changes)
+                'changes_text': self.convert_changes_to_string(changes, settings_dict),
+                'settings': settings_dict.values()
             })
 
         return history
 
-    def convert_changes_to_string(self, changes):
+    def convert_settings_to_dict(self, settings):
+        return OrderedDict([
+            ('account_manager', {
+                'name': 'Account Manager',
+                'value': settings.account_manager.get_full_name().encode('utf-8')
+            }),
+            ('service_representative', {
+                'name': 'Sales Representative',
+                'value': settings.sales_representative.get_full_name().encode('utf-8')
+            }),
+            ('service_fee', {
+                'name': 'Service Fee',
+                'value': constants.ServiceFee.get_text(settings.service_fee)
+            }),
+            ('iab_category', {
+                'name': 'IAB Category',
+                'value': constants.IABCategory.get_text(settings.iab_category)
+            }),
+            ('promotion_goal', {
+                'name': 'Promotion Goal',
+                'value': constants.PromotionGoal.get_text(settings.promotion_goal)
+            })
+        ])
+
+    def convert_changes_to_string(self, changes, settings):
         change_strings = []
 
-        for key, value in changes.items():
-            if key == 'account_manager':
-                key = 'Account Manager'
-                value = value.get_full_name().encode('utf-8')
-            elif key == 'sales_representative':
-                key = 'Sales Representative'
-                value = value.get_full_name().encode('utf-8')
-            elif key == 'service_fee':
-                key = 'Service Fee'
-                value = constants.ServiceFee.get_text(value)
-            elif key == 'iab_category':
-                key = 'IAB Category'
-                value = constants.IABCategory.get_text(value)
-            elif key == 'promotion_goal':
-                key = 'Promotion Goal'
-                value = constants.PromotionGoal.get_text(value)
-
-            change_strings.append('{} set to "{}"'.format(key, value))
+        for key in changes:
+            setting = settings[key]
+            change_strings.append(
+                '{} set to "{}"'.format(setting['name'], setting['value'])
+            )
 
         return ', '.join(change_strings)
 
