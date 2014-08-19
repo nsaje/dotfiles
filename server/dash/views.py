@@ -39,13 +39,6 @@ logger = logging.getLogger(__name__)
 STATS_START_DELTA = 30
 STATS_END_DELTA = 1
 
-OAUTH_URIS = {
-    'yahoo': {
-        'auth_uri': 'https://api.login.yahoo.com/oauth2/request_auth',
-        'token_uri': 'https://api.login.yahoo.com/oauth2/get_token',
-    }
-}
-
 
 def get_ad_group(user, ad_group_id):
     try:
@@ -857,7 +850,7 @@ def oauth_authorize(request, source_name):
         'state': urllib.quote(json.dumps(state))
     }
 
-    url = OAUTH_URIS[source_name]['auth_uri'] + '?' + urllib.urlencode(params)
+    url = settings.SOURCE_OAUTH_URIS[source_name]['auth_uri'] + '?' + urllib.urlencode(params)
     return redirect(url)
 
 
@@ -895,7 +888,11 @@ def oauth_redirect(request, source_name):
         'grant_type': 'authorization_code'
     }
 
-    req = urllib2.Request(OAUTH_URIS[source_name]['token_uri'], data=urllib.urlencode(data), headers=headers)
+    req = urllib2.Request(
+        settings.SOURCE_OAUTH_URIS[source_name]['token_uri'],
+        data=urllib.urlencode(data),
+        headers=headers
+    )
     r = urllib2.urlopen(req)
 
     if r.getcode() == httplib.OK:
