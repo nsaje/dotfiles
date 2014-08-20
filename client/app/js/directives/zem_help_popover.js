@@ -1,7 +1,7 @@
 /*global $,oneApp*/
 "use strict";
 
-oneApp.directive('zemHelpPopover', function(config) {
+oneApp.directive('zemHelpPopover', function() {
     return {
         restrict: 'E',
         scope: {

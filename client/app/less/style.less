@@ -1072,6 +1072,37 @@ a.help-popover:visited {
     }
 }
 
+.history-popover-table {
+    display: table;
+
+    .history-popover-row {
+        display: table-row;
+
+        .history-popover-cell {
+            display: table-cell;
+            padding: 3px 0 3px 10px;
+            font-size: 12px;
+            white-space: nowrap;
+
+            .setting-value {
+                white-space: normal;
+            }
+            
+            &.header-cell {
+                padding-top: 0;
+                padding-bottom: 6px;
+                font-size: 15px;
+            }
+
+            &.left-cell {
+                padding-right: 10px;
+                padding-left: 0;
+                border-right: 1px solid #e3e3e3;
+            }
+        }
+    }
+}
+
 .table {
     color: #454545;
     font-size: 13px;

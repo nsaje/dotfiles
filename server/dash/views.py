@@ -279,55 +279,82 @@ class CampaignSettings(api_common.BaseApiView):
             order_by('created_dt')
 
         history = []
-        for i in range(0, len(settings) - 1):
-            old_settings = settings[i]
-            new_settings = settings[i + 1]
+        for i in range(0, len(settings)):
+            old_settings = settings[i - 1] if i > 0 else None
+            new_settings = settings[i]
 
-            changes = old_settings.get_setting_changes(new_settings)
+            changes = old_settings.get_setting_changes(new_settings) \
+                if old_settings is not None else None
 
-            if not changes:
+            if i > 0 and not changes:
                 continue
 
-            settings_dict = self.convert_settings_to_dict(new_settings)
+            settings_dict = self.convert_settings_to_dict(old_settings, new_settings)
 
             history.append({
                 'datetime': new_settings.created_dt,
                 'changed_by': new_settings.created_by.email,
                 'changes_text': self.convert_changes_to_string(changes, settings_dict),
-                'settings': settings_dict.values()
+                'settings': settings_dict.values(),
+                'show_old_settings': old_settings is not None
             })
 
         return history
 
-    def convert_settings_to_dict(self, settings):
-        return OrderedDict([
+    def convert_settings_to_dict(self, old_settings, new_settings):
+        settings_dict = OrderedDict([
             ('name', {
                 'name': 'Name',
-                'value': settings.name.encode('utf-8')
+                'value': new_settings.name.encode('utf-8')
             }),
             ('account_manager', {
                 'name': 'Account Manager',
-                'value': settings.account_manager.get_full_name().encode('utf-8')
+                'value': new_settings.account_manager.get_full_name().encode('utf-8')
             }),
-            ('service_representative', {
+            ('sales_representative', {
                 'name': 'Sales Representative',
-                'value': settings.sales_representative.get_full_name().encode('utf-8')
+                'value': new_settings.sales_representative.get_full_name().encode('utf-8')
             }),
             ('service_fee', {
                 'name': 'Service Fee',
-                'value': constants.ServiceFee.get_text(settings.service_fee)
+                'value': constants.ServiceFee.get_text(new_settings.service_fee)
             }),
             ('iab_category', {
                 'name': 'IAB Category',
-                'value': constants.IABCategory.get_text(settings.iab_category)
+                'value': constants.IABCategory.get_text(new_settings.iab_category)
             }),
             ('promotion_goal', {
                 'name': 'Promotion Goal',
-                'value': constants.PromotionGoal.get_text(settings.promotion_goal)
+                'value': constants.PromotionGoal.get_text(new_settings.promotion_goal)
             })
         ])
 
+        if old_settings is not None:
+            settings_dict['name']['old_value'] = old_settings.name.encode('utf-8')
+
+            if old_settings.account_manager is not None:
+                settings_dict['account_manager']['old_value'] = \
+                    old_settings.account_manager.get_full_name().encode('utf-8')
+
+            if old_settings.sales_representative is not None:
+                settings_dict['sales_representative']['old_value'] = \
+                    old_settings.sales_representative.get_full_name().encode('utf-8')
+
+            settings_dict['service_fee']['old_value'] = \
+                constants.ServiceFee.get_text(old_settings.service_fee)
+
+            settings_dict['iab_category']['old_value'] = \
+                constants.IABCategory.get_text(old_settings.iab_category)
+
+            settings_dict['promotion_goal']['old_value'] = \
+                constants.PromotionGoal.get_text(old_settings.promotion_goal)
+
+        return settings_dict
+
     def convert_changes_to_string(self, changes, settings_dict):
+        if changes is None:
+            return 'Created settings'
+
         change_strings = []
 
         for key in changes:

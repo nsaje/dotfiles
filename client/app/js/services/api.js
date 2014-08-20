@@ -367,8 +367,15 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 return {
                     changedBy: item.changed_by,
                     changesText: item.changes_text,
-                    settings: item.settings,
-                    datetime: item.datetime
+                    settings: item.settings.map(function (setting) {
+                        return {
+                            name: setting.name,
+                            value: setting.value,
+                            oldValue: setting.old_value
+                        };
+                    }),
+                    datetime: item.datetime,
+                    showOldSettings: item.show_old_settings
                 };
             }); 
         }

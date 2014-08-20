@@ -109,13 +109,34 @@
                     <tr ng-show="(!history || !history.length) && !requestInProgress">
                         <td class="no-data" colspan="3">No data</td>
                     </tr>
+
                     <tr ng-repeat="item in history | orderBy:orderField:orderReverse">
                         <td>{{ (item.datetime | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
                         <td>{{ item.changedBy }}</td>
-                        <td>{{ item.changesText }}</td>
+                        <td zem-html-popover="'popoverContent.html'" popover-trigger="mouseenter" popover-append-to-body="true">{{ item.changesText }}</td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+
+<script id="popoverContent.html" type="text/ng-template">
+    <div class="history-popover-table">
+        <div class="history-popover-row">
+            <div ng-if="item.showOldSettings" class="history-popover-cell header-cell left-cell"><strong>Old Settings</strong></div>
+            <div class="history-popover-cell header-cell"><strong>New Settings</strong></div>
+        </div>
+        <div class="history-popover-row" ng-repeat="setting in item.settings">
+            <div ng-if="item.showOldSettings" class="history-popover-cell left-cell">
+                <div><strong>{{setting.name}}</strong></div>
+                <div>&quot;{{setting.oldValue}}&quot;</div>
+            </div>
+            <div class="history-popover-cell">
+                <div><strong>{{setting.name}}</strong></div>
+                <div class="setting-value">&quot;{{setting.value}}&quot;</div>
+            </div>
+        </div>
+    </div>
+</script>
+
