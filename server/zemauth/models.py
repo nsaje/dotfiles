@@ -74,8 +74,9 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
         verbose_name_plural = _('users')
 
         permissions = (
-            ("help_view", "Can view help popovers."),
-            ("supply_dash_link_view", "Can view supply dash link.")
+            ('help_view', 'Can view help popovers.'),
+            ('supply_dash_link_view', 'Can view supply dash link.'),
+            ('ad_group_agency_tab_view', "Can view ad group's agency tab.")
         )
 
     def get_full_name(self):
