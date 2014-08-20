@@ -112,8 +112,9 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
                 perms = auth_models.Permission.objects.all()
             else:
                 perms = auth_models.Permission.objects.\
-                    filter(user=self).\
-                    filter(group__user=self)
+                    filter(models.Q(user=self) | models.Q(group__user=self)).\
+                    order_by('id').\
+                    distinct('id')
 
             public_permissions = auth_models.Permission.objects.\
                 filter(pk__in=(x.pk for x in perms)).\
