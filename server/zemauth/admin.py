@@ -41,4 +41,9 @@ class UserAdmin(authadmin.UserAdmin):
 
     list_display = ('email', 'username', 'first_name', 'last_name', 'is_staff', 'last_login')
 
+
+class InternalGroupAdmin(admin.ModelAdmin):
+    pass
+
 admin.site.register(models.User, UserAdmin)
+admin.site.register(models.InternalGroup, InternalGroupAdmin)

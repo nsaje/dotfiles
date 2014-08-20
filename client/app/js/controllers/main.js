@@ -14,7 +14,15 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
     }
 
     $scope.hasPermission = function (permission) {
-        return $scope.user.permissions.indexOf(permission) >= 0;
+        return $scope.user && Object.keys($scope.user.permissions).indexOf(permission) >= 0;
+    };
+
+    $scope.isPermissionInternal = function (permission) {
+        if (Object.keys($scope.user.permissions).indexOf(permission) < 0) {
+            return false;
+        }
+
+        return !$scope.user.permissions[permission];
     };
 
     $scope.getDateRanges = function () {
@@ -26,9 +34,9 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
 
         if ($scope.hasPermission('reports.fewer_daterange_options')) {
             result['Yesterday'] = [zemMoment().subtract('days', 1).startOf('day'), zemMoment().subtract('days', 1).endOf('day')];
-            currentMonth = zemMoment().startOf('month');
-            result[currentMonth.format('MMMM')] = [currentMonth, zemMoment().subtract('days', 1)];
             result['Last 30 Days'] = [zemMoment().subtract('days', 29), zemMoment().subtract('days', 1)];
+            currentMonth = zemMoment().startOf('month');
+            result[currentMonth.format(formatStr)] = [currentMonth, zemMoment().subtract('days', 1)];
 
             for (i = 0; i < monthsCount; i++) {
                 result[zemMoment().subtract('month', i+1).format(formatStr)] = [zemMoment().subtract('month', i+1).startOf('month'), zemMoment().subtract('month', i+1).endOf('month')];

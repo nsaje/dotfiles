@@ -53,6 +53,8 @@ class UserManagerTestCase(test.TestCase):
 
 
 class UserTestCase(test.TestCase):
+    fixtures = ['test_users.yaml']
+
     def test_email_user(self):
         kwargs = {
             "fail_silently": False,
@@ -101,6 +103,51 @@ class UserTestCase(test.TestCase):
         with transaction.atomic():
             user2 = models.User(email='TEST@test.com')
             self.assertRaises(IntegrityError, user2.save)
+
+    def test_superuser_permissions(self):
+        user = models.User.objects.get(pk=1)
+        permissions = user.get_all_permissions_with_access_levels()
+
+        self.assertFalse(permissions['test.internal_permission_1'])
+        self.assertFalse(permissions['test.internal_permission_2'])
+        self.assertTrue(permissions['test.public_permission_1'])
+        self.assertTrue(permissions['test.public_permission_2'])
+
+    def test_normal_user_permissions(self):
+        user = models.User.objects.get(pk=2)
+        permissions = user.get_all_permissions_with_access_levels()
+
+        self.assertFalse('test.internal_permission_1' in permissions)
+        self.assertFalse('test.internal_permission_2' in permissions)
+        self.assertTrue(permissions['test.public_permission_1'])
+        self.assertTrue(permissions['test.public_permission_2'])
+
+    def test_inactive_user_permissions(self):
+        user = models.User.objects.get(pk=2)
+        user.is_active = False
+        permissions = user.get_all_permissions_with_access_levels()
+
+        self.assertEqual(permissions, {})
+
+    def test_anonymous_user_permissions(self):
+        user = models.User.objects.get(pk=2)
+        user.is_anonymous = lambda: True
+        permissions = user.get_all_permissions_with_access_levels()
+
+        self.assertEqual(permissions, {})
+
+    def test_user_permissions_cache(self):
+        user = models.User.objects.get(pk=1)
+        permissions = user.get_all_permissions_with_access_levels()
+
+        # Basic check that some permissions were returned
+        self.assertFalse(permissions['test.internal_permission_1'])
+        self.assertFalse(permissions['test.internal_permission_2'])
+        self.assertTrue(permissions['test.public_permission_1'])
+        self.assertTrue(permissions['test.public_permission_2'])
+
+        permissions2 = user.get_all_permissions_with_access_levels()
+        self.assertEqual(permissions2, permissions)
 
     # def test_mandatory_email(self):
     #     user = models.User(first_name='Test')

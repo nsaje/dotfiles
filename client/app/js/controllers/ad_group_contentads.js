@@ -21,14 +21,14 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             field: 'url',
             checked: true,
             type: 'url',
-            help: 'Web address of the content.'
+            help: 'The web address of the content ad.'
         },
         {
             name: 'Spend',
             field: 'cost',
             checked: true,
             type: 'currency',
-            help: "Amount that you've been charged for promotion of your content ad."
+            help: "The amount spent per creative."
         },
         {
             name: 'Avg. CPC',
@@ -36,21 +36,21 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             checked: true,
             type: 'currency',
             fractionSize: 3,
-            help: "Average cost-per-click (CPC) is the average amount that you've been charged for a click on your content ad. "
+            help: "The average CPC for each content ad."
         },
         {
             name: 'Clicks',
             field: 'clicks',
             checked: true,
             type: 'number',
-            help: 'A click is when a user interacts with your content ad by clicking on it and you get a new user on your web site.'
+            help: 'The number of times a content ad has been clicked.'
         },
         {
             name: 'Impressions',
             field: 'impressions',
             checked: true,
             type: 'number',
-            help: 'Impressions indicate how often your content ad has been displayed to the user.'
+            help: 'The number of times a content ad has been displayed.'
 
         },
         {
@@ -58,7 +58,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             field: 'ctr',
             checked: true,
             type: 'percent',
-            help: 'Clickthrough rate (CTR) is the number of clicks your content ad receives divided by the number of times your content ad has been displayed.'
+            help: 'The number of clicks divided by the number of impressions.'
         }
     ];
 

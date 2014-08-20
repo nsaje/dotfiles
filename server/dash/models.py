@@ -237,6 +237,15 @@ class SourceCredentials(models.Model):
 
         super(SourceCredentials, self).save(*args, **kwargs)
 
+    def decrypt(self):
+        if not self.id or not self.credentials:
+            return self.credentials
+
+        return encryption_helpers.aes_decrypt(
+            binascii.a2b_base64(self.credentials),
+            settings.CREDENTIALS_ENCRYPTION_KEY
+        )
+
 
 class AdGroup(models.Model):
     id = models.AutoField(primary_key=True)

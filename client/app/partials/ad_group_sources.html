@@ -34,81 +34,89 @@
 
         <div class="loader-container">
             <div class="loader" ng-show="rows.length && loadRequestInProgress"></div>
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th class="arrow" ng-class="{ordered: order === '-name', 'ordered-reverse': order === 'name'}"><a href class="order" ng-click="orderRows('name')">Media Source</a><zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Media source is a vendor providing traffic through relationships with publishers." placement="top"></zem-help-popover></th>
-                        <th class="text-center arrow" ng-class="{ordered: order === '-status', 'ordered-reverse': order === 'status'}"><a class="order" href ng-click="orderRows('status')">Status</a><zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The status shows if the ad group is enabled on this media source or it is paused." placement="top"></zem-help-popover></th>
-                        <th class="text-right arrow" ng-class="{'text-right': col.type !== 'url', ordered: order === '-' + col.field, 'ordered-reverse': order === col.field, 'trimmed-currency': (col.type === 'currency' && col.fractionSize > 2)}" ng-repeat="col in columns | filter: {checked: true}"><a href class="order" ng-click="orderRows(col.field)">{{ col.name }}</a><zem-help-popover ng-if="col.help && hasPermission('zemauth.help_view')" content="{{ col.help }}" placement="{{ $last ? 'left' : 'top' }}"></zem-help-popover></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr ng-if="loadRequestInProgress && !rows.length">
-                        <td colspan="{{ selectedColumnsCount + 3}}" class="loader-row">
-                            <div class="loader"></div>
-                        </td>
-                    </tr>
-                    <tr ng-show="(!rows || !rows.length) && !loadRequestInProgress">
-                        <td class="no-data" colspan="{{ selectedColumnsCount + 3}}">No data</td>
-                    </tr>
-                    <tr ng-repeat="row in rows">
-                        <td class="input-one-char"><input type="checkbox" data-ng-model="row.checked" ng-disabled="!row.checked && selectedSourceIds.length === 4" data-ng-change="selectedSourcesChanged(row.id)"/></td>
-                        <td>{{ row.name }}</td>
-                        <td class="text-center">
-                            <div ng-if="row.status == constants.adGroupSettingsState.ACTIVE">Enabled</div>
-                            <div ng-if="row.status == constants.adGroupSettingsState.INACTIVE">Paused</div>
-                            <div ng-if="!row.status">N/A</div>
-                        </td>
 
-                        <td class="text-right number" ng-repeat="col in columns | filter: {checked: true}">
-                            <span ng-switch="col.type">
-                                <span ng-switch-when="currency">
-                                    <span ng-class="{'currency-3': col.fractionSize === 3}">
-                                        {{ (row[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
-                                    </span>
-                                </span>
-                                <span ng-switch-when="percent">
-                                    {{ (row[col.field] | number:2) || '0.0' }}%
-                                </span>
-                                <span ng-switch-when="number">
-                                    {{ (row[col.field] | number:0) || 'N/A' }}
-                                </span>
-                                <span ng-switch-when="datetime">
-                                    {{ (row[col.field] | date:'M/d/yyyy h:mm a') || 'N/A' }}
-                                </span>
-                            </span>
-                        </td>
-                    </tr>
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td class="input-one-char"><input type="checkbox" data-ng-model="selectedSourceTotals" data-ng-change="selectedSourcesChanged(null)"/></td>
-                        <td colspan="2">TOTALS</td>
-                        <td class="text-right number"></td>
-                        <td class="text-right number" ng-repeat="col in columns | filter: {checked: true, field: '!bid_cpc'}">
-                            <span ng-switch="col.type">
-                                <span ng-if="col.field != 'last_sync'">
+            <div class="table-container">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th class="arrow" ng-class="{ordered: order === '-name', 'ordered-reverse': order === 'name'}"><a href class="col-title order" ng-click="orderRows('name')">Media Source</a><zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="A media source where your content is being promoted." placement="top"></zem-help-popover></th>
+                            <th class="text-center arrow" ng-class="{ordered: order === '-status', 'ordered-reverse': order === 'status'}"><a class="col-title order" href ng-click="orderRows('status')">Status</a><zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Status of a particular media source (enabled or paused)." placement="top"></zem-help-popover></th>
+                            <th class="text-right arrow" ng-class="{'text-right': col.type !== 'url', ordered: order === '-' + col.field, 'ordered-reverse': order === col.field, 'trimmed-currency': (col.type === 'currency' && col.fractionSize > 2)}" ng-repeat="col in columns | filter: {checked: true}"><a href class="col-title order" ng-class="{internal: col.internal}" ng-click="orderRows(col.field)">{{ col.name }}</a><zem-help-popover ng-if="col.help && hasPermission('zemauth.help_view')" content="{{ col.help }}" placement="{{ $last ? 'left' : 'top' }}"></zem-help-popover></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-if="loadRequestInProgress && !rows.length">
+                            <td colspan="{{ selectedColumnsCount + 3}}" class="loader-row">
+                                <div class="loader"></div>
+                            </td>
+                        </tr>
+                        <tr ng-show="(!rows || !rows.length) && !loadRequestInProgress">
+                            <td class="no-data" colspan="{{ selectedColumnsCount + 3}}">No data</td>
+                        </tr>
+                        <tr ng-repeat="row in rows">
+                            <td class="input-one-char"><input type="checkbox" data-ng-model="row.checked" ng-disabled="!row.checked && selectedSourceIds.length === 4" data-ng-change="selectedSourcesChanged(row.id)"/></td>
+                            <td>{{ row.name }}</td>
+                            <td class="text-center">
+                                <div ng-if="row.status == constants.adGroupSettingsState.ACTIVE">Enabled</div>
+                                <div ng-if="row.status == constants.adGroupSettingsState.INACTIVE">Paused</div>
+                                <div ng-if="!row.status">N/A</div>
+                            </td>
+
+                            <td class="text-right number" ng-repeat="col in columns | filter: {checked: true}">
+                                <span ng-switch="col.type">
                                     <span ng-switch-when="currency">
                                         <span ng-class="{'currency-3': col.fractionSize === 3}">
-                                            {{ (totals[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
+                                            {{ (row[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
                                         </span>
                                     </span>
                                     <span ng-switch-when="percent">
-                                        {{ (totals[col.field] | number:2) || '0.0' }}%
+                                        {{ (row[col.field] | number:2) || '0.0' }}%
                                     </span>
                                     <span ng-switch-when="number">
-                                        {{ (totals[col.field] | number:0) || 'N/A' }}
+                                        {{ (row[col.field] | number:0) || 'N/A' }}
                                     </span>
                                     <span ng-switch-when="datetime">
-                                        {{ (row[col.field] | date:'M/d/yyyy h:mm a') || 'N/A' }}
+                                        <span class="datetime">
+                                            {{ (row[col.field] | date:'M/d/yyyy h:mm a') || 'N/A' }}
+                                        </span>
+                                    </span>
+                                    <span ng-switch-when="link">
+                                        <a ng-href="{{ row[col.field] }}" target="_blank"><img ng-src="{{ config.static_url }}/img/link.svg" class="link-img"></a>
                                     </span>
                                 </span>
-                            </span>
-                        </td>
-                    </tr>
-                </tfoot>
-            </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td class="input-one-char"><input type="checkbox" data-ng-model="selectedSourceTotals" data-ng-change="selectedSourcesChanged(null)"/></td>
+                            <td colspan="2">TOTALS</td>
+                            <td class="text-right number"></td>
+                            <td class="text-right number" ng-repeat="col in columns | filter: {checked: true, field: '!bid_cpc'}">
+                                <span ng-switch="col.type">
+                                    <span ng-if="col.field != 'last_sync'">
+                                        <span ng-switch-when="currency">
+                                            <span ng-class="{'currency-3': col.fractionSize === 3}">
+                                                {{ (totals[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
+                                            </span>
+                                        </span>
+                                        <span ng-switch-when="percent">
+                                            {{ (totals[col.field] | number:2) || '0.0' }}%
+                                        </span>
+                                        <span ng-switch-when="number">
+                                            {{ (totals[col.field] | number:0) || 'N/A' }}
+                                        </span>
+                                        <span ng-switch-when="datetime">
+                                            {{ (row[col.field] | date:'M/d/yyyy h:mm a') || 'N/A' }}
+                                        </span>
+                                    </span>
+                                </span>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
 
         <div class="last-sync">

@@ -142,3 +142,10 @@ LOGGING = {
 ACTIONLOG_RECENT_HOURS = 2
 
 LAST_N_DAY_REPORTS = 3
+
+SOURCE_OAUTH_URIS = {
+    'yahoo': {
+        'auth_uri': 'https://api.login.yahoo.com/oauth2/request_auth',
+        'token_uri': 'https://api.login.yahoo.com/oauth2/get_token',
+    }
+}

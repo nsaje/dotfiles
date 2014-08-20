@@ -85,7 +85,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('campaign_settings_view', 'Can view campaign settings in dashboard.'),
             ('campaign_settings_account_manager', 'Can be chosen as account manager.'),
             ('campaign_settings_sales_rep', 'Can be chosen as sales representative.'),
-            ('help_view', 'Can view help popovers.')
+            ('help_view', 'Can view help popovers.'),
+            ("supply_dash_link_view", "Can view supply dash link.")
         )
 
     def get_full_name(self):
@@ -111,3 +112,37 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
     def clean(self):
         if not self.pk and self.__class__.objects.filter(email=self.email.lower).exists():
             raise ValidationError({'email': 'User with this e-mail already exists.'})
+
+    def get_all_permissions_with_access_levels(self):
+        if not self.is_active or self.is_anonymous():
+            return {}
+
+        perm_cache_name = '_zemauth_permission_cache'
+        if not hasattr(self, perm_cache_name):
+            if self.is_superuser:
+                perms = auth_models.Permission.objects.all()
+            else:
+                perms = auth_models.Permission.objects.\
+                    filter(models.Q(user=self) | models.Q(group__user=self)).\
+                    order_by('id').\
+                    distinct('id')
+
+            public_permissions = auth_models.Permission.objects.\
+                filter(pk__in=(x.pk for x in perms)).\
+                filter(group__in=auth_models.Group.objects.filter(internalgroup=None))
+
+            public_permissions_ids = [x.pk for x in public_permissions]
+
+            permissions = {'{}.{}'.format(x.content_type.app_label, x.codename): x.pk
+                           in public_permissions_ids for x in perms}
+
+            setattr(self, perm_cache_name, permissions)
+
+        return getattr(self, perm_cache_name)
+
+
+class InternalGroup(models.Model):
+    group = models.ForeignKey(auth_models.Group, unique=True, on_delete=models.PROTECT)
+
+    def __unicode__(self):
+        return self.group.name
