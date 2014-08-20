@@ -191,7 +191,7 @@ class User(api_common.BaseApiView):
             result = {
                 'id': str(user.pk),
                 'email': user.email,
-                'permissions': list(user.get_all_permissions())
+                'permissions': user.get_all_permissions_with_access_levels()
             }
 
         return result
