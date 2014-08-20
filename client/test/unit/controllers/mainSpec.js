@@ -25,11 +25,11 @@ describe('MainCtrl', function () {
 
     describe('hasPermission', function () {
         beforeEach(function () {
-            $scope.user = { permissions: [] };
+            $scope.user = { permissions: {} };
         });
 
         it('should return true if user has the specified permission', function () {
-            $scope.user.permissions.push('somePermission');
+            $scope.user.permissions.somePermission = true;
             expect($scope.hasPermission('somePermission')).toBe(true);
         });
 
