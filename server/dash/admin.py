@@ -4,6 +4,7 @@ from django.contrib import admin
 from django import forms
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
+from django.conf import settings
 
 import constants
 import models
@@ -15,6 +16,14 @@ import json
 class StrWidget(forms.Widget):
     def render(self, name, value, attrs=None):
         return mark_safe(unicode(value))
+
+    def value_from_datadict(self, data, files, name):
+        return "Something"
+
+
+class StrFieldWidget(forms.Widget):
+    def render(self, name, value, attrs=None):
+        return mark_safe('<p>' + unicode(value) + '</p>')
 
     def value_from_datadict(self, data, files, name):
         return "Something"
@@ -65,7 +74,8 @@ class AdGroupSettingsForm(forms.ModelForm):
         }
 
 
-# Always empty form for source credentials
+# Always empty form for source credentials and a link for refresing OAuth credentials for
+# sources that use them
 
 class SourceCredentialsForm(forms.ModelForm):
     credentials = forms.CharField(
@@ -74,9 +84,37 @@ class SourceCredentialsForm(forms.ModelForm):
         widget=forms.Textarea(
             attrs={'rows': 15, 'cols': 60})
     )
+    oauth_refresh = forms.CharField(label='Refresh OAuth', required=False, widget=StrFieldWidget)
+
+    def _set_oauth_refresh(self, instance):
+        if not instance or not instance.pk or instance.source.type not in settings.SOURCE_OAUTH_URIS.keys():
+            self.fields['oauth_refresh'].widget = forms.HiddenInput()
+            return
+
+        self.initial['oauth_refresh'] = ''
+        self.fields['oauth_refresh'].widget.attrs['readonly'] = True
+
+        decrypted = instance.decrypt()
+        if 'client_id' not in decrypted or 'client_secret' not in decrypted:
+            self.initial['oauth_refresh'] = 'Credentials instance doesn\'t contain client_id or client_secret. '\
+                                            'Unable to refresh OAuth tokens.'
+            return
+
+        if 'oauth_tokens' not in decrypted:
+            self.initial['oauth_refresh'] = 'Credentials instance doesn\'t contain access tokens. '\
+                                            'For credentials to work, refresh them: '
+        else:
+            self.initial['oauth_refresh'] = 'Credentials instance contains access tokens. '\
+                                            'Refresh them anyway: '
+
+        self.initial['oauth_refresh'] += '<a href="' +\
+                                         reverse('dash.views.oauth_authorize',
+                                                 kwargs={'source_name': instance.source.type}) +\
+                                         '?credentials_id=' + str(instance.pk) + '">Refresh</a>'
 
     def __init__(self, *args, **kwargs):
         super(SourceCredentialsForm, self).__init__(*args, **kwargs)
+        self._set_oauth_refresh(kwargs.get('instance'))
         self.initial['credentials'] = ''
         self.fields['credentials'].help_text = \
             'The value in this field is automatically encrypted upon saving '\

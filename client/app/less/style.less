@@ -1056,9 +1056,18 @@ a.help-popover:visited {
     }
 }
 
+.table-container {
+    width: 100%;
+    overflow: auto;
+}
+
 .table {
     color: #454545;
     font-size: 13px;
+
+    th {
+        white-space: nowrap;
+    }
 
     thead, tfoot {
         background-color: #f6f6f6;
@@ -1174,6 +1183,10 @@ a.help-popover:visited {
         &.trimmed {
             overflow: hidden;
             text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        & .datetime {
             white-space: nowrap;
         }
     }

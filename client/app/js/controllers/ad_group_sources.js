@@ -22,21 +22,21 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             checked: true,
             type: 'currency',
             fractionSize: 3,
-            help: 'Maximum acceptable bid (in dollars) for promoting content ads of this ad group on this media source.'
+            help: 'Maximum bid price (in USD) per click.'
         },
         {
             name: 'Daily Budget',
             field: 'daily_budget',
             checked: true,
             type: 'currency',
-            help: 'Approximate amount that should be spent per day on this media source.'
+            help: 'Maximum budget per day.'
         },
         {
             name: 'Spend',
             field: 'cost',
             checked: true,
             type: 'currency',
-            help: "Amount that you've been charged for promotion of your content ad."
+            help: "Amount spent per media source."
         },
         {
             name: 'Avg. CPC',
@@ -44,35 +44,35 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             checked: true,
             type: 'currency',
             fractionSize: 3,
-            help: "Average cost-per-click (CPC) is the average amount that you've been charged for a click on your content ad. "
+            help: "The average CPC."
         },
         {
             name: 'Clicks',
             field: 'clicks',
             checked: true,
             type: 'number',
-            help: 'A click is when a user interacts with your content ad by clicking on it and you get a new user on your web site.'
+            help: 'The number of times a content ad has been clicked.'
         },
         {
             name: 'Impressions',
             field: 'impressions',
             checked: true,
             type: 'number',
-            help: 'Impressions indicate how often your content ad has been displayed to the user.'
+            help: 'The number of times a content ad has been displayed.'
         },
         {
             name: 'CTR',
             field: 'ctr',
             checked: true,
             type: 'percent',
-            help: 'Clickthrough rate (CTR) is the number of clicks your content ad receives divided by the number of times your content ad has been displayed.'
+            help: 'The number of clicks divided by the number of impressions.'
         },
         {
             name: 'Last OK Sync',
             field: 'last_sync',
             checked: false,
             type: 'datetime',
-            help: 'Data about bids, budgets and spends is synchronized on hourly basis. This is the time last synchronisation took place.'
+            help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred.'
         }
     ];
 

@@ -136,6 +136,15 @@ class SourceCredentials(models.Model):
 
         super(SourceCredentials, self).save(*args, **kwargs)
 
+    def decrypt(self):
+        if not self.id or not self.credentials:
+            return self.credentials
+
+        return encryption_helpers.aes_decrypt(
+            binascii.a2b_base64(self.credentials),
+            settings.CREDENTIALS_ENCRYPTION_KEY
+        )
+
 
 class UserAdGroupManager(models.Manager):
     def get_for_user(self, user):

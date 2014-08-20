@@ -7,10 +7,15 @@ import unicodecsv
 from xlwt import Workbook, Style
 import slugify
 import excel_styles
+import base64
+import httplib
+import urllib
+import urllib2
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core import urlresolvers
+from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render, redirect
@@ -754,11 +759,11 @@ class AdGroupAdsTable(api_common.BaseApiView):
         size = max(min(int(size or 5), 50), 1)
 
         result = reports.api.query(
-                start_date=start_date,
-                end_date=end_date,
-                breakdown=['article'],
-                order=[order],
-                ad_group=ad_group.id
+            start_date=start_date,
+            end_date=end_date,
+            breakdown=['article'],
+            order=[order],
+            ad_group=ad_group.id
         )
 
         result_pg, current_page, num_pages, count, start_index, end_index = reports.api.paginate(result, page, size)
@@ -853,3 +858,86 @@ class AdGroupDailyStats(api_common.BaseApiView):
 @statsd_helper.statsd_timer('dash', 'healthcheck')
 def healthcheck(request):
     return HttpResponse('OK')
+
+
+@login_required
+def oauth_authorize(request, source_name):
+    credentials_id = request.GET.get('credentials_id')
+
+    if not credentials_id:
+        logger.warning('Missing credentials id')
+        return reverse('index')
+
+    credentials = models.SourceCredentials.objects.get(id=credentials_id)
+    decrypted = json.loads(credentials.decrypt())
+
+    if 'client_id' not in decrypted or 'client_secret' not in decrypted:
+        logger.error('client_id and/or client_secret not in credentials')
+        return reverse('index')
+
+    state = {
+        'credentials_id': credentials_id,
+    }
+
+    redirect_uri = request.build_absolute_uri(reverse('source.oauth.redirect', kwargs={'source_name': source_name}))
+    redirect_uri = redirect_uri.replace('http://', 'https://')
+
+    params = {
+        'client_id': decrypted['client_id'],
+        'redirect_uri': redirect_uri,
+        'response_type': 'code',
+        'state': urllib.quote(json.dumps(state))
+    }
+
+    url = settings.SOURCE_OAUTH_URIS[source_name]['auth_uri'] + '?' + urllib.urlencode(params)
+    return redirect(url)
+
+
+def oauth_redirect(request, source_name):
+    # Token requests are implemented using urllib2 requests because Yahoo only supports credentials in
+    # Authorization header while oauth2client sends it in reqeust body (for get_token calls, after that
+    # it puts access token into header).
+
+    code = request.GET.get('code')
+    state = request.GET.get('state')
+
+    if not state or 'credentials_id' not in state:
+        logger.error('Missing state in OAuth2 redirect')
+        return reverse('index')
+
+    try:
+        state = json.loads(state)
+    except (TypeError, ValueError):
+        logger.error('Invalid state in OAuth2 redirect')
+        return reverse('index')
+
+    credentials = models.SourceCredentials.objects.get(id=state['credentials_id'])
+    decrypted = json.loads(credentials.decrypt())
+
+    redirect_uri = request.build_absolute_uri(reverse('source.oauth.redirect', kwargs={'source_name': source_name}))
+    redirect_uri = redirect_uri.replace('http://', 'https://')
+
+    headers = {
+        'Authorization': 'Basic {}'.format(base64.b64encode(decrypted['client_id'] + ':' + decrypted['client_secret']))
+    }
+
+    data = {
+        'redirect_uri': redirect_uri,
+        'code': code,
+        'grant_type': 'authorization_code'
+    }
+
+    req = urllib2.Request(
+        settings.SOURCE_OAUTH_URIS[source_name]['token_uri'],
+        data=urllib.urlencode(data),
+        headers=headers
+    )
+    r = urllib2.urlopen(req)
+
+    if r.getcode() == httplib.OK:
+        decrypted['oauth_tokens'] = json.loads(r.read())
+        decrypted['oauth_created_dt'] = datetime.datetime.utcnow().isoformat()
+        credentials.credentials = json.dumps(decrypted)
+        credentials.save()
+
+    return redirect('index')
