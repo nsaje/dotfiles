@@ -96,7 +96,17 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
     $scope.adGroupData = {};
 
     $scope.hasPermission = function (permission) {
-        return $scope.user && $scope.user.permissions.indexOf(permission) >= 0;
+        return $scope.user && Object.keys($scope.user.permissions).indexOf(permission) >= 0;
+    };
+
+    $scope.isPermissionInternal = function (permission) {
+        if (!$scope.user || Object.keys($scope.user.permissions).indexOf(permission) < 0) {
+            return false;
+        }
+        console.log(permission);
+        console.log(!$scope.user.permissions[permission]);
+
+        return !$scope.user.permissions[permission];
     };
 
     $scope.setAdGroupData = function (key, value) {

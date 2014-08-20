@@ -42,7 +42,7 @@
                             <th></th>
                             <th class="arrow" ng-class="{ordered: order === '-name', 'ordered-reverse': order === 'name'}"><a href class="col-title order" ng-click="orderRows('name')">Media Source</a><zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="A media source where your content is being promoted." placement="top"></zem-help-popover></th>
                             <th class="text-center arrow" ng-class="{ordered: order === '-status', 'ordered-reverse': order === 'status'}"><a class="col-title order" href ng-click="orderRows('status')">Status</a><zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Status of a particular media source (enabled or paused)." placement="top"></zem-help-popover></th>
-                            <th class="text-right arrow" ng-class="{'text-right': col.type !== 'url', ordered: order === '-' + col.field, 'ordered-reverse': order === col.field, 'trimmed-currency': (col.type === 'currency' && col.fractionSize > 2)}" ng-repeat="col in columns | filter: {checked: true}"><a href class="col-title order" ng-click="orderRows(col.field)">{{ col.name }}</a><zem-help-popover ng-if="col.help && hasPermission('zemauth.help_view')" content="{{ col.help }}" placement="{{ $last ? 'left' : 'top' }}"></zem-help-popover></th>
+                            <th class="text-right arrow" ng-class="{'text-right': col.type !== 'url', ordered: order === '-' + col.field, 'ordered-reverse': order === col.field, 'trimmed-currency': (col.type === 'currency' && col.fractionSize > 2)}" ng-repeat="col in columns | filter: {checked: true}"><a href class="col-title order" ng-class="{internal: col.internal}" ng-click="orderRows(col.field)">{{ col.name }}</a><zem-help-popover ng-if="col.help && hasPermission('zemauth.help_view')" content="{{ col.help }}" placement="{{ $last ? 'left' : 'top' }}"></zem-help-popover></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -80,6 +80,9 @@
                                         <span class="datetime">
                                             {{ (row[col.field] | date:'M/d/yyyy h:mm a') || 'N/A' }}
                                         </span>
+                                    </span>
+                                    <span ng-switch-when="link">
+                                        <a ng-href="{{ row[col.field] }}" target="_blank"><img ng-src="{{ config.static_url }}/img/link.svg" class="link-img"></a>
                                     </span>
                                 </span>
                             </td>

@@ -42,6 +42,7 @@ EINS_HOST = ''
 
 # Zwei API
 ZWEI_API_URL = ''
+ZWEI_API_GET_DASH_URL_URL = ZWEI_API_URL + 'purcel/dash_url/'
 ZWEI_API_SIGN_KEY = ''
 
 # Source credentials encryption key

@@ -58,3 +58,26 @@ def send(action):
 def send_multiple(actionlogs):
     for actionlog in actionlogs:
         send(actionlog)
+
+
+def get_supply_dash_url(source_type, credentials, source_campaign_key):
+    try:
+        # Decrypt has to be the last thing to happen before sending to zwei.
+        # Payload with decrypted credentials should never be logged.
+        enc_payload = {
+            'source': source_type,
+            'credentials': credentials,
+            'args': {
+                'source_campaign_key': source_campaign_key
+            }
+        }
+        payload = _decrypt_payload_credentials(enc_payload)
+        data = json.dumps(payload, cls=json_helper.JSONEncoder)
+        request = urllib2.Request(settings.ZWEI_API_GET_DASH_URL_URL, data)
+
+        response = request_signer.urllib2_secure_open(
+            request, settings.ZWEI_API_SIGN_KEY)
+        return json.loads(response.read())
+    except Exception as e:
+        msg = traceback.format_exc(e)
+        logger.error(msg)

@@ -1,0 +1,87 @@
+# test groups
+- fields:
+    name: 'Internal Group'
+    permissions: [1, 2]
+  model: auth.Group
+  pk: 1
+
+- fields:
+    name: 'Public Group'
+    permissions: [3, 4]
+  model: auth.Group
+  pk: 2
+
+- fields:
+    group: 1
+  pk: 1
+  model: zemauth.InternalGroup
+
+# content type
+- fields:
+    name: 'test'
+    app_label: 'test'
+    model: 'test'
+  model: contenttypes.ContentType
+  pk: 1
+
+# test permissions
+- fields:
+    name: 'An internal permission 1'
+    content_type: 1
+    codename: 'internal_permission_1'
+  model: auth.Permission
+  pk: 1
+
+- fields:
+    name: 'An internal permission 2'
+    content_type: 1
+    codename: 'internal_permission_2'
+  model: auth.Permission
+  pk: 2
+
+- fields:
+    name: 'A public permission 1'
+    content_type: 1
+    codename: 'public_permission_1'
+  model: auth.Permission
+  pk: 3
+
+- fields:
+    name: 'A public permission 2'
+    content_type: 1
+    codename: 'public_permission_2'
+  model: auth.Permission
+  pk: 4
+
+# test user
+- fields:
+    date_joined: '2014-06-04T09:58:21'
+    email: 'internal_user@zemanta.com'
+    first_name: ''
+    groups: [1]
+    is_active: true
+    is_staff: true
+    is_superuser: true
+    last_login: '2014-06-04T12:20:46'
+    last_name: ''
+    password: pbkdf2_sha256$12000$CWOT1c1UlFEr$GDTv3fbQ6bmJffEg1bvb+O49VfwD9Bg/DyylA3jcWvg=
+    user_permissions: [1]
+    username: internal_user
+  model: zemauth.user
+  pk: 1
+
+- fields:
+    date_joined: '2014-06-04T09:58:21'
+    email: 'public_user@zemanta.com'
+    first_name: ''
+    groups: [2]
+    is_active: true
+    is_staff: false
+    is_superuser: false
+    last_login: '2014-06-04T12:20:46'
+    last_name: ''
+    password: pbkdf2_sha256$12000$CWOT1c1UlFEr$GDTv3fbQ6bmJffEg1bvb+O49VfwD9Bg/DyylA3jcWvg=
+    user_permissions: [3]
+    username: public_user
+  model: zemauth.user
+  pk: 2
