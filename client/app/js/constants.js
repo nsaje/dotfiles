@@ -21,6 +21,44 @@ var constants = {
         CTR: 'ctr',
         COST: 'cost',
         CPC: 'cpc'
+    },
+    serviceFee: {
+        FEE_1500: '0.1500',
+        FEE_2000: '0.2000',
+        FEE_2050: '0.2050',
+        FEE_2233: '0.2233',
+        FEE_2500: '0.2500'
+    },
+    iabCategory: {
+        IAB_1: 1,
+        IAB_2: 2,
+        IAB_3: 3,
+        IAB_4: 4,
+        IAB_5: 5,
+        IAB_6: 6,
+        IAB_7: 7,
+        IAB_8: 8,
+        IAB_9: 9,
+        IAB_10: 10,
+        IAB_11: 11,
+        IAB_12: 12,
+        IAB_13: 13,
+        IAB_14: 14,
+        IAB_15: 15,
+        IAB_16: 16,
+        IAB_17: 17,
+        IAB_18: 18,
+        IAB_19: 19,
+        IAB_20: 20,
+        IAB_21: 21,
+        IAB_22: 22,
+        IAB_23: 23,
+        IAB_24: 24
+    },
+    promotionGoal: {
+        BRAND_BUILDING: 1,
+        TRAFFIC_ACQUISITION: 2,
+        CONVERSIONS: 3
     }
 };
 
@@ -47,5 +85,43 @@ var options = {
         {name: 'CTR', value: constants.sourceChartMetric.CTR},
         {name: 'Cost', value: constants.sourceChartMetric.COST},
         {name: 'Avg. CPC', value: constants.sourceChartMetric.CPC}
+    ],
+    serviceFees: [
+        {name: '15%', value: constants.serviceFee.FEE_1500},
+        {name: '20%', value: constants.serviceFee.FEE_2000},
+        {name: '20.5%', value: constants.serviceFee.FEE_2050},
+        {name: '22.33%', value: constants.serviceFee.FEE_2233},
+        {name: '25%', value: constants.serviceFee.FEE_2500},
+    ],
+    iabCategories: [
+        {name: 'Arts & Entertainment', value: constants.iabCategory.IAB_1},
+        {name: 'Automotive', value: constants.iabCategory.IAB_2},
+        {name: 'Business', value: constants.iabCategory.IAB_3},
+        {name: 'Careers', value: constants.iabCategory.IAB_4},
+        {name: 'Education', value: constants.iabCategory.IAB_5},
+        {name: 'Family & Parenting', value: constants.iabCategory.IAB_6},
+        {name: 'Health & Fitness', value: constants.iabCategory.IAB_7},
+        {name: 'Food & Drink', value: constants.iabCategory.IAB_8},
+        {name: 'Hobbies & Interests', value: constants.iabCategory.IAB_9},
+        {name: 'Home & Garden', value: constants.iabCategory.IAB_10},
+        {name: 'Law, Government & Politics', value: constants.iabCategory.IAB_11},
+        {name: 'News', value: constants.iabCategory.IAB_12},
+        {name: 'Personal Finance', value: constants.iabCategory.IAB_13},
+        {name: 'Society', value: constants.iabCategory.IAB_14},
+        {name: 'Science', value: constants.iabCategory.IAB_15},
+        {name: 'Pets', value: constants.iabCategory.IAB_16},
+        {name: 'Sports', value: constants.iabCategory.IAB_17},
+        {name: 'Style & Fashion', value: constants.iabCategory.IAB_18},
+        {name: 'Technology & Computing', value: constants.iabCategory.IAB_19},
+        {name: 'Travel', value: constants.iabCategory.IAB_20},
+        {name: 'Real Estate', value: constants.iabCategory.IAB_21},
+        {name: 'Shopping', value: constants.iabCategory.IAB_22},
+        {name: 'Religion & Spirituality', value: constants.iabCategory.IAB_23},
+        {name: 'Uncategorized', value: constants.iabCategory.IAB_24}
+    ],
+    promotionGoals: [
+        {name: 'Brand Building', value: constants.promotionGoal.BRAND_BUILDING},
+        {name: 'Traffic Acquisition', value: constants.promotionGoal.TRAFFIC_ACQUISITION},
+        {name: 'Conversions', value: constants.promotionGoal.CONVERSIONS}
     ]
 };

@@ -1,0 +1,11 @@
+<div ng-controller="CampaignCtrl">
+    <tabset class="zem-tabset">
+        <tab ng-repeat="tab in tabs | filter:{hidden: false}" active="tab.active">
+            <tab-heading>
+                <div class="tab-top"></div>
+                <a ui-sref="{{ tab.route }}({ id: $state.params.id })">{{ tab.heading }}</a>
+            </tab-heading>
+        </tab>
+    </tabset>
+    <div ui-view></div>
+</div>

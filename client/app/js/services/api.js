@@ -222,7 +222,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
     function AdGroupSettings() {
         function convertFromApi(settings) {
-            var result = {
+            return {
                 id: settings.id,
                 name: settings.name,
                 state: settings.state,
@@ -248,8 +248,6 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 targetRegions: settings.target_regions,
                 trackingCode: settings.tracking_code
             };
-
-            return result;
         }
 
         function convertToApi(settings) {
@@ -351,6 +349,120 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
+    function CampaignSettings() {
+        function convertSettingsFromApi(settings) {
+            return {
+                id: settings.id,
+                name: settings.name,
+                accountManager: settings.account_manager,
+                salesRepresentative: settings.sales_representative,
+                serviceFee: settings.service_fee,
+                IABCategory: settings.iab_category,
+                promotionGoal: settings.promotion_goal
+            };
+        }
+
+        function convertHistoryFromApi(history) {
+            return history.map(function (item) {
+                return {
+                    changedBy: item.changed_by,
+                    changesText: item.changes_text,
+                    settings: item.settings.map(function (setting) {
+                        return {
+                            name: setting.name,
+                            value: setting.value,
+                            oldValue: setting.old_value
+                        };
+                    }),
+                    datetime: item.datetime,
+                    showOldSettings: item.show_old_settings
+                };
+            }); 
+        }
+
+        function convertSettingsToApi(settings) {
+            return {
+                id: settings.id,
+                name: settings.name,
+                account_manager: settings.accountManager,
+                sales_representative: settings.salesRepresentative,
+                service_fee: settings.serviceFee,
+                iab_category: settings.IABCategory,
+                promotion_goal: settings.promotionGoal
+            };
+        }
+
+        function convertValidationErrorFromApi(errors) {
+            var result = {
+                id: errors.id,
+                name: errors.name,
+                accountManager: errors.account_manager,
+                salesRepresentative: errors.sales_representative,
+                serviceFee: errors.service_fee,
+                IABCategory: errors.iab_category,
+                promotionGoal: errors.promotion_goal
+            };
+
+            return result;
+        }
+
+
+        this.get = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/campaigns/' + id + '/settings/';
+
+            $http.get(url).
+                success(function (data, status) {
+                    if (!data || !data.data) {
+                        deferred.reject(data);
+                    }
+                    deferred.resolve({
+                        settings: convertSettingsFromApi(data.data.settings),
+                        accountManagers: data.data.account_managers,
+                        salesReps: data.data.sales_reps,
+                        history: convertHistoryFromApi(data.data.history)
+                    });
+                }).
+                error(function(data, status, headers) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.save = function (settings) {
+            var deferred = $q.defer();
+            var url = '/api/campaigns/' + settings.id + '/settings/';
+            var config = {
+                params: {}
+            };
+
+            var data = {
+                'settings': convertSettingsToApi(settings)
+            };
+
+            $http.put(url, data, config).
+                success(function (data, status) {
+                    if (!data || !data.data) {
+                        deferred.reject(data);
+                    }
+                    deferred.resolve({
+                        settings: convertSettingsFromApi(data.data.settings),
+                        history: convertHistoryFromApi(data.data.history)
+                    });
+                }).
+                error(function(data, status, headers, config) {
+                    var resource;
+                    if (status === 400 && data && data.data.error_code === 'ValidationError') {
+                        resource = convertValidationErrorFromApi(data.data.errors);
+                    }
+                    deferred.reject(resource);
+                });
+
+            return deferred.promise;
+        };
+    }
+
 
     function ActionLog() {
         this.list = function (filters) {
@@ -411,6 +523,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         adGroupSourcesTable: new AdGroupSourcesTable(),
         adGroupAdsTable: new AdGroupAdsTable(),
         adGroupSync: new AdGroupSync(),
+        campaignSettings: new CampaignSettings(),
         checkSyncProgress: new CheckSyncProgress(),
         adGroupSourcesDailyStats: new AdGroupSourcesDailyStats(),
         actionLog: new ActionLog()

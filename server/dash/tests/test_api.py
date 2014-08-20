@@ -114,9 +114,9 @@ class AdGroupSettingsOrderTest(TestCase):
             daily_budget_cc=decimal.Decimal('50.'),
         )
 
-        self.assertEqual(api._get_setting_changes(set1, set1), {})
+        self.assertEqual(set1.get_setting_changes(set1), {})
 
         self.assertEqual(
-            api._get_setting_changes(set1, set2),
+            set1.get_setting_changes(set2),
             {'state': 2, 'cpc_cc': decimal.Decimal('0.2')},
         )

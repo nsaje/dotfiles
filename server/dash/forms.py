@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 
 import dateutil.parser
 import rfc3987
@@ -6,6 +7,7 @@ import rfc3987
 from django import forms
 
 from dash import constants
+from zemauth.models import User as ZemUser
 
 
 class BaseApiForm(forms.Form):
@@ -22,7 +24,7 @@ class AdGroupSettingsForm(forms.Form):
     id = forms.IntegerField()
     name = forms.CharField(
         max_length=127,
-        error_messages={'required': 'Please specify campaign name.'}
+        error_messages={'required': 'Please specify ad group name.'}
     )
     state = forms.TypedChoiceField(
         choices=constants.AdGroupSettingsState.get_choices(),
@@ -118,3 +120,56 @@ class AdGroupSettingsForm(forms.Form):
                 raise forms.ValidationError(err_msg)
 
         return self.cleaned_data.get('tracking_code')
+
+
+class CampaignSettingsForm(forms.Form):
+    id = forms.IntegerField()
+    name = forms.CharField(
+        max_length=127,
+        error_messages={'required': 'Please specify campaign name.'}
+    )
+    account_manager = forms.IntegerField()
+    sales_representative = forms.IntegerField()
+    service_fee = forms.TypedChoiceField(
+        choices=constants.ServiceFee.get_choices(),
+        coerce=Decimal,
+        empty_value=None
+    )
+    iab_category = forms.TypedChoiceField(
+        choices=constants.IABCategory.get_choices(),
+        coerce=int,
+        empty_value=None
+    )
+    promotion_goal = forms.TypedChoiceField(
+        choices=constants.PromotionGoal.get_choices(),
+        coerce=int,
+        empty_value=None
+    )
+
+    def clean_account_manager(self):
+        account_manager_id = self.cleaned_data.get('account_manager')
+
+        err_msg = 'Invalid account manager.'
+
+        try:
+            account_manager = ZemUser.objects.\
+                get_users_with_perm('campaign_settings_account_manager').\
+                get(pk=account_manager_id)
+        except ZemUser.DoesNotExist:
+            raise forms.ValidationError(err_msg)
+
+        return account_manager
+
+    def clean_sales_representative(self):
+        sales_representative_id = self.cleaned_data.get('sales_representative')
+
+        err_msg = 'Invalid sales representative.'
+
+        try:
+            sales_representative = ZemUser.objects.\
+                get_users_with_perm('campaign_settings_sales_rep').\
+                get(pk=sales_representative_id)
+        except ZemUser.DoesNotExist:
+            raise forms.ValidationError(err_msg)
+
+        return sales_representative
