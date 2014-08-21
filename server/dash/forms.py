@@ -1,5 +1,4 @@
 import datetime
-from decimal import Decimal
 
 import dateutil.parser
 import rfc3987
@@ -130,10 +129,10 @@ class CampaignSettingsForm(forms.Form):
     )
     account_manager = forms.IntegerField()
     sales_representative = forms.IntegerField()
-    service_fee = forms.TypedChoiceField(
-        choices=constants.ServiceFee.get_choices(),
-        coerce=Decimal,
-        empty_value=None
+    service_fee = forms.DecimalField(
+        min_value=0,
+        max_value=100,
+        decimal_places=2,
     )
     iab_category = forms.TypedChoiceField(
         choices=constants.IABCategory.get_choices(),

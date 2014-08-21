@@ -1,5 +1,17 @@
 /*globals oneApp,constants,options,moment*/
 oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
+    $scope.serviceFeeSelect2Config = {
+        dropdownCssClass: 'service-fee-select2',
+        createSearchChoice: function (term, data) {
+            if ($(data).filter(function() { 
+                return this.text.localeCompare(term)===0;
+            }).length===0) {
+                return {id: term, text: term + '%'};
+            }
+        },
+        data: [{id: '15', text: '15%'}, {id: '20', text: '20%'}, {id: '25', text: '25%'}]
+    };
+
     $scope.settings = {};
     $scope.history = [];
     $scope.accountManagers = [];

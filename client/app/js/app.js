@@ -17,12 +17,11 @@ oneApp.config(["$locationProvider", function($locationProvider) {
 }]);
 
 oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stateProvider, $urlRouterProvider, config) {
-    $urlRouterProvider.otherwise('/ad_groups//ads');
+    $urlRouterProvider.otherwise('/');
 
     $stateProvider
         .state('main', {
-            abstract: true,
-            url: '',
+            url: '/',
             templateUrl: config.static_url + '/partials/main.html',
             controller: 'MainCtrl',
             resolve: {
@@ -33,12 +32,12 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
                     return api.navData.list();
                 }],
             },
-        });
+        })
     
     $stateProvider
         .state('main.campaigns', {
             abstract: true,
-            url: '/campaigns/{id}',
+            url: 'campaigns/{id}',
             templateUrl: config.static_url + '/partials/campaign.html'
         })
         .state('main.campaigns.agency', {
@@ -51,7 +50,7 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
     $stateProvider
         .state('main.adGroups', {
             abstract: true,
-            url: '/ad_groups/{id}',
+            url: 'ad_groups/{id}',
             templateUrl: config.static_url + '/partials/ad_group.html'
         })
         .state('main.adGroups.ads', {

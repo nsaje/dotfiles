@@ -44,7 +44,7 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', function ($sc
     };
 
     $scope.updateBreadcrumbAndTitle = function () {
-        if (!$scope.accounts) {
+        if (!$scope.account || $scope.campaign || $scope.adGroup) {
             return;
         }
         $scope.setBreadcrumbAndTitle(

@@ -11,6 +11,7 @@ import base64
 import httplib
 import urllib
 import urllib2
+from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -341,6 +342,9 @@ class CampaignSettings(api_common.BaseApiView):
 
         return history
 
+    def format_decimal_to_percent(self, num):
+        return '{:.2f}'.format(num * 100).rstrip('0').rstrip('.')
+
     def convert_settings_to_dict(self, old_settings, new_settings):
         settings_dict = OrderedDict([
             ('name', {
@@ -357,7 +361,7 @@ class CampaignSettings(api_common.BaseApiView):
             }),
             ('service_fee', {
                 'name': 'Service Fee',
-                'value': constants.ServiceFee.get_text(new_settings.service_fee)
+                'value': self.format_decimal_to_percent(new_settings.service_fee) + '%'
             }),
             ('iab_category', {
                 'name': 'IAB Category',
@@ -381,7 +385,7 @@ class CampaignSettings(api_common.BaseApiView):
                     old_settings.sales_representative.get_full_name().encode('utf-8')
 
             settings_dict['service_fee']['old_value'] = \
-                constants.ServiceFee.get_text(old_settings.service_fee)
+                self.format_decimal_to_percent(old_settings.service_fee) + '%'
 
             settings_dict['iab_category']['old_value'] = \
                 constants.IABCategory.get_text(old_settings.iab_category)
@@ -429,7 +433,7 @@ class CampaignSettings(api_common.BaseApiView):
                 'sales_representative':
                     str(settings.sales_representative.id)
                     if settings.sales_representative is not None else None,
-                'service_fee': settings.service_fee,
+                'service_fee': self.format_decimal_to_percent(settings.service_fee),
                 'iab_category': settings.iab_category,
                 'promotion_goal': settings.promotion_goal
             }
@@ -444,7 +448,7 @@ class CampaignSettings(api_common.BaseApiView):
         settings.name = resource['name']
         settings.account_manager = resource['account_manager']
         settings.sales_representative = resource['sales_representative']
-        settings.service_fee = resource['service_fee']
+        settings.service_fee = Decimal(resource['service_fee']) / 100
         settings.iab_category = resource['iab_category']
         settings.promotion_goal = resource['promotion_goal']
 
