@@ -65,6 +65,12 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', function ($sc
         $location.search('source_totals', data && data.sourceTotals ? 1 : null);
         $location.search('page', data && data.page);
     }
+    
+    $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
+        $location.search('source_ids', null);
+        $location.search('source_totals', null);
+        $location.search('page', null);
+    });
 
     $scope.getModels();
     $scope.updateBreadcrumbAndTitle();
