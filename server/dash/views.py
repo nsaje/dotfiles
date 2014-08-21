@@ -269,7 +269,7 @@ class NavigationDataView(api_common.BaseApiView):
 class CampaignSettings(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_settings_get')
     def get(self, request, campaign_id):
-        if not request.user.has_perm('dash.campaign_settings_view'):
+        if not request.user.has_perm('zemauth.campaign_settings_view'):
             raise exc.MissingDataError()
 
         campaign = get_campaign(request.user, campaign_id)
@@ -287,7 +287,7 @@ class CampaignSettings(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'ad_campaign_settings_put')
     def put(self, request, campaign_id):
-        if not request.user.has_perm('dash.settings_view'):
+        if not request.user.has_perm('zemauth.campaign_settings_view'):
             raise exc.MissingDataError()
 
         campaign = get_campaign(request.user, campaign_id)

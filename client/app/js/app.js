@@ -14,9 +14,13 @@ oneApp.config(['$httpProvider', function ($httpProvider) {
 oneApp.config(["$locationProvider", function($locationProvider) {
     $locationProvider.html5Mode(true);
     $locationProvider.hashPrefix('!');
+
 }]);
 
 oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stateProvider, $urlRouterProvider, config) {
+    $urlRouterProvider.when('/signout', ['$location', function ($location) {
+        window.location = $location.absUrl();
+    }]);
     $urlRouterProvider.otherwise('/');
 
     $stateProvider

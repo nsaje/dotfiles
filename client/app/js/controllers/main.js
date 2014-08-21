@@ -1,5 +1,5 @@
 /*globals oneApp,$*/
-oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'api', 'zemMoment', 'user', 'accounts', function ($scope, $state, $location, $document, api, zemMoment, user, accounts) {
+oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'zemMoment', 'user', 'accounts', function ($scope, $state, $location, $document, zemMoment, user, accounts) {
     $scope.accounts = accounts;
     $scope.user = user;
     $scope.currentRoute = $scope.current;
