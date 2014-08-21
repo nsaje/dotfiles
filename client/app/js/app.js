@@ -68,6 +68,11 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/settings',
             templateUrl: config.static_url + '/partials/ad_group_settings.html',
             controller: 'AdGroupSettingsCtrl'
+        })
+        .state('main.adGroups.agency', {
+            url: '/agency',
+            templateUrl: config.static_url + '/partials/ad_group_agency.html',
+            controller: 'AdGroupAgencyCtrl'
         });
 }]);
 

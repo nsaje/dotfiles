@@ -134,7 +134,7 @@
                     <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The tracking code / UTM to be appended to all URLs being promoted. Please contact your account manager for setting this field." placement="top"></zem-help-popover>
                 </label>
                 <div class="col-xs-4">
-                    <textarea id="tracking-input" type="text" class="form-control" rows="4" ng-model="settings.trackingCode"></textarea>
+                    <textarea id="tracking-input" type="text" readonly class="form-control" rows="4" ng-model="settings.trackingCode"></textarea>
                 </div>
 
                 <label ng-repeat="error in errors.trackingCode" class="control-label error" for="tracking-input">{{ error }}</label>
