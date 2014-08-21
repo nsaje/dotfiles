@@ -149,3 +149,5 @@ SOURCE_OAUTH_URIS = {
         'token_uri': 'https://api.login.yahoo.com/oauth2/get_token',
     }
 }
+
+TIMEZONE = 'America/New_York'
