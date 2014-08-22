@@ -747,31 +747,26 @@ a.help-popover:visited {
     }
 }
 
-.col-title.internal {
-    margin-right: 0.5em;
+.custom-cols,
+.table-container {
+    .internal {
+        margin-right: 0.5em;
 
-    &:before {
-        content: " ";
-        width: 0;
-        height: 0;
-        display: block;
-        border-top: 7px solid #16a085;
-        border-right: 7px solid transparent;
-        float: left;
+        &:before {
+            content: " ";
+            width: 0;
+            height: 0;
+            display: block;
+            border-top: 7px solid #16a085;
+            border-right: 7px solid transparent;
+            float: left;
+        }
     }
 }
-
-.zem-tabset .tab-title.internal {
-    position: relative;
-
-    &:before {
-        content: " ";
-        position: absolute;
-        border-top: 10px solid green;
-        border-right: 10px solid transparent;
-        left: 0;
-        top: 0;
-    }
+.zem-tabset .internal {
+    position: absolute;
+    border-top: 12px solid #16a085;
+    border-right: 12px solid transparent;
 }
 
 .header {
