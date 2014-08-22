@@ -52,56 +52,56 @@ class AdTargetCountry(ConstantBase):
 
 
 class IABCategory(ConstantBase):
-    IAB_1 = 1
-    IAB_2 = 2
-    IAB_3 = 3
-    IAB_4 = 4
-    IAB_5 = 5
-    IAB_6 = 6
-    IAB_7 = 7
-    IAB_8 = 8
-    IAB_9 = 9
-    IAB_10 = 10
-    IAB_11 = 11
-    IAB_12 = 12
-    IAB_13 = 13
-    IAB_14 = 14
-    IAB_15 = 15
-    IAB_16 = 16
-    IAB_17 = 17
-    IAB_18 = 18
-    IAB_19 = 19
-    IAB_20 = 20
-    IAB_21 = 21
-    IAB_22 = 22
-    IAB_23 = 23
-    IAB_24 = 24
+    IAB1 = 'IAB1'
+    IAB2 = 'IAB2'
+    IAB3 = 'IAB3'
+    IAB4 = 'IAB4'
+    IAB5 = 'IAB5'
+    IAB6 = 'IAB6'
+    IAB7 = 'IAB7'
+    IAB8 = 'IAB8'
+    IAB9 = 'IAB9'
+    IAB10 = 'IAB10'
+    IAB11 = 'IAB11'
+    IAB12 = 'IAB12'
+    IAB13 = 'IAB13'
+    IAB14 = 'IAB14'
+    IAB15 = 'IAB15'
+    IAB16 = 'IAB16'
+    IAB17 = 'IAB17'
+    IAB18 = 'IAB18'
+    IAB19 = 'IAB19'
+    IAB20 = 'IAB20'
+    IAB21 = 'IAB21'
+    IAB22 = 'IAB22'
+    IAB23 = 'IAB23'
+    IAB24 = 'IAB24'
 
     _VALUES = {
-        IAB_1: 'Arts & Entertainment',
-        IAB_2: 'Automotive',
-        IAB_3: 'Business',
-        IAB_4: 'Careers',
-        IAB_5: 'Education',
-        IAB_6: 'Family & Parenting',
-        IAB_7: 'Health & Fitness',
-        IAB_8: 'Food & Drink',
-        IAB_9: 'Hobbies & Interests',
-        IAB_10: 'Home & Garden',
-        IAB_11: 'Law, Government & Politics',
-        IAB_12: 'News',
-        IAB_13: 'Personal Finance',
-        IAB_14: 'Society',
-        IAB_15: 'Science',
-        IAB_16: 'Pets',
-        IAB_17: 'Sports',
-        IAB_18: 'Style & Fashion',
-        IAB_19: 'Technology & Computing',
-        IAB_20: 'Travel',
-        IAB_21: 'Real Estate',
-        IAB_22: 'Shopping',
-        IAB_23: 'Religion & Spirituality',
-        IAB_24: 'Uncategorized',
+        IAB1: 'IAB1 - Arts & Entertainment',
+        IAB2: 'IAB2 - Automotive',
+        IAB3: 'IAB3 - Business',
+        IAB4: 'IAB4 - Careers',
+        IAB5: 'IAB5 - Education',
+        IAB6: 'IAB6 - Family & Parenting',
+        IAB7: 'IAB7 - Health & Fitness',
+        IAB8: 'IAB8 - Food & Drink',
+        IAB9: 'IAB9 - Hobbies & Interests',
+        IAB10: 'IAB10 - Home & Garden',
+        IAB11: 'IAB11 - Law, Government & Politics',
+        IAB12: 'IAB12 - News',
+        IAB13: 'IAB13 - Personal Finance',
+        IAB14: 'IAB14 - Society',
+        IAB15: 'IAB15 - Science',
+        IAB16: 'IAB16 - Pets',
+        IAB17: 'IAB17 - Sports',
+        IAB18: 'IAB18 - Style & Fashion',
+        IAB19: 'IAB19 - Technology & Computing',
+        IAB20: 'IAB20 - Travel',
+        IAB21: 'IAB21 - Real Estate',
+        IAB22: 'IAB22 - Shopping',
+        IAB23: 'IAB23 - Religion & Spirituality',
+        IAB24: 'IAB24 - Uncategorized',
     }
 
 

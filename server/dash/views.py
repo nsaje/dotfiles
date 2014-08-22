@@ -421,6 +421,8 @@ class CampaignSettings(api_common.BaseApiView):
         else:
             settings = models.CampaignSettings()
 
+        print 'CATEG'
+        print settings.iab_category
         return settings
 
     def get_dict(self, settings, campaign):

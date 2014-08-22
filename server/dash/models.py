@@ -166,8 +166,9 @@ class CampaignSettings(SettingsBase):
         max_digits=5,
         default=Decimal('0.2000'),
     )
-    iab_category = models.IntegerField(
-        default=constants.IABCategory.IAB_24,
+    iab_category = models.SlugField(
+        max_length=5,
+        default=constants.IABCategory.IAB24,
         choices=constants.IABCategory.get_choices()
     )
     promotion_goal = models.IntegerField(
