@@ -391,10 +391,22 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                     changedBy: item.changed_by,
                     changesText: item.changes_text,
                     settings: item.settings.map(function (setting) {
+                        var value = setting.value,
+                            oldValue = setting.old_value;
+
+                        // insert zero-width space in emails for nice word wrapping
+                        if (typeof value === 'string') {
+                            value = value.replace('@', '&#8203;@');
+                        }
+
+                        if (typeof oldValue === 'string') {
+                            oldValue = oldValue.replace('@', '&#8203;@');
+                        }
+                        
                         return {
                             name: setting.name,
-                            value: setting.value,
-                            oldValue: setting.old_value
+                            value: value,
+                            oldValue: oldValue
                         };
                     }),
                     datetime: item.datetime,

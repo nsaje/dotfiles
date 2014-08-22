@@ -345,6 +345,9 @@ class CampaignSettings(api_common.BaseApiView):
     def format_decimal_to_percent(self, num):
         return '{:.2f}'.format(num * 100).rstrip('0').rstrip('.')
 
+    def get_full_name_or_email(self, user):
+        return user.get_full_name() or user.email
+
     def convert_settings_to_dict(self, old_settings, new_settings):
         settings_dict = OrderedDict([
             ('name', {
@@ -353,11 +356,11 @@ class CampaignSettings(api_common.BaseApiView):
             }),
             ('account_manager', {
                 'name': 'Account Manager',
-                'value': new_settings.account_manager.get_full_name().encode('utf-8')
+                'value': self.get_full_name_or_email(new_settings.account_manager).encode('utf-8')
             }),
             ('sales_representative', {
                 'name': 'Sales Representative',
-                'value': new_settings.sales_representative.get_full_name().encode('utf-8')
+                'value': self.get_full_name_or_email(new_settings.sales_representative).encode('utf-8')
             }),
             ('service_fee', {
                 'name': 'Service Fee',
@@ -378,11 +381,11 @@ class CampaignSettings(api_common.BaseApiView):
 
             if old_settings.account_manager is not None:
                 settings_dict['account_manager']['old_value'] = \
-                    old_settings.account_manager.get_full_name().encode('utf-8')
+                    self.get_full_name_or_email(old_settings.account_manager).encode('utf-8')
 
             if old_settings.sales_representative is not None:
                 settings_dict['sales_representative']['old_value'] = \
-                    old_settings.sales_representative.get_full_name().encode('utf-8')
+                    self.get_full_name_or_email(old_settings.sales_representative).encode('utf-8')
 
             settings_dict['service_fee']['old_value'] = \
                 self.format_decimal_to_percent(old_settings.service_fee) + '%'
@@ -454,7 +457,7 @@ class CampaignSettings(api_common.BaseApiView):
 
     def get_user_list(self, perm_name):
         users = ZemUser.objects.get_users_with_perm(perm_name).order_by('last_name')
-        return [{'id': str(user.id), 'name': user.get_full_name()} for user in users]
+        return [{'id': str(user.id), 'name': self.get_full_name_or_email(user)} for user in users]
 
 
 class AdGroupState(api_common.BaseApiView):
