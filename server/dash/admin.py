@@ -84,7 +84,7 @@ class SourceCredentialsForm(forms.ModelForm):
         widget=forms.Textarea(
             attrs={'rows': 15, 'cols': 60})
     )
-    oauth_refresh = forms.CharField(label='Refresh OAuth', required=False, widget=StrFieldWidget)
+    oauth_refresh = forms.CharField(label='OAuth tokens', required=False, widget=StrFieldWidget)
 
     def _set_oauth_refresh(self, instance):
         if not instance or not instance.pk or instance.source.type not in settings.SOURCE_OAUTH_URIS.keys():
@@ -102,15 +102,16 @@ class SourceCredentialsForm(forms.ModelForm):
 
         if 'oauth_tokens' not in decrypted:
             self.initial['oauth_refresh'] = 'Credentials instance doesn\'t contain access tokens. '\
-                                            'For credentials to work, refresh them: '
+                                            '<a href="' +\
+                                            reverse('dash.views.oauth_authorize',
+                                                    kwargs={'source_name': instance.source.type}) +\
+                                            '?credentials_id=' + str(instance.pk) + '">Generate tokens</a>'
         else:
             self.initial['oauth_refresh'] = 'Credentials instance contains access tokens. '\
-                                            'Refresh them anyway: '
-
-        self.initial['oauth_refresh'] += '<a href="' +\
-                                         reverse('dash.views.oauth_authorize',
-                                                 kwargs={'source_name': instance.source.type}) +\
-                                         '?credentials_id=' + str(instance.pk) + '">Refresh</a>'
+                                            '<a href="' +\
+                                            reverse('dash.views.oauth_authorize',
+                                                    kwargs={'source_name': instance.source.type}) +\
+                                            '?credentials_id=' + str(instance.pk) + '">Refresh tokens</a>'
 
     def __init__(self, *args, **kwargs):
         super(SourceCredentialsForm, self).__init__(*args, **kwargs)
