@@ -36,7 +36,7 @@ class UserManager(auth_models.BaseUserManager):
         return self.filter(
             models.Q(groups__permissions=perm) |
             models.Q(user_permissions=perm)
-        )
+        ).distinct()
 
 
 class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
