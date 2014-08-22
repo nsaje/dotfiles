@@ -741,7 +741,7 @@ a.help-popover:visited {
     }
 }
 
-.internal:before {
+.col-title.internal:before {
     content: " ";
     width: 0;
     height: 0;
@@ -750,6 +750,19 @@ a.help-popover:visited {
     border-right: 5px solid transparent;
     float: left;
     margin-left: -5px;
+}
+
+.zem-tabset .tab-title.internal {
+    position: relative;
+
+    &:before {
+        content: " ";
+        position: absolute;
+        border-top: 10px solid green;
+        border-right: 10px solid transparent;
+        left: 0;
+        top: 0;
+    }
 }
 
 .header {
