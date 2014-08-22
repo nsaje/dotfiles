@@ -370,7 +370,10 @@ def reapply_clean_url():
                     article.save()
             except IntegrityError:
                 num_merged_articles += 1
-                existing_article = dashmodels.Article.objects.get(title=article.title, url=article.url)
+                existing_article = dashmodels.Article.objects.get(
+                    title=article.title,
+                    url=article.url,
+                    ad_group=article.ad_group)
                 logger.info(
                     'Integrity error on saving article {id}. '
                     'Merging with already existing article {existing_id}.'.format(
