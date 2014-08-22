@@ -9,7 +9,7 @@ oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', function ($sc
     $scope.discarded = null;
 
     $scope.getSettings = function (id) {
-        api.adGroupSettings.get(id).then(
+        api.adGroupAgency.get(id).then(
             function (data) {
                 $scope.settings = data.settings;
                 $scope.actionIsWaiting = data.actionIsWaiting;
@@ -26,7 +26,7 @@ oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', function ($sc
         $scope.discarded = null;
         $scope.saveRequestInProgress = true;
         $scope.errors = {};
-        api.adGroupSettings.get($state.params.id).then(
+        api.adGroupAgency.get($state.params.id).then(
             function (data) {
                 $scope.settings = data.settings;
                 $scope.actionIsWaiting = data.actionIsWaiting;
@@ -46,7 +46,7 @@ oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', function ($sc
         $scope.discarded = null;
         $scope.saveRequestInProgress = true;
 
-        api.adGroupSettings.save($scope.settings).then(
+        api.adGroupAgency.save($scope.settings).then(
             function (data) {
                 $scope.errors = {};
                 $scope.settings = data.settings;

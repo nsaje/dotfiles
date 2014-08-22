@@ -39,6 +39,10 @@ urlpatterns += patterns(
         login_required(dash.views.AdGroupSettings.as_view()),
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/agency/',
+        login_required(dash.views.AdGroupAgency.as_view()),
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/table/',
         login_required(dash.views.AdGroupSourcesTable.as_view()),
     ),

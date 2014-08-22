@@ -463,6 +463,90 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
+    function AdGroupAgency() {
+        function convertFromApi(settings) {
+            return {
+                id: settings.id,
+                trackingCode: settings.tracking_code
+            };
+        }
+
+        function convertToApi(settings) {
+            var result = {
+                id: settings.id,
+                tracking_code: settings.trackingCode
+            };
+
+            return result;
+        }
+
+        function convertValidationErrorFromApi(errors) {
+            var result = {
+                trackingCode: errors.tracking_code
+            };
+
+            return result;
+        }
+
+        this.get = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + id + '/agency/';
+            var config = {
+                params: {}
+            };
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    var resource;
+                    if (data && data.data && data.data.settings) {
+                        resource = convertFromApi(data.data.settings);
+                    }
+                    deferred.resolve({
+                        settings: resource,
+                        actionIsWaiting: data.data.action_is_waiting
+                    });
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.save = function (settings) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + settings.id + '/agency/';
+            var config = {
+                params: {}
+            };
+
+            var data = {
+                'settings': convertToApi(settings)
+            };
+
+            $http.put(url, data, config).
+                success(function (data, status) {
+                    var resource;
+                    if (data && data.data && data.data.settings) {
+                        resource = convertFromApi(data.data.settings);
+                    }
+                    deferred.resolve({
+                        settings: resource,
+                        actionIsWaiting: data.data.action_is_waiting
+                    });
+                }).
+                error(function(data, status, headers, config) {
+                    var resource;
+                    if (status === 400 && data && data.data.error_code === 'ValidationError') {
+                        resource = convertValidationErrorFromApi(data.data.errors);
+                    }
+                    deferred.reject(resource);
+                });
+
+            return deferred.promise;
+        };
+    }
+
 
     function ActionLog() {
         this.list = function (filters) {
@@ -520,6 +604,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         navData: new NavData(),
         user: new User(),
         adGroupSettings: new AdGroupSettings(),
+        adGroupAgency: new AdGroupAgency(),
         adGroupSourcesTable: new AdGroupSourcesTable(),
         adGroupAdsTable: new AdGroupAdsTable(),
         adGroupSync: new AdGroupSync(),

@@ -562,6 +562,22 @@ class AdGroupSettings(api_common.BaseApiView):
 
 
 class AdGroupAgency(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_agency_get')
+    def get(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.ad_group_agency_tab_view'):
+            raise exc.MissingDataError()
+
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        settings = self.get_current_settings(ad_group)
+
+        response = {
+            'settings': self.get_dict(settings, ad_group),
+            'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group)
+        }
+
+        return self.create_api_response(response)
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_put')
     def put(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.ad_group_agency_tab_view'):
@@ -579,7 +595,9 @@ class AdGroupAgency(api_common.BaseApiView):
 
         settings = models.AdGroupSettings()
         self.set_settings(settings, current_settings, ad_group, form.cleaned_data)
-        settings.save()
+
+        with transaction.atomic():
+            settings.save()
 
         api.order_ad_group_settings_update(ad_group, current_settings, settings)
 
@@ -597,13 +615,7 @@ class AdGroupAgency(api_common.BaseApiView):
         if settings:
             settings = settings[0]
         else:
-            settings = models.AdGroupSettings(
-                state=constants.AdGroupSettingsState.INACTIVE,
-                start_date=datetime.datetime.utcnow().date(),
-                cpc_cc=0.4000,
-                daily_budget_cc=10.0000,
-                target_devices=constants.AdTargetDevice.get_all()
-            )
+            settings = models.AdGroupSettings()
 
         return settings
 
@@ -613,18 +625,6 @@ class AdGroupAgency(api_common.BaseApiView):
         if settings:
             result = {
                 'id': str(ad_group.pk),
-                'name': ad_group.name,
-                'state': settings.state,
-                'start_date': settings.start_date,
-                'end_date': settings.end_date,
-                'cpc_cc':
-                    '{:.2f}'.format(settings.cpc_cc)
-                    if settings.cpc_cc is not None else '',
-                'daily_budget_cc':
-                    '{:.2f}'.format(settings.daily_budget_cc)
-                    if settings.daily_budget_cc is not None else '',
-                'target_devices': settings.target_devices,
-                'target_regions': settings.target_regions,
                 'tracking_code': settings.tracking_code
             }
 
