@@ -14,28 +14,60 @@ oneApp.config(['$httpProvider', function ($httpProvider) {
 oneApp.config(["$locationProvider", function($locationProvider) {
     $locationProvider.html5Mode(true);
     $locationProvider.hashPrefix('!');
+
 }]);
 
 oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stateProvider, $urlRouterProvider, config) {
-    $urlRouterProvider.otherwise('/ad_groups');
+    $urlRouterProvider.when('/signout', ['$location', function ($location) {
+        window.location = $location.absUrl();
+    }]);
+    $urlRouterProvider.otherwise('/');
+
+    $stateProvider
+        .state('main', {
+            url: '/',
+            templateUrl: config.static_url + '/partials/main.html',
+            controller: 'MainCtrl',
+            resolve: {
+                user: ['api', function(api) {
+                    return api.user.get('current');
+                }],
+                accounts: ['api', function (api) {
+                    return api.navData.list();
+                }],
+            },
+        })
+    
+    $stateProvider
+        .state('main.campaigns', {
+            abstract: true,
+            url: 'campaigns/{id}',
+            templateUrl: config.static_url + '/partials/campaign.html'
+        })
+        .state('main.campaigns.agency', {
+            url: '/agency',
+            templateUrl: config.static_url + '/partials/campaign_agency.html',
+            controller: 'CampaignAgencyCtrl'
+        });
+
 
     $stateProvider
-        .state('adGroups', {
+        .state('main.adGroups', {
             abstract: true,
-            url: '/ad_groups/{id}',
-            template: '<ui-view/>'
+            url: 'ad_groups/{id}',
+            templateUrl: config.static_url + '/partials/ad_group.html'
         })
-        .state('adGroups.ads', {
+        .state('main.adGroups.ads', {
             url: '/ads',
             templateUrl: config.static_url + '/partials/ad_group_contentads.html',
             controller: 'AdGroupAdsCtrl'
         })
-        .state('adGroups.sources', {
+        .state('main.adGroups.sources', {
             url: '/sources',
             templateUrl: config.static_url + '/partials/ad_group_sources.html',
             controller: 'AdGroupSourcesCtrl'
         })
-        .state('adGroups.settings', {
+        .state('main.adGroups.settings', {
             url: '/settings',
             templateUrl: config.static_url + '/partials/ad_group_settings.html',
             controller: 'AdGroupSettingsCtrl'

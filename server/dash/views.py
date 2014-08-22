@@ -11,6 +11,7 @@ import base64
 import httplib
 import urllib
 import urllib2
+from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -34,6 +35,8 @@ from dash import forms
 from dash import models
 from dash import api
 
+from zemauth.models import User as ZemUser
+
 import constants
 
 logger = logging.getLogger(__name__)
@@ -44,10 +47,18 @@ STATS_END_DELTA = 1
 
 def get_ad_group(user, ad_group_id):
     try:
-        return models.AdGroup.user_objects.get_for_user(user).\
+        return models.AdGroup.objects.get_for_user(user).\
             filter(id=int(ad_group_id)).get()
     except models.AdGroup.DoesNotExist:
         raise exc.MissingDataError('Ad Group does not exist')
+
+
+def get_campaign(user, campaign_id):
+    try:
+        return models.Campaign.objects.get_for_user(user).\
+            filter(id=int(campaign_id)).get()
+    except models.Campaign.DoesNotExist:
+        raise exc.MissingDataError('Campaign does not exist')
 
 
 def daterange(start_date, end_date):
@@ -253,6 +264,214 @@ class NavigationDataView(api_common.BaseApiView):
             data.append(account)
 
         return self.create_api_response(data)
+
+
+class CampaignSettings(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_settings_get')
+    def get(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.campaign_settings_view'):
+            raise exc.MissingDataError()
+
+        campaign = get_campaign(request.user, campaign_id)
+
+        campaign_settings = self.get_current_settings(campaign)
+
+        response = {
+            'settings': self.get_dict(campaign_settings, campaign),
+            'account_managers': self.get_user_list('campaign_settings_account_manager'),
+            'sales_reps': self.get_user_list('campaign_settings_sales_rep'),
+            'history': self.get_history(campaign)
+        }
+
+        return self.create_api_response(response)
+
+    @statsd_helper.statsd_timer('dash.api', 'ad_campaign_settings_put')
+    def put(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.campaign_settings_view'):
+            raise exc.MissingDataError()
+
+        campaign = get_campaign(request.user, campaign_id)
+
+        resource = json.loads(request.body)
+
+        form = forms.CampaignSettingsForm(resource.get('settings', {}))
+        if not form.is_valid():
+            raise exc.ValidationError(errors=dict(form.errors))
+
+        self.set_campaign(campaign, form.cleaned_data)
+
+        settings = models.CampaignSettings()
+        self.set_settings(settings, campaign, form.cleaned_data)
+
+        with transaction.atomic():
+            campaign.save()
+            settings.save()
+
+        response = {
+            'settings': self.get_dict(settings, campaign),
+            'history': self.get_history(campaign)
+        }
+
+        return self.create_api_response(response)
+
+    def get_history(self, campaign):
+        settings = models.CampaignSettings.objects.\
+            filter(campaign=campaign).\
+            order_by('created_dt')
+
+        history = []
+        for i in range(0, len(settings)):
+            old_settings = settings[i - 1] if i > 0 else None
+            new_settings = settings[i]
+
+            changes = old_settings.get_setting_changes(new_settings) \
+                if old_settings is not None else None
+
+            if i > 0 and not changes:
+                continue
+
+            settings_dict = self.convert_settings_to_dict(old_settings, new_settings)
+
+            history.append({
+                'datetime': new_settings.created_dt,
+                'changed_by': new_settings.created_by.email,
+                'changes_text': self.convert_changes_to_string(changes, settings_dict),
+                'settings': settings_dict.values(),
+                'show_old_settings': old_settings is not None
+            })
+
+        return history
+
+    def format_decimal_to_percent(self, num):
+        return '{:.2f}'.format(num * 100).rstrip('0').rstrip('.')
+
+    def convert_settings_to_dict(self, old_settings, new_settings):
+        settings_dict = OrderedDict([
+            ('name', {
+                'name': 'Name',
+                'value': new_settings.name.encode('utf-8')
+            }),
+            ('account_manager', {
+                'name': 'Account Manager',
+                'value': new_settings.account_manager.get_full_name().encode('utf-8')
+            }),
+            ('sales_representative', {
+                'name': 'Sales Representative',
+                'value': new_settings.sales_representative.get_full_name().encode('utf-8')
+            }),
+            ('service_fee', {
+                'name': 'Service Fee',
+                'value': self.format_decimal_to_percent(new_settings.service_fee) + '%'
+            }),
+            ('iab_category', {
+                'name': 'IAB Category',
+                'value': constants.IABCategory.get_text(new_settings.iab_category)
+            }),
+            ('promotion_goal', {
+                'name': 'Promotion Goal',
+                'value': constants.PromotionGoal.get_text(new_settings.promotion_goal)
+            })
+        ])
+
+        if old_settings is not None:
+            settings_dict['name']['old_value'] = old_settings.name.encode('utf-8')
+
+            if old_settings.account_manager is not None:
+                settings_dict['account_manager']['old_value'] = \
+                    old_settings.account_manager.get_full_name().encode('utf-8')
+
+            if old_settings.sales_representative is not None:
+                settings_dict['sales_representative']['old_value'] = \
+                    old_settings.sales_representative.get_full_name().encode('utf-8')
+
+            settings_dict['service_fee']['old_value'] = \
+                self.format_decimal_to_percent(old_settings.service_fee) + '%'
+
+            settings_dict['iab_category']['old_value'] = \
+                constants.IABCategory.get_text(old_settings.iab_category)
+
+            settings_dict['promotion_goal']['old_value'] = \
+                constants.PromotionGoal.get_text(old_settings.promotion_goal)
+
+        return settings_dict
+
+    def convert_changes_to_string(self, changes, settings_dict):
+        if changes is None:
+            return 'Created settings'
+
+        change_strings = []
+
+        for key in changes:
+            setting = settings_dict[key]
+            change_strings.append(
+                '{} set to "{}"'.format(setting['name'], setting['value'])
+            )
+
+        return ', '.join(change_strings)
+
+    def get_current_settings(self, campaign):
+        settings = models.CampaignSettings.objects.\
+            filter(campaign=campaign).\
+            order_by('-created_dt')
+        if settings:
+            settings = settings[0]
+        else:
+            settings = models.CampaignSettings()
+
+        return settings
+
+    def get_dict(self, settings, campaign):
+        result = {}
+
+        if settings:
+            result = {
+                'id': str(campaign.pk),
+                'name': campaign.name,
+                'account_manager':
+                    str(settings.account_manager.id)
+                    if settings.account_manager is not None else None,
+                'sales_representative':
+                    str(settings.sales_representative.id)
+                    if settings.sales_representative is not None else None,
+                'service_fee': self.format_decimal_to_percent(settings.service_fee),
+                'iab_category': settings.iab_category,
+                'promotion_goal': settings.promotion_goal
+            }
+
+        return result
+
+    def set_campaign(self, campaign, resource):
+        campaign.name = resource['name']
+
+    def set_settings(self, settings, campaign, resource):
+        settings.campaign = campaign
+        settings.name = resource['name']
+        settings.account_manager = resource['account_manager']
+        settings.sales_representative = resource['sales_representative']
+        settings.service_fee = Decimal(resource['service_fee']) / 100
+        settings.iab_category = resource['iab_category']
+        settings.promotion_goal = resource['promotion_goal']
+
+    def get_user_list(self, perm_name):
+        users = ZemUser.objects.get_users_with_perm(perm_name).order_by('last_name')
+        return [{'id': str(user.id), 'name': user.get_full_name()} for user in users]
+
+
+class AdGroupState(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_state_get')
+    def get(self, request, ad_group_id):
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        settings = models.AdGroupSettings.objects.\
+            filter(ad_group=ad_group).\
+            order_by('-created_dt')
+
+        response = {
+            'state': settings[0].state if settings
+            else constants.AdGroupSettingsState.INACTIVE
+        }
+
+        return self.create_api_response(response)
 
 
 class AdGroupSettings(api_common.BaseApiView):

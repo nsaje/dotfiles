@@ -31,5 +31,7 @@
 {% endblock %}
 
 {% block content %}
-<div ng-app="one" ng-include src="'{{ staticUrl }}/partials/main.html'"></div>
+<div ng-app="one">
+    <div ui-view></div>
+</div>
 {% endblock %} 

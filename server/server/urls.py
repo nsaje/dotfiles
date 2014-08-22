@@ -35,6 +35,10 @@ urlpatterns = patterns(
 urlpatterns += patterns(
     '',
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/state/',
+        login_required(dash.views.AdGroupState.as_view()),
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/settings/',
         login_required(dash.views.AdGroupSettings.as_view()),
     ),
@@ -65,6 +69,10 @@ urlpatterns += patterns(
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/daily_stats/',
         login_required(dash.views.AdGroupDailyStats.as_view()),
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/settings/',
+        login_required(dash.views.CampaignSettings.as_view()),
     ),
     url(r'^api/nav_data$', login_required(dash.views.NavigationDataView.as_view())),
     url(r'^api/users/(?P<user_id>(\d+|current))/$', login_required(dash.views.User.as_view())),

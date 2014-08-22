@@ -1,7 +1,7 @@
 'use strict';
 
 describe('MainCtrl', function () {
-    var $scope, ctrl, $state;
+    var $scope, ctrl, $state, user = { permissions: [] }, accounts;
 
     beforeEach(function () {
         module('one');
@@ -15,12 +15,12 @@ describe('MainCtrl', function () {
         inject(function ($rootScope, $controller, _$state_) {
             $scope = $rootScope.$new();
             $state = _$state_;
-            ctrl = $controller('MainCtrl', {$scope: $scope, $state: $state});
+            ctrl = $controller('MainCtrl', {$scope: $scope, $state: $state, user: user, accounts: accounts});
         });
     });
 
-    it('should init accounts to null', function () {
-        expect($scope.accounts).toBe(null);
+    it('should init accounts properly', function () {
+        expect($scope.accounts).toEqual(accounts);
     });
 
     describe('hasPermission', function () {
@@ -39,32 +39,6 @@ describe('MainCtrl', function () {
 
         it('should return false if called without specifying permission', function () {
             expect($scope.hasPermission()).toBe(false);
-        });
-    });
-
-    describe('setAdGroupData', function () {
-        beforeEach(function () {
-            $state.params.id = 1;
-        });
-
-        it('should add key-value pair for the current ad group', function () {
-            $scope.adGroupData = { 1: { key1: 'value1' } };
-            $scope.setAdGroupData('key2', 'value2');
-            expect($scope.adGroupData).toEqual({
-                1: {
-                    key1: 'value1',
-                    key2: 'value2'
-                }
-            });
-        });
-
-        it('should store key-value pair for the current ad group even when nothing has been stored yet', function () {
-            $scope.setAdGroupData('key2', 'value2');
-            expect($scope.adGroupData).toEqual({
-                1: {
-                    key2: 'value2'
-                }
-            });
         });
     });
 });

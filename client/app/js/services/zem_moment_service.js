@@ -3,6 +3,6 @@
 
 oneApp.factory('zemMoment', function () {
     return function () {
-        return moment();
+        return moment.apply(this, arguments);
     }
 });

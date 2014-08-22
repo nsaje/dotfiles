@@ -76,41 +76,38 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         }
     ];
 
-    $scope.$watch('user', function (newValue, oldValue) {
+    $scope.initColumns = function () {
         var cols;
 
-        if (newValue) {
-            if ($scope.hasPermission('reports.yesterday_spend_view')) {
-                $scope.columns.splice(2, 0, {
-                    name: 'Yesterday Spend',
-                    field: 'yesterday_cost',
-                    checked: false,
-                    type: 'currency',
-                    help: 'Amount that you have spent yesterday for promotion on specific media source.',
-                    internal: $scope.isPermissionInternal('reports.yesterday_spend_view')
-                });
-            }
-
-            if ($scope.hasPermission('zemauth.supply_dash_link_view')) {
-                $scope.columns.splice(0, 0, {
-                    name: 'Link',
-                    field: 'supply_dash_url',
-                    checked: false,
-                    type: 'link',
-                    internal: $scope.isPermissionInternal('zemauth.supply_dash_link_view')
-                });
-            }
-
-            cols = zemCustomTableColsService.load('adGroupSourcesCols', $scope.columns);
-            $scope.selectedColumnsCount = cols.length;
-
-            $scope.$watch('columns', function (newValue, oldValue) {
-                cols = zemCustomTableColsService.save('adGroupSourcesCols', newValue);
-                $scope.selectedColumnsCount = cols.length;
-            }, true);
-
+        if ($scope.hasPermission('reports.yesterday_spend_view')) {
+            $scope.columns.splice(2, 0, {
+                name: 'Yesterday Spend',
+                field: 'yesterday_cost',
+                checked: false,
+                type: 'currency',
+                help: 'Amount that you have spent yesterday for promotion on specific media source.',
+                internal: $scope.isPermissionInternal('reports.yesterday_spend_view')
+            });
         }
-    });
+
+        if ($scope.hasPermission('zemauth.supply_dash_link_view')) {
+            $scope.columns.splice(0, 0, {
+                name: 'Link',
+                field: 'supply_dash_url',
+                checked: false,
+                type: 'link',
+                internal: $scope.isPermissionInternal('zemauth.supply_dash_link_view')
+            });
+        }
+
+        cols = zemCustomTableColsService.load('adGroupSourcesCols', $scope.columns);
+        $scope.selectedColumnsCount = cols.length;
+
+        $scope.$watch('columns', function (newValue, oldValue) {
+            cols = zemCustomTableColsService.save('adGroupSourcesCols', newValue);
+            $scope.selectedColumnsCount = cols.length;
+        }, true);
+    };
 
     $scope.$watch('isChartShown', function (newValue, oldValue) {
         zemChartService.save('zemChart', newValue);
@@ -178,17 +175,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
         $location.search('order', $scope.order);
         $scope.getTableData();
-    };
-
-    $scope.getAdGroupState = function() {
-        api.adGroupSettings.get($state.params.id).then(
-            function(data) {
-                $scope.setAdGroupPaused(data.settings.state === 2);
-            },
-            function(){
-                // error
-            }
-        );
     };
 
     $scope.getTableData = function (showWaiting) {
@@ -349,6 +335,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $scope.setAdGroupData('sourceTotals', $scope.selectedSourceTotals);
 
         $scope.getAdGroupState();
+        $scope.initColumns();
     };
 
     // export

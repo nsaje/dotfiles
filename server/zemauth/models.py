@@ -30,6 +30,14 @@ class UserManager(auth_models.BaseUserManager):
     def create_superuser(self, email, password, **extra_fields):
         return self._create_user(email, password, True, True, **extra_fields)
 
+    def get_users_with_perm(self, perm_name):
+        perm = auth_models.Permission.objects.get(codename=perm_name)
+
+        return self.filter(
+            models.Q(groups__permissions=perm) |
+            models.Q(user_permissions=perm)
+        )
+
 
 class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
     ''' Describes custom Zemanta user.
@@ -74,7 +82,10 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
         verbose_name_plural = _('users')
 
         permissions = (
-            ("help_view", "Can view help popovers."),
+            ('campaign_settings_view', 'Can view campaign settings in dashboard.'),
+            ('campaign_settings_account_manager', 'Can be chosen as account manager.'),
+            ('campaign_settings_sales_rep', 'Can be chosen as sales representative.'),
+            ('help_view', 'Can view help popovers.'),
             ("supply_dash_link_view", "Can view supply dash link.")
         )
 

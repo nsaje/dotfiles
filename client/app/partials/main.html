@@ -1,4 +1,4 @@
-<div class="container-fluid" ng-controller="MainCtrl">
+<div class="container-fluid">
     <div class="row header" ng-include src="config.static_url + '/partials/header.html'"></div>
 
     <div class="row body">
@@ -8,9 +8,10 @@
                     <div class="account-name">{{ account.name }}</div>
                     <ul class="list-group">
                         <li class="campaign-group list-group-item" ng-repeat="campaign in account.campaigns">
-                            <div class="campaign-name">{{ campaign.name }}</div>
+                            <div class="campaign-name" ng-if="!hasPermission('zemauth.campaign_settings_view')">{{ campaign.name }}</div>
+                            <a ng-if="hasPermission('zemauth.campaign_settings_view')" class="campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() }) }" ui-sref="{{ 'main.campaigns.agency' }}({ id: campaign.id })">{{ campaign.name }}</a>
                             <ul class="list-group ad-groups">
-                                <a class="ad-group-item list-group-item" ng-class="{'active': $state.includes('adGroups', { id: adGroup.id.toString() }) }" ui-sref="{{ $state.current.name || 'adGroups.ads' }}({ id: adGroup.id })" ng-repeat="adGroup in campaign.adGroups">
+                                <a class="ad-group-item list-group-item" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() }) }" ui-sref="{{ $state.includes('*.adGroups.**') ? $state.current.name : 'main.adGroups.ads' }}({ id: adGroup.id })" ng-repeat="adGroup in campaign.adGroups">
                                     <img ng-src="{{ config.static_url }}/img/ad_group.svg">
                                     <span class="ad-group-name">{{ adGroup.name }}</span>
                                 </a>
@@ -21,22 +22,12 @@
             </div>
         </div>
             <div class="content" ng-show="accounts">
-            <form class="form-horizontal pull-right" role="form" ng-show="currentRoute.name !== 'adGroups.settings'">
+            <form class="form-horizontal pull-right" role="form" ng-hide="$state.includes('*.campaigns.agency') || $state.includes('*.adGroups.settings')">
                 <div class="input-group calendar">
                     <i class="input-group-addon"><img ng-src="{{ config.static_url }}/img/calendar.svg"></i>
                     <input type="daterange" class="form-control" ng-model="dateRange" max-date="{{ maxDateStr }}" format="{{ inputDateFormat }}" ranges="{{ dateRanges }}" opens="left">
                 </div>
             </form>
-
-            <tabset class="zem-tabset">
-                <tab ng-repeat="tab in tabs" active="tab.active">
-                    <tab-heading>
-                        <div class="tab-top"></div>
-                        <a ui-sref="{{ tab.route }}({ id: $state.params.id })">{{ tab.heading }}</a>
-                    </tab-heading>
-                </tab>
-                <span ng-show="isAdGroupPaused"><span class="little-red-square"></span><span class="warning-paused">This Ad Group is currently not running.</span></span>
-            </tabset>
 
             <div ui-view></div>
         </div>
