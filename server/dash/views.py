@@ -457,6 +457,23 @@ class CampaignSettings(api_common.BaseApiView):
         return [{'id': str(user.id), 'name': user.get_full_name()} for user in users]
 
 
+class AdGroupState(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_state_get')
+    def get(self, request, ad_group_id):
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        settings = models.AdGroupSettings.objects.\
+            filter(ad_group=ad_group).\
+            order_by('-created_dt')
+
+        response = {
+            'state': settings[0].state if settings
+            else constants.AdGroupSettingsState.INACTIVE
+        }
+
+        return self.create_api_response(response)
+
+
 class AdGroupSettings(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_get')
     def get(self, request, ad_group_id):

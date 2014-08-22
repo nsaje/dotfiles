@@ -1,3 +1,6 @@
+/*global $,oneApp*/
+"use strict";
+
 oneApp.directive('zemSelect2ModelTransform', ['$compile', function($compile) {
     return { 
         restrict: 'A',

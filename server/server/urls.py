@@ -35,6 +35,10 @@ urlpatterns = patterns(
 urlpatterns += patterns(
     '',
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/state/',
+        login_required(dash.views.AdGroupState.as_view()),
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/settings/',
         login_required(dash.views.AdGroupSettings.as_view()),
     ),
