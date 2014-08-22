@@ -90,6 +90,9 @@ AUTHENTICATION_BACKENDS = (
 
 TEST_RUNNER = 'utils.test_runner.CustomDiscoverRunner'
 
+DEFAULT_FROM_EMAIL = ''
+AD_GROUP_SETTINGS_CHANGE_FROM_EMAIL = 'my gmail account'
+
 from localsettings import *
 
 LOGGING = {

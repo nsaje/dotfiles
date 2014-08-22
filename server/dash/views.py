@@ -16,6 +16,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core import urlresolvers
+from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.db.models import Q
@@ -520,6 +521,11 @@ class AdGroupSettings(api_common.BaseApiView):
 
         api.order_ad_group_settings_update(ad_group, current_settings, settings)
 
+        user = request.user
+        changes = current_settings.get_setting_changes(settings)
+        if changes and user.has_perm('zemauth.ad_group_settings_change_trigger_mail'):
+            self.send_change_mail(ad_group, user)
+
         response = {
             'settings': self.get_dict(settings, ad_group),
             'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group)
@@ -580,6 +586,42 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
         settings.tracking_code = current_settings.tracking_code
+
+    def send_change_mail(ad_group, user, request):
+        campaign_settings = models.CampaignSettings.objects.\
+            filter(campaign=ad_group.campaign).\
+            order_by('-created_dt')
+        if not campaign_settings or not campaign_settings.account_manager:
+            logger.error('Could not send e-mail because there is no account manager set for campaign with id %s.', ad_group.campaign.pk)
+            return
+
+        recipients = [campaign_settings.account_manager.email]
+
+        subject = 'Settings change - ad group {}, campaign {}, account {}'.format(
+            ad_group.name,
+            ad_group.campaign.name,
+            ad_group.campaign.account.name
+        )
+
+        action_log_url = request.build_absolute_uri(
+            reverse('action_log.views.action_log'))
+        action_log_url = action_log_url.replace('http://', 'https://')
+        action_log_url += '#?filters=ad_group:{}'.format(ad_group.pk)
+
+        body = '{} has made a change in the settings of the ad group {}, campaign {}, account {}. Please check {} for details.'.format(
+            user.email,
+            ad_group.name,
+            ad_group.campaign.name,
+            ad_group.campaign.account.name,
+            action_log_url
+        )
+
+        send_mail(
+            subject,
+            body,
+            settings.AD_GROUP_SETTINGS_CHANGE_FROM_EMAIL,
+            recipients
+        )
 
 
 class AdGroupAgency(api_common.BaseApiView):
