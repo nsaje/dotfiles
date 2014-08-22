@@ -424,18 +424,24 @@ class ApiTestCase(test.TestCase):
 
     def test_clean_url(self):
 
-        url_normal = 'http://sd.domain.com/path/to?attr1=1&attr2=&attr1=123i#uff'
+        url_normal = 'http://sd.domain.com/path/to?attr1=1&attr1=123i&attr2=#uff'
         self.assertEqual(url_normal, api._clean_url(url_normal))
 
-        url_with_non_zemanta_utm = 'http://sd.domain.com/path/to?attr1=1&utm_source=nonzemanta'
-        self.assertEqual(url_with_non_zemanta_utm, api._clean_url(url_with_non_zemanta_utm))
+        url_unsorted = 'http://sd.domain.com/path/to?attr1=1&attr2=&attr1=123i#uff'
+        url_unsorted_cleaned = 'http://sd.domain.com/path/to?attr1=1&attr1=123i&attr2=#uff'
+        self.assertEqual(url_unsorted_cleaned, api._clean_url(url_unsorted))
 
-        url_with_zemanta_but_no_utm = 'http://sd.domain.com/path/to?attr1=1&source=zemantaone'
-        self.assertEqual(url_with_zemanta_but_no_utm, api._clean_url(url_with_zemanta_but_no_utm))
+        url_with_utm = 'http://sd.domain.com/path/to?attr1=1&utm_source=abc'
+        url_with_utm_cleaned = 'http://sd.domain.com/path/to?attr1=1'
+        self.assertEqual(url_with_utm_cleaned, api._clean_url(url_with_utm))
 
-        url_with_zemanta_and_utm = 'http://sd.domain.com/path/to?attr1=1&utm_source=zemantaone'
-        url_with_zemanta_and_utm_cleaned = 'http://sd.domain.com/path/to?attr1=1'
-        self.assertEqual(url_with_zemanta_and_utm_cleaned, api._clean_url(url_with_zemanta_and_utm))
+        url_with_z1 = 'http://sd.domain.com/path/to?attr1=1&_z1_xyz=abc'
+        url_with_z1_cleaned = 'http://sd.domain.com/path/to?attr1=1'
+        self.assertEqual(url_with_z1_cleaned, api._clean_url(url_with_z1))
+
+        url_unsorted_with_z1_utm = 'http://sd.domain.com/path/to?attr2=2&attr1=1&_z1_xyz=abc&utm_source=abc#uff'
+        url_unsorted_with_z1_utm_cleaned = 'http://sd.domain.com/path/to?attr1=1&attr2=2#uff'
+        self.assertEqual(url_unsorted_with_z1_utm_cleaned, api._clean_url(url_unsorted_with_z1_utm))
 
 
 class UpsertReportsTestCase(test.TestCase):
