@@ -3,7 +3,7 @@
         <tab ng-repeat="tab in tabs | filter:{hidden: false}" active="tab.active">
             <tab-heading>
                 <div class="tab-top"></div>
-                <a ui-sref="{{ tab.route }}({ id: $state.params.id })">{{ tab.heading }}</a>
+                <a class="tab-title" ng-class="{internal: tab.internal}" ui-sref="{{ tab.route }}({ id: $state.params.id })">{{ tab.heading }}</a>
             </tab-heading>
         </tab>
     </tabset>

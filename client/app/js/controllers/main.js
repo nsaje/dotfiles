@@ -1,5 +1,5 @@
 /*globals oneApp,$*/
-oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'api', 'zemMoment', 'user', 'accounts', function ($scope, $state, $location, $document, api, zemMoment, user, accounts) {
+oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'zemMoment', 'user', 'accounts', function ($scope, $state, $location, $document, zemMoment, user, accounts) {
     $scope.accounts = accounts;
     $scope.user = user;
     $scope.currentRoute = $scope.current;
@@ -21,8 +21,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
         if (Object.keys($scope.user.permissions).indexOf(permission) < 0) {
             return false;
         }
-        console.log(permission);
-        console.log(!$scope.user.permissions[permission]);
 
         return !$scope.user.permissions[permission];
     };
@@ -83,24 +81,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ap
     };
 
     if ($scope.hasPermission('reports.fewer_daterange_options')) {
-        $scope.maxDate = zemMoment().subtract('day', 1);
-        $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
-        $scope.dateRange = {
-            startDate: zemMoment().subtract('day', 29).hours(0).minutes(0).seconds(0).milliseconds(0),
-            endDate: zemMoment().subtract('day', 1).endOf('day')
-        };
-    } else {
-        $scope.dateRange = {
-            startDate: zemMoment().subtract('day', 30).hours(0).minutes(0).seconds(0).milliseconds(0),
-            endDate: zemMoment().hours(0).minutes(0).seconds(0).milliseconds(0)
-        };
-    }
-
-    $scope.setDateRangeFromSearch();
-    $scope.dateRanges = $scope.getDateRanges();
-
-    if ($scope.hasPermission('reports.fewer_daterange_options')) {
-        $scope.maxDate = zemMoment().subtract('day', 1);
         $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
         $scope.dateRange = {
             startDate: zemMoment().subtract('day', 29).hours(0).minutes(0).seconds(0).milliseconds(0),

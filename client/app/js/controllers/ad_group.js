@@ -1,5 +1,5 @@
 /*globals oneApp,$,moment*/
-oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', function ($scope, $state, $location) {
+oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', function ($scope, $state, $location, api) {
     $scope.tabs = [
         {heading: 'Content Ads', route: 'main.adGroups.ads', active: true, hidden: false},
         {heading: 'Media Sources', route: 'main.adGroups.sources', active: false, hidden: false},
@@ -45,7 +45,7 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', function ($sc
     };
 
     $scope.updateBreadcrumbAndTitle = function () {
-        if (!$scope.accounts) {
+        if (!$scope.account || $scope.campaign || $scope.adGroup) {
             return;
         }
         $scope.setBreadcrumbAndTitle(
@@ -66,6 +66,23 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', function ($sc
         $location.search('source_totals', data && data.sourceTotals ? 1 : null);
         $location.search('page', data && data.page);
     }
+    
+    $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
+        $location.search('source_ids', null);
+        $location.search('source_totals', null);
+        $location.search('page', null);
+    });
+
+    $scope.getAdGroupState = function() {
+        api.adGroupState.get($state.params.id).then(
+            function(data) {
+                $scope.setAdGroupPaused(data.state === 2);
+            },
+            function(){
+                // error
+            }
+        );
+    };
 
     $scope.getModels();
     $scope.updateBreadcrumbAndTitle();

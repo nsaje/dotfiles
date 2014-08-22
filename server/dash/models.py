@@ -165,7 +165,6 @@ class CampaignSettings(SettingsBase):
         decimal_places=4,
         max_digits=5,
         default=Decimal('0.2000'),
-        choices=constants.ServiceFee.get_choices()
     )
     iab_category = models.IntegerField(
         default=constants.IABCategory.IAB_24,

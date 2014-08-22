@@ -11,6 +11,7 @@ import base64
 import httplib
 import urllib
 import urllib2
+from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -268,7 +269,7 @@ class NavigationDataView(api_common.BaseApiView):
 class CampaignSettings(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_settings_get')
     def get(self, request, campaign_id):
-        if not request.user.has_perm('dash.campaign_settings_view'):
+        if not request.user.has_perm('zemauth.campaign_settings_view'):
             raise exc.MissingDataError()
 
         campaign = get_campaign(request.user, campaign_id)
@@ -286,7 +287,7 @@ class CampaignSettings(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'ad_campaign_settings_put')
     def put(self, request, campaign_id):
-        if not request.user.has_perm('dash.settings_view'):
+        if not request.user.has_perm('zemauth.campaign_settings_view'):
             raise exc.MissingDataError()
 
         campaign = get_campaign(request.user, campaign_id)
@@ -341,6 +342,9 @@ class CampaignSettings(api_common.BaseApiView):
 
         return history
 
+    def format_decimal_to_percent(self, num):
+        return '{:.2f}'.format(num * 100).rstrip('0').rstrip('.')
+
     def convert_settings_to_dict(self, old_settings, new_settings):
         settings_dict = OrderedDict([
             ('name', {
@@ -357,7 +361,7 @@ class CampaignSettings(api_common.BaseApiView):
             }),
             ('service_fee', {
                 'name': 'Service Fee',
-                'value': constants.ServiceFee.get_text(new_settings.service_fee)
+                'value': self.format_decimal_to_percent(new_settings.service_fee) + '%'
             }),
             ('iab_category', {
                 'name': 'IAB Category',
@@ -381,7 +385,7 @@ class CampaignSettings(api_common.BaseApiView):
                     old_settings.sales_representative.get_full_name().encode('utf-8')
 
             settings_dict['service_fee']['old_value'] = \
-                constants.ServiceFee.get_text(old_settings.service_fee)
+                self.format_decimal_to_percent(old_settings.service_fee) + '%'
 
             settings_dict['iab_category']['old_value'] = \
                 constants.IABCategory.get_text(old_settings.iab_category)
@@ -429,7 +433,7 @@ class CampaignSettings(api_common.BaseApiView):
                 'sales_representative':
                     str(settings.sales_representative.id)
                     if settings.sales_representative is not None else None,
-                'service_fee': settings.service_fee,
+                'service_fee': self.format_decimal_to_percent(settings.service_fee),
                 'iab_category': settings.iab_category,
                 'promotion_goal': settings.promotion_goal
             }
@@ -444,13 +448,30 @@ class CampaignSettings(api_common.BaseApiView):
         settings.name = resource['name']
         settings.account_manager = resource['account_manager']
         settings.sales_representative = resource['sales_representative']
-        settings.service_fee = resource['service_fee']
+        settings.service_fee = Decimal(resource['service_fee']) / 100
         settings.iab_category = resource['iab_category']
         settings.promotion_goal = resource['promotion_goal']
 
     def get_user_list(self, perm_name):
         users = ZemUser.objects.get_users_with_perm(perm_name).order_by('last_name')
         return [{'id': str(user.id), 'name': user.get_full_name()} for user in users]
+
+
+class AdGroupState(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_state_get')
+    def get(self, request, ad_group_id):
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        settings = models.AdGroupSettings.objects.\
+            filter(ad_group=ad_group).\
+            order_by('-created_dt')
+
+        response = {
+            'state': settings[0].state if settings
+            else constants.AdGroupSettingsState.INACTIVE
+        }
+
+        return self.create_api_response(response)
 
 
 class AdGroupSettings(api_common.BaseApiView):
@@ -1182,13 +1203,13 @@ def oauth_redirect(request, source_name):
 
     if not state or 'credentials_id' not in state:
         logger.error('Missing state in OAuth2 redirect')
-        return reverse('index')
+        return redirect('index')
 
     try:
         state = json.loads(state)
     except (TypeError, ValueError):
         logger.error('Invalid state in OAuth2 redirect')
-        return reverse('index')
+        return redirect('index')
 
     credentials = models.SourceCredentials.objects.get(id=state['credentials_id'])
     decrypted = json.loads(credentials.decrypt())

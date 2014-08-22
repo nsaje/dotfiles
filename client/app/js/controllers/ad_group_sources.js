@@ -177,17 +177,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $scope.getTableData();
     };
 
-    $scope.getAdGroupState = function() {
-        api.adGroupSettings.get($state.params.id).then(
-            function(data) {
-                $scope.setAdGroupPaused(data.settings.state === 2);
-            },
-            function(){
-                // error
-            }
-        );
-    };
-
     $scope.getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 

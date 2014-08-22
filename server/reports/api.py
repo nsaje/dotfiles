@@ -7,6 +7,9 @@ import urllib
 import logging
 import collections
 
+import pytz
+
+from django.conf import settings
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction, IntegrityError
 from django.db.models import Sum
@@ -217,7 +220,8 @@ def collect_results(result):
 
 
 def get_yesterday_cost(ad_group):
-    today = datetime.datetime.utcnow()
+    today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
+    today = today_utc.astimezone(pytz.timezone(settings.TIMEZONE)).replace(tzinfo=None)
     today = datetime.datetime(today.year, today.month, today.day)
     yesterday = today - datetime.timedelta(days=1)
 

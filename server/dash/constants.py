@@ -51,22 +51,6 @@ class AdTargetCountry(ConstantBase):
     }
 
 
-class ServiceFee(ConstantBase):
-    FEE_1500 = Decimal('0.1500')
-    FEE_2000 = Decimal('0.2000')
-    FEE_2050 = Decimal('0.2050')
-    FEE_2233 = Decimal('0.2233')
-    FEE_2500 = Decimal('0.2500')
-
-    _VALUES = {
-        FEE_1500: '15%',
-        FEE_2000: '20%',
-        FEE_2050: '20.5%',
-        FEE_2233: '22.33%',
-        FEE_2500: '25%'
-    }
-
-
 class IABCategory(ConstantBase):
     IAB_1 = 1
     IAB_2 = 2

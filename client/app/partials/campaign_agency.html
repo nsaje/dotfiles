@@ -46,9 +46,7 @@
                 <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Fee for management of the campaign; calculated based on media spend." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-3">
-                <select ui-select2="{minimumResultsForSearch: 10}" id="service-fee-select" class="form-control" ng-model="settings.serviceFee">
-                    <option ng-repeat="fee in options.serviceFees" value="{{fee.value}}">{{fee.name}}</option>
-                </select>
+                <div ui-select2="serviceFeeSelect2Config" id="service-fee-select" class="form-control" ng-model="settings.serviceFee" zem-select2-model-transform></div>
             </div>
             <label ng-repeat="error in errors.serviceFee" class="control-label error" for="service-fee-select">{{ error }}</label>
         </div>
@@ -130,7 +128,7 @@
         <div class="history-popover-row" ng-repeat="setting in item.settings">
             <div ng-if="item.showOldSettings" class="history-popover-cell left-cell">
                 <div><strong>{{setting.name}}</strong></div>
-                <div>&quot;{{setting.oldValue}}&quot;</div>
+                <div class="setting-value">&quot;{{setting.oldValue}}&quot;</div>
             </div>
             <div class="history-popover-cell">
                 <div><strong>{{setting.name}}</strong></div>

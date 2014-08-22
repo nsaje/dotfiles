@@ -39,6 +39,12 @@ a:visited {
     color: #2fa8c7;
 }
 
+// TypeKit
+
+.wf-loading {
+    visibility: hidden;    
+}
+
 // Bootstrap styles
 
 .container-fluid {
@@ -741,15 +747,31 @@ a.help-popover:visited {
     }
 }
 
-.internal:before {
-    content: " ";
-    width: 0;
-    height: 0;
-    display: block;
-    border-top: 5px solid green;
-    border-right: 5px solid transparent;
-    float: left;
-    margin-left: -5px;
+.col-title.internal {
+    margin-right: 0.5em;
+
+    &:before {
+        content: " ";
+        width: 0;
+        height: 0;
+        display: block;
+        border-top: 7px solid #16a085;
+        border-right: 7px solid transparent;
+        float: left;
+    }
+}
+
+.zem-tabset .tab-title.internal {
+    position: relative;
+
+    &:before {
+        content: " ";
+        position: absolute;
+        border-top: 10px solid green;
+        border-right: 10px solid transparent;
+        left: 0;
+        top: 0;
+    }
 }
 
 .header {
@@ -866,7 +888,6 @@ a.help-popover:visited {
                 font-size: 14px;
                 font-weight: 600;
                 color: #414141;
-                cursor: pointer;
 
                 &.active {
                     text-decoration: underline;
@@ -1084,6 +1105,10 @@ a.help-popover:visited {
             font-size: 15px;
         }
     }
+}
+
+.service-fee-select2 .select2-search input {
+    background-image: none !important;
 }
 
 .history-popover-table {
