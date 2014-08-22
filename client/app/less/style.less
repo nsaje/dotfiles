@@ -747,18 +747,26 @@ a.help-popover:visited {
     }
 }
 
-.internal {
-    margin-right: 0.5em;
+.custom-cols,
+.table-container {
+    .internal {
+        margin-right: 0.5em;
 
-    &:before {
-        content: " ";
-        width: 0;
-        height: 0;
-        display: block;
-        border-top: 7px solid #16a085;
-        border-right: 7px solid transparent;
-        float: left;
+        &:before {
+            content: " ";
+            width: 0;
+            height: 0;
+            display: block;
+            border-top: 7px solid #16a085;
+            border-right: 7px solid transparent;
+            float: left;
+        }
     }
+}
+.zem-tabset .internal {
+    position: absolute;
+    border-top: 12px solid #16a085;
+    border-right: 12px solid transparent;
 }
 
 .header {
