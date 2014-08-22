@@ -747,15 +747,18 @@ a.help-popover:visited {
     }
 }
 
-.col-title.internal:before {
-    content: " ";
-    width: 0;
-    height: 0;
-    display: block;
-    border-top: 5px solid green;
-    border-right: 5px solid transparent;
-    float: left;
-    margin-left: -5px;
+.col-title.internal {
+    margin-right: 0.5em;
+
+    &:before {
+        content: " ";
+        width: 0;
+        height: 0;
+        display: block;
+        border-top: 7px solid #16a085;
+        border-right: 7px solid transparent;
+        float: left;
+    }
 }
 
 .zem-tabset .tab-title.internal {

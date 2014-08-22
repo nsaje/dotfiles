@@ -81,7 +81,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     };
 
     if ($scope.hasPermission('reports.fewer_daterange_options')) {
-        $scope.maxDate = zemMoment().subtract('day', 1);
         $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
         $scope.dateRange = {
             startDate: zemMoment().subtract('day', 29).hours(0).minutes(0).seconds(0).milliseconds(0),
