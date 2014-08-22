@@ -321,7 +321,7 @@ def _clean_url(raw_url):
     query_parameters = urlparse.parse_qsl(split_url[3], keep_blank_values=True)
 
     cleaned_query_parameters = filter(
-        lambda (attr, value): not (attr.startswith('utm_') or attr.startswith('z1_')),
+        lambda (attr, value): not (attr.startswith('utm_') or attr.startswith('_z1_')),
         query_parameters
     )
 
@@ -356,8 +356,9 @@ def reapply_clean_url():
 
             try:
                 logger.info(
-                    'Saving article {id} with new url: {url}'.format(
+                    'Saving article {id}, old url: {old_url} with new url: {url}'.format(
                         id=article.id,
+                        old_url=old,
                         url=article.url
                     )
                 )

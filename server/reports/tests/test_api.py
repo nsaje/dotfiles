@@ -435,11 +435,11 @@ class ApiTestCase(test.TestCase):
         url_with_utm_cleaned = 'http://sd.domain.com/path/to?attr1=1'
         self.assertEqual(url_with_utm_cleaned, api._clean_url(url_with_utm))
 
-        url_with_z1 = 'http://sd.domain.com/path/to?attr1=1&z1_xyz=abc'
+        url_with_z1 = 'http://sd.domain.com/path/to?attr1=1&_z1_xyz=abc'
         url_with_z1_cleaned = 'http://sd.domain.com/path/to?attr1=1'
         self.assertEqual(url_with_z1_cleaned, api._clean_url(url_with_z1))
 
-        url_unsorted_with_z1_utm = 'http://sd.domain.com/path/to?attr2=2&attr1=1&z1_xyz=abc&utm_source=abc#uff'
+        url_unsorted_with_z1_utm = 'http://sd.domain.com/path/to?attr2=2&attr1=1&_z1_xyz=abc&utm_source=abc#uff'
         url_unsorted_with_z1_utm_cleaned = 'http://sd.domain.com/path/to?attr1=1&attr2=2#uff'
         self.assertEqual(url_unsorted_with_z1_utm_cleaned, api._clean_url(url_unsorted_with_z1_utm))
 
