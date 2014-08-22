@@ -4,7 +4,7 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
         {heading: 'Content Ads', route: 'main.adGroups.ads', active: true, hidden: false},
         {heading: 'Media Sources', route: 'main.adGroups.sources', active: false, hidden: false},
         {heading: 'Settings', route: 'main.adGroups.settings', active: false, hidden: !$scope.hasPermission('dash.settings_view')},
-        {heading: 'Agency', route: 'main.adGroups.agency', active: false, hidden: !$scope.hasPermission('zemauth.ad_group_agency_tab_view')}
+        {heading: 'Agency', route: 'main.adGroups.agency', active: false, hidden: !$scope.hasPermission('zemauth.ad_group_agency_tab_view'), internal: $scope.isPermissionInternal('zemauth.ad_group_agency_tab_view')}
     ];
 
     $scope.isAdGroupPaused = false;
