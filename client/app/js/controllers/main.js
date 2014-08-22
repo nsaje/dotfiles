@@ -14,7 +14,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     }
 
     $scope.hasPermission = function (permission) {
-        return $scope.user && Object.keys($scope.user.permissions).indexOf(permission) >= 0;
+        return Object.keys($scope.user.permissions).indexOf(permission) >= 0;
     };
 
     $scope.isPermissionInternal = function (permission) {
