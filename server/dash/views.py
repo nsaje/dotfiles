@@ -9,6 +9,7 @@ import slugify
 import excel_styles
 import base64
 import httplib
+import traceback
 import urllib
 import urllib2
 from decimal import Decimal
@@ -155,8 +156,10 @@ def is_sync_recent(last_sync_datetime):
 
 def get_campaign_url(ad_group, request):
     campaign_settings_url = request.build_absolute_uri(
-        reverse('admin:dash_campaign_change', args=(ad_group.campaign.id,)))
+        reverse('admin:dash_campaign_change', args=(ad_group.campaign.pk,)))
     campaign_settings_url = campaign_settings_url.replace('http://', 'https://')
+
+    return campaign_settings_url
 
 
 def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
@@ -209,12 +212,14 @@ def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
             fail_silently=False
         )
     except Exception as e:
+        logger.error('E-mail notification for ad group settings (ad group id: %d) change was not sent because an exception was raised: %s', ad_group.pk, traceback.format_exc(e))
+
         desc = {
             'campaign_settings_url': get_campaign_url(ad_group, request)
         }
         pagerduty_helper.trigger(
             'ad_group_settings_change_mail_failed',
-            'E-mail notification for ad group settings change was not sent because an exception was raised: {}'.format(e),
+            'E-mail notification for ad group settings change was not sent because an exception was raised: {}'.format(traceback.format_exc(e)),
             desc
         )
 
