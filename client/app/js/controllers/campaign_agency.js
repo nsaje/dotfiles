@@ -75,4 +75,8 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', 'api', function ($s
     };
 
     $scope.getSettings();
+
+    $scope.getName = function (user) {
+        return user.name;
+    };
 }]);

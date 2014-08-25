@@ -155,16 +155,16 @@ class CampaignSettingsForm(forms.Form):
         error_messages={'required': 'Please specify campaign name.'}
     )
     account_manager = forms.IntegerField()
-    sales_representative = forms.IntegerField()
+    sales_representative = forms.IntegerField(
+        required=False
+    )
     service_fee = forms.DecimalField(
         min_value=0,
         max_value=100,
         decimal_places=2,
     )
-    iab_category = forms.TypedChoiceField(
+    iab_category = forms.ChoiceField(
         choices=constants.IABCategory.get_choices(),
-        coerce=int,
-        empty_value=None
     )
     promotion_goal = forms.TypedChoiceField(
         choices=constants.PromotionGoal.get_choices(),
@@ -188,6 +188,9 @@ class CampaignSettingsForm(forms.Form):
 
     def clean_sales_representative(self):
         sales_representative_id = self.cleaned_data.get('sales_representative')
+
+        if sales_representative_id is None:
+            return None
 
         err_msg = 'Invalid sales representative.'
 

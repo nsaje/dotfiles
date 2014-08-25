@@ -239,6 +239,9 @@ class CampaignAdmin(admin.ModelAdmin):
     exclude = ('users', 'groups')
     inlines = (CampaignUserInline, CampaignGroupInline, AdGroupInline)
 
+    def view_on_site(self, obj):
+        return '/campaigns/{}/agency'.format(obj.id)
+
 
 class SourceAdmin(admin.ModelAdmin):
     search_fields = ['name']
