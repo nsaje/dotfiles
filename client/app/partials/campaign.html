@@ -3,8 +3,10 @@
         <tab ng-repeat="tab in tabs | filter:{hidden: false}" active="tab.active">
             <tab-heading>
                 <div class="tab-top"></div>
-                <zem-internal-feature ng-if="tab.internal" popover-placement="bottom"></zem-internal-feature>
-                <a class="tab-title" ui-sref="{{ tab.route }}({ id: $state.params.id })">{{ tab.heading }}</a>
+                <a class="tab-title" ui-sref="{{ tab.route }}({ id: $state.params.id })">
+                    <zem-internal-feature ng-if="tab.internal" popover-placement="bottom"></zem-internal-feature>
+                    {{ tab.heading }}
+                </a>
             </tab-heading>
         </tab>
     </tabset>
