@@ -23,7 +23,8 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', function ($scope, $state)
             return;
         }
         $scope.setBreadcrumbAndTitle(
-            [$scope.account.name, $scope.campaign.name],
+            [{name: $scope.account.name, state: 'main.accounts.campaigns({id: ' + $scope.account.id + '})'},
+            {name: $scope.campaign.name, state: 'main.campaigns.agency({id: ' + $scope.campaign.id + '})'}],
             $scope.campaign.name
         );
     };

@@ -9,7 +9,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
 
     $scope.adGroupData = {};
 
-    if (!$state.params.id && $scope.accounts && $scope.accounts.length) {
+    if ($state.is('main') && $scope.accounts && $scope.accounts.length) {
         $state.go('main.adGroups.ads', {id: $scope.accounts[0].campaigns[0].adGroups[0].id});
     }
 
@@ -100,6 +100,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
 
     $scope.setBreadcrumbAndTitle = function (breadcrumb, title) {
         $scope.breadcrumb = breadcrumb;
+        $scope.breadcrumb.unshift({name: 'All accounts', state: 'main.allAccounts.accounts'});
+
         $document.prop('title', title + ' | Zemanta');
     };
 
