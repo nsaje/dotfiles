@@ -3,7 +3,10 @@
         <tab ng-repeat="tab in tabs | filter:{hidden: false}" active="tab.active">
             <tab-heading>
                 <div class="tab-top"></div>
-                <a ui-sref="{{ tab.route }}({ id: $state.params.id })">{{ tab.heading }}</a>
+                <a ui-sref="{{ tab.route }}({ id: $state.params.id })">
+                    <zem-internal-feature ng-if="tab.internal" popover-placement="bottom"></zem-internal-feature>
+                    {{ tab.heading }}
+                </a>
             </tab-heading>
         </tab>
         <span ng-show="isAdGroupPaused"><span class="little-red-square"></span><span class="warning-paused">This Ad Group is currently not running.</span></span>

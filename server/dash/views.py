@@ -521,7 +521,7 @@ class AdGroupSettings(api_common.BaseApiView):
         self.set_ad_group(ad_group, form.cleaned_data)
 
         settings = models.AdGroupSettings()
-        self.set_settings(settings, ad_group, form.cleaned_data)
+        self.set_settings(settings, current_settings, ad_group, form.cleaned_data)
 
         with transaction.atomic():
             ad_group.save()
@@ -579,7 +579,7 @@ class AdGroupSettings(api_common.BaseApiView):
     def set_ad_group(self, ad_group, resource):
         ad_group.name = resource['name']
 
-    def set_settings(self, settings, ad_group, resource):
+    def set_settings(self, settings, current_settings, ad_group, resource):
         settings.ad_group = ad_group
         settings.state = resource['state']
         settings.start_date = resource['start_date']
@@ -588,6 +588,87 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.daily_budget_cc = resource['daily_budget_cc']
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
+        settings.tracking_code = current_settings.tracking_code
+
+
+class AdGroupAgency(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_agency_get')
+    def get(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.ad_group_agency_tab_view'):
+            raise exc.MissingDataError()
+
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        settings = self.get_current_settings(ad_group)
+
+        response = {
+            'settings': self.get_dict(settings, ad_group),
+            'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group)
+        }
+
+        return self.create_api_response(response)
+
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_put')
+    def put(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.ad_group_agency_tab_view'):
+            raise exc.MissingDataError()
+
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        current_settings = self.get_current_settings(ad_group)
+
+        resource = json.loads(request.body)
+
+        form = forms.AdGroupAgencySettingsForm(resource.get('settings', {}))
+        if not form.is_valid():
+            raise exc.ValidationError(errors=dict(form.errors))
+
+        settings = models.AdGroupSettings()
+        self.set_settings(settings, current_settings, ad_group, form.cleaned_data)
+
+        with transaction.atomic():
+            settings.save()
+
+        api.order_ad_group_settings_update(ad_group, current_settings, settings)
+
+        response = {
+            'settings': self.get_dict(settings, ad_group),
+            'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group)
+        }
+
+        return self.create_api_response(response)
+
+    def get_current_settings(self, ad_group):
+        settings = models.AdGroupSettings.objects.\
+            filter(ad_group=ad_group).\
+            order_by('-created_dt')
+        if settings:
+            settings = settings[0]
+        else:
+            settings = models.AdGroupSettings()
+
+        return settings
+
+    def get_dict(self, settings, ad_group):
+        result = {}
+
+        if settings:
+            result = {
+                'id': str(ad_group.pk),
+                'tracking_code': settings.tracking_code
+            }
+
+        return result
+
+    def set_settings(self, settings, current_settings, ad_group, resource):
+        settings.ad_group = ad_group
+        settings.state = current_settings.state
+        settings.start_date = current_settings.start_date
+        settings.end_date = current_settings.end_date
+        settings.cpc_cc = current_settings.cpc_cc
+        settings.daily_budget_cc = current_settings.daily_budget_cc
+        settings.target_devices = current_settings.target_devices
+        settings.target_regions = current_settings.target_regions
         settings.tracking_code = resource['tracking_code']
 
 
