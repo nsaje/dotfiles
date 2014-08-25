@@ -233,11 +233,22 @@ class CampaignAdmin(admin.ModelAdmin):
     list_display = (
         'name',
         'created_dt',
-        'modified_dt'
+        'modified_dt',
+        'settings_'
     )
-    readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
+    readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'settings_')
     exclude = ('users', 'groups')
     inlines = (CampaignUserInline, CampaignGroupInline, AdGroupInline)
+
+    def settings_(self, obj):
+        return '<a href="{admin_url}">List ({num_settings})</a>'.format(
+            admin_url='{}?{}'.format(
+                reverse('admin:dash_campaignsettings_changelist'),
+                urllib.urlencode({'campaign': obj.id})
+            ),
+            num_settings=obj.settings.count()
+        )
+    settings_.allow_tags = True
 
     def view_on_site(self, obj):
         return '/campaigns/{}/agency'.format(obj.id)
