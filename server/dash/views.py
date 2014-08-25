@@ -163,6 +163,9 @@ def get_campaign_url(ad_group, request):
 
 
 def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
+    if not settings.SEND_AD_GROUP_SETTINGS_CHANGE_MAIL:
+        return
+
     campaign_settings = models.CampaignSettings.objects.\
         filter(campaign=ad_group.campaign).\
         order_by('-created_dt')[:1]

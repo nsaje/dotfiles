@@ -25,6 +25,8 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 
+SEND_AD_GROUP_SETTINGS_CHANGE_MAIL = False
+
 # Path to log file
 LOG_FILE = '/path/to/log.log'
 
