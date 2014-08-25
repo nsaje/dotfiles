@@ -161,10 +161,8 @@ class CampaignSettingsForm(forms.Form):
         max_value=100,
         decimal_places=2,
     )
-    iab_category = forms.TypedChoiceField(
+    iab_category = forms.ChoiceField(
         choices=constants.IABCategory.get_choices(),
-        coerce=int,
-        empty_value=None
     )
     promotion_goal = forms.TypedChoiceField(
         choices=constants.PromotionGoal.get_choices(),
