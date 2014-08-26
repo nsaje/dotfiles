@@ -15,6 +15,9 @@ class CampaignStatusApiTest(TestCase):
     def setUp(self):
         self.ad_group_source = models.AdGroupSource.objects.get(id=1)
 
+    def test_test(self):
+        raise Exception 
+
     def test_upsert_unmodified(self):
         current_settings = self.ad_group_source.settings.latest()
 
