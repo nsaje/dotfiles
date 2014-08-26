@@ -25,37 +25,16 @@ class PermissionMixin(object):
         return False
 
 
-class Account(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(
-        max_length=127,
-        editable=True,
-        unique=True,
-        blank=False,
-        null=False
-    )
-    users = models.ManyToManyField(settings.AUTH_USER_MODEL)
-    groups = models.ManyToManyField(auth.models.Group)
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
-    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
-
-    class Meta:
-        ordering = ('-created_dt',)
-
-        permissions = (
-            ('group_account_automatically_add', 'All new accounts are automatically added to group.'),
-        )
-
-    def __unicode__(self):
-        return self.name
-
-
 class UserAuthorizationManager(models.Manager):
     def get_for_user(self, user):
         queryset = super(UserAuthorizationManager, self).get_queryset()
         if user.is_superuser:
             return queryset
+        elif queryset.model is Account:
+           return queryset.filter(
+               models.Q(users__id=user.id) |
+               models.Q(groups__user__id=user.id)
+           ).distinct('id')
         elif queryset.model is Campaign:
             return queryset.filter(
                 models.Q(users__id=user.id) |
@@ -71,6 +50,34 @@ class UserAuthorizationManager(models.Manager):
                 models.Q(campaign__account__users__id=user.id) |
                 models.Q(campaign__account__groups__user__id=user.id)
             ).distinct('id')
+
+
+class Account(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(
+        max_length=127,
+        editable=True,
+        unique=True,
+        blank=False,
+        null=False
+    )
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL)
+    groups = models.ManyToManyField(auth.models.Group)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+
+    objects = UserAuthorizationManager()
+
+    class Meta:
+        ordering = ('-created_dt',)
+
+        permissions = (
+            ('group_account_automatically_add', 'All new accounts are automatically added to group.'),
+        )
+
+    def __unicode__(self):
+        return self.name
 
 
 class Campaign(models.Model, PermissionMixin):

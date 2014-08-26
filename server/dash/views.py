@@ -216,54 +216,62 @@ class User(api_common.BaseApiView):
 class NavigationDataView(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'navigation_data_view_get')
     def get(self, request):
-        user_id = request.user.id
+        data = {}
+        self.fetch_ad_groups(data, request.user)
+        self.fetch_campaigns(data, request.user)
+        self.fetch_accounts(data, request.user)
 
-        if request.user.is_superuser:
-            ad_groups = models.AdGroup.objects.\
-                select_related('campaign__account').\
-                all()
+        result = []
+        for account in data.values():
+            account['campaigns'] = account['campaigns'].values()
+            result.append(account)
 
-        else:
-            ad_groups = (
-                models.AdGroup.objects
-                .select_related('campaign__account')
-                .filter(
-                    Q(campaign__users__in=[user_id]) |
-                    Q(campaign__groups__user__id=user_id) |
-                    Q(campaign__account__users__in=[user_id]) |
-                    Q(campaign__account__groups__user__id=user_id)
-                )
-            ).distinct('id')
+        return self.create_api_response(result)
 
-        accounts = {}
+    def fetch_ad_groups(self, data, user):
+        ad_groups = models.AdGroup.objects.get_for_user(user).select_related('campaign__account')
+
         for ad_group in ad_groups:
             campaign = ad_group.campaign
             account = campaign.account
 
-            if account.id not in accounts:
-                accounts[account.id] = {
-                    'id': account.id,
-                    'name': account.name,
-                    'campaigns': {}
-                }
+            self.add_account_dict(data, account)
 
-            campaigns = accounts[account.id]['campaigns']
-
-            if campaign.id not in campaigns:
-                campaigns[campaign.id] = {
-                    'id': campaign.id,
-                    'name': campaign.name,
-                    'adGroups': []
-                }
+            campaigns = data[account.id]['campaigns']
+            self.add_campaign_dict(campaigns, campaign)
 
             campaigns[campaign.id]['adGroups'].append({'id': ad_group.id, 'name': ad_group.name})
 
-        data = []
-        for account in accounts.values():
-            account['campaigns'] = account['campaigns'].values()
-            data.append(account)
+    def fetch_campaigns(self, data, user):
+        campaigns = models.Campaign.objects.get_for_user(user).select_related('account')
 
-        return self.create_api_response(data)
+        for campaign in campaigns:
+            account = campaign.account
+
+            self.add_account_dict(data, account)
+            self.add_campaign_dict(data[account.id]['campaigns'], campaign)
+
+    def fetch_accounts(self, data, user):
+        accounts = models.Account.objects.get_for_user(user)
+
+        for account in accounts:
+            self.add_account_dict(data, account)
+
+    def add_account_dict(self, data, account):
+        if account.id not in data:
+            data[account.id] = {
+                'id': account.id,
+                'name': account.name,
+                'campaigns': {}
+            }
+
+    def add_campaign_dict(self, data, campaign):
+        if campaign.id not in data:
+            data[campaign.id] = {
+                'id': campaign.id,
+                'name': campaign.name,
+                'adGroups': []
+            }
 
 
 class CampaignSettings(api_common.BaseApiView):
@@ -1162,6 +1170,44 @@ class AdGroupDailyStats(api_common.BaseApiView):
                 stat['source_name'] = sources_dict[stat['source']]
 
         return stats
+
+
+class Account(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'account_put')
+    def put(self, request):
+        if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
+            raise exc.MissingDataError()
+
+        account = models.Account(name=self.create_name())
+        account.save()
+
+        response = {
+            'name': account.name,
+            'id': account.id
+        }
+
+        return self.create_api_response(response)
+
+    def create_name(self):
+        name = 'New account'
+        accounts = models.Account.objects.filter(name__regex=r'^New account( [0-9]+)?$')
+
+        if len(accounts):
+            num = len(accounts) + 1
+
+            nums = [int(a.name.replace('New account', '').strip() or 1) for a in accounts]
+            nums.sort()
+
+            for i, j in enumerate(nums):
+                # value can be used if index is smaller than value
+                if (i + 1) < j:
+                    num = i + 1
+                    break
+
+            if num > 1:
+                name += ' {}'.format(num)
+
+        return name
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')
