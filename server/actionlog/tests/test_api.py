@@ -131,7 +131,7 @@ class ActionLogApiTestCase(TestCase):
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
 
         ad_group = dashmodels.AdGroup.objects.get(id=1)
-        ad_group_sources = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group)
+        ad_group_sources = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group, source__maintenance=False)
         sync.AdGroupSync(ad_group).trigger_status()
 
         for ad_group_source in ad_group_sources.all():
@@ -170,7 +170,7 @@ class ActionLogApiTestCase(TestCase):
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
 
         ad_group = dashmodels.AdGroup.objects.get(id=1)
-        ad_group_sources = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group)
+        ad_group_sources = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group, source__maintenance=False)
         date = datetime.date(2014, 6, 1)
         
         ad_group_sync = sync.AdGroupSync(ad_group)

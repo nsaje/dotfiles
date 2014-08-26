@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 MAX_RECONCILIATION_RETRIES = 10
 
-DIMENSIONS = set(['article', 'ad_group', 'date', 'source'])
+DIMENSIONS = set(['article', 'ad_group', 'date', 'source', 'account', 'campaign'])
 
 AGGREGATE_FIELDS = dict(
     clicks_sum=Sum('clicks'),
@@ -36,8 +36,13 @@ AGGREGATE_FIELDS = dict(
 
 
 def _preprocess_constraints(constraints):
+    constraint_field_translate = {
+        'account': 'ad_group__campaign__account',
+        'campaign': 'ad_group__campaign'
+    }
     result = {}
     for k, v in constraints.iteritems():
+        k = constraint_field_translate.get(k, k)
         if isinstance(v, collections.Sequence):
             result['{0}__in'.format(k)] = v
         else:
@@ -71,7 +76,11 @@ def _preprocess_order(order):
 
 
 def _preprocess_breakdown(breakdown):
-    breakdown_field_translate = {'date': 'datetime'}
+    breakdown_field_translate = {
+        'date': 'datetime',
+        'account': 'ad_group__campaign__account',
+        'campaign': 'ad_group__campaign'
+    }
     breakdown = [] if breakdown is None else breakdown[:]
     if len(set(breakdown) - DIMENSIONS) != 0:
         raise exc.ReportsQueryError('Invalid breakdown')
@@ -194,6 +203,8 @@ def collect_results(result):
         'datetime': 'date',
         'article__title': 'title',
         'article__url': 'url',
+        'ad_group__campaign': 'campaign',
+        'ad_group__campaign__account': 'account'
     }
 
     col_val_transform = {

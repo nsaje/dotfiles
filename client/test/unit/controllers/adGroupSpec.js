@@ -14,6 +14,15 @@ describe('AdGroupCtrl', function () {
             $scope.isPermissionInternal = function () {
                 return true;
             };
+            $scope.canAccessAllAccounts = function () {
+                return true;
+            };
+            $scope.canAccessAccounts = function () {
+                return true;
+            };
+            $scope.canAccessCampaigns = function () {
+                return true;
+            };
             $scope.adGroupData = {};
             $scope.accounts = [{
                 id: 1,

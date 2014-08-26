@@ -9,12 +9,19 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
 
     $scope.adGroupData = {};
 
-    if ($state.is('main') && $scope.accounts && $scope.accounts.length) {
-        $state.go('main.adGroups.ads', {id: $scope.accounts[0].campaigns[0].adGroups[0].id});
-    }
+    $scope.hasPermission = function (permissions) {
+        if (!permissions) {
+            return false;
+        }
 
-    $scope.hasPermission = function (permission) {
-        return Object.keys($scope.user.permissions).indexOf(permission) >= 0;
+        // can take string or array, returns true if user has any of the permissions
+        if (typeof permissions === 'string') {
+            permissions = [permissions];
+        }
+
+        return permissions.some(function (permission) {
+            return Object.keys($scope.user.permissions).indexOf(permission) >= 0;
+        });
     };
 
     $scope.isPermissionInternal = function (permission) {
@@ -24,6 +31,27 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
 
         return !$scope.user.permissions[permission];
     };
+    
+    $scope.canAccessAllAccounts = function () {
+        return $scope.hasPermission('zemauth.all_accounts_accounts_view');
+    };
+
+    $scope.canAccessAccounts = function () {
+        return $scope.hasPermission('zemauth.accounts_campaigns_view');
+    };
+
+    $scope.canAccessCampaigns = function () {
+        return $scope.hasPermission('zemauth.campaign_settings_view')
+    };
+
+    // Redirect from default state
+    if ($state.is('main') && $scope.accounts && $scope.accounts.length) {
+        if ($scope.canAccessAllAccounts()) {
+            $state.go('main.allAccounts.accounts');
+        } else {
+            $state.go('main.adGroups.ads', {id: $scope.accounts[0].campaigns[0].adGroups[0].id});
+        }
+    }
 
     $scope.getDateRanges = function () {
         var result = {};
@@ -100,7 +128,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
 
     $scope.setBreadcrumbAndTitle = function (breadcrumb, title) {
         $scope.breadcrumb = breadcrumb;
-        $scope.breadcrumb.unshift({name: 'All accounts', state: 'main.allAccounts.accounts'});
+        $scope.breadcrumb.unshift({name: 'All accounts', state: 'main.allAccounts.accounts', disabled: !$scope.canAccessAllAccounts()});
 
         $document.prop('title', title + ' | Zemanta');
     };
