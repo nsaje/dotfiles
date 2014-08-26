@@ -18,7 +18,7 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) 
             return;
         }
         $scope.setBreadcrumbAndTitle(
-            [{name: $scope.account.name, state: 'main.accounts.campaigns({id: ' + $scope.account.id + '})'}],
+            [{name: $scope.account.name, state: 'main.accounts.campaigns({id: ' + $scope.account.id + '})', disabled: true }],
             $scope.account.name
         );
     };

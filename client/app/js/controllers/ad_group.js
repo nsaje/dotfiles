@@ -49,9 +49,9 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
             return;
         }
         $scope.setBreadcrumbAndTitle(
-            [{name: $scope.account.name, state: 'main.accounts.campaigns({id: ' + $scope.account.id + '})'},
-            {name: $scope.campaign.name, state: 'main.campaigns.agency({id: ' + $scope.campaign.id + '})'},
-            {name: $scope.adGroup.name, state: 'main.adGroups.ads({id: ' + $scope.adGroup.id + '})'}],
+            [{name: $scope.account.name, state: 'main.accounts.campaigns({id: ' + $scope.account.id + '})', disabled: !$scope.canAccessAccounts()},
+            {name: $scope.campaign.name, state: 'main.campaigns.agency({id: ' + $scope.campaign.id + '})', disabled: !$scope.canAccessCampaigns()},
+            {name: $scope.adGroup.name, state: 'main.adGroups.ads({id: ' + $scope.adGroup.id + '})', disabled: true}],
             $scope.adGroup.name + ' - ' + $scope.campaign.name
         );
     };
