@@ -585,7 +585,27 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     function Account() {
         this.create = function () {
             var deferred = $q.defer();
-            var url = '/api/account/';
+            var url = '/api/accounts/';
+
+            $http.put(url).
+                success(function (data, status) {
+                    deferred.resolve({
+                        name: data.data.name,
+                        id: data.data.id
+                    });
+                }).
+                error(function (data, status) {
+                    deferred.reject(); 
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    function AccountCampaigns() {
+        this.create = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + id + '/campaigns/';
 
             $http.put(url).
                 success(function (data, status) {
@@ -665,6 +685,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         adGroupSync: new AdGroupSync(),
         campaignSettings: new CampaignSettings(),
         account: new Account(),
+        accountCampaigns: new AccountCampaigns(),
         checkSyncProgress: new CheckSyncProgress(),
         adGroupSourcesDailyStats: new AdGroupSourcesDailyStats(),
         actionLog: new ActionLog()

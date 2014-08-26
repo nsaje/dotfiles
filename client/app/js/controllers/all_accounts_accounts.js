@@ -1,3 +1,4 @@
+/*globals oneApp*/
 oneApp.controller('AllAccountsAccountsCtrl', ['$scope', 'api', function ($scope, api) {
     $scope.addAccount = function () {
         api.account.create().then(

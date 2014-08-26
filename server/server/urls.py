@@ -79,7 +79,11 @@ urlpatterns += patterns(
         login_required(dash.views.CampaignSettings.as_view()),
     ),
     url(
-        r'^api/account/',
+        r'^api/accounts/(?P<account_id>\d+)/campaigns/',
+        login_required(dash.views.AccountCampaigns.as_view()),
+    ),
+    url(
+        r'^api/accounts/',
         login_required(dash.views.Account.as_view()),
     ),
     url(r'^api/nav_data$', login_required(dash.views.NavigationDataView.as_view())),

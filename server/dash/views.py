@@ -20,7 +20,6 @@ from django.core import urlresolvers
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 import pytz
@@ -62,6 +61,14 @@ def get_campaign(user, campaign_id):
             filter(id=int(campaign_id)).get()
     except models.Campaign.DoesNotExist:
         raise exc.MissingDataError('Campaign does not exist')
+
+
+def get_account(user, account_id):
+    try:
+        return models.Account.objects.get_for_user(user).\
+            filter(id=int(account_id)).get()
+    except models.Account.DoesNotExist:
+        raise exc.MissingDataError('Account does not exist')
 
 
 def daterange(start_date, end_date):
@@ -225,6 +232,27 @@ def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
             'E-mail notification for ad group settings change was not sent because an exception was raised: {}'.format(traceback.format_exc(e)),
             desc
         )
+
+
+def create_name(model, name):
+    objects = model.objects.filter(name__regex=r'^{}( [0-9]+)?$'.format(name))
+
+    if len(objects):
+        num = len(objects) + 1
+
+        nums = [int(a.name.replace(name, '').strip() or 1) for a in objects]
+        nums.sort()
+
+        for i, j in enumerate(nums):
+            # value can be used if index is smaller than value
+            if (i + 1) < j:
+                num = i + 1
+                break
+
+        if num > 1:
+            name += ' {}'.format(num)
+
+    return name
 
 
 @statsd_helper.statsd_timer('dash', 'index')
@@ -1264,7 +1292,7 @@ class Account(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
             raise exc.MissingDataError()
 
-        account = models.Account(name=self.create_name())
+        account = models.Account(name=create_name(models.Account, 'New account'))
         account.save()
 
         response = {
@@ -1274,26 +1302,27 @@ class Account(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    def create_name(self):
-        name = 'New account'
-        accounts = models.Account.objects.filter(name__regex=r'^New account( [0-9]+)?$')
 
-        if len(accounts):
-            num = len(accounts) + 1
+class AccountCampaigns(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'account_campaigns_put')
+    def put(self, request, account_id):
+        if not request.user.has_perm('zemauth.accounts_campaigns_view'):
+            raise exc.MissingDataError()
 
-            nums = [int(a.name.replace('New account', '').strip() or 1) for a in accounts]
-            nums.sort()
+        account = get_account(request.user, account_id)
 
-            for i, j in enumerate(nums):
-                # value can be used if index is smaller than value
-                if (i + 1) < j:
-                    num = i + 1
-                    break
+        campaign = models.Campaign(
+            name=create_name(models.Campaign, 'New campaign'),
+            account=account
+        )
+        campaign.save()
 
-            if num > 1:
-                name += ' {}'.format(num)
+        response = {
+            'name': campaign.name,
+            'id': campaign.id
+        }
 
-        return name
+        return self.create_api_response(response)
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')
