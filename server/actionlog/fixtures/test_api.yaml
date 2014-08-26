@@ -62,6 +62,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Gravity
         type: gravity
+        maintenance: false
     model: dash.source
     pk: 2
 
@@ -70,6 +71,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Outbrain
         type: outbrain
+        maintenance: false
     model: dash.source
     pk: 3
 
@@ -78,6 +80,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Taboola
         type: taboola
+        maintenance: false
     model: dash.source
     pk: 4
 
@@ -86,8 +89,18 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Yahoo
         type: yahoo
+        maintenance: false
     model: dash.source
     pk: 5
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: MaintenanceSource
+        type: maintenance
+        maintenance: true
+    model: dash.source
+    pk: 6
 
 # test adgroup
 
@@ -175,6 +188,14 @@
     model: dash.adgroupsource
     pk: 8
 
+-   fields:
+        source: 6
+        ad_group: 1
+        source_campaign_key: '["fake"]'
+        source_credentials: 6
+    model: dash.adgroupsource
+    pk: 9
+
 
 # test ad group source credentials
 
@@ -222,3 +243,12 @@
         credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
     model: dash.sourcecredentials
     pk: 5
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        source: 6
+        name: 'Test credentials 6'
+        credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
+    model: dash.sourcecredentials
+    pk: 6
