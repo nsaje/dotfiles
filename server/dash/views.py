@@ -892,6 +892,140 @@ class AdGroupSourcesTable(api_common.BaseApiView):
         return rows
 
 
+class AccountsAccountsTable(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'all_accounts_accounts_table_get')
+    def get(self, request, ad_group_id):
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        sources_data = reports.api.query(
+            get_stats_start_date(request.GET.get('start_date')),
+            get_stats_end_date(request.GET.get('end_date')),
+            ['source'],
+            ad_group=int(ad_group.id)
+        )
+        sources_data = reports.api.collect_results(sources_data)
+
+        sources = ad_group.sources.all().order_by('name')
+        source_settings = models.AdGroupSourceSettings.get_current_settings(
+            ad_group, sources)
+
+        yesterday_cost = {}
+        yesterday_total_cost = None
+        if request.user.has_perm('reports.yesterday_spend_view'):
+            yesterday_cost = reports.api.get_yesterday_cost(ad_group)
+            if yesterday_cost:
+                yesterday_total_cost = sum(yesterday_cost.values())
+
+        totals_data = reports.api.query(
+            get_stats_start_date(request.GET.get('start_date')),
+            get_stats_end_date(request.GET.get('end_date')),
+            ad_group=int(ad_group.id)
+        )
+        totals_data = reports.api.collect_results(totals_data)
+
+        last_success_actions = get_last_successful_source_sync_dates(ad_group)
+
+        last_sync = None
+        if last_success_actions.values() and None not in last_success_actions.values():
+            last_sync = pytz.utc.localize(min(last_success_actions.values()))
+
+        return self.create_api_response({
+            'rows': self.get_rows(
+                ad_group,
+                sources,
+                sources_data,
+                source_settings,
+                last_success_actions,
+                yesterday_cost,
+                order=request.GET.get('order', None)
+            ),
+            'totals': self.get_totals(
+                ad_group,
+                totals_data,
+                source_settings,
+                yesterday_total_cost
+            ),
+            'last_sync': last_sync,
+            'is_sync_recent': is_sync_recent(last_sync),
+            'is_sync_in_progress': actionlog.api.is_sync_in_progress(ad_group),
+        })
+
+    def get_totals(self, ad_group, totals_data, source_settings, yesterday_cost):
+        return {
+            'daily_budget': float(sum(settings.daily_budget_cc for settings in source_settings.values()
+                                      if settings.daily_budget_cc is not None)),
+            'cost': totals_data['cost'],
+            'cpc': totals_data['cpc'],
+            'clicks': totals_data['clicks'],
+            'impressions': totals_data['impressions'],
+            'ctr': totals_data['ctr'],
+            'yesterday_cost': yesterday_cost
+        }
+
+    def get_rows(self, ad_group, sources, sources_data, source_settings, last_actions, yesterday_cost, order=None):
+        rows = []
+        for source in sources:
+            sid = source.pk
+            try:
+                settings = source_settings[sid]
+            except KeyError:
+                logger.error(
+                    'Missing ad group source settings for ad group %s and source %s' %
+                    (ad_group.id, sid))
+                continue
+
+            # get source reports data
+            source_data = {}
+            for item in sources_data:
+                if item['source'] == sid:
+                    source_data = item
+                    break
+
+            last_sync = last_actions.get(sid)
+            if last_sync:
+                last_sync = pytz.utc.localize(last_sync)
+
+            supply_dash_url = urlresolvers.reverse('dash.views.supply_dash_redirect')
+            supply_dash_url += '?ad_group_id={}&source_id={}'.format(ad_group.pk, sid)
+
+            rows.append({
+                'id': str(sid),
+                'name': settings.ad_group_source.source.name,
+                'status': settings.state,
+                'bid_cpc': float(settings.cpc_cc) if settings.cpc_cc is not None else None,
+                'daily_budget':
+                    float(settings.daily_budget_cc)
+                    if settings.daily_budget_cc is not None
+                    else None,
+                'cost': source_data.get('cost', None),
+                'cpc': source_data.get('cpc', None),
+                'clicks': source_data.get('clicks', None),
+                'impressions': source_data.get('impressions', None),
+                'ctr': source_data.get('ctr', None),
+                'last_sync': last_sync,
+                'yesterday_cost': yesterday_cost.get(sid),
+                'supply_dash_url': supply_dash_url
+            })
+
+        if order:
+            reverse = False
+            if order.startswith('-'):
+                reverse = True
+                order = order[1:]
+
+            # Sort should always put Nones at the end
+            def _sort(item):
+                value = item.get(order)
+                if order == 'last_sync' and not value:
+                    value = datetime.datetime(datetime.MINYEAR, 1, 1)
+
+                return (item.get(order) is None or reverse, value)
+
+            rows = sorted(rows, key=_sort, reverse=reverse)
+
+        return rows
+
+
 class AdGroupAdsExport(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_export_get')
     def get(self, request, ad_group_id):
@@ -1243,6 +1377,42 @@ class AdGroupDailyStats(api_common.BaseApiView):
         if sources:
             sources_dict = {x.pk: x.name for x in sources}
 
+        for stat in stats:
+            if 'source' in stat:
+                stat['source_name'] = sources_dict[stat['source']]
+
+        return stats
+
+
+class AccountsDailyStats(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'accounts_daily_stats_get')
+    def get(self, request):
+        # Permission check
+        if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
+            raise exc.MissingDataError()
+
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+
+        user = request.user
+
+        breakdown = ['date']
+        accounts = models.Account.objects.get_for_user(user)
+        totals_stats = reports.api.query(
+            get_stats_start_date(start_date),
+            get_stats_end_date(end_date),
+            breakdown,
+            ['date'],
+            account=accounts
+        )
+        totals_stats = reports.api.collect_results(totals_stats)
+
+        return self.create_api_response({
+            'stats': self.get_dict(totals_stats)
+        })
+
+    def get_dict(self, stats):
+        sources_dict = {}
         for stat in stats:
             if 'source' in stat:
                 stat['source_name'] = sources_dict[stat['source']]

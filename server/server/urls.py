@@ -63,6 +63,10 @@ urlpatterns += patterns(
         login_required(dash.views.AdGroupAdsTable.as_view()),
     ),
     url(
+        r'^api/accounts/table/',
+        login_required(dash.views.AccountsAccountsTable.as_view()),
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/sync/',
         login_required(dash.views.AdGroupSync.as_view()),
     ),
@@ -73,6 +77,10 @@ urlpatterns += patterns(
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/daily_stats/',
         login_required(dash.views.AdGroupDailyStats.as_view()),
+    ),
+    url(
+        r'^api/accounts/daily_stats/',
+        login_required(dash.views.AccountsDailyStats.as_view()),
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/settings/',

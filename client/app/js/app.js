@@ -49,7 +49,8 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         })
         .state('main.allAccounts.accounts', {
             url: '/accounts',
-            templateUrl: config.static_url + '/partials/all_accounts_accounts.html'
+            templateUrl: config.static_url + '/partials/all_accounts_accounts.html',
+            controller: 'AllAccountsAccountsCtrl'
         });
     
     $stateProvider
