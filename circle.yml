@@ -1,3 +1,7 @@
+general:
+    artifacts:
+        - ./server/htmlcov
+
 machine:
     python:
         version: 2.7.6
@@ -26,3 +30,6 @@ test:
         - grunt test:
             pwd:
                 client
+        - coverage html
+            pwd:
+                server
