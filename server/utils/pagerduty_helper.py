@@ -25,3 +25,19 @@ def trigger_event(action_log_id):
     }
 
     urllib2.urlopen(settings.PAGER_DUTY_URL, json.dumps(data))
+
+
+def trigger(incident_key, description, details=None):
+    if not settings.PAGER_DUTY_ENABLED:
+        return
+
+    data = {
+        'service_key': settings.PAGER_DUTY_SERVICE_KEY,
+        'incident_key': incident_key,
+        'event_type': 'trigger',
+        'description': description,
+        'client': 'Zemanta One - {0}'.format(settings.HOSTNAME),
+        'details': details
+    }
+
+    urllib2.urlopen(settings.PAGER_DUTY_URL, json.dumps(data))

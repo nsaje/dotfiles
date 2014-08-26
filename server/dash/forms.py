@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 import datetime
+import re
 
 import dateutil.parser
 import rfc3987
@@ -137,11 +139,13 @@ class AdGroupAgencySettingsForm(forms.Form):
                 tracking_code = '?' + tracking_code
 
             test_url = 'http:{0}'.format(tracking_code)
+            # We use { } for macros which rfc3987 doesn't allow so here we replace macros
+            # with a single world so that it can still be correctly validated.
+            print 'TUKAJ SEM'
+            test_url = re.sub('{[^}]+}', 'MACRO', test_url)
 
             try:
-                result = rfc3987.parse(test_url, rule='IRI')
-                if '?' + result['query'] != tracking_code:
-                    raise forms.ValidationError(err_msg)
+                rfc3987.parse(test_url, rule='IRI')
             except ValueError:
                 raise forms.ValidationError(err_msg)
 
