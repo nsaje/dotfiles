@@ -80,7 +80,7 @@ urlpatterns += patterns(
     ),
     url(
         r'^api/accounts/daily_stats/',
-        login_required(dash.views.AccountsDailyStats.as_view()),
+        login_required(dash.views.AccountDailyStats.as_view()),
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/settings/',
