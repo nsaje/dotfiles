@@ -30,6 +30,6 @@ test:
         - grunt test:
             pwd:
                 client
-        - coverage html
+        - coverage html:
             pwd:
                 server
