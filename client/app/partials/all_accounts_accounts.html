@@ -5,6 +5,7 @@
 
     <div class="section table-ad-group-sources">
         <div class="button-bar">
+            <button type="button" class="btn btn-add" ng-click="addAccount()">+ Account</button>
             <select ui-select2="{minimumResultsForSearch: -1}" ng-model="exportType" ng-change="downloadReport()" data-placeholder="Download Report" class="export">
                 <option value=""></option>
                 <option value="csv">CSV by day</option>

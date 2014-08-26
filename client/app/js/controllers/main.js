@@ -44,15 +44,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
         return $scope.hasPermission('zemauth.campaign_settings_view')
     };
 
-    // Redirect from default state
-    if ($state.is('main') && $scope.accounts && $scope.accounts.length) {
-        if ($scope.canAccessAllAccounts()) {
-            $state.go('main.allAccounts.accounts');
-        } else {
-            $state.go('main.adGroups.ads', {id: $scope.accounts[0].campaigns[0].adGroups[0].id});
-        }
-    }
-
     $scope.getDateRanges = function () {
         var result = {};
         var i = 0;
@@ -136,6 +127,15 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     $scope.$on("$stateChangeSuccess", function (event, toState, toParams, fromState, fromParams) {
         $scope.currentRoute = $state.current;
         $scope.setDateRangeFromSearch();
+
+        // Redirect from default state
+        if ($state.is('main') && $scope.accounts && $scope.accounts.length) {
+            if ($scope.canAccessAllAccounts()) {
+                $state.go('main.allAccounts.accounts');
+            } else {
+                $state.go('main.adGroups.ads', {id: $scope.accounts[0].campaigns[0].adGroups[0].id});
+            }
+        }
     });
 
     $scope.$watch('dateRange', function (newValue, oldValue) {

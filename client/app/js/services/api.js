@@ -582,6 +582,25 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
+    function Account() {
+        this.create = function () {
+            var deferred = $q.defer();
+            var url = '/api/account/';
+
+            $http.put(url).
+                success(function (data, status) {
+                    deferred.resolve({
+                        name: data.data.name,
+                        id: data.data.id
+                    });
+                }).
+                error(function (data, status) {
+                    deferred.reject(); 
+                });
+
+            return deferred.promise;
+        };
+    }
 
     function ActionLog() {
         this.list = function (filters) {
@@ -645,6 +664,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         adGroupAdsTable: new AdGroupAdsTable(),
         adGroupSync: new AdGroupSync(),
         campaignSettings: new CampaignSettings(),
+        account: new Account(),
         checkSyncProgress: new CheckSyncProgress(),
         adGroupSourcesDailyStats: new AdGroupSourcesDailyStats(),
         actionLog: new ActionLog()
