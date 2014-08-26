@@ -9,6 +9,7 @@ import slugify
 import excel_styles
 import base64
 import httplib
+import traceback
 import urllib
 import urllib2
 from decimal import Decimal
@@ -16,6 +17,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core import urlresolvers
+from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.db.models import Q
@@ -26,6 +28,7 @@ import pytz
 from utils import statsd_helper
 from utils import api_common
 from utils import exc
+from utils import pagerduty_helper
 import actionlog.api
 import actionlog.sync
 import actionlog.zwei_actions
@@ -149,6 +152,79 @@ def is_sync_recent(last_sync_datetime):
     result = last_sync_datetime >= pytz.utc.localize(min_sync_date)
 
     return result
+
+
+def get_campaign_url(ad_group, request):
+    campaign_settings_url = request.build_absolute_uri(
+        reverse('admin:dash_campaign_change', args=(ad_group.campaign.pk,)))
+    campaign_settings_url = campaign_settings_url.replace('http://', 'https://')
+
+    return campaign_settings_url
+
+
+def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
+    if not settings.SEND_AD_GROUP_SETTINGS_CHANGE_MAIL:
+        return
+
+    campaign_settings = models.CampaignSettings.objects.\
+        filter(campaign=ad_group.campaign).\
+        order_by('-created_dt')[:1]
+    if user.pk == campaign_settings[0].account_manager.pk:
+        return
+
+    if not campaign_settings or not campaign_settings[0].account_manager:
+        logger.error('Could not send e-mail because there is no account manager set for campaign with id %s.', ad_group.campaign.pk)
+
+        desc = {
+            'campaign_settings_url': get_campaign_url(ad_group, request)
+        }
+        pagerduty_helper.trigger(
+            'ad_group_settings_change_mail_failed',
+            'E-mail notification for ad group settings change was not sent because the campaign settings or account manager is not set.',
+            desc
+        )
+        return
+
+    recipients = [campaign_settings[0].account_manager.email]
+
+    subject = 'Settings change - ad group {}, campaign {}, account {}'.format(
+        ad_group.name,
+        ad_group.campaign.name,
+        ad_group.campaign.account.name
+    )
+
+    action_log_url = request.build_absolute_uri(
+        reverse('action_log_view'))
+    action_log_url = action_log_url.replace('http://', 'https://')
+    action_log_url += '#?filters=ad_group:{}'.format(ad_group.pk)
+
+    body = '{} has made a change in the settings of the ad group {}, campaign {}, account {}. Please check {} for details.'.format(
+        user.email,
+        ad_group.name,
+        ad_group.campaign.name,
+        ad_group.campaign.account.name,
+        action_log_url
+    )
+
+    try:
+        send_mail(
+            subject,
+            body,
+            settings.AD_GROUP_SETTINGS_CHANGE_FROM_EMAIL,
+            recipients,
+            fail_silently=False
+        )
+    except Exception as e:
+        logger.error('E-mail notification for ad group settings (ad group id: %d) change was not sent because an exception was raised: %s', ad_group.pk, traceback.format_exc(e))
+
+        desc = {
+            'campaign_settings_url': get_campaign_url(ad_group, request)
+        }
+        pagerduty_helper.trigger(
+            'ad_group_settings_change_mail_failed',
+            'E-mail notification for ad group settings change was not sent because an exception was raised: {}'.format(traceback.format_exc(e)),
+            desc
+        )
 
 
 @statsd_helper.statsd_timer('dash', 'index')
@@ -529,6 +605,11 @@ class AdGroupSettings(api_common.BaseApiView):
 
         api.order_ad_group_settings_update(ad_group, current_settings, settings)
 
+        user = request.user
+        changes = current_settings.get_setting_changes(settings)
+        if changes:
+            send_ad_group_settings_change_mail_if_necessary(ad_group, user, request)
+
         response = {
             'settings': self.get_dict(settings, ad_group),
             'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group)
@@ -630,6 +711,11 @@ class AdGroupAgency(api_common.BaseApiView):
             settings.save()
 
         api.order_ad_group_settings_update(ad_group, current_settings, settings)
+
+        user = request.user
+        changes = current_settings.get_setting_changes(settings)
+        if changes:
+            send_ad_group_settings_change_mail_if_necessary(ad_group, user, request)
 
         response = {
             'settings': self.get_dict(settings, ad_group),

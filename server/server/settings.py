@@ -90,6 +90,8 @@ AUTHENTICATION_BACKENDS = (
 
 TEST_RUNNER = 'utils.test_runner.CustomDiscoverRunner'
 
+DEFAULT_FROM_EMAIL = ''
+
 from localsettings import *
 
 LOGGING = {
