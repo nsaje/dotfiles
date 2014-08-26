@@ -1261,14 +1261,14 @@ def oauth_authorize(request, source_name):
 
     if not credentials_id:
         logger.warning('Missing credentials id')
-        return reverse('index')
+        return redirect('index')
 
     credentials = models.SourceCredentials.objects.get(id=credentials_id)
     decrypted = json.loads(credentials.decrypt())
 
     if 'client_id' not in decrypted or 'client_secret' not in decrypted:
         logger.error('client_id and/or client_secret not in credentials')
-        return reverse('index')
+        return redirect('index')
 
     state = {
         'credentials_id': credentials_id,
@@ -1335,4 +1335,4 @@ def oauth_redirect(request, source_name):
         credentials.credentials = json.dumps(decrypted)
         credentials.save()
 
-    return redirect('index')
+    return redirect(reverse('admin:dash_sourcecredentials_change', args=(credentials.id,)))
