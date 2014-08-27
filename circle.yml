@@ -1,12 +1,19 @@
+general:
+    artifacts:
+        - ./server/coverage_report.txt
+
 machine:
     python:
         version: 2.7.6
     node:
         version: v0.10.22
+    environment:
+        COVERAGE_ENABLED: 1 
 
 dependencies:
     override:
         - pip install -r server/requirements.txt
+        - pip install -r server/requirements_dev.txt
         - npm install:
             pwd:
                 client
@@ -26,3 +33,7 @@ test:
         - grunt test:
             pwd:
                 client
+    post:
+        - coverage report > coverage_report.txt:
+            pwd:
+                server
