@@ -30,7 +30,7 @@ checkout:
 
 test:
     override:
-        - coverage run manage.py test:
+        - python manage.py test:
             pwd:
                 server
         - grunt test:
