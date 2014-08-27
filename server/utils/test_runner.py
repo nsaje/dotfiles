@@ -74,9 +74,9 @@ def connect_to_librato():
 
 def post_tests_metrics_to_librato(librato_api, coverage_percentage, num_of_tests, tests_elapsed_time):
     queue = librato_api.new_queue()
-    queue.add('{0}.tests.coverage_percentage'.format(settings.PROJECT_NAME), coverage_percentage ,type='gauge', source='circle-ci')
-    queue.add('{0}.tests.num_of_tests'.format(settings.PROJECT_NAME), num_of_tests ,type='gauge', source='circle-ci')
-    queue.add('{0}.tests.tests_elapsed_time'.format(settings.PROJECT_NAME), tests_elapsed_time ,type='gauge', source='circle-ci')
+    queue.add('tests.{0}.coverage_percentage'.format(settings.PROJECT_NAME), coverage_percentage ,type='gauge', source='circle-ci')
+    queue.add('tests.{0}.num_of_tests'.format(settings.PROJECT_NAME), num_of_tests ,type='gauge', source='circle-ci')
+    queue.add('tests.{0}.tests_elapsed_time'.format(settings.PROJECT_NAME), tests_elapsed_time ,type='gauge', source='circle-ci')
     queue.submit()
 
 class CoverageRunner(runner.DiscoverRunner):
