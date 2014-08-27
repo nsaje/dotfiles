@@ -47,15 +47,15 @@ class SplitTestsRunner(runner.DiscoverRunner):
             self.skip_db = True
             os.environ['HEALTH_CHECK'] = '1'
 
-        super(CustomDiscoverRunner, self).__init__(*args, **kwargs)
+        super(SplitTestsRunner, self).__init__(*args, **kwargs)
 
     def setup_databases(self, **kwargs):
         if not self.skip_db:
-            return super(CustomDiscoverRunner, self).setup_databases(**kwargs)
+            return super(SplitTestsRunner, self).setup_databases(**kwargs)
 
     def teardown_databases(self, old_config, **kwargs):
         if not self.skip_db:
-            return super(CustomDiscoverRunner, self).teardown_databases(old_config, **kwargs)
+            return super(SplitTestsRunner, self).teardown_databases(old_config, **kwargs)
 
 
 
@@ -72,7 +72,20 @@ def connect_to_librato():
 
     return librato.connect(librato_user, librato_token)
 
+def post_tests_metrics_to_librato(librato_api, coverage_percentage, num_of_tests, tests_elapsed_time):
+    queue = librato_api.new_queue()
+    queue.add('{0}.tests.coverage_percentage'.format(settings.PROJECT_NAME), coverage_percentage ,type='gauge', source='circle-ci')
+    queue.add('{0}.tests.num_of_tests'.format(settings.PROJECT_NAME), num_of_tests ,type='gauge', source='circle-ci')
+    queue.add('{0}.tests.tests_elapsed_time'.format(settings.PROJECT_NAME), tests_elapsed_time ,type='gauge', source='circle-ci')
+    queue.submit()
+
 class CoverageRunner(runner.DiscoverRunner):
+
+
+    def build_suite(self, *args, **kwargs):
+        suite = super(CoverageRunner, self).build_suite(*args, **kwargs)
+        self._num_of_tests = suite.countTestCases()
+        return suite
 
     def run_tests(self, *args, **kwargs):
         if not settings.COVERAGE_ENABLED:
@@ -91,8 +104,12 @@ class CoverageRunner(runner.DiscoverRunner):
 
         coverage.stop()
         coverage.save()
-        coverage.html_report()
 
+        post_tests_metrics_to_librato( librato_api, 
+            coverage_percentage = coverage.report(file=open(os.devnull,'w')),
+            num_of_tests = self._num_of_tests, 
+            tests_elapsed_time = time.time() - t0
+            )
 
         return result
 

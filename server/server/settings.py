@@ -25,6 +25,8 @@ except:
 
 # Application definition
 
+PROJECT_NAME = 'eins'
+
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
