@@ -82,14 +82,16 @@ def post_tests_metrics_to_librato(librato_api, coverage_percentage, num_of_tests
     if 'CIRCLECI' not in os.environ:
         return
 
+    circleci_link = 'https://circleci.com/gh/{0}/{1}/{2}'.format(
+            os.environ.get('CIRCLE_PROJECT_USERNAME'),
+            os.environ.get('CIRCLE_PROJECT_REPONAME'),
+            os.environ.get('CIRCLE_BUILD_NUM'),
+        )
     librato_api.post_annotation('circle_ci.{0}'.format(settings.PROJECT_NAME),
         title='build triggered by {0}'.format(os.environ.get('CIRCLE_USERNAME')), 
         source='circle-ci', 
-        description='https://circleci.com/gh/{0}/{1}/{2}'.format(
-                os.environ.get('CIRCLE_PROJECT_USERNAME'),
-                os.environ.get('CIRCLE_PROJECT_REPONAME'),
-                os.environ.get('CIRCLE_BUILD_NUM'),
-            )
+        rel=circleci_link,
+        href=circleci_link
         )
 
 
