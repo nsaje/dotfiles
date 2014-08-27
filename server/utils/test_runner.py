@@ -79,8 +79,22 @@ def post_tests_metrics_to_librato(librato_api, coverage_percentage, num_of_tests
     queue.add('tests.{0}.tests_elapsed_time'.format(settings.PROJECT_NAME), tests_elapsed_time ,type='gauge', source='circle-ci')
     queue.submit()
 
-class CoverageRunner(runner.DiscoverRunner):
+    if 'CIRCLECI' not in os.environ:
+        return
 
+    api.post_annotation('circle_ci.{0}'.format(settings.PROJECT_NAME),
+        title='build triggered by {0}'.os.environ.get('CIRCLE_USERNAME'), 
+        source='circle-ci', 
+        description='https://circleci.com/gh/{0}/{1}/{2}'.format(
+                os.environ.get('CIRCLE_PROJECT_USERNAME'),
+                os.environ.get('CIRCLE_PROJECT_REPONAME'),
+                os.environ.get('CIRCLE_BUILD_NUM'),
+            )
+        )
+
+
+
+class CoverageRunner(runner.DiscoverRunner):
 
     def build_suite(self, *args, **kwargs):
         suite = super(CoverageRunner, self).build_suite(*args, **kwargs)
