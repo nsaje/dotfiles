@@ -9,9 +9,6 @@ machine:
         version: v0.10.22
     environment:
         COVERAGE_ENABLED: 1 
-        LIBRATO_USER: devops@zemanta.com 
-        LIBRATO_TOKEN: fbf1141debf185d2e3499b1797ae375b32f8b6ec207f6d71b99818a2f9d92309
-
 
 dependencies:
     override:
