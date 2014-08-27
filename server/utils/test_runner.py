@@ -1,11 +1,13 @@
-from optparse import make_option
 import os
 import logging
+import time
+from optparse import make_option
 
 from django.test import runner
+from django.conf import settings
 
 
-class CustomDiscoverRunner(runner.DiscoverRunner):
+class SplitTestsRunner(runner.DiscoverRunner):
     option_list = runner.DiscoverRunner.option_list + (
         make_option(
             '--integration-tests',
@@ -54,3 +56,54 @@ class CustomDiscoverRunner(runner.DiscoverRunner):
     def teardown_databases(self, old_config, **kwargs):
         if not self.skip_db:
             return super(CustomDiscoverRunner, self).teardown_databases(old_config, **kwargs)
+
+
+
+
+def connect_to_librato():
+    import librato
+    try:
+
+        librato_user = os.environ['LIBRATO_USER']
+        librato_token = os.environ['LIBRATO_TOKEN']
+    except KeyError:
+        raise Exception('librato user or token not set in enviroment settings ' +
+        'LIBRATO_USER and LIBRATO_TOKEN despite set COVERAGE_ENABLED enviroment variable')
+
+    return librato.connect(librato_user, librato_token)
+
+class CoverageRunner(runner.DiscoverRunner):
+
+    def run_tests(self, *args, **kwargs):
+        if not settings.COVERAGE_ENABLED:
+            return super(CoverageRunner, self).run_tests(*args, **kwargs)
+
+        import coverage
+        librato_api = connect_to_librato()
+        coverage = coverage.coverage()
+
+        # start measuring time
+        t0 = time.time()
+        # start measuring coverage
+        coverage.start()
+
+        result = super(CoverageRunner, self).run_tests(*args, **kwargs)
+
+        coverage.stop()
+        coverage.save()
+        coverage.html_report()
+
+
+        return result
+
+class CustomRunner(CoverageRunner, SplitTestsRunner):
+    pass
+
+
+
+
+
+
+
+
+
