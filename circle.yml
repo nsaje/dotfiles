@@ -1,6 +1,6 @@
 general:
     artifacts:
-        - ./coverage_report.txt
+        - ./server/coverage_report.txt
 
 machine:
     python:
