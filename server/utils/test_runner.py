@@ -90,7 +90,9 @@ def post_tests_metrics_to_librato(librato_api, coverage_percentage, num_of_tests
     librato_api.post_annotation('circle_ci.{0}'.format(settings.PROJECT_NAME),
         title='build triggered by {0}'.format(os.environ.get('CIRCLE_USERNAME')), 
         source='circle-ci', 
-        description=circleci_link        )
+        description=circleci_link,
+        links=[{'rel': 'circleci', 'href': 'http://google.com'}]       
+        )
 
 
 
