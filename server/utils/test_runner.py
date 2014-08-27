@@ -73,14 +73,14 @@ def connect_to_librato():
     return librato.connect(librato_user, librato_token)
 
 def post_tests_metrics_to_librato(librato_api, coverage_percentage, num_of_tests, tests_elapsed_time):
+    if 'CIRCLECI' not in os.environ or os.environ.get('CIRCLE_BRANCH') != os.environ.get('MAIN_BRANCH','master'):
+        return
+
     queue = librato_api.new_queue()
     queue.add('tests.{0}.coverage_percentage'.format(settings.PROJECT_NAME), coverage_percentage ,type='gauge', source='circle-ci')
     queue.add('tests.{0}.num_of_tests'.format(settings.PROJECT_NAME), num_of_tests ,type='gauge', source='circle-ci')
     queue.add('tests.{0}.tests_elapsed_time'.format(settings.PROJECT_NAME), tests_elapsed_time ,type='gauge', source='circle-ci')
     queue.submit()
-
-    if 'CIRCLECI' not in os.environ:
-        return
 
     circleci_link = 'https://circleci.com/gh/{0}/{1}/{2}'.format(
             os.environ.get('CIRCLE_PROJECT_USERNAME'),
@@ -91,7 +91,7 @@ def post_tests_metrics_to_librato(librato_api, coverage_percentage, num_of_tests
         title='build triggered by {0}'.format(os.environ.get('CIRCLE_USERNAME')), 
         source='circle-ci', 
         description=circleci_link,
-        links=[{'rel': 'circleci', 'href': circleci_link, 'label': circleci_link]       
+        links=[{'rel': 'circleci', 'href': circleci_link, 'label': circleci_link}]       
         )
 
 
