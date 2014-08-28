@@ -141,7 +141,6 @@ class AdGroupAgencySettingsForm(forms.Form):
             test_url = 'http:{0}'.format(tracking_code)
             # We use { } for macros which rfc3987 doesn't allow so here we replace macros
             # with a single world so that it can still be correctly validated.
-            print 'TUKAJ SEM'
             test_url = re.sub('{[^}]+}', 'MACRO', test_url)
 
             try:
@@ -150,6 +149,14 @@ class AdGroupAgencySettingsForm(forms.Form):
                 raise forms.ValidationError(err_msg)
 
         return self.cleaned_data.get('tracking_code')
+
+
+class AccountAgencySettingsForm(forms.Form):
+    id = forms.IntegerField()
+    name = forms.CharField(
+        max_length=127,
+        error_messages={'required': 'Please specify account name.'}
+    )
 
 
 class CampaignSettingsForm(forms.Form):

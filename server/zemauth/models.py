@@ -83,13 +83,15 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
 
         permissions = (
             ('campaign_settings_view', 'Can view campaign settings in dashboard.'),
+            ('campaign_ad_groups_view', "Can view campaign's ad groups tab in dashboard."),
             ('campaign_settings_account_manager', 'Can be chosen as account manager.'),
             ('campaign_settings_sales_rep', 'Can be chosen as sales representative.'),
             ('help_view', 'Can view help popovers.'),
             ("supply_dash_link_view", "Can view supply dash link."),
             ('ad_group_agency_tab_view', "Can view ad group's agency tab."),
             ('all_accounts_accounts_view', "Can view all accounts's accounts tab."),
-            ('accounts_campaigns_view', "Can view accounts's campaigns tab."),
+            ('account_campaigns_view', "Can view accounts's campaigns tab."),
+            ('account_agency_view', "Can view accounts's agency tab."),
         )
 
     def get_full_name(self):

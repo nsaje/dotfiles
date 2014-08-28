@@ -1,0 +1,6 @@
+<div class="page page-account-campaigns">
+    <button type="button" class="btn btn-add" ng-click="addCampaign()">+ Campaign</button>
+    <div class="loader" ng-show="requestInProgress"></div>
+    <span ng-show="added" class="success">Campaign &quot;{{ addedName }}&quot; has been added.</span>
+    <span ng-show="added === false" class="error">An error occurred while adding.</span>
+</div>

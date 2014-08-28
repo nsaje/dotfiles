@@ -1,7 +1,8 @@
 /*globals oneApp,$,moment*/
 oneApp.controller('CampaignCtrl', ['$scope', '$state', function ($scope, $state) {
     $scope.tabs = [
-        {heading: 'Agency', route: 'main.campaigns.agency', active: true, hidden: !$scope.hasPermission('zemauth.campaign_settings_view'), internal: $scope.isPermissionInternal('zemauth.campaign_settings_view')}
+        {heading: 'Ad groups', route: 'main.campaigns.ad_groups', active: true, hidden: !$scope.hasPermission('zemauth.campaign_ad_groups_view'), internal: $scope.isPermissionInternal('zemauth.campaign_ad_groups_view')},
+        {heading: 'Agency', route: 'main.campaigns.agency', active: false, hidden: !$scope.hasPermission('zemauth.campaign_settings_view'), internal: $scope.isPermissionInternal('zemauth.campaign_settings_view')}
     ];
 
     $scope.account = null;

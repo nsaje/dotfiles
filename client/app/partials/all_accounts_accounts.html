@@ -6,6 +6,9 @@
     <div class="section table-ad-group-sources">
         <div class="button-bar">
             <button type="button" class="btn btn-add" ng-click="addAccount()">+ Account</button>
+            <div class="loader" ng-show="requestInProgress"></div>
+            <span ng-show="added" class="success">Account &quot;{{ addedName }}&quot; has been added.</span>
+            <span ng-show="added === false" class="error">An error occurred while adding.</span>
             <zem-custom-table-cols class='pull-right' columns='columns'></zem-custom-table-cols>
 
             <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/img/chart.svg"></a>

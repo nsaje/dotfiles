@@ -2,6 +2,9 @@
 oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'zemCustomTableColsService', 'zemChartService', function ($scope, $state, $location, $window, $timeout, api, zemCustomTableColsService, zemChartService) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
+    $scope.requestInProgress = false;
+    $scope.addedName = null;
+    $scope.added = null;
     $scope.triggerSyncFailed = false;
     $scope.selectedSourceIds = [];
     $scope.selectedSourceTotals = true;
@@ -59,6 +62,10 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     };
 
     $scope.addAccount = function () {
+        $scope.requestInProgress = true;
+        $scope.addedName = null;
+        $scope.added = null;
+
         api.account.create().then(
             function (data) {
                 $scope.accounts.push({
@@ -66,12 +73,17 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
                     'id': data.id,
                     'campaigns': []
                 });
+
+                $scope.addedName = data.name;
+                $scope.added = true;
             },
             function (data) {
                 // error
-                return;
+                $scope.added = false;
             }
-        );
+        ).finally(function () {
+            $scope.requestInProgress = false;
+        });
     };
 
     $scope.setChartData = function () {

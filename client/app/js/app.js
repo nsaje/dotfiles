@@ -62,7 +62,13 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         })
         .state('main.accounts.campaigns', {
             url: '/campaigns',
-            templateUrl: config.static_url + '/partials/accounts_campaigns.html'
+            templateUrl: config.static_url + '/partials/account_campaigns.html',
+            controller: 'AccountCampaignsCtrl'
+        })
+        .state('main.accounts.agency', {
+            url: '/agency',
+            templateUrl: config.static_url + '/partials/account_agency.html',
+            controller: 'AccountAgencyCtrl'
         });
 
     $stateProvider
@@ -71,6 +77,11 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: 'campaigns/{id}',
             template: basicTemplate,
             controller: 'CampaignCtrl'
+        })
+        .state('main.campaigns.ad_groups', {
+            url: '/ad_groups',
+            templateUrl: config.static_url + '/partials/campaign_ad_groups.html',
+            controller: 'CampaignAdGroupsCtrl'
         })
         .state('main.campaigns.agency', {
             url: '/agency',
