@@ -97,7 +97,6 @@ urlpatterns += patterns(
     ),
     url(r'^api/nav_data$', login_required(dash.views.NavigationDataView.as_view())),
     url(r'^api/users/(?P<user_id>(\d+|current))/$', login_required(dash.views.User.as_view())),
-    url(r'^api/', handler404)
 )
 
 # Action Log
@@ -163,5 +162,6 @@ urlpatterns += patterns(
 
 urlpatterns += patterns(
     '',
+    url(r'^api/', handler404),
     url(r'^', dash.views.index, name='index')
 )
