@@ -372,6 +372,80 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
+    function AccountAgency() {
+        function convertSettingsFromApi(settings) {
+            return {
+                id: settings.id,
+                name: settings.name
+            };
+        }
+
+        function convertSettingsToApi(settings) {
+            return {
+                id: settings.id,
+                name: settings.name
+            };
+        }
+
+        function convertValidationErrorFromApi(errors) {
+            return {
+                id: errors.id,
+                name: errors.name
+            };
+        }
+
+        this.get = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + id + '/agency/';
+
+            $http.get(url).
+                success(function (data, status) {
+                    if (!data || !data.data) {
+                        deferred.reject(data);
+                    }
+                    deferred.resolve({
+                        settings: convertSettingsFromApi(data.data.settings),
+                    });
+                }).
+                error(function(data, status, headers) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.save = function (settings) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + settings.id + '/agency/';
+            var config = {
+                params: {}
+            };
+
+            var data = {
+                'settings': convertSettingsToApi(settings)
+            };
+
+            $http.put(url, data, config).
+                success(function (data, status) {
+                    if (!data || !data.data) {
+                        deferred.reject(data);
+                    }
+                    deferred.resolve({
+                        settings: convertSettingsFromApi(data.data.settings),
+                    });
+                }).
+                error(function(data, status, headers, config) {
+                    var resource;
+                    if (status === 400 && data && data.data.error_code === 'ValidationError') {
+                        resource = convertValidationErrorFromApi(data.data.errors);
+                    }
+                    deferred.reject(resource);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function CampaignSettings() {
         function convertSettingsFromApi(settings) {
             return {
@@ -684,6 +758,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         adGroupAdsTable: new AdGroupAdsTable(),
         adGroupSync: new AdGroupSync(),
         campaignSettings: new CampaignSettings(),
+        accountAgency: new AccountAgency(),
         account: new Account(),
         accountCampaigns: new AccountCampaigns(),
         checkSyncProgress: new CheckSyncProgress(),

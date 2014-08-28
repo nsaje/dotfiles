@@ -37,7 +37,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     };
 
     $scope.canAccessAccounts = function () {
-        return $scope.hasPermission('zemauth.accounts_campaigns_view');
+        return $scope.hasPermission('zemauth.account_campaigns_view');
     };
 
     $scope.canAccessCampaigns = function () {

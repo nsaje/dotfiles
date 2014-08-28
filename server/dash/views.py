@@ -378,6 +378,43 @@ class NavigationDataView(api_common.BaseApiView):
             }
 
 
+class AccountAgency(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'account_agency_get')
+    def get(self, request, account_id):
+        if not request.user.has_perm('zemauth.account_agency_view'):
+            raise exc.MissingDataError()
+
+        account = get_account(request.user, account_id)
+
+        return self.create_api_response(self.get_response(account))
+
+    @statsd_helper.statsd_timer('dash.api', 'account_agency_put')
+    def put(self, request, account_id):
+        if not request.user.has_perm('zemauth.account_agency_view'):
+            raise exc.MissingDataError()
+
+        account = get_account(request.user, account_id)
+
+        resource = json.loads(request.body)
+
+        form = forms.AccountAgencySettingsForm(resource.get('settings', {}))
+        if not form.is_valid():
+            raise exc.ValidationError(errors=dict(form.errors))
+
+        account.name = form.cleaned_data['name']
+        account.save()
+
+        return self.create_api_response(self.get_response(account))
+
+    def get_response(self, data):
+        return {
+            'settings': {
+                'id': data.id,
+                'name': data.name
+            }
+        }
+
+
 class CampaignSettings(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_settings_get')
     def get(self, request, campaign_id):
@@ -397,7 +434,7 @@ class CampaignSettings(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    @statsd_helper.statsd_timer('dash.api', 'ad_campaign_settings_put')
+    @statsd_helper.statsd_timer('dash.api', 'campaign_settings_put')
     def put(self, request, campaign_id):
         if not request.user.has_perm('zemauth.campaign_settings_view'):
             raise exc.MissingDataError()
@@ -1306,7 +1343,7 @@ class Account(api_common.BaseApiView):
 class AccountCampaigns(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'account_campaigns_put')
     def put(self, request, account_id):
-        if not request.user.has_perm('zemauth.accounts_campaigns_view'):
+        if not request.user.has_perm('zemauth.account_campaigns_view'):
             raise exc.MissingDataError()
 
         account = get_account(request.user, account_id)

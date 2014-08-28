@@ -1,6 +1,7 @@
 oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) {
     $scope.tabs = [
-        {heading: 'Campaigns', route: 'main.accounts.campaigns', active: true, hidden: !$scope.hasPermission('zemauth.accounts_campaigns_view'), internal: $scope.isPermissionInternal('zemauth.accounts_campaign_view')}
+        {heading: 'Campaigns', route: 'main.accounts.campaigns', active: true, hidden: !$scope.hasPermission('zemauth.account_campaigns_view'), internal: $scope.isPermissionInternal('zemauth.account_campaigns_view')},
+        {heading: 'Agency', route: 'main.accounts.agency', active: true, hidden: !$scope.hasPermission('zemauth.accounts_agency_view'), internal: $scope.isPermissionInternal('zemauth.accounts_agency_view')}
     ];
 
     $scope.account = null;
@@ -21,6 +22,13 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) 
             [{name: $scope.account.name, state: 'main.accounts.campaigns({id: ' + $scope.account.id + '})', disabled: true }],
             $scope.account.name
         );
+    };
+
+    $scope.updateAccounts = function (newAccountName) {
+        if (!newAccountName) {
+            return;
+        }
+        $scope.account.name = newAccountName;
     };
 
     $scope.getAccount();
