@@ -596,8 +596,6 @@ class CampaignSettings(api_common.BaseApiView):
         else:
             settings = models.CampaignSettings()
 
-        print 'CATEG'
-        print settings.iab_category
         return settings
 
     def get_dict(self, settings, campaign):
@@ -1071,7 +1069,6 @@ class AccountsAccountsTable(api_common.BaseApiView):
 
             # get source reports data
             account_data = {}
-            print accounts_data
             for item in accounts_data:
                 if item['account'] == aid:
                     account_data = item
