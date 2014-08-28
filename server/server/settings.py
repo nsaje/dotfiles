@@ -35,7 +35,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'dash',
-    'django_extensions',  # optional for visualizing models and other perks
+    #'django_extensions',  # optional for visualizing models and other perks
     'zemauth',
     'actionlog',
     'reports',
@@ -90,7 +90,7 @@ AUTHENTICATION_BACKENDS = (
     'zemauth.backends.EmailOrUsernameModelBackend',
 )
 
-TEST_RUNNER = 'utils.test_runner.CustomRunner'
+TEST_RUNNER = 'xmlrunner.extra.djangotestrunner.XMLTestRunner'
 
 COVERAGE_ENABLED = 'COVERAGE_ENABLED' in os.environ
 

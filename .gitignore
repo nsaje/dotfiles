@@ -114,3 +114,7 @@ client/test/sauce.json
 
 # Client coverage 
 client/coverage
+
+# Server JUnit files
+server/TEST*
+
