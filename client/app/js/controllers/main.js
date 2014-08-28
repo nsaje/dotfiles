@@ -37,11 +37,17 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     };
 
     $scope.canAccessAccounts = function () {
-        return $scope.hasPermission('zemauth.account_campaigns_view');
+        return $scope.hasPermission([
+            'zemauth.account_campaigns_view',
+            'zemauth.account_agency_view'
+        ]);
     };
 
     $scope.canAccessCampaigns = function () {
-        return $scope.hasPermission('zemauth.campaign_settings_view')
+        return $scope.hasPermission([
+            'zemauth.campaign_settings_view',
+            'zemauth.campaign_ad_groups_view'
+        ])
     };
 
     $scope.getDateRanges = function () {

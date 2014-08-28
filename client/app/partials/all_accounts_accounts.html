@@ -1,3 +1,6 @@
 <div class="page page-all-accounts-accounts">
     <button type="button" class="btn btn-add" ng-click="addAccount()">+ Account</button>
+    <div class="loader" ng-show="requestInProgress"></div>
+    <span ng-show="added" class="success">Account &quot;{{ addedName }}&quot; has been added.</span>
+    <span ng-show="added === false" class="error">An error occurred while adding.</span>
 </div>

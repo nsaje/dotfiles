@@ -234,8 +234,8 @@ def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
         )
 
 
-def create_name(model, name):
-    objects = model.objects.filter(name__regex=r'^{}( [0-9]+)?$'.format(name))
+def create_name(objects, name):
+    objects = objects.filter(name__regex=r'^{}( [0-9]+)?$'.format(name))
 
     if len(objects):
         num = len(objects) + 1
@@ -413,6 +413,28 @@ class AccountAgency(api_common.BaseApiView):
                 'name': data.name
             }
         }
+
+
+class CampaignAdGroups(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaigns_ad_group_put')
+    def put(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.campaign_ad_groups_view'):
+            raise exc.MissingDataError()
+
+        campaign = get_campaign(request.user, campaign_id)
+
+        ad_group = models.AdGroup(
+            name=create_name(models.AdGroup.objects.filter(campaign=campaign), 'New ad group'),
+            campaign=campaign
+        )
+        ad_group.save()
+
+        response = {
+            'name': ad_group.name,
+            'id': ad_group.id
+        }
+
+        return self.create_api_response(response)
 
 
 class CampaignSettings(api_common.BaseApiView):
@@ -1329,7 +1351,7 @@ class Account(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
             raise exc.MissingDataError()
 
-        account = models.Account(name=create_name(models.Account, 'New account'))
+        account = models.Account(name=create_name(models.Account.objects, 'New account'))
         account.save()
 
         response = {
@@ -1349,7 +1371,7 @@ class AccountCampaigns(api_common.BaseApiView):
         account = get_account(request.user, account_id)
 
         campaign = models.Campaign(
-            name=create_name(models.Campaign, 'New campaign'),
+            name=create_name(models.Campaign.objects.filter(account=account), 'New campaign'),
             account=account
         )
         campaign.save()
