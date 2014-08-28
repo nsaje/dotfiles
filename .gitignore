@@ -118,3 +118,6 @@ client/coverage
 # Server JUnit files
 server/TEST*
 
+# Client JUnit files
+client/test-results.xml
+
