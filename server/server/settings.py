@@ -25,6 +25,8 @@ except:
 
 # Application definition
 
+PROJECT_NAME = 'eins'
+
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
@@ -88,7 +90,9 @@ AUTHENTICATION_BACKENDS = (
     'zemauth.backends.EmailOrUsernameModelBackend',
 )
 
-TEST_RUNNER = 'utils.test_runner.CustomDiscoverRunner'
+TEST_RUNNER = 'utils.test_runner.CustomRunner'
+
+COVERAGE_ENABLED = 'COVERAGE_ENABLED' in os.environ
 
 DEFAULT_FROM_EMAIL = ''
 
