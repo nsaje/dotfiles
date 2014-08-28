@@ -48,6 +48,44 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
+    function AdGroupSources() {
+        this.get = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + id + '/sources/';
+
+            $http.get(url).
+                success(function (data, status) {
+                    var resource;
+                    if (data && data.data) {
+                        resource = data.data.sources;
+                    }
+                    deferred.resolve({
+                        'sources': resource
+                    });
+                }).
+                error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.add = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + id + '/sources/';
+
+            $http.put(url).
+                success(function (data, status) {
+                    deferred.resolve(data);
+                }).
+                error(function (data, status) {
+                    deferred.reject(data); 
+                });
+
+            return deferred.promise;
+        }
+    }
+
     function AdGroupSourcesTable() {
         this.get = function (id, startDate, endDate, order) {
             var deferred = $q.defer();
@@ -774,6 +812,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         adGroupState: new AdGroupState(),
         adGroupSettings: new AdGroupSettings(),
         adGroupAgency: new AdGroupAgency(),
+        adGroupSources: new AdGroupSources(),
         adGroupSourcesTable: new AdGroupSourcesTable(),
         adGroupAdsTable: new AdGroupAdsTable(),
         adGroupSync: new AdGroupSync(),

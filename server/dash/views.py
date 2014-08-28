@@ -853,8 +853,37 @@ class AdGroupAgency(api_common.BaseApiView):
         settings.tracking_code = resource['tracking_code']
 
 
+class AdGroupSources(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_get')
+    def get(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.ad_group_sources_add_source'):
+            raise exc.MissingDataError()
+
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        sources = models.Source.objects.all()
+        ad_group_sources = ad_group.sources.all().order_by('name')
+
+        sources = [{'id': s.id, 'name': s.name} for s in sources if s not in ad_group_sources]
+
+        return self.create_api_response({
+            'sources': sources
+        })
+
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_put')
+    def put(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.ad_group_sources_add_source'):
+            raise exc.MissingDataError()
+
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        # TODO get ad groups
+
+        return self.create_api_response(None)
+
+
 class AdGroupSourcesTable(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_table_get')
+    @statsd_helper.statsd_timer('dash.api', 'zemauth.ad_group_sources_table_get')
     def get(self, request, ad_group_id):
         ad_group = get_ad_group(request.user, ad_group_id)
 

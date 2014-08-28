@@ -336,12 +336,51 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
         $scope.getAdGroupState();
         $scope.initColumns();
+
+        $scope.getSources();
     };
 
     // export
     $scope.downloadReport = function() {
         $window.open('api/ad_groups/' + $state.params.id + '/sources/export/?type=' + $scope.exportType + '&start_date=' + $scope.dateRange.startDate.format() + '&end_date=' + $scope.dateRange.endDate.format(), '_blank');
         $scope.exportType = '';
+    };
+
+    $scope.getSources = function () {
+        if (!$scope.hasPermission('zemauth.ad_group_sources_add_source')) {
+            return;
+        }
+
+        api.adGroupSources.get($state.params.id).then(
+            function (data) {
+                $scope.sources = data.sources;
+            },
+            function (data) {
+                // error
+                return;
+            }
+        );
+    };
+
+    $scope.addSource = function (sourceIdToAdd) {
+        if (!sourceIdToAdd) {
+            return;
+        }
+
+        api.adGroupSources.add(sourceIdToAdd).then(
+            function (data) {
+                $scope.getTableData();
+                $scope.sources = $scope.sources.filter(function (item) {
+                    return item.id.toString() !== sourceIdToAdd.toString();
+                })
+            },
+            function (data) {
+                // error
+                return;
+            }
+        );
+
+        $scope.sourceIdToAdd = '';
     };
 
     var pollSyncStatus = function() {

@@ -5,6 +5,10 @@
 
     <div class="section table-ad-group-sources">
         <div class="button-bar">
+            <select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'add-source'}" ng-model="sourceIdToAdd" ng-change="addSource(sourceIdToAdd)" data-placeholder="+ Media Sources" class="add-source">
+                <option value=""></option>
+                <option ng-repeat="source in sources" value="{{source.id}}">{{source.name}}</option>
+            </select>
             <select ui-select2="{minimumResultsForSearch: -1}" ng-model="exportType" ng-change="downloadReport()" data-placeholder="Download Report" class="export">
                 <option value=""></option>
                 <option value="csv">CSV by day</option>
