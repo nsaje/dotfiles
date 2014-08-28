@@ -26,6 +26,14 @@
     model: dash.account
     pk: 1
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test account 2'
+    model: dash.account
+    pk: 2
+
 # test campaign
 
 -   fields:
@@ -45,6 +53,15 @@
         name: 'test campaign 2'
     model: dash.campaign
     pk: 2
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        account: 2 # test account 2
+        name: 'test campaign 3'
+    model: dash.campaign
+    pk: 3
 
 # sources
 
@@ -122,6 +139,24 @@
     model: dash.adgroup
     pk: 2
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 3
+        name: 'test adgroup 3'
+    model: dash.adgroup
+    pk: 3
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 3
+        name: 'test adgroup 4'
+    model: dash.adgroup
+    pk: 4
+
 # test adgroupsource
 
 -   fields:
@@ -195,6 +230,46 @@
         source_credentials: 6
     model: dash.adgroupsource
     pk: 9
+
+-   fields:
+        source: 1
+        ad_group: 3
+        source_campaign_key: '["fake"]'
+        source_credentials: 1
+    model: dash.adgroupsource
+    pk: 10
+
+-   fields:
+        source: 2
+        ad_group: 3
+        source_campaign_key: '["fake"]'
+        source_credentials: 2
+    model: dash.adgroupsource
+    pk: 11
+
+-   fields:
+        source: 1
+        ad_group: 4
+        source_campaign_key: '["fake"]'
+        source_credentials: 1
+    model: dash.adgroupsource
+    pk: 12
+
+-   fields:
+        source: 2
+        ad_group: 4
+        source_campaign_key: '["fake"]'
+        source_credentials: 2
+    model: dash.adgroupsource
+    pk: 13
+
+-   fields:
+        source: 3
+        ad_group: 4
+        source_campaign_key: '["fake"]'
+        source_credentials: 3
+    model: dash.adgroupsource
+    pk: 14
 
 
 # test ad group source credentials

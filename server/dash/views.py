@@ -821,7 +821,7 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             ),
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
-            'is_sync_in_progress': actionlog.api.is_sync_in_progress(ad_group),
+            'is_sync_in_progress': actionlog.api.is_sync_in_progress([ad_group]),
         })
 
     def get_totals(self, ad_group, totals_data, source_settings, yesterday_cost):
@@ -901,37 +901,41 @@ class AdGroupSourcesTable(api_common.BaseApiView):
 
 
 class AccountsAccountsTable(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'all_accounts_accounts_table_get')
-    def get(self, request, ad_group_id):
-        ad_group = get_ad_group(request.user, ad_group_id)
+    @statsd_helper.statsd_timer('dash.api', 'accounts_accounts_table_get')
+    def get(self, request):
+        # Permission check
+        if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
+            raise exc.MissingDataError()
 
-        sources_data = reports.api.query(
+        user = request.user
+        accounts = models.Account.objects.get_for_user(user)
+
+        accounts_data = reports.api.query(
             get_stats_start_date(request.GET.get('start_date')),
             get_stats_end_date(request.GET.get('end_date')),
-            ['source'],
-            ad_group=int(ad_group.id)
+            ['account'],
+            account=accounts
         )
-        sources_data = reports.api.collect_results(sources_data)
+        accounts_data = reports.api.collect_results(accounts_data)
 
-        sources = ad_group.sources.all().order_by('name')
-        source_settings = models.AdGroupSourceSettings.get_current_settings(
-            ad_group, sources)
-
-        yesterday_cost = {}
-        yesterday_total_cost = None
-        if request.user.has_perm('reports.yesterday_spend_view'):
-            yesterday_cost = reports.api.get_yesterday_cost(ad_group)
-            if yesterday_cost:
-                yesterday_total_cost = sum(yesterday_cost.values())
+        # ad_groups = models.AdGroup.objects.filter(campaign__account__in=accounts)
+        ad_groups_settings = models.AdGroupSettings.objects.\
+            distinct('ad_group').\
+            filter(ad_group__campaign__account__in=accounts).\
+            order_by('-created_dt').\
+            order_by('ad_group')
 
         totals_data = reports.api.query(
             get_stats_start_date(request.GET.get('start_date')),
             get_stats_end_date(request.GET.get('end_date')),
-            ad_group=int(ad_group.id)
+            account=accounts
         )
         totals_data = reports.api.collect_results(totals_data)
 
-        last_success_actions = get_last_successful_source_sync_dates(ad_group)
+        last_success_actions = {}
+        for account in accounts:
+            account_sync = actionlog.sync.AccountSync(account)
+            last_success_actions[account.pk] = account_sync.get_latest_success()
 
         last_sync = None
         if last_success_actions.values() and None not in last_success_actions.values():
@@ -939,80 +943,65 @@ class AccountsAccountsTable(api_common.BaseApiView):
 
         return self.create_api_response({
             'rows': self.get_rows(
-                ad_group,
-                sources,
-                sources_data,
-                source_settings,
+                accounts,
+                accounts_data,
+                ad_groups_settings,
                 last_success_actions,
-                yesterday_cost,
                 order=request.GET.get('order', None)
             ),
-            'totals': self.get_totals(
-                ad_group,
-                totals_data,
-                source_settings,
-                yesterday_total_cost
-            ),
+            'totals': self.get_totals(totals_data),
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
-            'is_sync_in_progress': actionlog.api.is_sync_in_progress(ad_group),
+            'is_sync_in_progress': actionlog.api.is_sync_in_progress(accounts=accounts),
         })
 
-    def get_totals(self, ad_group, totals_data, source_settings, yesterday_cost):
+    def get_totals(self, totals_data):
         return {
-            'daily_budget': float(sum(settings.daily_budget_cc for settings in source_settings.values()
-                                      if settings.daily_budget_cc is not None)),
             'cost': totals_data['cost'],
             'cpc': totals_data['cpc'],
             'clicks': totals_data['clicks'],
             'impressions': totals_data['impressions'],
-            'ctr': totals_data['ctr'],
-            'yesterday_cost': yesterday_cost
+            'ctr': totals_data['ctr']
         }
 
-    def get_rows(self, ad_group, sources, sources_data, source_settings, last_actions, yesterday_cost, order=None):
+    def get_rows(self, accounts, accounts_data, ad_groups_settings, last_actions, order=None):
         rows = []
-        for source in sources:
-            sid = source.pk
-            try:
-                settings = source_settings[sid]
-            except KeyError:
-                logger.error(
-                    'Missing ad group source settings for ad group %s and source %s' %
-                    (ad_group.id, sid))
-                continue
+        for account in accounts:
+            aid = account.pk
+
+            state = constants.AdGroupSettingsState.ACTIVE
+            ad_group_settings_found = False
+            for ad_group_settings in ad_groups_settings:
+                if ad_group_settings.ad_group.campaign.account.pk == aid:
+                    ad_group_settings_found = True
+                    if ad_group_settings.state != constants.AdGroupSettingsState.ACTIVE:
+                        state = constants.AdGroupSettingsState.INACTIVE
+                        break
+            else:
+                if not ad_group_settings_found:
+                    # The default state is inactive.
+                    state = constants.AdGroupSettingsState.INACTIVE
 
             # get source reports data
-            source_data = {}
-            for item in sources_data:
-                if item['source'] == sid:
-                    source_data = item
+            account_data = {}
+            print accounts_data
+            for item in accounts_data:
+                if item['account'] == aid:
+                    account_data = item
                     break
 
-            last_sync = last_actions.get(sid)
+            last_sync = last_actions.get(aid)
             if last_sync:
                 last_sync = pytz.utc.localize(last_sync)
 
-            supply_dash_url = urlresolvers.reverse('dash.views.supply_dash_redirect')
-            supply_dash_url += '?ad_group_id={}&source_id={}'.format(ad_group.pk, sid)
-
             rows.append({
-                'id': str(sid),
-                'name': settings.ad_group_source.source.name,
-                'status': settings.state,
-                'bid_cpc': float(settings.cpc_cc) if settings.cpc_cc is not None else None,
-                'daily_budget':
-                    float(settings.daily_budget_cc)
-                    if settings.daily_budget_cc is not None
-                    else None,
-                'cost': source_data.get('cost', None),
-                'cpc': source_data.get('cpc', None),
-                'clicks': source_data.get('clicks', None),
-                'impressions': source_data.get('impressions', None),
-                'ctr': source_data.get('ctr', None),
-                'last_sync': last_sync,
-                'yesterday_cost': yesterday_cost.get(sid),
-                'supply_dash_url': supply_dash_url
+                'id': str(aid),
+                'name': account.name,
+                'status': state,
+                'cost': account_data.get('cost', None),
+                'cpc': account_data.get('cpc', None),
+                'clicks': account_data.get('clicks', None),
+                'last_sync': last_sync
             })
 
         if order:
@@ -1025,7 +1014,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
             def _sort(item):
                 value = item.get(order)
                 if order == 'last_sync' and not value:
-                    value = datetime.datetime(datetime.MINYEAR, 1, 1)
+                    value = pytz.UTC.localize(datetime.datetime(datetime.MINYEAR, 1, 1))
 
                 return (item.get(order) is None or reverse, value)
 
@@ -1260,12 +1249,25 @@ class AdGroupSourcesExport(api_common.BaseApiView):
         return response
 
 
+class AccountSync(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'account_sync_get')
+    def get(self, request):
+        # TODO
+        pass
+        # ad_group = get_ad_group(request.user, ad_group_id)
+
+        # if not actionlog.api.is_sync_in_progress(ad_groups=[ad_group]):
+        #     actionlog.sync.AdGroupSync(ad_group).trigger_all()
+
+        # return self.create_api_response({})
+
+
 class AdGroupSync(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_sync')
     def get(self, request, ad_group_id):
         ad_group = get_ad_group(request.user, ad_group_id)
 
-        if not actionlog.api.is_sync_in_progress(ad_group):
+        if not actionlog.api.is_sync_in_progress(ad_groups=[ad_group]):
             actionlog.sync.AdGroupSync(ad_group).trigger_all()
 
         return self.create_api_response({})
@@ -1276,7 +1278,7 @@ class AdGroupCheckSyncProgress(api_common.BaseApiView):
     def get(self, request, ad_group_id):
         ad_group = get_ad_group(request.user, ad_group_id)
 
-        in_progress = actionlog.api.is_sync_in_progress(ad_group)
+        in_progress = actionlog.api.is_sync_in_progress(ad_groups=[ad_group])
 
         return self.create_api_response({'is_sync_in_progress': in_progress})
 
@@ -1319,7 +1321,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
             'totals': totals_data,
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
-            'is_sync_in_progress': actionlog.api.is_sync_in_progress(ad_group),
+            'is_sync_in_progress': actionlog.api.is_sync_in_progress([ad_group]),
             'order': order,
             'pagination': {
                 'currentPage': current_page,

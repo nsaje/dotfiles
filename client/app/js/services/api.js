@@ -602,6 +602,87 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
+    function AccountDailyStats() {
+        function convertFromApi(data) {
+            var result = {
+                date: parseInt(moment.utc(data.date).format('XSSS'), 10),
+                clicks: data.clicks,
+                impressions: data.impressions,
+                ctr: data.ctr !== null ? parseFloat((data.ctr).toFixed(2)) : null,
+                cpc: data.cpc !== null ? parseFloat((data.cpc).toFixed(3)) : null,
+                cost: data.cost !== null ? parseFloat((data.cost).toFixed(2)) : null
+            };
+            return result;
+        }
+
+        this.list = function (startDate, endDate) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/daily_stats/';
+            var config = {
+                params: {}
+            };
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
+
+            $http.get(url, config).
+                success(function (response, status) {
+                    var resource;
+                    if (response && response.data && response.data.stats) {
+                        resource = response.data.stats;
+                        resource = response.data.stats.map(function (x) {
+                            return convertFromApi(x);
+                        });
+                    }
+                    deferred.resolve(resource);
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    function AccountAccountsTable() {
+        this.get = function (startDate, endDate, order) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/table/';
+            var config = {
+                params: {}
+            };
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
+
+            if (order) {
+                config.params.order = order;
+            }
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    if (data && data.data) {
+                        deferred.resolve(data.data);
+                    }
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function ActionLog() {
         this.list = function (filters) {
             var deferred = $q.defer();
@@ -665,6 +746,8 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         adGroupSync: new AdGroupSync(),
         campaignSettings: new CampaignSettings(),
         account: new Account(),
+        accountDailyStats: new AccountDailyStats(),
+        accountAccountsTable: new AccountAccountsTable(),
         checkSyncProgress: new CheckSyncProgress(),
         adGroupSourcesDailyStats: new AdGroupSourcesDailyStats(),
         actionLog: new ActionLog()

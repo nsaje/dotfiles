@@ -125,6 +125,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     };
 
     $scope.$on("$stateChangeSuccess", function (event, toState, toParams, fromState, fromParams) {
+        var adGroupId;
+
         $scope.currentRoute = $state.current;
         $scope.setDateRangeFromSearch();
 
@@ -133,7 +135,21 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
             if ($scope.canAccessAllAccounts()) {
                 $state.go('main.allAccounts.accounts');
             } else {
-                $state.go('main.adGroups.ads', {id: $scope.accounts[0].campaigns[0].adGroups[0].id});
+                $scope.accounts.some(function (account) {
+                    if (account.campaigns && account.campaigns.length) {
+                        account.campaigns.some(function (campaign) {
+                            if (campaign.adGroups && campaign.adGroups.length) {
+                                adGroupId = campaign.adGroups[0].id;
+                                return true;
+                            }
+                        });
+                    }
+
+                    if (adGroupId) {
+                        return true;
+                    }
+                });
+                $state.go('main.adGroups.ads', {id: adGroupId});
             }
         }
     });

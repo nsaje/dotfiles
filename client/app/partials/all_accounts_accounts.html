@@ -6,11 +6,6 @@
     <div class="section table-ad-group-sources">
         <div class="button-bar">
             <button type="button" class="btn btn-add" ng-click="addAccount()">+ Account</button>
-            <select ui-select2="{minimumResultsForSearch: -1}" ng-model="exportType" ng-change="downloadReport()" data-placeholder="Download Report" class="export">
-                <option value=""></option>
-                <option value="csv">CSV by day</option>
-                <option value="excel">Excel by day</option>
-            </select>
             <zem-custom-table-cols class='pull-right' columns='columns'></zem-custom-table-cols>
 
             <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/img/chart.svg"></a>
@@ -40,8 +35,7 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th></th>
-                            <th class="arrow" ng-class="{ordered: order === '-name', 'ordered-reverse': order === 'name'}"><a href class="col-title order" ng-click="orderRows('name')">Media Source</a><zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="A media source where your content is being promoted." placement="top"></zem-help-popover></th>
+                            <th class="arrow" ng-class="{ordered: order === '-name', 'ordered-reverse': order === 'name'}"><a href class="col-title order" ng-click="orderRows('name')">Account</a><zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="A media source where your content is being promoted." placement="top"></zem-help-popover></th>
                             <th class="text-center arrow" ng-class="{ordered: order === '-status', 'ordered-reverse': order === 'status'}"><a class="col-title order" href ng-click="orderRows('status')">Status</a><zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Status of a particular media source (enabled or paused)." placement="top"></zem-help-popover></th>
                             <th class="text-right arrow" ng-class="{'text-right': col.type !== 'url', ordered: order === '-' + col.field, 'ordered-reverse': order === col.field, 'trimmed-currency': (col.type === 'currency' && col.fractionSize > 2)}" ng-repeat="col in columns | filter: {checked: true}"><zem-internal-feature ng-if="col.internal"></zem-internal-feature><a href class="col-title order" ng-click="orderRows(col.field)">{{ col.name }}</a><zem-help-popover ng-if="col.help && hasPermission('zemauth.help_view')" content="{{ col.help }}" placement="{{ $last ? 'left' : 'top' }}"></zem-help-popover></th>
                         </tr>
@@ -56,7 +50,6 @@
                             <td class="no-data" colspan="{{ selectedColumnsCount + 3}}">No data</td>
                         </tr>
                         <tr ng-repeat="row in rows">
-                            <td class="input-one-char"><input type="checkbox" data-ng-model="row.checked" ng-disabled="!row.checked && selectedSourceIds.length === 4" data-ng-change="selectedSourcesChanged(row.id)"/></td>
                             <td>{{ row.name }}</td>
                             <td class="text-center">
                                 <div ng-if="row.status == constants.adGroupSettingsState.ACTIVE">Enabled</div>
@@ -91,8 +84,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td class="input-one-char"><input type="checkbox" data-ng-model="selectedSourceTotals" data-ng-change="selectedSourcesChanged(null)"/></td>
-                            <td colspan="2">TOTALS</td>
+                            <td>TOTALS</td>
                             <td class="text-right number"></td>
                             <td class="text-right number" ng-repeat="col in columns | filter: {checked: true, field: '!bid_cpc'}">
                                 <span ng-switch="col.type">

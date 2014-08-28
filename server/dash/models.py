@@ -34,7 +34,7 @@ class UserAuthorizationManager(models.Manager):
             return queryset.filter(
                 models.Q(users__id=user.id) |
                 models.Q(groups__user__id=user.id)
-            ).distinct('id')
+            ).distinct('id').order_by('id')
         elif queryset.model is Campaign:
             return queryset.filter(
                 models.Q(users__id=user.id) |

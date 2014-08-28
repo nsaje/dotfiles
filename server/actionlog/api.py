@@ -168,20 +168,29 @@ def age_oldest_waiting_action():
     return n_hours
 
 
-def is_sync_in_progress(ad_group):
+def is_sync_in_progress(ad_groups=None, accounts=None):
     '''
     sync is in progress if one of the following is true:
     - a get reports action for this ad_group is in 'waiting' state
     - a fetch status action for this ad_group is in 'waiting' state
     '''
 
-    waiting_actions = models.ActionLog.objects.filter(
-        ad_group_source__ad_group=ad_group,
+    if ad_groups and accounts:
+        raise Exception('Please set only one, ad_groups or accounts.')
+
+    q = models.ActionLog.objects.filter(
         state=constants.ActionState.WAITING,
         action_type=constants.ActionType.AUTOMATIC,
         action__in=(constants.Action.FETCH_REPORTS,
                     constants.Action.FETCH_CAMPAIGN_STATUS)
-    ).exists()
+    )
+
+    if ad_groups:
+        q = q.filter(ad_group_source__ad_group__in=ad_groups)
+    elif accounts:
+        q = q.filter(ad_group_source__ad_group__campaign__account__in=accounts)
+
+    waiting_actions = q.exists()
 
     return waiting_actions
 

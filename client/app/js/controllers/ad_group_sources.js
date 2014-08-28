@@ -155,7 +155,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
         Object.keys(temp).forEach(function (sourceId) {
             result.data.push(temp[sourceId].data);
-            result.names.push(temp[sourceId].name),
+            result.names.push(temp[sourceId].name);
             result.ids.push(temp[sourceId].id);
         });
 
