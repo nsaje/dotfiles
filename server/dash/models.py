@@ -292,6 +292,8 @@ class AdGroupSource(models.Model):
     source_credentials = models.ForeignKey(SourceCredentials, null=True, on_delete=models.PROTECT)
     source_campaign_key = jsonfield.JSONField(blank=True, default={})
 
+    last_successful_sync_dt = models.DateTimeField(blank=True, null=True)
+
     def __unicode__(self):
         return '%s - %s' % (self.ad_group, self.source)
 

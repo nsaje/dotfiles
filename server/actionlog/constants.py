@@ -55,3 +55,7 @@ class ActionLogOrderType(ConstantBase):
         FETCH_REPORTS: 'Fetch reports',
         FETCH_STATUS: 'Fetch status'
     }
+
+    @classmethod
+    def get_sync_types(cls):
+        return (cls.FETCH_ALL, cls.FETCH_REPORTS, cls.FETCH_STATUS, cls.STOP_ALL)

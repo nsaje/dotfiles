@@ -144,7 +144,7 @@ def get_last_successful_source_sync_dates(ad_group):
     ag_sync = actionlog.sync.AdGroupSync(ad_group)
     result = {}
     for c in ag_sync.get_components():
-        result[c.ad_group_source.source_id] = c.get_latest_success()
+        result[c.ad_group_source.source_id] = c.get_latest_success(recompute=False)
     return result
 
 
@@ -1021,7 +1021,8 @@ class AccountsAccountsTable(api_common.BaseApiView):
         last_success_actions = {}
         for account in accounts:
             account_sync = actionlog.sync.AccountSync(account)
-            last_success_actions[account.pk] = account_sync.get_latest_success()
+            last_success_actions[account.pk] = account_sync.get_latest_success(
+                recompute=False)
 
         last_sync = None
         if last_success_actions.values() and None not in last_success_actions.values():
@@ -1405,7 +1406,8 @@ class AdGroupAdsTable(api_common.BaseApiView):
         totals_data = reports.api.query(start_date, end_date, ad_group=int(ad_group.id))
         totals_data = reports.api.collect_results(totals_data)
 
-        last_sync = actionlog.sync.AdGroupSync(ad_group).get_latest_success()
+        last_sync = actionlog.sync.AdGroupSync(ad_group).get_latest_success(
+            recompute=False)
         if last_sync:
             last_sync = pytz.utc.localize(last_sync)
 
