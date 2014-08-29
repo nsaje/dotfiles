@@ -90,6 +90,17 @@ def cancel_expired_actionlogs():
         actionlog.save()
 
 
+def get_sources_waiting(ad_group):
+    actions = models.ActionLog.objects.filter(
+        action=constants.Action.CREATE_CAMPAIGN,
+        ad_group_source__ad_group_id=ad_group.id,
+        state=constants.ActionState.WAITING,
+        action_type=constants.ActionType.AUTOMATIC
+    )
+
+    return [action.ad_group_source.source for action in actions]
+
+
 def is_waiting_for_set_actions(ad_group):
     action_types = (constants.Action.SET_CAMPAIGN_STATE, constants.Action.SET_PROPERTY)
     # get latest action for ad_group where order != null

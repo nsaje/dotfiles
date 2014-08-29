@@ -15,6 +15,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     $scope.isChartShown = zemChartService.load('zemChart');
     $scope.chartBtnTitle = 'Hide chart';
     $scope.order = '-clicks';
+    $scope.sources = [];
+    $scope.sourcesWaiting = null;
     $scope.columns = [
         {
             name: 'Bid CPC',
@@ -354,6 +356,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         api.adGroupSources.get($state.params.id).then(
             function (data) {
                 $scope.sources = data.sources;
+                $scope.sourcesWaiting = data.sourcesWaiting;
             },
             function (data) {
                 // error
@@ -369,10 +372,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
         api.adGroupSources.add(sourceIdToAdd).then(
             function (data) {
-                $scope.getTableData();
-                $scope.sources = $scope.sources.filter(function (item) {
-                    return item.id.toString() !== sourceIdToAdd.toString();
-                })
+                $scope.getSources();
             },
             function (data) {
                 // error

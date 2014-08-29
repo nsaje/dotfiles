@@ -872,7 +872,8 @@ class AdGroupSources(api_common.BaseApiView):
         sources = [{'id': s.id, 'name': s.name} for s in sources if s not in ad_group_sources]
 
         return self.create_api_response({
-            'sources': sources
+            'sources': sources,
+            'sources_waiting': [source.name for source in actionlog.api.get_sources_waiting(ad_group)]
         })
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_put')
@@ -882,7 +883,8 @@ class AdGroupSources(api_common.BaseApiView):
 
         ad_group = get_ad_group(request.user, ad_group_id)
 
-        # TODO get ad groups
+        # TODO make ad group sources and create campaign
+        # actionlog.api.create_campaign()
 
         return self.create_api_response(None)
 

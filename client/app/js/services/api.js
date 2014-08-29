@@ -55,12 +55,9 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             $http.get(url).
                 success(function (data, status) {
-                    var resource;
-                    if (data && data.data) {
-                        resource = data.data.sources;
-                    }
                     deferred.resolve({
-                        'sources': resource
+                        sources: data.data.sources,
+                        sourcesWaiting: data.data.sources_waiting
                     });
                 }).
                 error(function (data) {
