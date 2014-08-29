@@ -38,3 +38,4 @@ test:
         - coverage report > coverage_report.txt:
             pwd:
                 server
+        - pushci coverage "coverage/cobertura/C*/cobertura.xml" -s frontend -b librato -c circle

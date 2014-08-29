@@ -5,6 +5,7 @@ Fabric==1.9.0
 librato-metrics==0.4.11
 coverage==3.7.1
 
-
 # for visualizing project models
 django-extensions==1.3.7
+
+git+git://github.com/tomazk/ci-metric-push.git
