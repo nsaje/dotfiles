@@ -79,6 +79,11 @@ var options = {
         {name: 'Cost', value: constants.sourceChartMetric.COST},
         {name: 'Avg. CPC', value: constants.sourceChartMetric.CPC}
     ],
+    allAccountsChartMetrics: [
+        {name: 'Clicks', value: constants.sourceChartMetric.CLICKS},
+        {name: 'Cost', value: constants.sourceChartMetric.COST},
+        {name: 'Avg. CPC', value: constants.sourceChartMetric.CPC}
+    ],
     iabCategories: [
         {name: 'IAB1 - Arts & Entertainment', value: constants.iabCategory.IAB1},
         {name: 'IAB2 - Automotive', value: constants.iabCategory.IAB2},

@@ -11,7 +11,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.constants = constants;
     $scope.options = options;
     $scope.chartMetric1 = constants.sourceChartMetric.CLICKS;
-    $scope.chartMetric2 = constants.sourceChartMetric.IMPRESSIONS;
+    $scope.chartMetric2 = null;
     $scope.dailyStats = [];
     $scope.chartData = undefined;
     $scope.isChartShown = zemChartService.load('zemChart');
