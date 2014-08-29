@@ -234,6 +234,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     };
 
     $scope.triggerSync = function() {
+        $scope.isSyncInProgress = true;
         api.accountSync.get($state.params.id).then(
             function () {
                 $scope.isSyncInProgress = true;

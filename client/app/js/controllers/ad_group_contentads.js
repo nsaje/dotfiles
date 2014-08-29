@@ -310,6 +310,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
 
     // trigger sync
     $scope.triggerSync = function() {
+        $scope.isSyncInProgress = true;
         api.adGroupSync.get($state.params.id).then(
             function () {
                 $scope.isSyncInProgress = true;
