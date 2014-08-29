@@ -210,7 +210,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     var pollSyncStatus = function() {
         if($scope.isSyncInProgress){
             $timeout(function() {
-                api.checkSyncProgress.get($state.params.id).then(
+                api.checkSyncProgress.get().then(
                     function(data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 

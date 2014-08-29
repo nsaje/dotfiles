@@ -163,6 +163,44 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
+    function AccountSync() {
+        this.get = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/sync/';
+
+            $http.get(url).
+                success(function (data, status) {
+                    if (data && data.success) {
+                        deferred.resolve();
+                    }
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    function CheckAccountsSyncProgress() {
+        this.get = function(id) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/check_sync_progress/';
+
+            $http.get(url).
+                success(function(data, status){
+                    if (data && data.success) {
+                        deferred.resolve(data.data);
+                    }
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function AdGroupSourcesDailyStats() {
         function convertFromApi(data) {
             var result = {
@@ -865,6 +903,8 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         accountDailyStats: new AccountDailyStats(),
         accountAccountsTable: new AccountAccountsTable(),
         accountCampaigns: new AccountCampaigns(),
+        accountSync: new AccountSync(),
+        checkAccountsSyncProgress: new CheckAccountsSyncProgress(),
         checkSyncProgress: new CheckSyncProgress(),
         adGroupSourcesDailyStats: new AdGroupSourcesDailyStats(),
         actionLog: new ActionLog()

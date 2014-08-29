@@ -1337,14 +1337,22 @@ class AdGroupSourcesExport(api_common.BaseApiView):
 class AccountSync(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'account_sync_get')
     def get(self, request):
-        # TODO
-        pass
-        # ad_group = get_ad_group(request.user, ad_group_id)
+        accounts = models.Account.objects.get_for_user(request.user)
+        if not actionlog.api.is_sync_in_progress(accounts=accounts):
+            for account in accounts:
+                actionlog.sync.AccountSync(account).trigger_all()
 
-        # if not actionlog.api.is_sync_in_progress(ad_groups=[ad_group]):
-        #     actionlog.sync.AdGroupSync(ad_group).trigger_all()
+        return self.create_api_response({})
 
-        # return self.create_api_response({})
+
+class AccountSyncProgress(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'account_is_sync_in_progress')
+    def get(self, request, ad_group_id):
+        accounts = models.Account.objects.get_for_user(request.user)
+
+        in_progress = actionlog.api.is_sync_in_progress(accounts=accounts)
+
+        return self.create_api_response({'is_sync_in_progress': in_progress})
 
 
 class AdGroupSync(api_common.BaseApiView):

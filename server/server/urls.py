@@ -68,6 +68,14 @@ urlpatterns += patterns(
         login_required(dash.views.AccountsAccountsTable.as_view()),
     ),
     url(
+        r'^api/accounts/sync/',
+        login_required(dash.views.AccountSync.as_view()),
+    ),
+    url(
+        r'^api/accounts/check_sync_progress/',
+        login_required(dash.views.AccountSyncProgress.as_view()),
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/sync/',
         login_required(dash.views.AdGroupSync.as_view()),
     ),
