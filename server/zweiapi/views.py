@@ -43,7 +43,7 @@ def zwei_callback(request, action_id):
 
         if action.order.order_type in actionlogconstants.get_sync_types():
             action.ad_group_source.last_successful_sync_dt = \
-                actionlog.sync.AdGroupSourceSync(action.ad_group_source)
+                actionlog.sync.AdGroupSourceSync(action.ad_group_source).get_latest_success()
             action.ad_group_source.save()
     except Exception as e:
         tb = traceback.format_exc()
