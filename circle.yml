@@ -8,8 +8,7 @@ machine:
         version: 2.7.6
     node:
         version: v0.10.22
-    environment:
-        COVERAGE_ENABLED: 1 
+
 
 dependencies:
     override:
@@ -28,7 +27,7 @@ checkout:
 
 test:
     override:
-        - python manage.py test:
+        - coverage run manage.py test:
             pwd:
                 server
         - grunt test:
@@ -36,6 +35,10 @@ test:
                 client
     post:
         - coverage report > coverage_report.txt:
-            pwd:
-                server
+            pwd: server
+        - coverage xml
+            pwd: server
         - pushci coverage "client/coverage/cobertura/C*/cobertura.xml" -s frontend -b librato -c circle
+        - pushci junit "client/test-results.xml" -s frontend -b librato -c circle
+        - pushci coverage "server/coverage.xml" -s backend -b librato -c circle
+        - pushci junit "server/TEST-*.xml" -s backend -b librato -c circle

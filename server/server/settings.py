@@ -90,7 +90,7 @@ AUTHENTICATION_BACKENDS = (
     'zemauth.backends.EmailOrUsernameModelBackend',
 )
 
-TEST_RUNNER = 'xmlrunner.extra.djangotestrunner.XMLTestRunner'
+TEST_RUNNER = 'utils.test_runner.CustomRunner'
 
 COVERAGE_ENABLED = 'COVERAGE_ENABLED' in os.environ
 
