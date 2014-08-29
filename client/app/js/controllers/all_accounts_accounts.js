@@ -194,12 +194,56 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
     });
 
+    $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
+        if(newValue === true && oldValue === false){
+            pollSyncStatus();
+        }
+    });
+
     $scope.$watch('chartMetric2', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             $scope.setChartData();
             $location.search('chart_metric2', $scope.chartMetric2);
         }
     });
+
+    var pollSyncStatus = function() {
+        if($scope.isSyncInProgress){
+            $timeout(function() {
+                api.checkSyncProgress.get($state.params.id).then(
+                    function(data) {
+                        $scope.isSyncInProgress = data.is_sync_in_progress;
+
+                        if($scope.isSyncInProgress == false){
+                            // we found out that the sync is no longer in progress
+                            // time to reload the data
+                            $scope.getTableData();
+                            $scope.getDailyStats();
+                        }
+                    },
+                    function(data) {
+                        // error
+                        $scope.triggerSyncFailed = true;
+                        $scope.isSyncInProgress = false;
+                    }
+                ).finally(function() {
+                    pollSyncStatus();
+                });
+            }, 5000);
+        }
+    };
+
+    $scope.triggerSync = function() {
+        api.accountSync.get($state.params.id).then(
+            function () {
+                $scope.isSyncInProgress = true;
+            },
+            function () {
+                // error
+                $scope.triggerSyncFailed = true;
+            }
+        );
+    };
 
     $scope.init = function() {
         var chartMetric1 = $location.search().chart_metric1;
@@ -228,6 +272,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         $scope.order = $location.search().order || $scope.order;
 
         $scope.initColumns();
+
+        pollSyncStatus();
     };
 
     $scope.init();

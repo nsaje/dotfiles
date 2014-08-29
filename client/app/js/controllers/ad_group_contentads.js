@@ -302,7 +302,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
                 ).finally(function() {
                     pollSyncStatus();
                 });
-            }, 1000);
+            }, 5000);
         }
     }
 

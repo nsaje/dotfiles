@@ -366,7 +366,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 ).finally(function() {
                     pollSyncStatus();
                 });
-            }, 1000);
+            }, 5000);
         }
     }
 
