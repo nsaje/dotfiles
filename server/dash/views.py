@@ -1347,7 +1347,7 @@ class AccountSync(api_common.BaseApiView):
 
 class AccountSyncProgress(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'account_is_sync_in_progress')
-    def get(self, request, ad_group_id):
+    def get(self, request):
         accounts = models.Account.objects.get_for_user(request.user)
 
         in_progress = actionlog.api.is_sync_in_progress(accounts=accounts)
