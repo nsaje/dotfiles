@@ -31,11 +31,15 @@ module.exports = function(config) {
         'test/unit/**/*.js'
     ],
 
+    preprocessors: {
+        'app/js/**/*.js': 'coverage'
+    },
+
 
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['progress'],
+    reporters: ['progress', 'coverage'],
 
 
     // web server port
@@ -64,10 +68,31 @@ module.exports = function(config) {
     // if true, Karma captures browsers, runs the tests and exits
     singleRun: false,
 
+    coverageReporter: {
+        reporters: [
+            {
+                type: 'text-summary',
+                dir: 'coverage/text/',
+                file: 'coverage.txt'
+            },
+            {
+                type: 'html',
+                dir: 'coverage/html',
+            },
+            {
+                type: 'cobertura',
+                dir: 'coverage/cobertura',
+                file: 'cobertura.xml'
+            }
+
+        ]
+    },
+
 
     plugins: [
         'karma-jasmine',
         'karma-chrome-launcher',
+        'karma-coverage'
     ]
   });
 };

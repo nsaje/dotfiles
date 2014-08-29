@@ -18,35 +18,35 @@ class TestRunnerTestCase(unittest.TestCase):
             del os.environ['HEALTH_CHECK']
 
     def test_init_none(self):
-        cd = test_runner.CustomDiscoverRunner()
+        cd = test_runner.SplitTestsRunner()
         self.assertFalse(cd.skip_db)
         self.assertIs(os.environ.get('INTEGRATION_TESTS'), None)
         self.assertIs(os.environ.get('UI_TESTS'), None)
         self.assertIs(os.environ.get('HEALTH_CHECK'), None)
 
     def test_init_integration(self):
-        cd = test_runner.CustomDiscoverRunner(integration_tests=True)
+        cd = test_runner.SplitTestsRunner(integration_tests=True)
         self.assertFalse(cd.skip_db)
         self.assertEqual(os.environ.get('INTEGRATION_TESTS'), '1')
         self.assertIs(os.environ.get('UI_TESTS'), None)
         self.assertIs(os.environ.get('HEALTH_CHECK'), None)
 
     def test_init_ui(self):
-        cd = test_runner.CustomDiscoverRunner(ui_tests=True)
+        cd = test_runner.SplitTestsRunner(ui_tests=True)
         self.assertFalse(cd.skip_db)
         self.assertIs(os.environ.get('INTEGRATION_TESTS'), None)
         self.assertEqual(os.environ.get('UI_TESTS'), '1')
         self.assertIs(os.environ.get('HEALTH_CHECK'), None)
 
     def test_init_health_check(self):
-        cd = test_runner.CustomDiscoverRunner(health_check=True)
+        cd = test_runner.SplitTestsRunner(health_check=True)
         self.assertTrue(cd.skip_db)
         self.assertIs(os.environ.get('INTEGRATION_TESTS'), None)
         self.assertIs(os.environ.get('UI_TESTS'), None)
         self.assertEqual(os.environ.get('HEALTH_CHECK'), '1')
 
     def test_init_all(self):
-        cd = test_runner.CustomDiscoverRunner(
+        cd = test_runner.SplitTestsRunner(
             integration_tests=True, ui_tests=True, health_check=True)
         self.assertTrue(cd.skip_db)
         self.assertEqual(os.environ.get('INTEGRATION_TESTS'), '1')
@@ -55,14 +55,14 @@ class TestRunnerTestCase(unittest.TestCase):
 
     @mock.patch('utils.test_runner.runner.DiscoverRunner.setup_databases')
     def test_setup_databases(self, setup_databases_mock):
-        cd = test_runner.CustomDiscoverRunner()
+        cd = test_runner.SplitTestsRunner()
         cd.setup_databases()
 
         self.assertTrue(setup_databases_mock.called)
 
     @mock.patch('utils.test_runner.runner.DiscoverRunner.setup_databases')
     def test_skip_setup_databases(self, setup_databases_mock):
-        cd = test_runner.CustomDiscoverRunner()
+        cd = test_runner.SplitTestsRunner()
         cd.skip_db = True
         cd.setup_databases()
 
@@ -70,14 +70,14 @@ class TestRunnerTestCase(unittest.TestCase):
 
     @mock.patch('utils.test_runner.runner.DiscoverRunner.teardown_databases')
     def test_teardown_databases(self, teardown_databases_mock):
-        cd = test_runner.CustomDiscoverRunner()
+        cd = test_runner.SplitTestsRunner()
         cd.teardown_databases(None)
 
         self.assertTrue(teardown_databases_mock.called)
 
     @mock.patch('utils.test_runner.runner.DiscoverRunner.teardown_databases')
     def test_skip_teardown_databases(self, teardown_databases_mock):
-        cd = test_runner.CustomDiscoverRunner()
+        cd = test_runner.SplitTestsRunner()
         cd.skip_db = True
         cd.teardown_databases(None)
 
