@@ -28,15 +28,13 @@ checkout:
 test:
     override:
         - coverage run manage.py test:
-            pwd:
-                server
+            pwd: server
         - grunt test:
-            pwd:
-                client
+            pwd: client
     post:
         - coverage report > coverage_report.txt:
             pwd: server
-        - coverage xml
+        - coverage xml:
             pwd: server
         - pushci coverage "client/coverage/cobertura/C*/cobertura.xml" -s frontend -b librato -c circle
         - pushci junit "client/test-results.xml" -s frontend -b librato -c circle
