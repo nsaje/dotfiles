@@ -20,7 +20,7 @@ class BaseSync(object):
         child_syncs = self.get_components()
         child_sync_times = [child_sync.get_latest_success() for child_sync in child_syncs]
         if not child_sync_times:
-            return datetime.datetime.utcnow()
+            return None
         if None in child_sync_times:
             return None
         return min(child_sync_times)
@@ -54,21 +54,27 @@ class GlobalSync(BaseSync, ISyncComposite):
 
     def get_components(self):
         for account in dash.models.Account.objects.all():
-            yield AccountSync(account)
+            account_sync = AccountSync(account)
+            if len(list(account_sync.get_components())) > 0:
+                yield account_sync
 
 
 class AccountSync(BaseSync, ISyncComposite):
 
     def get_components(self):
         for campaign in dash.models.Campaign.objects.filter(account=self.obj):
-            yield CampaignSync(campaign)
+            campaign_sync = CampaignSync(campaign)
+            if len(list(campaign_sync.get_components())) > 0:
+                yield campaign_sync
 
 
 class CampaignSync(BaseSync, ISyncComposite):
 
     def get_components(self):
         for ad_group in dash.models.AdGroup.objects.filter(campaign=self.obj):
-            yield AdGroupSync(ad_group)
+            ad_group_sync = AdGroupSync(ad_group)
+            if len(list(ad_group_sync.get_components())) > 0:
+                yield ad_group_sync
 
 
 class AdGroupSync(BaseSync, ISyncComposite):
