@@ -449,8 +449,8 @@ class CampaignSettings(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(campaign_settings, campaign),
-            'account_managers': self.get_user_list('campaign_settings_account_manager'),
-            'sales_reps': self.get_user_list('campaign_settings_sales_rep'),
+            'account_managers': self.get_user_list(campaign_settings, 'campaign_settings_account_manager'),
+            'sales_reps': self.get_user_list(campaign_settings, 'campaign_settings_sales_rep'),
             'history': self.get_history(campaign)
         }
 
@@ -632,8 +632,13 @@ class CampaignSettings(api_common.BaseApiView):
         settings.iab_category = resource['iab_category']
         settings.promotion_goal = resource['promotion_goal']
 
-    def get_user_list(self, perm_name):
-        users = ZemUser.objects.get_users_with_perm(perm_name)
+    def get_user_list(self, settings, perm_name):
+        users = list(ZemUser.objects.get_users_with_perm(perm_name))
+
+        manager = settings.account_manager
+        if manager is not None and manager not in users:
+            users.append(manager)
+
         return [{'id': str(user.id), 'name': self.get_full_name_or_email(user)} for user in users]
 
 
@@ -1399,11 +1404,20 @@ class AccountCampaigns(api_common.BaseApiView):
 
         account = get_account(request.user, account_id)
 
+        name = create_name(models.Campaign.objects.filter(account=account), 'New campaign')
+
         campaign = models.Campaign(
-            name=create_name(models.Campaign.objects.filter(account=account), 'New campaign'),
+            name=name,
             account=account
         )
         campaign.save()
+
+        settings = models.CampaignSettings(
+            name=name,
+            campaign=campaign,
+            account_manager=request.user,
+        )
+        settings.save()
 
         response = {
             'name': campaign.name,

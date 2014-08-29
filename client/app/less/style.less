@@ -798,6 +798,14 @@ a.help-popover:visited {
         }
     }
 }
+
+.button-bar .internal {
+    position: absolute;
+    border-top: 12px solid #16a085;
+    border-right: 12px solid transparent;
+    z-index: 1;
+}
+
 .zem-tabset .internal {
     position: absolute;
     border-top: 12px solid #16a085;
@@ -973,7 +981,8 @@ a.help-popover:visited {
         .button-bar {
             margin-bottom: 10px;
 
-            .select2-container {
+            .button-bar-item {
+                display: inline;
                 margin-right: 10px;
             }
             .btn {
