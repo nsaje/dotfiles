@@ -176,8 +176,6 @@ def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
     campaign_settings = models.CampaignSettings.objects.\
         filter(campaign=ad_group.campaign).\
         order_by('-created_dt')[:1]
-    if user.pk == campaign_settings[0].account_manager.pk:
-        return
 
     if not campaign_settings or not campaign_settings[0].account_manager:
         logger.error('Could not send e-mail because there is no account manager set for campaign with id %s.', ad_group.campaign.pk)
@@ -190,6 +188,9 @@ def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
             'E-mail notification for ad group settings change was not sent because the campaign settings or account manager is not set.',
             desc
         )
+        return
+
+    if user.pk == campaign_settings[0].account_manager.pk:
         return
 
     recipients = [campaign_settings[0].account_manager.email]
