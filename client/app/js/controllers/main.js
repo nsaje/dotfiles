@@ -125,7 +125,9 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
 
     $scope.setBreadcrumbAndTitle = function (breadcrumb, title) {
         $scope.breadcrumb = breadcrumb;
-        $scope.breadcrumb.unshift({name: 'All accounts', state: 'main.allAccounts.accounts', disabled: !$scope.canAccessAllAccounts()});
+        if ($scope.canAccessAllAccounts()) {
+            $scope.breadcrumb.unshift({name: 'All accounts', state: 'main.allAccounts.accounts', disabled: !$scope.canAccessAllAccounts()});
+        }
 
         $document.prop('title', title + ' | Zemanta');
     };

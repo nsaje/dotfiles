@@ -47,10 +47,15 @@ STATS_START_DELTA = 30
 STATS_END_DELTA = 1
 
 
-def get_ad_group(user, ad_group_id):
+def get_ad_group(user, ad_group_id, select_related=False):
     try:
-        return models.AdGroup.objects.get_for_user(user).\
-            filter(id=int(ad_group_id)).get()
+        ad_group = models.AdGroup.objects.get_for_user(user).\
+            filter(id=int(ad_group_id))
+
+        if select_related:
+            ad_group = ad_group.select_related('campaign__partner')
+
+        return ad_group.get()
     except models.AdGroup.DoesNotExist:
         raise exc.MissingDataError('Ad Group does not exist')
 
@@ -206,12 +211,19 @@ def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
     action_log_url = action_log_url.replace('http://', 'https://')
     action_log_url += '#?filters=ad_group:{}'.format(ad_group.pk)
 
-    body = '{} has made a change in the settings of the ad group {}, campaign {}, account {}. Please check {} for details.'.format(
-        user.email,
-        ad_group.name,
-        ad_group.campaign.name,
-        ad_group.campaign.account.name,
-        action_log_url
+    body = '''Hi account manager of {ad_group.name}
+
+We'd like to notify you that {user.email} has made a change in the settings of the ad group {ad_group.name}, campaign {campaign.name}, account {account.name}. Please check {link_url} for details.
+
+Yours truly,
+Zemanta
+    '''
+    body = body.format(
+        user=user,
+        ad_group=ad_group,
+        campaign=ad_group.campaign,
+        account=ad_group.campaign.account,
+        link_url=action_log_url
     )
 
     try:
@@ -292,7 +304,7 @@ def supply_dash_redirect(request):
     url_response = actionlog.zwei_actions.get_supply_dash_url(
         ad_group_source.source.type, credentials, ad_group_source.source_campaign_key)
 
-    return redirect(url_response['url'])
+    return render(request, 'redirect.html', {'url': url_response['url']})
 
 
 class User(api_common.BaseApiView):
@@ -675,7 +687,7 @@ class AdGroupSettings(api_common.BaseApiView):
         if not request.user.has_perm('dash.settings_view'):
             raise exc.MissingDataError()
 
-        ad_group = get_ad_group(request.user, ad_group_id)
+        ad_group = get_ad_group(request.user, ad_group_id, select_related=True)
 
         current_settings = self.get_current_settings(ad_group)
 
