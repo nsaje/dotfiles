@@ -911,7 +911,16 @@ class AdGroupSources(api_common.BaseApiView):
 
         ad_group_source.save()
 
-        actionlog.api.create_campaign(ad_group_source, ad_group.name)
+        name = 'ONE: {} / {} / {} / {} / {}'.format(
+            ad_group.campaign.account.name,
+            ad_group.campaign.name,
+            ad_group.name,
+            ad_group.id,
+            source.name
+        )
+        print name
+
+        actionlog.api.create_campaign(ad_group_source, name)
 
         return self.create_api_response(None)
 
