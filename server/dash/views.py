@@ -1154,7 +1154,6 @@ class AccountsAccountsTable(api_common.BaseApiView):
         for account in accounts:
             aid = account.pk
 
-            state = constants.AdGroupSettingsState.ACTIVE
             for ad_group_settings in ad_groups_settings:
                 if ad_group_settings.ad_group.campaign.account.pk == aid and \
                         ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE:
