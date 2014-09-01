@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+import math
 import dateutil.parser
 from collections import OrderedDict
 import unicodecsv
@@ -909,6 +910,7 @@ class AdGroupSourcesTable(api_common.BaseApiView):
                 source_settings,
                 last_success_actions,
                 yesterday_cost,
+                size=size,
                 order=request.GET.get('order', None)
             ),
             'totals': self.get_totals(
@@ -1005,8 +1007,15 @@ class AccountsAccountsTable(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
             raise exc.MissingDataError()
 
+        page = request.GET.get('page')
+        size = request.GET.get('size')
+        order = request.GET.get('order')
         user = request.user
         accounts = models.Account.objects.get_for_user(user)
+
+        size = max(min(int(size or 5), 50), 1)
+        if page:
+            page = int(page)
 
         accounts_data = reports.api.query(
             get_stats_start_date(request.GET.get('start_date')),
@@ -1016,7 +1025,6 @@ class AccountsAccountsTable(api_common.BaseApiView):
         )
         accounts_data = reports.api.collect_results(accounts_data)
 
-        # ad_groups = models.AdGroup.objects.filter(campaign__account__in=accounts)
         ad_groups_settings = models.AdGroupSettings.objects.\
             distinct('ad_group').\
             filter(ad_group__campaign__account__in=accounts).\
@@ -1040,18 +1048,31 @@ class AccountsAccountsTable(api_common.BaseApiView):
         if last_success_actions.values() and None not in last_success_actions.values():
             last_sync = pytz.utc.localize(min(last_success_actions.values()))
 
+        rows, current_page, num_pages, count, start_index, end_index = self.get_rows(
+            accounts,
+            accounts_data,
+            ad_groups_settings,
+            last_success_actions,
+            page=page,
+            size=size,
+            order=order
+        )
+
         return self.create_api_response({
-            'rows': self.get_rows(
-                accounts,
-                accounts_data,
-                ad_groups_settings,
-                last_success_actions,
-                order=request.GET.get('order', None)
-            ),
+            'rows': rows,
             'totals': self.get_totals(totals_data),
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(accounts=accounts),
+            'order': order,
+            'pagination': {
+                'currentPage': current_page,
+                'numPages': num_pages,
+                'count': count,
+                'startIndex': start_index,
+                'endIndex': end_index,
+                'size': size
+            }
         })
 
     def get_totals(self, totals_data):
@@ -1063,7 +1084,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
             'ctr': totals_data['ctr']
         }
 
-    def get_rows(self, accounts, accounts_data, ad_groups_settings, last_actions, order=None):
+    def get_rows(self, accounts, accounts_data, ad_groups_settings, last_actions, page, size, order=None):
         rows = []
         for account in accounts:
             aid = account.pk
@@ -1118,7 +1139,21 @@ class AccountsAccountsTable(api_common.BaseApiView):
 
             rows = sorted(rows, key=_sort, reverse=reverse)
 
-        return rows
+        len_accounts = len(accounts)
+        current_page = page or 1
+        num_pages = int(math.ceil(float(len_accounts) / size))
+        count = len_accounts
+        start_index = 0
+        end_index = len_accounts - 1
+
+        if page and size:
+            start = (page - 1) * size
+            if start <= len_accounts:
+                rows = rows[start:(page * size)]
+            else:
+                current_page = 1
+
+        return rows, current_page, num_pages, count, start_index, end_index
 
 
 class AdGroupAdsExport(api_common.BaseApiView):

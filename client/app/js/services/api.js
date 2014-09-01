@@ -802,12 +802,20 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AccountAccountsTable() {
-        this.get = function (startDate, endDate, order) {
+        this.get = function (page, size, startDate, endDate, order) {
             var deferred = $q.defer();
             var url = '/api/accounts/table/';
             var config = {
                 params: {}
             };
+
+            if (page) {
+                config.params.page = page;
+            }
+
+            if (size) {
+                config.params.size = size;
+            }
 
             if (startDate) {
                 config.params.start_date = startDate.format();
