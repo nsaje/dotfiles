@@ -68,7 +68,7 @@ def update_campaign_state(ad_group_source, state):
             current_settings.save()
 
 
-def update_campaign_id(ad_group_source, source_campaign_key):
+def update_campaign_key(ad_group_source, source_campaign_key):
     ad_group_source.source_campaign_key = json.dumps(source_campaign_key)
     ad_group_source.save()
 
