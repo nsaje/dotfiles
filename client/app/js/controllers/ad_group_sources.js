@@ -14,7 +14,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     $scope.chartData = undefined;
     $scope.isChartShown = zemChartService.load('zemChart');
     $scope.chartBtnTitle = 'Hide chart';
-    $scope.order = '-clicks';
+    $scope.order = '-cost';
     $scope.columns = [
         {
             name: 'Bid CPC',

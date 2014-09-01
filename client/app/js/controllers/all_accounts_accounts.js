@@ -16,14 +16,14 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.chartData = undefined;
     $scope.isChartShown = zemChartService.load('zemChart');
     $scope.chartBtnTitle = 'Hide chart';
-    $scope.order = '-clicks';
+    $scope.order = '-cost';
     $scope.columns = [
         {
             name: 'Spend',
             field: 'cost',
             checked: true,
             type: 'currency',
-            help: "The amount spent per creative."
+            help: "Amount spent per account"
         },
         {
             name: 'Avg. CPC',
@@ -31,7 +31,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             checked: true,
             type: 'currency',
             fractionSize: 3,
-            help: "The average CPC for each content ad."
+            help: "The average CPC."
         },
         {
             name: 'Clicks',

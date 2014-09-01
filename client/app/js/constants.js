@@ -76,12 +76,12 @@ var options = {
         {name: 'Clicks', value: constants.sourceChartMetric.CLICKS},
         {name: 'Impressions', value: constants.sourceChartMetric.IMPRESSIONS},
         {name: 'CTR', value: constants.sourceChartMetric.CTR},
-        {name: 'Cost', value: constants.sourceChartMetric.COST},
+        {name: 'Spend', value: constants.sourceChartMetric.COST},
         {name: 'Avg. CPC', value: constants.sourceChartMetric.CPC}
     ],
     allAccountsChartMetrics: [
         {name: 'Clicks', value: constants.sourceChartMetric.CLICKS},
-        {name: 'Cost', value: constants.sourceChartMetric.COST},
+        {name: 'Spend', value: constants.sourceChartMetric.COST},
         {name: 'Avg. CPC', value: constants.sourceChartMetric.CPC}
     ],
     iabCategories: [

@@ -3,7 +3,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.triggerSyncFailed = false;
-    $scope.order = '-clicks';
+    $scope.order = '-cost';
     $scope.constants = constants;
     $scope.options = options;
     $scope.chartMetric1 = constants.sourceChartMetric.CLICKS;

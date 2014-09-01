@@ -1,6 +1,6 @@
 <div class="page page-all-accounts-accounts">
     <div class="section" ng-class="{'height-hidden': !isChartShown}">
-        <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric1-values="options.allAccountsChartMetrics" zem-metric2-values="options.allAccountsChartMetrics" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)"></zem-chart>
+        <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric1-values="options.allAccountsChartMetrics" zem-metric2-values="options.allAccountsChartMetrics" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" zem-hide-legend="true"></zem-chart>
     </div>
 
     <div class="section table-ad-group-sources">
@@ -38,8 +38,8 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th class="arrow" ng-class="{ordered: order === '-name', 'ordered-reverse': order === 'name'}"><a href class="col-title order" ng-click="orderRows('name')">Account</a><zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="A media source where your content is being promoted." placement="top"></zem-help-popover></th>
-                            <th class="text-center arrow" ng-class="{ordered: order === '-status', 'ordered-reverse': order === 'status'}"><a class="col-title order" href ng-click="orderRows('status')">Status</a><zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Status of a particular media source (enabled or paused)." placement="top"></zem-help-popover></th>
+                            <th class="arrow" ng-class="{ordered: order === '-name', 'ordered-reverse': order === 'name'}"><a href class="col-title order" ng-click="orderRows('name')">Account</a><zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="A partner account." placement="top"></zem-help-popover></th>
+                            <th class="text-center arrow" ng-class="{ordered: order === '-status', 'ordered-reverse': order === 'status'}"><a class="col-title order" href ng-click="orderRows('status')">Status</a><zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Status of an account (enabled or paused). An account is paused only if all its campaigns are paused, too; otherwise the account is enabled." placement="top"></zem-help-popover></th>
                             <th class="text-right arrow" ng-class="{'text-right': col.type !== 'url', ordered: order === '-' + col.field, 'ordered-reverse': order === col.field, 'trimmed-currency': (col.type === 'currency' && col.fractionSize > 2)}" ng-repeat="col in columns | filter: {checked: true}"><zem-internal-feature ng-if="col.internal"></zem-internal-feature><a href class="col-title order" ng-click="orderRows(col.field)">{{ col.name }}</a><zem-help-popover ng-if="col.help && hasPermission('zemauth.help_view')" content="{{ col.help }}" placement="{{ $last ? 'left' : 'top' }}"></zem-help-popover></th>
                         </tr>
                     </thead>
