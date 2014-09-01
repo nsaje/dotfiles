@@ -264,7 +264,7 @@ def supply_dash_redirect(request):
     url_response = actionlog.zwei_actions.get_supply_dash_url(
         ad_group_source.source.type, credentials, ad_group_source.source_campaign_key)
 
-    return redirect(url_response['url'])
+    return render(request, 'redirect.html', {'url': url_response['url']})
 
 
 class User(api_common.BaseApiView):
