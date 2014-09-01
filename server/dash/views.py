@@ -1147,17 +1147,13 @@ class AccountsAccountsTable(api_common.BaseApiView):
             aid = account.pk
 
             state = constants.AdGroupSettingsState.ACTIVE
-            ad_group_settings_found = False
             for ad_group_settings in ad_groups_settings:
                 if ad_group_settings.ad_group.campaign.account.pk == aid:
-                    ad_group_settings_found = True
-                    if ad_group_settings.state != constants.AdGroupSettingsState.ACTIVE:
-                        state = constants.AdGroupSettingsState.INACTIVE
+                    if ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE:
+                        state = constants.AdGroupSettingsState.ACTIVE
                         break
             else:
-                if not ad_group_settings_found:
-                    # The default state is inactive.
-                    state = constants.AdGroupSettingsState.INACTIVE
+                state = constants.AdGroupSettingsState.INACTIVE
 
             # get source reports data
             account_data = {}
