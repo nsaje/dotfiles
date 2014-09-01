@@ -34,14 +34,14 @@ class UserAuthorizationManager(models.Manager):
            return queryset.filter(
                models.Q(users__id=user.id) |
                models.Q(groups__user__id=user.id)
-           ).distinct('id')
+           ).distinct()
         elif queryset.model is Campaign:
             return queryset.filter(
                 models.Q(users__id=user.id) |
                 models.Q(groups__user__id=user.id) |
                 models.Q(account__users__id=user.id) |
                 models.Q(account__groups__user__id=user.id)
-            ).distinct('id')
+            ).distinct()
         else:
             # AdGroup
             return queryset.filter(
@@ -49,7 +49,7 @@ class UserAuthorizationManager(models.Manager):
                 models.Q(campaign__groups__user__id=user.id) |
                 models.Q(campaign__account__users__id=user.id) |
                 models.Q(campaign__account__groups__user__id=user.id)
-            ).distinct('id')
+            ).distinct()
 
 
 class Account(models.Model):
