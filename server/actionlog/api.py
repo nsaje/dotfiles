@@ -406,10 +406,15 @@ def _init_create_campaign(ad_group_source, name):
     )
     logger.info(msg)
 
+    order = models.ActionLogOrder.objects.create(
+        order_type=constants.ActionLogOrderType.CREATE_CAMPAIGN
+    )
+
     action = models.ActionLog.objects.create(
         action=constants.Action.CREATE_CAMPAIGN,
         action_type=constants.ActionType.AUTOMATIC,
         ad_group_source=ad_group_source,
+        order=order
     )
 
     try:
