@@ -34,14 +34,14 @@ class UserAuthorizationManager(models.Manager):
             return queryset.filter(
                 models.Q(users__id=user.id) |
                 models.Q(groups__user__id=user.id)
-            ).distinct('id').order_by('id')
+            ).distinct()
         elif queryset.model is Campaign:
             return queryset.filter(
                 models.Q(users__id=user.id) |
                 models.Q(groups__user__id=user.id) |
                 models.Q(account__users__id=user.id) |
                 models.Q(account__groups__user__id=user.id)
-            ).distinct('id')
+            ).distinct()
         else:
             # AdGroup
             return queryset.filter(
@@ -49,7 +49,7 @@ class UserAuthorizationManager(models.Manager):
                 models.Q(campaign__groups__user__id=user.id) |
                 models.Q(campaign__account__users__id=user.id) |
                 models.Q(campaign__account__groups__user__id=user.id)
-            ).distinct('id')
+            ).distinct()
 
 
 class Account(models.Model):
@@ -252,6 +252,14 @@ class SourceCredentials(models.Model):
             binascii.a2b_base64(self.credentials),
             settings.CREDENTIALS_ENCRYPTION_KEY
         )
+
+
+class DefaultSourceCredentials(models.Model):
+    source = models.ForeignKey(Source, unique=True, on_delete=models.PROTECT)
+    credentials = models.ForeignKey(SourceCredentials, on_delete=models.PROTECT)
+
+    def __unicode__(self):
+        return self.source.name
 
 
 class AdGroup(models.Model):

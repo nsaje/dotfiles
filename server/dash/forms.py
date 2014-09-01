@@ -190,7 +190,7 @@ class CampaignSettingsForm(forms.Form):
 
         try:
             account_manager = ZemUser.objects.\
-                get_users_with_perm('campaign_settings_account_manager').\
+                get_users_with_perm('campaign_settings_account_manager', True).\
                 get(pk=account_manager_id)
         except ZemUser.DoesNotExist:
             raise forms.ValidationError(err_msg)

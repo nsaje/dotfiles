@@ -463,8 +463,8 @@ class CampaignSettings(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(campaign_settings, campaign),
-            'account_managers': self.get_user_list('campaign_settings_account_manager'),
-            'sales_reps': self.get_user_list('campaign_settings_sales_rep'),
+            'account_managers': self.get_user_list(campaign_settings, 'campaign_settings_account_manager'),
+            'sales_reps': self.get_user_list(campaign_settings, 'campaign_settings_sales_rep'),
             'history': self.get_history(campaign)
         }
 
@@ -644,8 +644,13 @@ class CampaignSettings(api_common.BaseApiView):
         settings.iab_category = resource['iab_category']
         settings.promotion_goal = resource['promotion_goal']
 
-    def get_user_list(self, perm_name):
-        users = ZemUser.objects.get_users_with_perm(perm_name)
+    def get_user_list(self, settings, perm_name):
+        users = list(ZemUser.objects.get_users_with_perm(perm_name))
+
+        manager = settings.account_manager
+        if manager is not None and manager not in users:
+            users.append(manager)
+
         return [{'id': str(user.id), 'name': self.get_full_name_or_email(user)} for user in users]
 
 
@@ -865,8 +870,54 @@ class AdGroupAgency(api_common.BaseApiView):
         settings.tracking_code = resource['tracking_code']
 
 
+class AdGroupSources(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_get')
+    def get(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.ad_group_sources_add_source'):
+            raise exc.MissingDataError()
+
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        sources = map(lambda s: s.source, models.DefaultSourceCredentials.objects.all())
+        ad_group_sources = ad_group.sources.all().order_by('name')
+
+        sources = [{'id': s.id, 'name': s.name} for s in sources if s not in ad_group_sources]
+
+        return self.create_api_response({
+            'sources': sources,
+            'sources_waiting': [source.name for source in actionlog.api.get_sources_waiting(ad_group)]
+        })
+
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_put')
+    def put(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.ad_group_sources_add_source'):
+            raise exc.MissingDataError()
+
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        source_id = json.loads(request.body)['source_id']
+        source = models.Source.objects.get(id=source_id)
+
+        try:
+            default_credentials = models.DefaultSourceCredentials.objects.get(source=source)
+        except models.DefaultSourceCredentials.DoesNotExist:
+            raise exc.MissingDataError('No default credentials set for {}.'.format(source.name))
+
+        ad_group_source = models.AdGroupSource(
+            source=source,
+            ad_group=ad_group,
+            source_credentials=default_credentials.credentials
+        )
+
+        ad_group_source.save()
+
+        actionlog.api.create_campaign(ad_group_source, ad_group.name)
+
+        return self.create_api_response(None)
+
+
 class AdGroupSourcesTable(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_table_get')
+    @statsd_helper.statsd_timer('dash.api', 'zemauth.ad_group_sources_table_get')
     def get(self, request, ad_group_id):
         ad_group = get_ad_group(request.user, ad_group_id)
 
@@ -878,7 +929,7 @@ class AdGroupSourcesTable(api_common.BaseApiView):
         )
         sources_data = reports.api.collect_results(sources_data)
 
-        sources = ad_group.sources.all().order_by('name')
+        sources = self.get_active_ad_group_sources(ad_group)
         source_settings = models.AdGroupSourceSettings.get_current_settings(
             ad_group, sources)
 
@@ -923,6 +974,12 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             'is_sync_recent': is_sync_recent(last_sync),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress([ad_group]),
         })
+
+    def get_active_ad_group_sources(self, ad_group):
+        sources = ad_group.sources.all().order_by('name')
+        inactive_sources = actionlog.api.get_sources_waiting(ad_group)
+
+        return [s for s in sources if s not in inactive_sources]
 
     def get_totals(self, ad_group, totals_data, source_settings, yesterday_cost):
         return {
@@ -1597,11 +1654,20 @@ class AccountCampaigns(api_common.BaseApiView):
 
         account = get_account(request.user, account_id)
 
+        name = create_name(models.Campaign.objects.filter(account=account), 'New campaign')
+
         campaign = models.Campaign(
-            name=create_name(models.Campaign.objects.filter(account=account), 'New campaign'),
+            name=name,
             account=account
         )
         campaign.save()
+
+        settings = models.CampaignSettings(
+            name=name,
+            campaign=campaign,
+            account_manager=request.user,
+        )
+        settings.save()
 
         response = {
             'name': campaign.name,
