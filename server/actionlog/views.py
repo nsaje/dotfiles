@@ -62,16 +62,31 @@ class ActionLogApiView(api_common.BaseApiView):
         }
 
     def _get_take_action(self, action):
+        NAMES = {
+            'start_date': 'Start date',
+            'end_date': 'End date',
+            'cpc_cc': 'Max CPC bid',
+            'daily_budget_cc': 'Daily budget',
+            'target_devices': 'Device targeting',
+            'target_regions': 'Geographic targeting',
+            'tracking_code': 'Tracking code',
+            'state': 'State'
+        }
+
         if action.action == constants.Action.SET_PROPERTY:
             prop = action.payload.get('property')
             val = action.payload.get('value')
 
             if prop == 'state':
                 val = dash.constants.AdGroupSourceSettingsState.get_text(val)
+            elif prop == 'end_date' and val is None:
+                val = '"I\'ll stop it myself"'
+            elif prop == 'target_regions' and not val:
+                val = '"worldwide"'
             else:
                 val = json.dumps(val)
 
-            return '{} to {}'.format(prop, val)
+            return '{} set to {}'.format(NAMES.get(prop) or prop, val)
         else:
             raise Exception('Unsupported action %s' % action.action)
 
