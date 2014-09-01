@@ -104,6 +104,8 @@ def _process_zwei_response(action, data):
     elif action.action == actionlogconstants.Action.SET_CAMPAIGN_STATE:
         state = action.payload['args']['state']
         dashapi.update_campaign_state(action.ad_group_source, state)
+    elif action.action == actionlogconstants.Action.CREATE_CAMPAIGN:
+        dashapi.update_campaign_id(action.ad_group_source, data['data']['campaign_id'])
 
     action.state = actionlogconstants.ActionState.SUCCESS
     action.save()
