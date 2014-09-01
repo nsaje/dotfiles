@@ -5,11 +5,20 @@
 
     <div class="section table-ad-group-sources">
         <div class="button-bar">
-            <select ui-select2="{minimumResultsForSearch: -1}" ng-model="exportType" ng-change="downloadReport()" data-placeholder="Download Report" class="export">
-                <option value=""></option>
-                <option value="csv">CSV by day</option>
-                <option value="excel">Excel by day</option>
-            </select>
+            <div class="button-bar-item add-source-container">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.ad_group_sources_add_source')" popover-placement="bottom"></zem-internal-feature>
+                <select ui-select2="{minimumResultsForSearch: -1, formatNoMatches: 'No sources to add'}" ng-model="sourceIdToAdd" ng-change="addSource(sourceIdToAdd)" class="add-source" data-placeholder="+ Media Sources">
+                    <option value=""></option>
+                    <option ng-repeat="source in sources" value="{{source.id}}">{{source.name}}</option>
+                </select>
+            </div>
+            <div class="button-bar-item export-container">
+                <select ui-select2="{minimumResultsForSearch: -1}" ng-model="exportType" ng-change="downloadReport()" data-placeholder="Download Report">
+                    <option value=""></option>
+                    <option value="csv">CSV by day</option>
+                    <option value="excel">Excel by day</option>
+                </select>
+            </div>
             <zem-custom-table-cols class='pull-right' columns='columns'></zem-custom-table-cols>
 
             <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/img/chart.svg"></a>
@@ -28,9 +37,13 @@
             <div class="clearfix"></div>
         </div>
 
+        <alert type="info" class="alert-sync" ng-show="sourcesWaiting">
+            We are adding the following media source(s): {{sourcesWaiting.join(', ')}}. This may take some time.
+        </alert>
         <alert type="info" class="alert-sync" ng-show="isSyncRecent === false">
             We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">The last successful sync took place {{ lastSyncDate.fromNow() }}.</span> If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
         </alert>
+        <div ng-show="addSourceError" class="error add-source-error">Could not add media source. {{addSourceError}}</div>
 
         <div class="loader-container">
             <div class="loader" ng-show="rows.length && loadRequestInProgress"></div>

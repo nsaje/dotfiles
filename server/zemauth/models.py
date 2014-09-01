@@ -1,3 +1,5 @@
+import operator
+
 from django.contrib.auth import models as auth_models
 from django.core.mail import send_mail
 from django.db import models
@@ -30,13 +32,18 @@ class UserManager(auth_models.BaseUserManager):
     def create_superuser(self, email, password, **extra_fields):
         return self._create_user(email, password, True, True, **extra_fields)
 
-    def get_users_with_perm(self, perm_name):
+    def get_users_with_perm(self, perm_name, include_superusers=False):
         perm = auth_models.Permission.objects.get(codename=perm_name)
 
-        return self.filter(
-            models.Q(groups__permissions=perm) |
+        query_list = [
+            models.Q(groups__permissions=perm),
             models.Q(user_permissions=perm)
-        ).distinct()
+        ]
+
+        if include_superusers:
+            query_list.append(models.Q(is_superuser=True))
+
+        return self.filter(reduce(operator.or_, query_list)).distinct()
 
 
 class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
@@ -92,6 +99,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('all_accounts_accounts_view', "Can view all accounts's accounts tab."),
             ('account_campaigns_view', "Can view accounts's campaigns tab."),
             ('account_agency_view', "Can view accounts's agency tab."),
+            ('ad_group_sources_add_source', "Can add media sources."),
         )
 
     def get_full_name(self):
