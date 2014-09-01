@@ -961,7 +961,6 @@ class AdGroupSourcesTable(api_common.BaseApiView):
                 source_settings,
                 last_success_actions,
                 yesterday_cost,
-                size=size,
                 order=request.GET.get('order', None)
             ),
             'totals': self.get_totals(
@@ -1148,10 +1147,10 @@ class AccountsAccountsTable(api_common.BaseApiView):
 
             state = constants.AdGroupSettingsState.ACTIVE
             for ad_group_settings in ad_groups_settings:
-                if ad_group_settings.ad_group.campaign.account.pk == aid:
-                    if ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE:
-                        state = constants.AdGroupSettingsState.ACTIVE
-                        break
+                if ad_group_settings.ad_group.campaign.account.pk == aid and \
+                        ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE:
+                    state = constants.AdGroupSettingsState.ACTIVE
+                    break
             else:
                 state = constants.AdGroupSettingsState.INACTIVE
 
