@@ -94,7 +94,7 @@ def get_sources_waiting(ad_group):
     actions = models.ActionLog.objects.filter(
         action=constants.Action.CREATE_CAMPAIGN,
         ad_group_source__ad_group_id=ad_group.id,
-        state=constants.ActionState.WAITING,
+        state__in=[constants.ActionState.WAITING, constants.ActionState.FAILED],
         action_type=constants.ActionType.AUTOMATIC
     )
 

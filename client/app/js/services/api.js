@@ -67,16 +67,20 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             return deferred.promise;
         };
 
-        this.add = function (id) {
+        this.add = function (adGroupId, sourceId) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + id + '/sources/';
+            var url = '/api/ad_groups/' + adGroupId + '/sources/';
 
-            $http.put(url).
+            var data = {
+                'source_id': sourceId
+            };
+
+            $http.put(url, data).
                 success(function (data, status) {
                     deferred.resolve(data);
                 }).
                 error(function (data, status) {
-                    deferred.reject(data); 
+                    deferred.reject(data.data.message); 
                 });
 
             return deferred.promise;

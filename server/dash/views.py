@@ -866,7 +866,7 @@ class AdGroupSources(api_common.BaseApiView):
 
         ad_group = get_ad_group(request.user, ad_group_id)
 
-        sources = models.Source.objects.all()
+        sources = map(lambda s: s.source, models.DefaultSourceCredentials.objects.all())
         ad_group_sources = ad_group.sources.all().order_by('name')
 
         sources = [{'id': s.id, 'name': s.name} for s in sources if s not in ad_group_sources]
@@ -883,8 +883,23 @@ class AdGroupSources(api_common.BaseApiView):
 
         ad_group = get_ad_group(request.user, ad_group_id)
 
-        # TODO make ad group sources and create campaign
-        # actionlog.api.create_campaign()
+        source_id = json.loads(request.body)['source_id']
+        source = models.Source.objects.get(id=source_id)
+
+        try:
+            default_credentials = models.DefaultSourceCredentials.objects.get(source=source)
+        except models.DefaultSourceCredentials.DoesNotExist:
+            raise exc.MissingDataError('No default credentials set for {}.'.format(source.name))
+
+        ad_group_source = models.AdGroupSource(
+            source=source,
+            ad_group=ad_group,
+            source_credentials=default_credentials.credentials
+        )
+
+        ad_group_source.save()
+
+        actionlog.api.create_campaign(ad_group_source, ad_group.name)
 
         return self.create_api_response(None)
 
@@ -902,7 +917,7 @@ class AdGroupSourcesTable(api_common.BaseApiView):
         )
         sources_data = reports.api.collect_results(sources_data)
 
-        sources = ad_group.sources.all().order_by('name')
+        sources = self.get_active_ad_group_sources(ad_group)
         source_settings = models.AdGroupSourceSettings.get_current_settings(
             ad_group, sources)
 
@@ -946,6 +961,12 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             'is_sync_recent': is_sync_recent(last_sync),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(ad_group),
         })
+
+    def get_active_ad_group_sources(self, ad_group):
+        sources = ad_group.sources.all().order_by('name')
+        inactive_sources = actionlog.api.get_sources_waiting(ad_group)
+
+        return [s for s in sources if s not in inactive_sources]
 
     def get_totals(self, ad_group, totals_data, source_settings, yesterday_cost):
         return {

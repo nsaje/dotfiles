@@ -254,6 +254,14 @@ class SourceCredentials(models.Model):
         )
 
 
+class DefaultSourceCredentials(models.Model):
+    source = models.ForeignKey(Source, unique=True, on_delete=models.PROTECT)
+    credentials = models.ForeignKey(SourceCredentials, on_delete=models.PROTECT)
+
+    def __unicode__(self):
+        return self.source.name
+
+
 class AdGroup(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(
