@@ -80,6 +80,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
                 $scope.addedName = data.name;
                 $scope.added = true;
+
+                $scope.loadPage();
             },
             function (data) {
                 // error
