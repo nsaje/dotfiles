@@ -55,7 +55,6 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
     
     $stateProvider
         .state('main.accounts', {
-            abstract: true,
             url: 'accounts/{id}',
             template: basicTemplate,
             controller: 'AccountCtrl'
