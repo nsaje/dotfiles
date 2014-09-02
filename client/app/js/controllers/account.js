@@ -3,7 +3,7 @@
 oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) {
     $scope.tabs = [
         {heading: 'Campaigns', route: 'main.accounts.campaigns', active: true, hidden: !$scope.hasPermission('zemauth.account_campaigns_view'), internal: $scope.isPermissionInternal('zemauth.account_campaigns_view')},
-        {heading: 'Agency', route: 'main.accounts.agency', active: false, hidden: !$scope.hasPermission('zemauth.accounts_agency_view'), internal: $scope.isPermissionInternal('zemauth.accounts_agency_view')}
+        {heading: 'Agency', route: 'main.accounts.agency', active: false, hidden: !$scope.hasPermission('zemauth.account_agency_view'), internal: $scope.isPermissionInternal('zemauth.accounts_agency_view')}
     ];
     $scope.account = null;
 
