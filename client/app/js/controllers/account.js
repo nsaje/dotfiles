@@ -20,7 +20,7 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) 
             return;
         }
         $scope.setBreadcrumbAndTitle(
-            [{name: $scope.account.name, state: 'main.accounts.campaigns({id: ' + $scope.account.id + '})', disabled: true }],
+            [{name: $scope.account.name, state: $scope.getDefaultAccountState() + '({id: ' + $scope.account.id + '})', disabled: true }],
             $scope.account.name
         );
     };
@@ -34,15 +34,4 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) 
 
     $scope.getAccount();
     $scope.updateBreadcrumbAndTitle();
-
-    $scope.$on("$stateChangeSuccess", function (e, toState, toParams, fromState, fromParams) {
-        if ($state.is('main.accounts')) { 
-            var state = $scope.getDefaultAccountState();
-            if (state) {
-                $state.go(state, {id: $state.params.id});
-            } else {
-                $state.go('main');
-            }
-        }
-    });
 }]);

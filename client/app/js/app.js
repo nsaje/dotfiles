@@ -22,6 +22,20 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         window.location = $location.absUrl();
     }]);
     $urlRouterProvider.otherwise('/');
+    $urlRouterProvider.rule(function ($injector, $location) {
+        var path = $location.url();
+
+        // check to see if the path has a trailing slash
+        if ('/' === path[path.length - 1]) {
+            return path.replace(/\/$/, '');
+        }
+
+        if (path.indexOf('/?') > -1) {
+            return path.replace('/?', '?');
+        }
+
+        return false;
+    });
 
     var basicTemplate = '<ng-include src="config.static_url + \'/partials/tabset.html\'"></ng-include><div ui-view></div>'
 
@@ -42,7 +56,6 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
 
     $stateProvider
         .state('main.allAccounts', {
-            abstract: true,
             url: 'all_accounts',
             template: basicTemplate,
             controller: 'AllAccountsCtrl'
@@ -72,7 +85,6 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
 
     $stateProvider
         .state('main.campaigns', {
-            abstract: true,
             url: 'campaigns/{id}',
             template: basicTemplate,
             controller: 'CampaignCtrl'
@@ -91,7 +103,6 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
 
     $stateProvider
         .state('main.adGroups', {
-            abstract: true,
             url: 'ad_groups/{id}',
             templateUrl: config.static_url + '/partials/ad_group.html'
         })

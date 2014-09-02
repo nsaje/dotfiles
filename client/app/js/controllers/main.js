@@ -32,8 +32,18 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
         return !$scope.user.permissions[permission];
     };
     
+    $scope.getDefaultAllAccountsState = function () {
+        var result = null;
+
+        if ($scope.hasPermission('zemauth.all_accounts_accounts_view')) {
+            result = 'main.allAccounts.accounts';
+        }
+
+        return result;
+    };
+
     $scope.canAccessAllAccounts = function () {
-        return $scope.hasPermission('zemauth.all_accounts_accounts_view');
+        return !!$scope.getDefaultAllAccountsState();
     };
 
     $scope.getDefaultAccountState = function () {
@@ -52,11 +62,24 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
         return !!$scope.getDefaultAccountState();
     };
 
+    $scope.getDefaultCampaignState = function () {
+        var result = null;
+
+        if ($scope.hasPermission('zemauth.campaign_ad_groups_view')) {
+            result = 'main.campaigns.ad_groups';
+        } else if ($scope.hasPermission('zemauth.campaign_settings_view')) {
+            result = 'main.campaigns.agency';
+        }
+
+        return result;
+    };
+
     $scope.canAccessCampaigns = function () {
-        return $scope.hasPermission([
-            'zemauth.campaign_settings_view',
-            'zemauth.campaign_ad_groups_view'
-        ]);
+        return !!$scope.getDefaultCampaignState();
+    };
+
+    $scope.getDefaultAdGroupState = function () {
+        return 'main.adGroups.ads';
     };
 
     $scope.getDateRanges = function () {
@@ -135,39 +158,53 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     $scope.setBreadcrumbAndTitle = function (breadcrumb, title) {
         $scope.breadcrumb = breadcrumb;
         if ($scope.canAccessAllAccounts()) {
-            $scope.breadcrumb.unshift({name: 'All accounts', state: 'main.allAccounts.accounts', disabled: !$scope.canAccessAllAccounts()});
+            $scope.breadcrumb.unshift({name: 'All accounts', state: $scope.getDefaultAllAccountsState(), disabled: !$scope.canAccessAllAccounts()});
         }
 
         $document.prop('title', title + ' | Zemanta');
     };
 
     $scope.$on("$stateChangeSuccess", function (event, toState, toParams, fromState, fromParams) {
-        var adGroupId;
-
         $scope.currentRoute = $state.current;
         $scope.setDateRangeFromSearch();
 
         // Redirect from default state
-        if ($state.is('main') && $scope.accounts && $scope.accounts.length) {
+        var state = null;
+        var id = $state.params.id;
+
+
+        if ($state.is('main.allAccounts')) { 
+            state = $scope.getDefaultAllAccountsState();
+        } else if ($state.is('main.accounts')) { 
+            state = $scope.getDefaultAccountState();
+        } else if ($state.is('main.campaigns')) { 
+            state = $scope.getDefaultCampaignState();
+        } else if ($state.is('main.adGroups')) { 
+            state = $scope.getDefaultAdGroupState();
+        } else if ($state.is('main') && $scope.accounts && $scope.accounts.length) {
             if ($scope.canAccessAllAccounts()) {
-                $state.go('main.allAccounts.accounts');
+                state = 'main.allAccounts.accounts';
             } else {
                 $scope.accounts.some(function (account) {
                     if (account.campaigns && account.campaigns.length) {
                         account.campaigns.some(function (campaign) {
                             if (campaign.adGroups && campaign.adGroups.length) {
-                                adGroupId = campaign.adGroups[0].id;
+                                id = campaign.adGroups[0].id;
                                 return true;
                             }
                         });
                     }
 
-                    if (adGroupId) {
+                    if (id) {
                         return true;
                     }
                 });
-                $state.go('main.adGroups.ads', {id: adGroupId});
+                state = $scope.getDefaultAdGroupState();
             }
+        }
+
+        if (state) {
+            $state.go(state, {id: id});
         }
     });
 

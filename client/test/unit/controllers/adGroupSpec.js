@@ -36,7 +36,16 @@ describe('AdGroupCtrl', function () {
 
             $scope.setBreadcrumbAndTitle = function () {
                 return;
-            }
+            };
+            $scope.getDefaultAccountState = function () {
+                return;
+            };
+            $scope.getDefaultCampaignState = function () {
+                return;
+            };
+            $scope.getDefaultAdGroupState = function () {
+                return;
+            };
 
             $state = _$state_;
             $state.params.id = 1;
