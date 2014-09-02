@@ -4,7 +4,10 @@
 
 <div class="breadcrumb-container">
     <ol class="breadcrumb" ng-show="breadcrumb">
-        <li ng-repeat="path in breadcrumb track by $index" ng-class="{'active': $last}">{{ path }}</li>
+        <li ng-repeat="item in breadcrumb track by $index">
+            <span ng-if="item.disabled" ng-class="{'active': $last}">{{ item.name }}</span>
+            <a ng-if="!item.disabled" ui-sref="{{item.state}}" ng-class="{'active': $last}">{{ item.name }}</a>
+        </li>
     </ol>
 </div>
 

@@ -14,7 +14,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     $scope.chartData = undefined;
     $scope.isChartShown = zemChartService.load('zemChart');
     $scope.chartBtnTitle = 'Hide chart';
-    $scope.order = '-clicks';
+    $scope.order = '-cost';
+    $scope.sources = [];
+    $scope.sourcesWaiting = null;
+    $scope.addSourceError = null;
     $scope.columns = [
         {
             name: 'Bid CPC',
@@ -155,7 +158,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
         Object.keys(temp).forEach(function (sourceId) {
             result.data.push(temp[sourceId].data);
-            result.names.push(temp[sourceId].name),
+            result.names.push(temp[sourceId].name);
             result.ids.push(temp[sourceId].id);
         });
 
@@ -336,12 +339,49 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
         $scope.getAdGroupState();
         $scope.initColumns();
+
+        $scope.getSources();
     };
 
     // export
     $scope.downloadReport = function() {
         $window.open('api/ad_groups/' + $state.params.id + '/sources/export/?type=' + $scope.exportType + '&start_date=' + $scope.dateRange.startDate.format() + '&end_date=' + $scope.dateRange.endDate.format(), '_blank');
         $scope.exportType = '';
+    };
+
+    $scope.getSources = function () {
+        if (!$scope.hasPermission('zemauth.ad_group_sources_add_source')) {
+            return;
+        }
+
+        api.adGroupSources.get($state.params.id).then(
+            function (data) {
+                $scope.sources = data.sources;
+                $scope.sourcesWaiting = data.sourcesWaiting;
+            },
+            function (data) {
+                // error
+                return;
+            }
+        );
+    };
+
+    $scope.addSource = function (sourceIdToAdd) {
+        if (!sourceIdToAdd) {
+            return;
+        }
+
+        $scope.addSourceError = null;
+        api.adGroupSources.add($state.params.id, sourceIdToAdd).then(
+            function (data) {
+                $scope.getSources();
+            },
+            function (data) {
+                $scope.addSourceError = data;
+            }
+        );
+
+        $scope.sourceIdToAdd = '';
     };
 
     var pollSyncStatus = function() {
@@ -366,7 +406,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 ).finally(function() {
                     pollSyncStatus();
                 });
-            }, 1000);
+            }, 5000);
         }
     }
 
@@ -374,6 +414,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
     // trigger sync
     $scope.triggerSync = function() {
+        $scope.isSyncInProgress = true;
         api.adGroupSync.get($state.params.id).then(
             function () {
                 $scope.isSyncInProgress = true;

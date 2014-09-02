@@ -4,6 +4,9 @@
 
 @default-color: #2fa8c7;
 
+@add-color: #f68620;
+@add-color-hover: #dd771b;
+
 // Mixins
 
 .box-shadow(@shadow) {
@@ -173,6 +176,24 @@ a:visited {
     &:hover {
         border-color: #2488a1;
         color: #2488a1;
+    }
+}
+
+
+
+.btn-add,
+.btn-add:focus,
+.btn-add:hover,
+.btn-add:active,
+.btn-add.active {
+    background-color: @add-color;
+    border-color: @add-color;
+    color: #fff;
+    .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
+
+    &:hover {
+        background-color: @add-color-hover;
+        border-color: @add-color-hover;
     }
 }
 
@@ -496,7 +517,8 @@ div[datepicker] {
         color: #414141;
     }
 
-    & > li {
+    & > li a,
+    & > li span {
         font-size: 15px;
         font-weight: normal;
         color: #414141;
@@ -719,6 +741,19 @@ div[datepicker] {
     }
 }
 
+.select2-container.add-source .select2-choice {
+    background-color: @add-color;
+    border-color: @add-color;
+    
+    span {
+        color: #fff;
+    }
+
+    span.select2-arrow b {
+        background-image: url('../../img/select2x2_white.png') !important;
+    }
+}
+
 // Custom page styles
 
 .link-img {
@@ -763,6 +798,14 @@ a.help-popover:visited {
         }
     }
 }
+
+.button-bar .button-bar-item .internal {
+    position: absolute;
+    border-top: 12px solid #16a085;
+    border-right: 12px solid transparent;
+    z-index: 1;
+}
+
 .zem-tabset .internal {
     position: absolute;
     border-top: 12px solid #16a085;
@@ -879,6 +922,10 @@ a.help-popover:visited {
                 font-size: 16px;
                 font-weight: 600;
                 color: #f68620;
+
+                &.active {
+                    text-decoration: underline;
+                }
             }
 
             .campaign-name {
@@ -934,6 +981,10 @@ a.help-popover:visited {
         .button-bar {
             margin-bottom: 10px;
 
+            .button-bar-item {
+                display: inline;
+                margin-right: 10px;
+            }
             .btn {
                 margin-left: 5px;
             }
@@ -962,6 +1013,7 @@ a.help-popover:visited {
 }
 
 
+.page-all-accounts-accounts,
 .page-ad-group-ads,
 .page-ad-group-sources {
     .alert-sync {
@@ -972,6 +1024,10 @@ a.help-popover:visited {
         text-align: center;
         font-size: 12px;
         color: #737373;
+    }
+
+    .add-source-error {
+        padding-bottom: 10px;
     }
 }
 

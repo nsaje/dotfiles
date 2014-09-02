@@ -47,11 +47,17 @@ class ActionLogOrderType(ConstantBase):
     AD_GROUP_SETTINGS_UPDATE = 3
     FETCH_REPORTS = 4
     FETCH_STATUS = 5
+    CREATE_CAMPAIGN = 6
 
     _VALUES = {
         FETCH_ALL: 'Fetch all',
         STOP_ALL: 'Stop all',
         AD_GROUP_SETTINGS_UPDATE: 'AdGroup Settings Update',
         FETCH_REPORTS: 'Fetch reports',
-        FETCH_STATUS: 'Fetch status'
+        FETCH_STATUS: 'Fetch status',
+        CREATE_CAMPAIGN: 'Create campaign'
     }
+
+    @classmethod
+    def get_sync_types(cls):
+        return (cls.FETCH_ALL, cls.FETCH_REPORTS, cls.FETCH_STATUS, cls.STOP_ALL)

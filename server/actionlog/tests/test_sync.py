@@ -62,6 +62,19 @@ class ActionLogSyncTestCase(TestCase):
 
         self.assertEqual(latest_success_dt.isoformat(), '2014-07-01T11:11:11')
 
+    def test_cached_ad_group_source_latest_success(self):
+        latest_success_dt = sync.AdGroupSourceSync(
+            dash.models.AdGroupSource.objects.get(pk=1)
+        ).get_latest_success()
+
+        self.assertEqual(latest_success_dt.isoformat(), '2014-07-01T07:07:07')
+
+        latest_success_dt = sync.AdGroupSourceSync(
+            dash.models.AdGroupSource.objects.get(pk=1)
+        ).get_latest_success(recompute=False)
+
+        self.assertEqual(latest_success_dt.isoformat(), '2014-06-10T09:58:21')
+
     def test_ad_group_latest_success(self):
         latest_success_dt = sync.AdGroupSync(
             dash.models.AdGroup.objects.get(pk=1)
@@ -74,6 +87,19 @@ class ActionLogSyncTestCase(TestCase):
         ).get_latest_success()
 
         self.assertEqual(latest_success_dt, None)
+
+    def test_cached_ad_group_latest_success(self):
+        latest_success_dt = sync.AdGroupSync(
+            dash.models.AdGroup.objects.get(pk=1)
+        ).get_latest_success()
+
+        self.assertEqual(latest_success_dt.isoformat(), '2014-07-01T07:07:07')
+
+        latest_success_dt = sync.AdGroupSync(
+            dash.models.AdGroup.objects.get(pk=1)
+        ).get_latest_success(recompute=False)
+
+        self.assertEqual(latest_success_dt.isoformat(), '2014-06-10T09:58:21')
 
     def test_ad_group_latest_success_maintenance(self):
         latest_success_dt = sync.AdGroupSync(
@@ -109,6 +135,19 @@ class ActionLogSyncTestCase(TestCase):
         ).get_latest_success()
 
         self.assertEqual(latest_success_dt, None)
+
+    def test_cached_campaign_latest_success(self):
+        latest_success_dt = sync.CampaignSync(
+            dash.models.Campaign.objects.get(pk=1)
+        ).get_latest_success()
+
+        self.assertEqual(latest_success_dt.isoformat(), '2014-07-01T07:07:07')
+
+        latest_success_dt = sync.CampaignSync(
+            dash.models.Campaign.objects.get(pk=1)
+        ).get_latest_success(recompute=False)
+
+        self.assertEqual(latest_success_dt.isoformat(), '2014-06-10T09:58:21')
 
     def test_global_latest_success(self):
         latest_success_dt = sync.GlobalSync().get_latest_success()

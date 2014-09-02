@@ -16,9 +16,9 @@ class BaseSync(object):
     def __init__(self, obj):
         self.obj = obj
 
-    def get_latest_success(self):
+    def get_latest_success(self, recompute=True):
         child_syncs = self.get_components()
-        child_sync_times = [child_sync.get_latest_success() for child_sync in child_syncs]
+        child_sync_times = [child_sync.get_latest_success(recompute) for child_sync in child_syncs]
         if not child_sync_times:
             return None
         if None in child_sync_times:
@@ -89,14 +89,17 @@ class AdGroupSourceSync(BaseSync):
     def __init__(self, ad_group_source):
         self.ad_group_source = ad_group_source
 
-    def get_latest_success(self):
-        status_sync_dt = self.get_latest_status_sync()
-        if not status_sync_dt:
-            return None
-        report_sync_dt = self.get_latest_report_sync()
-        if not report_sync_dt:
-            return None
-        return min(status_sync_dt, report_sync_dt)
+    def get_latest_success(self, recompute=True):
+        if recompute:
+            status_sync_dt = self.get_latest_status_sync()
+            if not status_sync_dt:
+                return None
+            report_sync_dt = self.get_latest_report_sync()
+            if not report_sync_dt:
+                return None
+            return min(status_sync_dt, report_sync_dt)
+        else:
+            return self.ad_group_source.last_successful_sync_dt
 
     def get_latest_report_sync(self):
         # the query below works like this:

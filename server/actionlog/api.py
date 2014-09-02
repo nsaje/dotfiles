@@ -90,6 +90,17 @@ def cancel_expired_actionlogs():
         actionlog.save()
 
 
+def get_sources_waiting(ad_group):
+    actions = models.ActionLog.objects.filter(
+        action=constants.Action.CREATE_CAMPAIGN,
+        ad_group_source__ad_group_id=ad_group.id,
+        state__in=[constants.ActionState.WAITING, constants.ActionState.FAILED],
+        action_type=constants.ActionType.AUTOMATIC
+    )
+
+    return [action.ad_group_source.source for action in actions]
+
+
 def is_waiting_for_set_actions(ad_group):
     action_types = (constants.Action.SET_CAMPAIGN_STATE, constants.Action.SET_PROPERTY)
     # get latest action for ad_group where order != null
@@ -168,20 +179,29 @@ def age_oldest_waiting_action():
     return n_hours
 
 
-def is_sync_in_progress(ad_group):
+def is_sync_in_progress(ad_groups=None, accounts=None):
     '''
     sync is in progress if one of the following is true:
     - a get reports action for this ad_group is in 'waiting' state
     - a fetch status action for this ad_group is in 'waiting' state
     '''
 
-    waiting_actions = models.ActionLog.objects.filter(
-        ad_group_source__ad_group=ad_group,
+    if ad_groups and accounts:
+        raise Exception('Please set only one, ad_groups or accounts.')
+
+    q = models.ActionLog.objects.filter(
         state=constants.ActionState.WAITING,
         action_type=constants.ActionType.AUTOMATIC,
         action__in=(constants.Action.FETCH_REPORTS,
                     constants.Action.FETCH_CAMPAIGN_STATUS)
-    ).exists()
+    )
+
+    if ad_groups:
+        q = q.filter(ad_group_source__ad_group__in=ad_groups)
+    elif accounts:
+        q = q.filter(ad_group_source__ad_group__campaign__account__in=accounts)
+
+    waiting_actions = q.exists()
 
     return waiting_actions
 
@@ -386,10 +406,15 @@ def _init_create_campaign(ad_group_source, name):
     )
     logger.info(msg)
 
+    order = models.ActionLogOrder.objects.create(
+        order_type=constants.ActionLogOrderType.CREATE_CAMPAIGN
+    )
+
     action = models.ActionLog.objects.create(
         action=constants.Action.CREATE_CAMPAIGN,
         action_type=constants.ActionType.AUTOMATIC,
         ad_group_source=ad_group_source,
+        order=order
     )
 
     try:

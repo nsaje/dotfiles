@@ -9,12 +9,19 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
 
     $scope.adGroupData = {};
 
-    if (!$state.params.id && $scope.accounts && $scope.accounts.length) {
-        $state.go('main.adGroups.ads', {id: $scope.accounts[0].campaigns[0].adGroups[0].id});
-    }
+    $scope.hasPermission = function (permissions) {
+        if (!permissions) {
+            return false;
+        }
 
-    $scope.hasPermission = function (permission) {
-        return Object.keys($scope.user.permissions).indexOf(permission) >= 0;
+        // can take string or array, returns true if user has any of the permissions
+        if (typeof permissions === 'string') {
+            permissions = [permissions];
+        }
+
+        return permissions.some(function (permission) {
+            return Object.keys($scope.user.permissions).indexOf(permission) >= 0;
+        });
     };
 
     $scope.isPermissionInternal = function (permission) {
@@ -23,6 +30,24 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
         }
 
         return !$scope.user.permissions[permission];
+    };
+    
+    $scope.canAccessAllAccounts = function () {
+        return $scope.hasPermission('zemauth.all_accounts_accounts_view');
+    };
+
+    $scope.canAccessAccounts = function () {
+        return $scope.hasPermission([
+            'zemauth.account_campaigns_view',
+            'zemauth.account_agency_view'
+        ]);
+    };
+
+    $scope.canAccessCampaigns = function () {
+        return $scope.hasPermission([
+            'zemauth.campaign_settings_view',
+            'zemauth.campaign_ad_groups_view'
+        ])
     };
 
     $scope.getDateRanges = function () {
@@ -100,12 +125,41 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
 
     $scope.setBreadcrumbAndTitle = function (breadcrumb, title) {
         $scope.breadcrumb = breadcrumb;
+        if ($scope.canAccessAllAccounts()) {
+            $scope.breadcrumb.unshift({name: 'All accounts', state: 'main.allAccounts.accounts', disabled: !$scope.canAccessAllAccounts()});
+        }
+
         $document.prop('title', title + ' | Zemanta');
     };
 
     $scope.$on("$stateChangeSuccess", function (event, toState, toParams, fromState, fromParams) {
+        var adGroupId;
+
         $scope.currentRoute = $state.current;
         $scope.setDateRangeFromSearch();
+
+        // Redirect from default state
+        if ($state.is('main') && $scope.accounts && $scope.accounts.length) {
+            if ($scope.canAccessAllAccounts()) {
+                $state.go('main.allAccounts.accounts');
+            } else {
+                $scope.accounts.some(function (account) {
+                    if (account.campaigns && account.campaigns.length) {
+                        account.campaigns.some(function (campaign) {
+                            if (campaign.adGroups && campaign.adGroups.length) {
+                                adGroupId = campaign.adGroups[0].id;
+                                return true;
+                            }
+                        });
+                    }
+
+                    if (adGroupId) {
+                        return true;
+                    }
+                });
+                $state.go('main.adGroups.ads', {id: adGroupId});
+            }
+        }
     });
 
     $scope.$watch('dateRange', function (newValue, oldValue) {

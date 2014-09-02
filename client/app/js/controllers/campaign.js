@@ -1,7 +1,8 @@
 /*globals oneApp,$,moment*/
 oneApp.controller('CampaignCtrl', ['$scope', '$state', function ($scope, $state) {
     $scope.tabs = [
-        {heading: 'Agency', route: 'main.campaigns.agency', active: true, hidden: !$scope.hasPermission('zemauth.campaign_settings_view'), internal: $scope.isPermissionInternal('zemauth.campaign_settings_view')}
+        {heading: 'Ad groups', route: 'main.campaigns.ad_groups', active: true, hidden: !$scope.hasPermission('zemauth.campaign_ad_groups_view'), internal: $scope.isPermissionInternal('zemauth.campaign_ad_groups_view')},
+        {heading: 'Agency', route: 'main.campaigns.agency', active: false, hidden: !$scope.hasPermission('zemauth.campaign_settings_view'), internal: $scope.isPermissionInternal('zemauth.campaign_settings_view')}
     ];
 
     $scope.account = null;
@@ -23,7 +24,8 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', function ($scope, $state)
             return;
         }
         $scope.setBreadcrumbAndTitle(
-            [$scope.account.name, $scope.campaign.name],
+            [{name: $scope.account.name, state: 'main.accounts.campaigns({id: ' + $scope.account.id + '})', disabled: !$scope.canAccessAccounts()},
+            {name: $scope.campaign.name, state: 'main.campaigns.agency({id: ' + $scope.campaign.id + '})', disabled: true}],
             $scope.campaign.name
         );
     };

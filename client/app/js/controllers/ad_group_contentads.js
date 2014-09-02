@@ -3,7 +3,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.triggerSyncFailed = false;
-    $scope.order = '-clicks';
+    $scope.order = '-cost';
     $scope.constants = constants;
     $scope.options = options;
     $scope.chartMetric1 = constants.sourceChartMetric.CLICKS;
@@ -302,7 +302,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
                 ).finally(function() {
                     pollSyncStatus();
                 });
-            }, 1000);
+            }, 5000);
         }
     }
 
@@ -310,6 +310,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
 
     // trigger sync
     $scope.triggerSync = function() {
+        $scope.isSyncInProgress = true;
         api.adGroupSync.get($state.params.id).then(
             function () {
                 $scope.isSyncInProgress = true;

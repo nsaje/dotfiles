@@ -12,7 +12,8 @@ oneApp.directive('zemChart', ['config', function(config) {
             metric2Values: '=zemMetric2Values',
             minDate: '=zemMinDate',
             maxDate: '=zemMaxDate',
-            onRemove: '&zemOnRemove'
+            onRemove: '&zemOnRemove',
+            hideLegend: '@zemHideLegend'
         },
         templateUrl: config.static_url + '/partials/zem_chart.html',
         controller: ['$scope', '$element', '$attrs', '$http', function ($scope, $element, $attrs, $http) {

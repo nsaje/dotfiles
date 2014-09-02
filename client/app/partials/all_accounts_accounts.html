@@ -1,24 +1,14 @@
-<div class="page page-ad-group-sources">
+<div class="page page-all-accounts-accounts">
     <div class="section" ng-class="{'height-hidden': !isChartShown}">
-        <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric1-values="options.sourceChartMetrics" zem-metric2-values="options.sourceChartMetrics" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)"></zem-chart>
+        <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric1-values="options.allAccountsChartMetrics" zem-metric2-values="options.allAccountsChartMetrics" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" zem-hide-legend="true"></zem-chart>
     </div>
 
     <div class="section table-ad-group-sources">
         <div class="button-bar">
-            <div ng-if="hasPermission('zemauth.ad_group_sources_add_source')" class="button-bar-item add-source-container">
-                <zem-internal-feature ng-if="isPermissionInternal('zemauth.ad_group_sources_add_source')" popover-placement="bottom"></zem-internal-feature>
-                <select ui-select2="{minimumResultsForSearch: -1, formatNoMatches: 'No sources to add'}" ng-model="sourceIdToAdd" ng-change="addSource(sourceIdToAdd)" class="add-source" data-placeholder="+ Media Sources">
-                    <option value=""></option>
-                    <option ng-repeat="source in sources" value="{{source.id}}">{{source.name}}</option>
-                </select>
-            </div>
-            <div class="button-bar-item export-container">
-                <select ui-select2="{minimumResultsForSearch: -1}" ng-model="exportType" ng-change="downloadReport()" data-placeholder="Download Report">
-                    <option value=""></option>
-                    <option value="csv">CSV by day</option>
-                    <option value="excel">Excel by day</option>
-                </select>
-            </div>
+            <button type="button" class="btn btn-add" ng-click="addAccount()">+ Account</button>
+            <div class="loader" ng-show="requestInProgress"></div>
+            <span ng-show="added" class="success">Account &quot;{{ addedName }}&quot; has been added.</span>
+            <span ng-show="added === false" class="error">An error occurred while adding.</span>
             <zem-custom-table-cols class='pull-right' columns='columns'></zem-custom-table-cols>
 
             <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/img/chart.svg"></a>
@@ -37,13 +27,9 @@
             <div class="clearfix"></div>
         </div>
 
-        <alert type="info" class="alert-sync" ng-show="sourcesWaiting">
-            We are adding the following media source(s): {{sourcesWaiting.join(', ')}}. This may take some time.
-        </alert>
         <alert type="info" class="alert-sync" ng-show="isSyncRecent === false">
             We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">The last successful sync took place {{ lastSyncDate.fromNow() }}.</span> If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
         </alert>
-        <div ng-show="addSourceError" class="error add-source-error">Could not add media source. {{addSourceError}}</div>
 
         <div class="loader-container">
             <div class="loader" ng-show="rows.length && loadRequestInProgress"></div>
@@ -52,9 +38,8 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th></th>
-                            <th class="arrow" ng-class="{ordered: order === '-name', 'ordered-reverse': order === 'name'}"><a href class="col-title order" ng-click="orderRows('name')">Media Source</a><zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="A media source where your content is being promoted." placement="top"></zem-help-popover></th>
-                            <th class="text-center arrow" ng-class="{ordered: order === '-status', 'ordered-reverse': order === 'status'}"><a class="col-title order" href ng-click="orderRows('status')">Status</a><zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Status of a particular media source (enabled or paused)." placement="top"></zem-help-popover></th>
+                            <th class="arrow" ng-class="{ordered: order === '-name', 'ordered-reverse': order === 'name'}"><a href class="col-title order" ng-click="orderRows('name')">Account</a><zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="A partner account." placement="top"></zem-help-popover></th>
+                            <th class="text-center arrow" ng-class="{ordered: order === '-status', 'ordered-reverse': order === 'status'}"><a class="col-title order" href ng-click="orderRows('status')">Status</a><zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Status of an account (enabled or paused). An account is paused only if all its campaigns are paused, too; otherwise the account is enabled." placement="top"></zem-help-popover></th>
                             <th class="text-right arrow" ng-class="{'text-right': col.type !== 'url', ordered: order === '-' + col.field, 'ordered-reverse': order === col.field, 'trimmed-currency': (col.type === 'currency' && col.fractionSize > 2)}" ng-repeat="col in columns | filter: {checked: true}"><zem-internal-feature ng-if="col.internal"></zem-internal-feature><a href class="col-title order" ng-click="orderRows(col.field)">{{ col.name }}</a><zem-help-popover ng-if="col.help && hasPermission('zemauth.help_view')" content="{{ col.help }}" placement="{{ $last ? 'left' : 'top' }}"></zem-help-popover></th>
                         </tr>
                     </thead>
@@ -68,7 +53,6 @@
                             <td class="no-data" colspan="{{ selectedColumnsCount + 3}}">No data</td>
                         </tr>
                         <tr ng-repeat="row in rows">
-                            <td class="input-one-char"><input type="checkbox" data-ng-model="row.checked" ng-disabled="!row.checked && selectedSourceIds.length === 4" data-ng-change="selectedSourcesChanged(row.id)"/></td>
                             <td>{{ row.name }}</td>
                             <td class="text-center">
                                 <div ng-if="row.status == constants.adGroupSettingsState.ACTIVE">Enabled</div>
@@ -103,8 +87,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td class="input-one-char"><input type="checkbox" data-ng-model="selectedSourceTotals" data-ng-change="selectedSourcesChanged(null)"/></td>
-                            <td colspan="2">TOTALS</td>
+                            <td>TOTALS</td>
                             <td class="text-right number"></td>
                             <td class="text-right number" ng-repeat="col in columns | filter: {checked: true, field: '!bid_cpc'}">
                                 <span ng-switch="col.type">
@@ -142,5 +125,25 @@
                 </span>
             </span>
         </div>
+
+        <div class="pagination" ng-show="rows">
+            <span>Go to page</span>
+            <form ng-submit="loadPage()">
+                <input class="page-num form-control" type="number" min="1" max="{{ pagination.numPages }}" ng-model="pagination.currentPage">
+            </form>
+
+            <span>Show rows</span>
+            <select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'show-rows'}" class="show-rows" ng-model="pagination.sizeTemp" ng-change="changePaginationSize()" data-placeholder="{{ pagination.size }}">
+                <option value=""></option>
+                <option ng-repeat="number in sizeRange" value="{{ number }}">{{ number }}</option>
+            </select>
+
+            <div ng-disabled="pagination.currentPage == 1" class="btn btn-default" ng-click="loadPage(1)"><img ng-src="{{ config.static_url }}/img/arrow-first.svg"></div>
+            <div ng-disabled="pagination.currentPage == 1" class="btn btn-default" ng-click="loadPage(pagination.currentPage - 1)"><img ng-src="{{ config.static_url }}/img/arrow-prev.svg"></div>
+            <span class="current-rows">{{ pagination.startIndex}} - {{ pagination.endIndex }} of {{ pagination.count }}</span>
+            <div ng-disabled="pagination.currentPage == pagination.numPages" class="btn btn-default" ng-click="loadPage(pagination.currentPage + 1)"><img ng-src="{{ config.static_url }}/img/arrow-next.svg"></div>
+            <div ng-disabled="pagination.currentPage == pagination.numPages" class="btn btn-default" ng-click="loadPage(pagination.numPages)"><img ng-src="{{ config.static_url }}/img/arrow-last.svg"></div>
+        </pagination>
+    </div>
     </div>
 </div>
