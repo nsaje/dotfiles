@@ -258,6 +258,9 @@ class DefaultSourceCredentials(models.Model):
     source = models.ForeignKey(Source, unique=True, on_delete=models.PROTECT)
     credentials = models.ForeignKey(SourceCredentials, on_delete=models.PROTECT)
 
+    class Meta:
+        verbose_name_plural = "Default Source Credentials"
+
     def __unicode__(self):
         return self.source.name
 
