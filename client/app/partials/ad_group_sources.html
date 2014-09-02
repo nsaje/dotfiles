@@ -9,7 +9,7 @@
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.ad_group_sources_add_source')" popover-placement="bottom"></zem-internal-feature>
                 <select ui-select2="{minimumResultsForSearch: -1, formatNoMatches: 'No sources to add'}" ng-model="sourceIdToAdd" ng-change="addSource(sourceIdToAdd)" class="add-source" data-placeholder="+ Media Sources">
                     <option value=""></option>
-                    <option ng-repeat="source in sources" value="{{source.id}}">{{source.name}}</option>
+                    <option ng-repeat="source in sources | orderBy:'name'" value="{{source.id}}">{{source.name}}</option>
                 </select>
             </div>
             <div class="button-bar-item export-container">
