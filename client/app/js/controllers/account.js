@@ -35,13 +35,14 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) 
     $scope.getAccount();
     $scope.updateBreadcrumbAndTitle();
 
-    if ($state.is('main.accounts')) { 
-        if ($scope.hasPermission('zemauth.account_campaigns_view')) {
-            $state.go('main.accounts.campaigns', {id: $state.params.id});
-        } else if ($scope.hasPermission('zemauth.account_agency_view')) {
-            $state.go('main.accounts.agency', {id: $state.params.id});
-        } else {
-            $state.go('main');
+    $scope.$on("$stateChangeSuccess", function (e, toState, toParams, fromState, fromParams) {
+        if ($state.is('main.accounts')) { 
+            var state = $scope.getDefaultAccountState();
+            if (state) {
+                $state.go(state, {id: $state.params.id});
+            } else {
+                $state.go('main');
+            }
         }
-    }
+    });
 }]);

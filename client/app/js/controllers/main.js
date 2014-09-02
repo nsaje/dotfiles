@@ -36,18 +36,27 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
         return $scope.hasPermission('zemauth.all_accounts_accounts_view');
     };
 
+    $scope.getDefaultAccountState = function () {
+        var result = null;
+
+        if ($scope.hasPermission('zemauth.account_campaigns_view')) {
+            result = 'main.accounts.campaigns';
+        } else if ($scope.hasPermission('zemauth.account_agency_view')) {
+            result = 'main.accounts.agency';
+        }
+
+        return result;
+    };
+
     $scope.canAccessAccounts = function () {
-        return $scope.hasPermission([
-            'zemauth.account_campaigns_view',
-            'zemauth.account_agency_view'
-        ]);
+        return !!$scope.getDefaultAccountState();
     };
 
     $scope.canAccessCampaigns = function () {
         return $scope.hasPermission([
             'zemauth.campaign_settings_view',
             'zemauth.campaign_ad_groups_view'
-        ])
+        ]);
     };
 
     $scope.getDateRanges = function () {
