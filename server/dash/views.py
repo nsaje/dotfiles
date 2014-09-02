@@ -1203,13 +1203,16 @@ class AccountsAccountsTable(api_common.BaseApiView):
         current_page = page or 1
         num_pages = int(math.ceil(float(len_accounts) / size))
         count = len_accounts
-        start_index = 0
-        end_index = len_accounts - 1
+        start_index = 1
+        end_index = size if len_accounts > size else len_accounts
 
         if page and size:
             start = (page - 1) * size
+            end = page * size
             if start <= len_accounts:
-                rows = rows[start:(page * size)]
+                rows = rows[start:end]
+                start_index = start + 1
+                end_index = end - (size - len(rows))
             else:
                 current_page = 1
 
