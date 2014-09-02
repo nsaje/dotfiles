@@ -10,7 +10,7 @@
                     <ul class="list-group">
                         <li class="campaign-group list-group-item" ng-repeat="campaign in account.campaigns">
                             <div ng-if="!canAccessCampaigns()" class="campaign-name">{{ campaign.name }}</div>
-                            <a ng-if="canAccessCampaigns()" class="campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() }) }" ui-sref="{{ 'main.campaigns.ad_groups' }}({ id: campaign.id })">{{ campaign.name }}</a>
+                            <a ng-if="canAccessCampaigns()" class="campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() }) }" ui-sref="{{ 'main.campaigns.' + (hasPermission('zemauth.campaign_settings_view') ? 'agency' : 'ad_groups') }}({ id: campaign.id })">{{ campaign.name }}</a>
                             <ul class="list-group ad-groups">
                                 <a class="ad-group-item list-group-item" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() }) }" ui-sref="{{ $state.includes('*.adGroups.**') ? $state.current.name : 'main.adGroups.ads' }}({ id: adGroup.id })" ng-repeat="adGroup in campaign.adGroups">
                                     <img ng-src="{{ config.static_url }}/img/ad_group.svg">
