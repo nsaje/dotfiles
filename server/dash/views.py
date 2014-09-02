@@ -1092,9 +1092,8 @@ class AccountsAccountsTable(api_common.BaseApiView):
 
         ad_groups_settings = models.AdGroupSettings.objects.\
             distinct('ad_group').\
-            filter(ad_group__campaign__account__in=accounts).\
-            order_by('-created_dt').\
-            order_by('ad_group')
+            filter(ad_group__campaign__account__in=[x.pk for x in accounts]).\
+            order_by('ad_group', '-created_dt')
 
         totals_data = reports.api.query(
             get_stats_start_date(request.GET.get('start_date')),
