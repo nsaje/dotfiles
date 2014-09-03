@@ -80,7 +80,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                     deferred.resolve(data);
                 }).
                 error(function (data, status) {
-                    deferred.reject(data.data.message); 
+                    deferred.reject(data); 
                 });
 
             return deferred.promise;

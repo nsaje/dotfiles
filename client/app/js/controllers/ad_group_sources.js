@@ -17,7 +17,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     $scope.order = '-cost';
     $scope.sources = [];
     $scope.sourcesWaiting = null;
-    $scope.addSourceError = null;
     $scope.columns = [
         {
             name: 'Bid CPC',
@@ -385,13 +384,13 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             return;
         }
 
-        $scope.addSourceError = null;
         api.adGroupSources.add($state.params.id, sourceIdToAdd).then(
             function (data) {
                 $scope.getSources();
             },
             function (data) {
-                $scope.addSourceError = data;
+                // error
+                return;
             }
         );
 
