@@ -646,10 +646,11 @@ class UpsertReportsTestCase(test.TestCase):
             self.assertEqual(article_stats.impressions, row['impressions'])
             self.assertEqual(article_stats.clicks, row['clicks'])
             self.assertEqual(article_stats.cost_cc, row['cost_cc'])
+            self.assertEqual(article_stats.has_traffic_metrics, 1)
 
         api.save_report(ags.ad_group, ags.source, rows_new_title, date)
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
-        self.assertEqual(len(stats), 2)
+        self.assertEqual(len(stats), 4)
         for row in rows_new_title:
             article = dashmodels.Article.objects.get(title=row['title'], url=row['url'], ad_group=ags.ad_group)
             article_stats = models.ArticleStats.objects.get(
@@ -661,9 +662,24 @@ class UpsertReportsTestCase(test.TestCase):
             self.assertEqual(article_stats.impressions, row['impressions'])
             self.assertEqual(article_stats.clicks, row['clicks'])
             self.assertEqual(article_stats.cost_cc, row['cost_cc'])
+            self.assertEqual(article_stats.has_traffic_metrics, 1)
+        # make sure the metrics for the articles inserted before are reset
+        for row in rows:
+            article = dashmodels.Article.objects.get(title=row['title'], url=row['url'], ad_group=ags.ad_group)
+            article_stats = models.ArticleStats.objects.get(
+                article=article,
+                ad_group=ags.ad_group,
+                source=ags.source,
+                datetime=date
+            )
+            self.assertEqual(article_stats.impressions, 0)
+            self.assertEqual(article_stats.clicks, 0)
+            self.assertEqual(article_stats.cost_cc, 0)
+            self.assertEqual(article_stats.has_traffic_metrics, 1)
 
         api.save_report(ags.ad_group, ags.source, rows_new_url, date)
-        self.assertEqual(len(stats), 2)
+        stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
+        self.assertEqual(len(stats), 6)
         for row in rows_new_url:
             article = dashmodels.Article.objects.get(title=row['title'], url=row['url'], ad_group=ags.ad_group)
             article_stats = models.ArticleStats.objects.get(
@@ -675,6 +691,20 @@ class UpsertReportsTestCase(test.TestCase):
             self.assertEqual(article_stats.impressions, row['impressions'])
             self.assertEqual(article_stats.clicks, row['clicks'])
             self.assertEqual(article_stats.cost_cc, row['cost_cc'])
+            self.assertEqual(article_stats.has_traffic_metrics, 1)
+        # make sure the metrics for the articles inserted before are reset
+        for row in rows + rows_new_title:
+            article = dashmodels.Article.objects.get(title=row['title'], url=row['url'], ad_group=ags.ad_group)
+            article_stats = models.ArticleStats.objects.get(
+                article=article,
+                ad_group=ags.ad_group,
+                source=ags.source,
+                datetime=date
+            )
+            self.assertEqual(article_stats.impressions, 0)
+            self.assertEqual(article_stats.clicks, 0)
+            self.assertEqual(article_stats.cost_cc, 0)
+            self.assertEqual(article_stats.has_traffic_metrics, 1)
 
     def test_save_reports_duplicate(self):
         date1 = datetime.date(2014, 7, 10)

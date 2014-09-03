@@ -247,14 +247,15 @@ def get_yesterday_cost(ad_group):
     return result
 
 
-def _delete_existing_stats(ad_group, source, date):
+def _resret_existing_traffic_stats(ad_group, source, date):
     existing_stats = models.ArticleStats.objects.filter(ad_group=ad_group, source=source, datetime=date)
     if existing_stats:
         logger.info(
-            'Deleting {num} old article statistics. Ad_group: {ad_group}, Source: {source}, datetime: {datetime}'
+            'Resetting {num} old article traffic statistics. Ad_group: {ad_group}, Source: {source}, datetime: {datetime}'
             .format(num=len(existing_stats), ad_group=ad_group, source=source, datetime=date)
         )
-        existing_stats.delete()
+        for stats in existing_stats:
+            stats.reset_traffic_metrics()
 
 
 @transaction.atomic
@@ -265,7 +266,7 @@ def save_report(ad_group, source, rows, date):
     if it does find, it updates the metrics of the existing row
     '''
 
-    _delete_existing_stats(ad_group, source, date)
+    _resret_existing_traffic_stats(ad_group, source, date)
 
     for row in rows:
         article = _reconcile_article(row['url'], row['title'], ad_group)
@@ -292,6 +293,8 @@ def save_report(ad_group, source, rows, date):
             article_stats.cost_cc += row['cpc_cc'] * row['clicks']
         else:
             article_stats.cost_cc += row['cost_cc']
+
+        article_stats.has_traffic_metrics = 1
 
         article_stats.save()
 
