@@ -203,7 +203,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AccountSync() {
-        this.get = function (id) {
+        this.get = function () {
             var deferred = $q.defer();
             var url = '/api/accounts/sync/';
 

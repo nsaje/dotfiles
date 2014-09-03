@@ -3,7 +3,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.requestInProgress = false;
-    $scope.triggerSyncFailed = false;
     $scope.selectedSourceIds = [];
     $scope.selectedSourceTotals = true;
     $scope.constants = constants;
@@ -241,7 +240,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
                     },
                     function(data) {
                         // error
-                        $scope.triggerSyncFailed = true;
                         $scope.isSyncInProgress = false;
                     }
                 ).finally(function() {
@@ -253,15 +251,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
     $scope.triggerSync = function() {
         $scope.isSyncInProgress = true;
-        api.accountSync.get($state.params.id).then(
-            function () {
-                $scope.isSyncInProgress = true;
-            },
-            function () {
-                // error
-                $scope.triggerSyncFailed = true;
-            }
-        );
+        api.accountSync.get();
     };
 
     $scope.loadPage = function(page) {

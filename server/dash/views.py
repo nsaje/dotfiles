@@ -13,6 +13,7 @@ import httplib
 import traceback
 import urllib
 import urllib2
+import threading
 from decimal import Decimal
 
 from django.conf import settings
@@ -1445,13 +1446,25 @@ class AdGroupSourcesExport(api_common.BaseApiView):
         return response
 
 
+class TriggerAccountSyncThread(threading.Thread):
+    """ Used to trigger sync for all accounts asynchronously. """
+    def __init__(self, accounts, *args, **kwargs):
+        self.accounts = accounts
+        super(TriggerAccountSyncThread, self).__init__(*args, **kwargs)
+
+    def run(self):
+        for account in self.accounts:
+            actionlog.sync.AccountSync(account).trigger_all()
+
+
 class AccountSync(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'account_sync_get')
     def get(self, request):
         accounts = models.Account.objects.get_for_user(request.user)
         if not actionlog.api.is_sync_in_progress(accounts=accounts):
-            for account in accounts:
-                actionlog.sync.AccountSync(account).trigger_all()
+            # trigger account sync asynchronously and immediately return
+            TriggerAccountSyncThread(accounts).start()
 
         return self.create_api_response({})
 
