@@ -912,13 +912,12 @@ class AdGroupSources(api_common.BaseApiView):
         ad_group_source.save()
 
         name = 'ONE: {} / {} / {} / {} / {}'.format(
-            ad_group.campaign.account.name,
-            ad_group.campaign.name,
-            ad_group.name,
+            ad_group.campaign.account.name.encode('utf-8'),
+            ad_group.campaign.name.encode('utf-8'),
+            ad_group.name.encode('utf-8'),
             ad_group.id,
-            source.name
+            source.name.encode('utf-8')
         )
-        print name
 
         actionlog.api.create_campaign(ad_group_source, name)
 
