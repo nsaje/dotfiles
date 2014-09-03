@@ -3,8 +3,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.requestInProgress = false;
-    $scope.addedName = null;
-    $scope.added = null;
     $scope.triggerSyncFailed = false;
     $scope.selectedSourceIds = [];
     $scope.selectedSourceTotals = true;
@@ -67,8 +65,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
     $scope.addAccount = function () {
         $scope.requestInProgress = true;
-        $scope.addedName = null;
-        $scope.added = null;
 
         api.account.create().then(
             function (data) {
@@ -78,14 +74,11 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
                     'campaigns': []
                 });
 
-                $scope.addedName = data.name;
-                $scope.added = true;
-
-                $scope.loadPage();
+                $state.go('main.accounts.agency', {id: data.id});
             },
             function (data) {
                 // error
-                $scope.added = false;
+                return;
             }
         ).finally(function () {
             $scope.requestInProgress = false;

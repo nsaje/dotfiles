@@ -1,14 +1,10 @@
 /*globals oneApp*/
 oneApp.controller('CampaignAdGroupsCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
     $scope.requestInProgress = false;
-    $scope.addedName = null;
-    $scope.added = null;
 
     $scope.addAdGroup = function () {
         var campaignId = $state.params.id;
         $scope.requestInProgress = true;
-        $scope.addedName = null;
-        $scope.added = null;
 
         api.campaignAdGroups.create(campaignId).then(
             function (data) {
@@ -20,15 +16,14 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$scope', '$state', 'api', function (
                                 name: data.name
                             });
 
-                            $scope.addedName = data.name;
-                            $scope.added = true;
+                            $state.go('main.adGroups.settings', {id: data.id});
                         }
                     });
                 });
             },
             function (data) {
                 // error
-                $scope.added = false;
+                return;
             }
         ).finally(function () {
             $scope.requestInProgress = false;
