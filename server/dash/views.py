@@ -1105,6 +1105,10 @@ class AccountsAccountsTable(api_common.BaseApiView):
         last_success_actions = {}
         for account in accounts:
             account_sync = actionlog.sync.AccountSync(account)
+
+            if not len(list(account_sync.get_components())):
+                continue
+
             last_success_actions[account.pk] = account_sync.get_latest_success(
                 recompute=False)
 
