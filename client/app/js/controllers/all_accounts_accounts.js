@@ -287,6 +287,12 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         $scope.loadPage();
     };
 
+    $scope.toggleChart = function () {
+        $scope.isChartShown = !$scope.isChartShown;
+        $scope.chartBtnTitle = $scope.isChartShown ? 'Hide chart' : 'Show chart';
+        $location.search('chart_hidden', !$scope.isChartShown ? '1' : null);
+    };
+
     $scope.init = function() {
         var chartMetric1 = $location.search().chart_metric1;
         var chartMetric2 = $location.search().chart_metric2;

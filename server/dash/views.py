@@ -1192,6 +1192,8 @@ class AccountsAccountsTable(api_common.BaseApiView):
                 value = item.get(order)
                 if order == 'last_sync' and not value:
                     value = pytz.UTC.localize(datetime.datetime(datetime.MINYEAR, 1, 1))
+                elif order == 'name':
+                    value = value.lower()
 
                 return (item.get(order) is None or reverse, value)
 
