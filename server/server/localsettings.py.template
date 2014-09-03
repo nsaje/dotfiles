@@ -62,3 +62,7 @@ CREDENTIALS_ENCRYPTION_KEY = ''  # has to be 32 bytes
 PAGER_DUTY_ENABLED = False
 PAGER_DUTY_URL = ''
 PAGER_DUTY_SERVICE_KEY = ''
+
+RAVEN_CONFIG = {
+    'dsn': '',
+}
