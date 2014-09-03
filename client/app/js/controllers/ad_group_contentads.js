@@ -90,7 +90,21 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         });
 
         var data = [[]];
+        var lastDate = null;
+        var oneDayMs = 24*60*60*1000;
         $scope.dailyStats.forEach(function (stat) {
+            // insert nulls for missing values
+            if (lastDate) {
+                for (var date = lastDate; date < stat.date - oneDayMs; date += oneDayMs) {
+                    data[0].push([date, null]);
+
+                    if (data[1]) {
+                        data[1].push([date, null]);
+                    }
+                }
+            }
+            lastDate = stat.date;
+
             data[0].push([stat.date, stat[$scope.chartMetric1]]);
 
             if ($scope.chartMetric2 && $scope.chartMetric2 !== $scope.chartMetric1) {

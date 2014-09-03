@@ -137,6 +137,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         });
 
         var temp = {};
+        var lastDate = null;
+        var oneDayMs = 24*60*60*1000;
         $scope.dailyStats.forEach(function (stat) {
             if (!temp.hasOwnProperty(stat.sourceId)) {
                 temp[stat.sourceId] = {
@@ -145,6 +147,18 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                     data: [[]]
                 };
             }
+
+            // insert nulls for missing values
+            if (lastDate) {
+                for (var date = lastDate; date < stat.date - oneDayMs; date += oneDayMs) {
+                    temp[stat.sourceId].data[0].push([date, null]);
+
+                    if (temp[stat.sourceId].data[1]) {
+                        temp[stat.sourceId].data[1].push([date, null]);
+                    }
+                }
+            }
+            lastDate = stat.date;
 
             temp[stat.sourceId].data[0].push([stat.date, stat[$scope.chartMetric1]]);
 

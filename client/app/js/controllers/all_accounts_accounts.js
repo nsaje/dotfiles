@@ -113,6 +113,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         });
 
         var temp = {};
+        var lastDate = null;
+        var oneDayMs = 24*60*60*1000;
         $scope.dailyStats.forEach(function (stat) {
             if (!temp.hasOwnProperty(stat.sourceId)) {
                 temp[stat.sourceId] = {
@@ -121,6 +123,18 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
                     data: [[]]
                 };
             }
+
+            // insert nulls for missing values
+            if (lastDate) {
+                for (var date = lastDate; date < stat.date - oneDayMs; date += oneDayMs) {
+                    data[0].push([date, null]);
+
+                    if (data[1]) {
+                        data[1].push([date, null]);
+                    }
+                }
+            }
+            lastDate = stat.date;
 
             temp[stat.sourceId].data[0].push([stat.date, stat[$scope.chartMetric1]]);
 
