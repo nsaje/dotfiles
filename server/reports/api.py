@@ -12,7 +12,7 @@ import pytz
 from django.conf import settings
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction, IntegrityError
-from django.db.models import Sum
+from django.db.models import Sum, Min, Max
 
 from . import exc
 from . import models
@@ -32,6 +32,25 @@ AGGREGATE_FIELDS = dict(
     cost_cc_sum=Sum('cost_cc'),
     ctr=db_aggregates.SumDivision('clicks', 'impressions'),
     cpc_cc=db_aggregates.SumDivision('cost_cc', 'clicks')
+)
+
+POSTCLICK_AGGREGATE_FIELDS = dict(
+    visits_sum=Sum('visits'),
+    new_visits_sum=Sum('new_visits'),
+    percent_new_users=db_aggregates.SumDivision('new_visits', 'visits'),
+    bounce_rate=db_aggregates.SumDivision('bounced_visits', 'visits'),
+    pageviews_sum=Sum('pageviews'),
+    pv_per_visit=db_aggregates.SumDivision('pageviews', 'visits'),
+    avg_tos=db_aggregates.SumDivision('duration', 'visits'),
+)
+
+INCOMPLETE_AGGREGATE_FIELDS = dict(
+    has_traffic_metrics_min=Min('has_traffic_metrics'),
+    has_postclick_metrics_min=Min('has_postclick_metrics'),
+    has_conversion_metrics_min=Min('has_conversion_metrics'),
+    has_traffic_metrics_max=Max('has_traffic_metrics'),
+    has_postclick_metrics_max=Max('has_postclick_metrics'),
+    has_conversion_metrics_max=Max('has_conversion_metrics'),
 )
 
 
@@ -157,12 +176,14 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
     if constraints:
         result = result.filter(**constraints)
 
+    AGG_FIELDS = {k:v for k, v in list(AGGREGATE_FIELDS.items()) + list(POSTCLICK_AGGREGATE_FIELDS.items()) + list(INCOMPLETE_AGGREGATE_FIELDS.items())}
+
     if breakdown:
         result = result.values(*breakdown)
-        agg_fields, order = _add_helper_order_aggregate_fields(AGGREGATE_FIELDS, order)
+        agg_fields, order = _add_helper_order_aggregate_fields(AGG_FIELDS, order)
         result = result.annotate(**agg_fields)
     else:
-        return result.aggregate(**AGGREGATE_FIELDS)
+        return result.aggregate(**AGG_FIELDS)
 
     if order:
         # only order by fields that are columns in ArticleStats table
@@ -204,7 +225,13 @@ def collect_results(result):
         'article__title': 'title',
         'article__url': 'url',
         'ad_group__campaign': 'campaign',
-        'ad_group__campaign__account': 'account'
+        'ad_group__campaign__account': 'account',
+        
+        'visits_sum': 'visits',
+        'new_visits_sum': 'new_visits',
+        'pageviews_sum': 'pageviews',
+        'conversion_value_cc_sum': 'conversion_value',
+        'conversions_sum': 'conversions'
     }
 
     col_val_transform = {
@@ -212,6 +239,7 @@ def collect_results(result):
         'cpc_cc': lambda x: None if x is None else float(decimal.Decimal(round(x)) / decimal.Decimal(10000)),
         'ctr': lambda x: None if x is None else x * 100,
         'datetime': lambda dt: dt.date(),
+        'conversion_value_cc_sum': lambda x: None if x is None else float(decimal.Decimal(round(x)) / decimal.Decimal(10000)),
     }
 
     def collect_row(row):
@@ -222,6 +250,11 @@ def collect_results(result):
             new_col_val = col_val_transform.get(col_name, lambda x: x)(col_val)
             new_col_name = col_name_translate.get(col_name, col_name)
             new_row[new_col_name] = new_col_val
+
+        new_row['incomplete_traffic_metrics'] = row.get('has_traffic_metrics_min', 0) == 0 and row.get('has_traffic_metrics_max', 0) == 1
+        new_row['incomplete_postclick_metrics'] = row.get('has_postclick_metrics_min', 0) == 0 and row.get('has_postclick_metrics_max', 0) == 1
+        new_row['incomplete_conversion_metrics'] = row.get('has_conversion_metrics_min', 0) == 0 and row.get('has_conversion_metrics_max', 0) == 1
+        
         return new_row
 
     if isinstance(result, dict):
