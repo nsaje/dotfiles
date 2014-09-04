@@ -59,7 +59,8 @@ CREDENTIALS_ENCRYPTION_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'  # has to be 32 
 # Pagerduty settings
 PAGER_DUTY_ENABLED = False
 PAGER_DUTY_URL = ''
-PAGER_DUTY_SERVICE_KEY = ''
+PAGER_DUTY_ADOPS_SERVICE_KEY = ''
+PAGER_DUTY_SYSOPS_SERVICE_KEY = ''
 
 RAVEN_CONFIG = {
     'dsn': '',

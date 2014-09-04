@@ -1,12 +1,18 @@
 from mock import Mock, patch
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from utils import signal_handlers
 from actionlog import constants
 
 
-@patch('utils.signal_handlers.pagerduty_helper.trigger_event')
+@override_settings(
+    HOSTNAME='testhost',
+    PAGER_DUTY_ENABLED=True,
+    PAGER_DUTY_URL='http://pagerduty.example.com',
+    PAGER_DUTY_ADOPS_SERVICE_KEY='123abc'
+)
+@patch('utils.signal_handlers.pagerduty_helper.trigger')
 class SignalHandlersTestCase(TestCase):
     def test_trigger_alert_pre_save_signal_handler(self, mock_trigger_event):
         instance_id = 1
@@ -14,7 +20,12 @@ class SignalHandlersTestCase(TestCase):
 
         signal_handlers.trigger_alert_pre_save_signal_handler(None, mock_instance)
 
-        mock_trigger_event.assert_called_with(instance_id)
+        mock_trigger_event.assert_called_with(
+            details={'action_log_admin_url': 'https://one.zemanta.com/admin/actionlog/actionlog/1/'},
+            incident_key='adgroup_stop_failed',
+            description='Adgroup stop action failed',
+            event_type='adops',
+        )
 
     def test_trigger_alert_pre_save_signal_handler_no_action(self, mock_trigger_event):
         instance_id = 1
