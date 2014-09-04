@@ -247,7 +247,7 @@ def get_yesterday_cost(ad_group):
     return result
 
 
-def _resret_existing_traffic_stats(ad_group, source, date):
+def _reset_existing_traffic_stats(ad_group, source, date):
     existing_stats = models.ArticleStats.objects.filter(ad_group=ad_group, source=source, datetime=date)
     if existing_stats:
         logger.info(
@@ -266,7 +266,7 @@ def save_report(ad_group, source, rows, date):
     if it does find, it updates the metrics of the existing row
     '''
 
-    _resret_existing_traffic_stats(ad_group, source, date)
+    _reset_existing_traffic_stats(ad_group, source, date)
 
     for row in rows:
         article = _reconcile_article(row['url'], row['title'], ad_group)
