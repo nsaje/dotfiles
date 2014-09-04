@@ -207,6 +207,23 @@ class Source(models.Model):
     def __unicode__(self):
         return self.name
 
+    def get_additional_action_parameters(self):
+        if self.type == constants.SourceType.ZEMANTA:
+            if self.zemantaexclusivepublishers:
+                exclusive_publisher_ids = [int(pid) for pid in self.zemantaexclusivepublishers.exclusive_publisher_ids.split(',')]
+                return {
+                    'create_campaign': {
+                        'exclusive_publisher_ids': exclusive_publisher_ids
+                    }
+                }
+
+        return {}
+
+
+class ZemantaExclusivePublishers(models.Model):
+    source = models.OneToOneField(Source, primary_key=True)
+    exclusive_publisher_ids = models.TextField(blank=True, null=False)
+
 
 class SourceCredentials(models.Model):
     id = models.AutoField(primary_key=True)

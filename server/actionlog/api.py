@@ -392,7 +392,7 @@ def _init_set_campaign_property(ad_group_source, prop, value, order):
 def _init_create_campaign(ad_group_source, name):
     if ad_group_source.source_campaign_key:
         msg = 'Unable to create external campaign for AdGroupSource with existing connection'\
-              'ad_group_source.id={ad_group_source_id}, name={name}, order.id={order_id}'.format(
+              'ad_group_source.id={ad_group_source_id}, name={name}'.format(
                   ad_group_source_id=ad_group_source.id,
                   name=name,
               )
@@ -435,6 +435,10 @@ def _init_create_campaign(ad_group_source, name):
                 },
                 'callback_url': callback,
             }
+
+            additional_parameters = ad_group_source.source.get_additional_action_parameters()
+            if 'create_campaign' in additional_parameters:
+                payload['args']['extra'] = additional_parameters['create_campaign']
 
             action.payload = payload
             action.save()
