@@ -2,7 +2,6 @@
 oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'zemCustomTableColsService', 'localStorageService', 'zemChartService', function ($scope, $state, $location, $window, $timeout, api, zemCustomTableColsService, localStorageService, zemChartService) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
-    $scope.triggerSyncFailed = false;
     $scope.order = '-cost';
     $scope.constants = constants;
     $scope.options = options;
@@ -310,7 +309,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
                     },
                     function(data) {
                         // error
-                        $scope.triggerSyncFailed = true;
                         $scope.isSyncInProgress = false;
                     }
                 ).finally(function() {
@@ -325,15 +323,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     // trigger sync
     $scope.triggerSync = function() {
         $scope.isSyncInProgress = true;
-        api.adGroupSync.get($state.params.id).then(
-            function () {
-                $scope.isSyncInProgress = true;
-            },
-            function () {
-                // error
-                $scope.triggerSyncFailed = true;
-            }
-        );
+        api.adGroupSync.get($state.params.id);
     }
 
     $scope.init();
