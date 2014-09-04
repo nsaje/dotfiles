@@ -323,7 +323,7 @@ class AdGroupSource(models.Model):
     last_successful_sync_dt = models.DateTimeField(blank=True, null=True)
 
     def __unicode__(self):
-        return '%s - %s' % (self.ad_group, self.source)
+        return u'%s - %s' % (self.ad_group, self.source)
 
 
 class AdGroupSettings(SettingsBase):
