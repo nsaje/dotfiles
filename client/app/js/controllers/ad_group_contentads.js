@@ -164,6 +164,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         }
 
         $location.search('order', $scope.order);
+        localStorageService.set('adGroupContentAds.order', $scope.order);
         $scope.getTableData();
     };
 
@@ -219,6 +220,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         var chartMetric2 = $location.search().chart_metric2 || localStorageService.get('adGroupContentAds.chartMetric2') || $scope.chartMetric2;
         var chartHidden = $location.search().chart_hidden;
         var size = $location.search().size || localStorageService.get('adGroupContentAds.paginationSize') || $scope.sizeRange[0];
+        var order = $location.search().order || localStorageService.get('adGroupContentAds.order') || $scope.order;
         var tableChanged = false;
         var chartChanged = false;
 
@@ -257,11 +259,16 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             tableChanged = true;
         }
         
+        if (order !== undefined && $scope.order !== order) {
+            $scope.order = order;
+            $location.search('order', order);
+            tableChanged = true;
+        }
+
         if (tableChanged) {
             $scope.loadPage();
         }
 
-        $scope.order = $location.search().order || $scope.order;
     };
     
     // pagination

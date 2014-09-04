@@ -189,6 +189,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         }
 
         $location.search('order', $scope.order);
+        localStorageService.set('adGroupSources.order', $scope.order);
         $scope.getTableData();
     };
 
@@ -313,6 +314,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         var chartMetric1 = $location.search().chart_metric1 || localStorageService.get('adGroupSources.chartMetric1') || $scope.chartMetric1;
         var chartMetric2 = $location.search().chart_metric2 || localStorageService.get('adGroupSources.chartMetric2') || $scope.chartMetric2;
         var chartHidden = $location.search().chart_hidden;
+        var order = $location.search().order || localStorageService.get('adGroupSources.order') || $scope.order;
         var changed = false;
 
         var data = $scope.adGroupData[$state.params.id];
@@ -349,8 +351,11 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             }
         }
 
+        if (order !== undefined && $scope.order !== order) {
+            $scope.order = order;
+            $location.search('order', order);
+        }
 
-        $scope.order = $location.search().order || $scope.order;
         $scope.selectedSourceTotals = !$scope.selectedSourceIds.length || !!sourceTotals;
         $scope.setAdGroupData('sourceTotals', $scope.selectedSourceTotals);
         $location.search('source_totals', sourceTotals);

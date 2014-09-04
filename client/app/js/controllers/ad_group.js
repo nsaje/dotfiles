@@ -67,6 +67,7 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
         $location.search('size', null);
         $location.search('chart_metric1', null);
         $location.search('chart_metric2', null);
+        $location.search('order', null);
     });
 
     $scope.getAdGroupState = function() {

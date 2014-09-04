@@ -170,6 +170,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
 
         $location.search('order', $scope.order);
+        localStorageService.set('allAccountsAccounts.order', $scope.order);
         $scope.getTableData();
     };
 
@@ -291,6 +292,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         var chartHidden = $location.search().chart_hidden;
         var size = $location.search().size || localStorageService.get('allAccountsAccounts.paginationSize') || $scope.sizeRange[0];
         var page = $location.search().page;
+        var order = $location.search().order || localStorageService.get('allAccountsAccounts.order') || $scope.order;
+
         var changed = false;
         var tableChanged = false;
 
@@ -314,7 +317,11 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             $scope.setChartData();
         }
 
-        $scope.order = $location.search().order || $scope.order;
+        if (order !== undefined && $scope.order !== order) {
+            $scope.order = order;
+            $location.search('order', order);
+            tableChanged = true;
+        }
 
         $scope.initColumns();
 
@@ -340,6 +347,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         $location.search('chart_metric2', null);
         $location.search('page', null);
         $location.search('size', null);
+        $location.search('order', null);
     });
 
     $scope.init();
