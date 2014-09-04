@@ -60,19 +60,13 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
         tab.active = $state.is(tab.route);
     });
 
-    if (!$scope.adGroupData.adGroupChange) {
-        $scope.adGroupData.adGroupChange = true;
-    } else {
-        var data = $scope.adGroupData[$state.params.id];
-        $location.search('source_ids', data && data.sourceIds && data.sourceIds.join(','));
-        $location.search('source_totals', data && data.sourceTotals ? 1 : null);
-        $location.search('page', data && data.page);
-    }
-    
     $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
         $location.search('source_ids', null);
         $location.search('source_totals', null);
         $location.search('page', null);
+        $location.search('size', null);
+        $location.search('chart_metric1', null);
+        $location.search('chart_metric2', null);
     });
 
     $scope.getAdGroupState = function() {

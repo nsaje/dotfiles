@@ -190,6 +190,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         if (newValue !== oldValue) {
             $scope.setChartData();
             $location.search('chart_metric1', $scope.chartMetric1);
+            localStorageService.set('adGroupContentAds.chartMetric1', $scope.chartMetric1);
         }
     });
 
@@ -197,6 +198,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         if (newValue !== oldValue) {
             $scope.setChartData();
             $location.search('chart_metric2', $scope.chartMetric2);
+            localStorageService.set('adGroupContentAds.chartMetric2', $scope.chartMetric2);
         }
     });
 
@@ -213,18 +215,25 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     });
 
     $scope.init = function() {
-        var chartMetric1 = $location.search().chart_metric1;
-        var chartMetric2 = $location.search().chart_metric2;
+        var chartMetric1 = $location.search().chart_metric1 || localStorageService.get('adGroupContentAds.chartMetric1') || $scope.chartMetric1;
+        var chartMetric2 = $location.search().chart_metric2 || localStorageService.get('adGroupContentAds.chartMetric2') || $scope.chartMetric2;
         var chartHidden = $location.search().chart_hidden;
+        var size = $location.search().size || localStorageService.get('adGroupContentAds.paginationSize') || $scope.sizeRange[0];
+        var tableChanged = false;
         var chartChanged = false;
+
+        var data = $scope.adGroupData[$state.params.id];
+        var page = $location.search().page || (data && data.page);
 
         if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
             $scope.chartMetric1 = chartMetric1;
+            $location.search('chart_metric1', chartMetric1);
             chartChanged = true;
         }
 
         if (chartMetric2 !== undefined && $scope.chartMetric2 !== chartMetric2) {
             $scope.chartMetric2 = chartMetric2;
+            $location.search('chart_metric2', chartMetric2);
             chartChanged = true;
         }
 
@@ -236,16 +245,13 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             $scope.setChartData();
         }
 
-        var tableChanged = false;
-
-        var page = $location.search().page;
         if (page !== undefined && $scope.pagination.currentPage !== page) {
             $scope.pagination.currentPage = page;
             $scope.setAdGroupData('page', page);
+            $location.search('page', page);
             tableChanged = true;
         }
 
-        var size = $location.search().size || localStorageService.get('paginationSize') || $scope.sizeRange[0];
         if (size !== undefined && $scope.pagination.size !== size) {
             $scope.pagination.size = size;
             tableChanged = true;
@@ -282,7 +288,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         $scope.pagination.sizeTemp = '';
 
         $location.search('size', $scope.pagination.size);
-        localStorageService.set('paginationSize', $scope.pagination.size);
+        localStorageService.set('adGroupContentAds.paginationSize', $scope.pagination.size);
         $scope.loadPage();
     };
 

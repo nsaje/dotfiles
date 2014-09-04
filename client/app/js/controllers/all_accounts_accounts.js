@@ -208,6 +208,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         if (newValue !== oldValue) {
             $scope.setChartData();
             $location.search('chart_metric1', $scope.chartMetric1);
+            localStorageService.set('allAccountsAccounts.chartMetric1', $scope.chartMetric1);
         }
     });
 
@@ -221,6 +222,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         if (newValue !== oldValue) {
             $scope.setChartData();
             $location.search('chart_metric2', $scope.chartMetric2);
+            localStorageService.set('allAccountsAccounts.chartMetric2', $scope.chartMetric2);
         }
     });
 
@@ -273,7 +275,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         $scope.pagination.sizeTemp = '';
 
         $location.search('size', $scope.pagination.size);
-        localStorageService.set('paginationSize', $scope.pagination.size);
+        localStorageService.set('allAccountsAccounts.paginationSize', $scope.pagination.size);
         $scope.loadPage();
     };
 
@@ -284,18 +286,23 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     };
 
     $scope.init = function() {
-        var chartMetric1 = $location.search().chart_metric1;
-        var chartMetric2 = $location.search().chart_metric2;
+        var chartMetric1 = $location.search().chart_metric1 || localStorageService.get('allAccountsAccounts.chartMetric1') || $scope.chartMetric1;
+        var chartMetric2 = $location.search().chart_metric2 || localStorageService.get('allAccountsAccounts.chartMetric2') || $scope.chartMetric2;
         var chartHidden = $location.search().chart_hidden;
+        var size = $location.search().size || localStorageService.get('allAccountsAccounts.paginationSize') || $scope.sizeRange[0];
+        var page = $location.search().page;
         var changed = false;
+        var tableChanged = false;
 
         if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
             $scope.chartMetric1 = chartMetric1;
+            $location.search('chart_metric1', chartMetric1);
             changed = true;
         }
 
         if (chartMetric2 !== undefined && $scope.chartMetric2 !== chartMetric2) {
             $scope.chartMetric2 = chartMetric2;
+            $location.search('chart_metric2', chartMetric2);
             changed = true;
         }
 
@@ -313,14 +320,11 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
         pollSyncStatus();
 
-        var tableChanged = false;
-        var page = $location.search().page;
         if (page !== undefined && $scope.pagination.currentPage !== page) {
             $scope.pagination.currentPage = page;
             tableChanged = true;
         }
 
-        var size = $location.search().size || localStorageService.get('paginationSize') || $scope.sizeRange[0];
         if (size !== undefined && $scope.pagination.size !== size) {
             $scope.pagination.size = size;
             tableChanged = true;
@@ -330,6 +334,13 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             $scope.loadPage();
         }
     };
+
+    $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
+        $location.search('chart_metric1', null);
+        $location.search('chart_metric2', null);
+        $location.search('page', null);
+        $location.search('size', null);
+    });
 
     $scope.init();
 }]);
