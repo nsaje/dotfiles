@@ -1,5 +1,4 @@
 import datetime
-import operator
 
 from django import test
 from django.core.exceptions import ObjectDoesNotExist
@@ -12,20 +11,7 @@ from dash import models as dashmodels
 from reports import api
 from reports import exc
 from reports import models
-
-
-def dicts_match_for_keys(dct1, dct2, keys):
-    if not reduce(operator.iand, (k in dct1 and k in dct2 for k in keys), True):
-        return False
-    return reduce(operator.iand, (dct1[k] == dct2[k] for k in keys), True)
-
-
-def sequence_of_dicts_match_for_keys(dicts1, dicts2, keys):
-    if len(dicts1) != len(dicts2):
-        return False
-    return reduce(operator.iand, 
-        (dicts_match_for_keys(dct1, dct2, keys) for dct1, dct2 in zip(dicts1, dicts2)),
-        True)
+from utils.test_helper import dicts_match_for_keys, sequence_of_dicts_match_for_keys
 
 
 class QueryTestCase(test.TestCase):

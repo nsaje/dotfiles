@@ -14,7 +14,6 @@ class ArticleStats(models.Model):
     clicks = models.IntegerField(default=0, blank=False, null=False)
     cost_cc = models.IntegerField(default=0, blank=False, null=False)
     
-
      # postclick metrics
     visits = models.IntegerField(default=0, blank=False, null=False)
     new_visits = models.IntegerField(default=0, blank=False, null=False)
