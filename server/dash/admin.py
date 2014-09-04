@@ -147,6 +147,9 @@ class DefaultSourceSettingsAdmin(admin.ModelAdmin):
     )
 
     def credentials_(self, obj):
+        if obj.credentials is None:
+            return '/'
+
         return '<a href="{credentials_url}">{credentials}</a>'.format(
             credentials_url=reverse('admin:dash_sourcecredentials_change', args=(obj.credentials.id,)),
             credentials=obj.credentials

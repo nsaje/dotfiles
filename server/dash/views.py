@@ -879,7 +879,7 @@ class AdGroupSources(api_common.BaseApiView):
 
         ad_group = get_ad_group(request.user, ad_group_id)
 
-        sources = map(lambda s: s.source, models.DefaultSourceSettings.objects.all())
+        sources = map(lambda s: s.source, models.DefaultSourceSettings.objects.exclude(credentials__isnull=True))
         ad_group_sources = ad_group.sources.all().order_by('name')
 
         sources = [{'id': s.id, 'name': s.name} for s in sources if s not in ad_group_sources]
