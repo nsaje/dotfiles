@@ -14,8 +14,7 @@ class RollupTestCase(test.TestCase):
         self.end_date = datetime.date(2014, 8, 3)
 
     def test_by_adgroup_for_campaign(self):
-        rs = api.query(self.start_date, self.end_date, breakdown=['ad_group'], order=['clicks'], campaign=1)
-        rows = api.collect_results(rs)
+        rows = api.query(self.start_date, self.end_date, breakdown=['ad_group'], order=['clicks'], campaign=1)
         
         self.assertEqual(len(rows), 3)
 
@@ -37,8 +36,7 @@ class RollupTestCase(test.TestCase):
         self.assertEqual(rows[2]['cpc'], 0.0286)
 
     def test_by_source_for_campaign(self):
-        rs = api.query(self.start_date, self.end_date, breakdown=['source'], order=['clicks'], campaign=2)
-        rows = api.collect_results(rs)
+        rows = api.query(self.start_date, self.end_date, breakdown=['source'], order=['clicks'], campaign=2)
         
         self.assertEqual(len(rows), 2)
 
@@ -55,8 +53,7 @@ class RollupTestCase(test.TestCase):
         self.assertEqual(rows[1]['cpc'], 0.0401)
 
     def test_by_campaign_for_account(self):
-        rs = api.query(self.start_date, self.end_date, breakdown=['campaign'], order=['clicks'], account=1)
-        rows = api.collect_results(rs)
+        rows = api.query(self.start_date, self.end_date, breakdown=['campaign'], order=['clicks'], account=1)
 
         self.assertEqual(len(rows), 2)
 
@@ -69,8 +66,7 @@ class RollupTestCase(test.TestCase):
         self.assertEqual(rows[1]['cost'], 7.3366)
 
     def test_by_source_for_account(self):
-        rs = api.query(self.start_date, self.end_date, breakdown=['source'], order=['clicks'], account=1)
-        rows = api.collect_results(rs)
+        rows = api.query(self.start_date, self.end_date, breakdown=['source'], order=['clicks'], account=1)
 
         self.assertEqual(len(rows), 2)
 
@@ -79,8 +75,7 @@ class RollupTestCase(test.TestCase):
         self.assertEqual(rows[0]['cost'], 4.8329)
 
     def test_by_account_for_all(self):
-        rs = api.query(self.start_date, self.end_date, breakdown=['account'], order=['clicks'])
-        rows = api.collect_results(rs)
+        rows = api.query(self.start_date, self.end_date, breakdown=['account'], order=['clicks'])
 
         self.assertEqual(len(rows), 2)
 
@@ -89,8 +84,7 @@ class RollupTestCase(test.TestCase):
         self.assertEqual(rows[1]['cost'], 11.1313)
 
     def test_by_source_for_all(self):
-        rs = api.query(self.start_date, self.end_date, breakdown=['source'], order=['clicks'])
-        rows = api.collect_results(rs)
+        rows = api.query(self.start_date, self.end_date, breakdown=['source'], order=['clicks'])
 
         self.assertEqual(len(rows), 2)
 
@@ -99,8 +93,7 @@ class RollupTestCase(test.TestCase):
         self.assertEqual(rows[1]['cost'], 5.6237)
 
     def test_by_day_for_all(self):
-        rs = api.query(self.start_date, self.end_date, breakdown=['date'], order=['date'])
-        rows = api.collect_results(rs)
+        rows = api.query(self.start_date, self.end_date, breakdown=['date'], order=['date'])
 
         self.assertEqual(len(rows), 3)
 

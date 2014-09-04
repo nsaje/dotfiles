@@ -58,7 +58,7 @@ class QueryTestCase(test.TestCase):
             'clicks': 24
         }]
 
-        result = api.collect_results(api.query(start, end, ['date'], ['date'], ad_group=1))
+        result = api.query(start, end, ['date'], ['date'], ad_group=1)
 
         self.assertTrue(sequence_of_dicts_match_for_keys(result, expected, expected[0].keys()))
 
@@ -74,7 +74,7 @@ class QueryTestCase(test.TestCase):
         start = datetime.date(2014, 6, 10)
         end = datetime.date(2014, 6, 12)
 
-        result = api.collect_results(api.query(start, end, ['date'], ad_group=1))
+        result = api.query(start, end, ['date'], ad_group=1)
 
         self.assertEqual(result, [])
 
@@ -90,7 +90,7 @@ class QueryTestCase(test.TestCase):
             'impressions': None
         }
 
-        result = api.collect_results(api.query(start, end, [], ad_group=1))
+        result = api.query(start, end, [], ad_group=1)
 
         self.assertTrue(dicts_match_for_keys(result, expected, expected.keys()))
 
@@ -107,7 +107,7 @@ class QueryTestCase(test.TestCase):
             'clicks': 78
         }
 
-        result = api.collect_results(api.query(start, end, ['source'], ad_group=1))[0]
+        result = api.query(start, end, ['source'], ad_group=1)[0]
 
         self.assertTrue(dicts_match_for_keys(result, expected, expected.keys()))
 
@@ -123,7 +123,7 @@ class QueryTestCase(test.TestCase):
             'cpc': 0.0481
         }
 
-        result = api.collect_results(api.query(start, end, [], ad_group=1))
+        result = api.query(start, end, [], ad_group=1)
 
         self.assertTrue(dicts_match_for_keys(result, expected, expected.keys()))
 
@@ -173,7 +173,7 @@ class QueryTestCase(test.TestCase):
             'url': 'http://test2.com'
         }]
 
-        result = api.collect_results(api.query(start, end, ['date', 'article'], ['date', 'article'], ad_group=1))
+        result = api.query(start, end, ['date', 'article'], ['date', 'article'], ad_group=1)
 
         self.assertTrue(sequence_of_dicts_match_for_keys(result, expected, expected[0].keys()))
 
@@ -219,7 +219,7 @@ class QueryTestCase(test.TestCase):
             'url': 'http://test4.com'
         }]
 
-        result = api.collect_results(api.query(start, end, ['article'], ['article'], article=[1, 2, 3, 4, 5]))
+        result = api.query(start, end, ['article'], ['article'], article=[1, 2, 3, 4, 5])
 
         self.assertTrue(sequence_of_dicts_match_for_keys(result, expected, expected[0].keys()))
 
@@ -291,10 +291,10 @@ class QueryTestCase(test.TestCase):
             'url': 'http://test1.com'
         }]
 
-        result = api.collect_results(api.query(start, end, ['date', 'article'], order=['cpc'], ad_group=1))
+        result = api.query(start, end, ['date', 'article'], order=['cpc'], ad_group=1)
         self.assertTrue(sequence_of_dicts_match_for_keys(result, expected, expected[0].keys()))
 
-        result = api.collect_results(api.query(start, end, ['date', 'article'], order=['-cpc'], ad_group=1))
+        result = api.query(start, end, ['date', 'article'], order=['-cpc'], ad_group=1)
 
         desc_expected = [expected[2], expected[1], expected[0], expected[3]]
         self.assertTrue(sequence_of_dicts_match_for_keys(result, desc_expected, desc_expected[0].keys()))
@@ -332,7 +332,7 @@ class QueryTestCase(test.TestCase):
             order=['cpc'],
             ad_group=1
         ), 1, 2)
-        rows = api.collect_results(result[0])
+        rows = result[0]
         self.assertTrue(sequence_of_dicts_match_for_keys(rows, expected, expected[0].keys()))
         self.assertEqual(result[1], 1)
         self.assertEqual(result[2], 2)
@@ -369,7 +369,7 @@ class QueryTestCase(test.TestCase):
             order=['cpc'],
             ad_group=1
         ), 2, 2)
-        rows = api.collect_results(result[0])
+        rows = result[0]
         self.assertTrue(sequence_of_dicts_match_for_keys(rows, expected, expected[0].keys()))
         self.assertEqual(result[1], 2)
         self.assertEqual(result[2], 2)
@@ -385,7 +385,7 @@ class QueryTestCase(test.TestCase):
             order=['cpc'],
             ad_group=1
         ), 3, 2)
-        rows = api.collect_results(result[0])
+        rows = result[0]
         self.assertTrue(sequence_of_dicts_match_for_keys(rows, expected, expected[0].keys()))
         self.assertEqual(result[1], 2)
         self.assertEqual(result[2], 2)
@@ -401,8 +401,7 @@ class QueryTestCase(test.TestCase):
         self.assertEqual(isinstance(result, Sequence), True)
 
         result = api.query(start, end, ['source'], ['clicks'], ad_group=1)
-        self.assertEqual(isinstance(result, QuerySet), True)
-        self.assertEqual(isinstance(result, Sequence), False)
+        self.assertEqual(isinstance(result, Sequence), True)
 
 
 class YesterdayCostTestCase(test.TestCase):
