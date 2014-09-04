@@ -139,20 +139,7 @@ class SourceCredentialsForm(forms.ModelForm):
             del self.cleaned_data['credentials']
 
 
-class ZemantaExclusivePublishersInlineForm(forms.ModelForm):
-
-    def clean_exclusive_publisher_ids(self):
-        if self.cleaned_data['exclusive_publisher_ids'] != '':
-            try:
-                for el in self.cleaned_data['exclusive_publisher_ids'].strip().split(','):
-                    int(el)
-            except Exception:
-                raise forms.ValidationError('The value has to be a comma separated list of publisher ids.')
-
-        return ','.join(el.strip() for el in self.cleaned_data['exclusive_publisher_ids'].split(','))
-
-
-class DefaultSourceCredentialsAdmin(admin.ModelAdmin):
+class DefaultSourceSettingsAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'source',
@@ -283,14 +270,6 @@ class CampaignAdmin(admin.ModelAdmin):
         return '/campaigns/{}/agency'.format(obj.id)
 
 
-class ZemantaExclusivePublishersInline(admin.TabularInline):
-    form = ZemantaExclusivePublishersInlineForm
-    verbose_name = "Zemanta Exclusive Publishers"
-    verbose_name_plural = "Zemanta Exclusive Publishers"
-    model = models.ZemantaExclusivePublishers
-    extra = 0
-
-
 class SourceAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
@@ -300,17 +279,6 @@ class SourceAdmin(admin.ModelAdmin):
         'modified_dt',
     )
     readonly_fields = ('created_dt', 'modified_dt')
-
-    def change_view(self, request, source_id, form_url='', extra_context=None):
-        from django.contrib.admin.util import unquote
-        source = self.get_object(request, unquote(source_id))
-        if source:
-            if source.type == constants.SourceType.ZEMANTA:
-                self.inlines = (ZemantaExclusivePublishersInline,)
-            else:
-                self.inlines = ()
-
-        return super(SourceAdmin, self).change_view(request, source_id, form_url, extra_context)
 
 
 class SourceCredentialsAdmin(admin.ModelAdmin):
@@ -470,4 +438,4 @@ admin.site.register(models.AdGroup, AdGroupAdmin)
 admin.site.register(models.AdGroupSettings, AdGroupSettingsAdmin)
 admin.site.register(models.AdGroupSourceSettings, AdGroupSourceSettingsAdmin)
 admin.site.register(models.SourceCredentials, SourceCredentialsAdmin)
-admin.site.register(models.DefaultSourceCredentials, DefaultSourceCredentialsAdmin)
+admin.site.register(models.DefaultSourceSettings, DefaultSourceSettingsAdmin)

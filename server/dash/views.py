@@ -879,7 +879,7 @@ class AdGroupSources(api_common.BaseApiView):
 
         ad_group = get_ad_group(request.user, ad_group_id)
 
-        sources = map(lambda s: s.source, models.DefaultSourceCredentials.objects.all())
+        sources = map(lambda s: s.source, models.DefaultSourceSettings.objects.all())
         ad_group_sources = ad_group.sources.all().order_by('name')
 
         sources = [{'id': s.id, 'name': s.name} for s in sources if s not in ad_group_sources]
@@ -900,14 +900,17 @@ class AdGroupSources(api_common.BaseApiView):
         source = models.Source.objects.get(id=source_id)
 
         try:
-            default_credentials = models.DefaultSourceCredentials.objects.get(source=source)
-        except models.DefaultSourceCredentials.DoesNotExist:
-            raise exc.MissingDataError('No default credentials set for {}.'.format(source.name))
+            default_settings = models.DefaultSourceSettings.objects.get(source=source)
+        except models.DefaultSourceSettings.DoesNotExist:
+            raise exc.MissingDataError('No default settings set for {}.'.format(source.name))
+
+        if not default_settings.credentials:
+            raise exc.MissingDataError('No default credentials set in {}.'.format(default_settings))
 
         ad_group_source = models.AdGroupSource(
             source=source,
             ad_group=ad_group,
-            source_credentials=default_credentials.credentials
+            source_credentials=default_settings.credentials
         )
 
         ad_group_source.save()

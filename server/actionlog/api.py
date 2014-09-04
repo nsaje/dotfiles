@@ -436,9 +436,10 @@ def _init_create_campaign(ad_group_source, name):
                 'callback_url': callback,
             }
 
-            additional_parameters = ad_group_source.source.get_additional_action_parameters()
-            if 'create_campaign' in additional_parameters:
-                payload['args']['extra'] = additional_parameters['create_campaign']
+            if ad_group_source.source.defaultsourcesettings:
+                params = ad_group_source.source.defaultsourcesettings.params
+                if 'create_campaign' in params:
+                    payload['args']['extra'] = params['create_campaign']
 
             action.payload = payload
             action.save()

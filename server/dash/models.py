@@ -207,23 +207,6 @@ class Source(models.Model):
     def __unicode__(self):
         return self.name
 
-    def get_additional_action_parameters(self):
-        if self.type == constants.SourceType.ZEMANTA:
-            if self.zemantaexclusivepublishers:
-                exclusive_publisher_ids = [int(pid) for pid in self.zemantaexclusivepublishers.exclusive_publisher_ids.split(',')]
-                return {
-                    'create_campaign': {
-                        'exclusive_publisher_ids': exclusive_publisher_ids
-                    }
-                }
-
-        return {}
-
-
-class ZemantaExclusivePublishers(models.Model):
-    source = models.OneToOneField(Source, primary_key=True)
-    exclusive_publisher_ids = models.TextField(blank=True, null=False)
-
 
 class SourceCredentials(models.Model):
     id = models.AutoField(primary_key=True)
@@ -271,12 +254,19 @@ class SourceCredentials(models.Model):
         )
 
 
-class DefaultSourceCredentials(models.Model):
-    source = models.ForeignKey(Source, unique=True, on_delete=models.PROTECT)
-    credentials = models.ForeignKey(SourceCredentials, on_delete=models.PROTECT)
+class DefaultSourceSettings(models.Model):
+    source = models.OneToOneField(Source, unique=True, on_delete=models.PROTECT)
+    credentials = models.ForeignKey(SourceCredentials, on_delete=models.PROTECT, null=True, blank=True)
+    params = jsonfield.JSONField(
+        blank=True,
+        null=False,
+        default={},
+        verbose_name='Additional action parameters',
+        help_text='Information about format can be found here: <a href="https://sites.google.com/a/zemanta.com/root/content-ads-dsp/additional-source-parameters-format" target="_blank">Zemanta Pages</a>'
+    )
 
     class Meta:
-        verbose_name_plural = "Default Source Credentials"
+        verbose_name_plural = "Default Source Settings"
 
     def __unicode__(self):
         return self.source.name
