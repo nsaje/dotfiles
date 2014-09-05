@@ -7,4 +7,4 @@ coverage==3.7.1
 # for visualizing project models
 django-extensions==1.3.7
 
-git+git://github.com/tomazk/ci-metric-push.git#cipush
+git+git://github.com/Zemanta/ci-metric-push.git#cipush
