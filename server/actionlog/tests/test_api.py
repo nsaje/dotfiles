@@ -226,6 +226,38 @@ class ActionLogApiTestCase(TestCase):
             }
             self.assertEqual(action.payload, payload)
 
+    @patch('actionlog.models.datetime', MockDateTime)
+    def test_create_campaign(self):
+
+        utcnow = datetime.datetime.utcnow()
+        models.datetime.utcnow = classmethod(lambda cls: utcnow)
+
+        ad_group_source = dashmodels.AdGroupSource.objects.get(id=5)
+
+        name = 'Test'
+
+        api.create_campaign(ad_group_source, name)
+        action = models.ActionLog.objects.get(
+            ad_group_source=ad_group_source,
+            action=constants.Action.CREATE_CAMPAIGN
+        )
+
+        expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S')
+        callback = urlparse.urljoin(
+            settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
+        )
+        payload = {
+            'source': ad_group_source.source.type,
+            'action': constants.Action.CREATE_CAMPAIGN,
+            'expiration_dt': expiration_dt,
+            'credentials': ad_group_source.source_credentials.credentials,
+            'args': {
+                'name': name,
+            },
+            'callback_url': callback
+        }
+        self.assertEqual(action.payload, payload)
+
 
 class ActionLogApiCancelExpiredTestCase(TestCase):
 
