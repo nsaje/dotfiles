@@ -15,7 +15,8 @@ from . import models
 from . import constants
 from . import zwei_actions
 
-from dash import constants as dashconstants
+import dash.constants
+import dash.models
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,9 @@ def stop_ad_group(ad_group, source=None, order=None, commit=True):
 
     actionlogs = []
     for ad_group_source in ad_group_sources:
-        actionlogs.append(_init_stop_campaign(ad_group_source, order))
+        action = _init_stop_campaign(ad_group_source, order)
+        if action:
+            actionlogs.append(action)
 
     if commit:
         zwei_actions.send_multiple(actionlogs)
@@ -224,8 +227,7 @@ def _get_ad_group_sources(ad_group, source):
 
 
 def _init_stop_campaign(ad_group_source, order):
-    msg = '_init_stop started: ad_group_source.id: {}'.format(ad_group_source.id)
-    logger.info(msg)
+    logger.info('_init_stop started: ad_group_source.id: %s', ad_group_source.id)
 
     action = models.ActionLog.objects.create(
         action=constants.Action.SET_CAMPAIGN_STATE,
@@ -249,7 +251,7 @@ def _init_stop_campaign(ad_group_source, order):
                     ad_group_source.source_credentials.credentials,
                 'args': {
                     'source_campaign_key': ad_group_source.source_campaign_key,
-                    'state': dashconstants.AdGroupSourceSettingsState.INACTIVE,
+                    'state': dash.constants.AdGroupSourceSettingsState.INACTIVE,
                 },
                 'callback_url': callback,
             }

@@ -2,37 +2,33 @@ import json
 import urllib2
 
 from django.conf import settings
-from django.core import urlresolvers
+
+from utils.constant_base import ConstantBase
 
 
-def trigger_event(action_log_id):
-    if not settings.PAGER_DUTY_ENABLED:
-        return
+class PagerDutyEventType(ConstantBase):
+    SYSOPS = 'sysops'
+    ADOPS = 'adops'
 
-    # Base URL is hardcoded for a lack of better alternatives
-    admin_url = 'https://one.zemanta.com{0}'.format(
-        urlresolvers.reverse('admin:actionlog_actionlog_change', args=(action_log_id,)))
-
-    data = {
-        'service_key': settings.PAGER_DUTY_SERVICE_KEY,
-        'incident_key': 'adgroup_stop_failed',
-        'event_type': 'trigger',
-        'description': 'Adgroup stop action failed',
-        'client': 'Zemanta One - {0}'.format(settings.HOSTNAME),
-        'details': {
-            'action_log_admin_url': admin_url,
-        }
+    _VALUES = {
+        SYSOPS: 'SysOps',
+        ADOPS: 'AdOps',
     }
 
-    urllib2.urlopen(settings.PAGER_DUTY_URL, json.dumps(data))
 
-
-def trigger(incident_key, description, details=None):
+def trigger(event_type, incident_key, description, details=None):
     if not settings.PAGER_DUTY_ENABLED:
         return
 
+    if event_type == PagerDutyEventType.SYSOPS:
+        service_key = settings.PAGER_DUTY_SYSOPS_SERVICE_KEY
+    elif event_type == PagerDutyEventType.ADOPS:
+        service_key = settings.PAGER_DUTY_ADOPS_SERVICE_KEY
+    else:
+        raise AttributeError('Invalid event type')
+
     data = {
-        'service_key': settings.PAGER_DUTY_SERVICE_KEY,
+        'service_key': service_key,
         'incident_key': incident_key,
         'event_type': 'trigger',
         'description': description,

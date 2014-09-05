@@ -190,9 +190,10 @@ def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
             'campaign_settings_url': get_campaign_url(ad_group, request)
         }
         pagerduty_helper.trigger(
-            'ad_group_settings_change_mail_failed',
-            'E-mail notification for ad group settings change was not sent because the campaign settings or account manager is not set.',
-            desc
+            event_type=pagerduty_helper.PagerDutyEventType.ADOPS,
+            incident_key='ad_group_settings_change_mail_failed',
+            description='E-mail notification for ad group settings change was not sent because the campaign settings or account manager is not set.',
+            details=desc,
         )
         return
 
@@ -242,9 +243,10 @@ Zemanta
             'campaign_settings_url': get_campaign_url(ad_group, request)
         }
         pagerduty_helper.trigger(
-            'ad_group_settings_change_mail_failed',
-            'E-mail notification for ad group settings change was not sent because an exception was raised: {}'.format(traceback.format_exc(e)),
-            desc
+            event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
+            incident_key='ad_group_settings_change_mail_failed',
+            description='E-mail notification for ad group settings change was not sent because an exception was raised: {}'.format(traceback.format_exc(e)),
+            details=desc,
         )
 
 
