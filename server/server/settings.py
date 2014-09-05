@@ -25,6 +25,8 @@ except:
 
 # Application definition
 
+PROJECT_NAME = 'eins'
+
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
@@ -38,6 +40,7 @@ INSTALLED_APPS = (
     'actionlog',
     'reports',
     'zweiapi',
+    'raven.contrib.django.raven_compat',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -88,7 +91,11 @@ AUTHENTICATION_BACKENDS = (
     'zemauth.backends.EmailOrUsernameModelBackend',
 )
 
-TEST_RUNNER = 'utils.test_runner.CustomDiscoverRunner'
+TEST_RUNNER = 'utils.test_runner.CustomRunner'
+
+COVERAGE_ENABLED = 'COVERAGE_ENABLED' in os.environ
+
+DEFAULT_FROM_EMAIL = ''
 
 from localsettings import *
 
@@ -117,6 +124,11 @@ LOGGING = {
             'filename': LOG_FILE,
             'formatter': 'standard'
         },
+        'sentry': {
+            'level': 'ERROR',
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+            'formatter': 'standard',
+        },
     },
     'loggers': {
         'django.db.backends': {
@@ -130,7 +142,7 @@ LOGGING = {
             'propagate': True
         },
         '': {
-            'handlers': ['file', 'console'],
+            'handlers': ['file', 'console', 'sentry'],
             'level': 'DEBUG',
             'propagate': True
         }

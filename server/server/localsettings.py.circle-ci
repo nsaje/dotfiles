@@ -16,6 +16,16 @@ DATABASES = {
     }
 }
 
+# Email settings
+EMAIL_USE_TLS = True
+EMAIL_HOST = ''
+EMAIL_PORT = 587
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+
+SEND_AD_GROUP_SETTINGS_CHANGE_MAIL = False
+AD_GROUP_SETTINGS_CHANGE_FROM_EMAIL = 'help-test@zemanta.com'
+
 # Path to log file
 LOG_FILE = '/home/ubuntu/zemanta-eins.server.log'
 
@@ -50,3 +60,7 @@ CREDENTIALS_ENCRYPTION_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'  # has to be 32 
 PAGER_DUTY_ENABLED = False
 PAGER_DUTY_URL = ''
 PAGER_DUTY_SERVICE_KEY = ''
+
+RAVEN_CONFIG = {
+    'dsn': '',
+}

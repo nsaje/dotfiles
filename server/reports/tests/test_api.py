@@ -11,6 +11,7 @@ from dash import models as dashmodels
 from reports import api
 from reports import exc
 from reports import models
+from utils.test_helper import dicts_match_for_keys, sequence_of_dicts_match_for_keys
 
 
 class QueryTestCase(test.TestCase):
@@ -43,9 +44,9 @@ class QueryTestCase(test.TestCase):
             'clicks': 24
         }]
 
-        result = api.collect_results(api.query(start, end, ['date'], ['date'], ad_group=1))
+        result = api.query(start, end, ['date'], ['date'], ad_group=1)
 
-        self.assertEqual(result, expected)
+        self.assertTrue(sequence_of_dicts_match_for_keys(result, expected, expected[0].keys()))
 
     def test_breakdown_copy(self):
         start = datetime.date(2014, 6, 10)
@@ -59,7 +60,7 @@ class QueryTestCase(test.TestCase):
         start = datetime.date(2014, 6, 10)
         end = datetime.date(2014, 6, 12)
 
-        result = api.collect_results(api.query(start, end, ['date'], ad_group=1))
+        result = api.query(start, end, ['date'], ad_group=1)
 
         self.assertEqual(result, [])
 
@@ -75,9 +76,9 @@ class QueryTestCase(test.TestCase):
             'impressions': None
         }
 
-        result = api.collect_results(api.query(start, end, [], ad_group=1))
+        result = api.query(start, end, [], ad_group=1)
 
-        self.assertEqual(result, expected)
+        self.assertTrue(dicts_match_for_keys(result, expected, expected.keys()))
 
     def test_source_breakdown(self):
         start = datetime.date(2014, 6, 4)
@@ -92,9 +93,9 @@ class QueryTestCase(test.TestCase):
             'clicks': 78
         }
 
-        result = api.collect_results(api.query(start, end, ['source'], ad_group=1))[0]
+        result = api.query(start, end, ['source'], ad_group=1)[0]
 
-        self.assertEqual(result, expected)
+        self.assertTrue(dicts_match_for_keys(result, expected, expected.keys()))
 
     def test_totals_breakdown(self):
         start = datetime.date(2014, 6, 4)
@@ -108,9 +109,9 @@ class QueryTestCase(test.TestCase):
             'cpc': 0.0481
         }
 
-        result = api.collect_results(api.query(start, end, [], ad_group=1))
+        result = api.query(start, end, [], ad_group=1)
 
-        self.assertEqual(result, expected)
+        self.assertTrue(dicts_match_for_keys(result, expected, expected.keys()))
 
     def test_list_breakdown(self):
         start = datetime.date(2014, 6, 4)
@@ -158,9 +159,9 @@ class QueryTestCase(test.TestCase):
             'url': 'http://test2.com'
         }]
 
-        result = api.collect_results(api.query(start, end, ['date', 'article'], ['date', 'article'], ad_group=1))
+        result = api.query(start, end, ['date', 'article'], ['date', 'article'], ad_group=1)
 
-        self.assertEqual(result, expected)
+        self.assertTrue(sequence_of_dicts_match_for_keys(result, expected, expected[0].keys()))
 
     def test_list_constraints(self):
         start = datetime.date(2014, 6, 4)
@@ -204,9 +205,9 @@ class QueryTestCase(test.TestCase):
             'url': 'http://test4.com'
         }]
 
-        result = api.collect_results(api.query(start, end, ['article'], ['article'], article=[1, 2, 3, 4, 5]))
+        result = api.query(start, end, ['article'], ['article'], article=[1, 2, 3, 4, 5])
 
-        self.assertEqual(result, expected)
+        self.assertTrue(sequence_of_dicts_match_for_keys(result, expected, expected[0].keys()))
 
     def test_invalid_breakdown(self):
         start = datetime.date(2014, 6, 4)
@@ -276,13 +277,13 @@ class QueryTestCase(test.TestCase):
             'url': 'http://test1.com'
         }]
 
-        result = api.collect_results(api.query(start, end, ['date', 'article'], order=['cpc'], ad_group=1))
-        self.assertEqual(result, expected)
+        result = api.query(start, end, ['date', 'article'], order=['cpc'], ad_group=1)
+        self.assertTrue(sequence_of_dicts_match_for_keys(result, expected, expected[0].keys()))
 
-        result = api.collect_results(api.query(start, end, ['date', 'article'], order=['-cpc'], ad_group=1))
+        result = api.query(start, end, ['date', 'article'], order=['-cpc'], ad_group=1)
 
         desc_expected = [expected[2], expected[1], expected[0], expected[3]]
-        self.assertEqual(result, desc_expected)
+        self.assertTrue(sequence_of_dicts_match_for_keys(result, desc_expected, desc_expected[0].keys()))
 
     def test_pagination(self):
         start = datetime.date(2014, 6, 4)
@@ -317,8 +318,8 @@ class QueryTestCase(test.TestCase):
             order=['cpc'],
             ad_group=1
         ), 1, 2)
-        rows = api.collect_results(result[0])
-        self.assertEqual(rows, expected)
+        rows = result[0]
+        self.assertTrue(sequence_of_dicts_match_for_keys(rows, expected, expected[0].keys()))
         self.assertEqual(result[1], 1)
         self.assertEqual(result[2], 2)
         self.assertEqual(result[3], 4)
@@ -354,8 +355,8 @@ class QueryTestCase(test.TestCase):
             order=['cpc'],
             ad_group=1
         ), 2, 2)
-        rows = api.collect_results(result[0])
-        self.assertEqual(rows, expected)
+        rows = result[0]
+        self.assertTrue(sequence_of_dicts_match_for_keys(rows, expected, expected[0].keys()))
         self.assertEqual(result[1], 2)
         self.assertEqual(result[2], 2)
         self.assertEqual(result[3], 4)
@@ -370,8 +371,8 @@ class QueryTestCase(test.TestCase):
             order=['cpc'],
             ad_group=1
         ), 3, 2)
-        rows = api.collect_results(result[0])
-        self.assertEqual(rows, expected)
+        rows = result[0]
+        self.assertTrue(sequence_of_dicts_match_for_keys(rows, expected, expected[0].keys()))
         self.assertEqual(result[1], 2)
         self.assertEqual(result[2], 2)
         self.assertEqual(result[3], 4)
@@ -386,8 +387,7 @@ class QueryTestCase(test.TestCase):
         self.assertEqual(isinstance(result, Sequence), True)
 
         result = api.query(start, end, ['source'], ['clicks'], ad_group=1)
-        self.assertEqual(isinstance(result, QuerySet), True)
-        self.assertEqual(isinstance(result, Sequence), False)
+        self.assertEqual(isinstance(result, Sequence), True)
 
 
 class YesterdayCostTestCase(test.TestCase):
@@ -646,10 +646,11 @@ class UpsertReportsTestCase(test.TestCase):
             self.assertEqual(article_stats.impressions, row['impressions'])
             self.assertEqual(article_stats.clicks, row['clicks'])
             self.assertEqual(article_stats.cost_cc, row['cost_cc'])
+            self.assertEqual(article_stats.has_traffic_metrics, 1)
 
         api.save_report(ags.ad_group, ags.source, rows_new_title, date)
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
-        self.assertEqual(len(stats), 2)
+        self.assertEqual(len(stats), 4)
         for row in rows_new_title:
             article = dashmodels.Article.objects.get(title=row['title'], url=row['url'], ad_group=ags.ad_group)
             article_stats = models.ArticleStats.objects.get(
@@ -661,9 +662,24 @@ class UpsertReportsTestCase(test.TestCase):
             self.assertEqual(article_stats.impressions, row['impressions'])
             self.assertEqual(article_stats.clicks, row['clicks'])
             self.assertEqual(article_stats.cost_cc, row['cost_cc'])
+            self.assertEqual(article_stats.has_traffic_metrics, 1)
+        # make sure the metrics for the articles inserted before are reset
+        for row in rows:
+            article = dashmodels.Article.objects.get(title=row['title'], url=row['url'], ad_group=ags.ad_group)
+            article_stats = models.ArticleStats.objects.get(
+                article=article,
+                ad_group=ags.ad_group,
+                source=ags.source,
+                datetime=date
+            )
+            self.assertEqual(article_stats.impressions, 0)
+            self.assertEqual(article_stats.clicks, 0)
+            self.assertEqual(article_stats.cost_cc, 0)
+            self.assertEqual(article_stats.has_traffic_metrics, 1)
 
         api.save_report(ags.ad_group, ags.source, rows_new_url, date)
-        self.assertEqual(len(stats), 2)
+        stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
+        self.assertEqual(len(stats), 6)
         for row in rows_new_url:
             article = dashmodels.Article.objects.get(title=row['title'], url=row['url'], ad_group=ags.ad_group)
             article_stats = models.ArticleStats.objects.get(
@@ -675,6 +691,20 @@ class UpsertReportsTestCase(test.TestCase):
             self.assertEqual(article_stats.impressions, row['impressions'])
             self.assertEqual(article_stats.clicks, row['clicks'])
             self.assertEqual(article_stats.cost_cc, row['cost_cc'])
+            self.assertEqual(article_stats.has_traffic_metrics, 1)
+        # make sure the metrics for the articles inserted before are reset
+        for row in rows + rows_new_title:
+            article = dashmodels.Article.objects.get(title=row['title'], url=row['url'], ad_group=ags.ad_group)
+            article_stats = models.ArticleStats.objects.get(
+                article=article,
+                ad_group=ags.ad_group,
+                source=ags.source,
+                datetime=date
+            )
+            self.assertEqual(article_stats.impressions, 0)
+            self.assertEqual(article_stats.clicks, 0)
+            self.assertEqual(article_stats.cost_cc, 0)
+            self.assertEqual(article_stats.has_traffic_metrics, 1)
 
     def test_save_reports_duplicate(self):
         date1 = datetime.date(2014, 7, 10)

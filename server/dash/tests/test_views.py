@@ -42,35 +42,7 @@ class AdGroupAdsExportTestCase(test.TestCase):
 
         self.mock_models.Source.objects.all.return_value = [self.mock_source1, self.mock_source2]
 
-        # self.mock_article = Mock()
-        # self.mock_article.id = 1
-        # self.mock_article.title = u'Test Article with unicode Čžš'
-        # self.mock_article.url = 'http://www.example.com'
-        # self.mock_models.Article.objects.filter.return_value = [self.mock_article]
-
-        # self.mock_api.query.side_effect = [
-        #     ([{
-        #         'article': 1,
-        #         'date': datetime.date(2014, 7, 1),
-        #         'cost': 1000.123242,
-        #         'cpc': 10.2334,
-        #         'clicks': 103,
-        #         'impressions': 100000,
-        #         'ctr': 1.031231231
-        #     }],),
-        #     ([{
-        #         'article': 1,
-        #         'source': 1,
-        #         'date': datetime.date(2014, 7, 1),
-        #         'cost': 1000.123242,
-        #         'cpc': 10.2334,
-        #         'clicks': 103,
-        #         'impressions': 100000,
-        #         'ctr': 1.031231231
-        #     }],)
-        # ]
-
-        self.mock_api.collect_results.side_effect = [
+        self.mock_api.query.side_effect = [
             [{
                 'article': 1,
                 'date': datetime.date(2014, 7, 1),

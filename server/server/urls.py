@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
 from django.views.generic import TemplateView
+from django.conf.urls import handler404
 
 import utils.statsd_helper
 
@@ -47,6 +48,10 @@ urlpatterns += patterns(
         login_required(dash.views.AdGroupAgency.as_view()),
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/$',
+        login_required(dash.views.AdGroupSources.as_view()),
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/table/',
         login_required(dash.views.AdGroupSourcesTable.as_view()),
     ),
@@ -63,6 +68,18 @@ urlpatterns += patterns(
         login_required(dash.views.AdGroupAdsTable.as_view()),
     ),
     url(
+        r'^api/accounts/table/',
+        login_required(dash.views.AccountsAccountsTable.as_view()),
+    ),
+    url(
+        r'^api/accounts/sync/',
+        login_required(dash.views.AccountSync.as_view()),
+    ),
+    url(
+        r'^api/accounts/check_sync_progress/',
+        login_required(dash.views.AccountSyncProgress.as_view()),
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/sync/',
         login_required(dash.views.AdGroupSync.as_view()),
     ),
@@ -75,8 +92,28 @@ urlpatterns += patterns(
         login_required(dash.views.AdGroupDailyStats.as_view()),
     ),
     url(
+        r'^api/accounts/daily_stats/',
+        login_required(dash.views.AccountDailyStats.as_view()),
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/',
+        login_required(dash.views.CampaignAdGroups.as_view()),
+    ),
+    url(
         r'^api/campaigns/(?P<campaign_id>\d+)/settings/',
         login_required(dash.views.CampaignSettings.as_view()),
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/campaigns/',
+        login_required(dash.views.AccountCampaigns.as_view()),
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/agency/',
+        login_required(dash.views.AccountAgency.as_view()),
+    ),
+    url(
+        r'^api/accounts/$',
+        login_required(dash.views.Account.as_view()),
     ),
     url(r'^api/nav_data$', login_required(dash.views.NavigationDataView.as_view())),
     url(r'^api/users/(?P<user_id>(\d+|current))/$', login_required(dash.views.User.as_view())),
@@ -145,5 +182,6 @@ urlpatterns += patterns(
 
 urlpatterns += patterns(
     '',
+    url(r'^api/', handler404),
     url(r'^', dash.views.index, name='index')
 )

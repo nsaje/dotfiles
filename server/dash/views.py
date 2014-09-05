@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+import math
 import dateutil.parser
 from collections import OrderedDict
 import unicodecsv
@@ -9,16 +10,18 @@ import slugify
 import excel_styles
 import base64
 import httplib
+import traceback
 import urllib
 import urllib2
+import threading
 from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core import urlresolvers
+from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 import pytz
@@ -26,6 +29,7 @@ import pytz
 from utils import statsd_helper
 from utils import api_common
 from utils import exc
+from utils import pagerduty_helper
 import actionlog.api
 import actionlog.sync
 import actionlog.zwei_actions
@@ -45,10 +49,15 @@ STATS_START_DELTA = 30
 STATS_END_DELTA = 1
 
 
-def get_ad_group(user, ad_group_id):
+def get_ad_group(user, ad_group_id, select_related=False):
     try:
-        return models.AdGroup.objects.get_for_user(user).\
-            filter(id=int(ad_group_id)).get()
+        ad_group = models.AdGroup.objects.get_for_user(user).\
+            filter(id=int(ad_group_id))
+
+        if select_related:
+            ad_group = ad_group.select_related('campaign__partner')
+
+        return ad_group.get()
     except models.AdGroup.DoesNotExist:
         raise exc.MissingDataError('Ad Group does not exist')
 
@@ -59,6 +68,14 @@ def get_campaign(user, campaign_id):
             filter(id=int(campaign_id)).get()
     except models.Campaign.DoesNotExist:
         raise exc.MissingDataError('Campaign does not exist')
+
+
+def get_account(user, account_id):
+    try:
+        return models.Account.objects.get_for_user(user).\
+            filter(id=int(account_id)).get()
+    except models.Account.DoesNotExist:
+        raise exc.MissingDataError('Account does not exist')
 
 
 def daterange(start_date, end_date):
@@ -93,7 +110,6 @@ def generate_rows(dimensions, ad_group_id, start_date, end_date):
         ordering,
         ad_group=int(ad_group_id)
     )
-    data = reports.api.collect_results(data)
 
     if 'source' in dimensions:
         sources = {source.id: source for source in models.Source.objects.all()}
@@ -134,7 +150,7 @@ def get_last_successful_source_sync_dates(ad_group):
     ag_sync = actionlog.sync.AdGroupSync(ad_group)
     result = {}
     for c in ag_sync.get_components():
-        result[c.ad_group_source.source_id] = c.get_latest_success()
+        result[c.ad_group_source.source_id] = c.get_latest_success(recompute=False)
     return result
 
 
@@ -149,6 +165,108 @@ def is_sync_recent(last_sync_datetime):
     result = last_sync_datetime >= pytz.utc.localize(min_sync_date)
 
     return result
+
+
+def get_campaign_url(ad_group, request):
+    campaign_settings_url = request.build_absolute_uri(
+        reverse('admin:dash_campaign_change', args=(ad_group.campaign.pk,)))
+    campaign_settings_url = campaign_settings_url.replace('http://', 'https://')
+
+    return campaign_settings_url
+
+
+def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
+    if not settings.SEND_AD_GROUP_SETTINGS_CHANGE_MAIL:
+        return
+
+    campaign_settings = models.CampaignSettings.objects.\
+        filter(campaign=ad_group.campaign).\
+        order_by('-created_dt')[:1]
+
+    if not campaign_settings or not campaign_settings[0].account_manager:
+        logger.error('Could not send e-mail because there is no account manager set for campaign with id %s.', ad_group.campaign.pk)
+
+        desc = {
+            'campaign_settings_url': get_campaign_url(ad_group, request)
+        }
+        pagerduty_helper.trigger(
+            'ad_group_settings_change_mail_failed',
+            'E-mail notification for ad group settings change was not sent because the campaign settings or account manager is not set.',
+            desc
+        )
+        return
+
+    if user.pk == campaign_settings[0].account_manager.pk:
+        return
+
+    recipients = [campaign_settings[0].account_manager.email]
+
+    subject = 'Settings change - ad group {}, campaign {}, account {}'.format(
+        ad_group.name,
+        ad_group.campaign.name,
+        ad_group.campaign.account.name
+    )
+
+    action_log_url = request.build_absolute_uri(
+        reverse('action_log_view'))
+    action_log_url = action_log_url.replace('http://', 'https://')
+    action_log_url += '#?filters=ad_group:{}'.format(ad_group.pk)
+
+    body = '''Hi account manager of {ad_group.name}
+
+We'd like to notify you that {user.email} has made a change in the settings of the ad group {ad_group.name}, campaign {campaign.name}, account {account.name}. Please check {link_url} for details.
+
+Yours truly,
+Zemanta
+    '''
+    body = body.format(
+        user=user,
+        ad_group=ad_group,
+        campaign=ad_group.campaign,
+        account=ad_group.campaign.account,
+        link_url=action_log_url
+    )
+
+    try:
+        send_mail(
+            subject,
+            body,
+            settings.AD_GROUP_SETTINGS_CHANGE_FROM_EMAIL,
+            recipients,
+            fail_silently=False
+        )
+    except Exception as e:
+        logger.error('E-mail notification for ad group settings (ad group id: %d) change was not sent because an exception was raised: %s', ad_group.pk, traceback.format_exc(e))
+
+        desc = {
+            'campaign_settings_url': get_campaign_url(ad_group, request)
+        }
+        pagerduty_helper.trigger(
+            'ad_group_settings_change_mail_failed',
+            'E-mail notification for ad group settings change was not sent because an exception was raised: {}'.format(traceback.format_exc(e)),
+            desc
+        )
+
+
+def create_name(objects, name):
+    objects = objects.filter(name__regex=r'^{}( [0-9]+)?$'.format(name))
+
+    if len(objects):
+        num = len(objects) + 1
+
+        nums = [int(a.name.replace(name, '').strip() or 1) for a in objects]
+        nums.sort()
+
+        for i, j in enumerate(nums):
+            # value can be used if index is smaller than value
+            if (i + 1) < j:
+                num = i + 1
+                break
+
+        if num > 1:
+            name += ' {}'.format(num)
+
+    return name
 
 
 @statsd_helper.statsd_timer('dash', 'index')
@@ -187,7 +305,7 @@ def supply_dash_redirect(request):
     url_response = actionlog.zwei_actions.get_supply_dash_url(
         ad_group_source.source.type, credentials, ad_group_source.source_campaign_key)
 
-    return redirect(url_response['url'])
+    return render(request, 'redirect.html', {'url': url_response['url']})
 
 
 class User(api_common.BaseApiView):
@@ -216,54 +334,121 @@ class User(api_common.BaseApiView):
 class NavigationDataView(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'navigation_data_view_get')
     def get(self, request):
-        user_id = request.user.id
+        data = {}
+        self.fetch_ad_groups(data, request.user)
+        self.fetch_campaigns(data, request.user)
+        self.fetch_accounts(data, request.user)
 
-        if request.user.is_superuser:
-            ad_groups = models.AdGroup.objects.\
-                select_related('campaign__account').\
-                all()
+        result = []
+        for account in data.values():
+            account['campaigns'] = account['campaigns'].values()
+            result.append(account)
 
-        else:
-            ad_groups = (
-                models.AdGroup.objects
-                .select_related('campaign__account')
-                .filter(
-                    Q(campaign__users__in=[user_id]) |
-                    Q(campaign__groups__user__id=user_id) |
-                    Q(campaign__account__users__in=[user_id]) |
-                    Q(campaign__account__groups__user__id=user_id)
-                )
-            ).distinct('id')
+        return self.create_api_response(result)
 
-        accounts = {}
+    def fetch_ad_groups(self, data, user):
+        ad_groups = models.AdGroup.objects.get_for_user(user).select_related('campaign__account')
+
         for ad_group in ad_groups:
             campaign = ad_group.campaign
             account = campaign.account
 
-            if account.id not in accounts:
-                accounts[account.id] = {
-                    'id': account.id,
-                    'name': account.name,
-                    'campaigns': {}
-                }
+            self.add_account_dict(data, account)
 
-            campaigns = accounts[account.id]['campaigns']
-
-            if campaign.id not in campaigns:
-                campaigns[campaign.id] = {
-                    'id': campaign.id,
-                    'name': campaign.name,
-                    'adGroups': []
-                }
+            campaigns = data[account.id]['campaigns']
+            self.add_campaign_dict(campaigns, campaign)
 
             campaigns[campaign.id]['adGroups'].append({'id': ad_group.id, 'name': ad_group.name})
 
-        data = []
-        for account in accounts.values():
-            account['campaigns'] = account['campaigns'].values()
-            data.append(account)
+    def fetch_campaigns(self, data, user):
+        campaigns = models.Campaign.objects.get_for_user(user).select_related('account')
 
-        return self.create_api_response(data)
+        for campaign in campaigns:
+            account = campaign.account
+
+            self.add_account_dict(data, account)
+            self.add_campaign_dict(data[account.id]['campaigns'], campaign)
+
+    def fetch_accounts(self, data, user):
+        accounts = models.Account.objects.get_for_user(user)
+
+        for account in accounts:
+            self.add_account_dict(data, account)
+
+    def add_account_dict(self, data, account):
+        if account.id not in data:
+            data[account.id] = {
+                'id': account.id,
+                'name': account.name,
+                'campaigns': {}
+            }
+
+    def add_campaign_dict(self, data, campaign):
+        if campaign.id not in data:
+            data[campaign.id] = {
+                'id': campaign.id,
+                'name': campaign.name,
+                'adGroups': []
+            }
+
+
+class AccountAgency(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'account_agency_get')
+    def get(self, request, account_id):
+        if not request.user.has_perm('zemauth.account_agency_view'):
+            raise exc.MissingDataError()
+
+        account = get_account(request.user, account_id)
+
+        return self.create_api_response(self.get_response(account))
+
+    @statsd_helper.statsd_timer('dash.api', 'account_agency_put')
+    def put(self, request, account_id):
+        if not request.user.has_perm('zemauth.account_agency_view'):
+            raise exc.MissingDataError()
+
+        account = get_account(request.user, account_id)
+
+        resource = json.loads(request.body)
+
+        form = forms.AccountAgencySettingsForm(resource.get('settings', {}))
+        if not form.is_valid():
+            raise exc.ValidationError(errors=dict(form.errors))
+
+        account.name = form.cleaned_data['name']
+        account.save()
+
+        return self.create_api_response(self.get_response(account))
+
+    def get_response(self, data):
+        return {
+            'settings': {
+                'id': data.id,
+                'name': data.name
+            }
+        }
+
+
+class CampaignAdGroups(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaigns_ad_group_put')
+    def put(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.campaign_ad_groups_view'):
+            raise exc.MissingDataError()
+
+        campaign = get_campaign(request.user, campaign_id)
+
+        ad_group = models.AdGroup(
+            name=create_name(models.AdGroup.objects.filter(campaign=campaign), 'New ad group'),
+            campaign=campaign
+        )
+        ad_group.save()
+
+        response = {
+            'name': ad_group.name,
+            'id': ad_group.id
+        }
+
+        return self.create_api_response(response)
 
 
 class CampaignSettings(api_common.BaseApiView):
@@ -278,14 +463,14 @@ class CampaignSettings(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(campaign_settings, campaign),
-            'account_managers': self.get_user_list('campaign_settings_account_manager'),
-            'sales_reps': self.get_user_list('campaign_settings_sales_rep'),
+            'account_managers': self.get_user_list(campaign_settings, 'campaign_settings_account_manager'),
+            'sales_reps': self.get_user_list(campaign_settings, 'campaign_settings_sales_rep'),
             'history': self.get_history(campaign)
         }
 
         return self.create_api_response(response)
 
-    @statsd_helper.statsd_timer('dash.api', 'ad_campaign_settings_put')
+    @statsd_helper.statsd_timer('dash.api', 'campaign_settings_put')
     def put(self, request, campaign_id):
         if not request.user.has_perm('zemauth.campaign_settings_view'):
             raise exc.MissingDataError()
@@ -425,8 +610,6 @@ class CampaignSettings(api_common.BaseApiView):
         else:
             settings = models.CampaignSettings()
 
-        print 'CATEG'
-        print settings.iab_category
         return settings
 
     def get_dict(self, settings, campaign):
@@ -461,8 +644,13 @@ class CampaignSettings(api_common.BaseApiView):
         settings.iab_category = resource['iab_category']
         settings.promotion_goal = resource['promotion_goal']
 
-    def get_user_list(self, perm_name):
-        users = ZemUser.objects.get_users_with_perm(perm_name)
+    def get_user_list(self, settings, perm_name):
+        users = list(ZemUser.objects.get_users_with_perm(perm_name))
+
+        manager = settings.account_manager
+        if manager is not None and manager not in users:
+            users.append(manager)
+
         return [{'id': str(user.id), 'name': self.get_full_name_or_email(user)} for user in users]
 
 
@@ -505,7 +693,7 @@ class AdGroupSettings(api_common.BaseApiView):
         if not request.user.has_perm('dash.settings_view'):
             raise exc.MissingDataError()
 
-        ad_group = get_ad_group(request.user, ad_group_id)
+        ad_group = get_ad_group(request.user, ad_group_id, select_related=True)
 
         current_settings = self.get_current_settings(ad_group)
 
@@ -528,6 +716,11 @@ class AdGroupSettings(api_common.BaseApiView):
             settings.save()
 
         api.order_ad_group_settings_update(ad_group, current_settings, settings)
+
+        user = request.user
+        changes = current_settings.get_setting_changes(settings)
+        if changes:
+            send_ad_group_settings_change_mail_if_necessary(ad_group, user, request)
 
         response = {
             'settings': self.get_dict(settings, ad_group),
@@ -631,6 +824,11 @@ class AdGroupAgency(api_common.BaseApiView):
 
         api.order_ad_group_settings_update(ad_group, current_settings, settings)
 
+        user = request.user
+        changes = current_settings.get_setting_changes(settings)
+        if changes:
+            send_ad_group_settings_change_mail_if_necessary(ad_group, user, request)
+
         response = {
             'settings': self.get_dict(settings, ad_group),
             'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group)
@@ -672,8 +870,65 @@ class AdGroupAgency(api_common.BaseApiView):
         settings.tracking_code = resource['tracking_code']
 
 
+class AdGroupSources(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_get')
+    def get(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.ad_group_sources_add_source'):
+            raise exc.MissingDataError()
+
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        sources = map(lambda s: s.source, models.DefaultSourceSettings.objects.exclude(credentials__isnull=True))
+        ad_group_sources = ad_group.sources.all().order_by('name')
+
+        sources = [{'id': s.id, 'name': s.name} for s in sources if s not in ad_group_sources]
+
+        return self.create_api_response({
+            'sources': sources,
+            'sources_waiting': [source.name for source in actionlog.api.get_sources_waiting(ad_group)]
+        })
+
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_put')
+    def put(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.ad_group_sources_add_source'):
+            raise exc.MissingDataError()
+
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        source_id = json.loads(request.body)['source_id']
+        source = models.Source.objects.get(id=source_id)
+
+        try:
+            default_settings = models.DefaultSourceSettings.objects.get(source=source)
+        except models.DefaultSourceSettings.DoesNotExist:
+            raise exc.MissingDataError('No default settings set for {}.'.format(source.name))
+
+        if not default_settings.credentials:
+            raise exc.MissingDataError('No default credentials set in {}.'.format(default_settings))
+
+        ad_group_source = models.AdGroupSource(
+            source=source,
+            ad_group=ad_group,
+            source_credentials=default_settings.credentials
+        )
+
+        ad_group_source.save()
+
+        name = 'ONE: {} / {} / {} / {} / {}'.format(
+            ad_group.campaign.account.name.encode('utf-8'),
+            ad_group.campaign.name.encode('utf-8'),
+            ad_group.name.encode('utf-8'),
+            ad_group.id,
+            source.name.encode('utf-8')
+        )
+
+        actionlog.api.create_campaign(ad_group_source, name)
+
+        return self.create_api_response(None)
+
+
 class AdGroupSourcesTable(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_table_get')
+    @statsd_helper.statsd_timer('dash.api', 'zemauth.ad_group_sources_table_get')
     def get(self, request, ad_group_id):
         ad_group = get_ad_group(request.user, ad_group_id)
 
@@ -683,9 +938,8 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             ['source'],
             ad_group=int(ad_group.id)
         )
-        sources_data = reports.api.collect_results(sources_data)
 
-        sources = ad_group.sources.all().order_by('name')
+        sources = self.get_active_ad_group_sources(ad_group)
         source_settings = models.AdGroupSourceSettings.get_current_settings(
             ad_group, sources)
 
@@ -701,7 +955,6 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             get_stats_end_date(request.GET.get('end_date')),
             ad_group=int(ad_group.id)
         )
-        totals_data = reports.api.collect_results(totals_data)
 
         last_success_actions = get_last_successful_source_sync_dates(ad_group)
 
@@ -727,8 +980,14 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             ),
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
-            'is_sync_in_progress': actionlog.api.is_sync_in_progress(ad_group),
+            'is_sync_in_progress': actionlog.api.is_sync_in_progress([ad_group]),
         })
+
+    def get_active_ad_group_sources(self, ad_group):
+        sources = ad_group.sources.all().order_by('name')
+        inactive_sources = actionlog.api.get_sources_waiting(ad_group)
+
+        return [s for s in sources if s not in inactive_sources]
 
     def get_totals(self, ad_group, totals_data, source_settings, yesterday_cost):
         return {
@@ -804,6 +1063,163 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             rows = sorted(rows, key=_sort, reverse=reverse)
 
         return rows
+
+
+class AccountsAccountsTable(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'accounts_accounts_table_get')
+    def get(self, request):
+        # Permission check
+        if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
+            raise exc.MissingDataError()
+
+        page = request.GET.get('page')
+        size = request.GET.get('size')
+        order = request.GET.get('order')
+        user = request.user
+        accounts = models.Account.objects.get_for_user(user)
+
+        size = max(min(int(size or 5), 50), 1)
+        if page:
+            page = int(page)
+
+        accounts_data = reports.api.query(
+            get_stats_start_date(request.GET.get('start_date')),
+            get_stats_end_date(request.GET.get('end_date')),
+            ['account'],
+            account=accounts
+        )
+
+        ad_groups_settings = models.AdGroupSettings.objects.\
+            distinct('ad_group').\
+            filter(ad_group__campaign__account__in=[x.pk for x in accounts]).\
+            order_by('ad_group', '-created_dt')
+
+        totals_data = reports.api.query(
+            get_stats_start_date(request.GET.get('start_date')),
+            get_stats_end_date(request.GET.get('end_date')),
+            account=accounts
+        )
+
+        last_success_actions = {}
+        for account in accounts:
+            account_sync = actionlog.sync.AccountSync(account)
+
+            if not len(list(account_sync.get_components())):
+                continue
+
+            last_success_actions[account.pk] = account_sync.get_latest_success(
+                recompute=False)
+
+        last_sync = None
+        if last_success_actions.values() and None not in last_success_actions.values():
+            last_sync = pytz.utc.localize(min(last_success_actions.values()))
+
+        rows, current_page, num_pages, count, start_index, end_index = self.get_rows(
+            accounts,
+            accounts_data,
+            ad_groups_settings,
+            last_success_actions,
+            page=page,
+            size=size,
+            order=order
+        )
+
+        return self.create_api_response({
+            'rows': rows,
+            'totals': self.get_totals(totals_data),
+            'last_sync': last_sync,
+            'is_sync_recent': is_sync_recent(last_sync),
+            'is_sync_in_progress': actionlog.api.is_sync_in_progress(accounts=accounts),
+            'order': order,
+            'pagination': {
+                'currentPage': current_page,
+                'numPages': num_pages,
+                'count': count,
+                'startIndex': start_index,
+                'endIndex': end_index,
+                'size': size
+            }
+        })
+
+    def get_totals(self, totals_data):
+        return {
+            'cost': totals_data['cost'],
+            'cpc': totals_data['cpc'],
+            'clicks': totals_data['clicks'],
+            'impressions': totals_data['impressions'],
+            'ctr': totals_data['ctr']
+        }
+
+    def get_rows(self, accounts, accounts_data, ad_groups_settings, last_actions, page, size, order=None):
+        rows = []
+        for account in accounts:
+            aid = account.pk
+
+            for ad_group_settings in ad_groups_settings:
+                if ad_group_settings.ad_group.campaign.account.pk == aid and \
+                        ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE:
+                    state = constants.AdGroupSettingsState.ACTIVE
+                    break
+            else:
+                state = constants.AdGroupSettingsState.INACTIVE
+
+            # get source reports data
+            account_data = {}
+            for item in accounts_data:
+                if item['account'] == aid:
+                    account_data = item
+                    break
+
+            last_sync = last_actions.get(aid)
+            if last_sync:
+                last_sync = pytz.utc.localize(last_sync)
+
+            rows.append({
+                'id': str(aid),
+                'name': account.name,
+                'status': state,
+                'cost': account_data.get('cost', None),
+                'cpc': account_data.get('cpc', None),
+                'clicks': account_data.get('clicks', None),
+                'last_sync': last_sync
+            })
+
+        if order:
+            reverse = False
+            if order.startswith('-'):
+                reverse = True
+                order = order[1:]
+
+            # Sort should always put Nones at the end
+            def _sort(item):
+                value = item.get(order)
+                if order == 'last_sync' and not value:
+                    value = pytz.UTC.localize(datetime.datetime(datetime.MINYEAR, 1, 1))
+                elif order == 'name':
+                    value = value.lower()
+
+                return (item.get(order) is None or reverse, value)
+
+            rows = sorted(rows, key=_sort, reverse=reverse)
+
+        len_accounts = len(accounts)
+        current_page = page or 1
+        num_pages = int(math.ceil(float(len_accounts) / size))
+        count = len_accounts
+        start_index = 1
+        end_index = size if len_accounts > size else len_accounts
+
+        if page and size:
+            start = (page - 1) * size
+            end = page * size
+            if start <= len_accounts:
+                rows = rows[start:end]
+                start_index = start + 1
+                end_index = end - (size - len(rows))
+            else:
+                current_page = 1
+
+        return rows, current_page, num_pages, count, start_index, end_index
 
 
 class AdGroupAdsExport(api_common.BaseApiView):
@@ -1032,12 +1448,48 @@ class AdGroupSourcesExport(api_common.BaseApiView):
         return response
 
 
+class TriggerAccountSyncThread(threading.Thread):
+    """ Used to trigger sync for all accounts asynchronously. """
+    def __init__(self, accounts, *args, **kwargs):
+        self.accounts = accounts
+        super(TriggerAccountSyncThread, self).__init__(*args, **kwargs)
+
+    def run(self):
+        try:
+            for account in self.accounts:
+                actionlog.sync.AccountSync(account).trigger_all()
+        except Exception:
+            logger.exception('Exception in TriggerAccountSyncThread')
+
+
+class AccountSync(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'account_sync_get')
+    def get(self, request):
+        accounts = models.Account.objects.get_for_user(request.user)
+        if not actionlog.api.is_sync_in_progress(accounts=accounts):
+            # trigger account sync asynchronously and immediately return
+            TriggerAccountSyncThread(accounts).start()
+
+        return self.create_api_response({})
+
+
+class AccountSyncProgress(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'account_is_sync_in_progress')
+    def get(self, request):
+        accounts = models.Account.objects.get_for_user(request.user)
+
+        in_progress = actionlog.api.is_sync_in_progress(accounts=accounts)
+
+        return self.create_api_response({'is_sync_in_progress': in_progress})
+
+
 class AdGroupSync(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_sync')
     def get(self, request, ad_group_id):
         ad_group = get_ad_group(request.user, ad_group_id)
 
-        if not actionlog.api.is_sync_in_progress(ad_group):
+        if not actionlog.api.is_sync_in_progress(ad_groups=[ad_group]):
             actionlog.sync.AdGroupSync(ad_group).trigger_all()
 
         return self.create_api_response({})
@@ -1048,7 +1500,7 @@ class AdGroupCheckSyncProgress(api_common.BaseApiView):
     def get(self, request, ad_group_id):
         ad_group = get_ad_group(request.user, ad_group_id)
 
-        in_progress = actionlog.api.is_sync_in_progress(ad_group)
+        in_progress = actionlog.api.is_sync_in_progress(ad_groups=[ad_group])
 
         return self.create_api_response({'is_sync_in_progress': in_progress})
 
@@ -1077,12 +1529,12 @@ class AdGroupAdsTable(api_common.BaseApiView):
 
         result_pg, current_page, num_pages, count, start_index, end_index = reports.api.paginate(result, page, size)
 
-        rows = reports.api.collect_results(result_pg)
+        rows = result_pg
 
         totals_data = reports.api.query(start_date, end_date, ad_group=int(ad_group.id))
-        totals_data = reports.api.collect_results(totals_data)
 
-        last_sync = actionlog.sync.AdGroupSync(ad_group).get_latest_success()
+        last_sync = actionlog.sync.AdGroupSync(ad_group).get_latest_success(
+            recompute=False)
         if last_sync:
             last_sync = pytz.utc.localize(last_sync)
 
@@ -1091,7 +1543,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
             'totals': totals_data,
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
-            'is_sync_in_progress': actionlog.api.is_sync_in_progress(ad_group),
+            'is_sync_in_progress': actionlog.api.is_sync_in_progress([ad_group]),
             'order': order,
             'pagination': {
                 'currentPage': current_page,
@@ -1126,7 +1578,6 @@ class AdGroupDailyStats(api_common.BaseApiView):
                 ['date'],
                 ad_group=int(ad_group.id)
             )
-            totals_stats = reports.api.collect_results(totals_stats)
 
         sources = None
         breakdown_stats = []
@@ -1146,7 +1597,6 @@ class AdGroupDailyStats(api_common.BaseApiView):
                 ad_group=int(ad_group.id),
                 **extra_kwargs
             )
-            breakdown_stats = reports.api.collect_results(breakdown_stats)
 
         return self.create_api_response({
             'stats': self.get_dict(breakdown_stats + totals_stats, sources)
@@ -1164,6 +1614,89 @@ class AdGroupDailyStats(api_common.BaseApiView):
         return stats
 
 
+class AccountDailyStats(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'accounts_daily_stats_get')
+    def get(self, request):
+        # Permission check
+        if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
+            raise exc.MissingDataError()
+
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+
+        user = request.user
+
+        breakdown = ['date']
+        accounts = models.Account.objects.get_for_user(user)
+        totals_stats = reports.api.query(
+            get_stats_start_date(start_date),
+            get_stats_end_date(end_date),
+            breakdown,
+            ['date'],
+            account=accounts
+        )
+
+        return self.create_api_response({
+            'stats': self.get_dict(totals_stats)
+        })
+
+    def get_dict(self, stats):
+        sources_dict = {}
+        for stat in stats:
+            if 'source' in stat:
+                stat['source_name'] = sources_dict[stat['source']]
+
+        return stats
+
+
+class Account(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'account_put')
+    def put(self, request):
+        if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
+            raise exc.MissingDataError()
+
+        account = models.Account(name=create_name(models.Account.objects, 'New account'))
+        account.save()
+
+        response = {
+            'name': account.name,
+            'id': account.id
+        }
+
+        return self.create_api_response(response)
+
+
+class AccountCampaigns(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'account_campaigns_put')
+    def put(self, request, account_id):
+        if not request.user.has_perm('zemauth.account_campaigns_view'):
+            raise exc.MissingDataError()
+
+        account = get_account(request.user, account_id)
+
+        name = create_name(models.Campaign.objects.filter(account=account), 'New campaign')
+
+        campaign = models.Campaign(
+            name=name,
+            account=account
+        )
+        campaign.save()
+
+        settings = models.CampaignSettings(
+            name=name,
+            campaign=campaign,
+            account_manager=request.user,
+        )
+        settings.save()
+
+        response = {
+            'name': campaign.name,
+            'id': campaign.id
+        }
+
+        return self.create_api_response(response)
+
+
 @statsd_helper.statsd_timer('dash', 'healthcheck')
 def healthcheck(request):
     return HttpResponse('OK')
@@ -1175,14 +1708,14 @@ def oauth_authorize(request, source_name):
 
     if not credentials_id:
         logger.warning('Missing credentials id')
-        return reverse('index')
+        return redirect('index')
 
     credentials = models.SourceCredentials.objects.get(id=credentials_id)
     decrypted = json.loads(credentials.decrypt())
 
     if 'client_id' not in decrypted or 'client_secret' not in decrypted:
         logger.error('client_id and/or client_secret not in credentials')
-        return reverse('index')
+        return redirect('index')
 
     state = {
         'credentials_id': credentials_id,
@@ -1249,4 +1782,4 @@ def oauth_redirect(request, source_name):
         credentials.credentials = json.dumps(decrypted)
         credentials.save()
 
-    return redirect('index')
+    return redirect(reverse('admin:dash_sourcecredentials_change', args=(credentials.id,)))

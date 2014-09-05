@@ -111,3 +111,6 @@ server/static
 client/app/dist
 client/app/js/config.js
 client/test/sauce.json
+
+# Client coverage 
+client/coverage

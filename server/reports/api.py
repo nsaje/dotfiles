@@ -12,7 +12,7 @@ import pytz
 from django.conf import settings
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction, IntegrityError
-from django.db.models import Sum
+from django.db.models import Sum, Min, Max
 
 from . import exc
 from . import models
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 MAX_RECONCILIATION_RETRIES = 10
 
-DIMENSIONS = set(['article', 'ad_group', 'date', 'source'])
+DIMENSIONS = set(['article', 'ad_group', 'date', 'source', 'account', 'campaign'])
 
 AGGREGATE_FIELDS = dict(
     clicks_sum=Sum('clicks'),
@@ -34,10 +34,39 @@ AGGREGATE_FIELDS = dict(
     cpc_cc=db_aggregates.SumDivision('cost_cc', 'clicks')
 )
 
+POSTCLICK_AGGREGATE_FIELDS = dict(
+    visits_sum=Sum('visits'),
+    new_visits_sum=Sum('new_visits'),
+    percent_new_users=db_aggregates.SumDivision('new_visits', 'visits'),
+    bounce_rate=db_aggregates.SumDivision('bounced_visits', 'visits'),
+    pageviews_sum=Sum('pageviews'),
+    pv_per_visit=db_aggregates.SumDivision('pageviews', 'visits'),
+    avg_tos=db_aggregates.SumDivision('duration', 'visits'),
+)
+
+INCOMPLETE_AGGREGATE_FIELDS = dict(
+    has_traffic_metrics_min=Min('has_traffic_metrics'),
+    has_postclick_metrics_min=Min('has_postclick_metrics'),
+    has_conversion_metrics_min=Min('has_conversion_metrics'),
+    has_traffic_metrics_max=Max('has_traffic_metrics'),
+    has_postclick_metrics_max=Max('has_postclick_metrics'),
+    has_conversion_metrics_max=Max('has_conversion_metrics'),
+)
+
+GOAL_AGGREGATE_FIELDS = dict(
+    conversions_sum=Sum('conversions'),
+    conversions_value_cc_sum=Sum('conversions_value_cc'),
+)
+
 
 def _preprocess_constraints(constraints):
+    constraint_field_translate = {
+        'account': 'ad_group__campaign__account',
+        'campaign': 'ad_group__campaign'
+    }
     result = {}
     for k, v in constraints.iteritems():
+        k = constraint_field_translate.get(k, k)
         if isinstance(v, collections.Sequence):
             result['{0}__in'.format(k)] = v
         else:
@@ -45,33 +74,12 @@ def _preprocess_constraints(constraints):
     return result
 
 
-def _preprocess_order(order):
-    order_field_translate = {
-        'title': 'article__title',
-        'cost': 'cost_cc_sum',
-        'cpc': 'cpc_cc',
-        'clicks': 'clicks_sum',
-        'impressions': 'impressions_sum',
-        'ctr': 'ctr',
-        'date': 'datetime',
-        'url': 'article__url'
-    }
-    order = [] if order is None else order[:]
-    result = []
-    for x in order:
-        is_reverse = False
-        if x.startswith('-'):
-            is_reverse = True
-            x = x[1:]
-        new_order_name = order_field_translate.get(x, x)
-        if is_reverse:
-            new_order_name = '-' + new_order_name
-        result.append(new_order_name)
-    return result
-
-
 def _preprocess_breakdown(breakdown):
-    breakdown_field_translate = {'date': 'datetime'}
+    breakdown_field_translate = {
+        'date': 'datetime',
+        'account': 'ad_group__campaign__account',
+        'campaign': 'ad_group__campaign'
+    }
     breakdown = [] if breakdown is None else breakdown[:]
     if len(set(breakdown) - DIMENSIONS) != 0:
         raise exc.ReportsQueryError('Invalid breakdown')
@@ -79,67 +87,19 @@ def _preprocess_breakdown(breakdown):
     return fields
 
 
-def _add_helper_order_aggregate_fields(agg_fields, order):
-    more_agg_fields = {k:v for k,v in agg_fields.items()}
-    null_order_fields = []
-    for order_field in order:
-        if 'clicks_sum' in order_field:
-            more_agg_fields['clicks_sum_null'] = db_aggregates.IsSumNull('clicks')
-            null_order_fields.append('clicks_sum_null')
-        if 'impressions_sum' in order_field:
-            more_agg_fields['impressions_sum_null'] = db_aggregates.IsSumNull('impressions')
-            null_order_fields.append('impressions_sum_null')
-        if 'cost_cc_sum' in order_field:
-            more_agg_fields['cost_cc_sum_null'] = db_aggregates.IsSumNull('cost_cc')
-            null_order_fields.append('cost_cc_sum_null')
-        if 'ctr' in order_field:
-            more_agg_fields['ctr_null'] = db_aggregates.IsSumDivisionNull('clicks', 'impressions')
-            null_order_fields.append('ctr_null')
-        if 'cpc_cc' in order_field:
-            more_agg_fields['cpc_cc_null'] = db_aggregates.IsSumDivisionNull('cost_cc', 'clicks')
-            null_order_fields.append('cpc_cc_null')
-    return more_agg_fields, null_order_fields + order
-
-
-def _get_own_order(order):
-    '''
-    returns order_by criteria which apply only to ArticleStats
-    '''
-    own_order_fields = DIMENSIONS.union(set(['cost_cc_sum', 'cpc_cc', 'clicks_sum', 'impressions_sum', 'ctr', 'datetime']))
-    null_helpers = set(['{0}_null'.format(x) for x in own_order_fields])
-    own_order_fields = own_order_fields.union(null_helpers)
-    result = []
-    for x in order:
-        colname = x
-        if x.startswith('-'):
-            colname = x[1:]
-        if colname in own_order_fields:
-            result.append(x)
-    return result
-
-
-def _include_article_data(rows, order):
+def _include_article_data(rows):
     rows = list(rows)
     article_ids = [row['article'] for row in rows]
     article_lookup = {a.pk:a for a in dashmodels.Article.objects.filter(pk__in=article_ids)}
     for row in rows:
         a = article_lookup[row['article']]
-        row['article__title'] = a.title
-        row['article__url'] = a.url
-    article_order = [x for x in order if 'article__title' in x or 'article__url' in x]
-    for x in article_order:
-        is_reverse = False
-        field = x
-        if x.startswith('-'):
-            field = x[1:]
-            is_reverse = True
-        rows = sorted(rows, key=lambda row: row[field], reverse=is_reverse)
+        row['title'] = a.title
+        row['url'] = a.url
     return rows
 
 
-def query(start_date, end_date, breakdown=None, order=None, **constraints):
+def query_stats(start_date, end_date, breakdown=None, **constraints):
     breakdown = _preprocess_breakdown(breakdown)
-    order = _preprocess_order(order)
     constraints = _preprocess_constraints(constraints)
 
     result = models.ArticleStats.objects
@@ -148,21 +108,91 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
     if constraints:
         result = result.filter(**constraints)
 
+    agg_fields = {k:v for k, v in list(AGGREGATE_FIELDS.items()) + list(POSTCLICK_AGGREGATE_FIELDS.items()) + list(INCOMPLETE_AGGREGATE_FIELDS.items())}
+
     if breakdown:
         result = result.values(*breakdown)
-        agg_fields, order = _add_helper_order_aggregate_fields(AGGREGATE_FIELDS, order)
         result = result.annotate(**agg_fields)
     else:
-        return result.aggregate(**AGGREGATE_FIELDS)
-
-    if order:
-        # only order by fields that are columns in ArticleStats table
-        result = result.order_by(*_get_own_order(order))
-
-    if 'article' in breakdown:
-        result = _include_article_data(result, order)    # much faster than doing the join
+        result = result.aggregate(**agg_fields)
 
     return result
+
+
+def query_goal(start_date, end_date, breakdown=None, **constraints):
+    breakdown = _preprocess_breakdown(breakdown)
+    breakdown.append('goal_name')
+    constraints = _preprocess_constraints(constraints)
+
+    result = models.GoalConversionStats.objects
+
+    result = result.filter(datetime__gte=start_date, datetime__lte=end_date)
+    if constraints:
+        result = result.filter(**constraints)
+
+    if breakdown:
+        result = result.values(*breakdown)
+        result = result.annotate(**GOAL_AGGREGATE_FIELDS)
+
+    return result
+
+
+def _extract_key(result, breakdown):
+    values = [result[field] for field in breakdown]
+    return RowKey(*values)
+
+
+def _extend_result(result, conversion_result):
+    col_prefix = 'G[{0}]_'.format(conversion_result['goal_name'])
+    result[col_prefix + 'conversions'] = conversion_result['conversions']
+    result[col_prefix + 'conversion_value'] = conversion_result['conversion_value']
+
+
+def sorted_results(results, order=None):
+    rows = results[:]
+    if not order:
+        return rows
+    for field in reversed(order):
+        desc = False
+        deco_fun = lambda x: x is None
+        if field.startswith('-'):
+            desc=True
+            field = field[1:]
+            deco_fun = lambda x: x is not None
+        cmp_fun = lambda w: lambda x, y: cmp((deco_fun(x.get(w)), x.get(w)), (deco_fun(y.get(w)), y.get(w)))
+        rows = sorted(rows, cmp=cmp_fun(field), reverse=desc)
+    return rows
+
+
+def query(start_date, end_date, breakdown=None, order=None, **constraints):
+    report_results = query_stats(start_date, end_date, breakdown=breakdown, **constraints)
+    report_results = _collect_results(report_results)
+
+    conversion_results = query_goal(start_date, end_date, breakdown=breakdown, **constraints)
+    conversion_results = _collect_results(conversion_results)
+
+    # in memory join of the result sets
+    if breakdown:
+        # include related data
+        if 'article' in breakdown:
+            report_results = _include_article_data(report_results)
+
+        global RowKey
+        RowKey = collections.namedtuple('RowKey', ' '.join(breakdown))
+        results = {}
+        for row in report_results:
+            key = _extract_key(row, breakdown)
+            results[key] = row
+        for row in conversion_results:
+            key = _extract_key(row, breakdown)
+            _extend_result(results[key], row)
+        results = results.values()
+        return sorted_results(results, order)
+    else:
+        result = report_results
+        for row in conversion_results:
+            _extend_result(result, row)
+        return result
 
 
 def paginate(result, page, page_size):
@@ -176,7 +206,7 @@ def paginate(result, page, page_size):
         result_pg = paginator.page(paginator.num_pages)
 
     return (
-        result_pg,
+        [r for r in result_pg],
         result_pg.number,
         result_pg.paginator.num_pages,
         result_pg.paginator.count,
@@ -185,15 +215,21 @@ def paginate(result, page, page_size):
     )
 
 
-def collect_results(result):
+def _collect_results(result):
     col_name_translate = {
         'clicks_sum': 'clicks',
         'impressions_sum': 'impressions',
         'cost_cc_sum': 'cost',
         'cpc_cc': 'cpc',
         'datetime': 'date',
-        'article__title': 'title',
-        'article__url': 'url',
+        'ad_group__campaign': 'campaign',
+        'ad_group__campaign__account': 'account',
+        
+        'visits_sum': 'visits',
+        'new_visits_sum': 'new_visits',
+        'pageviews_sum': 'pageviews',
+        'conversions_value_cc_sum': 'conversion_value',
+        'conversions_sum': 'conversions'
     }
 
     col_val_transform = {
@@ -201,16 +237,22 @@ def collect_results(result):
         'cpc_cc': lambda x: None if x is None else float(decimal.Decimal(round(x)) / decimal.Decimal(10000)),
         'ctr': lambda x: None if x is None else x * 100,
         'datetime': lambda dt: dt.date(),
+        'conversions_value_cc_sum': lambda x: None if x is None else float(decimal.Decimal(round(x)) / decimal.Decimal(10000)),
     }
 
     def collect_row(row):
         new_row = {}
         for col_name, col_val in dict(row).items():
-            if col_name.endswith('_null'):
+            if col_name.endswith('_null') or col_name.endswith('_metrics_min') or col_name.endswith('_metrics_max'):
                 continue
             new_col_val = col_val_transform.get(col_name, lambda x: x)(col_val)
             new_col_name = col_name_translate.get(col_name, col_name)
             new_row[new_col_name] = new_col_val
+
+        new_row['incomplete_traffic_metrics'] = row.get('has_traffic_metrics_min', 0) == 0 and row.get('has_traffic_metrics_max', 0) == 1
+        new_row['incomplete_postclick_metrics'] = row.get('has_postclick_metrics_min', 0) == 0 and row.get('has_postclick_metrics_max', 0) == 1
+        new_row['incomplete_conversion_metrics'] = row.get('has_conversion_metrics_min', 0) == 0 and row.get('has_conversion_metrics_max', 0) == 1
+        
         return new_row
 
     if isinstance(result, dict):
@@ -225,25 +267,26 @@ def get_yesterday_cost(ad_group):
     today = datetime.datetime(today.year, today.month, today.day)
     yesterday = today - datetime.timedelta(days=1)
 
-    qs = query(
+    rs = query(
         start_date=yesterday,
         end_date=yesterday,
         breakdown=['source'],
         ad_group=ad_group
     )
-    result = {row['source']: row['cost'] for row in collect_results(qs)}
+    result = {row['source']: row['cost'] for row in rs}
 
     return result
 
 
-def _delete_existing_stats(ad_group, source, date):
+def _reset_existing_traffic_stats(ad_group, source, date):
     existing_stats = models.ArticleStats.objects.filter(ad_group=ad_group, source=source, datetime=date)
     if existing_stats:
         logger.info(
-            'Deleting {num} old article statistics. Ad_group: {ad_group}, Source: {source}, datetime: {datetime}'
+            'Resetting {num} old article traffic statistics. Ad_group: {ad_group}, Source: {source}, datetime: {datetime}'
             .format(num=len(existing_stats), ad_group=ad_group, source=source, datetime=date)
         )
-        existing_stats.delete()
+        for stats in existing_stats:
+            stats.reset_traffic_metrics()
 
 
 @transaction.atomic
@@ -254,7 +297,7 @@ def save_report(ad_group, source, rows, date):
     if it does find, it updates the metrics of the existing row
     '''
 
-    _delete_existing_stats(ad_group, source, date)
+    _reset_existing_traffic_stats(ad_group, source, date)
 
     for row in rows:
         article = _reconcile_article(row['url'], row['title'], ad_group)
@@ -281,6 +324,8 @@ def save_report(ad_group, source, rows, date):
             article_stats.cost_cc += row['cpc_cc'] * row['clicks']
         else:
             article_stats.cost_cc += row['cost_cc']
+
+        article_stats.has_traffic_metrics = 1
 
         article_stats.save()
 

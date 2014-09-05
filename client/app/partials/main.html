@@ -5,13 +5,14 @@
         <div class="sidebar" ng-show="accounts">
             <div id="nav">
                 <div class="account-group" ng-repeat="account in accounts">
-                    <div class="account-name">{{ account.name }}</div>
+                    <div ng-if="!canAccessAccounts()" class="account-name">{{ account.name }}</div>
+                    <a ng-if="canAccessAccounts()" class="account-name" ng-class="{'active': $state.includes('main.accounts', { id: account.id.toString() }) }" ui-sref="{{ $state.includes('*.accounts.**') ? $state.current.name : getDefaultAccountState() }}({ id: account.id })">{{ account.name }}</a>
                     <ul class="list-group">
                         <li class="campaign-group list-group-item" ng-repeat="campaign in account.campaigns">
-                            <div class="campaign-name" ng-if="!hasPermission('zemauth.campaign_settings_view')">{{ campaign.name }}</div>
-                            <a ng-if="hasPermission('zemauth.campaign_settings_view')" class="campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() }) }" ui-sref="{{ 'main.campaigns.agency' }}({ id: campaign.id })">{{ campaign.name }}</a>
+                            <div ng-if="!canAccessCampaigns()" class="campaign-name">{{ campaign.name }}</div>
+                            <a ng-if="canAccessCampaigns()" class="campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() }) }" ui-sref="{{ $state.includes('*.campaigns.**') ? $state.current.name : getDefaultCampaignState() }}({ id: campaign.id })">{{ campaign.name }}</a>
                             <ul class="list-group ad-groups">
-                                <a class="ad-group-item list-group-item" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() }) }" ui-sref="{{ $state.includes('*.adGroups.**') ? $state.current.name : 'main.adGroups.ads' }}({ id: adGroup.id })" ng-repeat="adGroup in campaign.adGroups">
+                                <a class="ad-group-item list-group-item" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() }) }" ui-sref="{{ $state.includes('*.adGroups.**') ? $state.current.name : getDefaultAdGroupState() }}({ id: adGroup.id })" ng-repeat="adGroup in campaign.adGroups">
                                     <img ng-src="{{ config.static_url }}/img/ad_group.svg">
                                     <span class="ad-group-name">{{ adGroup.name }}</span>
                                 </a>

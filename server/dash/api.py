@@ -1,4 +1,5 @@
 import decimal
+import json
 import logging
 
 from django.db import transaction
@@ -65,6 +66,11 @@ def update_campaign_state(ad_group_source, state):
             current_settings.pk = None  # create a new settings object as a copy of the old one
             current_settings.state = state
             current_settings.save()
+
+
+def update_campaign_key(ad_group_source, source_campaign_key):
+    ad_group_source.source_campaign_key = json.dumps(source_campaign_key)
+    ad_group_source.save()
 
 
 def order_ad_group_settings_update(ad_group, current_settings, new_settings):

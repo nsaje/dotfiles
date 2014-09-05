@@ -1,5 +1,24 @@
 <div class="container-fluid" ng-controller="ActionLogCtrl">
-    <div class="row header" ng-include src="config.static_url + '/partials/header.html'"></div>
+    <div class="row header">
+        <div class="logo-container">
+            <a ng-href='/'><img class="logo" ng-src="{{ config.static_url }}/img/logo_one.png"></a>
+        </div>
+
+        <div class="profile-container">
+            <div class="content">
+                <a href="mailto:help@zemanta.com" class="contact">Contact support</a>
+                <span class="profile dropdown">
+                    <a href class="dropdown-toggle">
+                        <img ng-src="{{ config.static_url }}/img/human.svg">
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                        <li class="dropdown-header">{{ user.email }}</li>
+                        <li><a ng-href="/signout">Sign out</a></li>
+                    </ul>
+                </span>
+            </div>
+        </div>
+    </div>
 
     <div class="section action-log-list">
         <table class="table">

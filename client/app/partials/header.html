@@ -1,10 +1,13 @@
 <div class="logo-container">
-    <a ng-href="/"><img class="logo" ng-src="{{ config.static_url }}/img/logo_one.png"></a>
+    <a ui-sref="{{ canAccessAllAccounts() ? getDefaultAllAccountsState() : getDefaultAdGroupState() }}"><img class="logo" ng-src="{{ config.static_url }}/img/logo_one.png"></a>
 </div>
 
 <div class="breadcrumb-container">
     <ol class="breadcrumb" ng-show="breadcrumb">
-        <li ng-repeat="path in breadcrumb track by $index" ng-class="{'active': $last}">{{ path }}</li>
+        <li ng-repeat="item in breadcrumb track by $index">
+            <span ng-if="item.disabled" ng-class="{'active': $last}">{{ item.name }}</span>
+            <a ng-if="!item.disabled" ui-sref="{{item.state}}" ng-class="{'active': $last}">{{ item.name }}</a>
+        </li>
     </ol>
 </div>
 

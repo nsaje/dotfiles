@@ -16,11 +16,11 @@ class BaseSync(object):
     def __init__(self, obj):
         self.obj = obj
 
-    def get_latest_success(self):
+    def get_latest_success(self, recompute=True):
         child_syncs = self.get_components()
-        child_sync_times = [child_sync.get_latest_success() for child_sync in child_syncs]
+        child_sync_times = [child_sync.get_latest_success(recompute) for child_sync in child_syncs]
         if not child_sync_times:
-            return datetime.datetime.utcnow()
+            return None
         if None in child_sync_times:
             return None
         return min(child_sync_times)
@@ -54,27 +54,33 @@ class GlobalSync(BaseSync, ISyncComposite):
 
     def get_components(self):
         for account in dash.models.Account.objects.all():
-            yield AccountSync(account)
+            account_sync = AccountSync(account)
+            if len(list(account_sync.get_components())) > 0:
+                yield account_sync
 
 
 class AccountSync(BaseSync, ISyncComposite):
 
     def get_components(self):
         for campaign in dash.models.Campaign.objects.filter(account=self.obj):
-            yield CampaignSync(campaign)
+            campaign_sync = CampaignSync(campaign)
+            if len(list(campaign_sync.get_components())) > 0:
+                yield campaign_sync
 
 
 class CampaignSync(BaseSync, ISyncComposite):
 
     def get_components(self):
         for ad_group in dash.models.AdGroup.objects.filter(campaign=self.obj):
-            yield AdGroupSync(ad_group)
+            ad_group_sync = AdGroupSync(ad_group)
+            if len(list(ad_group_sync.get_components())) > 0:
+                yield ad_group_sync
 
 
 class AdGroupSync(BaseSync, ISyncComposite):
 
     def get_components(self):
-        for ags in dash.models.AdGroupSource.objects.filter(ad_group=self.obj):
+        for ags in dash.models.AdGroupSource.objects.filter(ad_group=self.obj, source__maintenance=False):
             yield AdGroupSourceSync(ags)
 
 
@@ -83,14 +89,17 @@ class AdGroupSourceSync(BaseSync):
     def __init__(self, ad_group_source):
         self.ad_group_source = ad_group_source
 
-    def get_latest_success(self):
-        status_sync_dt = self.get_latest_status_sync()
-        if not status_sync_dt:
-            return None
-        report_sync_dt = self.get_latest_report_sync()
-        if not report_sync_dt:
-            return None
-        return min(status_sync_dt, report_sync_dt)
+    def get_latest_success(self, recompute=True):
+        if recompute:
+            status_sync_dt = self.get_latest_status_sync()
+            if not status_sync_dt:
+                return None
+            report_sync_dt = self.get_latest_report_sync()
+            if not report_sync_dt:
+                return None
+            return min(status_sync_dt, report_sync_dt)
+        else:
+            return self.ad_group_source.last_successful_sync_dt
 
     def get_latest_report_sync(self):
         # the query below works like this:

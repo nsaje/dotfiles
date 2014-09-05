@@ -25,6 +25,33 @@ class PermissionMixin(object):
         return False
 
 
+class UserAuthorizationManager(models.Manager):
+    def get_for_user(self, user):
+        queryset = super(UserAuthorizationManager, self).get_queryset()
+        if user.is_superuser:
+            return queryset
+        elif queryset.model is Account:
+            return queryset.filter(
+                models.Q(users__id=user.id) |
+                models.Q(groups__user__id=user.id)
+            ).distinct()
+        elif queryset.model is Campaign:
+            return queryset.filter(
+                models.Q(users__id=user.id) |
+                models.Q(groups__user__id=user.id) |
+                models.Q(account__users__id=user.id) |
+                models.Q(account__groups__user__id=user.id)
+            ).distinct()
+        else:
+            # AdGroup
+            return queryset.filter(
+                models.Q(campaign__users__id=user.id) |
+                models.Q(campaign__groups__user__id=user.id) |
+                models.Q(campaign__account__users__id=user.id) |
+                models.Q(campaign__account__groups__user__id=user.id)
+            ).distinct()
+
+
 class Account(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(
@@ -40,6 +67,8 @@ class Account(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
 
+    objects = UserAuthorizationManager()
+
     class Meta:
         ordering = ('-created_dt',)
 
@@ -49,28 +78,6 @@ class Account(models.Model):
 
     def __unicode__(self):
         return self.name
-
-
-class UserAuthorizationManager(models.Manager):
-    def get_for_user(self, user):
-        queryset = super(UserAuthorizationManager, self).get_queryset()
-        if user.is_superuser:
-            return queryset
-        elif queryset.model is Campaign:
-            return queryset.filter(
-                models.Q(users__id=user.id) |
-                models.Q(groups__user__id=user.id) |
-                models.Q(account__users__id=user.id) |
-                models.Q(account__groups__user__id=user.id)
-            ).distinct('id')
-        else:
-            # AdGroup
-            return queryset.filter(
-                models.Q(campaign__users__id=user.id) |
-                models.Q(campaign__groups__user__id=user.id) |
-                models.Q(campaign__account__users__id=user.id) |
-                models.Q(campaign__account__groups__user__id=user.id)
-            ).distinct('id')
 
 
 class Campaign(models.Model, PermissionMixin):
@@ -247,6 +254,24 @@ class SourceCredentials(models.Model):
         )
 
 
+class DefaultSourceSettings(models.Model):
+    source = models.OneToOneField(Source, unique=True, on_delete=models.PROTECT)
+    credentials = models.ForeignKey(SourceCredentials, on_delete=models.PROTECT, null=True, blank=True)
+    params = jsonfield.JSONField(
+        blank=True,
+        null=False,
+        default={},
+        verbose_name='Additional action parameters',
+        help_text='Information about format can be found here: <a href="https://sites.google.com/a/zemanta.com/root/content-ads-dsp/additional-source-parameters-format" target="_blank">Zemanta Pages</a>'
+    )
+
+    class Meta:
+        verbose_name_plural = "Default Source Settings"
+
+    def __unicode__(self):
+        return self.source.name
+
+
 class AdGroup(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(
@@ -285,8 +310,10 @@ class AdGroupSource(models.Model):
     source_credentials = models.ForeignKey(SourceCredentials, null=True, on_delete=models.PROTECT)
     source_campaign_key = jsonfield.JSONField(blank=True, default={})
 
+    last_successful_sync_dt = models.DateTimeField(blank=True, null=True)
+
     def __unicode__(self):
-        return '%s - %s' % (self.ad_group, self.source)
+        return u'%s - %s' % (self.ad_group, self.source)
 
 
 class AdGroupSettings(SettingsBase):

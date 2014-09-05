@@ -12,6 +12,7 @@ from django.conf import settings
 from utils import request_signer
 from actionlog import models as actionlogmodels
 from actionlog import constants as actionlogconstants
+import actionlog.sync
 from reports import api as reportsapi
 from dash import api as dashapi
 
@@ -39,6 +40,11 @@ def zwei_callback(request, action_id):
     data = json.loads(request.body)
     try:
         _process_zwei_response(action, data)
+
+        if action.order and action.order.order_type in actionlogconstants.ActionLogOrderType.get_sync_types():
+            action.ad_group_source.last_successful_sync_dt = \
+                actionlog.sync.AdGroupSourceSync(action.ad_group_source).get_latest_success()
+            action.ad_group_source.save()
     except Exception as e:
         tb = traceback.format_exc()
         msg = 'Zwei callback failed for action: {action_id}. Error: {error}, message: {message}.'\
@@ -104,6 +110,8 @@ def _process_zwei_response(action, data):
     elif action.action == actionlogconstants.Action.SET_CAMPAIGN_STATE:
         state = action.payload['args']['state']
         dashapi.update_campaign_state(action.ad_group_source, state)
+    elif action.action == actionlogconstants.Action.CREATE_CAMPAIGN:
+        dashapi.update_campaign_key(action.ad_group_source, data['data']['source_campaign_key'])
 
     action.state = actionlogconstants.ActionState.SUCCESS
     action.save()
