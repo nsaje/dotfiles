@@ -93,6 +93,8 @@ AUTHENTICATION_BACKENDS = (
 
 TEST_RUNNER = 'utils.test_runner.CustomRunner'
 
+TEST_OUTPUT_DIR = os.path.join(BASE_DIR, '.junit_xml')
+
 COVERAGE_ENABLED = 'COVERAGE_ENABLED' in os.environ
 
 DEFAULT_FROM_EMAIL = ''

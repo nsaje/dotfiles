@@ -116,7 +116,7 @@ client/test/sauce.json
 client/coverage
 
 # Server JUnit files
-server/TEST*
+server/.junit_xml/TEST*
 
 # Client JUnit files
 client/test-results.xml
