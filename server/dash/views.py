@@ -1455,8 +1455,11 @@ class TriggerAccountSyncThread(threading.Thread):
         super(TriggerAccountSyncThread, self).__init__(*args, **kwargs)
 
     def run(self):
-        for account in self.accounts:
-            actionlog.sync.AccountSync(account).trigger_all()
+        try:
+            for account in self.accounts:
+                actionlog.sync.AccountSync(account).trigger_all()
+        except Exception:
+            logger.exception('Exception in TriggerAccountSyncThread')
 
 
 class AccountSync(api_common.BaseApiView):
