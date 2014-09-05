@@ -76,3 +76,25 @@ class PostclickTestCase(test.TestCase):
 
         result = api.query(datetime.date(2014, 6, 6), datetime.date(2014, 6, 6))
         self.assertFalse(result['incomplete_postclick_metrics'])
+
+
+class GoalConversionTestCase(test.TestCase):
+    fixtures = [
+        'test_reports_base.yaml', 
+        'test_article_stats_postclick.yaml',
+        'test_conversion_goal_stats.yaml',
+    ]
+
+    def setUp(self):
+        self.start_date = datetime.date(2014, 6, 4)
+        self.end_date = datetime.date(2014, 6, 4)
+
+    def test_conversion_goal_reports(self):
+        result = api.query(self.start_date, self.end_date, ad_group=1)
+
+        self.assertEqual(result['G[Goal_A]_conversions'], 14)
+        self.assertEqual(result['G[Goal_B]_conversions'], 17)
+        self.assertEqual(result['G[Goal_A]_conversion_value'], 0.3)
+        self.assertEqual(result['G[Goal_B]_conversion_value'], 0.5)
+        self.assertEqual(result['visits'], 350)
+
