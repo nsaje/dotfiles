@@ -1,4 +1,5 @@
 import logging
+import sys
 import traceback
 import urlparse
 import time
@@ -15,7 +16,8 @@ from . import models
 from . import constants
 from . import zwei_actions
 
-from dash import constants as dashconstants
+import dash.constants
+import dash.models
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +53,10 @@ def stop_ad_group(ad_group, source=None, order=None, commit=True):
 
     actionlogs = []
     for ad_group_source in ad_group_sources:
-        actionlogs.append(_init_stop_campaign(ad_group_source, order))
+        try:
+            actionlogs.append(_init_stop_campaign(ad_group_source, order))
+        except InsertActionException:
+            continue
 
     if commit:
         zwei_actions.send_multiple(actionlogs)
@@ -62,12 +67,19 @@ def stop_ad_group(ad_group, source=None, order=None, commit=True):
 def set_ad_group_property(ad_group, source=None, prop=None, value=None, order=None):
     ad_group_sources = _get_ad_group_sources(ad_group, source)
     for ad_group_source in ad_group_sources:
-        _init_set_campaign_property(ad_group_source, prop, value, order)
+        try:
+            _init_set_campaign_property(ad_group_source, prop, value, order)
+        except InsertActionException:
+            continue
 
 
 def create_campaign(ad_group_source, name):
-    action = _init_create_campaign(ad_group_source, name)
-    zwei_actions.send(action)
+    try:
+        action = _init_create_campaign(ad_group_source, name)
+    except InsertActionException:
+        pass
+    else:
+        zwei_actions.send(action)
 
 
 @transaction.atomic
@@ -88,6 +100,17 @@ def cancel_expired_actionlogs():
         actionlog.message = 'Action log has expired.'
         actionlog.state = constants.ActionState.FAILED
         actionlog.save()
+
+
+def get_sources_waiting(ad_group):
+    actions = models.ActionLog.objects.filter(
+        action=constants.Action.CREATE_CAMPAIGN,
+        ad_group_source__ad_group_id=ad_group.id,
+        state__in=[constants.ActionState.WAITING, constants.ActionState.FAILED],
+        action_type=constants.ActionType.AUTOMATIC
+    )
+
+    return [action.ad_group_source.source for action in actions]
 
 
 def is_waiting_for_set_actions(ad_group):
@@ -168,20 +191,29 @@ def age_oldest_waiting_action():
     return n_hours
 
 
-def is_sync_in_progress(ad_group):
+def is_sync_in_progress(ad_groups=None, accounts=None):
     '''
     sync is in progress if one of the following is true:
     - a get reports action for this ad_group is in 'waiting' state
     - a fetch status action for this ad_group is in 'waiting' state
     '''
 
-    waiting_actions = models.ActionLog.objects.filter(
-        ad_group_source__ad_group=ad_group,
+    if ad_groups and accounts:
+        raise Exception('Please set only one, ad_groups or accounts.')
+
+    q = models.ActionLog.objects.filter(
         state=constants.ActionState.WAITING,
         action_type=constants.ActionType.AUTOMATIC,
         action__in=(constants.Action.FETCH_REPORTS,
                     constants.Action.FETCH_CAMPAIGN_STATUS)
-    ).exists()
+    )
+
+    if ad_groups:
+        q = q.filter(ad_group_source__ad_group__in=ad_groups)
+    elif accounts:
+        q = q.filter(ad_group_source__ad_group__campaign__account__in=accounts)
+
+    waiting_actions = q.exists()
 
     return waiting_actions
 
@@ -204,8 +236,7 @@ def _get_ad_group_sources(ad_group, source):
 
 
 def _init_stop_campaign(ad_group_source, order):
-    msg = '_init_stop started: ad_group_source.id: {}'.format(ad_group_source.id)
-    logger.info(msg)
+    logger.info('_init_stop started: ad_group_source.id: %s', ad_group_source.id)
 
     action = models.ActionLog.objects.create(
         action=constants.Action.SET_CAMPAIGN_STATE,
@@ -229,7 +260,7 @@ def _init_stop_campaign(ad_group_source, order):
                     ad_group_source.source_credentials.credentials,
                 'args': {
                     'source_campaign_key': ad_group_source.source_campaign_key,
-                    'state': dashconstants.AdGroupSourceSettingsState.INACTIVE,
+                    'state': dash.constants.AdGroupSourceSettingsState.INACTIVE,
                 },
                 'callback_url': callback,
             }
@@ -237,10 +268,14 @@ def _init_stop_campaign(ad_group_source, order):
             action.payload = payload
             action.save()
 
+            return action
+
     except Exception as e:
+        logger.exception('An exception occurred while initializing set_campaign_state action.')
         _handle_error(action, e)
 
-    return action
+        et, ei, tb = sys.exc_info()
+        raise InsertActionException, ei, tb
 
 
 def _init_fetch_status(ad_group_source, order):
@@ -278,10 +313,14 @@ def _init_fetch_status(ad_group_source, order):
             action.payload = payload
             action.save()
 
+            return action
+
     except Exception as e:
+        logger.exception('An exception occurred while initializing get_campaign_status action.')
         _handle_error(action, e)
 
-    return action
+        et, ei, tb = sys.exc_info()
+        raise InsertActionException, ei, tb
 
 
 def _init_fetch_reports(ad_group_source, date, order):
@@ -321,10 +360,14 @@ def _init_fetch_reports(ad_group_source, date, order):
             action.payload = payload
             action.save()
 
+            return action
+
     except Exception as e:
+        logger.exception('An exception occurred while initializing get_reports action.')
         _handle_error(action, e)
 
-    return action
+        et, ei, tb = sys.exc_info()
+        raise InsertActionException, ei, tb
 
 
 def _init_set_campaign_property(ad_group_source, prop, value, order):
@@ -366,13 +409,17 @@ def _init_set_campaign_property(ad_group_source, prop, value, order):
                 a.save()
 
     except Exception as e:
+        logger.exception('An exception occurred while initializing set_property action.')
         _handle_error(action, e)
+
+        et, ei, tb = sys.exc_info()
+        raise InsertActionException, ei, tb
 
 
 def _init_create_campaign(ad_group_source, name):
     if ad_group_source.source_campaign_key:
         msg = 'Unable to create external campaign for AdGroupSource with existing connection'\
-              'ad_group_source.id={ad_group_source_id}, name={name}, order.id={order_id}'.format(
+              'ad_group_source.id={ad_group_source_id}, name={name}'.format(
                   ad_group_source_id=ad_group_source.id,
                   name=name,
               )
@@ -386,10 +433,15 @@ def _init_create_campaign(ad_group_source, name):
     )
     logger.info(msg)
 
+    order = models.ActionLogOrder.objects.create(
+        order_type=constants.ActionLogOrderType.CREATE_CAMPAIGN
+    )
+
     action = models.ActionLog.objects.create(
         action=constants.Action.CREATE_CAMPAIGN,
         action_type=constants.ActionType.AUTOMATIC,
         ad_group_source=ad_group_source,
+        order=order
     )
 
     try:
@@ -411,10 +463,19 @@ def _init_create_campaign(ad_group_source, name):
                 'callback_url': callback,
             }
 
+            if hasattr(ad_group_source.source, 'defaultsourcesettings'):
+                params = ad_group_source.source.defaultsourcesettings.params
+                if 'create_campaign' in params:
+                    payload['args']['extra'] = params['create_campaign']
+
             action.payload = payload
             action.save()
 
+            return action
+
     except Exception as e:
+        logger.exception('An exception occurred while initializing create_campaign action.')
         _handle_error(action, e)
 
-    return action
+        et, ei, tb = sys.exc_info()
+        raise InsertActionException, ei, tb

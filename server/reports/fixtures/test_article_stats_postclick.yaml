@@ -1,0 +1,204 @@
+# Articles
+
+- fields:
+    url: 'http://test1.com'
+    title: 'Test Article 1'
+    ad_group: 1
+    created_dt: '2014-06-04T09:58:21'
+  model: dash.article
+  pk: 1
+
+- fields:
+    url: 'http://test2.com'
+    title: 'Test Article 2'
+    ad_group: 1
+    created_dt: '2014-06-04T09:58:21'
+  model: dash.article
+  pk: 2
+
+- fields:
+    url: 'http://test3.com'
+    title: 'Test Article 3'
+    ad_group: 2
+    created_dt: '2014-06-04T09:58:21'
+  model: dash.article
+  pk: 3
+
+- fields:
+    url: 'http://test4.com'
+    title: 'Test Article 4'
+    ad_group: 2
+    created_dt: '2014-06-04T09:58:21'
+  model: dash.article
+  pk: 4
+
+  # Article Stats
+
+  # ... for Test Article 1
+- fields:
+    datetime: '2014-06-04T00:00:00'
+    ad_group: 1
+    article: 1
+    source: 1
+    visits: 200
+    new_visits: 190
+    bounced_visits: 160
+    pageviews: 400
+    duration: 2000
+    created_dt: '2014-06-04T09:58:21'
+  model: reports.articlestats
+  pk: 1
+
+- fields:
+    datetime: '2014-06-05T00:00:00'
+    ad_group: 1
+    article: 1
+    source: 1
+    visits: 200
+    new_visits: 0
+    bounced_visits: 200
+    pageviews: 100
+    duration: 2000
+    created_dt: '2014-06-04T09:58:21'
+  model: reports.articlestats
+  pk: 2
+
+- fields:
+    datetime: '2014-06-06T00:00:00'
+    ad_group: 1
+    article: 1
+    source: 1
+    visits: 300
+    new_visits: 280
+    bounced_visits: 200
+    pageviews: 400
+    duration: 1000
+    has_postclick_metrics: 1
+    created_dt: '2014-06-04T09:58:21'
+  model: reports.articlestats
+  pk: 3
+ 
+# ... for Test Article 2
+- fields:
+    datetime: '2014-06-04T00:00:00'
+    ad_group: 1
+    article: 2
+    source: 1
+    visits: 150
+    new_visits: 100
+    bounced_visits: 50
+    pageviews: 200
+    duration: 800
+    created_dt: '2014-06-04T09:58:21'
+  model: reports.articlestats
+  pk: 4
+
+- fields:
+    datetime: '2014-06-05T00:00:00'
+    ad_group: 1
+    article: 2
+    source: 1
+    visits: 0
+    new_visits: 0
+    bounced_visits: 0
+    pageviews: 0
+    duration: 0
+    created_dt: '2014-06-04T09:58:21'
+  model: reports.articlestats
+  pk: 5
+
+- fields:
+    datetime: '2014-06-06T00:00:00'
+    ad_group: 1
+    article: 2
+    source: 1
+    visits: 200
+    new_visits: 190
+    bounced_visits: 160
+    pageviews: 400
+    duration: 2000
+    has_postclick_metrics: 1
+    created_dt: '2014-06-04T09:58:21'
+  model: reports.articlestats
+  pk: 6
+
+# ... for Test Article 3
+- fields:
+    datetime: '2014-06-04T00:00:00'
+    ad_group: 2
+    article: 3
+    source: 2
+    visits: 1111
+    new_visits: 1001
+    bounced_visits: 888
+    pageviews: 2222
+    duration: 6666
+    created_dt: '2014-06-04T09:58:21'
+  model: reports.articlestats
+  pk: 7
+
+- fields:
+    datetime: '2014-06-05T00:00:00'
+    ad_group: 2
+    article: 3
+    source: 2
+    visits: 200
+    new_visits: 190
+    bounced_visits: 160
+    pageviews: 400
+    duration: 2000
+    created_dt: '2014-06-04T09:58:21'
+  model: reports.articlestats
+  pk: 8
+
+- fields:
+    datetime: '2014-06-06T00:00:00'
+    ad_group: 2
+    article: 3
+    source: 2
+    visits: 201
+    new_visits: 191
+    bounced_visits: 161
+    pageviews: 401
+    duration: 2001
+    has_postclick_metrics: 1
+    created_dt: '2014-06-04T09:58:21'
+  model: reports.articlestats
+  pk: 9
+
+# ... for Test Article 4
+# - fields:
+#     datetime: '2014-06-04T00:00:00'
+#     ad_group: 2
+#     article: 4
+#     source: 2
+#     impressions: 1168
+#     clicks: 13
+#     cost_cc: 7073
+#     created_dt: '2014-06-04T09:58:21'
+#   model: reports.articlestats
+#   pk: 10
+
+# - fields:
+#     datetime: '2014-06-05T00:00:00'
+#     ad_group: 2
+#     article: 4
+#     source: 2
+#     impressions: 1477
+#     clicks: 8
+#     cost_cc: 4352
+#     created_dt: '2014-06-04T09:58:21'
+#   model: reports.articlestats
+#   pk: 11
+
+# - fields:
+#     datetime: '2014-06-06T00:00:00'
+#     ad_group: 2
+#     article: 4
+#     source: 2
+#     impressions: 2175
+#     clicks: 39
+#     cost_cc: 21220
+#     created_dt: '2014-06-04T09:58:21'
+#   model: reports.articlestats
+#   pk: 12

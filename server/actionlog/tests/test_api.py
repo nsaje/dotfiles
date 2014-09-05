@@ -226,6 +226,38 @@ class ActionLogApiTestCase(TestCase):
             }
             self.assertEqual(action.payload, payload)
 
+    @patch('actionlog.models.datetime', MockDateTime)
+    def test_create_campaign(self):
+
+        utcnow = datetime.datetime.utcnow()
+        models.datetime.utcnow = classmethod(lambda cls: utcnow)
+
+        ad_group_source = dashmodels.AdGroupSource.objects.get(id=5)
+
+        name = 'Test'
+
+        api.create_campaign(ad_group_source, name)
+        action = models.ActionLog.objects.get(
+            ad_group_source=ad_group_source,
+            action=constants.Action.CREATE_CAMPAIGN
+        )
+
+        expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S')
+        callback = urlparse.urljoin(
+            settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
+        )
+        payload = {
+            'source': ad_group_source.source.type,
+            'action': constants.Action.CREATE_CAMPAIGN,
+            'expiration_dt': expiration_dt,
+            'credentials': ad_group_source.source_credentials.credentials,
+            'args': {
+                'name': name,
+            },
+            'callback_url': callback
+        }
+        self.assertEqual(action.payload, payload)
+
 
 class ActionLogApiCancelExpiredTestCase(TestCase):
 
@@ -324,12 +356,12 @@ class SyncInProgressTestCase(TestCase):
 
     fixtures = ['test_api.yaml']
 
-    def test_sync_in_progress(self):
+    def test_ad_groups_sync_in_progress(self):
         ad_group = dashmodels.AdGroup.objects.get(pk=1)
 
         self.assertEqual(models.ActionLog.objects.filter(ad_group_source__ad_group=ad_group).count(), 0)
 
-        self.assertEqual(api.is_sync_in_progress(ad_group), False)
+        self.assertEqual(api.is_sync_in_progress([ad_group]), False)
 
         alog = models.ActionLog(
             action=constants.Action.FETCH_REPORTS,
@@ -338,9 +370,111 @@ class SyncInProgressTestCase(TestCase):
         )
         alog.save()
 
-        self.assertEqual(api.is_sync_in_progress(ad_group), True)
+        self.assertEqual(api.is_sync_in_progress([ad_group]), True)
 
         alog.state = constants.ActionState.SUCCESS
         alog.save()
 
-        self.assertEqual(api.is_sync_in_progress(ad_group), False)
+        self.assertEqual(api.is_sync_in_progress([ad_group]), False)
+
+    def test_multiple_ad_groups_sync_in_progress(self):
+        ad_group = dashmodels.AdGroup.objects.get(pk=1)
+        ad_group2 = dashmodels.AdGroup.objects.get(pk=2)
+
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source__ad_group__in=[ad_group, ad_group2]).count(), 0)
+
+        alog = models.ActionLog(
+            action=constants.Action.FETCH_REPORTS,
+            action_type=constants.ActionType.AUTOMATIC,
+            ad_group_source=dashmodels.AdGroupSource.objects.get(pk=1),
+        )
+        alog.save()
+
+        alog2 = models.ActionLog(
+            action=constants.Action.FETCH_REPORTS,
+            action_type=constants.ActionType.AUTOMATIC,
+            ad_group_source=dashmodels.AdGroupSource.objects.get(pk=7),
+        )
+        alog2.save()
+
+        self.assertEqual(api.is_sync_in_progress([ad_group, ad_group2]), True)
+
+        alog.state = constants.ActionState.SUCCESS
+        alog.save()
+        self.assertEqual(api.is_sync_in_progress([ad_group, ad_group2]), True)
+
+        alog2.state = constants.ActionState.SUCCESS
+        alog2.save()
+        self.assertEqual(api.is_sync_in_progress([ad_group, ad_group2]), False)
+
+    def test_accounts_sync_in_progress(self):
+        account = dashmodels.Account.objects.get(pk=1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source__ad_group__campaign__account=account).count(), 0)
+
+        self.assertEqual(api.is_sync_in_progress(accounts=[account]), False)
+
+        alog = models.ActionLog(
+            action=constants.Action.FETCH_REPORTS,
+            action_type=constants.ActionType.AUTOMATIC,
+            ad_group_source=dashmodels.AdGroupSource.objects.filter(ad_group__campaign__account=account)[0],
+        )
+        alog.save()
+
+        self.assertEqual(api.is_sync_in_progress(accounts=[account]), True)
+
+        alog.state = constants.ActionState.SUCCESS
+        alog.save()
+
+        self.assertEqual(api.is_sync_in_progress(accounts=[account]), False)
+
+    def test_multiple_accounts_sync_in_progress(self):
+        account = dashmodels.Account.objects.get(pk=1)
+        account2 = dashmodels.Account.objects.get(pk=2)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source__ad_group__campaign__account__in=[account, account2]).count(), 0)
+
+        self.assertEqual(api.is_sync_in_progress(accounts=[account]), False)
+
+        alog = models.ActionLog(
+            action=constants.Action.FETCH_REPORTS,
+            action_type=constants.ActionType.AUTOMATIC,
+            ad_group_source=dashmodels.AdGroupSource.objects.filter(ad_group__campaign__account=account)[0],
+        )
+        alog.save()
+
+        alog2 = models.ActionLog(
+            action=constants.Action.FETCH_REPORTS,
+            action_type=constants.ActionType.AUTOMATIC,
+            ad_group_source=dashmodels.AdGroupSource.objects.filter(ad_group__campaign__account=account2)[0],
+        )
+        alog2.save()
+
+        self.assertEqual(api.is_sync_in_progress(accounts=[account, account2]), True)
+
+        alog.state = constants.ActionState.SUCCESS
+        alog.save()
+
+        self.assertEqual(api.is_sync_in_progress(accounts=[account, account2]), True)
+
+        alog2.state = constants.ActionState.SUCCESS
+        alog2.save()
+
+        self.assertEqual(api.is_sync_in_progress(accounts=[account, account2]), False)
+
+    def test_global_sync_in_progress(self):
+        self.assertEqual(models.ActionLog.objects.all().count(), 0)
+
+        self.assertEqual(api.is_sync_in_progress(), False)
+
+        alog = models.ActionLog(
+            action=constants.Action.FETCH_REPORTS,
+            action_type=constants.ActionType.AUTOMATIC,
+            ad_group_source=dashmodels.AdGroupSource.objects.get(pk=1),
+        )
+        alog.save()
+
+        self.assertEqual(api.is_sync_in_progress(), True)
+
+        alog.state = constants.ActionState.SUCCESS
+        alog.save()
+
+        self.assertEqual(api.is_sync_in_progress(), False)

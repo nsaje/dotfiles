@@ -40,6 +40,7 @@ INSTALLED_APPS = (
     'actionlog',
     'reports',
     'zweiapi',
+    'raven.contrib.django.raven_compat',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -123,6 +124,11 @@ LOGGING = {
             'filename': LOG_FILE,
             'formatter': 'standard'
         },
+        'sentry': {
+            'level': 'ERROR',
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+            'formatter': 'standard',
+        },
     },
     'loggers': {
         'django.db.backends': {
@@ -136,7 +142,7 @@ LOGGING = {
             'propagate': True
         },
         '': {
-            'handlers': ['file', 'console'],
+            'handlers': ['file', 'console', 'sentry'],
             'level': 'DEBUG',
             'propagate': True
         }

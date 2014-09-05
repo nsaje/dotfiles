@@ -22,6 +22,22 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         window.location = $location.absUrl();
     }]);
     $urlRouterProvider.otherwise('/');
+    $urlRouterProvider.rule(function ($injector, $location) {
+        var path = $location.url();
+
+        // check to see if the path has a trailing slash
+        if ('/' === path[path.length - 1]) {
+            return path.replace(/\/$/, '');
+        }
+
+        if (path.indexOf('/?') > -1) {
+            return path.replace('/?', '?');
+        }
+
+        return false;
+    });
+
+    var basicTemplate = '<ng-include src="config.static_url + \'/partials/tabset.html\'"></ng-include><div ui-view></div>'
 
     $stateProvider
         .state('main', {
@@ -36,13 +52,47 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
                     return api.navData.list();
                 }],
             },
+        });
+
+    $stateProvider
+        .state('main.allAccounts', {
+            url: 'all_accounts',
+            template: basicTemplate,
+            controller: 'AllAccountsCtrl'
         })
+        .state('main.allAccounts.accounts', {
+            url: '/accounts',
+            templateUrl: config.static_url + '/partials/all_accounts_accounts.html',
+            controller: 'AllAccountsAccountsCtrl'
+        });
     
+    $stateProvider
+        .state('main.accounts', {
+            url: 'accounts/{id}',
+            template: basicTemplate,
+            controller: 'AccountCtrl'
+        })
+        .state('main.accounts.campaigns', {
+            url: '/campaigns',
+            templateUrl: config.static_url + '/partials/account_campaigns.html',
+            controller: 'AccountCampaignsCtrl'
+        })
+        .state('main.accounts.agency', {
+            url: '/agency',
+            templateUrl: config.static_url + '/partials/account_agency.html',
+            controller: 'AccountAgencyCtrl'
+        });
+
     $stateProvider
         .state('main.campaigns', {
-            abstract: true,
             url: 'campaigns/{id}',
-            templateUrl: config.static_url + '/partials/campaign.html'
+            template: basicTemplate,
+            controller: 'CampaignCtrl'
+        })
+        .state('main.campaigns.ad_groups', {
+            url: '/ad_groups',
+            templateUrl: config.static_url + '/partials/campaign_ad_groups.html',
+            controller: 'CampaignAdGroupsCtrl'
         })
         .state('main.campaigns.agency', {
             url: '/agency',
@@ -53,7 +103,6 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
 
     $stateProvider
         .state('main.adGroups', {
-            abstract: true,
             url: 'ad_groups/{id}',
             templateUrl: config.static_url + '/partials/ad_group.html'
         })
