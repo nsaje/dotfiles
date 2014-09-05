@@ -121,6 +121,13 @@ module.exports = function (grunt) {
             sauce: {
                 configFile: 'test/karma.conf-sauce.js'
             }
+        },
+        protractor: {
+            local: {
+                configFile: 'test/protractor.conf.js',
+                chromeDriver: 'node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager update',
+                args: {}
+            }
         }
     });
 
