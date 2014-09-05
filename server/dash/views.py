@@ -110,7 +110,6 @@ def generate_rows(dimensions, ad_group_id, start_date, end_date):
         ordering,
         ad_group=int(ad_group_id)
     )
-    #data = reports.api.collect_results(data)
 
     if 'source' in dimensions:
         sources = {source.id: source for source in models.Source.objects.all()}
@@ -939,7 +938,6 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             ['source'],
             ad_group=int(ad_group.id)
         )
-        #sources_data = reports.api.collect_results(sources_data)
 
         sources = self.get_active_ad_group_sources(ad_group)
         source_settings = models.AdGroupSourceSettings.get_current_settings(
@@ -957,7 +955,6 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             get_stats_end_date(request.GET.get('end_date')),
             ad_group=int(ad_group.id)
         )
-        #totals_data = reports.api.collect_results(totals_data)
 
         last_success_actions = get_last_successful_source_sync_dates(ad_group)
 
@@ -1091,7 +1088,6 @@ class AccountsAccountsTable(api_common.BaseApiView):
             ['account'],
             account=accounts
         )
-        #accounts_data = reports.api.collect_results(accounts_data)
 
         ad_groups_settings = models.AdGroupSettings.objects.\
             distinct('ad_group').\
@@ -1103,7 +1099,6 @@ class AccountsAccountsTable(api_common.BaseApiView):
             get_stats_end_date(request.GET.get('end_date')),
             account=accounts
         )
-        #totals_data = reports.api.collect_results(totals_data)
 
         last_success_actions = {}
         for account in accounts:
