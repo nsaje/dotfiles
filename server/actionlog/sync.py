@@ -3,7 +3,7 @@ import dash.models
 import actionlog.models
 import actionlog.constants
 
-from actionlog.api import _init_fetch_status, _init_fetch_reports
+from actionlog.api import _init_fetch_status, _init_fetch_reports, InsertActionException
 from utils.command_helpers import last_n_days
 from . import zwei_actions
 
@@ -156,8 +156,12 @@ class AdGroupSourceSync(BaseSync):
         order = actionlog.models.ActionLogOrder.objects.create(
             order_type=actionlog.constants.ActionLogOrderType.FETCH_STATUS
         )
-        action = _init_fetch_status(self.ad_group_source, order)
-        zwei_actions.send(action)
+        try:
+            action = _init_fetch_status(self.ad_group_source, order)
+        except InsertActionException:
+            pass
+        else:
+            zwei_actions.send(action)
 
     def trigger_reports(self):
         dates = self.get_dates_to_sync_reports()
@@ -170,7 +174,11 @@ class AdGroupSourceSync(BaseSync):
             if order_type is not None:
                 order = actionlog.models.ActionLogOrder.objects.create(order_type=order_type)
             for date in dates:
-                action = _init_fetch_reports(self.ad_group_source, date, order)
+                try:
+                    action = _init_fetch_reports(self.ad_group_source, date, order)
+                except InsertActionException:
+                    continue
+
                 actions.append(action)
 
         zwei_actions.send_multiple(actions)

@@ -1,4 +1,5 @@
 import logging
+import sys
 import traceback
 import urlparse
 import time
@@ -52,9 +53,10 @@ def stop_ad_group(ad_group, source=None, order=None, commit=True):
 
     actionlogs = []
     for ad_group_source in ad_group_sources:
-        action = _init_stop_campaign(ad_group_source, order)
-        if action:
-            actionlogs.append(action)
+        try:
+            actionlogs.append(_init_stop_campaign(ad_group_source, order))
+        except InsertActionException:
+            continue
 
     if commit:
         zwei_actions.send_multiple(actionlogs)
@@ -65,12 +67,19 @@ def stop_ad_group(ad_group, source=None, order=None, commit=True):
 def set_ad_group_property(ad_group, source=None, prop=None, value=None, order=None):
     ad_group_sources = _get_ad_group_sources(ad_group, source)
     for ad_group_source in ad_group_sources:
-        _init_set_campaign_property(ad_group_source, prop, value, order)
+        try:
+            _init_set_campaign_property(ad_group_source, prop, value, order)
+        except InsertActionException:
+            continue
 
 
 def create_campaign(ad_group_source, name):
-    action = _init_create_campaign(ad_group_source, name)
-    zwei_actions.send(action)
+    try:
+        action = _init_create_campaign(ad_group_source, name)
+    except InsertActionException:
+        pass
+    else:
+        zwei_actions.send(action)
 
 
 @transaction.atomic
@@ -259,10 +268,14 @@ def _init_stop_campaign(ad_group_source, order):
             action.payload = payload
             action.save()
 
+            return action
+
     except Exception as e:
+        logger.exception('An exception occurred while initializing set_campaign_state action.')
         _handle_error(action, e)
 
-    return action
+        et, ei, tb = sys.exc_info()
+        raise InsertActionException, ei, tb
 
 
 def _init_fetch_status(ad_group_source, order):
@@ -300,10 +313,14 @@ def _init_fetch_status(ad_group_source, order):
             action.payload = payload
             action.save()
 
+            return action
+
     except Exception as e:
+        logger.exception('An exception occurred while initializing get_campaign_status action.')
         _handle_error(action, e)
 
-    return action
+        et, ei, tb = sys.exc_info()
+        raise InsertActionException, ei, tb
 
 
 def _init_fetch_reports(ad_group_source, date, order):
@@ -343,10 +360,14 @@ def _init_fetch_reports(ad_group_source, date, order):
             action.payload = payload
             action.save()
 
+            return action
+
     except Exception as e:
+        logger.exception('An exception occurred while initializing get_reports action.')
         _handle_error(action, e)
 
-    return action
+        et, ei, tb = sys.exc_info()
+        raise InsertActionException, ei, tb
 
 
 def _init_set_campaign_property(ad_group_source, prop, value, order):
@@ -388,7 +409,11 @@ def _init_set_campaign_property(ad_group_source, prop, value, order):
                 a.save()
 
     except Exception as e:
+        logger.exception('An exception occurred while initializing set_property action.')
         _handle_error(action, e)
+
+        et, ei, tb = sys.exc_info()
+        raise InsertActionException, ei, tb
 
 
 def _init_create_campaign(ad_group_source, name):
@@ -438,7 +463,7 @@ def _init_create_campaign(ad_group_source, name):
                 'callback_url': callback,
             }
 
-            if ad_group_source.source.defaultsourcesettings:
+            if hasattr(ad_group_source.source, 'defaultsourcesettings'):
                 params = ad_group_source.source.defaultsourcesettings.params
                 if 'create_campaign' in params:
                     payload['args']['extra'] = params['create_campaign']
@@ -446,7 +471,11 @@ def _init_create_campaign(ad_group_source, name):
             action.payload = payload
             action.save()
 
+            return action
+
     except Exception as e:
+        logger.exception('An exception occurred while initializing create_campaign action.')
         _handle_error(action, e)
 
-    return action
+        et, ei, tb = sys.exc_info()
+        raise InsertActionException, ei, tb
