@@ -11,6 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('dash', '0027_auto_20140904_1323'),
+        ('dash', '0028_auto_20140904_0648'),
     ]
 
     operations = [
