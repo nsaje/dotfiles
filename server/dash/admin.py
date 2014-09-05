@@ -139,7 +139,7 @@ class SourceCredentialsForm(forms.ModelForm):
             del self.cleaned_data['credentials']
 
 
-class DefaultSourceCredentialsAdmin(admin.ModelAdmin):
+class DefaultSourceSettingsAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'source',
@@ -147,6 +147,9 @@ class DefaultSourceCredentialsAdmin(admin.ModelAdmin):
     )
 
     def credentials_(self, obj):
+        if obj.credentials is None:
+            return '/'
+
         return '<a href="{credentials_url}">{credentials}</a>'.format(
             credentials_url=reverse('admin:dash_sourcecredentials_change', args=(obj.credentials.id,)),
             credentials=obj.credentials
@@ -438,4 +441,4 @@ admin.site.register(models.AdGroup, AdGroupAdmin)
 admin.site.register(models.AdGroupSettings, AdGroupSettingsAdmin)
 admin.site.register(models.AdGroupSourceSettings, AdGroupSourceSettingsAdmin)
 admin.site.register(models.SourceCredentials, SourceCredentialsAdmin)
-admin.site.register(models.DefaultSourceCredentials, DefaultSourceCredentialsAdmin)
+admin.site.register(models.DefaultSourceSettings, DefaultSourceSettingsAdmin)

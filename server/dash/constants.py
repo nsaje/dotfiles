@@ -115,3 +115,21 @@ class PromotionGoal(ConstantBase):
         TRAFFIC_ACQUISITION: 'Traffic Acquisition',
         CONVERSIONS: 'Conversions'
     }
+
+
+class SourceType(ConstantBase):
+    ADBLADE = 'adblade'
+    GRAVITY = 'gravity'
+    NRELATE = 'nrelate'
+    OUTBRAIN = 'outbrain'
+    YAHOO = 'yahoo'
+    ZEMANTA = 'zemanta'
+
+    _VALUES = {
+        ADBLADE: 'AdBlade',
+        GRAVITY: 'Gravity',
+        NRELATE: 'nRelate',
+        OUTBRAIN: 'Outbrain',
+        YAHOO: 'Yahoo',
+        ZEMANTA: 'Zemanta'
+    }

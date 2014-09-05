@@ -13,6 +13,7 @@ import httplib
 import traceback
 import urllib
 import urllib2
+import threading
 from decimal import Decimal
 
 from django.conf import settings
@@ -878,7 +879,7 @@ class AdGroupSources(api_common.BaseApiView):
 
         ad_group = get_ad_group(request.user, ad_group_id)
 
-        sources = map(lambda s: s.source, models.DefaultSourceCredentials.objects.all())
+        sources = map(lambda s: s.source, models.DefaultSourceSettings.objects.exclude(credentials__isnull=True))
         ad_group_sources = ad_group.sources.all().order_by('name')
 
         sources = [{'id': s.id, 'name': s.name} for s in sources if s not in ad_group_sources]
@@ -899,14 +900,17 @@ class AdGroupSources(api_common.BaseApiView):
         source = models.Source.objects.get(id=source_id)
 
         try:
-            default_credentials = models.DefaultSourceCredentials.objects.get(source=source)
-        except models.DefaultSourceCredentials.DoesNotExist:
-            raise exc.MissingDataError('No default credentials set for {}.'.format(source.name))
+            default_settings = models.DefaultSourceSettings.objects.get(source=source)
+        except models.DefaultSourceSettings.DoesNotExist:
+            raise exc.MissingDataError('No default settings set for {}.'.format(source.name))
+
+        if not default_settings.credentials:
+            raise exc.MissingDataError('No default credentials set in {}.'.format(default_settings))
 
         ad_group_source = models.AdGroupSource(
             source=source,
             ad_group=ad_group,
-            source_credentials=default_credentials.credentials
+            source_credentials=default_settings.credentials
         )
 
         ad_group_source.save()
@@ -1104,6 +1108,10 @@ class AccountsAccountsTable(api_common.BaseApiView):
         last_success_actions = {}
         for account in accounts:
             account_sync = actionlog.sync.AccountSync(account)
+
+            if not len(list(account_sync.get_components())):
+                continue
+
             last_success_actions[account.pk] = account_sync.get_latest_success(
                 recompute=False)
 
@@ -1192,6 +1200,8 @@ class AccountsAccountsTable(api_common.BaseApiView):
                 value = item.get(order)
                 if order == 'last_sync' and not value:
                     value = pytz.UTC.localize(datetime.datetime(datetime.MINYEAR, 1, 1))
+                elif order == 'name':
+                    value = value.lower()
 
                 return (item.get(order) is None or reverse, value)
 
@@ -1443,13 +1453,25 @@ class AdGroupSourcesExport(api_common.BaseApiView):
         return response
 
 
+class TriggerAccountSyncThread(threading.Thread):
+    """ Used to trigger sync for all accounts asynchronously. """
+    def __init__(self, accounts, *args, **kwargs):
+        self.accounts = accounts
+        super(TriggerAccountSyncThread, self).__init__(*args, **kwargs)
+
+    def run(self):
+        for account in self.accounts:
+            actionlog.sync.AccountSync(account).trigger_all()
+
+
 class AccountSync(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'account_sync_get')
     def get(self, request):
         accounts = models.Account.objects.get_for_user(request.user)
         if not actionlog.api.is_sync_in_progress(accounts=accounts):
-            for account in accounts:
-                actionlog.sync.AccountSync(account).trigger_all()
+            # trigger account sync asynchronously and immediately return
+            TriggerAccountSyncThread(accounts).start()
 
         return self.create_api_response({})
 

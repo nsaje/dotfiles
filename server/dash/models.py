@@ -254,12 +254,19 @@ class SourceCredentials(models.Model):
         )
 
 
-class DefaultSourceCredentials(models.Model):
-    source = models.ForeignKey(Source, unique=True, on_delete=models.PROTECT)
-    credentials = models.ForeignKey(SourceCredentials, on_delete=models.PROTECT)
+class DefaultSourceSettings(models.Model):
+    source = models.OneToOneField(Source, unique=True, on_delete=models.PROTECT)
+    credentials = models.ForeignKey(SourceCredentials, on_delete=models.PROTECT, null=True, blank=True)
+    params = jsonfield.JSONField(
+        blank=True,
+        null=False,
+        default={},
+        verbose_name='Additional action parameters',
+        help_text='Information about format can be found here: <a href="https://sites.google.com/a/zemanta.com/root/content-ads-dsp/additional-source-parameters-format" target="_blank">Zemanta Pages</a>'
+    )
 
     class Meta:
-        verbose_name_plural = "Default Source Credentials"
+        verbose_name_plural = "Default Source Settings"
 
     def __unicode__(self):
         return self.source.name
@@ -306,7 +313,7 @@ class AdGroupSource(models.Model):
     last_successful_sync_dt = models.DateTimeField(blank=True, null=True)
 
     def __unicode__(self):
-        return '%s - %s' % (self.ad_group, self.source)
+        return u'%s - %s' % (self.ad_group, self.source)
 
 
 class AdGroupSettings(SettingsBase):
