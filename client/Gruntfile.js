@@ -126,7 +126,9 @@ module.exports = function (grunt) {
             local: {
                 configFile: 'test/protractor.conf.js',
                 chromeDriver: 'node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager update',
-                args: {}
+            },
+            sauce: {
+                configFile: 'test/protractor.conf-sauce.js'
             }
         }
     });
@@ -137,7 +139,7 @@ module.exports = function (grunt) {
     grunt.registerTask('dist-less', ['less:dist']);
     grunt.registerTask('build', ['dist-js', 'dist-less'])
     grunt.registerTask('default', ['ngconstant:prod', 'build']);
-    grunt.registerTask('test', ['default', 'karma:local']);
-    grunt.registerTask('test-sauce', ['default', 'karma:sauce']);
+    grunt.registerTask('test', ['default', 'karma:' + (grunt.option('sauce') ? 'sauce' : 'local')]);
+    grunt.registerTask('e2e', ['protractor:' + (grunt.option('sauce') ? 'sauce' : 'local')]);
     grunt.registerTask('dev', ['ngconstant:dev', 'build', 'connect:dev', 'watch']);
 };
