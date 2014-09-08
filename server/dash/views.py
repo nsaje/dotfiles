@@ -197,8 +197,8 @@ def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
         )
         return
 
-    # if user.pk == campaign_settings[0].account_manager.pk:
-    #     return
+    if user.pk == campaign_settings[0].account_manager.pk:
+        return
 
     recipients = [campaign_settings[0].account_manager.email]
 
