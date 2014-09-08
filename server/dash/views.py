@@ -197,12 +197,12 @@ def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
         )
         return
 
-    if user.pk == campaign_settings[0].account_manager.pk:
-        return
+    # if user.pk == campaign_settings[0].account_manager.pk:
+    #     return
 
     recipients = [campaign_settings[0].account_manager.email]
 
-    subject = 'Settings change - ad group {}, campaign {}, account {}'.format(
+    subject = u'Settings change - ad group {}, campaign {}, account {}'.format(
         ad_group.name,
         ad_group.campaign.name,
         ad_group.campaign.account.name
@@ -213,7 +213,7 @@ def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
     action_log_url = action_log_url.replace('http://', 'https://')
     action_log_url += '#?filters=ad_group:{}'.format(ad_group.pk)
 
-    body = '''Hi account manager of {ad_group.name}
+    body = u'''Hi account manager of {ad_group.name}
 
 We'd like to notify you that {user.email} has made a change in the settings of the ad group {ad_group.name}, campaign {campaign.name}, account {account.name}. Please check {link_url} for details.
 
