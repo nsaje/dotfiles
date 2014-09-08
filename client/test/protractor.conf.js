@@ -18,8 +18,8 @@ exports.config = {
     onPrepare: function () {
         // handle signin
         browser.driver.get(localConfig.baseUrl + '/signin');
-        browser.driver.findElement(By.name('username')).sendKeys(localConfig.signinUsername);
-        browser.driver.findElement(By.name('password')).sendKeys(localConfig.signinPassword);
+        browser.driver.findElement(By.name('username')).sendKeys('protractor@zemanta.com');
+        browser.driver.findElement(By.name('password')).sendKeys('testPr0tr4ct0r');
         browser.driver.findElement(By.id('id_signin_btn')).click();
     }
 };

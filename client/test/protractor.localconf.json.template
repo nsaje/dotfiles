@@ -1,5 +1,3 @@
 {
-    "baseUrl": "url",
-    "signinUsername": "username",
-    "signinPassword": "password"
+    "baseUrl": "url"
 }
