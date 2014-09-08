@@ -21,5 +21,7 @@ exports.config = {
         browser.driver.findElement(By.name('username')).sendKeys('protractor@zemanta.com');
         browser.driver.findElement(By.name('password')).sendKeys('testPr0tr4ct0r');
         browser.driver.findElement(By.id('id_signin_btn')).click();
+
+        browser.driver.sleep(1000);  // prevent Broken Pipe error in Django
     }
 };
