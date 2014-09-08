@@ -330,6 +330,9 @@ def _init_fetch_reports(ad_group_source, date, order):
     )
     logger.info(msg)
 
+    if not ad_group_source.source_campaign_key:
+        raise InsertActionException('Source campaign key empty')
+
     action = models.ActionLog.objects.create(
         action=constants.Action.FETCH_REPORTS,
         action_type=constants.ActionType.AUTOMATIC,
@@ -363,7 +366,7 @@ def _init_fetch_reports(ad_group_source, date, order):
             return action
 
     except Exception as e:
-        logger.exception('An exception occurred while initializing get_reports action.')
+        logger.exception('An exception occurred while initializing get_reports action')
         _handle_error(action, e)
 
         et, ei, tb = sys.exc_info()
