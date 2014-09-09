@@ -92,9 +92,9 @@ class GoalConversionTestCase(test.TestCase):
     def test_conversion_goal_reports(self):
         result = api.query(self.start_date, self.end_date, ad_group=1)
 
-        self.assertEqual(result['G[Goal_A]_conversions'], 14)
-        self.assertEqual(result['G[Goal_B]_conversions'], 17)
-        self.assertEqual(result['G[Goal_A]_conversion_value'], 0.3)
-        self.assertEqual(result['G[Goal_B]_conversion_value'], 0.5)
+        self.assertEqual(result['goals']['Goal_A']['conversions'], 14)
+        self.assertEqual(result['goals']['Goal_B']['conversions'], 17)
+        self.assertEqual(result['goals']['Goal_A']['conversion_value'], 0.3)
+        self.assertEqual(result['goals']['Goal_B']['conversion_value'], 0.5)
         self.assertEqual(result['visits'], 350)
 

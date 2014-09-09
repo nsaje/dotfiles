@@ -143,9 +143,15 @@ def _extract_key(result, breakdown):
 
 
 def _extend_result(result, conversion_result):
-    col_prefix = 'G[{0}]_'.format(conversion_result['goal_name'])
-    result[col_prefix + 'conversions'] = conversion_result['conversions']
-    result[col_prefix + 'conversion_value'] = conversion_result['conversion_value']
+    goal_name = conversion_result['goal_name']
+    conversions = conversion_result['conversions']
+    conversion_value = conversion_result['conversion_value']
+    goals = result.get('goals', {})
+    this_goal = goals.get(goal_name, {})
+    this_goal['conversions'] = conversions
+    this_goal['conversion_value'] = conversion_value
+    goals[goal_name] = this_goal
+    result['goals'] = goals
 
 
 def sorted_results(results, order=None):
