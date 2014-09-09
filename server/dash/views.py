@@ -983,6 +983,9 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress([ad_group]),
+            'incomplete_traffic_metrics': True,
+            'incomplete_postclick_metrics': True,
+            'incomplete_conversion_metrics': True,
         })
 
     def get_active_ad_group_sources(self, ad_group):
@@ -992,7 +995,7 @@ class AdGroupSourcesTable(api_common.BaseApiView):
         return [s for s in sources if s not in inactive_sources]
 
     def get_totals(self, ad_group, totals_data, source_settings, yesterday_cost):
-        return {
+        result = {
             'daily_budget': float(sum(settings.daily_budget_cc for settings in source_settings.values()
                                       if settings.daily_budget_cc is not None)),
             'cost': totals_data['cost'],
@@ -1000,8 +1003,20 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             'clicks': totals_data['clicks'],
             'impressions': totals_data['impressions'],
             'ctr': totals_data['ctr'],
-            'yesterday_cost': yesterday_cost
+            'yesterday_cost': yesterday_cost,
+
+            'visits': totals_data['visits'],
+            'pageviews': totals_data['pageviews'],
+            'percent_new_users': totals_data['percent_new_users'],
+            'bounce_rate': totals_data['bounce_rate'],
+            'pv_per_visit': totals_data['pv_per_visit'],
+            'avg_tos': totals_data['avg_tos'],
+            'click_discrepancy': totals_data['click_discrepancy'],
         }
+        for field, val in totals_data.iteritems():
+            if field.startswith('G[') and field.endswith('_conversionrate'):
+                result[field] = val
+        return result
 
     def get_rows(self, ad_group, sources, sources_data, source_settings, last_actions, yesterday_cost, order=None):
         rows = []
@@ -1029,7 +1044,7 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             supply_dash_url = urlresolvers.reverse('dash.views.supply_dash_redirect')
             supply_dash_url += '?ad_group_id={}&source_id={}'.format(ad_group.pk, sid)
 
-            rows.append({
+            row = {
                 'id': str(sid),
                 'name': settings.ad_group_source.source.name,
                 'status': settings.state,
@@ -1043,10 +1058,27 @@ class AdGroupSourcesTable(api_common.BaseApiView):
                 'clicks': source_data.get('clicks', None),
                 'impressions': source_data.get('impressions', None),
                 'ctr': source_data.get('ctr', None),
+
+                # postclick metrics
+                'visits': source_data.get('visits', None),
+                'pageviews': source_data.get('pageviews', None),
+                'percent_new_users': source_data.get('percent_new_users', None),
+                'bounce_rate': source_data.get('bounce_rate', None),
+                'pv_per_visit': source_data.get('pv_per_visit', None),
+                'avg_tos': source_data.get('avg_tos', None),
+                'click_discrepancy': source_data.get('click_discrepancy', None),
+
                 'last_sync': last_sync,
                 'yesterday_cost': yesterday_cost.get(sid),
                 'supply_dash_url': supply_dash_url
-            })
+            }
+
+            # add conversion fields
+            for field, val in source_data.iteritems():
+                if field.startswith('G[') and field.endswith('_conversionrate'):
+                    row[field] = val
+
+            rows.append(row)
 
         if order:
             reverse = False
@@ -1554,7 +1586,10 @@ class AdGroupAdsTable(api_common.BaseApiView):
                 'startIndex': start_index,
                 'endIndex': end_index,
                 'size': size
-            }
+            },
+            'incomplete_traffic_metrics': True,
+            'incomplete_postclick_metrics': True,
+            'incomplete_conversion_metrics': True,
         })
 
 

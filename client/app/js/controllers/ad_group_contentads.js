@@ -2,6 +2,9 @@
 oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'zemCustomTableColsService', 'localStorageService', 'zemChartService', function ($scope, $state, $location, $window, $timeout, api, zemCustomTableColsService, localStorageService, zemChartService) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
+    $scope.incompleteTrafficMetrics = false;
+    $scope.incompletePostclickMetrics = false;
+    $scope.incompleteConversionMetrics = false;
     $scope.order = '-cost';
     $scope.constants = constants;
     $scope.options = options;
@@ -58,6 +61,55 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             checked: true,
             type: 'percent',
             help: 'The number of clicks divided by the number of impressions.'
+        },
+        {
+            name: 'Visits',
+            field: 'visits',
+            checked: true,
+            type: 'number',
+            help: 'The number of visits as reported by Google Analytics.'
+        },
+        {
+            name: 'Pageviews',
+            field: 'pageviews',
+            checked: true,
+            type: 'number',
+            help: 'The number of pageviews as reported by Google Analytics.'
+        },
+        {
+            name: 'New Users',
+            field: 'percent_new_users',
+            checked: false,
+            type: 'percent',
+            help: 'Percentage of visits made by new users, as reported by Google Analytics.'
+        },
+        {
+            name: 'Bounce Rate',
+            field: 'bounce_rate',
+            checked: false,
+            type: 'percent',
+            help: 'Bounce rate help goes here.'
+        },
+        {
+            name: 'PV/Visit',
+            field: 'pv_per_visit',
+            checked: false,
+            type: 'number',
+            help: 'Help, pageviews per visit.'
+        },
+        {
+            name: 'Avg. ToS',
+            field: 'avg_tos',
+            checked: false,
+            type: 'number',
+            help: 'Help, average time on site.'
+        },
+        {
+            name: 'Click Discrepancy',
+            field: 'click_discrepancy',
+            checked: false,
+            type: 'number',
+            help: 'number of clicks minus number of visits.'
         }
     ];
 
@@ -123,16 +175,52 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
 
     $scope.loadRequestInProgress = false;
 
+    $scope.addGoalColumns = function(rows) {
+        var alreadyAdded = function(field) {
+            for(var i = 0; i < $scope.columns.length; i++) {
+                if(field == $scope.columns[i]['field']){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        for(var i = 0; i < rows.length; i++) {
+            for(var field in rows[i]) {
+                if(alreadyAdded(field)) {
+                    continue;
+                }
+                if(field.indexOf('G[') === 0 && field.indexOf('_conversionrate') != -1){
+                    var col_descr = {
+                        'name': field,
+                        'field': field,
+                        'checked': false,
+                        'type': 'percent',
+                        'help': 'This column is helpless'
+                    }
+                    $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
+                    alreadyAdded[field] = true;
+                }
+            }
+        }
+    };
+
     $scope.getTableData = function () {
         $scope.loadRequestInProgress = true;
 
         api.adGroupAdsTable.get($state.params.id, $scope.pagination.currentPage, $scope.pagination.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
+                $scope.addGoalColumns(data.rows);
+
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
                 $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
                 $scope.isSyncRecent = data.is_sync_recent;
                 $scope.isSyncInProgress = data.is_sync_in_progress;
+
+                $scope.incompleteTrafficMetrics = data.incomplete_traffic_metrics;
+                $scope.incompletePostclickMetrics = data.incomplete_postclick_metrics;
+                $scope.incompleteConversionMetrics = data.incomplete_conversion_metrics;
 
                 $scope.order = data.order;
                 $scope.pagination = data.pagination;

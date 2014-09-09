@@ -147,6 +147,21 @@ def _extend_result(result, conversion_result):
     result[col_prefix + 'conversions'] = conversion_result['conversions']
     result[col_prefix + 'conversion_value'] = conversion_result['conversion_value']
 
+# TODO:
+# this is temporary
+def _fake_postclick_data(result):
+    import random
+    result['visits'] = int(0.9 * result['clicks']) if result.get('clicks') is not None else None
+    result['pageviews'] = int(1.8 * result['clicks']) if result.get('clicks') is not None else None
+    result['percent_new_users'] = random.choice([0.67, 0.32, 0.20, 0.12]) if result.get('visits') is not None else None
+    result['bounce_rate'] = random.choice([0.88, 0.95, 0.68, 0.54]) if result.get('visits') is not None else None
+    result['pv_per_visit'] = random.choice([2.34, 1.23, 3.45, 4.56]) if result.get('visits') is not None else None
+    result['avg_tos'] = random.choice([31.13, 21.12, 17.71, 54.45]) if result.get('visits') is not None else None
+    result['click_discrepancy'] = result['clicks'] - result['visits'] if result.get('clicks') is not None and result.get('visits') is not None else None
+
+    result['G[goal A]_conversionrate'] = random.choice([0.03, 0.01, 0.02, 0.04, 0.05])
+    result['G[goal B]_conversionrate'] = random.choice([0.02, 0.03, 0.04, 0.05, 0.06])
+
 
 def sorted_results(results, order=None):
     rows = results[:]
@@ -168,8 +183,11 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
     report_results = query_stats(start_date, end_date, breakdown=breakdown, **constraints)
     report_results = _collect_results(report_results)
 
-    conversion_results = query_goal(start_date, end_date, breakdown=breakdown, **constraints)
-    conversion_results = _collect_results(conversion_results)
+    #conversion_results = query_goal(start_date, end_date, breakdown=breakdown, **constraints)
+    #conversion_results = _collect_results(conversion_results)
+    # TODO
+    # this is temporary
+    conversion_results = []
 
     # in memory join of the result sets
     if breakdown:
@@ -187,11 +205,19 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
             key = _extract_key(row, breakdown)
             _extend_result(results[key], row)
         results = results.values()
+        # TODO:
+        # this is temporary
+        for result in results:
+            _fake_postclick_data(result)
+
         return sorted_results(results, order)
     else:
         result = report_results
         for row in conversion_results:
             _extend_result(result, row)
+        # TODO
+        # this is temporary
+        _fake_postclick_data(result)
         return result
 
 

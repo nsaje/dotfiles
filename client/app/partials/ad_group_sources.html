@@ -38,8 +38,20 @@
         <alert type="info" class="alert-sync" ng-show="sourcesWaiting">
             We are adding the following media source(s): {{sourcesWaiting.join(', ')}}. This may take some time.
         </alert>
-        <alert type="info" class="alert-sync" ng-show="isSyncRecent === false">
-            We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">The last successful sync took place {{ lastSyncDate.fromNow() }}.</span> If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
+        <alert type="info" class="alert-sync" ng-show="isSyncRecent === false || incompleteTrafficMetrics === true || incompletePostclickMetrics === true || incompleteConversionMetrics === true">
+            <span ng-show="isSyncRecent === false">
+                We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">the last successful sync took place {{ lastSyncDate.fromNow() }}.</span> <br />
+            </span>
+            <span ng-show="incompleteTrafficMetrics === true">
+                The traffic metrics data is incomplete for the selected daterange. Please check the graph above to see for which dates the data is missing.<br />
+            </span>
+            <span ng-show="incompletePostclickMetrics === true">
+                The postclick metrics data is incomplete for the selected daterange. Please check the graph above to see for which dates the data is missing.<br />
+            </span>
+            <span ng-show="incompleteConversionMetrics === true">
+                The conversion metrics data is incomplete for the selected daterange. Please check the graph above to see for which dates the data is missing.<br />
+            </span>
+            If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
         </alert>
 
         <div class="loader-container">
@@ -84,7 +96,14 @@
                                         {{ (row[col.field] | number:2) || '0.0' }}%
                                     </span>
                                     <span ng-switch-when="number">
-                                        {{ (row[col.field] | number:0) || 'N/A' }}
+                                        <span ng-switch="!!col.fractionSize">
+                                            <span ng-switch-when="true">
+                                                {{ (row[col.field] | number:col.fractionSize) || 'N/A' }}
+                                            </span>
+                                            <span ng-switch-default>
+                                                {{ (row[col.field] | number:0) || 'N/A' }}
+                                            </span>
+                                        </span>
                                     </span>
                                     <span ng-switch-when="datetime">
                                         <span class="datetime">

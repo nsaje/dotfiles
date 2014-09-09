@@ -250,7 +250,14 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 cpc: data.cpc !== null ? parseFloat((data.cpc).toFixed(3)) : null,
                 cost: data.cost !== null ? parseFloat((data.cost).toFixed(2)) : null,
                 sourceId: data.source || null,
-                sourceName: data.source_name || null
+                sourceName: data.source_name || null,
+                visits: data.visits,
+                pageviews: data.pageviews,
+                percent_new_users: data.percent_new_users,
+                bounce_rate: data.bounce_rate,
+                pv_per_visit: data.pv_per_visit,
+                avg_tos: data.avg_tos,
+                click_discrepancy: data.click_discrepancy
             };
             return result;
         }
