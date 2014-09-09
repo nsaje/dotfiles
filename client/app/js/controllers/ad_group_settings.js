@@ -7,7 +7,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
     $scope.options = options;
     $scope.isStartDatePickerOpen = false;
     $scope.isEndDatePickerOpen = false;
-    $scope.datepickerMinDate = moment().toDate();
     $scope.alerts = [];
     $scope.saveRequestInProgress = false;
     $scope.saved = null;
