@@ -42,4 +42,12 @@ exports.config = {
     }, {
         'browserName': 'firefox'
     }],
+
+    framework: 'jasmine',
+    jasmineNodeOpts: {
+        isVerbose: true,
+        showColors: true,
+        includeStackTrace: true,
+        defaultTimeoutInterval: 60000
+    }
 };
