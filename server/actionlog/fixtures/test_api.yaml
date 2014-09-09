@@ -223,7 +223,7 @@
 -   fields:
         source: 3
         ad_group: 2
-        source_campaign_key: '["fake"]'
+        source_campaign_key: ''
         source_credentials: 3
     model: dash.adgroupsource
     pk: 8
@@ -332,3 +332,25 @@
         credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
     model: dash.sourcecredentials
     pk: 6
+
+# test campaignsettings
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        name: 'test campaign 2'
+        account_manager: NULL
+        sales_representative: NULL
+        iab_category: 'IAB24'
+        campaign: 2
+    model: dash.campaignsettings
+    pk: 1
+
+# test defaultsourcesettings
+
+-   fields:
+        source: 3
+        credentials: NULL
+        params: '{"create_campaign": {"exclusive_blog_ids": [123456]}}'
+    model: dash.defaultsourcesettings
+    pk: 1
