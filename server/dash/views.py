@@ -1397,13 +1397,16 @@ class AdGroupSourcesExport(api_common.BaseApiView):
 
         for item in data:
             # Format
+            row = {}
             for key in ['cost', 'cpc', 'ctr']:
                 val = item[key]
                 if not isinstance(val, float):
                     val = 0
-                item[key] = '{:.2f}'.format(val)
+                row[key] = '{:.2f}'.format(val)
+            for key in fieldnames:
+                row[key] = item[key]
 
-            writer.writerow(item)
+            writer.writerow(row)
 
         return response
 
