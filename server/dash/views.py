@@ -1,4 +1,4 @@
-import datetime
+# -*- coding: utf-8 -*-import datetime
 import json
 import logging
 import math
@@ -1603,20 +1603,61 @@ class AdGroupDailyStats(api_common.BaseApiView):
                 **extra_kwargs
             )
 
-        return self.create_api_response({
-            'stats': self.get_dict(breakdown_stats + totals_stats, sources)
-        })
+        return self.create_api_response(self.get_response_dict(breakdown_stats + totals_stats, sources))
 
-    def get_dict(self, stats, sources):
+    def get_response_dict(self, stats, sources):
         sources_dict = {}
         if sources:
             sources_dict = {x.pk: x.name for x in sources}
 
+        options_dict = {}
+        results = []
         for stat in stats:
-            if 'source' in stat:
-                stat['source_name'] = sources_dict[stat['source']]
+            result = {
+                'date': stat['date'],
+                'clicks': stat['clicks'],
+                'impressions': stat['impressions'],
+                'ctr': '{:.2f}'.format(stat['ctr'])
+                       if 'ctr' in stat and stat['ctr'] is not None else None,
+                'cpc': '{:.3f}'.format(stat['cpc'])
+                       if 'cpc' in stat and stat['cpc'] is not None else None,
+                'cost': '{:.2f}'.format(stat['cost'])
+                       if 'cost' in stat and stat['cost'] is not None else None
+            }
 
-        return stats
+            if 'source' in stat:
+                result['source_id'] = stat['source']
+                result['source_name'] = sources_dict[stat['source']]
+
+            # handle custom goal metrics
+            if 'goals' in stat and stat['goals'] is not None:
+                for goal_name, goal_metrics in stat['goals'].items():
+                    for metric_key, metric_value in goal_metrics.items():
+                        if metric_key == 'conversion_rate':
+                            metric_value = '{:.2f}'.format(metric_value) if metric_value is not None else None
+                            metric_name = 'Conversion Rate'
+                        elif metric_key == 'conversions':
+                            metric_name = 'Conversions'
+
+                        metric_id = '{}_{}'.format(
+                            slugify.slugify(goal_name).encode('ascii', 'ignore'),
+                            metric_key
+                        )
+
+                        if metric_id not in options_dict:
+                            options_dict[metric_id] = {
+                                'name': '{}: {}'.format(goal_name, metric_name),
+                                'value': metric_id
+                            }
+
+                        result[metric_id] = metric_value
+
+            results.append(result)
+
+        return {
+            'stats': results,
+            'options': options_dict.values()
+        }
 
 
 class AccountDailyStats(api_common.BaseApiView):
