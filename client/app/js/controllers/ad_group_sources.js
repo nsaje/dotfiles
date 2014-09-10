@@ -6,12 +6,12 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     $scope.selectedSourceIds = [];
     $scope.selectedSourceTotals = true;
     $scope.constants = constants;
-    $scope.options = options;
     $scope.chartMetric1 = constants.sourceChartMetric.CLICKS;
     $scope.chartMetric2 = constants.sourceChartMetric.IMPRESSIONS;
     $scope.dailyStats = [];
     $scope.chartData = undefined;
     $scope.isChartShown = zemChartService.load('zemChart');
+    $scope.sourceChartMetrics = options.sourceChartMetrics;
     $scope.chartBtnTitle = 'Hide chart';
     $scope.order = '-cost';
     $scope.sources = [];
@@ -129,6 +129,13 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 format = 'currency';
             } else if (x === constants.sourceChartMetric.CTR) {
                 format = 'percent';
+            } else {
+                // check goal metrics for format info
+                $scope.sourceChartMetrics.forEach(function (metric) {
+                    if (x === metric.value && metric.format) {
+                        format = metric.format;
+                    }
+                });
             }
 
             return format;
@@ -216,9 +223,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     };
 
     $scope.getDailyStats = function () {
-        api.adGroupSourcesDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedSourceTotals).then(
+        api.adGroupDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedSourceTotals).then(
             function (data) {
-                $scope.dailyStats = data;
+                $scope.dailyStats = data.stats;
+                $scope.sourceChartMetrics = options.sourceChartMetrics.concat(data.options);
                 $scope.setChartData();
             },
             function (data) {

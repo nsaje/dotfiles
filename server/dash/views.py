@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-import datetime
+# -*- coding: utf-8 -*-
+import datetime
 import json
 import logging
 import math
@@ -1617,11 +1618,11 @@ class AdGroupDailyStats(api_common.BaseApiView):
                 'date': stat['date'],
                 'clicks': stat['clicks'],
                 'impressions': stat['impressions'],
-                'ctr': '{:.2f}'.format(stat['ctr'])
+                'ctr': round(stat['ctr'], 2)
                        if 'ctr' in stat and stat['ctr'] is not None else None,
-                'cpc': '{:.3f}'.format(stat['cpc'])
+                'cpc': round(stat['cpc'], 3)
                        if 'cpc' in stat and stat['cpc'] is not None else None,
-                'cost': '{:.2f}'.format(stat['cost'])
+                'cost': round(stat['cost'], 2)
                        if 'cost' in stat and stat['cost'] is not None else None
             }
 
@@ -1629,15 +1630,19 @@ class AdGroupDailyStats(api_common.BaseApiView):
                 result['source_id'] = stat['source']
                 result['source_name'] = sources_dict[stat['source']]
 
-            # handle custom goal metrics
             if 'goals' in stat and stat['goals'] is not None:
                 for goal_name, goal_metrics in stat['goals'].items():
                     for metric_key, metric_value in goal_metrics.items():
+                        metric_format = None
                         if metric_key == 'conversion_rate':
-                            metric_value = '{:.2f}'.format(metric_value) if metric_value is not None else None
+                            metric_value = round(metric_value, 2) if metric_value is not None else None
+                            metric_format = 'percent'
                             metric_name = 'Conversion Rate'
                         elif metric_key == 'conversions':
                             metric_name = 'Conversions'
+                        else:
+                            # unknown metric
+                            continue
 
                         metric_id = '{}_{}'.format(
                             slugify.slugify(goal_name).encode('ascii', 'ignore'),
@@ -1647,7 +1652,8 @@ class AdGroupDailyStats(api_common.BaseApiView):
                         if metric_id not in options_dict:
                             options_dict[metric_id] = {
                                 'name': '{}: {}'.format(goal_name, metric_name),
-                                'value': metric_id
+                                'value': metric_id,
+                                'format': metric_format
                             }
 
                         result[metric_id] = metric_value

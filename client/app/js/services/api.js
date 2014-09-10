@@ -240,19 +240,12 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
-    function AdGroupSourcesDailyStats() {
+    function AdGroupDailyStats() {
         function convertFromApi(data) {
-            var result = {
-                date: parseInt(moment.utc(data.date).format('XSSS'), 10),
-                clicks: data.clicks,
-                impressions: data.impressions,
-                ctr: data.ctr !== null ? parseFloat((data.ctr).toFixed(2)) : null,
-                cpc: data.cpc !== null ? parseFloat((data.cpc).toFixed(3)) : null,
-                cost: data.cost !== null ? parseFloat((data.cost).toFixed(2)) : null,
-                sourceId: data.source || null,
-                sourceName: data.source_name || null
-            };
-            return result;
+            data.date = parseInt(moment.utc(data.date).format('XSSS'));
+            data.sourceId = data.source_id;
+            data.sourceName = data.source_name;
+            return data;
         }
 
         this.list = function (adGroupId, startDate, endDate, sourceIds, totals) {
@@ -280,14 +273,20 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             $http.get(url, config).
                 success(function (response, status) {
-                    var resource;
+                    var stats, options;
                     if (response && response.data && response.data.stats) {
-                        resource = response.data.stats;
-                        resource = response.data.stats.map(function (x) {
+                        stats = response.data.stats;
+                        stats = response.data.stats.map(function (x) {
                             return convertFromApi(x);
                         });
                     }
-                    deferred.resolve(resource);
+                    if (response && response.data && response.data.options) {
+                        options = response.data.options;
+                    }
+                    deferred.resolve({
+                        stats: stats,
+                        options: options
+                    });
                 }).
                 error(function(data, status, headers, config) {
                     deferred.reject(data);
@@ -954,7 +953,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         accountSync: new AccountSync(),
         checkAccountsSyncProgress: new CheckAccountsSyncProgress(),
         checkSyncProgress: new CheckSyncProgress(),
-        adGroupSourcesDailyStats: new AdGroupSourcesDailyStats(),
+        adGroupDailyStats: new AdGroupDailyStats(),
         actionLog: new ActionLog()
     };
 }]);

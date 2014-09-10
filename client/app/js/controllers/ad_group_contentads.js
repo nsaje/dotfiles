@@ -10,6 +10,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     $scope.dailyStats = [];
     $scope.chartData = undefined;
     $scope.isChartShown = zemChartService.load('zemChart');
+    $scope.sourceChartMetrics = options.sourceChartMetrics;
     $scope.chartBtnTitle = 'Hide chart';
     $scope.pagination = {
         currentPage: 1,
@@ -83,6 +84,13 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
                 format = 'currency';
             } else if (x === constants.sourceChartMetric.CTR) {
                 format = 'percent';
+            } else {
+                // check goal metrics for format info
+                $scope.sourceChartMetrics.forEach(function (metric) {
+                    if (x === metric.value && metric.format) {
+                        format = metric.format;
+                    }
+                });
             }
 
             return format;
@@ -169,9 +177,10 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     };
 
     $scope.getDailyStats = function () {
-        api.adGroupSourcesDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true).then(
+        api.adGroupDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true).then(
             function (data) {
-                $scope.dailyStats = data;
+                $scope.dailyStats = data.stats;
+                $scope.sourceChartMetrics = options.sourceChartMetrics.concat(data.options);
                 $scope.setChartData();
             },
             function (data) {
