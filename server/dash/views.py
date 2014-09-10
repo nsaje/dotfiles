@@ -798,7 +798,8 @@ class AdGroupAgency(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group)
+            'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group),
+            'history': self.get_history(ad_group)
         }
 
         return self.create_api_response(response)
@@ -833,7 +834,8 @@ class AdGroupAgency(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group)
+            'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group),
+            'history': self.get_history(ad_group)
         }
 
         return self.create_api_response(response)
@@ -870,6 +872,71 @@ class AdGroupAgency(api_common.BaseApiView):
         settings.target_devices = current_settings.target_devices
         settings.target_regions = current_settings.target_regions
         settings.tracking_code = resource['tracking_code']
+
+    def get_history(self, ad_group):
+        settings = models.AdGroupSettings.objects.\
+            filter(ad_group=ad_group).\
+            order_by('created_dt')
+
+        history = []
+        for i in range(0, len(settings)):
+            old_settings = settings[i - 1] if i > 0 else None
+            new_settings = settings[i]
+
+            changes = old_settings.get_setting_changes(new_settings) \
+                if old_settings is not None else None
+
+            if i > 0 and not changes:
+                continue
+
+            settings_dict = self.convert_settings_to_dict(old_settings, new_settings)
+
+            history.append({
+                'datetime': new_settings.created_dt,
+                'changed_by': new_settings.created_by.email,
+                'changes_text': self.convert_changes_to_string(changes),
+                'settings': settings_dict.values(),
+                'show_old_settings': old_settings is not None
+            })
+
+        return history
+
+    def convert_changes_to_string(self, changes):
+        if changes is None:
+            return 'Created settings'
+
+        change_strings = []
+
+        for key, value in changes.iteritems():
+            prop = models.AdGroupSettings.get_human_prop_name(key)
+            val = models.AdGroupSettings.get_human_value(key, value)
+            change_strings.append(
+                '{} set to "{}"'.format(prop, val)
+            )
+
+        return ', '.join(change_strings)
+
+    def convert_settings_to_dict(self, old_settings, new_settings):
+        settings_dict = OrderedDict()
+        for field in models.AdGroupSettings._settings_fields:
+            settings_dict[field] = {
+                'name': models.AdGroupSettings.get_human_prop_name(field),
+                'value': models.AdGroupSettings.get_human_value(field, getattr(
+                    new_settings,
+                    field,
+                    models.AdGroupSettings.get_default_value(field)
+                ))
+            }
+
+            if old_settings is not None:
+                old_value = models.AdGroupSettings.get_human_value(field, getattr(
+                    old_settings,
+                    field,
+                    models.AdGroupSettings.get_default_value(field)
+                ))
+                settings_dict[field]['old_value'] = old_value
+
+        return settings_dict
 
 
 class AdGroupSources(api_common.BaseApiView):
