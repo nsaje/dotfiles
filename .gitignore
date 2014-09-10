@@ -114,3 +114,6 @@ client/test/sauce.json
 
 # Client coverage 
 client/coverage
+
+# Client test config
+client/test/protractor.localconf.json
