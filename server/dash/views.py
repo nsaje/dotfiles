@@ -208,10 +208,8 @@ def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
         ad_group.campaign.account.name
     )
 
-    action_log_url = request.build_absolute_uri(
-        reverse('action_log_view'))
-    action_log_url = action_log_url.replace('http://', 'https://')
-    action_log_url += '#?filters=ad_group:{}'.format(ad_group.pk)
+    link_url = request.build_absolute_uri('/ad_groups/{}/agency'.format(ad_group.pk))
+    link_url = link_url.replace('http://', 'https://')
 
     body = u'''Hi account manager of {ad_group.name}
 
@@ -225,7 +223,7 @@ Zemanta
         ad_group=ad_group,
         campaign=ad_group.campaign,
         account=ad_group.campaign.account,
-        link_url=action_log_url
+        link_url=link_url
     )
 
     try:
