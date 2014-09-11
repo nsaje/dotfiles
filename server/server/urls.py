@@ -13,6 +13,7 @@ from zemauth.forms import AuthenticationForm
 import zweiapi.views
 import actionlog.views
 import dash.views
+import convapi.views
 
 admin.site.login = login_required(admin.site.login)
 
@@ -148,6 +149,18 @@ urlpatterns += patterns(
         name='api.zwei_callback',
     )
 )
+
+
+# Conversion Api
+urlpatterns += patterns(
+    '',
+    url(
+        r'^convapi/mailgun/gareps$', 
+        convapi.views.mailgun_gareps,
+        name='convapi.mailgun',
+    )
+)
+
 
 # Source OAuth
 urlpatterns += patterns(
