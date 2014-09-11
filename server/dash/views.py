@@ -5,9 +5,8 @@ import math
 import dateutil.parser
 from collections import OrderedDict
 import unicodecsv
-from xlwt import Workbook, Style
+from xlsxwriter import Workbook
 import slugify
-import excel_styles
 import base64
 import httplib
 import traceback
@@ -15,6 +14,7 @@ import urllib
 import urllib2
 import threading
 from decimal import Decimal
+import StringIO
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -126,24 +126,27 @@ def write_excel_row(worksheet, row_index, column_data):
         worksheet.write(
             row_index,
             column_index,
-            column_value[0],
-            column_value[1] if len(column_value) > 1 else Style.default_style
+            column_value
         )
 
 
-def create_excel_worksheet(workbook, name, widths, header_names, data, transform_func):
-    worksheet = workbook.add_sheet(name)
+def create_excel_worksheet(workbook, name, columns, data):
+    worksheet = workbook.add_worksheet(name)
 
-    for index, width in widths:
-        worksheet.col(index).width = width
+    for index, col in enumerate(columns):
+        worksheet.set_column(
+            index,
+            index,
+            col['width'] if 'width' in col else None,
+            col['format'] if 'format' in col else None
+        )
 
-    worksheet.panes_frozen = True
+        worksheet.write(0, index, col['name'])
 
-    for index, name in enumerate(header_names):
-        worksheet.write(0, index, name)
+    worksheet.freeze_panes(1, 0)  # freeze the first row
 
     for index, item in enumerate(data):
-        write_excel_row(worksheet, index + 1, transform_func(item))
+        write_excel_row(worksheet, index + 1, item)
 
 
 def get_last_successful_source_sync_dates(ad_group):
@@ -208,10 +211,8 @@ def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
         ad_group.campaign.account.name
     )
 
-    action_log_url = request.build_absolute_uri(
-        reverse('action_log_view'))
-    action_log_url = action_log_url.replace('http://', 'https://')
-    action_log_url += '#?filters=ad_group:{}'.format(ad_group.pk)
+    link_url = request.build_absolute_uri('/ad_groups/{}/agency'.format(ad_group.pk))
+    link_url = link_url.replace('http://', 'https://')
 
     body = u'''Hi account manager of {ad_group.name}
 
@@ -225,7 +226,7 @@ Zemanta
         ad_group=ad_group,
         campaign=ad_group.campaign,
         account=ad_group.campaign.account,
-        link_url=action_log_url
+        link_url=link_url
     )
 
     try:
@@ -798,7 +799,8 @@ class AdGroupAgency(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group)
+            'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group),
+            'history': self.get_history(ad_group)
         }
 
         return self.create_api_response(response)
@@ -833,7 +835,8 @@ class AdGroupAgency(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group)
+            'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group),
+            'history': self.get_history(ad_group)
         }
 
         return self.create_api_response(response)
@@ -870,6 +873,71 @@ class AdGroupAgency(api_common.BaseApiView):
         settings.target_devices = current_settings.target_devices
         settings.target_regions = current_settings.target_regions
         settings.tracking_code = resource['tracking_code']
+
+    def get_history(self, ad_group):
+        settings = models.AdGroupSettings.objects.\
+            filter(ad_group=ad_group).\
+            order_by('created_dt')
+
+        history = []
+        for i in range(0, len(settings)):
+            old_settings = settings[i - 1] if i > 0 else None
+            new_settings = settings[i]
+
+            changes = old_settings.get_setting_changes(new_settings) \
+                if old_settings is not None else None
+
+            if i > 0 and not changes:
+                continue
+
+            settings_dict = self.convert_settings_to_dict(old_settings, new_settings)
+
+            history.append({
+                'datetime': new_settings.created_dt,
+                'changed_by': new_settings.created_by.email,
+                'changes_text': self.convert_changes_to_string(changes),
+                'settings': settings_dict.values(),
+                'show_old_settings': old_settings is not None
+            })
+
+        return history
+
+    def convert_changes_to_string(self, changes):
+        if changes is None:
+            return 'Created settings'
+
+        change_strings = []
+
+        for key, value in changes.iteritems():
+            prop = models.AdGroupSettings.get_human_prop_name(key)
+            val = models.AdGroupSettings.get_human_value(key, value)
+            change_strings.append(
+                '{} set to "{}"'.format(prop, val)
+            )
+
+        return ', '.join(change_strings)
+
+    def convert_settings_to_dict(self, old_settings, new_settings):
+        settings_dict = OrderedDict()
+        for field in models.AdGroupSettings._settings_fields:
+            settings_dict[field] = {
+                'name': models.AdGroupSettings.get_human_prop_name(field),
+                'value': models.AdGroupSettings.get_human_value(field, getattr(
+                    new_settings,
+                    field,
+                    models.AdGroupSettings.get_default_value(field)
+                ))
+            }
+
+            if old_settings is not None:
+                old_value = models.AdGroupSettings.get_human_value(field, getattr(
+                    old_settings,
+                    field,
+                    models.AdGroupSettings.get_default_value(field)
+                ))
+                settings_dict[field]['old_value'] = old_value
+
+        return settings_dict
 
 
 class AdGroupSources(api_common.BaseApiView):
@@ -1293,48 +1361,67 @@ class AdGroupAdsExport(api_common.BaseApiView):
         return response
 
     def create_excel_response(self, ads_data, sources_data, filename):
-        response = self.create_file_response('application/octet-stream', '%s.xls' % filename)
+        output = StringIO.StringIO()
+        workbook = Workbook(output, {'strings_to_urls': False})
 
-        workbook = Workbook(encoding='UTF-8')
+        format_date = workbook.add_format({'num_format': u'm/d/yy'})
+        format_percent = workbook.add_format({'num_format': u'0.00%'})
+        format_usd = workbook.add_format({'num_format': u'[$$-409]#,##0.00;-[$$-409]#,##0.00'})
+
+        columns = [
+            {'name': 'Date', 'format': format_date},
+            {'name': 'Title', 'width': 30},
+            {'name': 'URL', 'width': 40},
+            {'name': 'Cost', 'format': format_usd},
+            {'name': 'CPC', 'format': format_usd},
+            {'name': 'Clicks'},
+            {'name': 'Impressions', 'width': 15},
+            {'name': 'CTR', 'format': format_percent},
+        ]
 
         create_excel_worksheet(
             workbook,
             'Detailed Report',
-            [(1, 6000), (2, 8000), (6, 3000)],
-            ['Date', 'Title', 'URL', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'],
-            ads_data,
-            lambda item: [
-                (item['date'], excel_styles.style_date),
-                (item['title'],),
-                (item['url'],),
-                (item['cost'] or 0, excel_styles.style_usd),
-                (item['cpc'] or 0, excel_styles.style_usd),
-                (item['clicks'] or 0,),
-                (item['impressions'] or 0,),
-                ((item['ctr'] or 0) / 100, excel_styles.style_percent)
-            ]
+            columns,
+            data=[[
+                item['date'],
+                item['title'],
+                item['url'],
+                item['cost'] or 0,
+                item['cpc'] or 0,
+                item['clicks'] or 0,
+                item['impressions'] or 0,
+                (item['ctr'] or 0) / 100
+            ] for item in ads_data]
         )
 
+        columns.insert(3, {'name': 'Source', 'width': 20})
         create_excel_worksheet(
             workbook,
             'Per Source Report',
-            [(1, 6000), (2, 8000), (3, 4000), (7, 3000)],
-            ['Date', 'Title', 'URL', 'Source', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'],
-            sources_data,
-            lambda item: [
-                (item['date'], excel_styles.style_date),
-                (item['title'],),
-                (item['url'],),
-                (item['source'],),
-                (item['cost'] or 0, excel_styles.style_usd),
-                (item['cpc'] or 0, excel_styles.style_usd),
-                (item['clicks'] or 0,),
-                (item['impressions'] or 0,),
-                ((item['ctr'] or 0) / 100, excel_styles.style_percent)
-            ]
+            columns,
+            data=[[
+                item['date'],
+                item['title'],
+                item['url'],
+                item['source'],
+                item['cost'] or 0,
+                item['cpc'] or 0,
+                item['clicks'] or 0,
+                item['impressions'] or 0,
+                (item['ctr'] or 0) / 100
+            ] for item in sources_data]
         )
 
-        workbook.save(response)
+        workbook.close()
+        output.seek(0)
+
+        response = self.create_file_response(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            '%s.xlsx' % filename,
+            content=output.read()
+        )
+
         return response
 
 
@@ -1411,45 +1498,62 @@ class AdGroupSourcesExport(api_common.BaseApiView):
         return response
 
     def create_excel_response(self, date_data, date_source_data, filename, include_per_day=False):
-        response = self.create_file_response('application/octet-stream', '%s.xls' % filename)
+        output = StringIO.StringIO()
+        workbook = Workbook(output, {'strings_to_urls': False})
 
-        workbook = Workbook(encoding='UTF-8')
+        format_date = workbook.add_format({'num_format': u'm/d/yy'})
+        format_percent = workbook.add_format({'num_format': u'0.00%'})
+        format_usd = workbook.add_format({'num_format': u'[$$-409]#,##0.00;-[$$-409]#,##0.00'})
+
+        columns = [
+            {'name': 'Date', 'format': format_date},
+            {'name': 'Cost', 'format': format_usd},
+            {'name': 'CPC', 'format': format_usd},
+            {'name': 'Clicks'},
+            {'name': 'Impressions', 'width': 15},
+            {'name': 'CTR', 'format': format_percent},
+        ]
 
         if include_per_day:
             create_excel_worksheet(
                 workbook,
                 'Per-Day Report',
-                [],
-                ['Date', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'],
-                date_data,
-                lambda item: [
-                    (item['date'], excel_styles.style_date),
-                    (item['cost'] or 0, excel_styles.style_usd),
-                    (item['cpc'] or 0, excel_styles.style_usd),
-                    (item['clicks'] or 0,),
-                    (item['impressions'] or 0,),
-                    ((item['ctr'] or 0) / 100, excel_styles.style_percent)
-                ]
+                columns,
+                data=[[
+                    item['date'],
+                    item['cost'] or 0,
+                    item['cpc'] or 0,
+                    item['clicks'] or 0,
+                    item['impressions'] or 0,
+                    (item['ctr'] or 0) / 100
+                ] for item in date_data]
             )
 
+        columns.insert(1, {'name': 'Source', 'width': 30})
         create_excel_worksheet(
             workbook,
             'Per-Source Report',
-            [(1, 6000), (5, 3000)],
-            ['Date', 'Source', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'],
-            date_source_data,
-            lambda item: [
-                (item['date'], excel_styles.style_date),
-                (item['source'],),
-                (item['cost'] or 0, excel_styles.style_usd),
-                (item['cpc'] or 0, excel_styles.style_usd),
-                (item['clicks'] or 0,),
-                (item['impressions'] or 0,),
-                ((item['ctr'] or 0) / 100, excel_styles.style_percent)
-            ]
+            columns,
+            data=[[
+                item['date'],
+                item['source'],
+                item['cost'] or 0,
+                item['cpc'] or 0,
+                item['clicks'] or 0,
+                item['impressions'] or 0,
+                (item['ctr'] or 0) / 100
+            ] for item in date_source_data]
         )
 
-        workbook.save(response)
+        workbook.close()
+        output.seek(0)
+
+        response = self.create_file_response(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            '%s.xlsx' % filename,
+            content=output.read()
+        )
+
         return response
 
 

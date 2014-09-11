@@ -1,5 +1,6 @@
 import jsonfield
 import binascii
+import datetime
 from decimal import Decimal
 
 from django.conf import settings
@@ -365,6 +366,54 @@ class AdGroupSettings(SettingsBase):
         permissions = (
             ("settings_view", "Can view settings in dashboard."),
         )
+
+    @classmethod
+    def get_default_value(cls, prop_name):
+        DEFAULTS = {
+            'state': constants.AdGroupSettingsState.INACTIVE,
+            'start_date': datetime.datetime.utcnow().date(),
+            'cpc_cc': 0.4000,
+            'daily_budget_cc': 10.0000,
+            'target_devices': constants.AdTargetDevice.get_all()
+        }
+
+        return DEFAULTS.get(prop_name)
+
+    @classmethod
+    def get_human_prop_name(cls, prop_name):
+        NAMES = {
+            'start_date': 'Start date',
+            'end_date': 'End date',
+            'cpc_cc': 'Max CPC bid',
+            'daily_budget_cc': 'Daily budget',
+            'target_devices': 'Device targeting',
+            'target_regions': 'Geographic targeting',
+            'tracking_code': 'Tracking code',
+            'state': 'State'
+        }
+
+        return NAMES[prop_name]
+
+    @classmethod
+    def get_human_value(cls, prop_name, value):
+        if prop_name == 'state':
+            value = constants.AdGroupSourceSettingsState.get_text(value)
+        elif prop_name == 'end_date' and value is None:
+            value = 'I\'ll stop it myself'
+        elif prop_name == 'cpc_cc' and value is not None:
+            value = '${:.3f}'.format(value)
+        elif prop_name == 'daily_budget_cc' and value is not None:
+            value = '${:.2f}'.format(value)
+        elif prop_name == 'target_devices':
+            value = ', '.join(constants.AdTargetDevice.get_text(x) for x in value)
+        elif prop_name == 'target_regions':
+            if value:
+                value = ', '.join(constants.AdTargetCountry.get_text(x) for x in value)
+            else:
+                value = 'worldwide'
+
+        return value
+
 
 
 class AdGroupSourceSettings(models.Model):
