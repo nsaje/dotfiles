@@ -1666,6 +1666,130 @@ class AdGroupDailyStats(api_common.BaseApiView):
         }
 
 
+class BaseDailyStatsView(api_common.BaseApiView):
+    def get_stats(self, request, totals_kwargs, selected_kwargs, group_key):
+        start_date = get_stats_start_date(request.GET.get('start_date'))
+        end_date = get_stats_end_date(request.GET.get('end_date'))
+
+        breakdown = ['date']
+
+        totals_stats = []
+        if totals_kwargs:
+            totals_stats = reports.api.query(
+                start_date,
+                end_date,
+                breakdown,
+                ['date'],
+                **totals_kwargs
+            )
+
+        breakdown_stats = []
+
+        if selected_kwargs:
+            breakdown.append(group_key)
+            breakdown_stats = reports.api.query(
+                start_date,
+                end_date,
+                breakdown,
+                ['date'],
+                **selected_kwargs
+            )
+
+        return breakdown_stats + totals_stats
+
+    def get_series_groups_dict(self, totals, groups_dict):
+        result = {key: {
+            'id': key,
+            'name': groups_dict[key],
+            'series_data': {}
+        } for key in groups_dict}
+
+        if totals:
+            result['totals'] = {
+                'id': 'totals',
+                'name': 'Totals',
+                'series_data': {}
+            }
+
+        return result
+
+    def process_stat_goals(self, stat_goals, goals, stat):
+        # may modify goal_metrics and stat
+        for goal_name, goal_metrics in stat_goals.items():
+            for metric_type, metric_value in goal_metrics.items():
+                metric_id = '{}_goal_{}'.format(
+                    slugify.slugify(goal_name).encode('ascii', 'replace'),
+                    metric_type
+                )
+
+                if metric_id not in goal_metrics:
+                    goals[metric_id] = {
+                        'name': goal_name,
+                        'type': metric_type
+                    }
+
+                # set it in stat
+                stat[metric_id] = metric_value
+
+    def get_response_dict(self, stats, totals, groups_dict, metrics, group_key):
+        series_groups = self.get_series_groups_dict(totals, groups_dict)
+        goals = {}
+
+        for stat in stats:
+            if stat.get('goals') is not None:
+                self.process_stat_goals(stat['goals'], goals, stat)
+
+            # get id of group it belongs to
+            group_id = stat.get(group_key) or 'totals'
+
+            data = series_groups[group_id]['series_data']
+            for metric in metrics:
+                if metric not in data:
+                    data[metric] = []
+
+                series_groups[group_id]['series_data'][metric].append(
+                    (stat['date'], stat.get(metric))
+                )
+
+        return {
+            'goals': goals,
+            'chart_data': series_groups.values()
+        }
+
+
+class CampaignDailyStats(BaseDailyStatsView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_daily_stats_get')
+    def get(self, request, campaign_id):
+        campaign = get_campaign(request.user, campaign_id)
+
+        metrics = request.GET.getlist('metrics')
+        selected_ids = request.GET.getlist('selected_ids')
+        totals = request.GET.get('totals')
+
+        totals_kwargs = None
+        selected_kwargs = None
+        ad_groups = []
+
+        if totals:
+            totals_kwargs = {'campaign': int(campaign.id)}
+
+        if selected_ids:
+            ids = [int(x) for x in selected_ids]
+            selected_kwargs = {'campaign': int(campaign.id), 'ad_group_id': ids}
+
+            ad_groups = models.AdGroup.objects.filter(pk__in=ids)
+
+        stats = self.get_stats(request, totals_kwargs, selected_kwargs, 'ad_group')
+
+        return self.create_api_response(self.get_response_dict(
+            stats,
+            totals,
+            {ad_group.id: ad_group.name for ad_group in ad_groups},
+            metrics,
+            'ad_group'
+        ))
+
+
 class AccountDailyStats(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'accounts_daily_stats_get')
     def get(self, request):

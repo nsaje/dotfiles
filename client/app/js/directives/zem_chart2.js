@@ -1,4 +1,4 @@
-/*global $,oneApp,moment*/
+/*global $,oneApp,moment,constants*/
 "use strict";
 
 oneApp.directive('zemChart2', ['config', function(config) {
@@ -7,7 +7,8 @@ oneApp.directive('zemChart2', ['config', function(config) {
         scope: {
             data: '=zemData',
             metric1: '=zemMetric1',
-            metricValues: '=zemMetricValues',
+            metricOptions: '=zemMetricOptions',
+            goalMetrics: '=zemGoalMetrics',
             metric2: '=zemMetric2',
             minDate: '=zemMinDate',
             maxDate: '=zemMaxDate',
@@ -15,7 +16,6 @@ oneApp.directive('zemChart2', ['config', function(config) {
         },
         templateUrl: config.static_url + '/partials/zem_chart2.html',
         controller: ['$scope', '$element', '$attrs', '$http', function ($scope, $element, $attrs, $http) {
-
             var totalsColor = ['#009db2', '#c9eaef'];
             var colors = [
                 ['#d35400', '#eebe9e'],
@@ -94,7 +94,10 @@ oneApp.directive('zemChart2', ['config', function(config) {
                 var i = 0;
                 var data = newValue;
                 var color = null;
-                var metric = null;
+                var seriesData = null;
+                var metrics = null;
+                var metricIds = null;
+                var seriesName = null;
 
                 $scope.hasData = false;
                 $scope.legendItems = [];
@@ -117,31 +120,33 @@ oneApp.directive('zemChart2', ['config', function(config) {
                     $scope.config.options.xAxis.max = null;
                 }
 
-                setAxisFormats(data);
+                // currently selected metric ids
+                metricIds = [$scope.metric1];
+                if ($scope.metric2) {
+                    metricIds.push($scope.metric2);
+                }
+
+                setAxisFormats(metricIds);
                 clearUsedColors(data);
 
-                data.seriesGroups.forEach(function (group) {
+                data.forEach(function (group) {
                     color = getColor(group);
                     addLegendItem(color, group);
 
-                    group.seriesData.forEach(function (seriesData, index) {
-                        metric = data.metrics[index];
-                        if (!metric) {
-                            return;
-                        }
-
+                    metricIds.forEach(function (metricId, index) {
+                        seriesData = group.seriesData[metricId] || [];
                         if (seriesData.length) {
                             $scope.hasData = true;
                         }
 
-                        $scope.config.series.push({
-                            name: group.name + ' (' + metric.name  + ')',
+                        seriesName = group.name + ' (' + getMetricName(metricId)  + ')';
+                        $scope.config.series.unshift({
+                            name: seriesName,
                             color: color[index],
                             yAxis: index,
-                            data: seriesData,
+                            data: transformDate(seriesData),
                             tooltip: {
-                                valueSuffix: metric.valueSuffix,
-                                valuePrefix: metric.valuePrefix
+                                pointFormat: seriesName + ': <b>' + getPointFormat(metricId) + '</b></br>'
                             },
                             marker: {
                                 radius: 3,
@@ -169,24 +174,76 @@ oneApp.directive('zemChart2', ['config', function(config) {
             });
 
 
-            // helpers
+            /////////////
+            // helpers //
+            /////////////
 
-            var setAxisFormats = function (data) {
+            var metricFormats = {};
+            metricFormats[constants.sourceChartMetric.CPC] = {'type': 'currency', 'fractionSize': 3};
+            metricFormats[constants.sourceChartMetric.COST] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.sourceChartMetric.CTR] = {'type': 'percent', 'fractionSize': 2};
+            metricFormats[constants.sourceChartMetric.CONVERSION_RATE] = {'type': 'percent', 'fractionSize': 2};
+
+            var getMetricName = function (metricId) {
+                var name = null;
+                $scope.metricOptions.forEach(function (option) {
+                    if (option.value === metricId) {
+                        name = option.name;
+                    }
+                });
+
+                return name;
+            };
+
+            var getPointFormat = function (metricId) {
+                var format = null;    
+                var valueSuffix = '';
+                var valuePrefix = '';
+                var fractionSize = 0;
+                
+                metricId = getGoalMetricType(metricId);
+                format = metricFormats[metricId];    
+
+                if (format !== undefined) {
+                    fractionSize = format.fractionSize;
+
+                    if (format.type === 'currency') {
+                        valuePrefix = '$';
+                    } else if (format.type === 'percent') {
+                        valueSuffix = '%';
+                    }
+                }
+
+                return valuePrefix + '{point.y:,.' + fractionSize + 'f}' + valueSuffix;
+            };
+
+            var getGoalMetricType = function (metricId) {
+                // check if metric is custom goal metric,
+                // if it is, return its type
+                var goal = $scope.goalMetrics[metricId]; 
+                if (goal !== undefined) {
+                    return goal.type;
+                }
+
+                return metricId;
+            };
+
+            var setAxisFormats = function (metricIds) {
+                var format = null;
                 var axisFormat = null;
 
-                data.metrics.forEach(function (metric, index) {
+                metricIds.forEach(function (metricId, index) {
+                    metricId = getGoalMetricType(metricId);
+
+                    format = metricFormats[metricId];    
                     axisFormat = null;
 
-                    if (!metric) {
-                        return;
-                    }
-
-                    if (metric.format === 'currency') {
-                        metric.valuePrefix = '$';
-                        axisFormat = '${value}';
-                    } else if (metric.format === 'percent') {
-                        metric.valueSuffix = '%';
-                        axisFormat = '{value}%';
+                    if (format !== undefined) {
+                        if (format.type === 'currency') {
+                            axisFormat = '${value}';
+                        } else if (format.type === 'percent') {
+                            axisFormat = '{value}%';
+                        }
                     }
                     
                     $scope.config.options.yAxis[index].labels = {
@@ -195,10 +252,17 @@ oneApp.directive('zemChart2', ['config', function(config) {
                 });
             };
 
+            var transformDate = function (data) {
+                return data.map(function (item) {
+                    item[0] = parseInt(moment.utc(item[0]).format('XSSS'), 10);
+                    return item;
+                });
+            };
+
             var clearUsedColors = function (data) {
                 // clean usedColors of all groupIds that are not selected anymore
                 var groupId = null;
-                var groupIds = data.seriesGroups.map(function (group) {
+                var groupIds = data.map(function (group) {
                     return group.id;
                 });
 

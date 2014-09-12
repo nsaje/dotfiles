@@ -20,7 +20,9 @@ var constants = {
         IMPRESSIONS: 'impressions',
         CTR: 'ctr',
         COST: 'cost',
-        CPC: 'cpc'
+        CPC: 'cpc',
+        CONVERSIONS: 'conversions',
+        CONVERSION_RATE: 'conversion_rate'
     },
     iabCategory: {
         IAB1: 'IAB1',

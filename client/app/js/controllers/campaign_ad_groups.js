@@ -1,7 +1,14 @@
-/*globals oneApp*/
-oneApp.controller('CampaignAdGroupsCtrl', ['$scope', '$state', 'api', 'zemChartService', function ($scope, $state, api, zemChartService) {
+/*globals oneApp, options*/
+oneApp.controller('CampaignAdGroupsCtrl', ['$scope', '$state', 'api', 'zemChartService', '$location', 'localStorageService', function ($scope, $state, api, zemChartService, $location, localStorageService) {
     $scope.requestInProgress = false;
     $scope.isChartShown = zemChartService.load('zemChart');
+    $scope.chartMetric1 = constants.sourceChartMetric.CLICKS;
+    $scope.chartMetric2 = constants.sourceChartMetric.IMPRESSIONS;
+    $scope.chartData = undefined;
+    $scope.chartMetrics = options.sourceChartMetrics;
+    $scope.chartGoalMetrics = null;
+    $scope.selectedAdGroupIds = [];
+    $scope.selectedTotals = true;
 
     $scope.addAdGroup = function () {
         var campaignId = $state.params.id;
@@ -31,136 +38,34 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$scope', '$state', 'api', 'zemChartS
         });
     };
 
+    $scope.$watch('chartMetric1', function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            $scope.getDailyStats();
+            $location.search('chart_metric1', $scope.chartMetric1);
+            localStorageService.set('campaignAdGroups.chartMetric1', $scope.chartMetric1);
+        }
+    });
 
-
-
-    $scope.chartMetric1 = constants.sourceChartMetric.CLICKS;
-    $scope.chartMetric2 = constants.sourceChartMetric.IMPRESSIONS;
-    $scope.dailyStats = [];
-    $scope.chartData = undefined;
-    $scope.chartMetrics = options.sourceChartMetrics;
-
-    $scope.setChartData = function () {
-        var result = {
-            formats: [],
-            data: [],
-            names: [],
-            ids: []
-        };
-
-        result.formats = [$scope.chartMetric1, $scope.chartMetric2].map(function (x) {
-            var format = null;
-            if (x === constants.sourceChartMetric.COST ||
-                x === constants.sourceChartMetric.CPC) {
-                format = 'currency';
-            } else if (x === constants.sourceChartMetric.CTR) {
-                format = 'percent';
-            } else {
-                // check goal metrics for format info
-                $scope.sourceChartMetrics.forEach(function (metric) {
-                    if (x === metric.value && metric.format) {
-                        format = metric.format;
-                    }
-                });
-            }
-
-            return format;
-        });
-
-        var temp = {};
-        var lastDate = null;
-        var oneDayMs = 24*60*60*1000;
-        $scope.dailyStats.forEach(function (stat) {
-            if (!temp.hasOwnProperty(stat.sourceId)) {
-                temp[stat.sourceId] = {
-                    name: stat.sourceName,
-                    id: stat.sourceId,
-                    data: [[]]
-                };
-            }
-
-            // insert nulls for missing values
-            if (lastDate) {
-                for (var date = lastDate; date < stat.date - oneDayMs; date += oneDayMs) {
-                    temp[stat.sourceId].data[0].push([date, null]);
-
-                    if (temp[stat.sourceId].data[1]) {
-                        temp[stat.sourceId].data[1].push([date, null]);
-                    }
-                }
-            }
-            lastDate = stat.date;
-
-            temp[stat.sourceId].data[0].push([stat.date, stat[$scope.chartMetric1]]);
-
-            if ($scope.chartMetric2 && $scope.chartMetric2 !== $scope.chartMetric1) {
-                if (!temp[stat.sourceId].data[1]) {
-                    temp[stat.sourceId].data[1] = [];
-                }
-                temp[stat.sourceId].data[1].push([stat.date, stat[$scope.chartMetric2]]);
-            }
-        });
-
-        Object.keys(temp).forEach(function (sourceId) {
-            result.data.push(temp[sourceId].data);
-            result.names.push(temp[sourceId].name);
-            result.ids.push(temp[sourceId].id);
-        });
-
-        $scope.chartData = result;
-
-        // TODO REMOVE
-        $scope.chartData = {
-            metrics: [
-                {
-                    name: 'CTR',
-                    id: 'ctr',
-                    format: 'percent'
-                },
-                {
-                    name: 'Cost',
-                    id: 'cost',
-                    format: 'currency'
-                },
-            
-            ],
-            seriesGroups: [
-                {
-                    id: '12',
-                    name: 'Outbrain',
-                    seriesData: [
-                        [
-                            [1404691200000, 25],
-                            [1404777600000, 11],
-                            [1404864000000, 39],
-                        ],
-                        [
-                            [1404691200000, 35],
-                            [1404777600000, 21],
-                            [1404864000000, 49],
-                        ],
-                    ]
-                }, {
-                    id: 'totals',
-                    name: 'Totals',
-                    seriesData: [
-                        [
-                            [1404691200000, 45],
-                            [1404777600000, null],
-                            [1404864000000, 89],
-                        ],
-                    ]
-                }
-            ]
-        };
-    };
+    $scope.$watch('chartMetric2', function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            $scope.getDailyStats();
+            $location.search('chart_metric2', $scope.chartMetric2);
+            localStorageService.set('campaignAdGroups.chartMetric2', $scope.chartMetric2);
+        }
+    });
 
     $scope.getDailyStats = function () {
-        api.adGroupDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedSourceTotals).then(
+        api.campaignDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedAdGroupIds, $scope.selectedTotals, $scope.chartMetric1, $scope.chartMetric2).then(
             function (data) {
-                $scope.dailyStats = data.stats;
-                $scope.sourceChartMetrics = options.sourceChartMetrics.concat(data.options);
-                $scope.setChartData();
+                $scope.chartMetricOptions = options.sourceChartMetrics.concat(Object.keys(data.goals).map(function (goalId) {
+                    return {
+                        name: data.goals[goalId].name,
+                        value: goalId
+                    };
+                }));
+
+                $scope.chartGoalMetrics = data.goals;
+                $scope.chartData = data.chartData;
             },
             function (data) {
                 // error
@@ -169,5 +74,56 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$scope', '$state', 'api', 'zemChartS
         );
     };
 
-    $scope.getDailyStats();
+    $scope.init = function() {
+        var chartMetric1 = $location.search().chart_metric1 || localStorageService.get('campaignAdGroups.chartMetric1') || $scope.chartMetric1;
+        var chartMetric2 = $location.search().chart_metric2 || localStorageService.get('campaignAdGroups.chartMetric2') || $scope.chartMetric2;
+        var chartHidden = $location.search().chart_hidden;
+        var order = $location.search().order || localStorageService.get('campaignAdGroups.order') || $scope.order;
+
+        var data = $scope.adGroupData[$state.params.id];
+        var adGroupIds = $location.search().ad_group_ids || (data && data.adGroupIds && data.adGroupIds.join(','));
+        var adGroupTotals = $location.search().ad_group_totals || (data && data.adGroupTotals ? 1 : null);
+
+        if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
+            $scope.chartMetric1 = chartMetric1;
+            $location.search('chart_metric1', chartMetric1);
+        }
+
+        if (chartMetric2 !== undefined && $scope.chartMetric2 !== chartMetric2) {
+            $scope.chartMetric2 = chartMetric2;
+            $location.search('chart_metric2', chartMetric2);
+        }
+
+        if (chartHidden) {
+            $scope.isChartShown = false;
+        }
+
+        if (adGroupIds) {
+            $scope.selectedAdGroupIds = adGroupIds.split(',');
+            $location.search('ad_group_ids', adGroupIds);
+
+            if ($scope.rows) {
+                $scope.selectAdGroups();
+            }
+        }
+
+        if (order !== undefined && $scope.order !== order) {
+            $scope.order = order;
+            $location.search('order', order);
+        }
+
+        $scope.selectedTotals = !$scope.selectedAdGroupIds.length || !!adGroupTotals;
+        $location.search('ad_group_totals', adGroupTotals);
+
+        $scope.getDailyStats();
+    };
+
+    $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
+        $location.search('ad_group_ids', null);
+        $location.search('ad_group_totals', null);
+        $location.search('chart_metric1', null);
+        $location.search('chart_metric2', null);
+    });
+
+    $scope.init();
 }]);

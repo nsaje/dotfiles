@@ -296,6 +296,71 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
+    function CampaignDailyStats() {
+        function convertFromApi(group) {
+            return {
+                id: group.id,
+                name: group.name,
+                seriesData: group.series_data
+            };
+        }
+
+        this.list = function (id, startDate, endDate, selectedIds, totals, metric1, metric2) {
+            var deferred = $q.defer();
+            var url = '/api/campaigns/' + id + '/daily_stats/';
+            var config = {
+                params: { metrics: [] }
+            };
+            var metrics;
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
+
+            if (selectedIds) {
+                config.params.selected_ids = selectedIds;
+            }
+
+            if (totals) {
+                config.params.totals = totals;
+            }
+
+            if (metric1) {
+                config.params.metrics.push(metric1);
+            }
+
+            if (metric2) {
+                config.params.metrics.push(metric2);
+            }
+
+            $http.get(url, config).
+                success(function (response, status) {
+                    var chartData, goals;
+                    if (response && response.data && response.data.chart_data) {
+                        chartData = response.data.chart_data.map(function (group) {
+                            return convertFromApi(group);
+                        });
+                    }
+                    if (response && response.data && response.data.goals) {
+                        goals = response.data.goals;
+                    }
+                    deferred.resolve({
+                        chartData: chartData,
+                        goals: goals
+                    });
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function AdGroupState() {
         this.get = function (id) {
             var deferred = $q.defer();
@@ -954,6 +1019,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         checkAccountsSyncProgress: new CheckAccountsSyncProgress(),
         checkSyncProgress: new CheckSyncProgress(),
         adGroupDailyStats: new AdGroupDailyStats(),
+        campaignDailyStats: new CampaignDailyStats(),
         actionLog: new ActionLog()
     };
 }]);
