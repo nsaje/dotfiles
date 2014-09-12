@@ -6,6 +6,7 @@ import urlparse
 import urllib
 import logging
 import collections
+import operator
 
 import pytz
 
@@ -42,15 +43,6 @@ POSTCLICK_AGGREGATE_FIELDS = dict(
     pageviews_sum=Sum('pageviews'),
     pv_per_visit=db_aggregates.SumDivision('pageviews', 'visits'),
     avg_tos=db_aggregates.SumDivision('duration', 'visits'),
-)
-
-INCOMPLETE_AGGREGATE_FIELDS = dict(
-    has_traffic_metrics_min=Min('has_traffic_metrics'),
-    has_postclick_metrics_min=Min('has_postclick_metrics'),
-    has_conversion_metrics_min=Min('has_conversion_metrics'),
-    has_traffic_metrics_max=Max('has_traffic_metrics'),
-    has_postclick_metrics_max=Max('has_postclick_metrics'),
-    has_conversion_metrics_max=Max('has_conversion_metrics'),
 )
 
 GOAL_AGGREGATE_FIELDS = dict(
@@ -108,7 +100,7 @@ def query_stats(start_date, end_date, breakdown=None, **constraints):
     if constraints:
         result = result.filter(**constraints)
 
-    agg_fields = {k:v for k, v in list(AGGREGATE_FIELDS.items()) + list(POSTCLICK_AGGREGATE_FIELDS.items()) + list(INCOMPLETE_AGGREGATE_FIELDS.items())}
+    agg_fields = {k:v for k, v in list(AGGREGATE_FIELDS.items()) + list(POSTCLICK_AGGREGATE_FIELDS.items())}
 
     if breakdown:
         result = result.values(*breakdown)
@@ -153,27 +145,8 @@ def _extend_result(result, conversion_result):
     goals[goal_name] = this_goal
     result['goals'] = goals
 
-# # TODO:
-# # this is temporary
-# def _fake_postclick_data(result):
-#     import random
-#     result['visits'] = int(0.9 * result['clicks']) if result.get('clicks') is not None else None
-#     result['pageviews'] = int(1.8 * result['clicks']) if result.get('clicks') is not None else None
-#     result['percent_new_users'] = random.choice([0.67, 0.32, 0.20, 0.12]) if result.get('visits') is not None else None
-#     result['bounce_rate'] = random.choice([0.88, 0.95, 0.68, 0.54]) if result.get('visits') is not None else None
-#     result['pv_per_visit'] = random.choice([2.34, 1.23, 3.45, 4.56]) if result.get('visits') is not None else None
-#     result['avg_tos'] = random.choice([31.13, 21.12, 17.71, 54.45]) if result.get('visits') is not None else None
-#     result['click_discrepancy'] = result['clicks'] - result['visits'] if result.get('clicks') is not None and result.get('visits') is not None else None
-
-#     result['G[goal A]_conversionrate'] = random.choice([0.03, 0.01, 0.02, 0.04, 0.05])
-#     result['G[goal B]_conversionrate'] = random.choice([0.02, 0.03, 0.04, 0.05, 0.06])
-
 
 def _add_computed_metrics(result):
-    #result['percent_new_users'] = 100.0 * result['new_visits'] / result['visits'] if result['visits'] > 0 else None
-    #result['bounce_rate'] = 100.0 * result['bounced_visits'] / result['visits'] if result['visits'] > 0 else None
-    #result['pv_per_visit'] = float(result['pageviews']) / result['visits'] if result['visits'] > 0 else None
-    #result['avg_tos'] = float(result['duration']) / result['visits'] if result['visits'] > 0 else None
     result['click_discrepancy'] = result['clicks'] - result['visits'] if result.get('clicks') is not None and result.get('visits') is not None else None
  
     for goal_name, metrics in result.get('goals', {}).iteritems():
@@ -232,8 +205,6 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
             key = _extract_key(row, breakdown)
             _extend_result(results[key], row)
         
-        
-
         for key, row in results.iteritems():
             _add_computed_metrics(row)
 
@@ -303,10 +274,6 @@ def _collect_results(result):
             new_col_name = col_name_translate.get(col_name, col_name)
             new_row[new_col_name] = new_col_val
 
-        new_row['incomplete_traffic_metrics'] = row.get('has_traffic_metrics_min', 0) == 0 and row.get('has_traffic_metrics_max', 0) == 1
-        new_row['incomplete_postclick_metrics'] = row.get('has_postclick_metrics_min', 0) == 0 and row.get('has_postclick_metrics_max', 0) == 1
-        new_row['incomplete_conversion_metrics'] = row.get('has_conversion_metrics_min', 0) == 0 and row.get('has_conversion_metrics_max', 0) == 1
-        
         return new_row
 
     if isinstance(result, dict):
@@ -330,6 +297,34 @@ def get_yesterday_cost(ad_group):
     result = {row['source']: row['cost'] for row in rs}
 
     return result
+
+
+def _has_any_postclick_metrics(ad_group):
+    rs = models.ArticleStats.objects.filter(
+            ad_group=ad_group
+        ).aggregate(has_postclick_metrics_max=Max('has_postclick_metrics'))
+
+    return rs['has_postclick_metrics_max'] == 1
+
+
+def has_complete_postclick_metrics(start_date, end_date, ad_group):
+    if not _has_any_postclick_metrics(ad_group):
+        return True
+
+    rs = models.ArticleStats.objects.filter(
+        datetime__gte=start_date,
+        datetime__lte=end_date,
+        ad_group=ad_group
+    ).values('datetime').annotate(
+        has_postclick_metrics_max=Max('has_postclick_metrics')
+    )
+
+    is_complete = reduce(operator.iand, 
+        (r['has_postclick_metrics_max'] == 1 for r in rs),
+        True
+    )
+
+    return is_complete
 
 
 def _reset_existing_traffic_stats(ad_group, source, date):

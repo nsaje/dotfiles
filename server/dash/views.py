@@ -935,9 +935,12 @@ class AdGroupSourcesTable(api_common.BaseApiView):
     def get(self, request, ad_group_id):
         ad_group = get_ad_group(request.user, ad_group_id)
 
+        start_date = get_stats_start_date(request.GET.get('start_date'))
+        end_date = get_stats_end_date(request.GET.get('end_date'))
+
         sources_data = reports.api.query(
-            get_stats_start_date(request.GET.get('start_date')),
-            get_stats_end_date(request.GET.get('end_date')),
+            start_date,
+            end_date,
             ['source'],
             ad_group=int(ad_group.id)
         )
@@ -954,8 +957,8 @@ class AdGroupSourcesTable(api_common.BaseApiView):
                 yesterday_total_cost = sum(yesterday_cost.values())
 
         totals_data = reports.api.query(
-            get_stats_start_date(request.GET.get('start_date')),
-            get_stats_end_date(request.GET.get('end_date')),
+            start_date,
+            end_date,
             ad_group=int(ad_group.id)
         )
 
@@ -964,6 +967,11 @@ class AdGroupSourcesTable(api_common.BaseApiView):
         last_sync = None
         if last_success_actions.values() and None not in last_success_actions.values():
             last_sync = pytz.utc.localize(min(last_success_actions.values()))
+
+        incomplete_postclick_metrics = \
+            not reports.api.has_complete_postclick_metrics(
+                start_date, end_date, ad_group
+            )
 
         return self.create_api_response({
             'rows': self.get_rows(
@@ -984,9 +992,7 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress([ad_group]),
-            'incomplete_traffic_metrics': True,
-            'incomplete_postclick_metrics': True,
-            'incomplete_conversion_metrics': True,
+            'incomplete_postclick_metrics': incomplete_postclick_metrics,
         })
 
     def get_active_ad_group_sources(self, ad_group):
@@ -1016,9 +1022,6 @@ class AdGroupSourcesTable(api_common.BaseApiView):
 
             'goals': totals_data.get('goals', {})
         }
-        for field, val in totals_data.iteritems():
-            if field.startswith('G[') and field.endswith('_conversionrate'):
-                result[field] = val
         return result
 
     def get_rows(self, ad_group, sources, sources_data, source_settings, last_actions, yesterday_cost, order=None):

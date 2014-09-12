@@ -3,6 +3,7 @@
 oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'zemCustomTableColsService', 'zemChartService', 'localStorageService', function ($scope, $state, $location, $window, $timeout, api, zemCustomTableColsService, zemChartService, localStorageService) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
+    $scope.isIncompletePostclickMetrics = false;
     $scope.selectedSourceIds = [];
     $scope.selectedSourceTotals = true;
     $scope.constants = constants;
@@ -302,9 +303,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 $scope.isSyncRecent = data.is_sync_recent;
                 $scope.isSyncInProgress = data.is_sync_in_progress;
 
-                $scope.incompleteTrafficMetrics = data.incomplete_traffic_metrics;
-                $scope.incompletePostclickMetrics = data.incomplete_postclick_metrics;
-                $scope.incompleteConversionMetrics = data.incomplete_conversion_metrics;
+                $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
 
                 $scope.selectSources();
             },
