@@ -2,9 +2,6 @@
 oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'zemCustomTableColsService', 'localStorageService', 'zemChartService', function ($scope, $state, $location, $window, $timeout, api, zemCustomTableColsService, localStorageService, zemChartService) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
-    $scope.incompleteTrafficMetrics = false;
-    $scope.incompletePostclickMetrics = false;
-    $scope.incompleteConversionMetrics = false;
     $scope.order = '-cost';
     $scope.constants = constants;
     $scope.options = options;
@@ -13,6 +10,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     $scope.dailyStats = [];
     $scope.chartData = undefined;
     $scope.isChartShown = zemChartService.load('zemChart');
+    $scope.sourceChartMetrics = options.sourceChartMetrics;
     $scope.chartBtnTitle = 'Hide chart';
     $scope.pagination = {
         currentPage: 1,
@@ -135,6 +133,13 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
                 format = 'currency';
             } else if (x === constants.sourceChartMetric.CTR) {
                 format = 'percent';
+            } else {
+                // check goal metrics for format info
+                $scope.sourceChartMetrics.forEach(function (metric) {
+                    if (x === metric.value && metric.format) {
+                        format = metric.format;
+                    }
+                });
             }
 
             return format;
@@ -183,23 +188,32 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
                 }
             }
             return false;
-        }
+        };
 
         for(var i = 0; i < rows.length; i++) {
             for(var field in rows[i]) {
                 if(alreadyAdded(field)) {
                     continue;
                 }
-                if(field.indexOf('G[') === 0 && field.indexOf('_conversionrate') != -1){
+
+                if(field.indexOf(': Conversions') != -1) {
                     var col_descr = {
-                        'name': field,
+                        'name': field.substr('goal__'.length),
+                        'field': field,
+                        'checked': false,
+                        'type': 'number',
+                        'help': 'Number of goal completions'
+                    }
+                    $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
+                } else if(field.indexOf(': Conversion Rate') != -1) {
+                    var col_descr = {
+                        'name': field.substr('goal__'.length),
                         'field': field,
                         'checked': false,
                         'type': 'percent',
-                        'help': 'This column is helpless'
+                        'help': 'Conversion rate help'
                     }
                     $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
-                    alreadyAdded[field] = true;
                 }
             }
         }
@@ -257,9 +271,10 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     };
 
     $scope.getDailyStats = function () {
-        api.adGroupSourcesDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true).then(
+        api.adGroupDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true).then(
             function (data) {
-                $scope.dailyStats = data;
+                $scope.dailyStats = data.stats;
+                $scope.sourceChartMetrics = options.sourceChartMetrics.concat(data.options);
                 $scope.setChartData();
             },
             function (data) {

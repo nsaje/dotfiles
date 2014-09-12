@@ -235,6 +235,14 @@ def _get_ad_group_sources(ad_group, source):
     return ad_group.adgroupsource_set.filter(source=source)
 
 
+def _get_campaign_settings(campaign):
+    s = dash.models.CampaignSettings.objects.filter(campaign=campaign)
+    if s:
+        return s.latest('created_dt')
+
+    return None
+
+
 def _init_stop_campaign(ad_group_source, order):
     logger.info('_init_stop started: ad_group_source.id: %s', ad_group_source.id)
 
@@ -330,6 +338,9 @@ def _init_fetch_reports(ad_group_source, date, order):
     )
     logger.info(msg)
 
+    if not ad_group_source.source_campaign_key:
+        raise InsertActionException('Source campaign key empty')
+
     action = models.ActionLog.objects.create(
         action=constants.Action.FETCH_REPORTS,
         action_type=constants.ActionType.AUTOMATIC,
@@ -363,7 +374,7 @@ def _init_fetch_reports(ad_group_source, date, order):
             return action
 
     except Exception as e:
-        logger.exception('An exception occurred while initializing get_reports action.')
+        logger.exception('An exception occurred while initializing get_reports action')
         _handle_error(action, e)
 
         et, ei, tb = sys.exc_info()
@@ -444,6 +455,8 @@ def _init_create_campaign(ad_group_source, name):
         order=order
     )
 
+    campaign_settings = _get_campaign_settings(ad_group_source.ad_group.campaign)
+
     try:
         with transaction.atomic():
             callback = urlparse.urljoin(
@@ -459,6 +472,7 @@ def _init_create_campaign(ad_group_source, name):
                     ad_group_source.source_credentials.credentials,
                 'args': {
                     'name': name,
+                    'extra': {},
                 },
                 'callback_url': callback,
             }
@@ -466,7 +480,12 @@ def _init_create_campaign(ad_group_source, name):
             if hasattr(ad_group_source.source, 'defaultsourcesettings'):
                 params = ad_group_source.source.defaultsourcesettings.params
                 if 'create_campaign' in params:
-                    payload['args']['extra'] = params['create_campaign']
+                    payload['args']['extra'].update(params['create_campaign'])
+
+            if campaign_settings:
+                payload['args']['extra'].update({
+                    'iab_category': campaign_settings.iab_category,
+                })
 
             action.payload = payload
             action.save()

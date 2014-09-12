@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import datetime
 import json
 import logging
@@ -1012,6 +1013,8 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             'pv_per_visit': totals_data['pv_per_visit'],
             'avg_tos': totals_data['avg_tos'],
             'click_discrepancy': totals_data['click_discrepancy'],
+
+            'goals': totals_data.get('goals', {})
         }
         for field, val in totals_data.iteritems():
             if field.startswith('G[') and field.endswith('_conversionrate'):
@@ -1070,7 +1073,9 @@ class AdGroupSourcesTable(api_common.BaseApiView):
 
                 'last_sync': last_sync,
                 'yesterday_cost': yesterday_cost.get(sid),
-                'supply_dash_url': supply_dash_url
+                'supply_dash_url': supply_dash_url,
+
+                'goals': source_data.get('goals', {})
             }
 
             # add conversion fields
@@ -1429,13 +1434,16 @@ class AdGroupSourcesExport(api_common.BaseApiView):
 
         for item in data:
             # Format
+            row = {}
             for key in ['cost', 'cpc', 'ctr']:
                 val = item[key]
                 if not isinstance(val, float):
                     val = 0
-                item[key] = '{:.2f}'.format(val)
+                row[key] = '{:.2f}'.format(val)
+            for key in fieldnames:
+                row[key] = item[key]
 
-            writer.writerow(item)
+            writer.writerow(row)
 
         return response
 
@@ -1635,20 +1643,77 @@ class AdGroupDailyStats(api_common.BaseApiView):
                 **extra_kwargs
             )
 
-        return self.create_api_response({
-            'stats': self.get_dict(breakdown_stats + totals_stats, sources)
-        })
+        return self.create_api_response(self.get_response_dict(breakdown_stats + totals_stats, sources))
 
-    def get_dict(self, stats, sources):
+    def get_response_dict(self, stats, sources):
         sources_dict = {}
         if sources:
             sources_dict = {x.pk: x.name for x in sources}
 
+        options_dict = {}
+        results = []
         for stat in stats:
-            if 'source' in stat:
-                stat['source_name'] = sources_dict[stat['source']]
+            result = {
+                'date': stat['date'],
+                'clicks': stat['clicks'],
+                'impressions': stat['impressions'],
+                'ctr': round(stat['ctr'], 2)
+                       if 'ctr' in stat and stat['ctr'] is not None else None,
+                'cpc': round(stat['cpc'], 3)
+                       if 'cpc' in stat and stat['cpc'] is not None else None,
+                'cost': round(stat['cost'], 2)
+                       if 'cost' in stat and stat['cost'] is not None else None,
+                'visits': stat.get('visits', None),
+                'bounce_rate': round(stat['bounce_rate'], 2)
+                       if 'bounce_rate' in stat and stat['bounce_rate'] is not None else None,
+                'pageviews': stat.get('pageviews'),
+                'click_discrepancy': stat['click_discrepancy'],
+                'percent_new_users': round(stat['percent_new_users'], 2)
+                       if 'percent_new_users' in stat and stat['percent_new_users'] is not None else None,
+                'pv_per_visit': round(stat['pv_per_visit'], 2)
+                       if 'pv_per_visit' in stat and stat['pv_per_visit'] is not None else None,
+                'avg_tos': round(stat['avg_tos'], 2)
+                       if 'avg_tos' in stat and stat['avg_tos'] is not None else None,
+            }
 
-        return stats
+            if 'source' in stat:
+                result['source_id'] = stat['source']
+                result['source_name'] = sources_dict[stat['source']]
+
+            if 'goals' in stat and stat['goals'] is not None:
+                for goal_name, goal_metrics in stat['goals'].items():
+                    for metric_key, metric_value in goal_metrics.items():
+                        metric_format = None
+                        if metric_key == 'conversion_rate':
+                            metric_value = round(metric_value, 2) if metric_value is not None else None
+                            metric_format = 'percent'
+                            metric_name = 'Conversion Rate'
+                        elif metric_key == 'conversions':
+                            metric_name = 'Conversions'
+                        else:
+                            # unknown metric
+                            continue
+
+                        metric_id = '{}_{}'.format(
+                            slugify.slugify(goal_name).encode('ascii', 'ignore'),
+                            metric_key
+                        )
+
+                        if metric_id not in options_dict:
+                            options_dict[metric_id] = {
+                                'name': '{}: {}'.format(goal_name, metric_name),
+                                'value': metric_id,
+                                'format': metric_format
+                            }
+
+                        result[metric_id] = metric_value
+
+            results.append(result)
+
+        return {
+            'stats': results,
+            'options': options_dict.values()
+        }
 
 
 class AccountDailyStats(api_common.BaseApiView):

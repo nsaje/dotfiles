@@ -143,24 +143,54 @@ def _extract_key(result, breakdown):
 
 
 def _extend_result(result, conversion_result):
-    col_prefix = 'G[{0}]_'.format(conversion_result['goal_name'])
-    result[col_prefix + 'conversions'] = conversion_result['conversions']
-    result[col_prefix + 'conversion_value'] = conversion_result['conversion_value']
+    goal_name = conversion_result['goal_name']
+    conversions = conversion_result['conversions']
+    conversion_value = conversion_result['conversion_value']
+    goals = result.get('goals', {})
+    this_goal = goals.get(goal_name, {})
+    this_goal['conversions'] = conversions
+    this_goal['conversion_value'] = conversion_value
+    goals[goal_name] = this_goal
+    result['goals'] = goals
 
-# TODO:
-# this is temporary
-def _fake_postclick_data(result):
-    import random
-    result['visits'] = int(0.9 * result['clicks']) if result.get('clicks') is not None else None
-    result['pageviews'] = int(1.8 * result['clicks']) if result.get('clicks') is not None else None
-    result['percent_new_users'] = random.choice([0.67, 0.32, 0.20, 0.12]) if result.get('visits') is not None else None
-    result['bounce_rate'] = random.choice([0.88, 0.95, 0.68, 0.54]) if result.get('visits') is not None else None
-    result['pv_per_visit'] = random.choice([2.34, 1.23, 3.45, 4.56]) if result.get('visits') is not None else None
-    result['avg_tos'] = random.choice([31.13, 21.12, 17.71, 54.45]) if result.get('visits') is not None else None
+# # TODO:
+# # this is temporary
+# def _fake_postclick_data(result):
+#     import random
+#     result['visits'] = int(0.9 * result['clicks']) if result.get('clicks') is not None else None
+#     result['pageviews'] = int(1.8 * result['clicks']) if result.get('clicks') is not None else None
+#     result['percent_new_users'] = random.choice([0.67, 0.32, 0.20, 0.12]) if result.get('visits') is not None else None
+#     result['bounce_rate'] = random.choice([0.88, 0.95, 0.68, 0.54]) if result.get('visits') is not None else None
+#     result['pv_per_visit'] = random.choice([2.34, 1.23, 3.45, 4.56]) if result.get('visits') is not None else None
+#     result['avg_tos'] = random.choice([31.13, 21.12, 17.71, 54.45]) if result.get('visits') is not None else None
+#     result['click_discrepancy'] = result['clicks'] - result['visits'] if result.get('clicks') is not None and result.get('visits') is not None else None
+
+#     result['G[goal A]_conversionrate'] = random.choice([0.03, 0.01, 0.02, 0.04, 0.05])
+#     result['G[goal B]_conversionrate'] = random.choice([0.02, 0.03, 0.04, 0.05, 0.06])
+
+
+def _add_computed_metrics(result):
+    #result['percent_new_users'] = 100.0 * result['new_visits'] / result['visits'] if result['visits'] > 0 else None
+    #result['bounce_rate'] = 100.0 * result['bounced_visits'] / result['visits'] if result['visits'] > 0 else None
+    #result['pv_per_visit'] = float(result['pageviews']) / result['visits'] if result['visits'] > 0 else None
+    #result['avg_tos'] = float(result['duration']) / result['visits'] if result['visits'] > 0 else None
     result['click_discrepancy'] = result['clicks'] - result['visits'] if result.get('clicks') is not None and result.get('visits') is not None else None
+ 
+    for goal_name, metrics in result.get('goals', {}).iteritems():
+        metrics['conversion_rate'] = metrics['conversions'] / result['visits'] if result['visits'] > 0 else None
 
-    result['G[goal A]_conversionrate'] = random.choice([0.03, 0.01, 0.02, 0.04, 0.05])
-    result['G[goal B]_conversionrate'] = random.choice([0.02, 0.03, 0.04, 0.05, 0.06])
+    if result['visits'] == 0:
+        result['visits'] = None
+        result['pageviews'] = None
+        result['bounce_rate'] = None
+        result['percent_new_users'] = None
+        result['pv_per_visit'] = None
+        result['avg_tos'] = None
+        result['click_discrepancy'] = None
+
+        for goal_name, metrics in result.get('goals', {}).iteritems():
+            for mertic_name in metrics:
+                metrics[metric_name] = None
 
 
 def sorted_results(results, order=None):
@@ -183,12 +213,9 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
     report_results = query_stats(start_date, end_date, breakdown=breakdown, **constraints)
     report_results = _collect_results(report_results)
 
-    #conversion_results = query_goal(start_date, end_date, breakdown=breakdown, **constraints)
-    #conversion_results = _collect_results(conversion_results)
-    # TODO
-    # this is temporary
-    conversion_results = []
-
+    conversion_results = query_goal(start_date, end_date, breakdown=breakdown, **constraints)
+    conversion_results = _collect_results(conversion_results)
+    
     # in memory join of the result sets
     if breakdown:
         # include related data
@@ -204,20 +231,19 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
         for row in conversion_results:
             key = _extract_key(row, breakdown)
             _extend_result(results[key], row)
-        results = results.values()
-        # TODO:
-        # this is temporary
-        for result in results:
-            _fake_postclick_data(result)
+        
+        
 
-        return sorted_results(results, order)
+        for key, row in results.iteritems():
+            _add_computed_metrics(row)
+
+        return sorted_results(results.values(), order)
     else:
+        # no breakdown => the result is a single row aggregate
         result = report_results
         for row in conversion_results:
             _extend_result(result, row)
-        # TODO
-        # this is temporary
-        _fake_postclick_data(result)
+        _add_computed_metrics(result)
         return result
 
 
@@ -264,6 +290,8 @@ def _collect_results(result):
         'ctr': lambda x: None if x is None else x * 100,
         'datetime': lambda dt: dt.date(),
         'conversions_value_cc_sum': lambda x: None if x is None else float(decimal.Decimal(round(x)) / decimal.Decimal(10000)),
+        'bounce_rate': lambda x: None if x is None else x * 100,
+        'percent_new_users': lambda x: None if x is None else x * 100,
     }
 
     def collect_row(row):

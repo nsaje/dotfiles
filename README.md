@@ -93,7 +93,11 @@ For development, you can run grunt dev which also runs server on port 9999 and i
 grunt dev
 ```
 
-#### Testing
+## Testing
+
+### Client
+
+#### Unit testing
 
 We use Jasmine as testing framework and Karma as test runner. Before running tests, make sure you have karma installed. Karma is integrated with Grunt, so tests can be run with:
 ```bash
@@ -109,7 +113,7 @@ cp test/sauce.json.template test/sauce.json
 
 and change it as needed. Then run:
 ```bash
-grunt test-sauce
+grunt test --sauce
 ```
 
 In this case tests are executed in 7 browsers, defined in test/karma.conf-sauce.js.
@@ -117,4 +121,38 @@ In this case tests are executed in 7 browsers, defined in test/karma.conf-sauce.
 Karma can also auto-watch files and run test on every change:
 ```bash
 karma start test/karma.conf.js
+```
+
+#### End-to-end testing
+
+Integration testing is done using <a href="https://github.com/angular/protractor">Protractor</a>. 
+
+To setup, first copy the protractor.localconf.js template:
+```bash
+cp test/protractor.localconf.json.template test/protractor.localconf.json
+```
+
+and modify as needed.
+
+You will also need to load protractor fixtures into your database. You can do this by changing directory to server/ and running:
+```bash
+python manage.py loaddata protractor
+```
+
+To test, first ensure that your dev server is running. Then run:
+```bash
+grunt e2e
+```
+
+The test suite will be run in your local Chrome browser.
+
+##### Running tests on SauceLabs
+
+You can also test on multiple browsers using SauceLabs cloud. To do this, first set up your sauce.json file as described in the Unit Testing section if you haven't done that yet.
+
+Next, create a secure tunnel to the SauceLabs cloud by following the instructions at https://saucelabs.com/connect.
+
+After you are done, you can run your tests using
+```bash
+grunt e2e --sauce
 ```

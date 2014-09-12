@@ -5,7 +5,7 @@ module.exports = function(config) {
 
     if (!process.env.SAUCE_USERNAME) {
         if (!fs.existsSync(path.join(__dirname, 'sauce.json'))) {
-            console.log('Create a sauce.json with your credentials based on the sauce-sample.json file.');
+            console.log('Create a sauce.json with your credentials based on the sauce.json.template file.');
             process.exit(1);
         } else {
             process.env.SAUCE_USERNAME = require('./sauce').username;
@@ -82,7 +82,7 @@ module.exports = function(config) {
             'app/lib/components/angular-local-storage/angular-local-storage.min.js',
             'app/lib/components/angular-mocks/angular-mocks.js',
             'app/js/**/*.js',
-            'test/**/*.js'
+            'test/unit/**/*.js'
         ],
     
     
