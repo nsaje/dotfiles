@@ -135,9 +135,6 @@ class ActionLogApiTestCase(TestCase):
         sync.AdGroupSync(ad_group).trigger_status()
 
         for ad_group_source in ad_group_sources.all():
-            if not ad_group_source.source_campaign_key:
-                self.assertFalse(models.ActionLog.objects.filter(ad_group_source=ad_group_source).exists())
-                continue
 
             action = models.ActionLog.objects.get(
                 ad_group_source=ad_group_source,
@@ -182,10 +179,6 @@ class ActionLogApiTestCase(TestCase):
             ad_group_source_sync.trigger_reports_for_dates([date])
 
         for ad_group_source in ad_group_sources.all():
-            if not ad_group_source.source_campaign_key:
-                self.assertFalse(models.ActionLog.objects.filter(ad_group_source=ad_group_source).exists())
-                continue
-
             action = models.ActionLog.objects.get(
                 ad_group_source=ad_group_source,
             )

@@ -292,9 +292,6 @@ def _init_fetch_status(ad_group_source, order):
     )
     logger.info(msg)
 
-    if not ad_group_source.source_campaign_key:
-        raise InsertActionException('Source campaign key empty')
-
     action = models.ActionLog.objects.create(
         action=constants.Action.FETCH_CAMPAIGN_STATUS,
         action_type=constants.ActionType.AUTOMATIC,
@@ -340,9 +337,6 @@ def _init_fetch_reports(ad_group_source, date, order):
         repr(date)
     )
     logger.info(msg)
-
-    if not ad_group_source.source_campaign_key:
-        raise InsertActionException('Source campaign key empty')
 
     action = models.ActionLog.objects.create(
         action=constants.Action.FETCH_REPORTS,
