@@ -1722,14 +1722,12 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
                 'ad_group': ad_group.pk
             }
 
+            row['state'] = models.AdGroupSettings.get_default_value('state')
             for ad_group_settings in ad_groups_settings:
-                if ad_group.pk == ad_group_settings.ad_group_id:
-                    row['state'] = ad_group_settings.state or models.AdGroupSettings.get_default_value('state')
+                if ad_group.pk == ad_group_settings.ad_group_id and \
+                        ad_group_settings.state is not None:
+                    row['state'] = ad_group_settings.state
                     break
-            else:
-                # If no settings exist because it is a new ad group, use the default
-                # value for state.
-                row['state'] = models.AdGroupSettings.get_default_value('state')
 
             for stat in stats:
                 if ad_group.pk == stat['ad_group']:
