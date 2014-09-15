@@ -1,12 +1,12 @@
 <div class="chart-container">
     <div class="chart-selector">
-        <select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'metric1'}" ng-model="metric1" class="metric1 input-small">
+        <select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'metric1'}" ng-model="metric1" class="metric1">
             <option ng-repeat="metric in metric1Values" value="{{ metric.value }}">{{ metric.name }}</option>
         </select>
 
         <span class="middle-text">VS.</span>
 
-        <select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'metric2'}" ng-model="metric2" class="metric2 input-small">
+        <select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'metric2'}" ng-model="metric2" class="metric2">
             <option value="">None</option>
             <option ng-repeat="metric in metric2Values" value="{{ metric.value }}">{{ metric.name }}</option>
         </select>
