@@ -7,7 +7,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.selectedSourceTotals = true;
     $scope.constants = constants;
     $scope.options = options;
-    $scope.chartMetric1 = constants.sourceChartMetric.CLICKS;
+    $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = null;
     $scope.dailyStats = [];
     $scope.chartData = undefined;
@@ -94,10 +94,10 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
         result.formats = [$scope.chartMetric1, $scope.chartMetric2].map(function (x) {
             var format = null;
-            if (x === constants.sourceChartMetric.COST ||
-                x === constants.sourceChartMetric.CPC) {
+            if (x === constants.chartMetric.COST ||
+                x === constants.chartMetric.CPC) {
                 format = 'currency';
-            } else if (x === constants.sourceChartMetric.CTR) {
+            } else if (x === constants.chartMetric.CTR) {
                 format = 'percent';
             }
 

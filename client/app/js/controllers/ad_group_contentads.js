@@ -5,12 +5,12 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     $scope.order = '-cost';
     $scope.constants = constants;
     $scope.options = options;
-    $scope.chartMetric1 = constants.sourceChartMetric.CLICKS;
-    $scope.chartMetric2 = constants.sourceChartMetric.IMPRESSIONS;
+    $scope.chartMetric1 = constants.chartMetric.CLICKS;
+    $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
     $scope.dailyStats = [];
     $scope.chartData = undefined;
     $scope.isChartShown = zemChartService.load('zemChart');
-    $scope.sourceChartMetrics = options.sourceChartMetrics;
+    $scope.chartMetrics = options.adGroupChartMetrics;
     $scope.chartBtnTitle = 'Hide chart';
     $scope.pagination = {
         currentPage: 1,
@@ -79,14 +79,14 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
 
         result.formats = [$scope.chartMetric1, $scope.chartMetric2].map(function (x) {
             var format = null;
-            if (x === constants.sourceChartMetric.COST ||
-                x === constants.sourceChartMetric.CPC) {
+            if (x === constants.chartMetric.COST ||
+                x === constants.chartMetric.CPC) {
                 format = 'currency';
-            } else if (x === constants.sourceChartMetric.CTR) {
+            } else if (x === constants.chartMetric.CTR) {
                 format = 'percent';
             } else {
                 // check goal metrics for format info
-                $scope.sourceChartMetrics.forEach(function (metric) {
+                $scope.chartMetrics.forEach(function (metric) {
                     if (x === metric.value && metric.format) {
                         format = metric.format;
                     }
@@ -180,7 +180,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         api.adGroupDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true).then(
             function (data) {
                 $scope.dailyStats = data.stats;
-                $scope.sourceChartMetrics = options.sourceChartMetrics.concat(data.options);
+                $scope.chartMetrics = options.adGroupChartMetrics.concat(data.options);
                 $scope.setChartData();
             },
             function (data) {
