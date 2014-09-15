@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import datetime
 import re
 
 import dateutil.parser
@@ -72,21 +71,6 @@ class AdGroupSettingsForm(forms.Form):
         self.current_settings = current_settings
 
         super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
-
-    def clean_start_date(self):
-        start_date = self.cleaned_data['start_date']
-
-        # maticz: We deal with UTC dates even if a valid date was submitted from user's
-        # point of view but was done in a different timezone (eg. client date is 14.3.2014
-        # while on server it is already 15.3.2014). We just validate that this date is
-        # a possible date today somewhere in the world.
-        # Product guys confirmed it.
-        min_date = (datetime.datetime.utcnow() - datetime.timedelta(hours=12)).date()
-        if start_date != self.current_settings.start_date and \
-                start_date < min_date:
-            raise forms.ValidationError("Start date can't be set in past.")
-
-        return start_date
 
     def clean_end_date(self):
         end_date = self.cleaned_data.get('end_date')

@@ -28,7 +28,7 @@ class AdTargetDevice(ConstantBase):
     MOBILE = 'mobile'
 
     _VALUES = {
-        DESKTOP: 'Destkop',
+        DESKTOP: 'Desktop',
         MOBILE: 'Mobile'
     }
 

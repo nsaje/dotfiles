@@ -121,3 +121,5 @@ server/.junit_xml/TEST*
 # Client JUnit files
 client/test-results.xml
 
+# Client test config
+client/test/protractor.localconf.json

@@ -31,7 +31,7 @@
                 <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The date when content promotion commenced." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-2">
-                <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="settings.startDate" min-date="datepickerMinDate" is-open="isStartDatePickerOpen" ng-click="openDatePicker('startDate')">
+                <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="settings.startDate" is-open="isStartDatePickerOpen" ng-click="openDatePicker('startDate')">
             </div>
 
             <label ng-repeat="error in errors.startDate" class="control-label error" for="start-date-input">{{ error }}</label>
@@ -43,7 +43,7 @@
                 <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The date when content promotion paused." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-2">
-                <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="settings.endDate" min-date="datepickerMinDate" is-open="isEndDatePickerOpen" ng-click="openDatePicker('endDate')">
+                <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="settings.endDate" is-open="isEndDatePickerOpen" ng-click="openDatePicker('endDate')">
             </div>
 
             <div class="checkbox col-xs-2">

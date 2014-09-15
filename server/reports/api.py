@@ -355,8 +355,8 @@ def _reconcile_article(raw_url, title, ad_group):
             return dashmodels.Article.objects.create(ad_group=ad_group, url=url, title=title)
     except IntegrityError:
         logger.info(
-            'Integrity error upon inserting article: title = {title}, url = {url}, ad group id = {ad_group_id}. '
-            'Using existing article.'.
+            u'Integrity error upon inserting article: title = {title}, url = {url}, ad group id = {ad_group_id}. '
+            u'Using existing article.'.
             format(title=title, url=url, ad_group_id=ad_group.id)
         )
         return dashmodels.Article.objects.get(ad_group=ad_group, url=url, title=title)
