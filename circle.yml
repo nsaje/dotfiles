@@ -36,4 +36,4 @@ test:
             pwd: server
         - coverage xml:
             pwd: server
-        - pushci --debug
+        - test "$CIRCLE_BRANCH" == "master" && pushci --debug
