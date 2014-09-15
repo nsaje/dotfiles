@@ -40,6 +40,7 @@ INSTALLED_APPS = (
     'actionlog',
     'reports',
     'zweiapi',
+    'convapi',
     'raven.contrib.django.raven_compat',
 )
 
