@@ -1,5 +1,7 @@
 import logging
 
+from django.db import models
+
 from parse import LandingPageUrl
 from resolve import resolve_source, resolve_article
 
@@ -8,6 +10,59 @@ import reports.models
 
 
 logger = logging.getLogger(__name__)
+
+
+class RawPostclickStats(models.Model):
+
+    datetime = models.DateTimeField()
+
+    ad_group_id = models.IntegerField(default=0, blank=False, null=False)
+    source_id = models.IntegerField(default=0, blank=False, null=True)
+
+    url_raw = models.CharField(max_length=2048, blank=False, null=False)
+    url_clean = models.CharField(max_length=2048, blank=False, null=False)
+
+    device_type = models.CharField(max_length=64, blank=False, null=False)
+
+    # _z1_parameters
+    z1_adgid = models.CharField(max_length=32, blank=False, null=False)
+    z1_msid = models.CharField(max_length=64, blank=False, null=False)
+    z1_did = models.CharField(max_length=64, blank=False, null=True)
+    z1_kid = models.CharField(max_length=64, blank=False, null=True)
+    z1_tid = models.CharField(max_length=64, blank=False, null=True)
+
+    # postclick metrics
+    visits = models.IntegerField(default=0, blank=False, null=False)
+    new_visits = models.IntegerField(default=0, blank=False, null=False)
+    bounced_visits = models.IntegerField(default=0, blank=False, null=False)
+    pageviews = models.IntegerField(default=0, blank=False, null=False)
+    duration = models.IntegerField(default=0, blank=False, null=False)
+
+
+class RawGoalConversionStats(models.Model):
+
+    datetime = models.DateTimeField()
+
+    ad_group_id = models.IntegerField(default=0, blank=False, null=False)
+    source_id = models.IntegerField(default=0, blank=False, null=True)
+
+    url_raw = models.CharField(max_length=2048, blank=False, null=False)
+    url_clean = models.CharField(max_length=2048, blank=False, null=False)
+
+    device_type = models.CharField(max_length=64, blank=False, null=False)
+
+    goal_name = models.CharField(max_length=127, blank=False, null=False)
+
+    # _z1_parameters
+    z1_adgid = models.CharField(max_length=32, blank=False, null=False)
+    z1_msid = models.CharField(max_length=64, blank=False, null=False)
+    z1_did = models.CharField(max_length=64, blank=False, null=True)
+    z1_kid = models.CharField(max_length=64, blank=False, null=True)
+    z1_tid = models.CharField(max_length=64, blank=False, null=True)
+
+    # conversion metrics
+    conversions = models.IntegerField(default=0, blank=False, null=False)
+    conversions_value_cc = models.IntegerField(default=0, blank=False, null=False)
 
 
 class ReportEmail(object):
@@ -62,19 +117,41 @@ class ReportEmail(object):
             result[goal_name] = metric_fields
         return result
 
+    def get_initial_data(self, goal_fields):
+        def get_initial_goal_data(goal_fields):
+            data = {}
+            for goal_name in goal_fields:
+                data[goal_name] = {'conversions': 0, 'conversions_value_cc': 0}
+            return data 
+
+        data = {
+            'visits': 0,
+            'new_visits': 0,
+            'bounced_visits': 0,
+            'pageviews': 0,
+            'duration': 0,
+            'goals': get_initial_goal_data(goal_fields),
+        }
+
+        return data
+
+    def add_parsed_metrics(self, data, entry, goal_fields):
+        visits = int(entry['Sessions'])
+        data['visits'] += visits
+        data['new_visits'] += int(entry['New Users'])
+        data['bounced_visits'] += int(round(float(entry['Bounce Rate'].replace('%', '')) / 100 * visits))
+        data['pageviews'] += int(round(float(entry['Pages / Session']) * visits))
+        data['duration'] += visits * self._parse_duration(entry['Avg. Session Duration'])
+        for goal_name, metric_fields in goal_fields.items():
+            data['goals'][goal_name]['conversions'] += int(entry[metric_fields['conversions']])
+            data['goals'][goal_name]['conversions_value_cc'] += int(10000 * float(entry[metric_fields['value']].replace('$', '')))
+
     def get_stats_by_key(self):
 
         goal_fields = self.get_goal_fields()
 
-        def get_initial_goal_data():
-            data = {}
-            for goal_name in goal_fields:
-                data[goal_name] = {'conversions': 0, 'conversions_value_cc': 0}
-            return data
-
         stats = {}
 
-        
         for entry in self.report.get_entries():
             url = LandingPageUrl(entry['Landing Page'])
             try:
@@ -108,24 +185,10 @@ landing_page_url={landing_page_url})'.format(
                  ))
                 continue
             key = (self.report.get_date(), article.id, url.ad_group_id, source.id)
-            data = stats.get(key, {
-                    'visits': 0,
-                    'new_visits': 0,
-                    'bounced_visits': 0,
-                    'pageviews': 0,
-                    'duration': 0,
-                    'goals': get_initial_goal_data(),
-                })
-
             
-            visits = int(entry['Sessions'])
-            data['visits'] += visits
-            data['new_visits'] += int(entry['New Users'])
-            data['bounced_visits'] += int(round(float(entry['Bounce Rate'].replace('%', '')) / 100 * visits))
-            data['pageviews'] += int(round(float(entry['Pages / Session']) * visits))
-            data['duration'] += visits * self._parse_duration(entry['Avg. Session Duration'])
-            for goal_name, metric_fields in goal_fields.items():
-                data['goals'][goal_name]['conversions'] += int(entry[metric_fields['conversions']])
+            data = stats.get(key, self.get_initial_data(goal_fields))
+
+            self.add_parsed_metrics(data, entry, goal_fields)
 
             stats[key] = data
 
@@ -154,6 +217,16 @@ bounced_visits={bounced_visits}, pageviews={pageviews}, duration={duration})'.fo
             duration=sum(d['duration'] for d in data.values())
         ))
 
+        if data:
+            dt, _, ad_group_id, _ = data.keys()[0]
+            
+            for stats in reports.models.ArticleStats.objects.filter(datetime=dt, ad_group=ad_group_id):
+                stats.reset_postclick_metrics()
+
+            for goal_stats in reports.models.GoalConversionStats.objects.filter(datetime=dt, ad_group=ad_group_id):
+                goal_stats.reset_metrics()
+
+
         for (dt, article_id, ad_group_id, source_id), statvals in data.iteritems():
             article = dash.models.Article.objects.get(id=article_id)
             ad_group = dash.models.AdGroup.objects.get(id=ad_group_id)
@@ -173,7 +246,6 @@ bounced_visits={bounced_visits}, pageviews={pageviews}, duration={duration})'.fo
                     ad_group=ad_group,
                     source=source
                 )
-            article_stats.reset_postclick_metrics()
             article_stats.visits = statvals['visits']
             article_stats.new_visits = statvals['new_visits']
             article_stats.bounced_visits = statvals['bounced_visits']
@@ -206,3 +278,63 @@ bounced_visits={bounced_visits}, pageviews={pageviews}, duration={duration})'.fo
                 gcstats.save()
 
             article_stats.save()
+
+    def save_raw(self):
+        goal_fields = self.get_goal_fields()
+        dt = self.report.get_date()
+
+        entries = self.report.get_entries()
+
+        ad_group_id = LandingPageUrl(entries[0]['Landing Page']).ad_group_id
+
+        RawPostclickStats.objects.filter(datetime=dt, ad_group_id=ad_group_id).delete()
+        RawGoalConversionStats.objects.filter(datetime=dt, ad_group_id=ad_group_id).delete()
+
+        for entry in entries:
+            landing_page = LandingPageUrl(entry['Landing Page'])
+
+            assert landing_page.ad_group_id == ad_group_id
+
+            source = resolve_source(landing_page.source_param)
+            source_id = source.id if source is not None else None
+
+            metrics_data = self.get_initial_data(goal_fields)
+            self.add_parsed_metrics(metrics_data, entry, goal_fields)
+
+            raw_postclick_stats = RawPostclickStats(
+                datetime=dt,
+                url_raw=landing_page.raw_url,
+                url_clean=landing_page.clean_url,
+                ad_group_id=int(landing_page.ad_group_id),
+                source_id=source_id,
+                device_type=entry['Device Category'],
+                z1_adgid=str(landing_page.ad_group_id),
+                z1_msid=landing_page.source_param,
+                z1_did=landing_page.z1_did,
+                z1_kid=landing_page.z1_kid,
+                z1_tid=landing_page.z1_tid,
+                visits=metrics_data['visits'],
+                new_visits=metrics_data['new_visits'],
+                bounced_visits=metrics_data['bounced_visits'],
+                pageviews=metrics_data['pageviews'],
+                duration=metrics_data['duration']
+            )
+            raw_postclick_stats.save()
+
+            for goal_name, conversion_metrics in metrics_data.get('goals', {}).items():
+                raw_goal_stats = RawGoalConversionStats(
+                    datetime=dt,
+                    ad_group_id=int(landing_page.ad_group_id),
+                    source_id=source_id,
+                    url_raw=landing_page.raw_url,
+                    url_clean=landing_page.clean_url,
+                    device_type=entry['Device Category'],
+                    z1_adgid=str(landing_page.ad_group_id),
+                    z1_msid=landing_page.source_param,
+                    z1_did=landing_page.z1_did,
+                    z1_kid=landing_page.z1_kid,
+                    z1_tid=landing_page.z1_tid,
+                    conversions=conversion_metrics['conversions'],
+                    conversions_value_cc=conversion_metrics['conversions_value_cc'],
+                )
+                raw_goal_stats.save()

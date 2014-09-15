@@ -56,6 +56,7 @@ def mailgun_gareps(request):
         logger.error('ERROR: not all landing page urls have a media source specified')
         return HttpResponse(status=406)
 
+    report_email.save_raw()
     report_email.aggregate()
     
     return HttpResponse(status=200)

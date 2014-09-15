@@ -105,6 +105,10 @@ class LandingPageUrl(object):
         self.clean_url = None
         self.ad_group_id = None
         self.source_param = None
+
+        self.z1_did = None
+        self.z1_kid = None
+        self.z1_tid = None
         
         self._parse()
         
@@ -120,6 +124,12 @@ class LandingPageUrl(object):
             self.ad_group_id = int(query_params['_z1_adgid'])
         if '_z1_msid' in query_params:
             self.source_param = query_params['_z1_msid']
+        if '_z1_did' in query_params:
+            self.z1_did = query_params['_z1_did']
+        if '_z1_kid' in query_params:
+            self.z1_kid = query_params['_z1_kid']
+        if '_z1_tid' in query_params:
+            self.z1_tid = query_params['_z1_tid']
             
         clean_query_params = {k:v for k,v in query_params.items() if not k.startswith('_z1_') and not k.startswith('utm_')}
         
