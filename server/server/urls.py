@@ -100,12 +100,28 @@ urlpatterns += patterns(
         login_required(dash.views.AccountDailyStats.as_view()),
     ),
     url(
+        r'^api/accounts/(?P<account_id>\d+)/campaigns/table/',
+        login_required(dash.views.AccountCampaignsTable.as_view()),
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/table/',
+        login_required(dash.views.CampaignAdGroupsTable.as_view()),
+    ),
+    url(
         r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/',
         login_required(dash.views.CampaignAdGroups.as_view()),
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/settings/',
         login_required(dash.views.CampaignSettings.as_view()),
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/sync/',
+        login_required(dash.views.CampaignSync.as_view()),
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/check_sync_progress/',
+        login_required(dash.views.CampaignSyncProgress.as_view()),
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/campaigns/',

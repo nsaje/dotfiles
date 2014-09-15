@@ -7,7 +7,7 @@ oneApp.directive('zemCustomTableCols', function(config) {
         scope: {
             columns: '='
         },
-        template: '<span class="dropdown custom-cols"><a href class="btn btn-default dropdown-toggle" title="Show/hide columns">...</a><ul class="dropdown-menu dropdown-menu-right"><li ng-repeat="col in columns"><div class="checkbox"><label><input type="checkbox" ng-model="col.checked"><zem-internal-feature ng-if="col.internal"></zem-internal-feature>{{ col.name }}</label></div></li></ul></span>',
+        template: '<span class="dropdown custom-cols"><a href class="btn btn-default dropdown-toggle" title="Show/hide columns">...</a><ul class="dropdown-menu dropdown-menu-right"><li ng-repeat="col in columns" ng-if="!col.unselectable"><div class="checkbox"><label><input type="checkbox" ng-model="col.checked"><zem-internal-feature ng-if="col.internal"></zem-internal-feature>{{ col.name }}</label></div></li></ul></span>',
         compile: function compile(tElement, tAttrs, transclude) {
             // Prevent closing of dropdown-menu when checkbox is clicked.
             $(tElement).on('click', function(e) {
