@@ -102,20 +102,21 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             field: 'pv_per_visit',
             checked: false,
             type: 'number',
+            fractionSize: 2,
             help: 'Help, pageviews per visit.'
         },
         {
             name: 'Avg. ToS',
             field: 'avg_tos',
             checked: false,
-            type: 'number',
+            type: 'seconds',
             help: 'Help, average time on site.'
         },
         {
             name: 'Click Discrepancy',
             field: 'click_discrepancy',
             checked: false,
-            type: 'number',
+            type: 'percent',
             help: 'number of clicks minus number of visits.'
         },
         {

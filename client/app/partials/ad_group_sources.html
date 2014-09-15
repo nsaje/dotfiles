@@ -82,7 +82,17 @@
                                         </span>
                                     </span>
                                     <span ng-switch-when="percent">
-                                        {{ (row[col.field] | number:2) || '0.0' }}%
+                                        <span ng-switch="row[col.field]">
+                                            <span ng-switch-when="null">
+                                                N/A
+                                            </span>
+                                            <span ng-switch-when="undefined">
+                                                N/A
+                                            </span>
+                                            <span ng-switch-default>
+                                                {{ (row[col.field] | number:2) }}%
+                                            </span>
+                                        </span>
                                     </span>
                                     <span ng-switch-when="number">
                                         <span ng-switch="!!col.fractionSize">
@@ -97,6 +107,19 @@
                                     <span ng-switch-when="datetime">
                                         <span class="datetime">
                                             {{ (row[col.field] | date:'M/d/yyyy h:mm a') || 'N/A' }}
+                                        </span>
+                                    </span>
+                                    <span ng-switch-when="seconds">
+                                        <span ng-switch="row[col.field]">
+                                            <span ng-switch-when="null">
+                                                N/A
+                                            </span>
+                                            <span ng-switch-when="undefined">
+                                                N/A
+                                            </span>
+                                            <span ng-switch-default>
+                                                {{ (row[col.field] | number:1) }} s
+                                            </span>
                                         </span>
                                     </span>
                                     <span ng-switch-when="link">
@@ -120,13 +143,43 @@
                                             </span>
                                         </span>
                                         <span ng-switch-when="percent">
-                                            {{ (totals[col.field] | number:2) || '0.0' }}%
+                                            <span ng-switch="totals[col.field]">
+                                                <span ng-switch-when="null">
+                                                    N/A
+                                                </span>
+                                                <span ng-switch-when="undefined">
+                                                    N/A
+                                                </span>
+                                                <span ng-switch-default>
+                                                    {{ (totals[col.field] | number:2) }}%
+                                                </span>
+                                            </span>
                                         </span>
                                         <span ng-switch-when="number">
-                                            {{ (totals[col.field] | number:0) || 'N/A' }}
+                                            <span ng-switch="!!col.fractionSize">
+                                                <span ng-switch-when="true">
+                                                    {{ (totals[col.field] | number:col.fractionSize) || 'N/A' }}
+                                                </span>
+                                                <span ng-switch-default>
+                                                    {{ (totals[col.field] | number:0) || 'N/A' }}
+                                                </span>
+                                            </span>
+                                        </span>
+                                        <span ng-switch-when="seconds">
+                                            <span ng-switch="totals[col.field]">
+                                                <span ng-switch-when="null">
+                                                    N/A
+                                                </span>
+                                                <span ng-switch-when="undefined">
+                                                    N/A
+                                                </span>
+                                                <span ng-switch-default>
+                                                    {{ (totals[col.field] | number:1) }} s
+                                                </span>
+                                            </span>
                                         </span>
                                         <span ng-switch-when="datetime">
-                                            {{ (row[col.field] | date:'M/d/yyyy h:mm a') || 'N/A' }}
+                                            {{ (totals[col.field] | date:'M/d/yyyy h:mm a') || 'N/A' }}
                                         </span>
                                     </span>
                                 </span>
