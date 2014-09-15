@@ -1,4 +1,4 @@
-/*global $,oneApp,moment*/
+/*global $,oneApp,moment,constants*/
 "use strict";
 
 oneApp.directive('zemChart', ['config', function(config) {
@@ -7,17 +7,15 @@ oneApp.directive('zemChart', ['config', function(config) {
         scope: {
             data: '=zemData',
             metric1: '=zemMetric1',
-            metric1Values: '=zemMetric1Values',
+            metricOptions: '=zemMetricOptions',
+            goalMetrics: '=zemGoalMetrics',
             metric2: '=zemMetric2',
-            metric2Values: '=zemMetric2Values',
             minDate: '=zemMinDate',
             maxDate: '=zemMaxDate',
-            onRemove: '&zemOnRemove',
-            hideLegend: '@zemHideLegend'
+            onRemove: '&zemOnRemove'
         },
         templateUrl: config.static_url + '/partials/zem_chart.html',
         controller: ['$scope', '$element', '$attrs', '$http', function ($scope, $element, $attrs, $http) {
-
             var totalsColor = ['#009db2', '#c9eaef'];
             var colors = [
                 ['#d35400', '#eebe9e'],
@@ -25,12 +23,10 @@ oneApp.directive('zemChart', ['config', function(config) {
                 ['#34495e', '#d6dbdf'],
                 ['#f39c12', '#fdebd0']
             ];
-            var nameColors = {};
+            var usedColors = {};
 
             $scope.hasData = true;
-
             $scope.legendItems = [];
-
             $scope.appConfig = config;
 
             $scope.config = {
@@ -41,7 +37,6 @@ oneApp.directive('zemChart', ['config', function(config) {
                     xAxis: {
                         type: 'datetime',
                         minTickInterval: 24 * 3600 * 1000
-                        /* categories: [] */
                     },
                     yAxis: [{
                         title: {
@@ -97,33 +92,25 @@ oneApp.directive('zemChart', ['config', function(config) {
 
             $scope.$watch('data', function(newValue, oldValue) {
                 var i = 0;
-                var j = 0;
-                var k = 0;
-                var ci = 0;
-                var metrics = [];
-                var data = [];
-                var valuePrefix = null;
-                var valueSuffix = null;
-                var axisFormat = null;
-                var id = null;
-                var name = null;
+                var data = newValue;
                 var color = null;
-                var usedColors = [];
-                var colorIndex = 0;
-                var tempNameColors = {};
-                var key = null;
+                var seriesData = null;
+                var metrics = null;
+                var metricIds = null;
+                var seriesName = null;
 
                 $scope.hasData = false;
                 $scope.legendItems = [];
+                $scope.config.series = [];
 
                 // Undefined means that no data has been assigned yet but will be.
-                if (newValue === undefined) {
+                if (data === undefined) {
                     $scope.hasData = true;
                     return;
                 }
 
                 // Set min and max only if start date and end date are different. If
-                // they are the sime, let charts figure it out because otherwise it
+                // they are the same, let charts figure it out because otherwise it
                 // renders strangely.
                 if ($scope.minDate.valueOf() !== $scope.maxDate.valueOf()) {
                     $scope.config.options.xAxis.min = moment($scope.minDate).add('minutes', $scope.minDate.zone()).valueOf();
@@ -132,117 +119,46 @@ oneApp.directive('zemChart', ['config', function(config) {
                     $scope.config.options.xAxis.min = null;
                     $scope.config.options.xAxis.max = null;
                 }
-            
-                if (newValue && Object.keys(newValue).length) {
-                    $scope.config.series = [];
 
-                    for (i = 0; i < $scope.metric1Values.length; i++) {
-                        if ($scope.metric1Values[i].value === $scope.metric1) {
-                            metrics.push($scope.metric1Values[i].name);
-                            break;
-                        }
-                    }
-
-                    if ($scope.metric2Values && $scope.metric2Values.length) {
-                        for (i = 0; i < $scope.metric2Values.length; i++) {
-                            if ($scope.metric2Values[i].value === $scope.metric2) {
-                                metrics.push($scope.metric2Values[i].name);
-                                break;
-                            }
-                        }
-                    }
-
-                    for (key in nameColors) {
-                        if (nameColors.hasOwnProperty(key) && newValue.names.indexOf(key) !== -1) {
-                            colorIndex = nameColors[key];
-
-                            usedColors.push(colorIndex);
-                            tempNameColors[key] = colorIndex;
-                        }
-                    }
-                    nameColors = tempNameColors;
-
-                    data = newValue.data;
-                    for (i = 0; i < data.length; i++) {
-                        id = newValue.ids[i];
-                        name = newValue.names[i];
-
-                        if (id === null || id === undefined) {
-                            // Totals
-                            name = 'Totals';
-                            color = totalsColor;
-
-                            $scope.legendItems.unshift({
-                                id: id,
-                                name: name,
-                                color1: color[0],
-                                color2: color[1]
-                            })
-                        } else {
-                            if (nameColors[name] === undefined) {
-                                for (ci = 0; ci < colors.length; ci++) {
-                                    if (usedColors.indexOf(ci) === -1) {
-                                        nameColors[name] = ci;
-                                        usedColors.push(ci);
-                                        break;
-                                    }
-                                }
-                            }
-
-                            color = colors[nameColors[name]];
-
-                            $scope.legendItems.push({
-                                id: id,
-                                name: name,
-                                color1: color[0],
-                                color2: color[1]
-                            })
-                        }
-
-                        for (j = data[i].length - 1; j >= 0; j--) {
-                            valuePrefix = null;
-                            valueSuffix = null;
-                            axisFormat = null;
-
-                            if (newValue.formats[j] === 'currency') {
-                                valuePrefix = '$';
-                                axisFormat = '${value}';
-                            } else if (newValue.formats[j] === 'percent') {
-                                valueSuffix = '%';
-                                axisFormat = '{value}%';
-                            }
-                            
-                            $scope.config.options.yAxis[j].labels = {
-                                format: axisFormat
-                            };
-
-                            $scope.config.series.push({
-                                name: name + ' (' + metrics[j] + ')',
-                                color: color[j],
-                                yAxis: j,
-                                data: data[i][j],
-                                tooltip: {
-                                    valueSuffix: valueSuffix,
-                                    valuePrefix: valuePrefix
-                                },
-                                marker: {
-                                    radius: 3,
-                                    symbol: 'square',
-                                    fillColor: color[j],
-                                    lineWidth: 2,
-                                    lineColor: null
-                                }
-                            });
-                            for (k = 0; k < data[i][j].length; k++) {
-                                if ((!Array.isArray(data[i][j][k]) && data[i][j][k]) || data[i][j][k][data[i][j][k].length-1]) {
-                                    $scope.hasData = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
+                // currently selected metric ids
+                metricIds = [$scope.metric1];
+                if ($scope.metric2) {
+                    metricIds.push($scope.metric2);
                 }
 
+                setAxisFormats(metricIds);
+                clearUsedColors(data);
+
+                data.forEach(function (group) {
+                    color = getColor(group);
+                    addLegendItem(color, group);
+
+                    metricIds.forEach(function (metricId, index) {
+                        seriesData = group.seriesData[metricId] || [];
+                        if (seriesData.length) {
+                            $scope.hasData = true;
+                        }
+
+                        seriesName = group.name + ' (' + getMetricName(metricId)  + ')';
+                        $scope.config.series.unshift({
+                            name: seriesName,
+                            color: color[index],
+                            yAxis: index,
+                            data: transformDate(seriesData),
+                            tooltip: {
+                                pointFormat: seriesName + ': <b>' + getPointFormat(metricId) + '</b></br>'
+                            },
+                            marker: {
+                                radius: 3,
+                                symbol: 'square',
+                                fillColor: color[index],
+                                lineWidth: 2,
+                                lineColor: null
+                            }
+                        });
+                    });
+                });
+            
                 // HACK: we need this in order to force the chart to display
                 // x axis with value 0 on the bottom of the graph if there is
                 // no data to be displayed (or is always 0).
@@ -256,6 +172,161 @@ oneApp.directive('zemChart', ['config', function(config) {
                     }
                 }
             });
+
+
+            /////////////
+            // helpers //
+            /////////////
+
+            var metricFormats = {};
+            metricFormats[constants.chartMetric.CPC] = {'type': 'currency', 'fractionSize': 3};
+            metricFormats[constants.chartMetric.COST] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.CTR] = {'type': 'percent', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.CONVERSION_RATE] = {'type': 'percent', 'fractionSize': 2};
+
+            var getMetricName = function (metricId) {
+                var name = null;
+                $scope.metricOptions.forEach(function (option) {
+                    if (option.value === metricId) {
+                        name = option.name;
+                    }
+                });
+
+                return name;
+            };
+
+            var getPointFormat = function (metricId) {
+                var format = null;    
+                var valueSuffix = '';
+                var valuePrefix = '';
+                var fractionSize = 0;
+                
+                metricId = getGoalMetricType(metricId);
+                format = metricFormats[metricId];    
+
+                if (format !== undefined) {
+                    fractionSize = format.fractionSize;
+
+                    if (format.type === 'currency') {
+                        valuePrefix = '$';
+                    } else if (format.type === 'percent') {
+                        valueSuffix = '%';
+                    }
+                }
+
+                return valuePrefix + '{point.y:,.' + fractionSize + 'f}' + valueSuffix;
+            };
+
+            var getGoalMetricType = function (metricId) {
+                // check if metric is custom goal metric,
+                // if it is, return its type
+                var goal = null;
+
+                if ($scope.goalMetrics) {
+                    goal = $scope.goalMetrics[metricId]; 
+                    if (goal !== undefined) {
+                        return goal.type;
+                    }
+                }
+
+                return metricId;
+            };
+
+            var setAxisFormats = function (metricIds) {
+                var format = null;
+                var axisFormat = null;
+
+                metricIds.forEach(function (metricId, index) {
+                    metricId = getGoalMetricType(metricId);
+
+                    format = metricFormats[metricId];    
+                    axisFormat = null;
+
+                    if (format !== undefined) {
+                        if (format.type === 'currency') {
+                            axisFormat = '${value}';
+                        } else if (format.type === 'percent') {
+                            axisFormat = '{value}%';
+                        }
+                    }
+                    
+                    $scope.config.options.yAxis[index].labels = {
+                        format: axisFormat
+                    };
+                });
+            };
+
+            var transformDate = function (data) {
+                return data.map(function (item) {
+                    item[0] = parseInt(moment.utc(item[0]).format('XSSS'), 10);
+                    return item;
+                });
+            };
+
+            var clearUsedColors = function (data) {
+                // clean usedColors of all groupIds that are not selected anymore
+                var groupId = null;
+                var groupIds = data.map(function (group) {
+                    return group.id.toString();
+                });
+
+                for (groupId in usedColors) {
+                    if (!usedColors.hasOwnProperty(groupId)) {
+                        continue;
+                    }
+
+                    if (groupIds.indexOf(groupId.toString()) === -1) {
+                        delete usedColors[groupId];
+                    }
+                }
+            };
+
+            var getColor = function (group) {
+                var color = null;
+                var usedColorIndexes = null;
+                var i = 0;
+
+                if (group.id === 'totals') {
+                    return totalsColor;
+                }
+
+                // check if group had been assigned a color before
+                color = colors[usedColors[group.id]];
+
+                // if not, select one of the available colors
+                if (!color) {
+                    usedColorIndexes = Object.keys(usedColors).map(function (key) {
+                        return usedColors[key];
+                    });
+
+                    for (i = 0; i < colors.length; i++) {
+                        if (usedColorIndexes.indexOf(i) !== -1) {
+                            continue;
+                        }
+
+                        color = colors[i];
+                        usedColors[group.id] = i;
+                        break;
+                    }
+                }
+
+                return color;
+            };
+
+            var addLegendItem = function (color, group) {
+                var legendItem = {
+                    id: group.id,
+                    name: group.name,
+                    color1: color[0],
+                    color2: color[1]
+                };
+
+                if (legendItem.id === 'totals') {
+                    $scope.legendItems.unshift(legendItem);
+                } else {
+                    $scope.legendItems.push(legendItem);
+                }
+            }
         }]
     };
 }]);

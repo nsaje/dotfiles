@@ -315,7 +315,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
-    function CampaignDailyStats() {
+    function DailyStats() {
         function convertFromApi(group) {
             return {
                 id: group.id,
@@ -324,9 +324,9 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             };
         }
 
-        this.list = function (id, startDate, endDate, selectedIds, totals, metric1, metric2) {
+        this.list = function (modelName, id, startDate, endDate, selectedIds, totals, metric1, metric2) {
             var deferred = $q.defer();
-            var url = '/api/campaigns/' + id + '/daily_stats/';
+            var url = '/api/' + modelName + '/' + id + '/daily_stats/';
             var config = {
                 params: { metrics: [] }
             };
@@ -1143,7 +1143,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         checkCampaignSyncProgress: new CheckCampaignSyncProgress(),
         checkSyncProgress: new CheckSyncProgress(),
         adGroupDailyStats: new AdGroupDailyStats(),
-        campaignDailyStats: new CampaignDailyStats(),
+        dailyStats: new DailyStats(),
         actionLog: new ActionLog()
     };
 }]);

@@ -4,14 +4,15 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.selectedSourceIds = [];
-    $scope.selectedSourceTotals = true;
+    $scope.selectedTotals = true;
     $scope.constants = constants;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
     $scope.dailyStats = [];
     $scope.chartData = undefined;
     $scope.isChartShown = zemChartService.load('zemChart');
-    $scope.chartMetrics = options.adGroupChartMetrics;
+    $scope.chartMetricOptions = options.adGroupChartMetrics;
+    $scope.chartGoalMetrics = null;
     $scope.chartBtnTitle = 'Hide chart';
     $scope.order = '-cost';
     $scope.sources = [];
@@ -114,76 +115,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         zemChartService.save('zemChart', newValue);
     });
 
-    $scope.setChartData = function () {
-        var result = {
-            formats: [],
-            data: [],
-            names: [],
-            ids: []
-        };
-
-        result.formats = [$scope.chartMetric1, $scope.chartMetric2].map(function (x) {
-            var format = null;
-            if (x === constants.chartMetric.COST ||
-                x === constants.chartMetric.CPC) {
-                format = 'currency';
-            } else if (x === constants.chartMetric.CTR) {
-                format = 'percent';
-            } else {
-                // check goal metrics for format info
-                $scope.chartMetrics.forEach(function (metric) {
-                    if (x === metric.value && metric.format) {
-                        format = metric.format;
-                    }
-                });
-            }
-
-            return format;
-        });
-
-        var temp = {};
-        var lastDate = null;
-        var oneDayMs = 24*60*60*1000;
-        $scope.dailyStats.forEach(function (stat) {
-            if (!temp.hasOwnProperty(stat.sourceId)) {
-                temp[stat.sourceId] = {
-                    name: stat.sourceName,
-                    id: stat.sourceId,
-                    data: [[]]
-                };
-            }
-
-            // insert nulls for missing values
-            if (lastDate) {
-                for (var date = lastDate; date < stat.date - oneDayMs; date += oneDayMs) {
-                    temp[stat.sourceId].data[0].push([date, null]);
-
-                    if (temp[stat.sourceId].data[1]) {
-                        temp[stat.sourceId].data[1].push([date, null]);
-                    }
-                }
-            }
-            lastDate = stat.date;
-
-            temp[stat.sourceId].data[0].push([stat.date, stat[$scope.chartMetric1]]);
-
-            if ($scope.chartMetric2 && $scope.chartMetric2 !== $scope.chartMetric1) {
-                if (!temp[stat.sourceId].data[1]) {
-                    temp[stat.sourceId].data[1] = [];
-                }
-                temp[stat.sourceId].data[1].push([stat.date, stat[$scope.chartMetric2]]);
-            }
-        });
-
-        Object.keys(temp).forEach(function (sourceId) {
-            result.data.push(temp[sourceId].data);
-            result.names.push(temp[sourceId].name);
-            result.ids.push(temp[sourceId].id);
-        });
-
-        $scope.chartData = result;
-    };
-
     $scope.loadRequestInProgress = false;
 
     $scope.orderRows = function (col) {
@@ -223,11 +154,16 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     };
 
     $scope.getDailyStats = function () {
-        api.adGroupDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedSourceTotals).then(
+        api.dailyStats.list('ad_groups', $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, $scope.chartMetric1, $scope.chartMetric2).then(
             function (data) {
                 $scope.dailyStats = data.stats;
-                $scope.chartMetrics = options.adGroupChartMetrics.concat(data.options);
-                $scope.setChartData();
+                $scope.chartMetricOptions = options.adGroupChartMetrics.concat(Object.keys(data.goals).map(function (goalId) {
+                    return {
+                        name: data.goals[goalId].name,
+                        value: goalId
+                    }
+                }));
+                $scope.chartData = data.chartData;
             },
             function (data) {
                 // error
@@ -246,10 +182,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     };
 
     $scope.selectedSourceRemoved = function (sourceId) {
-        if (sourceId) {
+        if (sourceId !== 'totals') {
             $scope.updateSelectedSources(String(sourceId));
         } else {
-            $scope.selectedSourceTotals = false;
+            $scope.selectedTotals = false;
         }
 
         $scope.selectSources();
@@ -265,15 +201,15 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     };
 
     $scope.updateSelectedRowsData = function () {
-        if (!$scope.selectedSourceTotals && !$scope.selectedSourceIds.length) {
-            $scope.selectedSourceTotals = true;
+        if (!$scope.selectedTotals && !$scope.selectedSourceIds.length) {
+            $scope.selectedTotals = true;
         }
 
         $location.search('source_ids', $scope.selectedSourceIds.join(','));
-        $location.search('source_totals', $scope.selectedSourceTotals ? 1 : null);
+        $location.search('source_totals', $scope.selectedTotals ? 1 : null);
 
         $scope.setAdGroupData('sourceIds', $scope.selectedSourceIds);
-        $scope.setAdGroupData('sourceTotals', $scope.selectedSourceTotals);
+        $scope.setAdGroupData('sourceTotals', $scope.selectedTotals);
 
         $scope.getDailyStats();
     };
@@ -286,7 +222,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            $scope.setChartData();
+            $scope.getDailyStats();
             $location.search('chart_metric1', $scope.chartMetric1);
             localStorageService.set('adGroupSources.chartMetric1', $scope.chartMetric1);
         }
@@ -294,7 +230,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
     $scope.$watch('chartMetric2', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            $scope.setChartData();
+            $scope.getDailyStats();
             $location.search('chart_metric2', $scope.chartMetric2);
             localStorageService.set('adGroupSources.chartMetric2', $scope.chartMetric2);
         }
@@ -323,7 +259,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         var chartMetric2 = $location.search().chart_metric2 || localStorageService.get('adGroupSources.chartMetric2') || $scope.chartMetric2;
         var chartHidden = $location.search().chart_hidden;
         var order = $location.search().order || localStorageService.get('adGroupSources.order') || $scope.order;
-        var changed = false;
 
         var data = $scope.adGroupData[$state.params.id];
         var sourceIds = $location.search().source_ids || (data && data.sourceIds && data.sourceIds.join(','));
@@ -332,21 +267,15 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
             $scope.chartMetric1 = chartMetric1;
             $location.search('chart_metric1', chartMetric1);
-            changed = true;
         }
 
         if (chartMetric2 !== undefined && $scope.chartMetric2 !== chartMetric2) {
             $scope.chartMetric2 = chartMetric2;
             $location.search('chart_metric2', chartMetric2);
-            changed = true;
         }
 
         if (chartHidden) {
             $scope.isChartShown = false;
-        }
-
-        if (changed) {
-            $scope.setChartData();
         }
 
         if (sourceIds) {
@@ -364,8 +293,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             $location.search('order', order);
         }
 
-        $scope.selectedSourceTotals = !$scope.selectedSourceIds.length || !!sourceTotals;
-        $scope.setAdGroupData('sourceTotals', $scope.selectedSourceTotals);
+        $scope.selectedTotals = !$scope.selectedSourceIds.length || !!sourceTotals;
+        $scope.setAdGroupData('sourceTotals', $scope.selectedTotals);
         $location.search('source_totals', sourceTotals);
 
         $scope.getAdGroupState();
