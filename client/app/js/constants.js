@@ -20,7 +20,14 @@ var constants = {
         IMPRESSIONS: 'impressions',
         CTR: 'ctr',
         COST: 'cost',
-        CPC: 'cpc'
+        CPC: 'cpc',
+        VISITS: 'visits',
+        PAGEVIEWS: 'pageviews',
+        NEW_USERS: 'percent_new_users',
+        BOUNCE_RATE: 'bounce_rate',
+        PV_PER_VISIT: 'pv_per_visit',
+        AVG_TOS: 'avg_tos',
+        CLICK_DISCREPANCY: 'click_discrepancy'
     },
     iabCategory: {
         IAB1: 'IAB1',
@@ -77,7 +84,14 @@ var options = {
         {name: 'Impressions', value: constants.sourceChartMetric.IMPRESSIONS},
         {name: 'CTR', value: constants.sourceChartMetric.CTR},
         {name: 'Spend', value: constants.sourceChartMetric.COST},
-        {name: 'Avg. CPC', value: constants.sourceChartMetric.CPC}
+        {name: 'Avg. CPC', value: constants.sourceChartMetric.CPC},
+        {name: 'Visits', value: constants.sourceChartMetric.VISITS},
+        {name: 'Pageviews', value: constants.sourceChartMetric.PAGEVIEWS},
+        {name: 'New Users', value: constants.sourceChartMetric.NEW_USERS},
+        {name: 'Bounce Rate', value: constants.sourceChartMetric.BOUNCE_RATE},
+        {name: 'PV/Visit', value: constants.sourceChartMetric.PV_PER_VISIT},
+        {name: 'Avg. ToS', value: constants.sourceChartMetric.AVG_TOS},
+        {name: 'Click Discrepancy', value: constants.sourceChartMetric.CLICK_DISCREPANCY},
     ],
     allAccountsChartMetrics: [
         {name: 'Clicks', value: constants.sourceChartMetric.CLICKS},

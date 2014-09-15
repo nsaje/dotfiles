@@ -3,15 +3,16 @@
 oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'zemCustomTableColsService', 'zemChartService', 'localStorageService', function ($scope, $state, $location, $window, $timeout, api, zemCustomTableColsService, zemChartService, localStorageService) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
+    $scope.isIncompletePostclickMetrics = false;
     $scope.selectedSourceIds = [];
     $scope.selectedSourceTotals = true;
     $scope.constants = constants;
-    $scope.options = options;
     $scope.chartMetric1 = constants.sourceChartMetric.CLICKS;
     $scope.chartMetric2 = constants.sourceChartMetric.IMPRESSIONS;
     $scope.dailyStats = [];
     $scope.chartData = undefined;
     $scope.isChartShown = zemChartService.load('zemChart');
+    $scope.sourceChartMetrics = options.sourceChartMetrics;
     $scope.chartBtnTitle = 'Hide chart';
     $scope.order = '-cost';
     $scope.sources = [];
@@ -67,6 +68,56 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             checked: true,
             type: 'percent',
             help: 'The number of clicks divided by the number of impressions.'
+        },
+        {
+            name: 'Visits',
+            field: 'visits',
+            checked: true,
+            type: 'number',
+            help: 'The number of visits as reported by Google Analytics.'
+        },
+        {
+            name: 'Pageviews',
+            field: 'pageviews',
+            checked: true,
+            type: 'number',
+            help: 'The number of pageviews as reported by Google Analytics.'
+        },
+        {
+            name: '% New Users',
+            field: 'percent_new_users',
+            checked: false,
+            type: 'percent',
+            help: 'Percentage of visits made by new users, as reported by Google Analytics.'
+        },
+        {
+            name: 'Bounce Rate',
+            field: 'bounce_rate',
+            checked: false,
+            type: 'percent',
+            help: 'Bounce rate help goes here.'
+        },
+        {
+            name: 'PV/Visit',
+            field: 'pv_per_visit',
+            checked: false,
+            type: 'number',
+            fractionSize: 2,
+            help: 'Help, pageviews per visit.'
+        },
+        {
+            name: 'Avg. ToS',
+            field: 'avg_tos',
+            checked: false,
+            type: 'seconds',
+            help: 'Help, average time on site.'
+        },
+        {
+            name: 'Click Discrepancy',
+            field: 'click_discrepancy',
+            checked: false,
+            type: 'percent',
+            help: 'number of clicks minus number of visits.'
         },
         {
             name: 'Last OK Sync',
@@ -129,6 +180,13 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 format = 'currency';
             } else if (x === constants.sourceChartMetric.CTR) {
                 format = 'percent';
+            } else {
+                // check goal metrics for format info
+                $scope.sourceChartMetrics.forEach(function (metric) {
+                    if (x === metric.value && metric.format) {
+                        format = metric.format;
+                    }
+                });
             }
 
             return format;
@@ -193,16 +251,60 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $scope.getTableData();
     };
 
+
+    $scope.addGoalColumns = function(rows) {
+        var alreadyAdded = function(field) {
+            for(var i = 0; i < $scope.columns.length; i++) {
+                if(field == $scope.columns[i]['field']){
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        for(var i = 0; i < rows.length; i++) {
+            for(var field in rows[i]) {
+                if(alreadyAdded(field)) {
+                    continue;
+                }
+
+                if(field.indexOf(': Conversions') != -1) {
+                    var col_descr = {
+                        'name': field.substr('goal__'.length),
+                        'field': field,
+                        'checked': false,
+                        'type': 'number',
+                        'help': 'Number of goal completions'
+                    }
+                    $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
+                } else if(field.indexOf(': Conversion Rate') != -1) {
+                    var col_descr = {
+                        'name': field.substr('goal__'.length),
+                        'field': field,
+                        'checked': false,
+                        'type': 'percent',
+                        'help': 'Conversion rate help'
+                    }
+                    $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
+                }
+            }
+        }
+    };
+
     $scope.getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
         api.adGroupSourcesTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
+                $scope.addGoalColumns(data.rows);
+
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
                 $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
                 $scope.isSyncRecent = data.is_sync_recent;
                 $scope.isSyncInProgress = data.is_sync_in_progress;
+
+                $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
 
                 $scope.selectSources();
             },
@@ -216,9 +318,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     };
 
     $scope.getDailyStats = function () {
-        api.adGroupSourcesDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedSourceTotals).then(
+        api.adGroupDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedSourceTotals).then(
             function (data) {
-                $scope.dailyStats = data;
+                $scope.dailyStats = data.stats;
+                $scope.sourceChartMetrics = options.sourceChartMetrics.concat(data.options);
                 $scope.setChartData();
             },
             function (data) {

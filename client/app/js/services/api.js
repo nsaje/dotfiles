@@ -88,6 +88,31 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AdGroupSourcesTable() {
+
+        function convertFromApi(data) {
+            for(var i = 0; i < data.rows.length; i++) {
+                var row = data.rows[i];
+                var converted_row = {}
+                for(var field in row) {
+                    if(field.indexOf('goals') == '0') {
+                        for(var goalName in row['goals']) {
+                            for(var metricName in row['goals'][goalName]) {
+                                if(metricName == 'conversions') {
+                                    converted_row['goal__' + goalName + ': Conversions'] = row['goals'][goalName][metricName];
+                                } else if(metricName == 'conversion_rate') {
+                                    converted_row['goal__' + goalName + ': Conversion Rate'] = row['goals'][goalName][metricName];
+                                }
+                            }
+                        }
+                    } else {
+                        converted_row[field] = row[field];
+                    }
+                }
+                data.rows[i] = converted_row;
+            }
+            return data;
+        };
+
         this.get = function (id, startDate, endDate, order) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/sources/table/';
@@ -108,7 +133,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
-                        deferred.resolve(data.data);
+                        deferred.resolve(convertFromApi(data.data));
                     }
                 }).
                 error(function(data, status, headers, config) {
@@ -120,6 +145,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AdGroupAdsTable() {
+
         this.get = function (id, page, size, startDate, endDate, order) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/contentads/table/';
@@ -240,19 +266,12 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
-    function AdGroupSourcesDailyStats() {
+    function AdGroupDailyStats() {
         function convertFromApi(data) {
-            var result = {
-                date: parseInt(moment.utc(data.date).format('XSSS'), 10),
-                clicks: data.clicks,
-                impressions: data.impressions,
-                ctr: data.ctr !== null ? parseFloat((data.ctr).toFixed(2)) : null,
-                cpc: data.cpc !== null ? parseFloat((data.cpc).toFixed(3)) : null,
-                cost: data.cost !== null ? parseFloat((data.cost).toFixed(2)) : null,
-                sourceId: data.source || null,
-                sourceName: data.source_name || null
-            };
-            return result;
+            data.date = parseInt(moment.utc(data.date).format('XSSS'));
+            data.sourceId = data.source_id;
+            data.sourceName = data.source_name;
+            return data;
         }
 
         this.list = function (adGroupId, startDate, endDate, sourceIds, totals) {
@@ -280,14 +299,20 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             $http.get(url, config).
                 success(function (response, status) {
-                    var resource;
+                    var stats, options;
                     if (response && response.data && response.data.stats) {
-                        resource = response.data.stats;
-                        resource = response.data.stats.map(function (x) {
+                        stats = response.data.stats;
+                        stats = response.data.stats.map(function (x) {
                             return convertFromApi(x);
                         });
                     }
-                    deferred.resolve(resource);
+                    if (response && response.data && response.data.options) {
+                        options = response.data.options;
+                    }
+                    deferred.resolve({
+                        stats: stats,
+                        options: options
+                    });
                 }).
                 error(function(data, status, headers, config) {
                     deferred.reject(data);
@@ -990,7 +1015,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         accountSync: new AccountSync(),
         checkAccountsSyncProgress: new CheckAccountsSyncProgress(),
         checkSyncProgress: new CheckSyncProgress(),
-        adGroupSourcesDailyStats: new AdGroupSourcesDailyStats(),
+        adGroupDailyStats: new AdGroupDailyStats(),
         actionLog: new ActionLog()
     };
 }]);

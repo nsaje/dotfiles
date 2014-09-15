@@ -20,31 +20,31 @@ class PostclickTestCase(test.TestCase):
         expected = [
             {
                 'avg_tos': 6.47912388774812,
-                'bounce_rate': 0.751540041067762,
+                'bounce_rate': 75.1540041067762,
                 'date': datetime.date(2014, 6, 4),
                 'new_visits': 1291,
                 'pageviews': 2822,
-                'percent_new_users': 0.883641341546886,
+                'percent_new_users': 88.3641341546886,
                 'pv_per_visit': 1.9315537303217,
                 'visits': 1461
             },
             {
                 'avg_tos': 10.0,
-                'bounce_rate': 0.9,
+                'bounce_rate': 90,
                 'date': datetime.date(2014, 6, 5),
                 'new_visits': 190,
                 'pageviews': 500,
-                'percent_new_users': 0.475,
+                'percent_new_users': 47.5,
                 'pv_per_visit': 1.25,
                 'visits': 400
             },
             {
                 'avg_tos': 7.13409415121255,
-                'bounce_rate': 0.743223965763195,
+                'bounce_rate': 74.3223965763195,
                 'date': datetime.date(2014, 6, 6),
                 'new_visits': 661,
                 'pageviews': 1201,
-                'percent_new_users': 0.942938659058488,
+                'percent_new_users': 94.2938659058489,
                 'pv_per_visit': 1.7132667617689,
                 'visits': 701
             }
@@ -57,10 +57,10 @@ class PostclickTestCase(test.TestCase):
 
         expected = {
             'avg_tos': 7.2080405932865,
-            'bounce_rate': 0.772443403590945,
+            'bounce_rate': 77.2443403590945,
             'new_visits': 2142,
             'pageviews': 4523,
-            'percent_new_users': 0.836065573770492,
+            'percent_new_users': 83.6065573770492,
             'pv_per_visit': 1.76541764246682,
             'visits': 2562
         }
@@ -68,14 +68,14 @@ class PostclickTestCase(test.TestCase):
         self.assertTrue(dicts_match_for_keys(result, expected, expected.keys()))
 
     def test_incomplete_metrics(self):
-        result = api.query(self.start_date, self.end_date)
-        self.assertTrue(result['incomplete_postclick_metrics'])
+        is_complete = api.has_complete_postclick_metrics(self.start_date, self.end_date, ad_group=1)
+        self.assertFalse(is_complete)
 
-        result = api.query(self.start_date, datetime.date(2014, 6, 5))
-        self.assertFalse(result['incomplete_postclick_metrics'])
+        is_complete = api.has_complete_postclick_metrics(self.start_date, datetime.date(2014, 6, 5), ad_group=1)
+        self.assertFalse(is_complete)
 
-        result = api.query(datetime.date(2014, 6, 6), datetime.date(2014, 6, 6))
-        self.assertFalse(result['incomplete_postclick_metrics'])
+        is_complete = api.has_complete_postclick_metrics(datetime.date(2014, 6, 6), datetime.date(2014, 6, 6), ad_group=1)
+        self.assertTrue(is_complete)
 
 
 class GoalConversionTestCase(test.TestCase):
@@ -92,9 +92,9 @@ class GoalConversionTestCase(test.TestCase):
     def test_conversion_goal_reports(self):
         result = api.query(self.start_date, self.end_date, ad_group=1)
 
-        self.assertEqual(result['G[Goal_A]_conversions'], 14)
-        self.assertEqual(result['G[Goal_B]_conversions'], 17)
-        self.assertEqual(result['G[Goal_A]_conversion_value'], 0.3)
-        self.assertEqual(result['G[Goal_B]_conversion_value'], 0.5)
+        self.assertEqual(result['goals']['Goal_A']['conversions'], 14)
+        self.assertEqual(result['goals']['Goal_B']['conversions'], 17)
+        self.assertEqual(result['goals']['Goal_A']['conversion_value'], 0.3)
+        self.assertEqual(result['goals']['Goal_B']['conversion_value'], 0.5)
         self.assertEqual(result['visits'], 350)
 

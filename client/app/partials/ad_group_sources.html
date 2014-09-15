@@ -1,6 +1,6 @@
 <div class="page page-ad-group-sources">
     <div class="section" ng-class="{'height-hidden': !isChartShown}">
-        <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric1-values="options.sourceChartMetrics" zem-metric2-values="options.sourceChartMetrics" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)"></zem-chart>
+        <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric1-values="sourceChartMetrics" zem-metric2-values="sourceChartMetrics" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)"></zem-chart>
     </div>
 
     <div class="section table-ad-group-sources">
@@ -39,7 +39,8 @@
             We are adding the following media source(s): {{sourcesWaiting.join(', ')}}. This may take some time.
         </alert>
         <alert type="info" class="alert-sync" ng-show="isSyncRecent === false">
-            We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">The last successful sync took place {{ lastSyncDate.fromNow() }}.</span> If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
+            We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">the last successful sync took place {{ lastSyncDate.fromNow() }}.</span> 
+            If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
         </alert>
 
         <div class="loader-container">
@@ -81,14 +82,44 @@
                                         </span>
                                     </span>
                                     <span ng-switch-when="percent">
-                                        {{ (row[col.field] | number:2) || '0.0' }}%
+                                        <span ng-switch="row[col.field]">
+                                            <span ng-switch-when="null">
+                                                N/A
+                                            </span>
+                                            <span ng-switch-when="undefined">
+                                                N/A
+                                            </span>
+                                            <span ng-switch-default>
+                                                {{ (row[col.field] | number:2) }}%
+                                            </span>
+                                        </span>
                                     </span>
                                     <span ng-switch-when="number">
-                                        {{ (row[col.field] | number:0) || 'N/A' }}
+                                        <span ng-switch="!!col.fractionSize">
+                                            <span ng-switch-when="true">
+                                                {{ (row[col.field] | number:col.fractionSize) || 'N/A' }}
+                                            </span>
+                                            <span ng-switch-default>
+                                                {{ (row[col.field] | number:0) || 'N/A' }}
+                                            </span>
+                                        </span>
                                     </span>
                                     <span ng-switch-when="datetime">
                                         <span class="datetime">
                                             {{ (row[col.field] | date:'M/d/yyyy h:mm a') || 'N/A' }}
+                                        </span>
+                                    </span>
+                                    <span ng-switch-when="seconds">
+                                        <span ng-switch="row[col.field]">
+                                            <span ng-switch-when="null">
+                                                N/A
+                                            </span>
+                                            <span ng-switch-when="undefined">
+                                                N/A
+                                            </span>
+                                            <span ng-switch-default>
+                                                {{ (row[col.field] | number:1) }} s
+                                            </span>
                                         </span>
                                     </span>
                                     <span ng-switch-when="link">
@@ -112,13 +143,43 @@
                                             </span>
                                         </span>
                                         <span ng-switch-when="percent">
-                                            {{ (totals[col.field] | number:2) || '0.0' }}%
+                                            <span ng-switch="totals[col.field]">
+                                                <span ng-switch-when="null">
+                                                    N/A
+                                                </span>
+                                                <span ng-switch-when="undefined">
+                                                    N/A
+                                                </span>
+                                                <span ng-switch-default>
+                                                    {{ (totals[col.field] | number:2) }}%
+                                                </span>
+                                            </span>
                                         </span>
                                         <span ng-switch-when="number">
-                                            {{ (totals[col.field] | number:0) || 'N/A' }}
+                                            <span ng-switch="!!col.fractionSize">
+                                                <span ng-switch-when="true">
+                                                    {{ (totals[col.field] | number:col.fractionSize) || 'N/A' }}
+                                                </span>
+                                                <span ng-switch-default>
+                                                    {{ (totals[col.field] | number:0) || 'N/A' }}
+                                                </span>
+                                            </span>
+                                        </span>
+                                        <span ng-switch-when="seconds">
+                                            <span ng-switch="totals[col.field]">
+                                                <span ng-switch-when="null">
+                                                    N/A
+                                                </span>
+                                                <span ng-switch-when="undefined">
+                                                    N/A
+                                                </span>
+                                                <span ng-switch-default>
+                                                    {{ (totals[col.field] | number:1) }} s
+                                                </span>
+                                            </span>
                                         </span>
                                         <span ng-switch-when="datetime">
-                                            {{ (row[col.field] | date:'M/d/yyyy h:mm a') || 'N/A' }}
+                                            {{ (totals[col.field] | date:'M/d/yyyy h:mm a') || 'N/A' }}
                                         </span>
                                     </span>
                                 </span>
@@ -137,6 +198,11 @@
                 <span ng-switch-default>
                     * Reporting metrics synced {{ lastSyncDate.fromNow() }}. Service fee not included.
                 </span>
+            </span>
+        </div>
+        <div class="incomplete-postclick">
+            <span ng-show="isIncompletePostclickMetrics">
+                * Postclick metrics are incomplete for the selected date range. Please check the graph for more details.
             </span>
         </div>
     </div>

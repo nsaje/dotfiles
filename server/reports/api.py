@@ -6,6 +6,7 @@ import urlparse
 import urllib
 import logging
 import collections
+import operator
 
 import pytz
 
@@ -42,15 +43,6 @@ POSTCLICK_AGGREGATE_FIELDS = dict(
     pageviews_sum=Sum('pageviews'),
     pv_per_visit=db_aggregates.SumDivision('pageviews', 'visits'),
     avg_tos=db_aggregates.SumDivision('duration', 'visits'),
-)
-
-INCOMPLETE_AGGREGATE_FIELDS = dict(
-    has_traffic_metrics_min=Min('has_traffic_metrics'),
-    has_postclick_metrics_min=Min('has_postclick_metrics'),
-    has_conversion_metrics_min=Min('has_conversion_metrics'),
-    has_traffic_metrics_max=Max('has_traffic_metrics'),
-    has_postclick_metrics_max=Max('has_postclick_metrics'),
-    has_conversion_metrics_max=Max('has_conversion_metrics'),
 )
 
 GOAL_AGGREGATE_FIELDS = dict(
@@ -108,7 +100,7 @@ def query_stats(start_date, end_date, breakdown=None, **constraints):
     if constraints:
         result = result.filter(**constraints)
 
-    agg_fields = {k:v for k, v in list(AGGREGATE_FIELDS.items()) + list(POSTCLICK_AGGREGATE_FIELDS.items()) + list(INCOMPLETE_AGGREGATE_FIELDS.items())}
+    agg_fields = {k:v for k, v in list(AGGREGATE_FIELDS.items()) + list(POSTCLICK_AGGREGATE_FIELDS.items())}
 
     if breakdown:
         result = result.values(*breakdown)
@@ -143,9 +135,38 @@ def _extract_key(result, breakdown):
 
 
 def _extend_result(result, conversion_result):
-    col_prefix = 'G[{0}]_'.format(conversion_result['goal_name'])
-    result[col_prefix + 'conversions'] = conversion_result['conversions']
-    result[col_prefix + 'conversion_value'] = conversion_result['conversion_value']
+    goal_name = conversion_result['goal_name']
+    conversions = conversion_result['conversions']
+    conversion_value = conversion_result['conversion_value']
+    goals = result.get('goals', {})
+    this_goal = goals.get(goal_name, {})
+    this_goal['conversions'] = conversions
+    this_goal['conversion_value'] = conversion_value
+    goals[goal_name] = this_goal
+    result['goals'] = goals
+
+
+def _add_computed_metrics(result):
+    if result.get('clicks') is None or result.get('visits') is None or result['clicks'] == 0:
+        result['click_discrepancy'] = None
+    else:
+        result['click_discrepancy'] =  100.0 * max(0, result['clicks'] - result['visits']) / result['clicks']
+ 
+    for goal_name, metrics in result.get('goals', {}).iteritems():
+        metrics['conversion_rate'] = metrics['conversions'] / result['visits'] if result['visits'] > 0 else None
+
+    if result['visits'] == 0:
+        result['visits'] = None
+        result['pageviews'] = None
+        result['bounce_rate'] = None
+        result['percent_new_users'] = None
+        result['pv_per_visit'] = None
+        result['avg_tos'] = None
+        result['click_discrepancy'] = None
+
+        for goal_name, metrics in result.get('goals', {}).iteritems():
+            for mertic_name in metrics:
+                metrics[metric_name] = None
 
 
 def sorted_results(results, order=None):
@@ -170,7 +191,7 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
 
     conversion_results = query_goal(start_date, end_date, breakdown=breakdown, **constraints)
     conversion_results = _collect_results(conversion_results)
-
+    
     # in memory join of the result sets
     if breakdown:
         # include related data
@@ -186,12 +207,17 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
         for row in conversion_results:
             key = _extract_key(row, breakdown)
             _extend_result(results[key], row)
-        results = results.values()
-        return sorted_results(results, order)
+        
+        for key, row in results.iteritems():
+            _add_computed_metrics(row)
+
+        return sorted_results(results.values(), order)
     else:
+        # no breakdown => the result is a single row aggregate
         result = report_results
         for row in conversion_results:
             _extend_result(result, row)
+        _add_computed_metrics(result)
         return result
 
 
@@ -238,6 +264,8 @@ def _collect_results(result):
         'ctr': lambda x: None if x is None else x * 100,
         'datetime': lambda dt: dt.date(),
         'conversions_value_cc_sum': lambda x: None if x is None else float(decimal.Decimal(round(x)) / decimal.Decimal(10000)),
+        'bounce_rate': lambda x: None if x is None else x * 100,
+        'percent_new_users': lambda x: None if x is None else x * 100,
     }
 
     def collect_row(row):
@@ -249,10 +277,6 @@ def _collect_results(result):
             new_col_name = col_name_translate.get(col_name, col_name)
             new_row[new_col_name] = new_col_val
 
-        new_row['incomplete_traffic_metrics'] = row.get('has_traffic_metrics_min', 0) == 0 and row.get('has_traffic_metrics_max', 0) == 1
-        new_row['incomplete_postclick_metrics'] = row.get('has_postclick_metrics_min', 0) == 0 and row.get('has_postclick_metrics_max', 0) == 1
-        new_row['incomplete_conversion_metrics'] = row.get('has_conversion_metrics_min', 0) == 0 and row.get('has_conversion_metrics_max', 0) == 1
-        
         return new_row
 
     if isinstance(result, dict):
@@ -276,6 +300,34 @@ def get_yesterday_cost(ad_group):
     result = {row['source']: row['cost'] for row in rs}
 
     return result
+
+
+def _has_any_postclick_metrics(ad_group):
+    rs = models.ArticleStats.objects.filter(
+            ad_group=ad_group
+        ).aggregate(has_postclick_metrics_max=Max('has_postclick_metrics'))
+
+    return rs['has_postclick_metrics_max'] == 1
+
+
+def has_complete_postclick_metrics(start_date, end_date, ad_group):
+    if not _has_any_postclick_metrics(ad_group):
+        return True
+
+    rs = models.ArticleStats.objects.filter(
+        datetime__gte=start_date,
+        datetime__lte=end_date,
+        ad_group=ad_group
+    ).values('datetime').annotate(
+        has_postclick_metrics_max=Max('has_postclick_metrics')
+    )
+
+    is_complete = reduce(operator.iand, 
+        (r['has_postclick_metrics_max'] == 1 for r in rs),
+        True
+    )
+
+    return is_complete
 
 
 def _reset_existing_traffic_stats(ad_group, source, date):
