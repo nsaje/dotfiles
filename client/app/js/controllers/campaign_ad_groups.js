@@ -49,6 +49,12 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         $scope.getDailyStats();
     };
 
+    $scope.selectRows = function () {
+        $scope.rows.forEach(function (x) {
+            x.checked = $scope.selectedAdGroupIds.indexOf(x.ad_group) > -1;
+        });
+    };
+
     $scope.columns = [
         {
             name: '',
@@ -225,6 +231,8 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
                     return x;
                 });
+
+                $scope.selectRows();
             },
             function (data) {
                 // error
@@ -316,7 +324,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             $location.search('ad_group_ids', adGroupIds);
 
             if ($scope.rows) {
-                $scope.selectAdGroups();
+                $scope.selectRows();
             }
         }
 
