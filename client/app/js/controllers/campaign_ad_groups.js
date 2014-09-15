@@ -1,4 +1,4 @@
-/*globals oneApp,moment,constants*/
+/*globals oneApp,moment,constants,options*/
 oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'localStorageService', 'zemCustomTableColsService', 'zemChartService', function ($location, $scope, $state, $timeout, api, localStorageService, zemCustomTableColsService, zemChartService) {
     $scope.getTableDataRequestInProgress = false;
     $scope.addGroupRequestInProgress = false;
@@ -14,14 +14,51 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.rows = null;
     $scope.totalRow = null;
     $scope.order = '-cost';
+
+    $scope.updateSelectedAdGroups = function (adGroupId) {
+        var i = $scope.selectedAdGroupIds.indexOf(adGroupId);
+        if (i > -1) {
+            $scope.selectedAdGroupIds.splice(i, 1);
+        } else {
+            $scope.selectedAdGroupIds.push(adGroupId);
+        }
+    };
+
+    $scope.selectedAdGroupsChanged = function (row, checked) {
+        if (row.ad_group) {
+            $scope.updateSelectedAdGroups(row.ad_group);
+        } else {
+            $scope.selectedTotals = !$scope.selectedTotals;
+        }
+
+        $scope.updateSelectedRowsData();
+    };
+
+    $scope.updateSelectedRowsData = function () {
+        if (!$scope.selectedTotals && !$scope.selectedAdGroupIds.length) {
+            $scope.selectedTotals = true;
+            $scope.totalRow.checked = true;
+        }
+
+        $location.search('ad_group_ids', $scope.selectedAdGroupIds.join(','));
+        $location.search('ad_group_totals', $scope.selectedTotals ? 1 : null);
+
+        // $scope.setAdGroupData('sourceIds', $scope.selectedSourceIds);
+        // $scope.setAdGroupData('sourceTotals', $scope.selectedSourceTotals);
+
+        $scope.getDailyStats();
+    };
+
     $scope.columns = [
         {
             name: '',
+            field: 'checked',
             type: 'checkbox',
             checked: true,
             totalRow: true,
             unselectable: true,
-            order: false
+            order: false,
+            selectCallback: $scope.selectedAdGroupsChanged
         },
         {
             name: 'Name',
@@ -179,6 +216,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totalRow = data.totals;
+                $scope.totalRow.checked = $scope.selectedTotals;
                 $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
                 $scope.isSyncRecent = data.is_sync_recent;
                 $scope.isSyncInProgress = data.is_sync_in_progress;
@@ -252,15 +290,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             cols = zemCustomTableColsService.save('campaignAdGroupsCols', newValue);
             $scope.selectedColumnsCount = cols.length;
         }, true);
-    };
-
-    $scope.init = function() {
-        var order = $location.search().order || localStorageService.get('campaignAdGroups.order') || $scope.order;
-
-        $scope.selectedTotals = !$scope.selectedAdGroupIds.length || !!adGroupTotals;
-        $location.search('ad_group_totals', adGroupTotals);
-
-        $scope.getDailyStats();
     };
 
     $scope.init = function() {

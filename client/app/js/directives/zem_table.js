@@ -15,6 +15,7 @@ oneApp.directive('zemTable', ['config', function(config) {
         templateUrl: config.static_url + '/partials/zem_table.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
             $scope.numberColumnTypes = ['currency', 'percent', 'number', 'datetime'];
+            $scope.selectedRowsCount = 0;
             
             $scope.isNumberColumnType = function (columnType) {
                 return $scope.numberColumnTypes.indexOf(columnType) > -1;
@@ -44,6 +45,18 @@ oneApp.directive('zemTable', ['config', function(config) {
                 }
 
                 $scope.orderCallback({order: $scope.order});
+            };
+
+            $scope.callSelectCallback = function (callback, row, checked, count) {
+                if (count) {
+                    if (checked) {
+                        $scope.selectedRowsCount++;
+                    } else {
+                        $scope.selectedRowsCount--;
+                    }
+                }
+
+                callback(row, checked);
             };
         }]
     };
