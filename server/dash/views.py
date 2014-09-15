@@ -1532,6 +1532,20 @@ class TriggerAccountSyncThread(threading.Thread):
             logger.exception('Exception in TriggerAccountSyncThread')
 
 
+class TriggerCampaignSyncThread(threading.Thread):
+    """ Used to trigger sync for all accounts asynchronously. """
+    def __init__(self, campaigns, *args, **kwargs):
+        self.campaigns = campaigns
+        super(TriggerCampaignSyncThread, self).__init__(*args, **kwargs)
+
+    def run(self):
+        try:
+            for campaign in self.campaigns:
+                actionlog.sync.CampaignSync(campaign).trigger_all()
+        except Exception:
+            logger.exception('Exception in TriggerCampaignSyncThread')
+
+
 class AccountSync(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'account_sync_get')
@@ -1550,6 +1564,28 @@ class AccountSyncProgress(api_common.BaseApiView):
         accounts = models.Account.objects.get_for_user(request.user)
 
         in_progress = actionlog.api.is_sync_in_progress(accounts=accounts)
+
+        return self.create_api_response({'is_sync_in_progress': in_progress})
+
+
+class CampaignSync(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'campaign_sync_get')
+    def get(self, request, campaign_id):
+        campaigns = [get_campaign(request.user, campaign_id)]
+        if not actionlog.api.is_sync_in_progress(campaigns=campaigns):
+            # trigger account sync asynchronously and immediately return
+            TriggerCampaignSyncThread(campaigns).start()
+
+        return self.create_api_response({})
+
+
+class CampaignSyncProgress(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_is_sync_in_progress')
+    def get(self, request, campaign_id):
+        campaigns = [get_campaign(request.user, campaign_id)]
+
+        in_progress = actionlog.api.is_sync_in_progress(campaigns=campaigns)
 
         return self.create_api_response({'is_sync_in_progress': in_progress})
 
@@ -1623,6 +1659,141 @@ class AdGroupAdsTable(api_common.BaseApiView):
                 'endIndex': end_index,
                 'size': size
             }
+        })
+
+
+class CampaignAdGroupsTable(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_ad_groups_table_get')
+    def get(self, request, campaign_id):
+        campaign = get_campaign(request.user, campaign_id)
+
+        start_date = get_stats_start_date(request.GET.get('start_date'))
+        end_date = get_stats_end_date(request.GET.get('end_date'))
+        order = request.GET.get('order') or '-cost'
+
+        stats = reports.api.query(
+            start_date=start_date,
+            end_date=end_date,
+            breakdown=['ad_group'],
+            order=[order],
+            campaign=campaign
+        )
+
+        ad_groups = campaign.adgroup_set.all()
+        ad_groups_settings = models.AdGroupSettings.objects.\
+            distinct('ad_group').\
+            filter(ad_group__campaign=campaign).\
+            order_by('ad_group', '-created_dt')
+
+        totals_stats = reports.api.query(start_date, end_date, campaign=campaign.pk)
+
+        last_success_actions = {}
+        for ad_group in ad_groups:
+            ad_group_sync = actionlog.sync.AdGroupSync(ad_group)
+
+            if not len(list(ad_group_sync.get_components())):
+                continue
+
+            last_success_actions[ad_group.pk] = ad_group_sync.get_latest_success(
+                recompute=False)
+
+        last_sync = actionlog.sync.CampaignSync(campaign).get_latest_success(
+            recompute=False)
+        if last_sync:
+            last_sync = pytz.utc.localize(last_sync)
+
+        return self.create_api_response({
+            'rows': self.get_rows(
+                ad_groups, ad_groups_settings, stats, last_success_actions, order),
+            'totals': totals_stats,
+            'last_sync': last_sync,
+            'is_sync_recent': is_sync_recent(last_sync),
+            'is_sync_in_progress': actionlog.api.is_sync_in_progress(
+                campaigns=[campaign]),
+            'order': order,
+        })
+
+    def get_rows(self, ad_groups, ad_groups_settings, stats, last_actions, order):
+        rows = []
+        for ad_group in ad_groups:
+            row = {
+                'name': ad_group.name,
+                'ad_group': ad_group.pk
+            }
+
+            for ad_group_settings in ad_groups_settings:
+                if ad_group.pk == ad_group_settings.ad_group_id:
+                    row['state'] = ad_group_settings.state or models.AdGroupSettings.get_default_value('state')
+                    break
+            else:
+                # If no settings exist because it is a new ad group, use the default
+                # value for state.
+                row['state'] = models.AdGroupSettings.get_default_value('state')
+
+            for stat in stats:
+                if ad_group.pk == stat['ad_group']:
+                    row.update(stat)
+                    break
+
+            last_sync = last_actions.get(ad_group.pk)
+            if last_sync:
+                last_sync = pytz.utc.localize(last_sync)
+
+            row['last_sync'] = last_sync
+
+            rows.append(row)
+
+        if order:
+            reverse = False
+            if order.startswith('-'):
+                reverse = True
+                order = order[1:]
+
+            # Sort should always put Nones at the end
+            def _sort(item):
+                value = item.get(order)
+                if order == 'last_sync' and not value:
+                    value = datetime.datetime(datetime.MINYEAR, 1, 1)
+
+                return (item.get(order) is None or reverse, value)
+
+            rows = sorted(rows, key=_sort, reverse=reverse)
+
+        return rows
+
+
+class AccountCampaignsTable(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'account_campaigns_table_get')
+    def get(self, request, account_id):
+        account = get_account(request.user, account_id)
+
+        start_date = get_stats_start_date(request.GET.get('start_date'))
+        end_date = get_stats_end_date(request.GET.get('end_date'))
+        order = request.GET.get('order') or '-clicks'
+
+        data = reports.api.query(
+            start_date=start_date,
+            end_date=end_date,
+            breakdown=['campaign'],
+            order=[order],
+            campaign=account.pk
+        )
+
+        totals_data = reports.api.query(start_date, end_date, account=account.pk)
+
+        last_sync = actionlog.sync.AccountSync(account).get_latest_success(
+            recompute=False)
+        if last_sync:
+            last_sync = pytz.utc.localize(last_sync)
+
+        return self.create_api_response({
+            'rows': data,
+            'totals': totals_data,
+            'last_sync': last_sync,
+            'is_sync_recent': is_sync_recent(last_sync),
+            'is_sync_in_progress': actionlog.api.is_sync_in_progress(
+                accounts=[account]),
+            'order': order,
         })
 
 
