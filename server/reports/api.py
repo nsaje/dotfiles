@@ -165,7 +165,7 @@ def _add_computed_metrics(result):
         result['click_discrepancy'] = None
 
         for goal_name, metrics in result.get('goals', {}).iteritems():
-            for mertic_name in metrics:
+            for metric_name in metrics:
                 metrics[metric_name] = None
 
 

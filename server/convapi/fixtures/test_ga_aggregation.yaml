@@ -1,0 +1,157 @@
+# Users
+
+- fields:
+    date_joined: '2014-06-04T09:58:21'
+    email: ''
+    first_name: ''
+    groups: []
+    is_active: true
+    is_staff: true
+    is_superuser: true
+    last_login: '2014-06-04T12:20:46'
+    last_name: ''
+    password: pbkdf2_sha256$12000$CWOT1c1UlFEr$GDTv3fbQ6bmJffEg1bvb+O49VfwD9Bg/DyylA3jcWvg=
+    user_permissions: []
+    username: test_user
+  model: zemauth.user
+  pk: 1
+
+# Accounts
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    name: 'Accounting for Beer'
+  model: dash.account
+  pk: 1
+
+# Campaigns
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    account: 1
+    name: 'Beer is good'
+  model: dash.campaign
+  pk: 1
+
+# Ad Groups
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 1
+    name: 'Beer is good indeed'
+  model: dash.adgroup
+  pk: 1
+
+# Sources
+- fields:
+    type: 'yahoo'
+    name: 'Yahoo'
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+  model: dash.source
+  pk: 1
+
+- fields:
+    type: 'zemanta'
+    name: 'Infolinks'
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+  model: dash.source
+  pk: 2
+
+- fields:
+    type: 'outbrain'
+    name: 'Outbrain'
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+  model: dash.source
+  pk: 3
+
+- fields:
+    type: 'adblade'
+    name: 'AdBlade'
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+  model: dash.source
+  pk: 4
+
+
+# Articles
+
+- fields:
+    url: 'http://beer.com/lasko'
+    title: 'A Cold Lasko is all You Need'
+    ad_group: 1
+    created_dt: '2014-06-04T09:58:21'
+  model: dash.article
+  pk: 1
+
+- fields:
+    url: 'http://beer.com/union'
+    title: 'Union: United by the Love of Beer'
+    ad_group: 1
+    created_dt: '2014-06-04T09:58:21'
+  model: dash.article
+  pk: 2
+
+- fields:
+    url: 'http://beer.com/erdinger'
+    title: '5 Reasons why you Should Drink Erdinger Today. Number 3 is hilarious.'
+    ad_group: 1
+    created_dt: '2014-06-04T09:58:21'
+  model: dash.article
+  pk: 3
+
+- fields:
+    url: 'http://beer.com/mercatorpivo'
+    title: 'The pinacle of horrible taste.'
+    ad_group: 1
+    created_dt: '2014-06-04T09:58:21'
+  model: dash.article
+  pk: 4
+
+
+# ArticleStats
+- fields:
+    datetime: '2014-09-01T00:00:00'
+    ad_group: 1
+    article: 1
+    source: 1
+    impressions: 1264
+    clicks: 21
+    cost_cc: 11426
+    visits: 18
+    new_visits: 9
+    pageviews: 42
+    bounced_visits: 14
+    duration: 84
+    created_dt: '2014-09-01T00:00:00'
+  model: reports.articlestats
+  pk: 1
+
+
+# GoalConversionStats
+- fields:
+    datetime: '2014-09-01T00:00:00'
+    ad_group: 1
+    article: 1
+    source: 1
+    goal_name: 'Buy Beer (Goal 1)'
+    conversions: 5
+    conversions_value_cc: 5000
+  model: reports.goalconversionstats
+  pk: 1
+
+- fields:
+    datetime: '2014-09-01T00:00:00'
+    ad_group: 1
+    article: 1
+    source: 1
+    goal_name: 'Get Drunk (Goal 2)'
+    conversions: 2
+    conversions_value_cc: 4000
+  model: reports.goalconversionstats
+  pk: 2

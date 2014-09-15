@@ -326,6 +326,7 @@ bounced_visits={bounced_visits}, pageviews={pageviews}, duration={duration})'.fo
                     datetime=dt,
                     ad_group_id=int(landing_page.ad_group_id),
                     source_id=source_id,
+                    goal_name=goal_name,
                     url_raw=landing_page.raw_url,
                     url_clean=landing_page.clean_url,
                     device_type=entry['Device Category'],

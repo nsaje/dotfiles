@@ -4,6 +4,7 @@ import logging
 
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
+from django.db import transaction
 
 from auth import MailGunRequestAuth, GASourceAuth
 from parse import CsvReport
@@ -14,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 @csrf_exempt
+@transaction.atomic
 def mailgun_gareps(request):
     if request.method != 'POST':
         logger.error('ERROR: only POST is supported')

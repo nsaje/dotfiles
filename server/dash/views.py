@@ -1133,7 +1133,6 @@ class AdGroupSourcesTable(api_common.BaseApiView):
                 'impressions': source_data.get('impressions', None),
                 'ctr': source_data.get('ctr', None),
 
-                # postclick metrics
                 'visits': source_data.get('visits', None),
                 'pageviews': source_data.get('pageviews', None),
                 'percent_new_users': source_data.get('percent_new_users', None),
@@ -1770,18 +1769,21 @@ class AdGroupDailyStats(api_common.BaseApiView):
                        if 'cpc' in stat and stat['cpc'] is not None else None,
                 'cost': round(stat['cost'], 2)
                        if 'cost' in stat and stat['cost'] is not None else None,
+            }
+            # postclick metrics
+            result.update({
                 'visits': stat.get('visits', None),
                 'bounce_rate': round(stat['bounce_rate'], 2)
                        if 'bounce_rate' in stat and stat['bounce_rate'] is not None else None,
                 'pageviews': stat.get('pageviews'),
-                'click_discrepancy': stat['click_discrepancy'],
+                'click_discrepancy': stat.get('click_discrepancy'),
                 'percent_new_users': round(stat['percent_new_users'], 2)
                        if 'percent_new_users' in stat and stat['percent_new_users'] is not None else None,
                 'pv_per_visit': round(stat['pv_per_visit'], 2)
                        if 'pv_per_visit' in stat and stat['pv_per_visit'] is not None else None,
                 'avg_tos': round(stat['avg_tos'], 2)
                        if 'avg_tos' in stat and stat['avg_tos'] is not None else None,
-            }
+            })
 
             if 'source' in stat:
                 result['source_id'] = stat['source']
