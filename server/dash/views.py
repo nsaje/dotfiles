@@ -1719,7 +1719,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         for ad_group in ad_groups:
             row = {
                 'name': ad_group.name,
-                'ad_group': ad_group.pk
+                'ad_group': str(ad_group.pk)
             }
 
             row['state'] = models.AdGroupSettings.get_default_value('state')
