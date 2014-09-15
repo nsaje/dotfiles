@@ -179,10 +179,10 @@ oneApp.directive('zemChart2', ['config', function(config) {
             /////////////
 
             var metricFormats = {};
-            metricFormats[constants.sourceChartMetric.CPC] = {'type': 'currency', 'fractionSize': 3};
-            metricFormats[constants.sourceChartMetric.COST] = {'type': 'currency', 'fractionSize': 2};
-            metricFormats[constants.sourceChartMetric.CTR] = {'type': 'percent', 'fractionSize': 2};
-            metricFormats[constants.sourceChartMetric.CONVERSION_RATE] = {'type': 'percent', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.CPC] = {'type': 'currency', 'fractionSize': 3};
+            metricFormats[constants.chartMetric.COST] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.CTR] = {'type': 'percent', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.CONVERSION_RATE] = {'type': 'percent', 'fractionSize': 2};
 
             var getMetricName = function (metricId) {
                 var name = null;

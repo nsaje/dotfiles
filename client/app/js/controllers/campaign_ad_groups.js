@@ -4,10 +4,10 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.addGroupRequestInProgress = false;
     $scope.isSyncInProgress = false;
     $scope.isChartShown = zemChartService.load('zemChart');
-    $scope.chartMetric1 = constants.sourceChartMetric.CLICKS;
-    $scope.chartMetric2 = constants.sourceChartMetric.IMPRESSIONS;
+    $scope.chartMetric1 = constants.chartMetric.CLICKS;
+    $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
     $scope.chartData = undefined;
-    $scope.chartMetrics = options.sourceChartMetrics;
+    $scope.chartMetricOptions = options.campaignChartMetrics;
     $scope.chartGoalMetrics = null;
     $scope.selectedAdGroupIds = [];
     $scope.selectedTotals = true;
@@ -155,13 +155,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.getDailyStats = function () {
         api.campaignDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedAdGroupIds, $scope.selectedTotals, $scope.chartMetric1, $scope.chartMetric2).then(
             function (data) {
-                $scope.chartMetricOptions = options.sourceChartMetrics.concat(Object.keys(data.goals).map(function (goalId) {
-                    return {
-                        name: data.goals[goalId].name,
-                        value: goalId
-                    };
-                }));
-
                 $scope.chartGoalMetrics = data.goals;
                 $scope.chartData = data.chartData;
             },
