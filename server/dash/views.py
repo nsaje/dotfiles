@@ -1799,7 +1799,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
 
 
 class BaseDailyStatsView(api_common.BaseApiView):
-    def get_stats(self, request, totals_kwargs, selected_kwargs, group_key):
+    def get_stats(self, request, totals_kwargs, selected_kwargs=None, group_key=None):
         start_date = get_stats_start_date(request.GET.get('start_date'))
         end_date = get_stats_end_date(request.GET.get('end_date'))
 
@@ -1830,11 +1830,14 @@ class BaseDailyStatsView(api_common.BaseApiView):
         return breakdown_stats + totals_stats
 
     def get_series_groups_dict(self, totals, groups_dict):
-        result = {key: {
-            'id': key,
-            'name': groups_dict[key],
-            'series_data': {}
-        } for key in groups_dict}
+        result = {}
+
+        if groups_dict is not None:
+            result = {key: {
+                'id': key,
+                'name': groups_dict[key],
+                'series_data': {}
+            } for key in groups_dict}
 
         if totals:
             result['totals'] = {
@@ -1863,7 +1866,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
                 # set it in stat
                 stat[metric_id] = metric_value
 
-    def get_response_dict(self, stats, totals, groups_dict, metrics, group_key):
+    def get_response_dict(self, stats, totals, groups_dict, metrics, group_key=None):
         series_groups = self.get_series_groups_dict(totals, groups_dict)
         goals = {}
 
@@ -1955,39 +1958,26 @@ class AdGroupDailyStats(BaseDailyStatsView):
         ))
 
 
-class AccountDailyStats(api_common.BaseApiView):
+class AccountDailyStats(BaseDailyStatsView):
     @statsd_helper.statsd_timer('dash.api', 'accounts_daily_stats_get')
     def get(self, request):
         # Permission check
         if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
             raise exc.MissingDataError()
 
-        start_date = request.GET.get('start_date')
-        end_date = request.GET.get('end_date')
+        metrics = request.GET.getlist('metrics')
+        accounts = models.Account.objects.get_for_user(request.user)
 
-        user = request.user
+        kwargs = {'account': accounts}
 
-        breakdown = ['date']
-        accounts = models.Account.objects.get_for_user(user)
-        totals_stats = reports.api.query(
-            get_stats_start_date(start_date),
-            get_stats_end_date(end_date),
-            breakdown,
-            ['date'],
-            account=accounts
-        )
+        stats = self.get_stats(request, kwargs)
 
-        return self.create_api_response({
-            'stats': self.get_dict(totals_stats)
-        })
-
-    def get_dict(self, stats):
-        sources_dict = {}
-        for stat in stats:
-            if 'source' in stat:
-                stat['source_name'] = sources_dict[stat['source']]
-
-        return stats
+        return self.create_api_response(self.get_response_dict(
+            stats,
+            True,
+            None,
+            metrics
+        ))
 
 
 class Account(api_common.BaseApiView):

@@ -8,7 +8,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     $scope.constants = constants;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
-    $scope.dailyStats = [];
     $scope.chartData = undefined;
     $scope.isChartShown = zemChartService.load('zemChart');
     $scope.chartMetricOptions = options.adGroupChartMetrics;
@@ -156,7 +155,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     $scope.getDailyStats = function () {
         api.dailyStats.list('ad_groups', $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, $scope.chartMetric1, $scope.chartMetric2).then(
             function (data) {
-                $scope.dailyStats = data.stats;
                 $scope.chartMetricOptions = options.adGroupChartMetrics.concat(Object.keys(data.goals).map(function (goalId) {
                     return {
                         name: data.goals[goalId].name,
