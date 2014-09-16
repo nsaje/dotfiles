@@ -16,6 +16,8 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
         } else {
             $scope.selectedCampaignIds.push(campaignId);
         }
+
+        $scope.columns[0].disabled = $scope.selectedCampaignIds.length >= 4;
     };
 
     $scope.selectedCampaignsChanged = function (row, checked) {
@@ -58,7 +60,8 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             totalRow: true,
             unselectable: true,
             order: false,
-            selectCallback: $scope.selectedCampaignsChanged
+            selectCallback: $scope.selectedCampaignsChanged,
+            disabled: false
         },
         {
             name: 'Name',

@@ -23,7 +23,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             $scope.selectedAdGroupIds.push(adGroupId);
         }
 
-        $scope.columns[0].disabled = $scope.selectedAdGroupIds.length === 4;
+        $scope.columns[0].disabled = $scope.selectedAdGroupIds.length >= 4;
     };
 
     $scope.selectedAdGroupsChanged = function (row, checked) {
