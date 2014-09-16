@@ -428,4 +428,4 @@ def clean_url(raw_url):
 
     split_url[3] = urllib.urlencode(sorted(cleaned_query_parameters, key=lambda x: x[0]))
 
-    return urlparse.urlunsplit(split_url), query_parameters
+    return urlparse.urlunsplit(split_url), dict(query_parameters)
