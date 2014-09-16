@@ -269,63 +269,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
-    function AdGroupDailyStats() {
-        function convertFromApi(data) {
-            data.date = parseInt(moment.utc(data.date).format('XSSS'));
-            data.sourceId = data.source_id;
-            data.sourceName = data.source_name;
-            return data;
-        }
-
-        this.list = function (adGroupId, startDate, endDate, sourceIds, totals) {
-            var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/daily_stats/';
-            var config = {
-                params: {}
-            };
-
-            if (startDate) {
-                config.params.start_date = startDate.format();
-            }
-
-            if (endDate) {
-                config.params.end_date = endDate.format();
-            }
-
-            if (sourceIds) {
-                config.params.source_ids = sourceIds;
-            }
-
-            if (totals) {
-                config.params.totals = totals;
-            }
-
-            $http.get(url, config).
-                success(function (response, status) {
-                    var stats, options;
-                    if (response && response.data && response.data.stats) {
-                        stats = response.data.stats;
-                        stats = response.data.stats.map(function (x) {
-                            return convertFromApi(x);
-                        });
-                    }
-                    if (response && response.data && response.data.options) {
-                        options = response.data.options;
-                    }
-                    deferred.resolve({
-                        stats: stats,
-                        options: options
-                    });
-                }).
-                error(function(data, status, headers, config) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
-    function CampaignDailyStats() {
+    function DailyStats() {
         function convertFromApi(group) {
             return {
                 id: group.id,
@@ -334,13 +278,12 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             };
         }
 
-        this.list = function (id, startDate, endDate, selectedIds, totals, metric1, metric2) {
+        this.list = function (modelName, id, startDate, endDate, selectedIds, totals, metrics) {
             var deferred = $q.defer();
-            var url = '/api/campaigns/' + id + '/daily_stats/';
+            var url = '/api/' + modelName + (id ? ('/' + id) : '') + '/daily_stats/';
             var config = {
-                params: { metrics: [] }
+                params: {}
             };
-            var metrics;
 
             if (startDate) {
                 config.params.start_date = startDate.format();
@@ -358,12 +301,8 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 config.params.totals = totals;
             }
 
-            if (metric1) {
-                config.params.metrics.push(metric1);
-            }
-
-            if (metric2) {
-                config.params.metrics.push(metric2);
+            if (metrics) {
+                config.params.metrics = metrics;
             }
 
             $http.get(url, config).
@@ -951,53 +890,6 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
-    function AccountDailyStats() {
-        function convertFromApi(data) {
-            var result = {
-                date: parseInt(moment.utc(data.date).format('XSSS'), 10),
-                clicks: data.clicks,
-                impressions: data.impressions,
-                ctr: data.ctr !== null ? parseFloat((data.ctr).toFixed(2)) : null,
-                cpc: data.cpc !== null ? parseFloat((data.cpc).toFixed(3)) : null,
-                cost: data.cost !== null ? parseFloat((data.cost).toFixed(2)) : null
-            };
-            return result;
-        }
-
-        this.list = function (startDate, endDate) {
-            var deferred = $q.defer();
-            var url = '/api/accounts/daily_stats/';
-            var config = {
-                params: {}
-            };
-
-            if (startDate) {
-                config.params.start_date = startDate.format();
-            }
-
-            if (endDate) {
-                config.params.end_date = endDate.format();
-            }
-
-            $http.get(url, config).
-                success(function (response, status) {
-                    var resource;
-                    if (response && response.data && response.data.stats) {
-                        resource = response.data.stats;
-                        resource = response.data.stats.map(function (x) {
-                            return convertFromApi(x);
-                        });
-                    }
-                    deferred.resolve(resource);
-                }).
-                error(function(data, status, headers, config) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
     function AccountAccountsTable() {
         this.get = function (page, size, startDate, endDate, order) {
             var deferred = $q.defer();
@@ -1202,7 +1094,6 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         campaignSync: new CampaignSync(),
         accountAgency: new AccountAgency(),
         account: new Account(),
-        accountDailyStats: new AccountDailyStats(),
         accountAccountsTable: new AccountAccountsTable(),
         accountCampaigns: new AccountCampaigns(),
         accountCampaignsTable: new AccountCampaignsTable(),
@@ -1210,8 +1101,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         checkAccountsSyncProgress: new CheckAccountsSyncProgress(),
         checkCampaignSyncProgress: new CheckCampaignSyncProgress(),
         checkSyncProgress: new CheckSyncProgress(),
-        adGroupDailyStats: new AdGroupDailyStats(),
-        campaignDailyStats: new CampaignDailyStats(),
+        dailyStats: new DailyStats(),
         actionLog: new ActionLog()
     };
 }]);

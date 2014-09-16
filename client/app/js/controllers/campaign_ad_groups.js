@@ -199,9 +199,8 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     });
 
     $scope.getDailyStats = function () {
-        api.campaignDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedAdGroupIds, $scope.selectedTotals, $scope.chartMetric1, $scope.chartMetric2).then(
+        api.dailyStats.list('campaigns', $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedAdGroupIds, $scope.selectedTotals, $scope.chartMetric1, $scope.chartMetric2).then(
             function (data) {
-                $scope.chartGoalMetrics = data.goals;
                 $scope.chartData = data.chartData;
             },
             function (data) {

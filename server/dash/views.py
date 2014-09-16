@@ -1894,112 +1894,8 @@ class AccountCampaignsTable(api_common.BaseApiView):
         return rows
 
 
-class AdGroupDailyStats(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_daily_stats_get')
-    def get(self, request, ad_group_id):
-        ad_group = get_ad_group(request.user, ad_group_id)
-
-        source_ids = request.GET.getlist('source_ids')
-        totals = request.GET.get('totals')
-
-        start_date = request.GET.get('start_date')
-        end_date = request.GET.get('end_date')
-
-        breakdown = ['date']
-
-        totals_stats = []
-        if totals:
-            totals_stats = reports.api.query(
-                get_stats_start_date(start_date),
-                get_stats_end_date(end_date),
-                breakdown,
-                ['date'],
-                ad_group=int(ad_group.id)
-            )
-
-        sources = None
-        breakdown_stats = []
-        extra_kwargs = {}
-
-        if source_ids:
-            ids = [int(x) for x in source_ids]
-            extra_kwargs['source_id'] = ids
-            breakdown.append('source')
-            sources = models.Source.objects.filter(pk__in=ids)
-
-            breakdown_stats = reports.api.query(
-                get_stats_start_date(start_date),
-                get_stats_end_date(end_date),
-                breakdown,
-                ['date'],
-                ad_group=int(ad_group.id),
-                **extra_kwargs
-            )
-
-        return self.create_api_response(self.get_response_dict(breakdown_stats + totals_stats, sources))
-
-    def get_response_dict(self, stats, sources):
-        sources_dict = {}
-        if sources:
-            sources_dict = {x.pk: x.name for x in sources}
-
-        options_dict = {}
-        results = []
-        for stat in stats:
-            result = {
-                'date': stat['date'],
-                'clicks': stat['clicks'],
-                'impressions': stat['impressions'],
-                'ctr': round(stat['ctr'], 2)
-                       if 'ctr' in stat and stat['ctr'] is not None else None,
-                'cpc': round(stat['cpc'], 3)
-                       if 'cpc' in stat and stat['cpc'] is not None else None,
-                'cost': round(stat['cost'], 2)
-                       if 'cost' in stat and stat['cost'] is not None else None
-            }
-
-            if 'source' in stat:
-                result['source_id'] = stat['source']
-                result['source_name'] = sources_dict[stat['source']]
-
-            if 'goals' in stat and stat['goals'] is not None:
-                for goal_name, goal_metrics in stat['goals'].items():
-                    for metric_key, metric_value in goal_metrics.items():
-                        metric_format = None
-                        if metric_key == 'conversion_rate':
-                            metric_value = round(metric_value, 2) if metric_value is not None else None
-                            metric_format = 'percent'
-                            metric_name = 'Conversion Rate'
-                        elif metric_key == 'conversions':
-                            metric_name = 'Conversions'
-                        else:
-                            # unknown metric
-                            continue
-
-                        metric_id = '{}_{}'.format(
-                            slugify.slugify(goal_name).encode('ascii', 'ignore'),
-                            metric_key
-                        )
-
-                        if metric_id not in options_dict:
-                            options_dict[metric_id] = {
-                                'name': '{}: {}'.format(goal_name, metric_name),
-                                'value': metric_id,
-                                'format': metric_format
-                            }
-
-                        result[metric_id] = metric_value
-
-            results.append(result)
-
-        return {
-            'stats': results,
-            'options': options_dict.values()
-        }
-
-
 class BaseDailyStatsView(api_common.BaseApiView):
-    def get_stats(self, request, totals_kwargs, selected_kwargs, group_key):
+    def get_stats(self, request, totals_kwargs, selected_kwargs=None, group_key=None):
         start_date = get_stats_start_date(request.GET.get('start_date'))
         end_date = get_stats_end_date(request.GET.get('end_date'))
 
@@ -2030,11 +1926,14 @@ class BaseDailyStatsView(api_common.BaseApiView):
         return breakdown_stats + totals_stats
 
     def get_series_groups_dict(self, totals, groups_dict):
-        result = {key: {
-            'id': key,
-            'name': groups_dict[key],
-            'series_data': {}
-        } for key in groups_dict}
+        result = {}
+
+        if groups_dict is not None:
+            result = {key: {
+                'id': key,
+                'name': groups_dict[key],
+                'series_data': {}
+            } for key in groups_dict}
 
         if totals:
             result['totals'] = {
@@ -2063,7 +1962,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
                 # set it in stat
                 stat[metric_id] = metric_value
 
-    def get_response_dict(self, stats, totals, groups_dict, metrics, group_key):
+    def get_response_dict(self, stats, totals, groups_dict, metrics, group_key=None):
         series_groups = self.get_series_groups_dict(totals, groups_dict)
         goals = {}
 
@@ -2122,39 +2021,59 @@ class CampaignDailyStats(BaseDailyStatsView):
         ))
 
 
-class AccountDailyStats(api_common.BaseApiView):
+class AdGroupDailyStats(BaseDailyStatsView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_daily_stats_get')
+    def get(self, request, ad_group_id):
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        metrics = request.GET.getlist('metrics')
+        selected_ids = request.GET.getlist('selected_ids')
+        totals = request.GET.get('totals')
+
+        totals_kwargs = None
+        selected_kwargs = None
+        sources = []
+
+        if totals:
+            totals_kwargs = {'ad_group': int(ad_group.id)}
+
+        if selected_ids:
+            ids = [int(x) for x in selected_ids]
+            selected_kwargs = {'ad_group': int(ad_group.id), 'source_id': ids}
+
+            sources = models.Source.objects.filter(pk__in=ids)
+
+        stats = self.get_stats(request, totals_kwargs, selected_kwargs, 'source')
+
+        return self.create_api_response(self.get_response_dict(
+            stats,
+            totals,
+            {source.id: source.name for source in sources},
+            metrics,
+            'source'
+        ))
+
+
+class AccountDailyStats(BaseDailyStatsView):
     @statsd_helper.statsd_timer('dash.api', 'accounts_daily_stats_get')
     def get(self, request):
         # Permission check
         if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
             raise exc.MissingDataError()
 
-        start_date = request.GET.get('start_date')
-        end_date = request.GET.get('end_date')
+        metrics = request.GET.getlist('metrics')
+        accounts = models.Account.objects.get_for_user(request.user)
 
-        user = request.user
+        kwargs = {'account': accounts}
 
-        breakdown = ['date']
-        accounts = models.Account.objects.get_for_user(user)
-        totals_stats = reports.api.query(
-            get_stats_start_date(start_date),
-            get_stats_end_date(end_date),
-            breakdown,
-            ['date'],
-            account=accounts
-        )
+        stats = self.get_stats(request, kwargs)
 
-        return self.create_api_response({
-            'stats': self.get_dict(totals_stats)
-        })
-
-    def get_dict(self, stats):
-        sources_dict = {}
-        for stat in stats:
-            if 'source' in stat:
-                stat['source_name'] = sources_dict[stat['source']]
-
-        return stats
+        return self.create_api_response(self.get_response_dict(
+            stats,
+            True,
+            None,
+            metrics
+        ))
 
 
 class Account(api_common.BaseApiView):
