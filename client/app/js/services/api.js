@@ -1020,6 +1020,53 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
+    function AccountCampaignsTable() {
+        function convertRowsFromApi(data) {
+            var result = data;
+            // result.name = {
+            //     text: result.name,
+            //     url: '/test'
+            // };
+            result.state_text = result.state === constants.adGroupSettingsState.ACTIVE ? 'Active' : 'Paused';
+            return result;
+        }
+
+        this.get = function (id, startDate, endDate, order) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + id + '/campaigns/table/';
+            var config = {
+                params: {}
+            };
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
+
+            if (order) {
+                config.params.order = order;
+            }
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    if (data && data.data) {
+                        // data.data.rows = data.data.rows.map(function (x) {
+                        //     return convertRowsFromApi(x);
+                        // });
+                        deferred.resolve(data.data);
+                    }
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function CampaignAdGroupsTable() {
         function convertRowsFromApi(data) {
             var result = data;
@@ -1138,6 +1185,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         accountDailyStats: new AccountDailyStats(),
         accountAccountsTable: new AccountAccountsTable(),
         accountCampaigns: new AccountCampaigns(),
+        accountCampaignsTable: new AccountCampaignsTable(),
         accountSync: new AccountSync(),
         checkAccountsSyncProgress: new CheckAccountsSyncProgress(),
         checkCampaignSyncProgress: new CheckCampaignSyncProgress(),
