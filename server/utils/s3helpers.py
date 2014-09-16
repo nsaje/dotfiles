@@ -1,4 +1,5 @@
 import boto
+from boto.s3.key import Key
 
 from django.conf import settings
 
@@ -17,7 +18,7 @@ class S3Helper(object):
 
     def put(self, key, contents):
         if self.initialized:
-            k = boto.s3.Key(self.bucket)
+            k = Key(self.bucket)
             k.key = key
 
             k.set_contents_from_string(contents)
