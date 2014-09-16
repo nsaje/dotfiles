@@ -50,6 +50,8 @@ def mailgun_gareps(request):
         report=csvreport
     )
 
+    report_email.store_to_s3()
+
     if not report_email.is_ad_group_consistent():
         logger.error('ERROR: ad group not consistent')
         return HttpResponse(status=406)

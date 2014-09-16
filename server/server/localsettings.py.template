@@ -66,6 +66,15 @@ PAGER_DUTY_URL = ''
 PAGER_DUTY_ADOPS_SERVICE_KEY = ''
 PAGER_DUTY_SYSOPS_SERVICE_KEY = ''
 
+# Sentry config
 RAVEN_CONFIG = {
     'dsn': '',
 }
+
+# Amazon AWS keys
+AWS_ACCESS_KEY_ID = ''
+AWS_SECRET_ACCESS_KEY = ''
+
+# S3 related settings
+S3_BUCKET = ''
+USE_S3 = False
