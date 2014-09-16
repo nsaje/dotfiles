@@ -24,6 +24,8 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         } else {
             $scope.selectedAdGroupIds.push(adGroupId);
         }
+
+        $scope.columns[0].disabled = $scope.selectedAdGroupIds.length === 4;
     };
 
     $scope.selectedAdGroupsChanged = function (row, checked) {
@@ -64,7 +66,8 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             totalRow: true,
             unselectable: true,
             order: false,
-            selectCallback: $scope.selectedAdGroupsChanged
+            selectCallback: $scope.selectedAdGroupsChanged,
+            disabled: false
         },
         {
             name: 'Name',
