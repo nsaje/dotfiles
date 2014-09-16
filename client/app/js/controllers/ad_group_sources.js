@@ -70,56 +70,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             help: 'The number of clicks divided by the number of impressions.'
         },
         {
-            name: 'Visits',
-            field: 'visits',
-            checked: true,
-            type: 'number',
-            help: 'The number of visits as reported by Google Analytics.'
-        },
-        {
-            name: 'Pageviews',
-            field: 'pageviews',
-            checked: true,
-            type: 'number',
-            help: 'The number of pageviews as reported by Google Analytics.'
-        },
-        {
-            name: '% New Users',
-            field: 'percent_new_users',
-            checked: false,
-            type: 'percent',
-            help: 'Percentage of visits made by new users, as reported by Google Analytics.'
-        },
-        {
-            name: 'Bounce Rate',
-            field: 'bounce_rate',
-            checked: false,
-            type: 'percent',
-            help: 'Bounce rate help goes here.'
-        },
-        {
-            name: 'PV/Visit',
-            field: 'pv_per_visit',
-            checked: false,
-            type: 'number',
-            fractionSize: 2,
-            help: 'Help, pageviews per visit.'
-        },
-        {
-            name: 'Avg. ToS',
-            field: 'avg_tos',
-            checked: false,
-            type: 'seconds',
-            help: 'Help, average time on site.'
-        },
-        {
-            name: 'Click Discrepancy',
-            field: 'click_discrepancy',
-            checked: false,
-            type: 'percent',
-            help: 'number of clicks minus number of visits.'
-        },
-        {
             name: 'Last OK Sync',
             field: 'last_sync',
             checked: false,
@@ -149,6 +99,84 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 checked: false,
                 type: 'link',
                 internal: $scope.isPermissionInternal('zemauth.supply_dash_link_view')
+            });
+        }
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            $scope.columns.splice($scope.columns.length - 1, 0, {
+                name: 'Visits',
+                field: 'visits',
+                checked: true,
+                type: 'number',
+                help: 'The number of visits as reported by Google Analytics.',
+                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+            });
+        }
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            $scope.columns.splice($scope.columns.length - 1, 0, {
+                name: 'Pageviews',
+                field: 'pageviews',
+                checked: true,
+                type: 'number',
+                help: 'The number of pageviews as reported by Google Analytics.',
+                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+            });
+        }
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            $scope.columns.splice($scope.columns.length - 1, 0, {
+                name: '% New Users',
+                field: 'percent_new_users',
+                checked: false,
+                type: 'percent',
+                help: 'Percentage of visits made by new users, as reported by Google Analytics.',
+                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+            });
+        }
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            $scope.columns.splice($scope.columns.length - 1, 0, {
+                name: 'Bounce Rate',
+                field: 'bounce_rate',
+                checked: false,
+                type: 'percent',
+                help: 'Bounce rate help goes here.',
+                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+            });
+        }
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            $scope.columns.splice($scope.columns.length - 1, 0, {
+                name: 'PV/Visit',
+                field: 'pv_per_visit',
+                checked: false,
+                type: 'number',
+                fractionSize: 2,
+                help: 'Help, pageviews per visit.',
+                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+            });
+        }
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            $scope.columns.splice($scope.columns.length - 1, 0, {
+                name: 'Avg. ToS',
+                field: 'avg_tos',
+                checked: false,
+                type: 'seconds',
+                help: 'Help, average time on site.',
+                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+            });
+        }
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            $scope.columns.splice($scope.columns.length - 1, 0, {
+                name: 'Click Discrepancy',
+                field: 'click_discrepancy',
+                checked: false,
+                type: 'percent',
+                help: 'Help, click discrepancy.',
+                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
             });
         }
 
@@ -262,30 +290,34 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             return false;
         };
 
-        for(var i = 0; i < rows.length; i++) {
-            for(var field in rows[i]) {
-                if(alreadyAdded(field)) {
-                    continue;
-                }
+        if($scope.hasPermission('zemauth.postclick_metrics')) {
+            for(var i = 0; i < rows.length; i++) {
+                for(var field in rows[i]) {
+                    if(alreadyAdded(field)) {
+                        continue;
+                    }
 
-                if(field.indexOf(': Conversions') != -1) {
-                    var col_descr = {
-                        'name': field.substr('goal__'.length),
-                        'field': field,
-                        'checked': false,
-                        'type': 'number',
-                        'help': 'Number of goal completions'
+                    if(field.indexOf(': Conversions') != -1) {
+                        var col_descr = {
+                            'name': field.substr('goal__'.length),
+                            'field': field,
+                            'checked': false,
+                            'type': 'number',
+                            'help': 'Number of goal completions',
+                            internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+                        }
+                        $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
+                    } else if(field.indexOf(': Conversion Rate') != -1) {
+                        var col_descr = {
+                            'name': field.substr('goal__'.length),
+                            'field': field,
+                            'checked': false,
+                            'type': 'percent',
+                            'help': 'Conversion rate help',
+                            internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+                        }
+                        $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
                     }
-                    $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
-                } else if(field.indexOf(': Conversion Rate') != -1) {
-                    var col_descr = {
-                        'name': field.substr('goal__'.length),
-                        'field': field,
-                        'checked': false,
-                        'type': 'percent',
-                        'help': 'Conversion rate help'
-                    }
-                    $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
                 }
             }
         }

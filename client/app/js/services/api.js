@@ -90,8 +90,8 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     function AdGroupSourcesTable() {
 
         function convertFromApi(data) {
-            for(var i = 0; i < data.rows.length; i++) {
-                var row = data.rows[i];
+
+            function convertRow(row) {
                 var converted_row = {}
                 for(var field in row) {
                     if(field.indexOf('goals') == '0') {
@@ -108,8 +108,15 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                         converted_row[field] = row[field];
                     }
                 }
-                data.rows[i] = converted_row;
+                return converted_row;
             }
+
+            for(var i = 0; i < data.rows.length; i++) {
+                var row = data.rows[i];
+                data.rows[i] = convertRow(row);
+            }
+            data.totals = convertRow(data.totals);
+            
             return data;
         };
 
