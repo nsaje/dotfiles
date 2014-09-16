@@ -79,7 +79,7 @@ def _get_error_message(data):
 
 @transaction.atomic
 def _process_zwei_response(action, data):
-    logger.info('Processing Action Response: %s, response: %s', action, data)
+    logger.info('Processing Action Response: %s', action)
 
     if action.state != actionlogconstants.ActionState.WAITING:
         logger.warning('Action not waiting for a response. Action: %s, response: %s', action, data)
