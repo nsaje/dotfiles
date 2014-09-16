@@ -425,23 +425,23 @@ class ApiTestCase(test.TestCase):
     def test_clean_url(self):
 
         url_normal = 'http://sd.domain.com/path/to?attr1=1&attr1=123i&attr2=#uff'
-        self.assertEqual(url_normal, api._clean_url(url_normal))
+        self.assertEqual(url_normal, api.clean_url(url_normal)[0])
 
         url_unsorted = 'http://sd.domain.com/path/to?attr1=1&attr2=&attr1=123i#uff'
         url_unsorted_cleaned = 'http://sd.domain.com/path/to?attr1=1&attr1=123i&attr2=#uff'
-        self.assertEqual(url_unsorted_cleaned, api._clean_url(url_unsorted))
+        self.assertEqual(url_unsorted_cleaned, api.clean_url(url_unsorted)[0])
 
         url_with_utm = 'http://sd.domain.com/path/to?attr1=1&utm_source=abc'
         url_with_utm_cleaned = 'http://sd.domain.com/path/to?attr1=1'
-        self.assertEqual(url_with_utm_cleaned, api._clean_url(url_with_utm))
+        self.assertEqual(url_with_utm_cleaned, api.clean_url(url_with_utm)[0])
 
         url_with_z1 = 'http://sd.domain.com/path/to?attr1=1&_z1_xyz=abc'
         url_with_z1_cleaned = 'http://sd.domain.com/path/to?attr1=1'
-        self.assertEqual(url_with_z1_cleaned, api._clean_url(url_with_z1))
+        self.assertEqual(url_with_z1_cleaned, api.clean_url(url_with_z1)[0])
 
         url_unsorted_with_z1_utm = 'http://sd.domain.com/path/to?attr2=2&attr1=1&_z1_xyz=abc&utm_source=abc#uff'
         url_unsorted_with_z1_utm_cleaned = 'http://sd.domain.com/path/to?attr1=1&attr2=2#uff'
-        self.assertEqual(url_unsorted_with_z1_utm_cleaned, api._clean_url(url_unsorted_with_z1_utm))
+        self.assertEqual(url_unsorted_with_z1_utm_cleaned, api.clean_url(url_unsorted_with_z1_utm)[0])
 
 
 class UpsertReportsTestCase(test.TestCase):
@@ -811,7 +811,7 @@ class ArticleReconciliationTestCase(test.TestCase):
         with self.assertRaises(exc.ArticleReconciliationException):
             api._reconcile_article(None, title, ad_group)
 
-        cleaned_url = api._clean_url(raw_url)
+        cleaned_url, _ = api.clean_url(raw_url)
         with self.assertRaises(ObjectDoesNotExist):
             article = dashmodels.Article.objects.get(url=cleaned_url, title=title, ad_group=ad_group)
 

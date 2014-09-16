@@ -102,7 +102,7 @@ def get_stats_end_date(end_time):
     return date.date()
 
 
-def generate_rows(dimensions, ad_group_id, start_date, end_date):
+def generate_rows(dimensions, ad_group_id, start_date, end_date, user):
     ordering = ['date'] if 'date' in dimensions else []
     data = filter_by_permissions(reports.api.query(
         start_date,
@@ -110,7 +110,7 @@ def generate_rows(dimensions, ad_group_id, start_date, end_date):
         dimensions,
         ordering,
         ad_group=int(ad_group_id)
-    ), request.user)
+    ), user)
 
     if 'source' in dimensions:
         sources = {source.id: source for source in models.Source.objects.all()}
@@ -1376,7 +1376,8 @@ class AdGroupAdsExport(api_common.BaseApiView):
             ['date', 'article'],
             ad_group.id,
             start_date,
-            end_date
+            end_date,
+            request.user
         )
 
         if request.GET.get('type') == 'excel':
@@ -1384,7 +1385,8 @@ class AdGroupAdsExport(api_common.BaseApiView):
                 ['date', 'source', 'article'],
                 ad_group_id,
                 start_date,
-                end_date
+                end_date,
+                request.user
             )
 
             return self.create_excel_response(ads_results, sources_results, filename)
@@ -1509,7 +1511,8 @@ class AdGroupSourcesExport(api_common.BaseApiView):
             ['date', 'source'],
             ad_group.id,
             start_date,
-            end_date
+            end_date,
+            request.user
         )
 
         if request.GET.get('type') == 'excel':
@@ -1517,7 +1520,8 @@ class AdGroupSourcesExport(api_common.BaseApiView):
                 ['date'],
                 ad_group.id,
                 start_date,
-                end_date
+                end_date,
+                request.user
             )
 
             return self.create_excel_response(

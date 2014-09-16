@@ -395,7 +395,7 @@ def _reconcile_article(raw_url, title, ad_group):
     if not raw_url:
         raise exc.ArticleReconciliationException('Missing article url.')
 
-    url = _clean_url(raw_url)
+    url, _ = clean_url(raw_url)
 
     try:
         return dashmodels.Article.objects.get(ad_group=ad_group, title=title, url=url)
@@ -414,7 +414,7 @@ def _reconcile_article(raw_url, title, ad_group):
         return dashmodels.Article.objects.get(ad_group=ad_group, url=url, title=title)
 
 
-def _clean_url(raw_url):
+def clean_url(raw_url):
     '''
     Removes all utm_* and z1_* params, then alphabetically order the remaining params
     '''
@@ -428,91 +428,4 @@ def _clean_url(raw_url):
 
     split_url[3] = urllib.urlencode(sorted(cleaned_query_parameters, key=lambda x: x[0]))
 
-    return urlparse.urlunsplit(split_url)
-
-
-def reapply_clean_url():
-    '''
-    Reapplies _clean_url function to already saved articles and merges duplicates.
-    '''
-    articles = dashmodels.Article.objects.all()
-    num_new_urls = 0
-    num_merged_articles = 0
-    num_merged_stats = 0
-
-    ad_group_articles_changed = collections.Counter()
-    ad_group_stats_changed = collections.Counter()
-
-    with transaction.atomic():
-        for article in articles:
-            old = article.url
-            new = _clean_url(old)
-
-            if old == new:
-                continue
-
-            article.url = new
-            num_new_urls += 1
-            ad_group_articles_changed[article.ad_group.id] += 1
-
-            try:
-                logger.info(
-                    'Saving article {id}, old url: {old_url} with new url: {url}'.format(
-                        id=article.id,
-                        old_url=old,
-                        url=article.url
-                    )
-                )
-                with transaction.atomic():
-                    article.save()
-            except IntegrityError:
-                num_merged_articles += 1
-                existing_article = dashmodels.Article.objects.get(
-                    title=article.title,
-                    url=article.url,
-                    ad_group=article.ad_group)
-                logger.info(
-                    'Integrity error on saving article {id}. '
-                    'Merging with already existing article {existing_id}.'.format(
-                        id=article.id,
-                        existing_id=existing_article.id,
-                    )
-                )
-
-                stats = models.ArticleStats.objects.filter(article=article)
-                for stat in stats:
-                    ad_group_stats_changed[stat.ad_group.id] += 1
-                    try:
-                        stat.article = existing_article
-                        with transaction.atomic():
-                            stat.save()
-                    except IntegrityError:
-                        num_merged_stats += 1
-                        existing_stat = models.ArticleStats.objects.get(
-                            datetime=stat.datetime,
-                            ad_group=stat.ad_group,
-                            article=existing_article,
-                            source=stat.source
-                        )
-                        logger.info(
-                            'Integrity error on saving stat {id}. '
-                            'Merging with already existing stat {existing_id}.'.format(
-                                id=stat.id,
-                                existing_id=existing_stat.id,
-                            )
-                        )
-
-                        existing_stat.impressions += stat.impressions
-                        existing_stat.clicks += stat.clicks
-                        existing_stat.cost_cc += stat.cost_cc
-                        existing_stat.save()
-
-                        stat.delete()
-
-                article.delete()
-
-    logger.info("AD GROUP ARTICLE CHANGES: {}".format(ad_group_articles_changed))
-    logger.info("AD GROUP STAT CHANGES: {}".format(ad_group_stats_changed))
-    logger.info("ARTICLES WITH NEW URLS: {}".format(num_new_urls))
-    logger.info("MERGED ARTICLES: {}".format(num_merged_articles))
-    logger.info("MERGED STATS: {}".format(num_merged_stats))
+    return urlparse.urlunsplit(split_url), query_parameters

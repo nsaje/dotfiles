@@ -154,10 +154,8 @@ class ReportEmail(object):
 
         for entry in self.report.get_entries():
             url = LandingPageUrl(entry['Landing Page'])
-            try:
-                source = resolve_source(url.source_param)
-                if source is None: raise
-            except:
+            source = resolve_source(url.source_param)
+            if source is None:
                 logger.error('ERROR: Cannot resolve source for (ad_group={ad_group}, sender={sender},\
 recipient={recipient}, subject={subject}, maildate={maildate}, \
 landing_page_url={landing_page_url})'.format(
@@ -169,10 +167,9 @@ landing_page_url={landing_page_url})'.format(
                     landing_page_url=url.raw_url
                  ))
                 continue
-            try:
-                article = resolve_article(url.clean_url, url.ad_group_id, self.report.get_date(), source)
-                if article is None: raise
-            except:
+            
+            article = resolve_article(url.clean_url, url.ad_group_id, self.report.get_date(), source)
+            if article is None:
                 logger.error('ERROR: Cannot resolve article for (ad_group={ad_group}, sender={sender},\
 recipient={recipient}, subject={subject}, maildate={maildate}, \
 landing_page_url={landing_page_url})'.format(
@@ -184,6 +181,7 @@ landing_page_url={landing_page_url})'.format(
                     landing_page_url=url.raw_url
                  ))
                 continue
+
             key = (self.report.get_date(), article.id, url.ad_group_id, source.id)
             
             data = stats.get(key, self.get_initial_data(goal_fields))
