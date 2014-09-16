@@ -88,6 +88,13 @@ var options = {
         {name: 'Spend', value: constants.chartMetric.COST},
         {name: 'Avg. CPC', value: constants.chartMetric.CPC}
     ],
+    accountChartMetrics: [
+        {name: 'Clicks', value: constants.chartMetric.CLICKS},
+        {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
+        {name: 'CTR', value: constants.chartMetric.CTR},
+        {name: 'Spend', value: constants.chartMetric.COST},
+        {name: 'Avg. CPC', value: constants.chartMetric.CPC}
+    ],
     allAccountsChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
         {name: 'Spend', value: constants.chartMetric.COST},

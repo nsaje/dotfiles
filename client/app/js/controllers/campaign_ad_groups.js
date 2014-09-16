@@ -8,7 +8,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
     $scope.chartData = undefined;
     $scope.chartMetricOptions = options.campaignChartMetrics;
-    $scope.chartGoalMetrics = null;
     $scope.selectedAdGroupIds = [];
     $scope.selectedTotals = true;
     $scope.rows = null;
@@ -372,6 +371,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     });
 
     $scope.$watch('dateRange', function (newValue, oldValue) {
+        $scope.getDailyStats();
         $scope.getTableData();
     });
 

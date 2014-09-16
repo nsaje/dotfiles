@@ -1,8 +1,13 @@
 /*globals oneApp,constants,moment*/
-oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'localStorageService', 'zemCustomTableColsService', function ($location, $scope, $state, $timeout, api, localStorageService, zemCustomTableColsService) {
+oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'localStorageService', 'zemCustomTableColsService', 'zemChartService', function ($location, $scope, $state, $timeout, api, localStorageService, zemCustomTableColsService, zemChartService) {
     $scope.getTableDataRequestInProgress = false;
     $scope.addCampaignRequestInProgress = false;
     $scope.isSyncInProgress = false;
+    $scope.isChartShown = zemChartService.load('zemChart');
+    $scope.chartMetric1 = constants.chartMetric.CLICKS;
+    $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
+    $scope.chartData = undefined;
+    $scope.chartMetricOptions = options.accountChartMetrics;
     $scope.selectedCampaignIds = [];
     $scope.selectedTotals = true;
     $scope.rows = null;
@@ -44,10 +49,11 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
         // $scope.setAdGroupData('sourceIds', $scope.selectedSourceIds);
         // $scope.setAdGroupData('sourceTotals', $scope.selectedSourceTotals);
 
-        /* $scope.getDailyStats(); */
+        $scope.getDailyStats();
     };
 
     $scope.selectRows = function () {
+        $scope.totalRow.checked = $scope.selectedTotals;
         $scope.rows.forEach(function (x) {
             x.checked = $scope.selectedCampaignIds.indexOf(x.campaign.toString()) > -1;
         });
@@ -177,6 +183,45 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
         });
     };
 
+    $scope.$watch('chartMetric1', function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            $scope.getDailyStats();
+            $location.search('chart_metric1', $scope.chartMetric1);
+            localStorageService.set('accountCampaigns.chartMetric1', $scope.chartMetric1);
+        }
+    });
+
+    $scope.$watch('chartMetric2', function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            $scope.getDailyStats();
+            $location.search('chart_metric2', $scope.chartMetric2);
+            localStorageService.set('accountCampaigns.chartMetric2', $scope.chartMetric2);
+        }
+    });
+
+    $scope.getDailyStats = function () {
+        api.dailyStats.list('accounts', $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedCampaignIds, $scope.selectedTotals, [$scope.chartMetric1, $scope.chartMetric2]).then(
+            function (data) {
+                $scope.chartData = data.chartData;
+            },
+            function (data) {
+                // error
+                return;
+            }
+        );
+    };
+
+    $scope.selectedCampaignRemoved = function (id) {
+        if (id !== 'totals') {
+            $scope.updateSelectedCampaigns(id);
+        } else {
+            $scope.selectedTotals = false;
+        }
+
+        $scope.selectRows();
+        $scope.updateSelectedRowsData();
+    };
+
     $scope.getTableData = function () {
         $scope.getTableDataRequestInProgress = true;
 
@@ -216,7 +261,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
         $scope.order = order;
 
         $location.search('order', $scope.order);
-        localStorageService.set('campaignAdGroups.order', $scope.order);
+        localStorageService.set('accountCampaigns.order', $scope.order);
         $scope.getTableData();
     };
 
@@ -236,7 +281,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
                             // we found out that the sync is no longer in progress
                             // time to reload the data
                             $scope.getTableData();
-                            /* $scope.getDailyStats(); */
+                            $scope.getDailyStats();
                         }
                     },
                     function(data) {
@@ -263,11 +308,28 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     $scope.init = function() {
-        var order = $location.search().order || localStorageService.get('campaignAdGroups.order') || $scope.order;
+        var chartMetric1 = $location.search().chart_metric1 || localStorageService.get('accountCampaigns.chartMetric1') || $scope.chartMetric1;
+        var chartMetric2 = $location.search().chart_metric2 || localStorageService.get('accountCampaigns.chartMetric2') || $scope.chartMetric2;
+        var chartHidden = $location.search().chart_hidden;
+        var order = $location.search().order || localStorageService.get('accountCampaigns.order') || $scope.order;
         var tableChanged = false;
 
         var campaignIds = $location.search().campaign_ids;
         var campaignTotals = $location.search().campaign_totals;
+
+        if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
+            $scope.chartMetric1 = chartMetric1;
+            $location.search('chart_metric1', chartMetric1);
+        }
+
+        if (chartMetric2 !== undefined && $scope.chartMetric2 !== chartMetric2) {
+            $scope.chartMetric2 = chartMetric2;
+            $location.search('chart_metric2', chartMetric2);
+        }
+
+        if (chartHidden) {
+            $scope.isChartShown = false;
+        }
 
         if (campaignIds) {
             campaignIds.split(',').forEach(function (id) {
@@ -296,6 +358,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
         initColumns();
 
         pollSyncStatus();
+        $scope.getDailyStats();
     };
 
     $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
@@ -306,6 +369,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
 
     $scope.$watch('dateRange', function (newValue, oldValue) {
         $scope.getTableData();
+        $scope.getDailyStats();
     });
 
     $scope.init();

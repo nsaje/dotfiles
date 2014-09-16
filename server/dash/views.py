@@ -1988,6 +1988,39 @@ class BaseDailyStatsView(api_common.BaseApiView):
         }
 
 
+class AccountDailyStats(BaseDailyStatsView):
+    @statsd_helper.statsd_timer('dash.api', 'account_daily_stats_get')
+    def get(self, request, account_id):
+        account = get_account(request.user, account_id)
+
+        metrics = request.GET.getlist('metrics')
+        selected_ids = request.GET.getlist('selected_ids')
+        totals = request.GET.get('totals')
+
+        totals_kwargs = None
+        selected_kwargs = None
+        campaigns = []
+
+        if totals:
+            totals_kwargs = {'account': int(account.id)}
+
+        if selected_ids:
+            ids = [int(x) for x in selected_ids]
+            selected_kwargs = {'account': int(account.id), 'campaign': ids}
+
+            campaigns = models.Campaign.objects.filter(pk__in=ids)
+
+        stats = self.get_stats(request, totals_kwargs, selected_kwargs, 'campaign')
+
+        return self.create_api_response(self.get_response_dict(
+            stats,
+            totals,
+            {campaign.id: campaign.name for campaign in campaigns},
+            metrics,
+            'campaign'
+        ))
+
+
 class CampaignDailyStats(BaseDailyStatsView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_daily_stats_get')
     def get(self, request, campaign_id):
@@ -2054,7 +2087,7 @@ class AdGroupDailyStats(BaseDailyStatsView):
         ))
 
 
-class AccountDailyStats(BaseDailyStatsView):
+class AccountsDailyStats(BaseDailyStatsView):
     @statsd_helper.statsd_timer('dash.api', 'accounts_daily_stats_get')
     def get(self, request):
         # Permission check

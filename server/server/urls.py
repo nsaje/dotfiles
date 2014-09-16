@@ -96,8 +96,12 @@ urlpatterns += patterns(
         login_required(dash.views.CampaignDailyStats.as_view()),
     ),
     url(
-        r'^api/accounts/daily_stats/',
+        r'^api/accounts/(?P<account_id>\d+)/daily_stats/',
         login_required(dash.views.AccountDailyStats.as_view()),
+    ),
+    url(
+        r'^api/all_accounts/daily_stats/',
+        login_required(dash.views.AccountsDailyStats.as_view()),
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/campaigns/table/',
