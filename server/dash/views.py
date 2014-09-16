@@ -104,13 +104,13 @@ def get_stats_end_date(end_time):
 
 def generate_rows(dimensions, ad_group_id, start_date, end_date):
     ordering = ['date'] if 'date' in dimensions else []
-    data = reports.api.query(
+    data = filter_by_permissions(reports.api.query(
         start_date,
         end_date,
         dimensions,
         ordering,
         ad_group=int(ad_group_id)
-    )
+    ), request.user)
 
     if 'source' in dimensions:
         sources = {source.id: source for source in models.Source.objects.all()}
@@ -271,6 +271,32 @@ def create_name(objects, name):
             name += ' {}'.format(num)
 
     return name
+
+
+def filter_by_permissions(result, user):
+    '''
+    filters reports such that the user will only get fields that he is allowed to see
+    '''
+    TRAFFIC_FIELDS = [
+        'clicks', 'impressions', 'cost', 'cpc', 'ctr', 'article', 'title',
+        'url', 'campaign', 'account', 'source', 'date',
+    ]
+    POSTCLICK_FIELDS = [
+        'visits', 'percent_new_users', 'pv_per_visit', 'avg_tos',
+        'bounce_rate', 'goals', 'click_discrepancy', 'pageviews',
+    ]
+    def filter_row(row):
+        filtered_row = {}
+        for field in TRAFFIC_FIELDS:
+            if field in row: filtered_row[field] = row[field]
+        if user.has_perm('zemauth.postclick_metrics'):
+            for field in POSTCLICK_FIELDS:
+                if field in row: filtered_row[field] = row[field]
+        return filtered_row
+    if isinstance(result, dict):
+        return filter_row(result)
+    else:
+        return [filter_row(row) for row in result]
 
 
 @statsd_helper.statsd_timer('dash', 'index')
@@ -1006,12 +1032,12 @@ class AdGroupSourcesTable(api_common.BaseApiView):
         start_date = get_stats_start_date(request.GET.get('start_date'))
         end_date = get_stats_end_date(request.GET.get('end_date'))
 
-        sources_data = reports.api.query(
+        sources_data = filter_by_permissions(reports.api.query(
             start_date,
             end_date,
             ['source'],
             ad_group=int(ad_group.id)
-        )
+        ), request.user)
 
         sources = self.get_active_ad_group_sources(ad_group)
         source_settings = models.AdGroupSourceSettings.get_current_settings(
@@ -1024,11 +1050,11 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             if yesterday_cost:
                 yesterday_total_cost = sum(yesterday_cost.values())
 
-        totals_data = reports.api.query(
+        totals_data = filter_by_permissions(reports.api.query(
             start_date,
             end_date,
             ad_group=int(ad_group.id)
-        )
+        ), request.user)
 
         last_success_actions = get_last_successful_source_sync_dates(ad_group)
 
@@ -1080,13 +1106,13 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             'ctr': totals_data['ctr'],
             'yesterday_cost': yesterday_cost,
 
-            'visits': totals_data['visits'],
-            'pageviews': totals_data['pageviews'],
-            'percent_new_users': totals_data['percent_new_users'],
-            'bounce_rate': totals_data['bounce_rate'],
-            'pv_per_visit': totals_data['pv_per_visit'],
-            'avg_tos': totals_data['avg_tos'],
-            'click_discrepancy': totals_data['click_discrepancy'],
+            'visits': totals_data.get('visits'),
+            'pageviews': totals_data.get('pageviews'),
+            'percent_new_users': totals_data.get('percent_new_users'),
+            'bounce_rate': totals_data.get('bounce_rate'),
+            'pv_per_visit': totals_data.get('pv_per_visit'),
+            'avg_tos': totals_data.get('avg_tos'),
+            'click_discrepancy': totals_data.get('click_discrepancy'),
 
             'goals': totals_data.get('goals', {})
         }
@@ -1191,23 +1217,23 @@ class AccountsAccountsTable(api_common.BaseApiView):
         if page:
             page = int(page)
 
-        accounts_data = reports.api.query(
+        accounts_data = filter_by_permissions(reports.api.query(
             get_stats_start_date(request.GET.get('start_date')),
             get_stats_end_date(request.GET.get('end_date')),
             ['account'],
             account=accounts
-        )
+        ), request.user)
 
         ad_groups_settings = models.AdGroupSettings.objects.\
             distinct('ad_group').\
             filter(ad_group__campaign__account__in=[x.pk for x in accounts]).\
             order_by('ad_group', '-created_dt')
 
-        totals_data = reports.api.query(
+        totals_data = filter_by_permissions(reports.api.query(
             get_stats_start_date(request.GET.get('start_date')),
             get_stats_end_date(request.GET.get('end_date')),
             account=accounts
-        )
+        ), request.user)
 
         last_success_actions = {}
         for account in accounts:
@@ -1667,19 +1693,19 @@ class AdGroupAdsTable(api_common.BaseApiView):
 
         size = max(min(int(size or 5), 50), 1)
 
-        result = reports.api.query(
+        result = filter_by_permissions(reports.api.query(
             start_date=start_date,
             end_date=end_date,
             breakdown=['article'],
             order=[order],
             ad_group=ad_group.id
-        )
+        ), request.user)
 
         result_pg, current_page, num_pages, count, start_index, end_index = reports.api.paginate(result, page, size)
 
         rows = result_pg
 
-        totals_data = reports.api.query(start_date, end_date, ad_group=int(ad_group.id))
+        totals_data = filter_by_permissions(reports.api.query(start_date, end_date, ad_group=int(ad_group.id)), request.user)
 
         last_sync = actionlog.sync.AdGroupSync(ad_group).get_latest_success(
             recompute=False)
@@ -1700,10 +1726,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
                 'startIndex': start_index,
                 'endIndex': end_index,
                 'size': size
-            },
-            'incomplete_traffic_metrics': True,
-            'incomplete_postclick_metrics': True,
-            'incomplete_conversion_metrics': True,
+            }
         })
 
 
@@ -1722,13 +1745,13 @@ class AdGroupDailyStats(api_common.BaseApiView):
 
         totals_stats = []
         if totals:
-            totals_stats = reports.api.query(
+            totals_stats = filter_by_permissions(reports.api.query(
                 get_stats_start_date(start_date),
                 get_stats_end_date(end_date),
                 breakdown,
                 ['date'],
                 ad_group=int(ad_group.id)
-            )
+            ), request.user)
 
         sources = None
         breakdown_stats = []
@@ -1740,14 +1763,14 @@ class AdGroupDailyStats(api_common.BaseApiView):
             breakdown.append('source')
             sources = models.Source.objects.filter(pk__in=ids)
 
-            breakdown_stats = reports.api.query(
+            breakdown_stats = filter_by_permissions(reports.api.query(
                 get_stats_start_date(start_date),
                 get_stats_end_date(end_date),
                 breakdown,
                 ['date'],
                 ad_group=int(ad_group.id),
                 **extra_kwargs
-            )
+            ), request.user)
 
         return self.create_api_response(self.get_response_dict(breakdown_stats + totals_stats, sources))
 
@@ -1839,13 +1862,13 @@ class AccountDailyStats(api_common.BaseApiView):
 
         breakdown = ['date']
         accounts = models.Account.objects.get_for_user(user)
-        totals_stats = reports.api.query(
+        totals_stats = filter_by_permissions(reports.api.query(
             get_stats_start_date(start_date),
             get_stats_end_date(end_date),
             breakdown,
             ['date'],
             account=accounts
-        )
+        ), request.user)
 
         return self.create_api_response({
             'stats': self.get_dict(totals_stats)
