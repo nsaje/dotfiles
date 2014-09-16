@@ -28,6 +28,8 @@ EMAIL_HOST_PASSWORD = ''
 SEND_AD_GROUP_SETTINGS_CHANGE_MAIL = False
 AD_GROUP_SETTINGS_CHANGE_FROM_EMAIL = 'help-test@zemanta.com'
 
+MAILGUN_API_KEY = ''
+
 # Path to log file
 LOG_FILE = '/path/to/log.log'
 
