@@ -56,7 +56,7 @@ def get_ad_group(user, ad_group_id, select_related=False):
             filter(id=int(ad_group_id))
 
         if select_related:
-            ad_group = ad_group.select_related('campaign__partner')
+            ad_group = ad_group.select_related('campaign__account')
 
         return ad_group.get()
     except models.AdGroup.DoesNotExist:
@@ -71,10 +71,13 @@ def get_campaign(user, campaign_id):
         raise exc.MissingDataError('Campaign does not exist')
 
 
-def get_account(user, account_id):
+def get_account(user, account_id, select_related=False):
     try:
-        return models.Account.objects.get_for_user(user).\
-            filter(id=int(account_id)).get()
+        account = models.Account.objects.get_for_user(user)
+        if select_related:
+            account = account.select_related('campaign_set')
+
+        return account.filter(id=int(account_id)).get()
     except models.Account.DoesNotExist:
         raise exc.MissingDataError('Account does not exist')
 
@@ -1764,36 +1767,110 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
 class AccountCampaignsTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'account_campaigns_table_get')
     def get(self, request, account_id):
-        account = get_account(request.user, account_id)
+        user = request.user
+
+        campaigns = models.Campaign.objects.get_for_user(user).\
+            filter(account=account_id)
 
         start_date = get_stats_start_date(request.GET.get('start_date'))
         end_date = get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-clicks'
 
-        data = reports.api.query(
+        campaign_ids = [x.pk for x in campaigns]
+        stats = reports.api.query(
             start_date=start_date,
             end_date=end_date,
             breakdown=['campaign'],
             order=[order],
-            campaign=account.pk
+            campaign=campaign_ids
         )
 
-        totals_data = reports.api.query(start_date, end_date, account=account.pk)
+        totals_stats = reports.api.query(start_date, end_date, campaign=campaign_ids)
 
-        last_sync = actionlog.sync.AccountSync(account).get_latest_success(
+        ad_groups_settings = models.AdGroupSettings.objects.\
+            distinct('ad_group').\
+            filter(ad_group__campaign__in=campaigns).\
+            order_by('ad_group', '-created_dt')
+
+        last_success_actions = {}
+        for campaign in campaigns:
+            campaign_sync = actionlog.sync.CampaignSync(campaign)
+
+            if not len(list(campaign_sync.get_components())):
+                continue
+
+            last_success_actions[campaign.pk] = campaign_sync.get_latest_success(
+                recompute=False)
+
+        last_sync = actionlog.sync.CampaignSync(campaigns).get_latest_success(
             recompute=False)
         if last_sync:
             last_sync = pytz.utc.localize(last_sync)
 
         return self.create_api_response({
-            'rows': data,
-            'totals': totals_data,
+            'rows': self.get_rows(
+                campaigns,
+                ad_groups_settings,
+                stats,
+                last_success_actions,
+                order
+            ),
+            'totals': totals_stats,
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(
-                accounts=[account]),
+                campaigns=campaigns),
             'order': order,
         })
+
+    def get_rows(self, campaigns, ad_groups_settings, stats, last_actions, order):
+        rows = []
+        for campaign in campaigns:
+            # If at least one ad group is active, then the campaign is considered
+            # active.
+            state = constants.AdGroupSettingsState.INACTIVE
+            for ad_group_settings in ad_groups_settings:
+                if ad_group_settings.ad_group.campaign.pk == campaign.pk and \
+                        ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE:
+                    state = constants.AdGroupSettingsState.ACTIVE
+                    break
+
+            campaign_stat = {}
+            for stat in stats:
+                if stat['campaign'] == campaign.pk:
+                    campaign_stat = stat
+                    break
+
+            last_sync = last_actions.get(campaign.pk)
+            if last_sync:
+                last_sync = pytz.utc.localize(last_sync)
+
+            row = {
+                'campaign': str(campaign.pk),
+                'name': campaign.name,
+                'state': state,
+                'last_sync': last_sync
+            }
+            row.update(campaign_stat)
+            rows.append(row)
+
+        if order:
+            reverse = False
+            if order.startswith('-'):
+                reverse = True
+                order = order[1:]
+
+            # Sort should always put Nones at the end
+            def _sort(item):
+                value = item.get(order)
+                if order == 'last_sync' and not value:
+                    value = datetime.datetime(datetime.MINYEAR, 1, 1)
+
+                return (item.get(order) is None or reverse, value)
+
+            rows = sorted(rows, key=_sort, reverse=reverse)
+
+        return rows
 
 
 class AdGroupDailyStats(api_common.BaseApiView):
