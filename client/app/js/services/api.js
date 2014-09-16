@@ -268,13 +268,12 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             };
         }
 
-        this.list = function (modelName, id, startDate, endDate, selectedIds, totals, metric1, metric2) {
+        this.list = function (modelName, id, startDate, endDate, selectedIds, totals, metrics) {
             var deferred = $q.defer();
             var url = '/api/' + modelName + (id ? ('/' + id) : '') + '/daily_stats/';
             var config = {
-                params: { metrics: [] }
+                params: {}
             };
-            var metrics;
 
             if (startDate) {
                 config.params.start_date = startDate.format();
@@ -292,12 +291,8 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 config.params.totals = totals;
             }
 
-            if (metric1) {
-                config.params.metrics.push(metric1);
-            }
-
-            if (metric2) {
-                config.params.metrics.push(metric2);
+            if (metrics) {
+                config.params.metrics = metrics;
             }
 
             $http.get(url, config).

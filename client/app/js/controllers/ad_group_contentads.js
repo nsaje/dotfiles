@@ -10,6 +10,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     $scope.chartData = undefined;
     $scope.isChartShown = zemChartService.load('zemChart');
     $scope.chartMetricOptions = options.adGroupChartMetrics;
+    $scope.chartGoalMetrics = null;
     $scope.chartBtnTitle = 'Hide chart';
     $scope.pagination = {
         currentPage: 1,
@@ -120,16 +121,48 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         $scope.getTableData();
     };
 
+    var getDailyStatsMetrics = function () {
+        var metrics = [$scope.chartMetric1, $scope.chartMetric2];
+
+        var values = options.adGroupChartMetrics.map(function (option) {
+            return option.value;
+        });
+
+        if (values.indexOf($scope.chartMetric1) === -1) {
+            metrics.push(constants.chartMetric.CLICKS);
+        }
+
+        if (values.indexOf($scope.chartMetric2) === -1) {
+            metrics.push(constants.chartMetric.IMPRESSIONS);
+        }
+
+        return metrics;
+    };
+
     $scope.getDailyStats = function () {
-        api.dailyStats.list('ad_groups', $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true, $scope.chartMetric1, $scope.chartMetric2).then(
+        api.dailyStats.list('ad_groups', $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true, getDailyStatsMetrics()).then(
             function (data) {
                 $scope.chartMetricOptions = options.adGroupChartMetrics.concat(Object.keys(data.goals).map(function (goalId) {
                     return {
                         name: data.goals[goalId].name,
-                        id: goalId
+                        value: goalId
                     };
                 }));
+
+                // Select default metrics if selected metrics are not defined
+                var values = $scope.chartMetricOptions.map(function (option) {
+                    return option.value;
+                });
+
+                if (values.indexOf($scope.chartMetric1) === -1) {
+                    $scope.chartMetric1 = constants.chartMetric.CLICKS;
+                }
+                if (values.indexOf($scope.chartMetric2) === -1) {
+                    $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
+                }
+
                 $scope.chartData = data.chartData;
+                $scope.chartGoalMetrics = data.goals;
             },
             function (data) {
                 // error
@@ -144,19 +177,42 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         $location.search('chart_hidden', !$scope.isChartShown ? '1' : null);
     };
 
+    var hasMetricData = function (metric) {
+        var hasData = false;
+        $scope.chartData.forEach(function (group) {
+            if (group.seriesData[metric] !== undefined) {
+                hasData = true;
+            }
+        });
+
+        return hasData;
+    };
+
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            $scope.getDailyStats();
             $location.search('chart_metric1', $scope.chartMetric1);
-            localStorageService.set('adGroupContentAds.chartMetric1', $scope.chartMetric1);
+
+            if (!hasMetricData($scope.chartMetric1)) {
+                localStorageService.set('adGroupContentAds.chartMetric1', $scope.chartMetric1);
+                $scope.getDailyStats();
+            } else {
+                // create a copy to trigger watch
+                $scope.chartData = angular.copy($scope.chartData);
+            }
         }
     });
 
     $scope.$watch('chartMetric2', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            $scope.getDailyStats();
             $location.search('chart_metric2', $scope.chartMetric2);
-            localStorageService.set('adGroupContentAds.chartMetric2', $scope.chartMetric2);
+
+            if (!hasMetricData($scope.chartMetric2)) {
+                localStorageService.set('adGroupContentAds.chartMetric2', $scope.chartMetric2);
+                $scope.getDailyStats();
+            } else {
+                // create a copy to trigger watch
+                $scope.chartData = angular.copy($scope.chartData);
+            }
         }
     });
 
