@@ -14,7 +14,7 @@ import utils.s3helpers
 
 logger = logging.getLogger(__name__)
 
-S3_REPORT_KEY_FORMAT = 'zemantaone/conversionsreport/{sender}/{date}/{filename}'
+S3_REPORT_KEY_FORMAT = 'zemantaone/conversionreports/{sender}/{date}/{filename}'
 
 
 class RawPostclickStats(models.Model):
