@@ -16,6 +16,8 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.order = '-cost';
 
     $scope.updateSelectedAdGroups = function (adGroupId) {
+        adGroupId = parseInt(adGroupId);
+
         var i = $scope.selectedAdGroupIds.indexOf(adGroupId);
         if (i > -1) {
             $scope.selectedAdGroupIds.splice(i, 1);
@@ -43,13 +45,11 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         $location.search('ad_group_ids', $scope.selectedAdGroupIds.join(','));
         $location.search('ad_group_totals', $scope.selectedTotals ? 1 : null);
 
-        // $scope.setAdGroupData('sourceIds', $scope.selectedSourceIds);
-        // $scope.setAdGroupData('sourceTotals', $scope.selectedSourceTotals);
-
         $scope.getDailyStats();
     };
 
     $scope.selectRows = function () {
+        $scope.totalRow.checked = $scope.selectedTotals;
         $scope.rows.forEach(function (x) {
             x.checked = $scope.selectedAdGroupIds.indexOf(x.ad_group) > -1;
         });
@@ -196,7 +196,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     });
 
     $scope.getDailyStats = function () {
-        api.dailyStats.list('campaigns', $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedAdGroupIds, $scope.selectedTotals, $scope.chartMetric1, $scope.chartMetric2).then(
+        api.dailyStats.list('campaigns', $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedAdGroupIds, $scope.selectedTotals, [$scope.chartMetric1, $scope.chartMetric2]).then(
             function (data) {
                 $scope.chartData = data.chartData;
             },
@@ -205,6 +205,17 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 return;
             }
         );
+    };
+
+    $scope.selectedAdGroupRemoved = function (id) {
+        if (id !== 'totals') {
+            $scope.updateSelectedAdGroups(id);
+        } else {
+            $scope.selectedTotals = false;
+        }
+
+        $scope.selectRows();
+        $scope.updateSelectedRowsData();
     };
 
     $scope.getTableData = function () {
@@ -319,7 +330,9 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         }
 
         if (adGroupIds) {
-            $scope.selectedAdGroupIds = adGroupIds.split(',');
+            adGroupIds.split(',').forEach(function (id) {
+                 $scope.updateSelectedAdGroups(id);
+            });
             $location.search('ad_group_ids', adGroupIds);
 
             if ($scope.rows) {
