@@ -241,11 +241,21 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function CheckCampaignSyncProgress() {
-        this.get = function(id) {
-            var deferred = $q.defer(id);
-            var url = '/api/campaigns/' + id + '/check_sync_progress/';
+        this.get = function(campaignId, accountId) {
+            var deferred = $q.defer();
+            var url = '/api/campaigns/check_sync_progress/';
 
-            $http.get(url).
+            var config = {
+                params: {}
+            };
+
+            if (campaignId) {
+                config.params.campaign_id = campaignId;
+            } else if (accountId) {
+                config.params.account_id = accountId;
+            }
+
+            $http.get(url, config).
                 success(function(data, status){
                     if (data && data.success) {
                         deferred.resolve(data.data);
@@ -753,11 +763,21 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function CampaignSync() {
-        this.get = function (id) {
+        this.get = function (campaignId, accountId) {
             var deferred = $q.defer();
-            var url = '/api/campaigns/' + id + '/sync/';
+            var url = '/api/campaigns/sync/';
 
-            $http.get(url).
+            var config = {
+                params: {}
+            };
+
+            if (campaignId) {
+                config.params.campaign_id = campaignId;
+            } else if (accountId) {
+                config.params.account_id = accountId;
+            }
+
+            $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.success) {
                         deferred.resolve();

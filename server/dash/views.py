@@ -1537,7 +1537,7 @@ class TriggerAccountSyncThread(threading.Thread):
 
 
 class TriggerCampaignSyncThread(threading.Thread):
-    """ Used to trigger sync for all accounts asynchronously. """
+    """ Used to trigger sync for all campaign's ad groups asynchronously. """
     def __init__(self, campaigns, *args, **kwargs):
         self.campaigns = campaigns
         super(TriggerCampaignSyncThread, self).__init__(*args, **kwargs)
@@ -1575,8 +1575,19 @@ class AccountSyncProgress(api_common.BaseApiView):
 class CampaignSync(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_sync_get')
-    def get(self, request, campaign_id):
-        campaigns = [get_campaign(request.user, campaign_id)]
+    def get(self, request):
+        account_id = request.GET.get('account_id')
+        campaign_id = request.GET.get('campaign_id')
+
+        if account_id:
+            campaigns = models.Campaign.objects.get_for_user(request.user).\
+                filter(account=account_id)
+        else:
+            campaigns = models.Campaign.objects.get_for_user(request.user)
+
+            if campaign_id:
+                campaigns = campaigns.filter(pk=campaign_id)
+
         if not actionlog.api.is_sync_in_progress(campaigns=campaigns):
             # trigger account sync asynchronously and immediately return
             TriggerCampaignSyncThread(campaigns).start()
@@ -1587,7 +1598,17 @@ class CampaignSync(api_common.BaseApiView):
 class CampaignSyncProgress(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_is_sync_in_progress')
     def get(self, request, campaign_id):
-        campaigns = [get_campaign(request.user, campaign_id)]
+        account_id = request.GET.get('account_id')
+        campaign_id = request.GET.get('campaign_id')
+
+        if account_id:
+            campaigns = models.Campaign.objects.get_for_user(request.user).\
+                filter(account=account_id)
+        else:
+            campaigns = models.Campaign.objects.get_for_user(request.user)
+
+            if campaign_id:
+                campaigns = campaigns.filter(pk=campaign_id)
 
         in_progress = actionlog.api.is_sync_in_progress(campaigns=campaigns)
 

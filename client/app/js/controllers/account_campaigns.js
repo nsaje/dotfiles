@@ -217,13 +217,13 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
 
     $scope.triggerSync = function() {
         $scope.isSyncInProgress = true;
-        api.campaignSync.get($state.params.id);
+        api.campaignSync.get(null, $state.params.id);
     };
 
     var pollSyncStatus = function() {
         if ($scope.isSyncInProgress){
             $timeout(function() {
-                api.checkCampaignSyncProgress.get($state.params.id).then(
+                api.checkCampaignSyncProgress.get(null, $state.params.id).then(
                     function(data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 

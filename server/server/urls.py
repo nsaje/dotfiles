@@ -116,11 +116,11 @@ urlpatterns += patterns(
         login_required(dash.views.CampaignSettings.as_view()),
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/sync/',
+        r'^api/campaigns/sync/',
         login_required(dash.views.CampaignSync.as_view()),
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/check_sync_progress/',
+        r'^api/campaigns/check_sync_progress/',
         login_required(dash.views.CampaignSyncProgress.as_view()),
     ),
     url(
