@@ -53,7 +53,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.selectRows = function () {
         $scope.totalRow.checked = $scope.selectedTotals;
         $scope.rows.forEach(function (x) {
-            x.checked = $scope.selectedAdGroupIds.indexOf(x.ad_group) > -1;
+            x.checked = $scope.selectedAdGroupIds.indexOf(parseInt(x.ad_group)) > -1;
         });
     };
 
@@ -337,10 +337,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                  $scope.updateSelectedAdGroups(id);
             });
             $location.search('ad_group_ids', adGroupIds);
-
-            if ($scope.rows) {
-                $scope.selectRows();
-            }
         }
 
         $scope.selectedTotals = !$scope.selectedAdGroupIds.length || !!adGroupTotals;
