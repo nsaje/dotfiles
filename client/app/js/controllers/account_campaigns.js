@@ -10,6 +10,8 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.order = '-cost';
 
     $scope.updateSelectedCampaigns = function (campaignId) {
+        campaignId = campaignId.toString();
+
         var i = $scope.selectedCampaignIds.indexOf(campaignId);
         if (i > -1) {
             $scope.selectedCampaignIds.splice(i, 1);
@@ -47,7 +49,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
 
     $scope.selectRows = function () {
         $scope.rows.forEach(function (x) {
-            x.checked = $scope.selectedCampaignIds.indexOf(x.campaign) > -1;
+            x.checked = $scope.selectedCampaignIds.indexOf(x.campaign.toString()) > -1;
         });
     };
 
@@ -268,7 +270,9 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
         var campaignTotals = $location.search().campaign_totals;
 
         if (campaignIds) {
-            $scope.selectedCampaignIds = campaignIds.split(',');
+            campaignIds.split(',').forEach(function (id) {
+                 $scope.updateSelectedCampaigns(id);
+            });
             $location.search('campaign_ids', campaignIds);
 
             if ($scope.rows) {

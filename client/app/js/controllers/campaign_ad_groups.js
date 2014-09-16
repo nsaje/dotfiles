@@ -16,7 +16,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.order = '-cost';
 
     $scope.updateSelectedAdGroups = function (adGroupId) {
-        adGroupId = parseInt(adGroupId);
+        adGroupId = adGroupId.toString();
 
         var i = $scope.selectedAdGroupIds.indexOf(adGroupId);
         if (i > -1) {
@@ -53,7 +53,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.selectRows = function () {
         $scope.totalRow.checked = $scope.selectedTotals;
         $scope.rows.forEach(function (x) {
-            x.checked = $scope.selectedAdGroupIds.indexOf(parseInt(x.ad_group)) > -1;
+            x.checked = $scope.selectedAdGroupIds.indexOf(x.ad_group.toString()) > -1;
         });
     };
 
