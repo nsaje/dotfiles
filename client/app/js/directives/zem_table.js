@@ -48,13 +48,13 @@ oneApp.directive('zemTable', ['config', function(config) {
             };
 
             $scope.callSelectCallback = function (callback, row, checked, count) {
-                if (count) {
-                    if (checked) {
-                        $scope.selectedRowsCount++;
-                    } else {
-                        $scope.selectedRowsCount--;
-                    }
-                }
+                // if (count) {
+                //     if (checked) {
+                //         $scope.selectedRowsCount++;
+                //     } else {
+                //         $scope.selectedRowsCount--;
+                //     }
+                // }
 
                 callback(row, checked);
             };
