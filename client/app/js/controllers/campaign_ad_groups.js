@@ -70,7 +70,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             disabled: false
         },
         {
-            name: 'Name',
+            name: 'Ad Group',
             field: 'name',
             unselectable: true,
             checked: true,
@@ -82,7 +82,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             initialOrder: 'asc'
         },
         {
-            name: 'State',
+            name: 'Status',
             field: 'state',
             checked: true,
             type: 'text',
@@ -138,6 +138,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'ctr',
             checked: true,
             type: 'percent',
+            defaultValue: '0.0%',
             totalRow: true,
             help: 'The number of clicks divided by the number of impressions.',
             order: true,

@@ -104,6 +104,16 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                                 }
                             }
                         }
+                    } else if (field === 'status') {
+                        converted_row[field] = row[field];
+
+                        if (row[field] === constants.adGroupSettingsState.ACTIVE) {
+                            converted_row.status_label = 'Active';
+                        } else if (row[field] === constants.adGroupSettingsState.INACTIVE) {
+                            converted_row.status_label = 'Paused';
+                        } else {
+                            converted_row.status_label = 'N/A';
+                        }
                     } else {
                         converted_row[field] = row[field];
                     }

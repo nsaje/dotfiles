@@ -14,7 +14,7 @@ oneApp.directive('zemTable', ['config', function(config) {
         },
         templateUrl: config.static_url + '/partials/zem_table.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
-            $scope.numberColumnTypes = ['currency', 'percent', 'number', 'datetime'];
+            $scope.numberColumnTypes = ['currency', 'percent', 'number', 'seconds', 'datetime'];
             $scope.selectedRowsCount = 0;
             
             $scope.isNumberColumnType = function (columnType) {
@@ -24,6 +24,7 @@ oneApp.directive('zemTable', ['config', function(config) {
             $scope.callOrderCallback = function (field) {
                 var i;
                 var initialOrder;
+                var orderField;
 
                 if ($scope.order === field) {
                     $scope.order = '-' + field;
@@ -31,7 +32,8 @@ oneApp.directive('zemTable', ['config', function(config) {
                     $scope.order = field;
                 } else {
                     for (i = 0; i < $scope.columns.length; i++) {
-                        if ($scope.columns[i].field === field) {
+                        orderField = $scope.columns[i].orderField || $scope.columns[i].field;
+                        if (orderField === field) {
                             initialOrder = $scope.columns[i].initialOrder;
                             break;
                         }
