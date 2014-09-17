@@ -104,6 +104,16 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                                 }
                             }
                         }
+                    } else if (field === 'status') {
+                        converted_row[field] = row[field];
+
+                        if (row[field] === constants.adGroupSettingsState.ACTIVE) {
+                            converted_row.status_label = 'Active';
+                        } else if (row[field] === constants.adGroupSettingsState.INACTIVE) {
+                            converted_row.status_label = 'Paused';
+                        } else {
+                            converted_row.status_label = 'N/A';
+                        }
                     } else {
                         converted_row[field] = row[field];
                     }
@@ -152,6 +162,19 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AdGroupAdsTable() {
+        function convertFromApi(row) {
+            row.title_link = {
+                text: row.title,
+                url: row.url
+            }
+
+            row.url_link = {
+                text: row.url,
+                url: row.url
+            }
+ 
+            return row;
+        }
 
         this.get = function (id, page, size, startDate, endDate, order) {
             var deferred = $q.defer();
@@ -184,6 +207,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 success(function (data, status) {
                     var resource;
                     if (data && data.data) {
+                        data.data.rows = data.data.rows.map(convertFromApi);
                         deferred.resolve(data.data);
                     }
                 }).
@@ -924,6 +948,12 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AccountAccountsTable() {
+        function convertFromApi(row) {
+            row.status_label = row.status === constants.adGroupSettingsState.ACTIVE ? 'Active' : 'Paused';
+ 
+            return row;
+        }
+
         this.get = function (page, size, startDate, endDate, order) {
             var deferred = $q.defer();
             var url = '/api/accounts/table/';
@@ -954,6 +984,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
+                        data.data.rows = data.data.rows.map(convertFromApi);
                         deferred.resolve(data.data);
                     }
                 }).

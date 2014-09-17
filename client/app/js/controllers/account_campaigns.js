@@ -72,7 +72,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             disabled: false
         },
         {
-            name: 'Name',
+            name: 'Campaign',
             field: 'name',
             unselectable: true,
             checked: true,
@@ -84,12 +84,14 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             initialOrder: 'asc'
         },
         {
-            name: 'State',
+            name: 'Status',
             field: 'state',
             checked: true,
             type: 'text',
             totalRow: false,
             help: 'Status of a campaign (enabled or paused).',
+            extraThCss: 'text-center',
+            extraTdCss: 'text-center',
             order: true,
             initialOrder: 'asc'
         },
@@ -140,6 +142,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'ctr',
             checked: true,
             type: 'percent',
+            defaultValue: '0.0%',
             totalRow: true,
             help: 'The number of clicks divided by the number of impressions.',
             order: true,
@@ -239,7 +242,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
                 $scope.rows = $scope.rows.map(function (x) {
                     x.name = {
                         text: x.name,
-                        url: $state.href($scope.getDefaultAdGroupState(), {id: x.ad_group})
+                        url: $state.href($scope.getDefaultCampaignState(), {id: x.campaign})
                     };
                     x.state = x.state === constants.adGroupSettingsState.ACTIVE ? 'Active' : 'Paused';
 
