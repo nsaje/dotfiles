@@ -17,11 +17,39 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     };
     $scope.columns = [
         {
+            name: 'Account',
+            field: 'name_link',
+            unselectable: true,
+            checked: true,
+            type: 'linkText',
+            hasTotalsLabel: true,
+            totalRow: false,
+            help: 'Name of the campaign.',
+            order: true,
+            orderField: 'name',
+            initialOrder: 'asc'
+        },
+        {
+            name: 'Status',
+            field: 'status_label',
+            unselectable: true,
+            checked: true,
+            type: 'text',
+            totalRow: false,
+            help: 'Status of a campaign (enabled or paused).',
+            order: true,
+            orderField: 'status',
+            initialOrder: 'asc'
+        },
+        {
             name: 'Spend',
             field: 'cost',
             checked: true,
             type: 'currency',
-            help: "Amount spent per account"
+            help: "Amount spent per account",
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         },
         {
             name: 'Avg. CPC',
@@ -29,21 +57,29 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             checked: true,
             type: 'currency',
             fractionSize: 3,
-            help: "The average CPC."
+            help: "The average CPC.",
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         },
         {
             name: 'Clicks',
             field: 'clicks',
             checked: true,
             type: 'number',
-            help: 'The number of times a content ad has been clicked.'
+            help: 'The number of times a content ad has been clicked.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         },
         {
             name: 'Last OK Sync',
             field: 'last_sync',
             checked: false,
             type: 'datetime',
-            help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred.'
+            help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred.',
+            order: true,
+            initialOrder: 'desc'
         }
     ];
 
@@ -93,14 +129,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         );
     };
 
-    $scope.orderRows = function (col) {
-        if ($scope.order.indexOf(col) === 1) {
-            $scope.order = col;
-        } else if ($scope.order.indexOf(col) === -1 && col === 'name') {
-            $scope.order = col;
-        } else {
-            $scope.order = '-' + col;
-        }
+    $scope.orderRows = function (order) {
+        $scope.order = order;
 
         $location.search('order', $scope.order);
         localStorageService.set('allAccountsAccounts.order', $scope.order);
@@ -120,6 +150,15 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
                 $scope.order = data.order;
                 $scope.pagination = data.pagination;
+
+                $scope.rows = $scope.rows.map(function (x) {
+                    x.name_link = {
+                        text: x.name,
+                        url: $state.href($scope.getDefaultAccountState(), {id: x.id})
+                    };
+
+                    return x;
+                });
 
                 $location.search('page', $scope.pagination.currentPage);
             },

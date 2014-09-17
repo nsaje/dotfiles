@@ -934,6 +934,12 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AccountAccountsTable() {
+        function convertFromApi(row) {
+            row.status_label = row.status === constants.adGroupSettingsState.ACTIVE ? 'Active' : 'Paused';
+ 
+            return row;
+        }
+
         this.get = function (page, size, startDate, endDate, order) {
             var deferred = $q.defer();
             var url = '/api/accounts/table/';
@@ -964,6 +970,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
+                        data.data.rows = data.data.rows.map(convertFromApi);
                         deferred.resolve(data.data);
                     }
                 }).
