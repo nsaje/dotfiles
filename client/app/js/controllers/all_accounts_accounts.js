@@ -24,7 +24,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             type: 'linkText',
             hasTotalsLabel: true,
             totalRow: false,
-            help: 'Name of the campaign.',
+            help: 'A partner account.',
             order: true,
             orderField: 'name',
             initialOrder: 'asc'
@@ -36,7 +36,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             checked: true,
             type: 'text',
             totalRow: false,
-            help: 'Status of a campaign (enabled or paused).',
+            help: 'Status of an account (enabled or paused). An account is paused only if all its campaigns are paused, too; otherwise the account is enabled.',
             order: true,
             orderField: 'status',
             initialOrder: 'asc'

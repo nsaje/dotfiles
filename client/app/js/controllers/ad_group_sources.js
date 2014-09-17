@@ -81,7 +81,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             type: 'text',
             hasTotalsLabel: true,
             totalRow: false,
-            help: 'Name of the ad group.',
+            help: 'A media source where your content is being promoted.',
             order: true,
             initialOrder: 'asc'
         },
@@ -92,7 +92,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             checked: true,
             type: 'text',
             totalRow: false,
-            help: 'Status of an ad group (enabled or paused).',
+            help: 'Status of a particular media source (enabled or paused).',
             order: true,
             orderField: 'status',
             initialOrder: 'asc'
