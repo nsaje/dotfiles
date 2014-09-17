@@ -59,6 +59,11 @@ class GAReportsAggregationTest(TestCase):
         self.assertEqual(result['clicks'], 21)
         self.assertTrue('goals' in result)
         self.assertEqual(result['goals']['Buy Beer (Goal 1)']['conversions'], 54)
+        self.assertEqual(result['pv_per_visit'], 2.2)
+        self.assertEqual(result['bounce_rate'], 50.0)
+        self.assertEqual(round(result['percent_new_users'], 4), 74.8077)
+        self.assertEqual(result['pageviews'], 1144)
+        self.assertEqual(round(result['avg_tos'], 4), 40.6154)
 
         result_by_source = reports.api.query(self.report_date, self.report_date, ['source'], ad_group=1)
         self.assertEqual(len(result_by_source), 3)
