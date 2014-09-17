@@ -146,12 +146,19 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     $scope.getDailyStats = function () {
         api.dailyStats.list('ad_groups', $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true, getDailyStatsMetrics()).then(
             function (data) {
-                $scope.chartMetricOptions = options.adGroupChartMetrics.concat(Object.keys(data.goals).map(function (goalId) {
+                $scope.chartMetricOptions = options.adGroupChartMetrics;
+
+                if ($scope.hasPermission('zemauth.postclick_metrics')) {
+                    $scope.chartMetricOptions = $scope.chartMetricOptions.concat(options.adGroupChartPostClickMetrics);
+                }
+            
+                $scope.chartMetricOptions = $scope.chartMetricOptions.concat(Object.keys(data.goals).map(function (goalId) {
                     return {
                         name: data.goals[goalId].name,
                         value: goalId
-                    };
+                    }
                 }));
+
 
                 // Select default metrics if selected metrics are not defined
                 var values = $scope.chartMetricOptions.map(function (option) {
@@ -242,6 +249,10 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
 
         var data = $scope.adGroupData[$state.params.id];
         var page = $location.search().page || (data && data.page);
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            $scope.chartMetricOptions = $scope.chartMetricOptions.concat(options.adGroupChartPostClickMetrics);
+        }
 
         if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
             $scope.chartMetric1 = chartMetric1;
