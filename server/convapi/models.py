@@ -353,6 +353,6 @@ bounced_visits={bounced_visits}, pageviews={pageviews}, duration={duration})'.fo
         )
 
         try:
-            utils.S3Helper().put(key, self.report.raw)
+            utils.s3helpers.S3Helper().put(key, self.report.raw)
         except Exception:
             logger.exception('Error while saving conversion report to s3')
