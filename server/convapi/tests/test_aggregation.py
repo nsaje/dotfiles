@@ -4,6 +4,7 @@ from django.test import TestCase
 
 import convapi.parse
 import convapi.models
+import convapi.aggregate
 import reports.api
 import reports.models
 
@@ -15,7 +16,7 @@ class GAReportsAggregationTest(TestCase):
     def setUp(self):
         self.csvreport = convapi.parse.CsvReport(open('convapi/fixtures/ga_report_20140901.csv').read())
         self.report_date = datetime.date(2014, 9, 1)
-        self.remail = convapi.models.ReportEmail(
+        self.remail = convapi.aggregate.ReportEmail(
             sender='some sender',
             recipient='some recipient',
             subject='some subject',
@@ -35,7 +36,7 @@ class GAReportsAggregationTest(TestCase):
                 'Landing Page', 'Device Category', 'Sessions', '% New Sessions', 'New Users',
                 'Bounce Rate', 'Pages / Session', 'Avg. Session Duration',
                 'Buy Beer (Goal 1 Conversion Rate)', 'Buy Beer (Goal 1 Completions)',
-                'Buy Beer (Goal 1 Value)', 'Get Drunk (Goal 2 Conversion Rate)', 
+                'Buy Beer (Goal 1 Value)', 'Get Drunk (Goal 2 Conversion Rate)',
                 'Get Drunk (Goal 2 Completions)', 'Get Drunk (Goal 2 Value)'
             ])
         self.assertEqual(sum(int(entry['Sessions']) for entry in self.remail.report.get_entries()), 520)
@@ -59,6 +60,11 @@ class GAReportsAggregationTest(TestCase):
         self.assertEqual(result['clicks'], 21)
         self.assertTrue('goals' in result)
         self.assertEqual(result['goals']['Buy Beer (Goal 1)']['conversions'], 54)
+        self.assertEqual(result['pv_per_visit'], 2.2)
+        self.assertEqual(result['bounce_rate'], 50.0)
+        self.assertEqual(round(result['percent_new_users'], 4), 74.8077)
+        self.assertEqual(result['pageviews'], 1144)
+        self.assertEqual(round(result['avg_tos'], 4), 40.6154)
 
         result_by_source = reports.api.query(self.report_date, self.report_date, ['source'], ad_group=1)
         self.assertEqual(len(result_by_source), 3)

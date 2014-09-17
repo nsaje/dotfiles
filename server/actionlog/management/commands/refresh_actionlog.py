@@ -18,9 +18,9 @@ class Command(BaseCommand):
         refresh_orders.refresh_fetch_all_orders()
 
         # monitor the state of manual actions
-        n_cmd_waiting = api.count_waiting_manual_actions()
+        n_cmd_waiting = api.count_waiting_stats_actions()
         statsd_helper.statsd_gauge('n_cmd_waiting', n_cmd_waiting)
-        n_cmd_failed = api.count_failed_manual_actions()
+        n_cmd_failed = api.count_failed_stats_actions()
         statsd_helper.statsd_gauge('n_cmd_failed', n_cmd_failed)
-        hours_oldest_cmd_waiting = api.age_oldest_waiting_action()
+        hours_oldest_cmd_waiting = api.age_oldest_waiting_stats_action()
         statsd_helper.statsd_gauge('hours_oldest_cmd_waiting', hours_oldest_cmd_waiting)
