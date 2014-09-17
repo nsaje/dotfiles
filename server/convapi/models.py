@@ -14,7 +14,7 @@ import utils.s3helpers
 
 logger = logging.getLogger(__name__)
 
-S3_REPORT_KEY_FORMAT = 'conversionreports/{sender}/{date}/{filename}'
+S3_REPORT_KEY_FORMAT = 'conversionreports/{sender}/{date}/{ts}{ext}'
 
 
 class RawPostclickStats(models.Model):
@@ -344,11 +344,12 @@ bounced_visits={bounced_visits}, pageviews={pageviews}, duration={duration})'.fo
                 raw_goal_stats.save()
 
     def store_to_s3(self):
+        ext = mimetypes.guess_extension(self.report.get_content_type())
         key = S3_REPORT_KEY_FORMAT.format(
             sender=self.sender,
             date=self.report.get_date(),
             ts=datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S'),
-            ext=mimetypes.guess_extension(self.report.get_content_type())
+            ext=ext if ext else ''
         )
 
         try:
