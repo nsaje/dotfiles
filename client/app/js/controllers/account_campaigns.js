@@ -370,6 +370,13 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
         $scope.getDailyStats();
     };
 
+    $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
+        $location.search('campaign_ids', null);
+        $location.search('campaign_totals', null);
+        $location.search('chart_metric1', null);
+        $location.search('chart_metric2', null);
+    });
+
     $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
         if(newValue === true && oldValue === false){
             pollSyncStatus();
