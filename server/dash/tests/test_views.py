@@ -124,12 +124,12 @@ class AdGroupAdsExportTestCase(AdGroupExportBaseTestCase):
 
         response = views.AdGroupAdsExport().get(request, self.ad_group_id)
 
-        filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.xls'.format(
+        filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.xlsx'.format(
             slugify.slugify(self.account_name),
             slugify.slugify(self.ad_group_name)
         )
 
-        self.assertEqual(response['Content-Type'], 'application/octet-stream')
+        self.assertEqual(response['Content-Type'], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         self.assertEqual(
            response['Content-Disposition'],
            'attachment; filename="%s"' % filename
@@ -228,12 +228,12 @@ class AdGroupSourcesExportTestCase(AdGroupExportBaseTestCase):
 
         response = views.AdGroupSourcesExport().get(request, self.ad_group_id)
 
-        filename = '{0}_{1}_per_sources_report_2014-06-30_2014-07-01.xls'.format(
+        filename = '{0}_{1}_per_sources_report_2014-06-30_2014-07-01.xlsx'.format(
             slugify.slugify(self.account_name),
             slugify.slugify(self.ad_group_name)
         )
 
-        self.assertEqual(response['Content-Type'], 'application/octet-stream')
+        self.assertEqual(response['Content-Type'], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         self.assertEqual(
            response['Content-Disposition'],
            'attachment; filename="%s"' % filename

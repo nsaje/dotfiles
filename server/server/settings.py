@@ -35,11 +35,12 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'dash',
-    'django_extensions',  # optional for visualizing models and other perks
+    #'django_extensions',  # optional for visualizing models and other perks
     'zemauth',
     'actionlog',
     'reports',
     'zweiapi',
+    'convapi',
     'raven.contrib.django.raven_compat',
 )
 
@@ -92,6 +93,8 @@ AUTHENTICATION_BACKENDS = (
 )
 
 TEST_RUNNER = 'utils.test_runner.CustomRunner'
+
+TEST_OUTPUT_DIR = os.path.join(BASE_DIR, '.junit_xml')
 
 COVERAGE_ENABLED = 'COVERAGE_ENABLED' in os.environ
 

@@ -33,8 +33,9 @@ class BaseApiView(View):
 
         return response
 
-    def create_file_response(self, content_type, filename, status_code=200):
+    def create_file_response(self, content_type, filename, status_code=200, content=''):
         response = HttpResponse(
+            content,
             content_type=content_type,
             status=status_code
         )

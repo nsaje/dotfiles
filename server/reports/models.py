@@ -71,3 +71,8 @@ class GoalConversionStats(models.Model):
         unique_together = (
             ('datetime', 'ad_group', 'article', 'source', 'goal_name'),
         )
+
+    def reset_metrics(self):
+        self.conversions = 0
+        self.conversions_value_cc = 0
+        self.save()

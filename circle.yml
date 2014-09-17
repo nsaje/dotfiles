@@ -8,8 +8,7 @@ machine:
         version: 2.7.6
     node:
         version: v0.10.22
-    environment:
-        COVERAGE_ENABLED: 1 
+
 
 dependencies:
     override:
@@ -28,13 +27,13 @@ checkout:
 
 test:
     override:
-        - python manage.py test:
-            pwd:
-                server
+        - coverage run manage.py test:
+            pwd: server
         - grunt test:
-            pwd:
-                client
+            pwd: client
     post:
         - coverage report > coverage_report.txt:
-            pwd:
-                server
+            pwd: server
+        - coverage xml:
+            pwd: server
+        - test "$CIRCLE_BRANCH" == "master" && pushci --debug || exit 0

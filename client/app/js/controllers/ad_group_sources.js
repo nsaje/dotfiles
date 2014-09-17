@@ -3,6 +3,7 @@
 oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'zemCustomTableColsService', 'zemChartService', 'localStorageService', function ($scope, $state, $location, $window, $timeout, api, zemCustomTableColsService, zemChartService, localStorageService) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
+    $scope.isIncompletePostclickMetrics = false;
     $scope.selectedSourceIds = [];
     $scope.selectedTotals = true;
     $scope.constants = constants;
@@ -101,6 +102,84 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             });
         }
 
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            $scope.columns.splice($scope.columns.length - 1, 0, {
+                name: 'Visits',
+                field: 'visits',
+                checked: true,
+                type: 'number',
+                help: 'The number of visits as reported by Google Analytics.',
+                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+            });
+        }
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            $scope.columns.splice($scope.columns.length - 1, 0, {
+                name: 'Pageviews',
+                field: 'pageviews',
+                checked: true,
+                type: 'number',
+                help: 'The number of pageviews as reported by Google Analytics.',
+                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+            });
+        }
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            $scope.columns.splice($scope.columns.length - 1, 0, {
+                name: '% New Users',
+                field: 'percent_new_users',
+                checked: false,
+                type: 'percent',
+                help: 'Percentage of visits made by new users, as reported by Google Analytics.',
+                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+            });
+        }
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            $scope.columns.splice($scope.columns.length - 1, 0, {
+                name: 'Bounce Rate',
+                field: 'bounce_rate',
+                checked: false,
+                type: 'percent',
+                help: 'Bounce rate help goes here.',
+                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+            });
+        }
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            $scope.columns.splice($scope.columns.length - 1, 0, {
+                name: 'PV/Visit',
+                field: 'pv_per_visit',
+                checked: false,
+                type: 'number',
+                fractionSize: 2,
+                help: 'Help, pageviews per visit.',
+                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+            });
+        }
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            $scope.columns.splice($scope.columns.length - 1, 0, {
+                name: 'Avg. ToS',
+                field: 'avg_tos',
+                checked: false,
+                type: 'seconds',
+                help: 'Help, average time on site.',
+                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+            });
+        }
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            $scope.columns.splice($scope.columns.length - 1, 0, {
+                name: 'Click Discrepancy',
+                field: 'click_discrepancy',
+                checked: false,
+                type: 'percent',
+                help: 'Help, click discrepancy.',
+                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+            });
+        }
+
         cols = zemCustomTableColsService.load('adGroupSourcesCols', $scope.columns);
         $scope.selectedColumnsCount = cols.length;
 
@@ -130,16 +209,64 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $scope.getTableData();
     };
 
+
+    $scope.addGoalColumns = function(rows) {
+        var alreadyAdded = function(field) {
+            for(var i = 0; i < $scope.columns.length; i++) {
+                if(field == $scope.columns[i]['field']){
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        if($scope.hasPermission('zemauth.postclick_metrics')) {
+            for(var i = 0; i < rows.length; i++) {
+                for(var field in rows[i]) {
+                    if(alreadyAdded(field)) {
+                        continue;
+                    }
+
+                    if(field.indexOf(': Conversions') != -1) {
+                        var col_descr = {
+                            'name': field.substr('goal__'.length),
+                            'field': field,
+                            'checked': false,
+                            'type': 'number',
+                            'help': 'Number of goal completions',
+                            internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+                        }
+                        $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
+                    } else if(field.indexOf(': Conversion Rate') != -1) {
+                        var col_descr = {
+                            'name': field.substr('goal__'.length),
+                            'field': field,
+                            'checked': false,
+                            'type': 'percent',
+                            'help': 'Conversion rate help',
+                            internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+                        }
+                        $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
+                    }
+                }
+            }
+        }
+    };
+
     $scope.getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
         api.adGroupSourcesTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
+                $scope.addGoalColumns(data.rows);
+
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
                 $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
                 $scope.isSyncRecent = data.is_sync_recent;
                 $scope.isSyncInProgress = data.is_sync_in_progress;
+
+                $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
 
                 $scope.selectSources();
             },
@@ -173,7 +300,13 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     $scope.getDailyStats = function () {
         api.dailyStats.list('ad_groups', $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics()).then(
             function (data) {
-                $scope.chartMetricOptions = options.adGroupChartMetrics.concat(Object.keys(data.goals).map(function (goalId) {
+                $scope.chartMetricOptions = options.adGroupChartMetrics;
+
+                if ($scope.hasPermission('zemauth.postclick_metrics')) {
+                    $scope.chartMetricOptions = $scope.chartMetricOptions.concat(options.adGroupChartPostClickMetrics);
+                }
+            
+                $scope.chartMetricOptions = $scope.chartMetricOptions.concat(Object.keys(data.goals).map(function (goalId) {
                     return {
                         name: data.goals[goalId].name,
                         value: goalId
@@ -316,6 +449,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         var data = $scope.adGroupData[$state.params.id];
         var sourceIds = $location.search().source_ids || (data && data.sourceIds && data.sourceIds.join(','));
         var sourceTotals = $location.search().source_totals || (data && data.sourceTotals ? 1 : null);
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            $scope.chartMetricOptions = $scope.chartMetricOptions.concat(options.adGroupChartPostClickMetrics);
+        }
 
         if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
             $scope.chartMetric1 = chartMetric1;

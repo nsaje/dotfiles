@@ -21,8 +21,13 @@ var constants = {
         CTR: 'ctr',
         COST: 'cost',
         CPC: 'cpc',
-        CONVERSIONS: 'conversions',
-        CONVERSION_RATE: 'conversion_rate'
+        VISITS: 'visits',
+        PAGEVIEWS: 'pageviews',
+        NEW_USERS: 'percent_new_users',
+        BOUNCE_RATE: 'bounce_rate',
+        PV_PER_VISIT: 'pv_per_visit',
+        AVG_TOS: 'avg_tos',
+        CLICK_DISCREPANCY: 'click_discrepancy'
     },
     iabCategory: {
         IAB1: 'IAB1',
@@ -79,7 +84,16 @@ var options = {
         {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
         {name: 'CTR', value: constants.chartMetric.CTR},
         {name: 'Spend', value: constants.chartMetric.COST},
-        {name: 'Avg. CPC', value: constants.chartMetric.CPC}
+        {name: 'Avg. CPC', value: constants.chartMetric.CPC},
+    ],
+    adGroupChartPostClickMetrics: [
+        {name: 'Visits', value: constants.chartMetric.VISITS},
+        {name: 'Pageviews', value: constants.chartMetric.PAGEVIEWS},
+        {name: 'New Users', value: constants.chartMetric.NEW_USERS},
+        {name: 'Bounce Rate', value: constants.chartMetric.BOUNCE_RATE},
+        {name: 'PV/Visit', value: constants.chartMetric.PV_PER_VISIT},
+        {name: 'Avg. ToS', value: constants.chartMetric.AVG_TOS},
+        {name: 'Click Discrepancy', value: constants.chartMetric.CLICK_DISCREPANCY},
     ],
     campaignChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},

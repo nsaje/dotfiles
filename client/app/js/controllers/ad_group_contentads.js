@@ -87,6 +87,10 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
                 $scope.isSyncRecent = data.is_sync_recent;
                 $scope.isSyncInProgress = data.is_sync_in_progress;
 
+                $scope.incompleteTrafficMetrics = data.incomplete_traffic_metrics;
+                $scope.incompletePostclickMetrics = data.incomplete_postclick_metrics;
+                $scope.incompleteConversionMetrics = data.incomplete_conversion_metrics;
+
                 $scope.order = data.order;
                 $scope.pagination = data.pagination;
             },

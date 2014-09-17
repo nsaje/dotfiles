@@ -6,9 +6,8 @@ import math
 import dateutil.parser
 from collections import OrderedDict
 import unicodecsv
-from xlwt import Workbook, Style
+from xlsxwriter import Workbook
 import slugify
-import excel_styles
 import base64
 import httplib
 import traceback
@@ -16,6 +15,7 @@ import urllib
 import urllib2
 import threading
 from decimal import Decimal
+import StringIO
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -105,15 +105,15 @@ def get_stats_end_date(end_time):
     return date.date()
 
 
-def generate_rows(dimensions, ad_group_id, start_date, end_date):
+def generate_rows(dimensions, ad_group_id, start_date, end_date, user):
     ordering = ['date'] if 'date' in dimensions else []
-    data = reports.api.query(
+    data = filter_by_permissions(reports.api.query(
         start_date,
         end_date,
         dimensions,
         ordering,
         ad_group=int(ad_group_id)
-    )
+    ), user)
 
     if 'source' in dimensions:
         sources = {source.id: source for source in models.Source.objects.all()}
@@ -130,24 +130,27 @@ def write_excel_row(worksheet, row_index, column_data):
         worksheet.write(
             row_index,
             column_index,
-            column_value[0],
-            column_value[1] if len(column_value) > 1 else Style.default_style
+            column_value
         )
 
 
-def create_excel_worksheet(workbook, name, widths, header_names, data, transform_func):
-    worksheet = workbook.add_sheet(name)
+def create_excel_worksheet(workbook, name, columns, data):
+    worksheet = workbook.add_worksheet(name)
 
-    for index, width in widths:
-        worksheet.col(index).width = width
+    for index, col in enumerate(columns):
+        worksheet.set_column(
+            index,
+            index,
+            col['width'] if 'width' in col else None,
+            col['format'] if 'format' in col else None
+        )
 
-    worksheet.panes_frozen = True
+        worksheet.write(0, index, col['name'])
 
-    for index, name in enumerate(header_names):
-        worksheet.write(0, index, name)
+    worksheet.freeze_panes(1, 0)  # freeze the first row
 
     for index, item in enumerate(data):
-        write_excel_row(worksheet, index + 1, transform_func(item))
+        write_excel_row(worksheet, index + 1, item)
 
 
 def get_last_successful_source_sync_dates(ad_group):
@@ -271,6 +274,32 @@ def create_name(objects, name):
             name += ' {}'.format(num)
 
     return name
+
+
+def filter_by_permissions(result, user):
+    '''
+    filters reports such that the user will only get fields that he is allowed to see
+    '''
+    TRAFFIC_FIELDS = [
+        'clicks', 'impressions', 'cost', 'cpc', 'ctr', 'article', 'title',
+        'url', 'campaign', 'account', 'source', 'date',
+    ]
+    POSTCLICK_FIELDS = [
+        'visits', 'percent_new_users', 'pv_per_visit', 'avg_tos',
+        'bounce_rate', 'goals', 'click_discrepancy', 'pageviews',
+    ]
+    def filter_row(row):
+        filtered_row = {}
+        for field in TRAFFIC_FIELDS:
+            if field in row: filtered_row[field] = row[field]
+        if user.has_perm('zemauth.postclick_metrics'):
+            for field in POSTCLICK_FIELDS:
+                if field in row: filtered_row[field] = row[field]
+        return filtered_row
+    if isinstance(result, dict):
+        return filter_row(result)
+    else:
+        return [filter_row(row) for row in result]
 
 
 @statsd_helper.statsd_timer('dash', 'index')
@@ -1003,12 +1032,15 @@ class AdGroupSourcesTable(api_common.BaseApiView):
     def get(self, request, ad_group_id):
         ad_group = get_ad_group(request.user, ad_group_id)
 
-        sources_data = reports.api.query(
-            get_stats_start_date(request.GET.get('start_date')),
-            get_stats_end_date(request.GET.get('end_date')),
+        start_date = get_stats_start_date(request.GET.get('start_date'))
+        end_date = get_stats_end_date(request.GET.get('end_date'))
+
+        sources_data = filter_by_permissions(reports.api.query(
+            start_date,
+            end_date,
             ['source'],
             ad_group=int(ad_group.id)
-        )
+        ), request.user)
 
         sources = self.get_active_ad_group_sources(ad_group)
         source_settings = models.AdGroupSourceSettings.get_current_settings(
@@ -1021,17 +1053,22 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             if yesterday_cost:
                 yesterday_total_cost = sum(yesterday_cost.values())
 
-        totals_data = reports.api.query(
-            get_stats_start_date(request.GET.get('start_date')),
-            get_stats_end_date(request.GET.get('end_date')),
+        totals_data = filter_by_permissions(reports.api.query(
+            start_date,
+            end_date,
             ad_group=int(ad_group.id)
-        )
+        ), request.user)
 
         last_success_actions = get_last_successful_source_sync_dates(ad_group)
 
         last_sync = None
         if last_success_actions.values() and None not in last_success_actions.values():
             last_sync = pytz.utc.localize(min(last_success_actions.values()))
+
+        incomplete_postclick_metrics = \
+            not reports.api.has_complete_postclick_metrics(
+                start_date, end_date, ad_group
+            )
 
         return self.create_api_response({
             'rows': self.get_rows(
@@ -1052,6 +1089,7 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress([ad_group]),
+            'incomplete_postclick_metrics': incomplete_postclick_metrics,
         })
 
     def get_active_ad_group_sources(self, ad_group):
@@ -1061,7 +1099,7 @@ class AdGroupSourcesTable(api_common.BaseApiView):
         return [s for s in sources if s not in inactive_sources]
 
     def get_totals(self, ad_group, totals_data, source_settings, yesterday_cost):
-        return {
+        result = {
             'daily_budget': float(sum(settings.daily_budget_cc for settings in source_settings.values()
                                       if settings.daily_budget_cc is not None)),
             'cost': totals_data['cost'],
@@ -1069,8 +1107,19 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             'clicks': totals_data['clicks'],
             'impressions': totals_data['impressions'],
             'ctr': totals_data['ctr'],
-            'yesterday_cost': yesterday_cost
+            'yesterday_cost': yesterday_cost,
+
+            'visits': totals_data.get('visits'),
+            'pageviews': totals_data.get('pageviews'),
+            'percent_new_users': totals_data.get('percent_new_users'),
+            'bounce_rate': totals_data.get('bounce_rate'),
+            'pv_per_visit': totals_data.get('pv_per_visit'),
+            'avg_tos': totals_data.get('avg_tos'),
+            'click_discrepancy': totals_data.get('click_discrepancy'),
+
+            'goals': totals_data.get('goals', {})
         }
+        return result
 
     def get_rows(self, ad_group, sources, sources_data, source_settings, last_actions, yesterday_cost, order=None):
         rows = []
@@ -1098,7 +1147,7 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             supply_dash_url = urlresolvers.reverse('dash.views.supply_dash_redirect')
             supply_dash_url += '?ad_group_id={}&source_id={}'.format(ad_group.pk, sid)
 
-            rows.append({
+            row = {
                 'id': str(sid),
                 'name': settings.ad_group_source.source.name,
                 'status': settings.state,
@@ -1112,10 +1161,28 @@ class AdGroupSourcesTable(api_common.BaseApiView):
                 'clicks': source_data.get('clicks', None),
                 'impressions': source_data.get('impressions', None),
                 'ctr': source_data.get('ctr', None),
+
+                'visits': source_data.get('visits', None),
+                'pageviews': source_data.get('pageviews', None),
+                'percent_new_users': source_data.get('percent_new_users', None),
+                'bounce_rate': source_data.get('bounce_rate', None),
+                'pv_per_visit': source_data.get('pv_per_visit', None),
+                'avg_tos': source_data.get('avg_tos', None),
+                'click_discrepancy': source_data.get('click_discrepancy', None),
+
                 'last_sync': last_sync,
                 'yesterday_cost': yesterday_cost.get(sid),
-                'supply_dash_url': supply_dash_url
-            })
+                'supply_dash_url': supply_dash_url,
+
+                'goals': source_data.get('goals', {})
+            }
+
+            # add conversion fields
+            for field, val in source_data.iteritems():
+                if field.startswith('G[') and field.endswith('_conversionrate'):
+                    row[field] = val
+
+            rows.append(row)
 
         if order:
             reverse = False
@@ -1153,23 +1220,23 @@ class AccountsAccountsTable(api_common.BaseApiView):
         if page:
             page = int(page)
 
-        accounts_data = reports.api.query(
+        accounts_data = filter_by_permissions(reports.api.query(
             get_stats_start_date(request.GET.get('start_date')),
             get_stats_end_date(request.GET.get('end_date')),
             ['account'],
             account=accounts
-        )
+        ), request.user)
 
         ad_groups_settings = models.AdGroupSettings.objects.\
             distinct('ad_group').\
             filter(ad_group__campaign__account__in=[x.pk for x in accounts]).\
             order_by('ad_group', '-created_dt')
 
-        totals_data = reports.api.query(
+        totals_data = filter_by_permissions(reports.api.query(
             get_stats_start_date(request.GET.get('start_date')),
             get_stats_end_date(request.GET.get('end_date')),
             account=accounts
-        )
+        ), request.user)
 
         last_success_actions = {}
         for account in accounts:
@@ -1312,7 +1379,8 @@ class AdGroupAdsExport(api_common.BaseApiView):
             ['date', 'article'],
             ad_group.id,
             start_date,
-            end_date
+            end_date,
+            request.user
         )
 
         if request.GET.get('type') == 'excel':
@@ -1320,7 +1388,8 @@ class AdGroupAdsExport(api_common.BaseApiView):
                 ['date', 'source', 'article'],
                 ad_group_id,
                 start_date,
-                end_date
+                end_date,
+                request.user
             )
 
             return self.create_excel_response(ads_results, sources_results, filename)
@@ -1362,48 +1431,67 @@ class AdGroupAdsExport(api_common.BaseApiView):
         return response
 
     def create_excel_response(self, ads_data, sources_data, filename):
-        response = self.create_file_response('application/octet-stream', '%s.xls' % filename)
+        output = StringIO.StringIO()
+        workbook = Workbook(output, {'strings_to_urls': False})
 
-        workbook = Workbook(encoding='UTF-8')
+        format_date = workbook.add_format({'num_format': u'm/d/yy'})
+        format_percent = workbook.add_format({'num_format': u'0.00%'})
+        format_usd = workbook.add_format({'num_format': u'[$$-409]#,##0.00;-[$$-409]#,##0.00'})
+
+        columns = [
+            {'name': 'Date', 'format': format_date},
+            {'name': 'Title', 'width': 30},
+            {'name': 'URL', 'width': 40},
+            {'name': 'Cost', 'format': format_usd},
+            {'name': 'CPC', 'format': format_usd},
+            {'name': 'Clicks'},
+            {'name': 'Impressions', 'width': 15},
+            {'name': 'CTR', 'format': format_percent},
+        ]
 
         create_excel_worksheet(
             workbook,
             'Detailed Report',
-            [(1, 6000), (2, 8000), (6, 3000)],
-            ['Date', 'Title', 'URL', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'],
-            ads_data,
-            lambda item: [
-                (item['date'], excel_styles.style_date),
-                (item['title'],),
-                (item['url'],),
-                (item['cost'] or 0, excel_styles.style_usd),
-                (item['cpc'] or 0, excel_styles.style_usd),
-                (item['clicks'] or 0,),
-                (item['impressions'] or 0,),
-                ((item['ctr'] or 0) / 100, excel_styles.style_percent)
-            ]
+            columns,
+            data=[[
+                item['date'],
+                item['title'],
+                item['url'],
+                item['cost'] or 0,
+                item['cpc'] or 0,
+                item['clicks'] or 0,
+                item['impressions'] or 0,
+                (item['ctr'] or 0) / 100
+            ] for item in ads_data]
         )
 
+        columns.insert(3, {'name': 'Source', 'width': 20})
         create_excel_worksheet(
             workbook,
             'Per Source Report',
-            [(1, 6000), (2, 8000), (3, 4000), (7, 3000)],
-            ['Date', 'Title', 'URL', 'Source', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'],
-            sources_data,
-            lambda item: [
-                (item['date'], excel_styles.style_date),
-                (item['title'],),
-                (item['url'],),
-                (item['source'],),
-                (item['cost'] or 0, excel_styles.style_usd),
-                (item['cpc'] or 0, excel_styles.style_usd),
-                (item['clicks'] or 0,),
-                (item['impressions'] or 0,),
-                ((item['ctr'] or 0) / 100, excel_styles.style_percent)
-            ]
+            columns,
+            data=[[
+                item['date'],
+                item['title'],
+                item['url'],
+                item['source'],
+                item['cost'] or 0,
+                item['cpc'] or 0,
+                item['clicks'] or 0,
+                item['impressions'] or 0,
+                (item['ctr'] or 0) / 100
+            ] for item in sources_data]
         )
 
-        workbook.save(response)
+        workbook.close()
+        output.seek(0)
+
+        response = self.create_file_response(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            '%s.xlsx' % filename,
+            content=output.read()
+        )
+
         return response
 
 
@@ -1426,7 +1514,8 @@ class AdGroupSourcesExport(api_common.BaseApiView):
             ['date', 'source'],
             ad_group.id,
             start_date,
-            end_date
+            end_date,
+            request.user
         )
 
         if request.GET.get('type') == 'excel':
@@ -1434,7 +1523,8 @@ class AdGroupSourcesExport(api_common.BaseApiView):
                 ['date'],
                 ad_group.id,
                 start_date,
-                end_date
+                end_date,
+                request.user
             )
 
             return self.create_excel_response(
@@ -1480,45 +1570,62 @@ class AdGroupSourcesExport(api_common.BaseApiView):
         return response
 
     def create_excel_response(self, date_data, date_source_data, filename, include_per_day=False):
-        response = self.create_file_response('application/octet-stream', '%s.xls' % filename)
+        output = StringIO.StringIO()
+        workbook = Workbook(output, {'strings_to_urls': False})
 
-        workbook = Workbook(encoding='UTF-8')
+        format_date = workbook.add_format({'num_format': u'm/d/yy'})
+        format_percent = workbook.add_format({'num_format': u'0.00%'})
+        format_usd = workbook.add_format({'num_format': u'[$$-409]#,##0.00;-[$$-409]#,##0.00'})
+
+        columns = [
+            {'name': 'Date', 'format': format_date},
+            {'name': 'Cost', 'format': format_usd},
+            {'name': 'CPC', 'format': format_usd},
+            {'name': 'Clicks'},
+            {'name': 'Impressions', 'width': 15},
+            {'name': 'CTR', 'format': format_percent},
+        ]
 
         if include_per_day:
             create_excel_worksheet(
                 workbook,
                 'Per-Day Report',
-                [],
-                ['Date', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'],
-                date_data,
-                lambda item: [
-                    (item['date'], excel_styles.style_date),
-                    (item['cost'] or 0, excel_styles.style_usd),
-                    (item['cpc'] or 0, excel_styles.style_usd),
-                    (item['clicks'] or 0,),
-                    (item['impressions'] or 0,),
-                    ((item['ctr'] or 0) / 100, excel_styles.style_percent)
-                ]
+                columns,
+                data=[[
+                    item['date'],
+                    item['cost'] or 0,
+                    item['cpc'] or 0,
+                    item['clicks'] or 0,
+                    item['impressions'] or 0,
+                    (item['ctr'] or 0) / 100
+                ] for item in date_data]
             )
 
+        columns.insert(1, {'name': 'Source', 'width': 30})
         create_excel_worksheet(
             workbook,
             'Per-Source Report',
-            [(1, 6000), (5, 3000)],
-            ['Date', 'Source', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'],
-            date_source_data,
-            lambda item: [
-                (item['date'], excel_styles.style_date),
-                (item['source'],),
-                (item['cost'] or 0, excel_styles.style_usd),
-                (item['cpc'] or 0, excel_styles.style_usd),
-                (item['clicks'] or 0,),
-                (item['impressions'] or 0,),
-                ((item['ctr'] or 0) / 100, excel_styles.style_percent)
-            ]
+            columns,
+            data=[[
+                item['date'],
+                item['source'],
+                item['cost'] or 0,
+                item['cpc'] or 0,
+                item['clicks'] or 0,
+                item['impressions'] or 0,
+                (item['ctr'] or 0) / 100
+            ] for item in date_source_data]
         )
 
-        workbook.save(response)
+        workbook.close()
+        output.seek(0)
+
+        response = self.create_file_response(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            '%s.xlsx' % filename,
+            content=output.read()
+        )
+
         return response
 
 
@@ -1650,19 +1757,19 @@ class AdGroupAdsTable(api_common.BaseApiView):
 
         size = max(min(int(size or 5), 50), 1)
 
-        result = reports.api.query(
+        result = filter_by_permissions(reports.api.query(
             start_date=start_date,
             end_date=end_date,
             breakdown=['article'],
             order=[order],
             ad_group=ad_group.id
-        )
+        ), request.user)
 
         result_pg, current_page, num_pages, count, start_index, end_index = reports.api.paginate(result, page, size)
 
         rows = result_pg
 
-        totals_data = reports.api.query(start_date, end_date, ad_group=int(ad_group.id))
+        totals_data = filter_by_permissions(reports.api.query(start_date, end_date, ad_group=int(ad_group.id)), request.user)
 
         last_sync = actionlog.sync.AdGroupSync(ad_group).get_latest_success(
             recompute=False)
