@@ -348,7 +348,7 @@ bounced_visits={bounced_visits}, pageviews={pageviews}, duration={duration})'.fo
             sender=self.sender,
             date=self.report.get_date(),
             ts=datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S'),
-            ext=mimetypes.guess_extension(self.report.raw.content_type)
+            ext=mimetypes.guess_extension(self.report.get_content_type())
         )
 
         try:
