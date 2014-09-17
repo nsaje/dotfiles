@@ -6,7 +6,7 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th ng-class="{'text-right': isNumberColumnType(col.type), 'arrow': col.order, ordered: order === '-' + (col.orderField || col.field), 'ordered-reverse': order === (col.orderField || col.field)}" ng-class="col.extraClass" ng-repeat="col in columns | filter: {checked: true}">
+                        <th ng-class="{'text-right': isNumberColumnType(col.type), 'arrow': col.order, ordered: order === '-' + (col.orderField || col.field), 'ordered-reverse': order === (col.orderField || col.field)}" class="{{ col.extraThCss }}" ng-repeat="col in columns | filter: {checked: true}">
                             <zem-internal-feature ng-if="col.internal"></zem-internal-feature>
                             <span ng-switch="col.order">
                                 <a ng-switch-when='true' href class="col-title order" ng-click="callOrderCallback((col.orderField || col.field))">{{ col.name }}</a>

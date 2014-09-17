@@ -93,6 +93,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             type: 'text',
             totalRow: false,
             help: 'Status of a particular media source (enabled or paused).',
+            extraThCss: 'text-center',
+            extraTdCss: 'text-center',
             order: true,
             orderField: 'status',
             initialOrder: 'asc'
