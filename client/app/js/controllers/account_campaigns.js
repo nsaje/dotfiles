@@ -195,7 +195,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
                 $scope.rows = $scope.rows.map(function (x) {
                     x.name = {
                         text: x.name,
-                        url: $state.href($scope.getDefaultAdGroupState(), {id: x.ad_group})
+                        url: $state.href($scope.getDefaultCampaignState(), {id: x.campaign})
                     };
                     x.state = x.state === constants.adGroupSettingsState.ACTIVE ? 'Active' : 'Paused';
 
