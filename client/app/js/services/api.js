@@ -162,6 +162,19 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AdGroupAdsTable() {
+        function convertFromApi(row) {
+            row.title_link = {
+                text: row.title,
+                url: row.url
+            }
+
+            row.url_link = {
+                text: row.url,
+                url: row.url
+            }
+ 
+            return row;
+        }
 
         this.get = function (id, page, size, startDate, endDate, order) {
             var deferred = $q.defer();
@@ -194,6 +207,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 success(function (data, status) {
                     var resource;
                     if (data && data.data) {
+                        data.data.rows = data.data.rows.map(convertFromApi);
                         deferred.resolve(data.data);
                     }
                 }).

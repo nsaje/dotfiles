@@ -17,18 +17,40 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     };
     $scope.columns = [
         {
-            name: 'URL',
-            field: 'url',
+            name: 'Title',
+            field: 'title_link',
+            unselectable: true,
             checked: true,
-            type: 'url',
-            help: 'The web address of the content ad.'
+            type: 'linkText',
+            hasTotalsLabel: true,
+            totalRow: false,
+            help: 'The creative title/headline of a content ad.',
+            extraTdCss: 'trimmed',
+            order: true,
+            orderField: 'title',
+            initialOrder: 'asc'
+        },
+        {
+            name: 'URL',
+            field: 'url_link',
+            checked: true,
+            type: 'linkText',
+            help: 'The web address of the content ad.',
+            extraTdCss: 'trimmed url',
+            totalRow: false,
+            order: true,
+            orderField: 'url',
+            initialOrder: 'asc'
         },
         {
             name: 'Spend',
             field: 'cost',
             checked: true,
             type: 'currency',
-            help: "The amount spent per creative."
+            help: "The amount spent per creative.",
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         },
         {
             name: 'Avg. CPC',
@@ -36,29 +58,40 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             checked: true,
             type: 'currency',
             fractionSize: 3,
-            help: "The average CPC for each content ad."
+            help: "The average CPC for each content ad.",
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         },
         {
             name: 'Clicks',
             field: 'clicks',
             checked: true,
             type: 'number',
-            help: 'The number of times a content ad has been clicked.'
+            help: 'The number of times a content ad has been clicked.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         },
         {
             name: 'Impressions',
             field: 'impressions',
             checked: true,
             type: 'number',
-            help: 'The number of times a content ad has been displayed.'
-
+            help: 'The number of times a content ad has been displayed.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         },
         {
             name: 'CTR',
             field: 'ctr',
             checked: true,
             type: 'percent',
-            help: 'The number of clicks divided by the number of impressions.'
+            help: 'The number of clicks divided by the number of impressions.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         }
     ];
 
@@ -103,22 +136,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         });
     };
 
-    $scope.orderTableData = function(field) {
-        // Title and URL are sorted ascending by default while everything else
-        // is descending.
-        if (field === 'title' || field === 'url') {
-            if ($scope.order === field) {
-                $scope.order = '-' + field;
-            } else {
-                $scope.order = field;
-            }
-        } else {
-            if ($scope.order === '-' + field) {
-                $scope.order = field;
-            } else {
-                $scope.order = '-' + field;
-            }
-        }
+    $scope.orderTableData = function(order) {
+        $scope.order = order;
 
         $location.search('order', $scope.order);
         localStorageService.set('adGroupContentAds.order', $scope.order);
