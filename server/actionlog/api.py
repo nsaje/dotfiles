@@ -10,7 +10,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Min
+from django.db.models import Q, Min
 
 from . import models
 from . import constants
@@ -145,50 +145,30 @@ def is_waiting_for_set_actions(ad_group):
     return is_fail_in_latest_group or is_any_waiting_action
 
 
-def count_waiting_manual_actions():
-    result = -1
-    try:
-        result = models.ActionLog.objects.filter(
-            action_type=constants.ActionType.MANUAL,
-            state=constants.ActionState.WAITING
-        ).count()
-    except Exception as e:
-        msg = traceback.format_exc(e)
-        logger.error(msg)
-    return result
+def count_waiting_stats_actions():
+    return models.ActionLog.objects.filter(
+        Q(action_type=constants.ActionType.MANUAL) | Q(action=constants.Action.CREATE_CAMPAIGN),
+        state=constants.ActionState.WAITING
+    ).count()
 
 
-def count_failed_manual_actions():
-    result = -1
-    try:
-        result = models.ActionLog.objects.filter(
-            action_type=constants.ActionType.MANUAL,
-            state=constants.ActionState.FAILED
-        ).count()
-    except Exception as e:
-        msg = traceback.format_exc(e)
-        logger.error(msg)
-    return result
+def count_failed_stats_actions():
+    return models.ActionLog.objects.filter(
+        Q(action_type=constants.ActionType.MANUAL) | Q(action=constants.Action.CREATE_CAMPAIGN),
+        state=constants.ActionState.FAILED
+    ).count()
 
 
-def age_oldest_waiting_action():
-    n_hours = -1
-    try:
-        result = models.ActionLog.objects.filter(
-            action_type=constants.ActionType.MANUAL,
-            state=constants.ActionState.WAITING
-        ).aggregate(Min('created_dt'))
+def age_oldest_waiting_stats_action():
+    waiting_actions = models.ActionLog.objects.filter(
+        Q(action_type=constants.ActionType.MANUAL) | Q(action=constants.Action.CREATE_CAMPAIGN),
+        state=constants.ActionState.WAITING
+    ).order_by('created_dt')
 
-        if result.get('created_dt__min') is None:
-            n_hours = 0
-        else:
-            t_now = time.mktime(datetime.utcnow().timetuple())
-            t_created = time.mktime(result['created_dt__min'].timetuple())
-            n_hours = int((t_now - t_created) / 3600)
-    except Exception as e:
-        msg = traceback.format_exc(e)
-        logger.error(msg)
-    return n_hours
+    if not waiting_actions.exists():
+        return 0
+
+    return int((datetime.utcnow() - waiting_actions[0].created_dt).total_seconds() / 3600)
 
 
 def is_sync_in_progress(ad_groups=None, accounts=None):
