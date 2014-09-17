@@ -1,4 +1,6 @@
+import datetime
 import logging
+import mimetypes
 
 from django.db import models
 
@@ -7,9 +9,12 @@ from resolve import resolve_source, resolve_article
 
 import dash.models
 import reports.models
+import utils.s3helpers
 
 
 logger = logging.getLogger(__name__)
+
+S3_REPORT_KEY_FORMAT = 'conversionreports/{sender}/{date}/{filename}'
 
 
 class RawPostclickStats(models.Model):
@@ -337,3 +342,16 @@ bounced_visits={bounced_visits}, pageviews={pageviews}, duration={duration})'.fo
                     conversions_value_cc=conversion_metrics['conversions_value_cc'],
                 )
                 raw_goal_stats.save()
+
+    def store_to_s3(self):
+        key = S3_REPORT_KEY_FORMAT.format(
+            sender=self.sender,
+            date=self.report.get_date(),
+            ts=datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S'),
+            ext=mimetypes.guess_extension(self.report.raw.content_type)
+        )
+
+        try:
+            utils.S3Helper().put(key, self.report.raw)
+        except Exception:
+            logger.exception('Error while saving conversion report to s3')
