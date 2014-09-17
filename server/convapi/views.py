@@ -8,7 +8,7 @@ from django.db import transaction
 
 from auth import MailGunRequestAuth, GASourceAuth
 from parse import CsvReport
-from models import ReportEmail
+from aggregate import ReportEmail
 
 
 logger = logging.getLogger(__name__)

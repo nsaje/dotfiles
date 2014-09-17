@@ -298,6 +298,12 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
         }
     };
 
+    $scope.toggleChart = function () {
+        $scope.isChartShown = !$scope.isChartShown;
+        $scope.chartBtnTitle = $scope.isChartShown ? 'Hide chart' : 'Show chart';
+        $location.search('chart_hidden', !$scope.isChartShown ? '1' : null);
+    };
+
     var initColumns = function () {
         var cols;
 

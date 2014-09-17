@@ -222,8 +222,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 field: 'visits',
                 checked: true,
                 type: 'number',
-                help: 'The number of visits as reported by Google Analytics.',
                 internal: isInternal,
+                help: 'Total number of sessions within a date range. A session is the period of time in which a user is actively engaged with your site.',
                 totalRow: true,
                 order: true,
                 initialOrder: 'desc'
@@ -234,8 +234,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 field: 'pageviews',
                 checked: true,
                 type: 'number',
-                help: 'The number of pageviews as reported by Google Analytics.',
                 internal: isInternal,
+                help: 'Total number of pageviews made during the selected date range. A pageview is a view of a single page. Repeated views are counted.',
                 totalRow: true,
                 order: true,
                 initialOrder: 'desc'
@@ -246,8 +246,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 field: 'percent_new_users',
                 checked: false,
                 type: 'percent',
-                help: 'Percentage of visits made by new users, as reported by Google Analytics.',
                 internal: isInternal,
+                help: 'An estimate of first time visits during the selected date range.',
                 totalRow: true,
                 order: true,
                 initialOrder: 'desc'
@@ -258,8 +258,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 field: 'bounce_rate',
                 checked: false,
                 type: 'percent',
-                help: 'Bounce rate help goes here.',
                 internal: isInternal,
+                help: 'Percantage of visits that resulted in only one page view.',
                 totalRow: true,
                 order: true,
                 initialOrder: 'desc'
@@ -271,8 +271,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 checked: false,
                 type: 'number',
                 fractionSize: 2,
-                help: 'Help, pageviews per visit.',
                 internal: isInternal,
+                help: 'Average number of pageviews per visit.',
                 totalRow: true,
                 order: true,
                 initialOrder: 'desc'
@@ -283,8 +283,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 field: 'avg_tos',
                 checked: false,
                 type: 'seconds',
-                help: 'Help, average time on site.',
                 internal: isInternal,
+                help: 'Average time spent on site in seconds during the selected date range.',
                 totalRow: true,
                 order: true,
                 initialOrder: 'desc'
@@ -295,8 +295,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 field: 'click_discrepancy',
                 checked: false,
                 type: 'percent',
-                help: 'Help, click discrepancy.',
                 internal: isInternal,
+                help: 'Clicks detected only by media source as a percentage of total clicks.',
                 totalRow: true,
                 order: true,
                 initialOrder: 'desc'
@@ -363,7 +363,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                             'field': field,
                             'checked': false,
                             'type': 'number',
-                            'help': 'Number of goal completions',
+                            'help': 'Number of completions of the conversion goal',
                             internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
                         }
                         $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
@@ -373,7 +373,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                             'field': field,
                             'checked': false,
                             'type': 'percent',
-                            'help': 'Conversion rate help',
+                            'help': 'Percentage of visits which resulted in a goal completion',
                             internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
                         }
                         $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
