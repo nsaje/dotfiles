@@ -215,6 +215,13 @@ def _get_ad_group_sources(ad_group, source):
     return ad_group.adgroupsource_set.filter(source=source)
 
 
+def _get_ad_group_settings(ad_group):
+    s = dash.models.AdGroupSettings.objects.filter(ad_group=ad_group)
+    if s:
+        return s.latest('created_dt')
+
+    return None
+
 def _get_campaign_settings(campaign):
     s = dash.models.CampaignSettings.objects.filter(campaign=campaign)
     if s:
@@ -432,6 +439,7 @@ def _init_create_campaign(ad_group_source, name):
         order=order
     )
 
+    ad_group_settings = _get_ad_group_settings(ad_group_source.ad_group)
     campaign_settings = _get_campaign_settings(ad_group_source.ad_group.campaign)
 
     try:
@@ -458,6 +466,11 @@ def _init_create_campaign(ad_group_source, name):
                 params = ad_group_source.source.defaultsourcesettings.params
                 if 'create_campaign' in params:
                     payload['args']['extra'].update(params['create_campaign'])
+
+            if ad_group_settings:
+                payload['args']['extra'].update({
+                    'tracking_code': ad_group_settings.tracking_code,
+                })
 
             if campaign_settings:
                 payload['args']['extra'].update({
