@@ -88,6 +88,38 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AdGroupSourcesTable() {
+
+        function convertFromApi(data) {
+
+            function convertRow(row) {
+                var converted_row = {}
+                for(var field in row) {
+                    if(field.indexOf('goals') == '0') {
+                        for(var goalName in row['goals']) {
+                            for(var metricName in row['goals'][goalName]) {
+                                if(metricName == 'conversions') {
+                                    converted_row['goal__' + goalName + ': Conversions'] = row['goals'][goalName][metricName];
+                                } else if(metricName == 'conversion_rate') {
+                                    converted_row['goal__' + goalName + ': Conversion Rate'] = row['goals'][goalName][metricName];
+                                }
+                            }
+                        }
+                    } else {
+                        converted_row[field] = row[field];
+                    }
+                }
+                return converted_row;
+            }
+
+            for(var i = 0; i < data.rows.length; i++) {
+                var row = data.rows[i];
+                data.rows[i] = convertRow(row);
+            }
+            data.totals = convertRow(data.totals);
+            
+            return data;
+        };
+
         this.get = function (id, startDate, endDate, order) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/sources/table/';
@@ -108,7 +140,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
-                        deferred.resolve(data.data);
+                        deferred.resolve(convertFromApi(data.data));
                     }
                 }).
                 error(function(data, status, headers, config) {
@@ -120,6 +152,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AdGroupAdsTable() {
+
         this.get = function (id, page, size, startDate, endDate, order) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/contentads/table/';

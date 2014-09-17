@@ -1,0 +1,21 @@
+- coverage:
+    pwd: client/coverage/cobertura/C*/cobertura.xml
+    ci: circle
+    backend: librato
+    suite: eins_frontend
+- junit:
+    pwd: client/test-results.xml
+    ci: circle
+    backend: librato
+    suite: eins_frontend
+
+- coverage:
+    pwd: server/coverage.xml
+    ci: circle
+    backend: librato
+    suite: eins_backend
+- junit:
+    pwd: server/.junit_xml/TEST-*
+    ci: circle
+    backend: librato
+    suite: eins_backend

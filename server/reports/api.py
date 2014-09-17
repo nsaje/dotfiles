@@ -6,6 +6,7 @@ import urlparse
 import urllib
 import logging
 import collections
+import operator
 
 import pytz
 
@@ -42,15 +43,6 @@ POSTCLICK_AGGREGATE_FIELDS = dict(
     pageviews_sum=Sum('pageviews'),
     pv_per_visit=db_aggregates.SumDivision('pageviews', 'visits'),
     avg_tos=db_aggregates.SumDivision('duration', 'visits'),
-)
-
-INCOMPLETE_AGGREGATE_FIELDS = dict(
-    has_traffic_metrics_min=Min('has_traffic_metrics'),
-    has_postclick_metrics_min=Min('has_postclick_metrics'),
-    has_conversion_metrics_min=Min('has_conversion_metrics'),
-    has_traffic_metrics_max=Max('has_traffic_metrics'),
-    has_postclick_metrics_max=Max('has_postclick_metrics'),
-    has_conversion_metrics_max=Max('has_conversion_metrics'),
 )
 
 GOAL_AGGREGATE_FIELDS = dict(
@@ -108,7 +100,7 @@ def query_stats(start_date, end_date, breakdown=None, **constraints):
     if constraints:
         result = result.filter(**constraints)
 
-    agg_fields = {k:v for k, v in list(AGGREGATE_FIELDS.items()) + list(POSTCLICK_AGGREGATE_FIELDS.items()) + list(INCOMPLETE_AGGREGATE_FIELDS.items())}
+    agg_fields = {k:v for k, v in list(AGGREGATE_FIELDS.items()) + list(POSTCLICK_AGGREGATE_FIELDS.items())}
 
     if breakdown:
         result = result.values(*breakdown)
@@ -154,6 +146,29 @@ def _extend_result(result, conversion_result):
     result['goals'] = goals
 
 
+def _add_computed_metrics(result):
+    if result.get('clicks') is None or result.get('visits') is None or result['clicks'] == 0:
+        result['click_discrepancy'] = None
+    else:
+        result['click_discrepancy'] =  100.0 * max(0, result['clicks'] - result['visits']) / result['clicks']
+ 
+    for goal_name, metrics in result.get('goals', {}).iteritems():
+        metrics['conversion_rate'] = metrics['conversions'] / result['visits'] if result['visits'] > 0 else None
+
+    if result['visits'] == 0:
+        result['visits'] = None
+        result['pageviews'] = None
+        result['bounce_rate'] = None
+        result['percent_new_users'] = None
+        result['pv_per_visit'] = None
+        result['avg_tos'] = None
+        result['click_discrepancy'] = None
+
+        for goal_name, metrics in result.get('goals', {}).iteritems():
+            for metric_name in metrics:
+                metrics[metric_name] = None
+
+
 def sorted_results(results, order=None):
     rows = results[:]
     if not order:
@@ -176,7 +191,7 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
 
     conversion_results = query_goal(start_date, end_date, breakdown=breakdown, **constraints)
     conversion_results = _collect_results(conversion_results)
-
+    
     # in memory join of the result sets
     if breakdown:
         # include related data
@@ -192,12 +207,17 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
         for row in conversion_results:
             key = _extract_key(row, breakdown)
             _extend_result(results[key], row)
-        results = results.values()
-        return sorted_results(results, order)
+        
+        for key, row in results.iteritems():
+            _add_computed_metrics(row)
+
+        return sorted_results(results.values(), order)
     else:
+        # no breakdown => the result is a single row aggregate
         result = report_results
         for row in conversion_results:
             _extend_result(result, row)
+        _add_computed_metrics(result)
         return result
 
 
@@ -244,6 +264,8 @@ def _collect_results(result):
         'ctr': lambda x: None if x is None else x * 100,
         'datetime': lambda dt: dt.date(),
         'conversions_value_cc_sum': lambda x: None if x is None else float(decimal.Decimal(round(x)) / decimal.Decimal(10000)),
+        'bounce_rate': lambda x: None if x is None else x * 100,
+        'percent_new_users': lambda x: None if x is None else x * 100,
     }
 
     def collect_row(row):
@@ -255,10 +277,6 @@ def _collect_results(result):
             new_col_name = col_name_translate.get(col_name, col_name)
             new_row[new_col_name] = new_col_val
 
-        new_row['incomplete_traffic_metrics'] = row.get('has_traffic_metrics_min', 0) == 0 and row.get('has_traffic_metrics_max', 0) == 1
-        new_row['incomplete_postclick_metrics'] = row.get('has_postclick_metrics_min', 0) == 0 and row.get('has_postclick_metrics_max', 0) == 1
-        new_row['incomplete_conversion_metrics'] = row.get('has_conversion_metrics_min', 0) == 0 and row.get('has_conversion_metrics_max', 0) == 1
-        
         return new_row
 
     if isinstance(result, dict):
@@ -282,6 +300,34 @@ def get_yesterday_cost(ad_group):
     result = {row['source']: row['cost'] for row in rs}
 
     return result
+
+
+def _has_any_postclick_metrics(ad_group):
+    rs = models.ArticleStats.objects.filter(
+            ad_group=ad_group
+        ).aggregate(has_postclick_metrics_max=Max('has_postclick_metrics'))
+
+    return rs['has_postclick_metrics_max'] == 1
+
+
+def has_complete_postclick_metrics(start_date, end_date, ad_group):
+    if not _has_any_postclick_metrics(ad_group):
+        return True
+
+    rs = models.ArticleStats.objects.filter(
+        datetime__gte=start_date,
+        datetime__lte=end_date,
+        ad_group=ad_group
+    ).values('datetime').annotate(
+        has_postclick_metrics_max=Max('has_postclick_metrics')
+    )
+
+    is_complete = reduce(operator.iand, 
+        (r['has_postclick_metrics_max'] == 1 for r in rs),
+        True
+    )
+
+    return is_complete
 
 
 def _reset_existing_traffic_stats(ad_group, source, date):
@@ -349,7 +395,7 @@ def _reconcile_article(raw_url, title, ad_group):
     if not raw_url:
         raise exc.ArticleReconciliationException('Missing article url.')
 
-    url = _clean_url(raw_url)
+    url, _ = clean_url(raw_url)
 
     try:
         return dashmodels.Article.objects.get(ad_group=ad_group, title=title, url=url)
@@ -361,14 +407,14 @@ def _reconcile_article(raw_url, title, ad_group):
             return dashmodels.Article.objects.create(ad_group=ad_group, url=url, title=title)
     except IntegrityError:
         logger.info(
-            'Integrity error upon inserting article: title = {title}, url = {url}, ad group id = {ad_group_id}. '
-            'Using existing article.'.
+            u'Integrity error upon inserting article: title = {title}, url = {url}, ad group id = {ad_group_id}. '
+            u'Using existing article.'.
             format(title=title, url=url, ad_group_id=ad_group.id)
         )
         return dashmodels.Article.objects.get(ad_group=ad_group, url=url, title=title)
 
 
-def _clean_url(raw_url):
+def clean_url(raw_url):
     '''
     Removes all utm_* and z1_* params, then alphabetically order the remaining params
     '''
@@ -382,91 +428,4 @@ def _clean_url(raw_url):
 
     split_url[3] = urllib.urlencode(sorted(cleaned_query_parameters, key=lambda x: x[0]))
 
-    return urlparse.urlunsplit(split_url)
-
-
-def reapply_clean_url():
-    '''
-    Reapplies _clean_url function to already saved articles and merges duplicates.
-    '''
-    articles = dashmodels.Article.objects.all()
-    num_new_urls = 0
-    num_merged_articles = 0
-    num_merged_stats = 0
-
-    ad_group_articles_changed = collections.Counter()
-    ad_group_stats_changed = collections.Counter()
-
-    with transaction.atomic():
-        for article in articles:
-            old = article.url
-            new = _clean_url(old)
-
-            if old == new:
-                continue
-
-            article.url = new
-            num_new_urls += 1
-            ad_group_articles_changed[article.ad_group.id] += 1
-
-            try:
-                logger.info(
-                    'Saving article {id}, old url: {old_url} with new url: {url}'.format(
-                        id=article.id,
-                        old_url=old,
-                        url=article.url
-                    )
-                )
-                with transaction.atomic():
-                    article.save()
-            except IntegrityError:
-                num_merged_articles += 1
-                existing_article = dashmodels.Article.objects.get(
-                    title=article.title,
-                    url=article.url,
-                    ad_group=article.ad_group)
-                logger.info(
-                    'Integrity error on saving article {id}. '
-                    'Merging with already existing article {existing_id}.'.format(
-                        id=article.id,
-                        existing_id=existing_article.id,
-                    )
-                )
-
-                stats = models.ArticleStats.objects.filter(article=article)
-                for stat in stats:
-                    ad_group_stats_changed[stat.ad_group.id] += 1
-                    try:
-                        stat.article = existing_article
-                        with transaction.atomic():
-                            stat.save()
-                    except IntegrityError:
-                        num_merged_stats += 1
-                        existing_stat = models.ArticleStats.objects.get(
-                            datetime=stat.datetime,
-                            ad_group=stat.ad_group,
-                            article=existing_article,
-                            source=stat.source
-                        )
-                        logger.info(
-                            'Integrity error on saving stat {id}. '
-                            'Merging with already existing stat {existing_id}.'.format(
-                                id=stat.id,
-                                existing_id=existing_stat.id,
-                            )
-                        )
-
-                        existing_stat.impressions += stat.impressions
-                        existing_stat.clicks += stat.clicks
-                        existing_stat.cost_cc += stat.cost_cc
-                        existing_stat.save()
-
-                        stat.delete()
-
-                article.delete()
-
-    logger.info("AD GROUP ARTICLE CHANGES: {}".format(ad_group_articles_changed))
-    logger.info("AD GROUP STAT CHANGES: {}".format(ad_group_stats_changed))
-    logger.info("ARTICLES WITH NEW URLS: {}".format(num_new_urls))
-    logger.info("MERGED ARTICLES: {}".format(num_merged_articles))
-    logger.info("MERGED STATS: {}".format(num_merged_stats))
+    return urlparse.urlunsplit(split_url), dict(query_parameters)

@@ -400,6 +400,10 @@ class AdGroupSettings(SettingsBase):
             value = constants.AdGroupSourceSettingsState.get_text(value)
         elif prop_name == 'end_date' and value is None:
             value = 'I\'ll stop it myself'
+        elif prop_name == 'cpc_cc' and value is not None:
+            value = '${:.3f}'.format(value)
+        elif prop_name == 'daily_budget_cc' and value is not None:
+            value = '${:.2f}'.format(value)
         elif prop_name == 'target_devices':
             value = ', '.join(constants.AdTargetDevice.get_text(x) for x in value)
         elif prop_name == 'target_regions':

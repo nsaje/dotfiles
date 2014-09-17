@@ -577,6 +577,9 @@ div[datepicker] {
         margin-bottom: 10px;
 
         .select2-container {
+            /*width: 12em !important;*/
+            width: 12em;
+
             &.metric1 {
                 margin-right: 0.8em;
             }
@@ -709,7 +712,6 @@ div[datepicker] {
             }
         }
     }
-
 }
 
 .select2-dropdown-open .select2-choice,
@@ -1027,7 +1029,7 @@ a.help-popover:visited {
         margin-bottom: 10px;
     }
 
-    .last-sync {
+    .last-sync, .incomplete-postclick {
         text-align: center;
         font-size: 12px;
         color: #737373;
@@ -1178,6 +1180,8 @@ a.help-popover:visited {
 
 .history-popover-table {
     display: table;
+    table-layout: fixed;
+    width: 100%;
 
     .history-popover-row {
         display: table-row;
@@ -1438,6 +1442,8 @@ a.help-popover:visited {
         margin-top: 11px;
         border: 1px solid #2fa8c7;
         color: #2fa8c7;
+
+        width: 14em;
 
         .checkbox {
             margin: 3px 20px
