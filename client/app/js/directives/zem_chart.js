@@ -1,7 +1,7 @@
 /*global $,oneApp,moment,constants*/
 "use strict";
 
-oneApp.directive('zemChart', ['config', function(config) {
+oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
     return {
         restrict: 'E',
         scope: {
@@ -24,10 +24,31 @@ oneApp.directive('zemChart', ['config', function(config) {
                 ['#f39c12', '#fdebd0']
             ];
             var usedColors = {};
+            var format = function (object) {
+                var span = angular.element(document.createElement('span')).text(object.text);
+                if (!angular.element(object.element).hasClass('internal')) {
+                    return span;
+                }
+
+                var internal = $compile(angular.element(document.createElement('zem-internal-feature')))($scope);
+                return internal.add(span);
+            };
 
             $scope.hasData = true;
             $scope.legendItems = [];
             $scope.appConfig = config;
+
+            $scope.select2Metric1Config = {
+                minimumResultsForSearch: -1,
+                dropdownCssClass: 'metric1',
+                formatResult: format
+            };
+
+            $scope.select2Metric2Config = {
+                minimumResultsForSearch: -1,
+                dropdownCssClass: 'metric2',
+                formatResult: format
+            };
 
             $scope.config = {
                 options: {
