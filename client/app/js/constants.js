@@ -27,7 +27,9 @@ var constants = {
         BOUNCE_RATE: 'bounce_rate',
         PV_PER_VISIT: 'pv_per_visit',
         AVG_TOS: 'avg_tos',
-        CLICK_DISCREPANCY: 'click_discrepancy'
+        CLICK_DISCREPANCY: 'click_discrepancy',
+        CONVERSION_RATE: 'conversion_rate',
+        CONVERSIONS: 'conversions'
     },
     iabCategory: {
         IAB1: 'IAB1',
