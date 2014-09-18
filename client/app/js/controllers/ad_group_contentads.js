@@ -25,7 +25,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             hasTotalsLabel: true,
             totalRow: false,
             help: 'The creative title/headline of a content ad.',
-            extraTdCss: 'trimmed',
+            extraTdCss: 'trimmed title',
             order: true,
             orderField: 'title',
             initialOrder: 'asc'
