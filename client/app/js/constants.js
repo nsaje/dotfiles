@@ -15,7 +15,7 @@ var constants = {
         UNITED_KINGDOM: 'UK',
         UNITED_STATES: 'US'
     },
-    sourceChartMetric: {
+    chartMetric: {
         CLICKS: 'clicks',
         IMPRESSIONS: 'impressions',
         CTR: 'ctr',
@@ -79,24 +79,40 @@ var options = {
         {name: 'United Kingdom', value: constants.adTargetCountry.UNITED_KINGDOM},
         {name: 'United States', value: constants.adTargetCountry.UNITED_STATES}
     ],
-    sourceChartMetrics: [
-        {name: 'Clicks', value: constants.sourceChartMetric.CLICKS},
-        {name: 'Impressions', value: constants.sourceChartMetric.IMPRESSIONS},
-        {name: 'CTR', value: constants.sourceChartMetric.CTR},
-        {name: 'Spend', value: constants.sourceChartMetric.COST},
-        {name: 'Avg. CPC', value: constants.sourceChartMetric.CPC},
-        {name: 'Visits', value: constants.sourceChartMetric.VISITS},
-        {name: 'Pageviews', value: constants.sourceChartMetric.PAGEVIEWS},
-        {name: 'New Users', value: constants.sourceChartMetric.NEW_USERS},
-        {name: 'Bounce Rate', value: constants.sourceChartMetric.BOUNCE_RATE},
-        {name: 'PV/Visit', value: constants.sourceChartMetric.PV_PER_VISIT},
-        {name: 'Avg. ToS', value: constants.sourceChartMetric.AVG_TOS},
-        {name: 'Click Discrepancy', value: constants.sourceChartMetric.CLICK_DISCREPANCY},
+    adGroupChartMetrics: [
+        {name: 'Clicks', value: constants.chartMetric.CLICKS},
+        {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
+        {name: 'CTR', value: constants.chartMetric.CTR},
+        {name: 'Spend', value: constants.chartMetric.COST},
+        {name: 'Avg. CPC', value: constants.chartMetric.CPC},
+    ],
+    adGroupChartPostClickMetrics: [
+        {name: 'Visits', value: constants.chartMetric.VISITS},
+        {name: 'Pageviews', value: constants.chartMetric.PAGEVIEWS},
+        {name: 'New Users', value: constants.chartMetric.NEW_USERS},
+        {name: 'Bounce Rate', value: constants.chartMetric.BOUNCE_RATE},
+        {name: 'PV/Visit', value: constants.chartMetric.PV_PER_VISIT},
+        {name: 'Avg. ToS', value: constants.chartMetric.AVG_TOS},
+        {name: 'Click Discrepancy', value: constants.chartMetric.CLICK_DISCREPANCY},
+    ],
+    campaignChartMetrics: [
+        {name: 'Clicks', value: constants.chartMetric.CLICKS},
+        {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
+        {name: 'CTR', value: constants.chartMetric.CTR},
+        {name: 'Spend', value: constants.chartMetric.COST},
+        {name: 'Avg. CPC', value: constants.chartMetric.CPC}
+    ],
+    accountChartMetrics: [
+        {name: 'Clicks', value: constants.chartMetric.CLICKS},
+        {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
+        {name: 'CTR', value: constants.chartMetric.CTR},
+        {name: 'Spend', value: constants.chartMetric.COST},
+        {name: 'Avg. CPC', value: constants.chartMetric.CPC}
     ],
     allAccountsChartMetrics: [
-        {name: 'Clicks', value: constants.sourceChartMetric.CLICKS},
-        {name: 'Spend', value: constants.sourceChartMetric.COST},
-        {name: 'Avg. CPC', value: constants.sourceChartMetric.CPC}
+        {name: 'Clicks', value: constants.chartMetric.CLICKS},
+        {name: 'Spend', value: constants.chartMetric.COST},
+        {name: 'Avg. CPC', value: constants.chartMetric.CPC}
     ],
     iabCategories: [
         {name: 'IAB1 - Arts & Entertainment', value: constants.iabCategory.IAB1},

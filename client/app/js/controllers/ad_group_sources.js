@@ -5,40 +5,130 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     $scope.isSyncInProgress = false;
     $scope.isIncompletePostclickMetrics = false;
     $scope.selectedSourceIds = [];
-    $scope.selectedSourceTotals = true;
+    $scope.selectedTotals = true;
     $scope.constants = constants;
-    $scope.chartMetric1 = constants.sourceChartMetric.CLICKS;
-    $scope.chartMetric2 = constants.sourceChartMetric.IMPRESSIONS;
-    $scope.dailyStats = [];
+    $scope.chartMetric1 = constants.chartMetric.CLICKS;
+    $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
     $scope.chartData = undefined;
     $scope.isChartShown = zemChartService.load('zemChart');
-    $scope.sourceChartMetrics = options.sourceChartMetrics;
+    $scope.chartMetricOptions = [];
+    $scope.chartGoalMetrics = null;
     $scope.chartBtnTitle = 'Hide chart';
     $scope.order = '-cost';
     $scope.sources = [];
     $scope.sourcesWaiting = null;
+
+    $scope.updateSelectedSources = function (sourceId) {
+        var i = $scope.selectedSourceIds.indexOf(sourceId);
+
+        if (i > -1) {
+            $scope.selectedSourceIds.splice(i, 1);
+        } else {
+            $scope.selectedSourceIds.push(sourceId);
+        }
+
+        $scope.columns[0].disabled = $scope.selectedSourceIds.length >= 4;
+    };
+
+    $scope.selectedSourcesChanged = function (row, checked) {
+        if (row.id) {
+            $scope.updateSelectedSources(row.id);
+        } else {
+            $scope.selectedTotals = !$scope.selectedTotals;
+        }
+
+        $scope.updateSelectedRowsData();
+    };
+
+    $scope.updateSelectedRowsData = function () {
+        if (!$scope.selectedTotals && !$scope.selectedSourceIds.length) {
+            $scope.selectedTotals = true;
+            $scope.totals.checked = true;
+        }
+
+        $location.search('source_ids', $scope.selectedSourceIds.join(','));
+        $location.search('source_totals', $scope.selectedTotals ? 1 : null);
+
+        $scope.setAdGroupData('sourceIds', $scope.selectedSourceIds);
+        $scope.setAdGroupData('sourceTotals', $scope.selectedTotals);
+
+        $scope.getDailyStats();
+    };
+
+    $scope.selectRows = function () {
+        $scope.rows.forEach(function (x) {
+            x.checked = $scope.selectedSourceIds.indexOf(x.id) > -1;
+        });
+    };
+
     $scope.columns = [
+        {
+            name: '',
+            field: 'checked',
+            type: 'checkbox',
+            checked: true,
+            totalRow: true,
+            unselectable: true,
+            order: false,
+            selectCallback: $scope.selectedSourcesChanged,
+            disabled: false
+        },
+        {
+            name: 'Media Source',
+            field: 'name',
+            unselectable: true,
+            checked: true,
+            type: 'text',
+            hasTotalsLabel: true,
+            totalRow: false,
+            help: 'A media source where your content is being promoted.',
+            order: true,
+            initialOrder: 'asc'
+        },
+        {
+            name: 'Status',
+            field: 'status_label',
+            unselectable: true,
+            checked: true,
+            type: 'text',
+            totalRow: false,
+            help: 'Status of a particular media source (enabled or paused).',
+            extraThCss: 'text-center',
+            extraTdCss: 'text-center',
+            order: true,
+            orderField: 'status',
+            initialOrder: 'asc'
+        },
         {
             name: 'Bid CPC',
             field: 'bid_cpc',
             checked: true,
             type: 'currency',
             fractionSize: 3,
-            help: 'Maximum bid price (in USD) per click.'
+            help: 'Maximum bid price (in USD) per click.',
+            totalRow: false,
+            order: true,
+            initialOrder: 'desc'
         },
         {
             name: 'Daily Budget',
             field: 'daily_budget',
             checked: true,
             type: 'currency',
-            help: 'Maximum budget per day.'
+            help: 'Maximum budget per day.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         },
         {
             name: 'Spend',
             field: 'cost',
             checked: true,
             type: 'currency',
-            help: "Amount spent per media source."
+            help: "Amount spent per media source.",
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         },
         {
             name: 'Avg. CPC',
@@ -46,35 +136,51 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             checked: true,
             type: 'currency',
             fractionSize: 3,
-            help: "The average CPC."
+            help: "The average CPC.",
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         },
         {
             name: 'Clicks',
             field: 'clicks',
             checked: true,
             type: 'number',
-            help: 'The number of times a content ad has been clicked.'
+            help: 'The number of times a content ad has been clicked.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         },
         {
             name: 'Impressions',
             field: 'impressions',
             checked: true,
             type: 'number',
-            help: 'The number of times a content ad has been displayed.'
+            help: 'The number of times a content ad has been displayed.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         },
         {
             name: 'CTR',
             field: 'ctr',
             checked: true,
             type: 'percent',
-            help: 'The number of clicks divided by the number of impressions.'
+            defaultValue: '0.0%',
+            help: 'The number of clicks divided by the number of impressions.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         },
         {
             name: 'Last OK Sync',
             field: 'last_sync',
             checked: false,
             type: 'datetime',
-            help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred.'
+            help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred.',
+            totalRow: false,
+            order: true,
+            initialOrder: 'desc'
         }
     ];
 
@@ -88,7 +194,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 checked: false,
                 type: 'currency',
                 help: 'Amount that you have spent yesterday for promotion on specific media source.',
-                internal: $scope.isPermissionInternal('reports.yesterday_spend_view')
+                internal: $scope.isPermissionInternal('reports.yesterday_spend_view'),
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc'
             });
         }
 
@@ -98,85 +207,99 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 field: 'supply_dash_url',
                 checked: false,
                 type: 'link',
-                internal: $scope.isPermissionInternal('zemauth.supply_dash_link_view')
+                internal: $scope.isPermissionInternal('zemauth.supply_dash_link_view'),
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc'
             });
         }
 
         if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            var isInternal = $scope.isPermissionInternal('zemauth.postclick_metrics');
+
             $scope.columns.splice($scope.columns.length - 1, 0, {
                 name: 'Visits',
                 field: 'visits',
                 checked: true,
                 type: 'number',
+                internal: isInternal,
                 help: 'Total number of sessions within a date range. A session is the period of time in which a user is actively engaged with your site.',
-                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc'
             });
-        }
 
-        if ($scope.hasPermission('zemauth.postclick_metrics')) {
             $scope.columns.splice($scope.columns.length - 1, 0, {
                 name: 'Pageviews',
                 field: 'pageviews',
                 checked: true,
                 type: 'number',
+                internal: isInternal,
                 help: 'Total number of pageviews made during the selected date range. A pageview is a view of a single page. Repeated views are counted.',
-                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc'
             });
-        }
 
-        if ($scope.hasPermission('zemauth.postclick_metrics')) {
             $scope.columns.splice($scope.columns.length - 1, 0, {
                 name: '% New Users',
                 field: 'percent_new_users',
                 checked: false,
                 type: 'percent',
+                internal: isInternal,
                 help: 'An estimate of first time visits during the selected date range.',
-                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc'
             });
-        }
 
-        if ($scope.hasPermission('zemauth.postclick_metrics')) {
             $scope.columns.splice($scope.columns.length - 1, 0, {
                 name: 'Bounce Rate',
                 field: 'bounce_rate',
                 checked: false,
                 type: 'percent',
+                internal: isInternal,
                 help: 'Percantage of visits that resulted in only one page view.',
-                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc'
             });
-        }
 
-        if ($scope.hasPermission('zemauth.postclick_metrics')) {
             $scope.columns.splice($scope.columns.length - 1, 0, {
                 name: 'PV/Visit',
                 field: 'pv_per_visit',
                 checked: false,
                 type: 'number',
                 fractionSize: 2,
+                internal: isInternal,
                 help: 'Average number of pageviews per visit.',
-                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc'
             });
-        }
 
-        if ($scope.hasPermission('zemauth.postclick_metrics')) {
             $scope.columns.splice($scope.columns.length - 1, 0, {
                 name: 'Avg. ToS',
                 field: 'avg_tos',
                 checked: false,
                 type: 'seconds',
+                internal: isInternal,
                 help: 'Average time spent on site in seconds during the selected date range.',
-                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc'
             });
-        }
 
-        if ($scope.hasPermission('zemauth.postclick_metrics')) {
             $scope.columns.splice($scope.columns.length - 1, 0, {
                 name: 'Click Discrepancy',
                 field: 'click_discrepancy',
                 checked: false,
                 type: 'percent',
+                internal: isInternal,
                 help: 'Clicks detected only by media source as a percentage of total clicks.',
-                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc'
             });
         }
 
@@ -193,78 +316,15 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         zemChartService.save('zemChart', newValue);
     });
 
-    $scope.setChartData = function () {
-        var result = {
-            formats: [],
-            data: [],
-            names: [],
-            ids: []
-        };
-
-        result.formats = [$scope.chartMetric1, $scope.chartMetric2].map(function (x) {
-            var format = null;
-            if (x === constants.sourceChartMetric.COST ||
-                x === constants.sourceChartMetric.CPC) {
-                format = 'currency';
-            } else if (x === constants.sourceChartMetric.CTR) {
-                format = 'percent';
-            } else {
-                // check goal metrics for format info
-                $scope.sourceChartMetrics.forEach(function (metric) {
-                    if (x === metric.value && metric.format) {
-                        format = metric.format;
-                    }
-                });
-            }
-
-            return format;
-        });
-
-        var temp = {};
-        var lastDate = null;
-        var oneDayMs = 24*60*60*1000;
-        $scope.dailyStats.forEach(function (stat) {
-            if (!temp.hasOwnProperty(stat.sourceId)) {
-                temp[stat.sourceId] = {
-                    name: stat.sourceName,
-                    id: stat.sourceId,
-                    data: [[]]
-                };
-            }
-
-            // insert nulls for missing values
-            if (lastDate) {
-                for (var date = lastDate; date < stat.date - oneDayMs; date += oneDayMs) {
-                    temp[stat.sourceId].data[0].push([date, null]);
-
-                    if (temp[stat.sourceId].data[1]) {
-                        temp[stat.sourceId].data[1].push([date, null]);
-                    }
-                }
-            }
-            lastDate = stat.date;
-
-            temp[stat.sourceId].data[0].push([stat.date, stat[$scope.chartMetric1]]);
-
-            if ($scope.chartMetric2 && $scope.chartMetric2 !== $scope.chartMetric1) {
-                if (!temp[stat.sourceId].data[1]) {
-                    temp[stat.sourceId].data[1] = [];
-                }
-                temp[stat.sourceId].data[1].push([stat.date, stat[$scope.chartMetric2]]);
-            }
-        });
-
-        Object.keys(temp).forEach(function (sourceId) {
-            result.data.push(temp[sourceId].data);
-            result.names.push(temp[sourceId].name);
-            result.ids.push(temp[sourceId].id);
-        });
-
-        $scope.chartData = result;
-    };
-
     $scope.loadRequestInProgress = false;
 
+    $scope.orderTableData = function(order) {
+        $scope.order = order;
+
+        $location.search('order', $scope.order);
+        localStorageService.set('adGroupSources.order', $scope.order);
+        $scope.getTableData();
+    };
     $scope.orderRows = function (col) {
         if ($scope.order.indexOf(col) === 1) {
             $scope.order = col;
@@ -332,13 +392,14 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
+                $scope.totals.checked = $scope.selectedTotals;
                 $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
                 $scope.isSyncRecent = data.is_sync_recent;
                 $scope.isSyncInProgress = data.is_sync_in_progress;
 
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
 
-                $scope.selectSources();
+                $scope.selectRows();
             },
             function (data) {
                 // error
@@ -349,12 +410,69 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         });
     };
 
+    var getDailyStatsMetrics = function () {
+        var metrics = [$scope.chartMetric1, $scope.chartMetric2];
+
+        var values = options.adGroupChartMetrics.map(function (option) {
+            return option.value;
+        });
+
+        if (values.indexOf($scope.chartMetric1) === -1) {
+            metrics.push(constants.chartMetric.CLICKS);
+        }
+
+        if (values.indexOf($scope.chartMetric2) === -1) {
+            metrics.push(constants.chartMetric.IMPRESSIONS);
+        }
+
+        return metrics;
+    };
+
+    var setChartOptions = function (goals) {
+        $scope.chartMetricOptions = options.adGroupChartMetrics;
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            $scope.chartMetricOptions = $scope.chartMetricOptions.concat(options.adGroupChartPostClickMetrics.map(function (option) {
+                if ($scope.isPermissionInternal('zemauth.postclick_metrics')) {
+                    option.internal = true;
+                }
+
+                return option;
+            }));
+        }
+
+        if (!goals) {
+            return;
+        }
+
+        $scope.chartMetricOptions = $scope.chartMetricOptions.concat(Object.keys(goals).map(function (goalId) {
+            return {
+                name: goals[goalId].name,
+                value: goalId,
+                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+            }
+        }));
+    };
+
     $scope.getDailyStats = function () {
-        api.adGroupDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedSourceTotals).then(
+        api.dailyStats.list('ad_groups', $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics()).then(
             function (data) {
-                $scope.dailyStats = data.stats;
-                $scope.sourceChartMetrics = options.sourceChartMetrics.concat(data.options);
-                $scope.setChartData();
+                setChartOptions(data.goals);
+            
+                // Select default metrics if selected metrics are not defined
+                var values = $scope.chartMetricOptions.map(function (option) {
+                    return option.value;
+                });
+
+                if (values.indexOf($scope.chartMetric1) === -1) {
+                    $scope.chartMetric1 = constants.chartMetric.CLICKS;
+                }
+                if (values.indexOf($scope.chartMetric2) === -1) {
+                    $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
+                }
+
+                $scope.chartData = data.chartData;
+                $scope.chartGoalMetrics = data.goals;
             },
             function (data) {
                 // error
@@ -363,46 +481,16 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         );
     };
 
-    $scope.updateSelectedSources = function (sourceId) {
-        var i = $scope.selectedSourceIds.indexOf(sourceId);
-        if (i > -1) {
-            $scope.selectedSourceIds.splice(i, 1);
-        } else {
-            $scope.selectedSourceIds.push(sourceId);
-        }
-    };
-
     $scope.selectedSourceRemoved = function (sourceId) {
-        if (sourceId) {
+        if (sourceId !== 'totals') {
             $scope.updateSelectedSources(String(sourceId));
         } else {
-            $scope.selectedSourceTotals = false;
+            $scope.selectedTotals = false;
+            $scope.totals.checked = false;
         }
 
-        $scope.selectSources();
+        $scope.selectRows();
         $scope.updateSelectedRowsData();
-    };
-
-    $scope.selectedSourcesChanged = function (sourceId) {
-        if (sourceId) {
-            $scope.updateSelectedSources(sourceId);
-        }
-
-        $scope.updateSelectedRowsData();
-    };
-
-    $scope.updateSelectedRowsData = function () {
-        if (!$scope.selectedSourceTotals && !$scope.selectedSourceIds.length) {
-            $scope.selectedSourceTotals = true;
-        }
-
-        $location.search('source_ids', $scope.selectedSourceIds.join(','));
-        $location.search('source_totals', $scope.selectedSourceTotals ? 1 : null);
-
-        $scope.setAdGroupData('sourceIds', $scope.selectedSourceIds);
-        $scope.setAdGroupData('sourceTotals', $scope.selectedSourceTotals);
-
-        $scope.getDailyStats();
     };
 
     $scope.toggleChart = function () {
@@ -411,19 +499,42 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $location.search('chart_hidden', !$scope.isChartShown ? '1' : null);
     };
 
+    var hasMetricData = function (metric) {
+        var hasData = false;
+        $scope.chartData.forEach(function (group) {
+            if (group.seriesData[metric] !== undefined) {
+                hasData = true;
+            }
+        });
+
+        return hasData;
+    };
+
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            $scope.setChartData();
             $location.search('chart_metric1', $scope.chartMetric1);
-            localStorageService.set('adGroupSources.chartMetric1', $scope.chartMetric1);
+
+            if (!hasMetricData($scope.chartMetric1)) {
+                localStorageService.set('adGroupSources.chartMetric1', $scope.chartMetric1);
+                $scope.getDailyStats();
+            } else {
+                // create a copy to trigger watch
+                $scope.chartData = angular.copy($scope.chartData);
+            }
         }
     });
 
     $scope.$watch('chartMetric2', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            $scope.setChartData();
             $location.search('chart_metric2', $scope.chartMetric2);
-            localStorageService.set('adGroupSources.chartMetric2', $scope.chartMetric2);
+
+            if (!hasMetricData($scope.chartMetric2)) {
+                localStorageService.set('adGroupSources.chartMetric2', $scope.chartMetric2);
+                $scope.getDailyStats();
+            } else {
+                // create a copy to trigger watch
+                $scope.chartData = angular.copy($scope.chartData);
+            }
         }
     });
 
@@ -439,41 +550,30 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $scope.getTableData();
     });
 
-    $scope.selectSources = function () {
-        $scope.rows.forEach(function (x) {
-            x.checked = $scope.selectedSourceIds.indexOf(x.id) > -1;
-        });
-    };
-
     $scope.init = function() {
         var chartMetric1 = $location.search().chart_metric1 || localStorageService.get('adGroupSources.chartMetric1') || $scope.chartMetric1;
         var chartMetric2 = $location.search().chart_metric2 || localStorageService.get('adGroupSources.chartMetric2') || $scope.chartMetric2;
         var chartHidden = $location.search().chart_hidden;
         var order = $location.search().order || localStorageService.get('adGroupSources.order') || $scope.order;
-        var changed = false;
 
         var data = $scope.adGroupData[$state.params.id];
         var sourceIds = $location.search().source_ids || (data && data.sourceIds && data.sourceIds.join(','));
         var sourceTotals = $location.search().source_totals || (data && data.sourceTotals ? 1 : null);
 
+        setChartOptions();
+
         if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
             $scope.chartMetric1 = chartMetric1;
             $location.search('chart_metric1', chartMetric1);
-            changed = true;
         }
 
         if (chartMetric2 !== undefined && $scope.chartMetric2 !== chartMetric2) {
             $scope.chartMetric2 = chartMetric2;
             $location.search('chart_metric2', chartMetric2);
-            changed = true;
         }
 
         if (chartHidden) {
             $scope.isChartShown = false;
-        }
-
-        if (changed) {
-            $scope.setChartData();
         }
 
         if (sourceIds) {
@@ -482,7 +582,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             $location.search('source_ids', sourceIds);
 
             if ($scope.rows) {
-                $scope.selectSources();
+                $scope.selectRows();
             }
         }
 
@@ -491,8 +591,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             $location.search('order', order);
         }
 
-        $scope.selectedSourceTotals = !$scope.selectedSourceIds.length || !!sourceTotals;
-        $scope.setAdGroupData('sourceTotals', $scope.selectedSourceTotals);
+        $scope.selectedTotals = !$scope.selectedSourceIds.length || !!sourceTotals;
+        $scope.setAdGroupData('sourceTotals', $scope.selectedTotals);
         $location.search('source_totals', sourceTotals);
 
         $scope.getAdGroupState();

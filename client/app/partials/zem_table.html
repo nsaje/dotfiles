@@ -1,0 +1,141 @@
+<div class="zem-table-container">
+    <div class="loader-container">
+        <div class="loader" ng-show="rows.length && showLoader"></div>
+
+        <div class="table-container">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th ng-class="{'text-right': isNumberColumnType(col.type), 'arrow': col.order, ordered: order === '-' + (col.orderField || col.field), 'ordered-reverse': order === (col.orderField || col.field)}" class="{{ col.extraThCss }}" ng-repeat="col in columns | filter: {checked: true}">
+                            <zem-internal-feature ng-if="col.internal"></zem-internal-feature>
+                            <span ng-switch="col.order">
+                                <a ng-switch-when='true' href class="col-title order" ng-click="callOrderCallback((col.orderField || col.field))">{{ col.name }}</a>
+                                <span ng-switch-default class="col-title">{{ col.name }}</span>
+                            </span>
+                            <zem-help-popover ng-if="col.help" content="{{ col.help }}" placement="{{ $last ? 'left' : 'top' }}"></zem-help-popover>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-if="showLoader && !rows.length">
+                        <td colspan="100" class="loader-row">
+                            <div class="loader"></div>
+                        </td>
+                    </tr>
+                    <tr ng-show="(!rows || !rows.length) && !showLoader">
+                        <td class="no-data" colspan="100">No data</td>
+                    </tr>
+                    <tr ng-repeat="row in rows">
+                        <td ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type), 'input-one-char': col.type === 'checkbox'}" class="{{ col.extraTdCss }}" ng-repeat="col in columns | filter: {checked: true}">
+                            <span ng-switch="col.type">
+                                <span ng-switch-when="currency">
+                                    <span ng-class="{'currency-3': col.fractionSize === 3}">
+                                        {{ (row[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
+                                    </span>
+                                </span>
+                                <span ng-switch-when="percent">
+                                    <span ng-switch="row[col.field]">
+                                        <span ng-switch-when="null">
+                                            {{ col.defaultValue || 'N/A' }}
+                                        </span>
+                                        <span ng-switch-when="undefined">
+                                            {{ col.defaultValue || 'N/A' }}
+                                        </span>
+                                        <span ng-switch-default>
+                                            {{ (row[col.field] | number:2) }}%
+                                        </span>
+                                    </span>
+                                </span>
+                                <span ng-switch-when="number">
+                                    {{ (row[col.field] | number:0) || 'N/A' }}
+                                </span>
+                                <span ng-switch-when="seconds">
+                                    <span ng-switch="row[col.field]">
+                                        <span ng-switch-when="null">
+                                            N/A
+                                        </span>
+                                        <span ng-switch-when="undefined">
+                                            N/A
+                                        </span>
+                                        <span ng-switch-default>
+                                            {{ (row[col.field] | number:1) }} s
+                                        </span>
+                                    </span>
+                                </span>
+                                <span ng-switch-when="datetime">
+                                    <span class="datetime">
+                                        {{ (row[col.field] | date:'M/d/yyyy h:mm a') || 'N/A' }}
+                                    </span>
+                                </span>
+                                <span ng-switch-when="link">
+                                    <a ng-href="{{ row[col.field] }}" target="_blank"><img ng-src="{{ config.static_url }}/img/link.svg" class="link-img"></a>
+                                </span>
+                                <span ng-switch-when="linkText">
+                                    <a ng-href="{{ row[col.field].url }}">{{ row[col.field].text }}</a>
+                                </span>
+                                <span ng-switch-when="text">
+                                    {{ row[col.field] }}
+                                </span>
+                                <span ng-switch-when='checkbox'>
+                                    <input type="checkbox" data-ng-model="row[col.field]" ng-disabled="!row[col.field] && col.disabled" data-ng-change="callSelectCallback(col.selectCallback, row, row[col.field], true)"/>
+                                </span>
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type)}" ng-repeat="col in columns | filter: {checked: true}">
+                            <span ng-if="col.hasTotalsLabel">TOTALS</span>
+
+                            <span ng-if="col.totalRow" ng-switch="col.type">
+                                <span ng-if="col.field != 'last_sync'">
+                                    <span ng-switch-when="currency">
+                                        <span ng-class="{'currency-3': col.fractionSize === 3}">
+                                            {{ (totalRow[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
+                                        </span>
+                                    </span>
+                                    <span ng-switch-when="percent">
+                                        <span ng-switch="totalRow[col.field]">
+                                            <span ng-switch-when="null">
+                                                {{ col.defaultValue || 'N/A' }}
+                                            </span>
+                                            <span ng-switch-when="undefined">
+                                                {{ col.defaultValue || 'N/A' }}
+                                            </span>
+                                            <span ng-switch-default>
+                                                {{ (totalRow[col.field] | number:2) }}%
+                                            </span>
+                                        </span>
+                                    </span>
+                                    <span ng-switch-when="number">
+                                        {{ (totalRow[col.field] | number:0) || 'N/A' }}
+                                    </span>
+                                    <span ng-switch-when="seconds">
+                                        <span ng-switch="totalRow[col.field]">
+                                            <span ng-switch-when="null">
+                                                N/A
+                                            </span>
+                                            <span ng-switch-when="undefined">
+                                                N/A
+                                            </span>
+                                            <span ng-switch-default>
+                                                {{ (totalRow[col.field] | number:1) }} s
+                                            </span>
+                                        </span>
+                                    </span>
+                                    <span ng-switch-when="datetime">
+                                        {{ (totalRow[col.field] | date:'M/d/yyyy h:mm a') || 'N/A' }}
+                                    </span>
+                                    <span ng-switch-when='checkbox'>
+                                        <input type="checkbox" data-ng-model="totalRow.checked" data-ng-change="callSelectCallback(col.selectCallback, totalRow, totalRow[col.field], false)"/>
+                                    </span>
+                                </span>
+                            </span>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>

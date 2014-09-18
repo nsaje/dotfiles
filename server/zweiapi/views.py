@@ -27,10 +27,8 @@ def zwei_callback(request, action_id):
     except request_signer.SignatureError as e:
         logger.exception('Invalid zwei callback signature.')
 
-        msg = 'Zwei callback failed for action: {action_id}. Error: {error}'.format(
-            action_id=action_id, error=repr(e.message)
-        )
-        logger.error(msg)
+        msg = 'Zwei callback failed for action: %s. Error: %s'
+        logger.error(msg, action_id, repr(e.message))
 
     try:
         action = actionlogmodels.ActionLog.objects.get(id=action_id)
@@ -47,13 +45,19 @@ def zwei_callback(request, action_id):
             action.ad_group_source.save()
     except Exception as e:
         tb = traceback.format_exc()
-        msg = 'Zwei callback failed for action: {action_id}. Error: {error}, message: {message}.'\
-              '\n\nTraceback: {traceback}'\
-              .format(action_id=action.id, error=e.__class__.__name__, message=repr(e.message), traceback=tb)
-        logger.error(msg)
+        msg = 'Zwei callback failed for action: %(action_id)s. Error: %(error)s, message: %(message)s.'
+        args = {
+            'action_id': action.id,
+            'error': e.__class__.__name__,
+            'message': repr(e.message)
+        }
+        logger.exception(msg, args)
+
+        msg += '\n\nTraceback: %(traceback)s'
+        args.update({'traceback': tb})
 
         action.state = actionlogconstants.ActionState.FAILED
-        action.message = msg
+        action.message = msg % args
         action.save()
 
     response_data = {'status': 'OK'}

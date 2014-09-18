@@ -171,7 +171,7 @@ def age_oldest_waiting_stats_action():
     return int((datetime.utcnow() - waiting_actions[0].created_dt).total_seconds() / 3600)
 
 
-def is_sync_in_progress(ad_groups=None, accounts=None):
+def is_sync_in_progress(ad_groups=None, campaigns=None, accounts=None):
     '''
     sync is in progress if one of the following is true:
     - a get reports action for this ad_group is in 'waiting' state
@@ -190,6 +190,8 @@ def is_sync_in_progress(ad_groups=None, accounts=None):
 
     if ad_groups:
         q = q.filter(ad_group_source__ad_group__in=ad_groups)
+    elif campaigns:
+        q = q.filter(ad_group_source__ad_group__campaign__in=campaigns)
     elif accounts:
         q = q.filter(ad_group_source__ad_group__campaign__account__in=accounts)
 
@@ -214,6 +216,13 @@ def _get_ad_group_sources(ad_group, source):
 
     return ad_group.adgroupsource_set.filter(source=source)
 
+
+def _get_ad_group_settings(ad_group):
+    s = dash.models.AdGroupSettings.objects.filter(ad_group=ad_group)
+    if s:
+        return s.latest('created_dt')
+
+    return None
 
 def _get_campaign_settings(campaign):
     s = dash.models.CampaignSettings.objects.filter(campaign=campaign)
@@ -432,6 +441,7 @@ def _init_create_campaign(ad_group_source, name):
         order=order
     )
 
+    ad_group_settings = _get_ad_group_settings(ad_group_source.ad_group)
     campaign_settings = _get_campaign_settings(ad_group_source.ad_group.campaign)
 
     try:
@@ -458,6 +468,11 @@ def _init_create_campaign(ad_group_source, name):
                 params = ad_group_source.source.defaultsourcesettings.params
                 if 'create_campaign' in params:
                     payload['args']['extra'].update(params['create_campaign'])
+
+            if ad_group_settings:
+                payload['args']['extra'].update({
+                    'tracking_code': ad_group_settings.tracking_code,
+                })
 
             if campaign_settings:
                 payload['args']['extra'].update({

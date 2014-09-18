@@ -3,13 +3,10 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.requestInProgress = false;
-    $scope.selectedSourceIds = [];
-    $scope.selectedSourceTotals = true;
     $scope.constants = constants;
     $scope.options = options;
-    $scope.chartMetric1 = constants.sourceChartMetric.CLICKS;
+    $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = null;
-    $scope.dailyStats = [];
     $scope.chartData = undefined;
     $scope.isChartShown = zemChartService.load('zemChart');
     $scope.chartBtnTitle = 'Hide chart';
@@ -20,11 +17,41 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     };
     $scope.columns = [
         {
+            name: 'Account',
+            field: 'name_link',
+            unselectable: true,
+            checked: true,
+            type: 'linkText',
+            hasTotalsLabel: true,
+            totalRow: false,
+            help: 'A partner account.',
+            order: true,
+            orderField: 'name',
+            initialOrder: 'asc'
+        },
+        {
+            name: 'Status',
+            field: 'status_label',
+            unselectable: true,
+            checked: true,
+            type: 'text',
+            totalRow: false,
+            help: 'Status of an account (enabled or paused). An account is paused only if all its campaigns are paused, too; otherwise the account is enabled.',
+            extraThCss: 'text-center',
+            extraTdCss: 'text-center',
+            order: true,
+            orderField: 'status',
+            initialOrder: 'asc'
+        },
+        {
             name: 'Spend',
             field: 'cost',
             checked: true,
             type: 'currency',
-            help: "Amount spent per account"
+            help: "Amount spent per account",
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         },
         {
             name: 'Avg. CPC',
@@ -32,21 +59,29 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             checked: true,
             type: 'currency',
             fractionSize: 3,
-            help: "The average CPC."
+            help: "The average CPC.",
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         },
         {
             name: 'Clicks',
             field: 'clicks',
             checked: true,
             type: 'number',
-            help: 'The number of times a content ad has been clicked.'
+            help: 'The number of times a content ad has been clicked.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         },
         {
             name: 'Last OK Sync',
             field: 'last_sync',
             checked: false,
             type: 'datetime',
-            help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred.'
+            help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred.',
+            order: true,
+            initialOrder: 'desc'
         }
     ];
 
@@ -84,74 +119,10 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         });
     };
 
-    $scope.setChartData = function () {
-        var result = {
-            formats: [],
-            data: [],
-            names: [],
-            ids: []
-        };
-
-        result.formats = [$scope.chartMetric1, $scope.chartMetric2].map(function (x) {
-            var format = null;
-            if (x === constants.sourceChartMetric.COST ||
-                x === constants.sourceChartMetric.CPC) {
-                format = 'currency';
-            } else if (x === constants.sourceChartMetric.CTR) {
-                format = 'percent';
-            }
-
-            return format;
-        });
-
-        var temp = {};
-        var lastDate = null;
-        var oneDayMs = 24*60*60*1000;
-        $scope.dailyStats.forEach(function (stat) {
-            if (!temp.hasOwnProperty(stat.sourceId)) {
-                temp[stat.sourceId] = {
-                    name: stat.sourceName,
-                    id: stat.sourceId,
-                    data: [[]]
-                };
-            }
-
-            // insert nulls for missing values
-            if (lastDate) {
-                for (var date = lastDate; date < stat.date - oneDayMs; date += oneDayMs) {
-                    data[0].push([date, null]);
-
-                    if (data[1]) {
-                        data[1].push([date, null]);
-                    }
-                }
-            }
-            lastDate = stat.date;
-
-            temp[stat.sourceId].data[0].push([stat.date, stat[$scope.chartMetric1]]);
-
-            if ($scope.chartMetric2 && $scope.chartMetric2 !== $scope.chartMetric1) {
-                if (!temp[stat.sourceId].data[1]) {
-                    temp[stat.sourceId].data[1] = [];
-                }
-                temp[stat.sourceId].data[1].push([stat.date, stat[$scope.chartMetric2]]);
-            }
-        });
-
-        Object.keys(temp).forEach(function (sourceId) {
-            result.data.push(temp[sourceId].data);
-            result.names.push(temp[sourceId].name);
-            result.ids.push(temp[sourceId].id);
-        });
-
-        $scope.chartData = result;
-    };
-
     $scope.getDailyStats = function () {
-        api.accountDailyStats.list($scope.dateRange.startDate, $scope.dateRange.endDate).then(
+        api.dailyStats.list('all_accounts', null, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true, [$scope.chartMetric1, $scope.chartMetric2]).then(
             function (data) {
-                $scope.dailyStats = data;
-                $scope.setChartData();
+                $scope.chartData = data.chartData;
             },
             function (data) {
                 // error
@@ -160,14 +131,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         );
     };
 
-    $scope.orderRows = function (col) {
-        if ($scope.order.indexOf(col) === 1) {
-            $scope.order = col;
-        } else if ($scope.order.indexOf(col) === -1 && col === 'name') {
-            $scope.order = col;
-        } else {
-            $scope.order = '-' + col;
-        }
+    $scope.orderRows = function (order) {
+        $scope.order = order;
 
         $location.search('order', $scope.order);
         localStorageService.set('allAccountsAccounts.order', $scope.order);
@@ -188,6 +153,15 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
                 $scope.order = data.order;
                 $scope.pagination = data.pagination;
 
+                $scope.rows = $scope.rows.map(function (x) {
+                    x.name_link = {
+                        text: x.name,
+                        url: $state.href($scope.getDefaultAccountState(), {id: x.id})
+                    };
+
+                    return x;
+                });
+
                 $location.search('page', $scope.pagination.currentPage);
             },
             function (data) {
@@ -207,7 +181,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            $scope.setChartData();
+            $scope.getDailyStats();
             $location.search('chart_metric1', $scope.chartMetric1);
             localStorageService.set('allAccountsAccounts.chartMetric1', $scope.chartMetric1);
         }
@@ -221,7 +195,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
     $scope.$watch('chartMetric2', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            $scope.setChartData();
+            $scope.getDailyStats();
             $location.search('chart_metric2', $scope.chartMetric2);
             localStorageService.set('allAccountsAccounts.chartMetric2', $scope.chartMetric2);
         }
@@ -294,27 +268,20 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         var page = $location.search().page;
         var order = $location.search().order || localStorageService.get('allAccountsAccounts.order') || $scope.order;
 
-        var changed = false;
         var tableChanged = false;
 
         if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
             $scope.chartMetric1 = chartMetric1;
             $location.search('chart_metric1', chartMetric1);
-            changed = true;
         }
 
         if (chartMetric2 !== undefined && $scope.chartMetric2 !== chartMetric2) {
             $scope.chartMetric2 = chartMetric2;
             $location.search('chart_metric2', chartMetric2);
-            changed = true;
         }
 
         if (chartHidden) {
             $scope.isChartShown = false;
-        }
-
-        if (changed) {
-            $scope.setChartData();
         }
 
         if (order !== undefined && $scope.order !== order) {
