@@ -5,7 +5,7 @@
 
     <div class="section table-ad-group-ads">
         <div class="button-bar">
-            <select ui-select2="{minimumResultsForSearch: -1}" ng-model="exportType" ng-change="downloadReport()" data-placeholder="Download Report" class="export">
+            <select ui-select2="exportSelect2Config" ng-model="exportType" ng-change="downloadReport()" data-placeholder="Download Report" class="export">
                 <option value=""></option>
                 <option value="csv">CSV by day</option>
                 <option value="excel">Excel by day</option>

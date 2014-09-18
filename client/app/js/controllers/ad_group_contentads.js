@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'zemCustomTableColsService', 'localStorageService', 'zemChartService', function ($scope, $state, $location, $window, $timeout, api, zemCustomTableColsService, localStorageService, zemChartService) {
+oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'zemCustomTableColsService', 'localStorageService', 'zemChartService', '$compile', function ($scope, $state, $location, $window, $timeout, api, zemCustomTableColsService, localStorageService, zemChartService, $compile) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.order = '-cost';
@@ -96,6 +96,35 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             initialOrder: 'desc'
         }
     ];
+
+    $scope.exportSelect2Config = {
+        minimumResultsForSearch: -1,
+        formatResult: function (object) {
+            if (!object.disabled) {
+                return angular.element(document.createElement('span')).text(object.text);
+            }
+
+            var popoverEl = angular.element(document.createElement('div'));
+
+            popoverEl.attr('popover', 'There is too much data to export. Please choose a smaller date range.');
+            popoverEl.attr('popover-trigger', 'mouseenter');
+            popoverEl.attr('popover-append-to-body', 'true');
+            popoverEl.text(object.text);
+
+            return $compile(popoverEl)($scope);
+        },
+        sortResults: function (results) {
+            // used to set disabled property on results
+            var numDays = $scope.dateRange.endDate.diff($scope.dateRange.startDate, 'days');
+
+            return results.map(function (result) {
+                if (result.id === 'excel' && ($scope.pagination.count * numDays) > 7000) {
+                    result.disabled = true;
+                }
+                return result;
+            });
+        }
+    };
 
     var cols = zemCustomTableColsService.load('adGroupAdsCols', $scope.columns);
     $scope.selectedColumnsCount = cols.length;
