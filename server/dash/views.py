@@ -1704,7 +1704,7 @@ class CampaignSync(api_common.BaseApiView):
 
 class CampaignSyncProgress(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_is_sync_in_progress')
-    def get(self, request, campaign_id):
+    def get(self, request):
         account_id = request.GET.get('account_id')
         campaign_id = request.GET.get('campaign_id')
 
