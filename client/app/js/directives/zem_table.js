@@ -14,6 +14,7 @@ oneApp.directive('zemTable', ['config', function(config) {
         },
         templateUrl: config.static_url + '/partials/zem_table.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
+            $scope.config = config;
             $scope.numberColumnTypes = ['currency', 'percent', 'number', 'seconds', 'datetime'];
             $scope.selectedRowsCount = 0;
             

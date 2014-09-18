@@ -188,7 +188,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         var cols;
 
         if ($scope.hasPermission('reports.yesterday_spend_view')) {
-            $scope.columns.splice(2, 0, {
+            $scope.columns.splice(5, 0, {
                 name: 'Yesterday Spend',
                 field: 'yesterday_cost',
                 checked: false,
@@ -202,7 +202,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         }
 
         if ($scope.hasPermission('zemauth.supply_dash_link_view')) {
-            $scope.columns.splice(0, 0, {
+            $scope.columns.splice(3, 0, {
                 name: 'Link',
                 field: 'supply_dash_url',
                 checked: false,
