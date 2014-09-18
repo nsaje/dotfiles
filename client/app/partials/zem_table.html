@@ -26,7 +26,7 @@
                         <td class="no-data" colspan="100">No data</td>
                     </tr>
                     <tr ng-repeat="row in rows">
-                        <td ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type), 'input-one-char': col.type === 'checkbox'}" class="{{ col.extraTdCss }}" ng-repeat="col in columns | filter: {checked: true}">
+                        <td ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type), 'input-one-char': col.type === 'checkbox', 'text-center': col.type === 'link'}" class="{{ col.extraTdCss }}" ng-repeat="col in columns | filter: {checked: true}">
                             <span ng-switch="col.type">
                                 <span ng-switch-when="currency">
                                     <span ng-class="{'currency-3': col.fractionSize === 3}">
