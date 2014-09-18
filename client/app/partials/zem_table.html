@@ -118,10 +118,10 @@
                                     <span ng-switch-when="number">
                                         <span ng-switch="!!col.fractionSize">
                                             <span ng-switch-when="true">
-                                                {{ (row[col.field] | number:col.fractionSize) || 'N/A' }}
+                                                {{ (totalRow[col.field] | number:col.fractionSize) || 'N/A' }}
                                             </span>
                                             <span ng-switch-default>
-                                                {{ (row[col.field] | number:0) || 'N/A' }}
+                                                {{ (totalRow[col.field] | number:0) || 'N/A' }}
                                             </span>
                                         </span>
                                     </span>

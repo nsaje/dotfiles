@@ -364,7 +364,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                             'checked': false,
                             'type': 'number',
                             'help': 'Number of completions of the conversion goal',
-                            internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+                            internal: $scope.isPermissionInternal('zemauth.postclick_metrics'),
+                            totalRow: true,
+                            order: true,
+                            initialOrder: 'desc'
                         }
                         $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
                     } else if(field.indexOf(': Conversion Rate') != -1) {
@@ -374,7 +377,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                             'checked': false,
                             'type': 'percent',
                             'help': 'Percentage of visits which resulted in a goal completion',
-                            internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+                            internal: $scope.isPermissionInternal('zemauth.postclick_metrics'),
+                            totalRow: true,
+                            order: true,
+                            initialOrder: 'desc'
                         }
                         $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
                     }
