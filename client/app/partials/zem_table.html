@@ -47,7 +47,14 @@
                                     </span>
                                 </span>
                                 <span ng-switch-when="number">
-                                    {{ (row[col.field] | number:0) || 'N/A' }}
+                                    <span ng-switch="!!col.fractionSize">
+                                        <span ng-switch-when="true">
+                                            {{ (row[col.field] | number:col.fractionSize) || 'N/A' }}
+                                        </span>
+                                        <span ng-switch-default>
+                                            {{ (row[col.field] | number:0) || 'N/A' }}
+                                        </span>
+                                    </span>
                                 </span>
                                 <span ng-switch-when="seconds">
                                     <span ng-switch="row[col.field]">
@@ -109,7 +116,14 @@
                                         </span>
                                     </span>
                                     <span ng-switch-when="number">
-                                        {{ (totalRow[col.field] | number:0) || 'N/A' }}
+                                        <span ng-switch="!!col.fractionSize">
+                                            <span ng-switch-when="true">
+                                                {{ (row[col.field] | number:col.fractionSize) || 'N/A' }}
+                                            </span>
+                                            <span ng-switch-default>
+                                                {{ (row[col.field] | number:0) || 'N/A' }}
+                                            </span>
+                                        </span>
                                     </span>
                                     <span ng-switch-when="seconds">
                                         <span ng-switch="totalRow[col.field]">
