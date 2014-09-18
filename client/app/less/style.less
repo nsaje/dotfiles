@@ -350,6 +350,7 @@ a:visited {
     .box-shadow(none);
     border: none;
     padding: 0px;
+    z-index: 100000;
 
     &:before {
         content: "";
@@ -574,6 +575,7 @@ div[datepicker] {
 
     .chart-selector {
         display: inline-block;
+        margin-bottom: 10px;
 
         .select2-container {
             /*width: 12em !important;*/
@@ -609,6 +611,7 @@ div[datepicker] {
             display: inline-block;
             margin-left: 20px;
             cursor: default;
+            margin-bottom: 10px;
 
             div {
                 display: inline-block;
@@ -790,9 +793,10 @@ a.help-popover:visited {
     }
 }
 
+.select2-drop,
 .custom-cols,
 .table-container {
-    .internal {
+     zem-internal-feature .internal {
         margin-right: 0.5em;
 
         &:before {
@@ -1022,9 +1026,7 @@ a.help-popover:visited {
 }
 
 
-.page-all-accounts-accounts,
-.page-ad-group-ads,
-.page-ad-group-sources {
+.page {
     .alert-sync {
         margin-bottom: 10px;
     }

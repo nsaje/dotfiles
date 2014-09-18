@@ -1,6 +1,6 @@
 <div class="page page-ad-group-ads">
     <div class="section" ng-class="{'height-hidden': !isChartShown}">
-        <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric1-values="sourceChartMetrics" zem-metric2-values="sourceChartMetrics" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate"></zem-chart>
+        <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-goal-metrics="chartGoalMetrics" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate"></zem-chart>
     </div>
 
     <div class="section table-ad-group-ads">
@@ -32,72 +32,7 @@
             If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
         </alert>
 
-        <div class="loader-container">
-            <div class="loader" ng-show="rows.length && loadRequestInProgress"></div>
-
-            <div class="table-container">
-                <table class="table table-hover ads-table">
-                    <thead>
-                        <tr>
-                            <th class="arrow" ng-class="{ordered: order === '-title', 'ordered-reverse': order === 'title'}"><a href="" class="order" ng-click="orderTableData('title')">Title</a><zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The creative title/headline of a content ad." placement="top"></zem-help-popover></th>
-                            <th class="arrow" ng-class="{'text-right': col.type !== 'url', ordered: order === '-' + col.field, 'ordered-reverse': order === col.field, 'trimmed-currency': (col.type === 'currency' && col.fractionSize > 2)}" ng-repeat="col in columns | filter: {checked: true}"><a href="" class="order" ng-click="orderTableData(col.field)">{{ col.name }}</a><zem-help-popover ng-if="col.help && hasPermission('zemauth.help_view')" content="{{ col.help }}" placement="{{ $last ? 'left' : 'top' }}"></zem-help-popover></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr ng-if="loadRequestInProgress && !rows.length">
-                            <td colspan="{{ selectedColumnsCount + 2}}" class="loader-row">
-                                <div class="loader"></div>
-                            </td>
-                        </tr>
-                        <tr ng-show="!rows.length && !loadRequestInProgress">
-                            <td class="no-data" colspan="{{ selectedColumnsCount + 2}}">No data</td>
-                        </tr>
-                        <tr ng-repeat="row in rows">
-                            <td class="trimmed title"><a href="{{ row.url }}" title="{{ row.title }}" target="_blank">{{ row.title }}</a></td>
-                            <td class="" ng-class="{number: col.type !== 'url', 'text-right': col.type !== 'url', trimmed: col.type === 'url', url: col.type === 'url'}" ng-repeat="col in columns | filter: {checked: true}">
-                                <span ng-switch="col.type">
-                                    <span ng-switch-when="currency">
-                                        <span ng-class="{'currency-3': col.fractionSize === 3}">
-                                            {{ (row[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
-                                        </span>
-                                    </span>
-                                    <span ng-switch-when="percent">
-                                        {{ (row[col.field] | number:2) || '0.0' }}%
-                                    </span>
-                                    <span ng-switch-when="number">
-                                        {{ (row[col.field] | number:0) || 'N/A' }}
-                                    </span>
-                                    <span ng-switch-when="url">
-                                        <a href="{{ row.url }}" title="{{ row.url }}" target="_blank">{{ row.url }}</a>
-                                    </span>
-                                </span>
-                            </td>
-                        </tr>
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td>TOTALS</td>
-                            <td class="text-right number" ng-repeat="col in columns | filter: {checked: true}">
-                                <span ng-switch="col.type">
-                                    <span ng-switch-when="currency">
-                                        <span ng-class="{'currency-3': col.fractionSize === 3}">
-                                            {{ (totals[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
-                                        </span>
-                                    </span>
-                                    <span ng-switch-when="percent">
-                                        {{ (totals[col.field] | number:2) || '0.0' }}%
-                                    </span>
-                                    <span ng-switch-when="number">
-                                        {{ (totals[col.field] | number:0) || 'N/A' }}
-                                    </span>
-                                    <span ng-switch-when="url"></span>
-                                </span>
-                            </td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        </div>
+        <zem-table zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderTableData(order)"></zem-table>
 
         <div class="last-sync">
             <span ng-switch="lastSyncDate">

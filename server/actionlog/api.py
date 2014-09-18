@@ -171,7 +171,7 @@ def age_oldest_waiting_stats_action():
     return int((datetime.utcnow() - waiting_actions[0].created_dt).total_seconds() / 3600)
 
 
-def is_sync_in_progress(ad_groups=None, accounts=None):
+def is_sync_in_progress(ad_groups=None, campaigns=None, accounts=None):
     '''
     sync is in progress if one of the following is true:
     - a get reports action for this ad_group is in 'waiting' state
@@ -190,6 +190,8 @@ def is_sync_in_progress(ad_groups=None, accounts=None):
 
     if ad_groups:
         q = q.filter(ad_group_source__ad_group__in=ad_groups)
+    elif campaigns:
+        q = q.filter(ad_group_source__ad_group__campaign__in=campaigns)
     elif accounts:
         q = q.filter(ad_group_source__ad_group__campaign__account__in=accounts)
 

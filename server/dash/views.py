@@ -56,7 +56,7 @@ def get_ad_group(user, ad_group_id, select_related=False):
             filter(id=int(ad_group_id))
 
         if select_related:
-            ad_group = ad_group.select_related('campaign__partner')
+            ad_group = ad_group.select_related('campaign__account')
 
         return ad_group.get()
     except models.AdGroup.DoesNotExist:
@@ -71,10 +71,13 @@ def get_campaign(user, campaign_id):
         raise exc.MissingDataError('Campaign does not exist')
 
 
-def get_account(user, account_id):
+def get_account(user, account_id, select_related=False):
     try:
-        return models.Account.objects.get_for_user(user).\
-            filter(id=int(account_id)).get()
+        account = models.Account.objects.get_for_user(user)
+        if select_related:
+            account = account.select_related('campaign_set')
+
+        return account.filter(id=int(account_id)).get()
     except models.Account.DoesNotExist:
         raise exc.MissingDataError('Account does not exist')
 
@@ -1640,6 +1643,20 @@ class TriggerAccountSyncThread(threading.Thread):
             logger.exception('Exception in TriggerAccountSyncThread')
 
 
+class TriggerCampaignSyncThread(threading.Thread):
+    """ Used to trigger sync for all campaign's ad groups asynchronously. """
+    def __init__(self, campaigns, *args, **kwargs):
+        self.campaigns = campaigns
+        super(TriggerCampaignSyncThread, self).__init__(*args, **kwargs)
+
+    def run(self):
+        try:
+            for campaign in self.campaigns:
+                actionlog.sync.CampaignSync(campaign).trigger_all()
+        except Exception:
+            logger.exception('Exception in TriggerCampaignSyncThread')
+
+
 class AccountSync(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'account_sync_get')
@@ -1658,6 +1675,49 @@ class AccountSyncProgress(api_common.BaseApiView):
         accounts = models.Account.objects.get_for_user(request.user)
 
         in_progress = actionlog.api.is_sync_in_progress(accounts=accounts)
+
+        return self.create_api_response({'is_sync_in_progress': in_progress})
+
+
+class CampaignSync(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'campaign_sync_get')
+    def get(self, request):
+        account_id = request.GET.get('account_id')
+        campaign_id = request.GET.get('campaign_id')
+
+        if account_id:
+            campaigns = models.Campaign.objects.get_for_user(request.user).\
+                filter(account=account_id)
+        else:
+            campaigns = models.Campaign.objects.get_for_user(request.user)
+
+            if campaign_id:
+                campaigns = campaigns.filter(pk=campaign_id)
+
+        if not actionlog.api.is_sync_in_progress(campaigns=campaigns):
+            # trigger account sync asynchronously and immediately return
+            TriggerCampaignSyncThread(campaigns).start()
+
+        return self.create_api_response({})
+
+
+class CampaignSyncProgress(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_is_sync_in_progress')
+    def get(self, request, campaign_id):
+        account_id = request.GET.get('account_id')
+        campaign_id = request.GET.get('campaign_id')
+
+        if account_id:
+            campaigns = models.Campaign.objects.get_for_user(request.user).\
+                filter(account=account_id)
+        else:
+            campaigns = models.Campaign.objects.get_for_user(request.user)
+
+            if campaign_id:
+                campaigns = campaigns.filter(pk=campaign_id)
+
+        in_progress = actionlog.api.is_sync_in_progress(campaigns=campaigns)
 
         return self.create_api_response({'is_sync_in_progress': in_progress})
 
@@ -1734,157 +1794,426 @@ class AdGroupAdsTable(api_common.BaseApiView):
         })
 
 
-class AdGroupDailyStats(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_daily_stats_get')
-    def get(self, request, ad_group_id):
-        ad_group = get_ad_group(request.user, ad_group_id)
+class CampaignAdGroupsTable(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_ad_groups_table_get')
+    def get(self, request, campaign_id):
+        campaign = get_campaign(request.user, campaign_id)
 
-        source_ids = request.GET.getlist('source_ids')
-        totals = request.GET.get('totals')
+        start_date = get_stats_start_date(request.GET.get('start_date'))
+        end_date = get_stats_end_date(request.GET.get('end_date'))
+        order = request.GET.get('order') or '-cost'
 
-        start_date = request.GET.get('start_date')
-        end_date = request.GET.get('end_date')
+        stats = reports.api.query(
+            start_date=start_date,
+            end_date=end_date,
+            breakdown=['ad_group'],
+            order=[order],
+            campaign=campaign
+        )
+
+        ad_groups = campaign.adgroup_set.all()
+        ad_groups_settings = models.AdGroupSettings.objects.\
+            distinct('ad_group').\
+            filter(ad_group__campaign=campaign).\
+            order_by('ad_group', '-created_dt')
+
+        totals_stats = reports.api.query(start_date, end_date, campaign=campaign.pk)
+
+        last_success_actions = {}
+        for ad_group in ad_groups:
+            ad_group_sync = actionlog.sync.AdGroupSync(ad_group)
+
+            if not len(list(ad_group_sync.get_components())):
+                continue
+
+            last_success_actions[ad_group.pk] = ad_group_sync.get_latest_success(
+                recompute=False)
+
+        last_sync = actionlog.sync.CampaignSync(campaign).get_latest_success(
+            recompute=False)
+        if last_sync:
+            last_sync = pytz.utc.localize(last_sync)
+
+        return self.create_api_response({
+            'rows': self.get_rows(
+                ad_groups, ad_groups_settings, stats, last_success_actions, order),
+            'totals': totals_stats,
+            'last_sync': last_sync,
+            'is_sync_recent': is_sync_recent(last_sync),
+            'is_sync_in_progress': actionlog.api.is_sync_in_progress(
+                campaigns=[campaign]),
+            'order': order,
+        })
+
+    def get_rows(self, ad_groups, ad_groups_settings, stats, last_actions, order):
+        rows = []
+        for ad_group in ad_groups:
+            row = {
+                'name': ad_group.name,
+                'ad_group': str(ad_group.pk)
+            }
+
+            row['state'] = models.AdGroupSettings.get_default_value('state')
+            for ad_group_settings in ad_groups_settings:
+                if ad_group.pk == ad_group_settings.ad_group_id and \
+                        ad_group_settings.state is not None:
+                    row['state'] = ad_group_settings.state
+                    break
+
+            for stat in stats:
+                if ad_group.pk == stat['ad_group']:
+                    row.update(stat)
+                    break
+
+            last_sync = last_actions.get(ad_group.pk)
+            if last_sync:
+                last_sync = pytz.utc.localize(last_sync)
+
+            row['last_sync'] = last_sync
+
+            rows.append(row)
+
+        if order:
+            reverse = False
+            if order.startswith('-'):
+                reverse = True
+                order = order[1:]
+
+            # Sort should always put Nones at the end
+            def _sort(item):
+                value = item.get(order)
+                if order == 'last_sync' and not value:
+                    value = datetime.datetime(datetime.MINYEAR, 1, 1)
+
+                return (item.get(order) is None or reverse, value)
+
+            rows = sorted(rows, key=_sort, reverse=reverse)
+
+        return rows
+
+
+class AccountCampaignsTable(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'account_campaigns_table_get')
+    def get(self, request, account_id):
+        user = request.user
+
+        campaigns = models.Campaign.objects.get_for_user(user).\
+            filter(account=account_id)
+
+        start_date = get_stats_start_date(request.GET.get('start_date'))
+        end_date = get_stats_end_date(request.GET.get('end_date'))
+        order = request.GET.get('order') or '-clicks'
+
+        campaign_ids = [x.pk for x in campaigns]
+        stats = reports.api.query(
+            start_date=start_date,
+            end_date=end_date,
+            breakdown=['campaign'],
+            order=[order],
+            campaign=campaign_ids
+        )
+
+        totals_stats = reports.api.query(start_date, end_date, campaign=campaign_ids)
+
+        ad_groups_settings = models.AdGroupSettings.objects.\
+            distinct('ad_group').\
+            filter(ad_group__campaign__in=campaigns).\
+            order_by('ad_group', '-created_dt')
+
+        last_success_actions = {}
+        for campaign in campaigns:
+            campaign_sync = actionlog.sync.CampaignSync(campaign)
+
+            if not len(list(campaign_sync.get_components())):
+                continue
+
+            last_success_actions[campaign.pk] = campaign_sync.get_latest_success(
+                recompute=False)
+
+        last_sync = actionlog.sync.CampaignSync(campaigns).get_latest_success(
+            recompute=False)
+        if last_sync:
+            last_sync = pytz.utc.localize(last_sync)
+
+        return self.create_api_response({
+            'rows': self.get_rows(
+                campaigns,
+                ad_groups_settings,
+                stats,
+                last_success_actions,
+                order
+            ),
+            'totals': totals_stats,
+            'last_sync': last_sync,
+            'is_sync_recent': is_sync_recent(last_sync),
+            'is_sync_in_progress': actionlog.api.is_sync_in_progress(
+                campaigns=campaigns),
+            'order': order,
+        })
+
+    def get_rows(self, campaigns, ad_groups_settings, stats, last_actions, order):
+        rows = []
+        for campaign in campaigns:
+            # If at least one ad group is active, then the campaign is considered
+            # active.
+            state = constants.AdGroupSettingsState.INACTIVE
+            for ad_group_settings in ad_groups_settings:
+                if ad_group_settings.ad_group.campaign.pk == campaign.pk and \
+                        ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE:
+                    state = constants.AdGroupSettingsState.ACTIVE
+                    break
+
+            campaign_stat = {}
+            for stat in stats:
+                if stat['campaign'] == campaign.pk:
+                    campaign_stat = stat
+                    break
+
+            last_sync = last_actions.get(campaign.pk)
+            if last_sync:
+                last_sync = pytz.utc.localize(last_sync)
+
+            row = {
+                'campaign': str(campaign.pk),
+                'name': campaign.name,
+                'state': state,
+                'last_sync': last_sync
+            }
+            row.update(campaign_stat)
+            rows.append(row)
+
+        if order:
+            reverse = False
+            if order.startswith('-'):
+                reverse = True
+                order = order[1:]
+
+            # Sort should always put Nones at the end
+            def _sort(item):
+                value = item.get(order)
+                if order == 'last_sync' and not value:
+                    value = datetime.datetime(datetime.MINYEAR, 1, 1)
+
+                return (item.get(order) is None or reverse, value)
+
+            rows = sorted(rows, key=_sort, reverse=reverse)
+
+        return rows
+
+
+class BaseDailyStatsView(api_common.BaseApiView):
+    def get_stats(self, request, totals_kwargs, selected_kwargs=None, group_key=None):
+        start_date = get_stats_start_date(request.GET.get('start_date'))
+        end_date = get_stats_end_date(request.GET.get('end_date'))
 
         breakdown = ['date']
 
         totals_stats = []
-        if totals:
-            totals_stats = filter_by_permissions(reports.api.query(
-                get_stats_start_date(start_date),
-                get_stats_end_date(end_date),
+        if totals_kwargs:
+            totals_stats = reports.api.query(
+                start_date,
+                end_date,
                 breakdown,
                 ['date'],
-                ad_group=int(ad_group.id)
-            ), request.user)
+                **totals_kwargs
+            )
 
-        sources = None
         breakdown_stats = []
-        extra_kwargs = {}
 
-        if source_ids:
-            ids = [int(x) for x in source_ids]
-            extra_kwargs['source_id'] = ids
-            breakdown.append('source')
-            sources = models.Source.objects.filter(pk__in=ids)
-
-            breakdown_stats = filter_by_permissions(reports.api.query(
-                get_stats_start_date(start_date),
-                get_stats_end_date(end_date),
+        if selected_kwargs:
+            breakdown.append(group_key)
+            breakdown_stats = reports.api.query(
+                start_date,
+                end_date,
                 breakdown,
                 ['date'],
-                ad_group=int(ad_group.id),
-                **extra_kwargs
-            ), request.user)
+                **selected_kwargs
+            )
 
-        return self.create_api_response(self.get_response_dict(breakdown_stats + totals_stats, sources))
+        return breakdown_stats + totals_stats
 
-    def get_response_dict(self, stats, sources):
-        sources_dict = {}
-        if sources:
-            sources_dict = {x.pk: x.name for x in sources}
+    def get_series_groups_dict(self, totals, groups_dict):
+        result = {}
 
-        options_dict = {}
-        results = []
-        for stat in stats:
-            result = {
-                'date': stat['date'],
-                'clicks': stat['clicks'],
-                'impressions': stat['impressions'],
-                'ctr': round(stat['ctr'], 2)
-                       if 'ctr' in stat and stat['ctr'] is not None else None,
-                'cpc': round(stat['cpc'], 3)
-                       if 'cpc' in stat and stat['cpc'] is not None else None,
-                'cost': round(stat['cost'], 2)
-                       if 'cost' in stat and stat['cost'] is not None else None,
+        if groups_dict is not None:
+            result = {key: {
+                'id': key,
+                'name': groups_dict[key],
+                'series_data': {}
+            } for key in groups_dict}
+
+        if totals:
+            result['totals'] = {
+                'id': 'totals',
+                'name': 'Totals',
+                'series_data': {}
             }
-            # postclick metrics
-            result.update({
-                'visits': stat.get('visits', None),
-                'bounce_rate': round(stat['bounce_rate'], 2)
-                       if 'bounce_rate' in stat and stat['bounce_rate'] is not None else None,
-                'pageviews': stat.get('pageviews'),
-                'click_discrepancy': stat.get('click_discrepancy'),
-                'percent_new_users': round(stat['percent_new_users'], 2)
-                       if 'percent_new_users' in stat and stat['percent_new_users'] is not None else None,
-                'pv_per_visit': round(stat['pv_per_visit'], 2)
-                       if 'pv_per_visit' in stat and stat['pv_per_visit'] is not None else None,
-                'avg_tos': round(stat['avg_tos'], 2)
-                       if 'avg_tos' in stat and stat['avg_tos'] is not None else None,
-            })
 
-            if 'source' in stat:
-                result['source_id'] = stat['source']
-                result['source_name'] = sources_dict[stat['source']]
+        return result
 
-            if 'goals' in stat and stat['goals'] is not None:
-                for goal_name, goal_metrics in stat['goals'].items():
-                    for metric_key, metric_value in goal_metrics.items():
-                        metric_format = None
-                        if metric_key == 'conversion_rate':
-                            metric_value = round(metric_value, 2) if metric_value is not None else None
-                            metric_format = 'percent'
-                            metric_name = 'Conversion Rate'
-                        elif metric_key == 'conversions':
-                            metric_name = 'Conversions'
-                        else:
-                            # unknown metric
-                            continue
+    def process_stat_goals(self, stat_goals, goals, stat):
+        # may modify goal_metrics and stat
+        for goal_name, goal_metrics in stat_goals.items():
+            for metric_type, metric_value in goal_metrics.items():
+                metric_id = '{}_goal_{}'.format(
+                    slugify.slugify(goal_name).encode('ascii', 'replace'),
+                    metric_type
+                )
 
-                        metric_id = '{}_{}'.format(
-                            slugify.slugify(goal_name).encode('ascii', 'ignore'),
-                            metric_key
-                        )
+                if metric_id not in goal_metrics:
+                    goals[metric_id] = {
+                        'name': goal_name,
+                        'type': metric_type
+                    }
 
-                        if metric_id not in options_dict:
-                            options_dict[metric_id] = {
-                                'name': '{}: {}'.format(goal_name, metric_name),
-                                'value': metric_id,
-                                'format': metric_format
-                            }
+                # set it in stat
+                stat[metric_id] = metric_value
 
-                        result[metric_id] = metric_value
+    def get_response_dict(self, stats, totals, groups_dict, metrics, group_key=None):
+        series_groups = self.get_series_groups_dict(totals, groups_dict)
+        goals = {}
 
-            results.append(result)
+        for stat in stats:
+            if stat.get('goals') is not None:
+                self.process_stat_goals(stat['goals'], goals, stat)
+
+            # get id of group it belongs to
+            group_id = stat.get(group_key) or 'totals'
+
+            data = series_groups[group_id]['series_data']
+            for metric in metrics:
+                if metric not in data:
+                    data[metric] = []
+
+                series_groups[group_id]['series_data'][metric].append(
+                    (stat['date'], stat.get(metric))
+                )
 
         return {
-            'stats': results,
-            'options': options_dict.values()
+            'goals': goals,
+            'chart_data': series_groups.values()
         }
 
 
-class AccountDailyStats(api_common.BaseApiView):
+class AccountDailyStats(BaseDailyStatsView):
+    @statsd_helper.statsd_timer('dash.api', 'account_daily_stats_get')
+    def get(self, request, account_id):
+        account = get_account(request.user, account_id)
+
+        metrics = request.GET.getlist('metrics')
+        selected_ids = request.GET.getlist('selected_ids')
+        totals = request.GET.get('totals')
+
+        totals_kwargs = None
+        selected_kwargs = None
+        campaigns = []
+
+        if totals:
+            totals_kwargs = {'account': int(account.id)}
+
+        if selected_ids:
+            ids = [int(x) for x in selected_ids]
+            selected_kwargs = {'account': int(account.id), 'campaign': ids}
+
+            campaigns = models.Campaign.objects.filter(pk__in=ids)
+
+        stats = self.get_stats(request, totals_kwargs, selected_kwargs, 'campaign')
+
+        return self.create_api_response(self.get_response_dict(
+            stats,
+            totals,
+            {campaign.id: campaign.name for campaign in campaigns},
+            metrics,
+            'campaign'
+        ))
+
+
+class CampaignDailyStats(BaseDailyStatsView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_daily_stats_get')
+    def get(self, request, campaign_id):
+        campaign = get_campaign(request.user, campaign_id)
+
+        metrics = request.GET.getlist('metrics')
+        selected_ids = request.GET.getlist('selected_ids')
+        totals = request.GET.get('totals')
+
+        totals_kwargs = None
+        selected_kwargs = None
+        ad_groups = []
+
+        if totals:
+            totals_kwargs = {'campaign': int(campaign.id)}
+
+        if selected_ids:
+            ids = [int(x) for x in selected_ids]
+            selected_kwargs = {'campaign': int(campaign.id), 'ad_group_id': ids}
+
+            ad_groups = models.AdGroup.objects.filter(pk__in=ids)
+
+        stats = self.get_stats(request, totals_kwargs, selected_kwargs, 'ad_group')
+
+        return self.create_api_response(self.get_response_dict(
+            stats,
+            totals,
+            {ad_group.id: ad_group.name for ad_group in ad_groups},
+            metrics,
+            'ad_group'
+        ))
+
+
+class AdGroupDailyStats(BaseDailyStatsView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_daily_stats_get')
+    def get(self, request, ad_group_id):
+        ad_group = get_ad_group(request.user, ad_group_id)
+
+        metrics = request.GET.getlist('metrics')
+        selected_ids = request.GET.getlist('selected_ids')
+        totals = request.GET.get('totals')
+
+        totals_kwargs = None
+        selected_kwargs = None
+        sources = []
+
+        if totals:
+            totals_kwargs = {'ad_group': int(ad_group.id)}
+
+        if selected_ids:
+            ids = [int(x) for x in selected_ids]
+            selected_kwargs = {'ad_group': int(ad_group.id), 'source_id': ids}
+
+            sources = models.Source.objects.filter(pk__in=ids)
+
+        stats = self.get_stats(request, totals_kwargs, selected_kwargs, 'source')
+
+        return self.create_api_response(self.get_response_dict(
+            stats,
+            totals,
+            {source.id: source.name for source in sources},
+            metrics,
+            'source'
+        ))
+
+
+class AccountsDailyStats(BaseDailyStatsView):
     @statsd_helper.statsd_timer('dash.api', 'accounts_daily_stats_get')
     def get(self, request):
         # Permission check
         if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
             raise exc.MissingDataError()
 
-        start_date = request.GET.get('start_date')
-        end_date = request.GET.get('end_date')
+        metrics = request.GET.getlist('metrics')
+        accounts = models.Account.objects.get_for_user(request.user)
 
-        user = request.user
+        kwargs = {'account': accounts}
 
-        breakdown = ['date']
-        accounts = models.Account.objects.get_for_user(user)
-        totals_stats = filter_by_permissions(reports.api.query(
-            get_stats_start_date(start_date),
-            get_stats_end_date(end_date),
-            breakdown,
-            ['date'],
-            account=accounts
-        ), request.user)
+        stats = self.get_stats(request, kwargs)
 
-        return self.create_api_response({
-            'stats': self.get_dict(totals_stats)
-        })
-
-    def get_dict(self, stats):
-        sources_dict = {}
-        for stat in stats:
-            if 'source' in stat:
-                stat['source_name'] = sources_dict[stat['source']]
-
-        return stats
+        return self.create_api_response(self.get_response_dict(
+            stats,
+            True,
+            None,
+            metrics
+        ))
 
 
 class Account(api_common.BaseApiView):

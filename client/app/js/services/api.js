@@ -1,4 +1,4 @@
-/*globals angular,oneApp,options,moment*/
+/*globals angular,oneApp,constants,options,moment*/
 "use strict";
 
 angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) {
@@ -104,6 +104,16 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                                 }
                             }
                         }
+                    } else if (field === 'status') {
+                        converted_row[field] = row[field];
+
+                        if (row[field] === constants.adGroupSettingsState.ACTIVE) {
+                            converted_row.status_label = 'Active';
+                        } else if (row[field] === constants.adGroupSettingsState.INACTIVE) {
+                            converted_row.status_label = 'Paused';
+                        } else {
+                            converted_row.status_label = 'N/A';
+                        }
                     } else {
                         converted_row[field] = row[field];
                     }
@@ -152,6 +162,19 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AdGroupAdsTable() {
+        function convertFromApi(row) {
+            row.title_link = {
+                text: row.title,
+                url: row.url
+            }
+
+            row.url_link = {
+                text: row.url,
+                url: row.url
+            }
+ 
+            return row;
+        }
 
         this.get = function (id, page, size, startDate, endDate, order) {
             var deferred = $q.defer();
@@ -184,6 +207,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 success(function (data, status) {
                     var resource;
                     if (data && data.data) {
+                        data.data.rows = data.data.rows.map(convertFromApi);
                         deferred.resolve(data.data);
                     }
                 }).
@@ -273,17 +297,47 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
-    function AdGroupDailyStats() {
-        function convertFromApi(data) {
-            data.date = parseInt(moment.utc(data.date).format('XSSS'));
-            data.sourceId = data.source_id;
-            data.sourceName = data.source_name;
-            return data;
+    function CheckCampaignSyncProgress() {
+        this.get = function(campaignId, accountId) {
+            var deferred = $q.defer();
+            var url = '/api/campaigns/check_sync_progress/';
+
+            var config = {
+                params: {}
+            };
+
+            if (campaignId) {
+                config.params.campaign_id = campaignId;
+            } else if (accountId) {
+                config.params.account_id = accountId;
+            }
+
+            $http.get(url, config).
+                success(function(data, status){
+                    if (data && data.success) {
+                        deferred.resolve(data.data);
+                    }
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    function DailyStats() {
+        function convertFromApi(group) {
+            return {
+                id: group.id,
+                name: group.name,
+                seriesData: group.series_data
+            };
         }
 
-        this.list = function (adGroupId, startDate, endDate, sourceIds, totals) {
+        this.list = function (modelName, id, startDate, endDate, selectedIds, totals, metrics) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/daily_stats/';
+            var url = '/api/' + modelName + (id ? ('/' + id) : '') + '/daily_stats/';
             var config = {
                 params: {}
             };
@@ -296,29 +350,32 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 config.params.end_date = endDate.format();
             }
 
-            if (sourceIds) {
-                config.params.source_ids = sourceIds;
+            if (selectedIds) {
+                config.params.selected_ids = selectedIds;
             }
 
             if (totals) {
                 config.params.totals = totals;
             }
 
+            if (metrics) {
+                config.params.metrics = metrics;
+            }
+
             $http.get(url, config).
                 success(function (response, status) {
-                    var stats, options;
-                    if (response && response.data && response.data.stats) {
-                        stats = response.data.stats;
-                        stats = response.data.stats.map(function (x) {
-                            return convertFromApi(x);
+                    var chartData, goals;
+                    if (response && response.data && response.data.chart_data) {
+                        chartData = response.data.chart_data.map(function (group) {
+                            return convertFromApi(group);
                         });
                     }
-                    if (response && response.data && response.data.options) {
-                        options = response.data.options;
+                    if (response && response.data && response.data.goals) {
+                        goals = response.data.goals;
                     }
                     deferred.resolve({
-                        stats: stats,
-                        options: options
+                        chartData: chartData,
+                        goals: goals
                     });
                 }).
                 error(function(data, status, headers, config) {
@@ -701,6 +758,35 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
+    function CampaignSync() {
+        this.get = function (campaignId, accountId) {
+            var deferred = $q.defer();
+            var url = '/api/campaigns/sync/';
+
+            var config = {
+                params: {}
+            };
+
+            if (campaignId) {
+                config.params.campaign_id = campaignId;
+            } else if (accountId) {
+                config.params.account_id = accountId;
+            }
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    if (data && data.success) {
+                        deferred.resolve();
+                    }
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function AdGroupAgency() {
         function convertFromApi(settings) {
             return {
@@ -861,54 +947,13 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
-    function AccountDailyStats() {
-        function convertFromApi(data) {
-            var result = {
-                date: parseInt(moment.utc(data.date).format('XSSS'), 10),
-                clicks: data.clicks,
-                impressions: data.impressions,
-                ctr: data.ctr !== null ? parseFloat((data.ctr).toFixed(2)) : null,
-                cpc: data.cpc !== null ? parseFloat((data.cpc).toFixed(3)) : null,
-                cost: data.cost !== null ? parseFloat((data.cost).toFixed(2)) : null
-            };
-            return result;
+    function AccountAccountsTable() {
+        function convertFromApi(row) {
+            row.status_label = row.status === constants.adGroupSettingsState.ACTIVE ? 'Active' : 'Paused';
+ 
+            return row;
         }
 
-        this.list = function (startDate, endDate) {
-            var deferred = $q.defer();
-            var url = '/api/accounts/daily_stats/';
-            var config = {
-                params: {}
-            };
-
-            if (startDate) {
-                config.params.start_date = startDate.format();
-            }
-
-            if (endDate) {
-                config.params.end_date = endDate.format();
-            }
-
-            $http.get(url, config).
-                success(function (response, status) {
-                    var resource;
-                    if (response && response.data && response.data.stats) {
-                        resource = response.data.stats;
-                        resource = response.data.stats.map(function (x) {
-                            return convertFromApi(x);
-                        });
-                    }
-                    deferred.resolve(resource);
-                }).
-                error(function(data, status, headers, config) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
-    function AccountAccountsTable() {
         this.get = function (page, size, startDate, endDate, order) {
             var deferred = $q.defer();
             var url = '/api/accounts/table/';
@@ -939,6 +984,101 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
+                        data.data.rows = data.data.rows.map(convertFromApi);
+                        deferred.resolve(data.data);
+                    }
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    function AccountCampaignsTable() {
+        function convertRowsFromApi(data) {
+            var result = data;
+            // result.name = {
+            //     text: result.name,
+            //     url: '/test'
+            // };
+            result.state_text = result.state === constants.adGroupSettingsState.ACTIVE ? 'Active' : 'Paused';
+            return result;
+        }
+
+        this.get = function (id, startDate, endDate, order) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + id + '/campaigns/table/';
+            var config = {
+                params: {}
+            };
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
+
+            if (order) {
+                config.params.order = order;
+            }
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    if (data && data.data) {
+                        // data.data.rows = data.data.rows.map(function (x) {
+                        //     return convertRowsFromApi(x);
+                        // });
+                        deferred.resolve(data.data);
+                    }
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    function CampaignAdGroupsTable() {
+        function convertRowsFromApi(data) {
+            var result = data;
+            // result.name = {
+            //     text: result.name,
+            //     url: '/test'
+            // };
+            result.state_text = result.state === constants.adGroupSettingsState.ACTIVE ? 'Active' : 'Paused';
+            return result;
+        }
+
+        this.get = function (id, startDate, endDate, order) {
+            var deferred = $q.defer();
+            var url = '/api/campaigns/' + id + '/ad_groups/table/';
+            var config = {
+                params: {}
+            };
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
+
+            if (order) {
+                config.params.order = order;
+            }
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    if (data && data.data) {
+                        // data.data.rows = data.data.rows.map(function (x) {
+                        //     return convertRowsFromApi(x);
+                        // });
                         deferred.resolve(data.data);
                     }
                 }).
@@ -1013,16 +1153,19 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         adGroupAdsTable: new AdGroupAdsTable(),
         adGroupSync: new AdGroupSync(),
         campaignAdGroups: new CampaignAdGroups(),
+        campaignAdGroupsTable: new CampaignAdGroupsTable(),
         campaignSettings: new CampaignSettings(),
+        campaignSync: new CampaignSync(),
         accountAgency: new AccountAgency(),
         account: new Account(),
-        accountDailyStats: new AccountDailyStats(),
         accountAccountsTable: new AccountAccountsTable(),
         accountCampaigns: new AccountCampaigns(),
+        accountCampaignsTable: new AccountCampaignsTable(),
         accountSync: new AccountSync(),
         checkAccountsSyncProgress: new CheckAccountsSyncProgress(),
+        checkCampaignSyncProgress: new CheckCampaignSyncProgress(),
         checkSyncProgress: new CheckSyncProgress(),
-        adGroupDailyStats: new AdGroupDailyStats(),
+        dailyStats: new DailyStats(),
         actionLog: new ActionLog()
     };
 }]);

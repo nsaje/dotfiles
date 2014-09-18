@@ -8,7 +8,7 @@ oneApp.factory("zemCustomTableColsService", function() {
         if (columnsCache) {
             cols = JSON.parse(columnsCache);
             columns.forEach(function (x) {
-                if (cols.indexOf(x.field) > -1) {
+                if (x.unselectable || cols.indexOf(x.field) > -1) {
                     x.checked = true;
                 } else {
                     x.checked = false;

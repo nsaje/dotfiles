@@ -5,30 +5,52 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     $scope.order = '-cost';
     $scope.constants = constants;
     $scope.options = options;
-    $scope.chartMetric1 = constants.sourceChartMetric.CLICKS;
-    $scope.chartMetric2 = constants.sourceChartMetric.IMPRESSIONS;
-    $scope.dailyStats = [];
+    $scope.chartMetric1 = constants.chartMetric.CLICKS;
+    $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
     $scope.chartData = undefined;
     $scope.isChartShown = zemChartService.load('zemChart');
-    $scope.sourceChartMetrics = options.sourceChartMetrics;
+    $scope.chartMetricOptions = options.adGroupChartMetrics;
+    $scope.chartGoalMetrics = null;
     $scope.chartBtnTitle = 'Hide chart';
     $scope.pagination = {
         currentPage: 1,
     };
     $scope.columns = [
         {
-            name: 'URL',
-            field: 'url',
+            name: 'Title',
+            field: 'title_link',
+            unselectable: true,
             checked: true,
-            type: 'url',
-            help: 'The web address of the content ad.'
+            type: 'linkText',
+            hasTotalsLabel: true,
+            totalRow: false,
+            help: 'The creative title/headline of a content ad.',
+            extraTdCss: 'trimmed',
+            order: true,
+            orderField: 'title',
+            initialOrder: 'asc'
+        },
+        {
+            name: 'URL',
+            field: 'url_link',
+            checked: true,
+            type: 'linkText',
+            help: 'The web address of the content ad.',
+            extraTdCss: 'trimmed url',
+            totalRow: false,
+            order: true,
+            orderField: 'url',
+            initialOrder: 'asc'
         },
         {
             name: 'Spend',
             field: 'cost',
             checked: true,
             type: 'currency',
-            help: "The amount spent per creative."
+            help: "The amount spent per creative.",
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         },
         {
             name: 'Avg. CPC',
@@ -36,29 +58,40 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             checked: true,
             type: 'currency',
             fractionSize: 3,
-            help: "The average CPC for each content ad."
+            help: "The average CPC for each content ad.",
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         },
         {
             name: 'Clicks',
             field: 'clicks',
             checked: true,
             type: 'number',
-            help: 'The number of times a content ad has been clicked.'
+            help: 'The number of times a content ad has been clicked.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         },
         {
             name: 'Impressions',
             field: 'impressions',
             checked: true,
             type: 'number',
-            help: 'The number of times a content ad has been displayed.'
-
+            help: 'The number of times a content ad has been displayed.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         },
         {
             name: 'CTR',
             field: 'ctr',
             checked: true,
             type: 'percent',
-            help: 'The number of clicks divided by the number of impressions.'
+            help: 'The number of clicks divided by the number of impressions.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         }
     ];
 
@@ -73,61 +106,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     $scope.$watch('isChartShown', function (newValue, oldValue) {
         zemChartService.save('zemChart', newValue);
     });
-
-    $scope.setChartData = function () {
-        var result = {};
-
-        result.formats = [$scope.chartMetric1, $scope.chartMetric2].map(function (x) {
-            var format = null;
-            if (x === constants.sourceChartMetric.COST ||
-                x === constants.sourceChartMetric.CPC) {
-                format = 'currency';
-            } else if (x === constants.sourceChartMetric.CTR) {
-                format = 'percent';
-            } else {
-                // check goal metrics for format info
-                $scope.sourceChartMetrics.forEach(function (metric) {
-                    if (x === metric.value && metric.format) {
-                        format = metric.format;
-                    }
-                });
-            }
-
-            return format;
-        });
-
-        var data = [[]];
-        var lastDate = null;
-        var oneDayMs = 24*60*60*1000;
-        $scope.dailyStats.forEach(function (stat) {
-            // insert nulls for missing values
-            if (lastDate) {
-                for (var date = lastDate; date < stat.date - oneDayMs; date += oneDayMs) {
-                    data[0].push([date, null]);
-
-                    if (data[1]) {
-                        data[1].push([date, null]);
-                    }
-                }
-            }
-            lastDate = stat.date;
-
-            data[0].push([stat.date, stat[$scope.chartMetric1]]);
-
-            if ($scope.chartMetric2 && $scope.chartMetric2 !== $scope.chartMetric1) {
-                if (!data[1]) {
-                    data[1] = [];
-                }
-                data[1].push([stat.date, stat[$scope.chartMetric2]]);
-            }
-        });
-
-        result.ids = [null];
-        result.names = [null];
-        result.data = [data];
-
-        $scope.chartData = result;
-    };
 
     $scope.loadRequestInProgress = false;
 
@@ -158,34 +136,49 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         });
     };
 
-    $scope.orderTableData = function(field) {
-        // Title and URL are sorted ascending by default while everything else
-        // is descending.
-        if (field === 'title' || field === 'url') {
-            if ($scope.order === field) {
-                $scope.order = '-' + field;
-            } else {
-                $scope.order = field;
-            }
-        } else {
-            if ($scope.order === '-' + field) {
-                $scope.order = field;
-            } else {
-                $scope.order = '-' + field;
-            }
-        }
+    $scope.orderTableData = function(order) {
+        $scope.order = order;
 
         $location.search('order', $scope.order);
         localStorageService.set('adGroupContentAds.order', $scope.order);
         $scope.getTableData();
     };
 
+    var getDailyStatsMetrics = function () {
+        var metrics = [$scope.chartMetric1, $scope.chartMetric2];
+
+        var values = options.adGroupChartMetrics.map(function (option) {
+            return option.value;
+        });
+
+        if (values.indexOf($scope.chartMetric1) === -1) {
+            metrics.push(constants.chartMetric.CLICKS);
+        }
+
+        if (values.indexOf($scope.chartMetric2) === -1) {
+            metrics.push(constants.chartMetric.IMPRESSIONS);
+        }
+
+        return metrics;
+    };
+
     $scope.getDailyStats = function () {
-        api.adGroupDailyStats.list($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true).then(
+        api.dailyStats.list('ad_groups', $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true, getDailyStatsMetrics()).then(
             function (data) {
-                $scope.dailyStats = data.stats;
-                $scope.sourceChartMetrics = options.sourceChartMetrics.concat(data.options);
-                $scope.setChartData();
+                // Select default metrics if selected metrics are not defined
+                var values = $scope.chartMetricOptions.map(function (option) {
+                    return option.value;
+                });
+
+                if (values.indexOf($scope.chartMetric1) === -1) {
+                    $scope.chartMetric1 = constants.chartMetric.CLICKS;
+                }
+                if (values.indexOf($scope.chartMetric2) === -1) {
+                    $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
+                }
+
+                $scope.chartData = data.chartData;
+                $scope.chartGoalMetrics = data.goals;
             },
             function (data) {
                 // error
@@ -200,19 +193,42 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         $location.search('chart_hidden', !$scope.isChartShown ? '1' : null);
     };
 
+    var hasMetricData = function (metric) {
+        var hasData = false;
+        $scope.chartData.forEach(function (group) {
+            if (group.seriesData[metric] !== undefined) {
+                hasData = true;
+            }
+        });
+
+        return hasData;
+    };
+
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            $scope.setChartData();
             $location.search('chart_metric1', $scope.chartMetric1);
-            localStorageService.set('adGroupContentAds.chartMetric1', $scope.chartMetric1);
+
+            if (!hasMetricData($scope.chartMetric1)) {
+                localStorageService.set('adGroupContentAds.chartMetric1', $scope.chartMetric1);
+                $scope.getDailyStats();
+            } else {
+                // create a copy to trigger watch
+                $scope.chartData = angular.copy($scope.chartData);
+            }
         }
     });
 
     $scope.$watch('chartMetric2', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            $scope.setChartData();
             $location.search('chart_metric2', $scope.chartMetric2);
-            localStorageService.set('adGroupContentAds.chartMetric2', $scope.chartMetric2);
+
+            if (!hasMetricData($scope.chartMetric2)) {
+                localStorageService.set('adGroupContentAds.chartMetric2', $scope.chartMetric2);
+                $scope.getDailyStats();
+            } else {
+                // create a copy to trigger watch
+                $scope.chartData = angular.copy($scope.chartData);
+            }
         }
     });
 
@@ -235,7 +251,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         var size = $location.search().size || localStorageService.get('adGroupContentAds.paginationSize') || $scope.sizeRange[0];
         var order = $location.search().order || localStorageService.get('adGroupContentAds.order') || $scope.order;
         var tableChanged = false;
-        var chartChanged = false;
 
         var data = $scope.adGroupData[$state.params.id];
         var page = $location.search().page || (data && data.page);
@@ -243,21 +258,15 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
             $scope.chartMetric1 = chartMetric1;
             $location.search('chart_metric1', chartMetric1);
-            chartChanged = true;
         }
 
         if (chartMetric2 !== undefined && $scope.chartMetric2 !== chartMetric2) {
             $scope.chartMetric2 = chartMetric2;
             $location.search('chart_metric2', chartMetric2);
-            chartChanged = true;
         }
 
         if (chartHidden) {
             $scope.isChartShown = false;
-        }
-
-        if (chartChanged) {
-            $scope.setChartData();
         }
 
         if (page !== undefined && $scope.pagination.currentPage !== page) {
