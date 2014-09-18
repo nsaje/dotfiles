@@ -204,6 +204,11 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
             metricFormats[constants.chartMetric.COST] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.CTR] = {'type': 'percent', 'fractionSize': 2};
             metricFormats[constants.chartMetric.CONVERSION_RATE] = {'type': 'percent', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.NEW_USERS] = {'type': 'percent', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.BOUNCE_RATE] = {'type': 'percent', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.PV_PER_VISIT] = {'fractionSize': 2};
+            metricFormats[constants.chartMetric.AVG_TOS] = {'type': 'time', 'fractionSize': 1};
+            metricFormats[constants.chartMetric.CLICK_DISCREPANCY] = {'type': 'percent', 'fractionSize': 2};
 
             var getMetricName = function (metricId) {
                 var name = null;
@@ -232,6 +237,8 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                         valuePrefix = '$';
                     } else if (format.type === 'percent') {
                         valueSuffix = '%';
+                    } else if (format.type === 'time') {
+                        valueSuffix = 's';
                     }
                 }
 
