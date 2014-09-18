@@ -1065,7 +1065,7 @@ class AdGroupSourcesTable(api_common.BaseApiView):
         incomplete_postclick_metrics = \
             not reports.api.has_complete_postclick_metrics(
                 start_date, end_date, ad_group
-            )
+            ) if request.user.has_perm('zemauth.postclick_metrics') else False
 
         return self.create_api_response({
             'rows': self.get_rows(
