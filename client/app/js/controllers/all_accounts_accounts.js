@@ -5,8 +5,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.requestInProgress = false;
     $scope.constants = constants;
     $scope.options = options;
-    $scope.chartMetric1 = constants.chartMetric.CLICKS;
-    $scope.chartMetric2 = null;
+    $scope.chartMetric1 = constants.chartMetric.COST;
+    $scope.chartMetric2 = constants.chartMetric.CLICKS;
     $scope.chartData = undefined;
     $scope.isChartShown = zemChartService.load('zemChart');
     $scope.chartBtnTitle = 'Hide chart';
