@@ -275,6 +275,8 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                             axisFormat = '${value}';
                         } else if (format.type === 'percent') {
                             axisFormat = '{value}%';
+                        } else if (format.type === 'time') {
+                            axisFormat = '{value}s';
                         }
                     }
                     
