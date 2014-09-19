@@ -27,6 +27,7 @@ module.exports = function (grunt) {
                     }
                 },
                 src: [
+                    'app/dist/js/zemanta-one.templates.js',
                     'app/js/config.js',
                     'app/js/constants.js',
                     'app/js/app.js',
@@ -35,8 +36,7 @@ module.exports = function (grunt) {
                     'app/js/directives/**/*.js',
                     'app/js/services/**/*.js',
                     'app/js/controllers/**/*.js',
-                    'app/js/filters/**/*.js',
-                    'app/dist/js/zemanta-one.templates.js'
+                    'app/js/filters/**/*.js'
                 ],
                 dest: 'app/dist/js/zemanta-one.js'
             }
