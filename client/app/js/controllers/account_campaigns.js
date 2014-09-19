@@ -89,7 +89,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             checked: true,
             type: 'text',
             totalRow: false,
-            help: 'Status of a campaign (enabled or paused).',
+            help: 'Status of a campaign (enabled or paused). A campaign is paused only if all its ad groups are paused too; otherwise, the campaign is enabled.',
             extraThCss: 'text-center',
             extraTdCss: 'text-center',
             order: true,
