@@ -36,7 +36,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             checked: true,
             type: 'text',
             totalRow: false,
-            help: 'Status of an account (enabled or paused). An account is paused only if all its campaigns are paused, too; otherwise the account is enabled.',
+            help: 'Status of an account (enabled or paused). An account is paused only if all its campaigns are paused too; otherwise the account is enabled.',
             extraThCss: 'text-center',
             extraTdCss: 'text-center',
             order: true,
