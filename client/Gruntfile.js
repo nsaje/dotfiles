@@ -11,7 +11,7 @@ module.exports = function (grunt) {
                 }
             },
             dist: {
-                src: ['app/partials/**.html'],
+                src: ['app/partials/**/*.html'],
                 dest: 'app/dist/js/zemanta-one.templates.js'
             }
         },
