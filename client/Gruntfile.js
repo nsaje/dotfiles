@@ -67,7 +67,8 @@ module.exports = function (grunt) {
                     livereload: true
                 },
                 files: [
-                    'app/js/**/*.js'
+                    'app/js/**/*.js',
+                    'app/partials/**/*.html'
                 ],
                 tasks: ['dist-js']
             },
