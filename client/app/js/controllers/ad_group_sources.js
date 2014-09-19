@@ -474,17 +474,26 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             }));
         }
 
-        if (!goals) {
-            return;
-        }
+        if (goals) {
+            $scope.chartMetricOptions = $scope.chartMetricOptions.concat(Object.keys(goals).map(function (goalId) {
+                var typeName = {
+                    'conversions': 'Conversions',
+                    'conversion_rate': 'Conversion Rate'
+                }[goals[goalId].type];
 
-        $scope.chartMetricOptions = $scope.chartMetricOptions.concat(Object.keys(goals).map(function (goalId) {
-            return {
-                name: goals[goalId].name,
-                value: goalId,
-                internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
-            }
-        }));
+                if (typeName === undefined) {
+                    return;
+                }
+                
+                return {
+                    name: goals[goalId].name + ': ' + typeName,
+                    value: goalId,
+                    internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+                }
+            }).filter(function (option) {
+                return option !== undefined;
+            }));
+        }
     };
 
     $scope.getDailyStats = function () {
@@ -500,7 +509,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 if (values.indexOf($scope.chartMetric1) === -1) {
                     $scope.chartMetric1 = constants.chartMetric.CLICKS;
                 }
-                if (values.indexOf($scope.chartMetric2) === -1) {
+                if (values.indexOf($scope.chartMetric2) === -1 && $scope.chartMetric2 !== 'none') {
                     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
                 }
 

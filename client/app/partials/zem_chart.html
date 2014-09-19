@@ -7,7 +7,7 @@
         <span class="middle-text">VS.</span>
 
         <select ui-select2="select2Metric2Config" ng-model="metric2" class="metric2">
-            <option value="">None</option>
+            <option value="none">None</option>
             <option ng-repeat="metric in metricOptions" ng-class="{internal: metric.internal}" value="{{ metric.value }}">{{metric.name}}</option>
         </select>
     </div>
