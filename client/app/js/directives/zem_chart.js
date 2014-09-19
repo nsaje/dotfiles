@@ -14,7 +14,7 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
             maxDate: '=zemMaxDate',
             onRemove: '&zemOnRemove'
         },
-        templateUrl: config.static_url + '/partials/zem_chart.html',
+        templateUrl: '/partials/zem_chart.html',
         controller: ['$scope', '$element', '$attrs', '$http', function ($scope, $element, $attrs, $http) {
             var totalsColor = ['#009db2', '#c9eaef'];
             var colors = [
