@@ -30,8 +30,8 @@ describe('All Accounts', function () {
             view.metric1Select.click();
             view.metric1SelectOptions.then(function (options) {
                 expect(options.length).toBe(3);
-                expect(options[1].getText()).toBe('Spend');
-                options[1].click();
+                expect(options[0].getText()).toBe('Clicks');
+                options[0].click();
             });
 
             view.metric2Select.click();
@@ -41,14 +41,14 @@ describe('All Accounts', function () {
                 options[3].click();
             });
 
-            expect(browser.getLocationAbsUrl()).toMatch(/chart_metric1=cost/);
+            expect(browser.getLocationAbsUrl()).toMatch(/chart_metric1=clicks/);
             expect(browser.getLocationAbsUrl()).toMatch(/chart_metric2=cpc/);
 
             // check if it is correctly loaded from local storage
             view.get();
-            expect(view.metric1Select.getText()).toEqual('Spend');
+            expect(view.metric1Select.getText()).toEqual('Clicks');
             expect(view.metric2Select.getText()).toEqual('Avg. CPC');
-            expect(browser.getLocationAbsUrl()).toMatch(/chart_metric1=cost/);
+            expect(browser.getLocationAbsUrl()).toMatch(/chart_metric1=clicks/);
             expect(browser.getLocationAbsUrl()).toMatch(/chart_metric2=cpc/);
         });
 

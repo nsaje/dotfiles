@@ -37,6 +37,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
 
         if ($scope.hasPermission('zemauth.all_accounts_accounts_view')) {
             result = 'main.allAccounts.accounts';
+        } else if ($scope.hasPermission('zemauth.all_accounts_sources_view')) {
+            result = 'main.allAccounts.sources';
         }
 
         return result;
@@ -51,6 +53,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
 
         if ($scope.hasPermission('zemauth.account_campaigns_view')) {
             result = 'main.accounts.campaigns';
+        } else if ($scope.hasPermission('zemauth.account_sources_view')) {
+            result = 'main.accounts.sources';
         } else if ($scope.hasPermission('zemauth.account_agency_view')) {
             result = 'main.accounts.agency';
         }
@@ -67,6 +71,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
 
         if ($scope.hasPermission('zemauth.campaign_ad_groups_view')) {
             result = 'main.campaigns.ad_groups';
+        } else if ($scope.hasPermission('zemauth.campaign_sources_view')) {
+            result = 'main.campaings.sources';
         } else if ($scope.hasPermission('zemauth.campaign_settings_view')) {
             result = 'main.campaigns.agency';
         }
