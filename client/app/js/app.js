@@ -64,8 +64,13 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/accounts',
             templateUrl: '/partials/all_accounts_accounts.html',
             controller: 'AllAccountsAccountsCtrl'
+        })
+        .state('main.allAccounts.sources', {
+            url: '/sources',
+            templateUrl: config.static_url + '/partials/media_sources.html',
+            controller: 'MediaSourcesCtrl'
         });
-    
+
     $stateProvider
         .state('main.accounts', {
             url: 'accounts/{id}',
@@ -76,6 +81,11 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/campaigns',
             templateUrl: '/partials/account_campaigns.html',
             controller: 'AccountCampaignsCtrl'
+        })
+        .state('main.accounts.sources', {
+            url: '/sources',
+            templateUrl: config.static_url + '/partials/media_sources.html',
+            controller: 'MediaSourcesCtrl'
         })
         .state('main.accounts.agency', {
             url: '/agency',
@@ -93,6 +103,11 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/ad_groups',
             templateUrl: '/partials/campaign_ad_groups.html',
             controller: 'CampaignAdGroupsCtrl'
+        })
+        .state('main.campaigns.sources', {
+            url: '/sources',
+            templateUrl: config.static_url + '/partials/media_sources.html',
+            controller: 'MediaSourcesCtrl'
         })
         .state('main.campaigns.agency', {
             url: '/agency',
