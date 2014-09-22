@@ -4,7 +4,7 @@
     </div>
     <div class="section table-ad-group-ads">
         <div class="button-bar">
-            <button type="button" class="btn btn-add" ng-click="addCampaign()">+ Campaign</button>
+            <button ng-if="hasPermission('zemauth.account_campaigns_add_campaign')" type="button" class="btn btn-add" ng-click="addCampaign()">+ Campaign</button>
             <div class="loader" ng-show="addCampaignRequestInProgress"></div>
 
             <zem-custom-table-cols class='pull-right' columns='columns'></zem-custom-table-cols>

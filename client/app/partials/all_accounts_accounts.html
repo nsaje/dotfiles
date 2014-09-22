@@ -5,7 +5,7 @@
 
     <div class="section table-ad-group-sources">
         <div class="button-bar">
-            <button type="button" class="btn btn-add" ng-click="addAccount()">+ Account</button>
+            <button ng-if="hasPermission('zemauth.all_accounts_accounts_add_account')"type="button" class="btn btn-add" ng-click="addAccount()">+ Account</button>
             <div class="loader" ng-show="requestInProgress"></div>
             <zem-custom-table-cols class='pull-right' columns='columns'></zem-custom-table-cols>
 
