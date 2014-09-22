@@ -6,6 +6,15 @@
     <div class="section table-ad-group-sources">
         <div class="button-bar">
             <button type="button" class="btn btn-add" ng-click="addAccount()">+ Account</button>
+
+            <div class="button-bar-item export-container">
+                <select ui-select2="{minimumResultsForSearch: -1}" ng-model="exportType" ng-change="downloadReport()" data-placeholder="Download Report">
+                    <option value=""></option>
+                    <option value="csv">CSV by day</option>
+                    <option value="excel">Excel by day</option>
+                </select>
+            </div>
+
             <div class="loader" ng-show="requestInProgress"></div>
             <zem-custom-table-cols class='pull-right' columns='columns'></zem-custom-table-cols>
 
