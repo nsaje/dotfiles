@@ -3,6 +3,7 @@
 
     <div class="row body">
         <div class="sidebar" ng-show="accounts">
+            <zem-nav-filter zem-current-account="account" zem-all-accounts="accounts" zem-can-access-accounts="{{ canAccessAccounts() }}" zem-can-access-campaigns="{{ canAccessCampaigns() }}" zem-default-account-state="{{ getDefaultAccountState() }}" zem-default-campaign-state="{{ getDefaultCampaignState() }}" zem-default-ad-group-state="{{ getDefaultAdGroupState() }}"></zem-nav-filter>
             <div id="nav">
                 <div class="account-group" ng-repeat="account in accounts">
                     <div ng-if="!canAccessAccounts()" class="account-name">{{ account.name }}</div>

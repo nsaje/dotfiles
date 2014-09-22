@@ -735,6 +735,53 @@ div[datepicker] {
     border-bottom: 0;
 }
 
+.select2-drop.nav-search {
+    box-shadow: none;
+    background-color: #F9F9F9;
+
+    .select2-results {
+        max-height: 500px;
+
+        .select2-no-results {
+          background-color: #F9F9F9;
+          color: #D5D5D5;
+          text-align: center;
+          font-size: 10px;
+        }
+
+        .select2-result-with-children {
+            & > .select2-result-label {
+                text-transform: uppercase;
+                font-size: 12px;
+                font-weight: bold;
+                padding-bottom: 0px;
+                padding-top: 5px;
+            }
+
+            ul.select2-result-sub {
+                li.select2-highlighted {
+                    background-color: #2fa8c7;
+                }
+
+                .select2-result-label {
+                    padding: 2px 7px 2px 7px;
+                    font-size: 11px;
+                }
+            }
+        }
+    }
+
+    .select2-search input {
+        background: white;
+        border-radius: 2px;
+        border: 1px solid #CBCBCB;
+        color: #5C5C5C;
+        font-size: 12px;
+        height: 34px !important;
+        padding-left: 10px;
+    }
+}
+
 // form dropdowns
 .form-control.select2-container {
     &.select2-dropdown-open {
@@ -897,14 +944,45 @@ a.help-popover:visited {
         top: 0px;
         bottom: 15px;
         width: 205px;
-        padding-left: 15px;
+        padding-left: 5px;
+
+        #nav-selector {
+            .select2-container {
+                width: 100%;
+
+                .select2-choice {
+                    font-size: 13px;
+                    color: #454545;
+                    background-color: #F9F9F9;
+                    padding: 0 15px;
+                    font-size: 14px;
+                    border: 1px solid #d2d2d2;
+                    border-radius: 2px;
+                    -webkit-border-radius: 2px;
+                    box-shadow: none;
+                    -webkit-box-shadow: none;
+                }
+
+                .select2-arrow {
+                    margin-right: 5px;
+
+                    b {
+                        background: url('../../img/drop_arrow.svg') no-repeat 0 8px;
+                    }
+                }
+
+                &.select2-dropdown-open {
+                    .select2-choice {
+                      border: 1px solid #2fa8c7;
+                    }
+                }
+            }
+        }
 
         #nav {
             height: 100%;
-            border: 1px solid #d2d2d2;
             padding: 5px;
             overflow: auto;
-            .border-radius(2px);
 
             .account-group {
                 padding-bottom: 10px;    

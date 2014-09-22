@@ -1,0 +1,14 @@
+<div id="nav-selector">
+    <select ui-select2="navSelectorOptions" ng-model="navSelector" ng-change="navSelectorChanged()" class="filter">
+        <option></option>
+        <optgroup label="Ad Groups">
+            <option ng-repeat="adGroup in adGroups" value="{{ adGroup.id }}">{{ adGroup.name }}</option>
+        </optgroup>
+        <optgroup label="Campaigns" ng-if="canAccessCampaigns">
+            <option ng-repeat="campaign in campaigns" value="{{ campaign.id }}">{{ campaign.name }}</option>
+        </optgroup>
+        <optgroup label="Accounts" ng-if="canAccessAccounts">
+            <option ng-repeat="account in accounts" value="{{ account.id }}">{{ account.name }}</option>
+        </optgroup>
+    </select>
+</div>

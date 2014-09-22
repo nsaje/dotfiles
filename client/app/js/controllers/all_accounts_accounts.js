@@ -85,6 +85,10 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
     ];
 
+    $scope.setAccount(null);
+    $scope.setCampaign(null);
+    $scope.setAdGroup(null);
+
     $scope.initColumns = function () {
         var cols;
 
