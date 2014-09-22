@@ -1,6 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'zemCustomTableColsService', 'zemChartService', 'localStorageService', function ($scope, $state, $location, $window, $timeout, api, zemCustomTableColsService, zemChartService, localStorageService) {
+oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', 'localStorageService', function ($scope, $state, $location, $window, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemChartService, localStorageService) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.isIncompletePostclickMetrics = false;
@@ -240,92 +240,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         }
 
         if ($scope.hasPermission('zemauth.postclick_metrics')) {
-            var isInternal = $scope.isPermissionInternal('zemauth.postclick_metrics');
-
-            $scope.columns.splice($scope.columns.length - 1, 0, {
-                name: 'Visits',
-                field: 'visits',
-                checked: true,
-                type: 'number',
-                internal: isInternal,
-                help: 'Total number of sessions within a date range. A session is the period of time in which a user is actively engaged with your site.',
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc'
-            });
-
-            $scope.columns.splice($scope.columns.length - 1, 0, {
-                name: 'Pageviews',
-                field: 'pageviews',
-                checked: true,
-                type: 'number',
-                internal: isInternal,
-                help: 'Total number of pageviews made during the selected date range. A pageview is a view of a single page. Repeated views are counted.',
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc'
-            });
-
-            $scope.columns.splice($scope.columns.length - 1, 0, {
-                name: '% New Users',
-                field: 'percent_new_users',
-                checked: false,
-                type: 'percent',
-                internal: isInternal,
-                help: 'An estimate of first time visits during the selected date range.',
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc'
-            });
-
-            $scope.columns.splice($scope.columns.length - 1, 0, {
-                name: 'Bounce Rate',
-                field: 'bounce_rate',
-                checked: false,
-                type: 'percent',
-                internal: isInternal,
-                help: 'Percantage of visits that resulted in only one page view.',
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc'
-            });
-
-            $scope.columns.splice($scope.columns.length - 1, 0, {
-                name: 'PV/Visit',
-                field: 'pv_per_visit',
-                checked: false,
-                type: 'number',
-                fractionSize: 2,
-                internal: isInternal,
-                help: 'Average number of pageviews per visit.',
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc'
-            });
-
-            $scope.columns.splice($scope.columns.length - 1, 0, {
-                name: 'Avg. ToS',
-                field: 'avg_tos',
-                checked: false,
-                type: 'seconds',
-                internal: isInternal,
-                help: 'Average time spent on site in seconds during the selected date range.',
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc'
-            });
-
-            $scope.columns.splice($scope.columns.length - 1, 0, {
-                name: 'Click Discrepancy',
-                field: 'click_discrepancy',
-                checked: false,
-                type: 'percent',
-                internal: isInternal,
-                help: 'Clicks detected only by media source as a percentage of total clicks.',
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc'
-            });
+            zemPostclickMetricsService.insertColumns($scope.columns, $scope.isPermissionInternal('zemauth.postclick_metrics'));
         }
 
         cols = zemCustomTableColsService.load('adGroupSourcesCols', $scope.columns);
@@ -465,13 +380,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $scope.chartMetricOptions = options.adGroupChartMetrics;
 
         if ($scope.hasPermission('zemauth.postclick_metrics')) {
-            $scope.chartMetricOptions = $scope.chartMetricOptions.concat(options.adGroupChartPostClickMetrics.map(function (option) {
-                if ($scope.isPermissionInternal('zemauth.postclick_metrics')) {
-                    option.internal = true;
-                }
-
-                return option;
-            }));
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions($scope.chartMetricOptions, $scope.isPermissionInternal('zemauth.postclick_metrics'));
         }
 
         if (goals) {
