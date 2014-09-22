@@ -9,7 +9,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
     $scope.chartData = undefined;
     $scope.isChartShown = zemChartService.load('zemChart');
     $scope.chartMetricOptions = [];
-    $scope.chartGoalMetrics = null;
     $scope.chartBtnTitle = 'Hide chart';
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
@@ -85,7 +84,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
     var getDailyStats = function () {
         api.dailyStats.list($scope.type, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics(), true).then(
             function (data) {
-                setChartOptions(data.goals);
+                setChartOptions();
             
                 // Select default metrics if selected metrics are not defined
                 var values = $scope.chartMetricOptions.map(function (option) {
@@ -100,7 +99,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
                 }
 
                 $scope.chartData = data.chartData;
-                $scope.chartGoalMetrics = data.goals;
             },
             function (data) {
                 // error
@@ -109,7 +107,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
         );
     };
 
-    var setChartOptions = function (goals) {
+    var setChartOptions = function () {
         $scope.chartMetricOptions = $scope.chartMetrics;
 
         if ($scope.hasPermission('zemauth.postclick_metrics')) {
@@ -119,27 +117,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
                 }
 
                 return option;
-            }));
-        }
-
-        if (goals) {
-            $scope.chartMetricOptions = $scope.chartMetricOptions.concat(Object.keys(goals).map(function (goalId) {
-                var typeName = {
-                    'conversions': 'Conversions',
-                    'conversion_rate': 'Conversion Rate'
-                }[goals[goalId].type];
-
-                if (typeName === undefined) {
-                    return;
-                }
-                
-                return {
-                    name: goals[goalId].name + ': ' + typeName,
-                    value: goalId,
-                    internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
-                }
-            }).filter(function (option) {
-                return option !== undefined;
             }));
         }
     };
