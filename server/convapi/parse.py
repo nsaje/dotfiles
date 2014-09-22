@@ -61,8 +61,6 @@ class CsvReport(object):
             raise exc.CsvParseException('Too few lines.')
         if not self.lines[0].startswith('# -----'):
             raise exc.CsvParseException('First line should start with "# -----"')
-        if not self.lines[1].startswith('# All Web Site Data'):
-            raise exc.CsvParseException('Second line should start with "# All Website Data"')
         if not self.lines[2].startswith('# Landing Pages'):
             raise exc.CsvParseException('Third line should start with "# Landing Pages"')
         if not self.lines[3].startswith('#'):
