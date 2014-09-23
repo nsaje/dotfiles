@@ -506,3 +506,31 @@ class Article(models.Model):
 
         get_latest_by = 'created_dt'
         unique_together = ('ad_group', 'url', 'title')
+
+
+class CampaignBudgetSettings(models.Model):
+
+    campaign = models.ForeignKey('Campaign', on_delete=models.PROTECT)
+    allocate = models.DecimalField(
+        max_digits=20,
+        decimal_places=4,
+        blank=False,
+        null=False,
+        default=0,
+        verbose_name='Allocate amount'
+    )
+    revoke = models.DecimalField(
+        max_digits=20,
+        decimal_places=4,
+        blank=False,
+        null=False,
+        default=0,
+        verbose_name='Revoke amount'
+    )
+    comment = models.CharField(max_length=256)
+    created_by = created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
+    class Meta:
+        get_latest_by = 'created_dt'
