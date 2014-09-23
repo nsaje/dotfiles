@@ -24,8 +24,8 @@ oneApp.directive('zemNavFilter', ['config', '$state', function(config, $state) {
                 allowClear: false,
                 minimumInputLength: 1,
                 placeholder: 'search',
-                containerCssClass: 'nav-search',
-                dropdownCssClass: 'nav-search',
+                containerCssClass: 'nav-filter',
+                dropdownCssClass: 'nav-filter',
                 formatInputTooShort: function (input, min) {
                     return 'type to start searching';
                 },
