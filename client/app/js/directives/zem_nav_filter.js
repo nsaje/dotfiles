@@ -36,7 +36,7 @@ oneApp.directive('zemNavFilter', ['config', '$state', function(config, $state) {
                     return item.text;
                 }
             };
-g
+
             $scope.$watch('accountsData', function (newValue) {
                 if (!$scope.accountsData || !$scope.accountsData.length) {
                     return;

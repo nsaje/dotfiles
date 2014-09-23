@@ -4,7 +4,22 @@
     <div class="row body">
         <div class="sidebar" ng-show="accounts">
             <zem-nav-filter zem-current-account="account" zem-all-accounts="accounts" zem-can-access-accounts="{{ canAccessAccounts() }}" zem-can-access-campaigns="{{ canAccessCampaigns() }}" zem-default-account-state="{{ getDefaultAccountState() }}" zem-default-campaign-state="{{ getDefaultCampaignState() }}" zem-default-ad-group-state="{{ getDefaultAdGroupState() }}"></zem-nav-filter>
-            <div id="nav">
+            <div id="nav-new">
+                <div ng-repeat="account in accounts">
+                    <ul class="list-group">
+                        <li class="campaign-group" ng-repeat="campaign in account.campaigns">
+                            <div ng-if="!canAccessCampaigns()" class="campaign-name list-group-item">{{ campaign.name }}</div>
+                            <a ng-if="canAccessCampaigns()" class="campaign-name list-group-item" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() }) }" ui-sref="{{ $state.includes('*.campaigns.**') ? $state.current.name : getDefaultCampaignState() }}({ id: campaign.id })">{{ campaign.name }}</a>
+                            <ul class="list-group ad-groups">
+                                <a class="ad-group-item list-group-item" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() }) }" ui-sref="{{ $state.includes('*.adGroups.**') ? $state.current.name : getDefaultAdGroupState() }}({ id: adGroup.id })" ng-repeat="adGroup in campaign.adGroups">
+                                    <span class="ad-group-name">{{ adGroup.name }}</span>
+                                </a>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div id="nav" ng-if="false">
                 <div class="account-group" ng-repeat="account in accounts">
                     <div ng-if="!canAccessAccounts()" class="account-name">{{ account.name }}</div>
                     <a ng-if="canAccessAccounts()" class="account-name" ng-class="{'active': $state.includes('main.accounts', { id: account.id.toString() }) }" ui-sref="{{ $state.includes('*.accounts.**') ? $state.current.name : getDefaultAccountState() }}({ id: account.id })">{{ account.name }}</a>
