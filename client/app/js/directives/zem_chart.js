@@ -135,7 +135,7 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                 // renders strangely.
                 if ($scope.minDate.valueOf() !== $scope.maxDate.valueOf()) {
                     $scope.config.options.xAxis.min = moment($scope.minDate).subtract($scope.minDate.zone(), 'minutes').valueOf();
-                    $scope.config.options.xAxis.max = moment($scope.maxDate).add($scope.maxDate.zone(), 'minutes').valueOf();
+                    $scope.config.options.xAxis.max = moment($scope.maxDate).subtract($scope.maxDate.zone(), 'minutes').valueOf();
                 } else {
                     $scope.config.options.xAxis.min = null;
                     $scope.config.options.xAxis.max = null;

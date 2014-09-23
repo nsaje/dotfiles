@@ -35,8 +35,8 @@ describe('zemChart', function () {
     }));
 
     it('should set xAxis range properly', function () {
-        expect(isolate.config.options.xAxis.min).toBe(1404950400000);
-        expect(isolate.config.options.xAxis.max).toBe(1405022400000);
+        expect(isolate.config.options.xAxis.min).toBe(moment.utc('2014-07-10').valueOf());
+        expect(isolate.config.options.xAxis.max).toBe(moment.utc('2014-07-11').valueOf());
     });
 
     it('should set totals series correctly', function () {
