@@ -101,6 +101,9 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('account_agency_view', "Can view accounts's agency tab."),
             ('ad_group_sources_add_source', "Can add media sources."),
             ('postclick_metrics', 'Can view postclick metrics.'),
+            ('campaign_ad_groups_add_ad_group', 'Can add ad groups.'),
+            ('account_campaigns_add_campaign', 'Can add campaigns.'),
+            ('all_accounts_accounts_add_account', 'Can add accounts.'),
         )
 
     def get_full_name(self):

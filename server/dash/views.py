@@ -1703,8 +1703,6 @@ class AllAccountsExport(api_common.BaseApiView):
         # header
         writer.writerow(fieldnames)
 
-        import pdb; pdb.set_trace()
-
         for item in data:
             # Format
             row = {}
