@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'zemCustomTableColsService', 'localStorageService', 'zemChartService', '$compile', function ($scope, $state, $location, $window, $timeout, api, zemCustomTableColsService, localStorageService, zemChartService, $compile) {
+oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'localStorageService', 'zemChartService', '$compile', function ($scope, $state, $location, $window, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, localStorageService, zemChartService, $compile) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.order = '-cost';
@@ -97,6 +97,22 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         }
     ];
 
+    var initColumns = function () {
+        var cols;
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            zemPostclickMetricsService.insertColumns($scope.columns, $scope.isPermissionInternal('zemauth.postclick_metrics'));
+        }
+
+        cols = zemCustomTableColsService.load('adGroupAdsCols', $scope.columns);
+        $scope.selectedColumnsCount = cols.length;
+
+        $scope.$watch('columns', function (newValue, oldValue) {
+            cols = zemCustomTableColsService.save('adGroupAdsCols', newValue);
+            $scope.selectedColumnsCount = cols.length;
+        }, true);
+    };
+
     $scope.exportSelect2Config = {
         minimumResultsForSearch: -1,
         formatResult: function (object) {
@@ -126,21 +142,13 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         }
     };
 
-    var cols = zemCustomTableColsService.load('adGroupAdsCols', $scope.columns);
-    $scope.selectedColumnsCount = cols.length;
-
-    $scope.$watch('columns', function (newValue, oldValue) {
-        cols = zemCustomTableColsService.save('adGroupAdsCols', newValue);
-        $scope.selectedColumnsCount = cols.length;
-    }, true);
-
     $scope.$watch('isChartShown', function (newValue, oldValue) {
         zemChartService.save('zemChart', newValue);
     });
 
     $scope.loadRequestInProgress = false;
 
-    $scope.getTableData = function () {
+    var getTableData = function () {
         $scope.loadRequestInProgress = true;
 
         api.adGroupAdsTable.get($state.params.id, $scope.pagination.currentPage, $scope.pagination.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
@@ -172,7 +180,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
 
         $location.search('order', $scope.order);
         localStorageService.set('adGroupContentAds.order', $scope.order);
-        $scope.getTableData();
+        getTableData();
     };
 
     var getDailyStatsMetrics = function () {
@@ -193,23 +201,22 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         return metrics;
     };
 
-    $scope.getDailyStats = function () {
+    var setChartOptions = function () {
+        $scope.chartMetricOptions = options.adGroupChartMetrics;
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                $scope.isPermissionInternal('zemauth.postclick_metrics')
+            );
+        }
+    };
+
+    var getDailyStats = function () {
         api.dailyStats.list('ad_groups', $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true, getDailyStatsMetrics()).then(
             function (data) {
-                // Select default metrics if selected metrics are not defined
-                var values = $scope.chartMetricOptions.map(function (option) {
-                    return option.value;
-                });
-
-                if (values.indexOf($scope.chartMetric1) === -1) {
-                    $scope.chartMetric1 = constants.chartMetric.CLICKS;
-                }
-                if (values.indexOf($scope.chartMetric2) === -1) {
-                    $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
-                }
-
+                setChartOptions();
                 $scope.chartData = data.chartData;
-                $scope.chartGoalMetrics = data.goals;
             },
             function (data) {
                 // error
@@ -237,29 +244,17 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
+            getDailyStats();
             $location.search('chart_metric1', $scope.chartMetric1);
-
-            if (!hasMetricData($scope.chartMetric1)) {
-                localStorageService.set('adGroupContentAds.chartMetric1', $scope.chartMetric1);
-                $scope.getDailyStats();
-            } else {
-                // create a copy to trigger watch
-                $scope.chartData = angular.copy($scope.chartData);
-            }
+            localStorageService.set('adGroupContentAds.chartMetric1', $scope.chartMetric1);
         }
     });
 
     $scope.$watch('chartMetric2', function (newValue, oldValue) {
         if (newValue !== oldValue) {
+            getDailyStats();
             $location.search('chart_metric2', $scope.chartMetric2);
-
-            if (!hasMetricData($scope.chartMetric2)) {
-                localStorageService.set('adGroupContentAds.chartMetric2', $scope.chartMetric2);
-                $scope.getDailyStats();
-            } else {
-                // create a copy to trigger watch
-                $scope.chartData = angular.copy($scope.chartData);
-            }
+            localStorageService.set('adGroupContentAds.chartMetric2', $scope.chartMetric2);
         }
     });
 
@@ -271,8 +266,12 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
 
     // From parent scope (mainCtrl).
     $scope.$watch('dateRange', function (newValue, oldValue) {
-        $scope.getDailyStats();
-        $scope.getTableData();
+        if (newValue.startDate.isSame(oldValue.startDate) && newValue.endDate.isSame(oldValue.endDate)) {
+            return;
+        }
+
+        getDailyStats();
+        getTableData();
     });
 
     $scope.init = function() {
@@ -281,10 +280,11 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         var chartHidden = $location.search().chart_hidden;
         var size = $location.search().size || localStorageService.get('adGroupContentAds.paginationSize') || $scope.sizeRange[0];
         var order = $location.search().order || localStorageService.get('adGroupContentAds.order') || $scope.order;
-        var tableChanged = false;
 
         var data = $scope.adGroupData[$state.params.id];
         var page = $location.search().page || (data && data.page);
+
+        setChartOptions();
 
         if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
             $scope.chartMetric1 = chartMetric1;
@@ -304,24 +304,20 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             $scope.pagination.currentPage = page;
             $scope.setAdGroupData('page', page);
             $location.search('page', page);
-            tableChanged = true;
         }
 
         if (size !== undefined && $scope.pagination.size !== size) {
             $scope.pagination.size = size;
-            tableChanged = true;
         }
         
         if (order !== undefined && $scope.order !== order) {
             $scope.order = order;
             $location.search('order', order);
-            tableChanged = true;
         }
 
-        if (tableChanged) {
-            $scope.loadPage();
-        }
-
+        $scope.loadPage();
+        getDailyStats();
+        initColumns();
     };
     
     // pagination
@@ -336,7 +332,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             $location.search('page', $scope.pagination.currentPage);
             $scope.setAdGroupData('page', $scope.pagination.currentPage);
 
-            $scope.getTableData();
+            getTableData();
             $scope.getAdGroupState();
         }
     };
@@ -369,8 +365,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
                         if($scope.isSyncInProgress == false){
                             // we found out that the sync is no longer in progress
                             // time to reload the data
-                            $scope.getTableData();
-                            $scope.getDailyStats();
+                            getTableData();
+                            getDailyStats();
                         }
                     },
                     function(data) {

@@ -52,7 +52,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $scope.setAdGroupData('sourceIds', $scope.selectedSourceIds);
         $scope.setAdGroupData('sourceTotals', $scope.selectedTotals);
 
-        $scope.getDailyStats();
+        getDailyStats();
     };
 
     $scope.selectRows = function () {
@@ -263,7 +263,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
         $location.search('order', $scope.order);
         localStorageService.set('adGroupSources.order', $scope.order);
-        $scope.getTableData();
+        getTableData();
     };
     $scope.orderRows = function (col) {
         if ($scope.order.indexOf(col) === 1) {
@@ -276,7 +276,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
         $location.search('order', $scope.order);
         localStorageService.set('adGroupSources.order', $scope.order);
-        $scope.getTableData();
+        getTableData();
     };
 
 
@@ -331,7 +331,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         }
     };
 
-    $scope.getTableData = function (showWaiting) {
+    var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
         api.adGroupSourcesTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
@@ -405,7 +405,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         }
     };
 
-    $scope.getDailyStats = function () {
+    var getDailyStats = function () {
         api.dailyStats.list('ad_groups', $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics()).then(
             function (data) {
                 setChartOptions(data.goals);
@@ -467,7 +467,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
             if (!hasMetricData($scope.chartMetric1)) {
                 localStorageService.set('adGroupSources.chartMetric1', $scope.chartMetric1);
-                $scope.getDailyStats();
+                getDailyStats();
             } else {
                 // create a copy to trigger watch
                 $scope.chartData = angular.copy($scope.chartData);
@@ -481,7 +481,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
             if (!hasMetricData($scope.chartMetric2)) {
                 localStorageService.set('adGroupSources.chartMetric2', $scope.chartMetric2);
-                $scope.getDailyStats();
+                getDailyStats();
             } else {
                 // create a copy to trigger watch
                 $scope.chartData = angular.copy($scope.chartData);
@@ -497,8 +497,12 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
     // From parent scope (mainCtrl).
     $scope.$watch('dateRange', function (newValue, oldValue) {
-        $scope.getDailyStats();
-        $scope.getTableData();
+        if (newValue.startDate.isSame(oldValue.startDate) && newValue.endDate.isSame(oldValue.endDate)) {
+            return;
+        }
+
+        getDailyStats();
+        getTableData();
     });
 
     $scope.init = function() {
@@ -549,7 +553,11 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $scope.getAdGroupState();
         $scope.initColumns();
 
-        $scope.getSources();
+        console.log('lala');
+        getTableData();
+        getDailyStats();
+
+        getSources();
     };
 
     // export
@@ -558,7 +566,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $scope.exportType = '';
     };
 
-    $scope.getSources = function () {
+    var getSources = function () {
         if (!$scope.hasPermission('zemauth.ad_group_sources_add_source')) {
             return;
         }
@@ -582,7 +590,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
         api.adGroupSources.add($state.params.id, sourceIdToAdd).then(
             function (data) {
-                $scope.getSources();
+                getSources();
             },
             function (data) {
                 // error
@@ -603,8 +611,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                         if($scope.isSyncInProgress == false){
                             // we found out that the sync is no longer in progress
                             // time to reload the data
-                            $scope.getTableData();
-                            $scope.getDailyStats();
+                            getTableData();
+                            getDailyStats();
                         }
                     },
                     function(data) {
