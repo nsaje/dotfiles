@@ -2103,28 +2103,38 @@ class AccountDailyStats(BaseDailyStatsView):
         metrics = request.GET.getlist('metrics')
         selected_ids = request.GET.getlist('selected_ids')
         totals = request.GET.get('totals')
+        sources = request.GET.get('sources')
 
         totals_kwargs = None
         selected_kwargs = None
-        campaigns = []
+        group_key = 'campaign'
+        group_names = None
+
+        if sources:
+            group_key = 'source'
 
         if totals:
             totals_kwargs = {'account': int(account.id)}
 
         if selected_ids:
             ids = [int(x) for x in selected_ids]
-            selected_kwargs = {'account': int(account.id), 'campaign': ids}
+            selected_kwargs = {'account': int(account.id), group_key: ids}
 
-            campaigns = models.Campaign.objects.filter(pk__in=ids)
+            if sources:
+                sources = models.Source.objects.filter(pk__in=ids)
+                group_names = {source.id: source.name for source in sources}
+            else:
+                campaigns = models.Campaign.objects.filter(pk__in=ids)
+                group_names = {campaign.id: campaign.name for campaign in campaigns}
 
-        stats = self.get_stats(request, totals_kwargs, selected_kwargs, 'campaign')
+        stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key)
 
         return self.create_api_response(self.get_response_dict(
             stats,
             totals,
-            {campaign.id: campaign.name for campaign in campaigns},
+            group_names,
             metrics,
-            'campaign'
+            group_key
         ))
 
 
@@ -2136,28 +2146,38 @@ class CampaignDailyStats(BaseDailyStatsView):
         metrics = request.GET.getlist('metrics')
         selected_ids = request.GET.getlist('selected_ids')
         totals = request.GET.get('totals')
+        sources = request.GET.get('sources')
 
         totals_kwargs = None
         selected_kwargs = None
-        ad_groups = []
+        group_key = 'ad_group'
+        group_names = None
+
+        if sources:
+            group_key = 'source'
 
         if totals:
             totals_kwargs = {'campaign': int(campaign.id)}
 
         if selected_ids:
             ids = [int(x) for x in selected_ids]
-            selected_kwargs = {'campaign': int(campaign.id), 'ad_group_id': ids}
+            selected_kwargs = {'campaign': int(campaign.id), '{}_id'.format(group_key): ids}
 
-            ad_groups = models.AdGroup.objects.filter(pk__in=ids)
+            if sources:
+                sources = models.Source.objects.filter(pk__in=ids)
+                group_names = {source.id: source.name for source in sources}
+            else:
+                ad_groups = models.AdGroup.objects.filter(pk__in=ids)
+                group_names = {ad_group.id: ad_group.name for ad_group in ad_groups}
 
-        stats = self.get_stats(request, totals_kwargs, selected_kwargs, 'ad_group')
+        stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key)
 
         return self.create_api_response(self.get_response_dict(
             stats,
             totals,
-            {ad_group.id: ad_group.name for ad_group in ad_groups},
+            group_names,
             metrics,
-            'ad_group'
+            group_key
         ))
 
 
@@ -2202,17 +2222,36 @@ class AccountsDailyStats(BaseDailyStatsView):
             raise exc.MissingDataError()
 
         metrics = request.GET.getlist('metrics')
+        selected_ids = request.GET.getlist('selected_ids')
+        totals = request.GET.get('totals')
+
+        totals_kwargs = None
+        selected_kwargs = None
+        group_key = None
+        group_names = None
+
         accounts = models.Account.objects.get_for_user(request.user)
 
-        kwargs = {'account': accounts}
+        if totals:
+            totals_kwargs = {'account': accounts}
 
-        stats = self.get_stats(request, kwargs)
+        if selected_ids:
+            ids = [int(x) for x in selected_ids]
+            selected_kwargs = {'account': accounts, 'source_id': ids}
+
+            group_key = 'source'
+
+            sources = models.Source.objects.filter(pk__in=ids)
+            group_names = {source.id: source.name for source in sources}
+
+        stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key)
 
         return self.create_api_response(self.get_response_dict(
             stats,
-            True,
-            None,
-            metrics
+            totals,
+            group_names,
+            metrics,
+            group_key
         ))
 
 
