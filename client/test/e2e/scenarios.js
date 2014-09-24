@@ -29,27 +29,27 @@ describe('All Accounts', function () {
 
             view.metric1Select.click();
             view.metric1SelectOptions.then(function (options) {
-                expect(options.length).toBe(3);
+                expect(options.length).toBe(12);
                 expect(options[0].getText()).toBe('Clicks');
                 options[0].click();
             });
 
             view.metric2Select.click();
             view.metric2SelectOptions.then(function (options) {
-                expect(options.length).toBe(4);
-                expect(options[3].getText()).toBe('Avg. CPC');
+                expect(options.length).toBe(13);
+                expect(options[3].getText()).toBe('CTR');
                 options[3].click();
             });
 
             expect(browser.getLocationAbsUrl()).toMatch(/chart_metric1=clicks/);
-            expect(browser.getLocationAbsUrl()).toMatch(/chart_metric2=cpc/);
+            expect(browser.getLocationAbsUrl()).toMatch(/chart_metric2=ctr/);
 
             // check if it is correctly loaded from local storage
             view.get();
             expect(view.metric1Select.getText()).toEqual('Clicks');
-            expect(view.metric2Select.getText()).toEqual('Avg. CPC');
+            expect(view.metric2Select.getText()).toEqual('CTR');
             expect(browser.getLocationAbsUrl()).toMatch(/chart_metric1=clicks/);
-            expect(browser.getLocationAbsUrl()).toMatch(/chart_metric2=cpc/);
+            expect(browser.getLocationAbsUrl()).toMatch(/chart_metric2=ctr/);
         });
 
         it('should toggle the chart when toggle button is clicked', function () {
