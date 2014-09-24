@@ -17,7 +17,5 @@ class Command(BaseCommand):
         n_reported_visits = convapi.models.RawPostclickStats.objects.filter(
             datetime=today
         ).aggregate(visits_sum=Sum('visits')).get('visits_sum') or 0
-        print n_aggregated_visits
-        print n_reported_visits
         statsd_gauge('convapi.reported_visits', n_reported_visits)
         statsd_gauge('convapi.aggregated_visits', n_aggregated_visits)
