@@ -69,7 +69,7 @@ def staging(*args):
     env.user = STAGING_USER
     if args[0] == 'all':
         selected_hosts = STAGING_SERVERS.values()
-    elif set(args) < set(STAGING_SERVERS.keys()):
+    elif set(args) <= set(STAGING_SERVERS.keys()):
         selected_hosts = [STAGING_SERVERS[host] for host in set(args)]
     else:
         abort("Unknown hosts!")
