@@ -1,6 +1,7 @@
 cron:
 - hosts: [knot01.zemanta.com]
   job: '0 * * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py fetch_all_order > /dev/null 2>&1'
+  job: '30 * * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py monitor_ga_reports > /dev/null 2>&1'
 
 - hosts: [knot01.zemanta.com,stadium01.zemanta.com]
   job: '15,45 * * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py refresh_actionlog > /dev/null 2>&1'
