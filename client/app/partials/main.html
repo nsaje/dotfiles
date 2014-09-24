@@ -2,8 +2,8 @@
     <div class="row header" ng-include src="'/partials/header.html'"></div>
 
     <div class="row body">
-        <div class="sidebar" ng-show="accounts">
-            <div id="nav-new">
+        <div class="sidebar sidebar-new" ng-show="accounts">
+            <div id="nav-new" ng-if="hasPermission('zemauth.all_new_sidebar')">
                 <zem-nav-search zem-current-account="account" zem-all-accounts="accounts" zem-can-access-accounts="{{ canAccessAccounts() }}" zem-can-access-campaigns="{{ canAccessCampaigns() }}" zem-default-account-state="{{ getDefaultAccountState() }}" zem-default-campaign-state="{{ getDefaultCampaignState() }}" zem-default-ad-group-state="{{ getDefaultAdGroupState() }}"></zem-nav-search>
                 <div id="nav-menu">
                     <div class="nav-group account-group" ng-if="$state.includes('main.allAccounts.accounts')" ng-repeat="account in accounts">
@@ -30,7 +30,7 @@
                     </div>
                 </div>
             </div>
-            <div id="nav" ng-if="false">
+            <div id="nav" ng-if="!hasPermission('zemauth.all_new_sidebar')">
                 <div class="account-group" ng-repeat="account in accounts">
                     <div ng-if="!canAccessAccounts()" class="account-name">{{ account.name }}</div>
                     <a ng-if="canAccessAccounts()" class="account-name" ng-class="{'active': $state.includes('main.accounts', { id: account.id.toString() }) }" ui-sref="{{ $state.includes('*.accounts.**') ? $state.current.name : getDefaultAccountState() }}({ id: account.id })">{{ account.name }}</a>

@@ -992,6 +992,11 @@ a.help-popover:visited {
         top: 0px;
         bottom: 15px;
         width: 205px;
+        padding-left: 15px;
+
+        &.sidebar-new {
+            padding-left: 0;
+        }
 
         #nav-new {
             height: 100%;
@@ -1060,8 +1065,10 @@ a.help-popover:visited {
 
         #nav {
             height: 100%;
+            border: 1px solid #d2d2d2;
             padding: 5px;
             overflow: auto;
+            .border-radius(2px);
 
             .account-group {
                 padding-bottom: 10px;    
