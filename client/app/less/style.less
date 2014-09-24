@@ -995,71 +995,64 @@ a.help-popover:visited {
 
         #nav-selector {
             padding-left: 5px;
+            z-index: 100000;
         }
 
         #nav-new {
             height: 100%;
             padding: 0;
             overflow: auto;
+            padding-top: 34px;
+            margin-top: -34px;
 
-            .list-group {
-                margin-bottom: 0;
-                border-radius: 0;
+            .account-group {
+                margin-top: 10px;
+                margin-bottom: 15px;
             }
 
-            .list-group-item {
-                border: 0;
-                padding: 2px 5px 2px 0;
+            .campaign-group {
+                margin-bottom: 10px;
+            }
 
-                &.ad-group-item {
-                    padding-left: 0;
+            .nav-name {
+                padding: 0 5px  0 15px;
+                border-radius: 0 2px 2px 0px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                font-size: 14px;
+
+                &:hover {
+                    background: #f5f5f5;
+                }
+
+                a,
+                a:hover,
+                a:active,
+                a:visited {
+                    color: #414141;
+                    text-decoration: none;
                 }
 
                 &.active {
                     background-color: #25A8C9;
-                    border-radius: 0 2px 2px 0px;
 
-                    &.campaign-name {
-                        color: #ffffff;
-                        text-decoration: none;
-                    }
-
-                    .ad-group-name {
-                        color: #ffffff;
-                        text-decoration: none;
+                    a,
+                    a:hover,
+                    a:active,
+                    a:visited {
+                        color: white;
                     }
                 }
 
-                &:hover {
-                    border-radius: 2px;
+                &.campaign-name {
+                    font-weight: 600;
                 }
-            }
 
-            .campaign-group {
-                margin-top: 10px;
-                margin-bottom: 25px;
-            }
-
-            .campaign-name {
-                font-size: 14px;
-                font-weight: 600;
-                color: #414141;
-                padding-left: 15px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .ad-group-item {
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .ad-group-name {
-                font-size: 14px;
-                color: #414141;
-                padding-left: 15px;
+                &.account-name {
+                    font-weight: 900;
+                    text-transform: uppercase;
+                }
             }
         }
 
