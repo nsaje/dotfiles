@@ -2,12 +2,12 @@
 "use strict";
 
 // https://github.com/angular-ui/bootstrap/issues/520
-oneApp.directive('popoverHtmlUnsafePopup', ['config', function (config) {
+oneApp.directive('popoverHtmlUnsafePopup', [function () {
     return {
         restrict: 'EA',
         replace: true,
         scope: { title: '@', content: '@', placement: '@', animation: '&', isOpen: '&' },
-        templateUrl: config.static_url + '/partials/popover_html_unsafe_popup.html'
+        templateUrl: '/partials/popover_html_unsafe_popup.html'
     };
 }]);
 

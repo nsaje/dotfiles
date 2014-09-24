@@ -1,6 +1,6 @@
 /*global angular*/
 
-var oneApp = angular.module('one', ['oneApi', 'ngBootstrap', 'ngSanitize', 'ui.router', 'ui.bootstrap', 'ui.bootstrap.datetimepicker', 'ui.select2', 'highcharts-ng', 'LocalStorageModule', 'config']);
+var oneApp = angular.module('one', ['templates-dist', 'oneApi', 'ngBootstrap', 'ngSanitize', 'ui.router', 'ui.bootstrap', 'ui.bootstrap.datetimepicker', 'ui.select2', 'highcharts-ng', 'LocalStorageModule', 'config']);
 
 oneApp.config(['$sceDelegateProvider', 'config', function ($sceDelegateProvider, config) {
     $sceDelegateProvider.resourceUrlWhitelist(['self', config.static_url + '/**']);
@@ -37,12 +37,12 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         return false;
     });
 
-    var basicTemplate = '<ng-include src="config.static_url + \'/partials/tabset.html\'"></ng-include><div ui-view></div>'
+    var basicTemplate = '<ng-include src="\'/partials/tabset.html\'"></ng-include><div ui-view></div>'
 
     $stateProvider
         .state('main', {
             url: '/',
-            templateUrl: config.static_url + '/partials/main.html',
+            templateUrl: '/partials/main.html',
             controller: 'MainCtrl',
             resolve: {
                 user: ['api', function(api) {
@@ -62,7 +62,7 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         })
         .state('main.allAccounts.accounts', {
             url: '/accounts',
-            templateUrl: config.static_url + '/partials/all_accounts_accounts.html',
+            templateUrl: '/partials/all_accounts_accounts.html',
             controller: 'AllAccountsAccountsCtrl'
         });
     
@@ -74,12 +74,12 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         })
         .state('main.accounts.campaigns', {
             url: '/campaigns',
-            templateUrl: config.static_url + '/partials/account_campaigns.html',
+            templateUrl: '/partials/account_campaigns.html',
             controller: 'AccountCampaignsCtrl'
         })
         .state('main.accounts.agency', {
             url: '/agency',
-            templateUrl: config.static_url + '/partials/account_agency.html',
+            templateUrl: '/partials/account_agency.html',
             controller: 'AccountAgencyCtrl'
         });
 
@@ -91,12 +91,12 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         })
         .state('main.campaigns.ad_groups', {
             url: '/ad_groups',
-            templateUrl: config.static_url + '/partials/campaign_ad_groups.html',
+            templateUrl: '/partials/campaign_ad_groups.html',
             controller: 'CampaignAdGroupsCtrl'
         })
         .state('main.campaigns.agency', {
             url: '/agency',
-            templateUrl: config.static_url + '/partials/campaign_agency.html',
+            templateUrl: '/partials/campaign_agency.html',
             controller: 'CampaignAgencyCtrl'
         });
 
@@ -104,26 +104,26 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
     $stateProvider
         .state('main.adGroups', {
             url: 'ad_groups/{id}',
-            templateUrl: config.static_url + '/partials/ad_group.html'
+            templateUrl: '/partials/ad_group.html'
         })
         .state('main.adGroups.ads', {
             url: '/ads',
-            templateUrl: config.static_url + '/partials/ad_group_contentads.html',
+            templateUrl: '/partials/ad_group_contentads.html',
             controller: 'AdGroupAdsCtrl'
         })
         .state('main.adGroups.sources', {
             url: '/sources',
-            templateUrl: config.static_url + '/partials/ad_group_sources.html',
+            templateUrl: '/partials/ad_group_sources.html',
             controller: 'AdGroupSourcesCtrl'
         })
         .state('main.adGroups.settings', {
             url: '/settings',
-            templateUrl: config.static_url + '/partials/ad_group_settings.html',
+            templateUrl: '/partials/ad_group_settings.html',
             controller: 'AdGroupSettingsCtrl'
         })
         .state('main.adGroups.agency', {
             url: '/agency',
-            templateUrl: config.static_url + '/partials/ad_group_agency.html',
+            templateUrl: '/partials/ad_group_agency.html',
             controller: 'AdGroupAgencyCtrl'
         });
 }]);

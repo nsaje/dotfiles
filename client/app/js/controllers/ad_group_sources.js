@@ -61,6 +61,31 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         });
     };
 
+    $scope.columnCategories = [
+        {
+            'name': 'Traffic Acquisition',
+            'fields': [
+               'bid_cpc', 'daily_budget', 'cost', 
+               'cpc', 'clicks', 'impressions', 'ctr', 
+               'yesterday_cost', 'supply_dash_url',
+            ]
+        },
+        {
+            'name': 'Audience Metrics',
+            'fields': [
+                'visits', 'pageviews', 'percent_new_users',
+                'bounce_rate', 'pv_per_visit', 'avg_tos', 
+                'click_discrepancy'
+            ]
+        },
+        {
+            'name': 'Data Sync',
+            'fields': ['last_sync']
+        }
+    ];
+
+    $scope.postclickCategoryIndex = 1;
+
     $scope.columns = [
         {
             name: '',
@@ -370,6 +395,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                             initialOrder: 'desc'
                         }
                         $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
+                        $scope.columnCategories[$scope.postclickCategoryIndex].fields.push(col_descr.field);
                     } else if(field.indexOf(': Conversion Rate') != -1) {
                         var col_descr = {
                             'name': field.substr('goal__'.length),
@@ -383,6 +409,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                             initialOrder: 'desc'
                         }
                         $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
+                        $scope.columnCategories[$scope.postclickCategoryIndex].fields.push(col_descr.field);
                     }
                 }
             }

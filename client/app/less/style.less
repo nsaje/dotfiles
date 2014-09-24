@@ -1154,6 +1154,9 @@ a.help-popover:visited {
             .button-bar-item {
                 display: inline;
                 margin-right: 10px;
+                .btn {
+                    margin-left: 0;
+                }
             }
             .btn {
                 margin-left: 5px;
@@ -1602,10 +1605,20 @@ a.help-popover:visited {
         border: 1px solid #2fa8c7;
         color: #2fa8c7;
 
-        width: 14em;
+        width: 18em;
+
+        max-height: 400px;
+        overflow-y: scroll;
 
         .checkbox {
             margin: 3px 20px
+        }
+
+        .category-name {
+            color: grey;
+            margin-left: 8px;
+            font-weight: 600;
+            font-size: 16px;
         }
     }
 }

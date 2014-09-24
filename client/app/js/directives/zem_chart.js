@@ -14,7 +14,7 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
             maxDate: '=zemMaxDate',
             onRemove: '&zemOnRemove'
         },
-        templateUrl: config.static_url + '/partials/zem_chart.html',
+        templateUrl: '/partials/zem_chart.html',
         controller: ['$scope', '$element', '$attrs', '$http', function ($scope, $element, $attrs, $http) {
             var totalsColor = ['#009db2', '#c9eaef'];
             var colors = [
@@ -134,8 +134,8 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                 // they are the same, let charts figure it out because otherwise it
                 // renders strangely.
                 if ($scope.minDate.valueOf() !== $scope.maxDate.valueOf()) {
-                    $scope.config.options.xAxis.min = moment($scope.minDate).add('minutes', $scope.minDate.zone()).valueOf();
-                    $scope.config.options.xAxis.max = moment($scope.maxDate).subtract('minutes', $scope.maxDate.zone()).valueOf();
+                    $scope.config.options.xAxis.min = moment($scope.minDate).subtract($scope.minDate.zone(), 'minutes').valueOf();
+                    $scope.config.options.xAxis.max = moment($scope.maxDate).subtract($scope.maxDate.zone(), 'minutes').valueOf();
                 } else {
                     $scope.config.options.xAxis.min = null;
                     $scope.config.options.xAxis.max = null;

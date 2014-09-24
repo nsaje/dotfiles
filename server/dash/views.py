@@ -1629,6 +1629,177 @@ class AdGroupSourcesExport(api_common.BaseApiView):
         return response
 
 
+class AllAccountsExport(api_common.BaseApiView):
+
+    def get(self, request):
+        accounts = models.Account.objects.get_for_user(request.user)
+
+        start_date = get_stats_start_date(request.GET.get('start_date'))
+        end_date = get_stats_end_date(request.GET.get('end_date'))
+
+        filename = 'all_accounts_report_{0}_{1}'.format(start_date, end_date)
+
+        results = reports.api.query(start_date, end_date, 
+            ['date', 'account'], ['date'], account=accounts)
+
+        self._add_account_data(results)
+
+        if request.GET.get('type') == 'excel':
+
+            detailed_results = reports.api.query(start_date, end_date,
+                ['date', 'account', 'campaign'], ['date'], account=accounts)
+
+            self._add_account_data(detailed_results)
+            self._add_campaign_data(detailed_results)
+
+            return self.create_excel_response(
+                results,
+                detailed_results,
+                filename
+            )
+        else:
+            return self.create_csv_response(results, filename)
+
+    def _add_account_data(self, results):
+        account_lookup = {}
+        for result in results:
+            if result['account'] not in account_lookup:
+                account = models.Account.objects.get(pk=result['account'])
+                account_lookup[result['account']] = account
+            result['account_name'] = account_lookup[result['account']].name
+
+    def _add_campaign_data(self, results):
+        campaign_data_lookup = {}
+        for result in results:
+            cid = result['campaign']
+            if cid not in campaign_data_lookup:
+                data = {}
+                campaign = models.Campaign.objects.get(pk=cid)
+                data['campaign_name'] = campaign.name
+                cs = models.CampaignSettings.objects.filter(campaign=cid).latest('created_dt')
+                data['account_manager'] = cs.account_manager.email if cs.account_manager is not None else 'N/A'
+                data['sales_representative'] = cs.sales_representative.email if cs.sales_representative is not None else 'N/A'
+                data['service_fee'] = cs.service_fee
+                data['iab_category'] = cs.iab_category
+                data['promotion_goal'] = constants.PromotionGoal.get_text(cs.promotion_goal)
+                campaign_data_lookup[cid] = data
+            result.update(campaign_data_lookup[cid])
+
+    def create_csv_response(self, data, filename):
+        response = self.create_file_response('text/csv; name="%s.csv"' % filename, '%s.csv' % filename)
+
+        fieldnames = OrderedDict([
+            ('date', 'Date'),
+            ('account_name', 'Account'),
+            ('cost', 'Cost'),
+            ('cpc', 'CPC'),
+            ('clicks', 'Clicks'),
+            ('impressions', 'Impressions'),
+            ('ctr', 'CTR')
+        ])
+
+        writer = unicodecsv.DictWriter(response, fieldnames, encoding='utf-8', dialect='excel')
+
+        # header
+        writer.writerow(fieldnames)
+
+        for item in data:
+            # Format
+            row = {}
+            for key in ['cost', 'cpc', 'ctr']:
+                val = item[key]
+                if not isinstance(val, float):
+                    val = 0
+                row[key] = '{:.2f}'.format(val)
+            for key in fieldnames:
+                row[key] = item[key]
+
+            writer.writerow(row)
+
+        return response
+
+    def create_excel_response(self, data, detailed_data, filename):
+        output = StringIO.StringIO()
+        workbook = Workbook(output, {'strings_to_urls': False})
+
+        format_date = workbook.add_format({'num_format': u'm/d/yy'})
+        format_percent = workbook.add_format({'num_format': u'0.00%'})
+        format_usd = workbook.add_format({'num_format': u'[$$-409]#,##0.00;-[$$-409]#,##0.00'})
+
+        columns_simple = [
+            {'name': 'Date', 'format': format_date},
+            {'name': 'Account'},
+            {'name': 'Cost', 'format': format_usd},
+            {'name': 'CPC', 'format': format_usd},
+            {'name': 'Clicks'},
+            {'name': 'Impressions', 'width': 15},
+            {'name': 'CTR', 'format': format_percent},
+        ]
+
+        create_excel_worksheet(
+            workbook,
+            'All Accounts Report',
+            columns_simple,
+            data=[[
+                item['date'],
+                item['account_name'],
+                item['cost'] or 0,
+                item['cpc'] or 0,
+                item['clicks'] or 0,
+                item['impressions'] or 0,
+                (item['ctr'] or 0) / 100
+            ] for item in data]
+        )
+
+        columns_detailed = [
+            {'name': 'Date', 'format': format_date},
+            {'name': 'Account'},
+            {'name': 'Campaign'},
+            {'name': 'Account Manager'},
+            {'name': 'Sales Representative'},
+            {'name': 'Service Fee', 'format': format_percent},
+            {'name': 'IAB Category'},
+            {'name': 'Promotion Goal'},
+            {'name': 'Cost', 'format': format_usd},
+            {'name': 'CPC', 'format': format_usd},
+            {'name': 'Clicks'},
+            {'name': 'Impressions', 'width': 15},
+            {'name': 'CTR', 'format': format_percent},
+        ]
+        
+        create_excel_worksheet(
+            workbook,
+            'Detailed Report',
+            columns_detailed,
+            data=[[
+                item['date'],
+                item['account_name'],
+                item['campaign_name'],
+                item['account_manager'],
+                item['sales_representative'],
+                item['service_fee'],
+                item['iab_category'],
+                item['promotion_goal'],
+                item['cost'] or 0,
+                item['cpc'] or 0,
+                item['clicks'] or 0,
+                item['impressions'] or 0,
+                (item['ctr'] or 0) / 100
+            ] for item in detailed_data]
+        )
+
+        workbook.close()
+        output.seek(0)
+
+        response = self.create_file_response(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            '%s.xlsx' % filename,
+            content=output.read()
+        )
+
+        return response
+
+
 class TriggerAccountSyncThread(threading.Thread):
     """ Used to trigger sync for all accounts asynchronously. """
     def __init__(self, accounts, *args, **kwargs):

@@ -51,4 +51,4 @@ def _urls_match(article_url, landing_page_url):
     landing_page_url = landing_page_url.decode('ascii', 'ignore')
     article_url = article_url.replace('//', '/')
     landing_page_url = landing_page_url.replace('//', '/')
-    return article_url.endswith(landing_page_url)
+    return article_url.lower().endswith(landing_page_url.lower())
