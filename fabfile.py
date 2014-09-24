@@ -43,7 +43,7 @@ PRODUCTION_SERVERS = {
 }
 
 GIT_REPOSITORY = 'git@github.com:Zemanta/zemanta-eins.git'
-DEFAULT_BRANCH = 'fea_nav_search'
+DEFAULT_BRANCH = 'master'
 
 
 selected_hosts = []
