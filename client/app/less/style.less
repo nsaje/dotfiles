@@ -737,7 +737,7 @@ div[datepicker] {
 
 // navigation filter select
 
-.nav-filter {
+.select2-nav-search {
     &.select2-container {
         width: 100%;
 
@@ -993,65 +993,67 @@ a.help-popover:visited {
         bottom: 15px;
         width: 205px;
 
-        #nav-selector {
-            padding-left: 5px;
-            z-index: 100000;
-        }
-
         #nav-new {
             height: 100%;
             padding: 0;
-            overflow: auto;
-            padding-top: 34px;
-            margin-top: -34px;
 
-            .account-group {
-                margin-top: 10px;
-                margin-bottom: 15px;
+            #nav-search {
+                padding-left: 5px;
             }
 
-            .campaign-group {
-                margin-bottom: 10px;
-            }
+            #nav-menu {
+                height: calc(~"100% - 34px");
+                overflow-y: auto;
 
-            .nav-name {
-                padding: 0 5px  0 15px;
-                border-radius: 0 2px 2px 0px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                font-size: 14px;
-
-                &:hover {
-                    background: #f5f5f5;
+                .account-group {
+                    margin-top: 10px;
+                    margin-bottom: 45px;
                 }
 
-                a,
-                a:hover,
-                a:active,
-                a:visited {
-                    color: #414141;
-                    text-decoration: none;
+                .campaign-group {
+                    margin-top: 5px;
+                    margin-bottom: 30px;
                 }
 
-                &.active {
-                    background-color: #25A8C9;
+                .nav-name {
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    font-size: 14px;
+                    padding: 0 5px  0 15px;
+                    border-radius: 0 2px 2px 0px;
+                    display: block;
+                    width: 100%;
 
-                    a,
-                    a:hover,
-                    a:active,
-                    a:visited {
+                    &:hover {
+                        background: #f5f5f5;
+                    }
+
+                    &,
+                    &:hover,
+                    &:active,
+                    &:visited {
+                        color: #414141;
+                        text-decoration: none;
+                    }
+
+                    &.active {
+                        background-color: #25A8C9;
                         color: white;
                     }
-                }
 
-                &.campaign-name {
-                    font-weight: 600;
-                }
+                    &.account-name {
+                        font-weight: 100;
+                    }
 
-                &.account-name {
-                    font-weight: 900;
-                    text-transform: uppercase;
+                    &.campaign-name {
+                        font-weight: 600;
+                    }
+
+                    &.account-name {
+                        font-weight: 900;
+                        text-transform: uppercase;
+                    }
                 }
             }
         }

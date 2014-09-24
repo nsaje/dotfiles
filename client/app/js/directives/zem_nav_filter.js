@@ -1,10 +1,10 @@
 /*globals $,oneApp,constants,options*/
 "use strict";
 
-oneApp.directive('zemNavFilter', ['config', '$state', function(config, $state) {
+oneApp.directive('zemNavSearch', ['config', '$state', function(config, $state) {
     return {
         restrict: 'E',
-        templateUrl: config.static_url + '/partials/zem_nav_filter.html',
+        templateUrl: config.static_url + '/partials/zem_nav_search.html',
         scope: {
             account: '=zemCurrentAccount',
             accountsData: '=zemAllAccounts',
@@ -23,9 +23,9 @@ oneApp.directive('zemNavFilter', ['config', '$state', function(config, $state) {
             $scope.navSelectorOptions = {
                 allowClear: false,
                 minimumInputLength: 1,
-                placeholder: 'search',
-                containerCssClass: 'nav-filter',
-                dropdownCssClass: 'nav-filter',
+                placeholder: 'Search',
+                containerCssClass: 'select2-nav-search',
+                dropdownCssClass: 'select2-nav-search',
                 formatInputTooShort: function (input, min) {
                     return 'type to start searching';
                 },
