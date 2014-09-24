@@ -29,7 +29,8 @@ module.exports = function(config) {
         'app/lib/components/angular-sanitize/angular-sanitize.min.js',
         'app/lib/components/angular-local-storage/angular-local-storage.min.js',
         'app/lib/components/angular-mocks/angular-mocks.js',
-        'app/dist/js/zemanta-one.min.js',
+        'app/dist/js/zemanta-one.templates.js',
+        'app/js/**/*.js',
         'test/unit/**/*.js'
     ],
 
