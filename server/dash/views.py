@@ -1681,7 +1681,7 @@ class AllAccountsExport(api_common.BaseApiView):
                 data['sales_representative'] = cs.sales_representative.email if cs.sales_representative is not None else 'N/A'
                 data['service_fee'] = cs.service_fee
                 data['iab_category'] = cs.iab_category
-                data['promotion_goal'] = cs.promotion_goal
+                data['promotion_goal'] = constants.PromotionGoal.get_text(cs.promotion_goal)
                 campaign_data_lookup[cid] = data
             result.update(campaign_data_lookup[cid])
 
