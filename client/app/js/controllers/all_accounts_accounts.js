@@ -260,6 +260,12 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         $location.search('chart_hidden', !$scope.isChartShown ? '1' : null);
     };
 
+    // export
+    $scope.downloadReport = function() {
+        $window.open('api/accounts/export/?type=' + $scope.exportType + '&start_date=' + $scope.dateRange.startDate.format() + '&end_date=' + $scope.dateRange.endDate.format(), '_blank');
+        $scope.exportType = '';
+    };
+
     $scope.init = function() {
         var chartMetric1 = $location.search().chart_metric1 || localStorageService.get('allAccountsAccounts.chartMetric1') || $scope.chartMetric1;
         var chartMetric2 = $location.search().chart_metric2 || localStorageService.get('allAccountsAccounts.chartMetric2') || $scope.chartMetric2;

@@ -216,8 +216,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
 
     $scope.$watch('dateRange', function (newValue, oldValue) {
         if (!$.isEmptyObject(newValue) && !$.isEmptyObject(oldValue) &&  (newValue.startDate.valueOf() !== oldValue.startDate.valueOf() || newValue.endDate.valueOf() !== oldValue.endDate.valueOf())) {
-            $location.search('start_date', $scope.dateRange.startDate ? $scope.dateRange.startDate.format() : null);
-            $location.search('end_date', $scope.dateRange.endDate ? $scope.dateRange.endDate.format() : null);
+            $location.search('start_date', $scope.dateRange.startDate ? $scope.dateRange.startDate.format('YYYY-MM-DD') : null);
+            $location.search('end_date', $scope.dateRange.endDate ? $scope.dateRange.endDate.format('YYYY-MM-DD') : null);
         }
     });
 }]);

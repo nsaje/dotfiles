@@ -137,6 +137,10 @@ urlpatterns += patterns(
         login_required(dash.views.AccountAgency.as_view()),
     ),
     url(
+        r'^api/accounts/export/',
+        login_required(dash.views.AllAccountsExport.as_view())
+    ),
+    url(
         r'^api/accounts/$',
         login_required(dash.views.Account.as_view()),
     ),
