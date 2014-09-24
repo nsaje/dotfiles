@@ -223,6 +223,20 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
         }
     });
 
+    $document.bind('keyup', function (e) {
+        if (e) {
+            if (String.fromCharCode(e.keyCode).toLowerCase() === 'f') {
+                var el = $('#nav-search .select2-container');
+
+                if (el) {
+                    el.select2('open');
+                }
+            }
+
+            e.preventDefault();
+        }
+    });
+
     $scope.$watch('dateRange', function (newValue, oldValue) {
         if (!$.isEmptyObject(newValue) && !$.isEmptyObject(oldValue) &&  (newValue.startDate.valueOf() !== oldValue.startDate.valueOf() || newValue.endDate.valueOf() !== oldValue.endDate.valueOf())) {
             $location.search('start_date', $scope.dateRange.startDate ? $scope.dateRange.startDate.format('YYYY-MM-DD') : null);
