@@ -1194,7 +1194,7 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             def _sort(item):
                 value = item.get(order)
                 if order == 'last_sync' and not value:
-                    value = datetime.datetime(datetime.MINYEAR, 1, 1)
+                    value = pytz.UTC.localize(datetime.datetime(datetime.MINYEAR, 1, 1))
 
                 return (item.get(order) is None or reverse, value)
 
@@ -2054,7 +2054,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             def _sort(item):
                 value = item.get(order)
                 if order == 'last_sync' and not value:
-                    value = datetime.datetime(datetime.MINYEAR, 1, 1)
+                    value = pytz.UTC.localize(datetime.datetime(datetime.MINYEAR, 1, 1))
 
                 return (item.get(order) is None or reverse, value)
 
@@ -2163,7 +2163,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
             def _sort(item):
                 value = item.get(order)
                 if order == 'last_sync' and not value:
-                    value = datetime.datetime(datetime.MINYEAR, 1, 1)
+                    value = pytz.UTC.localize(datetime.datetime(datetime.MINYEAR, 1, 1))
 
                 return (item.get(order) is None or reverse, value)
 

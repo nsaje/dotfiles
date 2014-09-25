@@ -47,6 +47,18 @@ describe('AdGroupCtrl', function () {
                 return;
             };
 
+            $scope.setAccount = function () {
+                return;
+            };
+
+            $scope.setCampaign = function () {
+                return;
+            };
+
+            $scope.setAdGroup = function () {
+                return;
+            };
+
             $state = _$state_;
             $state.params.id = 1;
 
