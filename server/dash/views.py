@@ -1815,7 +1815,7 @@ class TriggerAccountSyncThread(threading.Thread):
 
 
 class TriggerCampaignSyncThread(threading.Thread):
-    """ Used to trigger sync for all campaign's ad groups asynchronously. """
+    """ Used to trigger sync for ad_group's ad groups asynchronously. """
     def __init__(self, campaigns, *args, **kwargs):
         self.campaigns = campaigns
         super(TriggerCampaignSyncThread, self).__init__(*args, **kwargs)
@@ -1826,6 +1826,19 @@ class TriggerCampaignSyncThread(threading.Thread):
                 actionlog.sync.CampaignSync(campaign).trigger_all()
         except Exception:
             logger.exception('Exception in TriggerCampaignSyncThread')
+
+
+class TriggerAdGroupSyncThread(threading.Thread):
+    """ Used to trigger sync for all campaign's ad groups asynchronously. """
+    def __init__(self, ad_group, *args, **kwargs):
+        self.ad_group = ad_group
+        super(TriggerAdGroupSyncThread, self).__init__(*args, **kwargs)
+
+    def run(self):
+        try:
+            actionlog.sync.AdGroupSync(self.ad_group).trigger_all()
+        except Exception:
+            logger.exception('Exception in TriggerAdGroupSyncThread')
 
 
 class AccountSync(api_common.BaseApiView):
@@ -1899,7 +1912,8 @@ class AdGroupSync(api_common.BaseApiView):
         ad_group = get_ad_group(request.user, ad_group_id)
 
         if not actionlog.api.is_sync_in_progress(ad_groups=[ad_group]):
-            actionlog.sync.AdGroupSync(ad_group).trigger_all()
+            # trigger ad group sync asynchronously and immediately return
+            TriggerAdGroupSyncThread(ad_group).start()
 
         return self.create_api_response({})
 
