@@ -46,27 +46,26 @@ def mailgun_gareps(request):
 
     csvreport = CsvReport(attachment.read())
 
-    report_email = ReportEmail(
-        sender=request.POST['sender'],
-        recipient=recipient,
-        subject=request.POST['subject'],
-        date=request.POST['Date'],
-        text=None,
-        report=csvreport
-    )
-
-    report_email.store_to_s3()
-
-    if not report_email.is_ad_group_consistent():
-        logger.error('ERROR: ad group not consistent')
+    if not csvreport.is_ad_group_specified():
+        logger.error('ERROR: not all landing page urls have an ad_group specified')
         return HttpResponse(status=406)
 
-    if not report_email.is_media_source_specified():
+    if not csvreport.is_media_source_specified():
         logger.error('ERROR: not all landing page urls have a media source specified')
         return HttpResponse(status=406)
 
-    report_email.save_raw()
-    report_email.aggregate()
+    for ad_group_report in csvreport.split_by_ad_group():
+        report_email = ReportEmail(
+            sender=request.POST['sender'],
+            recipient=recipient,
+            subject=request.POST['subject'],
+            date=request.POST['Date'],
+            text=None,
+            report=ad_group_report
+        )
+
+        report_email.save_raw()
+        report_email.aggregate()
 
     statsd_incr('convapi.aggregated_emails')
     

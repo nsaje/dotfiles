@@ -25,27 +25,6 @@ class ReportEmail(object):
         self.date = date
         self.report = report
 
-    def is_ad_group_consistent(self):
-        ad_group_set = set()
-        try:
-            for entry in self.report.get_entries():
-                url = LandingPageUrl(entry['Landing Page'])
-                ad_group_set.add(url.ad_group_id)
-            return len(ad_group_set) == 1
-        except:
-            return False
-
-    def is_media_source_specified(self):
-        # check if the media source parameter is defined for each landing page url
-        try:
-            for entry in self.report.get_entries():
-                url = LandingPageUrl(entry['Landing Page'])
-                if url.source_param is None:
-                    return False
-        except:
-            return False
-        return True
-
     def _get_goal_name(self, goal_field):
         ix_goal = goal_field.index('(Goal')
         goal_number = ' '.join(goal_field[ix_goal:].split()[:2]) + ')'
@@ -288,16 +267,16 @@ bounced_visits=%s, pageviews=%s, duration=%s',
                 )
                 raw_goal_stats.save()
 
-    def store_to_s3(self):
-        ext = mimetypes.guess_extension(self.report.get_content_type())
-        key = S3_REPORT_KEY_FORMAT.format(
-            sender=self.sender,
-            date=self.report.get_date(),
-            ts=datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S'),
-            ext=ext if ext else ''
-        )
+    # def store_to_s3(self):
+    #     ext = mimetypes.guess_extension(self.report.get_content_type())
+    #     key = S3_REPORT_KEY_FORMAT.format(
+    #         sender=self.sender,
+    #         date=self.report.get_date(),
+    #         ts=datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S'),
+    #         ext=ext if ext else ''
+    #     )
 
-        try:
-            utils.s3helpers.S3Helper().put(key, self.report.raw)
-        except Exception:
-            logger.exception('Error while saving conversion report to s3')
+    #     try:
+    #         utils.s3helpers.S3Helper().put(key, self.report.raw)
+    #     except Exception:
+    #         logger.exception('Error while saving conversion report to s3')
