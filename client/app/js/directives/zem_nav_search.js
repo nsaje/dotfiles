@@ -26,9 +26,8 @@ oneApp.directive('zemNavSearch', ['config', '$state', function(config, $state) {
                 placeholder: 'Search',
                 containerCssClass: 'select2-nav-search',
                 dropdownCssClass: 'select2-nav-search',
-                formatInputTooShort: function (input, min) {
-                    return 'type to start searching';
-                },
+                formatInputTooShort: 'type to start searching',
+                formatNoMatches: 'no matches found',
                 formatSelection: function (item) {
                     return item.text;
                 },
