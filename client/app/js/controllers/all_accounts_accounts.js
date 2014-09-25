@@ -252,7 +252,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         api.accountSync.get();
     };
 
-    var loadPage = function(page) {
+    $scope.loadPage = function(page) {
         if(page && page > 0 && page <= $scope.pagination.numPages) {
             $scope.pagination.currentPage = page;
         }
@@ -272,7 +272,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
         $location.search('size', $scope.pagination.size);
         localStorageService.set('allAccountsAccounts.paginationSize', $scope.pagination.size);
-        loadPage();
+        $scope.loadPage();
     };
 
     $scope.toggleChart = function () {
@@ -326,7 +326,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             $scope.pagination.size = size;
         }
         
-        loadPage();
+        $scope.loadPage();
         getDailyStats();
         initColumns();
     };
