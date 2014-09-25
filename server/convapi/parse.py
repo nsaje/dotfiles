@@ -4,8 +4,6 @@ import exc
 import re
 import csv
 import StringIO
-import urlparse
-import urllib
 
 import reports.api
 
@@ -190,7 +188,7 @@ class LandingPageUrl(object):
         self.z1_did = None
         self.z1_kid = None
         self.z1_tid = None
-        
+
         self._parse()
 
         if self.clean_url is None or self.ad_group_id is None or self.source_param is None:
@@ -209,4 +207,3 @@ class LandingPageUrl(object):
             self.z1_kid = query_params['_z1_kid']
         if '_z1_tid' in query_params:
             self.z1_tid = query_params['_z1_tid']
-

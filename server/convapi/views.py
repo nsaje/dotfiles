@@ -1,5 +1,3 @@
-import exc
-import json
 import logging
 
 from django.views.decorators.csrf import csrf_exempt
@@ -8,7 +6,7 @@ from django.db import transaction
 
 from auth import MailGunRequestAuth, GASourceAuth
 from parse import CsvReport
-from aggregate import ReportEmail
+from aggregate import ReportEmail, store_to_s3
 from utils.statsd_helper import statsd_incr
 
 
@@ -27,7 +25,7 @@ def mailgun_gareps(request):
         return HttpResponse(status=406)
 
     recipient = request.POST['recipient']
-    
+
     if not GASourceAuth(recipient).is_authorised():
         logger.error('ERROR: sender is not authorised')
         statsd_incr('convapi.invalid_email_sender')
@@ -44,7 +42,12 @@ def mailgun_gareps(request):
         logger.error('ERROR: content type is not CSV')
         return HttpResponse(status=406)
 
-    csvreport = CsvReport(attachment.read())
+    filename = request.FILES['attachment-1'].name
+    content = attachment.read()
+
+    csvreport = CsvReport(content)
+
+    store_to_s3(csvreport.get_date(), filename, content)
 
     if not csvreport.is_ad_group_specified():
         logger.error('ERROR: not all landing page urls have an ad_group specified')
@@ -68,5 +71,5 @@ def mailgun_gareps(request):
         report_email.aggregate()
 
     statsd_incr('convapi.aggregated_emails')
-    
+
     return HttpResponse(status=200)
