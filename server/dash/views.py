@@ -1899,17 +1899,16 @@ class AccountCampaignsTable(api_common.BaseApiView):
         end_date = get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-clicks'
 
-        campaign_ids = [x.pk for x in campaigns]
         stats = filter_by_permissions(reports.api.query(
             start_date=start_date,
             end_date=end_date,
             breakdown=['campaign'],
             order=[order],
-            campaign=campaign_ids
+            campaign=campaigns
         ), request.user)
 
         totals_stats = filter_by_permissions(
-            reports.api.query(start_date, end_date, campaign=campaign_ids),
+            reports.api.query(start_date, end_date, campaign=campaigns),
             request.user
         )
 
