@@ -282,7 +282,7 @@ def filter_by_permissions(result, user):
     '''
     TRAFFIC_FIELDS = [
         'clicks', 'impressions', 'cost', 'cpc', 'ctr', 'article', 'title',
-        'url', 'campaign', 'account', 'source', 'date',
+        'url', 'ad_group', 'campaign', 'account', 'source', 'date',
     ]
     POSTCLICK_FIELDS = [
         'visits', 'percent_new_users', 'pv_per_visit', 'avg_tos',
@@ -1264,7 +1264,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
 
         return self.create_api_response({
             'rows': rows,
-            'totals': self.get_totals(totals_data),
+            'totals': totals_data,
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(accounts=accounts),
@@ -1278,15 +1278,6 @@ class AccountsAccountsTable(api_common.BaseApiView):
                 'size': size
             }
         })
-
-    def get_totals(self, totals_data):
-        return {
-            'cost': totals_data['cost'],
-            'cpc': totals_data['cpc'],
-            'clicks': totals_data['clicks'],
-            'impressions': totals_data['impressions'],
-            'ctr': totals_data['ctr']
-        }
 
     def get_rows(self, accounts, accounts_data, ad_groups_settings, last_actions, page, size, order=None):
         rows = []
@@ -1312,15 +1303,16 @@ class AccountsAccountsTable(api_common.BaseApiView):
             if last_sync:
                 last_sync = pytz.utc.localize(last_sync)
 
-            rows.append({
+            row = {
                 'id': str(aid),
                 'name': account.name,
                 'status': state,
-                'cost': account_data.get('cost', None),
-                'cpc': account_data.get('cpc', None),
-                'clicks': account_data.get('clicks', None),
                 'last_sync': last_sync
-            })
+            }
+
+            row.update(account_data)
+
+            rows.append(row)
 
         if order:
             reverse = False
@@ -1974,13 +1966,13 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         end_date = get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-cost'
 
-        stats = reports.api.query(
+        stats = filter_by_permissions(reports.api.query(
             start_date=start_date,
             end_date=end_date,
             breakdown=['ad_group'],
             order=[order],
             campaign=campaign
-        )
+        ), request.user)
 
         ad_groups = campaign.adgroup_set.all()
         ad_groups_settings = models.AdGroupSettings.objects.\
@@ -1988,7 +1980,10 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             filter(ad_group__campaign=campaign).\
             order_by('ad_group', '-created_dt')
 
-        totals_stats = reports.api.query(start_date, end_date, campaign=campaign.pk)
+        totals_stats = filter_by_permissions(
+            reports.api.query(start_date, end_date, campaign=campaign.pk),
+            request.user
+        )
 
         last_success_actions = {}
         for ad_group in ad_groups:
@@ -2075,16 +2070,18 @@ class AccountCampaignsTable(api_common.BaseApiView):
         end_date = get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-clicks'
 
-        campaign_ids = [x.pk for x in campaigns]
-        stats = reports.api.query(
+        stats = filter_by_permissions(reports.api.query(
             start_date=start_date,
             end_date=end_date,
             breakdown=['campaign'],
             order=[order],
-            campaign=campaign_ids
-        )
+            campaign=campaigns
+        ), request.user)
 
-        totals_stats = reports.api.query(start_date, end_date, campaign=campaign_ids)
+        totals_stats = filter_by_permissions(
+            reports.api.query(start_date, end_date, campaign=campaigns),
+            request.user
+        )
 
         ad_groups_settings = models.AdGroupSettings.objects.\
             distinct('ad_group').\
