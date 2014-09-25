@@ -61,6 +61,11 @@ var constants = {
         BRAND_BUILDING: 1,
         TRAFFIC_ACQUISITION: 2,
         CONVERSIONS: 3
+    },
+    entityType: {
+        adGroup: 'adGroup',
+        campaign: 'campaign',
+        account: 'account'
     }
 };
 

@@ -5,15 +5,15 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
         {heading: 'Agency', route: 'main.campaigns.agency', active: false, hidden: !$scope.hasPermission('zemauth.campaign_settings_view'), internal: $scope.isPermissionInternal('zemauth.campaign_settings_view')}
     ];
 
-    $scope.account = null;
-    $scope.campaign = null;
+    $scope.setAccount(null);
+    $scope.setCampaign(null);
 
     $scope.getModels = function () {
         $scope.accounts.forEach(function (account) {
             account.campaigns.forEach(function (campaign) {
                 if (campaign.id.toString() === $state.params.id) {
-                    $scope.account = account;
-                    $scope.campaign = campaign;
+                    $scope.setAccount(account);
+                    $scope.setCampaign(campaign);
                 }
             });
         });
