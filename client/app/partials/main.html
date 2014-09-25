@@ -1,9 +1,34 @@
 <div class="container-fluid">
-    <div class="row header" ng-include src="config.static_url + '/partials/header.html'"></div>
+    <div class="row header" ng-include src="'/partials/header.html'"></div>
 
     <div class="row body">
-        <div class="sidebar" ng-show="accounts">
-            <div id="nav">
+        <div class="sidebar" ng-show="accounts" ng-class="{'sidebar-new': hasPermission('zemauth.all_new_sidebar') }">
+            <div id="nav-new" ng-if="hasPermission('zemauth.all_new_sidebar')">
+                <zem-nav-search zem-current-account="account" zem-all-accounts="accounts" zem-can-access-accounts="{{ canAccessAccounts() }}" zem-can-access-campaigns="{{ canAccessCampaigns() }}" zem-default-account-state="{{ getDefaultAccountState() }}" zem-default-campaign-state="{{ getDefaultCampaignState() }}" zem-default-ad-group-state="{{ getDefaultAdGroupState() }}"></zem-nav-search>
+                <div id="nav-menu">
+                    <div class="nav-group account-group" ng-if="$state.includes('main.allAccounts.accounts')" ng-repeat="account in accounts">
+                        <div class="nav-group campaign-group" ng-repeat="campaign in account.campaigns">
+                            <span class="nav-name campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() })}" ng-if="!canAccessCampaigns()">{{ campaign.name }}</span>
+                            <a class="nav-name campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() })}" ng-if="canAccessCampaigns()" ui-sref="{{ getDefaultCampaignState() }}({ id: campaign.id})">{{ campaign.name }}</a>
+                            <div class="nav-group ad-group-group" ng-repeat="adGroup in campaign.adGroups">
+                                <a class="nav-name ad-group-name" ui-sref="{{ getDefaultAdGroupState() }}({ id: adGroup.id })" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() })}">{{ adGroup.name }}</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-if="!$state.includes('main.allAccounts.accounts')">
+                        <div class="nav-group account-group">
+                            <div class="nav-group campaign-group" ng-repeat="campaign in account.campaigns">
+                                <span class="nav-name campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() })}" ng-if="!canAccessCampaigns()">{{ campaign.name }}</span>
+                                <a class="nav-name campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() })}" ng-if="canAccessCampaigns()" ui-sref="{{ getDefaultCampaignState() }}({ id: campaign.id})">{{ campaign.name }}</a>
+                                <div class="nav-group ad-group-group" ng-repeat="adGroup in campaign.adGroups">
+                                    <a class="nav-name ad-group-name" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() })}" ui-sref="{{ getDefaultAdGroupState() }}({ id: adGroup.id })">{{ adGroup.name }}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="nav" ng-if="!hasPermission('zemauth.all_new_sidebar')">
                 <div class="account-group" ng-repeat="account in accounts">
                     <div ng-if="!canAccessAccounts()" class="account-name">{{ account.name }}</div>
                     <a ng-if="canAccessAccounts()" class="account-name" ng-class="{'active': $state.includes('main.accounts', { id: account.id.toString() }) }" ui-sref="{{ $state.includes('*.accounts.**') ? $state.current.name : getDefaultAccountState() }}({ id: account.id })">{{ account.name }}</a>
@@ -33,9 +58,9 @@
             <div ui-view></div>
         </div>
 
-        <div ng-show="!!accounts && !accounts.length" ng-include src="config.static_url + '/partials/403.html'"></div>
+        <div ng-show="!!accounts && !accounts.length" ng-include src="'/partials/403.html'"></div>
 
     </div>
 
-    <div class="row footer" ng-include src="config.static_url + '/partials/footer.html'"></div>
+    <div class="row footer" ng-include src="'/partials/footer.html'"></div>
 </div>

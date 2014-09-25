@@ -85,6 +85,10 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
     ];
 
+    $scope.setAccount(null);
+    $scope.setCampaign(null);
+    $scope.setAdGroup(null);
+
     $scope.initColumns = function () {
         var cols;
 
@@ -258,6 +262,12 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         $scope.isChartShown = !$scope.isChartShown;
         $scope.chartBtnTitle = $scope.isChartShown ? 'Hide chart' : 'Show chart';
         $location.search('chart_hidden', !$scope.isChartShown ? '1' : null);
+    };
+
+    // export
+    $scope.downloadReport = function() {
+        $window.open('api/accounts/export/?type=' + $scope.exportType + '&start_date=' + $scope.dateRange.startDate.format() + '&end_date=' + $scope.dateRange.endDate.format(), '_blank');
+        $scope.exportType = '';
     };
 
     $scope.init = function() {

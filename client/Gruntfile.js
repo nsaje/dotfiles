@@ -3,6 +3,18 @@ module.exports = function (grunt) {
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
+        html2js: {
+            options: {
+                base: 'app/',
+                rename: function (moduleName) {
+                    return '/' + moduleName;
+                }
+            },
+            dist: {
+                src: ['app/partials/**/*.html'],
+                dest: 'app/dist/js/zemanta-one.templates.js'
+            }
+        },
         concat: {
             dist: {
                 options: {
@@ -15,6 +27,7 @@ module.exports = function (grunt) {
                     }
                 },
                 src: [
+                    'app/dist/js/zemanta-one.templates.js',
                     'app/js/config.js',
                     'app/js/constants.js',
                     'app/js/app.js',
@@ -54,7 +67,8 @@ module.exports = function (grunt) {
                     livereload: true
                 },
                 files: [
-                    'app/js/**/*.js'
+                    'app/js/**/*.js',
+                    'app/partials/**/*.html'
                 ],
                 tasks: ['dist-js']
             },
@@ -135,7 +149,7 @@ module.exports = function (grunt) {
 
     require('load-grunt-tasks')(grunt, {scope: 'devDependencies'});
 
-    grunt.registerTask('dist-js', ['concat:dist', 'uglify:dist']);
+    grunt.registerTask('dist-js', ['html2js', 'concat:dist', 'uglify:dist']);
     grunt.registerTask('dist-less', ['less:dist']);
     grunt.registerTask('build', ['dist-js', 'dist-less'])
     grunt.registerTask('default', ['ngconstant:prod', 'build']);

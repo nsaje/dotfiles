@@ -34,7 +34,7 @@ def resolve_article(clean_url, ad_group, date, source):
     clicks_article = []
     for article in candidates:
         stats = reports.api.query_stats(
-            start_date=date, 
+            start_date=date,
             end_date=date,
             breakdown=None,
             ad_group=ad_group,

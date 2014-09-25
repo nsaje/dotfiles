@@ -8,6 +8,9 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
 
     $scope.adGroupData = {};
+    $scope.account = null;
+    $scope.campaign = null;
+    $scope.adGroup = null;
 
     $scope.hasPermission = function (permissions) {
         if (!permissions) {
@@ -164,6 +167,18 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
         $document.prop('title', title + ' | Zemanta');
     };
 
+    $scope.setAccount = function (account) {
+        $scope.account = account;
+    };
+
+    $scope.setCampaign = function (campaign) {
+        $scope.campaign = campaign;
+    };
+
+    $scope.setAdGroup = function (adGroup) {
+        $scope.adGroup = adGroup;
+    };
+
     $scope.$on("$stateChangeSuccess", function (event, toState, toParams, fromState, fromParams) {
         $scope.currentRoute = $state.current;
         $scope.setDateRangeFromSearch();
@@ -208,10 +223,24 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
         }
     });
 
+    $document.bind('keyup', function (e) {
+        if (e) {
+            if (String.fromCharCode(e.keyCode).toLowerCase() === 'f') {
+                var el = $('#nav-search .select2-container');
+
+                if (el) {
+                    el.select2('open');
+                }
+            }
+
+            e.preventDefault();
+        }
+    });
+
     $scope.$watch('dateRange', function (newValue, oldValue) {
         if (!$.isEmptyObject(newValue) && !$.isEmptyObject(oldValue) &&  (newValue.startDate.valueOf() !== oldValue.startDate.valueOf() || newValue.endDate.valueOf() !== oldValue.endDate.valueOf())) {
-            $location.search('start_date', $scope.dateRange.startDate ? $scope.dateRange.startDate.format() : null);
-            $location.search('end_date', $scope.dateRange.endDate ? $scope.dateRange.endDate.format() : null);
+            $location.search('start_date', $scope.dateRange.startDate ? $scope.dateRange.startDate.format('YYYY-MM-DD') : null);
+            $location.search('end_date', $scope.dateRange.endDate ? $scope.dateRange.endDate.format('YYYY-MM-DD') : null);
         }
     });
 }]);
