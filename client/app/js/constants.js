@@ -63,9 +63,9 @@ var constants = {
         CONVERSIONS: 3
     },
     entityType: {
-        adGroup: 'adGroup',
-        campaign: 'campaign',
-        account: 'account'
+        AD_GROUP: 'adGroup',
+        CAMPAIGN: 'campaign',
+        ACCOUNT: 'account'
     }
 };
 

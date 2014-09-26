@@ -46,18 +46,18 @@ oneApp.directive('zemNavSearch', ['config', '$state', function(config, $state) {
                 $scope.adGroups = [];
 
                 $scope.accountsData.forEach(function (account, i) {
-                    $scope.accounts.push({id: constants.entityType.account + ':' + account.id, name: account.name});
+                    $scope.accounts.push({id: constants.entityType.ACCOUNT + ':' + account.id, name: account.name});
                     account.campaigns.forEach(function (campaign, j) {
-                        $scope.campaigns.push({id: constants.entityType.campaign + ':' + campaign.id, name: campaign.name});
+                        $scope.campaigns.push({id: constants.entityType.CAMPAIGN + ':' + campaign.id, name: campaign.name});
                         campaign.adGroups.forEach(function (adGroup, k) {
-                            $scope.adGroups.push({id: constants.entityType.adGroup + ':' + adGroup.id, name: adGroup.name});
+                            $scope.adGroups.push({id: constants.entityType.AD_GROUP + ':' + adGroup.id, name: adGroup.name});
                         });
                     });
                 });
             });
 
             $scope.$watch('account', function (newValue) {
-                $scope.navSelector = $scope.account && constants.entityType.account + ':' + $scope.account.id || null;
+                $scope.navSelector = $scope.account && constants.entityType.ACCOUNT + ':' + $scope.account.id || null;
             });
 
             $scope.navSelectorChanged = function () {
@@ -68,11 +68,11 @@ oneApp.directive('zemNavSearch', ['config', '$state', function(config, $state) {
                 var state = null,
                     id = $scope.navSelector.split(':');
 
-                if (id[0] === constants.entityType.account) {
+                if (id[0] === constants.entityType.ACCOUNT) {
                     state = $scope.defaultAccountState;
-                } else if (id[0] === constants.entityType.campaign) {
+                } else if (id[0] === constants.entityType.CAMPAIGN) {
                     state = $scope.defaultCampaignState;
-                } else if (id[0] === constants.entityType.adGroup) {
+                } else if (id[0] === constants.entityType.AD_GROUP) {
                     state = $scope.defaultAdGroupState;
                 }
 
@@ -80,7 +80,7 @@ oneApp.directive('zemNavSearch', ['config', '$state', function(config, $state) {
                     $state.go(state, {id: id[1]});
                 }
 
-                $scope.navSelector = $scope.account && constants.entityType.account + ':' + $scope.account.id || null;
+                $scope.navSelector = $scope.account && constants.entityType.ACCOUNT + ':' + $scope.account.id || null;
             };
         }]
     };
