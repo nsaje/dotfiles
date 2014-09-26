@@ -228,9 +228,9 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
             if (String.fromCharCode(e.keyCode).toLowerCase() === 'f') {
                 var el = $('#nav-search .select2-container');
 
-                if (document.activeElement.tagName === 'INPUT' ||
-                    document.activeElement.tagName === 'SELECT' ||
-                    document.activeElement.tagName === 'TEXTAREA') {
+                if (document.activeElement.tagName.toLowerCase() === 'input' ||
+                    document.activeElement.tagName.toLowerCase() === 'select' ||
+                    document.activeElement.tagName.toLowerCase() === 'textarea') {
                     return;
                 }
 
