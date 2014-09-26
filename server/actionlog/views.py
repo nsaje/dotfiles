@@ -7,6 +7,7 @@ from django.conf import settings
 
 from utils import api_common
 from utils import exc
+from utils import statsd_helper
 import dash.models
 import dash.constants
 
@@ -24,7 +25,7 @@ def action_log(request):
 
 
 class ActionLogApiView(api_common.BaseApiView):
-
+    @statsd_helper.statsd_timer('actionlog.api', 'view_get')
     @method_decorator(permission_required('actionlog.manual_view'))
     def get(self, request):
         response = {}
@@ -45,7 +46,7 @@ class ActionLogApiView(api_common.BaseApiView):
             choice for choice in constants.ActionState.get_choices() if choice[0] in ACTION_LOG_STATE_OPTIONS
         )
 
-        ad_groups = dash.models.AdGroup.objects.filter(adgroupsource__actionlog__in=actions).distinct()
+        ad_groups = dash.models.AdGroup.objects.filter(adgroupsource__actionlog__in=actions).distinct().select_related('campaign__account')
         ad_group_items = filter_choices(
             (ad_group.id, self._get_ad_group_full_name(ad_group)) for ad_group in ad_groups
         )
@@ -110,7 +111,13 @@ class ActionLogApiView(api_common.BaseApiView):
         if filters.get('ad_group'):
             actions = actions.filter(ad_group_source__ad_group=filters['ad_group'])
 
-        return actions
+        return actions.select_related(
+            'modified_by',
+            'created_by',
+            'ad_group_source__ad_group__campaign__account',
+            'order',
+            'ad_group_source__source'
+        )
 
     def _prepare_actions(self, actions):
         actions = actions[:ACTION_LOG_DISPLAY_MAX_ACTION]
@@ -159,6 +166,7 @@ class ActionLogApiView(api_common.BaseApiView):
             'take_action': self._get_take_action(action),
         }
 
+    @statsd_helper.statsd_timer('actionlog.api', 'view_put')
     @method_decorator(permission_required('actionlog.manual_acknowledge'))
     def put(self, request, action_log_id):
 
