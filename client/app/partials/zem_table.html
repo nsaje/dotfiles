@@ -80,6 +80,9 @@
                                 <span ng-switch-when="linkText">
                                     <a ng-href="{{ row[col.field].url }}" target="_blank" ng-attr-title="{{ row[col.titleField] }}">{{ row[col.field].text }}</a>
                                 </span>
+                                <span ng-switch-when="linkNav">
+                                    <a ui-sref="{{row[col.field].state}}({id: {{row[col.field].id}}})">{{ row[col.field].text }}</a>
+                                </span>
                                 <span ng-switch-when="text">
                                     {{ row[col.field] }}
                                 </span>

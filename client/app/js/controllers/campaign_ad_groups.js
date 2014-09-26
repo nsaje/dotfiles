@@ -73,7 +73,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'name',
             unselectable: true,
             checked: true,
-            type: 'linkText',
+            type: 'linkNav',
             hasTotalsLabel: true,
             totalRow: false,
             help: 'Name of the ad group.',
@@ -240,7 +240,8 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 $scope.rows = $scope.rows.map(function (x) {
                     x.name = {
                         text: x.name,
-                        url: $state.href($scope.getDefaultAdGroupState(), {id: x.ad_group})
+                        state: $scope.getDefaultAdGroupState(),
+                        id: x.ad_group
                     };
                     x.state = x.state === constants.adGroupSettingsState.ACTIVE ? 'Active' : 'Paused';
 

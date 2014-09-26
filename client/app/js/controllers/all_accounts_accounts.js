@@ -21,7 +21,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             field: 'name_link',
             unselectable: true,
             checked: true,
-            type: 'linkText',
+            type: 'linkNav',
             hasTotalsLabel: true,
             totalRow: false,
             help: 'A partner account.',
@@ -160,7 +160,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
                 $scope.rows = $scope.rows.map(function (x) {
                     x.name_link = {
                         text: x.name,
-                        url: $state.href($scope.getDefaultAccountState(), {id: x.id})
+                        state: $scope.getDefaultAccountState(),
+                        id: x.id
                     };
 
                     return x;
