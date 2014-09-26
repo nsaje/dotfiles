@@ -15,7 +15,7 @@ from actionlog import models
 from actionlog import constants
 
 
-ACTION_LOG_DISPLAY_MAX_ACTION = 1000
+ACTION_LOG_DISPLAY_MAX_ACTION = 100
 ACTION_LOG_STATE_OPTIONS = {-1, 1, 2}
 
 
