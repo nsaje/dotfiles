@@ -228,6 +228,12 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
             if (String.fromCharCode(e.keyCode).toLowerCase() === 'f') {
                 var el = $('#nav-search .select2-container');
 
+                if (document.activeElement.tagName === 'INPUT' ||
+                    document.activeElement.tagName === 'SELECT' ||
+                    document.activeElement.tagName === 'TEXTAREA') {
+                    return;
+                }
+
                 if (el) {
                     el.select2('open');
                 }
