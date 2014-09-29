@@ -96,7 +96,7 @@ var options = {
     adGroupChartPostClickMetrics: [
         {name: 'Visits', value: constants.chartMetric.VISITS},
         {name: 'Pageviews', value: constants.chartMetric.PAGEVIEWS},
-        {name: 'New Users', value: constants.chartMetric.NEW_USERS},
+        {name: '% New Users', value: constants.chartMetric.NEW_USERS},
         {name: 'Bounce Rate', value: constants.chartMetric.BOUNCE_RATE},
         {name: 'PV/Visit', value: constants.chartMetric.PV_PER_VISIT},
         {name: 'Avg. ToS', value: constants.chartMetric.AVG_TOS},
