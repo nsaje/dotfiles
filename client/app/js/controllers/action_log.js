@@ -1,4 +1,4 @@
-oneActionLogApp.controller('ActionLogCtrl', ['$scope', '$state', '$location', 'api', function ($scope, $state, $location, api) {
+oneActionLogApp.controller('ActionLogCtrl', ['$scope', '$location', 'api', function ($scope, $location, api) {
 
     $scope.user = null;
     $scope.actionLogItems = null;
@@ -51,9 +51,12 @@ oneActionLogApp.controller('ActionLogCtrl', ['$scope', '$state', '$location', 'a
         },
 
         updateSearchFilters: function () {
-            var str_filters = $.map($scope.filters.selected, function (v, k) {
-                return [k, v[0]].join(':');
-            });
+            var str_filters = [];
+            for (var prop in $scope.filters.selected) {
+                if ($scope.filters.selected.hasOwnProperty(prop)) {
+                    str_filters.push([prop, $scope.filters.selected[prop][0]].join(':'));
+                }
+            }
 
             $location.search({
                 filters: str_filters

@@ -1,6 +1,6 @@
 /*global angular*/
 
-var oneActionLogApp = angular.module('one-actionlog', ['oneApi', 'ngBootstrap', 'ngSanitize', 'ui.router', 'ui.bootstrap', 'ui.bootstrap.datetimepicker', 'ui.select2', 'highcharts-ng', 'config']);
+var oneActionLogApp = angular.module('one-actionlog', ['oneApi', 'ui.router', 'ui.bootstrap', 'config', 'templates-dist']);
 
 oneActionLogApp.config(['$sceDelegateProvider', 'config', function ($sceDelegateProvider, config) {
     $sceDelegateProvider.resourceUrlWhitelist(['self', config.static_url + '/**']);

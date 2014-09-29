@@ -335,7 +335,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             };
         }
 
-        this.list = function (modelName, id, startDate, endDate, selectedIds, totals, metrics) {
+        this.list = function (modelName, id, startDate, endDate, selectedIds, totals, metrics, groupSources) {
             var deferred = $q.defer();
             var url = '/api/' + modelName + (id ? ('/' + id) : '') + '/daily_stats/';
             var config = {
@@ -360,6 +360,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             if (metrics) {
                 config.params.metrics = metrics;
+            }
+            
+            if (groupSources) {
+                config.params.sources = groupSources;
             }
 
             $http.get(url, config).
