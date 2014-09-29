@@ -156,6 +156,27 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
         }
     ];
 
+    $scope.columnCategories = [
+        {
+            'name': 'Traffic Acquisition',
+            'fields': [
+               'cost', 'cpc', 'clicks', 'impressions', 'ctr'
+            ]
+        },
+        {
+            'name': 'Audience Metrics',
+            'fields': [
+                'visits', 'pageviews', 'percent_new_users',
+                'bounce_rate', 'pv_per_visit', 'avg_tos', 
+                'click_discrepancy'
+            ]
+        },
+        {
+            'name': 'Data Sync',
+            'fields': ['last_sync']
+        }
+    ];
+
     $scope.addCampaign = function () {
         var accountId = $state.params.id;
         $scope.addCampaignRequestInProgress = true;

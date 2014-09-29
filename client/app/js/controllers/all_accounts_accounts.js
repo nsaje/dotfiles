@@ -86,6 +86,27 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
     ];
 
+    $scope.columnCategories = [
+        {
+            'name': 'Traffic Acquisition',
+            'fields': [
+               'clicks', 'cost', 'cpc'
+            ]
+        },
+        {
+            'name': 'Audience Metrics',
+            'fields': [
+                'visits', 'pageviews', 'percent_new_users',
+                'bounce_rate', 'pv_per_visit', 'avg_tos', 
+                'click_discrepancy'
+            ]
+        },
+        {
+            'name': 'Data Sync',
+            'fields': ['last_sync']
+        }
+    ];
+
     $scope.setAccount(null);
     $scope.setCampaign(null);
     $scope.setAdGroup(null);
@@ -129,7 +150,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     };
 
     var setChartOptions = function () {
-        $scope.chartMetricOptions = options.adGroupChartMetrics;
+        $scope.chartMetricOptions = options.allAccountsChartMetrics;
 
         if ($scope.hasPermission('zemauth.postclick_metrics')) {
             $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(

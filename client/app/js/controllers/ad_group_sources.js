@@ -465,8 +465,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         if (newValue !== oldValue) {
             $location.search('chart_metric1', $scope.chartMetric1);
 
+            localStorageService.set('adGroupSources.chartMetric1', $scope.chartMetric1);
             if (!hasMetricData($scope.chartMetric1)) {
-                localStorageService.set('adGroupSources.chartMetric1', $scope.chartMetric1);
                 getDailyStats();
             } else {
                 // create a copy to trigger watch
@@ -479,8 +479,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         if (newValue !== oldValue) {
             $location.search('chart_metric2', $scope.chartMetric2);
 
+            localStorageService.set('adGroupSources.chartMetric2', $scope.chartMetric2);
             if (!hasMetricData($scope.chartMetric2)) {
-                localStorageService.set('adGroupSources.chartMetric2', $scope.chartMetric2);
                 getDailyStats();
             } else {
                 // create a copy to trigger watch
