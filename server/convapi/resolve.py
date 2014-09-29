@@ -4,6 +4,8 @@ import reports.api
 
 
 def resolve_source(source_param):
+    if source_param is None:
+        return None
     source_param_lc = source_param.lower()
     for source in dash.models.Source.objects.all():
         if source_param_lc.startswith(source.name.lower()):
@@ -14,6 +16,8 @@ def resolve_source(source_param):
 
 
 def resolve_article(clean_url, ad_group, date, source):
+    if ad_group is None or source is None:
+        return None
 
     candidates = list(dash.models.Article.objects.filter(
         ad_group=ad_group,
@@ -22,7 +26,13 @@ def resolve_article(clean_url, ad_group, date, source):
     candidates = filter(lambda a: _urls_match(a.url, clean_url), candidates)
 
     if len(candidates) == 0:
-        return None
+        # there are no articles matching this url
+        # we just resolve it any one article from this ad_group
+        all_articles = list(dash.models.Article.objects.filter(ad_group=ad_group))
+        if not all_articles:
+            return None
+        else:
+            return all_articles[0]
 
     if len(candidates) == 1:
         return candidates[0]
