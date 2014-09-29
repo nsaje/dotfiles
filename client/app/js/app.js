@@ -98,6 +98,11 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/agency',
             templateUrl: '/partials/campaign_agency.html',
             controller: 'CampaignAgencyCtrl'
+        })
+        .state('main.campaigns.budget', {
+            url: '/budget',
+            templateUrl: '/partials/campaign_budget.html',
+            controller: 'CampaignBudgetCtrl'
         });
 
 

@@ -632,6 +632,52 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
+    function CampaignBudget() {
+        this.get = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/campaigns/' + id + '/budget/';
+
+            $http.get(url).
+                success(function (data, status) {
+                    if (!data || !data.data) {
+                        deferred.reject(data);
+                    }
+                    deferred.resolve(data.data);
+                }).
+                error(function(data, status, headers) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.save = function (id, data) {
+            var deferred = $q.defer();
+            var url = '/api/campaigns/' + id + '/budget/';
+            var config = {
+                params: {}
+            };
+
+            $http.put(url, data, config).
+                success(function (data, status) {
+                    if (!data || !data.data) {
+                        deferred.reject(data);
+                    }
+                    deferred.resolve(data.data);
+                }).
+                error(function(data, status, headers, config) {
+                    // var resource;
+                    // if (status === 400 && data && data.data.error_code === 'ValidationError') {
+                    //     resource = convertValidationErrorFromApi(data.data.errors);
+                    // }
+                    // deferred.reject(resource);
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function CampaignSettings() {
         function convertSettingsFromApi(settings) {
             return {
@@ -1155,6 +1201,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         campaignAdGroups: new CampaignAdGroups(),
         campaignAdGroupsTable: new CampaignAdGroupsTable(),
         campaignSettings: new CampaignSettings(),
+        campaignBudget: new CampaignBudget(),
         campaignSync: new CampaignSync(),
         accountAgency: new AccountAgency(),
         account: new Account(),

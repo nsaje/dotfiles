@@ -39,6 +39,7 @@ import reports.api
 from dash import forms
 from dash import models
 from dash import api
+from dash import budget
 
 from zemauth.models import User as ZemUser
 
@@ -482,6 +483,63 @@ class CampaignAdGroups(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
+
+
+class CampaignBudget(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_budget_get')
+    def get(self, request, campaign_id):
+        campaign = get_campaign(request.user, campaign_id)
+        response = self.get_response(campaign)
+        return self.create_api_response(response)
+
+    @statsd_helper.statsd_timer('dash.api', 'campaign_budget_put')
+    def put(self, request, campaign_id):
+        campaign = get_campaign(request.user, campaign_id)
+        campaign_budget = budget.CampaignBudget(campaign)
+
+        budget_change = json.loads(request.body)
+
+        campaign_budget.edit(
+            allocate_amount=float(budget_change['allocate']),
+            revoke_amount=float(budget_change['revoke']),
+            user=request.user,
+            comment=budget_change['comment'],
+            latest_id=budget_change['latest_id']
+        )
+
+        response = self.get_response(campaign)
+
+        return self.create_api_response(response)
+
+    def get_response(self, campaign):
+        campaign_budget = budget.CampaignBudget(campaign)
+
+        total = campaign_budget.get_total()
+        spend = campaign_budget.get_spend()
+        available = total - spend
+
+        response = {
+            'latest_id': campaign_budget.get_latest_id(),
+            'total': total,
+            'available': available,
+            'spend': spend,
+            'history': self.format_history(campaign_budget.get_history())
+        }
+        return response
+
+
+    def format_history(self, history):
+        result = []
+        for h in history:
+            item = {}
+            item['datetime'] = h.created_dt.isoformat()
+            item['user'] = h.created_by.email
+            item['allocate'] = float(h.allocate)
+            item['revoke'] = float(h.revoke)
+            item['total'] = float(h.total)
+            item['comment'] = h.comment
+            result.append(item)
+        return result
 
 
 class CampaignSettings(api_common.BaseApiView):

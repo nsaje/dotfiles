@@ -1,0 +1,92 @@
+<div class="page page-campaign-budget">
+
+    <form id="form-campaign-budget" class="form-horizontal">
+        <div class="form-group">
+            <label for="total-budget" class="col-xs-2 control-label">
+                Total budget
+            </label>
+            <div class="col-xs-2">
+                <span id="total-budget">$ {{ total }}</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="spend-budget" class="col-xs-2 control-label">
+                Spend
+            </label>
+            <div class="col-xs-2">
+                <span id="spend-budget">$ {{ spend }}</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="available-budget" class="col-xs-2 control-label">
+                Available budget
+            </label>
+            <div class="col-xs-2">
+                <span id="available-budget">$ {{ available }}</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="allocate-budget" class="col-xs-2 control-label">
+                Allocate budget
+            </label>
+            <div class="col-xs-2">
+                <input id="allocate-budget" class="form-control" ng-model="allocate">
+                <button type="button" class="btn btn-primary" ng-click="saveBudget()">Allocate</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="revoke-budget" class="col-xs-2 control-label">
+                Revoke budget
+            </label>
+            <div class="col-xs-2">
+                <input id="revoke-budget" class="form-control" ng-model="revoke">
+                <button type="button" class="btn btn-primary" ng-click="saveBudget()">Revoke</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-xs-4">
+                <textarea id="comment-budget" type="text" class="form-control" rows="4" ng-model="comment"></textarea>
+                <button type="button" class="btn btn-primary" ng-click="saveBudget()">Add Note</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="section table-campaign-agency">
+        <div class="title">History</div>
+        <div class="loader-container">
+            <div class="loader" ng-show="history.length && requestInProgress"></div>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>User</th>
+                        <th>Allocate</th>
+                        <th>Revoke</th>
+                        <th>Total</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-if="requestInProgress && !history.length">
+                        <td colspan="3" class="loader-row">
+                            <div class="loader"></div>
+                        </td>
+                    </tr>
+                    <tr ng-show="(!history || !history.length) && !requestInProgress">
+                        <td class="no-data" colspan="3">No data</td>
+                    </tr>
+
+                    <tr ng-repeat="item in history">
+                        <td>{{ (item.datetime | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
+                        <td>{{ item.user }}</td>
+                        <td>{{ item.allocate }}</td>
+                        <td>{{ item.revoke }}</td>
+                        <td>{{ item.total }}</td>
+                        <td>{{ item.comment }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>

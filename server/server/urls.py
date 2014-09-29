@@ -121,6 +121,10 @@ urlpatterns += patterns(
         login_required(dash.views.CampaignSettings.as_view()),
     ),
     url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/budget/',
+        login_required(dash.views.CampaignBudget.as_view()),
+    ),
+    url(
         r'^api/campaigns/sync/',
         login_required(dash.views.CampaignSync.as_view()),
     ),

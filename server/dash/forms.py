@@ -197,3 +197,7 @@ class CampaignSettingsForm(forms.Form):
             raise forms.ValidationError(err_msg)
 
         return sales_representative
+
+
+class CampaignBudgetForm(forms.Form):
+    pass

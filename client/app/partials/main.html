@@ -48,7 +48,7 @@
             </div>
         </div>
             <div class="content" ng-show="accounts">
-            <form class="form-horizontal pull-right" role="form" ng-hide="$state.includes('*.campaigns.agency') || $state.includes('*.adGroups.settings')">
+            <form class="form-horizontal pull-right" role="form" ng-hide="$state.includes('*.campaigns.agency') || $state.includes('*.adGroups.settings') || $state.includes('*.campaigns.budget')">
                 <div class="input-group calendar">
                     <i class="input-group-addon"><img ng-src="{{ config.static_url }}/img/calendar.svg"></i>
                     <input type="daterange" class="form-control" ng-model="dateRange" max-date="{{ maxDateStr }}" format="{{ inputDateFormat }}" ranges="{{ dateRanges }}" opens="left">

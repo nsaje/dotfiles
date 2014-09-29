@@ -527,6 +527,14 @@ class CampaignBudgetSettings(models.Model):
         default=0,
         verbose_name='Revoke amount'
     )
+    total = models.DecimalField(
+        max_digits=20,
+        decimal_places=4,
+        blank=False,
+        null=False,
+        default=0,
+        verbose_name='Total budget'
+    )
     comment = models.CharField(max_length=256)
     created_by = created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
 
@@ -534,3 +542,4 @@ class CampaignBudgetSettings(models.Model):
 
     class Meta:
         get_latest_by = 'created_dt'
+        ordering = ('-created_dt',)
