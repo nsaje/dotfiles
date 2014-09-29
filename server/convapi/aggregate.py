@@ -146,6 +146,7 @@ bounced_visits=%s, pageviews=%s, duration=%s',
 
         if data:
             dt, _, ad_group_id, _ = data.keys()[0]
+            assert(ad_group_id is not None)
 
             for stats in reports.models.ArticleStats.objects.filter(datetime=dt, ad_group=ad_group_id):
                 stats.reset_postclick_metrics()
@@ -214,6 +215,10 @@ bounced_visits=%s, pageviews=%s, duration=%s',
 
         ad_group_id = LandingPageUrl(entries[0]['Landing Page']).ad_group_id
 
+        if ad_group_id is None:
+            logger.error('Cannot handle url with no ad_group_id specified %s', entries[0]['Landing Page'])
+            return
+
         RawPostclickStats.objects.filter(datetime=dt, ad_group_id=ad_group_id).delete()
         RawGoalConversionStats.objects.filter(datetime=dt, ad_group_id=ad_group_id).delete()
 
@@ -221,8 +226,13 @@ bounced_visits=%s, pageviews=%s, duration=%s',
             landing_page = LandingPageUrl(entry['Landing Page'])
 
             assert landing_page.ad_group_id == ad_group_id
+            assert ad_group_id is not None
+
+            if landing_page.source_param is None:
+                continue
 
             source = resolve_source(landing_page.source_param)
+            
             source_id = source.id if source is not None else None
 
             metrics_data = self.get_initial_data(goal_fields)
@@ -234,7 +244,7 @@ bounced_visits=%s, pageviews=%s, duration=%s',
                 url_clean=landing_page.clean_url,
                 ad_group_id=int(landing_page.ad_group_id),
                 source_id=source_id,
-                device_type=entry['Device Category'],
+                device_type=entry.get('Device Category'),
                 z1_adgid=str(landing_page.ad_group_id),
                 z1_msid=landing_page.source_param,
                 z1_did=landing_page.z1_did,
@@ -256,7 +266,7 @@ bounced_visits=%s, pageviews=%s, duration=%s',
                     goal_name=goal_name,
                     url_raw=landing_page.raw_url,
                     url_clean=landing_page.clean_url,
-                    device_type=entry['Device Category'],
+                    device_type=entry.get('Device Category'),
                     z1_adgid=str(landing_page.ad_group_id),
                     z1_msid=landing_page.source_param,
                     z1_did=landing_page.z1_did,

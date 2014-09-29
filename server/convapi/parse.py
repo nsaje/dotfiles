@@ -4,8 +4,11 @@ import exc
 import re
 import csv
 import StringIO
+import logging
 
 import reports.api
+
+logger = logging.getLogger(__name__)
 
 
 class IReport(object):
@@ -24,7 +27,6 @@ class CsvReport(IReport):
 
     REQUIRED_FIELDS = [
         'Landing Page',
-        'Device Category',
         'Sessions',
         '% New Sessions',
         'New Users',
@@ -191,8 +193,8 @@ class LandingPageUrl(object):
 
         self._parse()
 
-        if self.clean_url is None or self.ad_group_id is None or self.source_param is None:
-            raise exc.LandingPageUrlParseError('Failed to parse landing page url. _z1_adgid and _z1_msid should be specified')
+        if self.ad_group_id is None or self.source_param is None:
+            logger.error('Could not parse landing page url %s', raw_url)
 
     def _parse(self):
         self.clean_url, query_params = reports.api.clean_url(self.raw_url)

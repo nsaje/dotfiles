@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'localStorageService', 'zemCustomTableColsService', 'zemChartService', function ($scope, $state, $location, $window, $timeout, api, localStorageService, zemCustomTableColsService, zemChartService) {
+oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'localStorageService', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', function ($scope, $state, $location, $window, $timeout, api, localStorageService, zemCustomTableColsService, zemPostclickMetricsService, zemChartService) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.requestInProgress = false;
@@ -7,6 +7,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.options = options;
     $scope.chartMetric1 = constants.chartMetric.COST;
     $scope.chartMetric2 = constants.chartMetric.CLICKS;
+    $scope.chartMetricOptions = options.allAccountsChartMetrics;
     $scope.chartData = undefined;
     $scope.isChartShown = zemChartService.load('zemChart');
     $scope.chartBtnTitle = 'Hide chart';
@@ -21,7 +22,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             field: 'name_link',
             unselectable: true,
             checked: true,
-            type: 'linkText',
+            type: 'linkNav',
             hasTotalsLabel: true,
             totalRow: false,
             help: 'A partner account.',
@@ -85,12 +86,37 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
     ];
 
+    $scope.columnCategories = [
+        {
+            'name': 'Traffic Acquisition',
+            'fields': [
+               'clicks', 'cost', 'cpc'
+            ]
+        },
+        {
+            'name': 'Audience Metrics',
+            'fields': [
+                'visits', 'pageviews', 'percent_new_users',
+                'bounce_rate', 'pv_per_visit', 'avg_tos', 
+                'click_discrepancy'
+            ]
+        },
+        {
+            'name': 'Data Sync',
+            'fields': ['last_sync']
+        }
+    ];
+
     $scope.setAccount(null);
     $scope.setCampaign(null);
     $scope.setAdGroup(null);
 
-    $scope.initColumns = function () {
+    var initColumns = function () {
         var cols;
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            zemPostclickMetricsService.insertColumns($scope.columns, $scope.isPermissionInternal('zemauth.postclick_metrics'));
+        }
 
         cols = zemCustomTableColsService.load('allAccountsAccountsCols', $scope.columns);
         $scope.selectedColumnsCount = cols.length;
@@ -123,9 +149,21 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         });
     };
 
-    $scope.getDailyStats = function () {
+    var setChartOptions = function () {
+        $scope.chartMetricOptions = options.allAccountsChartMetrics;
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                $scope.isPermissionInternal('zemauth.postclick_metrics')
+            );
+        }
+    };
+
+    var getDailyStats = function () {
         api.dailyStats.list('all_accounts', null, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true, [$scope.chartMetric1, $scope.chartMetric2]).then(
             function (data) {
+                setChartOptions();
                 $scope.chartData = data.chartData;
             },
             function (data) {
@@ -140,10 +178,10 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
         $location.search('order', $scope.order);
         localStorageService.set('allAccountsAccounts.order', $scope.order);
-        $scope.getTableData();
+        getTableData();
     };
 
-    $scope.getTableData = function (showWaiting) {
+    var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
         api.accountAccountsTable.get($scope.pagination.currentPage, $scope.pagination.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
@@ -160,7 +198,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
                 $scope.rows = $scope.rows.map(function (x) {
                     x.name_link = {
                         text: x.name,
-                        url: $state.href($scope.getDefaultAccountState(), {id: x.id})
+                        state: $scope.getDefaultAccountState(),
+                        id: x.id
                     };
 
                     return x;
@@ -179,13 +218,17 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
     // From parent scope (mainCtrl).
     $scope.$watch('dateRange', function (newValue, oldValue) {
-        $scope.getDailyStats();
-        $scope.getTableData();
+        if (newValue.startDate.isSame(oldValue.startDate) && newValue.endDate.isSame(oldValue.endDate)) {
+            return;
+        }
+
+        getDailyStats();
+        getTableData();
     });
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            $scope.getDailyStats();
+            getDailyStats();
             $location.search('chart_metric1', $scope.chartMetric1);
             localStorageService.set('allAccountsAccounts.chartMetric1', $scope.chartMetric1);
         }
@@ -199,7 +242,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
     $scope.$watch('chartMetric2', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            $scope.getDailyStats();
+            getDailyStats();
             $location.search('chart_metric2', $scope.chartMetric2);
             localStorageService.set('allAccountsAccounts.chartMetric2', $scope.chartMetric2);
         }
@@ -215,8 +258,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
                         if($scope.isSyncInProgress == false){
                             // we found out that the sync is no longer in progress
                             // time to reload the data
-                            $scope.getTableData();
-                            $scope.getDailyStats();
+                            getTableData();
+                            getDailyStats();
                         }
                     },
                     function(data) {
@@ -243,7 +286,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         if ($scope.pagination.currentPage && $scope.pagination.size) {
             $location.search('page', $scope.pagination.currentPage);
 
-            $scope.getTableData();
+            getTableData();
         }
     };
 
@@ -278,7 +321,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         var page = $location.search().page;
         var order = $location.search().order || localStorageService.get('allAccountsAccounts.order') || $scope.order;
 
-        var tableChanged = false;
+        setChartOptions();
 
         if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
             $scope.chartMetric1 = chartMetric1;
@@ -297,26 +340,21 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         if (order !== undefined && $scope.order !== order) {
             $scope.order = order;
             $location.search('order', order);
-            tableChanged = true;
         }
-
-        $scope.initColumns();
 
         pollSyncStatus();
 
         if (page !== undefined && $scope.pagination.currentPage !== page) {
             $scope.pagination.currentPage = page;
-            tableChanged = true;
         }
 
         if (size !== undefined && $scope.pagination.size !== size) {
             $scope.pagination.size = size;
-            tableChanged = true;
         }
         
-        if (tableChanged) {
-            $scope.loadPage();
-        }
+        $scope.loadPage();
+        getDailyStats();
+        initColumns();
     };
 
     $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {

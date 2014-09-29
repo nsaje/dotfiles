@@ -11,7 +11,7 @@ class RawPostclickStats(models.Model):
     url_raw = models.CharField(max_length=2048, blank=False, null=False)
     url_clean = models.CharField(max_length=2048, blank=False, null=False)
 
-    device_type = models.CharField(max_length=64, blank=False, null=False)
+    device_type = models.CharField(max_length=64, blank=False, null=True)
 
     # _z1_parameters
     z1_adgid = models.CharField(max_length=32, blank=False, null=False)
@@ -38,7 +38,7 @@ class RawGoalConversionStats(models.Model):
     url_raw = models.CharField(max_length=2048, blank=False, null=False)
     url_clean = models.CharField(max_length=2048, blank=False, null=False)
 
-    device_type = models.CharField(max_length=64, blank=False, null=False)
+    device_type = models.CharField(max_length=64, blank=False, null=True)
 
     goal_name = models.CharField(max_length=127, blank=False, null=False)
 

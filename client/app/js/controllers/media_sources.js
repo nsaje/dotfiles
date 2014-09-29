@@ -1,0 +1,174 @@
+/*globals oneApp,moment,constants,options*/
+oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$location', 'localStorageService', 'api', function ($scope, $state, zemChartService, $location, localStorageService, api) {
+    $scope.type = null;
+    $scope.selectedTotals = true;
+    $scope.selectedSourceIds = [];
+    $scope.chartMetrics = [];
+    $scope.chartMetric1 = constants.chartMetric.CLICKS;
+    $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
+    $scope.chartData = undefined;
+    $scope.isChartShown = zemChartService.load('zemChart');
+    $scope.chartMetricOptions = [];
+    $scope.chartBtnTitle = 'Hide chart';
+
+    $scope.$watch('chartMetric1', function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            $location.search('chart_metric1', $scope.chartMetric1);
+
+            if (!hasMetricData($scope.chartMetric1)) {
+                localStorageService.set($scope.type + 'Sources.chartMetric1', $scope.chartMetric1);
+                getDailyStats();
+            } else {
+                // create a copy to trigger watch
+                $scope.chartData = angular.copy($scope.chartData);
+            }
+        }
+    });
+
+    $scope.$watch('chartMetric2', function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            $location.search('chart_metric2', $scope.chartMetric2);
+
+            if (!hasMetricData($scope.chartMetric2)) {
+                localStorageService.set($scope.type + 'Sources.chartMetric2', $scope.chartMetric2);
+                getDailyStats();
+            } else {
+                // create a copy to trigger watch
+                $scope.chartData = angular.copy($scope.chartData);
+            }
+        }
+    });
+
+    var hasMetricData = function (metric) {
+        var hasData = false;
+        $scope.chartData.forEach(function (group) {
+            if (group.seriesData[metric] !== undefined) {
+                hasData = true;
+            }
+        });
+
+        return hasData;
+    };
+
+    var setType = function () {
+        if ($state.includes('main.allAccounts')) {
+            $scope.type = 'all_accounts';
+            $scope.chartMetrics = options.allAccountsChartMetrics;
+        } else if ($state.includes('main.accounts')) {
+            $scope.type = 'accounts';
+            $scope.chartMetrics = options.accountChartMetrics;
+        } else if ($state.includes('main.campaigns')) {
+            $scope.type = 'campaigns';
+            $scope.chartMetrics = options.campaignChartMetrics;
+        }
+    };
+
+    var getDailyStatsMetrics = function () {
+        var metrics = [$scope.chartMetric1, $scope.chartMetric2];
+
+        var values = $scope.chartMetrics.map(function (option) {
+            return option.value;
+        });
+
+        if (values.indexOf($scope.chartMetric1) === -1) {
+            metrics.push(constants.chartMetric.CLICKS);
+        }
+
+        if (values.indexOf($scope.chartMetric2) === -1) {
+            metrics.push(constants.chartMetric.IMPRESSIONS);
+        }
+
+        return metrics;
+    };
+
+    var getDailyStats = function () {
+        api.dailyStats.list($scope.type, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics(), true).then(
+            function (data) {
+                setChartOptions();
+            
+                // Select default metrics if selected metrics are not defined
+                var values = $scope.chartMetricOptions.map(function (option) {
+                    return option.value;
+                });
+
+                if (values.indexOf($scope.chartMetric1) === -1) {
+                    $scope.chartMetric1 = constants.chartMetric.CLICKS;
+                }
+                if (values.indexOf($scope.chartMetric2) === -1 && $scope.chartMetric2 !== 'none') {
+                    $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
+                }
+
+                $scope.chartData = data.chartData;
+            },
+            function (data) {
+                // error
+                return;
+            }
+        );
+    };
+
+    var setChartOptions = function () {
+        $scope.chartMetricOptions = $scope.chartMetrics;
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            $scope.chartMetricOptions = $scope.chartMetricOptions.concat(options.adGroupChartPostClickMetrics.map(function (option) {
+                if ($scope.isPermissionInternal('zemauth.postclick_metrics')) {
+                    option.internal = true;
+                }
+
+                return option;
+            }));
+        }
+    };
+
+    var init = function () {
+        setType();
+
+        var chartMetric1 = $location.search().chart_metric1 || localStorageService.get($scope.type + 'Sources.chartMetric1') || $scope.chartMetric1;
+        var chartMetric2 = $location.search().chart_metric2 || localStorageService.get($scope.type + 'Sources.chartMetric2') || $scope.chartMetric2;
+        var chartHidden = $location.search().chart_hidden;
+
+        var sourceIds = $location.search().source_ids;
+        var sourceTotals = $location.search().source_totals;
+
+        setChartOptions();
+
+        if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
+            $scope.chartMetric1 = chartMetric1;
+            $location.search('chart_metric1', chartMetric1);
+        }
+
+        if (chartMetric2 !== undefined && $scope.chartMetric2 !== chartMetric2) {
+            $scope.chartMetric2 = chartMetric2;
+            $location.search('chart_metric2', chartMetric2);
+        }
+
+        if (chartHidden) {
+            $scope.isChartShown = false;
+        }
+
+        if (sourceIds) {
+            $scope.selectedSourceIds = sourceIds.split(',');
+            $location.search('source_ids', sourceIds);
+        }
+
+        $scope.selectedTotals = !$scope.selectedSourceIds.length || !!sourceTotals;
+        $location.search('source_totals', sourceTotals);
+
+        getDailyStats();
+    };
+
+    // From parent scope (mainCtrl).
+    $scope.$watch('dateRange', function (newValue, oldValue) {
+        getDailyStats();
+    });
+
+    $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
+        $location.search('source_ids', null);
+        $location.search('source_totals', null);
+        $location.search('chart_metric1', null);
+        $location.search('chart_metric2', null);
+    });
+
+    init();
+}]);
