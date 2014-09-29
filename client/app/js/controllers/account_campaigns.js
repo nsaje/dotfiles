@@ -1,5 +1,5 @@
 /*globals oneApp,constants,moment*/
-oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'localStorageService', 'zemCustomTableColsService', 'zemChartService', function ($location, $scope, $state, $timeout, api, localStorageService, zemCustomTableColsService, zemChartService) {
+oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'localStorageService', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', function ($location, $scope, $state, $timeout, api, localStorageService, zemCustomTableColsService, zemPostclickMetricsService, zemChartService) {
     $scope.getTableDataRequestInProgress = false;
     $scope.addCampaignRequestInProgress = false;
     $scope.isSyncInProgress = false;
@@ -46,10 +46,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
         $location.search('campaign_ids', $scope.selectedCampaignIds.join(','));
         $location.search('campaign_totals', $scope.selectedTotals ? 1 : null);
 
-        // $scope.setAdGroupData('sourceIds', $scope.selectedSourceIds);
-        // $scope.setAdGroupData('sourceTotals', $scope.selectedSourceTotals);
-
-        $scope.getDailyStats();
+        getDailyStats();
     };
 
     $scope.selectRows = function () {
@@ -188,7 +185,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            $scope.getDailyStats();
+            getDailyStats();
             $location.search('chart_metric1', $scope.chartMetric1);
             localStorageService.set('accountCampaigns.chartMetric1', $scope.chartMetric1);
         }
@@ -196,15 +193,27 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
 
     $scope.$watch('chartMetric2', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            $scope.getDailyStats();
+            getDailyStats();
             $location.search('chart_metric2', $scope.chartMetric2);
             localStorageService.set('accountCampaigns.chartMetric2', $scope.chartMetric2);
         }
     });
 
-    $scope.getDailyStats = function () {
+    var setChartOptions = function () {
+        $scope.chartMetricOptions = options.accountChartMetrics;
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                $scope.isPermissionInternal('zemauth.postclick_metrics')
+            );
+        }
+    };
+
+    var getDailyStats = function () {
         api.dailyStats.list('accounts', $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedCampaignIds, $scope.selectedTotals, [$scope.chartMetric1, $scope.chartMetric2]).then(
             function (data) {
+                setChartOptions();
                 $scope.chartData = data.chartData;
             },
             function (data) {
@@ -225,7 +234,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
         $scope.updateSelectedRowsData();
     };
 
-    $scope.getTableData = function () {
+    var getTableData = function () {
         $scope.getTableDataRequestInProgress = true;
 
         api.accountCampaignsTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
@@ -266,7 +275,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
 
         $location.search('order', $scope.order);
         localStorageService.set('accountCampaigns.order', $scope.order);
-        $scope.getTableData();
+        getTableData();
     };
 
     $scope.triggerSync = function() {
@@ -284,8 +293,8 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
                         if (!$scope.isSyncInProgress){
                             // we found out that the sync is no longer in progress
                             // time to reload the data
-                            $scope.getTableData();
-                            $scope.getDailyStats();
+                            getTableData();
+                            getDailyStats();
                         }
                     },
                     function(data) {
@@ -308,6 +317,10 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     var initColumns = function () {
         var cols;
 
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            zemPostclickMetricsService.insertColumns($scope.columns, $scope.isPermissionInternal('zemauth.postclick_metrics'));
+        }
+
         cols = zemCustomTableColsService.load('accountCampaignsCols', $scope.columns);
         $scope.selectedColumnsCount = cols.length;
 
@@ -322,10 +335,11 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
         var chartMetric2 = $location.search().chart_metric2 || localStorageService.get('accountCampaigns.chartMetric2') || $scope.chartMetric2;
         var chartHidden = $location.search().chart_hidden;
         var order = $location.search().order || localStorageService.get('accountCampaigns.order') || $scope.order;
-        var tableChanged = false;
 
         var campaignIds = $location.search().campaign_ids;
         var campaignTotals = $location.search().campaign_totals;
+
+        setChartOptions();
 
         if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
             $scope.chartMetric1 = chartMetric1;
@@ -355,20 +369,15 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
         $scope.selectedTotals = !$scope.selectedCampaignIds.length || !!campaignTotals;
         $location.search('campaign_totals', campaignTotals);
 
-       if (order !== undefined && $scope.order !== order) {
+        if (order !== undefined && $scope.order !== order) {
             $scope.order = order;
             $location.search('order', order);
-            tableChanged = true;
         }
 
-        if (tableChanged) {
-            $scope.getTableData();
-        }
-
+        getTableData();
         initColumns();
-
         pollSyncStatus();
-        $scope.getDailyStats();
+        getDailyStats();
     };
 
     $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
@@ -385,8 +394,12 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     });
 
     $scope.$watch('dateRange', function (newValue, oldValue) {
-        $scope.getTableData();
-        $scope.getDailyStats();
+        if (newValue.startDate.isSame(oldValue.startDate) && newValue.endDate.isSame(oldValue.endDate)) {
+            return;
+        }
+
+        getTableData();
+        getDailyStats();
     });
 
     $scope.init();

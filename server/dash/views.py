@@ -282,7 +282,7 @@ def filter_by_permissions(result, user):
     '''
     TRAFFIC_FIELDS = [
         'clicks', 'impressions', 'cost', 'cpc', 'ctr', 'article', 'title',
-        'url', 'campaign', 'account', 'source', 'date',
+        'url', 'ad_group', 'campaign', 'account', 'source', 'date',
     ]
     POSTCLICK_FIELDS = [
         'visits', 'percent_new_users', 'pv_per_visit', 'avg_tos',
@@ -1264,7 +1264,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
 
         return self.create_api_response({
             'rows': rows,
-            'totals': self.get_totals(totals_data),
+            'totals': totals_data,
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(accounts=accounts),
@@ -1278,15 +1278,6 @@ class AccountsAccountsTable(api_common.BaseApiView):
                 'size': size
             }
         })
-
-    def get_totals(self, totals_data):
-        return {
-            'cost': totals_data['cost'],
-            'cpc': totals_data['cpc'],
-            'clicks': totals_data['clicks'],
-            'impressions': totals_data['impressions'],
-            'ctr': totals_data['ctr']
-        }
 
     def get_rows(self, accounts, accounts_data, ad_groups_settings, last_actions, page, size, order=None):
         rows = []
@@ -1312,15 +1303,16 @@ class AccountsAccountsTable(api_common.BaseApiView):
             if last_sync:
                 last_sync = pytz.utc.localize(last_sync)
 
-            rows.append({
+            row = {
                 'id': str(aid),
                 'name': account.name,
                 'status': state,
-                'cost': account_data.get('cost', None),
-                'cpc': account_data.get('cpc', None),
-                'clicks': account_data.get('clicks', None),
                 'last_sync': last_sync
-            })
+            }
+
+            row.update(account_data)
+
+            rows.append(row)
 
         if order:
             reverse = False
@@ -1988,13 +1980,13 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         end_date = get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-cost'
 
-        stats = reports.api.query(
+        stats = filter_by_permissions(reports.api.query(
             start_date=start_date,
             end_date=end_date,
             breakdown=['ad_group'],
             order=[order],
             campaign=campaign
-        )
+        ), request.user)
 
         ad_groups = campaign.adgroup_set.all()
         ad_groups_settings = models.AdGroupSettings.objects.\
@@ -2002,7 +1994,10 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             filter(ad_group__campaign=campaign).\
             order_by('ad_group', '-created_dt')
 
-        totals_stats = reports.api.query(start_date, end_date, campaign=campaign.pk)
+        totals_stats = filter_by_permissions(
+            reports.api.query(start_date, end_date, campaign=campaign.pk),
+            request.user
+        )
 
         last_success_actions = {}
         for ad_group in ad_groups:
@@ -2089,16 +2084,18 @@ class AccountCampaignsTable(api_common.BaseApiView):
         end_date = get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-clicks'
 
-        campaign_ids = [x.pk for x in campaigns]
-        stats = reports.api.query(
+        stats = filter_by_permissions(reports.api.query(
             start_date=start_date,
             end_date=end_date,
             breakdown=['campaign'],
             order=[order],
-            campaign=campaign_ids
-        )
+            campaign=campaigns
+        ), request.user)
 
-        totals_stats = reports.api.query(start_date, end_date, campaign=campaign_ids)
+        totals_stats = filter_by_permissions(
+            reports.api.query(start_date, end_date, campaign=campaigns),
+            request.user
+        )
 
         ad_groups_settings = models.AdGroupSettings.objects.\
             distinct('ad_group').\
@@ -2288,28 +2285,38 @@ class AccountDailyStats(BaseDailyStatsView):
         metrics = request.GET.getlist('metrics')
         selected_ids = request.GET.getlist('selected_ids')
         totals = request.GET.get('totals')
+        sources = request.GET.get('sources')
 
         totals_kwargs = None
         selected_kwargs = None
-        campaigns = []
+        group_key = 'campaign'
+        group_names = None
+
+        if sources:
+            group_key = 'source'
 
         if totals:
             totals_kwargs = {'account': int(account.id)}
 
         if selected_ids:
             ids = [int(x) for x in selected_ids]
-            selected_kwargs = {'account': int(account.id), 'campaign': ids}
+            selected_kwargs = {'account': int(account.id), group_key: ids}
 
-            campaigns = models.Campaign.objects.filter(pk__in=ids)
+            if sources:
+                sources = models.Source.objects.filter(pk__in=ids)
+                group_names = {source.id: source.name for source in sources}
+            else:
+                campaigns = models.Campaign.objects.filter(pk__in=ids)
+                group_names = {campaign.id: campaign.name for campaign in campaigns}
 
-        stats = self.get_stats(request, totals_kwargs, selected_kwargs, 'campaign')
+        stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key)
 
         return self.create_api_response(self.get_response_dict(
             stats,
             totals,
-            {campaign.id: campaign.name for campaign in campaigns},
+            group_names,
             metrics,
-            'campaign'
+            group_key
         ))
 
 
@@ -2321,28 +2328,38 @@ class CampaignDailyStats(BaseDailyStatsView):
         metrics = request.GET.getlist('metrics')
         selected_ids = request.GET.getlist('selected_ids')
         totals = request.GET.get('totals')
+        sources = request.GET.get('sources')
 
         totals_kwargs = None
         selected_kwargs = None
-        ad_groups = []
+        group_key = 'ad_group'
+        group_names = None
+
+        if sources:
+            group_key = 'source'
 
         if totals:
             totals_kwargs = {'campaign': int(campaign.id)}
 
         if selected_ids:
             ids = [int(x) for x in selected_ids]
-            selected_kwargs = {'campaign': int(campaign.id), 'ad_group_id': ids}
+            selected_kwargs = {'campaign': int(campaign.id), '{}_id'.format(group_key): ids}
 
-            ad_groups = models.AdGroup.objects.filter(pk__in=ids)
+            if sources:
+                sources = models.Source.objects.filter(pk__in=ids)
+                group_names = {source.id: source.name for source in sources}
+            else:
+                ad_groups = models.AdGroup.objects.filter(pk__in=ids)
+                group_names = {ad_group.id: ad_group.name for ad_group in ad_groups}
 
-        stats = self.get_stats(request, totals_kwargs, selected_kwargs, 'ad_group')
+        stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key)
 
         return self.create_api_response(self.get_response_dict(
             stats,
             totals,
-            {ad_group.id: ad_group.name for ad_group in ad_groups},
+            group_names,
             metrics,
-            'ad_group'
+            group_key
         ))
 
 
@@ -2387,17 +2404,36 @@ class AccountsDailyStats(BaseDailyStatsView):
             raise exc.MissingDataError()
 
         metrics = request.GET.getlist('metrics')
+        selected_ids = request.GET.getlist('selected_ids')
+        totals = request.GET.get('totals')
+
+        totals_kwargs = None
+        selected_kwargs = None
+        group_key = None
+        group_names = None
+
         accounts = models.Account.objects.get_for_user(request.user)
 
-        kwargs = {'account': accounts}
+        if totals:
+            totals_kwargs = {'account': accounts}
 
-        stats = self.get_stats(request, kwargs)
+        if selected_ids:
+            ids = [int(x) for x in selected_ids]
+            selected_kwargs = {'account': accounts, 'source_id': ids}
+
+            group_key = 'source'
+
+            sources = models.Source.objects.filter(pk__in=ids)
+            group_names = {source.id: source.name for source in sources}
+
+        stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key)
 
         return self.create_api_response(self.get_response_dict(
             stats,
-            True,
-            None,
-            metrics
+            totals,
+            group_names,
+            metrics,
+            group_key
         ))
 
 
