@@ -302,27 +302,29 @@ def get_yesterday_cost(ad_group):
     return result
 
 
-def _has_any_postclick_metrics(ad_group):
-    rs = models.ArticleStats.objects.filter(
-            ad_group=ad_group
-        ).aggregate(has_postclick_metrics_max=Max('has_postclick_metrics'))
+def _has_any_postclick_metrics(kwargs):
+    rs = models.ArticleStats.objects.filter(**kwargs).\
+         aggregate(has_postclick_metrics_max=Max('has_postclick_metrics'))
 
     return rs['has_postclick_metrics_max'] == 1
 
 
-def has_complete_postclick_metrics(start_date, end_date, ad_group):
-    if not _has_any_postclick_metrics(ad_group):
+def has_complete_postclick_metrics(start_date, end_date, **kwargs):
+    kwargs = _preprocess_constraints(kwargs)
+
+    if not _has_any_postclick_metrics(kwargs):
         return True
 
     rs = models.ArticleStats.objects.filter(
         datetime__gte=start_date,
         datetime__lte=end_date,
-        ad_group=ad_group
+        **kwargs
     ).values('datetime').annotate(
         has_postclick_metrics_max=Max('has_postclick_metrics')
     )
 
-    is_complete = reduce(operator.iand, 
+    is_complete = reduce(
+        operator.iand,
         (r['has_postclick_metrics_max'] == 1 for r in rs),
         True
     )
