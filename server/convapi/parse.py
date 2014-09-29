@@ -27,7 +27,6 @@ class CsvReport(IReport):
 
     REQUIRED_FIELDS = [
         'Landing Page',
-        'Device Category',
         'Sessions',
         '% New Sessions',
         'New Users',
