@@ -228,7 +228,11 @@ bounced_visits=%s, pageviews=%s, duration=%s',
             assert landing_page.ad_group_id == ad_group_id
             assert ad_group_id is not None
 
+            if landing_page.source_param is None:
+                continue
+
             source = resolve_source(landing_page.source_param)
+            
             source_id = source.id if source is not None else None
 
             metrics_data = self.get_initial_data(goal_fields)
