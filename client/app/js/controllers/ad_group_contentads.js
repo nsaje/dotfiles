@@ -12,7 +12,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     $scope.chartMetricOptions = options.adGroupChartMetrics;
     $scope.chartGoalMetrics = null;
     $scope.chartBtnTitle = 'Hide chart';
-    $scope.incompletePostclickMetrics = false;
+    $scope.isIncompletePostclickMetrics = false;
     $scope.pagination = {
         currentPage: 1,
     };
@@ -177,7 +177,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
                 $scope.isSyncRecent = data.is_sync_recent;
                 $scope.isSyncInProgress = data.is_sync_in_progress;
 
-                $scope.incompletePostclickMetrics = data.incomplete_postclick_metrics;
+                $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
 
                 $scope.order = data.order;
                 $scope.pagination = data.pagination;
