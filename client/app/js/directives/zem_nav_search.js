@@ -4,7 +4,7 @@
 oneApp.directive('zemNavSearch', ['config', '$state', function(config, $state) {
     return {
         restrict: 'E',
-        templateUrl: config.static_url + '/partials/zem_nav_search.html',
+        templateUrl: '/partials/zem_nav_search.html',
         scope: {
             account: '=zemCurrentAccount',
             accountsData: '=zemAllAccounts',

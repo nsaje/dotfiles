@@ -8,7 +8,7 @@ oneApp.directive('zemCustomTableCols', ['config', function(config) {
             columns: '=',
             categories: '=',
         },
-        templateUrl: config.static_url + '/partials/zem_custom_table_cols.html',
+        templateUrl: '/partials/zem_custom_table_cols.html',
         compile: function compile(tElement, tAttrs, transclude) {
             // Prevent closing of dropdown-menu when checkbox is clicked.
             $(tElement).on('click', function(e) {
