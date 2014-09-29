@@ -553,7 +553,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $scope.getAdGroupState();
         $scope.initColumns();
 
-        console.log('lala');
         getTableData();
         getDailyStats();
 
