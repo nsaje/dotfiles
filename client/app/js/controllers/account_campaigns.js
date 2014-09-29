@@ -13,6 +13,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.rows = null;
     $scope.totalRow = null;
     $scope.order = '-cost';
+    $scope.isIncompletePostclickMetrics = false;
 
     $scope.updateSelectedCampaigns = function (campaignId) {
         campaignId = campaignId.toString();
@@ -268,6 +269,8 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
                 $scope.isSyncInProgress = data.is_sync_in_progress;
 
                 $scope.order = data.order;
+
+                $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
 
                 $scope.rows = $scope.rows.map(function (x) {
                     x.name = {

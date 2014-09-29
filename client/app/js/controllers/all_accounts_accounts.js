@@ -13,6 +13,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.chartBtnTitle = 'Hide chart';
     $scope.order = '-cost';
     $scope.sizeRange = [5, 10, 20, 50];
+    $scope.isIncompletePostclickMetrics = false;
     $scope.pagination = {
         currentPage: 1,
     };
@@ -194,6 +195,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
                 $scope.order = data.order;
                 $scope.pagination = data.pagination;
+
+                $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
 
                 $scope.rows = $scope.rows.map(function (x) {
                     x.name_link = {
