@@ -194,7 +194,7 @@ class LandingPageUrl(object):
 
         self._parse()
 
-        if seld.ad_group_id is None or seld.source_param is None:
+        if self.ad_group_id is None or self.source_param is None:
             logger.error('Could not parse landing page url %s', raw_url)
 
     def _parse(self):
