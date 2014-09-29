@@ -1210,6 +1210,9 @@ class AccountsAccountsTable(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
             raise exc.MissingDataError()
 
+        start_date = get_stats_start_date(request.GET.get('start_date'))
+        end_date = get_stats_end_date(request.GET.get('end_date'))
+
         page = request.GET.get('page')
         size = request.GET.get('size')
         order = request.GET.get('order')
@@ -1221,8 +1224,8 @@ class AccountsAccountsTable(api_common.BaseApiView):
             page = int(page)
 
         accounts_data = filter_by_permissions(reports.api.query(
-            get_stats_start_date(request.GET.get('start_date')),
-            get_stats_end_date(request.GET.get('end_date')),
+            start_date,
+            end_date,
             ['account'],
             account=accounts
         ), request.user)
@@ -1233,8 +1236,8 @@ class AccountsAccountsTable(api_common.BaseApiView):
             order_by('ad_group', '-created_dt')
 
         totals_data = filter_by_permissions(reports.api.query(
-            get_stats_start_date(request.GET.get('start_date')),
-            get_stats_end_date(request.GET.get('end_date')),
+            start_date,
+            end_date,
             account=accounts
         ), request.user)
 
@@ -1262,6 +1265,11 @@ class AccountsAccountsTable(api_common.BaseApiView):
             order=order
         )
 
+        incomplete_postclick_metrics = \
+            not reports.api.has_complete_postclick_metrics(
+                start_date, end_date, account=accounts
+            ) if request.user.has_perm('zemauth.postclick_metrics') else False
+
         return self.create_api_response({
             'rows': rows,
             'totals': totals_data,
@@ -1276,7 +1284,8 @@ class AccountsAccountsTable(api_common.BaseApiView):
                 'startIndex': start_index,
                 'endIndex': end_index,
                 'size': size
-            }
+            },
+            'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
 
     def get_rows(self, accounts, accounts_data, ad_groups_settings, last_actions, page, size, order=None):
@@ -1953,6 +1962,11 @@ class AdGroupAdsTable(api_common.BaseApiView):
         if last_sync:
             last_sync = pytz.utc.localize(last_sync)
 
+        incomplete_postclick_metrics = \
+            not reports.api.has_complete_postclick_metrics(
+                start_date, end_date, ad_group=ad_group
+            ) if request.user.has_perm('zemauth.postclick_metrics') else False
+
         return self.create_api_response({
             'rows': rows,
             'totals': totals_data,
@@ -1967,7 +1981,8 @@ class AdGroupAdsTable(api_common.BaseApiView):
                 'startIndex': start_index,
                 'endIndex': end_index,
                 'size': size
-            }
+            },
+            'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
 
 
@@ -2014,6 +2029,11 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         if last_sync:
             last_sync = pytz.utc.localize(last_sync)
 
+        incomplete_postclick_metrics = \
+            not reports.api.has_complete_postclick_metrics(
+                start_date, end_date, campaign=campaign
+            ) if request.user.has_perm('zemauth.postclick_metrics') else False
+
         return self.create_api_response({
             'rows': self.get_rows(
                 ad_groups, ad_groups_settings, stats, last_success_actions, order),
@@ -2023,6 +2043,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(
                 campaigns=[campaign]),
             'order': order,
+            'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
 
     def get_rows(self, ad_groups, ad_groups_settings, stats, last_actions, order):
@@ -2117,6 +2138,11 @@ class AccountCampaignsTable(api_common.BaseApiView):
         if last_sync:
             last_sync = pytz.utc.localize(last_sync)
 
+        incomplete_postclick_metrics = \
+            not reports.api.has_complete_postclick_metrics(
+                start_date, end_date, campaign=campaigns
+            ) if request.user.has_perm('zemauth.postclick_metrics') else False
+
         return self.create_api_response({
             'rows': self.get_rows(
                 campaigns,
@@ -2131,6 +2157,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(
                 campaigns=campaigns),
             'order': order,
+            'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
 
     def get_rows(self, campaigns, ad_groups_settings, stats, last_actions, order):
