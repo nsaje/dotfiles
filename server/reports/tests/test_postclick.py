@@ -77,6 +77,32 @@ class PostclickTestCase(test.TestCase):
         is_complete = api.has_complete_postclick_metrics(datetime.date(2014, 6, 6), datetime.date(2014, 6, 6), ad_group=1)
         self.assertTrue(is_complete)
 
+        is_complete = api.has_complete_postclick_metrics(self.start_date, self.end_date, campaign=1)
+        self.assertFalse(is_complete)
+
+        is_complete = api.has_complete_postclick_metrics(self.start_date, datetime.date(2014, 6, 5), campaign=1)
+        self.assertFalse(is_complete)
+
+        is_complete = api.has_complete_postclick_metrics(datetime.date(2014, 6, 6), datetime.date(2014, 6, 6), campaign=1)
+        self.assertTrue(is_complete)
+
+        is_complete = api.has_complete_postclick_metrics(self.start_date, self.end_date, account=1)
+        self.assertFalse(is_complete)
+
+        is_complete = api.has_complete_postclick_metrics(self.start_date, datetime.date(2014, 6, 5), account=1)
+        self.assertFalse(is_complete)
+
+        is_complete = api.has_complete_postclick_metrics(datetime.date(2014, 6, 6), datetime.date(2014, 6, 6), account=1)
+        self.assertTrue(is_complete)
+
+        is_complete = api.has_complete_postclick_metrics(self.start_date, self.end_date, account=[1])
+        self.assertFalse(is_complete)
+
+        is_complete = api.has_complete_postclick_metrics(self.start_date, datetime.date(2014, 6, 5), account=[1])
+        self.assertFalse(is_complete)
+
+        is_complete = api.has_complete_postclick_metrics(datetime.date(2014, 6, 6), datetime.date(2014, 6, 6), account=[1])
+        self.assertTrue(is_complete)
 
 class GoalConversionTestCase(test.TestCase):
     fixtures = [
