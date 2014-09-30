@@ -73,6 +73,10 @@ urlpatterns += patterns(
         login_required(dash.views.AccountsAccountsTable.as_view()),
     ),
     url(
+        r'^api/accounts/(?P<account_id>\d+)/budget/',
+        login_required(dash.views.AccountBudget.as_view()),
+    ),
+    url(
         r'^api/accounts/sync/',
         login_required(dash.views.AccountSync.as_view()),
     ),
@@ -143,6 +147,10 @@ urlpatterns += patterns(
     url(
         r'^api/accounts/export/',
         login_required(dash.views.AllAccountsExport.as_view())
+    ),
+    url(
+        r'^api/accounts/budget/',
+        login_required(dash.views.AllAccountsBudget.as_view())
     ),
     url(
         r'^api/accounts/$',

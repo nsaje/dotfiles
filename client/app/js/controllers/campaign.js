@@ -3,7 +3,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
     $scope.tabs = [
         {heading: 'Ad groups', route: 'main.campaigns.ad_groups', active: true, hidden: !$scope.hasPermission('zemauth.campaign_ad_groups_view'), internal: $scope.isPermissionInternal('zemauth.campaign_ad_groups_view')},
         {heading: 'Agency', route: 'main.campaigns.agency', active: false, hidden: !$scope.hasPermission('zemauth.campaign_settings_view'), internal: $scope.isPermissionInternal('zemauth.campaign_settings_view')},
-        {heading: 'Budget', route: 'main.campaigns.budget', active: false, hidden: false, internal: true}
+        {heading: 'Budget', route: 'main.campaigns.budget', active: false, hidden: !$scope.hasPermission('zemauth.campaign_budget_management_view'), internal: $scope.isPermissionInternal('zemauth.campaign_budget_management_view')}
     ];
 
     $scope.setAccount(null);

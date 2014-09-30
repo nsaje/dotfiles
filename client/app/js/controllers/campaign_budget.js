@@ -1,27 +1,10 @@
 /*globals oneApp,constants,options,moment*/
 oneApp.controller('CampaignBudgetCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
-    $scope.total = 10000;
-    $scope.spend = 8000;
-    $scope.available = 2000;
+    $scope.total = 0;
+    $scope.spend = 0;
+    $scope.available = 0;
+    $scope.errors = {};
     $scope.history = [];
-    // $scope.history = [
-    //     {
-    //         datetime: '2014-09-26T16:16:08.545317',
-    //         user: 'lori@pofa.be',
-    //         allocate: 10000,
-    //         revoke: 0,
-    //         total: 30000,
-    //         comment: 'Helo bello'
-    //     },
-    //     {
-    //         datetime: '2014-09-26T16:16:08.545317',
-    //         user: 'super@user.com',
-    //         allocate: 0,
-    //         revoke: 3000,
-    //         total: 20000,
-    //         comment: 'Bunica bate toba'
-    //     }
-    // ];
     $scope.latestId = null;
     $scope.allocate = 0;
     $scope.revoke = 0;
@@ -49,10 +32,6 @@ oneApp.controller('CampaignBudgetCtrl', ['$scope', '$state', 'api', function ($s
     };
 
     $scope.saveBudget = function() {
-        console.log('allocate $' + $scope.allocate);
-        console.log('revoke $' + $scope.revoke);
-        console.log('comment: ' + $scope.comment);
-
         $scope.requestInProgress = true;
 
         api.campaignBudget.save($state.params.id, {
@@ -67,10 +46,16 @@ oneApp.controller('CampaignBudgetCtrl', ['$scope', '$state', 'api', function ($s
                 $scope.available = data.available;
                 $scope.history = data.history;
                 $scope.latestId = data.latest_id;
+                $scope.allocate = 0;
+                $scope.revoke = 0;
+                $scope.comment = '';
+                $scope.errors = 0;
             },
             function (data) {
                 // error
-                console.log('ERROR');
+                $scope.errors = data.data.errors;
+                console.log(JSON.stringify($scope.errors));
+                console.log($scope.errors);
             }
         ).finally(function () {
             $scope.requestInProgress = false;

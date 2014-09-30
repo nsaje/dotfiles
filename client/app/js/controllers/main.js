@@ -42,6 +42,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
             result = 'main.allAccounts.accounts';
         } else if ($scope.hasPermission('zemauth.all_accounts_sources_view')) {
             result = 'main.allAccounts.sources';
+        } else if ($scope.hasPermission('zemauth.all_accounts_budget_view')) {
+            result = 'main.allAccounts.budget'
         }
 
         return result;
@@ -60,6 +62,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
             result = 'main.accounts.sources';
         } else if ($scope.hasPermission('zemauth.account_agency_view')) {
             result = 'main.accounts.agency';
+        } else if ($scope.hasPermission('zemauth.account_budget_view')) {
+            result = 'main.accounts.budget';
         }
 
         return result;
@@ -78,6 +82,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
             result = 'main.campaings.sources';
         } else if ($scope.hasPermission('zemauth.campaign_settings_view')) {
             result = 'main.campaigns.agency';
+        } else if ($scope.hasPermission('zemauth.campaign_budget_management_view')) {
+            result = 'main.campaings.budget';
         }
 
         return result;

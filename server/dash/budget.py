@@ -66,6 +66,10 @@ class CampaignBudget(object):
         return r.get('cost') or 0
 
     def edit(self, allocate_amount, revoke_amount, comment, user, latest_id):
+        if not allocate_amount and not revoke_amount and not comment:
+            # nothing to change
+            return
+
         logger.info('Budget change: allocate=%s, revoke=%s, user=%s, comment=%s',
             allocate_amount, revoke_amount, user.email, comment
         )

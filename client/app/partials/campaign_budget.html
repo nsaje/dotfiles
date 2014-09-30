@@ -6,7 +6,7 @@
                 Total budget
             </label>
             <div class="col-xs-2">
-                <span id="total-budget">$ {{ total }}</span>
+                <p id="total-budget" class="control-label">{{ (total | currency) }}</p>
             </div>
         </div>
         <div class="form-group">
@@ -14,7 +14,7 @@
                 Spend
             </label>
             <div class="col-xs-2">
-                <span id="spend-budget">$ {{ spend }}</span>
+                <p id="spend-budget" class="control-label">{{ (spend | currency) }}</p>
             </div>
         </div>
         <div class="form-group">
@@ -22,36 +22,45 @@
                 Available budget
             </label>
             <div class="col-xs-2">
-                <span id="available-budget">$ {{ available }}</span>
+                <p id="available-budget" class="control-label">{{ (available | currency) }}</p>
             </div>
         </div>
-        <div class="form-group">
+        <div class="form-group" ng-class="{'has-error': !!errors.allocate}">
             <label for="allocate-budget" class="col-xs-2 control-label">
                 Allocate budget
             </label>
             <div class="col-xs-2">
-                <input id="allocate-budget" class="form-control" ng-model="allocate">
-                <button type="button" class="btn btn-primary" ng-click="saveBudget()">Allocate</button>
+                <div class="input-group">
+                    <span class="input-group-addon">$</span>
+                    <input id="allocate-budget" type="text" class="form-control" ng-model="allocate" zem-currency-input>
+                </div>
             </div>
+            <button type="button" class="btn btn-default col-xs-1" ng-click="saveBudget()">Allocate</button>
+            <label ng-repeat="error in errors.allocate" class="control-label error" for="allocate-budget">{{ error }}</label>
         </div>
-        <div class="form-group">
+        <div class="form-group" ng-class="{'has-error': !!errors.revoke}">
             <label for="revoke-budget" class="col-xs-2 control-label">
                 Revoke budget
             </label>
             <div class="col-xs-2">
-                <input id="revoke-budget" class="form-control" ng-model="revoke">
-                <button type="button" class="btn btn-primary" ng-click="saveBudget()">Revoke</button>
+                <div class="input-group">
+                    <span class="input-group-addon">$</span>
+                    <input id="revoke-budget" type="text" class="form-control" ng-model="revoke" zem-currency-input>
+                </div>
             </div>
+            <button type="button" class="btn btn-default col-xs-1" ng-click="saveBudget()">Revoke</button>
+            <label ng-repeat="error in errors.revoke" class="control-label error" for="revoke-budget">{{ error }}</label>
         </div>
-        <div class="form-group">
+        <div class="form-group" ng-class="{'has-error': !!errors.comment}">
             <div class="col-xs-4">
                 <textarea id="comment-budget" type="text" class="form-control" rows="4" ng-model="comment"></textarea>
-                <button type="button" class="btn btn-primary" ng-click="saveBudget()">Add Note</button>
             </div>
+            <button type="button" class="btn btn-default col-xs-1" ng-click="saveBudget()">Add Note</button>
+            <label ng-repeat="error in errors.comment" class="control-label error" for="comment-budget">{{ error }}</label>
         </div>
     </form>
 
-    <div class="section table-campaign-agency">
+    <div class="section table-campaign-budget">
         <div class="title">History</div>
         <div class="loader-container">
             <div class="loader" ng-show="history.length && requestInProgress"></div>
@@ -79,9 +88,9 @@
                     <tr ng-repeat="item in history">
                         <td>{{ (item.datetime | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
                         <td>{{ item.user }}</td>
-                        <td>{{ item.allocate }}</td>
-                        <td>{{ item.revoke }}</td>
-                        <td>{{ item.total }}</td>
+                        <td>{{ item.allocate | currency }}</td>
+                        <td>{{ item.revoke | currency }}</td>
+                        <td>{{ item.total | currency }}</td>
                         <td>{{ item.comment }}</td>
                     </tr>
                 </tbody>

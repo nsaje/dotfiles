@@ -499,11 +499,17 @@ class CampaignBudget(api_common.BaseApiView):
 
         budget_change = json.loads(request.body)
 
+        form = forms.CampaignBudgetForm(budget_change)
+
+        if not form.is_valid():
+            print form.errors
+            raise exc.ValidationError(errors=dict(form.errors))
+
         campaign_budget.edit(
-            allocate_amount=float(budget_change['allocate']),
-            revoke_amount=float(budget_change['revoke']),
+            allocate_amount=form.cleaned_data['allocate'],
+            revoke_amount=form.cleaned_data['revoke'],
             user=request.user,
-            comment=budget_change['comment'],
+            comment=form.cleaned_data['comment'],
             latest_id=budget_change['latest_id']
         )
 
@@ -527,7 +533,6 @@ class CampaignBudget(api_common.BaseApiView):
         }
         return response
 
-
     def format_history(self, history):
         result = []
         for h in history:
@@ -540,6 +545,49 @@ class CampaignBudget(api_common.BaseApiView):
             item['comment'] = h.comment
             result.append(item)
         return result
+
+
+class AccountBudget(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'account_budget_get')
+    def get(self, request, account_id):
+        account = get_account(request.user, account_id)
+        response = self.get_response(account)
+        return self.create_api_response(response)
+
+    def get_response(self, account):
+        account_budget = budget.AccountBudget(account)
+
+        total = account_budget.get_total()
+        spend = account_budget.get_spend()
+        available = total - spend
+
+        response = {
+            'total': total,
+            'available': available,
+            'spend': spend,
+        }
+        return response
+
+
+class AllAccountsBudget(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'all_accounts_budget_get')
+    def get(self, request):
+        response = self.get_response()
+        return self.create_api_response(response)
+
+    def get_response(self):
+        global_budget = budget.GlobalBudget()
+
+        total = global_budget.get_total()
+        spend = global_budget.get_spend()
+        available = total - spend
+
+        response = {
+            'total': total,
+            'available': available,
+            'spend': spend,
+        }
+        return response
 
 
 class CampaignSettings(api_common.BaseApiView):

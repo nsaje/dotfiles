@@ -670,11 +670,46 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                     deferred.resolve(data.data);
                 }).
                 error(function(data, status, headers, config) {
-                    // var resource;
-                    // if (status === 400 && data && data.data.error_code === 'ValidationError') {
-                    //     resource = convertValidationErrorFromApi(data.data.errors);
-                    // }
-                    // deferred.reject(resource);
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    function AccountBudget() {
+        this.get = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + id + '/budget/';
+
+            $http.get(url).
+                success(function (data, status) {
+                    if (!data || !data.data) {
+                        deferred.reject(data);
+                    }
+                    deferred.resolve(data.data);
+                }).
+                error(function(data, status, headers) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    function AllAccountsBudget() {
+        this.get = function () {
+            var deferred = $q.defer();
+            var url = '/api/accounts/budget/';
+
+            $http.get(url).
+                success(function (data, status) {
+                    if (!data || !data.data) {
+                        deferred.reject(data);
+                    }
+                    deferred.resolve(data.data);
+                }).
+                error(function(data, status, headers) {
                     deferred.reject(data);
                 });
 
@@ -1212,11 +1247,13 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         accountAccountsTable: new AccountAccountsTable(),
         accountCampaigns: new AccountCampaigns(),
         accountCampaignsTable: new AccountCampaignsTable(),
+        accountBudget: new AccountBudget(),
         accountSync: new AccountSync(),
         checkAccountsSyncProgress: new CheckAccountsSyncProgress(),
         checkCampaignSyncProgress: new CheckCampaignSyncProgress(),
         checkSyncProgress: new CheckSyncProgress(),
         dailyStats: new DailyStats(),
-        actionLog: new ActionLog()
+        actionLog: new ActionLog(),
+        allAccountsBudget: new AllAccountsBudget()
     };
 }]);
