@@ -170,6 +170,8 @@ def _add_computed_metrics(result):
 
 
 def sorted_results(results, order=None):
+    if not isinstance(results, collections.Sequence):
+        return results
     rows = results[:]
     if not order:
         return rows
@@ -185,19 +187,24 @@ def sorted_results(results, order=None):
     return rows
 
 
-def query(start_date, end_date, breakdown=None, order=None, **constraints):
+def _get_report_results(start_date, end_date, breakdown=None, **constraints):
     report_results = query_stats(start_date, end_date, breakdown=breakdown, **constraints)
     report_results = _collect_results(report_results)
 
+    if breakdown and 'article' in breakdown:
+        report_results = _include_article_data(report_results)
+
+    return report_results
+
+
+def _get_conversion_results(start_date, end_date, breakdown=None, **constraints):
     conversion_results = query_goal(start_date, end_date, breakdown=breakdown, **constraints)
     conversion_results = _collect_results(conversion_results)
-    
-    # in memory join of the result sets
-    if breakdown:
-        # include related data
-        if 'article' in breakdown:
-            report_results = _include_article_data(report_results)
+    return conversion_results
 
+
+def _join_with_conversions(breakdown, report_results, conversion_results):
+    if breakdown:
         global RowKey
         RowKey = collections.namedtuple('RowKey', ' '.join(breakdown))
         results = {}
@@ -207,11 +214,9 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
         for row in conversion_results:
             key = _extract_key(row, breakdown)
             _extend_result(results[key], row)
-        
         for key, row in results.iteritems():
             _add_computed_metrics(row)
-
-        return sorted_results(results.values(), order)
+        return results.values()
     else:
         # no breakdown => the result is a single row aggregate
         result = report_results
@@ -219,6 +224,14 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
             _extend_result(result, row)
         _add_computed_metrics(result)
         return result
+
+
+def query(start_date, end_date, breakdown=None, order=None, **constraints):
+    report_results = _get_report_results(start_date, end_date, breakdown, **constraints)
+    conversion_results = _get_conversion_results(start_date, end_date, breakdown, **constraints)
+    results = _join_with_conversions(breakdown, report_results, conversion_results)
+    results = sorted_results(results, order)
+    return results
 
 
 def paginate(result, page, page_size):
