@@ -302,34 +302,70 @@ def get_yesterday_cost(ad_group):
     return result
 
 
-def _has_any_postclick_metrics(kwargs):
-    rs = models.ArticleStats.objects.filter(**kwargs).\
-         aggregate(has_postclick_metrics_max=Max('has_postclick_metrics'))
+def has_complete_postclick_metrics_accounts(start_date, end_date, accounts):
+    return _has_complete_postclick_metrics(
+        start_date,
+        end_date,
+        'ad_group__campaign__account',
+        accounts
+    )
 
-    return rs['has_postclick_metrics_max'] == 1
+
+def has_complete_postclick_metrics_campaigns(start_date, end_date, campaigns):
+    return _has_complete_postclick_metrics(
+        start_date,
+        end_date,
+        'ad_group__campaign',
+        campaigns
+    )
 
 
-def has_complete_postclick_metrics(start_date, end_date, **kwargs):
-    kwargs = _preprocess_constraints(kwargs)
+def has_complete_postclick_metrics_ad_groups(start_date, end_date, ad_groups):
+    return _has_complete_postclick_metrics(
+        start_date,
+        end_date,
+        'ad_group',
+        ad_groups
+    )
 
-    if not _has_any_postclick_metrics(kwargs):
+
+def _get_ids_with_postclick_data(key, objects):
+    """
+    Filters the objects that are passed in and returns ids
+    of only those that have any postclick metric data in ArticleStats.
+    """
+    kwargs = {}
+    kwargs[key + '__in'] = objects
+
+    queryset = models.ArticleStats.objects.filter(**kwargs).values(key).annotate(
+        has_any_postclick_metrics=Max('has_postclick_metrics')
+    ).filter(has_any_postclick_metrics=1)
+
+    return [item[key] for item in queryset]
+
+
+def _has_complete_postclick_metrics(start_date, end_date, key, objects):
+    """
+    Returns True if passed-in objects have complete postclick data for the
+    specfied date range. All objects that don't have this data at all are ignored.
+    """
+    ids = _get_ids_with_postclick_data(key, objects)
+
+    if len(ids) == 0:
         return True
 
-    rs = models.ArticleStats.objects.filter(
+    kwargs = {}
+    kwargs[key + '__in'] = ids
+
+    aggr = models.ArticleStats.objects.filter(
         datetime__gte=start_date,
         datetime__lte=end_date,
         **kwargs
-    ).values('datetime').annotate(
-        has_postclick_metrics_max=Max('has_postclick_metrics')
-    )
+    ).values('datetime', 'ad_group').\
+        annotate(has_any_postclick_metrics=Max('has_postclick_metrics')).\
+        aggregate(has_all_postclick_metrics=Min('has_any_postclick_metrics'))
 
-    is_complete = reduce(
-        operator.iand,
-        (r['has_postclick_metrics_max'] == 1 for r in rs),
-        True
-    )
-
-    return is_complete
+    return aggr['has_all_postclick_metrics'] == 1
 
 
 def _reset_existing_traffic_stats(ad_group, source, date):

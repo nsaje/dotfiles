@@ -78,6 +78,16 @@
   model: reports.articlestats
   pk: 3
  
+- fields:
+    datetime: '2014-06-07T00:00:00'
+    ad_group: 1
+    article: 1
+    source: 1
+    has_postclick_metrics: 0
+    created_dt: '2014-06-04T09:58:21'
+  model: reports.articlestats
+  pk: 11
+ 
 # ... for Test Article 2
 - fields:
     datetime: '2014-06-04T00:00:00'
@@ -121,6 +131,16 @@
     created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 6
+ 
+- fields:
+    datetime: '2014-06-07T00:00:00'
+    ad_group: 1
+    article: 2
+    source: 1
+    has_postclick_metrics: 0
+    created_dt: '2014-06-04T09:58:21'
+  model: reports.articlestats
+  pk: 12
 
 # ... for Test Article 3
 - fields:
@@ -166,6 +186,20 @@
   model: reports.articlestats
   pk: 9
 
+- fields:
+    datetime: '2014-06-07T00:00:00'
+    ad_group: 2
+    article: 3
+    source: 2
+    visits: 201
+    new_visits: 191
+    bounced_visits: 161
+    pageviews: 401
+    duration: 2001
+    has_postclick_metrics: 1
+    created_dt: '2014-06-04T09:58:21'
+  model: reports.articlestats
+  pk: 10
 # ... for Test Article 4
 # - fields:
 #     datetime: '2014-06-04T00:00:00'
