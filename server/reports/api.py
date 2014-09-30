@@ -361,9 +361,11 @@ def _has_complete_postclick_metrics(start_date, end_date, key, objects):
         datetime__gte=start_date,
         datetime__lte=end_date,
         **kwargs
-    ).aggregate(Min('has_postclick_metrics'))
+    ).values('datetime', 'ad_group').\
+        annotate(has_any_postclick_metrics=Max('has_postclick_metrics')).\
+        aggregate(has_all_postclick_metrics=Min('has_any_postclick_metrics'))
 
-    return aggr['has_postclick_metrics__min'] == 1
+    return aggr['has_all_postclick_metrics'] == 1
 
 
 def _reset_existing_traffic_stats(ad_group, source, date):
