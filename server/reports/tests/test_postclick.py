@@ -47,6 +47,16 @@ class PostclickTestCase(test.TestCase):
                 'percent_new_users': 94.2938659058489,
                 'pv_per_visit': 1.7132667617689,
                 'visits': 701
+            },
+            {
+                'avg_tos': 9.95522388059701,
+                'pageviews': 401,
+                'new_visits': 191,
+                'visits': 201,
+                'bounce_rate': 80.0995024875622,
+                'date': datetime.date(2014, 6, 7),
+                'percent_new_users': 95.0248756218905,
+                'pv_per_visit': 1.99502487562189
             }
         ]
 
@@ -56,13 +66,13 @@ class PostclickTestCase(test.TestCase):
         result = api.query(self.start_date, self.end_date)
 
         expected = {
-            'avg_tos': 7.2080405932865,
-            'bounce_rate': 77.2443403590945,
-            'new_visits': 2142,
-            'pageviews': 4523,
-            'percent_new_users': 83.6065573770492,
-            'pv_per_visit': 1.76541764246682,
-            'visits': 2562
+            'avg_tos': 7.40788997466522,
+            'pageviews': 4924,
+            'new_visits': 2333,
+            'visits': 2763,
+            'bounce_rate': 77.452044878755,
+            'percent_new_users': 84.4372059355773,
+            'pv_per_visit': 1.78212088309808
         }
 
         self.assertTrue(dicts_match_for_keys(result, expected, expected.keys()))
@@ -85,6 +95,10 @@ class PostclickTestCase(test.TestCase):
 
         is_complete = api.has_complete_postclick_metrics_campaigns(datetime.date(2014, 6, 6), datetime.date(2014, 6, 6), [1])
         self.assertTrue(is_complete)
+
+        # case where one ad group has postclick data and the other does not
+        is_complete = api.has_complete_postclick_metrics_campaigns(datetime.date(2014, 6, 7), datetime.date(2014, 6, 7), [1])
+        self.assertFalse(is_complete)
 
         is_complete = api.has_complete_postclick_metrics_accounts(self.start_date, self.end_date, [1])
         self.assertFalse(is_complete)
