@@ -1,6 +1,6 @@
-import datetime
 import logging
-import mimetypes
+import os.path
+import hashlib
 
 from parse import LandingPageUrl
 from models import RawPostclickStats, RawGoalConversionStats
@@ -12,7 +12,7 @@ import utils.s3helpers
 
 logger = logging.getLogger(__name__)
 
-S3_REPORT_KEY_FORMAT = 'conversionreports/{sender}/{date}/{ts}{ext}'
+S3_REPORT_KEY_FORMAT = 'conversionreports/{date}/{filename}'
 
 
 class ReportEmail(object):
@@ -24,27 +24,6 @@ class ReportEmail(object):
         self.text = text
         self.date = date
         self.report = report
-
-    def is_ad_group_consistent(self):
-        ad_group_set = set()
-        try:
-            for entry in self.report.get_entries():
-                url = LandingPageUrl(entry['Landing Page'])
-                ad_group_set.add(url.ad_group_id)
-            return len(ad_group_set) == 1
-        except:
-            return False
-
-    def is_media_source_specified(self):
-        # check if the media source parameter is defined for each landing page url
-        try:
-            for entry in self.report.get_entries():
-                url = LandingPageUrl(entry['Landing Page'])
-                if url.source_param is None:
-                    return False
-        except:
-            return False
-        return True
 
     def _get_goal_name(self, goal_field):
         ix_goal = goal_field.index('(Goal')
@@ -133,7 +112,7 @@ landing_page_url=%s',
                 continue
 
             key = (self.report.get_date(), article.id, url.ad_group_id, source.id)
-            
+
             data = stats.get(key, self.get_initial_data(goal_fields))
 
             self.add_parsed_metrics(data, entry, goal_fields)
@@ -167,7 +146,8 @@ bounced_visits=%s, pageviews=%s, duration=%s',
 
         if data:
             dt, _, ad_group_id, _ = data.keys()[0]
-            
+            assert(ad_group_id is not None)
+
             for stats in reports.models.ArticleStats.objects.filter(datetime=dt, ad_group=ad_group_id):
                 stats.reset_postclick_metrics()
 
@@ -203,7 +183,7 @@ bounced_visits=%s, pageviews=%s, duration=%s',
 
             if len(statvals['goals']) > 0:
                 article_stats.has_conversion_metrics = 1
-            
+
             for goal_name, goal_stats in statvals['goals'].iteritems():
                 try:
                     gcstats = reports.models.GoalConversionStats.objects.get(
@@ -235,6 +215,10 @@ bounced_visits=%s, pageviews=%s, duration=%s',
 
         ad_group_id = LandingPageUrl(entries[0]['Landing Page']).ad_group_id
 
+        if ad_group_id is None:
+            logger.error('Cannot handle url with no ad_group_id specified %s', entries[0]['Landing Page'])
+            return
+
         RawPostclickStats.objects.filter(datetime=dt, ad_group_id=ad_group_id).delete()
         RawGoalConversionStats.objects.filter(datetime=dt, ad_group_id=ad_group_id).delete()
 
@@ -242,8 +226,13 @@ bounced_visits=%s, pageviews=%s, duration=%s',
             landing_page = LandingPageUrl(entry['Landing Page'])
 
             assert landing_page.ad_group_id == ad_group_id
+            assert ad_group_id is not None
+
+            if landing_page.source_param is None:
+                continue
 
             source = resolve_source(landing_page.source_param)
+            
             source_id = source.id if source is not None else None
 
             metrics_data = self.get_initial_data(goal_fields)
@@ -255,7 +244,7 @@ bounced_visits=%s, pageviews=%s, duration=%s',
                 url_clean=landing_page.clean_url,
                 ad_group_id=int(landing_page.ad_group_id),
                 source_id=source_id,
-                device_type=entry['Device Category'],
+                device_type=entry.get('Device Category'),
                 z1_adgid=str(landing_page.ad_group_id),
                 z1_msid=landing_page.source_param,
                 z1_did=landing_page.z1_did,
@@ -277,7 +266,7 @@ bounced_visits=%s, pageviews=%s, duration=%s',
                     goal_name=goal_name,
                     url_raw=landing_page.raw_url,
                     url_clean=landing_page.clean_url,
-                    device_type=entry['Device Category'],
+                    device_type=entry.get('Device Category'),
                     z1_adgid=str(landing_page.ad_group_id),
                     z1_msid=landing_page.source_param,
                     z1_did=landing_page.z1_did,
@@ -288,16 +277,16 @@ bounced_visits=%s, pageviews=%s, duration=%s',
                 )
                 raw_goal_stats.save()
 
-    def store_to_s3(self):
-        ext = mimetypes.guess_extension(self.report.get_content_type())
-        key = S3_REPORT_KEY_FORMAT.format(
-            sender=self.sender,
-            date=self.report.get_date(),
-            ts=datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S'),
-            ext=ext if ext else ''
-        )
 
-        try:
-            utils.s3helpers.S3Helper().put(key, self.report.raw)
-        except Exception:
-            logger.exception('Error while saving conversion report to s3')
+def store_to_s3(date, filename, content):
+    filename = filename.lower().replace(' ', '_')
+    basefnm, extension = os.path.splitext(filename)
+    digest = hashlib.md5(content).hexdigest() + str(len(content))
+    key = S3_REPORT_KEY_FORMAT.format(
+        date=date.strftime('%Y%m%d'),
+        filename=basefnm + '_' + digest + extension
+    )
+    try:
+        utils.s3helpers.S3Helper().put(key, content)
+    except Exception:
+        logger.exception('Error while saving conversion report to s3')

@@ -29,14 +29,14 @@ describe('All Accounts', function () {
 
             view.metric1Select.click();
             view.metric1SelectOptions.then(function (options) {
-                expect(options.length).toBe(3);
+                expect(options.length).toBe(10);
                 expect(options[0].getText()).toBe('Clicks');
                 options[0].click();
             });
 
             view.metric2Select.click();
             view.metric2SelectOptions.then(function (options) {
-                expect(options.length).toBe(4);
+                expect(options.length).toBe(11);
                 expect(options[3].getText()).toBe('Avg. CPC');
                 options[3].click();
             });

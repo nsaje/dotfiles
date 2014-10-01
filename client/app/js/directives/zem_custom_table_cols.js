@@ -1,13 +1,14 @@
 /*global $,oneApp*/
 "use strict";
 
-oneApp.directive('zemCustomTableCols', function(config) {
+oneApp.directive('zemCustomTableCols', ['config', function(config) {
     return {
         restrict: 'E',
         scope: {
-            columns: '='
+            columns: '=',
+            categories: '=',
         },
-        template: '<span class="dropdown custom-cols"><a href class="btn btn-default dropdown-toggle" title="Show/hide columns">...</a><ul class="dropdown-menu dropdown-menu-right"><li ng-repeat="col in columns" ng-if="!col.unselectable"><div class="checkbox"><label><input type="checkbox" ng-model="col.checked"><zem-internal-feature ng-if="col.internal"></zem-internal-feature>{{ col.name }}</label></div></li></ul></span>',
+        templateUrl: '/partials/zem_custom_table_cols.html',
         compile: function compile(tElement, tAttrs, transclude) {
             // Prevent closing of dropdown-menu when checkbox is clicked.
             $(tElement).on('click', function(e) {
@@ -18,6 +19,33 @@ oneApp.directive('zemCustomTableCols', function(config) {
               pre: function preLink(scope, iElement, iAttrs, controller) {return;},
               post: function postLink(scope, iElement, iAttrs, controller) {return;}
             };
-        }
+        },
+        controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
+            $scope.categoryColumns = [];
+            $scope.hasCategories = false;
+
+            $scope.$watch('categories', function (newValue, oldValue) {
+                if(newValue) {
+                    $scope.categoryColumns = [];
+                    $scope.hasCategories = false;
+
+                    for(var i = 0; i < $scope.categories.length; i++) {
+                        var cat = $scope.categories[i];
+
+                        var cols = $scope.columns.filter(function(col) {
+                            return cat.fields.indexOf(col.field) != -1;
+                        });
+
+                        if(cols.length > 0) {
+                            $scope.categoryColumns.push({
+                                'columns': cols, 
+                                'name': cat.name
+                            });
+                            $scope.hasCategories = true;
+                        }
+                    }
+                }
+            }, true);
+        }]
     };
-});
+}]);

@@ -4,16 +4,29 @@ import exc
 import re
 import csv
 import StringIO
-import urlparse
-import urllib
+import logging
 
 import reports.api
 
-class CsvReport(object):
+logger = logging.getLogger(__name__)
+
+
+class IReport(object):
+
+    def get_entries(self):
+        raise NotImplementedError
+
+    def get_fieldnames(self):
+        raise NotImplementedError
+
+    def get_date(self):
+        raise NotImplementedError
+
+
+class CsvReport(IReport):
 
     REQUIRED_FIELDS = [
         'Landing Page',
-        'Device Category',
         'Sessions',
         '% New Sessions',
         'New Users',
@@ -28,6 +41,7 @@ class CsvReport(object):
         self.date = None
         self.fieldnames = None
         self.entries = None
+        self.ad_group_set = None
 
         self._parse()
 
@@ -37,11 +51,54 @@ class CsvReport(object):
     def get_entries(self):
         return self.entries
 
+    def _get_entries_for_ad_group(self, ad_group_id):
+        result = []
+        for entry in self.get_entries():
+            landing_page_url = LandingPageUrl(entry['Landing Page'])
+            if landing_page_url.ad_group_id is not None and int(landing_page_url.ad_group_id) == ad_group_id:
+                result.append(entry)
+        return result
+
     def get_date(self):
         return self.date
 
     def get_content_type(self):
         return 'text/csv'
+
+    def _get_ad_group_set(self):
+        if self.ad_group_set is None:
+            self.ad_group_set = set()
+            for entry in self.get_entries():
+                landing_page_url = LandingPageUrl(entry['Landing Page'])
+                if landing_page_url.ad_group_id is not None:
+                    self.ad_group_set.add(int(landing_page_url.ad_group_id))
+        return self.ad_group_set
+
+    def is_media_source_specified(self):
+        for entry in self.get_entries():
+            landing_page_url = LandingPageUrl(entry['Landing Page'])
+            if landing_page_url.ad_group_id is None:
+                return False
+        return True
+
+    def is_ad_group_specified(self):
+        for entry in self.get_entries():
+            landing_page_url = LandingPageUrl(entry['Landing Page'])
+            if landing_page_url.source_param is None:
+                return False
+        return True
+
+    def split_by_ad_group(self):
+        ad_group_reports = []
+        for ad_group_id in self._get_ad_group_set():
+            ad_group_reports.append(AdGroupReport(
+                ad_group_id=ad_group_id,
+                date=self.get_date(),
+                fieldnames=self.get_fieldnames(),
+                entries=self._get_entries_for_ad_group(ad_group_id)
+            ))
+        return ad_group_reports
+
 
     def _parse_date(self):
         dateline = self.lines[3]
@@ -61,8 +118,6 @@ class CsvReport(object):
             raise exc.CsvParseException('Too few lines.')
         if not self.lines[0].startswith('# -----'):
             raise exc.CsvParseException('First line should start with "# -----"')
-        if not self.lines[1].startswith('# All Web Site Data'):
-            raise exc.CsvParseException('Second line should start with "# All Website Data"')
         if not self.lines[2].startswith('# Landing Pages'):
             raise exc.CsvParseException('Third line should start with "# Landing Pages"')
         if not self.lines[3].startswith('#'):
@@ -103,6 +158,27 @@ class CsvReport(object):
             raise exc.CsvParseException('Not all required fields are present')
 
 
+class AdGroupReport(IReport):
+
+    def __init__(self, ad_group_id, date, fieldnames, entries):
+        self._ad_group_id = ad_group_id
+        self._date = date
+        self._fieldnames = fieldnames
+        self._entries = entries
+
+    def get_ad_group_id(self):
+        return self._ad_group_id
+
+    def get_date(self):
+        return self._date
+
+    def get_fieldnames(self):
+        return self._fieldnames
+
+    def get_entries(self):
+        return self._entries
+
+
 class LandingPageUrl(object):
 
     def __init__(self, raw_url):
@@ -114,11 +190,11 @@ class LandingPageUrl(object):
         self.z1_did = None
         self.z1_kid = None
         self.z1_tid = None
-        
+
         self._parse()
 
-        if self.clean_url is None or self.ad_group_id is None or self.source_param is None:
-            raise exc.LandingPageUrlParseError('Failed to parse landing page url. _z1_adgid and _z1_msid should be specified')
+        if self.ad_group_id is None or self.source_param is None:
+            logger.error('Could not parse landing page url %s', raw_url)
 
     def _parse(self):
         self.clean_url, query_params = reports.api.clean_url(self.raw_url)
@@ -133,4 +209,3 @@ class LandingPageUrl(object):
             self.z1_kid = query_params['_z1_kid']
         if '_z1_tid' in query_params:
             self.z1_tid = query_params['_z1_tid']
-

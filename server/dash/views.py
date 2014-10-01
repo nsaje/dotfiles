@@ -294,7 +294,7 @@ def filter_by_permissions(result, user):
     '''
     TRAFFIC_FIELDS = [
         'clicks', 'impressions', 'cost', 'cpc', 'ctr', 'article', 'title',
-        'url', 'campaign', 'account', 'source', 'date',
+        'url', 'ad_group', 'campaign', 'account', 'source', 'date',
     ]
     POSTCLICK_FIELDS = [
         'visits', 'percent_new_users', 'pv_per_visit', 'avg_tos',
@@ -1138,8 +1138,8 @@ class SourcesTable(api_common.BaseApiView):
             last_sync = pytz.utc.localize(min(last_success_actions.values()))
 
         incomplete_postclick_metrics = \
-            not reports.api.has_complete_postclick_metrics(
-                start_date, end_date, **has_complete_postclick_metrics_kwargs
+            not reports.api.has_complete_postclick_metrics_ad_groups(
+                start_date, end_date, [ad_group]
             ) if request.user.has_perm('zemauth.postclick_metrics') else False
 
         return self.create_api_response({
@@ -1301,7 +1301,7 @@ class SourcesTable(api_common.BaseApiView):
             def _sort(item):
                 value = item.get(order)
                 if order == 'last_sync' and not value:
-                    value = datetime.datetime(datetime.MINYEAR, 1, 1)
+                    value = pytz.UTC.localize(datetime.datetime(datetime.MINYEAR, 1, 1))
 
                 return (item.get(order) is None or reverse, value)
 
@@ -1317,6 +1317,9 @@ class AccountsAccountsTable(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
             raise exc.MissingDataError()
 
+        start_date = get_stats_start_date(request.GET.get('start_date'))
+        end_date = get_stats_end_date(request.GET.get('end_date'))
+
         page = request.GET.get('page')
         size = request.GET.get('size')
         order = request.GET.get('order')
@@ -1328,8 +1331,8 @@ class AccountsAccountsTable(api_common.BaseApiView):
             page = int(page)
 
         accounts_data = filter_by_permissions(reports.api.query(
-            get_stats_start_date(request.GET.get('start_date')),
-            get_stats_end_date(request.GET.get('end_date')),
+            start_date,
+            end_date,
             ['account'],
             account=accounts
         ), request.user)
@@ -1340,8 +1343,8 @@ class AccountsAccountsTable(api_common.BaseApiView):
             order_by('ad_group', '-created_dt')
 
         totals_data = filter_by_permissions(reports.api.query(
-            get_stats_start_date(request.GET.get('start_date')),
-            get_stats_end_date(request.GET.get('end_date')),
+            start_date,
+            end_date,
             account=accounts
         ), request.user)
 
@@ -1369,9 +1372,14 @@ class AccountsAccountsTable(api_common.BaseApiView):
             order=order
         )
 
+        incomplete_postclick_metrics = \
+            not reports.api.has_complete_postclick_metrics_accounts(
+                start_date, end_date, accounts
+            ) if request.user.has_perm('zemauth.postclick_metrics') else False
+
         return self.create_api_response({
             'rows': rows,
-            'totals': self.get_totals(totals_data),
+            'totals': totals_data,
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(accounts=accounts),
@@ -1383,17 +1391,9 @@ class AccountsAccountsTable(api_common.BaseApiView):
                 'startIndex': start_index,
                 'endIndex': end_index,
                 'size': size
-            }
+            },
+            'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
-
-    def get_totals(self, totals_data):
-        return {
-            'cost': totals_data['cost'],
-            'cpc': totals_data['cpc'],
-            'clicks': totals_data['clicks'],
-            'impressions': totals_data['impressions'],
-            'ctr': totals_data['ctr']
-        }
 
     def get_rows(self, accounts, accounts_data, ad_groups_settings, last_actions, page, size, order=None):
         rows = []
@@ -1419,15 +1419,16 @@ class AccountsAccountsTable(api_common.BaseApiView):
             if last_sync:
                 last_sync = pytz.utc.localize(last_sync)
 
-            rows.append({
+            row = {
                 'id': str(aid),
                 'name': account.name,
                 'status': state,
-                'cost': account_data.get('cost', None),
-                'cpc': account_data.get('cpc', None),
-                'clicks': account_data.get('clicks', None),
                 'last_sync': last_sync
-            })
+            }
+
+            row.update(account_data)
+
+            rows.append(row)
 
         if order:
             reverse = False
@@ -1736,6 +1737,177 @@ class AdGroupSourcesExport(api_common.BaseApiView):
         return response
 
 
+class AllAccountsExport(api_common.BaseApiView):
+
+    def get(self, request):
+        accounts = models.Account.objects.get_for_user(request.user)
+
+        start_date = get_stats_start_date(request.GET.get('start_date'))
+        end_date = get_stats_end_date(request.GET.get('end_date'))
+
+        filename = 'all_accounts_report_{0}_{1}'.format(start_date, end_date)
+
+        results = reports.api.query(start_date, end_date, 
+            ['date', 'account'], ['date'], account=accounts)
+
+        self._add_account_data(results)
+
+        if request.GET.get('type') == 'excel':
+
+            detailed_results = reports.api.query(start_date, end_date,
+                ['date', 'account', 'campaign'], ['date'], account=accounts)
+
+            self._add_account_data(detailed_results)
+            self._add_campaign_data(detailed_results)
+
+            return self.create_excel_response(
+                results,
+                detailed_results,
+                filename
+            )
+        else:
+            return self.create_csv_response(results, filename)
+
+    def _add_account_data(self, results):
+        account_lookup = {}
+        for result in results:
+            if result['account'] not in account_lookup:
+                account = models.Account.objects.get(pk=result['account'])
+                account_lookup[result['account']] = account
+            result['account_name'] = account_lookup[result['account']].name
+
+    def _add_campaign_data(self, results):
+        campaign_data_lookup = {}
+        for result in results:
+            cid = result['campaign']
+            if cid not in campaign_data_lookup:
+                data = {}
+                campaign = models.Campaign.objects.get(pk=cid)
+                data['campaign_name'] = campaign.name
+                cs = models.CampaignSettings.objects.filter(campaign=cid).latest('created_dt')
+                data['account_manager'] = cs.account_manager.email if cs.account_manager is not None else 'N/A'
+                data['sales_representative'] = cs.sales_representative.email if cs.sales_representative is not None else 'N/A'
+                data['service_fee'] = cs.service_fee
+                data['iab_category'] = cs.iab_category
+                data['promotion_goal'] = constants.PromotionGoal.get_text(cs.promotion_goal)
+                campaign_data_lookup[cid] = data
+            result.update(campaign_data_lookup[cid])
+
+    def create_csv_response(self, data, filename):
+        response = self.create_file_response('text/csv; name="%s.csv"' % filename, '%s.csv' % filename)
+
+        fieldnames = OrderedDict([
+            ('date', 'Date'),
+            ('account_name', 'Account'),
+            ('cost', 'Cost'),
+            ('cpc', 'CPC'),
+            ('clicks', 'Clicks'),
+            ('impressions', 'Impressions'),
+            ('ctr', 'CTR')
+        ])
+
+        writer = unicodecsv.DictWriter(response, fieldnames, encoding='utf-8', dialect='excel')
+
+        # header
+        writer.writerow(fieldnames)
+
+        for item in data:
+            # Format
+            row = {}
+            for key in ['cost', 'cpc', 'ctr']:
+                val = item[key]
+                if not isinstance(val, float):
+                    val = 0
+                row[key] = '{:.2f}'.format(val)
+            for key in fieldnames:
+                row[key] = item[key]
+
+            writer.writerow(row)
+
+        return response
+
+    def create_excel_response(self, data, detailed_data, filename):
+        output = StringIO.StringIO()
+        workbook = Workbook(output, {'strings_to_urls': False})
+
+        format_date = workbook.add_format({'num_format': u'm/d/yy'})
+        format_percent = workbook.add_format({'num_format': u'0.00%'})
+        format_usd = workbook.add_format({'num_format': u'[$$-409]#,##0.00;-[$$-409]#,##0.00'})
+
+        columns_simple = [
+            {'name': 'Date', 'format': format_date},
+            {'name': 'Account'},
+            {'name': 'Cost', 'format': format_usd},
+            {'name': 'CPC', 'format': format_usd},
+            {'name': 'Clicks'},
+            {'name': 'Impressions', 'width': 15},
+            {'name': 'CTR', 'format': format_percent},
+        ]
+
+        create_excel_worksheet(
+            workbook,
+            'All Accounts Report',
+            columns_simple,
+            data=[[
+                item['date'],
+                item['account_name'],
+                item['cost'] or 0,
+                item['cpc'] or 0,
+                item['clicks'] or 0,
+                item['impressions'] or 0,
+                (item['ctr'] or 0) / 100
+            ] for item in data]
+        )
+
+        columns_detailed = [
+            {'name': 'Date', 'format': format_date},
+            {'name': 'Account'},
+            {'name': 'Campaign'},
+            {'name': 'Account Manager'},
+            {'name': 'Sales Representative'},
+            {'name': 'Service Fee', 'format': format_percent},
+            {'name': 'IAB Category'},
+            {'name': 'Promotion Goal'},
+            {'name': 'Cost', 'format': format_usd},
+            {'name': 'CPC', 'format': format_usd},
+            {'name': 'Clicks'},
+            {'name': 'Impressions', 'width': 15},
+            {'name': 'CTR', 'format': format_percent},
+        ]
+        
+        create_excel_worksheet(
+            workbook,
+            'Detailed Report',
+            columns_detailed,
+            data=[[
+                item['date'],
+                item['account_name'],
+                item['campaign_name'],
+                item['account_manager'],
+                item['sales_representative'],
+                item['service_fee'],
+                item['iab_category'],
+                item['promotion_goal'],
+                item['cost'] or 0,
+                item['cpc'] or 0,
+                item['clicks'] or 0,
+                item['impressions'] or 0,
+                (item['ctr'] or 0) / 100
+            ] for item in detailed_data]
+        )
+
+        workbook.close()
+        output.seek(0)
+
+        response = self.create_file_response(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            '%s.xlsx' % filename,
+            content=output.read()
+        )
+
+        return response
+
+
 class TriggerAccountSyncThread(threading.Thread):
     """ Used to trigger sync for all accounts asynchronously. """
     def __init__(self, accounts, *args, **kwargs):
@@ -1751,7 +1923,7 @@ class TriggerAccountSyncThread(threading.Thread):
 
 
 class TriggerCampaignSyncThread(threading.Thread):
-    """ Used to trigger sync for all campaign's ad groups asynchronously. """
+    """ Used to trigger sync for ad_group's ad groups asynchronously. """
     def __init__(self, campaigns, *args, **kwargs):
         self.campaigns = campaigns
         super(TriggerCampaignSyncThread, self).__init__(*args, **kwargs)
@@ -1762,6 +1934,19 @@ class TriggerCampaignSyncThread(threading.Thread):
                 actionlog.sync.CampaignSync(campaign).trigger_all()
         except Exception:
             logger.exception('Exception in TriggerCampaignSyncThread')
+
+
+class TriggerAdGroupSyncThread(threading.Thread):
+    """ Used to trigger sync for all campaign's ad groups asynchronously. """
+    def __init__(self, ad_group, *args, **kwargs):
+        self.ad_group = ad_group
+        super(TriggerAdGroupSyncThread, self).__init__(*args, **kwargs)
+
+    def run(self):
+        try:
+            actionlog.sync.AdGroupSync(self.ad_group).trigger_all()
+        except Exception:
+            logger.exception('Exception in TriggerAdGroupSyncThread')
 
 
 class AccountSync(api_common.BaseApiView):
@@ -1835,7 +2020,8 @@ class AdGroupSync(api_common.BaseApiView):
         ad_group = get_ad_group(request.user, ad_group_id)
 
         if not actionlog.api.is_sync_in_progress(ad_groups=[ad_group]):
-            actionlog.sync.AdGroupSync(ad_group).trigger_all()
+            # trigger ad group sync asynchronously and immediately return
+            TriggerAdGroupSyncThread(ad_group).start()
 
         return self.create_api_response({})
 
@@ -1883,6 +2069,11 @@ class AdGroupAdsTable(api_common.BaseApiView):
         if last_sync:
             last_sync = pytz.utc.localize(last_sync)
 
+        incomplete_postclick_metrics = \
+            not reports.api.has_complete_postclick_metrics_ad_groups(
+                start_date, end_date, [ad_group]
+            ) if request.user.has_perm('zemauth.postclick_metrics') else False
+
         return self.create_api_response({
             'rows': rows,
             'totals': totals_data,
@@ -1897,7 +2088,8 @@ class AdGroupAdsTable(api_common.BaseApiView):
                 'startIndex': start_index,
                 'endIndex': end_index,
                 'size': size
-            }
+            },
+            'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
 
 
@@ -1910,13 +2102,13 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         end_date = get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-cost'
 
-        stats = reports.api.query(
+        stats = filter_by_permissions(reports.api.query(
             start_date=start_date,
             end_date=end_date,
             breakdown=['ad_group'],
             order=[order],
             campaign=campaign
-        )
+        ), request.user)
 
         ad_groups = campaign.adgroup_set.all()
         ad_groups_settings = models.AdGroupSettings.objects.\
@@ -1924,7 +2116,10 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             filter(ad_group__campaign=campaign).\
             order_by('ad_group', '-created_dt')
 
-        totals_stats = reports.api.query(start_date, end_date, campaign=campaign.pk)
+        totals_stats = filter_by_permissions(
+            reports.api.query(start_date, end_date, campaign=campaign.pk),
+            request.user
+        )
 
         last_success_actions = {}
         for ad_group in ad_groups:
@@ -1941,6 +2136,11 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         if last_sync:
             last_sync = pytz.utc.localize(last_sync)
 
+        incomplete_postclick_metrics = \
+            not reports.api.has_complete_postclick_metrics_campaigns(
+                start_date, end_date, [campaign]
+            ) if request.user.has_perm('zemauth.postclick_metrics') else False
+
         return self.create_api_response({
             'rows': self.get_rows(
                 ad_groups, ad_groups_settings, stats, last_success_actions, order),
@@ -1950,6 +2150,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(
                 campaigns=[campaign]),
             'order': order,
+            'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
 
     def get_rows(self, ad_groups, ad_groups_settings, stats, last_actions, order):
@@ -1990,7 +2191,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             def _sort(item):
                 value = item.get(order)
                 if order == 'last_sync' and not value:
-                    value = datetime.datetime(datetime.MINYEAR, 1, 1)
+                    value = pytz.UTC.localize(datetime.datetime(datetime.MINYEAR, 1, 1))
 
                 return (item.get(order) is None or reverse, value)
 
@@ -2011,16 +2212,18 @@ class AccountCampaignsTable(api_common.BaseApiView):
         end_date = get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-clicks'
 
-        campaign_ids = [x.pk for x in campaigns]
-        stats = reports.api.query(
+        stats = filter_by_permissions(reports.api.query(
             start_date=start_date,
             end_date=end_date,
             breakdown=['campaign'],
             order=[order],
-            campaign=campaign_ids
-        )
+            campaign=campaigns
+        ), request.user)
 
-        totals_stats = reports.api.query(start_date, end_date, campaign=campaign_ids)
+        totals_stats = filter_by_permissions(
+            reports.api.query(start_date, end_date, campaign=campaigns),
+            request.user
+        )
 
         ad_groups_settings = models.AdGroupSettings.objects.\
             distinct('ad_group').\
@@ -2042,6 +2245,11 @@ class AccountCampaignsTable(api_common.BaseApiView):
         if last_sync:
             last_sync = pytz.utc.localize(last_sync)
 
+        incomplete_postclick_metrics = \
+            not reports.api.has_complete_postclick_metrics_campaigns(
+                start_date, end_date, campaigns
+            ) if request.user.has_perm('zemauth.postclick_metrics') else False
+
         return self.create_api_response({
             'rows': self.get_rows(
                 campaigns,
@@ -2056,6 +2264,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(
                 campaigns=campaigns),
             'order': order,
+            'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
 
     def get_rows(self, campaigns, ad_groups_settings, stats, last_actions, order):
@@ -2099,7 +2308,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
             def _sort(item):
                 value = item.get(order)
                 if order == 'last_sync' and not value:
-                    value = datetime.datetime(datetime.MINYEAR, 1, 1)
+                    value = pytz.UTC.localize(datetime.datetime(datetime.MINYEAR, 1, 1))
 
                 return (item.get(order) is None or reverse, value)
 

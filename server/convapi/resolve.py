@@ -4,6 +4,8 @@ import reports.api
 
 
 def resolve_source(source_param):
+    if source_param is None:
+        return None
     source_param_lc = source_param.lower()
     for source in dash.models.Source.objects.all():
         if source_param_lc.startswith(source.name.lower()):
@@ -14,6 +16,8 @@ def resolve_source(source_param):
 
 
 def resolve_article(clean_url, ad_group, date, source):
+    if ad_group is None or source is None:
+        return None
 
     candidates = list(dash.models.Article.objects.filter(
         ad_group=ad_group,
@@ -22,7 +26,13 @@ def resolve_article(clean_url, ad_group, date, source):
     candidates = filter(lambda a: _urls_match(a.url, clean_url), candidates)
 
     if len(candidates) == 0:
-        return None
+        # there are no articles matching this url
+        # we just resolve it any one article from this ad_group
+        all_articles = list(dash.models.Article.objects.filter(ad_group=ad_group))
+        if not all_articles:
+            return None
+        else:
+            return all_articles[0]
 
     if len(candidates) == 1:
         return candidates[0]
@@ -34,7 +44,7 @@ def resolve_article(clean_url, ad_group, date, source):
     clicks_article = []
     for article in candidates:
         stats = reports.api.query_stats(
-            start_date=date, 
+            start_date=date,
             end_date=date,
             breakdown=None,
             ad_group=ad_group,
@@ -51,4 +61,4 @@ def _urls_match(article_url, landing_page_url):
     landing_page_url = landing_page_url.decode('ascii', 'ignore')
     article_url = article_url.replace('//', '/')
     landing_page_url = landing_page_url.replace('//', '/')
-    return article_url.endswith(landing_page_url)
+    return article_url.lower().endswith(landing_page_url.lower())

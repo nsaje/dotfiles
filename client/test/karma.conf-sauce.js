@@ -73,6 +73,8 @@ module.exports = function(config) {
             'app/lib/components/angular/angular.js',
             'app/lib/components/moment/min/moment.min.js',
             'app/lib/ng-bs-daterangepicker/0.0.1/ng-bs-daterangepicker.js',
+            'app/lib/components/highcharts-release/highcharts.js',
+            'app/lib/components/select2/select2.js',
             'app/lib/angular-ui-router.js',
             'app/lib/components/angular-bootstrap/ui-bootstrap-tpls.min.js',
             'app/lib/components/angular-bootstrap-datetimepicker/src/js/datetimepicker.js',
@@ -81,9 +83,11 @@ module.exports = function(config) {
             'app/lib/components/angular-sanitize/angular-sanitize.min.js',
             'app/lib/components/angular-local-storage/angular-local-storage.min.js',
             'app/lib/components/angular-mocks/angular-mocks.js',
-            'app/dist/js/zemanta-one.min.js',
+            'app/dist/js/zemanta-one.templates.js',
+            'app/js/**/*.js',
             'test/unit/**/*.js'
         ],
+
     
     
         // test results reporter to use

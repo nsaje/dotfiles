@@ -1,6 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'zemCustomTableColsService', 'zemChartService', 'localStorageService', function ($scope, $state, $location, $window, $timeout, api, zemCustomTableColsService, zemChartService, localStorageService) {
+oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', 'localStorageService', function ($scope, $state, $location, $window, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemChartService, localStorageService) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.isIncompletePostclickMetrics = false;
@@ -52,7 +52,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $scope.setAdGroupData('sourceIds', $scope.selectedSourceIds);
         $scope.setAdGroupData('sourceTotals', $scope.selectedTotals);
 
-        $scope.getDailyStats();
+        getDailyStats();
     };
 
     $scope.selectRows = function () {
@@ -60,6 +60,31 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             x.checked = $scope.selectedSourceIds.indexOf(x.id) > -1;
         });
     };
+
+    $scope.columnCategories = [
+        {
+            'name': 'Traffic Acquisition',
+            'fields': [
+               'bid_cpc', 'daily_budget', 'cost', 
+               'cpc', 'clicks', 'impressions', 'ctr', 
+               'yesterday_cost', 'supply_dash_url',
+            ]
+        },
+        {
+            'name': 'Audience Metrics',
+            'fields': [
+                'visits', 'pageviews', 'percent_new_users',
+                'bounce_rate', 'pv_per_visit', 'avg_tos', 
+                'click_discrepancy'
+            ]
+        },
+        {
+            'name': 'Data Sync',
+            'fields': ['last_sync']
+        }
+    ];
+
+    $scope.postclickCategoryIndex = 1;
 
     $scope.columns = [
         {
@@ -215,92 +240,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         }
 
         if ($scope.hasPermission('zemauth.postclick_metrics')) {
-            var isInternal = $scope.isPermissionInternal('zemauth.postclick_metrics');
-
-            $scope.columns.splice($scope.columns.length - 1, 0, {
-                name: 'Visits',
-                field: 'visits',
-                checked: true,
-                type: 'number',
-                internal: isInternal,
-                help: 'Total number of sessions within a date range. A session is the period of time in which a user is actively engaged with your site.',
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc'
-            });
-
-            $scope.columns.splice($scope.columns.length - 1, 0, {
-                name: 'Pageviews',
-                field: 'pageviews',
-                checked: true,
-                type: 'number',
-                internal: isInternal,
-                help: 'Total number of pageviews made during the selected date range. A pageview is a view of a single page. Repeated views are counted.',
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc'
-            });
-
-            $scope.columns.splice($scope.columns.length - 1, 0, {
-                name: '% New Users',
-                field: 'percent_new_users',
-                checked: false,
-                type: 'percent',
-                internal: isInternal,
-                help: 'An estimate of first time visits during the selected date range.',
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc'
-            });
-
-            $scope.columns.splice($scope.columns.length - 1, 0, {
-                name: 'Bounce Rate',
-                field: 'bounce_rate',
-                checked: false,
-                type: 'percent',
-                internal: isInternal,
-                help: 'Percantage of visits that resulted in only one page view.',
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc'
-            });
-
-            $scope.columns.splice($scope.columns.length - 1, 0, {
-                name: 'PV/Visit',
-                field: 'pv_per_visit',
-                checked: false,
-                type: 'number',
-                fractionSize: 2,
-                internal: isInternal,
-                help: 'Average number of pageviews per visit.',
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc'
-            });
-
-            $scope.columns.splice($scope.columns.length - 1, 0, {
-                name: 'Avg. ToS',
-                field: 'avg_tos',
-                checked: false,
-                type: 'seconds',
-                internal: isInternal,
-                help: 'Average time spent on site in seconds during the selected date range.',
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc'
-            });
-
-            $scope.columns.splice($scope.columns.length - 1, 0, {
-                name: 'Click Discrepancy',
-                field: 'click_discrepancy',
-                checked: false,
-                type: 'percent',
-                internal: isInternal,
-                help: 'Clicks detected only by media source as a percentage of total clicks.',
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc'
-            });
+            zemPostclickMetricsService.insertColumns($scope.columns, $scope.isPermissionInternal('zemauth.postclick_metrics'));
         }
 
         cols = zemCustomTableColsService.load('adGroupSourcesCols', $scope.columns);
@@ -323,7 +263,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
         $location.search('order', $scope.order);
         localStorageService.set('adGroupSources.order', $scope.order);
-        $scope.getTableData();
+        getTableData();
     };
     $scope.orderRows = function (col) {
         if ($scope.order.indexOf(col) === 1) {
@@ -336,7 +276,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
         $location.search('order', $scope.order);
         localStorageService.set('adGroupSources.order', $scope.order);
-        $scope.getTableData();
+        getTableData();
     };
 
 
@@ -370,6 +310,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                             initialOrder: 'desc'
                         }
                         $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
+                        $scope.columnCategories[$scope.postclickCategoryIndex].fields.push(col_descr.field);
                     } else if(field.indexOf(': Conversion Rate') != -1) {
                         var col_descr = {
                             'name': field.substr('goal__'.length),
@@ -383,13 +324,14 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                             initialOrder: 'desc'
                         }
                         $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
+                        $scope.columnCategories[$scope.postclickCategoryIndex].fields.push(col_descr.field);
                     }
                 }
             }
         }
     };
 
-    $scope.getTableData = function (showWaiting) {
+    var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
         api.adGroupSourcesTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
@@ -438,13 +380,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $scope.chartMetricOptions = options.adGroupChartMetrics;
 
         if ($scope.hasPermission('zemauth.postclick_metrics')) {
-            $scope.chartMetricOptions = $scope.chartMetricOptions.concat(options.adGroupChartPostClickMetrics.map(function (option) {
-                if ($scope.isPermissionInternal('zemauth.postclick_metrics')) {
-                    option.internal = true;
-                }
-
-                return option;
-            }));
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions($scope.chartMetricOptions, $scope.isPermissionInternal('zemauth.postclick_metrics'));
         }
 
         if (goals) {
@@ -469,7 +405,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         }
     };
 
-    $scope.getDailyStats = function () {
+    var getDailyStats = function () {
         api.dailyStats.list('ad_groups', $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics()).then(
             function (data) {
                 setChartOptions(data.goals);
@@ -529,9 +465,9 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         if (newValue !== oldValue) {
             $location.search('chart_metric1', $scope.chartMetric1);
 
+            localStorageService.set('adGroupSources.chartMetric1', $scope.chartMetric1);
             if (!hasMetricData($scope.chartMetric1)) {
-                localStorageService.set('adGroupSources.chartMetric1', $scope.chartMetric1);
-                $scope.getDailyStats();
+                getDailyStats();
             } else {
                 // create a copy to trigger watch
                 $scope.chartData = angular.copy($scope.chartData);
@@ -543,9 +479,9 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         if (newValue !== oldValue) {
             $location.search('chart_metric2', $scope.chartMetric2);
 
+            localStorageService.set('adGroupSources.chartMetric2', $scope.chartMetric2);
             if (!hasMetricData($scope.chartMetric2)) {
-                localStorageService.set('adGroupSources.chartMetric2', $scope.chartMetric2);
-                $scope.getDailyStats();
+                getDailyStats();
             } else {
                 // create a copy to trigger watch
                 $scope.chartData = angular.copy($scope.chartData);
@@ -561,8 +497,12 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
     // From parent scope (mainCtrl).
     $scope.$watch('dateRange', function (newValue, oldValue) {
-        $scope.getDailyStats();
-        $scope.getTableData();
+        if (newValue.startDate.isSame(oldValue.startDate) && newValue.endDate.isSame(oldValue.endDate)) {
+            return;
+        }
+
+        getDailyStats();
+        getTableData();
     });
 
     $scope.init = function() {
@@ -613,7 +553,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $scope.getAdGroupState();
         $scope.initColumns();
 
-        $scope.getSources();
+        getTableData();
+        getDailyStats();
+
+        getSources();
     };
 
     // export
@@ -622,7 +565,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $scope.exportType = '';
     };
 
-    $scope.getSources = function () {
+    var getSources = function () {
         if (!$scope.hasPermission('zemauth.ad_group_sources_add_source')) {
             return;
         }
@@ -646,7 +589,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
         api.adGroupSources.add($state.params.id, sourceIdToAdd).then(
             function (data) {
-                $scope.getSources();
+                getSources();
             },
             function (data) {
                 // error
@@ -667,8 +610,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                         if($scope.isSyncInProgress == false){
                             // we found out that the sync is no longer in progress
                             // time to reload the data
-                            $scope.getTableData();
-                            $scope.getDailyStats();
+                            getTableData();
+                            getDailyStats();
                         }
                     },
                     function(data) {

@@ -8,9 +8,6 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
     ];
 
     $scope.isAdGroupPaused = false;
-    $scope.account = null;
-    $scope.campaign = null;
-    $scope.adGroup = null;
 
     // this function is used by ad_grou_ conrollers to set $scope.$scope.isAdGroupPaused
     $scope.setAdGroupPaused = function(val) {
@@ -28,9 +25,9 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
             account.campaigns.forEach(function (campaign) {
                 campaign.adGroups.forEach(function (adGroup) {
                     if (adGroup.id.toString() === $state.params.id.toString()) {
-                        $scope.account  = account;
-                        $scope.campaign = campaign;
-                        $scope.adGroup = adGroup;
+                        $scope.setAccount(account);
+                        $scope.setCampaign(campaign);
+                        $scope.setAdGroup(adGroup);
                     }
                 });
             });

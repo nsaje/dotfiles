@@ -28,8 +28,8 @@ class GAReportsAggregationTest(TestCase):
     def test_report_aggregation(self):
         self.assertEqual(reports.models.ArticleStats.objects.filter(datetime=self.report_date).count(), 1)
 
-        self.assertTrue(self.remail.is_ad_group_consistent())
-        self.assertTrue(self.remail.is_media_source_specified())
+        self.assertTrue(self.csvreport.is_ad_group_specified())
+        self.assertTrue(self.csvreport.is_media_source_specified())
         self.assertEqual(self.remail.report.get_date(), self.report_date)
         self.assertEqual(len(self.remail.report.get_entries()), 7)
         self.assertEqual(self.remail.report.get_fieldnames(), [
