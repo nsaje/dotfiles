@@ -13,7 +13,7 @@ oneApp.controller('CampaignBudgetCtrl', ['$scope', '$state', 'api', function ($s
 
     $scope.getBudget = function() {
         $scope.requestInProgress = true;
-        console.log('getBudget()')
+        
         api.campaignBudget.get($state.params.id).then(
             function (data) {
                 $scope.total = data.total;
