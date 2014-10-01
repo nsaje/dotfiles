@@ -76,3 +76,55 @@ class GoalConversionStats(models.Model):
         self.conversions = 0
         self.conversions_value_cc = 0
         self.save()
+
+
+# The following models are preaggregated for better querying performance
+# Do not use these models directly in your code
+
+class AdGroupStats(models.Model):
+
+    datetime = models.DateTimeField()
+
+    ad_group = models.ForeignKey('dash.AdGroup', on_delete=models.PROTECT)
+    source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)
+
+    # traffic metrics
+    impressions = models.IntegerField(default=0, blank=False, null=False)
+    clicks = models.IntegerField(default=0, blank=False, null=False)
+    cost_cc = models.IntegerField(default=0, blank=False, null=False)
+    
+     # postclick metrics
+    visits = models.IntegerField(default=0, blank=False, null=False)
+    new_visits = models.IntegerField(default=0, blank=False, null=False)
+    bounced_visits = models.IntegerField(default=0, blank=False, null=False)
+    pageviews = models.IntegerField(default=0, blank=False, null=False)
+    duration = models.IntegerField(default=0, blank=False, null=False)
+
+    has_traffic_metrics = models.IntegerField(default=0, blank=False, null=False)
+    has_postclick_metrics = models.IntegerField(default=0, blank=False, null=False)
+    has_conversion_metrics = models.IntegerField(default=0, blank=False, null=False)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
+    class Meta:
+        unique_together = (
+            ('datetime', 'ad_group', 'source'),
+        )
+
+
+class AdGroupGoalConversionStats(models.Model):
+    datetime = models.DateTimeField()
+
+    ad_group = models.ForeignKey('dash.AdGroup', on_delete=models.PROTECT)
+    source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)
+
+    goal_name = models.CharField(max_length=127, blank=False, null=False)
+
+    # conversion metrics
+    conversions = models.IntegerField(default=0, blank=False, null=False)
+    conversions_value_cc = models.IntegerField(default=0, blank=False, null=False)
+
+    class Meta:
+        unique_together = (
+            ('datetime', 'ad_group', 'source', 'goal_name'),
+        )

@@ -90,11 +90,17 @@ def _include_article_data(rows):
     return rows
 
 
+def _get_initial_qs(breakdown):
+    if breakdown and 'article' in breakdown:
+        return models.ArticleStats.objects
+    else:
+        return models.AdGroupStats.objects
+
 def query_stats(start_date, end_date, breakdown=None, **constraints):
     breakdown = _preprocess_breakdown(breakdown)
     constraints = _preprocess_constraints(constraints)
 
-    result = models.ArticleStats.objects
+    result = _get_initial_qs(breakdown)
 
     result = result.filter(datetime__gte=start_date, datetime__lte=end_date)
     if constraints:
