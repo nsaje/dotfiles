@@ -1172,8 +1172,8 @@ class AdGroupSourcesTable(api_common.BaseApiView):
             last_sync = pytz.utc.localize(min(last_success_actions.values()))
 
         incomplete_postclick_metrics = \
-            not reports.api.has_complete_postclick_metrics(
-                start_date, end_date, ad_group=ad_group
+            not reports.api.has_complete_postclick_metrics_ad_groups(
+                start_date, end_date, [ad_group]
             ) if request.user.has_perm('zemauth.postclick_metrics') else False
 
         return self.create_api_response({
@@ -1372,8 +1372,8 @@ class AccountsAccountsTable(api_common.BaseApiView):
         )
 
         incomplete_postclick_metrics = \
-            not reports.api.has_complete_postclick_metrics(
-                start_date, end_date, account=accounts
+            not reports.api.has_complete_postclick_metrics_accounts(
+                start_date, end_date, accounts
             ) if request.user.has_perm('zemauth.postclick_metrics') else False
 
         return self.create_api_response({
@@ -2069,8 +2069,8 @@ class AdGroupAdsTable(api_common.BaseApiView):
             last_sync = pytz.utc.localize(last_sync)
 
         incomplete_postclick_metrics = \
-            not reports.api.has_complete_postclick_metrics(
-                start_date, end_date, ad_group=ad_group
+            not reports.api.has_complete_postclick_metrics_ad_groups(
+                start_date, end_date, [ad_group]
             ) if request.user.has_perm('zemauth.postclick_metrics') else False
 
         return self.create_api_response({
@@ -2136,8 +2136,8 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             last_sync = pytz.utc.localize(last_sync)
 
         incomplete_postclick_metrics = \
-            not reports.api.has_complete_postclick_metrics(
-                start_date, end_date, campaign=campaign
+            not reports.api.has_complete_postclick_metrics_campaigns(
+                start_date, end_date, [campaign]
             ) if request.user.has_perm('zemauth.postclick_metrics') else False
 
         return self.create_api_response({
@@ -2245,8 +2245,8 @@ class AccountCampaignsTable(api_common.BaseApiView):
             last_sync = pytz.utc.localize(last_sync)
 
         incomplete_postclick_metrics = \
-            not reports.api.has_complete_postclick_metrics(
-                start_date, end_date, campaign=campaigns
+            not reports.api.has_complete_postclick_metrics_campaigns(
+                start_date, end_date, campaigns
             ) if request.user.has_perm('zemauth.postclick_metrics') else False
 
         return self.create_api_response({

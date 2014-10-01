@@ -170,6 +170,8 @@ def _add_computed_metrics(result):
 
 
 def sorted_results(results, order=None):
+    if not isinstance(results, collections.Sequence):
+        return results
     rows = results[:]
     if not order:
         return rows
@@ -185,40 +187,51 @@ def sorted_results(results, order=None):
     return rows
 
 
-def query(start_date, end_date, breakdown=None, order=None, **constraints):
+def _get_report_results(start_date, end_date, breakdown=None, **constraints):
     report_results = query_stats(start_date, end_date, breakdown=breakdown, **constraints)
     report_results = _collect_results(report_results)
 
+    if breakdown and 'article' in breakdown:
+        report_results = _include_article_data(report_results)
+
+    return report_results
+
+
+def _get_conversion_results(start_date, end_date, breakdown=None, **constraints):
     conversion_results = query_goal(start_date, end_date, breakdown=breakdown, **constraints)
     conversion_results = _collect_results(conversion_results)
-    
-    # in memory join of the result sets
-    if breakdown:
-        # include related data
-        if 'article' in breakdown:
-            report_results = _include_article_data(report_results)
+    return conversion_results
 
-        global RowKey
-        RowKey = collections.namedtuple('RowKey', ' '.join(breakdown))
-        results = {}
-        for row in report_results:
-            key = _extract_key(row, breakdown)
-            results[key] = row
-        for row in conversion_results:
-            key = _extract_key(row, breakdown)
-            _extend_result(results[key], row)
-        
-        for key, row in results.iteritems():
-            _add_computed_metrics(row)
 
-        return sorted_results(results.values(), order)
-    else:
+def _join_with_conversions(breakdown, report_results, conversion_results):
+    if not breakdown:
         # no breakdown => the result is a single row aggregate
         result = report_results
         for row in conversion_results:
             _extend_result(result, row)
         _add_computed_metrics(result)
         return result
+
+    global RowKey
+    RowKey = collections.namedtuple('RowKey', ' '.join(breakdown))
+    results = {}
+    for row in report_results:
+        key = _extract_key(row, breakdown)
+        results[key] = row
+    for row in conversion_results:
+        key = _extract_key(row, breakdown)
+        _extend_result(results[key], row)
+    for key, row in results.iteritems():
+        _add_computed_metrics(row)
+    return results.values()
+
+
+def query(start_date, end_date, breakdown=None, order=None, **constraints):
+    report_results = _get_report_results(start_date, end_date, breakdown, **constraints)
+    conversion_results = _get_conversion_results(start_date, end_date, breakdown, **constraints)
+    results = _join_with_conversions(breakdown, report_results, conversion_results)
+    results = sorted_results(results, order)
+    return results
 
 
 def paginate(result, page, page_size):
@@ -302,34 +315,70 @@ def get_yesterday_cost(ad_group):
     return result
 
 
-def _has_any_postclick_metrics(kwargs):
-    rs = models.ArticleStats.objects.filter(**kwargs).\
-         aggregate(has_postclick_metrics_max=Max('has_postclick_metrics'))
+def has_complete_postclick_metrics_accounts(start_date, end_date, accounts):
+    return _has_complete_postclick_metrics(
+        start_date,
+        end_date,
+        'ad_group__campaign__account',
+        accounts
+    )
 
-    return rs['has_postclick_metrics_max'] == 1
+
+def has_complete_postclick_metrics_campaigns(start_date, end_date, campaigns):
+    return _has_complete_postclick_metrics(
+        start_date,
+        end_date,
+        'ad_group__campaign',
+        campaigns
+    )
 
 
-def has_complete_postclick_metrics(start_date, end_date, **kwargs):
-    kwargs = _preprocess_constraints(kwargs)
+def has_complete_postclick_metrics_ad_groups(start_date, end_date, ad_groups):
+    return _has_complete_postclick_metrics(
+        start_date,
+        end_date,
+        'ad_group',
+        ad_groups
+    )
 
-    if not _has_any_postclick_metrics(kwargs):
+
+def _get_ids_with_postclick_data(key, objects):
+    """
+    Filters the objects that are passed in and returns ids
+    of only those that have any postclick metric data in ArticleStats.
+    """
+    kwargs = {}
+    kwargs[key + '__in'] = objects
+
+    queryset = models.ArticleStats.objects.filter(**kwargs).values(key).annotate(
+        has_any_postclick_metrics=Max('has_postclick_metrics')
+    ).filter(has_any_postclick_metrics=1)
+
+    return [item[key] for item in queryset]
+
+
+def _has_complete_postclick_metrics(start_date, end_date, key, objects):
+    """
+    Returns True if passed-in objects have complete postclick data for the
+    specfied date range. All objects that don't have this data at all are ignored.
+    """
+    ids = _get_ids_with_postclick_data(key, objects)
+
+    if len(ids) == 0:
         return True
 
-    rs = models.ArticleStats.objects.filter(
+    kwargs = {}
+    kwargs[key + '__in'] = ids
+
+    aggr = models.ArticleStats.objects.filter(
         datetime__gte=start_date,
         datetime__lte=end_date,
         **kwargs
-    ).values('datetime').annotate(
-        has_postclick_metrics_max=Max('has_postclick_metrics')
-    )
+    ).values('datetime', 'ad_group').\
+        annotate(has_any_postclick_metrics=Max('has_postclick_metrics')).\
+        aggregate(has_all_postclick_metrics=Min('has_any_postclick_metrics'))
 
-    is_complete = reduce(
-        operator.iand,
-        (r['has_postclick_metrics_max'] == 1 for r in rs),
-        True
-    )
-
-    return is_complete
+    return aggr['has_all_postclick_metrics'] == 1
 
 
 def _reset_existing_traffic_stats(ad_group, source, date):
@@ -392,10 +441,10 @@ def _reconcile_article(raw_url, title, ad_group):
         raise exc.ArticleReconciliationException('Missing ad group.')
 
     if not title:
-        raise exc.ArticleReconciliationException('Missing article title.')
+        raise exc.ArticleReconciliationException('Missing article title. url={url}'.format(url=raw_url))
 
     if not raw_url:
-        raise exc.ArticleReconciliationException('Missing article url.')
+        raise exc.ArticleReconciliationException('Missing article url. title={title}'.format(title=title))
 
     url, _ = clean_url(raw_url)
 
