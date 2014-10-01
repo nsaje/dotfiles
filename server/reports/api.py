@@ -204,26 +204,26 @@ def _get_conversion_results(start_date, end_date, breakdown=None, **constraints)
 
 
 def _join_with_conversions(breakdown, report_results, conversion_results):
-    if breakdown:
-        global RowKey
-        RowKey = collections.namedtuple('RowKey', ' '.join(breakdown))
-        results = {}
-        for row in report_results:
-            key = _extract_key(row, breakdown)
-            results[key] = row
-        for row in conversion_results:
-            key = _extract_key(row, breakdown)
-            _extend_result(results[key], row)
-        for key, row in results.iteritems():
-            _add_computed_metrics(row)
-        return results.values()
-    else:
+    if not breakdown:
         # no breakdown => the result is a single row aggregate
         result = report_results
         for row in conversion_results:
             _extend_result(result, row)
         _add_computed_metrics(result)
         return result
+
+    global RowKey
+    RowKey = collections.namedtuple('RowKey', ' '.join(breakdown))
+    results = {}
+    for row in report_results:
+        key = _extract_key(row, breakdown)
+        results[key] = row
+    for row in conversion_results:
+        key = _extract_key(row, breakdown)
+        _extend_result(results[key], row)
+    for key, row in results.iteritems():
+        _add_computed_metrics(row)
+    return results.values()
 
 
 def query(start_date, end_date, breakdown=None, order=None, **constraints):
