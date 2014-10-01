@@ -354,7 +354,7 @@ def _get_ad_group_ids_with_postclick_data(key, objects):
         has_any_postclick_metrics=Max('has_postclick_metrics')
     ).filter(has_any_postclick_metrics=1)
 
-    return [item["ad_group"] for item in queryset]
+    return [item['ad_group'] for item in queryset]
 
 
 def _has_complete_postclick_metrics(start_date, end_date, key, objects):
