@@ -156,3 +156,9 @@ After you are done, you can run your tests using
 ```bash
 grunt e2e --sauce
 ```
+
+##### Google Analytics Postclick Data Import
+
+Clients send us daily reports by landing pages from their Google Analytics. We import the postclick and conversion metrics into ONE's reports. The general process is described in the sequence diagram below
+
+![Image](docs/ga_import_sequence.png)

@@ -1,0 +1,24 @@
+# this is the script which generates the sequence diagram on www.websequencediagrams.com
+# to update the sequence diagram, update this script and render the image again on the site
+
+title GA Report Aggregation Sequence
+
+Client->MailGun: Sends email with CSV report attached \n (gareports@mailapi.zemanta.com) 
+note left of MailGun: MailGun does 3 things: \n 1. Stores the email \n 2. forwards it to \npostclick-reports@zemanta.com\n 3. POST to ONE
+
+MailGun->+ONE(convapi): Http POST email and attachment
+
+ONE(convapi)->ONE(convapi): Check Request Signature
+
+ONE(convapi)->ONE(convapi): Store CSV to S3
+
+ONE(convapi)->ONE(convapi): Parse Report Attachment
+
+ONE(convapi)->ONE(convapi): Store raw data
+
+ONE(convapi)->+ONE(reports): Import data into Reports
+
+note left of ONE(reports): This step is explained\nseparately in more detail
+ONE(reports)-->-ONE(convapi):  
+
+ONE(convapi)-->-MailGun: Return codes:\n200 - Success\n500 - error, will be retried\n406 - error, no retry
