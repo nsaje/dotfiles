@@ -1,0 +1,32 @@
+<div class="page page-account-budget">
+
+    <form id="form-account-budget" class="form-horizontal">
+        <div class="form-group">
+            <label for="total-budget" class="col-xs-2 control-label">
+                Total budget
+            </label>
+            <div class="col-xs-2">
+                <p id="total-budget" class="control-label" ng-show="!requestInProgress">{{ (total | currency) }}</p>
+                <div class="loader" ng-show="requestInProgress"></div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="spend-budget" class="col-xs-2 control-label">
+                Spend
+            </label>
+            <div class="col-xs-2">
+                <p id="spend-budget" class="control-label" ng-show="!requestInProgress">{{ (spend | currency) }}</p>
+                <div class="loader" ng-show="requestInProgress"></div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="available-budget" class="col-xs-2 control-label">
+                Available budget
+            </label>
+            <div class="col-xs-2">
+                <p id="available-budget" class="control-label" ng-show="!requestInProgress">{{ (available | currency) }}</p>
+                <div class="loader" ng-show="requestInProgress"></div>
+            </div>
+        </div>
+    </form>
+</div>

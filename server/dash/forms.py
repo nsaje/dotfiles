@@ -197,3 +197,24 @@ class CampaignSettingsForm(forms.Form):
             raise forms.ValidationError(err_msg)
 
         return sales_representative
+
+
+class CampaignBudgetForm(forms.Form):
+    allocate = forms.DecimalField(decimal_places=4)
+    revoke = forms.DecimalField(decimal_places=4)
+    comment = forms.CharField(max_length=256, required=False)
+
+    def clean_allocate(self):
+        allocate_amount = self.cleaned_data.get('allocate')
+        err_msg = 'Please allocate at least $10'
+        if allocate_amount > 0 and allocate_amount < 10:
+            raise forms.ValidationError(err_msg)
+        return float(allocate_amount)
+
+    def clean_revoke(self):
+        revoke_amount = self.cleaned_data.get('revoke')
+        err_msg = 'Please revoke at least $10'
+        if revoke_amount > 0 and revoke_amount < 10:
+            raise forms.ValidationError(err_msg)
+        return float(revoke_amount)
+
