@@ -53,8 +53,8 @@ urlpatterns += patterns(
         login_required(dash.views.AdGroupSources.as_view()),
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/table/',
-        login_required(dash.views.AdGroupSourcesTable.as_view()),
+        r'^api/(?P<type_>(ad_groups|campaigns|accounts|all_accounts))/(?P<id_>\d+)/sources/table/',
+        login_required(dash.views.SourcesTable.as_view()),
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/',
