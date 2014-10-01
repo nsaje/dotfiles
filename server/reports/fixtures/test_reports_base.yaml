@@ -54,6 +54,15 @@
   model: dash.adgroup
   pk: 2
 
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 1
+    name: 'Test AdGroup 3'
+  model: dash.adgroup
+  pk: 3
+
 # Sources
 - fields:
     type: 'test'
