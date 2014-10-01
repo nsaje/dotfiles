@@ -342,7 +342,7 @@ def has_complete_postclick_metrics_ad_groups(start_date, end_date, ad_groups):
     )
 
 
-def _get_ids_with_postclick_data(key, objects):
+def _get_ad_group_ids_with_postclick_data(key, objects):
     """
     Filters the objects that are passed in and returns ids
     of only those that have any postclick metric data in ArticleStats.
@@ -350,11 +350,11 @@ def _get_ids_with_postclick_data(key, objects):
     kwargs = {}
     kwargs[key + '__in'] = objects
 
-    queryset = models.ArticleStats.objects.filter(**kwargs).values(key).annotate(
+    queryset = models.ArticleStats.objects.filter(**kwargs).values('ad_group').annotate(
         has_any_postclick_metrics=Max('has_postclick_metrics')
     ).filter(has_any_postclick_metrics=1)
 
-    return [item[key] for item in queryset]
+    return [item["ad_group"] for item in queryset]
 
 
 def _has_complete_postclick_metrics(start_date, end_date, key, objects):
@@ -362,18 +362,15 @@ def _has_complete_postclick_metrics(start_date, end_date, key, objects):
     Returns True if passed-in objects have complete postclick data for the
     specfied date range. All objects that don't have this data at all are ignored.
     """
-    ids = _get_ids_with_postclick_data(key, objects)
+    ids = _get_ad_group_ids_with_postclick_data(key, objects)
 
     if len(ids) == 0:
         return True
 
-    kwargs = {}
-    kwargs[key + '__in'] = ids
-
     aggr = models.ArticleStats.objects.filter(
         datetime__gte=start_date,
         datetime__lte=end_date,
-        **kwargs
+        ad_group__in=ids
     ).values('datetime', 'ad_group').\
         annotate(has_any_postclick_metrics=Max('has_postclick_metrics')).\
         aggregate(has_all_postclick_metrics=Min('has_any_postclick_metrics'))
