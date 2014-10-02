@@ -1153,7 +1153,7 @@ class CampaignSourcesTable(object):
         self.campaign = get_campaign(user, id_)
 
     def has_complete_postclick_metrics(self, start_date, end_date):
-        return reports.api.has_complete_postclick_metrics_accounts(
+        return reports.api.has_complete_postclick_metrics_campaigns(
             start_date, end_date, [self.campaign])
 
     def get_sources(self):
@@ -1203,7 +1203,7 @@ class AdGroupSourcesTable(object):
         self.ad_group = get_ad_group(user, id_)
 
     def has_complete_postclick_metrics(self, start_date, end_date):
-        return reports.api.has_complete_postclick_metrics_accounts(
+        return reports.api.has_complete_postclick_metrics_ad_groups(
             start_date, end_date, [self.ad_group])
 
     def get_sources(self):
