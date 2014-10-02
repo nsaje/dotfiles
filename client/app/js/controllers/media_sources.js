@@ -1,6 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$location', 'localStorageService', 'api', 'zemPostclickMetricsService', 'zemCustomTableColsService', function ($scope, $state, zemChartService, $location, localStorageService, api, zemPostclickMetricsService, zemCustomTableColsService) {
-    $scope.type = null;
+    $scope.localStoragePrefix = null;
     $scope.selectedTotals = true;
     $scope.selectedSourceIds = [];
     $scope.chartMetrics = [];
@@ -147,11 +147,11 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
             zemPostclickMetricsService.insertColumns($scope.columns, $scope.isPermissionInternal('zemauth.postclick_metrics'));
         }
 
-        cols = zemCustomTableColsService.load($scope.type + 'SourcesCols', $scope.columns);
+        cols = zemCustomTableColsService.load($scope.localStoragePrefix + 'SourcesCols', $scope.columns);
         $scope.selectedColumnsCount = cols.length;
 
         $scope.$watch('columns', function (newValue, oldValue) {
-            cols = zemCustomTableColsService.save($scope.type + 'SourcesCols', newValue);
+            cols = zemCustomTableColsService.save($scope.localStoragePrefix + 'SourcesCols', newValue);
             $scope.selectedColumnsCount = cols.length;
         }, true);
     };
@@ -161,7 +161,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
             $location.search('chart_metric1', $scope.chartMetric1);
 
             if (!hasMetricData($scope.chartMetric1)) {
-                localStorageService.set($scope.type + 'Sources.chartMetric1', $scope.chartMetric1);
+                localStorageService.set($scope.localStoragePrefix + 'Sources.chartMetric1', $scope.chartMetric1);
                 getDailyStats();
             } else {
                 // create a copy to trigger watch
@@ -175,7 +175,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
             $location.search('chart_metric2', $scope.chartMetric2);
 
             if (!hasMetricData($scope.chartMetric2)) {
-                localStorageService.set($scope.type + 'Sources.chartMetric2', $scope.chartMetric2);
+                localStorageService.set($scope.localStoragePrefix + 'Sources.chartMetric2', $scope.chartMetric2);
                 getDailyStats();
             } else {
                 // create a copy to trigger watch
@@ -193,19 +193,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
         });
 
         return hasData;
-    };
-
-    var setType = function () {
-        if ($state.includes('main.allAccounts')) {
-            $scope.type = 'all_accounts';
-            $scope.chartMetrics = options.allAccountsChartMetrics;
-        } else if ($state.includes('main.accounts')) {
-            $scope.type = 'accounts';
-            $scope.chartMetrics = options.accountChartMetrics;
-        } else if ($state.includes('main.campaigns')) {
-            $scope.type = 'campaigns';
-            $scope.chartMetrics = options.campaignChartMetrics;
-        }
     };
 
     var getDailyStatsMetrics = function () {
@@ -229,7 +216,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
     var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
-        api.sourcesTable.get($scope.type, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
+        api.sourcesTable.get($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
@@ -252,7 +239,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list($scope.type, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics(), true).then(
+        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics(), true).then(
             function (data) {
                 setChartOptions();
             
@@ -292,10 +279,19 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
     };
 
     var init = function () {
-        setType();
+        if ($scope.level === constants.level.ALL_ACCOUNTS) {
+            $scope.localStoragePrefix = 'allAccountSources.';
+            $scope.chartMetrics = options.allAccountsChartMetrics;
+        } else if ($scope.level === constants.level.ACCOUNTS) {
+            $scope.localStoragePrefix = 'accountSources.';
+            $scope.chartMetrics = options.accountChartMetrics;
+        } else if ($scope.level === constants.level.CAMPAIGNS) {
+            $scope.localStoragePrefix = 'campaignSources.';
+            $scope.chartMetrics = options.campaignChartMetrics;
+        }
 
-        var chartMetric1 = $location.search().chart_metric1 || localStorageService.get($scope.type + 'Sources.chartMetric1') || $scope.chartMetric1;
-        var chartMetric2 = $location.search().chart_metric2 || localStorageService.get($scope.type + 'Sources.chartMetric2') || $scope.chartMetric2;
+        var chartMetric1 = $location.search().chart_metric1 || localStorageService.get($scope.localStoragePrefix + 'Sources.chartMetric1') || $scope.chartMetric1;
+        var chartMetric2 = $location.search().chart_metric2 || localStorageService.get($scope.localStoragePrefix + 'Sources.chartMetric2') || $scope.chartMetric2;
         var chartHidden = $location.search().chart_hidden;
 
         var sourceIds = $location.search().source_ids;

@@ -413,9 +413,9 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             };
         }
 
-        this.list = function (modelName, id, startDate, endDate, selectedIds, totals, metrics, groupSources) {
+        this.list = function (level, id, startDate, endDate, selectedIds, totals, metrics, groupSources) {
             var deferred = $q.defer();
-            var url = '/api/' + modelName + (id ? ('/' + id) : '') + '/daily_stats/';
+            var url = '/api/' + level + (id ? ('/' + id) : '') + '/daily_stats/';
             var config = {
                 params: {}
             };

@@ -53,11 +53,11 @@ urlpatterns += patterns(
         login_required(dash.views.AdGroupSources.as_view()),
     ),
     url(
-        r'^api/(?P<type_>(all_accounts))/sources/table/',
+        r'^api/(?P<level>(all_accounts))/sources/table/',
         login_required(dash.views.SourcesTable.as_view()),
     ),
     url(
-        r'^api/(?P<type_>(ad_groups|campaigns|accounts))/(?P<id_>\d+)/sources/table/',
+        r'^api/(?P<level>(ad_groups|campaigns|accounts))/(?P<id_>\d+)/sources/table/',
         login_required(dash.views.SourcesTable.as_view()),
     ),
     url(

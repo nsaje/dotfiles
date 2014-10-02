@@ -1359,16 +1359,16 @@ class AdGroupSourcesTable(object):
 
 class SourcesTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'zemauth.sources_table_get')
-    def get(self, request, type_, id_=None):
+    def get(self, request, level, id_=None):
         user = request.user
 
-        if type_ == 'all_accounts':
+        if level == 'all_accounts':
             self.typeSourcesTable = AllAccountsSourcesTable(user, id_)
-        elif type_ == 'accounts':
+        elif level == 'accounts':
             self.typeSourcesTable = AccountSourcesTable(user, id_)
-        elif type_ == 'campaigns':
+        elif level == 'campaigns':
             self.typeSourcesTable = CampaignSourcesTable(user, id_)
-        elif type_ == 'ad_groups':
+        elif level == 'ad_groups':
             self.typeSourcesTable = AdGroupSourcesTable(user, id_)
 
         start_date = get_stats_start_date(request.GET.get('start_date'))
@@ -1405,7 +1405,7 @@ class SourcesTable(api_common.BaseApiView):
                 last_success_actions,
                 yesterday_cost,
                 order=request.GET.get('order', None),
-                include_supply_dash_url=type_ == 'ad_groups'
+                include_supply_dash_url=level == 'ad_groups'
             ),
             'totals': self.get_totals(
                 totals_data,

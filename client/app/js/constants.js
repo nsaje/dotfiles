@@ -66,6 +66,12 @@ var constants = {
         AD_GROUP: 'adGroup',
         CAMPAIGN: 'campaign',
         ACCOUNT: 'account'
+    },
+    level: {
+        AD_GROUPS: 'ad_groups',
+        CAMPAIGNS: 'campaigns',
+        ACCOUNTS: 'accounts',
+        ALL_ACCOUNTS: 'all_accounts'
     }
 };
 
