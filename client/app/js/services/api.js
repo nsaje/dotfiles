@@ -141,14 +141,16 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 params: {}
             };
 
-            config.params.order = order;
-
             if (startDate) {
                 config.params.start_date = startDate.format();
             }
 
             if (endDate) {
                 config.params.end_date = endDate.format();
+            }
+
+            if (order) {
+                config.params.order = order;
             }
 
             $http.get(url, config).

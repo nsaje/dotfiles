@@ -1359,31 +1359,31 @@ class AdGroupSourcesTable(object):
 
 class SourcesTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'zemauth.sources_table_get')
-    def get(self, request, level, id_=None):
+    def get(self, request, level_, id_=None):
         user = request.user
 
-        if level == 'all_accounts':
-            self.typeSourcesTable = AllAccountsSourcesTable(user, id_)
-        elif level == 'accounts':
-            self.typeSourcesTable = AccountSourcesTable(user, id_)
-        elif level == 'campaigns':
-            self.typeSourcesTable = CampaignSourcesTable(user, id_)
-        elif level == 'ad_groups':
-            self.typeSourcesTable = AdGroupSourcesTable(user, id_)
+        if level_ == 'all_accounts':
+            self.levelSourcesTable = AllAccountsSourcesTable(user, id_)
+        elif level_ == 'accounts':
+            self.levelSourcesTable = AccountSourcesTable(user, id_)
+        elif level_ == 'campaigns':
+            self.levelSourcesTable = CampaignSourcesTable(user, id_)
+        elif level_ == 'ad_groups':
+            self.levelSourcesTable = AdGroupSourcesTable(user, id_)
 
         start_date = get_stats_start_date(request.GET.get('start_date'))
         end_date = get_stats_end_date(request.GET.get('end_date'))
 
-        sources = self.typeSourcesTable.get_sources()
-        sources_settings = self.typeSourcesTable.get_sources_settings()
-        last_success_actions = self.typeSourcesTable.get_last_success_actions()
-        sources_data, totals_data = self.typeSourcesTable.get_stats(start_date, end_date)
-        is_sync_in_progress = self.typeSourcesTable.is_sync_in_progress()
+        sources = self.levelSourcesTable.get_sources()
+        sources_settings = self.levelSourcesTable.get_sources_settings()
+        last_success_actions = self.levelSourcesTable.get_last_success_actions()
+        sources_data, totals_data = self.levelSourcesTable.get_stats(start_date, end_date)
+        is_sync_in_progress = self.levelSourcesTable.is_sync_in_progress()
 
         yesterday_cost = {}
         yesterday_total_cost = None
         if user.has_perm('reports.yesterday_spend_view'):
-            yesterday_cost, yesterday_total_cost = self.typeSourcesTable.\
+            yesterday_cost, yesterday_total_cost = self.levelSourcesTable.\
                 get_yesterday_cost()
 
         last_sync = None
@@ -1393,7 +1393,7 @@ class SourcesTable(api_common.BaseApiView):
         incomplete_postclick_metrics = False
         if user.has_perm('zemauth.postclick_metrics'):
             incomplete_postclick_metrics = \
-                not self.typeSourcesTable.has_complete_postclick_metrics(
+                not self.levelSourcesTable.has_complete_postclick_metrics(
                     start_date, end_date)
 
         return self.create_api_response({
@@ -1405,7 +1405,7 @@ class SourcesTable(api_common.BaseApiView):
                 last_success_actions,
                 yesterday_cost,
                 order=request.GET.get('order', None),
-                include_supply_dash_url=level == 'ad_groups'
+                include_supply_dash_url=level_ == 'ad_groups'
             ),
             'totals': self.get_totals(
                 totals_data,
