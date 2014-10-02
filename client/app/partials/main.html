@@ -6,7 +6,7 @@
             <div id="nav-new" ng-if="hasPermission('zemauth.all_new_sidebar')">
                 <zem-nav-search zem-current-account="account" zem-all-accounts="accounts" zem-can-access-accounts="{{ canAccessAccounts() }}" zem-can-access-campaigns="{{ canAccessCampaigns() }}" zem-default-account-state="{{ getDefaultAccountState() }}" zem-default-campaign-state="{{ getDefaultCampaignState() }}" zem-default-ad-group-state="{{ getDefaultAdGroupState() }}"></zem-nav-search>
                 <div id="nav-menu">
-                    <div class="nav-group account-group" ng-if="$state.includes('main.allAccounts.accounts')" ng-repeat="account in accounts">
+                    <div class="nav-group account-group" ng-if="$state.includes('main.allAccounts.*')" ng-repeat="account in accounts">
                         <div class="nav-group campaign-group" ng-repeat="campaign in account.campaigns">
                             <span class="nav-name campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() })}" ng-if="!canAccessCampaigns()">{{ campaign.name }}</span>
                             <a class="nav-name campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() })}" ng-if="canAccessCampaigns()" ui-sref="{{ getDefaultCampaignState() }}({ id: campaign.id})">{{ campaign.name }}</a>
@@ -15,7 +15,7 @@
                             </div>
                         </div>
                     </div>
-                    <div ng-if="!$state.includes('main.allAccounts.accounts')">
+                    <div ng-if="!$state.includes('main.allAccounts.*')">
                         <div class="nav-group account-group">
                             <div class="nav-group campaign-group" ng-repeat="campaign in account.campaigns">
                                 <span class="nav-name campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() })}" ng-if="!canAccessCampaigns()">{{ campaign.name }}</span>
@@ -48,7 +48,7 @@
             </div>
         </div>
             <div class="content" ng-show="accounts">
-            <form class="form-horizontal pull-right" role="form" ng-hide="$state.includes('*.campaigns.agency') || $state.includes('*.adGroups.settings')">
+            <form class="form-horizontal pull-right" role="form" ng-hide="$state.includes('*.campaigns.agency') || $state.includes('*.adGroups.settings') || $state.includes('*.*.budget')">
                 <div class="input-group calendar">
                     <i class="input-group-addon"><img ng-src="{{ config.static_url }}/img/calendar.svg"></i>
                     <input type="daterange" class="form-control" ng-model="dateRange" max-date="{{ maxDateStr }}" format="{{ inputDateFormat }}" ranges="{{ dateRanges }}" opens="left">

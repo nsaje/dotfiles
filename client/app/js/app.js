@@ -69,6 +69,11 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/sources',
             templateUrl: '/partials/media_sources.html',
             controller: 'MediaSourcesCtrl'
+        })
+        .state('main.allAccounts.budget', {
+            url: '/budget',
+            templateUrl: '/partials/all_accounts_budget.html',
+            controller: 'AllAccountsBudgetCtrl'
         });
 
     $stateProvider
@@ -91,6 +96,11 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/agency',
             templateUrl: '/partials/account_agency.html',
             controller: 'AccountAgencyCtrl'
+        })
+        .state('main.accounts.budget', {
+            url: '/budget',
+            templateUrl: '/partials/account_budget.html',
+            controller: 'AccountBudgetCtrl'
         });
 
     $stateProvider
@@ -113,6 +123,11 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/agency',
             templateUrl: '/partials/campaign_agency.html',
             controller: 'CampaignAgencyCtrl'
+        })
+        .state('main.campaigns.budget', {
+            url: '/budget',
+            templateUrl: '/partials/campaign_budget.html',
+            controller: 'CampaignBudgetCtrl'
         });
 
 

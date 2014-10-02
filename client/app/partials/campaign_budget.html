@@ -1,0 +1,101 @@
+<div class="page page-campaign-budget">
+
+    <form id="form-campaign-budget" class="form-horizontal">
+        <div class="form-group">
+            <label for="total-budget" class="col-xs-2 control-label">
+                Total budget
+            </label>
+            <div class="col-xs-2">
+                <p id="total-budget" class="control-label">{{ (total | currency) }}</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="spend-budget" class="col-xs-2 control-label">
+                Spend
+            </label>
+            <div class="col-xs-2">
+                <p id="spend-budget" class="control-label">{{ (spend | currency) }}</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="available-budget" class="col-xs-2 control-label">
+                Available budget
+            </label>
+            <div class="col-xs-2">
+                <p id="available-budget" class="control-label">{{ (available | currency) }}</p>
+            </div>
+        </div>
+        <div class="form-group" ng-class="{'has-error': !!errors.allocate}">
+            <label for="allocate-budget" class="col-xs-2 control-label">
+                Allocate budget
+            </label>
+            <div class="col-xs-2">
+                <div class="input-group">
+                    <span class="input-group-addon">$</span>
+                    <input id="allocate-budget" type="text" class="form-control" ng-model="allocate" zem-currency-input>
+                </div>
+            </div>
+            <button type="button" class="btn btn-default col-xs-1" ng-click="saveBudget()">Allocate</button>
+            <label ng-repeat="error in errors.allocate" class="control-label error" for="allocate-budget">{{ error }}</label>
+        </div>
+        <div class="form-group" ng-class="{'has-error': !!errors.revoke}">
+            <label for="revoke-budget" class="col-xs-2 control-label">
+                Revoke budget
+            </label>
+            <div class="col-xs-2">
+                <div class="input-group">
+                    <span class="input-group-addon">$</span>
+                    <input id="revoke-budget" type="text" class="form-control" ng-model="revoke" zem-currency-input>
+                </div>
+            </div>
+            <button type="button" class="btn btn-default col-xs-1" ng-click="saveBudget()">Revoke</button>
+            <label ng-repeat="error in errors.revoke" class="control-label error" for="revoke-budget">{{ error }}</label>
+        </div>
+        <div class="form-group" ng-class="{'has-error': !!errors.comment}">
+            <div class="col-xs-4">
+                <textarea id="comment-budget" type="text" class="form-control" rows="4" ng-model="comment"></textarea>
+            </div>
+            <button type="button" class="btn btn-default col-xs-1" ng-click="saveBudget()">Add Note</button>
+            <label ng-repeat="error in errors.comment" class="control-label error" for="comment-budget">{{ error }}</label>
+        </div>
+    </form>
+
+    <div class="section table-campaign-budget">
+        <div class="title">History</div>
+        <div class="loader-container">
+            <div class="loader" ng-show="history.length && requestInProgress"></div>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>User</th>
+                        <th>Allocate</th>
+                        <th>Revoke</th>
+                        <th>Total</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-if="requestInProgress && !history.length">
+                        <td colspan="3" class="loader-row">
+                            <div class="loader"></div>
+                        </td>
+                    </tr>
+                    <tr ng-show="(!history || !history.length) && !requestInProgress">
+                        <td class="no-data" colspan="6">No data</td>
+                    </tr>
+
+                    <tr ng-repeat="item in history">
+                        <td>{{ (item.datetime | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
+                        <td>{{ item.user }}</td>
+                        <td>{{ item.allocate | currency }}</td>
+                        <td>{{ item.revoke | currency }}</td>
+                        <td>{{ item.total | currency }}</td>
+                        <td>{{ item.comment }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
