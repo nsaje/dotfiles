@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$location', 'localStorageService', 'api', function ($scope, $state, zemChartService, $location, localStorageService, api) {
+oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$location', 'localStorageService', 'api', 'zemPostclickMetricsService', 'zemCustomTableColsService', function ($scope, $state, zemChartService, $location, localStorageService, api, zemPostclickMetricsService, zemCustomTableColsService) {
     $scope.type = null;
     $scope.selectedTotals = true;
     $scope.selectedSourceIds = [];
@@ -10,6 +10,151 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
     $scope.isChartShown = zemChartService.load('zemChart');
     $scope.chartMetricOptions = [];
     $scope.chartBtnTitle = 'Hide chart';
+
+    $scope.order = '-cost';
+    $scope.isSyncRecent = true;
+    $scope.isSyncInProgress = false;
+    $scope.isIncompletePostclickMetrics = false;
+    $scope.sources = [];
+
+    $scope.columns = [
+        {
+            name: '',
+            field: 'checked',
+            type: 'checkbox',
+            checked: true,
+            totalRow: true,
+            unselectable: true,
+            order: false,
+            selectCallback: $scope.selectedSourcesChanged,
+            disabled: false
+        },
+        {
+            name: 'Media Source',
+            field: 'name',
+            unselectable: true,
+            checked: true,
+            type: 'text',
+            hasTotalsLabel: true,
+            totalRow: false,
+            help: 'A media source where your content is being promoted.',
+            order: true,
+            initialOrder: 'asc'
+        },
+        {
+            name: 'Status',
+            field: 'status_label',
+            unselectable: true,
+            checked: true,
+            type: 'text',
+            totalRow: false,
+            help: 'Status of a particular media source (enabled or paused).',
+            extraThCss: 'text-center',
+            extraTdCss: 'text-center',
+            order: true,
+            orderField: 'status',
+            initialOrder: 'asc'
+        },
+        {
+            name: 'Bid CPC',
+            field: 'bid_cpc',
+            checked: true,
+            type: 'currency',
+            fractionSize: 3,
+            help: 'Maximum bid price (in USD) per click.',
+            totalRow: false,
+            order: true,
+            initialOrder: 'desc'
+        },
+        {
+            name: 'Daily Budget',
+            field: 'daily_budget',
+            checked: true,
+            type: 'currency',
+            help: 'Maximum budget per day.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
+        },
+        {
+            name: 'Spend',
+            field: 'cost',
+            checked: true,
+            type: 'currency',
+            help: "Amount spent per media source.",
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
+        },
+        {
+            name: 'Avg. CPC',
+            field: 'cpc',
+            checked: true,
+            type: 'currency',
+            fractionSize: 3,
+            help: "The average CPC.",
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
+        },
+        {
+            name: 'Clicks',
+            field: 'clicks',
+            checked: true,
+            type: 'number',
+            help: 'The number of times a content ad has been clicked.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
+        },
+        {
+            name: 'Impressions',
+            field: 'impressions',
+            checked: true,
+            type: 'number',
+            help: 'The number of times a content ad has been displayed.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
+        },
+        {
+            name: 'CTR',
+            field: 'ctr',
+            checked: true,
+            type: 'percent',
+            defaultValue: '0.0%',
+            help: 'The number of clicks divided by the number of impressions.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
+        },
+        {
+            name: 'Last OK Sync',
+            field: 'last_sync',
+            checked: false,
+            type: 'datetime',
+            help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred.',
+            totalRow: false,
+            order: true,
+            initialOrder: 'desc'
+        }
+    ];
+
+    $scope.initColumns = function () {
+        var cols;
+
+        if ($scope.hasPermission('zemauth.postclick_metrics')) {
+            zemPostclickMetricsService.insertColumns($scope.columns, $scope.isPermissionInternal('zemauth.postclick_metrics'));
+        }
+
+        cols = zemCustomTableColsService.load($scope.type + 'SourcesCols', $scope.columns);
+        $scope.selectedColumnsCount = cols.length;
+
+        $scope.$watch('columns', function (newValue, oldValue) {
+            cols = zemCustomTableColsService.save($scope.type + 'SourcesCols', newValue);
+            $scope.selectedColumnsCount = cols.length;
+        }, true);
+    };
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
@@ -79,6 +224,31 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
         }
 
         return metrics;
+    };
+
+    var getTableData = function (showWaiting) {
+        $scope.loadRequestInProgress = true;
+
+        api.sourcesTable.get($scope.type, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
+            function (data) {
+                $scope.rows = data.rows;
+                $scope.totals = data.totals;
+                $scope.totals.checked = $scope.selectedTotals;
+                $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
+                $scope.isSyncRecent = data.is_sync_recent;
+                $scope.isSyncInProgress = data.is_sync_in_progress;
+
+                $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
+
+                /* $scope.selectRows(); */
+            },
+            function (data) {
+                // error
+                return;
+            }
+        ).finally(function () {
+            $scope.loadRequestInProgress = false;
+        });
     };
 
     var getDailyStats = function () {
@@ -155,7 +325,10 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
         $scope.selectedTotals = !$scope.selectedSourceIds.length || !!sourceTotals;
         $location.search('source_totals', sourceTotals);
 
+        $scope.initColumns();
+
         getDailyStats();
+        getTableData();
     };
 
     // From parent scope (mainCtrl).

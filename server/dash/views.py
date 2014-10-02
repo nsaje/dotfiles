@@ -1042,7 +1042,7 @@ class AdGroupSources(api_common.BaseApiView):
 class AllAccountsSourcesTable(object):
     def __init__(self, user, id_):
         self.user = user
-        self.accounts = models.Account.objects.get_for_user()
+        self.accounts = models.Account.objects.get_for_user(user)
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return reports.api.has_complete_postclick_metrics_accounts(
@@ -1065,13 +1065,13 @@ class AllAccountsSourcesTable(object):
             start_date,
             end_date,
             ['source'],
-            accounts=self.accounts
+            account=self.accounts
         ), self.user)
 
         totals_stats = filter_by_permissions(reports.api.query(
             start_date,
             end_date,
-            accounts=self.accounts
+            account=self.accounts
         ), self.user)
 
         return sources_stats, totals_stats
@@ -1092,6 +1092,9 @@ class AllAccountsSourcesTable(object):
                 recompute=False)
 
         return last_success_actions
+
+    def is_sync_in_progress(self):
+        return actionlog.api.is_sync_in_progress(accounts=self.accounts)
 
 
 class AccountSourcesTable(object):
@@ -1140,6 +1143,9 @@ class AccountSourcesTable(object):
 
         return last_success_actions
 
+    def is_sync_in_progress(self):
+        return actionlog.api.is_sync_in_progress(accounts=[self.account])
+
 
 class CampaignSourcesTable(object):
     def __init__(self, user, id_):
@@ -1186,6 +1192,9 @@ class CampaignSourcesTable(object):
         }
 
         return last_success_actions
+
+    def is_sync_in_progress(self):
+        return actionlog.api.is_sync_in_progress(campaigns=[self.campaign])
 
 
 class AdGroupSourcesTable(object):
@@ -1238,10 +1247,13 @@ class AdGroupSourcesTable(object):
 
         return last_success_actions
 
+    def is_sync_in_progress(self):
+        return actionlog.api.is_sync_in_progress(ad_groups=[self.ad_group])
+
 
 class SourcesTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'zemauth.sources_table_get')
-    def get(self, request, type_, id_):
+    def get(self, request, type_, id_=None):
         user = request.user
 
         if type_ == 'all_accounts':
@@ -1260,6 +1272,7 @@ class SourcesTable(api_common.BaseApiView):
         sources_settings = self.typeSourcesTable.get_sources_settings()
         last_success_actions = self.typeSourcesTable.get_last_success_actions()
         sources_data, totals_data = self.typeSourcesTable.get_stats(start_date, end_date)
+        is_sync_in_progress = self.typeSourcesTable.is_sync_in_progress()
 
         yesterday_cost = {}
         yesterday_total_cost = None
@@ -1295,8 +1308,7 @@ class SourcesTable(api_common.BaseApiView):
             ),
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
-            # TODO
-            'is_sync_in_progress': actionlog.api.is_sync_in_progress(),
+            'is_sync_in_progress': is_sync_in_progress,
             'incomplete_postclick_metrics': incomplete_postclick_metrics,
         })
 
@@ -1335,13 +1347,14 @@ class SourcesTable(api_common.BaseApiView):
             sid = source.pk
             settings = None
             for s in sources_settings:
-                if s.ad_group_source.pk == sid:
+                if s.ad_group_source.source_id == sid:
                     settings = s
                     break
 
             if not settings:
                 # TODO
                 logger.error('Missing ad group source settings for source %s', sid)
+                settings = models.AdGroupSourceSettings(state=None)
 
             # get source reports data
             source_data = {}
