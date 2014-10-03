@@ -1991,13 +1991,23 @@ class AllAccountsExport(api_common.BaseApiView):
                 data = {}
                 campaign = models.Campaign.objects.get(pk=cid)
                 data['campaign_name'] = campaign.name
-                cs = models.CampaignSettings.objects.filter(campaign=cid).latest('created_dt')
-                data['account_manager'] = cs.account_manager.email if cs.account_manager is not None else 'N/A'
-                data['sales_representative'] = cs.sales_representative.email if cs.sales_representative is not None else 'N/A'
-                data['service_fee'] = cs.service_fee
-                data['iab_category'] = cs.iab_category
-                data['promotion_goal'] = constants.PromotionGoal.get_text(cs.promotion_goal)
+
+                try:
+                    cs = models.CampaignSettings.objects.filter(campaign=cid).latest('created_dt')
+                    data['account_manager'] = cs.account_manager.email if cs.account_manager is not None else 'N/A'
+                    data['sales_representative'] = cs.sales_representative.email if cs.sales_representative is not None else 'N/A'
+                    data['service_fee'] = cs.service_fee
+                    data['iab_category'] = cs.iab_category
+                    data['promotion_goal'] = constants.PromotionGoal.get_text(cs.promotion_goal)
+                except models.CampaignSettings.DoesNotExist:
+                    data['account_manager'] = 'N/A'
+                    data['sales_representative'] = 'N/A'
+                    data['service_fee'] = 'N/A'
+                    data['iab_category'] = 'N/A'
+                    data['promotion_goal'] = 'N/A'
+
                 campaign_data_lookup[cid] = data
+
             result.update(campaign_data_lookup[cid])
 
     def create_csv_response(self, data, filename):
