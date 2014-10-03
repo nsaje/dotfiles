@@ -130,11 +130,13 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             return data;
         };
 
-        this.get = function (type, id, startDate, endDate, order) {
+        this.get = function (level, id, startDate, endDate, order) {
             var deferred = $q.defer();
-            var url = '/api/' + type + '/' + id + '/sources/table/';
-            if (type === 'all_accounts') {
-                url = '/api/' + type + '/sources/table/';
+            var url = null;
+            if (level === 'all_accounts') {
+                url = '/api/' + level + '/sources/table/';
+            } else {
+                url = '/api/' + level + '/' + id + '/sources/table/';
             }
 
             var config = {
