@@ -102,15 +102,24 @@ def cancel_expired_actionlogs():
         actionlog.save()
 
 
-def get_sources_waiting(ad_group):
+def get_ad_group_sources_waiting(**kwargs):
+    constraints = {}
+
+    if 'ad_group' in kwargs:
+        constraints['ad_group_source__ad_group'] = kwargs['ad_group']
+    if 'campaign' in kwargs:
+        constraints['ad_group_source__ad_group__campaign'] = kwargs['campaign']
+    if 'account' in kwargs:
+        constraints['ad_group_source__ad_group__campaign__account'] = kwargs['account']
+
     actions = models.ActionLog.objects.filter(
         action=constants.Action.CREATE_CAMPAIGN,
-        ad_group_source__ad_group_id=ad_group.id,
         state__in=[constants.ActionState.WAITING, constants.ActionState.FAILED],
-        action_type=constants.ActionType.AUTOMATIC
+        action_type=constants.ActionType.AUTOMATIC,
+        **constraints
     )
 
-    return [action.ad_group_source.source for action in actions]
+    return [action.ad_group_source for action in actions]
 
 
 def is_waiting_for_set_actions(ad_group):

@@ -23,6 +23,7 @@ from django.core import urlresolvers
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.db import transaction
+from django.db.models import Count
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 import pytz
@@ -1097,14 +1098,24 @@ class AdGroupSources(api_common.BaseApiView):
 
         ad_group = get_ad_group(request.user, ad_group_id)
 
-        sources = map(lambda s: s.source, models.DefaultSourceSettings.objects.exclude(credentials__isnull=True))
         ad_group_sources = ad_group.sources.all().order_by('name')
 
-        sources = [{'id': s.id, 'name': s.name} for s in sources if s not in ad_group_sources]
+        sources = []
+        for source_settings in models.DefaultSourceSettings.objects.exclude(credentials__isnull=True):
+            if source_settings.source in ad_group_sources:
+                continue
+
+            sources.append({
+                'id': source_settings.source.id,
+                'name': source_settings.source.name
+            })
+
+        sources_waiting = set([ad_group_source.source.name for ad_group_source
+                               in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)])
 
         return self.create_api_response({
             'sources': sources,
-            'sources_waiting': [source.name for source in actionlog.api.get_sources_waiting(ad_group)]
+            'sources_waiting': list(sources_waiting)
         })
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_put')
@@ -1150,21 +1161,28 @@ class AllAccountsSourcesTable(object):
     def __init__(self, user, id_):
         self.user = user
         self.accounts = models.Account.objects.get_for_user(user)
+        self.inactive_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(account=self.accounts)
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return reports.api.has_complete_postclick_metrics_accounts(
             start_date, end_date, self.accounts)
 
     def get_sources(self):
-        return models.Source.objects.filter(
-            adgroupsource__ad_group__campaign__account__in=self.accounts)
+        source_ids = models.AdGroupSource.objects.\
+            filter(ad_group__campaign__account__in=self.accounts).\
+            exclude(id__in=[s.id for s in self.inactive_ad_group_sources]).\
+            values('source_id').\
+            distinct()
+
+        source_ids = [s['source_id'] for s in source_ids]
+
+        return models.Source.objects.filter(id__in=source_ids)
 
     def get_sources_settings(self):
-        account_ids = [x.pk for x in self.accounts]
-
         return models.AdGroupSourceSettings.objects.\
             distinct('ad_group_source').\
-            filter(ad_group_source__ad_group__campaign__account__in=account_ids).\
+            filter(ad_group_source__ad_group__campaign__account=self.accounts).\
+            exclude(ad_group_source__in=self.inactive_ad_group_sources).\
             order_by('ad_group_source', '-created_dt')
 
     def get_stats(self, start_date, end_date):
@@ -1208,19 +1226,28 @@ class AccountSourcesTable(object):
     def __init__(self, user, id_):
         self.user = user
         self.account = get_account(user, id_)
+        self.inactive_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(account=self.account)
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return reports.api.has_complete_postclick_metrics_accounts(
             start_date, end_date, [self.account])
 
     def get_sources(self):
-        return models.Source.objects.\
-            filter(adgroupsource__ad_group__campaign__account=self.account)
+        source_ids = models.AdGroupSource.objects.\
+            filter(ad_group__campaign__account=self.account).\
+            exclude(id__in=[s.id for s in self.inactive_ad_group_sources]).\
+            values('source_id').\
+            distinct()
+
+        source_ids = [s['source_id'] for s in source_ids]
+
+        return models.Source.objects.filter(id__in=source_ids)
 
     def get_sources_settings(self):
         return models.AdGroupSourceSettings.objects.\
             distinct('ad_group_source').\
             filter(ad_group_source__ad_group__campaign__account=self.account).\
+            exclude(ad_group_source__in=self.inactive_ad_group_sources).\
             order_by('ad_group_source', '-created_dt')
 
     def get_stats(self, start_date, end_date):
@@ -1258,19 +1285,28 @@ class CampaignSourcesTable(object):
     def __init__(self, user, id_):
         self.user = user
         self.campaign = get_campaign(user, id_)
+        self.inactive_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(campaign=self.campaign)
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return reports.api.has_complete_postclick_metrics_campaigns(
             start_date, end_date, [self.campaign])
 
     def get_sources(self):
-        return models.Source.objects.\
-            filter(adgroupsource__ad_group__campaign=self.campaign)
+        source_ids = models.AdGroupSource.objects.\
+            filter(ad_group__campaign=self.campaign).\
+            exclude(id__in=[s.id for s in self.inactive_ad_group_sources]).\
+            values('source_id').\
+            distinct()
+
+        source_ids = [s['source_id'] for s in source_ids]
+
+        return models.Source.objects.filter(id__in=source_ids)
 
     def get_sources_settings(self):
         return models.AdGroupSourceSettings.objects.\
             distinct('ad_group_source').\
             filter(ad_group_source__ad_group__campaign=self.campaign).\
+            exclude(ad_group_source__in=self.inactive_ad_group_sources).\
             order_by('ad_group_source', '-created_dt')
 
     def get_stats(self, start_date, end_date):
@@ -1308,18 +1344,23 @@ class AdGroupSourcesTable(object):
     def __init__(self, user, id_):
         self.user = user
         self.ad_group = get_ad_group(user, id_)
+        self.inactive_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=self.ad_group)
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return reports.api.has_complete_postclick_metrics_ad_groups(
             start_date, end_date, [self.ad_group])
 
     def get_sources(self):
-        return models.Source.objects.filter(adgroupsource__ad_group=self.ad_group)
+        return models.Source.objects.\
+            exclude(adgroupsource__in=self.inactive_ad_group_sources).\
+            filter(adgroupsource__ad_group=self.ad_group)\
+            .distinct('id')
 
     def get_sources_settings(self):
         return models.AdGroupSourceSettings.objects.\
             distinct('ad_group_source').\
             filter(ad_group_source__ad_group=self.ad_group).\
+            exclude(ad_group_source__in=self.inactive_ad_group_sources).\
             order_by('ad_group_source', '-created_dt')
 
     def get_stats(self, start_date, end_date):
@@ -1419,12 +1460,6 @@ class SourcesTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics,
         })
 
-    def get_active_sources(self, ad_group):
-        sources = ad_group.sources.all().order_by('name')
-        inactive_sources = actionlog.api.get_sources_waiting(ad_group)
-
-        return [s for s in sources if s not in inactive_sources]
-
     def get_totals(self, totals_data, sources_settings, yesterday_cost):
         result = {
             'daily_budget': float(sum(settings.daily_budget_cc for settings in sources_settings
@@ -1448,46 +1483,47 @@ class SourcesTable(api_common.BaseApiView):
         }
         return result
 
-    def get_rows(self, id_, sources, sources_data, sources_settings, last_actions, yesterday_cost, order=None, include_supply_dash_url=False):
+    def get_status(self, settings):
+        if any(s.state == constants.AdGroupSourceSettingsState.ACTIVE for s in settings):
+            return constants.AdGroupSourceSettingsState.ACTIVE
+
+        return constants.AdGroupSourceSettingsState.INACTIVE
+
+    def get_rows(
+            self,
+            id_,
+            sources,
+            sources_data,
+            sources_settings,
+            last_actions,
+            yesterday_cost,
+            order=None,
+            include_supply_dash_url=False):
         rows = []
         for source in sources:
-            sid = source.pk
-            settings = None
-            for s in sources_settings:
-                if s.ad_group_source.source_id == sid:
-                    settings = s
-                    break
-
-            if not settings:
-                # TODO
-                logger.error('Missing ad group source settings for source %s', sid)
-                settings = models.AdGroupSourceSettings(state=None)
+            settings = [s for s in sources_settings
+                        if s.ad_group_source.source_id == source.id]
 
             # get source reports data
             source_data = {}
             for item in sources_data:
-                if item['source'] == sid:
+                if item['source'] == source.id:
                     source_data = item
                     break
 
-            last_sync = last_actions.get(sid)
+            last_sync = last_actions.get(source.id)
             if last_sync:
                 last_sync = pytz.utc.localize(last_sync)
 
             supply_dash_url = None
             if include_supply_dash_url:
                 supply_dash_url = urlresolvers.reverse('dash.views.supply_dash_redirect')
-                supply_dash_url += '?ad_group_id={}&source_id={}'.format(id_, sid)
+                supply_dash_url += '?ad_group_id={}&source_id={}'.format(id_, source.id)
 
             row = {
-                'id': str(sid),
+                'id': str(source.id),
                 'name': source.name,
-                'status': settings.state,
-                'bid_cpc': float(settings.cpc_cc) if settings.cpc_cc is not None else None,
-                'daily_budget':
-                    float(settings.daily_budget_cc)
-                    if settings.daily_budget_cc is not None
-                    else None,
+                'status': self.get_status(settings),
                 'cost': source_data.get('cost', None),
                 'cpc': source_data.get('cpc', None),
                 'clicks': source_data.get('clicks', None),
@@ -1503,11 +1539,24 @@ class SourcesTable(api_common.BaseApiView):
                 'click_discrepancy': source_data.get('click_discrepancy', None),
 
                 'last_sync': last_sync,
-                'yesterday_cost': yesterday_cost.get(sid),
+                'yesterday_cost': yesterday_cost.get(source.id),
                 'supply_dash_url': supply_dash_url,
 
                 'goals': source_data.get('goals', {})
             }
+
+            bid_cpc_values = [s.cpc_cc for s in settings if s.cpc_cc is not None]
+            daily_budget_values = [s.daily_budget_cc for s in settings if s.daily_budget_cc is not None]
+
+            if len(daily_budget_values) > 0:
+                row['daily_budget'] = float(sum(daily_budget_values))
+
+            if len(bid_cpc_values) > 0:
+                row['max_bid_cpc'] = float(min(bid_cpc_values))
+                row['min_bid_cpc'] = float(max(bid_cpc_values))
+
+            if len(bid_cpc_values) == 1:
+                row['bid_cpc'] = bid_cpc_values[0]
 
             # add conversion fields
             for field, val in source_data.iteritems():
