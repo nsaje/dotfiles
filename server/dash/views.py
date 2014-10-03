@@ -31,6 +31,7 @@ from utils import statsd_helper
 from utils import api_common
 from utils import exc
 from utils import pagerduty_helper
+from utils.sort_helper import sort_results
 import actionlog.api
 import actionlog.sync
 import actionlog.zwei_actions
@@ -1516,20 +1517,7 @@ class SourcesTable(api_common.BaseApiView):
             rows.append(row)
 
         if order:
-            reverse = False
-            if order.startswith('-'):
-                reverse = True
-                order = order[1:]
-
-            # Sort should always put Nones at the end
-            def _sort(item):
-                value = item.get(order)
-                if order == 'last_sync' and not value:
-                    value = pytz.UTC.localize(datetime.datetime(datetime.MINYEAR, 1, 1))
-
-                return (item.get(order) is None or reverse, value)
-
-            rows = sorted(rows, key=_sort, reverse=reverse)
+            rows = sort_results(rows, [order])
 
         return rows
 
@@ -1655,22 +1643,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
             rows.append(row)
 
         if order:
-            reverse = False
-            if order.startswith('-'):
-                reverse = True
-                order = order[1:]
-
-            # Sort should always put Nones at the end
-            def _sort(item):
-                value = item.get(order)
-                if order == 'last_sync' and not value:
-                    value = pytz.UTC.localize(datetime.datetime(datetime.MINYEAR, 1, 1))
-                elif order == 'name':
-                    value = value.lower()
-
-                return (item.get(order) is None or reverse, value)
-
-            rows = sorted(rows, key=_sort, reverse=reverse)
+            rows = sort_results(rows, [order])
 
         len_accounts = len(accounts)
         current_page = page or 1
@@ -1971,15 +1944,25 @@ class AllAccountsExport(api_common.BaseApiView):
 
         filename = 'all_accounts_report_{0}_{1}'.format(start_date, end_date)
 
-        results = reports.api.query(start_date, end_date, 
-            ['date', 'account'], ['date'], account=accounts)
+        results = reports.api.query(
+            start_date,
+            end_date,
+            ['date', 'account'],
+            ['date'],
+            account=accounts
+        )
 
         self._add_account_data(results)
 
         if request.GET.get('type') == 'excel':
 
-            detailed_results = reports.api.query(start_date, end_date,
-                ['date', 'account', 'campaign'], ['date'], account=accounts)
+            detailed_results = reports.api.query(
+                start_date,
+                end_date,
+                ['date', 'account', 'campaign'],
+                ['date'],
+                account=accounts
+            )
 
             self._add_account_data(detailed_results)
             self._add_campaign_data(detailed_results)
@@ -2406,20 +2389,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             rows.append(row)
 
         if order:
-            reverse = False
-            if order.startswith('-'):
-                reverse = True
-                order = order[1:]
-
-            # Sort should always put Nones at the end
-            def _sort(item):
-                value = item.get(order)
-                if order == 'last_sync' and not value:
-                    value = pytz.UTC.localize(datetime.datetime(datetime.MINYEAR, 1, 1))
-
-                return (item.get(order) is None or reverse, value)
-
-            rows = sorted(rows, key=_sort, reverse=reverse)
+            rows = sort_results(rows, [order])
 
         return rows
 
@@ -2523,20 +2493,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
             rows.append(row)
 
         if order:
-            reverse = False
-            if order.startswith('-'):
-                reverse = True
-                order = order[1:]
-
-            # Sort should always put Nones at the end
-            def _sort(item):
-                value = item.get(order)
-                if order == 'last_sync' and not value:
-                    value = pytz.UTC.localize(datetime.datetime(datetime.MINYEAR, 1, 1))
-
-                return (item.get(order) is None or reverse, value)
-
-            rows = sorted(rows, key=_sort, reverse=reverse)
+            rows = sort_results(rows, [order])
 
         return rows
 

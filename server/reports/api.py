@@ -19,6 +19,7 @@ from . import models
 
 from dash import models as dashmodels
 from utils import db_aggregates
+from utils.sort_helper import sort_results
 
 logger = logging.getLogger(__name__)
 
@@ -168,24 +169,6 @@ def _add_computed_metrics(result):
                 metrics[metric_name] = None
 
 
-def sorted_results(results, order=None):
-    if not isinstance(results, collections.Sequence):
-        return results
-    rows = results[:]
-    if not order:
-        return rows
-    for field in reversed(order):
-        desc = False
-        deco_fun = lambda x: x is None
-        if field.startswith('-'):
-            desc=True
-            field = field[1:]
-            deco_fun = lambda x: x is not None
-        cmp_fun = lambda w: lambda x, y: cmp((deco_fun(x.get(w)), x.get(w)), (deco_fun(y.get(w)), y.get(w)))
-        rows = sorted(rows, cmp=cmp_fun(field), reverse=desc)
-    return rows
-
-
 def _get_report_results(start_date, end_date, breakdown=None, **constraints):
     report_results = query_stats(start_date, end_date, breakdown=breakdown, **constraints)
     report_results = _collect_results(report_results)
@@ -229,7 +212,7 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
     report_results = _get_report_results(start_date, end_date, breakdown, **constraints)
     conversion_results = _get_conversion_results(start_date, end_date, breakdown, **constraints)
     results = _join_with_conversions(breakdown, report_results, conversion_results)
-    results = sorted_results(results, order)
+    results = sort_results(results, order)
     return results
 
 
