@@ -2663,7 +2663,7 @@ def oauth_authorize(request, source_name):
         'client_id': decrypted['client_id'],
         'redirect_uri': redirect_uri,
         'response_type': 'code',
-        'state': urllib.quote(json.dumps(state))
+        'state': base64.b64encode(json.dumps(state))
     }
 
     url = settings.SOURCE_OAUTH_URIS[source_name]['auth_uri'] + '?' + urllib.urlencode(params)
@@ -2683,7 +2683,7 @@ def oauth_redirect(request, source_name):
         return redirect('index')
 
     try:
-        state = json.loads(state)
+        state = base64.b64decode(json.loads(state))
     except (TypeError, ValueError):
         logger.error('Invalid state in OAuth2 redirect')
         return redirect('index')

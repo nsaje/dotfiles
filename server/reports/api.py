@@ -6,7 +6,6 @@ import urlparse
 import urllib
 import logging
 import collections
-import operator
 
 import pytz
 

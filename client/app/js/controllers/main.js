@@ -74,6 +74,10 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     };
 
     $scope.getDefaultCampaignState = function () {
+        if ($state.includes('main.campaigns.*')) {
+            return $state.current.name;
+        }
+
         var result = null;
 
         if ($scope.hasPermission('zemauth.campaign_ad_groups_view')) {
@@ -94,6 +98,10 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     };
 
     $scope.getDefaultAdGroupState = function () {
+        if ($state.includes('main.adGroups.*')) {
+            return $state.current.name;
+        }
+
         return 'main.adGroups.ads';
     };
 
