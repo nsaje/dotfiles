@@ -17,6 +17,58 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
     $scope.isIncompletePostclickMetrics = false;
     $scope.sources = [];
 
+    $scope.updateSelectedSources = function (sourceId) {
+        var i = $scope.selectedSourceIds.indexOf(sourceId);
+
+        if (i > -1) {
+            $scope.selectedSourceIds.splice(i, 1);
+        } else {
+            $scope.selectedSourceIds.push(sourceId);
+        }
+
+        $scope.columns[0].disabled = $scope.selectedSourceIds.length >= 4;
+    };
+
+    $scope.selectedSourcesChanged = function (row, checked) {
+        if (row.id) {
+            $scope.updateSelectedSources(row.id);
+        } else {
+            $scope.selectedTotals = !$scope.selectedTotals;
+        }
+
+        $scope.updateSelectedRowsData();
+    };
+
+    $scope.updateSelectedRowsData = function () {
+        if (!$scope.selectedTotals && !$scope.selectedSourceIds.length) {
+            $scope.selectedTotals = true;
+            $scope.totals.checked = true;
+        }
+
+        $location.search('source_ids', $scope.selectedSourceIds.join(','));
+        $location.search('source_totals', $scope.selectedTotals ? 1 : null);
+
+        getDailyStats();
+    };
+
+    $scope.selectRows = function () {
+        $scope.rows.forEach(function (x) {
+            x.checked = $scope.selectedSourceIds.indexOf(x.id) > -1;
+        });
+    };
+
+    $scope.selectedSourceRemoved = function (sourceId) {
+        if (sourceId !== 'totals') {
+            $scope.updateSelectedSources(String(sourceId));
+        } else {
+            $scope.selectedTotals = false;
+            $scope.totals.checked = false;
+        }
+
+        $scope.selectRows();
+        $scope.updateSelectedRowsData();
+    };
+
     $scope.columns = [
         {
             name: '',
@@ -56,8 +108,19 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
             initialOrder: 'asc'
         },
         {
-            name: 'Bid CPC',
-            field: 'bid_cpc',
+            name: 'Min Bid',
+            field: 'min_bid_cpc',
+            checked: true,
+            type: 'currency',
+            fractionSize: 3,
+            help: 'Minimum bid price (in USD) per click.',
+            totalRow: false,
+            order: true,
+            initialOrder: 'desc'
+        },
+        {
+            name: 'Max Bid',
+            field: 'max_bid_cpc',
             checked: true,
             type: 'currency',
             fractionSize: 3,
@@ -137,6 +200,28 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
             totalRow: false,
             order: true,
             initialOrder: 'desc'
+        }
+    ];
+
+    $scope.columnCategories = [
+        {
+            'name': 'Traffic Acquisition',
+            'fields': [
+               'min_bid_cpc', 'max_bid_cpc', 'daily_budget', 'cost', 
+               'cpc', 'clicks', 'impressions', 'ctr'
+            ]
+        },
+        {
+            'name': 'Audience Metrics',
+            'fields': [
+                'visits', 'pageviews', 'percent_new_users',
+                'bounce_rate', 'pv_per_visit', 'avg_tos', 
+                'click_discrepancy'
+            ]
+        },
+        {
+            'name': 'Data Sync',
+            'fields': ['last_sync']
         }
     ];
 
@@ -236,7 +321,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
 
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
 
-                /* $scope.selectRows(); */
+                $scope.selectRows();
             },
             function (data) {
                 // error

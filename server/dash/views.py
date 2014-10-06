@@ -1552,8 +1552,8 @@ class SourcesTable(api_common.BaseApiView):
                 row['daily_budget'] = float(sum(daily_budget_values))
 
             if len(bid_cpc_values) > 0:
-                row['max_bid_cpc'] = float(min(bid_cpc_values))
-                row['min_bid_cpc'] = float(max(bid_cpc_values))
+                row['min_bid_cpc'] = float(min(bid_cpc_values))
+                row['max_bid_cpc'] = float(max(bid_cpc_values))
 
             if len(bid_cpc_values) == 1:
                 row['bid_cpc'] = bid_cpc_values[0]
