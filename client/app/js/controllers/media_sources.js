@@ -269,6 +269,12 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
         }
     });
 
+    $scope.toggleChart = function () {
+        $scope.isChartShown = !$scope.isChartShown;
+        $scope.chartBtnTitle = $scope.isChartShown ? 'Hide chart' : 'Show chart';
+        $location.search('chart_hidden', !$scope.isChartShown ? '1' : null);
+    };
+
     var hasMetricData = function (metric) {
         var hasData = false;
         $scope.chartData.forEach(function (group) {
