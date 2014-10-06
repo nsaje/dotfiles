@@ -2232,7 +2232,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
         )
         totals_stats['budget'] = sum(budget.CampaignBudget(campaign).get_total() \
             for campaign in campaigns)
-        totals_stats['available_budget'] = totals_stats['budget'] - totals_stats['cost']
+        totals_stats['available_budget'] = totals_stats['budget'] - totals_stats.get('cost', 0)
 
         ad_groups_settings = models.AdGroupSettings.objects.\
             distinct('ad_group').\
