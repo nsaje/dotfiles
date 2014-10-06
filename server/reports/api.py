@@ -280,7 +280,7 @@ def _collect_results(result):
         return [collect_row(row) for row in result]
 
 
-def get_yesterday_cost(ad_group):
+def get_yesterday_cost(**constraints):
     today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
     today = today_utc.astimezone(pytz.timezone(settings.TIMEZONE)).replace(tzinfo=None)
     today = datetime.datetime(today.year, today.month, today.day)
@@ -290,7 +290,7 @@ def get_yesterday_cost(ad_group):
         start_date=yesterday,
         end_date=yesterday,
         breakdown=['source'],
-        ad_group=ad_group
+        **constraints
     )
     result = {row['source']: row['cost'] for row in rs}
 

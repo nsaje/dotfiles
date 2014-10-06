@@ -208,7 +208,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
             'name': 'Traffic Acquisition',
             'fields': [
                'min_bid_cpc', 'max_bid_cpc', 'daily_budget', 'cost', 
-               'cpc', 'clicks', 'impressions', 'ctr'
+               'cpc', 'clicks', 'impressions', 'ctr', 'yesterday_cost'
             ]
         },
         {
@@ -227,6 +227,20 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
 
     $scope.initColumns = function () {
         var cols;
+
+        if ($scope.hasPermission('reports.yesterday_spend_view')) {
+            $scope.columns.splice(6, 0, {
+                name: 'Yesterday Spend',
+                field: 'yesterday_cost',
+                checked: false,
+                type: 'currency',
+                help: 'Amount that you have spent yesterday for promotion on specific media source.',
+                internal: $scope.isPermissionInternal('reports.yesterday_spend_view'),
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc'
+            });
+        }
 
         if ($scope.hasPermission('zemauth.postclick_metrics')) {
             zemPostclickMetricsService.insertColumns($scope.columns, $scope.isPermissionInternal('zemauth.postclick_metrics'));

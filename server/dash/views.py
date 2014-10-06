@@ -1202,7 +1202,12 @@ class AllAccountsSourcesTable(object):
         return sources_stats, totals_stats
 
     def get_yesterday_cost(self):
-        return {}, None
+        yesterday_cost = reports.api.get_yesterday_cost(account=self.accounts)
+        yesterday_total_cost = None
+        if yesterday_cost:
+            yesterday_total_cost = sum(yesterday_cost.values())
+
+        return yesterday_cost, yesterday_total_cost
 
     def get_last_success_actions(self):
         last_success_actions = {}
@@ -1267,7 +1272,12 @@ class AccountSourcesTable(object):
         return sources_stats, totals_stats
 
     def get_yesterday_cost(self):
-        return {}, None
+        yesterday_cost = reports.api.get_yesterday_cost(account=self.account)
+        yesterday_total_cost = None
+        if yesterday_cost:
+            yesterday_total_cost = sum(yesterday_cost.values())
+
+        return yesterday_cost, yesterday_total_cost
 
     def get_last_success_actions(self):
         account_sync = actionlog.sync.AccountSync(self.account)
@@ -1326,7 +1336,12 @@ class CampaignSourcesTable(object):
         return sources_stats, totals_stats
 
     def get_yesterday_cost(self):
-        return {}, None
+        yesterday_cost = reports.api.get_yesterday_cost(campaign=self.campaign)
+        yesterday_total_cost = None
+        if yesterday_cost:
+            yesterday_total_cost = sum(yesterday_cost.values())
+
+        return yesterday_cost, yesterday_total_cost
 
     def get_last_success_actions(self):
         campaign_sync = actionlog.sync.CampaignSync(self.campaign)
@@ -1380,7 +1395,7 @@ class AdGroupSourcesTable(object):
         return sources_stats, totals_stats
 
     def get_yesterday_cost(self):
-        yesterday_cost = reports.api.get_yesterday_cost(self.ad_group)
+        yesterday_cost = reports.api.get_yesterday_cost(ad_group=self.ad_group)
         yesterday_total_cost = None
         if yesterday_cost:
             yesterday_total_cost = sum(yesterday_cost.values())
