@@ -265,20 +265,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         localStorageService.set('adGroupSources.order', $scope.order);
         getTableData();
     };
-    $scope.orderRows = function (col) {
-        if ($scope.order.indexOf(col) === 1) {
-            $scope.order = col;
-        } else if ($scope.order.indexOf(col) === -1 && col === 'name') {
-            $scope.order = col;
-        } else {
-            $scope.order = '-' + col;
-        }
-
-        $location.search('order', $scope.order);
-        localStorageService.set('adGroupSources.order', $scope.order);
-        getTableData();
-    };
-
 
     $scope.addGoalColumns = function(rows) {
         var alreadyAdded = function(field) {
@@ -406,7 +392,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list('ad_groups', $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics()).then(
+        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics()).then(
             function (data) {
                 setChartOptions(data.goals);
             

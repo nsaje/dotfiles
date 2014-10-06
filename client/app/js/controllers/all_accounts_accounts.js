@@ -189,7 +189,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list('all_accounts', null, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true, [$scope.chartMetric1, $scope.chartMetric2]).then(
+        api.dailyStats.list($scope.level, null, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true, [$scope.chartMetric1, $scope.chartMetric2]).then(
             function (data) {
                 setChartOptions();
                 $scope.chartData = data.chartData;

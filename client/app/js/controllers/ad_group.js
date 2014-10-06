@@ -1,5 +1,6 @@
 /*globals oneApp,$,moment*/
 oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', function ($scope, $state, $location, api) {
+    $scope.level = constants.level.AD_GROUPS;
     $scope.tabs = [
         {heading: 'Content Ads', route: 'main.adGroups.ads', active: true, hidden: false},
         {heading: 'Media Sources', route: 'main.adGroups.sources', active: false, hidden: false},
