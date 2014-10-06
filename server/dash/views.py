@@ -1623,6 +1623,9 @@ class AccountsAccountsTable(api_common.BaseApiView):
             end_date,
             account=accounts
         ), request.user)
+        totals_data['budget'] = sum(budget.AccountBudget(account).get_total() \
+            for account in accounts)
+        totals_data['available_budget'] = totals_data['budget'] - totals_data.get('cost', 0)
 
         last_success_actions = {}
         for account in accounts:
@@ -1703,6 +1706,9 @@ class AccountsAccountsTable(api_common.BaseApiView):
             }
 
             row.update(account_data)
+
+            row['budget'] = budget.AccountBudget(account).get_total()
+            row['available_budget'] = row['budget'] - row.get('cost', 0)
 
             rows.append(row)
 
@@ -2472,6 +2478,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'account_campaigns_table_get')
     def get(self, request, account_id):
         user = request.user
+        account = models.Account.objects.get(pk=account_id)
 
         campaigns = models.Campaign.objects.get_for_user(user).\
             filter(account=account_id)
@@ -2492,6 +2499,9 @@ class AccountCampaignsTable(api_common.BaseApiView):
             reports.api.query(start_date, end_date, campaign=campaigns),
             request.user
         )
+        totals_stats['budget'] = sum(budget.CampaignBudget(campaign).get_total() \
+            for campaign in campaigns)
+        totals_stats['available_budget'] = totals_stats['budget'] - totals_stats.get('cost', 0)
 
         ad_groups_settings = models.AdGroupSettings.objects.\
             distinct('ad_group').\
@@ -2564,6 +2574,10 @@ class AccountCampaignsTable(api_common.BaseApiView):
                 'last_sync': last_sync
             }
             row.update(campaign_stat)
+
+            row['budget'] = budget.CampaignBudget(campaign).get_total()
+            row['available_budget'] = row['budget'] - row.get('cost', 0)
+
             rows.append(row)
 
         if order:
@@ -2905,7 +2919,7 @@ def oauth_authorize(request, source_name):
         'client_id': decrypted['client_id'],
         'redirect_uri': redirect_uri,
         'response_type': 'code',
-        'state': urllib.quote(json.dumps(state))
+        'state': base64.b64encode(json.dumps(state))
     }
 
     url = settings.SOURCE_OAUTH_URIS[source_name]['auth_uri'] + '?' + urllib.urlencode(params)
@@ -2925,7 +2939,7 @@ def oauth_redirect(request, source_name):
         return redirect('index')
 
     try:
-        state = json.loads(state)
+        state = base64.b64decode(json.loads(state))
     except (TypeError, ValueError):
         logger.error('Invalid state in OAuth2 redirect')
         return redirect('index')

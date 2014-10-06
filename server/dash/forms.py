@@ -84,28 +84,6 @@ class AdGroupSettingsForm(forms.Form):
 
         return end_date
 
-    def clean_tracking_code(self):
-        tracking_code = self.cleaned_data.get('tracking_code')
-
-        err_msg = 'Tracking code structure is not valid.'
-
-        if tracking_code:
-            # This is a bit of a hack we're doing here but if we don't prepend 'http:' to
-            # the provided tracking code, then rfc3987 doesn't know how to parse it.
-            if not tracking_code.startswith('?'):
-                tracking_code = '?' + tracking_code
-
-            test_url = 'http:{0}'.format(tracking_code)
-
-            try:
-                result = rfc3987.parse(test_url, rule='IRI')
-                if '?' + result['query'] != tracking_code:
-                    raise forms.ValidationError(err_msg)
-            except ValueError:
-                raise forms.ValidationError(err_msg)
-
-        return self.cleaned_data.get('tracking_code')
-
 
 class AdGroupAgencySettingsForm(forms.Form):
     id = forms.IntegerField()
