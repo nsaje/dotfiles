@@ -91,7 +91,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         {
             'name': 'Traffic Acquisition',
             'fields': [
-               'clicks', 'cost', 'cpc'
+               'clicks', 'cost', 'cpc', 'budget', 'available_budget'
             ]
         },
         {
@@ -114,6 +114,33 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
     var initColumns = function () {
         var cols;
+
+        if ($scope.hasPermission('zemauth.all_accounts_budget_view')) {
+            $scope.columns.splice(2, 0,
+                {
+                    name: 'Total Budget',
+                    field: 'budget',
+                    checked: true,
+                    type: 'currency',
+                    totalRow: true,
+                    help: 'Total amount of allocated budget.',
+                    order: true,
+                    initialOrder: 'desc',
+                    internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view')
+                },
+                {
+                    name: 'Available Budget',
+                    field: 'available_budget',
+                    checked: true,
+                    type: 'currency',
+                    totalRow: true,
+                    help: 'Total amount of budget still available.',
+                    order: true,
+                    initialOrder: 'desc',
+                    internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view')
+                }
+            )
+        }
 
         if ($scope.hasPermission('zemauth.postclick_metrics')) {
             zemPostclickMetricsService.insertColumns($scope.columns, $scope.isPermissionInternal('zemauth.postclick_metrics'));
