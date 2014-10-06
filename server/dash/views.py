@@ -177,18 +177,6 @@ def is_sync_recent(last_sync_datetime):
     return result
 
 
-def get_state(settings, **kwargs):
-    pass
-    # state = models.AdGroupSettings.get_default_value('state')
-    # for s in settings:
-    #     if ad_group.pk == ad_group_settings.ad_group_id and \
-    #             ad_group_settings.state is not None:
-    #         row['state'] = ad_group_settings.state
-    #         break
-
-    # return state
-
-
 def get_campaign_url(ad_group, request):
     campaign_settings_url = request.build_absolute_uri(
         reverse('admin:dash_campaign_change', args=(ad_group.campaign.pk,)))
@@ -1498,7 +1486,7 @@ class SourcesTable(api_common.BaseApiView):
         }
         return result
 
-    def get_status(self, settings):
+    def get_state(self, settings):
         if any(s.state == constants.AdGroupSourceSettingsState.ACTIVE for s in settings):
             return constants.AdGroupSourceSettingsState.ACTIVE
 
@@ -1538,7 +1526,7 @@ class SourcesTable(api_common.BaseApiView):
             row = {
                 'id': str(source.id),
                 'name': source.name,
-                'status': self.get_status(settings),
+                'status': self.get_state(settings),
                 'cost': source_data.get('cost', None),
                 'cpc': source_data.get('cpc', None),
                 'clicks': source_data.get('clicks', None),
