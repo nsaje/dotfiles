@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$location', 'localStorageService', 'api', 'zemPostclickMetricsService', 'zemCustomTableColsService', function ($scope, $state, zemChartService, $location, localStorageService, api, zemPostclickMetricsService, zemCustomTableColsService) {
+oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$location', 'localStorageService', 'api', 'zemPostclickMetricsService', 'zemCustomTableColsService', '$timeout', function ($scope, $state, zemChartService, $location, localStorageService, api, zemPostclickMetricsService, zemCustomTableColsService, $timeout) {
     $scope.localStoragePrefix = null;
     $scope.selectedTotals = true;
     $scope.selectedSourceIds = [];
@@ -425,7 +425,14 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
 
         getDailyStats();
         getTableData();
+        pollSyncStatus();
     };
+
+    $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
+        if(newValue === true && oldValue === false){
+            pollSyncStatus();
+        }
+    });
 
     // From parent scope (mainCtrl).
     $scope.$watch('dateRange', function (newValue, oldValue) {
@@ -438,6 +445,53 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
         $location.search('chart_metric1', null);
         $location.search('chart_metric2', null);
     });
+
+    var pollSyncStatus = function() {
+        if($scope.isSyncInProgress){
+            $timeout(function() {
+                var promise = null;
+
+                if ($scope.level === constants.level.ALL_ACCOUNTS) {
+                    promise = api.checkAccountSyncProgress.get();
+                } else if ($scope.level === constants.level.ACCOUNTS) {
+                    promise = api.checkAccountSyncProgress.get($state.params.id);
+                } else if ($scope.level === constants.level.CAMPAIGNS) {
+                    promise = api.checkCampaignSyncProgress.get($state.params.id);
+                }
+
+                promise.then(
+                    function(data) {
+                        $scope.isSyncInProgress = data.is_sync_in_progress;
+
+                        if($scope.isSyncInProgress == false){
+                            // we found out that the sync is no longer in progress
+                            // time to reload the data
+                            getTableData();
+                            getDailyStats();
+                        }
+                    },
+                    function(data) {
+                        // error
+                        $scope.isSyncInProgress = false;
+                    }
+                ).finally(function() {
+                    pollSyncStatus();
+                });
+            }, 5000);
+        }
+    }
+
+    $scope.triggerSync = function() {
+        $scope.isSyncInProgress = true;
+
+        if ($scope.level === constants.level.ALL_ACCOUNTS) {
+            api.accountSync.get();
+        } else if ($scope.level === constants.level.ACCOUNTS) {
+            api.accountSync.get($state.params.id);
+        } else if ($scope.level === constants.level.CAMPAIGNS) {
+            api.campaignSync.get($state.params.id);
+        }
+    }
 
     init();
 }]);
