@@ -339,8 +339,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
                 $scope.isSyncRecent = data.is_sync_recent;
                 $scope.isSyncInProgress = data.is_sync_in_progress;
 
-                $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
-
                 $scope.selectRows();
             },
             function (data) {
