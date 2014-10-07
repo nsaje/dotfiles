@@ -32,6 +32,15 @@
   model: dash.article
   pk: 4
 
+# Ad group 3 has no postclick metric data
+- fields:
+    url: 'http://test5.com'
+    title: 'Test Article 5'
+    ad_group: 3
+    created_dt: '2014-06-04T09:58:21'
+  model: dash.article
+  pk: 5
+
   # Article Stats
 
   # ... for Test Article 1
@@ -200,39 +209,14 @@
     created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 10
-# ... for Test Article 4
-# - fields:
-#     datetime: '2014-06-04T00:00:00'
-#     ad_group: 2
-#     article: 4
-#     source: 2
-#     impressions: 1168
-#     clicks: 13
-#     cost_cc: 7073
-#     created_dt: '2014-06-04T09:58:21'
-#   model: reports.articlestats
-#   pk: 10
 
-# - fields:
-#     datetime: '2014-06-05T00:00:00'
-#     ad_group: 2
-#     article: 4
-#     source: 2
-#     impressions: 1477
-#     clicks: 8
-#     cost_cc: 4352
-#     created_dt: '2014-06-04T09:58:21'
-#   model: reports.articlestats
-#   pk: 11
-
-# - fields:
-#     datetime: '2014-06-06T00:00:00'
-#     ad_group: 2
-#     article: 4
-#     source: 2
-#     impressions: 2175
-#     clicks: 39
-#     cost_cc: 21220
-#     created_dt: '2014-06-04T09:58:21'
-#   model: reports.articlestats
-#   pk: 12
+# ... for Test Article 5
+- fields:
+    datetime: '2014-06-06T00:00:00'
+    ad_group: 3
+    article: 5
+    source: 2
+    has_postclick_metrics: 0
+    created_dt: '2014-06-04T09:58:21'
+  model: reports.articlestats
+  pk: 15

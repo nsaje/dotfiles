@@ -87,6 +87,88 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         }
     }
 
+    function SourcesTable() {
+
+        function convertFromApi(data) {
+
+            function convertRow(row) {
+                var converted_row = {}
+                for(var field in row) {
+                    if(field.indexOf('goals') == '0') {
+                        for(var goalName in row['goals']) {
+                            for(var metricName in row['goals'][goalName]) {
+                                if(metricName == 'conversions') {
+                                    converted_row['goal__' + goalName + ': Conversions'] = row['goals'][goalName][metricName];
+                                } else if(metricName == 'conversion_rate') {
+                                    converted_row['goal__' + goalName + ': Conversion Rate'] = row['goals'][goalName][metricName];
+                                }
+                            }
+                        }
+                    } else if (field === 'status') {
+                        converted_row[field] = row[field];
+
+                        if (row[field] === constants.adGroupSettingsState.ACTIVE) {
+                            converted_row.status_label = 'Active';
+                        } else if (row[field] === constants.adGroupSettingsState.INACTIVE) {
+                            converted_row.status_label = 'Paused';
+                        } else {
+                            converted_row.status_label = 'N/A';
+                        }
+                    } else {
+                        converted_row[field] = row[field];
+                    }
+                }
+                return converted_row;
+            }
+
+            for(var i = 0; i < data.rows.length; i++) {
+                var row = data.rows[i];
+                data.rows[i] = convertRow(row);
+            }
+            data.totals = convertRow(data.totals);
+            
+            return data;
+        };
+
+        this.get = function (level, id, startDate, endDate, order) {
+            var deferred = $q.defer();
+            var url = null;
+            if (level === 'all_accounts') {
+                url = '/api/' + level + '/sources/table/';
+            } else {
+                url = '/api/' + level + '/' + id + '/sources/table/';
+            }
+
+            var config = {
+                params: {}
+            };
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
+
+            if (order) {
+                config.params.order = order;
+            }
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    if (data && data.data) {
+                        deferred.resolve(convertFromApi(data.data));
+                    }
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function AdGroupSourcesTable() {
 
         function convertFromApi(data) {
@@ -242,6 +324,12 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     function CheckSyncProgress() {
         this.get = function(id) {
             var deferred = $q.defer();
+
+            if (id === undefined) {
+                deferred.reject();
+                return deferred.promise;
+            }
+
             var url = '/api/ad_groups/' + id + '/check_sync_progress/';
 
             $http.get(url).
@@ -281,6 +369,12 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     function CheckAccountsSyncProgress() {
         this.get = function(id) {
             var deferred = $q.defer();
+
+            if (id === undefined) {
+                deferred.reject();
+                return deferred.promise;
+            }
+
             var url = '/api/accounts/check_sync_progress/';
 
             $http.get(url).
@@ -300,6 +394,12 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     function CheckCampaignSyncProgress() {
         this.get = function(campaignId, accountId) {
             var deferred = $q.defer();
+
+            if (campaignId === undefined && accountId === undefined) {
+                deferred.reject();
+                return deferred.promise;
+            }
+
             var url = '/api/campaigns/check_sync_progress/';
 
             var config = {
@@ -335,9 +435,9 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             };
         }
 
-        this.list = function (modelName, id, startDate, endDate, selectedIds, totals, metrics, groupSources) {
+        this.list = function (level, id, startDate, endDate, selectedIds, totals, metrics, groupSources) {
             var deferred = $q.defer();
-            var url = '/api/' + modelName + (id ? ('/' + id) : '') + '/daily_stats/';
+            var url = '/api/' + level + (id ? ('/' + id) : '') + '/daily_stats/';
             var config = {
                 params: {}
             };
@@ -1234,6 +1334,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         adGroupSettings: new AdGroupSettings(),
         adGroupAgency: new AdGroupAgency(),
         adGroupSources: new AdGroupSources(),
+        sourcesTable: new SourcesTable(),
         adGroupSourcesTable: new AdGroupSourcesTable(),
         adGroupAdsTable: new AdGroupAdsTable(),
         adGroupSync: new AdGroupSync(),

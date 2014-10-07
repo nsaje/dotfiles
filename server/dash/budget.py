@@ -70,6 +70,14 @@ class CampaignBudget(object):
             # nothing to change
             return
 
+        if allocate_amount > 0 or revoke_amount > 0:
+            parts = []
+            if allocate_amount:
+                parts.append('Allocated $%.2f to the campaign' % allocate_amount)
+            if revoke_amount:
+                parts.append('Revoked $%.2f from the campaign' % revoke_amount)
+            comment = ' and '.join(parts) + '.'
+
         logger.info('Budget change: allocate=%s, revoke=%s, user=%s, comment=%s',
             allocate_amount, revoke_amount, user.email, comment
         )
