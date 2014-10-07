@@ -131,18 +131,12 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
 
         this.get = function (level, id, startDate, endDate, order) {
-            if (level === undefined) {
-                return;
-            }
-
             var deferred = $q.defer();
             var url = null;
             if (level === 'all_accounts') {
                 url = '/api/' + level + '/sources/table/';
-            } else if (id !== undefined) {
-                url = '/api/' + level + '/' + id + '/sources/table/';
             } else {
-                return;
+                url = '/api/' + level + '/' + id + '/sources/table/';
             }
 
             var config = {
@@ -330,6 +324,12 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     function CheckSyncProgress() {
         this.get = function(id) {
             var deferred = $q.defer();
+
+            if (id === undefined) {
+                deferred.reject();
+                return deferred.promise;
+            }
+
             var url = '/api/ad_groups/' + id + '/check_sync_progress/';
 
             $http.get(url).
@@ -369,6 +369,12 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     function CheckAccountsSyncProgress() {
         this.get = function(id) {
             var deferred = $q.defer();
+
+            if (id === undefined) {
+                deferred.reject();
+                return deferred.promise;
+            }
+
             var url = '/api/accounts/check_sync_progress/';
 
             $http.get(url).
@@ -388,6 +394,12 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     function CheckCampaignSyncProgress() {
         this.get = function(campaignId, accountId) {
             var deferred = $q.defer();
+
+            if (campaignId === undefined && accountId === undefined) {
+                deferred.reject();
+                return deferred.promise;
+            }
+
             var url = '/api/campaigns/check_sync_progress/';
 
             var config = {
