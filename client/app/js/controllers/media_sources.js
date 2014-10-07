@@ -448,7 +448,12 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
 
     // From parent scope (mainCtrl).
     $scope.$watch('dateRange', function (newValue, oldValue) {
+        if (newValue.startDate.isSame(oldValue.startDate) && newValue.endDate.isSame(oldValue.endDate)) {
+            return;
+        }
+
         getDailyStats();
+        getTableData();
     });
 
     $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
