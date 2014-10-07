@@ -25,6 +25,29 @@ class BaseSync(object):
             return None
         return min(child_sync_times)
 
+    def get_latest_source_success(self, recompute=True):
+        child_syncs = self.get_components()
+        child_source_sync_times_list = [
+            child_sync.get_latest_source_success(recompute)
+            for child_sync in child_syncs
+        ]
+
+        # merge dicts
+        source_sync_times = {}
+        for sync_times in child_source_sync_times_list:
+            for key, value in sync_times.items():
+                if key in source_sync_times:
+                    old_value = source_sync_times[key]
+
+                    if old_value is None or value is None:
+                        value = None
+                    else:
+                        value = min(old_value, value)
+
+                source_sync_times[key] = value
+
+        return source_sync_times
+
     def trigger_all(self):
         child_syncs = self.get_components()
         for child_sync in child_syncs:
@@ -106,6 +129,9 @@ class AdGroupSourceSync(BaseSync):
             return min(status_sync_dt, report_sync_dt)
         else:
             return self.ad_group_source.last_successful_sync_dt
+
+    def get_latest_source_success(self, recompute=True):
+        return {self.ad_group_source.source_id: self.get_latest_success(recompute)}
 
     def get_latest_report_sync(self):
         # the query below works like this:
