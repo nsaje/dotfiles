@@ -3,19 +3,28 @@ import datetime
 from django import test
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
-from django.db.models.query import QuerySet
 from mock import patch
 from collections import Sequence
 
 from dash import models as dashmodels
+from dash import api as dashapi
+from dash import exc as dashexc
 from reports import api
-from reports import exc
 from reports import models
+from reports import refresh
+from reports import exc as repsexc
 from utils.test_helper import dicts_match_for_keys, sequence_of_dicts_match_for_keys
+from utils.url import clean_url
+
+from zweiapi.views import _prepare_report_row
+from reports.update import StatsUpdater
 
 
 class QueryTestCase(test.TestCase):
     fixtures = ['test_reports_base.yaml', 'test_article_stats.yaml']
+
+    def setUp(self):
+        refresh.refresh_adgroup_stats()
 
     def test_date_breakdown(self):
         start = datetime.date(2014, 6, 4)
@@ -214,7 +223,7 @@ class QueryTestCase(test.TestCase):
         end = datetime.date(2014, 6, 8)
 
         self.assertRaises(
-            exc.ReportsQueryError,
+            repsexc.ReportsQueryError,
             api.query,
             start,
             end,
@@ -223,7 +232,7 @@ class QueryTestCase(test.TestCase):
         )
 
         self.assertRaises(
-            exc.ReportsQueryError,
+            repsexc.ReportsQueryError,
             api.query,
             start,
             end,
@@ -393,6 +402,9 @@ class QueryTestCase(test.TestCase):
 class YesterdayCostTestCase(test.TestCase):
     fixtures = ['test_reports_base.yaml', 'test_article_stats.yaml']
 
+    def setUp(self):
+        refresh.refresh_adgroup_stats()
+
     @patch('reports.api.datetime')
     def test_get_yesterday_cost(self, datetime_mock):
         class DatetimeMock(datetime.datetime):
@@ -425,23 +437,23 @@ class ApiTestCase(test.TestCase):
     def test_clean_url(self):
 
         url_normal = 'http://sd.domain.com/path/to?attr1=1&attr1=123i&attr2=#uff'
-        self.assertEqual(url_normal, api.clean_url(url_normal)[0])
+        self.assertEqual(url_normal, clean_url(url_normal)[0])
 
         url_unsorted = 'http://sd.domain.com/path/to?attr1=1&attr2=&attr1=123i#uff'
         url_unsorted_cleaned = 'http://sd.domain.com/path/to?attr1=1&attr1=123i&attr2=#uff'
-        self.assertEqual(url_unsorted_cleaned, api.clean_url(url_unsorted)[0])
+        self.assertEqual(url_unsorted_cleaned, clean_url(url_unsorted)[0])
 
         url_with_utm = 'http://sd.domain.com/path/to?attr1=1&utm_source=abc'
         url_with_utm_cleaned = 'http://sd.domain.com/path/to?attr1=1'
-        self.assertEqual(url_with_utm_cleaned, api.clean_url(url_with_utm)[0])
+        self.assertEqual(url_with_utm_cleaned, clean_url(url_with_utm)[0])
 
         url_with_z1 = 'http://sd.domain.com/path/to?attr1=1&_z1_xyz=abc'
         url_with_z1_cleaned = 'http://sd.domain.com/path/to?attr1=1'
-        self.assertEqual(url_with_z1_cleaned, api.clean_url(url_with_z1)[0])
+        self.assertEqual(url_with_z1_cleaned, clean_url(url_with_z1)[0])
 
         url_unsorted_with_z1_utm = 'http://sd.domain.com/path/to?attr2=2&attr1=1&_z1_xyz=abc&utm_source=abc#uff'
         url_unsorted_with_z1_utm_cleaned = 'http://sd.domain.com/path/to?attr1=1&attr2=2#uff'
-        self.assertEqual(url_unsorted_with_z1_utm_cleaned, api.clean_url(url_unsorted_with_z1_utm)[0])
+        self.assertEqual(url_unsorted_with_z1_utm_cleaned, clean_url(url_unsorted_with_z1_utm)[0])
 
 
 class UpsertReportsTestCase(test.TestCase):
@@ -528,9 +540,15 @@ class UpsertReportsTestCase(test.TestCase):
             },
         ]
 
-        self.assertTrue(len(models.ArticleStats.objects.all()) == 0)
+        self.assertTrue(models.ArticleStats.objects.count() == 0)
+        self.assertTrue(models.AdGroupStats.objects.count() == 0)
 
-        api.save_report(ags1.ad_group, ags1.source, rows_ags1_date1, date1)
+        StatsUpdater().update_adgroup_source_traffic(
+            datetime=date1,
+            ad_group=ags1.ad_group,
+            source=ags1.source,
+            rows=map(_prepare_report_row(ags1.ad_group), rows_ags1_date1)
+        )
         for row in rows_ags1_date1:
             article = dashmodels.Article.objects.get(title=row['title'], url=row['url'])
             stats = models.ArticleStats.objects.get(
@@ -543,7 +561,12 @@ class UpsertReportsTestCase(test.TestCase):
             self.assertEqual(stats.clicks, row['clicks'])
             self.assertEqual(stats.cost_cc, row['cost_cc'])
 
-        api.save_report(ags2.ad_group, ags2.source, rows_ags2_date1, date1)
+        StatsUpdater().update_adgroup_source_traffic(
+            datetime=date1,
+            ad_group=ags2.ad_group,
+            source=ags2.source,
+            rows=map(_prepare_report_row(ags2.ad_group), rows_ags2_date1)
+        )
         for row in rows_ags2_date1:
             article = dashmodels.Article.objects.get(title=row['title'])
             stats = models.ArticleStats.objects.get(
@@ -556,8 +579,18 @@ class UpsertReportsTestCase(test.TestCase):
             self.assertEqual(stats.clicks, row['clicks'])
             self.assertEqual(stats.cost_cc, row['cpc_cc'] * row['clicks'])
 
-        api.save_report(ags1.ad_group, ags1.source, rows_ags1_date2, date2)
-        api.save_report(ags2.ad_group, ags2.source, rows_ags2_date2, date2)
+        StatsUpdater().update_adgroup_source_traffic(
+            datetime=date2,
+            ad_group=ags1.ad_group,
+            source=ags1.source,
+            rows=map(_prepare_report_row(ags1.ad_group), rows_ags1_date2)
+        )
+        StatsUpdater().update_adgroup_source_traffic(
+            datetime=date2,
+            ad_group=ags2.ad_group,
+            source=ags2.source,
+            rows=map(_prepare_report_row(ags2.ad_group), rows_ags2_date2)
+        )
 
         articles_ags1 = dashmodels.Article.objects.order_by('title')
         articles_ags2 = dashmodels.Article.objects.order_by('title')
@@ -632,7 +665,12 @@ class UpsertReportsTestCase(test.TestCase):
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
         self.assertEqual(len(stats), 0)
 
-        api.save_report(ags.ad_group, ags.source, rows, date)
+        StatsUpdater().update_adgroup_source_traffic(
+            datetime=date,
+            ad_group=ags.ad_group,
+            source=ags.source,
+            rows=map(_prepare_report_row(ags.ad_group), rows)
+        )
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
         self.assertEqual(len(stats), 2)
         for row in rows:
@@ -648,7 +686,12 @@ class UpsertReportsTestCase(test.TestCase):
             self.assertEqual(article_stats.cost_cc, row['cost_cc'])
             self.assertEqual(article_stats.has_traffic_metrics, 1)
 
-        api.save_report(ags.ad_group, ags.source, rows_new_title, date)
+        StatsUpdater().update_adgroup_source_traffic(
+            datetime=date,
+            ad_group=ags.ad_group,
+            source=ags.source,
+            rows=map(_prepare_report_row(ags.ad_group), rows_new_title)
+        )
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
         self.assertEqual(len(stats), 4)
         for row in rows_new_title:
@@ -677,7 +720,12 @@ class UpsertReportsTestCase(test.TestCase):
             self.assertEqual(article_stats.cost_cc, 0)
             self.assertEqual(article_stats.has_traffic_metrics, 1)
 
-        api.save_report(ags.ad_group, ags.source, rows_new_url, date)
+        StatsUpdater().update_adgroup_source_traffic(
+            datetime=date,
+            ad_group=ags.ad_group,
+            source=ags.source,
+            rows=map(_prepare_report_row(ags.ad_group), rows_new_url)
+        )
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
         self.assertEqual(len(stats), 6)
         for row in rows_new_url:
@@ -754,7 +802,13 @@ class UpsertReportsTestCase(test.TestCase):
 
         rows = rows_duplicate + rows_other
 
-        api.save_report(ags1.ad_group, ags1.source, rows, date1)
+        
+        StatsUpdater().update_adgroup_source_traffic(
+            datetime=date1,
+            ad_group=ags1.ad_group,
+            source=ags1.source,
+            rows=map(_prepare_report_row(ags1.ad_group), rows)
+        )
 
         article = dashmodels.Article.objects.get(title=title, url=url)
         stats = models.ArticleStats.objects.get(
@@ -788,37 +842,37 @@ class ArticleReconciliationTestCase(test.TestCase):
         raise IntegrityError
 
     @patch('dash.models.Article.objects.create', _mocked_create)
-    @patch('reports.api.transaction.atomic')
+    @patch('dash.api.transaction.atomic')
     def test_retry_on_integrity_error(self, atomic_mock):
         ad_group = dashmodels.AdGroup(id=1)
         raw_url = 'http://sd.domain.com/path/to'
         title = 'Example title'
 
         self.assertSequenceEqual(dashmodels.Article.objects.all(), [])
-        api._reconcile_article(raw_url, title, ad_group)
+        dashapi.reconcile_article(raw_url, title, ad_group)
 
     def test_reconcile_article(self):
         ad_group = dashmodels.AdGroup(id=1)
         raw_url = 'http://sd.domain.com/path/to'
         title = 'Five article titles you would never believe to exist'
 
-        with self.assertRaises(exc.ArticleReconciliationException):
-            api._reconcile_article(raw_url, title, None)
+        with self.assertRaises(dashexc.ArticleReconciliationException):
+            dashapi.reconcile_article(raw_url, title, None)
 
-        with self.assertRaises(exc.ArticleReconciliationException):
-            api._reconcile_article(raw_url, None, ad_group)
+        with self.assertRaises(dashexc.ArticleReconciliationException):
+            dashapi.reconcile_article(raw_url, None, ad_group)
 
-        with self.assertRaises(exc.ArticleReconciliationException):
-            api._reconcile_article(None, title, ad_group)
+        with self.assertRaises(dashexc.ArticleReconciliationException):
+            dashapi.reconcile_article(None, title, ad_group)
 
-        cleaned_url, _ = api.clean_url(raw_url)
+        cleaned_url, _ = clean_url(raw_url)
         with self.assertRaises(ObjectDoesNotExist):
             article = dashmodels.Article.objects.get(url=cleaned_url, title=title, ad_group=ad_group)
 
-        article = api._reconcile_article(raw_url, title, ad_group)
+        article = dashapi.reconcile_article(raw_url, title, ad_group)
 
         db_article = dashmodels.Article.objects.get(url=cleaned_url, title=title, ad_group=ad_group)
         self.assertEqual(article, db_article)
 
-        same_article = api._reconcile_article(raw_url, title, ad_group)
+        same_article = dashapi.reconcile_article(raw_url, title, ad_group)
         self.assertEqual(article, same_article)

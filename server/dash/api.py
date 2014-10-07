@@ -2,14 +2,16 @@ import decimal
 import json
 import logging
 
-from django.db import transaction
+from django.db import transaction, IntegrityError
 
 import actionlog.api
 import actionlog.models
 import actionlog.constants
 
+from dash import exc
 from dash import models
 from dash import constants
+from utils.url import clean_url
 
 logger = logging.getLogger(__name__)
 
@@ -84,3 +86,32 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings):
             actionlog.api.init_stop_ad_group_order(ad_group)
         else:
             actionlog.api.init_set_ad_group_property_order(ad_group, prop=field_name, value=field_value)
+
+
+def reconcile_article(raw_url, title, ad_group):
+    if not ad_group:
+        raise exc.ArticleReconciliationException('Missing ad group.')
+
+    if not title:
+        raise exc.ArticleReconciliationException('Missing article title. url={url}'.format(url=raw_url))
+
+    if not raw_url:
+        raise exc.ArticleReconciliationException('Missing article url. title={title}'.format(title=title))
+
+    url, _ = clean_url(raw_url)
+
+    try:
+        return models.Article.objects.get(ad_group=ad_group, title=title, url=url)
+    except models.Article.DoesNotExist:
+        pass
+
+    try:
+        with transaction.atomic():
+            return models.Article.objects.create(ad_group=ad_group, url=url, title=title)
+    except IntegrityError:
+        logger.info(
+            u'Integrity error upon inserting article: title = {title}, url = {url}, ad group id = {ad_group_id}. '
+            u'Using existing article.'.
+            format(title=title, url=url, ad_group_id=ad_group.id)
+        )
+        return models.Article.objects.get(ad_group=ad_group, url=url, title=title)

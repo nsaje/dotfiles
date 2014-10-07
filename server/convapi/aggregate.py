@@ -9,6 +9,7 @@ from resolve import resolve_source, resolve_article
 import dash.models
 import reports.models
 import utils.s3helpers
+import reports.update
 
 logger = logging.getLogger(__name__)
 
@@ -144,68 +145,50 @@ bounced_visits=%s, pageviews=%s, duration=%s',
             sum(d['duration'] for d in data.values())
         )
 
-        if data:
-            dt, _, ad_group_id, _ = data.keys()[0]
-            assert(ad_group_id is not None)
-
-            for stats in reports.models.ArticleStats.objects.filter(datetime=dt, ad_group=ad_group_id):
-                stats.reset_postclick_metrics()
-
-            for goal_stats in reports.models.GoalConversionStats.objects.filter(datetime=dt, ad_group=ad_group_id):
-                goal_stats.reset_metrics()
-
-
+        stat_rows = []
+        conv_rows = []
+        ad_group_id_set = set()
+        date_set = set()
         for (dt, article_id, ad_group_id, source_id), statvals in data.iteritems():
+            ad_group_id_set.add(ad_group_id)
+            date_set.add(dt)
             article = dash.models.Article.objects.get(id=article_id)
-            ad_group = dash.models.AdGroup.objects.get(id=ad_group_id)
             source = dash.models.Source.objects.get(id=source_id)
 
-            try:
-                article_stats = reports.models.ArticleStats.objects.get(
-                    datetime=dt,
-                    article=article,
-                    ad_group=ad_group,
-                    source=source
-                )
-            except reports.models.ArticleStats.DoesNotExist:
-                article_stats = reports.models.ArticleStats(
-                    datetime=dt,
-                    article=article,
-                    ad_group=ad_group,
-                    source=source
-                )
-            article_stats.visits = statvals['visits']
-            article_stats.new_visits = statvals['new_visits']
-            article_stats.bounced_visits = statvals['bounced_visits']
-            article_stats.pageviews = statvals['pageviews']
-            article_stats.duration = statvals['duration']
-            article_stats.has_postclick_metrics = 1
-
-            if len(statvals['goals']) > 0:
-                article_stats.has_conversion_metrics = 1
+            stat_rows.append({
+                'article': article,
+                'source': source,
+                'visits': statvals['visits'],
+                'new_visits': statvals['new_visits'],
+                'bounced_visits': statvals['bounced_visits'],
+                'pageviews': statvals['pageviews'],
+                'duration': statvals['duration']
+            })
 
             for goal_name, goal_stats in statvals['goals'].iteritems():
-                try:
-                    gcstats = reports.models.GoalConversionStats.objects.get(
-                            datetime=dt,
-                            article=article,
-                            ad_group=ad_group,
-                            source=source,
-                            goal_name=goal_name
-                        )
-                except reports.models.GoalConversionStats.DoesNotExist:
-                    gcstats = reports.models.GoalConversionStats(
-                            datetime=dt,
-                            article=article,
-                            ad_group=ad_group,
-                            source=source,
-                            goal_name=goal_name
-                        )
-                gcstats.conversions = goal_stats['conversions']
-                gcstats.conversions_value_cc = goal_stats['conversions_value_cc']
-                gcstats.save()
+                conv_rows.append({
+                    'article': article,
+                    'source': source,
+                    'goal_name': goal_name,
+                    'conversions': goal_stats['conversions'],
+                    'conversions_value_cc': goal_stats['conversions_value_cc']
+                })
 
-            article_stats.save()
+        assert len(ad_group_id_set) == 1
+        assert len(date_set) == 1
+        dt = list(date_set)[0]
+        ad_group = dash.models.AdGroup.objects.get(id=list(ad_group_id_set)[0])
+        reports.update.StatsUpdater().update_adgroup_postclick(
+            datetime=dt,
+            ad_group=ad_group,
+            rows=stat_rows
+        )
+        reports.update.ConversionsUpdater().update_adgroup(
+            datetime=dt,
+            ad_group=ad_group,
+            rows=conv_rows
+        )
+
 
     def save_raw(self):
         goal_fields = self.get_goal_fields()

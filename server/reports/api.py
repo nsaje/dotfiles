@@ -2,17 +2,13 @@ from __future__ import division
 
 import datetime
 import decimal
-import urlparse
-import urllib
 import logging
 import collections
-import operator
 
 import pytz
 
 from django.conf import settings
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db import transaction, IntegrityError
 from django.db.models import Sum, Min, Max
 
 from . import exc
@@ -23,7 +19,6 @@ from utils import db_aggregates
 
 logger = logging.getLogger(__name__)
 
-MAX_RECONCILIATION_RETRIES = 10
 
 DIMENSIONS = set(['article', 'ad_group', 'date', 'source', 'account', 'campaign'])
 
@@ -117,12 +112,19 @@ def query_stats(start_date, end_date, breakdown=None, **constraints):
     return result
 
 
+def _get_initial_conversion_qs(breakdown):
+    if breakdown and 'article' in breakdown:
+        return models.GoalConversionStats.objects
+    else:
+        return models.AdGroupGoalConversionStats.objects
+
+
 def query_goal(start_date, end_date, breakdown=None, **constraints):
     breakdown = _preprocess_breakdown(breakdown)
     breakdown.append('goal_name')
     constraints = _preprocess_constraints(constraints)
 
-    result = models.GoalConversionStats.objects
+    result = _get_initial_conversion_qs(breakdown)
 
     result = result.filter(datetime__gte=start_date, datetime__lte=end_date)
     if constraints:
@@ -356,7 +358,7 @@ def _get_ad_group_ids_with_postclick_data(key, objects):
     kwargs = {}
     kwargs[key + '__in'] = objects
 
-    queryset = models.ArticleStats.objects.filter(**kwargs).values('ad_group').annotate(
+    queryset = models.AdGroupStats.objects.filter(**kwargs).values('ad_group').annotate(
         has_any_postclick_metrics=Max('has_postclick_metrics')
     ).filter(has_any_postclick_metrics=1)
 
@@ -373,7 +375,7 @@ def _has_complete_postclick_metrics(start_date, end_date, key, objects):
     if len(ids) == 0:
         return True
 
-    aggr = models.ArticleStats.objects.filter(
+    aggr = models.AdGroupStats.objects.filter(
         datetime__gte=start_date,
         datetime__lte=end_date,
         ad_group__in=ids
@@ -393,93 +395,3 @@ def _reset_existing_traffic_stats(ad_group, source, date):
         )
         for stats in existing_stats:
             stats.reset_traffic_metrics()
-
-
-@transaction.atomic
-def save_report(ad_group, source, rows, date):
-    '''
-    looks for the article stats with dimensions specified in this row
-    if it does not find, it adds the row
-    if it does find, it updates the metrics of the existing row
-    '''
-
-    _reset_existing_traffic_stats(ad_group, source, date)
-
-    for row in rows:
-        article = _reconcile_article(row['url'], row['title'], ad_group)
-
-        try:
-            article_stats = models.ArticleStats.objects.get(
-                datetime=date,
-                article=article,
-                ad_group=ad_group,
-                source=source
-            )
-        except models.ArticleStats.DoesNotExist:
-            article_stats = models.ArticleStats(
-                datetime=date,
-                article=article,
-                ad_group=ad_group,
-                source=source
-            )
-
-        article_stats.impressions += row['impressions']
-        article_stats.clicks += row['clicks']
-
-        if 'cost_cc' not in row or row['cost_cc'] is None:
-            article_stats.cost_cc += row['cpc_cc'] * row['clicks']
-        else:
-            article_stats.cost_cc += row['cost_cc']
-
-        article_stats.has_traffic_metrics = 1
-
-        article_stats.save()
-
-
-# helpers
-
-
-def _reconcile_article(raw_url, title, ad_group):
-    if not ad_group:
-        raise exc.ArticleReconciliationException('Missing ad group.')
-
-    if not title:
-        raise exc.ArticleReconciliationException('Missing article title. url={url}'.format(url=raw_url))
-
-    if not raw_url:
-        raise exc.ArticleReconciliationException('Missing article url. title={title}'.format(title=title))
-
-    url, _ = clean_url(raw_url)
-
-    try:
-        return dashmodels.Article.objects.get(ad_group=ad_group, title=title, url=url)
-    except dashmodels.Article.DoesNotExist:
-        pass
-
-    try:
-        with transaction.atomic():
-            return dashmodels.Article.objects.create(ad_group=ad_group, url=url, title=title)
-    except IntegrityError:
-        logger.info(
-            u'Integrity error upon inserting article: title = {title}, url = {url}, ad group id = {ad_group_id}. '
-            u'Using existing article.'.
-            format(title=title, url=url, ad_group_id=ad_group.id)
-        )
-        return dashmodels.Article.objects.get(ad_group=ad_group, url=url, title=title)
-
-
-def clean_url(raw_url):
-    '''
-    Removes all utm_* and z1_* params, then alphabetically order the remaining params
-    '''
-    split_url = list(urlparse.urlsplit(raw_url))
-    query_parameters = urlparse.parse_qsl(split_url[3], keep_blank_values=True)
-
-    cleaned_query_parameters = filter(
-        lambda (attr, value): not (attr.startswith('utm_') or attr.startswith('_z1_')),
-        query_parameters
-    )
-
-    split_url[3] = urllib.urlencode(sorted(cleaned_query_parameters, key=lambda x: x[0]))
-
-    return urlparse.urlunsplit(split_url), dict(query_parameters)

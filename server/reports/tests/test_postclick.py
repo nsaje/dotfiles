@@ -3,6 +3,7 @@ import datetime
 from django import test
 
 from reports import api
+from reports import refresh
 from utils.test_helper import dicts_match_for_keys, sequence_of_dicts_match_for_keys
 
 
@@ -13,6 +14,7 @@ class PostclickTestCase(test.TestCase):
     def setUp(self):
         self.start_date = datetime.date(2014, 6, 1)
         self.end_date = datetime.date(2014, 7, 1)
+        refresh.refresh_adgroup_stats()
 
     def test_postclick_metrics_aggregation(self):
         result = api.query(self.start_date, self.end_date, ['date'], ['date'])
@@ -109,6 +111,7 @@ class PostclickTestCase(test.TestCase):
         is_complete = api.has_complete_postclick_metrics_accounts(datetime.date(2014, 6, 6), datetime.date(2014, 6, 6), [1])
         self.assertTrue(is_complete)
 
+
 class GoalConversionTestCase(test.TestCase):
     fixtures = [
         'test_reports_base.yaml', 
@@ -119,6 +122,8 @@ class GoalConversionTestCase(test.TestCase):
     def setUp(self):
         self.start_date = datetime.date(2014, 6, 4)
         self.end_date = datetime.date(2014, 6, 4)
+        refresh.refresh_adgroup_stats()
+        refresh.refresh_adgroup_conversion_stats()
 
     def test_conversion_goal_reports(self):
         result = api.query(self.start_date, self.end_date, ad_group=1)
@@ -128,4 +133,3 @@ class GoalConversionTestCase(test.TestCase):
         self.assertEqual(result['goals']['Goal_A']['conversion_value'], 0.3)
         self.assertEqual(result['goals']['Goal_B']['conversion_value'], 0.5)
         self.assertEqual(result['visits'], 350)
-

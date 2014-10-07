@@ -6,8 +6,11 @@ import reports.models
 import dash.models
 
 
-def refresh_adgroup_stats():
-    rs = reports.models.ArticleStats.objects.values(
+def refresh_adgroup_stats(**constraints):
+    # make sure we only filter by the allowed dimensions
+    assert len(set(constraints.keys()) - {'datetime', 'ad_group', 'source'}) == 0
+    
+    rs = reports.models.ArticleStats.objects.filter(**constraints).values(
         'datetime', 'ad_group', 'source'
     ).annotate(
         impressions=Sum('impressions'),
@@ -50,7 +53,40 @@ def refresh_adgroup_stats():
             adgroup_stats.save()
 
 
+def refresh_adgroup_conversion_stats(**constraints):
+    # make sure we only filter by the allowed dimensions
+    assert len(set(constraints.keys()) - {'datetime', 'ad_group', 'source', 'goal_name'}) == 0
 
+    rs = reports.models.GoalConversionStats.objects.filter(**constraints).values(
+        'datetime', 'ad_group', 'source', 'goal_name'
+    ).annotate(
+        conversions=Sum('conversions'),
+        conversions_value_cc=Sum('conversions_value_cc')
+    )
+    ad_group_lookup = {}
+    source_lookup = {}
+    with transaction.atomic():
+        for row in rs:
+            if row['ad_group'] not in ad_group_lookup:
+                ad_group_lookup[row['ad_group']] = \
+                    dash.models.AdGroup.objects.get(pk=row['ad_group'])
+            if row['source'] not in source_lookup:
+                source_lookup[row['source']] = \
+                    dash.models.Source.objects.get(pk=row['source'])
+            dimensions = {
+                'datetime': row['datetime'],
+                'ad_group': ad_group_lookup[row['ad_group']],
+                'source': source_lookup[row['source']],
+                'goal_name': row['goal_name']
+            }
+            row['ad_group'] = ad_group_lookup[row['ad_group']]
+            row['source'] = source_lookup[row['source']]
+            try:
+                adgroup_conversion_stats = reports.models.AdGroupGoalConversionStats.objects.get(**dimensions)
+                for metric, value in row.items():
+                    if metric not in ('datetime', 'ad_group', 'source', 'goal_name'):
+                        adgroup_conversion_stats.__setattr__(metric, value)
+            except reports.models.AdGroupGoalConversionStats.DoesNotExist:
+                adgroup_conversion_stats = reports.models.AdGroupGoalConversionStats(**row)
 
-def refresh_adgroup_conversion_stats():
-    pass
+            adgroup_conversion_stats.save()

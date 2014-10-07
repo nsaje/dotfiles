@@ -12,9 +12,10 @@ from django.conf import settings
 from utils import request_signer
 from actionlog import models as actionlogmodels
 from actionlog import constants as actionlogconstants
-import actionlog.sync
-from reports import api as reportsapi
 from dash import api as dashapi
+
+import actionlog.sync
+import reports.update
 
 
 logger = logging.getLogger(__name__)
@@ -81,6 +82,21 @@ def _get_error_message(data):
     return '\n'.join(message)
 
 
+def _prepare_report_row(ad_group):
+    def _inner(row):
+        r = {
+            'article': dashapi.reconcile_article(row['url'], row['title'], ad_group),
+            'impressions': row['impressions'],
+            'clicks': row['clicks'],
+        }
+        if row.get('cost_cc') is None:
+            r['cost_cc'] = row['cpc_cc'] * row['clicks']
+        else:
+            r['cost_cc'] = row['cost_cc']
+        return r
+    return _inner
+
+
 @transaction.atomic
 def _process_zwei_response(action, data):
     logger.info('Processing Action Response: %s', action)
@@ -99,16 +115,18 @@ def _process_zwei_response(action, data):
         return
 
     if action.action == actionlogconstants.Action.FETCH_REPORTS:
-        for source_campaign_key, data_rows in data['data']:
-            if source_campaign_key == action.ad_group_source.source_campaign_key:
-                rows = data_rows
-                break
-        else:
-            raise Exception('Source campaign key not in results.')
         date = action.payload['args']['date']
         ad_group = action.ad_group_source.ad_group
         source = action.ad_group_source.source
-        reportsapi.save_report(ad_group, source, rows, date)
+
+        for source_campaign_key, data_rows in data['data']:
+            if source_campaign_key == action.ad_group_source.source_campaign_key:
+                rows = map(_prepare_report_row(ad_group), data_rows)
+                break
+        else:
+            raise Exception('Source campaign key not in results.')
+
+        reports.update.StatsUpdater().update_adgroup_source_traffic(date, ad_group, source, rows)
     elif action.action == actionlogconstants.Action.FETCH_CAMPAIGN_STATUS:
         dashapi.campaign_status_upsert(action.ad_group_source, data['data'])
     elif action.action == actionlogconstants.Action.SET_CAMPAIGN_STATE:

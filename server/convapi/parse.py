@@ -6,7 +6,7 @@ import csv
 import StringIO
 import logging
 
-import reports.api
+import utils.url
 
 logger = logging.getLogger(__name__)
 
@@ -197,7 +197,7 @@ class LandingPageUrl(object):
             logger.error('Could not parse landing page url %s', raw_url)
 
     def _parse(self):
-        self.clean_url, query_params = reports.api.clean_url(self.raw_url)
+        self.clean_url, query_params = utils.url.clean_url(self.raw_url)
 
         if '_z1_adgid' in query_params:
             self.ad_group_id = int(query_params['_z1_adgid'])
