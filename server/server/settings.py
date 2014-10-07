@@ -165,4 +165,5 @@ SOURCE_OAUTH_URIS = {
     }
 }
 
+# Time zone used to convert datetimes in API responses
 DEFAULT_TIME_ZONE = 'America/New_York'
