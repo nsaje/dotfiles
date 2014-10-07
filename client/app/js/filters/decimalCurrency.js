@@ -1,9 +1,16 @@
 /*globals oneApp*/
 'use strict';
 
+function numberWithCommas (num) {
+    var parts = num.toString().split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join(".");
+}
+
 oneApp.filter('decimalCurrency', function () {
     return function (input, sign, fractionSize, replaceTrailingZeros) {
         var num = parseFloat(input);
+        var str = null;
 
         if (!isNaN(num)) {
             num = sign + num.toFixed(fractionSize || 2);
@@ -14,7 +21,7 @@ oneApp.filter('decimalCurrency', function () {
                 });
             }
 
-            return num;
+            return numberWithCommas(num);
         }
     };
 });
