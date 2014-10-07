@@ -22,8 +22,11 @@ class BaseApiView(View):
 
         return msg
 
-    def create_api_response(self, data, success=True, status_code=200):
-        body = {'success': success, 'data': data}
+    def create_api_response(self, data=None, success=True, status_code=200):
+        body = {'success': success}
+
+        if data:
+            body['data'] = data
 
         response = HttpResponse(
             content=json.dumps(body, cls=json_helper.JSONEncoder),

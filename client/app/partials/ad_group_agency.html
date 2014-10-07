@@ -1,4 +1,4 @@
-<div class="page page-ad-group-agency">
+<div class="page page-ad-group-agency" ng-if="!adGroup.archived">
     <alert ng-repeat="alert in alerts" type="{{ alert.type }}" close="closeAlert($index)" ng-bind-html="alert.message"></alert>
     <alert type="info" ng-show="actionIsWaiting">
         Settings changes are being propagated to external sources. The sync might take a few hours. If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
@@ -21,6 +21,7 @@
 
 		<button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
 		<button type="button" class="btn btn-default" ng-click="discardSettings()">Discard</button>
+                <button type="button" class="btn btn-default pull-right" ng-class="{'disabled': !canArchive}" ng-click="archiveAdGroup()" title="{{ !canArchive && 'An ad group has to be paused in order to archive it.'}}">Archive ad group</button>
         <div class="loader" ng-show="saveRequestInProgress"></div>
         <span ng-show="saved" class="success">Your updates have been saved.</span>
         <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
@@ -59,6 +60,13 @@
             </table>
         </div>
     </div>
+</div>
+
+<div class="page page-ad-group-agency" ng-if="!!adGroup.archived">
+    <p>
+        <strong>This ad group is archived.</strong>
+    </p>
+    <button type="button" class="btn btn-default" ng-click="restoreAdGroup()">Restore ad group</button>
 </div>
 
 <script id="popoverContent.html" type="text/ng-template">

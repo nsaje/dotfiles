@@ -177,6 +177,10 @@ a:visited {
         border-color: #2488a1;
         color: #2488a1;
     }
+
+    &.disabled {
+        color: #d9d9d9;
+    }
 }
 
 
@@ -1039,6 +1043,15 @@ a.help-popover:visited {
                         text-decoration: none;
                     }
 
+                    &.archived {
+                       &,
+                       &:hover,
+                       &:active,
+                       &:visited {
+                           color: #e8e8e8;
+                       }
+                    }
+
                     &.active {
                         background-color: #25A8C9;
                         color: white;
@@ -1124,6 +1137,31 @@ a.help-popover:visited {
     .content {
         margin-left: 210px;
         padding-right: 15px;
+
+        #filter {
+            a.btn {
+                padding: 2px;
+
+                img {
+                    width: 28px;
+                    height: 28px;
+                }
+            }
+
+            .dropdown-menu {
+                width: 250px;
+                left: auto;
+                right: 0;
+                top: 100%;
+                margin-left: -125px;
+                border: 1px solid #2fa8c7;
+                padding: 20px 30px;
+            }
+        }
+
+        #datepicker {
+            margin-left: 5px;
+        }
     }
 }
 
@@ -1323,10 +1361,12 @@ a.help-popover:visited {
 
 .page-ad-group-agency,
 .page-campaign-agency,
+.page-account-agency,
 .page-campaign-budget {
     .section.ad-group-agency-history-table,
     .section.table-campaign-agency,
-    .section.table-campaign-budget {
+    .section.table-campaign-budget,
+    .section.table-account-agency {
         margin-top: 30px;
 
         .title {
@@ -1490,6 +1530,16 @@ a.help-popover:visited {
     thead > tr > th.trimmed-currency a {
         display: inline-block;
         margin-right: 1ex;
+    }
+
+    tr.archived {
+        &,
+        & a,
+        & a:hover,
+        & a:active,
+        & a:visited {
+            color: #d9d9d9;
+        }
     }
 
     tr > td {

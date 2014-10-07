@@ -5,10 +5,11 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.contrib import auth
-from django.db import models
+from django.db import models, transaction
 
 from dash import constants
 from utils import encryption_helpers
+from utils import exc
 
 
 class PermissionMixin(object):
@@ -29,6 +30,32 @@ class PermissionMixin(object):
 class UserAuthorizationManager(models.Manager):
     def get_for_user(self, user):
         queryset = super(UserAuthorizationManager, self).get_queryset()
+
+        # accounts_settings = AccountSettings.objects.\
+        #     distinct('account').\
+        #     order_by('account_id', '-created_dt')
+        # campaigns_settings = CampaignSettings.objects.\
+        #     distinct('campaign').\
+        #     order_by('campaign', '-created_dt')
+        # ad_groups_settings = AdGroupSettings.objects.\
+        #     distinct('ad_group').\
+        #     order_by('ad_group', '-created_dt')
+
+        # if not include_archived:
+        #     if queryset.model is Account:
+        #         queryset = queryset.exclude(pk__in=[account_settings.account.id for
+        #                                             account_settings in accounts_settings if
+        #                                             account_settings.archived])
+        #     elif queryset.model is Campaign:
+        #         queryset = queryset.exclude(pk__in=[campaign_settings.campaign.id for
+        #                                             campaign_settings in campaigns_settings if
+        #                                             campaign_settings.archived])
+        #     else:
+        #         # AdGroup
+        #         queryset = queryset.exclude(pk__in=[ad_group_settings.ad_group.id for
+        #                                             ad_group_settings in ad_groups_settings if
+        #                                             ad_group_settings.archived])
+
         if user.is_superuser:
             return queryset
         elif queryset.model is Account:
@@ -80,6 +107,58 @@ class Account(models.Model):
     def __unicode__(self):
         return self.name
 
+    def get_current_settings(self):
+        if not self.pk:
+            return None
+
+        settings = AccountSettings.objects.\
+            filter(account_id=self.pk).\
+            order_by('-created_dt')
+        if settings:
+            settings = settings[0]
+        else:
+            settings = AccountSettings(
+                account=self,
+                name=self.name
+            )
+
+        return settings
+
+    def can_archive(self):
+        if not self.pk:
+            return False
+
+        for campaign in self.campaign_set.all():
+            if not campaign.can_archive():
+                return False
+
+        return True
+
+    @transaction.atomic
+    def archive(self):
+        if not self.can_archive():
+            return
+
+        current_settings = self.get_current_settings()
+        if not current_settings.archived:
+            for campaign in self.campaign_set.all():
+                for ad_group in campaign.adgroup_set.all():
+                    ad_group.archive()
+
+                campaign.archive()
+
+            new_settings = current_settings.copy_settings()
+            new_settings.archived = True
+            new_settings.save()
+
+    @transaction.atomic
+    def restore(self):
+        current_settings = self.get_current_settings()
+        if current_settings.archived:
+            new_settings = current_settings.copy_settings()
+            new_settings.archived = False
+            new_settings.save()
+
 
 class Campaign(models.Model, PermissionMixin):
     id = models.AutoField(primary_key=True)
@@ -111,6 +190,54 @@ class Campaign(models.Model, PermissionMixin):
 
     admin_link.allow_tags = True
 
+    def get_current_settings(self):
+        if not self.pk:
+            return None
+
+        settings = CampaignSettings.objects.\
+            filter(campaign_id=self.pk).\
+            order_by('-created_dt')
+        if settings:
+            settings = settings[0]
+        else:
+            settings = CampaignSettings(
+                campaign=self,
+                name=self.name
+            )
+
+        return settings
+
+    def can_archive(self):
+        if not self.pk:
+            return False
+
+        for ad_group in self.adgroup_set.all():
+            if not ad_group.can_archive():
+                return False
+
+        return True
+
+    @transaction.atomic
+    def archive(self):
+        if not self.can_archive():
+            return
+
+        current_settings = self.get_current_settings()
+        if not current_settings.archived:
+            for ad_group in self.adgroup_set.all():
+                ad_group.archive()
+            new_settings = current_settings.copy_settings()
+            new_settings.archived = True
+            new_settings.save()
+
+    @transaction.atomic
+    def restore(self):
+        current_settings = self.get_current_settings()
+        if current_settings.archived:
+            new_settings = current_settings.copy_settings()
+            new_settings.archived = False
+            new_settings.save()
+
 
 class SettingsBase(models.Model):
     _settings_fields = None
@@ -134,8 +261,45 @@ class SettingsBase(models.Model):
 
         return changes
 
+    def copy_settings(self):
+        new_settings = type(self)()
+
+        for name in self._settings_fields:
+            setattr(new_settings, name, getattr(self, name))
+
+        if type(self) == AccountSettings:
+            new_settings.account = self.account
+        elif type(self) == CampaignSettings:
+            new_settings.campaign = self.campaign
+        elif type(self) == AdGroupSettings:
+            new_settings.ad_group = self.ad_group
+
+        return new_settings
+
     class Meta:
         abstract = True
+
+
+class AccountSettings(SettingsBase):
+    _settings_fields = [
+        'name',
+        'archived'
+    ]
+
+    id = models.AutoField(primary_key=True)
+    account = models.ForeignKey(Account, related_name='settings', on_delete=models.PROTECT)
+    name = models.CharField(
+        max_length=127,
+        editable=True,
+        blank=False,
+        null=False
+    )
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    archived = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ('-created_dt',)
 
 
 class CampaignSettings(SettingsBase):
@@ -145,7 +309,8 @@ class CampaignSettings(SettingsBase):
         'sales_representative',
         'service_fee',
         'iab_category',
-        'promotion_goal'
+        'promotion_goal',
+        'archived'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -183,6 +348,7 @@ class CampaignSettings(SettingsBase):
         default=constants.PromotionGoal.BRAND_BUILDING,
         choices=constants.PromotionGoal.get_choices()
     )
+    archived = models.BooleanField(default=False)
 
     class Meta:
         ordering = ('-created_dt',)
@@ -303,6 +469,50 @@ class AdGroup(models.Model):
 
     admin_link.allow_tags = True
 
+    def get_current_settings(self):
+        if not self.pk:
+            return None
+
+        settings = AdGroupSettings.objects.\
+            filter(ad_group_id=self.pk).\
+            order_by('-created_dt')
+        if settings:
+            settings = settings[0]
+        else:
+            settings = AdGroupSettings(
+                ad_group=self
+            )
+
+        return settings
+
+    def can_archive(self):
+        if not self.pk:
+            return False
+
+        current_settings = self.get_current_settings()
+        return current_settings.state == constants.AdGroupSettingsState.INACTIVE
+
+    @transaction.atomic
+    def archive(self):
+        if not self.can_archive():
+            raise exc.ForbiddenError(
+                'Ad group has to be in state "Paused" in order to archive it.'
+            )
+
+        current_settings = self.get_current_settings()
+        if not current_settings.archived:
+            new_settings = current_settings.copy_settings()
+            new_settings.archived = True
+            new_settings.save()
+
+    @transaction.atomic
+    def restore(self):
+        current_settings = self.get_current_settings()
+        if current_settings.archived:
+            new_settings = current_settings.copy_settings()
+            new_settings.archived = False
+            new_settings.save()
+
 
 class AdGroupSource(models.Model):
     source = models.ForeignKey(Source, on_delete=models.PROTECT)
@@ -330,6 +540,7 @@ class AdGroupSettings(SettingsBase):
         'target_devices',
         'target_regions',
         'tracking_code',
+        'archived'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -359,6 +570,7 @@ class AdGroupSettings(SettingsBase):
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
     tracking_code = models.TextField(blank=True)
+    archived = models.BooleanField(default=False)
 
     class Meta:
         ordering = ('-created_dt',)
@@ -389,7 +601,8 @@ class AdGroupSettings(SettingsBase):
             'target_devices': 'Device targeting',
             'target_regions': 'Geographic targeting',
             'tracking_code': 'Tracking code',
-            'state': 'State'
+            'state': 'State',
+            'archived': 'Archived',
         }
 
         return NAMES[prop_name]
@@ -411,9 +624,10 @@ class AdGroupSettings(SettingsBase):
                 value = ', '.join(constants.AdTargetCountry.get_text(x) for x in value)
             else:
                 value = 'worldwide'
+        elif prop_name == 'archived':
+            value = str(value)
 
         return value
-
 
 
 class AdGroupSourceSettings(models.Model):

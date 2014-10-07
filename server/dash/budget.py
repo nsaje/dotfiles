@@ -114,7 +114,7 @@ class CampaignBudget(object):
         try:
             cbs_latest = dash.models.CampaignBudgetSettings.objects.filter(campaign=self.campaign).latest()
         except dash.models.CampaignBudgetSettings.DoesNotExist:
-            logger.info('campaign %s no budget changes yet', self.campaign.name)
+            pass
         return cbs_latest
 
     def get_latest_id(self):
