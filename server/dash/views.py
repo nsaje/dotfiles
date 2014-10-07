@@ -23,7 +23,6 @@ from django.core import urlresolvers
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.db.models import Count
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 import pytz
@@ -154,14 +153,6 @@ def create_excel_worksheet(workbook, name, columns, data):
 
     for index, item in enumerate(data):
         write_excel_row(worksheet, index + 1, item)
-
-
-def get_last_successful_source_sync_dates(ad_group):
-    ag_sync = actionlog.sync.AdGroupSync(ad_group)
-    result = {}
-    for c in ag_sync.get_components():
-        result[c.ad_group_source.source_id] = c.get_latest_success(recompute=False)
-    return result
 
 
 def is_sync_recent(last_sync_datetime):
@@ -1392,11 +1383,12 @@ class AdGroupSourcesTable(object):
 
     def get_last_success_actions(self):
         ad_group_sync = actionlog.sync.AdGroupSync(self.ad_group)
-        last_success_actions = {
-            self.ad_group.pk: ad_group_sync.get_latest_success(recompute=False)
-        }
 
-        return last_success_actions
+        result = {}
+        for component in ad_group_sync.get_components():
+            result[component.ad_group_source.source_id] = component.get_latest_success(recompute=False)
+
+        return result
 
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(ad_groups=[self.ad_group])
