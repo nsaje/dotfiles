@@ -10,7 +10,6 @@ function numberWithCommas (num) {
 oneApp.filter('decimalCurrency', function () {
     return function (input, sign, fractionSize, replaceTrailingZeros) {
         var num = parseFloat(input);
-        var str = null;
 
         if (!isNaN(num)) {
             num = sign + num.toFixed(fractionSize || 2);
