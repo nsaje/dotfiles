@@ -11,7 +11,7 @@ import dash.models
 import reports.update
 
 
-class StatsUpdaterTestCase(test.TestCase):
+class StatsUpdateTestCase(test.TestCase):
     fixtures = ['test_reports_base.yaml', 'test_article_stats.yaml']
 
     def setUp(self):
@@ -41,7 +41,7 @@ class StatsUpdaterTestCase(test.TestCase):
             )
         self.assertEqual(article_stats_totals, adgroup_stats_totals)
 
-        reports.update.StatsUpdater().update_adgroup_source_traffic(
+        reports.update.stats_update_adgroup_source_traffic(
             datetime=dt,
             ad_group=ad_group,
             source=source,
@@ -99,7 +99,7 @@ class StatsUpdaterTestCase(test.TestCase):
             )
         self.assertEqual(article_stats_totals, adgroup_stats_totals)
 
-        reports.update.StatsUpdater().update_adgroup_postclick(
+        reports.update.stats_update_adgroup_postclick(
             datetime=dt,
             ad_group=ad_group,
             rows=[{

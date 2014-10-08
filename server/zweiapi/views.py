@@ -126,7 +126,7 @@ def _process_zwei_response(action, data):
         else:
             raise Exception('Source campaign key not in results.')
 
-        reports.update.StatsUpdater().update_adgroup_source_traffic(date, ad_group, source, rows)
+        reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, rows)
     elif action.action == actionlogconstants.Action.FETCH_CAMPAIGN_STATUS:
         dashapi.campaign_status_upsert(action.ad_group_source, data['data'])
     elif action.action == actionlogconstants.Action.SET_CAMPAIGN_STATE:

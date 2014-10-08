@@ -185,12 +185,12 @@ bounced_visits=%s, pageviews=%s, duration=%s',
         assert len(date_set) == 1
         dt = list(date_set)[0]
         ad_group = dash.models.AdGroup.objects.get(id=list(ad_group_id_set)[0])
-        reports.update.StatsUpdater().update_adgroup_postclick(
+        reports.update.stats_update_adgroup_postclick(
             datetime=dt,
             ad_group=ad_group,
             rows=stat_rows
         )
-        reports.update.ConversionsUpdater().update_adgroup(
+        reports.update.goals_update_adgroup(
             datetime=dt,
             ad_group=ad_group,
             rows=conv_rows

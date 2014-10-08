@@ -17,7 +17,8 @@ from utils.test_helper import dicts_match_for_keys, sequence_of_dicts_match_for_
 from utils.url import clean_url
 
 from zweiapi.views import _prepare_report_row
-from reports.update import StatsUpdater
+
+import reports.update
 
 
 class QueryTestCase(test.TestCase):
@@ -543,7 +544,7 @@ class UpsertReportsTestCase(test.TestCase):
         self.assertTrue(models.ArticleStats.objects.count() == 0)
         self.assertTrue(models.AdGroupStats.objects.count() == 0)
 
-        StatsUpdater().update_adgroup_source_traffic(
+        reports.update.stats_update_adgroup_source_traffic(
             datetime=date1,
             ad_group=ags1.ad_group,
             source=ags1.source,
@@ -561,7 +562,7 @@ class UpsertReportsTestCase(test.TestCase):
             self.assertEqual(stats.clicks, row['clicks'])
             self.assertEqual(stats.cost_cc, row['cost_cc'])
 
-        StatsUpdater().update_adgroup_source_traffic(
+        reports.update.stats_update_adgroup_source_traffic(
             datetime=date1,
             ad_group=ags2.ad_group,
             source=ags2.source,
@@ -579,13 +580,13 @@ class UpsertReportsTestCase(test.TestCase):
             self.assertEqual(stats.clicks, row['clicks'])
             self.assertEqual(stats.cost_cc, row['cpc_cc'] * row['clicks'])
 
-        StatsUpdater().update_adgroup_source_traffic(
+        reports.update.stats_update_adgroup_source_traffic(
             datetime=date2,
             ad_group=ags1.ad_group,
             source=ags1.source,
             rows=map(_prepare_report_row(ags1.ad_group), rows_ags1_date2)
         )
-        StatsUpdater().update_adgroup_source_traffic(
+        reports.update.stats_update_adgroup_source_traffic(
             datetime=date2,
             ad_group=ags2.ad_group,
             source=ags2.source,
@@ -665,7 +666,7 @@ class UpsertReportsTestCase(test.TestCase):
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
         self.assertEqual(len(stats), 0)
 
-        StatsUpdater().update_adgroup_source_traffic(
+        reports.update.stats_update_adgroup_source_traffic(
             datetime=date,
             ad_group=ags.ad_group,
             source=ags.source,
@@ -686,7 +687,7 @@ class UpsertReportsTestCase(test.TestCase):
             self.assertEqual(article_stats.cost_cc, row['cost_cc'])
             self.assertEqual(article_stats.has_traffic_metrics, 1)
 
-        StatsUpdater().update_adgroup_source_traffic(
+        reports.update.stats_update_adgroup_source_traffic(
             datetime=date,
             ad_group=ags.ad_group,
             source=ags.source,
@@ -720,7 +721,7 @@ class UpsertReportsTestCase(test.TestCase):
             self.assertEqual(article_stats.cost_cc, 0)
             self.assertEqual(article_stats.has_traffic_metrics, 1)
 
-        StatsUpdater().update_adgroup_source_traffic(
+        reports.update.stats_update_adgroup_source_traffic(
             datetime=date,
             ad_group=ags.ad_group,
             source=ags.source,
@@ -803,7 +804,7 @@ class UpsertReportsTestCase(test.TestCase):
         rows = rows_duplicate + rows_other
 
         
-        StatsUpdater().update_adgroup_source_traffic(
+        reports.update.stats_update_adgroup_source_traffic(
             datetime=date1,
             ad_group=ags1.ad_group,
             source=ags1.source,

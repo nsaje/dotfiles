@@ -4,6 +4,10 @@ TRAFFIC_METRICS = {'impressions', 'clicks', 'cost_cc'}
 POSTCLICK_METRICS = {'visits', 'pageviews', 'new_visits', 'bounced_visits', 'duration'}
 CONVERSION_METRICS = {'conversions', 'conversions_value_cc'}
 
+# CAUTION: Do not use these models directly in your code
+# For querying use the functions from reports.api
+# For inserting/updating data use the functions from reports.update
+
 class StatsMetrics(models.Model):
     # traffic metrics
     impressions = models.IntegerField(default=0, blank=False, null=False)
@@ -87,7 +91,6 @@ class GoalConversionStats(models.Model):
 
 
 # The following models are preaggregated for better querying performance
-# Do not use these models directly in your code
 
 class AdGroupStats(StatsMetrics):
 

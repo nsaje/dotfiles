@@ -87,10 +87,11 @@ def _include_article_data(rows):
 
 
 def _get_initial_qs(breakdown):
-    if breakdown and 'article' in breakdown:
-        return models.ArticleStats.objects
-    else:
-        return models.AdGroupStats.objects
+    qs = models.ArticleStats.objects
+    if settings.QUERY_AGGREGATE_REPORTS and 'article' not in breakdown:
+        qs = models.AdGroupStats.objects
+    return qs
+
 
 def query_stats(start_date, end_date, breakdown=None, **constraints):
     breakdown = _preprocess_breakdown(breakdown)
@@ -114,10 +115,10 @@ def query_stats(start_date, end_date, breakdown=None, **constraints):
 
 
 def _get_initial_conversion_qs(breakdown):
-    if breakdown and 'article' in breakdown:
-        return models.GoalConversionStats.objects
-    else:
-        return models.AdGroupGoalConversionStats.objects
+    qs = models.GoalConversionStats.objects
+    if settings.QUERY_AGGREGATE_REPORTS and 'article' not in breakdown:
+        qs = models.AdGroupGoalConversionStats.objects
+    return qs
 
 
 def query_goal(start_date, end_date, breakdown=None, **constraints):
@@ -332,6 +333,7 @@ def has_complete_postclick_metrics_ad_groups(start_date, end_date, ad_groups):
         ad_groups
     )
 
+
 def _get_ad_group_ids_with_postclick_data(key, objects):
     """
     Filters the objects that are passed in and returns ids
@@ -340,7 +342,9 @@ def _get_ad_group_ids_with_postclick_data(key, objects):
     kwargs = {}
     kwargs[key + '__in'] = objects
 
-    queryset = models.AdGroupStats.objects.filter(**kwargs).values('ad_group').annotate(
+    queryset = _get_initial_qs([])
+
+    queryset = queryset.filter(**kwargs).values('ad_group').annotate(
         has_any_postclick_metrics=Max('has_postclick_metrics')
     ).filter(has_any_postclick_metrics=1)
 
@@ -357,7 +361,9 @@ def _has_complete_postclick_metrics(start_date, end_date, key, objects):
     if len(ids) == 0:
         return True
 
-    aggr = models.AdGroupStats.objects.filter(
+    queryset = _get_initial_qs([])
+
+    aggr = queryset.filter(
         datetime__gte=start_date,
         datetime__lte=end_date,
         ad_group__in=ids
