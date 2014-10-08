@@ -10,8 +10,10 @@ def resolve_source(source_param):
     for source in dash.models.Source.objects.all():
         if source_param_lc.startswith(source.name.lower()):
             return source
-    if source_param.startswith('bigstory.ap.org') or source_param.startswith('industrybrains'):
+    if source_param.startswith('bigstory.ap.org'):
         return dash.models.Source.objects.get(name='Zemanta CDN')
+    if source_param.startswith('industrybrains'):
+        return dash.models.Source.objects.get(name='AdBlade')
     return None
 
 
