@@ -1192,13 +1192,14 @@ class AllAccountsSourcesTable(object):
         last_success_actions = {}
 
         for account in self.accounts:
-            account_sync = actionlog.sync.AccountSync(account)
-
-            if not len(list(account_sync.get_components())):
-                continue
-
-            last_success_actions[account.pk] = account_sync.get_latest_success(
+            sync_times = actionlog.sync.AccountSync(account).get_latest_source_success(
                 recompute=False)
+
+            for key, value in sync_times.items():
+                if key in last_success_actions and value is not None:
+                    value = min(last_success_actions[key], value)
+
+                last_success_actions[key] = value
 
         return last_success_actions
 
@@ -1259,12 +1260,8 @@ class AccountSourcesTable(object):
         return yesterday_cost, yesterday_total_cost
 
     def get_last_success_actions(self):
-        account_sync = actionlog.sync.AccountSync(self.account)
-        last_success_actions = {
-            self.account.pk: account_sync.get_latest_success(recompute=False)
-        }
-
-        return last_success_actions
+        return actionlog.sync.AccountSync(self.account).get_latest_source_success(
+            recompute=False)
 
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(accounts=[self.account])
@@ -1323,12 +1320,8 @@ class CampaignSourcesTable(object):
         return yesterday_cost, yesterday_total_cost
 
     def get_last_success_actions(self):
-        campaign_sync = actionlog.sync.CampaignSync(self.campaign)
-        last_success_actions = {
-            self.campaign.pk: campaign_sync.get_latest_success(recompute=False)
-        }
-
-        return last_success_actions
+        return actionlog.sync.CampaignSync(self.campaign).get_latest_source_success(
+            recompute=False)
 
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(campaigns=[self.campaign])
@@ -1382,13 +1375,8 @@ class AdGroupSourcesTable(object):
         return yesterday_cost, yesterday_total_cost
 
     def get_last_success_actions(self):
-        ad_group_sync = actionlog.sync.AdGroupSync(self.ad_group)
-
-        result = {}
-        for component in ad_group_sync.get_components():
-            result[component.ad_group_source.source_id] = component.get_latest_success(recompute=False)
-
-        return result
+        return actionlog.sync.AdGroupSync(self.ad_group).get_latest_source_success(
+            recompute=False)
 
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(ad_groups=[self.ad_group])

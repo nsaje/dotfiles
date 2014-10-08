@@ -66,15 +66,15 @@ class ReportEmail(object):
         return data
 
     def add_parsed_metrics(self, data, entry, goal_fields):
-        visits = int(entry['Sessions'])
+        visits = int(entry['Sessions'].replace(',', ''))
         data['visits'] += visits
-        data['new_visits'] += int(entry['New Users'])
-        data['bounced_visits'] += int(round(float(entry['Bounce Rate'].replace('%', '')) / 100 * visits))
+        data['new_visits'] += int(entry['New Users'].replace(',', ''))
+        data['bounced_visits'] += int(round(float(entry['Bounce Rate'].replace('%', '').replace(',', '')) / 100 * visits))
         data['pageviews'] += int(round(float(entry['Pages / Session']) * visits))
         data['duration'] += visits * self._parse_duration(entry['Avg. Session Duration'])
         for goal_name, metric_fields in goal_fields.items():
-            data['goals'][goal_name]['conversions'] += int(entry[metric_fields['conversions']])
-            data['goals'][goal_name]['conversions_value_cc'] += int(10000 * float(entry[metric_fields['value']].replace('$', '')))
+            data['goals'][goal_name]['conversions'] += int(entry[metric_fields['conversions']].replace(',', ''))
+            data['goals'][goal_name]['conversions_value_cc'] += int(10000 * float(entry[metric_fields['value']].replace('$', '').replace(',', '')))
 
     def get_stats_by_key(self):
 
@@ -82,9 +82,14 @@ class ReportEmail(object):
 
         stats = {}
 
+        source_resolve_lookup = {}
+        article_resolve_lookup = {}
+
         for entry in self.report.get_entries():
             url = LandingPageUrl(entry['Landing Page'])
-            source = resolve_source(url.source_param)
+            if url.source_param not in source_resolve_lookup:
+                source_resolve_lookup[url.source_param] = resolve_source(url.source_param)
+            source = source_resolve_lookup[url.source_param]
             if source is None:
                 logger.error('ERROR: Cannot resolve source for (ad_group=%s, sender=%s,\
 recipient=%s, subject=%s, maildate=%s, \
@@ -98,7 +103,9 @@ landing_page_url=%s',
                  )
                 continue
 
-            article = resolve_article(url.clean_url, url.ad_group_id, self.report.get_date(), source)
+            if url.raw_url not in article_resolve_lookup:
+                article_resolve_lookup[url.raw_url] = resolve_article(url.clean_url, url.ad_group_id, self.report.get_date(), source)
+            article = article_resolve_lookup[url.raw_url]
             if article is None:
                 logger.error('ERROR: Cannot resolve article for (ad_group=%s, sender=%s,\
 recipient=%s, subject=%s, maildate=%s, \
