@@ -81,9 +81,14 @@ class ReportEmail(object):
 
         stats = {}
 
+        source_resolve_lookup = {}
+        article_resolve_lookup = {}
+
         for entry in self.report.get_entries():
             url = LandingPageUrl(entry['Landing Page'])
-            source = resolve_source(url.source_param)
+            if url.source_param not in source_resolve_lookup:
+                source_resolve_lookup[url.source_param] = resolve_source(url.source_param)
+            source = source_resolve_lookup[url.source_param]
             if source is None:
                 logger.error('ERROR: Cannot resolve source for (ad_group=%s, sender=%s,\
 recipient=%s, subject=%s, maildate=%s, \
@@ -97,7 +102,9 @@ landing_page_url=%s',
                  )
                 continue
 
-            article = resolve_article(url.clean_url, url.ad_group_id, self.report.get_date(), source)
+            if url.raw_url not in article_resolve_lookup:
+                article_resolve_lookup[url.raw_url] = resolve_article(url.clean_url, url.ad_group_id, self.report.get_date(), source)
+            article = article_resolve_lookup[url.raw_url]
             if article is None:
                 logger.error('ERROR: Cannot resolve article for (ad_group=%s, sender=%s,\
 recipient=%s, subject=%s, maildate=%s, \

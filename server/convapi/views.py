@@ -1,4 +1,5 @@
 import logging
+import threading
 
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
@@ -60,19 +61,40 @@ def mailgun_gareps(request):
     if not csvreport.is_media_source_specified():
         logger.error('ERROR: not all landing page urls have a media source specified')
 
-    for ad_group_report in csvreport.split_by_ad_group():
-        report_email = ReportEmail(
-            sender=request.POST['sender'],
-            recipient=recipient,
-            subject=request.POST['subject'],
-            date=request.POST['Date'],
-            text=None,
-            report=ad_group_report
-        )
-
-        report_email.save_raw()
-        report_email.aggregate()
-
-    statsd_incr('convapi.aggregated_emails')
+    TriggerReportAggregateThread(
+        csvreport=csvreport,
+        sender=request.POST['sender'],
+        recipient=recipient,
+        subject=request.POST['subject'],
+        date=request.POST['Date'],
+        text=None
+    ).start()
 
     return HttpResponse(status=200)
+
+
+class TriggerReportAggregateThread(threading.Thread):
+
+    def __init__(self, csvreport, sender, recipient, subject, date, text):
+        super(TriggerReportAggregateThread, self).__init__()
+        self.csvreport = csvreport
+        self.sender = sender
+        self.recipient = recipient
+        self.subject = subject
+        self.date = date
+        self.text = text
+
+    def run(self):
+        for ad_group_report in self.csvreport.split_by_ad_group():
+            report_email = ReportEmail(
+                sender=self.sender,
+                recipient=self.recipient,
+                subject=self.subject,
+                date=self.date,
+                text=self.text,
+                report=ad_group_report
+            )
+
+            report_email.save_raw()
+            report_email.aggregate()
+        statsd_incr('convapi.aggregated_emails')
