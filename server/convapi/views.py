@@ -8,6 +8,7 @@ from auth import MailGunRequestAuth, GASourceAuth
 from parse import CsvReport
 from aggregate import ReportEmail, store_to_s3
 from utils.statsd_helper import statsd_incr
+from convapi import exc
 
 
 logger = logging.getLogger(__name__)
@@ -45,7 +46,11 @@ def mailgun_gareps(request):
     filename = request.FILES['attachment-1'].name
     content = attachment.read()
 
-    csvreport = CsvReport(content)
+    try:
+        csvreport = CsvReport(content)
+    except exc.CsvParseException as e:
+        logger.error(e.message)
+        return HttpResponse(status=406)
 
     store_to_s3(csvreport.get_date(), filename, content)
 

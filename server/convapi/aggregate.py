@@ -65,15 +65,15 @@ class ReportEmail(object):
         return data
 
     def add_parsed_metrics(self, data, entry, goal_fields):
-        visits = int(entry['Sessions'])
+        visits = int(entry['Sessions'].replace(',', ''))
         data['visits'] += visits
-        data['new_visits'] += int(entry['New Users'])
-        data['bounced_visits'] += int(round(float(entry['Bounce Rate'].replace('%', '')) / 100 * visits))
+        data['new_visits'] += int(entry['New Users'].replace(',', ''))
+        data['bounced_visits'] += int(round(float(entry['Bounce Rate'].replace('%', '').replace(',', '')) / 100 * visits))
         data['pageviews'] += int(round(float(entry['Pages / Session']) * visits))
         data['duration'] += visits * self._parse_duration(entry['Avg. Session Duration'])
         for goal_name, metric_fields in goal_fields.items():
-            data['goals'][goal_name]['conversions'] += int(entry[metric_fields['conversions']])
-            data['goals'][goal_name]['conversions_value_cc'] += int(10000 * float(entry[metric_fields['value']].replace('$', '')))
+            data['goals'][goal_name]['conversions'] += int(entry[metric_fields['conversions']].replace(',', ''))
+            data['goals'][goal_name]['conversions_value_cc'] += int(10000 * float(entry[metric_fields['value']].replace('$', '').replace(',', '')))
 
     def get_stats_by_key(self):
 

@@ -39,7 +39,7 @@ class GAReportsAggregationTest(TestCase):
                 'Buy Beer (Goal 1 Value)', 'Get Drunk (Goal 2 Conversion Rate)',
                 'Get Drunk (Goal 2 Completions)', 'Get Drunk (Goal 2 Value)'
             ])
-        self.assertEqual(sum(int(entry['Sessions']) for entry in self.remail.report.get_entries()), 520)
+        self.assertEqual(sum(int(entry['Sessions'].replace(',', '')) for entry in self.remail.report.get_entries()), 520)
 
         self.remail.save_raw()
 
