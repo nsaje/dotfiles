@@ -4,6 +4,7 @@ from django import test
 
 from dash import models as dashmodels
 from reports import api
+from reports import refresh
 
 
 class RollupTestCase(test.TestCase):
@@ -12,6 +13,7 @@ class RollupTestCase(test.TestCase):
     def setUp(self):
         self.start_date = datetime.date(2014,8,1)
         self.end_date = datetime.date(2014, 8, 3)
+        refresh.refresh_adgroup_stats()
 
     def test_by_adgroup_for_campaign(self):
         rows = api.query(self.start_date, self.end_date, breakdown=['ad_group'], order=['clicks'], campaign=1)

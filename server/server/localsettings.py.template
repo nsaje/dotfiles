@@ -78,3 +78,6 @@ AWS_SECRET_ACCESS_KEY = ''
 # S3 related settings
 S3_BUCKET = ''
 USE_S3 = False
+
+# adgroup-level reports aggregations
+QUERY_AGGREGATE_REPORTS=False

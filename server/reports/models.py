@@ -1,20 +1,20 @@
 from django.db import models
 
+TRAFFIC_METRICS = {'impressions', 'clicks', 'cost_cc'}
+POSTCLICK_METRICS = {'visits', 'pageviews', 'new_visits', 'bounced_visits', 'duration'}
+CONVERSION_METRICS = {'conversions', 'conversions_value_cc'}
 
-class ArticleStats(models.Model):
+# CAUTION: Do not use these models directly in your code
+# For querying use the functions from reports.api
+# For inserting/updating data use the functions from reports.update
 
-    datetime = models.DateTimeField()
-
-    ad_group = models.ForeignKey('dash.AdGroup', on_delete=models.PROTECT)
-    article = models.ForeignKey('dash.Article', on_delete=models.PROTECT)
-    source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)
-
+class StatsMetrics(models.Model):
     # traffic metrics
     impressions = models.IntegerField(default=0, blank=False, null=False)
     clicks = models.IntegerField(default=0, blank=False, null=False)
     cost_cc = models.IntegerField(default=0, blank=False, null=False)
-    
-     # postclick metrics
+
+    # postclick metrics
     visits = models.IntegerField(default=0, blank=False, null=False)
     new_visits = models.IntegerField(default=0, blank=False, null=False)
     bounced_visits = models.IntegerField(default=0, blank=False, null=False)
@@ -24,6 +24,18 @@ class ArticleStats(models.Model):
     has_traffic_metrics = models.IntegerField(default=0, blank=False, null=False)
     has_postclick_metrics = models.IntegerField(default=0, blank=False, null=False)
     has_conversion_metrics = models.IntegerField(default=0, blank=False, null=False)
+
+    class Meta:
+        abstract = True
+
+
+class ArticleStats(StatsMetrics):
+
+    datetime = models.DateTimeField()
+
+    ad_group = models.ForeignKey('dash.AdGroup', on_delete=models.PROTECT)
+    article = models.ForeignKey('dash.Article', on_delete=models.PROTECT)
+    source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
@@ -76,3 +88,38 @@ class GoalConversionStats(models.Model):
         self.conversions = 0
         self.conversions_value_cc = 0
         self.save()
+
+
+# The following models are preaggregated for better querying performance
+
+class AdGroupStats(StatsMetrics):
+
+    datetime = models.DateTimeField()
+
+    ad_group = models.ForeignKey('dash.AdGroup', on_delete=models.PROTECT)
+    source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
+    class Meta:
+        unique_together = (
+            ('datetime', 'ad_group', 'source'),
+        )
+
+
+class AdGroupGoalConversionStats(models.Model):
+    datetime = models.DateTimeField()
+
+    ad_group = models.ForeignKey('dash.AdGroup', on_delete=models.PROTECT)
+    source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)
+
+    goal_name = models.CharField(max_length=127, blank=False, null=False)
+
+    # conversion metrics
+    conversions = models.IntegerField(default=0, blank=False, null=False)
+    conversions_value_cc = models.IntegerField(default=0, blank=False, null=False)
+
+    class Meta:
+        unique_together = (
+            ('datetime', 'ad_group', 'source', 'goal_name'),
+        )
