@@ -1196,8 +1196,13 @@ class AllAccountsSourcesTable(object):
                 recompute=False)
 
             for key, value in sync_times.items():
-                if key in last_success_actions and value is not None:
-                    value = min(last_success_actions[key], value)
+                if key in last_success_actions:
+                    old_value = last_success_actions[key]
+
+                    if value is None or old_value is None:
+                        value = None
+                    else:
+                        value = min(old_value, value)
 
                 last_success_actions[key] = value
 
