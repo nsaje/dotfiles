@@ -1,7 +1,7 @@
 /*globals angular,oneApp,constants,options,moment*/
 "use strict";
 
-angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) {
+angular.module('oneApi', []).factory("api", ["$http", "$q", 'zemMoment', function($http, $q, zemMoment) {
     function NavData() {
         this.list = function () {
             var deferred = $q.defer();
@@ -519,8 +519,8 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 id: settings.id,
                 name: settings.name,
                 state: settings.state,
-                startDate: settings.start_date ? new Date(settings.start_date) : null,
-                endDate: settings.end_date ? new Date(settings.end_date) : null,
+                startDate: settings.start_date ? zemMoment(settings.start_date).toDate() : null,
+                endDate: settings.end_date ? zemMoment(settings.end_date).toDate() : null,
                 manualStop: !settings.end_date,
                 cpc: settings.cpc_cc,
                 dailyBudget: settings.daily_budget_cc,
