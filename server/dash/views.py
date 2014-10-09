@@ -1593,7 +1593,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
         ), request.user)
         totals_data['budget'] = sum(budget.AccountBudget(account).get_total() \
             for account in accounts)
-        totals_data['available_budget'] = totals_data['budget'] - totals_data.get('cost', 0)
+        totals_data['available_budget'] = totals_data['budget'] - (totals_data.get('cost') or 0)
 
         last_success_actions = {}
         for account in accounts:
@@ -1676,7 +1676,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
             row.update(account_data)
 
             row['budget'] = budget.AccountBudget(account).get_total()
-            row['available_budget'] = row['budget'] - row.get('cost', 0)
+            row['available_budget'] = row['budget'] - (row.get('cost') or 0)
 
             rows.append(row)
 
@@ -2469,7 +2469,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
         )
         totals_stats['budget'] = sum(budget.CampaignBudget(campaign).get_total() \
             for campaign in campaigns)
-        totals_stats['available_budget'] = totals_stats['budget'] - totals_stats.get('cost', 0)
+        totals_stats['available_budget'] = totals_stats['budget'] - (totals_stats.get('cost') or 0)
 
         ad_groups_settings = models.AdGroupSettings.objects.\
             distinct('ad_group').\
@@ -2544,7 +2544,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
             row.update(campaign_stat)
 
             row['budget'] = budget.CampaignBudget(campaign).get_total()
-            row['available_budget'] = row['budget'] - row.get('cost', 0)
+            row['available_budget'] = row['budget'] - (row.get('cost') or 0)
 
             rows.append(row)
 
