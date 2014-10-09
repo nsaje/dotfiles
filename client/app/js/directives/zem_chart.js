@@ -23,6 +23,8 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                 ['#34495e', '#d6dbdf'],
                 ['#f39c12', '#fdebd0']
             ];
+            var commonYAxisMetricIds = ['clicks', 'visits', 'pageviews'];
+
             var usedColors = {};
             var format = function (object) {
                 var span = angular.element(document.createElement('span')).text(object.text);
@@ -119,6 +121,7 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                 var metrics = null;
                 var metricIds = null;
                 var seriesName = null;
+                var commonYAxis = null;
 
                 $scope.hasData = false;
                 $scope.legendItems = [];
@@ -154,6 +157,13 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                     color = getColor(group);
                     addLegendItem(color, group);
 
+                    commonYAxis = true;
+                    metricIds.forEach(function (metricId, index) {
+                        if (commonYAxisMetricIds.indexOf(metricId) === -1) {
+                            commonYAxis = false;
+                        }
+                    });
+
                     metricIds.forEach(function (metricId, index) {
                         seriesData = group.seriesData[metricId] || [];
                         if (seriesData.length) {
@@ -164,7 +174,7 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                         $scope.config.series.unshift({
                             name: seriesName,
                             color: color[index],
-                            yAxis: index,
+                            yAxis: commonYAxis ? 0 : index,
                             data: transformDate(seriesData),
                             tooltip: {
                                 pointFormat: seriesName + ': <b>' + getPointFormat(metricId) + '</b></br>'
