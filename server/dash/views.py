@@ -107,26 +107,6 @@ def get_stats_end_date(end_time):
     return date.date()
 
 
-def generate_rows(dimensions, ad_group_id, start_date, end_date, user):
-    ordering = ['date'] if 'date' in dimensions else []
-    data = filter_by_permissions(reports.api.query(
-        start_date,
-        end_date,
-        dimensions,
-        ordering,
-        ad_group=int(ad_group_id)
-    ), user)
-
-    if 'source' in dimensions:
-        sources = {source.id: source for source in models.Source.objects.all()}
-
-    for item in data:
-        if 'source' in dimensions:
-            item['source'] = sources[item['source']].name
-
-    return data
-
-
 def write_excel_row(worksheet, row_index, column_data):
     for column_index, column_value in enumerate(column_data):
         worksheet.write(
@@ -495,7 +475,6 @@ class CampaignBudget(api_common.BaseApiView):
         form = forms.CampaignBudgetForm(budget_change)
 
         if not form.is_valid():
-            print form.errors
             raise exc.ValidationError(errors=dict(form.errors))
 
         campaign_budget.edit(
@@ -1706,6 +1685,169 @@ class AccountsAccountsTable(api_common.BaseApiView):
                 current_page = 1
 
         return rows, current_page, num_pages, count, start_index, end_index
+
+
+class CampaignAdGroupsExport(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaigns_ad_groups_export_get')
+    def get(self, request, campaign_id):
+        campaign = get_campaign(request.user, campaign_id)
+
+        start_date = get_stats_start_date(request.GET.get('start_date'))
+        end_date = get_stats_end_date(request.GET.get('end_date'))
+
+        filename = '{0}_{1}_detailed_report_{2}_{3}'.format(
+            slugify.slugify(campaign.account.name),
+            slugify.slugify(campaign.name),
+            start_date,
+            end_date
+        )
+
+        data = self.generate_rows(
+            ['date'],
+            start_date,
+            end_date,
+            request.user,
+            campaign=campaign
+        )
+
+        if request.GET.get('type') == 'excel':
+            detailed_data = self.generate_rows(
+                ['date', 'ad_group'],
+                start_date,
+                end_date,
+                request.user,
+                campaign=campaign
+            )
+
+            columns = [
+                {'key': 'date', 'name': 'Date', 'format': 'date'},
+                {'key': 'cost', 'name': 'Cost', 'format': 'currency'},
+                {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
+                {'key': 'clicks', 'name': 'Clicks'},
+                {'key': 'impressions', 'name': 'Impressions', 'width': 15},
+                {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
+            ]
+
+            detailed_columns = list(columns)  # make a copy
+            detailed_columns.insert(1, {'key': 'ad_group', 'name': 'Ad Group', 'width': 30})
+
+            return self.create_excel_response(
+                [
+                    ('Per Campaign Report', columns, data),
+                    ('Detailed Report', detailed_columns, detailed_data)
+                ],
+                filename
+            )
+        else:
+            fieldnames = OrderedDict([
+                ('date', 'Date'),
+                ('cost', 'Cost'),
+                ('cpc', 'Avg. CPC'),
+                ('clicks', 'Clicks'),
+                ('impressions', 'Impressions'),
+                ('ctr', 'CTR')
+            ])
+
+            return self.create_csv_response(fieldnames, data, filename)
+
+    def generate_rows(self, dimensions, start_date, end_date, user, **kwargs):
+        ordering = ['date'] if 'date' in dimensions else []
+        data = filter_by_permissions(reports.api.query(
+            start_date,
+            end_date,
+            dimensions,
+            ordering,
+            **kwargs
+        ), user)
+
+        if 'source' in dimensions:
+            sources = {source.id: source for source in models.Source.objects.all()}
+
+        if 'ad_group' in dimensions:
+            ad_groups = {ad_group.id: ad_group for ad_group in models.AdGroup.objects.all()}
+
+        for item in data:
+            if 'source' in dimensions:
+                item['source'] = sources[item['source']].name
+            if 'ad_group' in dimensions:
+                item['ad_group'] = ad_groups[item['ad_group']].name
+
+        return data
+
+    def create_csv_response(self, fieldnames, data, filename):
+        response = self.create_file_response('text/csv; name="%s.csv"' % filename, '%s.csv' % filename)
+        writer = unicodecsv.DictWriter(response, fieldnames, encoding='utf-8', dialect='excel')
+
+        # header
+        writer.writerow(fieldnames)
+
+        for item in data:
+            # Format
+            row = {}
+            for key in ['cost', 'cpc', 'ctr']:
+                val = item[key]
+                if not isinstance(val, float):
+                    val = 0
+                row[key] = '{:.2f}'.format(val)
+            for key in fieldnames:
+                row[key] = item[key]
+
+            writer.writerow(row)
+
+        return response
+
+    def get_value(self, item, key):
+        value = item[key]
+
+        if not value and key in ['cost', 'cpc', 'clicks', 'impressions', 'ctr']:
+            value = 0
+
+        if key == 'ctr':
+            value = value / 100
+
+        return value
+
+    def get_values(self, item, columns):
+        return [self.get_value(item, column['key']) for column in columns]
+
+    def create_excel_response(self, sheets_data, filename):
+        output = StringIO.StringIO()
+        workbook = Workbook(output, {'strings_to_urls': False})
+
+        format_date = workbook.add_format({'num_format': u'm/d/yy'})
+        format_percent = workbook.add_format({'num_format': u'0.00%'})
+        format_usd = workbook.add_format({'num_format': u'[$$-409]#,##0.00;-[$$-409]#,##0.00'})
+
+        for name, columns, data in sheets_data:
+            # set format
+            for column in columns:
+                if 'format' in column:
+                    format_id = column['format']
+
+                    if format_id == 'date':
+                        column['format'] = format_date
+                    elif format_id == 'currency':
+                        column['format'] = format_usd
+                    elif format_id == 'percent':
+                        column['format'] = format_percent
+
+            create_excel_worksheet(
+                workbook,
+                name,
+                columns,
+                data=[self.get_values(item, columns) for item in data]
+            )
+
+        workbook.close()
+        output.seek(0)
+
+        response = self.create_file_response(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            '%s.xlsx' % filename,
+            content=output.read()
+        )
+
+        return response
 
 
 class AdGroupAdsExport(api_common.BaseApiView):
