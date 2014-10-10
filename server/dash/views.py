@@ -1776,6 +1776,77 @@ class BaseExportView(api_common.BaseApiView):
         return [self.get_value(item, column['key']) for column in columns]
 
 
+class AccountCampaignsExport(BaseExportView):
+    @statsd_helper.statsd_timer('dash.api', 'accounts_campaigns_export_get')
+    def get(self, request, account_id):
+        account = get_account(request.user, account_id)
+
+        start_date = get_stats_start_date(request.GET.get('start_date'))
+        end_date = get_stats_end_date(request.GET.get('end_date'))
+
+        filename = '{0}_per_account_report_{1}_{2}'.format(
+            slugify.slugify(account.name),
+            start_date,
+            end_date
+        )
+
+        data = self.generate_rows(
+            ['date'],
+            start_date,
+            end_date,
+            request.user,
+            account=account
+        )
+
+        if request.GET.get('type') == 'excel':
+            detailed_data = self.generate_rows(
+                ['date', 'campaign'],
+                start_date,
+                end_date,
+                request.user,
+                account=account
+            )
+
+            self.add_campaign_data(detailed_data, account)
+
+            columns = [
+                {'key': 'date', 'name': 'Date', 'format': 'date'},
+                {'key': 'cost', 'name': 'Cost', 'format': 'currency'},
+                {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
+                {'key': 'clicks', 'name': 'Clicks'},
+                {'key': 'impressions', 'name': 'Impressions', 'width': 15},
+                {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
+            ]
+
+            detailed_columns = list(columns)  # make a copy
+            detailed_columns.insert(1, {'key': 'campaign', 'name': 'Campaign', 'width': 30})
+
+            return self.create_excel_response(
+                [
+                    ('Per Account Report', columns, data),
+                    ('Detailed Report', detailed_columns, detailed_data)
+                ],
+                filename
+            )
+        else:
+            fieldnames = OrderedDict([
+                ('date', 'Date'),
+                ('cost', 'Cost'),
+                ('cpc', 'Avg. CPC'),
+                ('clicks', 'Clicks'),
+                ('impressions', 'Impressions'),
+                ('ctr', 'CTR')
+            ])
+
+            return self.create_csv_response(fieldnames, data, filename)
+
+    def add_campaign_data(self, results, account):
+        campaigns = {campaign.id: campaign for campaign in models.Campaign.objects.filter(account=account)}
+
+        for result in results:
+            result['campaign'] = campaigns[result['campaign']].name
+
+
 class CampaignAdGroupsExport(BaseExportView):
     @statsd_helper.statsd_timer('dash.api', 'campaigns_ad_groups_export_get')
     def get(self, request, campaign_id):
@@ -1784,7 +1855,7 @@ class CampaignAdGroupsExport(BaseExportView):
         start_date = get_stats_start_date(request.GET.get('start_date'))
         end_date = get_stats_end_date(request.GET.get('end_date'))
 
-        filename = '{0}_{1}_detailed_report_{2}_{3}'.format(
+        filename = '{0}_{1}_per_campaign_report_{2}_{3}'.format(
             slugify.slugify(campaign.account.name),
             slugify.slugify(campaign.name),
             start_date,
@@ -2013,7 +2084,7 @@ class AllAccountsExport(BaseExportView):
             account=accounts
         )
 
-        self._add_account_data(results)
+        self.add_account_data(results, accounts)
 
         if request.GET.get('type') == 'excel':
             detailed_results = self.generate_rows(
@@ -2024,8 +2095,8 @@ class AllAccountsExport(BaseExportView):
                 account=accounts
             )
 
-            self._add_account_data(detailed_results)
-            self._add_campaign_data(detailed_results)
+            self.add_account_data(detailed_results, accounts)
+            self.add_campaign_data(detailed_results, accounts)
 
             columns = [
                 {'key': 'date', 'name': 'Date', 'format': 'date'},
@@ -2063,7 +2134,7 @@ class AllAccountsExport(BaseExportView):
         else:
             fieldnames = OrderedDict([
                 ('date', 'Date'),
-                ('account_name', 'Account'),
+                ('account', 'Account'),
                 ('cost', 'Cost'),
                 ('cpc', 'CPC'),
                 ('clicks', 'Clicks'),
@@ -2073,40 +2144,33 @@ class AllAccountsExport(BaseExportView):
 
             return self.create_csv_response(fieldnames, results, filename)
 
-    def _add_account_data(self, results):
-        account_lookup = {}
+    def add_account_data(self, results, accounts):
+        account_names = {account.id: account.name for account in accounts}
+
         for result in results:
-            if result['account'] not in account_lookup:
-                account = models.Account.objects.get(pk=result['account'])
-                account_lookup[result['account']] = account
-            result['account_name'] = account_lookup[result['account']].name
+            result['account'] = account_names[result['account']]
 
-    def _add_campaign_data(self, results):
-        campaign_data_lookup = {}
+    def add_campaign_data(self, results, accounts):
+        campaign_names = {campaign.id: campaign.name for campaign in
+                          models.Campaign.objects.filter(account=accounts)}
+
+        settings_queryset = models.CampaignSettings.objects.\
+            distinct('campaign').\
+            filter(campaign__account=accounts).\
+            order_by('campaign', '-created_dt')
+
+        campaign_settings = {s.campaign.id: s for s in settings_queryset}
+
         for result in results:
-            cid = result['campaign']
-            if cid not in campaign_data_lookup:
-                data = {}
-                campaign = models.Campaign.objects.get(pk=cid)
-                data['campaign_name'] = campaign.name
+            campaign_id = result['campaign']
+            cs = campaign_settings[campaign_id]
 
-                try:
-                    cs = models.CampaignSettings.objects.filter(campaign=cid).latest('created_dt')
-                    data['account_manager'] = cs.account_manager.email if cs.account_manager is not None else 'N/A'
-                    data['sales_representative'] = cs.sales_representative.email if cs.sales_representative is not None else 'N/A'
-                    data['service_fee'] = cs.service_fee
-                    data['iab_category'] = cs.iab_category
-                    data['promotion_goal'] = constants.PromotionGoal.get_text(cs.promotion_goal)
-                except models.CampaignSettings.DoesNotExist:
-                    data['account_manager'] = 'N/A'
-                    data['sales_representative'] = 'N/A'
-                    data['service_fee'] = 'N/A'
-                    data['iab_category'] = 'N/A'
-                    data['promotion_goal'] = 'N/A'
-
-                campaign_data_lookup[cid] = data
-
-            result.update(campaign_data_lookup[cid])
+            result['campaign'] = campaign_names[campaign_id]
+            result['account_manager'] = cs.account_manager.email if cs.account_manager is not None else 'N/A'
+            result['sales_representative'] = cs.sales_representative.email if cs.sales_representative is not None else 'N/A'
+            result['service_fee'] = cs.service_fee
+            result['iab_category'] = cs.iab_category
+            result['promotion_goal'] = constants.PromotionGoal.get_text(cs.promotion_goal)
 
 
 class TriggerAccountSyncThread(threading.Thread):
