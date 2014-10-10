@@ -44,6 +44,22 @@ class BaseApiView(View):
 
         return response
 
+    def create_excel_response(self, filename, status_code=200, content=''):
+        return self.create_file_response(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            '%s.xlsx' % filename,
+            status_code,
+            content
+        )
+
+    def create_csv_response(self, filename, status_code=200, content=''):
+        return self.create_file_response(
+            'text/csv; name="%s.csv"' % filename,
+            '%s.csv' % filename,
+            status_code,
+            content
+        )
+
     def get_exception_response(self, request, exception):
         error = {}
         if type(exception) in exc.custom_errors:

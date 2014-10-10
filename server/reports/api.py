@@ -226,6 +226,32 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
     return results
 
 
+def filter_by_permissions(result, user):
+    '''
+    filters reports such that the user will only get fields that he is allowed to see
+    '''
+    TRAFFIC_FIELDS = [
+        'clicks', 'impressions', 'cost', 'cpc', 'ctr', 'article', 'title',
+        'url', 'ad_group', 'campaign', 'account', 'source', 'date',
+    ]
+    POSTCLICK_FIELDS = [
+        'visits', 'percent_new_users', 'pv_per_visit', 'avg_tos',
+        'bounce_rate', 'goals', 'click_discrepancy', 'pageviews',
+    ]
+    def filter_row(row):
+        filtered_row = {}
+        for field in TRAFFIC_FIELDS:
+            if field in row: filtered_row[field] = row[field]
+        if user.has_perm('zemauth.postclick_metrics'):
+            for field in POSTCLICK_FIELDS:
+                if field in row: filtered_row[field] = row[field]
+        return filtered_row
+    if isinstance(result, dict):
+        return filter_row(result)
+    else:
+        return [filter_row(row) for row in result]
+
+
 def paginate(result, page, page_size):
     paginator = Paginator(result, page_size)
 

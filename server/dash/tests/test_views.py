@@ -3,7 +3,6 @@
 from mock import patch, Mock
 import datetime
 import slugify
-from collections import OrderedDict
 
 from django import test
 from django import http
@@ -56,9 +55,9 @@ class AdGroupAdsExportTestCase(AdGroupExportBaseTestCase):
     def setUp(self):
         super(AdGroupAdsExportTestCase, self).setUp()
 
-        self.api_patcher = patch('dash.views.reports.api')
-        self.mock_api = self.api_patcher.start()
-        self.mock_api.query.side_effect = [
+        self.query_patcher = patch('dash.views.reports.api.query')
+        self.mock_query = self.query_patcher.start()
+        self.mock_query.side_effect = [
             [{
                 'article': 1,
                 'date': datetime.date(2014, 7, 1),
@@ -88,7 +87,7 @@ class AdGroupAdsExportTestCase(AdGroupExportBaseTestCase):
 
     def tearDown(self):
         super(AdGroupAdsExportTestCase, self).tearDown()
-        self.api_patcher.stop()
+        self.query_patcher.stop()
 
     def test_get_csv(self):
         request = http.HttpRequest()
@@ -162,9 +161,9 @@ class AdGroupSourcesExportTestCase(AdGroupExportBaseTestCase):
     def setUp(self):
         super(AdGroupSourcesExportTestCase, self).setUp()
 
-        self.api_patcher = patch('dash.views.reports.api')
-        self.mock_api = self.api_patcher.start()
-        self.mock_api.query.side_effect = [
+        self.query_patcher = patch('dash.views.reports.api.query')
+        self.mock_query = self.query_patcher.start()
+        self.mock_query.side_effect = [
             [{
                 'article': 1,
                 'date': datetime.date(2014, 7, 1),
@@ -192,7 +191,7 @@ class AdGroupSourcesExportTestCase(AdGroupExportBaseTestCase):
 
     def tearDown(self):
         super(AdGroupSourcesExportTestCase, self).tearDown()
-        self.api_patcher.stop()
+        self.query_patcher.stop()
 
     def test_get_csv(self):
         request = http.HttpRequest()
@@ -256,79 +255,3 @@ class AdGroupSourcesExportTestCase(AdGroupExportBaseTestCase):
 
         self._assert_row(worksheet, 0, ['Date', 'Source', 'Cost', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR'])
         self._assert_row(worksheet, 1, [41821.0, 'Test Source 2', 1000.12, 10.23, 103, 100000, 0.0103])
-
-
-class BaseExportView(AssertRowMixin, test.TestCase):
-    def setUp(self):
-        self.data = [
-            {
-                'date': datetime.date(2014, 7, 1),
-                'cost': 1000.12,
-                'clicks': 103,
-                'impressions': 100000,
-                'ctr': 1.03,
-                'some_random_metric': 12
-            },
-            {
-                'date': datetime.date(2014, 7, 1),
-                'cost': 1034.12,
-                'clicks': 133,
-                'impressions': 100308,
-                'ctr': 1.04,
-                'some_random_metric': 14
-            }
-        ]
-
-    def test_create_csv_response(self):
-        fieldnames = OrderedDict([
-            ('date', 'Date'),
-            ('cost', 'Cost'),
-            ('clicks', 'Clicks'),
-            ('ctr', 'CTR')
-        ])
-
-        filename = 'csv_report'
-
-        response = views.BaseExportView().create_csv_response(fieldnames, self.data, filename)
-
-        expected_content = 'Date,Cost,Clicks,CTR\r\n2014-07-01,1000.12,103,1.03\r\n2014-07-01,1034.12,133,1.04\r\n'
-
-        self.assertEqual(
-            response['Content-Type'],
-            'text/csv; name="%s.csv"' % filename
-        )
-        self.assertEqual(
-            response['Content-Disposition'],
-            'attachment; filename="%s.csv"' % filename
-        )
-        self.assertEqual(response.content, expected_content)
-
-    def test_create_excel_response(self):
-        columns = [
-            {'key': 'date', 'name': 'Date', 'format': 'date'},
-            {'key': 'cost', 'name': 'Cost', 'format': 'currency'},
-            {'key': 'clicks', 'name': 'Clicks'},
-            {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
-        ]
-
-        filename = 'test_report'
-
-        response = views.BaseExportView().create_excel_response(
-            [('Test Report', columns, self.data)],
-            filename
-        )
-
-        self.assertEqual(response['Content-Type'], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        self.assertEqual(
-           response['Content-Disposition'],
-           'attachment; filename="%s.xlsx"' % filename
-        )
-
-        workbook = xlrd.open_workbook(file_contents=response.content)
-        self.assertIsNotNone(workbook)
-
-        worksheet = workbook.sheet_by_name('Test Report')
-        self.assertIsNotNone(worksheet)
-
-        self._assert_row(worksheet, 0, ['Date', 'Cost', 'Clicks', 'CTR'])
-        self._assert_row(worksheet, 1, [41821.0, 1000.12, 103, 0.0103])
