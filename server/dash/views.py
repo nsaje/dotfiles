@@ -1781,6 +1781,8 @@ class AccountCampaignsExport(BaseExportView):
     def get(self, request, account_id):
         account = get_account(request.user, account_id)
 
+        campaigns = models.Campaigns.objects.get_for_user(request.user).filter(account=account)
+
         start_date = get_stats_start_date(request.GET.get('start_date'))
         end_date = get_stats_end_date(request.GET.get('end_date'))
 
@@ -1795,7 +1797,7 @@ class AccountCampaignsExport(BaseExportView):
             start_date,
             end_date,
             request.user,
-            account=account
+            campaign=campaigns
         )
 
         if request.GET.get('type') == 'excel':
@@ -1804,10 +1806,10 @@ class AccountCampaignsExport(BaseExportView):
                 start_date,
                 end_date,
                 request.user,
-                account=account
+                campaign=campaigns
             )
 
-            self.add_campaign_data(detailed_data, account)
+            self.add_campaign_data(detailed_data, campaigns)
 
             columns = [
                 {'key': 'date', 'name': 'Date', 'format': 'date'},
@@ -1840,11 +1842,11 @@ class AccountCampaignsExport(BaseExportView):
 
             return self.create_csv_response(fieldnames, data, filename)
 
-    def add_campaign_data(self, results, account):
-        campaigns = {campaign.id: campaign for campaign in models.Campaign.objects.filter(account=account)}
+    def add_campaign_data(self, results, campaigns):
+        campaign_names = {campaign.id: campaign.name for campaign in campaigns}
 
         for result in results:
-            result['campaign'] = campaigns[result['campaign']].name
+            result['campaign'] = campaign_names[result['campaign']]
 
 
 class CampaignAdGroupsExport(BaseExportView):
