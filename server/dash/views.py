@@ -1711,6 +1711,9 @@ class BaseExportView(api_common.BaseApiView):
             # Format
             row = {}
             for key in ['cost', 'cpc', 'ctr']:
+                if key not in item:
+                    continue
+
                 val = item[key]
                 if not isinstance(val, float):
                     val = 0
@@ -1747,7 +1750,7 @@ class BaseExportView(api_common.BaseApiView):
                 workbook,
                 name,
                 columns,
-                data=[self.get_values(item, columns) for item in data]
+                data=[self._get_values(item, columns) for item in data]
             )
 
         workbook.close()
@@ -1761,7 +1764,7 @@ class BaseExportView(api_common.BaseApiView):
 
         return response
 
-    def get_value(self, item, key):
+    def _get_value(self, item, key):
         value = item[key]
 
         if not value and key in ['cost', 'cpc', 'clicks', 'impressions', 'ctr']:
@@ -1772,8 +1775,8 @@ class BaseExportView(api_common.BaseApiView):
 
         return value
 
-    def get_values(self, item, columns):
-        return [self.get_value(item, column['key']) for column in columns]
+    def _get_values(self, item, columns):
+        return [self._get_value(item, column['key']) for column in columns]
 
 
 class AccountCampaignsExport(BaseExportView):
@@ -1781,7 +1784,7 @@ class AccountCampaignsExport(BaseExportView):
     def get(self, request, account_id):
         account = get_account(request.user, account_id)
 
-        campaigns = models.Campaigns.objects.get_for_user(request.user).filter(account=account)
+        campaigns = models.Campaign.objects.get_for_user(request.user).filter(account=account)
 
         start_date = get_stats_start_date(request.GET.get('start_date'))
         end_date = get_stats_end_date(request.GET.get('end_date'))

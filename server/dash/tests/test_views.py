@@ -3,6 +3,7 @@
 from mock import patch, Mock
 import datetime
 import slugify
+from collections import OrderedDict
 
 from django import test
 from django import http
@@ -11,7 +12,13 @@ import xlrd
 from dash import views
 
 
-class AdGroupExportBaseTestCase(test.TestCase):
+class AssertRowMixin(object):
+    def _assert_row(self, worksheet, row_num, row_cell_list):
+        for cell_num, cell_value in enumerate(row_cell_list):
+            self.assertEqual(worksheet.cell_value(row_num, cell_num), cell_value)
+
+
+class AdGroupExportBaseTestCase(AssertRowMixin, test.TestCase):
 
     def setUp(self):
         self.get_ad_group_patcher = patch('dash.views.get_ad_group')
@@ -43,10 +50,6 @@ class AdGroupExportBaseTestCase(test.TestCase):
     def tearDown(self):
         self.get_ad_group_patcher.stop()
         self.models_patcher.stop()
-
-    def _assert_row(self, worksheet, row_num, row_cell_list):
-        for cell_num, cell_value in enumerate(row_cell_list):
-            self.assertEqual(worksheet.cell_value(row_num, cell_num), cell_value)
 
 
 class AdGroupAdsExportTestCase(AdGroupExportBaseTestCase):
@@ -141,7 +144,7 @@ class AdGroupAdsExportTestCase(AdGroupExportBaseTestCase):
         worksheet = workbook.sheet_by_name('Detailed Report')
         self.assertIsNotNone(worksheet)
 
-        self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'])
+        self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Cost', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR'])
 
         self._assert_row(worksheet, 1, [41821.0, u'Test Article with unicode Čžš', 'http://www.example.com',
             1000.12, 10.23, 103, 100000, 0.0103])
@@ -149,7 +152,7 @@ class AdGroupAdsExportTestCase(AdGroupExportBaseTestCase):
         worksheet = workbook.sheet_by_name('Per Source Report')
         self.assertIsNotNone(worksheet)
 
-        self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Source', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'])
+        self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Source', 'Cost', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR'])
 
         self._assert_row(worksheet, 1, [41821.0, u'Test Article with unicode Čžš', 'http://www.example.com', 'Test Source 1',
             1000.12, 10.23, 103, 100000, 0.0103])
@@ -242,14 +245,90 @@ class AdGroupSourcesExportTestCase(AdGroupExportBaseTestCase):
         workbook = xlrd.open_workbook(file_contents=response.content)
         self.assertIsNotNone(workbook)
 
-        worksheet = workbook.sheet_by_name('Per-Day Report')
+        worksheet = workbook.sheet_by_name('Per Day Report')
         self.assertIsNotNone(worksheet)
 
-        self._assert_row(worksheet, 0, ['Date', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'])
+        self._assert_row(worksheet, 0, ['Date', 'Cost', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR'])
         self._assert_row(worksheet, 1, [41821.0, 1000.12, 10.23, 103, 100000, 0.0103])
 
-        worksheet = workbook.sheet_by_name('Per-Source Report')
+        worksheet = workbook.sheet_by_name('Per Source Report')
         self.assertIsNotNone(worksheet)
 
-        self._assert_row(worksheet, 0, ['Date', 'Source', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'])
+        self._assert_row(worksheet, 0, ['Date', 'Source', 'Cost', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR'])
         self._assert_row(worksheet, 1, [41821.0, 'Test Source 2', 1000.12, 10.23, 103, 100000, 0.0103])
+
+
+class BaseExportView(AssertRowMixin, test.TestCase):
+    def setUp(self):
+        self.data = [
+            {
+                'date': datetime.date(2014, 7, 1),
+                'cost': 1000.12,
+                'clicks': 103,
+                'impressions': 100000,
+                'ctr': 1.03,
+                'some_random_metric': 12
+            },
+            {
+                'date': datetime.date(2014, 7, 1),
+                'cost': 1034.12,
+                'clicks': 133,
+                'impressions': 100308,
+                'ctr': 1.04,
+                'some_random_metric': 14
+            }
+        ]
+
+    def test_create_csv_response(self):
+        fieldnames = OrderedDict([
+            ('date', 'Date'),
+            ('cost', 'Cost'),
+            ('clicks', 'Clicks'),
+            ('ctr', 'CTR')
+        ])
+
+        filename = 'csv_report'
+
+        response = views.BaseExportView().create_csv_response(fieldnames, self.data, filename)
+
+        expected_content = 'Date,Cost,Clicks,CTR\r\n2014-07-01,1000.12,103,1.03\r\n2014-07-01,1034.12,133,1.04\r\n'
+
+        self.assertEqual(
+            response['Content-Type'],
+            'text/csv; name="%s.csv"' % filename
+        )
+        self.assertEqual(
+            response['Content-Disposition'],
+            'attachment; filename="%s.csv"' % filename
+        )
+        self.assertEqual(response.content, expected_content)
+
+    def test_create_excel_response(self):
+        columns = [
+            {'key': 'date', 'name': 'Date', 'format': 'date'},
+            {'key': 'cost', 'name': 'Cost', 'format': 'currency'},
+            {'key': 'clicks', 'name': 'Clicks'},
+            {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
+        ]
+
+        filename = 'test_report'
+
+        response = views.BaseExportView().create_excel_response(
+            [('Test Report', columns, self.data)],
+            filename
+        )
+
+        self.assertEqual(response['Content-Type'], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        self.assertEqual(
+           response['Content-Disposition'],
+           'attachment; filename="%s.xlsx"' % filename
+        )
+
+        workbook = xlrd.open_workbook(file_contents=response.content)
+        self.assertIsNotNone(workbook)
+
+        worksheet = workbook.sheet_by_name('Test Report')
+        self.assertIsNotNone(worksheet)
+
+        self._assert_row(worksheet, 0, ['Date', 'Cost', 'Clicks', 'CTR'])
+        self._assert_row(worksheet, 1, [41821.0, 1000.12, 103, 0.0103])
