@@ -28,16 +28,16 @@ def get_csv_content(fieldnames, data):
     for item in data:
         # Format
         row = {}
-        for key in ['cost', 'cpc', 'ctr']:
-            if key not in item:
-                continue
-
-            val = item[key]
-            if not isinstance(val, float):
-                val = 0
-            row[key] = '{:.2f}'.format(val)
         for key in fieldnames:
-            row[key] = item[key]
+            value = item[key]
+
+            if not value and key in ['cost', 'cpc', 'clicks', 'impressions', 'ctr']:
+                value = 0
+
+            if key == 'ctr':
+                value = '{:.2f}'.format(value)
+
+            row[key] = value
 
         writer.writerow(row)
 
@@ -69,7 +69,7 @@ def get_excel_content(sheets_data):
             workbook,
             name,
             columns,
-            data=[_get_values(item, columns) for item in data]
+            data=[_get_excel_values_list(item, columns) for item in data]
         )
 
     workbook.close()
@@ -78,7 +78,7 @@ def get_excel_content(sheets_data):
     return output.read()
 
 
-def _get_value(item, key):
+def _get_excel_value(item, key):
     value = item[key]
 
     if not value and key in ['cost', 'cpc', 'clicks', 'impressions', 'ctr']:
@@ -90,8 +90,8 @@ def _get_value(item, key):
     return value
 
 
-def _get_values(item, columns):
-    return [_get_value(item, column['key']) for column in columns]
+def _get_excel_values_list(item, columns):
+    return [_get_excel_value(item, column['key']) for column in columns]
 
 
 def _write_excel_row(worksheet, row_index, column_data):
