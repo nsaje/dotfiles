@@ -86,9 +86,10 @@ def _include_article_data(rows):
     return rows
 
 
-def _get_initial_qs(breakdown):
+def _get_initial_qs(breakdown, **constraints):
     qs = models.ArticleStats.objects
-    if settings.QUERY_AGGREGATE_REPORTS and 'article' not in breakdown:
+    if settings.QUERY_AGGREGATE_REPORTS and 'article' not in breakdown \
+        and 'article' not in constraints and 'article__in' not in constraints:
         qs = models.AdGroupStats.objects
     return qs
 
@@ -97,7 +98,7 @@ def query_stats(start_date, end_date, breakdown=None, **constraints):
     breakdown = _preprocess_breakdown(breakdown)
     constraints = _preprocess_constraints(constraints)
 
-    result = _get_initial_qs(breakdown)
+    result = _get_initial_qs(breakdown, **constraints)
 
     result = result.filter(datetime__gte=start_date, datetime__lte=end_date)
     if constraints:
@@ -114,9 +115,10 @@ def query_stats(start_date, end_date, breakdown=None, **constraints):
     return result
 
 
-def _get_initial_conversion_qs(breakdown):
+def _get_initial_conversion_qs(breakdown, **constraints):
     qs = models.GoalConversionStats.objects
-    if settings.QUERY_AGGREGATE_REPORTS and 'article' not in breakdown:
+    if settings.QUERY_AGGREGATE_REPORTS and 'article' not in breakdown \
+        and 'article' not in constraints and 'article__in' not in constraints:
         qs = models.AdGroupGoalConversionStats.objects
     return qs
 
