@@ -1557,6 +1557,10 @@ class SourcesTable(api_common.BaseApiView):
 class AccountsAccountsTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'accounts_accounts_table_get')
     def get(self, request):
+
+        import time
+        st = time.time()
+
         # Permission check
         if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
             raise exc.MissingDataError()
@@ -1568,7 +1572,9 @@ class AccountsAccountsTable(api_common.BaseApiView):
         size = request.GET.get('size')
         order = request.GET.get('order')
         user = request.user
+        
         accounts = models.Account.objects.get_for_user(user)
+        account_ids = set(acc.id for acc in accounts)
 
         size = max(min(int(size or 5), 50), 1)
         if page:
@@ -1591,38 +1597,54 @@ class AccountsAccountsTable(api_common.BaseApiView):
             end_date,
             account=accounts
         ), request.user)
-        totals_data['budget'] = sum(budget.AccountBudget(account).get_total() \
-            for account in accounts)
-        totals_data['available_budget'] = totals_data['budget'] - totals_data.get('cost', 0)
 
-        last_success_actions = {}
-        for account in accounts:
-            account_sync = actionlog.sync.AccountSync(account)
+        all_accounts_budget = budget.GlobalBudget().get_total_by_account()
+        account_budget = {aid:all_accounts_budget.get(aid, 0) for aid in account_ids}
+        
+        # totals_data['budget'] = sum(budget.AccountBudget(account).get_total() \
+        #     for account in accounts)
+        # totals_data['available_budget'] = totals_data['budget'] - totals_data.get('cost', 0)
+        totals_data['budget'] = sum(account_budget.itervalues())
+        totals_data['available_budget'] = totals_data['budget'] - (totals_data.get('cost') or 0)
 
-            if not len(list(account_sync.get_components())):
-                continue
+        # last_success_actions = {}
+        # for account in accounts:
+        #     account_sync = actionlog.sync.AccountSync(account)
 
-            last_success_actions[account.pk] = account_sync.get_latest_success(
-                recompute=False)
+        #     if not len(list(account_sync.get_components())):
+        #         continue
+
+        #     last_success_actions[account.pk] = account_sync.get_latest_success(
+        #         recompute=False)
+
+        last_success_actions = actionlog.sync.GlobalSync().get_latest_success_by_account()
 
         last_sync = None
         if last_success_actions.values() and None not in last_success_actions.values():
             last_sync = pytz.utc.localize(min(last_success_actions.values()))
+
+
+        print time.time() - st
 
         rows, current_page, num_pages, count, start_index, end_index = self.get_rows(
             accounts,
             accounts_data,
             ad_groups_settings,
             last_success_actions,
+            account_budget,
             page=page,
             size=size,
             order=order
         )
 
+        print time.time() - st 
+
         incomplete_postclick_metrics = \
             not reports.api.has_complete_postclick_metrics_accounts(
                 start_date, end_date, accounts
             ) if request.user.has_perm('zemauth.postclick_metrics') else False
+
+        print time.time() - st
 
         return self.create_api_response({
             'rows': rows,
@@ -1642,18 +1664,20 @@ class AccountsAccountsTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
 
-    def get_rows(self, accounts, accounts_data, ad_groups_settings, last_actions, page, size, order=None):
+    def get_rows(self, accounts, accounts_data, ad_groups_settings, last_actions, account_budget, page, size, order=None):
         rows = []
         for account in accounts:
             aid = account.pk
 
-            for ad_group_settings in ad_groups_settings:
-                if ad_group_settings.ad_group.campaign.account.pk == aid and \
-                        ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE:
-                    state = constants.AdGroupSettingsState.ACTIVE
-                    break
-            else:
-                state = constants.AdGroupSettingsState.INACTIVE
+            # for ad_group_settings in ad_groups_settings:
+            #     if ad_group_settings.ad_group.campaign.account.pk == aid and \
+            #             ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE:
+            #         state = constants.AdGroupSettingsState.ACTIVE
+            #         break
+            # else:
+            #     state = constants.AdGroupSettingsState.INACTIVE
+
+            state = constants.AdGroupSettingsState.INACTIVE
 
             # get source reports data
             account_data = {}
@@ -1675,8 +1699,10 @@ class AccountsAccountsTable(api_common.BaseApiView):
 
             row.update(account_data)
 
-            row['budget'] = budget.AccountBudget(account).get_total()
-            row['available_budget'] = row['budget'] - row.get('cost', 0)
+            # row['budget'] = budget.AccountBudget(account).get_total()
+            # row['available_budget'] = row['budget'] - row.get('cost', 0)
+            row['budget'] = account_budget[aid]
+            row['available_budget'] = row['budget'] - (row.get('cost') or 0)
 
             rows.append(row)
 

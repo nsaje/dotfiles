@@ -33,6 +33,22 @@ class GlobalBudget(CompositeBudget):
         r = reports.api.query(start_date=start_date, end_date=end_date)
         return r.get('cost') or 0
 
+    def get_total_by_account(self):
+        sql = '''
+        SELECT DISTINCT ON(campaign_id) 
+        cbs.id, campaign_id, account_id, total, cbs.created_dt
+        FROM 
+        dash_campaignbudgetsettings as cbs, 
+        dash_campaign as cmp
+        WHERE cmp.id = campaign_id 
+        ORDER BY campaign_id, cbs.created_dt DESC
+        '''
+        rows = dash.models.CampaignBudgetSettings.objects.raw(sql)
+        total_budget = {}
+        for row in rows:
+            total_budget[row.account_id] = float(row.total)
+        return total_budget
+
 
 class AccountBudget(CompositeBudget):
 
