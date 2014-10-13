@@ -11,7 +11,13 @@ import xlrd
 from dash import views
 
 
-class AdGroupExportBaseTestCase(test.TestCase):
+class AssertRowMixin(object):
+    def _assert_row(self, worksheet, row_num, row_cell_list):
+        for cell_num, cell_value in enumerate(row_cell_list):
+            self.assertEqual(worksheet.cell_value(row_num, cell_num), cell_value)
+
+
+class AdGroupExportBaseTestCase(AssertRowMixin, test.TestCase):
 
     def setUp(self):
         self.get_ad_group_patcher = patch('dash.views.get_ad_group')
@@ -44,18 +50,14 @@ class AdGroupExportBaseTestCase(test.TestCase):
         self.get_ad_group_patcher.stop()
         self.models_patcher.stop()
 
-    def _assert_row(self, worksheet, row_num, row_cell_list):
-        for cell_num, cell_value in enumerate(row_cell_list):
-            self.assertEqual(worksheet.cell_value(row_num, cell_num), cell_value)
-
 
 class AdGroupAdsExportTestCase(AdGroupExportBaseTestCase):
     def setUp(self):
         super(AdGroupAdsExportTestCase, self).setUp()
 
-        self.api_patcher = patch('dash.views.reports.api')
-        self.mock_api = self.api_patcher.start()
-        self.mock_api.query.side_effect = [
+        self.query_patcher = patch('dash.views.reports.api.query')
+        self.mock_query = self.query_patcher.start()
+        self.mock_query.side_effect = [
             [{
                 'article': 1,
                 'date': datetime.date(2014, 7, 1),
@@ -85,7 +87,7 @@ class AdGroupAdsExportTestCase(AdGroupExportBaseTestCase):
 
     def tearDown(self):
         super(AdGroupAdsExportTestCase, self).tearDown()
-        self.api_patcher.stop()
+        self.query_patcher.stop()
 
     def test_get_csv(self):
         request = http.HttpRequest()
@@ -141,7 +143,7 @@ class AdGroupAdsExportTestCase(AdGroupExportBaseTestCase):
         worksheet = workbook.sheet_by_name('Detailed Report')
         self.assertIsNotNone(worksheet)
 
-        self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'])
+        self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Cost', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR'])
 
         self._assert_row(worksheet, 1, [41821.0, u'Test Article with unicode Čžš', 'http://www.example.com',
             1000.12, 10.23, 103, 100000, 0.0103])
@@ -149,7 +151,7 @@ class AdGroupAdsExportTestCase(AdGroupExportBaseTestCase):
         worksheet = workbook.sheet_by_name('Per Source Report')
         self.assertIsNotNone(worksheet)
 
-        self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Source', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'])
+        self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Source', 'Cost', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR'])
 
         self._assert_row(worksheet, 1, [41821.0, u'Test Article with unicode Čžš', 'http://www.example.com', 'Test Source 1',
             1000.12, 10.23, 103, 100000, 0.0103])
@@ -159,9 +161,9 @@ class AdGroupSourcesExportTestCase(AdGroupExportBaseTestCase):
     def setUp(self):
         super(AdGroupSourcesExportTestCase, self).setUp()
 
-        self.api_patcher = patch('dash.views.reports.api')
-        self.mock_api = self.api_patcher.start()
-        self.mock_api.query.side_effect = [
+        self.query_patcher = patch('dash.views.reports.api.query')
+        self.mock_query = self.query_patcher.start()
+        self.mock_query.side_effect = [
             [{
                 'article': 1,
                 'date': datetime.date(2014, 7, 1),
@@ -189,7 +191,7 @@ class AdGroupSourcesExportTestCase(AdGroupExportBaseTestCase):
 
     def tearDown(self):
         super(AdGroupSourcesExportTestCase, self).tearDown()
-        self.api_patcher.stop()
+        self.query_patcher.stop()
 
     def test_get_csv(self):
         request = http.HttpRequest()
@@ -242,14 +244,14 @@ class AdGroupSourcesExportTestCase(AdGroupExportBaseTestCase):
         workbook = xlrd.open_workbook(file_contents=response.content)
         self.assertIsNotNone(workbook)
 
-        worksheet = workbook.sheet_by_name('Per-Day Report')
+        worksheet = workbook.sheet_by_name('Per Day Report')
         self.assertIsNotNone(worksheet)
 
-        self._assert_row(worksheet, 0, ['Date', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'])
+        self._assert_row(worksheet, 0, ['Date', 'Cost', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR'])
         self._assert_row(worksheet, 1, [41821.0, 1000.12, 10.23, 103, 100000, 0.0103])
 
-        worksheet = workbook.sheet_by_name('Per-Source Report')
+        worksheet = workbook.sheet_by_name('Per Source Report')
         self.assertIsNotNone(worksheet)
 
-        self._assert_row(worksheet, 0, ['Date', 'Source', 'Cost', 'CPC', 'Clicks', 'Impressions', 'CTR'])
+        self._assert_row(worksheet, 0, ['Date', 'Source', 'Cost', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR'])
         self._assert_row(worksheet, 1, [41821.0, 'Test Source 2', 1000.12, 10.23, 103, 100000, 0.0103])
