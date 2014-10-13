@@ -2,7 +2,6 @@
 import datetime
 import json
 import logging
-import math
 import dateutil.parser
 from collections import OrderedDict
 import slugify
@@ -33,6 +32,7 @@ import actionlog.api
 import actionlog.sync
 import actionlog.zwei_actions
 import reports.api
+import utils.pagination
 
 from dash import forms
 from dash import models
@@ -1537,15 +1537,15 @@ class AccountsAccountsTable(api_common.BaseApiView):
         if last_success_actions.values() and None not in last_success_actions.values():
             last_sync = pytz.utc.localize(min(last_success_actions.values()))
 
-        rows, current_page, num_pages, count, start_index, end_index = self.get_rows(
+        rows = self.get_rows(
             accounts,
             accounts_data,
             ad_groups_settings,
             last_success_actions,
-            page=page,
-            size=size,
             order=order
         )
+
+        rows, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(rows, page, size)
 
         incomplete_postclick_metrics = \
             not reports.api.has_complete_postclick_metrics_accounts(
@@ -1570,7 +1570,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
 
-    def get_rows(self, accounts, accounts_data, ad_groups_settings, last_actions, page, size, order=None):
+    def get_rows(self, accounts, accounts_data, ad_groups_settings, last_actions, order=None):
         rows = []
         for account in accounts:
             aid = account.pk
@@ -1611,24 +1611,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
         if order:
             rows = sort_results(rows, [order])
 
-        len_accounts = len(accounts)
-        current_page = page or 1
-        num_pages = int(math.ceil(float(len_accounts) / size))
-        count = len_accounts
-        start_index = 1
-        end_index = size if len_accounts > size else len_accounts
-
-        if page and size:
-            start = (page - 1) * size
-            end = page * size
-            if start <= len_accounts:
-                rows = rows[start:end]
-                start_index = start + 1
-                end_index = end - (size - len(rows))
-            else:
-                current_page = 1
-
-        return rows, current_page, num_pages, count, start_index, end_index
+        return rows
 
 
 class AccountCampaignsExport(api_common.BaseApiView):
@@ -2183,7 +2166,8 @@ class AdGroupAdsTable(api_common.BaseApiView):
             ad_group=ad_group.id
         ), request.user)
 
-        result_pg, current_page, num_pages, count, start_index, end_index = reports.api.paginate(result, page, size)
+        result_pg, current_page, num_pages, count, start_index, end_index = \
+            utils.pagination.paginate(result, page, size)
 
         rows = result_pg
 
@@ -2316,7 +2300,6 @@ class AccountCampaignsTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'account_campaigns_table_get')
     def get(self, request, account_id):
         user = request.user
-        account = models.Account.objects.get(pk=account_id)
 
         campaigns = models.Campaign.objects.get_for_user(user).\
             filter(account=account_id)
@@ -2349,15 +2332,12 @@ class AccountCampaignsTable(api_common.BaseApiView):
         last_success_actions = {}
         for campaign in campaigns:
             campaign_sync = actionlog.sync.CampaignSync(campaign)
+            if len(list(campaign_sync.get_components())) > 0:
+                last_success_actions[campaign.pk] = campaign_sync.get_latest_success(recompute=False)
 
-            if not len(list(campaign_sync.get_components())):
-                continue
-
-            last_success_actions[campaign.pk] = campaign_sync.get_latest_success(
-                recompute=False)
-
-        last_sync = actionlog.sync.CampaignSync(campaigns).get_latest_success(
-            recompute=False)
+        last_sync = None 
+        if last_success_actions.values() and None not in last_success_actions.values():
+            last_sync =min(last_success_actions.values())
         if last_sync:
             last_sync = pytz.utc.localize(last_sync)
 

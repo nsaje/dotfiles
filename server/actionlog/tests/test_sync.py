@@ -208,14 +208,6 @@ class ActionLogSyncTestCase(TestCase):
         latest_success_dt = sync.CampaignSync(campaign2).get_latest_success()
         self.assertEqual(latest_success_dt, None)
 
-        latest_success_dt = sync.CampaignSync([campaign1, campaign2]).\
-            get_latest_success()
-        self.assertEqual(latest_success_dt, None)
-
-        latest_success_dt = sync.CampaignSync((campaign1,)).\
-            get_latest_success()
-        self.assertEqual(latest_success_dt.isoformat(), '2014-07-01T07:07:07')
-
     def test_cached_campaign_latest_success(self):
         latest_success_dt = sync.CampaignSync(
             dash.models.Campaign.objects.get(pk=1)

@@ -19,6 +19,7 @@ from utils.url import clean_url
 from zweiapi.views import _prepare_report_row
 
 import reports.update
+import utils.pagination
 
 
 class QueryTestCase(test.TestCase):
@@ -321,7 +322,7 @@ class QueryTestCase(test.TestCase):
             'url': 'http://test2.com'
         }]
 
-        result = api.paginate(api.query(
+        result = utils.pagination.paginate(api.query(
             start,
             end,
             ['date', 'article'],
@@ -358,7 +359,7 @@ class QueryTestCase(test.TestCase):
             'url': 'http://test1.com'
         }]
 
-        result = api.paginate(api.query(
+        result = utils.pagination.paginate(api.query(
             start,
             end,
             ['date', 'article'],
@@ -374,7 +375,7 @@ class QueryTestCase(test.TestCase):
         self.assertEqual(result[5], 4)
 
         # Should be the same page as page 2
-        result = api.paginate(api.query(
+        result = utils.pagination.paginate(api.query(
             start,
             end,
             ['date', 'article'],

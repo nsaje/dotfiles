@@ -94,13 +94,7 @@ class AccountSync(BaseSync, ISyncComposite):
 class CampaignSync(BaseSync, ISyncComposite):
 
     def get_components(self):
-        ad_groups = dash.models.AdGroup.objects
-        if isinstance(self.obj, (list, tuple)):
-            ad_groups = ad_groups.filter(campaign__in=self.obj)
-        else:
-            ad_groups = ad_groups.filter(campaign=self.obj)
-
-        for ad_group in ad_groups:
+        for ad_group in dash.models.AdGroup.objects.filter(campaign=self.obj):
             ad_group_sync = AdGroupSync(ad_group)
             if len(list(ad_group_sync.get_components())) > 0:
                 yield ad_group_sync
