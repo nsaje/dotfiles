@@ -1507,6 +1507,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
         totals_data['available_budget'] = totals_data['budget'] - (totals_data.get('cost') or 0)
 
         last_success_actions = actionlog.sync.GlobalSync().get_latest_success_by_account()
+        last_success_actions = {aid:val for aid, val in last_success_actions.items() if aid in account_ids}
 
         last_sync = None
         if last_success_actions.values() and None not in last_success_actions.values():
