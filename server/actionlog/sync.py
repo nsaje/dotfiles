@@ -83,7 +83,7 @@ class GlobalSync(BaseSync, ISyncComposite):
 
     def get_latest_success_by_account(self):
         '''
-        this function is used to get fast last succcessful sync times
+        this function is a faster way to get last succcessful sync times
         on the account level
         '''
         sql = '''
@@ -105,6 +105,27 @@ class GlobalSync(BaseSync, ISyncComposite):
                 lsucc[row.account_id] = []
             lsucc[row.account_id].append(row.last_successful_sync_dt)
         return {k:min(v) for k, v in lsucc.iteritems()}
+
+    def get_latest_success_by_source(self):
+        sql = '''
+        SELECT ags.id, src.id as source_id, src.name,
+        last_successful_sync_dt
+        FROM dash_source as src,
+        dash_adgroupsource as ags
+        WHERE ags.source_id = src.id
+        '''
+        rows = dash.models.AdGroupSource.objects.raw(sql)
+        lsucc = {}
+        def _min_none(dt1, dt2):
+            if dt1 is None or dt2 is None:
+                return None
+            return min(dt1, dt2)
+        for row in rows:
+            if row.source_id not in lsucc:
+                lsucc[row.source_id] = row.last_successful_sync_dt
+            else:
+                lsucc[row.source_id] = _min_none(lsucc[row.source_id], row.last_successful_sync_dt)
+        return lsucc
 
 
 class AccountSync(BaseSync, ISyncComposite):

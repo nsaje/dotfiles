@@ -86,9 +86,10 @@ def _include_article_data(rows):
     return rows
 
 
-def _get_initial_qs(breakdown):
+def _get_initial_qs(breakdown, **constraints):
     qs = models.ArticleStats.objects
-    if settings.QUERY_AGGREGATE_REPORTS and 'article' not in breakdown:
+    if settings.QUERY_AGGREGATE_REPORTS and 'article' not in breakdown \
+        and 'article' not in constraints and 'article__in' not in constraints:
         qs = models.AdGroupStats.objects
     return qs
 
@@ -97,7 +98,7 @@ def query_stats(start_date, end_date, breakdown=None, **constraints):
     breakdown = _preprocess_breakdown(breakdown)
     constraints = _preprocess_constraints(constraints)
 
-    result = _get_initial_qs(breakdown)
+    result = _get_initial_qs(breakdown, **constraints)
 
     result = result.filter(datetime__gte=start_date, datetime__lte=end_date)
     if constraints:
@@ -114,9 +115,10 @@ def query_stats(start_date, end_date, breakdown=None, **constraints):
     return result
 
 
-def _get_initial_conversion_qs(breakdown):
+def _get_initial_conversion_qs(breakdown, **constraints):
     qs = models.GoalConversionStats.objects
-    if settings.QUERY_AGGREGATE_REPORTS and 'article' not in breakdown:
+    if settings.QUERY_AGGREGATE_REPORTS and 'article' not in breakdown \
+        and 'article' not in constraints and 'article__in' not in constraints:
         qs = models.AdGroupGoalConversionStats.objects
     return qs
 
@@ -224,6 +226,32 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
     results = _join_with_conversions(breakdown, report_results, conversion_results)
     results = sort_results(results, order)
     return results
+
+
+def filter_by_permissions(result, user):
+    '''
+    filters reports such that the user will only get fields that he is allowed to see
+    '''
+    TRAFFIC_FIELDS = [
+        'clicks', 'impressions', 'cost', 'cpc', 'ctr', 'article', 'title',
+        'url', 'ad_group', 'campaign', 'account', 'source', 'date',
+    ]
+    POSTCLICK_FIELDS = [
+        'visits', 'percent_new_users', 'pv_per_visit', 'avg_tos',
+        'bounce_rate', 'goals', 'click_discrepancy', 'pageviews',
+    ]
+    def filter_row(row):
+        filtered_row = {}
+        for field in TRAFFIC_FIELDS:
+            if field in row: filtered_row[field] = row[field]
+        if user.has_perm('zemauth.postclick_metrics'):
+            for field in POSTCLICK_FIELDS:
+                if field in row: filtered_row[field] = row[field]
+        return filtered_row
+    if isinstance(result, dict):
+        return filter_row(result)
+    else:
+        return [filter_row(row) for row in result]
 
 
 def paginate(result, page, page_size):

@@ -41,6 +41,25 @@ class BaseApiViewTestCase(test.TestCase):
         self.assertEqual(response['Content-Type'], content_type)
         self.assertEqual(response['Content-Disposition'], 'attachment; filename="%s"' % filename)
 
+    def test_create_excel_response(self):
+        filename = 'test'
+
+        response = api_common.BaseApiView().create_excel_response(filename)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response['Content-Type'],
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        self.assertEqual(response['Content-Disposition'], 'attachment; filename="%s.xlsx"' % filename)
+
+    def test_create_csv_response(self):
+        filename = 'test'
+
+        response = api_common.BaseApiView().create_csv_response(filename)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'text/csv; name="%s.csv"' % filename)
+        self.assertEqual(response['Content-Disposition'], 'attachment; filename="%s.csv"' % filename)
+
     @mock.patch('utils.api_common.logger')
     def test_handle_custom_exception(self, logger_mock):
         request = http.HttpRequest()
