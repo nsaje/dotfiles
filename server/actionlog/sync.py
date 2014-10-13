@@ -81,6 +81,50 @@ class GlobalSync(BaseSync, ISyncComposite):
             if len(list(account_sync.get_components())) > 0:
                 yield account_sync
 
+    def get_latest_success_by_account(self):
+        '''
+        this function is a faster way to get last succcessful sync times
+        on the account level
+        '''
+        sql = '''
+        SELECT cmp.id as campaign_id,
+        acc.id as account_id,
+        ag.id as ad_group_id,
+        ags.id, last_successful_sync_dt
+        FROM dash_campaign as cmp,
+        dash_account as acc, dash_adgroup as ag,
+        dash_adgroupsource as ags
+        WHERE ags.ad_group_id = ag.id
+        AND ag.campaign_id = cmp.id
+        AND cmp.account_id = acc.id
+        '''
+        rows = dash.models.AdGroupSource.objects.raw(sql)
+        latest_success = {}
+        for row in rows:
+            if row.account_id not in latest_success:
+                latest_success[row.account_id] = []
+            latest_success[row.account_id].append(row.last_successful_sync_dt)
+        return {k:_min_none(v) for k, v in latest_success.iteritems()}
+
+    def get_latest_success_by_source(self):
+        sql = '''
+        SELECT ags.id, src.id as source_id, src.name,
+        last_successful_sync_dt
+        FROM dash_source as src,
+        dash_adgroupsource as ags
+        WHERE ags.source_id = src.id
+        '''
+        rows = dash.models.AdGroupSource.objects.raw(sql)
+        latest_success = {}
+        for row in rows:
+            if row.source_id not in latest_success:
+                latest_success[row.source_id] = row.last_successful_sync_dt
+            else:
+                latest_success[row.source_id] = _min_none([
+                    latest_success[row.source_id], row.last_successful_sync_dt
+                ])
+        return latest_success
+
 
 class AccountSync(BaseSync, ISyncComposite):
 
@@ -157,7 +201,7 @@ class AdGroupSourceSync(BaseSync):
         LIMIT 1
         '''
         params = [
-            actionlog.constants.Action.FETCH_REPORTS, 
+            actionlog.constants.Action.FETCH_REPORTS,
             self.ad_group_source.id,
             actionlog.constants.ActionLogOrderType.FETCH_REPORTS
         ]
@@ -231,3 +275,9 @@ class AdGroupSourceSync(BaseSync):
             dates.append(dates[-1] + datetime.timedelta(days=1))
         assert(dates[-1] == today)
         return reversed(dates)
+
+
+def _min_none(values):
+    if None in values:
+        return None
+    return min(values)
