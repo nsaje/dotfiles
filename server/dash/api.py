@@ -118,27 +118,15 @@ def reconcile_article(raw_url, title, ad_group):
 
 
 def get_state_by_account():
-    sql = '''
-    SELECT DISTINCT ON (ad_group_id)
-    ags.id, ad_group_id, state,
-    acc.id as account_id
-    FROM 
-    dash_adgroupsettings as ags,
-    dash_adgroup as ag,
-    dash_campaign as cmp,
-    dash_account as acc
-    WHERE
-    ad_group_id = ag.id
-    AND ag.campaign_id = cmp.id
-    AND cmp.account_id = acc.id
-    ORDER BY ad_group_id, ags.created_dt desc
-    '''
-    rows = models.AdGroupSettings.objects.raw(sql)
+    qs = models.AdGroupSettings.objects.select_related('ad_group__campaign__account') \
+        .distinct('ad_group').order_by('ad_group', '-created_dt') \
+        .values('ad_group', 'ad_group__campaign__account', 'state')
     account_state = {}
-    for row in rows:
-        if row.account_id not in account_state:
-            account_state[row.account_id] = set()
-        account_state[row.account_id].add(row.state)
+    for row in qs:
+        aid = row['ad_group__campaign__account']
+        if aid not in account_state:
+            account_state[aid] = set()
+        account_state[aid].add(row['state'])
     def _acc_state(ag_states):
         if constants.AdGroupSettingsState.ACTIVE in ag_states:
             return constants.AdGroupSettingsState.ACTIVE
