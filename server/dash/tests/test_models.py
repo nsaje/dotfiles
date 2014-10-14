@@ -27,6 +27,7 @@ class AdGroupSettingsTest(TestCase):
 
     def test_get_settings_dict(self):
         settings_dict = {
+            'archived': False,
             'state': 1,
             'cpc_cc': Decimal('0.12'),
             'daily_budget_cc': Decimal('50'),

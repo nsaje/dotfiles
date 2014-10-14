@@ -30,32 +30,6 @@ class PermissionMixin(object):
 class UserAuthorizationManager(models.Manager):
     def get_for_user(self, user):
         queryset = super(UserAuthorizationManager, self).get_queryset()
-
-        # accounts_settings = AccountSettings.objects.\
-        #     distinct('account').\
-        #     order_by('account_id', '-created_dt')
-        # campaigns_settings = CampaignSettings.objects.\
-        #     distinct('campaign').\
-        #     order_by('campaign', '-created_dt')
-        # ad_groups_settings = AdGroupSettings.objects.\
-        #     distinct('ad_group').\
-        #     order_by('ad_group', '-created_dt')
-
-        # if not include_archived:
-        #     if queryset.model is Account:
-        #         queryset = queryset.exclude(pk__in=[account_settings.account.id for
-        #                                             account_settings in accounts_settings if
-        #                                             account_settings.archived])
-        #     elif queryset.model is Campaign:
-        #         queryset = queryset.exclude(pk__in=[campaign_settings.campaign.id for
-        #                                             campaign_settings in campaigns_settings if
-        #                                             campaign_settings.archived])
-        #     else:
-        #         # AdGroup
-        #         queryset = queryset.exclude(pk__in=[ad_group_settings.ad_group.id for
-        #                                             ad_group_settings in ad_groups_settings if
-        #                                             ad_group_settings.archived])
-
         if user.is_superuser:
             return queryset
         elif queryset.model is Account:
