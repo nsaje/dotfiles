@@ -40,7 +40,9 @@ class GlobalBudget(CompositeBudget):
             .values('campaign__account', 'total')
         total_budget = {}
         for row in qs:
-            total_budget[row['campaign__account']] = float(row['total'])
+            if row['campaign__account'] not in total_budget:
+                total_budget[row['campaign__account']] = 0
+            total_budget[row['campaign__account']] += float(row['total'])
         return total_budget
 
 
