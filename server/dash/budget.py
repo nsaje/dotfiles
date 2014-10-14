@@ -34,19 +34,13 @@ class GlobalBudget(CompositeBudget):
         return r.get('cost') or 0
 
     def get_total_by_account(self):
-        sql = '''
-        SELECT DISTINCT ON(campaign_id) 
-        cbs.id, campaign_id, account_id, total, cbs.created_dt
-        FROM 
-        dash_campaignbudgetsettings as cbs, 
-        dash_campaign as cmp
-        WHERE cmp.id = campaign_id 
-        ORDER BY campaign_id, cbs.created_dt DESC
-        '''
-        rows = dash.models.CampaignBudgetSettings.objects.raw(sql)
+        qs = dash.models.CampaignBudgetSettings.objects \
+            .select_related('campaign__account') \
+            .distinct('campaign').order_by('campaign', '-created_dt') \
+            .values('campaign__account', 'total')
         total_budget = {}
-        for row in rows:
-            total_budget[row.account_id] = float(row.total)
+        for row in qs:
+            total_budget[row['campaign__account']] = float(row['total'])
         return total_budget
 
 
