@@ -81,6 +81,38 @@ class GlobalSync(BaseSync, ISyncComposite):
             if len(list(account_sync.get_components())) > 0:
                 yield account_sync
 
+    def get_latest_success_by_account(self):
+        '''
+        this function is a faster way to get last succcessful sync times
+        on the account level
+        '''
+        qs = dash.models.AdGroupSource.objects.select_related('ad_group__campaign__account') \
+            .values('ad_group__campaign__account', 'last_successful_sync_dt')
+        latest_success = {}
+        for row in qs:
+            aid = row['ad_group__campaign__account']
+            if aid not in latest_success:
+                latest_success[aid] = []
+            latest_success[aid].append(row['last_successful_sync_dt'])
+        return {k:_min_none(v) for k, v in latest_success.iteritems()}
+
+    def get_latest_success_by_source(self):
+        '''
+        this function is a faster way to get last succcessful sync times
+        by source on globally
+        '''
+        qs = dash.models.AdGroupSource.objects.select_related('source') \
+            .values('source', 'last_successful_sync_dt')
+        latest_success = {}
+        for row in qs:
+            if row['source'] not in latest_success:
+                latest_success[row['source']] = row['last_successful_sync_dt']
+            else:
+                latest_success[row['source']] = _min_none([
+                    latest_success[row['source']], row['last_successful_sync_dt']
+                ])
+        return latest_success
+
 
 class AccountSync(BaseSync, ISyncComposite):
 
@@ -151,7 +183,7 @@ class AdGroupSourceSync(BaseSync):
         LIMIT 1
         '''
         params = [
-            actionlog.constants.Action.FETCH_REPORTS, 
+            actionlog.constants.Action.FETCH_REPORTS,
             self.ad_group_source.id,
             actionlog.constants.ActionLogOrderType.FETCH_REPORTS
         ]
@@ -225,3 +257,9 @@ class AdGroupSourceSync(BaseSync):
             dates.append(dates[-1] + datetime.timedelta(days=1))
         assert(dates[-1] == today)
         return reversed(dates)
+
+
+def _min_none(values):
+    if None in values:
+        return None
+    return min(values)

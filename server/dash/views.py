@@ -1112,24 +1112,7 @@ class AllAccountsSourcesTable(object):
         return yesterday_cost, yesterday_total_cost
 
     def get_last_success_actions(self):
-        last_success_actions = {}
-
-        for account in self.accounts:
-            sync_times = actionlog.sync.AccountSync(account).get_latest_source_success(
-                recompute=False)
-
-            for key, value in sync_times.items():
-                if key in last_success_actions:
-                    old_value = last_success_actions[key]
-
-                    if value is None or old_value is None:
-                        value = None
-                    else:
-                        value = min(old_value, value)
-
-                last_success_actions[key] = value
-
-        return last_success_actions
+        return actionlog.sync.GlobalSync().get_latest_success_by_source()
 
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(accounts=self.accounts)
@@ -1496,7 +1479,9 @@ class AccountsAccountsTable(api_common.BaseApiView):
         size = request.GET.get('size')
         order = request.GET.get('order')
         user = request.user
+        
         accounts = models.Account.objects.get_for_user(user)
+        account_ids = set(acc.id for acc in accounts)
 
         size = max(min(int(size or 5), 50), 1)
         if page:
@@ -1509,29 +1494,20 @@ class AccountsAccountsTable(api_common.BaseApiView):
             account=accounts
         ), request.user)
 
-        ad_groups_settings = models.AdGroupSettings.objects.\
-            distinct('ad_group').\
-            filter(ad_group__campaign__account__in=[x.pk for x in accounts]).\
-            order_by('ad_group', '-created_dt')
-
         totals_data = reports.api.filter_by_permissions(reports.api.query(
             start_date,
             end_date,
             account=accounts
         ), request.user)
-        totals_data['budget'] = sum(budget.AccountBudget(account).get_total() \
-            for account in accounts)
+
+        all_accounts_budget = budget.GlobalBudget().get_total_by_account()
+        account_budget = {aid:all_accounts_budget.get(aid, 0) for aid in account_ids}
+        
+        totals_data['budget'] = sum(account_budget.itervalues())
         totals_data['available_budget'] = totals_data['budget'] - (totals_data.get('cost') or 0)
 
-        last_success_actions = {}
-        for account in accounts:
-            account_sync = actionlog.sync.AccountSync(account)
-
-            if not len(list(account_sync.get_components())):
-                continue
-
-            last_success_actions[account.pk] = account_sync.get_latest_success(
-                recompute=False)
+        last_success_actions = actionlog.sync.GlobalSync().get_latest_success_by_account()
+        last_success_actions = {aid:val for aid, val in last_success_actions.items() if aid in account_ids}
 
         last_sync = None
         if last_success_actions.values() and None not in last_success_actions.values():
@@ -1540,8 +1516,8 @@ class AccountsAccountsTable(api_common.BaseApiView):
         rows = self.get_rows(
             accounts,
             accounts_data,
-            ad_groups_settings,
             last_success_actions,
+            account_budget,
             order=order
         )
 
@@ -1570,18 +1546,14 @@ class AccountsAccountsTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
 
-    def get_rows(self, accounts, accounts_data, ad_groups_settings, last_actions, order=None):
+    def get_rows(self, accounts, accounts_data, last_actions, account_budget, order=None):
         rows = []
+
+        account_state = api.get_state_by_account()
         for account in accounts:
             aid = account.pk
 
-            for ad_group_settings in ad_groups_settings:
-                if ad_group_settings.ad_group.campaign.account.pk == aid and \
-                        ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE:
-                    state = constants.AdGroupSettingsState.ACTIVE
-                    break
-            else:
-                state = constants.AdGroupSettingsState.INACTIVE
+            state = account_state.get(aid, constants.AdGroupSettingsState.INACTIVE)
 
             # get source reports data
             account_data = {}
@@ -1603,7 +1575,8 @@ class AccountsAccountsTable(api_common.BaseApiView):
 
             row.update(account_data)
 
-            row['budget'] = budget.AccountBudget(account).get_total()
+            row['budget'] = account_budget[aid]
+
             row['available_budget'] = row['budget'] - (row.get('cost') or 0)
 
             rows.append(row)

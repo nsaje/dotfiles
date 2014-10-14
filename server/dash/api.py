@@ -115,3 +115,21 @@ def reconcile_article(raw_url, title, ad_group):
             format(title=title, url=url, ad_group_id=ad_group.id)
         )
         return models.Article.objects.get(ad_group=ad_group, url=url, title=title)
+
+
+def get_state_by_account():
+    qs = models.AdGroupSettings.objects.select_related('ad_group__campaign__account') \
+        .distinct('ad_group').order_by('ad_group', '-created_dt') \
+        .values('ad_group', 'ad_group__campaign__account', 'state')
+    account_state = {}
+    for row in qs:
+        aid = row['ad_group__campaign__account']
+        if aid not in account_state:
+            account_state[aid] = set()
+        account_state[aid].add(row['state'])
+    def _acc_state(ag_states):
+        if constants.AdGroupSettingsState.ACTIVE in ag_states:
+            return constants.AdGroupSettingsState.ACTIVE
+        return constants.AdGroupSettingsState.INACTIVE
+    account_state = {aid:_acc_state(ag_states) for aid, ag_states in account_state.iteritems()}
+    return account_state
