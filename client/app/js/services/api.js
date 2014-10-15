@@ -836,6 +836,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", 'zemMoment', functio
                         settings: convertSettingsFromApi(data.data.settings),
                         history: convertHistoryFromApi(data.data.history),
                         canArchive: data.data.can_archive,
+                        canRestore: data.data.can_restore,
                     });
                 }).
                 error(function(data, status, headers) {
@@ -865,6 +866,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", 'zemMoment', functio
                         settings: convertSettingsFromApi(data.data.settings),
                         history: convertHistoryFromApi(data.data.history),
                         canArchive: data.data.can_archive,
+                        canRestore: data.data.can_restore,
                     });
                 }).
                 error(function(data, status, headers, config) {
@@ -1064,6 +1066,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", 'zemMoment', functio
                         accountManagers: data.data.account_managers,
                         salesReps: data.data.sales_reps,
                         canArchive: data.data.can_archive,
+                        canRestore: data.data.can_restore,
                         history: convertHistoryFromApi(data.data.history)
                     });
                 }).
@@ -1094,6 +1097,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", 'zemMoment', functio
                         settings: convertSettingsFromApi(data.data.settings),
                         history: convertHistoryFromApi(data.data.history),
                         canArchive: data.data.can_archive,
+                        canRestore: data.data.can_restore,
                     });
                 }).
                 error(function(data, status, headers, config) {
@@ -1212,6 +1216,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", 'zemMoment', functio
                         history: history,
                         actionIsWaiting: data.data.action_is_waiting,
                         canArchive: data.data.can_archive,
+                        canRestore: data.data.can_restore,
                     });
                 }).
                 error(function(data, status, headers, config) {
@@ -1245,6 +1250,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", 'zemMoment', functio
                         history: history,
                         actionIsWaiting: data.data.action_is_waiting,
                         canArchive: data.data.can_archive,
+                        canRestore: data.data.can_restore,
                     });
                 }).
                 error(function(data, status, headers, config) {

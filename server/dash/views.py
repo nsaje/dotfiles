@@ -542,6 +542,7 @@ class AccountAgency(api_common.BaseApiView):
             'settings': self.get_dict(account_settings, account),
             'history': self.get_history(account),
             'can_archive': account.can_archive(),
+            'can_restore': account.can_restore(),
         }
 
         return self.create_api_response(response)
@@ -572,6 +573,7 @@ class AccountAgency(api_common.BaseApiView):
             'settings': self.get_dict(settings, account),
             'history': self.get_history(account),
             'can_archive': account.can_archive(),
+            'can_restore': account.can_restore(),
         }
 
         return self.create_api_response(response)
@@ -808,7 +810,8 @@ class CampaignSettings(api_common.BaseApiView):
             'account_managers': self.get_user_list(campaign_settings, 'campaign_settings_account_manager'),
             'sales_reps': self.get_user_list(campaign_settings, 'campaign_settings_sales_rep'),
             'history': self.get_history(campaign),
-            'can_archive': campaign.can_archive()
+            'can_archive': campaign.can_archive(),
+            'can_restore': campaign.can_restore(),
         }
 
         return self.create_api_response(response)
@@ -838,7 +841,8 @@ class CampaignSettings(api_common.BaseApiView):
         response = {
             'settings': self.get_dict(settings, campaign),
             'history': self.get_history(campaign),
-            'can_archive': campaign.can_archive()
+            'can_archive': campaign.can_archive(),
+            'can_restore': campaign.can_restore(),
         }
 
         return self.create_api_response(response)
@@ -1148,7 +1152,8 @@ class AdGroupAgency(api_common.BaseApiView):
             'settings': self.get_dict(settings, ad_group),
             'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group),
             'history': self.get_history(ad_group),
-            'can_archive': ad_group.can_archive()
+            'can_archive': ad_group.can_archive(),
+            'can_restore': ad_group.can_restore(),
         }
 
         return self.create_api_response(response)
@@ -1185,7 +1190,8 @@ class AdGroupAgency(api_common.BaseApiView):
             'settings': self.get_dict(settings, ad_group),
             'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group),
             'history': self.get_history(ad_group),
-            'can_archive': ad_group.can_archive()
+            'can_archive': ad_group.can_archive(),
+            'can_restore': ad_group.can_restore(),
         }
 
         return self.create_api_response(response)

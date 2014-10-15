@@ -9,6 +9,7 @@ oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', function ($sc
     $scope.discarded = null;
     $scope.history = [];
     $scope.canArchive = false;
+    $scope.canRestore = true;
     $scope.orderField = 'datetime';
     $scope.orderReverse = true;
 
@@ -18,6 +19,7 @@ oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                 $scope.settings = data.settings;
                 $scope.history = data.history;
                 $scope.canArchive = data.canArchive;
+                $scope.canRestore = data.canRestore;
                 $scope.actionIsWaiting = data.actionIsWaiting;
             },
             function (data) {
@@ -37,6 +39,7 @@ oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                 $scope.settings = data.settings;
                 $scope.history = data.history;
                 $scope.canArchive = data.canArchive;
+                $scope.canRestore = data.canRestore;
                 $scope.actionIsWaiting = data.actionIsWaiting;
                 $scope.saveRequestInProgress = false;
                 $scope.discarded = true;
@@ -60,6 +63,7 @@ oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                 $scope.settings = data.settings;
                 $scope.history = data.history;
                 $scope.canArchive = data.canArchive;
+                $scope.canRestore = data.canRestore;
                 $scope.actionIsWaiting = data.actionIsWaiting;
                 $scope.saveRequestInProgress = false;
                 $scope.saved = true;
@@ -78,6 +82,7 @@ oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                 $scope.refreshNavData(accounts);
                 $scope.getModels();
             });
+            $scope.getSettings($state.params.id);
         });
     };
 
@@ -87,6 +92,7 @@ oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                 $scope.refreshNavData(accounts);
                 $scope.getModels();
             });
+            $scope.getSettings($state.params.id);
         });
     };
 

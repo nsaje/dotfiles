@@ -59,8 +59,6 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
 
     if ($scope.campaign && $scope.campaign.archived && !$state.is('main.campaigns.agency')) {
         $state.go('main.campaigns.agency', {id: $scope.campaign.id});
-    } else if ($scope.account && $scope.account.archived && !$state.is('main.accounts.agency')) {
-        $state.go('main.accounts.agency', {id: $scope.account.id});
     }
 
     $scope.updateBreadcrumbAndTitle();

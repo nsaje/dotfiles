@@ -3,6 +3,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
     $scope.settings = {};
     $scope.history = [];
     $scope.canArchive = false;
+    $scope.canRestore = true;
     $scope.errors = {};
     $scope.requestInProgress = false;
     $scope.saved = null;
@@ -20,6 +21,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                 $scope.settings = data.settings;
                 $scope.history = data.history;
                 $scope.canArchive = data.canArchive;
+                $scope.canRestore = data.canRestore;
                 $scope.discarded = discarded;
             },
             function (data) {
@@ -42,6 +44,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                 $scope.settings = data.settings;
                 $scope.history = data.history;
                 $scope.canArchive = data.canArchive;
+                $scope.canRestore = data.canRestore;
                 $scope.updateAccounts(data.settings.name);
                 $scope.updateBreadcrumbAndTitle();
                 $scope.requestInProgress = false;
@@ -62,6 +65,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                 $scope.refreshNavData(accounts);
                 $scope.getAccount();
             });
+            $scope.getSettings();
         });
     };
 
@@ -71,6 +75,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                 $scope.refreshNavData(accounts);
                 $scope.getAccount();
             });
+            $scope.getSettings();
         });
     };
 

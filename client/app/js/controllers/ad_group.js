@@ -74,7 +74,7 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
     $scope.getAdGroupState = function() {
         api.adGroupState.get($state.params.id).then(
             function(data) {
-                $scope.setAdGroupPaused(data.state === 2);
+                $scope.setAdGroupPaused(data.state === 2 && !$scope.adGroup.archived);
             },
             function(){
                 // error
@@ -88,10 +88,6 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
 
     if ($scope.adGroup && $scope.adGroup.archived && !$state.is('main.adGroups.agency')) {
         $state.go('main.adGroups.agency', {id: $scope.adGroup.id});
-    } else if ($scope.campaign && $scope.campaign.archived && !$state.is('main.campaigns.agency')) {
-        $state.go('main.campaigns.agency', {id: $scope.campaign.id});
-    } else if ($scope.account && $scope.account.archived && !$state.is('main.accounts.agency')) {
-        $state.go('main.accounts.agency', {id: $scope.account.id});
     }
 
     $scope.updateBreadcrumbAndTitle();

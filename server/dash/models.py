@@ -83,7 +83,9 @@ class Account(models.Model):
 
     def get_current_settings(self):
         if not self.pk:
-            return None
+            raise exc.BaseError(
+                'Account settings can\'t be fetched because acount hasn\'t been saved yet.'
+            )
 
         settings = AccountSettings.objects.\
             filter(account_id=self.pk).\
@@ -99,26 +101,29 @@ class Account(models.Model):
         return settings
 
     def can_archive(self):
-        if not self.pk:
-            return False
-
         for campaign in self.campaign_set.all():
             if not campaign.can_archive():
                 return False
 
         return True
 
+    def can_restore(self):
+        return True
+
+    def is_archived(self):
+        current_settings = self.get_current_settings()
+        return current_settings.archived
+
     @transaction.atomic
     def archive(self):
         if not self.can_archive():
-            return
+            raise exc.ForbiddenError(
+                'Account can\'t be archived.'
+            )
 
-        current_settings = self.get_current_settings()
-        if not current_settings.archived:
+        if not self.is_archived():
+            current_settings = self.get_current_settings()
             for campaign in self.campaign_set.all():
-                for ad_group in campaign.adgroup_set.all():
-                    ad_group.archive()
-
                 campaign.archive()
 
             new_settings = current_settings.copy_settings()
@@ -127,8 +132,13 @@ class Account(models.Model):
 
     @transaction.atomic
     def restore(self):
-        current_settings = self.get_current_settings()
-        if current_settings.archived:
+        if not self.can_restore():
+            raise exc.ForbiddenError(
+                'Account can\'t be restored.'
+            )
+
+        if self.is_archived():
+            current_settings = self.get_current_settings()
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
             new_settings.save()
@@ -166,7 +176,9 @@ class Campaign(models.Model, PermissionMixin):
 
     def get_current_settings(self):
         if not self.pk:
-            return None
+            raise exc.BaseError(
+                'Campaign settings can\'t be fetched because campaign hasn\'t been saved yet.'
+            )
 
         settings = CampaignSettings.objects.\
             filter(campaign_id=self.pk).\
@@ -182,32 +194,47 @@ class Campaign(models.Model, PermissionMixin):
         return settings
 
     def can_archive(self):
-        if not self.pk:
-            return False
-
         for ad_group in self.adgroup_set.all():
             if not ad_group.can_archive():
                 return False
 
         return True
 
+    def can_restore(self):
+        if self.account.is_archived():
+            return False
+
+        return True
+
+    def is_archived(self):
+        current_settings = self.get_current_settings()
+        return current_settings.archived
+
     @transaction.atomic
     def archive(self):
         if not self.can_archive():
-            return
+            raise exc.ForbiddenError(
+                'Campaign can\'t be archived.'
+            )
 
-        current_settings = self.get_current_settings()
-        if not current_settings.archived:
+        if not self.is_archived():
+            current_settings = self.get_current_settings()
             for ad_group in self.adgroup_set.all():
                 ad_group.archive()
+
             new_settings = current_settings.copy_settings()
             new_settings.archived = True
             new_settings.save()
 
     @transaction.atomic
     def restore(self):
-        current_settings = self.get_current_settings()
-        if current_settings.archived:
+        if not self.can_restore():
+            raise exc.ForbiddenError(
+                'Campaign can\'t be restored.'
+            )
+
+        if self.is_archived():
+            current_settings = self.get_current_settings()
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
             new_settings.save()
@@ -445,7 +472,9 @@ class AdGroup(models.Model):
 
     def get_current_settings(self):
         if not self.pk:
-            return None
+            raise exc.BaseError(
+                'Ad group setting couln\'t be fetched because ad group hasn\'t been saved yet.'
+            )
 
         settings = AdGroupSettings.objects.\
             filter(ad_group_id=self.pk).\
@@ -460,11 +489,18 @@ class AdGroup(models.Model):
         return settings
 
     def can_archive(self):
-        if not self.pk:
-            return False
-
         current_settings = self.get_current_settings()
         return current_settings.state == constants.AdGroupSettingsState.INACTIVE
+
+    def can_restore(self):
+        if self.campaign.is_archived():
+            return False
+
+        return True
+
+    def is_archived(self):
+        current_settings = self.get_current_settings()
+        return current_settings.archived
 
     @transaction.atomic
     def archive(self):
@@ -473,16 +509,21 @@ class AdGroup(models.Model):
                 'Ad group has to be in state "Paused" in order to archive it.'
             )
 
-        current_settings = self.get_current_settings()
-        if not current_settings.archived:
+        if not self.is_archived():
+            current_settings = self.get_current_settings()
             new_settings = current_settings.copy_settings()
             new_settings.archived = True
             new_settings.save()
 
     @transaction.atomic
     def restore(self):
-        current_settings = self.get_current_settings()
-        if current_settings.archived:
+        if not self.can_restore():
+            raise exc.Forbidden(
+                'Account and campaign have to not be archived in order to restore an ad group.'
+            )
+
+        if self.is_archived():
+            current_settings = self.get_current_settings()
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
             new_settings.save()
