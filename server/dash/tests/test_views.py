@@ -8,7 +8,7 @@ from django import test
 from django import http
 import xlrd
 
-from dash import views
+from dash.views import export
 
 
 class AssertRowMixin(object):
@@ -20,8 +20,8 @@ class AssertRowMixin(object):
 class AdGroupExportBaseTestCase(AssertRowMixin, test.TestCase):
 
     def setUp(self):
-        self.get_ad_group_patcher = patch('dash.views.get_ad_group')
-        self.models_patcher = patch('dash.views.models')
+        self.get_ad_group_patcher = patch('dash.views.helpers.get_ad_group')
+        self.models_patcher = patch('dash.views.export.models')
 
         self.mock_get_ad_group = self.get_ad_group_patcher.start()
         self.mock_models = self.models_patcher.start()
@@ -55,7 +55,7 @@ class AdGroupAdsExportTestCase(AdGroupExportBaseTestCase):
     def setUp(self):
         super(AdGroupAdsExportTestCase, self).setUp()
 
-        self.query_patcher = patch('dash.views.reports.api.query')
+        self.query_patcher = patch('dash.export.reports.api.query')
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
             [{
@@ -96,7 +96,7 @@ class AdGroupAdsExportTestCase(AdGroupExportBaseTestCase):
         request.GET['end_date'] = '2014-07-01'
         request.user = Mock()
 
-        response = views.AdGroupAdsExport().get(request, self.ad_group_id)
+        response = export.AdGroupAdsExport().get(request, self.ad_group_id)
 
         expected_content = '''Date,Title,URL,Cost,CPC,Clicks,Impressions,CTR\r
 2014-07-01,Test Article with unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://www.example.com,1000.12,10.23,103,100000,1.03\r
@@ -124,7 +124,7 @@ class AdGroupAdsExportTestCase(AdGroupExportBaseTestCase):
         request.GET['end_date'] = '2014-07-01'
         request.user = Mock()
 
-        response = views.AdGroupAdsExport().get(request, self.ad_group_id)
+        response = export.AdGroupAdsExport().get(request, self.ad_group_id)
 
         filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.xlsx'.format(
             slugify.slugify(self.account_name),
@@ -161,7 +161,7 @@ class AdGroupSourcesExportTestCase(AdGroupExportBaseTestCase):
     def setUp(self):
         super(AdGroupSourcesExportTestCase, self).setUp()
 
-        self.query_patcher = patch('dash.views.reports.api.query')
+        self.query_patcher = patch('dash.export.reports.api.query')
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
             [{
@@ -200,7 +200,7 @@ class AdGroupSourcesExportTestCase(AdGroupExportBaseTestCase):
         request.GET['end_date'] = '2014-07-01'
         request.user = Mock()
 
-        response = views.AdGroupSourcesExport().get(request, self.ad_group_id)
+        response = export.AdGroupSourcesExport().get(request, self.ad_group_id)
 
         expected_content = '''Date,Source,Cost,CPC,Clicks,Impressions,CTR\r
 2014-07-01,Test Source 2,1000.12,10.23,103,100000,1.03\r
@@ -228,7 +228,7 @@ class AdGroupSourcesExportTestCase(AdGroupExportBaseTestCase):
         request.GET['end_date'] = '2014-07-01'
         request.user = Mock()
 
-        response = views.AdGroupSourcesExport().get(request, self.ad_group_id)
+        response = export.AdGroupSourcesExport().get(request, self.ad_group_id)
 
         filename = '{0}_{1}_per_sources_report_2014-06-30_2014-07-01.xlsx'.format(
             slugify.slugify(self.account_name),
