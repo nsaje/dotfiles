@@ -15,7 +15,6 @@ oneApp.controller('CampaignBudgetCtrl', ['$scope', '$state', 'api', function ($s
         
         api.campaignBudget.get($state.params.id).then(
             function (data) {
-                console.log('got data')
                 $scope.total = data.total;
                 $scope.spend = data.spend;
                 $scope.available = data.available;

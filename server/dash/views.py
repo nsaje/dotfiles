@@ -407,7 +407,6 @@ class CampaignBudget(api_common.BaseApiView):
     def get(self, request, campaign_id):
         campaign = get_campaign(request.user, campaign_id)
         response = self.get_response(campaign)
-        import pprint; pprint.pprint(response)
         return self.create_api_response(response)
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_put')
@@ -430,8 +429,6 @@ class CampaignBudget(api_common.BaseApiView):
         )
 
         response = self.get_response(campaign)
-
-        import pprint; pprint.pprint(response)
 
         return self.create_api_response(response)
 
