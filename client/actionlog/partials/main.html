@@ -1,7 +1,7 @@
 <div class="container-fluid" ng-controller="ActionLogCtrl">
     <div class="row header">
         <div class="logo-container">
-            <a ng-href='/'><img class="logo" ng-src="{{ config.static_url }}/img/logo_one.png"></a>
+            <a ng-href='/'><img class="logo" ng-src="{{ config.static_url }}/actionlog/img/logo_one.png"></a>
         </div>
 
         <div class="profile-container">
@@ -9,7 +9,7 @@
                 <a href="mailto:help@zemanta.com" class="contact">Contact support</a>
                 <span class="profile dropdown">
                     <a href class="dropdown-toggle">
-                        <img ng-src="{{ config.static_url }}/img/human.svg">
+                        <img ng-src="{{ config.static_url }}/actionlog/img/human.svg">
                     </a>
                     <ul class="dropdown-menu dropdown-menu-right">
                         <li class="dropdown-header">{{ user.email }}</li>
@@ -69,6 +69,6 @@
         <alert ng-show="actionLogItems.length >= actionLogItemsMax" type="danger">Only {{actionLogItemsMax}} action can be displayed. There are more actions hidden.</alert>
     </div>
 
-    <div class="row footer" ng-include src="'/partials/footer.html'"></div>
+    <div class="row footer" ng-include src="config.static_url + '/actionlog/footer.html'"></div>
 </div>
 

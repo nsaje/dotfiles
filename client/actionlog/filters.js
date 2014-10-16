@@ -1,7 +1,7 @@
 /*global $,oneApp*/
 "use strict";
 
-oneActionLogApp.directive('zemActionLogFilter', function() {
+actionLogApp.directive('zemActionLogFilter', function() {
     return {
         restrict: 'E',
         scope: {

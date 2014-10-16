@@ -1,6 +1,6 @@
 /*global angular*/
 
-var oneApp = angular.module('one', ['templates-dist', 'oneApi', 'ngBootstrap', 'ngSanitize', 'ui.router', 'ui.bootstrap', 'ui.bootstrap.datetimepicker', 'ui.select2', 'highcharts-ng', 'LocalStorageModule', 'config']);
+var oneApp = angular.module('one', ['templates-one', 'oneApi', 'ngBootstrap', 'ngSanitize', 'ui.router', 'ui.bootstrap', 'ui.bootstrap.datetimepicker', 'ui.select2', 'highcharts-ng', 'LocalStorageModule', 'config']);
 
 oneApp.config(['$sceDelegateProvider', 'config', function ($sceDelegateProvider, config) {
     $sceDelegateProvider.resourceUrlWhitelist(['self', config.static_url + '/**']);

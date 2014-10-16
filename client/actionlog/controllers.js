@@ -1,4 +1,4 @@
-oneActionLogApp.controller('ActionLogCtrl', ['$scope', '$location', 'api', function ($scope, $location, api) {
+actionLogApp.controller('ActionLogCtrl', ['$scope', '$location', 'api', function ($scope, $location, api) {
 
     $scope.user = null;
     $scope.actionLogItems = null;
