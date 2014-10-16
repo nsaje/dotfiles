@@ -111,8 +111,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('campaign_budget_management_view', 'Can do campaign budget management.'),
             ('account_budget_view', 'Can view account budget.'),
             ('all_accounts_budget_view', 'Can view all accounts budget.'),
-            ('archive_restore_entity', 'Can delete or restore an entity.'),
-            ('view_archived_entities', 'Can view deleted entities.'),
+            ('archive_restore_entity', 'Can archive or restore an entity.'),
+            ('view_archived_entities', 'Can view archived entities.'),
         )
 
     def get_full_name(self):
