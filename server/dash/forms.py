@@ -178,21 +178,25 @@ class CampaignSettingsForm(forms.Form):
 
 
 class CampaignBudgetForm(forms.Form):
-    allocate = forms.DecimalField(decimal_places=4)
-    revoke = forms.DecimalField(decimal_places=4)
-    comment = forms.CharField(max_length=256, required=False)
+    amount = forms.DecimalField(decimal_places=4)
+    action = forms.CharField(max_length=8)
 
-    def clean_allocate(self):
-        allocate_amount = self.cleaned_data.get('allocate')
-        err_msg = 'Please allocate at least $10'
-        if allocate_amount > 0 and allocate_amount < 10:
-            raise forms.ValidationError(err_msg)
-        return float(allocate_amount)
+    def clean_amount(self):
+        x = self.cleaned_data.get('amount')
+        return float(x)
 
-    def clean_revoke(self):
-        revoke_amount = self.cleaned_data.get('revoke')
-        err_msg = 'Please revoke at least $10'
-        if revoke_amount > 0 and revoke_amount < 10:
-            raise forms.ValidationError(err_msg)
-        return float(revoke_amount)
+    def get_allocate_amount(self):
+        x = self.cleaned_data['amount']
+        a = self.cleaned_data.get('action')
+        if a == 'allocate':
+            return float(x)
+        else:
+            return 0
 
+    def get_revoke_amount(self):
+        x = self.cleaned_data['amount']
+        a = self.cleaned_data.get('action')
+        if a == 'revoke':
+            return float(x)
+        else:
+            return 0

@@ -407,6 +407,7 @@ class CampaignBudget(api_common.BaseApiView):
     def get(self, request, campaign_id):
         campaign = get_campaign(request.user, campaign_id)
         response = self.get_response(campaign)
+        import pprint; pprint.pprint(response)
         return self.create_api_response(response)
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_put')
@@ -422,14 +423,15 @@ class CampaignBudget(api_common.BaseApiView):
             raise exc.ValidationError(errors=dict(form.errors))
 
         campaign_budget.edit(
-            allocate_amount=form.cleaned_data['allocate'],
-            revoke_amount=form.cleaned_data['revoke'],
+            allocate_amount=form.get_allocate_amount(),
+            revoke_amount=form.get_revoke_amount(),
             user=request.user,
-            comment=form.cleaned_data['comment'],
-            latest_id=budget_change['latest_id']
+            comment='',
         )
 
         response = self.get_response(campaign)
+
+        import pprint; pprint.pprint(response)
 
         return self.create_api_response(response)
 
@@ -441,7 +443,6 @@ class CampaignBudget(api_common.BaseApiView):
         available = total - spend
 
         response = {
-            'latest_id': campaign_budget.get_latest_id(),
             'total': total,
             'available': available,
             'spend': spend,
