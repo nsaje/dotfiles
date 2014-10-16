@@ -1,15 +1,13 @@
 {% extends "base.html" %}
 
 {% block head_extra %}
-<link type="text/css" rel="stylesheet" href="{{ staticUrl }}/lib/components/bootstrap/dist/css/bootstrap.min.css" />
-<link type="text/css" rel="stylesheet" href="{{ staticUrl }}/dist/css/zemanta-one.min.css" />
-<script type="text/javascript" src="{{ staticUrl }}/lib/components/angular/angular.min.js"></script>
-<script type="text/javascript" src="{{ staticUrl }}/lib/angular-ui-router.js"></script>
-<script type="text/javascript" src="{{ staticUrl }}/lib/components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
-<script type="text/javascript" src="{{ staticUrl }}/dist/js/zemanta-one.min.js"></script>
+<link type="text/css" rel="stylesheet" href="{{ staticUrl }}/actionlog/zemanta-one.actionlog.lib.min.css" />
+<link type="text/css" rel="stylesheet" href="{{ staticUrl }}/actionlog/zemanta-one.actionlog.min.css" />
+<script type="text/javascript" src="{{ staticUrl }}/actionlog/zemanta-one.actionlog.lib.min.js"></script>
+<script type="text/javascript" src="{{ staticUrl }}/actionlog/zemanta-one.actionlog.min.js"></script>
 {% endblock %}
 
 {% block content %}
-<div ng-app="one-actionlog" ng-include src="'{{ staticUrl }}/partials/action_log.html'"></div>
+<div ng-app="actionlog" ng-include src="'{{ staticUrl }}/actionlog/main.html'"></div>
 {% endblock %} 
 
