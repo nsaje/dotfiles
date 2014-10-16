@@ -45,7 +45,7 @@ module.exports = function (grunt) {
                 src: [
                     'dist/common/config.js',
                     'actionlog/app.js',
-                    'actionlog/**/*.js'
+                    'actionlog/js/**/*.js'
                 ],
                 dest: 'dist/actionlog/zemanta-one.actionlog.js'
             }
@@ -145,7 +145,7 @@ module.exports = function (grunt) {
             },
             actionlog: {
                 files: {
-                    "dist/actionlog/zemanta-one.actionlog.min.css": "actionlog/**/*.less"
+                    "dist/actionlog/zemanta-one.actionlog.min.css": "actionlog/less/**/*.less"
                 }
             }
         },
@@ -165,8 +165,8 @@ module.exports = function (grunt) {
             actionlog: {
                 files: [
                     'actionlog/**/*.js',
-                    'actionlog/**/*.html',
-                    'actionlog/**/*.less',
+                    'actionlog/partials/**/*.html',
+                    'actionlog/less/**/*.less',
                     'actionlog/img/**/*'
                 ],
                 tasks: ['build:actionlog']
