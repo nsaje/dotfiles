@@ -14,7 +14,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
     $scope.getModels = function () {
         $scope.accounts.forEach(function (account) {
             account.campaigns.forEach(function (campaign) {
-                if (campaign.id.toString() === $state.params.id) {
+                if (campaign.id.toString() === $state.params.id.toString()) {
                     $scope.setAccount(account);
                     $scope.setCampaign(campaign);
                 }

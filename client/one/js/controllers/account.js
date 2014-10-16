@@ -12,7 +12,7 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) 
 
     $scope.getAccount = function () {
         $scope.accounts.forEach(function (account) {
-            if (account.id.toString() === $state.params.id) {
+            if (account.id.toString() === $state.params.id.toString()) {
                 $scope.setAccount(account);
             }
         });
