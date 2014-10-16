@@ -157,6 +157,30 @@ urlpatterns += patterns(
         login_required(dash.views.AccountAgency.as_view()),
     ),
     url(
+        r'^api/accounts/(?P<account_id>\d+)/archive/',
+        login_required(dash.views.AccountArchive.as_view()),
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/restore/',
+        login_required(dash.views.AccountRestore.as_view()),
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/archive/',
+        login_required(dash.views.CampaignArchive.as_view()),
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/restore/',
+        login_required(dash.views.CampaignRestore.as_view()),
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/archive/',
+        login_required(dash.views.AdGroupArchive.as_view()),
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/restore/',
+        login_required(dash.views.AdGroupRestore.as_view()),
+    ),
+    url(
         r'^api/accounts/export/',
         login_required(dash.views.AllAccountsExport.as_view())
     ),

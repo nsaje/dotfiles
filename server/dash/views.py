@@ -285,10 +285,14 @@ class User(api_common.BaseApiView):
 class NavigationDataView(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'navigation_data_view_get')
     def get(self, request):
+        include_archived_flag = request.user.has_perm('zemauth.view_archived_entities')
+
         data = {}
         self.fetch_ad_groups(data, request.user)
         self.fetch_campaigns(data, request.user)
         self.fetch_accounts(data, request.user)
+
+        self.add_settings_data(data, include_archived_flag)
 
         result = []
         for account in data.values():
@@ -296,6 +300,40 @@ class NavigationDataView(api_common.BaseApiView):
             result.append(account)
 
         return self.create_api_response(result)
+
+    def add_settings_data(self, data, include_archived_flag):
+        account_settingss = models.AccountSettings.objects.\
+            order_by('account_id', '-created_dt').\
+            distinct('account')
+        account_settingss = {acc_settings.account.id: acc_settings for acc_settings in account_settingss}
+
+        campaign_settingss = models.CampaignSettings.objects.\
+            order_by('campaign_id', '-created_dt').\
+            distinct('campaign')
+        campaign_settingss = {camp_settings.campaign.id: camp_settings for camp_settings in campaign_settingss}
+
+        ad_group_settingss = models.AdGroupSettings.objects.\
+            order_by('ad_group_id', '-created_dt').\
+            distinct('ad_group')
+        ad_group_settingss = {ag_settings.ad_group.id: ag_settings for ag_settings in ad_group_settingss}
+
+        for account in data.values():
+            account_settings = account_settingss.get(account['id'])
+
+            if include_archived_flag:
+                account['archived'] = account_settings.archived if account_settings else False
+
+            for campaign in account['campaigns'].values():
+                campaign_settings = campaign_settingss.get(campaign['id'])
+
+                if include_archived_flag:
+                    campaign['archived'] = campaign_settings.archived if campaign_settings else False
+
+                for ad_group in campaign['adGroups']:
+                    ad_group_settings = ad_group_settingss.get(ad_group['id'])
+
+                    if include_archived_flag:
+                        ad_group['archived'] = ad_group_settings.archived if ad_group_settings else False
 
     def fetch_ad_groups(self, data, user):
         ad_groups = models.AdGroup.objects.get_for_user(user).select_related('campaign__account')
@@ -343,6 +381,78 @@ class NavigationDataView(api_common.BaseApiView):
             }
 
 
+class AccountArchive(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'account_archive_post')
+    def post(self, request, account_id):
+        if not request.user.has_perm('zemauth.archive_restore_entity'):
+            raise exc.AuthorizationError()
+
+        account = get_account(request.user, account_id)
+        account.archive()
+
+        return self.create_api_response({})
+
+
+class AccountRestore(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'account_restore_post')
+    def post(self, request, account_id):
+        if not request.user.has_perm('zemauth.archive_restore_entity'):
+            raise exc.AuthorizationError()
+
+        account = get_account(request.user, account_id)
+        account.restore()
+
+        return self.create_api_response({})
+
+
+class CampaignArchive(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_archive_post')
+    def post(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.archive_restore_entity'):
+            raise exc.AuthorizationError()
+
+        campaign = get_campaign(request.user, campaign_id)
+        campaign.archive()
+
+        return self.create_api_response({})
+
+
+class CampaignRestore(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_restore_post')
+    def post(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.archive_restore_entity'):
+            raise exc.AuthorizationError()
+
+        campaign = get_campaign(request.user, campaign_id)
+        campaign.restore()
+
+        return self.create_api_response({})
+
+
+class AdGroupArchive(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_archive_post')
+    def post(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.archive_restore_entity'):
+            raise exc.AuthorizationError()
+
+        ad_group = get_ad_group(request.user, ad_group_id)
+        ad_group.archive()
+
+        return self.create_api_response({})
+
+
+class AdGroupRestore(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_restore_post')
+    def post(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.archive_restore_entity'):
+            raise exc.AuthorizationError()
+
+        ad_group = get_ad_group(request.user, ad_group_id)
+        ad_group.restore()
+
+        return self.create_api_response({})
+
+
 class AccountAgency(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'account_agency_get')
     def get(self, request, account_id):
@@ -350,8 +460,16 @@ class AccountAgency(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         account = get_account(request.user, account_id)
+        account_settings = self.get_current_settings(account)
 
-        return self.create_api_response(self.get_response(account))
+        response = {
+            'settings': self.get_dict(account_settings, account),
+            'history': self.get_history(account),
+            'can_archive': account.can_archive(),
+            'can_restore': account.can_restore(),
+        }
+
+        return self.create_api_response(response)
 
     @statsd_helper.statsd_timer('dash.api', 'account_agency_put')
     def put(self, request, account_id):
@@ -366,18 +484,113 @@ class AccountAgency(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        account.name = form.cleaned_data['name']
-        account.save()
+        self.set_account(account, form.cleaned_data)
 
-        return self.create_api_response(self.get_response(account))
+        settings = models.AccountSettings()
+        self.set_settings(settings, account, form.cleaned_data)
 
-    def get_response(self, data):
-        return {
-            'settings': {
-                'id': data.id,
-                'name': data.name
-            }
+        with transaction.atomic():
+            account.save()
+            settings.save()
+
+        response = {
+            'settings': self.get_dict(settings, account),
+            'history': self.get_history(account),
+            'can_archive': account.can_archive(),
+            'can_restore': account.can_restore(),
         }
+
+        return self.create_api_response(response)
+
+    def set_account(self, account, resource):
+        account.name = resource['name']
+
+    def set_settings(self, settings, account, resource):
+        settings.account = account
+        settings.name = resource['name']
+
+    def get_current_settings(self, account):
+        settings = models.AccountSettings.objects.\
+            filter(account=account).\
+            order_by('-created_dt')
+        if settings:
+            settings = settings[0]
+        else:
+            settings = models.AccountSettings()
+
+        return settings
+
+    def get_dict(self, settings, account):
+        result = {}
+
+        if settings:
+            result = {
+                'id': str(account.pk),
+                'name': account.name,
+                'archived': settings.archived,
+            }
+
+        return result
+
+    def get_history(self, account):
+        settings = models.AccountSettings.objects.\
+            filter(account=account).\
+            order_by('created_dt')
+
+        history = []
+        for i in range(0, len(settings)):
+            old_settings = settings[i - 1] if i > 0 else None
+            new_settings = settings[i]
+
+            changes = old_settings.get_setting_changes(new_settings) \
+                if old_settings is not None else None
+
+            if i > 0 and not changes:
+                continue
+
+            settings_dict = self.convert_settings_to_dict(old_settings, new_settings)
+
+            history.append({
+                'datetime': new_settings.created_dt,
+                'changed_by': new_settings.created_by.email,
+                'changes_text': self.convert_changes_to_string(changes, settings_dict),
+                'settings': settings_dict.values(),
+                'show_old_settings': old_settings is not None
+            })
+
+        return history
+
+    def convert_changes_to_string(self, changes, settings_dict):
+        if changes is None:
+            return 'Created settings'
+
+        change_strings = []
+
+        for key in changes:
+            setting = settings_dict[key]
+            change_strings.append(
+                '{} set to "{}"'.format(setting['name'], setting['value'])
+            )
+
+        return ', '.join(change_strings)
+
+    def convert_settings_to_dict(self, old_settings, new_settings):
+        settings_dict = OrderedDict([
+            ('name', {
+                'name': 'Name',
+                'value': new_settings.name.encode('utf-8')
+            }),
+            ('archived', {
+                'name': 'Archived',
+                'value': str(new_settings.archived)
+            }),
+        ])
+
+        if old_settings is not None:
+            settings_dict['name']['old_value'] = old_settings.name.encode('utf-8')
+            settings_dict['archived']['old_value'] = str(old_settings.archived)
+
+        return settings_dict
 
 
 class CampaignAdGroups(api_common.BaseApiView):
@@ -518,7 +731,9 @@ class CampaignSettings(api_common.BaseApiView):
             'settings': self.get_dict(campaign_settings, campaign),
             'account_managers': self.get_user_list(campaign_settings, 'campaign_settings_account_manager'),
             'sales_reps': self.get_user_list(campaign_settings, 'campaign_settings_sales_rep'),
-            'history': self.get_history(campaign)
+            'history': self.get_history(campaign),
+            'can_archive': campaign.can_archive(),
+            'can_restore': campaign.can_restore(),
         }
 
         return self.create_api_response(response)
@@ -547,7 +762,9 @@ class CampaignSettings(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(settings, campaign),
-            'history': self.get_history(campaign)
+            'history': self.get_history(campaign),
+            'can_archive': campaign.can_archive(),
+            'can_restore': campaign.can_restore(),
         }
 
         return self.create_api_response(response)
@@ -615,7 +832,11 @@ class CampaignSettings(api_common.BaseApiView):
             ('promotion_goal', {
                 'name': 'Promotion Goal',
                 'value': constants.PromotionGoal.get_text(new_settings.promotion_goal)
-            })
+            }),
+            ('archived', {
+                'name': 'Archived',
+                'value': str(new_settings.archived)
+            }),
         ])
 
         if old_settings is not None:
@@ -637,6 +858,8 @@ class CampaignSettings(api_common.BaseApiView):
 
             settings_dict['promotion_goal']['old_value'] = \
                 constants.PromotionGoal.get_text(old_settings.promotion_goal)
+
+            settings_dict['archived']['old_value'] = str(old_settings.archived)
 
         return settings_dict
 
@@ -850,7 +1073,9 @@ class AdGroupAgency(api_common.BaseApiView):
         response = {
             'settings': self.get_dict(settings, ad_group),
             'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group),
-            'history': self.get_history(ad_group)
+            'history': self.get_history(ad_group),
+            'can_archive': ad_group.can_archive(),
+            'can_restore': ad_group.can_restore(),
         }
 
         return self.create_api_response(response)
@@ -886,7 +1111,9 @@ class AdGroupAgency(api_common.BaseApiView):
         response = {
             'settings': self.get_dict(settings, ad_group),
             'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group),
-            'history': self.get_history(ad_group)
+            'history': self.get_history(ad_group),
+            'can_archive': ad_group.can_archive(),
+            'can_restore': ad_group.can_restore(),
         }
 
         return self.create_api_response(response)
@@ -1355,7 +1582,7 @@ class SourcesTable(api_common.BaseApiView):
     def get_totals(self, totals_data, sources_settings, yesterday_cost):
         result = {
             'daily_budget': float(sum(settings.daily_budget_cc for settings in sources_settings
-                if settings.daily_budget_cc is not None)),
+                                      if settings.daily_budget_cc is not None)),
             'cost': totals_data['cost'],
             'cpc': totals_data['cpc'],
             'clicks': totals_data['clicks'],
@@ -1476,10 +1703,18 @@ class AccountsAccountsTable(api_common.BaseApiView):
         page = request.GET.get('page')
         size = request.GET.get('size')
         order = request.GET.get('order')
+
+        include_archived_flag = request.user.has_perm('zemauth.view_archived_entities')
+
         user = request.user
-        
+
         accounts = models.Account.objects.get_for_user(user)
         account_ids = set(acc.id for acc in accounts)
+
+        accounts_settings = models.AccountSettings.objects.\
+            distinct('account').\
+            filter(account__in=accounts).\
+            order_by('account_id', '-created_dt')
 
         size = max(min(int(size or 5), 50), 1)
         if page:
@@ -1499,13 +1734,13 @@ class AccountsAccountsTable(api_common.BaseApiView):
         ), request.user)
 
         all_accounts_budget = budget.GlobalBudget().get_total_by_account()
-        account_budget = {aid:all_accounts_budget.get(aid, 0) for aid in account_ids}
-        
+        account_budget = {aid: all_accounts_budget.get(aid, 0) for aid in account_ids}
+
         totals_data['budget'] = sum(account_budget.itervalues())
         totals_data['available_budget'] = totals_data['budget'] - (totals_data.get('cost') or 0)
 
         last_success_actions = actionlog.sync.GlobalSync().get_latest_success_by_account()
-        last_success_actions = {aid:val for aid, val in last_success_actions.items() if aid in account_ids}
+        last_success_actions = {aid: val for aid, val in last_success_actions.items() if aid in account_ids}
 
         last_sync = None
         if last_success_actions.values() and None not in last_success_actions.values():
@@ -1513,10 +1748,12 @@ class AccountsAccountsTable(api_common.BaseApiView):
 
         rows = self.get_rows(
             accounts,
+            accounts_settings,
             accounts_data,
             last_success_actions,
             account_budget,
-            order=order
+            order=order,
+            include_archived_flag=include_archived_flag,
         )
 
         rows, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(rows, page, size)
@@ -1544,14 +1781,26 @@ class AccountsAccountsTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
 
-    def get_rows(self, accounts, accounts_data, last_actions, account_budget, order=None):
+    def get_rows(self, accounts, accounts_settings, accounts_data, last_actions, account_budget, order=None, include_archived_flag=False):
         rows = []
 
         account_state = api.get_state_by_account()
         for account in accounts:
             aid = account.pk
+            row = {
+                'id': str(aid),
+                'name': account.name
+            }
 
             state = account_state.get(aid, constants.AdGroupSettingsState.INACTIVE)
+            row['status'] = state
+
+            if include_archived_flag:
+                row['archived'] = False
+                for account_settings in accounts_settings:
+                    if account_settings.account.pk == account.pk:
+                        row['archived'] = account_settings.archived
+                        break
 
             # get source reports data
             account_data = {}
@@ -1560,16 +1809,9 @@ class AccountsAccountsTable(api_common.BaseApiView):
                     account_data = item
                     break
 
-            last_sync = last_actions.get(aid)
-            if last_sync:
-                last_sync = pytz.utc.localize(last_sync)
-
-            row = {
-                'id': str(aid),
-                'name': account.name,
-                'status': state,
-                'last_sync': last_sync
-            }
+            row['last_sync'] = last_actions.get(aid)
+            if row['last_sync']:
+                row['last_sync'] = pytz.utc.localize(row['last_sync'])
 
             row.update(account_data)
 
@@ -2186,6 +2428,8 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         end_date = get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-cost'
 
+        include_archived_flag = request.user.has_perm('zemauth.view_archived_entities')
+
         stats = reports.api.filter_by_permissions(reports.api.query(
             start_date=start_date,
             end_date=end_date,
@@ -2201,7 +2445,11 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             order_by('ad_group', '-created_dt')
 
         totals_stats = reports.api.filter_by_permissions(
-            reports.api.query(start_date, end_date, campaign=campaign.pk),
+            reports.api.query(
+                start_date,
+                end_date,
+                ad_group=ad_groups
+            ),
             request.user
         )
 
@@ -2227,7 +2475,13 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
 
         return self.create_api_response({
             'rows': self.get_rows(
-                ad_groups, ad_groups_settings, stats, last_success_actions, order),
+                ad_groups,
+                ad_groups_settings,
+                stats,
+                last_success_actions,
+                order,
+                include_archived_flag
+            ),
             'totals': totals_stats,
             'last_sync': last_sync,
             'is_sync_recent': is_sync_recent(last_sync),
@@ -2237,7 +2491,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
 
-    def get_rows(self, ad_groups, ad_groups_settings, stats, last_actions, order):
+    def get_rows(self, ad_groups, ad_groups_settings, stats, last_actions, order, include_archived_flag):
         rows = []
         for ad_group in ad_groups:
             row = {
@@ -2245,11 +2499,18 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
                 'ad_group': str(ad_group.pk)
             }
 
+            if include_archived_flag:
+                row['archived'] = False
+
             row['state'] = models.AdGroupSettings.get_default_value('state')
             for ad_group_settings in ad_groups_settings:
-                if ad_group.pk == ad_group_settings.ad_group_id and \
-                        ad_group_settings.state is not None:
-                    row['state'] = ad_group_settings.state
+                if ad_group.pk == ad_group_settings.ad_group_id:
+                    if ad_group_settings.state is not None:
+                        row['state'] = ad_group_settings.state
+
+                    if include_archived_flag:
+                        row['archived'] = ad_group_settings.archived
+
                     break
 
             for stat in stats:
@@ -2276,12 +2537,19 @@ class AccountCampaignsTable(api_common.BaseApiView):
     def get(self, request, account_id):
         user = request.user
 
-        campaigns = models.Campaign.objects.get_for_user(user).\
-            filter(account=account_id)
-
         start_date = get_stats_start_date(request.GET.get('start_date'))
         end_date = get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-clicks'
+
+        include_archived_flag = request.user.has_perm('zemauth.view_archived_entities')
+
+        campaigns = models.Campaign.objects.get_for_user(user).\
+            filter(account=account_id)
+
+        campaigns_settings = models.CampaignSettings.objects.\
+            distinct('campaign').\
+            filter(campaign__in=campaigns).\
+            order_by('campaign', '-created_dt')
 
         stats = reports.api.filter_by_permissions(reports.api.query(
             start_date=start_date,
@@ -2295,8 +2563,9 @@ class AccountCampaignsTable(api_common.BaseApiView):
             reports.api.query(start_date, end_date, campaign=campaigns),
             request.user
         )
-        totals_stats['budget'] = sum(budget.CampaignBudget(campaign).get_total() \
-            for campaign in campaigns)
+
+        totals_stats['budget'] = sum(budget.CampaignBudget(campaign).get_total()
+                                     for campaign in campaigns)
         totals_stats['available_budget'] = totals_stats['budget'] - (totals_stats.get('cost') or 0)
 
         ad_groups_settings = models.AdGroupSettings.objects.\
@@ -2310,9 +2579,9 @@ class AccountCampaignsTable(api_common.BaseApiView):
             if len(list(campaign_sync.get_components())) > 0:
                 last_success_actions[campaign.pk] = campaign_sync.get_latest_success(recompute=False)
 
-        last_sync = None 
+        last_sync = None
         if last_success_actions.values() and None not in last_success_actions.values():
-            last_sync =min(last_success_actions.values())
+            last_sync = min(last_success_actions.values())
         if last_sync:
             last_sync = pytz.utc.localize(last_sync)
 
@@ -2324,10 +2593,12 @@ class AccountCampaignsTable(api_common.BaseApiView):
         return self.create_api_response({
             'rows': self.get_rows(
                 campaigns,
+                campaigns_settings,
                 ad_groups_settings,
                 stats,
                 last_success_actions,
-                order
+                order,
+                include_archived_flag=include_archived_flag
             ),
             'totals': totals_stats,
             'last_sync': last_sync,
@@ -2338,17 +2609,34 @@ class AccountCampaignsTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
 
-    def get_rows(self, campaigns, ad_groups_settings, stats, last_actions, order):
+    def get_rows(self, campaigns, campaigns_settings, ad_groups_settings, stats, last_actions, order, include_archived_flag=False):
         rows = []
         for campaign in campaigns:
             # If at least one ad group is active, then the campaign is considered
             # active.
+
+            row = {
+                'campaign': str(campaign.pk),
+                'name': campaign.name,
+            }
+
             state = constants.AdGroupSettingsState.INACTIVE
             for ad_group_settings in ad_groups_settings:
                 if ad_group_settings.ad_group.campaign.pk == campaign.pk and \
                         ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE:
                     state = constants.AdGroupSettingsState.ACTIVE
                     break
+
+            row['state'] = state
+
+            if include_archived_flag:
+                archived = False
+                for campaign_settings in campaigns_settings:
+                    if campaign_settings.campaign.pk == campaign.pk:
+                        archived = campaign_settings.archived
+                        break
+
+                row['archived'] = archived
 
             campaign_stat = {}
             for stat in stats:
@@ -2360,12 +2648,8 @@ class AccountCampaignsTable(api_common.BaseApiView):
             if last_sync:
                 last_sync = pytz.utc.localize(last_sync)
 
-            row = {
-                'campaign': str(campaign.pk),
-                'name': campaign.name,
-                'state': state,
-                'last_sync': last_sync
-            }
+            row['last_sync'] = last_sync
+
             row.update(campaign_stat)
 
             row['budget'] = budget.CampaignBudget(campaign).get_total()

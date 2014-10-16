@@ -1,12 +1,19 @@
 /*globals oneApp,$,moment*/
 oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($scope, $state, $location) {
     $scope.level = constants.level.CAMPAIGNS;
-    $scope.tabs = [
-        {heading: 'Ad groups', route: 'main.campaigns.ad_groups', active: true, hidden: !$scope.hasPermission('zemauth.campaign_ad_groups_view'), internal: $scope.isPermissionInternal('zemauth.campaign_ad_groups_view')},
-        {heading: 'Media sources', route: 'main.campaigns.sources', active: false, hidden: !$scope.hasPermission('zemauth.campaign_sources_view'), internal: $scope.isPermissionInternal('zemauth.campaign_sources_view')},
-        {heading: 'Agency', route: 'main.campaigns.agency', active: false, hidden: !$scope.hasPermission('zemauth.campaign_settings_view'), internal: $scope.isPermissionInternal('zemauth.campaign_settings_view')},
-        {heading: 'Budget', route: 'main.campaigns.budget', active: false, hidden: !$scope.hasPermission('zemauth.campaign_budget_management_view'), internal: $scope.isPermissionInternal('zemauth.campaign_budget_management_view')}
-    ];
+    $scope.getTabs = function () {
+        return [
+            {heading: 'Ad groups', route: 'main.campaigns.ad_groups', active: true, hidden: !$scope.hasPermission('zemauth.campaign_ad_groups_view') || ($scope.campaign && $scope.campaign.archived), internal: $scope.isPermissionInternal('zemauth.campaign_ad_groups_view')},
+            {heading: 'Media sources', route: 'main.campaigns.sources', active: false, hidden: !$scope.hasPermission('zemauth.campaign_sources_view') || ($scope.campaign && $scope.campaign.archived), internal: $scope.isPermissionInternal('zemauth.campaign_sources_view')},
+            {heading: 'Agency', route: 'main.campaigns.agency', active: false, hidden: !$scope.hasPermission('zemauth.campaign_settings_view'), internal: $scope.isPermissionInternal('zemauth.campaign_settings_view')},
+            {heading: 'Budget', route: 'main.campaigns.budget', active: false, hidden: !$scope.hasPermission('zemauth.campaign_budget_management_view') || ($scope.campaign && $scope.campaign.archived), internal: $scope.isPermissionInternal('zemauth.campaign_budget_management_view')}
+        ];
+    };
+    $scope.setActiveTab = function () {
+        $scope.tabs.forEach(function(tab) {
+            tab.active = $state.is(tab.route);
+        });
+    };
 
     $scope.setAccount(null);
     $scope.setCampaign(null);
@@ -40,10 +47,6 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
         $scope.campaign.name = newCampaignName;
     };
 
-    $scope.tabs.forEach(function(tab) {
-        tab.active = $state.is(tab.route);
-    });
-
     $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
         $location.search('page', null);
         $location.search('size', null);
@@ -51,5 +54,19 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
     });
 
     $scope.getModels();
+    $scope.tabs = $scope.getTabs();
+    $scope.setActiveTab();
+
+    if ($scope.campaign && $scope.campaign.archived && !$state.is('main.campaigns.agency')) {
+        $state.go('main.campaigns.agency', {id: $scope.campaign.id});
+    }
+
     $scope.updateBreadcrumbAndTitle();
+
+    $scope.$watch('campaign.archived', function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            $scope.tabs = $scope.getTabs();
+            $scope.setActiveTab();
+        }
+    });
 }]);

@@ -14,6 +14,8 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', 'api', function ($s
 
     $scope.settings = {};
     $scope.history = [];
+    $scope.canArchive = false;
+    $scope.canRestore = true;
     $scope.accountManagers = [];
     $scope.salesReps = [];
     $scope.errors = {};
@@ -33,6 +35,8 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', 'api', function ($s
             function (data) {
                 $scope.settings = data.settings;
                 $scope.history = data.history;
+                $scope.canArchive = data.canArchive;
+                $scope.canRestore = data.canRestore;
 
                 if (discarded) {
                     $scope.discarded = true;
@@ -58,6 +62,8 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', 'api', function ($s
         api.campaignSettings.save($scope.settings).then(
             function (data) {
                 $scope.history = data.history;
+                $scope.canArchive = data.canArchive;
+                $scope.canRestore = data.canRestore;
                 $scope.errors = {};
                 $scope.settings = data.settings;
                 $scope.updateAccounts(data.settings.name);
@@ -71,6 +77,24 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', 'api', function ($s
             }
         ).finally(function () {
             $scope.requestInProgress = false;
+        });
+    };
+
+    $scope.archiveCampaign = function () {
+        api.campaignArchive.archive($scope.campaign.id).then(function () {
+            api.navData.list().then(function (accounts) {
+                $scope.refreshNavData(accounts);
+                $scope.getModels();
+            });
+        });
+    };
+
+    $scope.restoreCampaign = function () {
+        api.campaignArchive.restore($scope.campaign.id).then(function () {
+            api.navData.list().then(function (accounts) {
+                $scope.refreshNavData(accounts);
+                $scope.getModels();
+            });
         });
     };
 

@@ -1,5 +1,5 @@
 /*globals oneApp,$*/
-oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'zemMoment', 'user', 'accounts', function ($scope, $state, $location, $document, zemMoment, user, accounts) {
+oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'zemMoment', 'user', 'accounts', 'localStorageService', 'api', function ($scope, $state, $location, $document, zemMoment, user, accounts, localStorageService, api) {
     $scope.accounts = accounts;
     $scope.user = user;
     $scope.currentRoute = $scope.current;
@@ -7,10 +7,16 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     $scope.maxDate = zemMoment();
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
 
+    $scope.showArchived = false;
+
     $scope.adGroupData = {};
     $scope.account = null;
     $scope.campaign = null;
     $scope.adGroup = null;
+
+    $scope.refreshNavData = function (accounts) {
+        $scope.accounts = accounts;
+    };
 
     $scope.hasPermission = function (permissions) {
         if (!permissions) {
@@ -34,7 +40,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
 
         return !$scope.user.permissions[permission];
     };
-    
+
     $scope.getDefaultAllAccountsState = function () {
         var result = null;
 
@@ -43,7 +49,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
         } else if ($scope.hasPermission('zemauth.all_accounts_sources_view')) {
             result = 'main.allAccounts.sources';
         } else if ($scope.hasPermission('zemauth.all_accounts_budget_view')) {
-            result = 'main.allAccounts.budget'
+            result = 'main.allAccounts.budget';
         }
 
         return result;
@@ -176,6 +182,16 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     $scope.setDateRangeFromSearch();
     $scope.dateRanges = $scope.getDateRanges();
 
+    $scope.setShowArchived = function () {
+        if (typeof $location.search().show_archived !== 'undefined') {
+            $scope.showArchived = $location.search().show_archived === 'true';
+        } else if (localStorageService.keys().indexOf('main.showArchived') >= 0 && $scope.hasPermission('zemauth.view_archived_entities')) {
+            $scope.showArchived = localStorageService.get('main.showArchived') === 'true';
+        }
+    };
+
+    $scope.setShowArchived();
+
     $scope.breadcrumb = [];
 
     $scope.setBreadcrumbAndTitle = function (breadcrumb, title) {
@@ -243,6 +259,10 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
         }
     });
 
+    $('#filter').on('click', function(e) {
+        e.stopPropagation();
+    });
+
     $document.bind('keyup', function (e) {
         if (e) {
             if (String.fromCharCode(e.keyCode).toLowerCase() === 'f') {
@@ -267,6 +287,15 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
         if (!$.isEmptyObject(newValue) && !$.isEmptyObject(oldValue) &&  (newValue.startDate.valueOf() !== oldValue.startDate.valueOf() || newValue.endDate.valueOf() !== oldValue.endDate.valueOf())) {
             $location.search('start_date', $scope.dateRange.startDate ? $scope.dateRange.startDate.format('YYYY-MM-DD') : null);
             $location.search('end_date', $scope.dateRange.endDate ? $scope.dateRange.endDate.format('YYYY-MM-DD') : null);
+        }
+    });
+
+    $scope.$watch('showArchived', function (newValue, oldValue) {
+        if (oldValue !== newValue) {
+            if ($scope.hasPermission('zemauth.view_archived_entities')) {
+                $location.search('show_archived', newValue.toString());
+                localStorageService.set('main.showArchived', newValue.toString());
+            }
         }
     });
 }]);
