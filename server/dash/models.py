@@ -518,7 +518,7 @@ class AdGroup(models.Model):
     @transaction.atomic
     def restore(self):
         if not self.can_restore():
-            raise exc.Forbidden(
+            raise exc.ForbiddenError(
                 'Account and campaign have to not be archived in order to restore an ad group.'
             )
 
