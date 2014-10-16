@@ -47,7 +47,7 @@ class AdGroupSettingsTest(TestCase):
         )
 
 
-def created_by_receiver(sender, instance, **kwargs):
+def created_by_patch(sender, instance, **kwargs):
     u = zemauthmodels.User.objects.get(id=1)
     if instance.pk is not None:
         return
@@ -60,12 +60,14 @@ class ArchiveRestoreTestCase(TestCase):
     fixtures = ['test_models.yaml']
 
     def setUp(self):
-        pre_save.connect(created_by_receiver, sender=models.AdGroupSettings)
-        pre_save.connect(created_by_receiver, sender=models.CampaignSettings)
-        pre_save.connect(created_by_receiver, sender=models.AccountSettings)
+        pre_save.connect(created_by_patch, sender=models.AdGroupSettings)
+        pre_save.connect(created_by_patch, sender=models.CampaignSettings)
+        pre_save.connect(created_by_patch, sender=models.AccountSettings)
 
     def tearDown(self):
-        pre_save.disconnect(created_by_receiver)
+        pre_save.disconnect(created_by_patch, sender=models.AdGroupSettings)
+        pre_save.disconnect(created_by_patch, sender=models.CampaignSettings)
+        pre_save.disconnect(created_by_patch, sender=models.AccountSettings)
 
     def test_archive_ad_group(self):
         ag1 = models.AdGroup.objects.get(id=1)
