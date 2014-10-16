@@ -56,6 +56,7 @@
             </form>
             <div id="filter" class="pull-right" ng-show="hasPermission('zemauth.view_archived_entities')">
                 <div class="dropdown">
+                    <zem-internal-feature popover-placement="left" ng-if="isPermissionInternal('zemauth.view_archived_entities')"></zem-internal-feature>
                     <a href class="dropdown-toggle btn btn-default"><img ng-src="{{ config.static_url }}/img/filter_icon.svg"></img></a>
                     <ul class="dropdown-menu">
                         <li><div class="checkbox"><label><input type="checkbox" ng-model="showArchived">Show archived accounts, campaigns and ad groups</label></div></li>

@@ -1159,6 +1159,19 @@ a.help-popover:visited {
         padding-right: 15px;
 
         #filter {
+
+            .internal {
+                &:before {
+                    content: " ";
+                    position: absolute;
+                    width: 0;
+                    height: 0;
+                    display: block;
+                    border-top: 7px solid #16a085;
+                    border-right: 7px solid transparent;
+                }
+            }
+
             a.btn {
                 padding: 2px;
 
