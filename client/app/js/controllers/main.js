@@ -7,7 +7,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     $scope.maxDate = zemMoment();
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
 
-    $scope.showArchived = $location.search().show_archived || false;
+    $scope.showArchived = false;
 
     $scope.adGroupData = {};
     $scope.account = null;
@@ -32,10 +32,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
             return Object.keys($scope.user.permissions).indexOf(permission) >= 0;
         });
     };
-
-    if (localStorageService.keys().indexOf('main.showArchived') >= 0 && $scope.hasPermission('zemauth.view_archived_entities')) {
-        $scope.showArchived = localStorageService.get('main.showArchived');
-    }
 
     $scope.isPermissionInternal = function (permission) {
         if (Object.keys($scope.user.permissions).indexOf(permission) < 0) {
@@ -186,6 +182,16 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     $scope.setDateRangeFromSearch();
     $scope.dateRanges = $scope.getDateRanges();
 
+    $scope.setShowArchived = function () {
+        if (typeof $location.search().show_archived !== 'undefined') {
+            $scope.showArchived = $location.search().show_archived === 'true';
+        } else if (localStorageService.keys().indexOf('main.showArchived') >= 0 && $scope.hasPermission('zemauth.view_archived_entities')) {
+            $scope.showArchived = localStorageService.get('main.showArchived') === 'true';
+        }
+    };
+
+    $scope.setShowArchived();
+
     $scope.breadcrumb = [];
 
     $scope.setBreadcrumbAndTitle = function (breadcrumb, title) {
@@ -287,8 +293,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     $scope.$watch('showArchived', function (newValue, oldValue) {
         if (oldValue !== newValue) {
             if ($scope.hasPermission('zemauth.view_archived_entities')) {
-                $location.search('show_archived', newValue);
-                localStorageService.set('main.showArchived', newValue);
+                $location.search('show_archived', newValue.toString());
+                localStorageService.set('main.showArchived', newValue.toString());
             }
         }
     });
