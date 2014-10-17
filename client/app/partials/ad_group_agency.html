@@ -66,7 +66,7 @@
     <p>
         <strong>This ad group is archived.</strong>
     </p>
-    <button href type="button" class="btn btn-default" ng-class="{'disabled': !canRestore}" ng-click="restoreAdGroup()" title="{{ (!canRestore && 'In order to restore this ad group it\'s campaign must not be archived.') || '' }}">Restore ad group</button>
+    <button href type="button" class="btn btn-default" ng-class="{'disabled': !canRestore}" ng-click="restoreAdGroup()" title="{{ (!canRestore && 'In order to restore this ad group it\'s campaign must be restored first.') || '' }}">Restore ad group</button>
 </div>
 
 <script id="popoverContent.html" type="text/ng-template">

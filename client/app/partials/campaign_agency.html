@@ -122,7 +122,7 @@
     <p>
         <strong>This campaign is archived.</strong>
     </p>
-    <button type="button" class="btn btn-default" ng-class="{'disabled': !canRestore}" ng-click="restoreCampaign()" title="{{ (!canRestore && 'In order to restore a campaign, it\'s account must not be archived.') || '' }}">Restore campaign</button>
+    <button type="button" class="btn btn-default" ng-class="{'disabled': !canRestore}" ng-click="restoreCampaign()" title="{{ (!canRestore && 'In order to restore a campaign, it\'s account must be restored first.') || '' }}">Restore campaign</button>
 </div>
 
 <script id="popoverContent.html" type="text/ng-template">

@@ -8,6 +8,7 @@ oneApp.directive('zemNavSearch', ['config', '$state', function(config, $state) {
         scope: {
             account: '=zemCurrentAccount',
             accountsData: '=zemAllAccounts',
+            showArchived: '=zemShowArchived',
             canAccessAccounts: '@zemCanAccessAccounts',
             canAccessCampaigns: '@zemCanAccessCampaigns',
             defaultAccountState: '@zemDefaultAccountState',
@@ -46,14 +47,22 @@ oneApp.directive('zemNavSearch', ['config', '$state', function(config, $state) {
                 $scope.adGroups = [];
 
                 $scope.accountsData.forEach(function (account, i) {
-                    $scope.accounts.push({id: constants.entityType.ACCOUNT + ':' + account.id, name: account.name});
+                    $scope.accounts.push({id: constants.entityType.ACCOUNT + ':' + account.id, name: account.name, archived: account.archived});
                     account.campaigns.forEach(function (campaign, j) {
-                        $scope.campaigns.push({id: constants.entityType.CAMPAIGN + ':' + campaign.id, name: campaign.name});
+                        $scope.campaigns.push({id: constants.entityType.CAMPAIGN + ':' + campaign.id, name: campaign.name, archived: campaign.archived});
                         campaign.adGroups.forEach(function (adGroup, k) {
-                            $scope.adGroups.push({id: constants.entityType.AD_GROUP + ':' + adGroup.id, name: adGroup.name});
+                            $scope.adGroups.push({id: constants.entityType.AD_GROUP + ':' + adGroup.id, name: adGroup.name, archived: adGroup.archived});
                         });
                     });
                 });
+
+                function sortEntities(a, b) {
+                    return a.name.toLocaleLowerCase().localeCompare(b.name.toLocaleLowerCase());
+                }
+
+                $scope.accounts = $scope.accounts.sort(sortEntities);
+                $scope.campaigns = $scope.campaigns.sort(sortEntities);
+                $scope.adGroups = $scope.adGroups.sort(sortEntities);
             });
 
             $scope.$watch('account', function (newValue) {
