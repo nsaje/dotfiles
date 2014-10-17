@@ -10,14 +10,7 @@
   "devDependencies": {
     "angular-mocks": ">= 1.0.7"
   },
-  "homepage": "https://github.com/luisfarzati/ng-bs-daterangepicker",
-  "_release": "0.0.1",
-  "_resolution": {
-    "type": "version",
-    "tag": "0.0.1",
-    "commit": "455163695f19d958bc4ec39aa665f4972586c1d9"
-  },
-  "_source": "git://github.com/luisfarzati/ng-bs-daterangepicker.git",
-  "_target": "0.0.1",
-  "_originalSource": "ng-bs-daterangepicker"
+  "_source": "/Users/wafelj/Projects/zemanta-one/client/lib/custom_components/ng-bs-daterangepicker",
+  "_target": "*",
+  "_originalSource": "./lib/custom_components/ng-bs-daterangepicker"
 }
