@@ -1,10 +1,15 @@
 /*globals oneApp*/
 oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
     $scope.settings = {};
+    $scope.history = [];
+    $scope.canArchive = false;
+    $scope.canRestore = true;
     $scope.errors = {};
     $scope.requestInProgress = false;
     $scope.saved = null;
     $scope.discarded = null;
+    $scope.orderField = 'datetime';
+    $scope.orderReverse = true;
 
     $scope.getSettings = function (discarded) {
         $scope.saved = null;
@@ -14,6 +19,9 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
         api.accountAgency.get($state.params.id).then(
             function (data) {
                 $scope.settings = data.settings;
+                $scope.history = data.history;
+                $scope.canArchive = data.canArchive;
+                $scope.canRestore = data.canRestore;
                 $scope.discarded = discarded;
             },
             function (data) {
@@ -34,6 +42,9 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
             function (data) {
                 $scope.errors = {};
                 $scope.settings = data.settings;
+                $scope.history = data.history;
+                $scope.canArchive = data.canArchive;
+                $scope.canRestore = data.canRestore;
                 $scope.updateAccounts(data.settings.name);
                 $scope.updateBreadcrumbAndTitle();
                 $scope.requestInProgress = false;
@@ -45,6 +56,26 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
             }
         ).finally(function () {
             $scope.requestInProgress = false;
+        });
+    };
+
+    $scope.archiveAccount = function () {
+        api.accountArchive.archive($scope.account.id).then(function () {
+            api.navData.list().then(function (accounts) {
+                $scope.refreshNavData(accounts);
+                $scope.getAccount();
+            });
+            $scope.getSettings();
+        });
+    };
+
+    $scope.restoreAccount = function () {
+        api.accountArchive.restore($scope.account.id).then(function () {
+            api.navData.list().then(function (accounts) {
+                $scope.refreshNavData(accounts);
+                $scope.getAccount();
+            });
+            $scope.getSettings();
         });
     };
 

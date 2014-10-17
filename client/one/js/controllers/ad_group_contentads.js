@@ -396,8 +396,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         }
     }
 
-    pollSyncStatus();
-
     // trigger sync
     $scope.triggerSync = function() {
         $scope.isSyncInProgress = true;

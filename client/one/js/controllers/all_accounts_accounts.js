@@ -372,8 +372,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             $location.search('order', order);
         }
 
-        pollSyncStatus();
-
         if (page !== undefined && $scope.pagination.currentPage !== page) {
             $scope.pagination.currentPage = page;
         }

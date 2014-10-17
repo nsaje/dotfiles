@@ -23,5 +23,13 @@ exports.config = {
         browser.driver.findElement(By.id('id_signin_btn')).click();
 
         browser.driver.sleep(1000);  // prevent Broken Pipe error in Django
+    },
+
+    framework: 'jasmine',
+    jasmineNodeOpts: {
+        isVerbose: true,
+        showColors: true,
+        includeStackTrace: true,
+        defaultTimeoutInterval: 60000
     }
 };

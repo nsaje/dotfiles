@@ -37,7 +37,7 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         return false;
     });
 
-    var basicTemplate = '<ng-include src="\'/partials/tabset.html\'"></ng-include><div ui-view></div>'
+    var basicTemplate = '<ng-include src="\'/partials/tabset.html\'"></ng-include><div ui-view></div>';
 
     $stateProvider
         .state('main', {
@@ -93,7 +93,7 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             controller: 'AccountAgencyCtrl'
         });
 
-    $stateProvider
+    $stateProvider
         .state('main.campaigns', {
             url: 'campaigns/{id}',
             template: basicTemplate,
@@ -121,8 +121,8 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         });
 
 
-    $stateProvider
-        .state('main.adGroups', {
+    $stateProvider
+        .state('main.adGroups', {
             url: 'ad_groups/{id}',
             templateUrl: '/partials/ad_group.html'
         })

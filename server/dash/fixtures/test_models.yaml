@@ -16,7 +16,7 @@
     model: zemauth.user
     pk: 1
 
-# test account
+# test accounts
 
 -   fields:
         created_dt: '2014-06-04T09:58:21'
@@ -26,7 +26,15 @@
     model: dash.account
     pk: 1
 
-# test campaign
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test account 2'
+    model: dash.account
+    pk: 2
+
+# test campaigns
 
 -   fields:
         created_dt: '2014-06-04T09:58:21'
@@ -36,6 +44,15 @@
         name: 'test campaign 1'
     model: dash.campaign
     pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        account: 2 # test account 2
+        name: 'test campaign 2'
+    model: dash.campaign
+    pk: 2
 
 # sources
 
@@ -58,6 +75,15 @@
     model: dash.adgroup
     pk: 1
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 2
+        name: 'test adgroup 2'
+    model: dash.adgroup
+    pk: 2
+
 # test adgroupsettings
 
 -   fields:
@@ -72,8 +98,25 @@
         target_devices: ''
         target_regions: ''
         tracking_code: ''
+        archived: false
     model: dash.adgroupsettings
     pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        ad_group: 2
+        state: 2
+        start_date: '2014-06-04'
+        end_date: '2014-06-05'
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        target_devices: ''
+        target_regions: ''
+        tracking_code: ''
+        archived: false
+    model: dash.adgroupsettings
+    pk: 2
 
 # test adgroupsource
 

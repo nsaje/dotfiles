@@ -5,9 +5,8 @@ oneApp.controller('CampaignBudgetCtrl', ['$scope', '$state', 'api', function ($s
     $scope.available = 0;
     $scope.errors = {};
     $scope.history = [];
-    $scope.latestId = null;
-    $scope.allocate = 0;
-    $scope.revoke = 0;
+    $scope.amount = 0;
+    $scope.action = null;
     $scope.comment = '';
     $scope.requestInProgress = false;
 
@@ -20,7 +19,6 @@ oneApp.controller('CampaignBudgetCtrl', ['$scope', '$state', 'api', function ($s
                 $scope.spend = data.spend;
                 $scope.available = data.available;
                 $scope.history = data.history;
-                $scope.latestId = data.latest_id;
             },
             function (data) {
                 // error
@@ -35,19 +33,17 @@ oneApp.controller('CampaignBudgetCtrl', ['$scope', '$state', 'api', function ($s
         $scope.requestInProgress = true;
 
         api.campaignBudget.save($state.params.id, {
-            allocate: $scope.allocate, 
-            revoke: $scope.revoke, 
-            comment: $scope.comment, 
-            latest_id: $scope.latestId
+            amount: $scope.amount, 
+            action: $scope.action, 
+            comment: $scope.comment
         }).then(
             function (data) {
                 $scope.total = data.total;
                 $scope.spend = data.spend;
                 $scope.available = data.available;
                 $scope.history = data.history;
-                $scope.latestId = data.latest_id;
-                $scope.allocate = 0;
-                $scope.revoke = 0;
+                $scope.amount = 0;
+                $scope.action = null;
                 $scope.comment = '';
                 $scope.errors = 0;
             },
@@ -61,6 +57,16 @@ oneApp.controller('CampaignBudgetCtrl', ['$scope', '$state', 'api', function ($s
             $scope.requestInProgress = false;
         });
     };
+
+    $scope.allocateBudget = function() {
+        $scope.action = 'allocate';
+        $scope.saveBudget();
+    };
+
+    $scope.revokeBudget = function() {
+        $scope.action = 'revoke';
+        $scope.saveBudget();
+    }
 
     $scope.getBudget();
 

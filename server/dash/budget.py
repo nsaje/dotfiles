@@ -34,19 +34,15 @@ class GlobalBudget(CompositeBudget):
         return r.get('cost') or 0
 
     def get_total_by_account(self):
-        sql = '''
-        SELECT DISTINCT ON(campaign_id) 
-        cbs.id, campaign_id, account_id, total, cbs.created_dt
-        FROM 
-        dash_campaignbudgetsettings as cbs, 
-        dash_campaign as cmp
-        WHERE cmp.id = campaign_id 
-        ORDER BY campaign_id, cbs.created_dt DESC
-        '''
-        rows = dash.models.CampaignBudgetSettings.objects.raw(sql)
+        qs = dash.models.CampaignBudgetSettings.objects \
+            .select_related('campaign__account') \
+            .distinct('campaign').order_by('campaign', '-created_dt') \
+            .values('campaign__account', 'total')
         total_budget = {}
-        for row in rows:
-            total_budget[row.account_id] = float(row.total)
+        for row in qs:
+            if row['campaign__account'] not in total_budget:
+                total_budget[row['campaign__account']] = 0
+            total_budget[row['campaign__account']] += float(row['total'])
         return total_budget
 
 
@@ -81,7 +77,7 @@ class CampaignBudget(object):
         r = reports.api.query(start_date=start_date, end_date=end_date, campaign=self.campaign)
         return r.get('cost') or 0
 
-    def edit(self, allocate_amount, revoke_amount, comment, user, latest_id):
+    def edit(self, allocate_amount, revoke_amount, comment, user):
         if not allocate_amount and not revoke_amount and not comment:
             # nothing to change
             return
@@ -104,23 +100,18 @@ class CampaignBudget(object):
         cbs_latest = self._get_latest()
 
         with transaction.atomic():
-
-            if cbs_latest is not None and cbs_latest.id != latest_id:
-                # somebody already edited budget settings in the meantime
-                logger.error('Budget for campaign %s was changed in the meantime, canceling operation to avoid accidental overwrite', self.campaign.name)
-            else:
-                total = allocate_amount - revoke_amount
-                if cbs_latest is not None:
-                    total += float(cbs_latest.total)
-                cbs_new = dash.models.CampaignBudgetSettings(
-                    campaign=self.campaign,
-                    allocate=allocate_amount,
-                    revoke=revoke_amount,
-                    total=total,
-                    comment=comment,
-                    created_by=user
-                )
-                cbs_new.save()
+            total = allocate_amount - revoke_amount
+            if cbs_latest is not None:
+                total += float(cbs_latest.total)
+            cbs_new = dash.models.CampaignBudgetSettings(
+                campaign=self.campaign,
+                allocate=allocate_amount,
+                revoke=revoke_amount,
+                total=total,
+                comment=comment,
+                created_by=user
+            )
+            cbs_new.save()
 
     def get_history(self):
         return dash.models.CampaignBudgetSettings.objects.filter(campaign=self.campaign)
@@ -130,12 +121,8 @@ class CampaignBudget(object):
         try:
             cbs_latest = dash.models.CampaignBudgetSettings.objects.filter(campaign=self.campaign).latest()
         except dash.models.CampaignBudgetSettings.DoesNotExist:
-            logger.info('campaign %s no budget changes yet', self.campaign.name)
+            pass
         return cbs_latest
-
-    def get_latest_id(self):
-        cbs_latest = self._get_latest()
-        return cbs_latest.id if cbs_latest is not None else None
 
     def _can_edit(self, user):
         return self.campaign in dash.models.Campaign.objects.get_for_user(user)
