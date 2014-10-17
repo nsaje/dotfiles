@@ -471,7 +471,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
                 if ($scope.level === constants.level.ALL_ACCOUNTS) {
                     promise = api.checkAccountsSyncProgress.get();
                 } else if ($scope.level === constants.level.ACCOUNTS) {
-                    promise = api.checkAccountsSyncProgress.get($state.params.id);
+                    promise = api.checkCampaignSyncProgress.get(undefined, $state.params.id);
                 } else if ($scope.level === constants.level.CAMPAIGNS) {
                     promise = api.checkCampaignSyncProgress.get($state.params.id);
                 }

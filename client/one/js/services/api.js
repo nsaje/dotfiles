@@ -367,14 +367,8 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function CheckAccountsSyncProgress() {
-        this.get = function(id) {
+        this.get = function() {
             var deferred = $q.defer();
-
-            if (id === undefined) {
-                deferred.reject();
-                return deferred.promise;
-            }
-
             var url = '/api/accounts/check_sync_progress/';
 
             $http.get(url).
