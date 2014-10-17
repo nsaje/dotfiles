@@ -59,24 +59,28 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
         });
     };
 
-    $scope.archiveAccount = function () {
-        api.accountArchive.archive($scope.account.id).then(function () {
-            api.navData.list().then(function (accounts) {
-                $scope.refreshNavData(accounts);
-                $scope.getAccount();
-            });
-            $scope.getSettings();
+    $scope.refreshPage = function () {
+        api.navData.list().then(function (accounts) {
+            $scope.refreshNavData(accounts);
+            $scope.getAccount();
         });
+        $scope.getSettings();
+    };
+
+    $scope.archiveAccount = function () {
+        if ($scope.canArchive) {
+            api.accountArchive.archive($scope.account.id).then(function () {
+                $scope.refreshPage();
+            });
+        }
     };
 
     $scope.restoreAccount = function () {
-        api.accountArchive.restore($scope.account.id).then(function () {
-            api.navData.list().then(function (accounts) {
-                $scope.refreshNavData(accounts);
-                $scope.getAccount();
+        if ($scope.canRestore) {
+            api.accountArchive.restore($scope.account.id).then(function () {
+                $scope.refreshPage();
             });
-            $scope.getSettings();
-        });
+        }
     };
 
     $scope.getSettings();
