@@ -17,7 +17,6 @@ module.exports = function(config) {
     files: [
         'dist/one/zemanta-one.lib.js',
         'dist/one/zemanta-one.templates.js',
-        'dist/actionlog/zemanta-one.actionlog.lib.js',
         'one/js/**/*.js',
         'actionlog/**/*.js',
         'test/unit/**/*.js'
