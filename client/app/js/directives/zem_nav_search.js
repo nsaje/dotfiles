@@ -37,7 +37,7 @@ oneApp.directive('zemNavSearch', ['config', '$state', function(config, $state) {
                 }
             };
 
-            $scope.$watch('accountsData', function (newValue) {
+            $scope.computeOptions = function () {
                 if (!$scope.accountsData || !$scope.accountsData.length) {
                     return;
                 }
@@ -47,11 +47,17 @@ oneApp.directive('zemNavSearch', ['config', '$state', function(config, $state) {
                 $scope.adGroups = [];
 
                 $scope.accountsData.forEach(function (account, i) {
-                    $scope.accounts.push({id: constants.entityType.ACCOUNT + ':' + account.id, name: account.name, archived: account.archived});
+                    if ($scope.showArchived || !account.archived) {
+                        $scope.accounts.push({id: constants.entityType.ACCOUNT + ':' + account.id, name: account.name, archived: account.archived});
+                    }
                     account.campaigns.forEach(function (campaign, j) {
-                        $scope.campaigns.push({id: constants.entityType.CAMPAIGN + ':' + campaign.id, name: campaign.name, archived: campaign.archived});
+                        if ($scope.showArchived || !campaign.archived) {
+                            $scope.campaigns.push({id: constants.entityType.CAMPAIGN + ':' + campaign.id, name: campaign.name, archived: campaign.archived});
+                        }
                         campaign.adGroups.forEach(function (adGroup, k) {
-                            $scope.adGroups.push({id: constants.entityType.AD_GROUP + ':' + adGroup.id, name: adGroup.name, archived: adGroup.archived});
+                            if ($scope.showArchived || !adGroup.archived) {
+                                $scope.adGroups.push({id: constants.entityType.AD_GROUP + ':' + adGroup.id, name: adGroup.name, archived: adGroup.archived});
+                            }
                         });
                     });
                 });
@@ -63,6 +69,14 @@ oneApp.directive('zemNavSearch', ['config', '$state', function(config, $state) {
                 $scope.accounts = $scope.accounts.sort(sortEntities);
                 $scope.campaigns = $scope.campaigns.sort(sortEntities);
                 $scope.adGroups = $scope.adGroups.sort(sortEntities);
+            };
+
+            $scope.$watch('accountsData', function (newValue) {
+                $scope.computeOptions();
+            });
+
+            $scope.$watch('showArchived', function (newValue){
+                $scope.computeOptions();
             });
 
             $scope.$watch('account', function (newValue) {
