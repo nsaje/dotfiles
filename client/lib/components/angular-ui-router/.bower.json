@@ -20,7 +20,7 @@
     "Gruntfile.js",
     "files.js"
   ],
-  "_source": "/Users/wafelj/Projects/zemanta-one/client/dist/lib/components/angular-ui-router",
+  "_source": "/Users/wafelj/Projects/zemanta-one/client/lib/components/angular-ui-router",
   "_target": "*",
-  "_originalSource": "./dist/lib/components/angular-ui-router"
+  "_originalSource": "./lib/components/angular-ui-router"
 }

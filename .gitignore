@@ -101,16 +101,14 @@ Session.vim
 node_modules
 
 # bower
-client/dist/lib/components/angular-mocks
+client/lib/components/angular-mocks
 
 # Server Django project
 server/server/localsettings.py
 server/static
 
 # Client dist files
-client/dist/one
-client/dist/actionlog
-client/dist/common
+client/dist
 client/test/sauce.json
 
 # Client coverage 

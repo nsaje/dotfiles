@@ -30,7 +30,7 @@ module.exports = function (grunt) {
             one: {
                 src: [
                     'dist/one/zemanta-one.templates.js',
-                    'dist/common/config.js',
+                    'dist/build/config.js',
                     'one/js/constants.js',
                     'one/js/app.js',
                     'one/js/services/**/*.js',
@@ -43,7 +43,7 @@ module.exports = function (grunt) {
             },
             actionlog: {
                 src: [
-                    'dist/common/config.js',
+                    'dist/build/config.js',
                     'actionlog/app.js',
                     'actionlog/js/**/*.js'
                 ],
@@ -74,17 +74,17 @@ module.exports = function (grunt) {
         cssmin: {
             options: {
                 // used to rewrite css urls
-                root: 'dist'
+                target: 'lib'
             },
             one_lib: {
                 files: [{
                     src: [
-                        'dist/lib/components/bootstrap/dist/css/bootstrap.min.css',
-                        'dist/lib/components/angular-bootstrap-datetimepicker/src/css/datetimepicker.css',
-                        'dist/lib/components/bootstrap-multiselect/css/bootstrap-multiselect.css',
-                        'dist/lib/components/select2/select2.css',
-                        'dist/lib/components/select2/select2-bootstrap.css',
-                        'dist/lib/components/bootstrap-daterangepicker/daterangepicker-bs3.css'
+                        'lib/components/bootstrap/dist/css/bootstrap.min.css',
+                        'lib/components/angular-bootstrap-datetimepicker/src/css/datetimepicker.css',
+                        'lib/components/bootstrap-multiselect/css/bootstrap-multiselect.css',
+                        'lib/components/select2/select2.css',
+                        'lib/components/select2/select2-bootstrap.css',
+                        'lib/components/bootstrap-daterangepicker/daterangepicker-bs3.css'
                     ],
                     dest: 'dist/one/zemanta-one.lib.min.css'
                 }]
@@ -100,6 +100,20 @@ module.exports = function (grunt) {
             one: {
                 files: [
                     {expand: true, flatten: true, src: 'one/img/*', dest: 'dist/one/img/'}
+                ]
+            },
+            one_lib: {
+                files: [
+                    {
+                        expand: true,
+                        src: [
+                            'lib/components/select2/select2.png',
+                            'lib/components/select2/select2x2.png',
+                            'lib/components/bootstrap/dist/fonts/glyphicons-halflings-regular.woff',
+                            'lib/components/bootstrap/dist/fonts/glyphicons-halflings-regular.ttf'
+                        ],
+                        dest: 'dist/one/'
+                    }
                 ]
             },
             actionlog: {
@@ -172,9 +186,6 @@ module.exports = function (grunt) {
                 tasks: ['build:actionlog']
             }
         },
-        clean: {
-            dist: ['one/dist']
-        },
         connect: {
             dev: {
                 options: {
@@ -201,7 +212,7 @@ module.exports = function (grunt) {
         ngconstant: {
             options: {
                 name: 'config',
-                dest: 'dist/common/config.js'
+                dest: 'dist/build/config.js'
             },
             prod: {
                 constants: {
@@ -238,7 +249,7 @@ module.exports = function (grunt) {
         },
         build: {
             one: ['html2js:one', 'concat:one', 'uglify:one', 'less:one', 'copy:one'],
-            one_lib: ['bower_concat:one_lib', 'uglify:one_lib', 'cssmin:one_lib'],
+            one_lib: ['bower_concat:one_lib', 'uglify:one_lib', 'cssmin:one_lib', 'copy:one_lib'],
             actionlog: ['concat:actionlog', 'uglify:actionlog', 'less:actionlog', 'copy:actionlog'],
             actionlog_lib: ['bower_concat:actionlog_lib', 'uglify:actionlog_lib', 'cssmin:actionlog_lib']
         }
