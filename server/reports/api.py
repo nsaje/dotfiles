@@ -213,7 +213,8 @@ def _join_with_conversions(breakdown, report_results, conversion_results):
         results[key] = row
     for row in conversion_results:
         key = _extract_key(row, breakdown)
-        _extend_result(results[key], row)
+        if key in results:
+            _extend_result(results[key], row)
     for key, row in results.iteritems():
         _add_computed_metrics(row)
     return results.values()
