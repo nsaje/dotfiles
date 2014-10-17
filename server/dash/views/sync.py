@@ -3,8 +3,7 @@ import logging
 
 import actionlog.sync
 
-from . import helpers
-
+from dash.views import helpers
 from dash import models
 from utils import api_common
 from utils import statsd_helper

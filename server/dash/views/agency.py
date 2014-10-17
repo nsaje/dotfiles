@@ -12,8 +12,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 
-from . import helpers
-
+from dash.views import helpers
 from dash import forms
 from dash import models
 from dash import api
@@ -238,7 +237,9 @@ class CampaignSettings(api_common.BaseApiView):
             'settings': self.get_dict(campaign_settings, campaign),
             'account_managers': self.get_user_list(campaign_settings, 'campaign_settings_account_manager'),
             'sales_reps': self.get_user_list(campaign_settings, 'campaign_settings_sales_rep'),
-            'history': self.get_history(campaign)
+            'history': self.get_history(campaign),
+            'can_archive': campaign.can_archive(),
+            'can_restore': campaign.can_restore(),
         }
 
         return self.create_api_response(response)
@@ -267,7 +268,9 @@ class CampaignSettings(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(settings, campaign),
-            'history': self.get_history(campaign)
+            'history': self.get_history(campaign),
+            'can_archive': campaign.can_archive(),
+            'can_restore': campaign.can_restore(),
         }
 
         return self.create_api_response(response)
@@ -335,7 +338,11 @@ class CampaignSettings(api_common.BaseApiView):
             ('promotion_goal', {
                 'name': 'Promotion Goal',
                 'value': constants.PromotionGoal.get_text(new_settings.promotion_goal)
-            })
+            }),
+            ('archived', {
+                'name': 'Archived',
+                'value': str(new_settings.archived)
+            }),
         ])
 
         if old_settings is not None:
@@ -357,6 +364,8 @@ class CampaignSettings(api_common.BaseApiView):
 
             settings_dict['promotion_goal']['old_value'] = \
                 constants.PromotionGoal.get_text(old_settings.promotion_goal)
+
+            settings_dict['archived']['old_value'] = str(old_settings.archived)
 
         return settings_dict
 
@@ -495,8 +504,16 @@ class AccountAgency(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         account = helpers.get_account(request.user, account_id)
+        account_settings = self.get_current_settings(account)
 
-        return self.create_api_response(self.get_response(account))
+        response = {
+            'settings': self.get_dict(account_settings, account),
+            'history': self.get_history(account),
+            'can_archive': account.can_archive(),
+            'can_restore': account.can_restore(),
+        }
+
+        return self.create_api_response(response)
 
     @statsd_helper.statsd_timer('dash.api', 'account_agency_put')
     def put(self, request, account_id):
@@ -511,18 +528,113 @@ class AccountAgency(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        account.name = form.cleaned_data['name']
-        account.save()
+        self.set_account(account, form.cleaned_data)
 
-        return self.create_api_response(self.get_response(account))
+        settings = models.AccountSettings()
+        self.set_settings(settings, account, form.cleaned_data)
 
-    def get_response(self, data):
-        return {
-            'settings': {
-                'id': data.id,
-                'name': data.name
-            }
+        with transaction.atomic():
+            account.save()
+            settings.save()
+
+        response = {
+            'settings': self.get_dict(settings, account),
+            'history': self.get_history(account),
+            'can_archive': account.can_archive(),
+            'can_restore': account.can_restore(),
         }
+
+        return self.create_api_response(response)
+
+    def set_account(self, account, resource):
+        account.name = resource['name']
+
+    def set_settings(self, settings, account, resource):
+        settings.account = account
+        settings.name = resource['name']
+
+    def get_current_settings(self, account):
+        settings = models.AccountSettings.objects.\
+            filter(account=account).\
+            order_by('-created_dt')
+        if settings:
+            settings = settings[0]
+        else:
+            settings = models.AccountSettings()
+
+        return settings
+
+    def get_dict(self, settings, account):
+        result = {}
+
+        if settings:
+            result = {
+                'id': str(account.pk),
+                'name': account.name,
+                'archived': settings.archived,
+            }
+
+        return result
+
+    def get_history(self, account):
+        settings = models.AccountSettings.objects.\
+            filter(account=account).\
+            order_by('created_dt')
+
+        history = []
+        for i in range(0, len(settings)):
+            old_settings = settings[i - 1] if i > 0 else None
+            new_settings = settings[i]
+
+            changes = old_settings.get_setting_changes(new_settings) \
+                if old_settings is not None else None
+
+            if i > 0 and not changes:
+                continue
+
+            settings_dict = self.convert_settings_to_dict(old_settings, new_settings)
+
+            history.append({
+                'datetime': new_settings.created_dt,
+                'changed_by': new_settings.created_by.email,
+                'changes_text': self.convert_changes_to_string(changes, settings_dict),
+                'settings': settings_dict.values(),
+                'show_old_settings': old_settings is not None
+            })
+
+        return history
+
+    def convert_changes_to_string(self, changes, settings_dict):
+        if changes is None:
+            return 'Created settings'
+
+        change_strings = []
+
+        for key in changes:
+            setting = settings_dict[key]
+            change_strings.append(
+                '{} set to "{}"'.format(setting['name'], setting['value'])
+            )
+
+        return ', '.join(change_strings)
+
+    def convert_settings_to_dict(self, old_settings, new_settings):
+        settings_dict = OrderedDict([
+            ('name', {
+                'name': 'Name',
+                'value': new_settings.name.encode('utf-8')
+            }),
+            ('archived', {
+                'name': 'Archived',
+                'value': str(new_settings.archived)
+            }),
+        ])
+
+        if old_settings is not None:
+            settings_dict['name']['old_value'] = old_settings.name.encode('utf-8')
+            settings_dict['archived']['old_value'] = str(old_settings.archived)
+
+        return settings_dict
 
 
 class AdGroupAgency(api_common.BaseApiView):
@@ -538,7 +650,9 @@ class AdGroupAgency(api_common.BaseApiView):
         response = {
             'settings': self.get_dict(settings, ad_group),
             'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group),
-            'history': self.get_history(ad_group)
+            'history': self.get_history(ad_group),
+            'can_archive': ad_group.can_archive(),
+            'can_restore': ad_group.can_restore(),
         }
 
         return self.create_api_response(response)
@@ -574,7 +688,9 @@ class AdGroupAgency(api_common.BaseApiView):
         response = {
             'settings': self.get_dict(settings, ad_group),
             'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group),
-            'history': self.get_history(ad_group)
+            'history': self.get_history(ad_group),
+            'can_archive': ad_group.can_archive(),
+            'can_restore': ad_group.can_restore(),
         }
 
         return self.create_api_response(response)
@@ -676,5 +792,4 @@ class AdGroupAgency(api_common.BaseApiView):
                 settings_dict[field]['old_value'] = old_value
 
         return settings_dict
-
 

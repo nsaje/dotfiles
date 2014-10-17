@@ -13,7 +13,7 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 
-from . import helpers
+from dash.views import helpers
 
 from utils import statsd_helper
 from utils import api_common
@@ -115,10 +115,14 @@ class User(api_common.BaseApiView):
 class NavigationDataView(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'navigation_data_view_get')
     def get(self, request):
+        include_archived_flag = request.user.has_perm('zemauth.view_archived_entities')
+
         data = {}
         self.fetch_ad_groups(data, request.user)
         self.fetch_campaigns(data, request.user)
         self.fetch_accounts(data, request.user)
+
+        self.add_settings_data(data, include_archived_flag)
 
         result = []
         for account in data.values():
@@ -126,6 +130,40 @@ class NavigationDataView(api_common.BaseApiView):
             result.append(account)
 
         return self.create_api_response(result)
+
+    def add_settings_data(self, data, include_archived_flag):
+        account_settingss = models.AccountSettings.objects.\
+            order_by('account_id', '-created_dt').\
+            distinct('account')
+        account_settingss = {acc_settings.account.id: acc_settings for acc_settings in account_settingss}
+
+        campaign_settingss = models.CampaignSettings.objects.\
+            order_by('campaign_id', '-created_dt').\
+            distinct('campaign')
+        campaign_settingss = {camp_settings.campaign.id: camp_settings for camp_settings in campaign_settingss}
+
+        ad_group_settingss = models.AdGroupSettings.objects.\
+            order_by('ad_group_id', '-created_dt').\
+            distinct('ad_group')
+        ad_group_settingss = {ag_settings.ad_group.id: ag_settings for ag_settings in ad_group_settingss}
+
+        for account in data.values():
+            account_settings = account_settingss.get(account['id'])
+
+            if include_archived_flag:
+                account['archived'] = account_settings.archived if account_settings else False
+
+            for campaign in account['campaigns'].values():
+                campaign_settings = campaign_settingss.get(campaign['id'])
+
+                if include_archived_flag:
+                    campaign['archived'] = campaign_settings.archived if campaign_settings else False
+
+                for ad_group in campaign['adGroups']:
+                    ad_group_settings = ad_group_settingss.get(ad_group['id'])
+
+                    if include_archived_flag:
+                        ad_group['archived'] = ad_group_settings.archived if ad_group_settings else False
 
     def fetch_ad_groups(self, data, user):
         ad_groups = models.AdGroup.objects.get_for_user(user).select_related('campaign__account')
@@ -172,6 +210,77 @@ class NavigationDataView(api_common.BaseApiView):
                 'adGroups': []
             }
 
+
+class AccountArchive(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'account_archive_post')
+    def post(self, request, account_id):
+        if not request.user.has_perm('zemauth.archive_restore_entity'):
+            raise exc.AuthorizationError()
+
+        account = helpers.get_account(request.user, account_id)
+        account.archive()
+
+        return self.create_api_response({})
+
+
+class AccountRestore(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'account_restore_post')
+    def post(self, request, account_id):
+        if not request.user.has_perm('zemauth.archive_restore_entity'):
+            raise exc.AuthorizationError()
+
+        account = helpers.get_account(request.user, account_id)
+        account.restore()
+
+        return self.create_api_response({})
+
+
+class CampaignArchive(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_archive_post')
+    def post(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.archive_restore_entity'):
+            raise exc.AuthorizationError()
+
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        campaign.archive()
+
+        return self.create_api_response({})
+
+
+class CampaignRestore(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_restore_post')
+    def post(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.archive_restore_entity'):
+            raise exc.AuthorizationError()
+
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        campaign.restore()
+
+        return self.create_api_response({})
+
+
+class AdGroupArchive(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_archive_post')
+    def post(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.archive_restore_entity'):
+            raise exc.AuthorizationError()
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group.archive()
+
+        return self.create_api_response({})
+
+
+class AdGroupRestore(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_restore_post')
+    def post(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.archive_restore_entity'):
+            raise exc.AuthorizationError()
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group.restore()
+
+        return self.create_api_response({})
 
 class CampaignAdGroups(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaigns_ad_group_put')

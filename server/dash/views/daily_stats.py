@@ -2,8 +2,7 @@ import slugify
 
 import reports.api
 
-from . import helpers
-
+from dash.views import helpers
 from dash import models
 
 from utils import statsd_helper

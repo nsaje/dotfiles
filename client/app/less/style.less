@@ -173,13 +173,37 @@ a:visited {
     color: #2fa8c7;
     .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
 
-    &:hover {
-        border-color: #2488a1;
-        color: #2488a1;
+    &:not(.disabled) {
+        &:hover {
+            border-color: #2488a1;
+            color: #2488a1;
+        }
+    }
+
+    &.disabled {
+        color: #d9d9d9;
+        pointer-events: all;
+        cursor: auto;
+        box-shadow: none;
     }
 }
 
+.btn-red,
+.btn-red:focus,
+.btn-red:hover,
+.btn-red:active,
+.btn-red.active,
+.open .dropdown-toggle.btn-default {
+    background-color: #fff;
+    border-color: #ff0000;
+    color: #ff0000;
+    .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
 
+    &:hover {
+        border-color: #aa0000;
+        color: #aa0000;
+    }
+}
 
 .btn-add,
 .btn-add:focus,
@@ -1039,6 +1063,15 @@ a.help-popover:visited {
                         text-decoration: none;
                     }
 
+                    &.archived {
+                       &,
+                       &:hover,
+                       &:active,
+                       &:visited {
+                           color: #d9d9d9;
+                       }
+                    }
+
                     &.active {
                         background-color: #25A8C9;
                         color: white;
@@ -1091,6 +1124,10 @@ a.help-popover:visited {
                 font-weight: 600;
                 color: #f68620;
 
+                &.archived {
+                    color: #d9d9d9;
+                }
+
                 &.active {
                     text-decoration: underline;
                 }
@@ -1101,6 +1138,10 @@ a.help-popover:visited {
                 font-weight: 600;
                 color: #414141;
 
+                &.archived {
+                    color: #d9d9d9;
+                }
+
                 &.active {
                     text-decoration: underline;
                 }
@@ -1110,6 +1151,10 @@ a.help-popover:visited {
                 font-size: 13px;
                 font-weight: 300;
                 color: #414141;
+
+                &.archived {
+                    color: #d9d9d9;
+                }
             }
             
             .ad-group-item img {
@@ -1124,6 +1169,44 @@ a.help-popover:visited {
     .content {
         margin-left: 210px;
         padding-right: 15px;
+
+        #filter {
+
+            .internal {
+                &:before {
+                    content: " ";
+                    position: absolute;
+                    width: 0;
+                    height: 0;
+                    display: block;
+                    border-top: 7px solid #16a085;
+                    border-right: 7px solid transparent;
+                }
+            }
+
+            a.btn {
+                padding: 2px;
+
+                img {
+                    width: 28px;
+                    height: 28px;
+                }
+            }
+
+            ul.dropdown-menu {
+                width: 250px;
+                left: auto;
+                right: 0;
+                top: 100%;
+                margin-left: -125px;
+                border: 1px solid #2fa8c7;
+                padding: 15px 30px;
+            }
+        }
+
+        #datepicker {
+            margin-left: 5px;
+        }
     }
 }
 
@@ -1323,10 +1406,12 @@ a.help-popover:visited {
 
 .page-ad-group-agency,
 .page-campaign-agency,
+.page-account-agency,
 .page-campaign-budget {
     .section.ad-group-agency-history-table,
     .section.table-campaign-agency,
-    .section.table-campaign-budget {
+    .section.table-campaign-budget,
+    .section.table-account-agency {
         margin-top: 30px;
 
         .title {
@@ -1490,6 +1575,16 @@ a.help-popover:visited {
     thead > tr > th.trimmed-currency a {
         display: inline-block;
         margin-right: 1ex;
+    }
+
+    tr.archived {
+        &,
+        & a,
+        & a:hover,
+        & a:active,
+        & a:visited {
+            color: #d9d9d9;
+        }
     }
 
     tr > td {

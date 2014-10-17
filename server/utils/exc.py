@@ -46,6 +46,15 @@ class MissingDataError(BaseError):
         self.http_status_code = 404
 
 
+class ForbiddenError(BaseError):
+    '''
+    Error thrown when the requested operation cannot be completed.
+    '''
+    def __init__(self, message=None, pretty_message=None):
+        super(ForbiddenError, self).__init__(message, pretty_message)
+        self.http_status_code = 403
+
+
 custom_errors = (
     AuthError,
     AuthorizationError,

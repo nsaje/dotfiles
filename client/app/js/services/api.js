@@ -642,6 +642,135 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
+    function AdGroupArchive() {
+        this.archive = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + id + '/archive/';
+            var config = {
+                params: {}
+            };
+
+            var data = {};
+
+            $http.post(url, data, config).
+                success(function (data, status) {
+                    deferred.resolve();
+                }).
+                error(function (data, status, headers) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.restore = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + id + '/restore/';
+
+            var config = {
+                params: {}
+            };
+
+            var data = {};
+
+            $http.post(url, data, config).
+                success(function (data, status) {
+                    deferred.resolve();
+                }).
+                error(function (data, status, headers) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    function CampaignArchive() {
+        this.archive = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/campaigns/' + id + '/archive/';
+            var config = {
+                params: {}
+            };
+
+            var data = {};
+
+            $http.post(url, data, config).
+                success(function (data, status) {
+                    deferred.resolve();
+                }).
+                error(function (data, status, headers) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.restore = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/campaigns/' + id + '/restore/';
+
+            var config = {
+                params: {}
+            };
+
+            var data = {};
+
+            $http.post(url, data, config).
+                success(function (data, status) {
+                    deferred.resolve();
+                }).
+                error(function (data, status, headers) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    function AccountArchive() {
+        this.archive = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + id + '/archive/';
+            var config = {
+                params: {}
+            };
+
+            var data = {};
+
+            $http.post(url, data, config).
+                success(function (data, status) {
+                    deferred.resolve();
+                }).
+                error(function (data, status, headers) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.restore = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + id + '/restore/';
+
+            var config = {
+                params: {}
+            };
+
+            var data = {};
+
+            $http.post(url, data, config).
+                success(function (data, status) {
+                    deferred.resolve();
+                }).
+                error(function (data, status, headers) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function AccountAgency() {
         function convertSettingsFromApi(settings) {
             return {
@@ -664,6 +793,36 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             };
         }
 
+        function convertHistoryFromApi(history) {
+            return history.map(function (item) {
+                return {
+                    changedBy: item.changed_by,
+                    changesText: item.changes_text,
+                    settings: item.settings.map(function (setting) {
+                        var value = setting.value,
+                            oldValue = setting.old_value;
+
+                        // insert zero-width space in emails for nice word wrapping
+                        if (typeof value === 'string') {
+                            value = value.replace('@', '&#8203;@');
+                        }
+
+                        if (typeof oldValue === 'string') {
+                            oldValue = oldValue.replace('@', '&#8203;@');
+                        }
+
+                        return {
+                            name: setting.name,
+                            value: value,
+                            oldValue: oldValue
+                        };
+                    }),
+                    datetime: item.datetime,
+                    showOldSettings: item.show_old_settings
+                };
+            });
+        }
+
         this.get = function (id) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + id + '/agency/';
@@ -675,6 +834,9 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                     }
                     deferred.resolve({
                         settings: convertSettingsFromApi(data.data.settings),
+                        history: convertHistoryFromApi(data.data.history),
+                        canArchive: data.data.can_archive,
+                        canRestore: data.data.can_restore,
                     });
                 }).
                 error(function(data, status, headers) {
@@ -702,6 +864,9 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                     }
                     deferred.resolve({
                         settings: convertSettingsFromApi(data.data.settings),
+                        history: convertHistoryFromApi(data.data.history),
+                        canArchive: data.data.can_archive,
+                        canRestore: data.data.can_restore,
                     });
                 }).
                 error(function(data, status, headers, config) {
@@ -900,6 +1065,8 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                         settings: convertSettingsFromApi(data.data.settings),
                         accountManagers: data.data.account_managers,
                         salesReps: data.data.sales_reps,
+                        canArchive: data.data.can_archive,
+                        canRestore: data.data.can_restore,
                         history: convertHistoryFromApi(data.data.history)
                     });
                 }).
@@ -928,7 +1095,9 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                     }
                     deferred.resolve({
                         settings: convertSettingsFromApi(data.data.settings),
-                        history: convertHistoryFromApi(data.data.history)
+                        history: convertHistoryFromApi(data.data.history),
+                        canArchive: data.data.can_archive,
+                        canRestore: data.data.can_restore,
                     });
                 }).
                 error(function(data, status, headers, config) {
@@ -1045,7 +1214,9 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                     deferred.resolve({
                         settings: settings,
                         history: history,
-                        actionIsWaiting: data.data.action_is_waiting
+                        actionIsWaiting: data.data.action_is_waiting,
+                        canArchive: data.data.can_archive,
+                        canRestore: data.data.can_restore,
                     });
                 }).
                 error(function(data, status, headers, config) {
@@ -1077,7 +1248,9 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                     deferred.resolve({
                         settings: settings,
                         history: history,
-                        actionIsWaiting: data.data.action_is_waiting
+                        actionIsWaiting: data.data.action_is_waiting,
+                        canArchive: data.data.can_archive,
+                        canRestore: data.data.can_restore,
                     });
                 }).
                 error(function(data, status, headers, config) {
@@ -1338,11 +1511,13 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         adGroupSourcesTable: new AdGroupSourcesTable(),
         adGroupAdsTable: new AdGroupAdsTable(),
         adGroupSync: new AdGroupSync(),
+        adGroupArchive: new AdGroupArchive(),
         campaignAdGroups: new CampaignAdGroups(),
         campaignAdGroupsTable: new CampaignAdGroupsTable(),
         campaignSettings: new CampaignSettings(),
         campaignBudget: new CampaignBudget(),
         campaignSync: new CampaignSync(),
+        campaignArchive: new CampaignArchive(),
         accountAgency: new AccountAgency(),
         account: new Account(),
         accountAccountsTable: new AccountAccountsTable(),
@@ -1350,6 +1525,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         accountCampaignsTable: new AccountCampaignsTable(),
         accountBudget: new AccountBudget(),
         accountSync: new AccountSync(),
+        accountArchive: new AccountArchive(),
         checkAccountsSyncProgress: new CheckAccountsSyncProgress(),
         checkCampaignSyncProgress: new CheckCampaignSyncProgress(),
         checkSyncProgress: new CheckSyncProgress(),

@@ -480,7 +480,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
                     function(data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 
-                        if($scope.isSyncInProgress == false){
+                        if($scope.isSyncInProgress === false){
                             // we found out that the sync is no longer in progress
                             // time to reload the data
                             getTableData();
@@ -496,7 +496,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
                 });
             }, 5000);
         }
-    }
+    };
 
     $scope.triggerSync = function() {
         $scope.isSyncInProgress = true;
@@ -508,7 +508,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
         } else if ($scope.level === constants.level.CAMPAIGNS) {
             api.campaignSync.get($state.params.id);
         }
-    }
+    };
 
     init();
 }]);

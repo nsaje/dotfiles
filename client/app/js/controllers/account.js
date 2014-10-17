@@ -2,11 +2,18 @@
 
 oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) {
     $scope.level = constants.level.ACCOUNTS;
-    $scope.tabs = [
-        {heading: 'Campaigns', route: 'main.accounts.campaigns', active: true, hidden: !$scope.hasPermission('zemauth.account_campaigns_view'), internal: $scope.isPermissionInternal('zemauth.account_campaigns_view')},
-        {heading: 'Media sources', route: 'main.accounts.sources', active: false, hidden: !$scope.hasPermission('zemauth.account_sources_view'), internal: $scope.isPermissionInternal('zemauth.account_sources_view')},
-        {heading: 'Agency', route: 'main.accounts.agency', active: false, hidden: !$scope.hasPermission('zemauth.account_agency_view'), internal: $scope.isPermissionInternal('zemauth.account_agency_view')}
-    ];
+    $scope.getTabs = function () {
+        return [
+            {heading: 'Campaigns', route: 'main.accounts.campaigns', active: true, hidden: !$scope.hasPermission('zemauth.account_campaigns_view') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.account && $scope.account.archived), internal: $scope.isPermissionInternal('zemauth.account_campaigns_view')},
+            {heading: 'Media sources', route: 'main.accounts.sources', active: false, hidden: !$scope.hasPermission('zemauth.account_sources_view') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.account && $scope.account.archived), internal: $scope.isPermissionInternal('zemauth.account_sources_view')},
+            {heading: 'Agency', route: 'main.accounts.agency', active: false, hidden: !$scope.hasPermission('zemauth.account_agency_view'), internal: $scope.isPermissionInternal('zemauth.account_agency_view')}
+        ];
+    };
+    $scope.setActiveTab = function () {
+        $scope.tabs.forEach(function(tab) {
+            tab.active = $state.is(tab.route);
+        });
+    };
 
     $scope.setAccount(null);
 
@@ -38,7 +45,17 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) 
     $scope.getAccount();
     $scope.updateBreadcrumbAndTitle();
 
-    $scope.tabs.forEach(function(tab) {
-        tab.active = $state.is(tab.route);
+    $scope.tabs = $scope.getTabs();
+    $scope.setActiveTab();
+
+    if ($scope.account && $scope.account.archived && !$state.is('main.accounts.agency')) {
+        $state.go('main.accounts.agency', {id: $scope.account.id});
+    }
+
+    $scope.$watch('account.archived', function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            $scope.tabs = $scope.getTabs();
+            $scope.setActiveTab();
+        }
     });
 }]);

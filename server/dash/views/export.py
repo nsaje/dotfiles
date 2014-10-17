@@ -2,8 +2,7 @@ import slugify
 
 from collections import OrderedDict
 
-from . import helpers
-
+from dash.views import helpers
 from dash import models
 from dash import export
 from dash import constants

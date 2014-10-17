@@ -5,10 +5,9 @@ import actionlog.sync
 
 import utils.pagination
 
-from . import helpers
-
 from django.core import urlresolvers
 
+from dash.views import helpers
 from dash import models
 from dash import budget
 from dash import constants
@@ -440,10 +439,18 @@ class AccountsAccountsTable(api_common.BaseApiView):
         page = request.GET.get('page')
         size = request.GET.get('size')
         order = request.GET.get('order')
+
+        include_archived_flag = request.user.has_perm('zemauth.view_archived_entities')
+
         user = request.user
 
         accounts = models.Account.objects.get_for_user(user)
         account_ids = set(acc.id for acc in accounts)
+
+        accounts_settings = models.AccountSettings.objects.\
+            distinct('account').\
+            filter(account__in=accounts).\
+            order_by('account_id', '-created_dt')
 
         size = max(min(int(size or 5), 50), 1)
         if page:
@@ -463,13 +470,13 @@ class AccountsAccountsTable(api_common.BaseApiView):
         ), request.user)
 
         all_accounts_budget = budget.GlobalBudget().get_total_by_account()
-        account_budget = {aid:all_accounts_budget.get(aid, 0) for aid in account_ids}
+        account_budget = {aid: all_accounts_budget.get(aid, 0) for aid in account_ids}
 
         totals_data['budget'] = sum(account_budget.itervalues())
         totals_data['available_budget'] = totals_data['budget'] - (totals_data.get('cost') or 0)
 
         last_success_actions = actionlog.sync.GlobalSync().get_latest_success_by_account()
-        last_success_actions = {aid:val for aid, val in last_success_actions.items() if aid in account_ids}
+        last_success_actions = {aid: val for aid, val in last_success_actions.items() if aid in account_ids}
 
         last_sync = None
         if last_success_actions.values() and None not in last_success_actions.values():
@@ -477,10 +484,12 @@ class AccountsAccountsTable(api_common.BaseApiView):
 
         rows = self.get_rows(
             accounts,
+            accounts_settings,
             accounts_data,
             last_success_actions,
             account_budget,
-            order=order
+            order=order,
+            include_archived_flag=include_archived_flag,
         )
 
         rows, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(rows, page, size)
@@ -508,14 +517,26 @@ class AccountsAccountsTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
 
-    def get_rows(self, accounts, accounts_data, last_actions, account_budget, order=None):
+    def get_rows(self, accounts, accounts_settings, accounts_data, last_actions, account_budget, order=None, include_archived_flag=False):
         rows = []
 
         account_state = api.get_state_by_account()
         for account in accounts:
             aid = account.pk
+            row = {
+                'id': str(aid),
+                'name': account.name
+            }
 
             state = account_state.get(aid, constants.AdGroupSettingsState.INACTIVE)
+            row['status'] = state
+
+            if include_archived_flag:
+                row['archived'] = False
+                for account_settings in accounts_settings:
+                    if account_settings.account.pk == account.pk:
+                        row['archived'] = account_settings.archived
+                        break
 
             # get source reports data
             account_data = {}
@@ -524,16 +545,9 @@ class AccountsAccountsTable(api_common.BaseApiView):
                     account_data = item
                     break
 
-            last_sync = last_actions.get(aid)
-            if last_sync:
-                last_sync = pytz.utc.localize(last_sync)
-
-            row = {
-                'id': str(aid),
-                'name': account.name,
-                'status': state,
-                'last_sync': last_sync
-            }
+            row['last_sync'] = last_actions.get(aid)
+            if row['last_sync']:
+                row['last_sync'] = pytz.utc.localize(row['last_sync'])
 
             row.update(account_data)
 
@@ -617,6 +631,8 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-cost'
 
+        include_archived_flag = request.user.has_perm('zemauth.view_archived_entities')
+
         stats = reports.api.filter_by_permissions(reports.api.query(
             start_date=start_date,
             end_date=end_date,
@@ -632,7 +648,11 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             order_by('ad_group', '-created_dt')
 
         totals_stats = reports.api.filter_by_permissions(
-            reports.api.query(start_date, end_date, campaign=campaign.pk),
+            reports.api.query(
+                start_date,
+                end_date,
+                ad_group=ad_groups
+            ),
             request.user
         )
 
@@ -658,7 +678,13 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
 
         return self.create_api_response({
             'rows': self.get_rows(
-                ad_groups, ad_groups_settings, stats, last_success_actions, order),
+                ad_groups,
+                ad_groups_settings,
+                stats,
+                last_success_actions,
+                order,
+                include_archived_flag
+            ),
             'totals': totals_stats,
             'last_sync': last_sync,
             'is_sync_recent': helpers.is_sync_recent(last_sync),
@@ -668,7 +694,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
 
-    def get_rows(self, ad_groups, ad_groups_settings, stats, last_actions, order):
+    def get_rows(self, ad_groups, ad_groups_settings, stats, last_actions, order, include_archived_flag):
         rows = []
         for ad_group in ad_groups:
             row = {
@@ -676,11 +702,18 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
                 'ad_group': str(ad_group.pk)
             }
 
+            if include_archived_flag:
+                row['archived'] = False
+
             row['state'] = models.AdGroupSettings.get_default_value('state')
             for ad_group_settings in ad_groups_settings:
-                if ad_group.pk == ad_group_settings.ad_group_id and \
-                        ad_group_settings.state is not None:
-                    row['state'] = ad_group_settings.state
+                if ad_group.pk == ad_group_settings.ad_group_id:
+                    if ad_group_settings.state is not None:
+                        row['state'] = ad_group_settings.state
+
+                    if include_archived_flag:
+                        row['archived'] = ad_group_settings.archived
+
                     break
 
             for stat in stats:
@@ -707,12 +740,19 @@ class AccountCampaignsTable(api_common.BaseApiView):
     def get(self, request, account_id):
         user = request.user
 
-        campaigns = models.Campaign.objects.get_for_user(user).\
-            filter(account=account_id)
-
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-clicks'
+
+        include_archived_flag = request.user.has_perm('zemauth.view_archived_entities')
+
+        campaigns = models.Campaign.objects.get_for_user(user).\
+            filter(account=account_id)
+
+        campaigns_settings = models.CampaignSettings.objects.\
+            distinct('campaign').\
+            filter(campaign__in=campaigns).\
+            order_by('campaign', '-created_dt')
 
         stats = reports.api.filter_by_permissions(reports.api.query(
             start_date=start_date,
@@ -726,8 +766,9 @@ class AccountCampaignsTable(api_common.BaseApiView):
             reports.api.query(start_date, end_date, campaign=campaigns),
             request.user
         )
-        totals_stats['budget'] = sum(budget.CampaignBudget(campaign).get_total() \
-            for campaign in campaigns)
+
+        totals_stats['budget'] = sum(budget.CampaignBudget(campaign).get_total()
+                                     for campaign in campaigns)
         totals_stats['available_budget'] = totals_stats['budget'] - (totals_stats.get('cost') or 0)
 
         ad_groups_settings = models.AdGroupSettings.objects.\
@@ -743,7 +784,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
 
         last_sync = None
         if last_success_actions.values() and None not in last_success_actions.values():
-            last_sync =min(last_success_actions.values())
+            last_sync = min(last_success_actions.values())
         if last_sync:
             last_sync = pytz.utc.localize(last_sync)
 
@@ -755,10 +796,12 @@ class AccountCampaignsTable(api_common.BaseApiView):
         return self.create_api_response({
             'rows': self.get_rows(
                 campaigns,
+                campaigns_settings,
                 ad_groups_settings,
                 stats,
                 last_success_actions,
-                order
+                order,
+                include_archived_flag=include_archived_flag
             ),
             'totals': totals_stats,
             'last_sync': last_sync,
@@ -769,17 +812,34 @@ class AccountCampaignsTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
 
-    def get_rows(self, campaigns, ad_groups_settings, stats, last_actions, order):
+    def get_rows(self, campaigns, campaigns_settings, ad_groups_settings, stats, last_actions, order, include_archived_flag=False):
         rows = []
         for campaign in campaigns:
             # If at least one ad group is active, then the campaign is considered
             # active.
+
+            row = {
+                'campaign': str(campaign.pk),
+                'name': campaign.name,
+            }
+
             state = constants.AdGroupSettingsState.INACTIVE
             for ad_group_settings in ad_groups_settings:
                 if ad_group_settings.ad_group.campaign.pk == campaign.pk and \
                         ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE:
                     state = constants.AdGroupSettingsState.ACTIVE
                     break
+
+            row['state'] = state
+
+            if include_archived_flag:
+                archived = False
+                for campaign_settings in campaigns_settings:
+                    if campaign_settings.campaign.pk == campaign.pk:
+                        archived = campaign_settings.archived
+                        break
+
+                row['archived'] = archived
 
             campaign_stat = {}
             for stat in stats:
@@ -791,12 +851,8 @@ class AccountCampaignsTable(api_common.BaseApiView):
             if last_sync:
                 last_sync = pytz.utc.localize(last_sync)
 
-            row = {
-                'campaign': str(campaign.pk),
-                'name': campaign.name,
-                'state': state,
-                'last_sync': last_sync
-            }
+            row['last_sync'] = last_sync
+
             row.update(campaign_stat)
 
             row['budget'] = budget.CampaignBudget(campaign).get_total()

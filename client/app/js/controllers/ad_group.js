@@ -1,12 +1,19 @@
 /*globals oneApp,$,moment*/
 oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', function ($scope, $state, $location, api) {
     $scope.level = constants.level.AD_GROUPS;
-    $scope.tabs = [
-        {heading: 'Content Ads', route: 'main.adGroups.ads', active: true, hidden: false},
-        {heading: 'Media Sources', route: 'main.adGroups.sources', active: false, hidden: false},
-        {heading: 'Settings', route: 'main.adGroups.settings', active: false, hidden: !$scope.hasPermission('dash.settings_view')},
-        {heading: 'Agency', route: 'main.adGroups.agency', active: false, hidden: !$scope.hasPermission('zemauth.ad_group_agency_tab_view'), internal: $scope.isPermissionInternal('zemauth.ad_group_agency_tab_view')}
-    ];
+    $scope.getTabs = function() {
+        return [
+            {heading: 'Content Ads', route: 'main.adGroups.ads', active: true, hidden: ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived)},
+            {heading: 'Media Sources', route: 'main.adGroups.sources', active: false, hidden: ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived)},
+            {heading: 'Settings', route: 'main.adGroups.settings', active: false, hidden: !$scope.hasPermission('dash.settings_view') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived)},
+            {heading: 'Agency', route: 'main.adGroups.agency', active: false, hidden: !$scope.hasPermission('zemauth.ad_group_agency_tab_view'), internal: $scope.isPermissionInternal('zemauth.ad_group_agency_tab_view')}
+        ];
+    };
+    $scope.setActiveTab = function () {
+        $scope.tabs.forEach(function(tab) {
+            tab.active = $state.is(tab.route);
+        });
+    };
 
     $scope.isAdGroupPaused = false;
 
@@ -54,10 +61,6 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
         );
     };
 
-    $scope.tabs.forEach(function(tab) {
-        tab.active = $state.is(tab.route);
-    });
-
     $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
         $location.search('source_ids', null);
         $location.search('source_totals', null);
@@ -71,7 +74,7 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
     $scope.getAdGroupState = function() {
         api.adGroupState.get($state.params.id).then(
             function(data) {
-                $scope.setAdGroupPaused(data.state === 2);
+                $scope.setAdGroupPaused(data.state === 2 && !$scope.adGroup.archived);
             },
             function(){
                 // error
@@ -80,5 +83,19 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
     };
 
     $scope.getModels();
+    $scope.tabs = $scope.getTabs();
+    $scope.setActiveTab();
+
+    if ($scope.adGroup && $scope.adGroup.archived && !$state.is('main.adGroups.agency')) {
+        $state.go('main.adGroups.agency', {id: $scope.adGroup.id});
+    }
+
     $scope.updateBreadcrumbAndTitle();
+
+    $scope.$watch('adGroup.archived', function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            $scope.tabs = $scope.getTabs();
+            $scope.setActiveTab();
+        }
+    });
 }]);
