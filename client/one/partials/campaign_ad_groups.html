@@ -33,7 +33,7 @@
             <div class="clearfix"></div>
         </div>
 
-        <alert type="info" class="alert-sync" ng-show="isSyncRecent === false">
+        <alert type="info" class="alert-sync" ng-show="!isSyncRecent">
         We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">The last successful sync took place {{ lastSyncDate.fromNow() }}.</span> If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
         </alert>
 
