@@ -433,6 +433,14 @@ class AdGroupSourceSettingsAdmin(admin.ModelAdmin):
     )
 
 
+class DemoToRealAdmin(admin.ModelAdmin):
+    list_display = (
+        'demo_ad_group',
+        'real_ad_group',
+        'mult_factor'
+    )
+
+
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
 admin.site.register(models.CampaignSettings, CampaignSettingsAdmin)
@@ -442,3 +450,4 @@ admin.site.register(models.AdGroupSettings, AdGroupSettingsAdmin)
 admin.site.register(models.AdGroupSourceSettings, AdGroupSourceSettingsAdmin)
 admin.site.register(models.SourceCredentials, SourceCredentialsAdmin)
 admin.site.register(models.DefaultSourceSettings, DefaultSourceSettingsAdmin)
+admin.site.register(models.DemoToReal, DemoToRealAdmin)

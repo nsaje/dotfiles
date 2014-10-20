@@ -277,6 +277,13 @@ class SourcesTable(api_common.BaseApiView):
         sources_data, totals_data = self.levelSourcesTable.get_stats(start_date, end_date)
         is_sync_in_progress = self.levelSourcesTable.is_sync_in_progress()
 
+        # this if is here to handle demo cases
+        # TODO: do it properly like:  
+        # if self.levelSourcesTable.is_demo(): sources = self.levelSourcesTable.get_demo_sources()
+        if not sources:
+            sources = [models.Source.objects.get(pk=sid) \
+                for sid in set([x['source'] for x in sources_data])]
+
         yesterday_cost = {}
         yesterday_total_cost = None
         if user.has_perm('reports.yesterday_spend_view'):

@@ -86,6 +86,49 @@ def stats_update_adgroup_postclick(datetime, ad_group, rows):
     reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group)
 
 
+def stats_update_adgroup_all(datetime, ad_group, rows):
+    '''
+    rows is a list of dictionaries of the form
+    [{
+        article:<dash.Article obj>, source:<dash.Source obj>,
+        impressions:<int>, clicks:<int>, cost_cc:<int>,
+        visits:<int>, new_visits:<int>, bounced_visits:<int>,
+        pageviews:<int>, duration:<int>
+    }, ... ]
+
+    *Note*: rows contains all traffic and postclick data for the given datetime and ad_group
+    '''
+    # reset metrics
+    for article_stats in ArticleStats.objects.filter(datetime=datetime, ad_group=ad_group):
+        article_stats.reset_traffic_metrics()
+        article_stats.reset_postclick_metrics()
+
+    # save the data
+    for row in rows:
+        dimensions=dict(
+            datetime=datetime,
+            article=row['article'],
+            ad_group=ad_group,
+            source=row['source']
+        )
+        try:
+            article_stats = ArticleStats.objects.get(**dimensions)
+            for metric, value in row.items():
+                if metric in TRAFFIC_METRICS or metric in POSTCLICK_METRICS:
+                    article_stats.__setattr__(metric, article_stats.__getattribute__(metric) + value)
+        except ArticleStats.DoesNotExist:
+            fields = copy.copy(dimensions)
+            fields.update(row)
+            article_stats = ArticleStats(**fields)
+
+        article_stats.has_traffic_metrics = 1
+        article_stats.has_postclick_metrics = 1
+        article_stats.save()
+
+    # refresh the corresponding adgroup-level pre-aggregations
+    reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group)
+
+
 @transaction.atomic
 def goals_update_adgroup(datetime, ad_group, rows):
     '''
