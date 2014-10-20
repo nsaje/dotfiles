@@ -1,14 +1,14 @@
 <div id="nav-search">
     <select ui-select2="navSelectorOptions" ng-model="navSelector" ng-change="navSelectorChanged()" class="filter">
         <option></option>
-        <optgroup label="Ad Groups">
-            <option ng-repeat="adGroup in adGroups" value="{{ adGroup.id }}">{{ adGroup.name }}</option>
+        <optgroup label="Accounts" ng-if="canAccessAccounts">
+            <option ng-repeat="account in accounts" value="{{ account.id }}" ng-class="{'archived': account.archived}">{{ account.name }}</option>
         </optgroup>
         <optgroup label="Campaigns" ng-if="canAccessCampaigns">
-            <option ng-repeat="campaign in campaigns" value="{{ campaign.id }}">{{ campaign.name }}</option>
+            <option ng-repeat="campaign in campaigns" value="{{ campaign.id }}" ng-class="{'archived': campaign.archived}">{{ campaign.name }}</option>
         </optgroup>
-        <optgroup label="Accounts" ng-if="canAccessAccounts">
-            <option ng-repeat="account in accounts" value="{{ account.id }}">{{ account.name }}</option>
+        <optgroup label="Ad Groups">
+            <option ng-repeat="adGroup in adGroups" value="{{ adGroup.id }}" ng-class="{'archived': adGroup.archived }">{{ adGroup.name }}</option>
         </optgroup>
     </select>
 </div>

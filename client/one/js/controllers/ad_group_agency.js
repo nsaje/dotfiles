@@ -76,24 +76,28 @@ oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', function ($sc
         );
     };
 
-    $scope.archiveAdGroup = function () {
-        api.adGroupArchive.archive($scope.adGroup.id).then(function () {
-            api.navData.list().then(function (accounts) {
-                $scope.refreshNavData(accounts);
-                $scope.getModels();
-            });
-            $scope.getSettings($state.params.id);
+    $scope.refreshPage = function () {
+        api.navData.list().then(function (accounts) {
+            $scope.refreshNavData(accounts);
+            $scope.getModels();
         });
+        $scope.getSettings($state.params.id);
+    };
+
+    $scope.archiveAdGroup = function () {
+        if ($scope.canArchive) {
+            api.adGroupArchive.archive($scope.adGroup.id).then(function () {
+                $scope.refreshPage();
+            });
+        }
     };
 
     $scope.restoreAdGroup = function () {
-        api.adGroupArchive.restore($scope.adGroup.id).then(function () {
-            api.navData.list().then(function (accounts) {
-                $scope.refreshNavData(accounts);
-                $scope.getModels();
+        if ($scope.canRestore) {
+            api.adGroupArchive.restore($scope.adGroup.id).then(function () {
+                $scope.refreshPage();
             });
-            $scope.getSettings($state.params.id);
-        });
+        }
     };
 
     $scope.getSettings($state.params.id);

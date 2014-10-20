@@ -80,22 +80,28 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', 'api', function ($s
         });
     };
 
-    $scope.archiveCampaign = function () {
-        api.campaignArchive.archive($scope.campaign.id).then(function () {
-            api.navData.list().then(function (accounts) {
-                $scope.refreshNavData(accounts);
-                $scope.getModels();
-            });
+    $scope.refreshPage = function () {
+        api.navData.list().then(function (accounts) {
+            $scope.refreshNavData(accounts);
+            $scope.getModels();
         });
+        $scope.getSettings();
+    };
+
+    $scope.archiveCampaign = function () {
+        if ($scope.canArchive) {
+            api.campaignArchive.archive($scope.campaign.id).then(function () {
+                $scope.refreshPage();
+            });
+        }
     };
 
     $scope.restoreCampaign = function () {
-        api.campaignArchive.restore($scope.campaign.id).then(function () {
-            api.navData.list().then(function (accounts) {
-                $scope.refreshNavData(accounts);
-                $scope.getModels();
+        if ($scope.canRestore) {
+            api.campaignArchive.restore($scope.campaign.id).then(function () {
+                $scope.refreshPage();
             });
-        });
+        }
     };
 
     $scope.getSettings();
