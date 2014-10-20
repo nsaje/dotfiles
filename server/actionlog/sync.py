@@ -103,6 +103,7 @@ class GlobalSync(BaseSync, ISyncComposite):
         by source on globally
         '''
         qs = dash.models.AdGroupSource.objects.select_related('source') \
+            .filter(source__maintenance=False) \
             .values('source', 'last_successful_sync_dt')
         latest_success = {}
         for row in qs:
