@@ -434,6 +434,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $scope.isChartShown = !$scope.isChartShown;
         $scope.chartBtnTitle = $scope.isChartShown ? 'Hide chart' : 'Show chart';
         $location.search('chart_hidden', !$scope.isChartShown ? '1' : null);
+
+        $timeout(function() {
+            $scope.$broadcast('highchartsng.reflow');
+        }, 0);
     };
 
     var hasMetricData = function (metric) {

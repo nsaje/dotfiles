@@ -287,7 +287,15 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
         $scope.isChartShown = !$scope.isChartShown;
         $scope.chartBtnTitle = $scope.isChartShown ? 'Hide chart' : 'Show chart';
         $location.search('chart_hidden', !$scope.isChartShown ? '1' : null);
+
+        $timeout(function() {
+            $scope.$broadcast('highchartsng.reflow');
+        }, 0);
     };
+
+    $scope.$watch('isChartShown', function (newValue, oldValue) {
+        zemChartService.save('zemChart', newValue);
+    });
 
     var hasMetricData = function (metric) {
         var hasData = false;
