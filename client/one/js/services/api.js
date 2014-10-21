@@ -1306,7 +1306,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             return row;
         }
 
-        this.get = function (page, size, startDate, endDate, order) {
+        this.get = function (page, size, startDate, endDate, order, showArchived) {
             var deferred = $q.defer();
             var url = '/api/accounts/table/';
             var config = {
@@ -1331,6 +1331,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             if (order) {
                 config.params.order = order;
+            }
+
+            if (typeof(showArchived) !== 'undefined') {
+                config.params.show_archived = showArchived;
             }
 
             $http.get(url, config).
@@ -1359,7 +1363,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             return result;
         }
 
-        this.get = function (id, startDate, endDate, order) {
+        this.get = function (id, startDate, endDate, order, showArchived) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + id + '/campaigns/table/';
             var config = {
@@ -1376,6 +1380,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             if (order) {
                 config.params.order = order;
+            }
+
+            if (typeof(showArchived) !== 'undefined') {
+                config.params.show_archived = showArchived;
             }
 
             $http.get(url, config).
@@ -1406,7 +1414,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             return result;
         }
 
-        this.get = function (id, startDate, endDate, order) {
+        this.get = function (id, startDate, endDate, order, showArchived) {
             var deferred = $q.defer();
             var url = '/api/campaigns/' + id + '/ad_groups/table/';
             var config = {
@@ -1423,6 +1431,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             if (order) {
                 config.params.order = order;
+            }
+
+            if (showArchived) {
+                config.params.show_archived = showArchived;
             }
 
             $http.get(url, config).

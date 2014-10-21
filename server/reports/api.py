@@ -21,6 +21,11 @@ logger = logging.getLogger(__name__)
 
 
 DIMENSIONS = set(['article', 'ad_group', 'date', 'source', 'account', 'campaign'])
+TRAFFIC_FIELDS = ['clicks', 'impressions', 'cost', 'cpc', 'ctr', 'title', 'url']
+POSTCLICK_FIELDS = [
+    'visits', 'percent_new_users', 'pv_per_visit', 'avg_tos',
+    'bounce_rate', 'goals', 'click_discrepancy', 'pageviews',
+]
 
 AGGREGATE_FIELDS = dict(
     clicks_sum=Sum('clicks'),
@@ -232,21 +237,18 @@ def filter_by_permissions(result, user):
     '''
     filters reports such that the user will only get fields that he is allowed to see
     '''
-    TRAFFIC_FIELDS = [
-        'clicks', 'impressions', 'cost', 'cpc', 'ctr', 'article', 'title',
-        'url', 'ad_group', 'campaign', 'account', 'source', 'date',
-    ]
-    POSTCLICK_FIELDS = [
-        'visits', 'percent_new_users', 'pv_per_visit', 'avg_tos',
-        'bounce_rate', 'goals', 'click_discrepancy', 'pageviews',
-    ]
     def filter_row(row):
         filtered_row = {}
+        for field in DIMENSIONS:
+            if field in row:
+                filtered_row[field] = row[field]
         for field in TRAFFIC_FIELDS:
-            if field in row: filtered_row[field] = row[field]
+            if field in row:
+                filtered_row[field] = row[field]
         if user.has_perm('zemauth.postclick_metrics'):
             for field in POSTCLICK_FIELDS:
-                if field in row: filtered_row[field] = row[field]
+                if field in row:
+                    filtered_row[field] = row[field]
         return filtered_row
     if isinstance(result, dict):
         return filter_row(result)
@@ -263,7 +265,7 @@ def _collect_results(result):
         'datetime': 'date',
         'ad_group__campaign': 'campaign',
         'ad_group__campaign__account': 'account',
-        
+
         'visits_sum': 'visits',
         'new_visits_sum': 'new_visits',
         'pageviews_sum': 'pageviews',
@@ -340,6 +342,14 @@ def has_complete_postclick_metrics_ad_groups(start_date, end_date, ad_groups):
         'ad_group',
         ad_groups
     )
+
+
+def row_has_traffic_data(row):
+    return any(bool(row.get(field)) for field in TRAFFIC_FIELDS)
+
+
+def row_has_postclick_data(row):
+    return any(bool(row.get(field)) for field in POSTCLICK_FIELDS)
 
 
 def _get_ad_group_ids_with_postclick_data(key, objects):
