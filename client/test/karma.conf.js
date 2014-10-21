@@ -15,27 +15,15 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-        'app/lib/components/jquery/dist/jquery.min.js',
-        'app/lib/components/angular/angular.js',
-        'app/lib/components/moment/min/moment.min.js',
-        'app/lib/ng-bs-daterangepicker/0.0.1/ng-bs-daterangepicker.js',
-        'app/lib/components/highcharts-release/highcharts.js',
-        'app/lib/components/select2/select2.js',
-        'app/lib/angular-ui-router.js',
-        'app/lib/components/angular-bootstrap/ui-bootstrap-tpls.min.js',
-        'app/lib/components/angular-bootstrap-datetimepicker/src/js/datetimepicker.js',
-        'app/lib/components/angular-ui-select2/src/select2.js',
-        'app/lib/components/highcharts-ng/dist/highcharts-ng.min.js',
-        'app/lib/components/angular-sanitize/angular-sanitize.min.js',
-        'app/lib/components/angular-local-storage/angular-local-storage.min.js',
-        'app/lib/components/angular-mocks/angular-mocks.js',
-        'app/dist/js/zemanta-one.templates.js',
-        'app/js/**/*.js',
+        'dist/one/zemanta-one.lib.js',
+        'dist/one/zemanta-one.templates.js',
+        'one/js/**/*.js',
+        'actionlog/**/*.js',
         'test/unit/**/*.js'
     ],
 
     preprocessors: {
-        'app/js/**/*.js': 'coverage'
+        '{actionlog,one}/js/**/*.js': 'coverage'
     },
 
 

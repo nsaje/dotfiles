@@ -66,9 +66,6 @@ def zwei_callback(request, action_id):
 
 
 def _get_error_message(data):
-    if not data.get('error'):
-        return ''
-
     message = []
     if data['error'].get('error'):
         message.append(data['error']['error'])

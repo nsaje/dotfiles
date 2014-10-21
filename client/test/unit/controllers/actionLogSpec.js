@@ -4,7 +4,7 @@ describe('ActionLogCtrl', function () {
     var $scope, ctrl;
 
     beforeEach(function () {
-        module('one-actionlog');
+        module('actionlog');
 
         inject(function ($rootScope, $controller) {
             $scope = $rootScope.$new();

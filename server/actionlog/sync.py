@@ -86,7 +86,8 @@ class GlobalSync(BaseSync, ISyncComposite):
         this function is a faster way to get last succcessful sync times
         on the account level
         '''
-        qs = dash.models.AdGroupSource.objects.select_related('ad_group__campaign__account') \
+        qs = dash.models.AdGroupSource.objects.select_related('ad_group__campaign__account', 'source') \
+            .filter(source__maintenance=False) \
             .values('ad_group__campaign__account', 'last_successful_sync_dt')
         latest_success = {}
         for row in qs:
@@ -102,6 +103,7 @@ class GlobalSync(BaseSync, ISyncComposite):
         by source on globally
         '''
         qs = dash.models.AdGroupSource.objects.select_related('source') \
+            .filter(source__maintenance=False) \
             .values('source', 'last_successful_sync_dt')
         latest_success = {}
         for row in qs:

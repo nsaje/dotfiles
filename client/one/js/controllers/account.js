@@ -1,0 +1,61 @@
+/*globals oneApp*/
+
+oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) {
+    $scope.level = constants.level.ACCOUNTS;
+    $scope.getTabs = function () {
+        return [
+            {heading: 'Campaigns', route: 'main.accounts.campaigns', active: true, hidden: !$scope.hasPermission('zemauth.account_campaigns_view') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.account && $scope.account.archived), internal: $scope.isPermissionInternal('zemauth.account_campaigns_view')},
+            {heading: 'Media sources', route: 'main.accounts.sources', active: false, hidden: !$scope.hasPermission('zemauth.account_sources_view') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.account && $scope.account.archived), internal: $scope.isPermissionInternal('zemauth.account_sources_view')},
+            {heading: 'Agency', route: 'main.accounts.agency', active: false, hidden: !$scope.hasPermission('zemauth.account_agency_view'), internal: $scope.isPermissionInternal('zemauth.account_agency_view')}
+        ];
+    };
+    $scope.setActiveTab = function () {
+        $scope.tabs.forEach(function(tab) {
+            tab.active = $state.is(tab.route);
+        });
+    };
+
+    $scope.setAccount(null);
+
+    $scope.getAccount = function () {
+        $scope.accounts.forEach(function (account) {
+            if (account.id.toString() === $state.params.id.toString()) {
+                $scope.setAccount(account);
+            }
+        });
+    };
+
+    $scope.updateBreadcrumbAndTitle = function () {
+        if (!$scope.account) {
+            return;
+        }
+        $scope.setBreadcrumbAndTitle(
+            [{name: $scope.account.name, state: $scope.getDefaultAccountState() + '({id: ' + $scope.account.id + '})', disabled: true }],
+            $scope.account.name
+        );
+    };
+
+    $scope.updateAccounts = function (newAccountName) {
+        if (!newAccountName) {
+            return;
+        }
+        $scope.account.name = newAccountName;
+    };
+
+    $scope.getAccount();
+    $scope.updateBreadcrumbAndTitle();
+
+    $scope.tabs = $scope.getTabs();
+    $scope.setActiveTab();
+
+    if ($scope.account && $scope.account.archived && !$state.is('main.accounts.agency')) {
+        $state.go('main.accounts.agency', {id: $scope.account.id});
+    }
+
+    $scope.$watch('account.archived', function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            $scope.tabs = $scope.getTabs();
+            $scope.setActiveTab();
+        }
+    });
+}]);

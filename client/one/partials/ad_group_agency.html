@@ -1,0 +1,89 @@
+<div class="page page-ad-group-agency" ng-if="!adGroup.archived">
+    <alert ng-repeat="alert in alerts" type="{{ alert.type }}" close="closeAlert($index)" ng-bind-html="alert.message"></alert>
+    <alert type="info" ng-show="actionIsWaiting">
+        Settings changes are being propagated to external sources. The sync might take a few hours. If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
+    </alert>
+
+    <form id="form-ad-group-agency" class="form-horizontal">
+        <div class="form-vertical">
+            <div class="form-group" ng-class="{'has-error': !!errors.trackingCode}">
+                <label for="tracking-input" class="col-xs-2 control-label">
+                    Tracking codes
+                    <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The tracking code / UTM to be appended to all URLs being promoted." placement="top"></zem-help-popover>
+                </label>
+                <div class="col-xs-4">
+                    <textarea id="tracking-input" type="text" class="form-control" rows="4" ng-model="settings.trackingCode"></textarea>
+                </div>
+
+                <label ng-repeat="error in errors.trackingCode" class="control-label error" for="tracking-input">{{ error }}</label>
+            </div>
+        </div>
+
+		<button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
+		<button type="button" class="btn btn-default" ng-click="discardSettings()">Discard</button>
+                <button type="button" class="btn btn-default pull-right" ng-class="{'disabled': !canArchive}" ng-click="archiveAdGroup()" title="{{ (!canArchive && 'An ad group has to be paused in order to archive it.') || ''}}">Archive ad group</button>
+        <div class="loader" ng-show="saveRequestInProgress"></div>
+        <span ng-show="saved" class="success">Your updates have been saved.</span>
+        <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
+        <span ng-show="discarded" class="success">Your updates have been discarded.</span>
+	</form>
+
+    <div class="section ad-group-agency-history-table">
+        <div class="title">History<zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="History of settings changes." placement="top"></zem-help-popover>
+</div>
+        <div class="loader-container">
+            <div class="loader" ng-show="history.length && requestInProgress"></div>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="arrow" ng-class="{ordered: orderField === 'datetime' && orderReverse, 'ordered-reverse': orderField === 'datetime' && !orderReverse}"><a href class="order" ng-click="orderField = 'datetime'; orderReverse = orderReverse">Date</a></th>
+                        <th class="arrow" ng-class="{ordered: orderField === 'changedBy' && orderReverse, 'ordered-reverse': orderField === 'changedBy' && !orderReverse}"><a href class="order" ng-click="orderField = 'changedBy'; orderReverse = !orderReverse">User</a></th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-if="requestInProgress && !history.length">
+                        <td colspan="3" class="loader-row">
+                            <div class="loader"></div>
+                        </td>
+                    </tr>
+                    <tr ng-show="(!history || !history.length) && !requestInProgress">
+                        <td class="no-data" colspan="3">No data</td>
+                    </tr>
+
+                    <tr ng-repeat="item in history | orderBy:orderField:orderReverse">
+                        <td>{{ (item.datetime | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
+                        <td>{{ item.changedBy }}</td>
+                        <td zem-html-popover="'popoverContent.html'" popover-trigger="mouseenter" popover-append-to-body="true">{{ item.changesText }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="page page-ad-group-agency" ng-if="!!adGroup.archived">
+    <p>
+        <strong>This ad group is archived.</strong>
+    </p>
+    <button href type="button" class="btn btn-default" ng-class="{'disabled': !canRestore}" ng-click="restoreAdGroup()" title="{{ (!canRestore && 'In order to restore this ad group it\'s campaign must be restored first.') || '' }}">Restore ad group</button>
+</div>
+
+<script id="popoverContent.html" type="text/ng-template">
+    <div class="history-popover-table">
+        <div class="history-popover-row">
+            <div ng-if="item.showOldSettings" class="history-popover-cell header-cell left-cell"><strong>Old Settings</strong></div>
+            <div class="history-popover-cell header-cell"><strong>New Settings</strong></div>
+        </div>
+        <div class="history-popover-row" ng-repeat="setting in item.settings">
+            <div ng-if="item.showOldSettings" class="history-popover-cell left-cell">
+                <div><strong>{{setting.name}}</strong></div>
+                <div class="setting-value" ng-bind-html="setting.oldValue"></div>
+            </div>
+            <div class="history-popover-cell">
+                <div><strong>{{setting.name}}</strong></div>
+                <div class="setting-value" ng-bind-html="setting.value"></div>
+            </div>
+        </div>
+    </div>
+</script>

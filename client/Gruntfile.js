@@ -5,92 +5,193 @@ module.exports = function (grunt) {
         pkg: grunt.file.readJSON('package.json'),
         html2js: {
             options: {
-                base: 'app/',
                 rename: function (moduleName) {
                     return '/' + moduleName;
                 }
             },
-            dist: {
-                src: ['app/partials/**/*.html'],
-                dest: 'app/dist/js/zemanta-one.templates.js'
+            one: {
+                options: {
+                    base: 'one/',
+                },
+                src: ['one/partials/**/*.html'],
+                dest: 'dist/one/zemanta-one.templates.js'
             }
         },
         concat: {
-            dist: {
-                options: {
-                    // Replace all 'use strict' statements in the code with a single
-                    // one at the top
-                    banner: "'use strict';\n",
-                    process: function(src, filepath) {
-                        return '// Source: ' + filepath + '\n' +
-                            src.replace(/(^|\n)[ \t]*('use strict'|"use strict");?\s*/g, '$1');
-                    }
-                },
+            options: {
+                // Replace all 'use strict' statements in the code with a single
+                // one at the top
+                banner: "'use strict';\n",
+                process: function(src, filepath) {
+                    return '// Source: ' + filepath + '\n' +
+                        src.replace(/(^|\n)[ \t]*('use strict'|"use strict");?\s*/g, '$1');
+                }
+            },
+            one: {
                 src: [
-                    'app/dist/js/zemanta-one.templates.js',
-                    'app/js/config.js',
-                    'app/js/constants.js',
-                    'app/js/app.js',
-                    'app/js/app_actionlog.js',
-                    'app/js/services/**/*.js',
-                    'app/js/directives/**/*.js',
-                    'app/js/services/**/*.js',
-                    'app/js/controllers/**/*.js',
-                    'app/js/filters/**/*.js'
+                    'dist/one/zemanta-one.templates.js',
+                    'dist/build/config.js',
+                    'one/js/constants.js',
+                    'one/js/app.js',
+                    'one/js/services/**/*.js',
+                    'one/js/directives/**/*.js',
+                    'one/js/services/**/*.js',
+                    'one/js/controllers/**/*.js',
+                    'one/js/filters/**/*.js'
                 ],
-                dest: 'app/dist/js/zemanta-one.js'
+                dest: 'dist/one/zemanta-one.js'
+            },
+            actionlog: {
+                src: [
+                    'dist/build/config.js',
+                    'actionlog/app.js',
+                    'actionlog/js/**/*.js'
+                ],
+                dest: 'dist/actionlog/zemanta-one.actionlog.js'
+            }
+        },
+        bower_concat: {
+            one_lib: {
+                dest: 'dist/one/zemanta-one.lib.js',
+                mainFiles: {
+                    'highcharts-release': 'highcharts.js'
+                },
+                dependencies: {
+                    'angular': 'bootstrap-daterangepicker'
+                }
+            },
+            actionlog_lib: {
+                dest: 'dist/actionlog/zemanta-one.actionlog.lib.js',
+                cssDest: 'dist/actionlog/zemanta-one.actionlog.lib.css',
+                include: [
+                    'jquery',
+                    'bootstrap',
+                    'angular',
+                    'angular-bootstrap',
+                ]
+            }
+        },
+        cssmin: {
+            options: {
+                // used to rewrite css urls
+                target: 'lib'
+            },
+            one_lib: {
+                files: [{
+                    src: [
+                        'lib/components/bootstrap/dist/css/bootstrap.min.css',
+                        'lib/components/angular-bootstrap-datetimepicker/src/css/datetimepicker.css',
+                        'lib/components/bootstrap-multiselect/css/bootstrap-multiselect.css',
+                        'lib/components/select2/select2.css',
+                        'lib/components/select2/select2-bootstrap.css',
+                        'lib/components/bootstrap-daterangepicker/daterangepicker-bs3.css'
+                    ],
+                    dest: 'dist/one/zemanta-one.lib.min.css'
+                }]
+            },
+            actionlog_lib: {
+                files: [{
+                    src: 'dist/actionlog/zemanta-one.actionlog.lib.css',
+                    dest: 'dist/actionlog/zemanta-one.actionlog.lib.min.css',
+                }]
+            }
+        },
+        copy: {
+            one: {
+                files: [
+                    {expand: true, flatten: true, src: 'one/img/*', dest: 'dist/one/img/'}
+                ]
+            },
+            one_lib: {
+                files: [
+                    {
+                        expand: true,
+                        src: [
+                            'lib/components/select2/select2.png',
+                            'lib/components/select2/select2x2.png',
+                            'lib/components/bootstrap/dist/fonts/glyphicons-halflings-regular.woff',
+                            'lib/components/bootstrap/dist/fonts/glyphicons-halflings-regular.ttf'
+                        ],
+                        dest: 'dist/one/'
+                    }
+                ]
+            },
+            actionlog: {
+                files: [
+                    {expand: true, flatten: true, src: 'actionlog/partials/**/*.html', dest: 'dist/actionlog/'},
+                    {expand: true, flatten: true, src: 'actionlog/img/*', dest: 'dist/actionlog/img/'}
+                ]
             }
         },
         uglify: {
-            dist: {
-                options: {
-                    sourceMap: true
-                },
+            options: {
+                sourceMap: true
+            },
+            one: {
                 files: {
-                    'app/dist/js/zemanta-one.min.js': ['app/dist/js/zemanta-one.js']
+                    'dist/one/zemanta-one.min.js': ['dist/one/zemanta-one.js']
+                }
+            },
+            one_lib: {
+                files: {
+                    'dist/one/zemanta-one.lib.min.js': ['dist/one/zemanta-one.lib.js']
+                }
+            },
+            actionlog: {
+                files: {
+                    'dist/actionlog/zemanta-one.actionlog.min.js': ['dist/actionlog/zemanta-one.actionlog.js']
+                }
+            },
+            actionlog_lib: {
+                files: {
+                    'dist/actionlog/zemanta-one.actionlog.lib.min.js': ['dist/actionlog/zemanta-one.actionlog.lib.js']
                 }
             }
         },
         less: {
-            dist: {
-                options: {
-                    cleancss: true
-                },
+            options: {
+                cleancss: true
+            },
+            one: {
                 files: {
-                    "app/dist/css/zemanta-one.min.css": "app/less/**/*.less"
+                    "dist/one/zemanta-one.min.css": "one/less/**/*.less"
+                }
+            },
+            actionlog: {
+                files: {
+                    "dist/actionlog/zemanta-one.actionlog.min.css": "actionlog/less/**/*.less"
                 }
             }
         },
         watch: {
-            'dist-js': {
-                options: {
-                    livereload: true
-                },
-                files: [
-                    'app/js/**/*.js',
-                    'app/partials/**/*.html'
-                ],
-                tasks: ['dist-js']
+            options: {
+                livereload: true
             },
-            'dist-less': {
-                options: {
-                    livereload: true
-                },
+            one: {
                 files: [
-                    'app/less/**/*.less'
+                    'one/js/**/*.js',
+                    'one/partials/**/*.html',
+                    'one/less/**/*.less',
+                    'one/img/**/*'
                 ],
-                tasks: ['dist-less']
+                tasks: ['build:one']
+            },
+            actionlog: {
+                files: [
+                    'actionlog/**/*.js',
+                    'actionlog/partials/**/*.html',
+                    'actionlog/less/**/*.less',
+                    'actionlog/img/**/*'
+                ],
+                tasks: ['build:actionlog']
             }
-        },
-        clean: {
-            dist: ['app/dist']
         },
         connect: {
             dev: {
                 options: {
                     port: 9999,
-                    base: 'app/',
-                    directory: 'app/',
+                    base: 'dist/',
+                    directory: 'dist/',
                     hostname: '*',
                     debug: true,
                     livereload: true,
@@ -102,7 +203,7 @@ module.exports = function (grunt) {
                                 res.setHeader('Access-Control-Allow-Origin', '*');
                                 return next();
                             },
-                            connect.static(require('path').resolve('app/'))
+                            connect.static(require('path').resolve('dist/'))
                         ];
                     }
                 }
@@ -111,20 +212,21 @@ module.exports = function (grunt) {
         ngconstant: {
             options: {
                 name: 'config',
-                dest: 'app/js/config.js',
+                dest: 'dist/build/config.js'
+            },
+            prod: {
                 constants: {
                     config: {
-                        static_url: '/client'    
+                        static_url: '/client'
                     }
                 }
             },
-            prod: {},
             dev: {
                 constants: {
                     config: {
                         static_url: 'http://localhost:9999'
                     }
-                }    
+                } 
             }
         },
         karma: {
@@ -144,14 +246,21 @@ module.exports = function (grunt) {
             sauce: {
                 configFile: 'test/protractor.conf-sauce.js'
             }
+        },
+        build: {
+            one: ['html2js:one', 'concat:one', 'uglify:one', 'less:one', 'copy:one'],
+            one_lib: ['bower_concat:one_lib', 'uglify:one_lib', 'cssmin:one_lib', 'copy:one_lib'],
+            actionlog: ['concat:actionlog', 'uglify:actionlog', 'less:actionlog', 'copy:actionlog'],
+            actionlog_lib: ['bower_concat:actionlog_lib', 'uglify:actionlog_lib', 'cssmin:actionlog_lib']
         }
     });
 
     require('load-grunt-tasks')(grunt, {scope: 'devDependencies'});
 
-    grunt.registerTask('dist-js', ['html2js', 'concat:dist', 'uglify:dist']);
-    grunt.registerTask('dist-less', ['less:dist']);
-    grunt.registerTask('build', ['dist-js', 'dist-less'])
+    grunt.registerMultiTask('build', 'Build project.', function () {
+        grunt.task.run(this.data);
+    });
+
     grunt.registerTask('default', ['ngconstant:prod', 'build']);
     grunt.registerTask('test', ['default', 'karma:' + (grunt.option('sauce') ? 'sauce' : 'local')]);
     grunt.registerTask('e2e', ['protractor:' + (grunt.option('sauce') ? 'sauce' : 'local')]);
