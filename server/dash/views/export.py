@@ -340,7 +340,7 @@ class AllAccountsExport(api_common.BaseApiView):
             columns = [
                 {'key': 'date', 'name': 'Date', 'format': 'date'},
                 {'key': 'account', 'name': 'Account'},
-                {'key': 'cost', 'name': 'Cost', 'format': 'currency'},
+                {'key': 'cost', 'name': 'Spend', 'format': 'currency'},
                 {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
                 {'key': 'clicks', 'name': 'Clicks'},
                 {'key': 'impressions', 'name': 'Impressions', 'width': 15},
@@ -353,34 +353,36 @@ class AllAccountsExport(api_common.BaseApiView):
                 {'key': 'campaign', 'name': 'Campaign'},
                 {'key': 'account_manager', 'name': 'Account Manager'},
                 {'key': 'sales_representative', 'name': 'Sales Representative'},
-                {'key': 'service_fee', 'name': 'Service Fee', 'format': 'currency'},
+                {'key': 'service_fee', 'name': 'Service Fee', 'format': 'percent'},
                 {'key': 'iab_category', 'name': 'IAB Category'},
                 {'key': 'promotion_goal', 'name': 'Promotion Goal'},
-                {'key': 'cost', 'name': 'Cost', 'format': 'currency'},
+                {'key': 'cost', 'name': 'Spend', 'format': 'currency'},
                 {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
                 {'key': 'clicks', 'name': 'Clicks'},
                 {'key': 'impressions', 'name': 'Impressions', 'width': 15},
                 {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
+                {'key': 'fee_amount', 'name': 'Fee Amount', 'format': 'currency'},
+                {'key': 'total_amount', 'name': 'Total Amount', 'format': 'currency'},
             ]
 
             content = export.get_excel_content([
                 ('All Accounts Report', columns, results),
                 ('Detailed Report', detailed_columns, detailed_results)
-            ])
+            ], start_date, end_date)
 
             return self.create_excel_response(filename, content=content)
         else:
             fieldnames = OrderedDict([
                 ('date', 'Date'),
                 ('account', 'Account'),
-                ('cost', 'Cost'),
+                ('cost', 'Spend'),
                 ('cpc', 'CPC'),
                 ('clicks', 'Clicks'),
                 ('impressions', 'Impressions'),
                 ('ctr', 'CTR')
             ])
 
-            content = export.get_csv_content(fieldnames, results)
+            content = export.get_csv_content(fieldnames, results, 'All accounts report', start_date, end_date)
             return self.create_csv_response(filename, content=content)
 
     def add_account_data(self, results, accounts):
@@ -402,11 +404,13 @@ class AllAccountsExport(api_common.BaseApiView):
 
         for result in results:
             campaign_id = result['campaign']
-            cs = campaign_settings[campaign_id]
+            cs = campaign_settings.get(campaign_id)
 
             result['campaign'] = campaign_names[campaign_id]
-            result['account_manager'] = cs.account_manager.email if cs.account_manager is not None else 'N/A'
-            result['sales_representative'] = cs.sales_representative.email if cs.sales_representative is not None else 'N/A'
-            result['service_fee'] = cs.service_fee
-            result['iab_category'] = cs.iab_category
-            result['promotion_goal'] = constants.PromotionGoal.get_text(cs.promotion_goal)
+            result['account_manager'] = cs.account_manager.email if cs is not None and cs.account_manager is not None else 'N/A'
+            result['sales_representative'] = cs.sales_representative.email if cs is not None and cs.sales_representative is not None else 'N/A'
+            result['service_fee'] = float(cs.service_fee) if cs is not None else 'N/A'
+            result['iab_category'] = cs.iab_category if cs is not None else 'N/A'
+            result['promotion_goal'] = constants.PromotionGoal.get_text(cs.promotion_goal) if cs is not None else 'N/A'
+            result['fee_amount'] = result['cost'] * result['service_fee'] if cs is not None else 'N/A'
+            result['total_amount'] = result['cost'] + result['fee_amount'] if cs is not None else 'N/A'
