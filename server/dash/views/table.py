@@ -272,7 +272,7 @@ class SourcesTable(api_common.BaseApiView):
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
         sources = self.levelSourcesTable.get_sources()
-        sources_settings = self.levelSourcesTable.get_sources_settings()
+        settings = self.levelSourcesTable.get_sources_settings()
         last_success_actions = self.levelSourcesTable.get_last_success_actions()
         sources_data, totals_data = self.levelSourcesTable.get_stats(start_date, end_date)
         is_sync_in_progress = self.levelSourcesTable.is_sync_in_progress()
@@ -292,6 +292,11 @@ class SourcesTable(api_common.BaseApiView):
             incomplete_postclick_metrics = \
                 not self.levelSourcesTable.has_complete_postclick_metrics(
                     start_date, end_date)
+
+        # group source settings by source id
+        sources_settings = {}
+        for source in sources:
+            sources_settings[source.id] = [s for s in settings if s.ad_group_source.source_id == source.id]
 
         return self.create_api_response({
             'rows': self.get_rows(
@@ -316,9 +321,16 @@ class SourcesTable(api_common.BaseApiView):
         })
 
     def get_totals(self, totals_data, sources_settings, yesterday_cost):
+        daily_budget = 0
+
+        for settings in sources_settings.values():
+            if self.get_state(settings) == constants.AdGroupSourceSettingsState.INACTIVE:
+                continue
+
+            daily_budget += sum(s.daily_budget_cc for s in settings if s.daily_budget_cc is not None)
+
         result = {
-            'daily_budget': float(sum(settings.daily_budget_cc for settings in sources_settings
-                if settings.daily_budget_cc is not None)),
+            'daily_budget': float(daily_budget),
             'cost': totals_data['cost'],
             'cpc': totals_data['cpc'],
             'clicks': totals_data['clicks'],
@@ -356,8 +368,7 @@ class SourcesTable(api_common.BaseApiView):
             include_supply_dash_url=False):
         rows = []
         for source in sources:
-            settings = [s for s in sources_settings
-                        if s.ad_group_source.source_id == source.id]
+            settings = sources_settings[source.id]
 
             # get source reports data
             source_data = {}
