@@ -252,8 +252,6 @@ class AdGroupSourcesTable(object):
         return actionlog.api.is_sync_in_progress(ad_groups=[self.ad_group])
 
 
-
-
 class SourcesTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'zemauth.sources_table_get')
     def get(self, request, level_, id_=None):
@@ -272,7 +270,7 @@ class SourcesTable(api_common.BaseApiView):
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
         sources = self.levelSourcesTable.get_sources()
-        settings = self.levelSourcesTable.get_sources_settings()
+        sources_settings = self.levelSourcesTable.get_sources_settings()
         last_success_actions = self.levelSourcesTable.get_last_success_actions()
         sources_data, totals_data = self.levelSourcesTable.get_stats(start_date, end_date)
         is_sync_in_progress = self.levelSourcesTable.is_sync_in_progress()
@@ -293,11 +291,6 @@ class SourcesTable(api_common.BaseApiView):
                 not self.levelSourcesTable.has_complete_postclick_metrics(
                     start_date, end_date)
 
-        # group source settings by source id
-        sources_settings = {}
-        for source in sources:
-            sources_settings[source.id] = [s for s in settings if s.ad_group_source.source_id == source.id]
-
         return self.create_api_response({
             'rows': self.get_rows(
                 id_,
@@ -307,7 +300,7 @@ class SourcesTable(api_common.BaseApiView):
                 last_success_actions,
                 yesterday_cost,
                 order=request.GET.get('order', None),
-                include_supply_dash_url=level_ == 'ad_groups'
+                ad_group_level=level_ == 'ad_groups'
             ),
             'totals': self.get_totals(
                 totals_data,
@@ -321,16 +314,8 @@ class SourcesTable(api_common.BaseApiView):
         })
 
     def get_totals(self, totals_data, sources_settings, yesterday_cost):
-        daily_budget = 0
-
-        for settings in sources_settings.values():
-            if self.get_state(settings) == constants.AdGroupSourceSettingsState.INACTIVE:
-                continue
-
-            daily_budget += sum(s.daily_budget_cc for s in settings if s.daily_budget_cc is not None)
-
-        result = {
-            'daily_budget': float(daily_budget),
+        return {
+            'daily_budget': self.get_daily_budget_total(sources_settings),
             'cost': totals_data['cost'],
             'cpc': totals_data['cpc'],
             'clicks': totals_data['clicks'],
@@ -348,13 +333,19 @@ class SourcesTable(api_common.BaseApiView):
 
             'goals': totals_data.get('goals', {})
         }
-        return result
 
     def get_state(self, settings):
         if any(s.state == constants.AdGroupSourceSettingsState.ACTIVE for s in settings):
             return constants.AdGroupSourceSettingsState.ACTIVE
 
         return constants.AdGroupSourceSettingsState.INACTIVE
+
+    def get_daily_budget_total(self, sources_settings):
+        budgets = [s.daily_budget_cc for s in sources_settings if
+                   s.daily_budget_cc is not None and
+                   s.state == constants.AdGroupSourceSettingsState.ACTIVE]
+
+        return sum(budgets)
 
     def get_rows(
             self,
@@ -365,10 +356,10 @@ class SourcesTable(api_common.BaseApiView):
             last_actions,
             yesterday_cost,
             order=None,
-            include_supply_dash_url=False):
+            ad_group_level=False):
         rows = []
         for source in sources:
-            settings = sources_settings[source.id]
+            settings = [s for s in sources_settings if s.ad_group_source.source_id == source.id]
 
             # get source reports data
             source_data = {}
@@ -382,13 +373,18 @@ class SourcesTable(api_common.BaseApiView):
                 last_sync = pytz.utc.localize(last_sync)
 
             supply_dash_url = None
-            if include_supply_dash_url:
+            if ad_group_level:
                 supply_dash_url = urlresolvers.reverse('dash.views.views.supply_dash_redirect')
                 supply_dash_url += '?ad_group_id={}&source_id={}'.format(id_, source.id)
+
+                daily_budget = settings[0].daily_budget_cc if len(settings) else None
+            else:
+                daily_budget = self.get_daily_budget_total(settings)
 
             row = {
                 'id': str(source.id),
                 'name': source.name,
+                'daily_budget': daily_budget,
                 'status': self.get_state(settings),
                 'cost': source_data.get('cost', None),
                 'cpc': source_data.get('cpc', None),
@@ -412,10 +408,6 @@ class SourcesTable(api_common.BaseApiView):
             }
 
             bid_cpc_values = [s.cpc_cc for s in settings if s.cpc_cc is not None]
-            daily_budget_values = [s.daily_budget_cc for s in settings if s.daily_budget_cc is not None]
-
-            if len(daily_budget_values) > 0:
-                row['daily_budget'] = float(sum(daily_budget_values))
 
             if len(bid_cpc_values) > 0:
                 row['min_bid_cpc'] = float(min(bid_cpc_values))
