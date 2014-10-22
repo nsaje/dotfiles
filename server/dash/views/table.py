@@ -443,7 +443,8 @@ class AccountsAccountsTable(api_common.BaseApiView):
         size = request.GET.get('size')
         order = request.GET.get('order')
 
-        include_archived_flag = request.user.has_perm('zemauth.view_archived_entities')
+        has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
+        show_archived = request.GET.get('show_archived') == 'true' and request.user.has_perm('zemauth.view_archived_entities')
 
         user = request.user
 
@@ -495,8 +496,9 @@ class AccountsAccountsTable(api_common.BaseApiView):
             last_success_actions,
             account_budget,
             account_total_spend,
+            has_view_archived_permission,
+            show_archived,
             order=order,
-            include_archived_flag=include_archived_flag,
         )
 
         rows, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(rows, page, size)
@@ -524,7 +526,8 @@ class AccountsAccountsTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
 
-    def get_rows(self, accounts, accounts_settings, accounts_data, last_actions, account_budget, account_total_spend, order=None, include_archived_flag=False):
+    def get_rows(self, accounts, accounts_settings, accounts_data, last_actions, account_budget,
+                 account_total_spend, has_view_archived_permission, show_archived, order=None):
         rows = []
 
         account_state = api.get_state_by_account()
@@ -535,22 +538,29 @@ class AccountsAccountsTable(api_common.BaseApiView):
                 'name': account.name
             }
 
-            state = account_state.get(aid, constants.AdGroupSettingsState.INACTIVE)
-            row['status'] = state
-
-            if include_archived_flag:
-                row['archived'] = False
-                for account_settings in accounts_settings:
-                    if account_settings.account.pk == account.pk:
-                        row['archived'] = account_settings.archived
-                        break
-
             # get source reports data
             account_data = {}
             for item in accounts_data:
                 if item['account'] == aid:
                     account_data = item
                     break
+
+            archived = False
+            for account_settings in accounts_settings:
+                if account_settings.account.pk == account.pk:
+                    archived = account_settings.archived
+                    break
+
+            if has_view_archived_permission and not show_archived and archived and\
+               not (reports.api.row_has_traffic_data(account_data) or
+                    reports.api.row_has_postclick_data(account_data)):
+                continue
+
+            state = account_state.get(aid, constants.AdGroupSettingsState.INACTIVE)
+            row['status'] = state
+
+            if has_view_archived_permission:
+                row['archived'] = archived
 
             row['last_sync'] = last_actions.get(aid)
             if row['last_sync']:
@@ -568,7 +578,6 @@ class AccountsAccountsTable(api_common.BaseApiView):
             rows = sort_results(rows, [order])
 
         return rows
-
 
 
 class AdGroupAdsTable(api_common.BaseApiView):
@@ -638,7 +647,8 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-cost'
 
-        include_archived_flag = request.user.has_perm('zemauth.view_archived_entities')
+        has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
+        show_archived = request.GET.get('show_archived') == 'true' and request.user.has_perm('zemauth.view_archived_entities')
 
         stats = reports.api.filter_by_permissions(reports.api.query(
             start_date=start_date,
@@ -690,7 +700,8 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
                 stats,
                 last_success_actions,
                 order,
-                include_archived_flag
+                has_view_archived_permission,
+                show_archived
             ),
             'totals': totals_stats,
             'last_sync': last_sync,
@@ -701,7 +712,8 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
 
-    def get_rows(self, ad_groups, ad_groups_settings, stats, last_actions, order, include_archived_flag):
+    def get_rows(self, ad_groups, ad_groups_settings, stats, last_actions,
+                 order, has_view_archived_permission, show_archived):
         rows = []
         for ad_group in ad_groups:
             row = {
@@ -709,24 +721,32 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
                 'ad_group': str(ad_group.pk)
             }
 
-            if include_archived_flag:
-                row['archived'] = False
-
-            row['state'] = models.AdGroupSettings.get_default_value('state')
-            for ad_group_settings in ad_groups_settings:
-                if ad_group.pk == ad_group_settings.ad_group_id:
-                    if ad_group_settings.state is not None:
-                        row['state'] = ad_group_settings.state
-
-                    if include_archived_flag:
-                        row['archived'] = ad_group_settings.archived
-
-                    break
-
+            ad_group_data = {}
             for stat in stats:
                 if ad_group.pk == stat['ad_group']:
-                    row.update(stat)
+                    ad_group_data = stat
                     break
+
+            state = models.AdGroupSettings.get_default_value('state')
+            archived = False
+            for ad_group_settings in ad_groups_settings:
+                if ad_group.pk == ad_group_settings.ad_group_id:
+                    archived = ad_group_settings.archived
+                    if ad_group_settings.state is not None:
+                        state = ad_group_settings.state
+
+                    break
+
+            if has_view_archived_permission and not show_archived and archived and\
+               not (reports.api.row_has_traffic_data(ad_group_data) or
+                    reports.api.row_has_postclick_data(ad_group_data)):
+                continue
+
+            row['state'] = state
+            if has_view_archived_permission:
+                row['archived'] = archived
+
+            row.update(ad_group_data)
 
             last_sync = last_actions.get(ad_group.pk)
             if last_sync:
@@ -751,7 +771,8 @@ class AccountCampaignsTable(api_common.BaseApiView):
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-clicks'
 
-        include_archived_flag = request.user.has_perm('zemauth.view_archived_entities')
+        has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
+        show_archived = request.GET.get('show_archived') == 'true' and request.user.has_perm('zemauth.view_archived_entities')
 
         campaigns = models.Campaign.objects.get_for_user(user).\
             filter(account=account_id)
@@ -810,7 +831,8 @@ class AccountCampaignsTable(api_common.BaseApiView):
                 stats,
                 last_success_actions,
                 order,
-                include_archived_flag=include_archived_flag
+                has_view_archived_permission,
+                show_archived
             ),
             'totals': totals_stats,
             'last_sync': last_sync,
@@ -821,7 +843,8 @@ class AccountCampaignsTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
 
-    def get_rows(self, campaigns, campaigns_settings, ad_groups_settings, stats, last_actions, order, include_archived_flag=False):
+    def get_rows(self, campaigns, campaigns_settings, ad_groups_settings, stats,
+                 last_actions, order, has_view_archived_permission, show_archived):
         rows = []
         for campaign in campaigns:
             # If at least one ad group is active, then the campaign is considered
@@ -832,6 +855,23 @@ class AccountCampaignsTable(api_common.BaseApiView):
                 'name': campaign.name,
             }
 
+            campaign_stat = {}
+            for stat in stats:
+                if stat['campaign'] == campaign.pk:
+                    campaign_stat = stat
+                    break
+
+            archived = False
+            for campaign_settings in campaigns_settings:
+                if campaign_settings.campaign.pk == campaign.pk:
+                    archived = campaign_settings.archived
+                    break
+
+            if has_view_archived_permission and not show_archived and archived and\
+               not (reports.api.row_has_traffic_data(campaign_stat) or
+                    reports.api.row_has_postclick_data(campaign_stat)):
+                continue
+
             state = constants.AdGroupSettingsState.INACTIVE
             for ad_group_settings in ad_groups_settings:
                 if ad_group_settings.ad_group.campaign.pk == campaign.pk and \
@@ -841,20 +881,8 @@ class AccountCampaignsTable(api_common.BaseApiView):
 
             row['state'] = state
 
-            if include_archived_flag:
-                archived = False
-                for campaign_settings in campaigns_settings:
-                    if campaign_settings.campaign.pk == campaign.pk:
-                        archived = campaign_settings.archived
-                        break
-
+            if has_view_archived_permission:
                 row['archived'] = archived
-
-            campaign_stat = {}
-            for stat in stats:
-                if stat['campaign'] == campaign.pk:
-                    campaign_stat = stat
-                    break
 
             last_sync = last_actions.get(campaign.pk)
             if last_sync:
