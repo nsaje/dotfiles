@@ -252,8 +252,6 @@ class AdGroupSourcesTable(object):
         return actionlog.api.is_sync_in_progress(ad_groups=[self.ad_group])
 
 
-
-
 class SourcesTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'zemauth.sources_table_get')
     def get(self, request, level_, id_=None):
@@ -309,7 +307,7 @@ class SourcesTable(api_common.BaseApiView):
                 last_success_actions,
                 yesterday_cost,
                 order=request.GET.get('order', None),
-                include_supply_dash_url=level_ == 'ad_groups'
+                ad_group_level=level_ == 'ad_groups'
             ),
             'totals': self.get_totals(
                 totals_data,
@@ -323,9 +321,8 @@ class SourcesTable(api_common.BaseApiView):
         })
 
     def get_totals(self, totals_data, sources_settings, yesterday_cost):
-        result = {
-            'daily_budget': float(sum(settings.daily_budget_cc for settings in sources_settings
-                if settings.daily_budget_cc is not None)),
+        return {
+            'daily_budget': self.get_daily_budget_total(sources_settings),
             'cost': totals_data['cost'],
             'cpc': totals_data['cpc'],
             'clicks': totals_data['clicks'],
@@ -343,13 +340,19 @@ class SourcesTable(api_common.BaseApiView):
 
             'goals': totals_data.get('goals', {})
         }
-        return result
 
     def get_state(self, settings):
         if any(s.state == constants.AdGroupSourceSettingsState.ACTIVE for s in settings):
             return constants.AdGroupSourceSettingsState.ACTIVE
 
         return constants.AdGroupSourceSettingsState.INACTIVE
+
+    def get_daily_budget_total(self, sources_settings):
+        budgets = [s.daily_budget_cc for s in sources_settings if
+                   s.daily_budget_cc is not None and
+                   s.state == constants.AdGroupSourceSettingsState.ACTIVE]
+
+        return sum(budgets)
 
     def get_rows(
             self,
@@ -360,11 +363,10 @@ class SourcesTable(api_common.BaseApiView):
             last_actions,
             yesterday_cost,
             order=None,
-            include_supply_dash_url=False):
+            ad_group_level=False):
         rows = []
         for source in sources:
-            settings = [s for s in sources_settings
-                        if s.ad_group_source.source_id == source.id]
+            settings = [s for s in sources_settings if s.ad_group_source.source_id == source.id]
 
             # get source reports data
             source_data = {}
@@ -378,13 +380,18 @@ class SourcesTable(api_common.BaseApiView):
                 last_sync = pytz.utc.localize(last_sync)
 
             supply_dash_url = None
-            if include_supply_dash_url:
+            if ad_group_level:
                 supply_dash_url = urlresolvers.reverse('dash.views.views.supply_dash_redirect')
                 supply_dash_url += '?ad_group_id={}&source_id={}'.format(id_, source.id)
+
+                daily_budget = settings[0].daily_budget_cc if len(settings) else None
+            else:
+                daily_budget = self.get_daily_budget_total(settings)
 
             row = {
                 'id': str(source.id),
                 'name': source.name,
+                'daily_budget': daily_budget,
                 'status': self.get_state(settings),
                 'cost': source_data.get('cost', None),
                 'cpc': source_data.get('cpc', None),
@@ -408,10 +415,6 @@ class SourcesTable(api_common.BaseApiView):
             }
 
             bid_cpc_values = [s.cpc_cc for s in settings if s.cpc_cc is not None]
-            daily_budget_values = [s.daily_budget_cc for s in settings if s.daily_budget_cc is not None]
-
-            if len(daily_budget_values) > 0:
-                row['daily_budget'] = float(sum(daily_budget_values))
 
             if len(bid_cpc_values) > 0:
                 row['min_bid_cpc'] = float(min(bid_cpc_values))
@@ -479,8 +482,11 @@ class AccountsAccountsTable(api_common.BaseApiView):
         all_accounts_budget = budget.GlobalBudget().get_total_by_account()
         account_budget = {aid: all_accounts_budget.get(aid, 0) for aid in account_ids}
 
+        all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
+        account_total_spend = {aid: all_accounts_total_spend.get(aid, 0) for aid in account_ids}
+
         totals_data['budget'] = sum(account_budget.itervalues())
-        totals_data['available_budget'] = totals_data['budget'] - (totals_data.get('cost') or 0)
+        totals_data['available_budget'] = totals_data['budget'] - sum(account_total_spend.values())
 
         last_success_actions = actionlog.sync.GlobalSync().get_latest_success_by_account()
         last_success_actions = {aid: val for aid, val in last_success_actions.items() if aid in account_ids}
@@ -495,6 +501,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
             accounts_data,
             last_success_actions,
             account_budget,
+            account_total_spend,
             order=order,
             include_archived_flag=include_archived_flag,
         )
@@ -524,7 +531,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
 
-    def get_rows(self, accounts, accounts_settings, accounts_data, last_actions, account_budget, order=None, include_archived_flag=False):
+    def get_rows(self, accounts, accounts_settings, accounts_data, last_actions, account_budget, account_total_spend, order=None, include_archived_flag=False):
         rows = []
 
         account_state = api.get_state_by_account()
@@ -560,7 +567,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
 
             row['budget'] = account_budget[aid]
 
-            row['available_budget'] = row['budget'] - (row.get('cost') or 0)
+            row['available_budget'] = row['budget'] - account_total_spend[aid]
 
             rows.append(row)
 
@@ -776,7 +783,9 @@ class AccountCampaignsTable(api_common.BaseApiView):
 
         totals_stats['budget'] = sum(budget.CampaignBudget(campaign).get_total()
                                      for campaign in campaigns)
-        totals_stats['available_budget'] = totals_stats['budget'] - (totals_stats.get('cost') or 0)
+        total_spend = sum(budget.CampaignBudget(campaign).get_spend() \
+                                     for campaign in campaigns)
+        totals_stats['available_budget'] = totals_stats['budget'] - total_spend
 
         ad_groups_settings = models.AdGroupSettings.objects.\
             distinct('ad_group').\
@@ -863,7 +872,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
             row.update(campaign_stat)
 
             row['budget'] = budget.CampaignBudget(campaign).get_total()
-            row['available_budget'] = row['budget'] - (row.get('cost') or 0)
+            row['available_budget'] = row['budget'] - budget.CampaignBudget(campaign).get_spend()
 
             rows.append(row)
 

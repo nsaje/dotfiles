@@ -354,7 +354,15 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         $scope.isChartShown = !$scope.isChartShown;
         $scope.chartBtnTitle = $scope.isChartShown ? 'Hide chart' : 'Show chart';
         $location.search('chart_hidden', !$scope.isChartShown ? '1' : null);
+
+        $timeout(function() {
+            $scope.$broadcast('highchartsng.reflow');
+        }, 0);
     };
+
+    $scope.$watch('isChartShown', function (newValue, oldValue) {
+        zemChartService.save('zemChart', newValue);
+    });
 
     $scope.init = function() {
         var chartMetric1 = $location.search().chart_metric1 || localStorageService.get('campaignAdGroups.chartMetric1') || $scope.chartMetric1;

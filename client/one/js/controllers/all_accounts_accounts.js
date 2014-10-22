@@ -209,6 +209,10 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         getTableData();
     };
 
+    $scope.$watch('isChartShown', function (newValue, oldValue) {
+        zemChartService.save('zemChart', newValue);
+    });
+
     var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
@@ -335,6 +339,10 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         $scope.isChartShown = !$scope.isChartShown;
         $scope.chartBtnTitle = $scope.isChartShown ? 'Hide chart' : 'Show chart';
         $location.search('chart_hidden', !$scope.isChartShown ? '1' : null);
+
+        $timeout(function() {
+            $scope.$broadcast('highchartsng.reflow');
+        }, 0);
     };
 
     // export

@@ -108,10 +108,10 @@ describe('All Accounts', function () {
 
         it('should toggle the chart when toggle button is clicked', function () {
             chart.hideButton.click();
-            expect(chart.container.getCssValue('height')).toEqual('0px');
+            expect(chart.container.getCssValue('display')).toEqual('none');
 
             chart.hideButton.click();
-            expect(chart.container.getCssValue('height')).not.toEqual('0px');
+            expect(chart.container.getCssValue('display')).not.toEqual('none');
         });
     });
 });
