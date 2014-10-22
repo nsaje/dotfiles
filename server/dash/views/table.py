@@ -22,28 +22,19 @@ class AllAccountsSourcesTable(object):
     def __init__(self, user, id_):
         self.user = user
         self.accounts = models.Account.objects.get_for_user(user)
-        self.inactive_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(account=self.accounts)
+        self.active_ad_group_sources = self._get_active_ad_group_sources()
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return reports.api.has_complete_postclick_metrics_accounts(
             start_date, end_date, self.accounts)
 
     def get_sources(self):
-        source_ids = models.AdGroupSource.objects.\
-            filter(ad_group__campaign__account__in=self.accounts).\
-            exclude(id__in=[s.id for s in self.inactive_ad_group_sources]).\
-            values('source_id').\
-            distinct()
-
-        source_ids = [s['source_id'] for s in source_ids]
-
-        return models.Source.objects.filter(id__in=source_ids)
+        return models.Source.objects.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
     def get_sources_settings(self):
         return models.AdGroupSourceSettings.objects.\
             distinct('ad_group_source').\
-            filter(ad_group_source__ad_group__campaign__account=self.accounts).\
-            exclude(ad_group_source__in=self.inactive_ad_group_sources).\
+            filter(ad_group_source__in=self.active_ad_group_sources).\
             order_by('ad_group_source', '-created_dt')
 
     def get_stats(self, start_date, end_date):
@@ -76,33 +67,53 @@ class AllAccountsSourcesTable(object):
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(accounts=self.accounts)
 
+    def _get_active_ad_group_sources(self):
+        demo_accounts = models.Account.demo_objects.all()
+        is_demo = any(acc in demo_accounts for acc in self.accounts)
+        if is_demo:
+            real_ad_groups = []
+            for acc in self.accounts:
+                if acc in demo_accounts:
+                    demo_ad_groups = models.AdGroup.objects.filter(campaign__account=acc)
+                    for ag in demo_ad_groups:
+                        real_ad_groups.append(
+                            models.DemoAdGroupRealAdGroup.objects.get(demo_ad_group=ag).real_ad_group
+                        )
+                else:
+                    real_ad_groups.extend(list(models.AdGroup.objects.filter(campaign__account=acc)))
+            _inactive_ad_group_sources = []
+            for ag in real_ad_groups:
+                _inactive_ad_group_sources.extend(
+                    actionlog.api.get_ad_group_sources_waiting(ad_group=ag)
+                )
+            active_ad_group_sources = models.AdGroupSource.objects.\
+                filter(ad_group__in=real_ad_groups).\
+                exclude(pk__in=_inactive_ad_group_sources)
+        else:
+            _inactive_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(account=self.accounts)
+            active_ad_group_sources = models.AdGroupSource.objects.\
+                filter(ad_group__campaign__account__in=self.accounts).\
+                exclude(pk__in=_inactive_ad_group_sources)
+        return active_ad_group_sources
+
 
 class AccountSourcesTable(object):
     def __init__(self, user, id_):
         self.user = user
         self.account = helpers.get_account(user, id_)
-        self.inactive_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(account=self.account)
+        self.active_ad_group_sources = self._get_active_ad_group_sources()
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return reports.api.has_complete_postclick_metrics_accounts(
             start_date, end_date, [self.account])
 
     def get_sources(self):
-        source_ids = models.AdGroupSource.objects.\
-            filter(ad_group__campaign__account=self.account).\
-            exclude(id__in=[s.id for s in self.inactive_ad_group_sources]).\
-            values('source_id').\
-            distinct()
-
-        source_ids = [s['source_id'] for s in source_ids]
-
-        return models.Source.objects.filter(id__in=source_ids)
+        return models.Source.objects.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
     def get_sources_settings(self):
         return models.AdGroupSourceSettings.objects.\
             distinct('ad_group_source').\
-            filter(ad_group_source__ad_group__campaign__account=self.account).\
-            exclude(ad_group_source__in=self.inactive_ad_group_sources).\
+            filter(ad_group_source__in=self.active_ad_group_sources).\
             order_by('ad_group_source', '-created_dt')
 
     def get_stats(self, start_date, end_date):
@@ -136,33 +147,48 @@ class AccountSourcesTable(object):
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(accounts=[self.account])
 
+    def _get_active_ad_group_sources(self):
+        demo_accounts = models.Account.demo_objects.all()
+        if self.account in demo_accounts:
+            demo_ad_groups = models.AdGroup.objects.filter(campaign__account=self.account)
+            real_ad_groups = []
+            for ag in demo_ad_groups:
+                real_ad_groups.append(
+                    models.DemoAdGroupRealAdGroup.objects.get(demo_ad_group=ag).real_ad_group
+                )
+            _inactive_ad_group_sources = []
+            for ag in real_ad_groups:
+                _inactive_ad_group_sources.extend(
+                    actionlog.api.get_ad_group_sources_waiting(ad_group=ag)
+                )
+            active_ad_group_sources = models.AdGroupSource.objects.\
+                filter(ad_group__in=real_ad_groups).\
+                exclude(pk__in=_inactive_ad_group_sources)
+        else:
+            _inactive_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(account=self.account)
+            active_ad_group_sources = models.AdGroupSource.objects.\
+                filter(ad_group__campaign__account=self.account).\
+                exclude(pk__in=_inactive_ad_group_sources)
+        return active_ad_group_sources
+
 
 class CampaignSourcesTable(object):
     def __init__(self, user, id_):
         self.user = user
         self.campaign = helpers.get_campaign(user, id_)
-        self.inactive_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(campaign=self.campaign)
+        self.active_ad_group_sources = self._get_active_ad_group_sources()
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return reports.api.has_complete_postclick_metrics_campaigns(
             start_date, end_date, [self.campaign])
 
     def get_sources(self):
-        source_ids = models.AdGroupSource.objects.\
-            filter(ad_group__campaign=self.campaign).\
-            exclude(id__in=[s.id for s in self.inactive_ad_group_sources]).\
-            values('source_id').\
-            distinct()
-
-        source_ids = [s['source_id'] for s in source_ids]
-
-        return models.Source.objects.filter(id__in=source_ids)
+        return models.Source.objects.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
     def get_sources_settings(self):
         return models.AdGroupSourceSettings.objects.\
             distinct('ad_group_source').\
-            filter(ad_group_source__ad_group__campaign=self.campaign).\
-            exclude(ad_group_source__in=self.inactive_ad_group_sources).\
+            filter(ad_group_source__in=self.active_ad_group_sources).\
             order_by('ad_group_source', '-created_dt')
 
     def get_stats(self, start_date, end_date):
@@ -196,28 +222,48 @@ class CampaignSourcesTable(object):
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(campaigns=[self.campaign])
 
+    def _get_active_ad_group_sources(self):
+        demo_campaigns = models.Campaign.demo_objects.all()
+        if self.campaign in demo_campaigns:
+            demo_ad_groups = models.AdGroup.objects.filter(campaign=self.campaign)
+            real_ad_groups = []
+            for ag in demo_ad_groups:
+                real_ad_groups.append(
+                    models.DemoAdGroupRealAdGroup.objects.get(demo_ad_group=ag).real_ad_group
+                )
+            _inactive_ad_group_sources = []
+            for ag in real_ad_groups:
+                _inactive_ad_group_sources.extend(
+                    actionlog.api.get_ad_group_sources_waiting(ad_group=ag)
+                )
+            active_ad_group_sources = models.AdGroupSource.objects.\
+                filter(ad_group__in=real_ad_groups).\
+                exclude(pk__in=_inactive_ad_group_sources)
+        else: 
+            _inactive_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(campaign=self.campaign)
+            active_ad_group_sources = models.AdGroupSource.objects.\
+                filter(ad_group__campaign=self.campaign).\
+                exclude(pk__in=_inactive_ad_group_sources)
+        return active_ad_group_sources
+
 
 class AdGroupSourcesTable(object):
     def __init__(self, user, id_):
         self.user = user
         self.ad_group = helpers.get_ad_group(user, id_)
-        self.inactive_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=self.ad_group)
+        self.active_ad_group_sources = self._get_active_ad_group_sources()
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return reports.api.has_complete_postclick_metrics_ad_groups(
             start_date, end_date, [self.ad_group])
 
     def get_sources(self):
-        return models.Source.objects.\
-            exclude(adgroupsource__in=self.inactive_ad_group_sources).\
-            filter(adgroupsource__ad_group=self.ad_group)\
-            .distinct('id')
+        return models.Source.objects.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
     def get_sources_settings(self):
         return models.AdGroupSourceSettings.objects.\
             distinct('ad_group_source').\
-            filter(ad_group_source__ad_group=self.ad_group).\
-            exclude(ad_group_source__in=self.inactive_ad_group_sources).\
+            filter(ad_group_source__in=self.active_ad_group_sources).\
             order_by('ad_group_source', '-created_dt')
 
     def get_stats(self, start_date, end_date):
@@ -251,6 +297,20 @@ class AdGroupSourcesTable(object):
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(ad_groups=[self.ad_group])
 
+    def _get_active_ad_group_sources(self):
+        if self.ad_group in models.AdGroup.demo_objects.all():
+            real_ad_group = models.DemoAdGroupRealAdGroup.objects.get(demo_ad_group=self.ad_group).real_ad_group
+            _inactive_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=real_ad_group)
+            active_ad_group_sources = models.AdGroupSource.objects.\
+                filter(ad_group=real_ad_group).\
+                exclude(pk__in=_inactive_ad_group_sources)
+        else:
+            _inactive_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=self.ad_group)
+            active_ad_group_sources = models.AdGroupSource.objects.\
+                filter(ad_group=self.ad_group).\
+                exclude(pk__in=_inactive_ad_group_sources)
+        return active_ad_group_sources
+
 
 class SourcesTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'zemauth.sources_table_get')
@@ -258,34 +318,27 @@ class SourcesTable(api_common.BaseApiView):
         user = request.user
 
         if level_ == 'all_accounts':
-            self.levelSourcesTable = AllAccountsSourcesTable(user, id_)
+            self.level_sources_table = AllAccountsSourcesTable(user, id_)
         elif level_ == 'accounts':
-            self.levelSourcesTable = AccountSourcesTable(user, id_)
+            self.level_sources_table = AccountSourcesTable(user, id_)
         elif level_ == 'campaigns':
-            self.levelSourcesTable = CampaignSourcesTable(user, id_)
+            self.level_sources_table = CampaignSourcesTable(user, id_)
         elif level_ == 'ad_groups':
-            self.levelSourcesTable = AdGroupSourcesTable(user, id_)
+            self.level_sources_table = AdGroupSourcesTable(user, id_)
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        sources = self.levelSourcesTable.get_sources()
-        sources_settings = self.levelSourcesTable.get_sources_settings()
-        last_success_actions = self.levelSourcesTable.get_last_success_actions()
-        sources_data, totals_data = self.levelSourcesTable.get_stats(start_date, end_date)
-        is_sync_in_progress = self.levelSourcesTable.is_sync_in_progress()
-
-        # this if is here to handle demo cases
-        # TODO: do it properly like:  
-        # if self.levelSourcesTable.is_demo(): sources = self.levelSourcesTable.get_demo_sources()
-        if not sources:
-            sources = [models.Source.objects.get(pk=sid) \
-                for sid in set([x['source'] for x in sources_data])]
+        sources = self.level_sources_table.get_sources()
+        sources_settings = self.level_sources_table.get_sources_settings()
+        last_success_actions = self.level_sources_table.get_last_success_actions()
+        sources_data, totals_data = self.level_sources_table.get_stats(start_date, end_date)
+        is_sync_in_progress = self.level_sources_table.is_sync_in_progress()
 
         yesterday_cost = {}
         yesterday_total_cost = None
         if user.has_perm('reports.yesterday_spend_view'):
-            yesterday_cost, yesterday_total_cost = self.levelSourcesTable.\
+            yesterday_cost, yesterday_total_cost = self.level_sources_table.\
                 get_yesterday_cost()
 
         last_sync = None
@@ -295,7 +348,7 @@ class SourcesTable(api_common.BaseApiView):
         incomplete_postclick_metrics = False
         if user.has_perm('zemauth.postclick_metrics'):
             incomplete_postclick_metrics = \
-                not self.levelSourcesTable.has_complete_postclick_metrics(
+                not self.level_sources_table.has_complete_postclick_metrics(
                     start_date, end_date)
 
         return self.create_api_response({

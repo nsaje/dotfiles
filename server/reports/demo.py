@@ -19,12 +19,12 @@ def _refresh_stats_data(start_date, end_date):
 
     for dt in daterange:
         for demo_ad_group in dash.models.AdGroup.demo_objects.all():
-            d2r = dash.models.DemoToReal.objects.get(
+            demo2real = dash.models.DemoAdGroupRealAdGroup.objects.get(
                 demo_ad_group=demo_ad_group
             )
 
-            real_ad_group = d2r.real_ad_group
-            m_factor = d2r.mult_factor
+            real_ad_group = demo2real.real_ad_group
+            multiplication_factor = demo2real.multiplication_factor
 
             qs = reports.models.ArticleStats.objects.filter(
                 datetime=dt,
@@ -38,9 +38,9 @@ def _refresh_stats_data(start_date, end_date):
                     'source': row.source
                 }
                 for metric in list(TRAFFIC_METRICS) + list(POSTCLICK_METRICS):
-                    val = row.__getattribute__(metric)
+                    val = getattr(row, metric)
                     if val is not None:
-                        val *= m_factor  # all business growth occurs here
+                        val *= multiplication_factor  # all business growth occurs here
                     d_row[metric] = val
                 demo_rows.append(d_row)
 
@@ -52,12 +52,12 @@ def _refresh_conversion_data(start_date, end_date):
 
     for dt in daterange:
         for demo_ad_group in dash.models.AdGroup.demo_objects.all():
-            d2r = dash.models.DemoToReal.objects.get(
+            demo2real = dash.models.DemoAdGroupRealAdGroup.objects.get(
                 demo_ad_group=demo_ad_group
             )
 
-            real_ad_group = d2r.real_ad_group
-            m_factor = d2r.mult_factor
+            real_ad_group = demo2real.real_ad_group
+            multiplication_factor = demo2real.multiplication_factor
 
             qs = reports.models.GoalConversionStats.objects.filter(
                 datetime=dt,
@@ -72,9 +72,9 @@ def _refresh_conversion_data(start_date, end_date):
                     'goal_name': row.goal_name,
                 }
                 for metric in CONVERSION_METRICS:
-                    val = row.__getattribute__(metric)
+                    val = getattr(row, metric)
                     if val is not None:
-                        val *= m_factor
+                        val *= multiplication_factor
                     d_row[metric] = val
                 demo_rows.append(d_row)
 
