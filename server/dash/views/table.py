@@ -475,8 +475,11 @@ class AccountsAccountsTable(api_common.BaseApiView):
         all_accounts_budget = budget.GlobalBudget().get_total_by_account()
         account_budget = {aid: all_accounts_budget.get(aid, 0) for aid in account_ids}
 
+        all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
+        account_total_spend = {aid: all_accounts_total_spend.get(aid, 0) for aid in account_ids}
+
         totals_data['budget'] = sum(account_budget.itervalues())
-        totals_data['available_budget'] = totals_data['budget'] - (totals_data.get('cost') or 0)
+        totals_data['available_budget'] = totals_data['budget'] - sum(account_total_spend.values())
 
         last_success_actions = actionlog.sync.GlobalSync().get_latest_success_by_account()
         last_success_actions = {aid: val for aid, val in last_success_actions.items() if aid in account_ids}
@@ -491,6 +494,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
             accounts_data,
             last_success_actions,
             account_budget,
+            account_total_spend,
             order=order,
             include_archived_flag=include_archived_flag,
         )
@@ -520,7 +524,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
 
-    def get_rows(self, accounts, accounts_settings, accounts_data, last_actions, account_budget, order=None, include_archived_flag=False):
+    def get_rows(self, accounts, accounts_settings, accounts_data, last_actions, account_budget, account_total_spend, order=None, include_archived_flag=False):
         rows = []
 
         account_state = api.get_state_by_account()
@@ -556,7 +560,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
 
             row['budget'] = account_budget[aid]
 
-            row['available_budget'] = row['budget'] - (row.get('cost') or 0)
+            row['available_budget'] = row['budget'] - account_total_spend[aid]
 
             rows.append(row)
 
@@ -772,7 +776,9 @@ class AccountCampaignsTable(api_common.BaseApiView):
 
         totals_stats['budget'] = sum(budget.CampaignBudget(campaign).get_total()
                                      for campaign in campaigns)
-        totals_stats['available_budget'] = totals_stats['budget'] - (totals_stats.get('cost') or 0)
+        total_spend = sum(budget.CampaignBudget(campaign).get_spend() \
+                                     for campaign in campaigns)
+        totals_stats['available_budget'] = totals_stats['budget'] - total_spend
 
         ad_groups_settings = models.AdGroupSettings.objects.\
             distinct('ad_group').\
@@ -859,7 +865,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
             row.update(campaign_stat)
 
             row['budget'] = budget.CampaignBudget(campaign).get_total()
-            row['available_budget'] = row['budget'] - (row.get('cost') or 0)
+            row['available_budget'] = row['budget'] - budget.CampaignBudget(campaign).get_spend()
 
             rows.append(row)
 

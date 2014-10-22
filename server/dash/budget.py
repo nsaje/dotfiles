@@ -45,6 +45,17 @@ class GlobalBudget(CompositeBudget):
             total_budget[row['campaign__account']] += float(row['total'])
         return total_budget
 
+    def get_spend_by_account(self):
+        start_date = datetime.date(datetime.MINYEAR, 1, 1)
+        end_date = datetime.datetime.utcnow().date()
+        rs = reports.api.query(
+            start_date=start_date,
+            end_date=end_date,
+            breakdown=['account']
+        )
+        result = {r['account']:(r.get('cost') or 0) for r in rs}
+        return result
+
 
 class AccountBudget(CompositeBudget):
 
