@@ -345,11 +345,11 @@ def has_complete_postclick_metrics_ad_groups(start_date, end_date, ad_groups):
 
 
 def row_has_traffic_data(row):
-    return any(bool(row.get(field)) for field in TRAFFIC_FIELDS)
+    return any(row.get(field) is not None for field in TRAFFIC_FIELDS)
 
 
 def row_has_postclick_data(row):
-    return any(bool(row.get(field)) for field in POSTCLICK_FIELDS)
+    return any(row.get(field) is not None for field in POSTCLICK_FIELDS)
 
 
 def _get_ad_group_ids_with_postclick_data(key, objects):
