@@ -102,5 +102,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
         }
     });
 
-    $scope.getSettings($state.params.id);
+    if (!$scope.adGroup.archived) {
+        $scope.getSettings($state.params.id);
+    }
 }]);

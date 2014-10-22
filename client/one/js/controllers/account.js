@@ -6,7 +6,8 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) 
         return [
             {heading: 'Campaigns', route: 'main.accounts.campaigns', active: true, hidden: !$scope.hasPermission('zemauth.account_campaigns_view') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.account && $scope.account.archived), internal: $scope.isPermissionInternal('zemauth.account_campaigns_view')},
             {heading: 'Media sources', route: 'main.accounts.sources', active: false, hidden: !$scope.hasPermission('zemauth.account_sources_view') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.account && $scope.account.archived), internal: $scope.isPermissionInternal('zemauth.account_sources_view')},
-            {heading: 'Agency', route: 'main.accounts.agency', active: false, hidden: !$scope.hasPermission('zemauth.account_agency_view'), internal: $scope.isPermissionInternal('zemauth.account_agency_view')}
+            {heading: 'Agency', route: 'main.accounts.agency', active: false, hidden: !$scope.hasPermission('zemauth.account_agency_view'), internal: $scope.isPermissionInternal('zemauth.account_agency_view')},
+            {heading: 'Settings', route: 'main.accounts.settings', active: false, hidden: $scope.hasPermission('zemauth.account_agency_view') || !$scope.hasPermission('zemauth.view_archived_entities') || !$scope.account || !$scope.account.archived, internal: false}
         ];
     };
     $scope.setActiveTab = function () {
@@ -48,8 +49,12 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) 
     $scope.tabs = $scope.getTabs();
     $scope.setActiveTab();
 
-    if ($scope.account && $scope.account.archived && !$state.is('main.accounts.agency')) {
-        $state.go('main.accounts.agency', {id: $scope.account.id});
+    if ($scope.hasPermission('zemauth.view_archived_entities') && $scope.account && $scope.account.archived) {
+        if ($scope.hasPermission('zemauth.account_agency_view')) {
+            $state.go('main.accounts.agency', {id: $scope.account.id});
+        } else {
+            $state.go('main.accounts.settings', {id: $scope.account.id});
+        }
     }
 
     $scope.$watch('account.archived', function (newValue, oldValue) {

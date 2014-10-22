@@ -5,7 +5,7 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
         return [
             {heading: 'Content Ads', route: 'main.adGroups.ads', active: true, hidden: ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived)},
             {heading: 'Media Sources', route: 'main.adGroups.sources', active: false, hidden: ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived)},
-            {heading: 'Settings', route: 'main.adGroups.settings', active: false, hidden: !$scope.hasPermission('dash.settings_view') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived)},
+            {heading: 'Settings', route: 'main.adGroups.settings', active: false, hidden: (!$scope.hasPermission('dash.settings_view') || ($scope.hasPermission('zemauth.ad_group_agency_tab_view') && $scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived)) && (!$scope.hasPermission('zemauth.view_archived_entities') || $scope.hasPermission('zemauth.ad_group_agency_tab_view') || !$scope.adGroup || !$scope.adGroup.archived)},
             {heading: 'Agency', route: 'main.adGroups.agency', active: false, hidden: !$scope.hasPermission('zemauth.ad_group_agency_tab_view'), internal: $scope.isPermissionInternal('zemauth.ad_group_agency_tab_view')}
         ];
     };
@@ -86,8 +86,12 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
     $scope.tabs = $scope.getTabs();
     $scope.setActiveTab();
 
-    if ($scope.adGroup && $scope.adGroup.archived && !$state.is('main.adGroups.agency')) {
-        $state.go('main.adGroups.agency', {id: $scope.adGroup.id});
+    if ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived) {
+        if ($scope.hasPermission('zemauth.ad_group_agency_tab_view')) {
+            $state.go('main.adGroups.agency', {id: $scope.adGroup.id});
+        } else {
+            $state.go('main.adGroups.settings', {id: $scope.adGroup.id});
+        }
     }
 
     $scope.updateBreadcrumbAndTitle();
