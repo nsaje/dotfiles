@@ -5,7 +5,7 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
         return [
             {heading: 'Content Ads', route: 'main.adGroups.ads', active: true, hidden: ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived)},
             {heading: 'Media Sources', route: 'main.adGroups.sources', active: false, hidden: ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived)},
-            {heading: 'Settings', route: 'main.adGroups.settings', active: false, hidden: !$scope.hasPermission('dash.settings_view') && !($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived)},
+            {heading: 'Settings', route: 'main.adGroups.settings', active: false, hidden: (!$scope.hasPermission('dash.settings_view') || ($scope.hasPermission('zemauth.ad_group_agency_tab_view') && $scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived)) && (!$scope.hasPermission('zemauth.view_archived_entities') || $scope.hasPermission('zemauth.ad_group_agency_tab_view') || !$scope.adGroup || !$scope.adGroup.archived)},
             {heading: 'Agency', route: 'main.adGroups.agency', active: false, hidden: !$scope.hasPermission('zemauth.ad_group_agency_tab_view'), internal: $scope.isPermissionInternal('zemauth.ad_group_agency_tab_view')}
         ];
     };
