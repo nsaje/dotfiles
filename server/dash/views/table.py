@@ -575,7 +575,13 @@ class AccountsAccountsTable(api_common.BaseApiView):
             rows.append(row)
 
         if order:
-            rows = sort_results(rows, [order])
+            if 'status' in order:
+                archived_order = 'archived'
+                if order.startswith('-'):
+                    archived_order = '-' + archived_order
+                rows = sort_results(rows, [archived_order, order])
+            else:
+                rows = sort_results(rows, [order])
 
         return rows
 
@@ -743,6 +749,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
                 continue
 
             row['state'] = state
+
             if has_view_archived_permission:
                 row['archived'] = archived
 
@@ -757,7 +764,13 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             rows.append(row)
 
         if order:
-            rows = sort_results(rows, [order])
+            if 'state' in order:
+                archived_order = 'archived'
+                if order.startswith('-'):
+                    archived_order = '-' + archived_order
+                rows = sort_results(rows, [archived_order, order])
+            else:
+                rows = sort_results(rows, [order])
 
         return rows
 
@@ -898,6 +911,12 @@ class AccountCampaignsTable(api_common.BaseApiView):
             rows.append(row)
 
         if order:
-            rows = sort_results(rows, [order])
+            if 'state' in order:
+                archived_order = 'archived'
+                if order.startswith('-'):
+                    archived_order = '-' + archived_order
+                rows = sort_results(rows, [archived_order, order])
+            else:
+                rows = sort_results(rows, [order])
 
         return rows
