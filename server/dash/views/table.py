@@ -557,10 +557,14 @@ class AccountsAccountsTable(api_common.BaseApiView):
                 continue
 
             state = account_state.get(aid, constants.AdGroupSettingsState.INACTIVE)
-            row['status'] = state
 
             if has_view_archived_permission:
+                if archived:
+                    state = constants.AdGroupSettingsState.ARCHIVED
+
                 row['archived'] = archived
+
+            row['status'] = state
 
             row['last_sync'] = last_actions.get(aid)
             if row['last_sync']:
@@ -742,9 +746,13 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
                     reports.api.row_has_postclick_data(ad_group_data)):
                 continue
 
-            row['state'] = state
             if has_view_archived_permission:
+                if archived:
+                    state = constants.AdGroupSettingsState.ARCHIVED
+
                 row['archived'] = archived
+
+            row['state'] = state
 
             row.update(ad_group_data)
 
@@ -879,10 +887,12 @@ class AccountCampaignsTable(api_common.BaseApiView):
                     state = constants.AdGroupSettingsState.ACTIVE
                     break
 
-            row['state'] = state
-
             if has_view_archived_permission:
+                if archived:
+                    state = constants.AdGroupSettingsState.ARCHIVED
                 row['archived'] = archived
+
+            row['state'] = state
 
             last_sync = last_actions.get(campaign.pk)
             if last_sync:

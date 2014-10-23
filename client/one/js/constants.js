@@ -1,7 +1,8 @@
 var constants = {
     adGroupSettingsState: {
         ACTIVE: 1,
-        INACTIVE: 2
+        INACTIVE: 2,
+        ARCHIVED: 3
     },
     adTargetDevice: {
         DESKTOP: 'desktop',

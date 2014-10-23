@@ -1301,8 +1301,14 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
     function AccountAccountsTable() {
         function convertFromApi(row) {
-            row.status_label = row.status === constants.adGroupSettingsState.ACTIVE ? 'Active' : 'Paused';
- 
+            if (row.status === constants.adGroupSettingsState.ACTIVE) {
+                row.status_label = 'Active';
+            } else if (row.status === constants.adGroupSettingsState.ARCHIVED) {
+                row.status_label = 'Archived';
+            } else {
+                row.status_label = 'Paused';
+            }
+
             return row;
         }
 

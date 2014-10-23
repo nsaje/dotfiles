@@ -296,7 +296,14 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                         state: $scope.getDefaultAdGroupState(),
                         id: x.ad_group
                     };
-                    x.state = x.state === constants.adGroupSettingsState.ACTIVE ? 'Active' : 'Paused';
+
+                    if (x.state === constants.adGroupSettingsState.ACTIVE) {
+                        x.state = 'Active';
+                    } else if (x.state === constants.adGroupSettingsState.ARCHIVED) {
+                        x.state = 'Archived';
+                    } else {
+                        x.state = 'Paused';
+                    }
 
                     return x;
                 });
