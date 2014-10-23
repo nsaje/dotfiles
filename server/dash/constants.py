@@ -5,19 +5,11 @@ from utils.constant_base import ConstantBase
 class AdGroupSettingsState(ConstantBase):
     ACTIVE = 1
     INACTIVE = 2
-    ARCHIVED = 3
 
     _VALUES = {
         ACTIVE: 'Enabled',
-        INACTIVE: 'Paused',
-        ARCHIVED: 'Archived'
+        INACTIVE: 'Paused'
     }
-
-    @classmethod
-    def get_all(cls):
-        # Archived not included because it should not validate on ad group settings state,
-        # it's intended to be manually set when returning response to the UI
-        return [cls.ACTIVE, cls.INACTIVE]
 
 
 class AdGroupSourceSettingsState(ConstantBase):

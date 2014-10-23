@@ -557,14 +557,10 @@ class AccountsAccountsTable(api_common.BaseApiView):
                 continue
 
             state = account_state.get(aid, constants.AdGroupSettingsState.INACTIVE)
+            row['status'] = state
 
             if has_view_archived_permission:
-                if archived:
-                    state = constants.AdGroupSettingsState.ARCHIVED
-
                 row['archived'] = archived
-
-            row['status'] = state
 
             row['last_sync'] = last_actions.get(aid)
             if row['last_sync']:
@@ -579,7 +575,13 @@ class AccountsAccountsTable(api_common.BaseApiView):
             rows.append(row)
 
         if order:
-            rows = sort_results(rows, [order])
+            if 'status' in order:
+                archived_order = 'archived'
+                if order.startswith('-'):
+                    archived_order = '-' + archived_order
+                rows = sort_results(rows, [archived_order, order])
+            else:
+                rows = sort_results(rows, [order])
 
         return rows
 
@@ -746,13 +748,10 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
                     reports.api.row_has_postclick_data(ad_group_data)):
                 continue
 
-            if has_view_archived_permission:
-                if archived:
-                    state = constants.AdGroupSettingsState.ARCHIVED
-
-                row['archived'] = archived
-
             row['state'] = state
+
+            if has_view_archived_permission:
+                row['archived'] = archived
 
             row.update(ad_group_data)
 
@@ -765,7 +764,13 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             rows.append(row)
 
         if order:
-            rows = sort_results(rows, [order])
+            if 'state' in order:
+                archived_order = 'archived'
+                if order.startswith('-'):
+                    archived_order = '-' + archived_order
+                rows = sort_results(rows, [archived_order, order])
+            else:
+                rows = sort_results(rows, [order])
 
         return rows
 
@@ -887,12 +892,10 @@ class AccountCampaignsTable(api_common.BaseApiView):
                     state = constants.AdGroupSettingsState.ACTIVE
                     break
 
-            if has_view_archived_permission:
-                if archived:
-                    state = constants.AdGroupSettingsState.ARCHIVED
-                row['archived'] = archived
-
             row['state'] = state
+
+            if has_view_archived_permission:
+                row['archived'] = archived
 
             last_sync = last_actions.get(campaign.pk)
             if last_sync:
@@ -908,6 +911,12 @@ class AccountCampaignsTable(api_common.BaseApiView):
             rows.append(row)
 
         if order:
-            rows = sort_results(rows, [order])
+            if 'state' in order:
+                archived_order = 'archived'
+                if order.startswith('-'):
+                    archived_order = '-' + archived_order
+                rows = sort_results(rows, [archived_order, order])
+            else:
+                rows = sort_results(rows, [order])
 
         return rows

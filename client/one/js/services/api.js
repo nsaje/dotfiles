@@ -1301,10 +1301,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
     function AccountAccountsTable() {
         function convertFromApi(row) {
-            if (row.status === constants.adGroupSettingsState.ACTIVE) {
-                row.status_label = 'Active';
-            } else if (row.status === constants.adGroupSettingsState.ARCHIVED) {
+            if (row.archived) {
                 row.status_label = 'Archived';
+            } else if (row.status === constants.adGroupSettingsState.ACTIVE) {
+                row.status_label = 'Active';
             } else {
                 row.status_label = 'Paused';
             }

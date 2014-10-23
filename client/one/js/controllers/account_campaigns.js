@@ -281,10 +281,10 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
                         id: x.campaign
                     };
 
-                    if (x.state === constants.adGroupSettingsState.ACTIVE) {
-                        x.state = 'Active';
-                    } else if (x.state === constants.adGroupSettingsState.ARCHIVED) {
+                    if (x.archived) {
                         x.state = 'Archived';
+                    } else if (x.state === constants.adGroupSettingsState.ACTIVE) {
+                        x.state = 'Active';
                     } else {
                         x.state = 'Paused';
                     }
