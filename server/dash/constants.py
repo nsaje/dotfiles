@@ -15,6 +15,8 @@ class AdGroupSettingsState(ConstantBase):
 
     @classmethod
     def get_all(cls):
+        # Archived not included because it should not validate on ad group settings state,
+        # it's intended to be manually set when returning response to the UI
         return [cls.ACTIVE, cls.INACTIVE]
 
 
