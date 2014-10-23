@@ -80,5 +80,5 @@ USE_S3 = False
 # adgroup-level reports aggregations
 QUERY_AGGREGATE_REPORTS=False
 
-# demo
+# email of the demo user
 DEMO_USER_EMAIL = ''

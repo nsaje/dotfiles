@@ -32,7 +32,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
             article_stats = ArticleStats.objects.get(**dimensions)
             for metric, value in row.items():
                 if metric in TRAFFIC_METRICS:
-                    article_stats.__setattr__(metric, article_stats.__getattribute__(metric) + value)
+                    setattr(article_stats, metric, getattr(article_stats, metric) + value)
         except ArticleStats.DoesNotExist:
             fields = copy.copy(dimensions)
             fields.update(row)
@@ -63,7 +63,7 @@ def stats_update_adgroup_postclick(datetime, ad_group, rows):
 
     # save the data
     for row in rows:
-        dimensions=dict(
+        dimensions = dict(
             datetime=datetime,
             article=row['article'],
             ad_group=ad_group,
@@ -73,7 +73,7 @@ def stats_update_adgroup_postclick(datetime, ad_group, rows):
             article_stats = ArticleStats.objects.get(**dimensions)
             for metric, value in row.items():
                 if metric in POSTCLICK_METRICS:
-                    article_stats.__setattr__(metric, article_stats.__getattribute__(metric) + value)
+                    setattr(article_stats, metric, getattr(article_stats, metric) + value)
         except ArticleStats.DoesNotExist:
             fields = copy.copy(dimensions)
             fields.update(row)
@@ -105,7 +105,7 @@ def stats_update_adgroup_all(datetime, ad_group, rows):
 
     # save the data
     for row in rows:
-        dimensions=dict(
+        dimensions = dict(
             datetime=datetime,
             article=row['article'],
             ad_group=ad_group,
@@ -115,7 +115,7 @@ def stats_update_adgroup_all(datetime, ad_group, rows):
             article_stats = ArticleStats.objects.get(**dimensions)
             for metric, value in row.items():
                 if metric in TRAFFIC_METRICS or metric in POSTCLICK_METRICS:
-                    article_stats.__setattr__(metric, article_stats.__getattribute__(metric) + value)
+                    setattr(article_stats, metric, getattr(article_stats, metric) + value)
         except ArticleStats.DoesNotExist:
             fields = copy.copy(dimensions)
             fields.update(row)
@@ -169,7 +169,7 @@ def goals_update_adgroup(datetime, ad_group, rows):
             conv_stats = GoalConversionStats.objects.get(**dimensions)
             for metric, value in row.items():
                 if metric in CONVERSION_METRICS:
-                    conv_stats.__setattr__(metric, conv_stats.__getattribute__(metric) + value)
+                    setattr(conv_stats, metric, getattr(conv_stats, metric) + value)
         except GoalConversionStats.DoesNotExist:
             fields = copy.copy(dimensions)
             fields.update(row)

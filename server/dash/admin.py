@@ -364,6 +364,7 @@ class AdGroupAdmin(admin.ModelAdmin):
         'name',
         'campaign_',
         'account_',
+        'is_demo',
         'created_dt',
         'modified_dt',
         'settings_',
@@ -433,12 +434,26 @@ class AdGroupSourceSettingsAdmin(admin.ModelAdmin):
     )
 
 
-class DemoToRealAdmin(admin.ModelAdmin):
+class DemoAdGroupRealAdGroupAdminForm(forms.ModelForm):
+
+    def clean_demo_ad_group(self):
+        if not self.cleaned_data['demo_ad_group'].is_demo:
+            raise forms.ValidationError('Only adgroups which have is_demo set to True can be chosen as demo ad groups')
+        return self.cleaned_data['demo_ad_group']
+
+    def clean_real_ad_group(self):
+        if self.cleaned_data['real_ad_group'].is_demo:
+            raise forms.ValidationError('Cannot choose an adgroup with is_demo set to True as a real ad group')
+        return self.cleaned_data['real_ad_group']
+
+
+class DemoAdGroupRealAdGroupAdmin(admin.ModelAdmin):
     list_display = (
         'demo_ad_group',
         'real_ad_group',
-        'mult_factor'
+        'multiplication_factor'
     )
+    form = DemoAdGroupRealAdGroupAdminForm
 
 
 admin.site.register(models.Account, AccountAdmin)
@@ -450,4 +465,4 @@ admin.site.register(models.AdGroupSettings, AdGroupSettingsAdmin)
 admin.site.register(models.AdGroupSourceSettings, AdGroupSourceSettingsAdmin)
 admin.site.register(models.SourceCredentials, SourceCredentialsAdmin)
 admin.site.register(models.DefaultSourceSettings, DefaultSourceSettingsAdmin)
-admin.site.register(models.DemoToReal, DemoToRealAdmin)
+admin.site.register(models.DemoAdGroupRealAdGroup, DemoAdGroupRealAdGroupAdmin)

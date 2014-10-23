@@ -11,6 +11,7 @@ from dash import constants
 from utils import encryption_helpers
 from utils import exc
 
+
 class PermissionMixin(object):
     USERS_FIELD = ''
 
@@ -29,34 +30,36 @@ class PermissionMixin(object):
 class UserAuthorizationManager(models.Manager):
     def get_for_user(self, user):
         queryset = super(UserAuthorizationManager, self).get_queryset()
-        
+
         demo_queryset = queryset.model.demo_objects.all()
 
         if user.email == settings.DEMO_USER_EMAIL:
             return demo_queryset
-        
-        if not user.is_superuser:
-            if queryset.model is Account:
-                queryset = queryset.filter(
-                    models.Q(users__id=user.id) |
-                    models.Q(groups__user__id=user.id)
-                ).distinct()
-            elif queryset.model is Campaign:
-                queryset = queryset.filter(
-                    models.Q(users__id=user.id) |
-                    models.Q(groups__user__id=user.id) |
-                    models.Q(account__users__id=user.id) |
-                    models.Q(account__groups__user__id=user.id)
-                ).distinct()
-            else:
-                # AdGroup
-                assert queryset.model is AdGroup
-                queryset = queryset.filter(
-                    models.Q(campaign__users__id=user.id) |
-                    models.Q(campaign__groups__user__id=user.id) |
-                    models.Q(campaign__account__users__id=user.id) |
-                    models.Q(campaign__account__groups__user__id=user.id)
-                ).distinct()
+
+        if user.is_superuser:
+            return queryset.exclude(pk__in=demo_queryset)
+
+        if queryset.model is Account:
+            queryset = queryset.filter(
+                models.Q(users__id=user.id) |
+                models.Q(groups__user__id=user.id)
+            ).distinct()
+        elif queryset.model is Campaign:
+            queryset = queryset.filter(
+                models.Q(users__id=user.id) |
+                models.Q(groups__user__id=user.id) |
+                models.Q(account__users__id=user.id) |
+                models.Q(account__groups__user__id=user.id)
+            ).distinct()
+        else:
+            # AdGroup
+            assert queryset.model is AdGroup
+            queryset = queryset.filter(
+                models.Q(campaign__users__id=user.id) |
+                models.Q(campaign__groups__user__id=user.id) |
+                models.Q(campaign__account__users__id=user.id) |
+                models.Q(campaign__account__groups__user__id=user.id)
+            ).distinct()
 
         return queryset.exclude(pk__in=demo_queryset)
 
@@ -76,7 +79,7 @@ class DemoManager(models.Manager):
         else:
             assert queryset.model is AdGroup
             queryset = queryset.filter(
-                id__in=(d2r.demo_ad_group.id for d2r in DemoToReal.objects.all())
+                id__in=(d2r.demo_ad_group.id for d2r in DemoAdGroupRealAdGroup.objects.all())
             )
         return queryset
 
@@ -482,6 +485,7 @@ class AdGroup(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    is_demo = models.BooleanField(null=False, blank=False, default=False)
 
     objects = UserAuthorizationManager()
     demo_objects = DemoManager()
@@ -804,7 +808,7 @@ class CampaignBudgetSettings(models.Model):
         ordering = ('-created_dt',)
 
 
-class DemoToReal(models.Model):
-    demo_ad_group = models.ForeignKey(AdGroup, on_delete=models.PROTECT, related_name='+')
+class DemoAdGroupRealAdGroup(models.Model):
+    demo_ad_group = models.ForeignKey(AdGroup, unique=True, on_delete=models.PROTECT, related_name='+')
     real_ad_group = models.ForeignKey(AdGroup, on_delete=models.PROTECT, related_name='+')
-    mult_factor = models.IntegerField(null=False, blank=False, default=1)
+    multiplication_factor = models.IntegerField(null=False, blank=False, default=1)
