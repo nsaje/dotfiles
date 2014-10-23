@@ -18,6 +18,14 @@ from utils import exc
 from utils.sort_helper import sort_results
 
 
+def sort_rows_by_order_and_archived(rows, order):
+    archived_order = 'archived'
+    if order.startswith('-'):
+        archived_order = '-' + archived_order
+
+    return sort_results(rows, [archived_order, order])
+
+
 class AllAccountsSourcesTable(object):
     def __init__(self, user, id_):
         self.user = user
@@ -575,11 +583,8 @@ class AccountsAccountsTable(api_common.BaseApiView):
             rows.append(row)
 
         if order:
-            if 'status' in order:
-                archived_order = 'archived'
-                if order.startswith('-'):
-                    archived_order = '-' + archived_order
-                rows = sort_results(rows, [archived_order, order])
+            if 'status' in order and has_view_archived_permission:
+                rows = sort_rows_by_order_and_archived(rows, order)
             else:
                 rows = sort_results(rows, [order])
 
@@ -764,11 +769,8 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             rows.append(row)
 
         if order:
-            if 'state' in order:
-                archived_order = 'archived'
-                if order.startswith('-'):
-                    archived_order = '-' + archived_order
-                rows = sort_results(rows, [archived_order, order])
+            if 'state' in order and has_view_archived_permission:
+                rows = sort_rows_by_order_and_archived(rows, order)
             else:
                 rows = sort_results(rows, [order])
 
@@ -911,11 +913,8 @@ class AccountCampaignsTable(api_common.BaseApiView):
             rows.append(row)
 
         if order:
-            if 'state' in order:
-                archived_order = 'archived'
-                if order.startswith('-'):
-                    archived_order = '-' + archived_order
-                rows = sort_results(rows, [archived_order, order])
+            if 'state' in order and has_view_archived_permission:
+                rows = sort_rows_by_order_and_archived(rows, order)
             else:
                 rows = sort_results(rows, [order])
 
