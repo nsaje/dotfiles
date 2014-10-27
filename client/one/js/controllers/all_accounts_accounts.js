@@ -91,7 +91,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         {
             'name': 'Traffic Acquisition',
             'fields': [
-               'clicks', 'cost', 'cpc', 'budget', 'available_budget'
+               'clicks', 'cost', 'cpc', 'budget', 'available_budget', 'unspent_budget'
             ]
         },
         {
@@ -114,6 +114,22 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
     var initColumns = function () {
         var cols;
+
+        if ($scope.hasPermission('zemauth.unspent_budget_view')) {
+            $scope.columns.splice(2, 0,
+                {
+                    name: 'Unspent Budget',
+                    field: 'unspent_budget',
+                    checked: false,
+                    type: 'currency',
+                    totalRow: true,
+                    help: 'Total budget minus the spend within the date range.',
+                    order: true,
+                    initialOrder: 'desc',
+                    internal: $scope.isPermissionInternal('zemauth.unspent_budget_view')
+                }
+            );
+        }
 
         if ($scope.hasPermission('zemauth.all_accounts_budget_view')) {
             $scope.columns.splice(2, 0,
