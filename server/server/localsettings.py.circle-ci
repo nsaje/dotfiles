@@ -82,3 +82,4 @@ QUERY_AGGREGATE_REPORTS=False
 
 # email of the demo user
 DEMO_USER_EMAIL = ''
+DEMO_USER_PASSWORD = ''

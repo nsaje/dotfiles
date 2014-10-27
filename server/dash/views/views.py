@@ -12,6 +12,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from django.contrib.auth import login, authenticate
+from django.views.decorators.http import require_GET
 
 from dash.views import helpers
 
@@ -110,6 +112,14 @@ class User(api_common.BaseApiView):
             }
 
         return result
+
+
+@login_required
+@require_GET
+def demo_mode(request):
+    demo_user = authenticate(username=settings.DEMO_USER_EMAIL, password=settings.DEMO_USER_PASSWORD)
+    login(request, demo_user)
+    return redirect('index')
 
 
 class NavigationDataView(api_common.BaseApiView):

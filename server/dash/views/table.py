@@ -18,11 +18,43 @@ from utils import exc
 from utils.sort_helper import sort_results
 
 
+def _get_adgroups_for(modelcls, modelobjects):
+    if modelcls is models.Account:
+        return models.AdGroup.objects.filter(campaign__account__in=modelobjects)
+    if modelcls is models.Campaign:
+        return models.AdGroup.objects.filter(campaign__in=modelobjects)
+    assert modelcls is models.AdGroup
+    return modelobjects
+
+
+def _get_active_ad_group_sources(modelcls, modelobjects):
+    all_demo_qs = modelcls.demo_objects.all()
+    demo_objects = filter(lambda x: x in all_demo_qs, modelobjects)
+    normal_objects = filter(lambda x: x not in all_demo_qs, modelobjects)
+
+    demo_adgroups = _get_adgroups_for(modelcls, demo_objects)
+    real_corresponding_adgroups = [x.real_ad_group \
+        for x in models.DemoAdGroupRealAdGroup.objects \
+            .filter(demo_ad_group__in=demo_adgroups)]
+    normal_adgroups = _get_adgroups_for(modelcls, normal_objects)
+    adgroups = list(real_corresponding_adgroups) + list(normal_adgroups)
+
+    _inactive_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(
+        ad_group=adgroups
+    )
+
+    active_ad_group_sources = models.AdGroupSource.objects \
+        .filter(ad_group__in=adgroups) \
+        .exclude(pk__in=_inactive_ad_group_sources)
+
+    return active_ad_group_sources
+
+
 class AllAccountsSourcesTable(object):
     def __init__(self, user, id_):
         self.user = user
         self.accounts = models.Account.objects.get_for_user(user)
-        self.active_ad_group_sources = self._get_active_ad_group_sources()
+        self.active_ad_group_sources = _get_active_ad_group_sources(models.Account, self.accounts)
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return reports.api.has_complete_postclick_metrics_accounts(
@@ -67,41 +99,12 @@ class AllAccountsSourcesTable(object):
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(accounts=self.accounts)
 
-    def _get_active_ad_group_sources(self):
-        demo_accounts = models.Account.demo_objects.all()
-        is_demo = any(acc in demo_accounts for acc in self.accounts)
-        if is_demo:
-            real_ad_groups = []
-            for acc in self.accounts:
-                if acc in demo_accounts:
-                    demo_ad_groups = models.AdGroup.objects.filter(campaign__account=acc)
-                    for ag in demo_ad_groups:
-                        real_ad_groups.append(
-                            models.DemoAdGroupRealAdGroup.objects.get(demo_ad_group=ag).real_ad_group
-                        )
-                else:
-                    real_ad_groups.extend(list(models.AdGroup.objects.filter(campaign__account=acc)))
-            _inactive_ad_group_sources = []
-            for ag in real_ad_groups:
-                _inactive_ad_group_sources.extend(
-                    actionlog.api.get_ad_group_sources_waiting(ad_group=ag)
-                )
-            active_ad_group_sources = models.AdGroupSource.objects.\
-                filter(ad_group__in=real_ad_groups).\
-                exclude(pk__in=_inactive_ad_group_sources)
-        else:
-            _inactive_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(account=self.accounts)
-            active_ad_group_sources = models.AdGroupSource.objects.\
-                filter(ad_group__campaign__account__in=self.accounts).\
-                exclude(pk__in=_inactive_ad_group_sources)
-        return active_ad_group_sources
-
 
 class AccountSourcesTable(object):
     def __init__(self, user, id_):
         self.user = user
         self.account = helpers.get_account(user, id_)
-        self.active_ad_group_sources = self._get_active_ad_group_sources()
+        self.active_ad_group_sources = _get_active_ad_group_sources(models.Account, [self.account])
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return reports.api.has_complete_postclick_metrics_accounts(
@@ -147,36 +150,12 @@ class AccountSourcesTable(object):
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(accounts=[self.account])
 
-    def _get_active_ad_group_sources(self):
-        demo_accounts = models.Account.demo_objects.all()
-        if self.account in demo_accounts:
-            demo_ad_groups = models.AdGroup.objects.filter(campaign__account=self.account)
-            real_ad_groups = []
-            for ag in demo_ad_groups:
-                real_ad_groups.append(
-                    models.DemoAdGroupRealAdGroup.objects.get(demo_ad_group=ag).real_ad_group
-                )
-            _inactive_ad_group_sources = []
-            for ag in real_ad_groups:
-                _inactive_ad_group_sources.extend(
-                    actionlog.api.get_ad_group_sources_waiting(ad_group=ag)
-                )
-            active_ad_group_sources = models.AdGroupSource.objects.\
-                filter(ad_group__in=real_ad_groups).\
-                exclude(pk__in=_inactive_ad_group_sources)
-        else:
-            _inactive_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(account=self.account)
-            active_ad_group_sources = models.AdGroupSource.objects.\
-                filter(ad_group__campaign__account=self.account).\
-                exclude(pk__in=_inactive_ad_group_sources)
-        return active_ad_group_sources
-
 
 class CampaignSourcesTable(object):
     def __init__(self, user, id_):
         self.user = user
         self.campaign = helpers.get_campaign(user, id_)
-        self.active_ad_group_sources = self._get_active_ad_group_sources()
+        self.active_ad_group_sources = _get_active_ad_group_sources(models.Campaign, [self.campaign])
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return reports.api.has_complete_postclick_metrics_campaigns(
@@ -222,36 +201,12 @@ class CampaignSourcesTable(object):
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(campaigns=[self.campaign])
 
-    def _get_active_ad_group_sources(self):
-        demo_campaigns = models.Campaign.demo_objects.all()
-        if self.campaign in demo_campaigns:
-            demo_ad_groups = models.AdGroup.objects.filter(campaign=self.campaign)
-            real_ad_groups = []
-            for ag in demo_ad_groups:
-                real_ad_groups.append(
-                    models.DemoAdGroupRealAdGroup.objects.get(demo_ad_group=ag).real_ad_group
-                )
-            _inactive_ad_group_sources = []
-            for ag in real_ad_groups:
-                _inactive_ad_group_sources.extend(
-                    actionlog.api.get_ad_group_sources_waiting(ad_group=ag)
-                )
-            active_ad_group_sources = models.AdGroupSource.objects.\
-                filter(ad_group__in=real_ad_groups).\
-                exclude(pk__in=_inactive_ad_group_sources)
-        else: 
-            _inactive_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(campaign=self.campaign)
-            active_ad_group_sources = models.AdGroupSource.objects.\
-                filter(ad_group__campaign=self.campaign).\
-                exclude(pk__in=_inactive_ad_group_sources)
-        return active_ad_group_sources
-
 
 class AdGroupSourcesTable(object):
     def __init__(self, user, id_):
         self.user = user
         self.ad_group = helpers.get_ad_group(user, id_)
-        self.active_ad_group_sources = self._get_active_ad_group_sources()
+        self.active_ad_group_sources = _get_active_ad_group_sources(models.AdGroup, [self.ad_group])
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return reports.api.has_complete_postclick_metrics_ad_groups(
@@ -296,20 +251,6 @@ class AdGroupSourcesTable(object):
 
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(ad_groups=[self.ad_group])
-
-    def _get_active_ad_group_sources(self):
-        if self.ad_group in models.AdGroup.demo_objects.all():
-            real_ad_group = models.DemoAdGroupRealAdGroup.objects.get(demo_ad_group=self.ad_group).real_ad_group
-            _inactive_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=real_ad_group)
-            active_ad_group_sources = models.AdGroupSource.objects.\
-                filter(ad_group=real_ad_group).\
-                exclude(pk__in=_inactive_ad_group_sources)
-        else:
-            _inactive_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=self.ad_group)
-            active_ad_group_sources = models.AdGroupSource.objects.\
-                filter(ad_group=self.ad_group).\
-                exclude(pk__in=_inactive_ad_group_sources)
-        return active_ad_group_sources
 
 
 class SourcesTable(api_common.BaseApiView):

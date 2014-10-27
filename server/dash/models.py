@@ -31,14 +31,6 @@ class UserAuthorizationManager(models.Manager):
     def get_for_user(self, user):
         queryset = super(UserAuthorizationManager, self).get_queryset()
 
-        demo_queryset = queryset.model.demo_objects.all()
-
-        if user.email == settings.DEMO_USER_EMAIL:
-            return demo_queryset
-
-        if user.is_superuser:
-            return queryset.exclude(pk__in=demo_queryset)
-
         if queryset.model is Account:
             queryset = queryset.filter(
                 models.Q(users__id=user.id) |
@@ -61,7 +53,7 @@ class UserAuthorizationManager(models.Manager):
                 models.Q(campaign__account__groups__user__id=user.id)
             ).distinct()
 
-        return queryset.exclude(pk__in=demo_queryset)
+        return queryset
 
 
 class DemoManager(models.Manager):
@@ -70,12 +62,12 @@ class DemoManager(models.Manager):
         queryset = super(DemoManager, self).get_queryset()
         if queryset.model is Account:
             queryset = queryset.filter(
-                id__in=(c.account.id for c in Campaign.demo_objects.all())
-            )
+                campaign__adgroup__in=AdGroup.demo_objects.all()
+            ).distinct()
         elif queryset.model is Campaign:
             queryset = queryset.filter(
-                id__in=(ag.campaign.id for ag in AdGroup.demo_objects.all())
-            )
+                adgroup__in=AdGroup.demo_objects.all()
+            ).distinct()
         else:
             assert queryset.model is AdGroup
             queryset = queryset.filter(

@@ -3,6 +3,7 @@ import sys
 import traceback
 import urlparse
 import time
+import collections
 
 from datetime import datetime
 
@@ -106,11 +107,20 @@ def get_ad_group_sources_waiting(**kwargs):
     constraints = {}
 
     if 'ad_group' in kwargs:
-        constraints['ad_group_source__ad_group'] = kwargs['ad_group']
+        key = 'ad_group_source__ad_group'
+        if isinstance(kwargs['ad_group'], collections.Sequence):
+            key += '__in'
+        constraints[key] = kwargs['ad_group']
     if 'campaign' in kwargs:
-        constraints['ad_group_source__ad_group__campaign'] = kwargs['campaign']
+        key = 'ad_group_source__ad_group__campaign'
+        if isinstance(kwargs['campaign'], collections.Sequence):
+            key += '__in'
+        constraints[key] = kwargs['campaign']
     if 'account' in kwargs:
-        constraints['ad_group_source__ad_group__campaign__account'] = kwargs['account']
+        key = 'ad_group_source__ad_group__campaign__account'
+        if isinstance(kwargs['account'], collections.Sequence):
+            key += '__in'
+        constraints[key] = kwargs['account']
 
     actions = models.ActionLog.objects.filter(
         action=constants.Action.CREATE_CAMPAIGN,
