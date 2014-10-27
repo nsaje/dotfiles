@@ -19,29 +19,29 @@ logger = logging.getLogger(__name__)
 @transaction.atomic
 def mailgun_gareps(request):
     if request.method != 'POST':
-        logger.error('ERROR: only POST is supported')
+        logger.warning('ERROR: only POST is supported')
         return HttpResponse(status=406)
     if not MailGunRequestAuth(request).is_authorised():
-        logger.error('ERROR: authenticity of request could not be verified')
+        logger.warning('ERROR: authenticity of request could not be verified')
         statsd_incr('convapi.invalid_request_signature')
         return HttpResponse(status=406)
 
     recipient = request.POST['recipient']
 
     if not GASourceAuth(recipient).is_authorised():
-        logger.error('ERROR: sender is not authorised')
+        logger.warning('ERROR: sender is not authorised')
         statsd_incr('convapi.invalid_email_sender')
         return HttpResponse(status=406)
 
     statsd_incr('convapi.accepted_emails')
 
     if int(request.POST.get('attachment-count', 0)) != 1:
-        logger.error('ERROR: single attachment expected, several received')
+        logger.warning('ERROR: single attachment expected, several received')
         return HttpResponse(status=406)
 
     attachment = request.FILES['attachment-1']
     if attachment.content_type != 'text/csv':
-        logger.error('ERROR: content type is not CSV')
+        logger.warning('ERROR: content type is not CSV')
         return HttpResponse(status=406)
 
     filename = request.FILES['attachment-1'].name
@@ -50,16 +50,16 @@ def mailgun_gareps(request):
     try:
         csvreport = CsvReport(content)
     except exc.CsvParseException as e:
-        logger.error(e.message)
+        logger.warning(e.message)
         return HttpResponse(status=406)
 
     store_to_s3(csvreport.get_date(), filename, content)
 
     if not csvreport.is_ad_group_specified():
-        logger.error('ERROR: not all landing page urls have an ad_group specified')
+        logger.warning('ERROR: not all landing page urls have an ad_group specified')
 
     if not csvreport.is_media_source_specified():
-        logger.error('ERROR: not all landing page urls have a media source specified')
+        logger.warning('ERROR: not all landing page urls have a media source specified')
 
     TriggerReportAggregateThread(
         csvreport=csvreport,

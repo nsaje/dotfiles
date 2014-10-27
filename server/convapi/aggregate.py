@@ -95,7 +95,7 @@ class ReportEmail(object):
                 source_resolve_lookup[url.source_param] = resolve_source(url.source_param)
             source = source_resolve_lookup[url.source_param]
             if source is None:
-                logger.error('ERROR: Cannot resolve source for (ad_group=%s, sender=%s,\
+                logger.warning('ERROR: Cannot resolve source for (ad_group=%s, sender=%s,\
 recipient=%s, subject=%s, maildate=%s, \
 landing_page_url=%s',
                     url.ad_group_id,
@@ -111,7 +111,7 @@ landing_page_url=%s',
                 article_resolve_lookup[url.raw_url] = resolve_article(url.clean_url, url.ad_group_id, self.report.get_date(), source)
             article = article_resolve_lookup[url.raw_url]
             if article is None:
-                logger.error('ERROR: Cannot resolve article for (ad_group=%s, sender=%s,\
+                logger.warning('ERROR: Cannot resolve article for (ad_group=%s, sender=%s,\
 recipient=%s, subject=%s, maildate=%s, \
 landing_page_url=%s',
                     url.ad_group_id,
@@ -210,7 +210,7 @@ bounced_visits=%s, pageviews=%s, duration=%s',
         ad_group_id = LandingPageUrl(entries[0]['Landing Page']).ad_group_id
 
         if ad_group_id is None:
-            logger.error('Cannot handle url with no ad_group_id specified %s', entries[0]['Landing Page'])
+            logger.warning('Cannot handle url with no ad_group_id specified %s', entries[0]['Landing Page'])
             return
 
         RawPostclickStats.objects.filter(datetime=dt, ad_group_id=ad_group_id).delete()
