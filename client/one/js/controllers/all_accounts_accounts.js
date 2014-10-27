@@ -91,14 +91,14 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         {
             'name': 'Traffic Acquisition',
             'fields': [
-               'clicks', 'cost', 'cpc', 'budget', 'available_budget'
+               'clicks', 'cost', 'cpc', 'budget', 'available_budget', 'unspent_budget'
             ]
         },
         {
             'name': 'Audience Metrics',
             'fields': [
                 'visits', 'pageviews', 'percent_new_users',
-                'bounce_rate', 'pv_per_visit', 'avg_tos', 
+                'bounce_rate', 'pv_per_visit', 'avg_tos',
                 'click_discrepancy'
             ]
         },
@@ -114,6 +114,22 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
     var initColumns = function () {
         var cols;
+
+        if ($scope.hasPermission('zemauth.unspent_budget_view')) {
+            $scope.columns.splice(2, 0,
+                {
+                    name: 'Unspent Budget',
+                    field: 'unspent_budget',
+                    checked: false,
+                    type: 'currency',
+                    totalRow: true,
+                    help: 'Total budget minus the spend within the date range.',
+                    order: true,
+                    initialOrder: 'desc',
+                    internal: $scope.isPermissionInternal('zemauth.unspent_budget_view')
+                }
+            );
+        }
 
         if ($scope.hasPermission('zemauth.all_accounts_budget_view')) {
             $scope.columns.splice(2, 0,
@@ -138,8 +154,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
                     order: true,
                     initialOrder: 'desc',
                     internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view')
-                }
-            )
+                });
         }
 
         if ($scope.hasPermission('zemauth.postclick_metrics')) {
@@ -216,7 +231,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
-        api.accountAccountsTable.get($scope.pagination.currentPage, $scope.pagination.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
+        api.accountAccountsTable.get($scope.pagination.currentPage, $scope.pagination.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order, $scope.showArchived).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
@@ -279,6 +294,12 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             getDailyStats();
             $location.search('chart_metric2', $scope.chartMetric2);
             localStorageService.set('allAccountsAccounts.chartMetric2', $scope.chartMetric2);
+        }
+    });
+
+    $scope.$watch('showArchived', function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            getTableData();
         }
     });
 
@@ -387,7 +408,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         if (size !== undefined && $scope.pagination.size !== size) {
             $scope.pagination.size = size;
         }
-        
+
         $scope.loadPage();
         getDailyStats();
         initColumns();

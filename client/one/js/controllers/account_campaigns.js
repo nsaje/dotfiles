@@ -163,7 +163,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             'name': 'Traffic Acquisition',
             'fields': [
                'cost', 'cpc', 'clicks', 'impressions', 'ctr',
-               'budget', 'available_budget'
+               'budget', 'available_budget', 'unspent_budget'
             ]
         },
         {
@@ -261,7 +261,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     var getTableData = function () {
         $scope.getTableDataRequestInProgress = true;
 
-        api.accountCampaignsTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
+        api.accountCampaignsTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order, $scope.showArchived).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totalRow = data.totals;
@@ -280,7 +280,14 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
                         state: $scope.getDefaultCampaignState(),
                         id: x.campaign
                     };
-                    x.state = x.state === constants.adGroupSettingsState.ACTIVE ? 'Active' : 'Paused';
+
+                    if (x.archived) {
+                        x.state = 'Archived';
+                    } else if (x.state === constants.adGroupSettingsState.ACTIVE) {
+                        x.state = 'Active';
+                    } else {
+                        x.state = 'Paused';
+                    }
 
                     return x;
                 });
@@ -350,6 +357,22 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
 
     var initColumns = function () {
         var cols;
+
+        if ($scope.hasPermission('zemauth.unspent_budget_view')) {
+            $scope.columns.splice(3, 0,
+                {
+                    name: 'Unspent Budget',
+                    field: 'unspent_budget',
+                    checked: false,
+                    type: 'currency',
+                    totalRow: true,
+                    help: 'Total budget minus the spend within the date range.',
+                    order: true,
+                    initialOrder: 'desc',
+                    internal: $scope.isPermissionInternal('zemauth.unspent_budget_view')
+                }
+            );
+        }
 
         if ($scope.hasPermission('zemauth.all_accounts_budget_view')) {
             $scope.columns.splice(3, 0,
@@ -461,6 +484,12 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
 
         getTableData();
         getDailyStats();
+    });
+
+    $scope.$watch('showArchived', function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            getTableData();
+        }
     });
 
     $scope.downloadReport = function() {

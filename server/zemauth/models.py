@@ -113,6 +113,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('all_accounts_budget_view', 'Can view all accounts budget.'),
             ('archive_restore_entity', 'Can archive or restore an entity.'),
             ('view_archived_entities', 'Can view archived entities.'),
+            ('unspent_budget_view', 'Can view unspent budget.'),
+            ('switch_to_demo_mode', 'Can switch to demo mode.'),
         )
 
     def get_full_name(self):

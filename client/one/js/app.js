@@ -21,6 +21,9 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
     $urlRouterProvider.when('/signout', ['$location', function ($location) {
         window.location = $location.absUrl();
     }]);
+    $urlRouterProvider.when('/demo_mode', ['$location', function ($location) {
+        window.location = $location.absUrl();
+    }]);
     $urlRouterProvider.otherwise('/');
     $urlRouterProvider.rule(function ($injector, $location) {
         var path = $location.url();
@@ -91,6 +94,10 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/agency',
             templateUrl: '/partials/account_agency.html',
             controller: 'AccountAgencyCtrl'
+        })
+        .state('main.accounts.settings', {
+            url: '/settings',
+            templateUrl: '/partials/account_settings.html',
         });
 
     $stateProvider
@@ -118,6 +125,10 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/budget',
             templateUrl: '/partials/campaign_budget.html',
             controller: 'CampaignBudgetCtrl'
+        })
+        .state('main.campaigns.settings', {
+            url: '/settings',
+            templateUrl: '/partials/campaign_settings.html',
         });
 
 

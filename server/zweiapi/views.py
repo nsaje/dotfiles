@@ -67,11 +67,11 @@ def zwei_callback(request, action_id):
 
 def _get_error_message(data):
     message = []
-    if data['error'].get('error'):
+    if data.get('error', {}).get('error'):
         message.append(data['error']['error'])
-    if data['error'].get('message'):
+    if data.get('error', {}).get('message'):
         message.append(data['error']['message'])
-    if data['error'].get('traceback'):
+    if data.get('error', {}).get('traceback'):
         message.append(data['error']['traceback'])
     if data.get('message'):
         message.append(data['message'])

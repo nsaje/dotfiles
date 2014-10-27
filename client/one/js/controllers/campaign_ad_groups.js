@@ -277,7 +277,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     var getTableData = function () {
         $scope.getTableDataRequestInProgress = true;
 
-        api.campaignAdGroupsTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
+        api.campaignAdGroupsTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order, $scope.showArchived).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totalRow = data.totals;
@@ -296,7 +296,14 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                         state: $scope.getDefaultAdGroupState(),
                         id: x.ad_group
                     };
-                    x.state = x.state === constants.adGroupSettingsState.ACTIVE ? 'Active' : 'Paused';
+
+                    if (x.archived) {
+                        x.state = 'Archived';
+                    } else if (x.state === constants.adGroupSettingsState.ACTIVE) {
+                        x.state = 'Active';
+                    } else {
+                        x.state = 'Paused';
+                    }
 
                     return x;
                 });
@@ -431,6 +438,12 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         getDailyStats();
         getTableData();
+    });
+
+    $scope.$watch('showArchived', function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            getTableData();
+        }
     });
 
     $scope.downloadReport = function() {
