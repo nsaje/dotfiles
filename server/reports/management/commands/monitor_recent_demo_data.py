@@ -19,7 +19,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if options.get('start_date') is None or options.get('end_date') is None:
             dates = last_n_days(3)
-            start_date, end_date = dates[0], dates[-1]
+            start_date, end_date = dates[-1], dates[0]
         else:
             start_date = dateutil.parser.parse(options['start_date']).date()
             end_date = dateutil.parser.parse(options['end_date']).date()
