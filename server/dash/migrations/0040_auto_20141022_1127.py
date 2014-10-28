@@ -5,6 +5,8 @@ from django.db import models, migrations
 import django.db.models.deletion
 
 
+print 'migrate DemoAdGroupRealAdGroup'
+
 class Migration(migrations.Migration):
 
     dependencies = [
