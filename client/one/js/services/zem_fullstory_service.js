@@ -3,7 +3,7 @@
 
 oneApp.factory('zemFullStoryService', function() {
     function identify(user) {
-        FS.identify(user.id, {email: user.email});
+        FS.identify(user.email, {email: user.email});
     }
 
     return {
