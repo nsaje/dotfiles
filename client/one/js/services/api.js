@@ -12,9 +12,11 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             $http.get(url, config).
                 success(function (data, status) {
+                    var resource;
                     if (data && data.data) {
-                        deferred.resolve(data.data);
+                        resource = data.data;
                     }
+                    deferred.resolve(resource || []);
                 }).
                 error(function(data, status, headers, config) {
                     deferred.reject(data);

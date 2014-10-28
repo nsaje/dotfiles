@@ -196,7 +196,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
 
     $scope.setBreadcrumbAndTitle = function (breadcrumb, title) {
         $scope.breadcrumb = breadcrumb;
-        if ($scope.canAccessAllAccounts()) {
+        if ($scope.canAccessAllAccounts() && $scope.accounts.length) {
             $scope.breadcrumb.unshift({name: 'All accounts', state: $scope.getDefaultAllAccountsState(), disabled: !$scope.canAccessAllAccounts()});
         }
 

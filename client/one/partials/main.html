@@ -67,7 +67,7 @@
             <div ui-view></div>
         </div>
 
-        <div ng-show="!!accounts && !accounts.length" ng-include src="'/partials/403.html'"></div>
+        <div ng-show="!accounts.length" ng-include src="'/partials/403.html'"></div>
 
     </div>
 
