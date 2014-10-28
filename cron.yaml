@@ -17,4 +17,4 @@ cron:
   job: '30 * * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py monitor_recent_demo_data > /dev/null 2>&1'
 
 - hosts: [knot01.zemanta.com]
-  job: '40 * * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py refresh_demo_stats > /dev/null 2>&1'
+  job: '0 6 * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py refresh_demo_stats > /dev/null 2>&1'

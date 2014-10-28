@@ -23,7 +23,7 @@ class Command(BaseCommand):
             start_date, end_date = selected_date, selected_date
         else:
             dates = last_n_days(3)
-            start_date, end_date = dates[0], dates[-1]
+            start_date, end_date = dates[-1], dates[0]
 
         logger.info('Refreshing demo stats for dates %s to %s' % (start_date, end_date))
 
