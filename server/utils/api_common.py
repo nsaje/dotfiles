@@ -3,6 +3,7 @@ import logging
 
 from django.http import HttpResponse
 from django.views.generic import View
+from django.conf import settings
 
 from utils import json_helper
 import exc
@@ -22,14 +23,24 @@ class BaseApiView(View):
 
         return msg
 
-    def create_api_response(self, data=None, success=True, status_code=200, convert_datetimes=True):
+    def create_api_response(
+            self,
+            data=None,
+            success=True,
+            status_code=200,
+            convert_datetimes_tz=settings.DEFAULT_TIME_ZONE):
+
         body = {'success': success}
 
         if data:
             body['data'] = data
 
         response = HttpResponse(
-            content=json.dumps(body, cls=json_helper.JSONEncoder, convert_datetimes=convert_datetimes),
+            content=json.dumps(
+                body,
+                cls=json_helper.JSONEncoder,
+                convert_datetimes_tz=convert_datetimes_tz
+            ),
             content_type='application/json',
             status=status_code
         )

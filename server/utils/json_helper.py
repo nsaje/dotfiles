@@ -4,24 +4,22 @@ import decimal
 import json
 import pytz
 
-from django.conf import settings
-
 
 class JSONEncoder(json.JSONEncoder):
-    def __init__(self, convert_datetimes=True, **kwargs):
-        self.convert_datetimes = convert_datetimes
+    def __init__(self, convert_datetimes_tz=None, **kwargs):
+        self.convert_datetimes_tz = convert_datetimes_tz
         super(JSONEncoder, self).__init__(**kwargs)
 
     def default(self, obj):
         if isinstance(obj, datetime.datetime):
-            if not self.convert_datetimes:
+            if self.convert_datetimes_tz is None:
                 return obj.isoformat()
 
             if obj.tzinfo is None:
                 # naive datetimes are treated as UTC
                 obj = pytz.utc.localize(obj)
 
-            return obj.astimezone(pytz.timezone(settings.TIMEZONE)).\
+            return obj.astimezone(pytz.timezone(self.convert_datetimes_tz)).\
                 replace(tzinfo=None).isoformat()
 
         elif isinstance(obj, (datetime.date, datetime.time)):

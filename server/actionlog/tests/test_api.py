@@ -126,7 +126,6 @@ class ActionLogApiTestCase(TestCase):
 
     @patch('actionlog.models.datetime', MockDateTime)
     def test_fetch_ad_group_status(self):
-
         utcnow = datetime.datetime.utcnow()
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
 
@@ -166,7 +165,6 @@ class ActionLogApiTestCase(TestCase):
 
     @patch('actionlog.models.datetime', MockDateTime)
     def test_fetch_ad_group_reports(self):
-
         utcnow = datetime.datetime.utcnow()
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
 

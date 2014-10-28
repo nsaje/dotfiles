@@ -165,4 +165,4 @@ SOURCE_OAUTH_URIS = {
     }
 }
 
-TIMEZONE = 'America/New_York'
+DEFAULT_TIME_ZONE = 'America/New_York'

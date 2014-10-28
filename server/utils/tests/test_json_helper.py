@@ -8,6 +8,9 @@ from utils import json_helper
 
 
 class JsonHelperTestCase(unittest.TestCase):
+    def setUp(self):
+        self.timezone = 'America/New_York'
+
     def _get_test_object(self, test_datetime):
         return {
             'id': 100,
@@ -19,22 +22,42 @@ class JsonHelperTestCase(unittest.TestCase):
         test_datetime = datetime.datetime(2014, 11, 1, 18, 0, 0)
         test_obj = self._get_test_object(test_datetime)
 
+        result = json.dumps(
+            test_obj,
+            cls=json_helper.JSONEncoder,
+            convert_datetimes_tz=self.timezone
+        )
+
         expected = '{"test": "something", "id": 100, "datetime": "2014-11-01T14:00:00"}'
-        self.assertEqual(json.dumps(test_obj, cls=json_helper.JSONEncoder), expected)
+
+        self.assertEqual(result, expected)
 
     def test_naive_datetime_no_convert(self):
         test_datetime = datetime.datetime(2014, 11, 1, 18, 0, 0)
         test_obj = self._get_test_object(test_datetime)
 
+        result = json.dumps(
+            test_obj,
+            cls=json_helper.JSONEncoder
+        )
+
         expected = '{"test": "something", "id": 100, "datetime": "2014-11-01T18:00:00"}'
-        self.assertEqual(json.dumps(test_obj, cls=json_helper.JSONEncoder, convert_datetimes=False), expected)
+
+        self.assertEqual(result, expected)
 
     def test_naive_datetime_dst(self):
         test_datetime = datetime.datetime(2014, 1, 1, 18, 0, 0)
         test_obj = self._get_test_object(test_datetime)
 
+        result = json.dumps(
+            test_obj,
+            cls=json_helper.JSONEncoder,
+            convert_datetimes_tz=self.timezone
+        )
+
         expected = '{"test": "something", "id": 100, "datetime": "2014-01-01T13:00:00"}'
-        self.assertEqual(json.dumps(test_obj, cls=json_helper.JSONEncoder), expected)
+
+        self.assertEqual(result, expected)
 
     def test_naive_date(self):
         test_datetime = datetime.datetime(2014, 11, 1, 18, 0, 0)
@@ -55,16 +78,30 @@ class JsonHelperTestCase(unittest.TestCase):
         test_datetime = test_datetime.replace(tzinfo=pytz.utc)
         test_obj = self._get_test_object(test_datetime)
 
+        result = json.dumps(
+            test_obj,
+            cls=json_helper.JSONEncoder,
+            convert_datetimes_tz=self.timezone
+        )
+
         expected = '{"test": "something", "id": 100, "datetime": "2014-11-01T14:00:00"}'
-        self.assertEqual(json.dumps(test_obj, cls=json_helper.JSONEncoder), expected)
+
+        self.assertEqual(result, expected)
 
     def test_aware_datetime_localized(self):
         test_datetime = datetime.datetime(2014, 12, 1, 18, 0, 0)
         test_datetime = pytz.timezone('Europe/Ljubljana').localize(test_datetime)
         test_obj = self._get_test_object(test_datetime)
 
+        result = json.dumps(
+            test_obj,
+            cls=json_helper.JSONEncoder,
+            convert_datetimes_tz=self.timezone
+        )
+
         expected = '{"test": "something", "id": 100, "datetime": "2014-12-01T12:00:00"}'
-        self.assertEqual(json.dumps(test_obj, cls=json_helper.JSONEncoder), expected)
+
+        self.assertEqual(result, expected)
 
     def test_aware_date(self):
         test_datetime = datetime.datetime(2014, 11, 1, 18, 0, 0)

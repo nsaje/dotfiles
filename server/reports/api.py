@@ -302,7 +302,7 @@ def _collect_results(result):
 
 def get_yesterday_cost(**constraints):
     today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
-    today = today_utc.astimezone(pytz.timezone(settings.TIMEZONE)).replace(tzinfo=None)
+    today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
     today = datetime.datetime(today.year, today.month, today.day)
     yesterday = today - datetime.timedelta(days=1)
 
