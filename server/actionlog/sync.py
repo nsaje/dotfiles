@@ -5,6 +5,7 @@ import actionlog.constants
 
 from actionlog.api import _init_fetch_status, _init_fetch_reports, InsertActionException
 from utils.command_helpers import last_n_days
+from utils.demo_helpers import demo_accounts_latest_success_now
 from . import zwei_actions
 
 from django.conf import settings
@@ -81,6 +82,7 @@ class GlobalSync(BaseSync, ISyncComposite):
             if len(list(account_sync.get_components())) > 0:
                 yield account_sync
 
+    @demo_accounts_latest_success_now(dash.models.Account.demo_objects.all())
     def get_latest_success_by_account(self):
         '''
         this function is a faster way to get last succcessful sync times
