@@ -1,7 +1,12 @@
 'use strict';
 
 describe('MainCtrl', function () {
-    var $scope, ctrl, $state, user = { permissions: [] }, accounts;
+    var $scope;
+    var ctrl;
+    var $state;
+    var user = { permissions: [] };
+    var accounts;
+    var zemFullStoryService;
 
     beforeEach(function () {
         module('one');
@@ -12,10 +17,15 @@ describe('MainCtrl', function () {
             });
         });
 
+
         inject(function ($rootScope, $controller, _$state_) {
             $scope = $rootScope.$new();
             $state = _$state_;
-            ctrl = $controller('MainCtrl', {$scope: $scope, $state: $state, user: user, accounts: accounts});
+            zemFullStoryService = {identify: function(user) {}};
+
+            spyOn(zemFullStoryService, 'identify');
+
+            ctrl = $controller('MainCtrl', {$scope: $scope, $state: $state, user: user, accounts: accounts, zemFullStoryService: zemFullStoryService});
         });
     });
 
@@ -39,6 +49,10 @@ describe('MainCtrl', function () {
 
         it('should return false if called without specifying permission', function () {
             expect($scope.hasPermission()).toBe(false);
+        });
+
+        it('should identify user with FullStory', function () {
+            expect(zemFullStoryService.identify).toHaveBeenCalledWith(user);
         });
     });
 });

@@ -1,5 +1,5 @@
-/*globals oneApp,$*/
-oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'zemMoment', 'user', 'accounts', 'localStorageService', 'api', function ($scope, $state, $location, $document, zemMoment, user, accounts, localStorageService, api) {
+/*globals oneApp,$,FS*/
+oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'zemMoment', 'user', 'accounts', 'localStorageService', 'api', 'zemFullStoryService', function ($scope, $state, $location, $document, zemMoment, user, accounts, localStorageService, api, zemFullStoryService) {
     $scope.accounts = accounts;
     $scope.user = user;
     $scope.currentRoute = $scope.current;
@@ -298,4 +298,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
             }
         }
     });
+
+    // FullStory user identification
+    zemFullStoryService.identify(user);
 }]);
