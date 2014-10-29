@@ -1,7 +1,7 @@
 import datetime
 import dateutil.parser
 
-from dash.models import AdGroup
+import dash.models
 
 
 def last_n_days(n):
@@ -12,24 +12,23 @@ def last_n_days(n):
     return [today - datetime.timedelta(days=x) for x in xrange(n)]
 
 
-def get_ad_groups(ad_group_ids=None):
-    if ad_group_ids is None:
-        return AdGroup.objects.all()
+def get_ad_group_sources(ad_group_ids=None, source_ids=None):
+    ad_group_sources = dash.models.AdGroupSource.objects.all()
 
-    ad_groups = AdGroup.objects.filter(id__in=ad_group_ids).all()
+    if ad_group_ids is not None:
+        ad_group_sources = ad_group_sources.filter(ad_group__in=ad_group_ids)
 
-    selected_ids = [ag.id for ag in ad_groups]
-    if set(selected_ids) != set(ad_group_ids):
-        raise Exception('Missing ad groups: {}'.format(set(ad_group_ids) - set(selected_ids)))
+    if source_ids is not None:
+        ad_group_sources = ad_group_sources.filter(source__in=source_ids)
 
-    return ad_groups
+    return ad_group_sources
 
 
-def parse_ad_group_ids(options):
-    if not options['ad_group_ids']:
+def parse_id_list(options, field_name):
+    if not options[field_name]:
         return
 
-    return [int(aid) for aid in options['ad_group_ids'].split(',')]
+    return [int(aid) for aid in options[field_name].split(',')]
 
 
 def parse_date(options, field_name='date'):

@@ -3,7 +3,7 @@ import logging
 from optparse import make_option
 from django.core.management.base import BaseCommand
 
-from utils.command_helpers import parse_ad_group_ids, get_ad_groups
+from utils.command_helpers import parse_id_list, get_ad_group_sources
 
 from actionlog import sync
 
@@ -12,14 +12,16 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
-        make_option('--ad_group_ids', help='Comma separated list of group ids. Default is all groups.'),
+        make_option('--ad_group_ids', help='Comma separated list of group ids. Default is all ad groups.'),
+        make_option('--source_ids', help='Comma separated list of source ids. Defualt is all sources.')
     )
 
     def handle(self, *args, **options):
-        ad_group_ids = parse_ad_group_ids(options)
+        ad_group_ids = parse_id_list(options, 'ad_group_ids')
+        source_ids = parse_id_list(options, 'source_ids')
 
         logger.info('Fetching status for ad_groups: %s', ad_group_ids or 'all')
 
-        ad_groups = get_ad_groups(ad_group_ids)
-        for ad_group in ad_groups:
-            sync.AdGroupSync(ad_group).trigger_status()
+        ad_group_sources = get_ad_group_sources(ad_group_ids, source_ids)
+        for ad_group_source in ad_group_sources:
+            sync.AdGroupSourceSync(ad_group_source).trigger_status()
