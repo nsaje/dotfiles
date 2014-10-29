@@ -177,7 +177,7 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                             yAxis: commonYAxis ? 0 : index,
                             data: transformDate(seriesData),
                             tooltip: {
-                                pointFormat: seriesName + ': <b>' + getPointFormat(metricId) + '</b></br>'
+                                pointFormat: '<div class="color-box" style="background-color: ' + color[index] + '"></div>' + seriesName + ': <b>' + getPointFormat(metricId) + '</b></br>'
                             },
                             marker: {
                                 radius: 3,
