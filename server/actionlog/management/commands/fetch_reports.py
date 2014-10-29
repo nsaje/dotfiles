@@ -15,7 +15,7 @@ class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--ad_group_ids', help='Comma separated list of group ids. Default is all ad groups.'),
         make_option('--source_ids', help='Comma separated list of source ids. Default is all sources.'),
-        make_option('--from_date', help='Iso format. The date is inclusive. Default is yesterday.'),
+        make_option('--from_date', help='Iso format. The date is inclusive. Default is same as till_date.'),
         make_option('--till_date', help='Iso format. The date is inclusive. Default is yesterday.')
     )
 
@@ -25,11 +25,11 @@ class Command(BaseCommand):
         ad_group_ids = parse_id_list(options, 'ad_group_ids')
         source_ids = parse_id_list(options, 'source_ids')
 
-        if not from_date:
-            from_date = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
-
         if not till_date:
             till_date = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
+
+        if not from_date:
+            from_date = till_date
 
         if from_date > till_date:
             logger.info('Unable to fetch reports. from_date should be less than or equal to till_date.')
