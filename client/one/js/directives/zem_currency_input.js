@@ -10,10 +10,6 @@ oneApp.directive('zemCurrencyInput', function() {
         },
         link: function postLink(scope, element, attrs, controller) {
             function getCaretPos(element) {
-                var range;
-                var re;
-                var rc;
-
                 if (element.selectionStart) {
                     return element.selectionStart;
                 }
