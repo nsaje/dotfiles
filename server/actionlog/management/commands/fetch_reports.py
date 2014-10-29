@@ -1,3 +1,4 @@
+import datetime
 import logging
 
 from optparse import make_option
@@ -13,17 +14,27 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--ad_group_ids', help='Comma separated list of group ids. Default is all groups.'),
-        make_option('--date', help='Iso format. Default is last 3 days.'),
+        make_option('--from_date', help='Iso format. The date is inclusive.'),
+        make_option('--till_date', help='Iso format. The date is inclusive. Default is today.')
     )
 
     def handle(self, *args, **options):
-        selected_date = parse_date(options)
+        from_date = parse_date(options, 'from_date')
+        till_date = parse_date(options, 'till_date')
         ad_group_ids = parse_ad_group_ids(options)
 
-        if selected_date:
-            dates = [selected_date]
-        else:
-            dates = last_n_days(3)
+        if not from_date:
+            logger.info('Unable to fetch reports. from_date not specified.')
+            return
+
+        if not till_date:
+            till_date = datetime.datetime.utcnow().date()
+
+        if from_date > till_date:
+            logger.info('Unable to fetch reports. from_date should be less than or equal to till_date.')
+            return
+
+        dates = [from_date + datetime.timedelta(days=i) for i in range((till_date - from_date).days + 1)]
 
         logger.info('Fetching report for dates: %s, ad_groups: %s', dates, ad_group_ids or 'all')
 

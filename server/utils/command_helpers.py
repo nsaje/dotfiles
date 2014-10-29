@@ -32,8 +32,8 @@ def parse_ad_group_ids(options):
     return [int(aid) for aid in options['ad_group_ids'].split(',')]
 
 
-def parse_date(options):
-    if not options['date']:
+def parse_date(options, field_name='date'):
+    if not options[field_name]:
         return
 
-    return dateutil.parser.parse(options['date']).date()
+    return dateutil.parser.parse(options[field_name]).date()
