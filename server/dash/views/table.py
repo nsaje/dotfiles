@@ -49,7 +49,7 @@ def _get_active_ad_group_sources(modelcls, modelobjects):
 
         active_ad_group_sources = models.AdGroupSource.objects \
             .filter(ad_group__in=adgroups) \
-            .exclude(pk__in=_inactive_ad_group_sources)
+            .exclude(pk__in=[ags.id for ags in _inactive_ad_group_sources])
 
     return active_ad_group_sources
 
