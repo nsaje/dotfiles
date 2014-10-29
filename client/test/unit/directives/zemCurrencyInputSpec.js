@@ -38,6 +38,22 @@ describe('zemCurrencyInput', function () {
         expect($scope.value).toEqual('1234567');
     });
 
+    it('takes only first dot into account in case there are more', function () {
+        var element = prepareElement();
+
+        setVal(element, '12.34.56');
+        expect(element.val()).toEqual('12.34');
+        expect($scope.value).toEqual('12.34');
+
+        setVal(element, '12.3.4.56');
+        expect(element.val()).toEqual('12.3');
+        expect($scope.value).toEqual('12.3');
+
+        setVal(element, '12..34.56');
+        expect(element.val()).toEqual('12.');
+        expect($scope.value).toEqual('12.');
+    });
+
     it('adds missing decimal places when it loses focus', function () {
         var element = prepareElement();
 

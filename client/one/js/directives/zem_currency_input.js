@@ -5,9 +5,6 @@ oneApp.directive('zemCurrencyInput', function() {
     return {
         require: 'ngModel',
         restrict: 'A',
-        scope: {
-            model: '=ngModel'
-        },
         link: function postLink(scope, element, attrs, controller) {
             function getCaretPos(element) {
                 if (element.selectionStart) {
