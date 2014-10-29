@@ -320,7 +320,7 @@ class SourcesTable(api_common.BaseApiView):
                 sources_settings,
                 yesterday_total_cost
             ),
-            'last_sync': pytz.utc.localize(last_sync).isoformat(),  # needs time offset
+            'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
             'is_sync_recent': helpers.is_sync_recent(last_sync),
             'is_sync_in_progress': is_sync_in_progress,
             'incomplete_postclick_metrics': incomplete_postclick_metrics,
@@ -523,7 +523,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
         return self.create_api_response({
             'rows': rows,
             'totals': totals_data,
-            'last_sync': pytz.utc.localize(last_sync).isoformat(),  # needs time offset
+            'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
             'is_sync_recent': helpers.is_sync_recent(last_sync),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(accounts=accounts),
             'order': order,
@@ -636,7 +636,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
         return self.create_api_response({
             'rows': rows,
             'totals': totals_data,
-            'last_sync': pytz.utc.localize(last_sync).isoformat(),  # needs time offset
+            'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
             'is_sync_recent': helpers.is_sync_recent(last_sync),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress([ad_group]),
             'order': order,
@@ -716,7 +716,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
                 show_archived
             ),
             'totals': totals_stats,
-            'last_sync': pytz.utc.localize(last_sync).isoformat(),
+            'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
             'is_sync_recent': helpers.is_sync_recent(last_sync),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(
                 campaigns=[campaign]),
@@ -848,7 +848,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
                 show_archived
             ),
             'totals': totals_stats,
-            'last_sync': pytz.utc.localize(last_sync).isoformat(),
+            'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
             'is_sync_recent': helpers.is_sync_recent(last_sync),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(
                 campaigns=campaigns),
