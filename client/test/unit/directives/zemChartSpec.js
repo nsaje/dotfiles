@@ -45,7 +45,7 @@ describe('zemChart', function () {
         expect(totalsSeries.name).toBe('Totals (Spend)');
         expect(totalsSeries.color).toBe('#009db2');
         expect(totalsSeries.yAxis).toBe(0);
-        expect(totalsSeries.tooltip.pointFormat).toBe('Totals (Spend): <b>${point.y:,.2f}</b></br>');
+        expect(totalsSeries.tooltip.pointFormat).toBe('<div class="color-box" style="background-color: #009db2"></div>Totals (Spend): <b>${point.y:,.2f}</b></br>');
 
         expect(totalsSeries.marker.radius).toBe(3);
         expect(totalsSeries.marker.symbol).toBe('square');
