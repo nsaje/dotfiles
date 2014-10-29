@@ -405,7 +405,7 @@ class SourcesTable(api_common.BaseApiView):
                 'avg_tos': source_data.get('avg_tos', None),
                 'click_discrepancy': source_data.get('click_discrepancy', None),
 
-                'last_sync': pytz.utc.localize(last_sync).isoformat(),  # needs time offset
+                'last_sync': last_sync,
                 'yesterday_cost': yesterday_cost.get(source.id),
                 'supply_dash_url': supply_dash_url,
 
