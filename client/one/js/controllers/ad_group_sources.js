@@ -198,7 +198,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             initialOrder: 'desc'
         },
         {
-            name: 'Last OK Sync',
+            name: 'Last OK Sync (EST)',
             field: 'last_sync',
             checked: false,
             type: 'datetime',

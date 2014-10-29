@@ -17,7 +17,7 @@ class BaseApiViewTestCase(test.TestCase):
                 'datetime': datetime.datetime(2014, 1, 10, 18, 0, 0)
             }
         }
-        expected_content = '{"data": {"test_obj": {"first_name": "Something", "id": 100, "datetime": "2014-01-10T18:00:00"}}, "success": true}'
+        expected_content = '{"data": {"test_obj": {"first_name": "Something", "id": 100, "datetime": "2014-01-10T13:00:00"}}, "success": true}'
 
         response = api_common.BaseApiView().create_api_response(data)
         self.assertEqual(response.status_code, 200)

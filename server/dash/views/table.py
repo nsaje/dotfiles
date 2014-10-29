@@ -1,7 +1,6 @@
-import pytz
-
 import reports.api
 import actionlog.sync
+import pytz
 
 import utils.pagination
 
@@ -297,7 +296,7 @@ class SourcesTable(api_common.BaseApiView):
 
         last_sync = None
         if last_success_actions.values() and None not in last_success_actions.values():
-            last_sync = pytz.utc.localize(min(last_success_actions.values()))
+            last_sync = min(last_success_actions.values())
 
         incomplete_postclick_metrics = False
         if user.has_perm('zemauth.postclick_metrics'):
@@ -321,7 +320,7 @@ class SourcesTable(api_common.BaseApiView):
                 sources_settings,
                 yesterday_total_cost
             ),
-            'last_sync': last_sync,
+            'last_sync': pytz.utc.localize(last_sync).isoformat(),  # needs time offset
             'is_sync_recent': helpers.is_sync_recent(last_sync),
             'is_sync_in_progress': is_sync_in_progress,
             'incomplete_postclick_metrics': incomplete_postclick_metrics,
@@ -383,8 +382,6 @@ class SourcesTable(api_common.BaseApiView):
                     break
 
             last_sync = last_actions.get(source.id)
-            if last_sync:
-                last_sync = pytz.utc.localize(last_sync)
 
             supply_dash_url = None
             if ad_group_level:
@@ -502,7 +499,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
 
         last_sync = None
         if last_success_actions.values() and None not in last_success_actions.values():
-            last_sync = pytz.utc.localize(min(last_success_actions.values()))
+            last_sync = min(last_success_actions.values())
 
         rows = self.get_rows(
             accounts,
@@ -526,7 +523,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
         return self.create_api_response({
             'rows': rows,
             'totals': totals_data,
-            'last_sync': last_sync,
+            'last_sync': pytz.utc.localize(last_sync).isoformat(),  # needs time offset
             'is_sync_recent': helpers.is_sync_recent(last_sync),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(accounts=accounts),
             'order': order,
@@ -579,7 +576,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
 
             row['last_sync'] = last_actions.get(aid)
             if row['last_sync']:
-                row['last_sync'] = pytz.utc.localize(row['last_sync'])
+                row['last_sync'] = row['last_sync']
 
             row.update(account_data)
 
@@ -630,8 +627,6 @@ class AdGroupAdsTable(api_common.BaseApiView):
 
         last_sync = actionlog.sync.AdGroupSync(ad_group).get_latest_success(
             recompute=False)
-        if last_sync:
-            last_sync = pytz.utc.localize(last_sync)
 
         incomplete_postclick_metrics = \
             not reports.api.has_complete_postclick_metrics_ad_groups(
@@ -641,7 +636,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
         return self.create_api_response({
             'rows': rows,
             'totals': totals_data,
-            'last_sync': last_sync,
+            'last_sync': pytz.utc.localize(last_sync).isoformat(),  # needs time offset
             'is_sync_recent': helpers.is_sync_recent(last_sync),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress([ad_group]),
             'order': order,
@@ -704,8 +699,6 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
 
         last_sync = actionlog.sync.CampaignSync(campaign).get_latest_success(
             recompute=False)
-        if last_sync:
-            last_sync = pytz.utc.localize(last_sync)
 
         incomplete_postclick_metrics = \
             not reports.api.has_complete_postclick_metrics_campaigns(
@@ -723,7 +716,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
                 show_archived
             ),
             'totals': totals_stats,
-            'last_sync': last_sync,
+            'last_sync': pytz.utc.localize(last_sync).isoformat(),
             'is_sync_recent': helpers.is_sync_recent(last_sync),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(
                 campaigns=[campaign]),
@@ -769,8 +762,6 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             row.update(ad_group_data)
 
             last_sync = last_actions.get(ad_group.pk)
-            if last_sync:
-                last_sync = pytz.utc.localize(last_sync)
 
             row['last_sync'] = last_sync
 
@@ -839,8 +830,6 @@ class AccountCampaignsTable(api_common.BaseApiView):
         last_sync = None
         if last_success_actions.values() and None not in last_success_actions.values():
             last_sync = min(last_success_actions.values())
-        if last_sync:
-            last_sync = pytz.utc.localize(last_sync)
 
         incomplete_postclick_metrics = \
             not reports.api.has_complete_postclick_metrics_campaigns(
@@ -859,7 +848,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
                 show_archived
             ),
             'totals': totals_stats,
-            'last_sync': last_sync,
+            'last_sync': pytz.utc.localize(last_sync).isoformat(),
             'is_sync_recent': helpers.is_sync_recent(last_sync),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(
                 campaigns=campaigns),
@@ -909,8 +898,6 @@ class AccountCampaignsTable(api_common.BaseApiView):
                 row['archived'] = archived
 
             last_sync = last_actions.get(campaign.pk)
-            if last_sync:
-                last_sync = pytz.utc.localize(last_sync)
 
             row['last_sync'] = last_sync
 

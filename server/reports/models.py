@@ -46,7 +46,6 @@ class ArticleStats(StatsMetrics):
 
         permissions = (
             ("yesterday_spend_view", "Can view yesterday spend column."),
-            ("fewer_daterange_options", "Has fewer options available in daterange picker."),
             ("per_day_sheet_source_export", "Has Per-Day Report sheet in Excel source export.")
         )
 

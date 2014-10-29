@@ -77,7 +77,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             initialOrder: 'desc'
         },
         {
-            name: 'Last OK Sync',
+            name: 'Last OK Sync (EST)',
             field: 'last_sync',
             checked: false,
             type: 'datetime',

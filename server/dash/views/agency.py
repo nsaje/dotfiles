@@ -485,7 +485,7 @@ class CampaignBudget(api_common.BaseApiView):
         result = []
         for h in history:
             item = {}
-            item['datetime'] = h.created_dt.isoformat()
+            item['datetime'] = h.created_dt
             item['user'] = h.created_by.email
             item['allocate'] = float(h.allocate)
             item['revoke'] = float(h.revoke)

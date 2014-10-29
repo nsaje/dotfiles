@@ -148,7 +148,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             initialOrder: 'desc'
         },
         {
-            name: 'Last OK Sync',
+            name: 'Last OK Sync (EST)',
             field: 'last_sync',
             checked: false,
             type: 'datetime',

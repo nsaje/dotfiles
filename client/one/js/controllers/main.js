@@ -118,32 +118,16 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
         var formatStr = 'MMMM YYYY';
         var currentMonth = null;
 
-        if ($scope.hasPermission('reports.fewer_daterange_options')) {
-            result['Yesterday'] = [zemMoment().subtract('days', 1).startOf('day'), zemMoment().subtract('days', 1).endOf('day')];
-            result['Last 30 Days'] = [zemMoment().subtract('days', 29), zemMoment().subtract('days', 1)];
-            currentMonth = zemMoment().startOf('month');
-            result[currentMonth.format(formatStr)] = [currentMonth, zemMoment().subtract('days', 1)];
+        result['Yesterday'] = [zemMoment().subtract('days', 1).startOf('day'), zemMoment().subtract('days', 1).endOf('day')];
+        result['Last 30 Days'] = [zemMoment().subtract('days', 29), zemMoment().subtract('days', 1)];
+        currentMonth = zemMoment().startOf('month');
+        result[currentMonth.format(formatStr)] = [currentMonth, zemMoment().subtract('days', 1)];
 
-            for (i = 0; i < monthsCount; i++) {
-                result[zemMoment().subtract('month', i+1).format(formatStr)] = [zemMoment().subtract('month', i+1).startOf('month'), zemMoment().subtract('month', i+1).endOf('month')];
-            }
-
-            result['Year to date'] = [zemMoment().startOf('year'), zemMoment().subtract('days', 1)];
-        } else {
-            result['Today'] = [zemMoment().startOf('day'), zemMoment().endOf('day')];
-            result['Yesterday'] = [zemMoment().subtract('days', 1).startOf('day'), zemMoment().subtract('days', 1).endOf('day')];
-            result['This week'] = [zemMoment().startOf('week'), zemMoment()];
-            result['Previous week'] = [zemMoment().subtract('days', 7).startOf('week'), zemMoment().subtract('days', 7).endOf('week')];
-            result['Last 14 days'] = [zemMoment().subtract('days', 14), zemMoment()];
-            result['This month'] = [zemMoment().startOf('month'), zemMoment()];
-            result['Last 30 Days'] = [zemMoment().subtract('days', 29), zemMoment()];
-
-            for (i = 0; i < monthsCount; i++) {
-                result[zemMoment().subtract('month', i+1).format(formatStr)] = [zemMoment().subtract('month', i+1).startOf('month'), zemMoment().subtract('month', i+1).endOf('month')];
-            }
-
-            result['Year to date'] = [zemMoment().startOf('year'), $scope.maxDate];
+        for (i = 0; i < monthsCount; i++) {
+            result[zemMoment().subtract('month', i+1).format(formatStr)] = [zemMoment().subtract('month', i+1).startOf('month'), zemMoment().subtract('month', i+1).endOf('month')];
         }
+
+        result['Year to date'] = [zemMoment().startOf('year'), zemMoment().subtract('days', 1)];
 
         return result;
     };
@@ -166,18 +150,11 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
         }
     };
 
-    if ($scope.hasPermission('reports.fewer_daterange_options')) {
-        $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
-        $scope.dateRange = {
-            startDate: zemMoment().subtract('day', 29).hours(0).minutes(0).seconds(0).milliseconds(0),
-            endDate: zemMoment().subtract('day', 1).endOf('day')
-        };
-    } else {
-        $scope.dateRange = {
-            startDate: zemMoment().subtract('day', 30).hours(0).minutes(0).seconds(0).milliseconds(0),
-            endDate: zemMoment().hours(0).minutes(0).seconds(0).milliseconds(0)
-        };
-    }
+    $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
+    $scope.dateRange = {
+        startDate: zemMoment().subtract('day', 29).hours(0).minutes(0).seconds(0).milliseconds(0),
+        endDate: zemMoment().subtract('day', 1).endOf('day')
+    };
 
     $scope.setDateRangeFromSearch();
     $scope.dateRanges = $scope.getDateRanges();

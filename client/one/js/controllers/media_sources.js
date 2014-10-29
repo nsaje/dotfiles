@@ -192,7 +192,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
             initialOrder: 'desc'
         },
         {
-            name: 'Last OK Sync',
+            name: 'Last OK Sync (EST)',
             field: 'last_sync',
             checked: false,
             type: 'datetime',
