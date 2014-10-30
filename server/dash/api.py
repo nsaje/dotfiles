@@ -119,7 +119,7 @@ def reconcile_article(raw_url, title, ad_group):
 
 def get_state_by_account():
     qs = models.AdGroupSettings.objects.select_related('ad_group__campaign__account') \
-        .distinct('ad_group').order_by('ad_group', '-created_dt') \
+        .distinct('ad_group_id').order_by('ad_group_id', '-created_dt') \
         .values('ad_group', 'ad_group__campaign__account', 'state')
     account_state = {}
     for row in qs:
