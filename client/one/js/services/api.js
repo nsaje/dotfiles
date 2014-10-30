@@ -249,14 +249,14 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         function convertFromApi(row) {
             row.title_link = {
                 text: row.title,
-                url: row.url
-            }
+                url: row.url !== '' ? row.url : null
+            };
 
             row.url_link = {
-                text: row.url,
-                url: row.url
-            }
- 
+                text: row.url !== '' ? row.url : 'N/A',
+                url: row.url !== '' ? row.url : null
+            };
+
             return row;
         }
 
