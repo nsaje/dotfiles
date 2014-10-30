@@ -558,6 +558,9 @@ class AdGroup(models.Model):
             new_settings.archived = False
             new_settings.save()
 
+    class Meta:
+        ordering = ('name',)
+
 
 class AdGroupSource(models.Model):
     source = models.ForeignKey(Source, on_delete=models.PROTECT)
@@ -806,5 +809,5 @@ class CampaignBudgetSettings(models.Model):
 
 class DemoAdGroupRealAdGroup(models.Model):
     demo_ad_group = models.ForeignKey(AdGroup, unique=True, on_delete=models.PROTECT, related_name='+')
-    real_ad_group = models.ForeignKey(AdGroup, on_delete=models.PROTECT, related_name='+')
+    real_ad_group = models.ForeignKey(AdGroup, unique=True, on_delete=models.PROTECT, related_name='+')
     multiplication_factor = models.IntegerField(null=False, blank=False, default=1)
