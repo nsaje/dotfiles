@@ -95,7 +95,7 @@ def reconcile_article(raw_url, title, ad_group):
     if not title:
         raise exc.ArticleReconciliationException('Missing article title. url={url}'.format(url=raw_url))
 
-    if not raw_url:
+    if raw_url is None:
         raise exc.ArticleReconciliationException('Missing article url. title={title}'.format(title=title))
 
     url, _ = clean_url(raw_url)
