@@ -17,6 +17,30 @@ class ActionLogSyncTestCase(TestCase):
 
     fixtures = ['test_api.yaml', 'test_sync.yaml']
 
+    def test_global_latest_success_by_account_ignore_archived(self):
+        latest_success_by_account = sync.GlobalSync().get_latest_success_by_account()
+
+        self.assertEqual(
+            latest_success_by_account,
+            {
+                1: datetime.datetime(2014, 6, 10, 9, 58, 21),
+                2: None,
+                3: datetime.datetime(2014, 6, 10, 9, 58, 21)
+            })
+
+    def test_global_latest_success_by_source_ignore_archived(self):
+        latest_success_by_source = sync.GlobalSync().get_latest_success_by_source()
+
+        self.assertEqual(
+            latest_success_by_source,
+            {
+                1: None,
+                2: None,
+                3: None,
+                4: datetime.datetime(2014, 6, 10, 9, 58, 21),
+                5: datetime.datetime(2014, 6, 10, 9, 58, 21)
+            })
+
     def test_ad_group_source_latest_status_sync(self):
         latest_status_sync_dt = sync.AdGroupSourceSync(
             dash.models.AdGroupSource.objects.get(pk=1)
@@ -308,3 +332,30 @@ class ActionLogTriggerSyncTestCase(TestCase):
                     datetime.date(2014, 7, 1) - datetime.timedelta(days=settings.LAST_N_DAY_REPORTS - 1)
                 )).days + 1
         )
+
+
+class ActionLogSyncGetComponentsTestCase(TestCase):
+
+    fixtures = ['test_api.yaml', 'test_sync.yaml']
+
+    def test_global_sync_get_components(self):
+        global_sync = sync.GlobalSync()
+        child_syncs = global_sync.get_components()
+
+        self.assertEqual(len(list(child_syncs)), 2)
+
+    def test_account_sync_get_components(self):
+        account = dash.models.Account.objects.get(pk=3)
+
+        account_sync = sync.AccountSync(account)
+        child_syncs = account_sync.get_components()
+
+        self.assertEqual(len(list(child_syncs)), 1)
+
+    def test_campaign_sync_get_components(self):
+        campaign = dash.models.Campaign.objects.get(pk=4)
+
+        campaign_sync = sync.CampaignSync(campaign)
+        child_syncs = campaign_sync.get_components()
+
+        self.assertEqual(len(list(child_syncs)), 1)

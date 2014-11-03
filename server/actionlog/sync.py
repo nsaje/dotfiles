@@ -76,10 +76,7 @@ class GlobalSync(BaseSync, ISyncComposite):
         pass
 
     def get_components(self):
-        for account in dash.models.Account.objects.all():
-            if account.is_archived():
-                continue
-
+        for account in dash.models.Account.objects.all().exclude_archived():
             account_sync = AccountSync(account)
             if len(list(account_sync.get_components())) > 0:
                 yield account_sync
@@ -122,6 +119,7 @@ class GlobalSync(BaseSync, ISyncComposite):
                 latest_success[row['source']] = _min_none([
                     latest_success[row['source']], row['last_successful_sync_dt']
                 ])
+
         return latest_success
 
     def _add_demo_accounts_sync_times(self, result):
@@ -135,10 +133,7 @@ class GlobalSync(BaseSync, ISyncComposite):
 class AccountSync(BaseSync, ISyncComposite):
 
     def get_components(self):
-        for campaign in dash.models.Campaign.objects.filter(account=self.obj):
-            if campaign.is_archived():
-                continue
-
+        for campaign in dash.models.Campaign.objects.filter(account=self.obj).exclude_archived():
             campaign_sync = CampaignSync(campaign)
             if len(list(campaign_sync.get_components())) > 0:
                 yield campaign_sync
@@ -148,9 +143,6 @@ class CampaignSync(BaseSync, ISyncComposite):
 
     def get_components(self):
         for ad_group in dash.models.AdGroup.objects.filter(campaign=self.obj).exclude_archived():
-            if ad_group.is_archived():
-                continue
-
             ad_group_sync = AdGroupSync(ad_group)
             if len(list(ad_group_sync.get_components())) > 0:
                 yield ad_group_sync
