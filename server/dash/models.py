@@ -28,37 +28,12 @@ class PermissionMixin(object):
         return False
 
 
-class UserAuthorizationManager(models.Manager):
-    def get_for_user(self, user):
-        queryset = super(UserAuthorizationManager, self).get_queryset()
-
-        if queryset.model is Account:
-            queryset = queryset.filter(
-                models.Q(users__id=user.id) |
-                models.Q(groups__user__id=user.id)
-            ).distinct()
-        elif queryset.model is Campaign:
-            queryset = queryset.filter(
-                models.Q(users__id=user.id) |
-                models.Q(groups__user__id=user.id) |
-                models.Q(account__users__id=user.id) |
-                models.Q(account__groups__user__id=user.id)
-            ).distinct()
-        else:
-            # AdGroup
-            assert queryset.model is AdGroup
-            queryset = queryset.filter(
-                models.Q(campaign__users__id=user.id) |
-                models.Q(campaign__groups__user__id=user.id) |
-                models.Q(campaign__account__users__id=user.id) |
-                models.Q(campaign__account__groups__user__id=user.id)
-            ).distinct()
-
-        return queryset
+class QuerySetManager(models.Manager):
+    def get_queryset(self):
+        return self.model.QuerySet(self.model)
 
 
 class DemoManager(models.Manager):
-
     def get_queryset(self):
         queryset = super(DemoManager, self).get_queryset()
         if queryset.model is Account:
@@ -95,7 +70,7 @@ class Account(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
 
-    objects = UserAuthorizationManager()
+    objects = QuerySetManager()
     demo_objects = DemoManager()
 
     class Meta:
@@ -170,6 +145,22 @@ class Account(models.Model):
             new_settings.archived = False
             new_settings.save()
 
+    class QuerySet(models.QuerySet):
+        def filter_by_user(self, user):
+            return self.filter(
+                models.Q(users__id=user.id) |
+                models.Q(groups__user__id=user.id)
+            ).distinct()
+
+        def exclude_archived(self):
+            archived_settings = AccountSettings.objects.\
+                distinct('account').\
+                order_by('account', '-created_dt').\
+                select_related('account').\
+                exclude(archived=True)
+
+            return self.filter(pk__in=[s.account.id for s in archived_settings])
+
 
 class Campaign(models.Model, PermissionMixin):
     id = models.AutoField(primary_key=True)
@@ -188,7 +179,7 @@ class Campaign(models.Model, PermissionMixin):
 
     USERS_FIELD = 'users'
 
-    objects = UserAuthorizationManager()
+    objects = QuerySetManager()
     demo_objects = DemoManager()
 
     def __unicode__(self):
@@ -266,6 +257,24 @@ class Campaign(models.Model, PermissionMixin):
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
             new_settings.save()
+
+    class QuerySet(models.QuerySet):
+        def filter_by_user(self, user):
+            return self.filter(
+                models.Q(users__id=user.id) |
+                models.Q(groups__user__id=user.id) |
+                models.Q(account__users__id=user.id) |
+                models.Q(account__groups__user__id=user.id)
+            ).distinct()
+
+        def exclude_archived(self):
+            archived_settings = CampaignSettings.objects.\
+                distinct('campaign').\
+                order_by('campaign', '-created_dt').\
+                select_related('campaign').\
+                exclude(archived=True)
+
+            return self.filter(pk__in=[s.campaign.id for s in archived_settings])
 
 
 class SettingsBase(models.Model):
@@ -483,7 +492,7 @@ class AdGroup(models.Model):
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
     is_demo = models.BooleanField(null=False, blank=False, default=False)
 
-    objects = UserAuthorizationManager()
+    objects = QuerySetManager()
     demo_objects = DemoManager()
 
     def __unicode__(self):
@@ -557,6 +566,23 @@ class AdGroup(models.Model):
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
             new_settings.save()
+
+    class QuerySet(models.QuerySet):
+        def filter_by_user(self, user):
+            return self.filter(
+                models.Q(campaign__users__id=user.id) |
+                models.Q(campaign__groups__user__id=user.id) |
+                models.Q(campaign__account__users__id=user.id) |
+                models.Q(campaign__account__groups__user__id=user.id)
+            ).distinct()
+
+        def exclude_archived(self):
+            archived_settings = AdGroupSettings.objects.\
+                distinct('ad_group').\
+                order_by('ad_group', '-created_dt').\
+                select_related('ad_group')
+
+            return self.filter(pk__in=[s.ad_group.id for s in archived_settings if not s.archived])
 
 
 class AdGroupSource(models.Model):

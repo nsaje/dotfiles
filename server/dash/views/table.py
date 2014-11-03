@@ -65,7 +65,7 @@ def sort_rows_by_order_and_archived(rows, order):
 class AllAccountsSourcesTable(object):
     def __init__(self, user, id_):
         self.user = user
-        self.accounts = models.Account.objects.get_for_user(user)
+        self.accounts = models.Account.objects.all().filter_by_user(user)
         self.active_ad_group_sources = _get_active_ad_group_sources(models.Account, self.accounts)
 
     def has_complete_postclick_metrics(self, start_date, end_date):
@@ -459,7 +459,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
 
         user = request.user
 
-        accounts = models.Account.objects.get_for_user(user)
+        accounts = models.Account.objects.all().filter_by_user(user)
         account_ids = set(acc.id for acc in accounts)
 
         accounts_settings = models.AccountSettings.objects.\
@@ -788,7 +788,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
         has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
         show_archived = request.GET.get('show_archived') == 'true' and request.user.has_perm('zemauth.view_archived_entities')
 
-        campaigns = models.Campaign.objects.get_for_user(user).\
+        campaigns = models.Campaign.objects.all().filter_by_user(user).\
             filter(account=account_id)
 
         campaigns_settings = models.CampaignSettings.objects.\

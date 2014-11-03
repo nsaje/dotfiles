@@ -136,4 +136,4 @@ class CampaignBudget(object):
         return cbs_latest
 
     def _can_edit(self, user):
-        return self.campaign in dash.models.Campaign.objects.get_for_user(user)
+        return self.campaign in dash.models.Campaign.objects.all().filter_by_user(user)

@@ -15,7 +15,7 @@ class AccountCampaignsExport(api_common.BaseApiView):
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
 
-        campaigns = models.Campaign.objects.get_for_user(request.user).filter(account=account)
+        campaigns = models.Campaign.objects.all().filter_by_user(request.user).filter(account=account)
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
@@ -308,7 +308,7 @@ class AdGroupSourcesExport(api_common.BaseApiView):
 
 class AllAccountsExport(api_common.BaseApiView):
     def get(self, request):
-        accounts = models.Account.objects.get_for_user(request.user)
+        accounts = models.Account.objects.all().filter_by_user(request.user)
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))

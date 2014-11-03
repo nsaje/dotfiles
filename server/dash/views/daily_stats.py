@@ -239,7 +239,7 @@ class AccountsDailyStats(BaseDailyStatsView):
         group_key = None
         group_names = None
 
-        accounts = models.Account.objects.get_for_user(request.user)
+        accounts = models.Account.objects.all().filter_by_user(request.user)
 
         if totals:
             totals_kwargs = {'account': accounts}
