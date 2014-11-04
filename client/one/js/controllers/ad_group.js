@@ -71,6 +71,10 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
         $location.search('order', null);
     });
 
+    $scope.$on('$stateChangeSuccess', function () {
+        $scope.updateBreadcrumbAndTitle();
+    });
+
     $scope.getAdGroupState = function() {
         api.adGroupState.get($state.params.id).then(
             function(data) {
@@ -93,8 +97,6 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
             $state.go('main.adGroups.settings', {id: $scope.adGroup.id});
         }
     }
-
-    $scope.updateBreadcrumbAndTitle();
 
     $scope.$watch('adGroup.archived', function (newValue, oldValue) {
         if (newValue !== oldValue) {
