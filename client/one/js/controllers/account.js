@@ -44,7 +44,6 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) 
     };
 
     $scope.getAccount();
-    $scope.updateBreadcrumbAndTitle();
 
     $scope.tabs = $scope.getTabs();
     $scope.setActiveTab();
@@ -62,5 +61,9 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) 
             $scope.tabs = $scope.getTabs();
             $scope.setActiveTab();
         }
+    });
+
+    $scope.$on('$stateChangeSuccess', function () {
+        $scope.updateBreadcrumbAndTitle();
     });
 }]);

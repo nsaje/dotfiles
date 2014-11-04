@@ -42,17 +42,24 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     };
 
     $scope.getDefaultAllAccountsState = function () {
-        var result = null;
-
-        if ($scope.hasPermission('zemauth.all_accounts_accounts_view')) {
-            result = 'main.allAccounts.accounts';
-        } else if ($scope.hasPermission('zemauth.all_accounts_sources_view')) {
-            result = 'main.allAccounts.sources';
-        } else if ($scope.hasPermission('zemauth.all_accounts_budget_view')) {
-            result = 'main.allAccounts.budget';
+        // keep the same tab if possible
+        if ($state.includes('**.sources') && $scope.hasPermission('zemauth.all_accounts_sources_view')) {
+            return 'main.allAccounts.sources';
         }
 
-        return result;
+        // otherwise get default state
+        if ($scope.hasPermission('zemauth.all_accounts_accounts_view')) {
+            return 'main.allAccounts.accounts';
+        }
+        if ($scope.hasPermission('zemauth.all_accounts_sources_view')) {
+            return 'main.allAccounts.sources';
+        }
+        if ($scope.hasPermission('zemauth.all_accounts_budget_view')) {
+            return 'main.allAccounts.budget';
+        }
+
+        // no permissions
+        return null;
     };
 
     $scope.canAccessAllAccounts = function () {
@@ -60,19 +67,30 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     };
 
     $scope.getDefaultAccountState = function () {
-        var result = null;
-
-        if ($scope.hasPermission('zemauth.account_campaigns_view')) {
-            result = 'main.accounts.campaigns';
-        } else if ($scope.hasPermission('zemauth.account_sources_view')) {
-            result = 'main.accounts.sources';
-        } else if ($scope.hasPermission('zemauth.account_agency_view')) {
-            result = 'main.accounts.agency';
-        } else if ($scope.hasPermission('zemauth.account_budget_view')) {
-            result = 'main.accounts.budget';
+        // keep the same tab if possible
+        if ($state.includes('**.sources') && $scope.hasPermission('zemauth.account_sources_view')) {
+            return 'main.accounts.sources';
+        }
+        if ($state.includes('**.agency') && $scope.hasPermission('zemauth.account_agency_view')) {
+            return 'main.accounts.agency';
         }
 
-        return result;
+        // otherwise get default state
+        if ($scope.hasPermission('zemauth.account_campaigns_view')) {
+            return 'main.accounts.campaigns';
+        }
+        if ($scope.hasPermission('zemauth.account_sources_view')) {
+            return 'main.accounts.sources';
+        }
+        if ($scope.hasPermission('zemauth.account_agency_view')) {
+            return 'main.accounts.agency';
+        }
+        if ($scope.hasPermission('zemauth.account_budget_view')) {
+            return 'main.accounts.budget';
+        }
+
+        // no permissions
+        return null;
     };
 
     $scope.canAccessAccounts = function () {
@@ -84,19 +102,30 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
             return $state.current.name;
         }
 
-        var result = null;
-
-        if ($scope.hasPermission('zemauth.campaign_ad_groups_view')) {
-            result = 'main.campaigns.ad_groups';
-        } else if ($scope.hasPermission('zemauth.campaign_sources_view')) {
-            result = 'main.campaings.sources';
-        } else if ($scope.hasPermission('zemauth.campaign_settings_view')) {
-            result = 'main.campaigns.agency';
-        } else if ($scope.hasPermission('zemauth.campaign_budget_management_view')) {
-            result = 'main.campaings.budget';
+        // keep the same tab if possible
+        if ($state.includes('**.sources') && $scope.hasPermission('zemauth.campaign_sources_view')) {
+            return 'main.campaigns.sources';
+        }
+        if ($state.includes('**.agency') && $scope.hasPermission('zemauth.campaign_settings_view')) {
+            return 'main.campaigns.agency';
         }
 
-        return result;
+        // otherwise get default state
+        if ($scope.hasPermission('zemauth.campaign_ad_groups_view')) {
+            return 'main.campaigns.ad_groups';
+        }
+        if ($scope.hasPermission('zemauth.campaign_sources_view')) {
+            return 'main.campaings.sources';
+        }
+        if ($scope.hasPermission('zemauth.campaign_settings_view')) {
+            return 'main.campaigns.agency';
+        }
+        if ($scope.hasPermission('zemauth.campaign_budget_management_view')) {
+            return 'main.campaings.budget';
+        }
+
+        // no permissions
+        return null;
     };
 
     $scope.canAccessCampaigns = function () {
@@ -108,6 +137,15 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
             return $state.current.name;
         }
 
+        // keep the same tab if possible
+        if ($state.includes('**.sources')) {
+            return 'main.adGroups.sources';
+        }
+        if ($state.includes('**.agency') && $scope.hasPermission('zemauth.ad_group_agency_tab_view')) {
+            return 'main.adGroups.agency';
+        }
+
+        // otherwise get default state
         return 'main.adGroups.ads';
     };
 

@@ -1,6 +1,6 @@
 var Nav = function () {
-    this.adGroups = element.all(by.repeater('adGroup in campaign.adGroups').column('name'));
-    this.campaigns = element.all(by.repeater('campaign in account.campaigns').column('name'));
+    this.adGroups = element.all(by.repeater('adGroup in campaign.adGroups').column('adGroup.name'));
+    this.campaigns = element.all(by.repeater('campaign in account.campaigns').column('campaign.name'));
 };
 
 var Chart = function () {

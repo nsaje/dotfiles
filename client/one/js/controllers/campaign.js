@@ -54,6 +54,10 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
         $location.search('order', null);
     });
 
+    $scope.$on('$stateChangeSuccess', function () {
+        $scope.updateBreadcrumbAndTitle();
+    });
+
     $scope.getModels();
     $scope.tabs = $scope.getTabs();
     $scope.setActiveTab();
@@ -65,8 +69,6 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
             $state.go('main.campaigns.settings', {id: $scope.campaign.id});
         }
     }
-
-    $scope.updateBreadcrumbAndTitle();
 
     $scope.$watch('campaign.archived', function (newValue, oldValue) {
         if (newValue !== oldValue) {
