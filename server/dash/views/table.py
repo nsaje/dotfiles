@@ -49,7 +49,7 @@ def _get_active_ad_group_sources(modelcls, modelobjects):
 
         active_ad_group_sources = models.AdGroupSource.objects \
             .filter(ad_group__in=adgroups) \
-            .exclude(pk__in=_inactive_ad_group_sources)
+            .exclude(pk__in=[ags.id for ags in _inactive_ad_group_sources])
 
     return active_ad_group_sources
 
@@ -77,9 +77,9 @@ class AllAccountsSourcesTable(object):
 
     def get_sources_settings(self):
         return models.AdGroupSourceSettings.objects.\
-            distinct('ad_group_source').\
+            distinct('ad_group_source_id').\
             filter(ad_group_source__in=self.active_ad_group_sources).\
-            order_by('ad_group_source', '-created_dt')
+            order_by('ad_group_source_id', '-created_dt')
 
     def get_stats(self, start_date, end_date):
         sources_stats = reports.api.filter_by_permissions(reports.api.query(
@@ -127,9 +127,9 @@ class AccountSourcesTable(object):
 
     def get_sources_settings(self):
         return models.AdGroupSourceSettings.objects.\
-            distinct('ad_group_source').\
+            distinct('ad_group_source_id').\
             filter(ad_group_source__in=self.active_ad_group_sources).\
-            order_by('ad_group_source', '-created_dt')
+            order_by('ad_group_source_id', '-created_dt')
 
     def get_stats(self, start_date, end_date):
         sources_stats = reports.api.filter_by_permissions(reports.api.query(
@@ -178,9 +178,9 @@ class CampaignSourcesTable(object):
 
     def get_sources_settings(self):
         return models.AdGroupSourceSettings.objects.\
-            distinct('ad_group_source').\
+            distinct('ad_group_source_id').\
             filter(ad_group_source__in=self.active_ad_group_sources).\
-            order_by('ad_group_source', '-created_dt')
+            order_by('ad_group_source_id', '-created_dt')
 
     def get_stats(self, start_date, end_date):
         sources_stats = reports.api.filter_by_permissions(reports.api.query(
@@ -229,9 +229,9 @@ class AdGroupSourcesTable(object):
 
     def get_sources_settings(self):
         return models.AdGroupSourceSettings.objects.\
-            distinct('ad_group_source').\
+            distinct('ad_group_source_id').\
             filter(ad_group_source__in=self.active_ad_group_sources).\
-            order_by('ad_group_source', '-created_dt')
+            order_by('ad_group_source_id', '-created_dt')
 
     def get_stats(self, start_date, end_date):
         sources_stats = reports.api.filter_by_permissions(reports.api.query(
@@ -463,7 +463,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
         account_ids = set(acc.id for acc in accounts)
 
         accounts_settings = models.AccountSettings.objects.\
-            distinct('account').\
+            distinct('account_id').\
             filter(account__in=accounts).\
             order_by('account_id', '-created_dt')
 
@@ -674,9 +674,9 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
 
         ad_groups = campaign.adgroup_set.all()
         ad_groups_settings = models.AdGroupSettings.objects.\
-            distinct('ad_group').\
+            distinct('ad_group_id').\
             filter(ad_group__campaign=campaign).\
-            order_by('ad_group', '-created_dt')
+            order_by('ad_group_id', '-created_dt')
 
         totals_stats = reports.api.filter_by_permissions(
             reports.api.query(
@@ -792,9 +792,9 @@ class AccountCampaignsTable(api_common.BaseApiView):
             filter(account=account_id)
 
         campaigns_settings = models.CampaignSettings.objects.\
-            distinct('campaign').\
+            distinct('campaign_id').\
             filter(campaign__in=campaigns).\
-            order_by('campaign', '-created_dt')
+            order_by('campaign_id', '-created_dt')
 
         stats = reports.api.filter_by_permissions(reports.api.query(
             start_date=start_date,
@@ -817,9 +817,9 @@ class AccountCampaignsTable(api_common.BaseApiView):
         totals_stats['unspent_budget'] = totals_stats['budget'] - (totals_stats.get('cost') or 0)
 
         ad_groups_settings = models.AdGroupSettings.objects.\
-            distinct('ad_group').\
+            distinct('ad_group_id').\
             filter(ad_group__campaign__in=campaigns).\
-            order_by('ad_group', '-created_dt')
+            order_by('ad_group_id', '-created_dt')
 
         last_success_actions = {}
         for campaign in campaigns:
