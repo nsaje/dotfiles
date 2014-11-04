@@ -1,5 +1,4 @@
 import datetime
-import mock
 from decimal import Decimal
 
 from django.db.models.signals import pre_save
@@ -205,3 +204,30 @@ class ArchiveRestoreTestCase(TestCase):
 
         ag.restore()
         self.assertFalse(ag.get_current_settings().archived)
+
+
+class AdGroupTestCase(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def test_queryset_exclude_archived(self):
+        qs = models.AdGroup.objects.all().exclude_archived()
+
+        self.assertEqual(len(qs), 6)
+
+
+class CampaignTestCase(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def test_queryset_exclude_archived(self):
+        qs = models.Campaign.objects.all().exclude_archived()
+
+        self.assertEqual(len(qs), 4)
+
+
+class AccountTestCase(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def test_queryset_exclude_archived(self):
+        qs = models.Account.objects.all().exclude_archived()
+
+        self.assertEqual(len(qs), 2)

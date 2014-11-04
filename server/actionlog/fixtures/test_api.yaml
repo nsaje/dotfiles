@@ -34,6 +34,14 @@
     model: dash.account
     pk: 2
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test account 3'
+    model: dash.account
+    pk: 3
+
 # test campaign
 
 -   fields:
@@ -62,6 +70,24 @@
         name: 'test campaign 3'
     model: dash.campaign
     pk: 3
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        account: 3 # test account 3
+        name: 'test campaign 4'
+    model: dash.campaign
+    pk: 4
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        account: 3 # test account 4
+        name: 'test campaign 5'
+    model: dash.campaign
+    pk: 5
 
 # sources
 
@@ -157,6 +183,33 @@
     model: dash.adgroup
     pk: 4
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 4
+        name: 'test adgroup 5'
+    model: dash.adgroup
+    pk: 5
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 5
+        name: 'test adgroup 6'
+    model: dash.adgroup
+    pk: 6
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 4
+        name: 'test adgroup 7'
+    model: dash.adgroup
+    pk: 7
+
 # test adgroupsource
 
 -   fields:
@@ -209,6 +262,7 @@
         ad_group: 2
         source_campaign_key: '["fake"]'
         source_credentials: 1
+        last_successful_sync_dt: '2014-06-10T09:58:21'
     model: dash.adgroupsource
     pk: 6
 
@@ -217,6 +271,7 @@
         ad_group: 2
         source_campaign_key: '["fake"]'
         source_credentials: 2
+        last_successful_sync_dt: '2014-06-10T09:58:21'
     model: dash.adgroupsource
     pk: 7
 
@@ -225,6 +280,7 @@
         ad_group: 2
         source_campaign_key: ''
         source_credentials: 3
+        last_successful_sync_dt: '2014-06-10T09:58:21'
     model: dash.adgroupsource
     pk: 8
 
@@ -276,6 +332,31 @@
     model: dash.adgroupsource
     pk: 14
 
+-   fields:
+        source: 3
+        ad_group: 6
+        source_campaign_key: '["fake"]'
+        source_credentials: 3
+        last_successful_sync_dt: '2014-06-10T09:58:21'
+    model: dash.adgroupsource
+    pk: 15
+
+-   fields:
+        source: 3
+        ad_group: 7
+        source_campaign_key: '["fake"]'
+        source_credentials: 3
+        last_successful_sync_dt: '2014-06-10T09:58:21'
+    model: dash.adgroupsource
+    pk: 16
+
+-   fields:
+        source: 4
+        ad_group: 5
+        source_campaign_key: '["fake"]'
+        source_credentials: 3
+    model: dash.adgroupsource
+    pk: 17
 
 # test ad group source credentials
 
@@ -333,6 +414,17 @@
     model: dash.sourcecredentials
     pk: 6
 
+# test accountsettings
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        archived: True
+        name: 'Test settings 3'
+        account: 3
+    model: dash.accountsettings
+    pk: 3
+
 # test campaignsettings
 
 -   fields:
@@ -345,6 +437,28 @@
         campaign: 2
     model: dash.campaignsettings
     pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        name: 'test campaign 4'
+        account_manager: NULL
+        sales_representative: NULL
+        iab_category: 'IAB24'
+        campaign: 4
+        archived: True
+    model: dash.campaignsettings
+    pk: 2
+
+# test adgroupsettings
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        archived: True
+        ad_group: 5
+    model: dash.adgroupsettings
+    pk: 5
 
 # test defaultsourcesettings
 

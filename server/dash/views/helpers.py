@@ -30,7 +30,7 @@ def get_stats_end_date(end_time):
 
 def get_account(user, account_id, select_related=False):
     try:
-        account = models.Account.objects.get_for_user(user)
+        account = models.Account.objects.all().filter_by_user(user)
         if select_related:
             account = account.select_related('campaign_set')
 
@@ -41,7 +41,7 @@ def get_account(user, account_id, select_related=False):
 
 def get_ad_group(user, ad_group_id, select_related=False):
     try:
-        ad_group = models.AdGroup.objects.get_for_user(user).\
+        ad_group = models.AdGroup.objects.all().filter_by_user(user).\
             filter(id=int(ad_group_id))
 
         if select_related:
@@ -54,7 +54,7 @@ def get_ad_group(user, ad_group_id, select_related=False):
 
 def get_campaign(user, campaign_id):
     try:
-        return models.Campaign.objects.get_for_user(user).\
+        return models.Campaign.objects.all().filter_by_user(user).\
             filter(id=int(campaign_id)).get()
     except models.Campaign.DoesNotExist:
         raise exc.MissingDataError('Campaign does not exist')

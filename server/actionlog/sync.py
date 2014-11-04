@@ -76,7 +76,7 @@ class GlobalSync(BaseSync, ISyncComposite):
         pass
 
     def get_components(self):
-        for account in dash.models.Account.objects.all():
+        for account in dash.models.Account.objects.all().exclude_archived():
             account_sync = AccountSync(account)
             if len(list(account_sync.get_components())) > 0:
                 yield account_sync
@@ -86,28 +86,31 @@ class GlobalSync(BaseSync, ISyncComposite):
         this function is a faster way to get last succcessful sync times
         on the account level
         '''
-        qs = dash.models.AdGroupSource.objects.select_related('ad_group__campaign__account', 'source') \
-            .filter(source__maintenance=False) \
-            .values('ad_group__campaign__account', 'last_successful_sync_dt')
+        qs = dash.models.AdGroupSource.objects.select_related('ad_group__campaign__account', 'source').\
+            filter(source__maintenance=False).\
+            filter(ad_group__in=dash.models.AdGroup.objects.all().exclude_archived()).\
+            values('ad_group__campaign__account', 'last_successful_sync_dt')
+
         latest_success = {}
         for row in qs:
             aid = row['ad_group__campaign__account']
             if aid not in latest_success:
                 latest_success[aid] = []
             latest_success[aid].append(row['last_successful_sync_dt'])
-        result = {k:_min_none(v) for k, v in latest_success.iteritems()}
+        result = {k: _min_none(v) for k, v in latest_success.iteritems()}
         result = self._add_demo_accounts_sync_times(result)
         return result
-        
 
     def get_latest_success_by_source(self):
         '''
         this function is a faster way to get last succcessful sync times
         by source on globally
         '''
-        qs = dash.models.AdGroupSource.objects.select_related('source') \
-            .filter(source__maintenance=False) \
-            .values('source', 'last_successful_sync_dt')
+        qs = dash.models.AdGroupSource.objects.select_related('source').\
+            filter(source__maintenance=False).\
+            filter(ad_group__in=dash.models.AdGroup.objects.all().exclude_archived()).\
+            values('source', 'last_successful_sync_dt')
+
         latest_success = {}
         for row in qs:
             if row['source'] not in latest_success:
@@ -116,6 +119,7 @@ class GlobalSync(BaseSync, ISyncComposite):
                 latest_success[row['source']] = _min_none([
                     latest_success[row['source']], row['last_successful_sync_dt']
                 ])
+
         return latest_success
 
     def _add_demo_accounts_sync_times(self, result):
@@ -129,7 +133,7 @@ class GlobalSync(BaseSync, ISyncComposite):
 class AccountSync(BaseSync, ISyncComposite):
 
     def get_components(self):
-        for campaign in dash.models.Campaign.objects.filter(account=self.obj):
+        for campaign in dash.models.Campaign.objects.filter(account=self.obj).exclude_archived():
             campaign_sync = CampaignSync(campaign)
             if len(list(campaign_sync.get_components())) > 0:
                 yield campaign_sync
@@ -138,7 +142,7 @@ class AccountSync(BaseSync, ISyncComposite):
 class CampaignSync(BaseSync, ISyncComposite):
 
     def get_components(self):
-        for ad_group in dash.models.AdGroup.objects.filter(campaign=self.obj):
+        for ad_group in dash.models.AdGroup.objects.filter(campaign=self.obj).exclude_archived():
             ad_group_sync = AdGroupSync(ad_group)
             if len(list(ad_group_sync.get_components())) > 0:
                 yield ad_group_sync

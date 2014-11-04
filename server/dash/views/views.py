@@ -176,7 +176,7 @@ class NavigationDataView(api_common.BaseApiView):
                         ad_group['archived'] = ad_group_settings.archived if ad_group_settings else False
 
     def fetch_ad_groups(self, data, user):
-        ad_groups = models.AdGroup.objects.get_for_user(user).select_related('campaign__account')
+        ad_groups = models.AdGroup.objects.all().filter_by_user(user).select_related('campaign__account')
 
         for ad_group in ad_groups:
             campaign = ad_group.campaign
@@ -190,7 +190,7 @@ class NavigationDataView(api_common.BaseApiView):
             campaigns[campaign.id]['adGroups'].append({'id': ad_group.id, 'name': ad_group.name})
 
     def fetch_campaigns(self, data, user):
-        campaigns = models.Campaign.objects.get_for_user(user).select_related('account')
+        campaigns = models.Campaign.objects.all().filter_by_user(user).select_related('account')
 
         for campaign in campaigns:
             account = campaign.account
@@ -199,7 +199,7 @@ class NavigationDataView(api_common.BaseApiView):
             self.add_campaign_dict(data[account.id]['campaigns'], campaign)
 
     def fetch_accounts(self, data, user):
-        accounts = models.Account.objects.get_for_user(user)
+        accounts = models.Account.objects.all().filter_by_user(user)
 
         for account in accounts:
             self.add_account_dict(data, account)

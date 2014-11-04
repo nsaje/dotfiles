@@ -57,7 +57,7 @@ class AccountSync(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'account_sync_get')
     def get(self, request):
-        accounts = models.Account.objects.get_for_user(request.user)
+        accounts = models.Account.objects.all().filter_by_user(request.user)
         if not actionlog.api.is_sync_in_progress(accounts=accounts):
             # trigger account sync asynchronously and immediately return
             TriggerAccountSyncThread(accounts).start()
@@ -68,7 +68,7 @@ class AccountSync(api_common.BaseApiView):
 class AccountSyncProgress(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'account_is_sync_in_progress')
     def get(self, request):
-        accounts = models.Account.objects.get_for_user(request.user)
+        accounts = models.Account.objects.all().filter_by_user(request.user)
 
         in_progress = actionlog.api.is_sync_in_progress(accounts=accounts)
 
@@ -83,10 +83,10 @@ class CampaignSync(api_common.BaseApiView):
         campaign_id = request.GET.get('campaign_id')
 
         if account_id:
-            campaigns = models.Campaign.objects.get_for_user(request.user).\
+            campaigns = models.Campaign.objects.all().filter_by_user(request.user).\
                 filter(account=account_id)
         else:
-            campaigns = models.Campaign.objects.get_for_user(request.user)
+            campaigns = models.Campaign.objects.all().filter_by_user(request.user)
 
             if campaign_id:
                 campaigns = campaigns.filter(pk=campaign_id)
@@ -105,10 +105,10 @@ class CampaignSyncProgress(api_common.BaseApiView):
         campaign_id = request.GET.get('campaign_id')
 
         if account_id:
-            campaigns = models.Campaign.objects.get_for_user(request.user).\
+            campaigns = models.Campaign.objects.all().filter_by_user(request.user).\
                 filter(account=account_id)
         else:
-            campaigns = models.Campaign.objects.get_for_user(request.user)
+            campaigns = models.Campaign.objects.all().filter_by_user(request.user)
 
             if campaign_id:
                 campaigns = campaigns.filter(pk=campaign_id)
