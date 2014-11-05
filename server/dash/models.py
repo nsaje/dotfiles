@@ -577,12 +577,12 @@ class AdGroupSource(models.Model):
         else:
             msid = self.source.name.lower()
 
-        codes = {
+        tracking_ids = {
             '_z1_msid': msid,
             '_z1_agid': self.ad_group.id
         }
 
-        return codes
+        return tracking_ids
 
     def __unicode__(self):
         return u'{} - {}'.format(self.ad_group, self.source)
