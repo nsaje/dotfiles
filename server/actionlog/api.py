@@ -276,7 +276,9 @@ def _init_stop_campaign(ad_group_source, order):
                     ad_group_source.source_credentials.credentials,
                 'args': {
                     'source_campaign_key': ad_group_source.source_campaign_key,
-                    'state': dash.constants.AdGroupSourceSettingsState.INACTIVE,
+                    'conf': {
+                        'state': dash.constants.AdGroupSourceSettingsState.INACTIVE,
+                    }
                 },
                 'callback_url': callback,
             }

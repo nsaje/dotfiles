@@ -127,7 +127,7 @@ def _process_zwei_response(action, data):
     elif action.action == actionlogconstants.Action.FETCH_CAMPAIGN_STATUS:
         dashapi.campaign_status_upsert(action.ad_group_source, data['data'])
     elif action.action == actionlogconstants.Action.SET_CAMPAIGN_STATE:
-        state = action.payload['args']['state']
+        state = action.payload['args']['conf']['state']
         dashapi.update_campaign_state(action.ad_group_source, state)
     elif action.action == actionlogconstants.Action.CREATE_CAMPAIGN:
         dashapi.update_campaign_key(action.ad_group_source, data['data']['source_campaign_key'])
