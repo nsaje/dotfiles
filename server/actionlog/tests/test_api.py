@@ -1,6 +1,7 @@
 import datetime
 import httplib
 import urlparse
+import urllib
 import urllib2
 
 from mock import patch, Mock
@@ -260,7 +261,9 @@ class ActionLogApiTestCase(TestCase):
             'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'name': name,
-                'extra': {},
+                'extra': {
+                    'tracking_code': urllib.urlencode(ad_group_source.get_tracking_ids())
+                },
             },
             'callback_url': callback
         }
@@ -288,6 +291,7 @@ class ActionLogApiTestCase(TestCase):
                 'extra': {
                     'iab_category': 'IAB24',
                     'exclusive_blog_ids': [123456],
+                    'tracking_code': urllib.urlencode(ad_group_source_extra.get_tracking_ids())
                 },
             },
             'callback_url': callback
