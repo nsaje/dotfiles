@@ -19,26 +19,36 @@
                 <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Choose who can access this account." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-8">
-                <div ng-repeat="i in [1,2,3]" class="form-group existing-user-row">
-                    <div class="col-xs-4 user-name-col">
-<p class="control-label"><b>AndrewPerkins </b>(wnldknakwkdnkkndrewn@client.com)</p>
+                <div ng-repeat="user in users" class="form-group existing-user-row">
+                    <div class="col-xs-6 user-name-col">
+<p class="control-label"><b>{{user.name}} </b>({{user.email}})</p>
                     </div>
                     <div class="col-xs-2">
-                        <button type="button" class="btn btn-default">Remove</button>
+                        <button type="button" class="btn btn-default" ng-click="removeUser(user.id)">Remove</button>
                     </div>
                 </div>
                 <div id="add-user-row" class="form-group">
-                    <div class="col-xs-3">
-                        <input id="first-name-input" type="text" class="form-control" placeholder="Name">
-                    </div>
-                    <div class="col-xs-3">
-                        <input id="last-name-input" type="text" class="form-control" placeholder="Last name">
-                    </div>
-                    <div class="col-xs-4">
-                        <input id="email-input" type="text" class="form-control" placeholder="Email">
+                    <div class="col-xs-2">
+                        <input id="first-name-input" type="text" ng-class="{'has-error': !!addUserErrors.firstName}" class="form-control" placeholder="Name" ng-model="addUserData.firstName">
                     </div>
                     <div class="col-xs-2">
-                        <button type="button" class="btn btn-default">Add new user</button>
+                        <input id="last-name-input" type="text" ng-class="{'has-error': !!addUserErrors.lastName}" class="form-control" placeholder="Last name" ng-model="addUserData.lastName">
+                    </div>
+                    <div class="col-xs-4">
+                        <input id="email-input" type="text" ng-class="{'has-error': !!addUserErrors.email}" class="form-control" placeholder="Email" ng-model="addUserData.email">
+                    </div>
+                    <div class="col-xs-4">
+                        <button type="button" class="btn btn-default" ng-click="addUser()">Add new user</button>
+                        <div class="loader" ng-show="addUserRequestInProgress"></div>
+                    </div><br />
+                    <div class="col-xs-12" ng-show="userSaved">
+                        <span ng-show="emailSent" class="success">An introductory email was sent to the new user.</span>
+                        <span ng-show="!emailSent" class="success">User has been granted permission to access this account.</span>
+                    </div>
+                    <div class="col-xs-12" ng-show="addUserErrors">
+                        <div><label ng-repeat="error in addUserErrors.firstName" class="error" for="first-name-input">{{ error }}</label></div>
+                        <div><label ng-repeat="error in addUserErrors.lastName" class="error" for="last-name-input">{{ error }}</label></div>
+                        <div><label ng-repeat="error in addUserErrors.email" class="error" for="email-input">{{ error }}</label></div>
                     </div>
                 </div>
             </div>

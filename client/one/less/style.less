@@ -131,6 +131,12 @@ a:visited {
         border: 1px solid #2fa8c7;
         .box-shadow(none);
     }
+
+    &.has-error,
+    &:focus.has-error {
+        border-color: #c70000;
+        .box-shadow(none);
+    }
 }
 
 .success {
@@ -1779,15 +1785,12 @@ a.help-popover:visited {
 }
 
 .page-account-agency {
-    .existing-user-row .user-name-col {
-        width: auto;
-    }
-
     #add-user-row {
         margin-left: -5px;
 
         div[class*=col-xs-] {
             padding: 0 5px;
+            margin-bottom: 5px;
         }
     }
 }

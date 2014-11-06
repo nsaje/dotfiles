@@ -10,6 +10,11 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
     $scope.discarded = null;
     $scope.orderField = 'datetime';
     $scope.orderReverse = true;
+    $scope.users = null;
+    $scope.addUserRequestInProgress = false;
+    $scope.addUserData = {};
+    $scope.addUserErrors = null;
+    $scope.userSaved = null;
 
     $scope.getSettings = function (discarded) {
         $scope.saved = null;
@@ -47,7 +52,6 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                 $scope.canRestore = data.canRestore;
                 $scope.updateAccounts(data.settings.name);
                 $scope.updateBreadcrumbAndTitle();
-                $scope.requestInProgress = false;
                 $scope.saved = true;
             },
             function (data) {
@@ -83,5 +87,68 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
         }
     };
 
+    var getUserIndex = function (userId) {
+        var userIndex = -1;
+        $scope.users.forEach(function (user, index) {
+            if (user.id === userId) {
+                userIndex = index;
+            }
+        });
+
+        return userIndex;
+    };
+
+    $scope.getUsers = function () {
+        api.accountUsers.list($state.params.id).then(
+            function (data) {
+                $scope.users = data.users;
+            }
+        );
+    };
+
+    $scope.addUser = function () {
+        $scope.userSaved = null;
+        $scope.addUserRequestInProgress = true;
+
+        api.accountUsers.put($state.params.id, $scope.addUserData).then(
+            function (data) {
+                var userIndex = getUserIndex(data.user.id);
+                console.log(userIndex);
+                if (userIndex === -1) {
+                    $scope.users.push(data.user);
+                }
+
+                $scope.userSaved = true;
+                $scope.addUserData = {};
+                $scope.addUserErrors = null;
+                $scope.emailSent = data.emailSent;
+            },
+            function (data) {
+                $scope.addUserErrors = data;
+                $scope.userSaved = false;
+            }
+        ).finally(function () {
+            $scope.addUserRequestInProgress = false;
+        });
+    };
+
+    $scope.removeUser = function (userId) {
+        $scope.userSaved = null;
+
+        api.accountUsers.remove($state.params.id, userId).then(
+            function (userId) {
+                var userIndex = getUserIndex(userId);
+
+                if (userIndex > -1) {
+                    $scope.users.splice(userIndex, 1);
+                }
+            }
+        );
+    };
+
     $scope.getSettings();
+
+    if ($scope.hasPermission('zemauth.account_agency_access_permissions')) {
+        $scope.getUsers();
+    }
 }]);

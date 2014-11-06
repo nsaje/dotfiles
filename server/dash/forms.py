@@ -200,3 +200,18 @@ class CampaignBudgetForm(forms.Form):
             return float(x)
         else:
             return 0
+
+
+class AccountUsersForm(forms.Form):
+    first_name = forms.CharField(
+        max_length=127,
+        error_messages={'required': 'Please specify first name.'}
+    )
+    last_name = forms.CharField(
+        max_length=127,
+        error_messages={'required': 'Please specify last name.'}
+    )
+    email = forms.EmailField(
+        max_length=127,
+        error_messages={'required': 'Please specify user\'s email.'}
+    )

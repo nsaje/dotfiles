@@ -791,3 +791,72 @@ class AdGroupAgency(api_common.BaseApiView):
 
         return settings_dict
 
+
+class AccountUsers(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'account_access_users_get')
+    def get(self, request, account_id):
+        if not request.user.has_perm('zemauth.account_agency_access_users'):
+            raise exc.MissingDataError()
+
+        account = helpers.get_account(request.user, account_id)
+        users = [{'id': u.id, 'name': u.get_full_name(), 'email': u.email} for u in account.users.all()]
+
+        return self.create_api_response({
+            'users': users
+        })
+
+    @statsd_helper.statsd_timer('dash.api', 'account_access_users_put')
+    def put(self, request, account_id):
+        if not request.user.has_perm('zemauth.account_agency_access_users'):
+            raise exc.MissingDataError()
+
+        account = helpers.get_account(request.user, account_id)
+        resource = json.loads(request.body)
+
+        form = forms.AccountUsersForm(
+            resource
+        )
+        if not form.is_valid():
+            raise exc.ValidationError(errors=dict(form.errors))
+
+        try:
+            user = ZemUser.objects.get(email=form.cleaned_data['email'])
+            email_sent = False
+        except ZemUser.DoesNotExist:
+            user = ZemUser.objects.create_user(
+                form.cleaned_data['email'],
+                first_name=form.cleaned_data['first_name'],
+                last_name=form.cleaned_data['last_name']
+            )
+
+            # TODO send email
+            email_sent = True
+
+        account.users.add(user)
+
+        return self.create_api_response({
+            'email_sent': email_sent,
+            'user': {
+                'id': user.id,
+                'name': user.get_full_name(),
+                'email': user.email
+            }
+        })
+
+    @statsd_helper.statsd_timer('dash.api', 'account_access_users_delete')
+    def delete(self, request, account_id, user_id):
+        if not request.user.has_perm('zemauth.account_agency_access_users'):
+            raise exc.MissingDataError()
+
+        account = helpers.get_account(request.user, account_id)
+
+        try:
+            user = ZemUser.objects.get(pk=user_id)
+        except ZemUser.DoesNotExist:
+            raise exc.MissingDataError()
+
+        account.users.remove(user)
+
+        return self.create_api_response({
+            'user_id': user.id
+        })
