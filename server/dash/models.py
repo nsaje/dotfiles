@@ -595,6 +595,19 @@ class AdGroupSource(models.Model):
 
     last_successful_sync_dt = models.DateTimeField(blank=True, null=True)
 
+    def get_tracking_ids(self):
+        if self.source.type == 'zemanta':
+            msid = '{sourceDomain}'
+        else:
+            msid = self.source.name.lower()
+
+        tracking_ids = {
+            '_z1_msid': msid,
+            '_z1_agid': self.ad_group.id
+        }
+
+        return tracking_ids
+
     def __unicode__(self):
         return u'{} - {}'.format(self.ad_group, self.source)
 
