@@ -16,15 +16,20 @@
             <label for="first-name-input" class="col-xs-2 control-label">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.account_agency_access_permissions')"></zem-internal-feature>
                 Access Permissions
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Choose who can access this account." placement="top"></zem-help-popover>
+                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Users who have access to the account you're currently on." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-8">
-                <div ng-repeat="user in users" class="form-group existing-user-row">
-                    <div class="col-xs-6 user-name-col">
-<p class="control-label"><b>{{user.name}} </b>({{user.email}})</p>
-                    </div>
-                    <div class="col-xs-2">
-                        <button type="button" class="btn btn-default" ng-click="removeUser(user.id)">Remove</button>
+                <div ng-repeat="user in users | orderBy:'name'" class="form-group existing-user-row">
+                    <label ng-if="user.removed" class="col-xs-6 control-label undo">The user was removed. <a ng-click="undoRemove(user.id)">Undo?</a></label>
+                    <div ng-if="!user.removed">
+                        <div class="col-xs-6 user-name-col">
+    <p class="control-label"><b>{{user.name}} </b>({{user.email}})</p>
+                            <span ng-show="user.saved && user.emailSent" class="success">An introductory email was sent to this user.</span>
+                            <span ng-show="user.saved && !user.emailSent" class="success">This user can now access this account.</span>
+                        </div>
+                        <div class="col-xs-2">
+                            <button type="button" class="btn btn-default" ng-click="removeUser(user.id)">Remove</button>
+                        </div>
                     </div>
                 </div>
                 <div id="add-user-row" class="form-group">
@@ -41,14 +46,8 @@
                         <button type="button" class="btn btn-default" ng-click="addUser()">Add new user</button>
                         <div class="loader" ng-show="addUserRequestInProgress"></div>
                     </div><br />
-                    <div class="col-xs-12" ng-show="userSaved">
-                        <span ng-show="emailSent" class="success">An introductory email was sent to the new user.</span>
-                        <span ng-show="!emailSent" class="success">User has been granted permission to access this account.</span>
-                    </div>
                     <div class="col-xs-12" ng-show="addUserErrors">
-                        <div><label ng-repeat="error in addUserErrors.firstName" class="error" for="first-name-input">{{ error }}</label></div>
-                        <div><label ng-repeat="error in addUserErrors.lastName" class="error" for="last-name-input">{{ error }}</label></div>
-                        <div><label ng-repeat="error in addUserErrors.email" class="error" for="email-input">{{ error }}</label></div>
+                        <label class="error">Please specify the user's first name, last name and email.</label>
                     </div>
                 </div>
             </div>

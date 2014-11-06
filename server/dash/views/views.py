@@ -16,6 +16,7 @@ from django.contrib.auth import login, authenticate
 from django.views.decorators.http import require_GET
 
 from dash.views import helpers
+from dash import forms
 
 from utils import statsd_helper
 from utils import api_common
@@ -27,6 +28,7 @@ import actionlog.zwei_actions
 from dash import models
 from dash import constants
 
+from zemauth.models import User as ZemUser
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +102,41 @@ class User(api_common.BaseApiView):
             response['user'] = self.get_dict(request.user)
 
         return self.create_api_response(response)
+
+    @statsd_helper.statsd_timer('dash.api', 'user_put')
+    def put(self, request):
+        if not request.user.has_perm('zemauth.add_user'):
+            raise exc.MissingDataError()
+
+        resource = json.loads(request.body)
+
+        form = forms.UserForm(resource)
+        if not form.is_valid():
+            raise exc.ValidationError(errors=dict(form.errors))
+
+        try:
+            user = ZemUser.objects.get(email=form.cleaned_data['email'])
+            user.first_name = form.cleaned_data['first_name']
+            user.last_name = form.cleaned_data['last_name']
+
+            user.save()
+
+            created = False
+        except ZemUser.DoesNotExist:
+            user = ZemUser.objects.create_user(
+                form.cleaned_data['email'],
+                first_name=form.cleaned_data['first_name'],
+                last_name=form.cleaned_data['last_name']
+            )
+
+            created = True
+
+        response = {'user': self.get_dict(user)}
+
+        return self.create_api_response(
+            response,
+            status_code=201 if created else 200
+        )
 
     def get_dict(self, user):
         result = {}

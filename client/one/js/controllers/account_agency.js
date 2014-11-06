@@ -14,7 +14,6 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
     $scope.addUserRequestInProgress = false;
     $scope.addUserData = {};
     $scope.addUserErrors = null;
-    $scope.userSaved = null;
 
     $scope.getSettings = function (discarded) {
         $scope.saved = null;
@@ -87,15 +86,15 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
         }
     };
 
-    var getUserIndex = function (userId) {
-        var userIndex = -1;
+    var getUser = function (userId) {
+        var result;
         $scope.users.forEach(function (user, index) {
             if (user.id === userId) {
-                userIndex = index;
+                result = user;
             }
         });
 
-        return userIndex;
+        return result;
     };
 
     $scope.getUsers = function () {
@@ -107,25 +106,32 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
     };
 
     $scope.addUser = function () {
-        $scope.userSaved = null;
         $scope.addUserRequestInProgress = true;
 
-        api.accountUsers.put($state.params.id, $scope.addUserData).then(
-            function (data) {
-                var userIndex = getUserIndex(data.user.id);
-                console.log(userIndex);
-                if (userIndex === -1) {
-                    $scope.users.push(data.user);
-                }
-
-                $scope.userSaved = true;
+        api.user.put($scope.addUserData).then(
+            function (userData) {
                 $scope.addUserData = {};
                 $scope.addUserErrors = null;
-                $scope.emailSent = data.emailSent;
+
+                api.accountUsers.put($state.params.id, userData.user.id).then(
+                    function (accountUserData) {
+                        var user = getUser(accountUserData.id);
+
+                        if (!user) {
+                            user = accountUserData;
+                            $scope.users.push(user);
+                        } else {
+                            user.name = accountUserData.name;
+                        }
+
+                        user.saved = true;
+                        user.removed = false;
+                        user.emailSent = userData.created;
+                    }
+                )
             },
             function (data) {
                 $scope.addUserErrors = data;
-                $scope.userSaved = false;
             }
         ).finally(function () {
             $scope.addUserRequestInProgress = false;
@@ -133,15 +139,26 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
     };
 
     $scope.removeUser = function (userId) {
-        $scope.userSaved = null;
-
         api.accountUsers.remove($state.params.id, userId).then(
             function (userId) {
-                var userIndex = getUserIndex(userId);
+                var user = getUser(userId);
 
-                if (userIndex > -1) {
-                    $scope.users.splice(userIndex, 1);
+                if (user) {
+                    user.removed = true;
+                    user.saved = false;
                 }
+            }
+        );
+    };
+
+    $scope.undoRemove = function (userId) {
+        api.accountUsers.put($state.params.id, userId).then(
+            function (data) {
+                var user = getUser(userId);
+                user.removed = false;
+            },
+            function (data) {
+                // TODO handle error?
             }
         );
     };

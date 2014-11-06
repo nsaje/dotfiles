@@ -203,6 +203,7 @@ urlpatterns += patterns(
     ),
     url(r'^api/nav_data$', login_required(dash.views.views.NavigationDataView.as_view())),
     url(r'^api/users/(?P<user_id>(\d+|current))/$', login_required(dash.views.views.User.as_view())),
+    url(r'^api/users/$', login_required(dash.views.views.User.as_view())),
 )
 
 # Action Log

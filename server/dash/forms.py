@@ -202,7 +202,11 @@ class CampaignBudgetForm(forms.Form):
             return 0
 
 
-class AccountUsersForm(forms.Form):
+class UserForm(forms.Form):
+    email = forms.EmailField(
+        max_length=127,
+        error_messages={'required': 'Please specify user\'s email.'}
+    )
     first_name = forms.CharField(
         max_length=127,
         error_messages={'required': 'Please specify first name.'}
@@ -210,8 +214,4 @@ class AccountUsersForm(forms.Form):
     last_name = forms.CharField(
         max_length=127,
         error_messages={'required': 'Please specify last name.'}
-    )
-    email = forms.EmailField(
-        max_length=127,
-        error_messages={'required': 'Please specify user\'s email.'}
     )
