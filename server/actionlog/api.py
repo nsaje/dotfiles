@@ -497,8 +497,8 @@ def _init_create_campaign(ad_group_source, name):
             payload['args']['extra'].update({
                 # Unquoting is necessary because we want to forward parameters as they were
                 # entered, even if they contain characters such as '{', '}' or ' ' because
-                # they should get handeled by supply source (urllib.urlencode() quotes by)
-                # default
+                # they should get handeled by supply source (urllib.urlencode() quotes by
+                # default)
                 'tracking_code': urllib.unquote(urllib.urlencode(tracking_code)),
             })
 
