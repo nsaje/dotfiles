@@ -495,7 +495,11 @@ def _init_create_campaign(ad_group_source, name):
                 tracking_code.update(dict(urlparse.parse_qsl(ad_group_settings.tracking_code)))
 
             payload['args']['extra'].update({
-                'tracking_code': urllib.urlencode(tracking_code),
+                # Unquoting is necessary because we want to forward parameters as they were
+                # entered, even if they contain characters such as '{', '}' or ' ' because
+                # they should get handeled by supply source (urllib.urlencode() quotes by)
+                # default
+                'tracking_code': urllib.unquote(urllib.urlencode(tracking_code)),
             })
 
             if campaign_settings:
