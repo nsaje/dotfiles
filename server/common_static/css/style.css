@@ -43,11 +43,18 @@ header {
     color: #313131;
 }
 
-.center-container .label.signin {
+.center-container h1 {
     text-align: center;
-    font-size: 30px;
     font-weight: 200;
-    margin: 20px 0;
+    margin-bottom: 0;
+}
+
+.center-container h2 {
+    text-align: center;
+    font-weight: 200;
+    font-size: 20px;
+    margin-bottom: 8px;
+    margin-top: 0;
 }
 
 .center-container input,
@@ -66,7 +73,8 @@ header {
 
 .center-container .placeholder,
 .center-container input[name="username"],
-.center-container input[name="password"] {
+.center-container input[name="password"],
+.center-container input[name="new_password"] {
     font-family: proxima-nova, sans-serif;
     border: 1px solid #2fa8c7;
     padding: 10px 12px;

@@ -8,7 +8,7 @@ from django.conf.urls import handler404
 
 import utils.statsd_helper
 
-from zemauth.forms import AuthenticationForm
+from zemauth.forms import AuthenticationForm, SetPasswordForm
 
 import zweiapi.views
 import actionlog.views
@@ -34,6 +34,14 @@ urlpatterns = patterns(
         'zemauth.views.login',
         {'authentication_form': AuthenticationForm, 'template_name': 'zemauth/signin.html'}),
     url(r'^signout$', 'django.contrib.auth.views.logout_then_login'),
+    url(r'^password_reset_confirm/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
+        'django.contrib.auth.views.password_reset_confirm',
+        {
+            'template_name': 'zemauth/password_reset_confirm.html',
+            'post_reset_redirect': '/',
+            'set_password_form': SetPasswordForm
+        },
+        name='password_reset_confirm'),
     url(r'^admin$', RedirectView.as_view(url='/admin/')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^oauth2callback', 'zemauth.views.google_callback'),

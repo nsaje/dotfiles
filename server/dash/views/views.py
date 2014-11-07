@@ -16,6 +16,8 @@ from django.http import HttpResponse
 from django.contrib.auth import login, authenticate
 from django.views.decorators.http import require_GET
 from django.core.mail import send_mail
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.http import urlsafe_base64_encode
 
 from dash.views import helpers
 from dash import forms
@@ -57,14 +59,18 @@ def create_name(objects, name):
     return name
 
 
+def generate_password_reset_url(user, request):
+    encoded_id = urlsafe_base64_encode(str(user.pk))
+    token = PasswordResetTokenGenerator().make_token(user)
+
+    url = request.build_absolute_uri(
+        reverse('password_reset_confirm', args=(encoded_id, token))
+    )
+
+    return url.replace('http://', 'https://')
+
+
 def send_email_to_new_user(user, request):
-    recipients = [user.email]
-
-    subject = u'Welcome to Zemanta!'
-
-    link_url = request.build_absolute_uri('/')
-    link_url = link_url.replace('http://', 'https://')
-
     body = u'''<p>Hi {name},</p>
 <p>
 Welcome to Zemanta's Content DSP!
@@ -85,16 +91,17 @@ Zemanta Client Services
     '''
     body = body.format(
         name=user.first_name,
-        link_url=link_url
+        link_url=generate_password_reset_url(user, request)
     )
 
     try:
         send_mail(
-            subject,
+            'Welcome to Zemanta!',
             body,
             settings.FROM_EMAIL,
-            recipients,
-            fail_silently=False
+            [user.email],
+            fail_silently=False,
+            html_message=body
         )
     except Exception as e:
         message = 'Welcome email for user {} ({}) was not sent because an exception was raised: {}'.format(
