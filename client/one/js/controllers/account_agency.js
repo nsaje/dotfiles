@@ -156,9 +156,6 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
             function (data) {
                 var user = getUser(userId);
                 user.removed = false;
-            },
-            function (data) {
-                // TODO handle error?
             }
         );
     };
