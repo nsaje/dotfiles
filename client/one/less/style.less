@@ -131,6 +131,12 @@ a:visited {
         border: 1px solid #2fa8c7;
         .box-shadow(none);
     }
+
+    &.has-error,
+    &:focus.has-error {
+        border-color: #c70000;
+        .box-shadow(none);
+    }
 }
 
 .success {
@@ -953,13 +959,16 @@ a.help-popover:visited {
     }
 }
 
-.profile-container .dropdown-menu .internal {
-    position: absolute;
-    border-top: 7px solid #16a085;
-    border-right: 7px solid transparent;
-    z-index: 1;
-    top: 5px;
-    left: 5px;
+.page-account-agency,
+.profile-container .dropdown-menu {
+    .internal {
+        position: absolute;
+        border-top: 7px solid #16a085;
+        border-right: 7px solid transparent;
+        z-index: 1;
+        top: 5px;
+        left: 5px;
+    }
 }
 
 .button-bar .button-bar-item .internal {
@@ -1772,5 +1781,31 @@ a.help-popover:visited {
 
     strong {
         font-weight: 400;
+    }
+}
+
+.page-account-agency {
+    .existing-user-row .undo {
+        padding-top: 10px;
+
+        &, a {
+            color: #4fca32;
+            font-size: 12px;
+            font-weight: 300;
+        }
+
+        a {
+            cursor: pointer;
+            text-decoration: underline;
+        }
+    }
+
+    #add-user-row {
+        margin-left: -5px;
+
+        div[class*=col-xs-] {
+            padding: 0 5px;
+            margin-bottom: 5px;
+        }
     }
 }

@@ -6,6 +6,7 @@ import base64
 import httplib
 import urllib
 import urllib2
+import traceback
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -14,12 +15,17 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth import login, authenticate
 from django.views.decorators.http import require_GET
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.http import urlsafe_base64_encode
 
 from dash.views import helpers
+from dash import forms
 
 from utils import statsd_helper
 from utils import api_common
 from utils import exc
+from utils import pagerduty_helper
 import actionlog.api
 import actionlog.sync
 import actionlog.zwei_actions
@@ -27,6 +33,7 @@ import actionlog.zwei_actions
 from dash import models
 from dash import constants
 
+from zemauth.models import User as ZemUser
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +57,75 @@ def create_name(objects, name):
             name += ' {}'.format(num)
 
     return name
+
+
+def generate_password_reset_url(user, request):
+    encoded_id = urlsafe_base64_encode(str(user.pk))
+    token = PasswordResetTokenGenerator().make_token(user)
+
+    url = request.build_absolute_uri(
+        reverse('password_reset_confirm', args=(encoded_id, token))
+    )
+
+    return url.replace('http://', 'https://')
+
+
+def send_email_to_new_user(user, request):
+    body = u'''<p>Hi {name},</p>
+<p>
+Welcome to Zemanta's Content DSP!
+</p>
+<p>
+We're excited to promote your quality content across our extended network. Through our reporting dashboard, you can monitor campaign performance across multiple supply channels.
+</p>
+<p>
+Click <a href="{link_url}">here</a> to create a password to log into your Zemanta account.
+</p>
+<p>
+As always, please don't hesitate to contact help@zemanta.com with any questions.
+</p>
+<p>
+Thanks,<br/>
+Zemanta Client Services
+</p>
+    '''
+    body = body.format(
+        name=user.first_name,
+        link_url=generate_password_reset_url(user, request)
+    )
+
+    try:
+        send_mail(
+            'Welcome to Zemanta!',
+            body,
+            settings.FROM_EMAIL,
+            [user.email],
+            fail_silently=False,
+            html_message=body
+        )
+    except Exception as e:
+        message = 'Welcome email for user {} ({}) was not sent because an exception was raised: {}'.format(
+            user.get_full_name(),
+            user.email,
+            traceback.format_exc(e)
+        )
+
+        logger.error(message)
+
+        user_url = request.build_absolute_uri(
+            reverse('admin:zemauth_user_change', args=(user.pk,))
+        )
+        user_url = user_url.replace('http://', 'https://')
+
+        desc = {
+            'user_url': user_url
+        }
+        pagerduty_helper.trigger(
+            event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
+            incident_key='new_user_mail_failed',
+            description=message,
+            details=desc,
+        )
 
 
 @statsd_helper.statsd_timer('dash', 'index')
@@ -100,6 +176,42 @@ class User(api_common.BaseApiView):
             response['user'] = self.get_dict(request.user)
 
         return self.create_api_response(response)
+
+    @statsd_helper.statsd_timer('dash.api', 'user_put')
+    def put(self, request):
+        if not request.user.has_perm('zemauth.add_user'):
+            raise exc.MissingDataError()
+
+        resource = json.loads(request.body)
+
+        form = forms.UserForm(resource)
+        if not form.is_valid():
+            raise exc.ValidationError(errors=dict(form.errors))
+
+        try:
+            user = ZemUser.objects.get(email=form.cleaned_data['email'])
+            user.first_name = form.cleaned_data['first_name']
+            user.last_name = form.cleaned_data['last_name']
+
+            user.save()
+
+            created = False
+        except ZemUser.DoesNotExist:
+            user = ZemUser.objects.create_user(
+                form.cleaned_data['email'],
+                first_name=form.cleaned_data['first_name'],
+                last_name=form.cleaned_data['last_name']
+            )
+
+            send_email_to_new_user(user, request)
+            created = True
+
+        response = {'user': self.get_dict(user)}
+
+        return self.create_api_response(
+            response,
+            status_code=201 if created else 200
+        )
 
     def get_dict(self, user):
         result = {}

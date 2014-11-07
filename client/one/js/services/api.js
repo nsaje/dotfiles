@@ -27,6 +27,22 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     } 
 
     function User() {
+        function convertToApi (data) {
+            return {
+                first_name: data.firstName,
+                last_name: data.lastName,
+                email: data.email
+            };
+        }
+
+        function convertValidationErrorFromApi(errors) {
+            return {
+                firstName: errors.first_name,
+                lastName: errors.last_name,
+                email: errors.email
+            };
+        }
+
         this.get = function (id) {
             var deferred = $q.defer();
             var url = '/api/users/' + id + '/';
@@ -48,6 +64,35 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             return deferred.promise;
         };
+
+        this.put = function (userData) {
+            var deferred = $q.defer();
+            var url = '/api/users/';
+
+            var data = convertToApi(userData);
+
+            $http.put(url, data).
+                success(function (data, status) {
+                    var resource;
+                    if (data && data.data) {
+                        resource = data.data;
+                    }
+                    deferred.resolve({
+                        'user': resource.user,
+                        'created': status === 201
+                    });
+                }).
+                error(function (data, status) {
+                    var resource;
+                    if (status === 400 && data && data.data.error_code === 'ValidationError') {
+                        resource = convertValidationErrorFromApi(data.data.errors);
+                    }
+                    deferred.reject(resource);
+                });
+
+            return deferred.promise;
+        };
+
     }
 
     function AdGroupSources() {
@@ -1462,6 +1507,71 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
+    function AccountUsers() {
+        this.list = function (accountId) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + accountId + '/users/';
+            
+            $http.get(url).
+                success(function (data) {
+                    var resource;
+
+                    if (data && data.data) {
+                        resource = data.data;
+                    }
+                    
+                    deferred.resolve(resource);
+                }).
+                error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.put = function (accountId, userId) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + accountId + '/users/' + userId + '/';
+
+            $http.put(url).
+                success(function (data) {
+                    var resource;
+                    if (data && data.data) {
+                        resource = data.data;
+                    }
+                    deferred.resolve(resource);
+                }).
+                error(function (data, status) {
+                    var resource;
+                    if (status === 400 && data && data.data.error_code === 'ValidationError') {
+                        resource = convertValidationErrorFromApi(data.data.errors);
+                    }
+                    deferred.reject(resource);
+                });
+
+            return deferred.promise;
+        };
+
+        this.remove = function (accountId, userId) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + accountId + '/users/' + userId + '/';
+
+            $http.delete(url).
+                success(function (data) {
+                    var resource;
+                    if (data && data.data) {
+                        resource = data.data.user_id;
+                    }
+                    deferred.resolve(resource);
+                }).
+                error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     return {
         navData: new NavData(),
         user: new User(),
@@ -1492,6 +1602,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         checkCampaignSyncProgress: new CheckCampaignSyncProgress(),
         checkSyncProgress: new CheckSyncProgress(),
         dailyStats: new DailyStats(),
-        allAccountsBudget: new AllAccountsBudget()
+        allAccountsBudget: new AllAccountsBudget(),
+        accountUsers: new AccountUsers()
     };
 }]);

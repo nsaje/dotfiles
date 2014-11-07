@@ -115,6 +115,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('view_archived_entities', 'Can view archived entities.'),
             ('unspent_budget_view', 'Can view unspent budget.'),
             ('switch_to_demo_mode', 'Can switch to demo mode.'),
+            ('account_agency_access_permissions', 'Can view and set account access permissions.')
         )
 
     def get_full_name(self):
