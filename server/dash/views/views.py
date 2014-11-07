@@ -6,6 +6,7 @@ import base64
 import httplib
 import urllib
 import urllib2
+import traceback
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -14,6 +15,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth import login, authenticate
 from django.views.decorators.http import require_GET
+from django.core.mail import send_mail
 
 from dash.views import helpers
 from dash import forms
@@ -21,6 +23,7 @@ from dash import forms
 from utils import statsd_helper
 from utils import api_common
 from utils import exc
+from utils import pagerduty_helper
 import actionlog.api
 import actionlog.sync
 import actionlog.zwei_actions
@@ -52,6 +55,70 @@ def create_name(objects, name):
             name += ' {}'.format(num)
 
     return name
+
+
+def send_email_to_new_user(user, request):
+    recipients = [user.email]
+
+    subject = u'Welcome to Zemanta!'
+
+    link_url = request.build_absolute_uri('/')
+    link_url = link_url.replace('http://', 'https://')
+
+    body = u'''<p>Hi {name},</p>
+<p>
+Welcome to Zemanta's Content DSP!
+</p>
+<p>
+We're excited to promote your quality content across our extended network. Through our reporting dashboard, you can monitor campaign performance across multiple supply channels.
+</p>
+<p>
+Click <a href="{link_url}">here</a> to create a password to log into your Zemanta account.
+</p>
+<p>
+As always, please don't hesitate to contact help@zemanta.com with any questions.
+</p>
+<p>
+Thanks,<br/>
+Zemanta Client Services
+</p>
+    '''
+    body = body.format(
+        name=user.first_name,
+        link_url=link_url
+    )
+
+    try:
+        send_mail(
+            subject,
+            body,
+            settings.FROM_EMAIL,
+            recipients,
+            fail_silently=False
+        )
+    except Exception as e:
+        message = 'Welcome email for user {} ({}) was not sent because an exception was raised: {}'.format(
+            user.get_full_name(),
+            user.email,
+            traceback.format_exc(e)
+        )
+
+        logger.error(message)
+
+        user_url = request.build_absolute_uri(
+            reverse('admin:zemauth_user_change', args=(user.pk,))
+        )
+        user_url = user_url.replace('http://', 'https://')
+
+        desc = {
+            'user_url': user_url
+        }
+        pagerduty_helper.trigger(
+            event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
+            incident_key='new_user_mail_failed',
+            description=message,
+            details=desc,
+        )
 
 
 @statsd_helper.statsd_timer('dash', 'index')
@@ -129,6 +196,7 @@ class User(api_common.BaseApiView):
                 last_name=form.cleaned_data['last_name']
             )
 
+            send_email_to_new_user(user, request)
             created = True
 
         response = {'user': self.get_dict(user)}

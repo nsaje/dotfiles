@@ -92,7 +92,7 @@ Zemanta
         send_mail(
             subject,
             body,
-            settings.AD_GROUP_SETTINGS_CHANGE_FROM_EMAIL,
+            settings.FROM_EMAIL,
             recipients,
             fail_silently=False
         )

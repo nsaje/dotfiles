@@ -19,7 +19,7 @@
                 <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Users who have access to the account you're currently on." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-8">
-                <div ng-repeat="user in users | orderBy:'name'" class="form-group existing-user-row">
+                <div ng-repeat="user in users" class="form-group existing-user-row">
                     <label ng-if="user.removed" class="col-xs-6 control-label undo">The user was removed. <a ng-click="undoRemove(user.id)">Undo?</a></label>
                     <div ng-if="!user.removed">
                         <div class="col-xs-6 user-name-col">
