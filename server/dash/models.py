@@ -715,6 +715,76 @@ class AdGroupSettings(SettingsBase):
         return value
 
 
+class AdGroupSourceState(models.Model):
+    id = models.AutoField(primary_key=True)
+
+    ad_group_source = models.ForeignKey(
+        AdGroupSource,
+        null=True,
+        related_name='states',
+        on_delete=models.PROTECT
+    )
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
+    state = models.IntegerField(
+        default=constants.AdGroupSourceSettingsState.INACTIVE,
+        choices=constants.AdGroupSourceSettingsState.get_choices()
+    )
+    cpc_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='CPC'
+    )
+    daily_budget_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Daily budget'
+    )
+
+    class Meta:
+        get_latest_by = 'created_dt'
+        ordering = ('-created_dt',)
+
+    @classmethod
+    def get_current_state(cls, ad_group, sources):
+        source_ids = [x.pk for x in sources]
+
+        source_settings = cls.objects.filter(
+            ad_group_source__ad_group=ad_group,
+        ).order_by('-created_dt')
+
+        result = {}
+        for s in source_settings:
+            source = s.ad_group_source.source
+
+            if source.id in result:
+                continue
+
+            result[source.id] = s
+
+            if len(result) == len(source_ids):
+                break
+
+        for sid in source_ids:
+            if sid in result:
+                continue
+
+            result[sid] = cls(
+                state=None,
+                ad_group_source=AdGroupSource(
+                    ad_group=ad_group,
+                    source=Source.objects.get(pk=sid)
+                )
+            )
+
+        return result
+
+
 class AdGroupSourceSettings(models.Model):
     id = models.AutoField(primary_key=True)
 
