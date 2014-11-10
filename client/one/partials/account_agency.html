@@ -34,20 +34,21 @@
                 </div>
                 <div id="add-user-row" class="form-group">
                     <div class="col-xs-2">
-                        <input id="first-name-input" type="text" ng-class="{'has-error': !!addUserErrors.firstName}" class="form-control" placeholder="Name" ng-model="addUserData.firstName">
+                        <input id="first-name-input" type="text" ng-class="{'has-error': !!addUserErrors.errors.firstName}" class="form-control" placeholder="Name" ng-model="addUserData.firstName">
                     </div>
                     <div class="col-xs-2">
-                        <input id="last-name-input" type="text" ng-class="{'has-error': !!addUserErrors.lastName}" class="form-control" placeholder="Last name" ng-model="addUserData.lastName">
+                        <input id="last-name-input" type="text" ng-class="{'has-error': !!addUserErrors.errors.lastName}" class="form-control" placeholder="Last name" ng-model="addUserData.lastName">
                     </div>
                     <div class="col-xs-4">
-                        <input id="email-input" type="text" ng-class="{'has-error': !!addUserErrors.email}" class="form-control" placeholder="Email" ng-model="addUserData.email">
+                        <input id="email-input" type="text" ng-class="{'has-error': !!addUserErrors.errors.email}" class="form-control" placeholder="Email" ng-model="addUserData.email">
                     </div>
                     <div class="col-xs-4">
                         <button type="button" class="btn btn-default" ng-click="addUser()">Add new user</button>
                         <div class="loader" ng-show="addUserRequestInProgress"></div>
                     </div><br />
                     <div class="col-xs-12" ng-show="addUserErrors">
-                        <label class="error">Please specify the user's first name, last name and email.</label>
+                        <label class="error">{{addUserErrors.message}}</label>
+                        <label ng-show="addUserErrors.conflict" class="error"></label>
                     </div>
                 </div>
             </div>

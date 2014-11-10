@@ -59,5 +59,5 @@ custom_errors = (
     AuthError,
     AuthorizationError,
     ValidationError,
-    MissingDataError
+    MissingDataError,
 )
