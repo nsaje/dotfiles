@@ -16,8 +16,9 @@ from django.http import HttpResponse
 from django.contrib.auth import login, authenticate
 from django.views.decorators.http import require_GET
 from django.core.mail import send_mail
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
+from django.contrib.auth import models as authmodels
 
 from dash.views import helpers
 from dash import forms
@@ -61,7 +62,7 @@ def create_name(objects, name):
 
 def generate_password_reset_url(user, request):
     encoded_id = urlsafe_base64_encode(str(user.pk))
-    token = PasswordResetTokenGenerator().make_token(user)
+    token = default_token_generator.make_token(user)
 
     url = request.build_absolute_uri(
         reverse('password_reset_confirm', args=(encoded_id, token))
@@ -202,6 +203,13 @@ class User(api_common.BaseApiView):
                 first_name=form.cleaned_data['first_name'],
                 last_name=form.cleaned_data['last_name']
             )
+
+            # add user to groups
+            perm = authmodels.Permission.objects.get(codename='group_new_user_add')
+            groups = authmodels.Group.objects.filter(permissions=perm)
+
+            for group in groups:
+                group.user_set.add(user)
 
             send_email_to_new_user(user, request)
             created = True
