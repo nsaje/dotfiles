@@ -278,11 +278,21 @@ class SourceAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'name',
+        'source_type',
         'maintenance',
         'created_dt',
         'modified_dt',
     )
     readonly_fields = ('created_dt', 'modified_dt')
+
+
+class SourceTypeAdmin(admin.ModelAdmin):
+    fields = ('type', 'available_actions')
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return self.readonly_fields + ('type',)
+        return self.readonly_fields
 
 
 class SourceCredentialsAdmin(admin.ModelAdmin):
@@ -435,6 +445,17 @@ class AdGroupSourceSettingsAdmin(admin.ModelAdmin):
     )
 
 
+class AdGroupSourceStateAdmin(admin.ModelAdmin):
+    search_fields = ['ad_group']
+    list_display = (
+        'ad_group_source',
+        'state',
+        'cpc_cc',
+        'daily_budget_cc',
+        'created_dt',
+    )
+
+
 class DemoAdGroupRealAdGroupAdminForm(forms.ModelForm):
 
     def clean_demo_ad_group(self):
@@ -464,6 +485,8 @@ admin.site.register(models.Source, SourceAdmin)
 admin.site.register(models.AdGroup, AdGroupAdmin)
 admin.site.register(models.AdGroupSettings, AdGroupSettingsAdmin)
 admin.site.register(models.AdGroupSourceSettings, AdGroupSourceSettingsAdmin)
+admin.site.register(models.AdGroupSourceState, AdGroupSourceStateAdmin)
 admin.site.register(models.SourceCredentials, SourceCredentialsAdmin)
+admin.site.register(models.SourceType, SourceTypeAdmin)
 admin.site.register(models.DefaultSourceSettings, DefaultSourceSettingsAdmin)
 admin.site.register(models.DemoAdGroupRealAdGroup, DemoAdGroupRealAdGroupAdmin)

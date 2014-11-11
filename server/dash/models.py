@@ -411,6 +411,13 @@ class SourceType(models.Model):
         blank=True
     )
 
+    def __str__(self):
+        return self.type
+
+    class Meta:
+        verbose_name = "Source Type"
+        verbose_name_plural = "Source Types"
+
 
 class Source(models.Model):
     id = models.AutoField(primary_key=True)
