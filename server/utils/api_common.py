@@ -12,16 +12,15 @@ logger = logging.getLogger(__name__)
 
 
 class BaseApiView(View):
-    def get_log_message(self, request, *args, **kwargs):
-        msg = 'GET: {0}\nPOST: {1}\nBody: {2}\nArgs:\n{3}\nKwargs:\n{4}'.format(
-            str(request.GET.items()),
-            str(request.POST.items()),
-            str(request.body),
-            '\n'.join(str(x) for x in args),
-            '\n'.join('{0}: {1}'.format(k, str(v)) for k, v in kwargs.iteritems())
-        )
-
-        return msg
+    
+    def log_message(self, level, request, *args, **kwargs):
+        logger.log(level, 'GET: %s POST: %s Body: %s Args: %s Kwargs: %s',
+                str(request.GET.items()),
+                str(request.POST.items()),
+                str(request.body),
+                '\n'.join(str(x) for x in args),
+                '\n'.join('{0}: {1}'.format(k, str(v)) for k, v in kwargs.iteritems())
+            )
 
     def create_api_response(
             self,
@@ -77,7 +76,7 @@ class BaseApiView(View):
     def get_exception_response(self, request, exception):
         error = {}
         if type(exception) in exc.custom_errors:
-            logger.warning(self.get_log_message(request, exception))
+            self.log_message(logging.WARN, request, exception)
 
             error["error_code"] = exception.error_code
             error["message"] = exception.pretty_message or exception.message
@@ -87,7 +86,7 @@ class BaseApiView(View):
 
             status_code = exception.http_status_code
         else:
-            logger.exception(self.get_log_message(request, exception))
+            self.log_message(logging.ERROR, request, exception)
 
             error["error_code"] = "ServerError"
             error["message"] = "An error occurred."
