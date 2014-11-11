@@ -140,7 +140,7 @@
 ##########
 
 - fields:
-    type: 'test'
+    source_type: null
     name: 'A Source'
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
@@ -148,7 +148,7 @@
   pk: 1
 
 - fields:
-    type: 'test'
+    source_type: null
     name: 'B Source'
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'

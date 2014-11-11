@@ -270,7 +270,7 @@ def _init_stop_campaign(ad_group_source, order):
 
             payload = {
                 'action': action.action,
-                'source': ad_group_source.source.type,
+                'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_source.source_credentials and
@@ -316,7 +316,7 @@ def _init_fetch_status(ad_group_source, order):
 
             payload = {
                 'action': action.action,
-                'source': ad_group_source.source.type,
+                'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_source.source_credentials and
@@ -362,7 +362,7 @@ def _init_fetch_reports(ad_group_source, date, order):
 
             payload = {
                 'action': action.action,
-                'source': ad_group_source.source.type,
+                'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_source.source_credentials and
@@ -472,7 +472,7 @@ def _init_create_campaign(ad_group_source, name):
 
             payload = {
                 'action': action.action,
-                'source': ad_group_source.source.type,
+                'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_source.source_credentials and

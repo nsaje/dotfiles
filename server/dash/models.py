@@ -390,11 +390,32 @@ class CampaignSettings(SettingsBase):
         ordering = ('-created_dt',)
 
 
-class Source(models.Model):
-    id = models.AutoField(primary_key=True)
+class SourceAction(models.Model):
+    action = models.IntegerField(
+        primary_key=True,
+        choices=constants.SourceAction.get_choices()
+    )
+
+    def __str__(self):
+        return constants.SourceAction.get_text(self.action)
+
+
+class SourceType(models.Model):
     type = models.CharField(
         max_length=127,
-        blank=True,
+        unique=True
+    )
+
+    available_actions = models.ManyToManyField(
+        SourceAction,
+        blank=True
+    )
+
+
+class Source(models.Model):
+    id = models.AutoField(primary_key=True)
+    source_type = models.ForeignKey(
+        SourceType,
         null=True
     )
     name = models.CharField(
@@ -596,7 +617,7 @@ class AdGroupSource(models.Model):
     last_successful_sync_dt = models.DateTimeField(blank=True, null=True)
 
     def get_tracking_ids(self):
-        if self.source.type == 'zemanta':
+        if self.source.source_type and self.source.source_type.type == constants.SourceType.ZEMANTA:
             msid = '{sourceDomain}'
         else:
             msid = self.source.name.lower()

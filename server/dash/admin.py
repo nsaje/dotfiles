@@ -89,7 +89,8 @@ class SourceCredentialsForm(forms.ModelForm):
     oauth_refresh = forms.CharField(label='OAuth tokens', required=False, widget=StrFieldWidget)
 
     def _set_oauth_refresh(self, instance):
-        if not instance or not instance.pk or instance.source.type not in settings.SOURCE_OAUTH_URIS.keys():
+        if not instance or not instance.pk or\
+           not (instance.source.source_type and instance.source.source_type.type in settings.SOURCE_OAUTH_URIS.keys()):
             self.fields['oauth_refresh'].widget = forms.HiddenInput()
             return
 
@@ -106,13 +107,13 @@ class SourceCredentialsForm(forms.ModelForm):
             self.initial['oauth_refresh'] = 'Credentials instance doesn\'t contain access tokens. '\
                                             '<a href="' +\
                                             reverse('dash.views.oauth_authorize',
-                                                    kwargs={'source_name': instance.source.type}) +\
+                                                    kwargs={'source_name': instance.source.source_type.type}) +\
                                             '?credentials_id=' + str(instance.pk) + '">Generate tokens</a>'
         else:
             self.initial['oauth_refresh'] = 'Credentials instance contains access tokens. '\
                                             '<a href="' +\
                                             reverse('dash.views.oauth_authorize',
-                                                    kwargs={'source_name': instance.source.type}) +\
+                                                    kwargs={'source_name': instance.source.source_type.type}) +\
                                             '?credentials_id=' + str(instance.pk) + '">Refresh tokens</a>'
 
     def __init__(self, *args, **kwargs):

@@ -113,7 +113,7 @@ class ActionLogApiTestCase(TestCase):
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
             payload = {
-                'source': ad_group_source.source.type,
+                'source': ad_group_source.source.source_type.type,
                 'action': constants.Action.SET_CAMPAIGN_STATE,
                 'expiration_dt': expiration_dt,
                 'credentials': ad_group_source.source_credentials.credentials,
@@ -152,7 +152,7 @@ class ActionLogApiTestCase(TestCase):
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
             payload = {
-                'source': ad_group_source.source.type,
+                'source': ad_group_source.source.source_type.type,
                 'action': constants.Action.FETCH_CAMPAIGN_STATUS,
                 'expiration_dt': expiration_dt,
                 'credentials': ad_group_source.source_credentials.credentials,
@@ -191,7 +191,7 @@ class ActionLogApiTestCase(TestCase):
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
             payload = {
-                'source': ad_group_source.source.type,
+                'source': ad_group_source.source.source_type.type,
                 'action': constants.Action.FETCH_REPORTS,
                 'expiration_dt': expiration_dt,
                 'credentials': ad_group_source.source_credentials.credentials,
@@ -255,7 +255,7 @@ class ActionLogApiTestCase(TestCase):
             settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
         )
         payload = {
-            'source': ad_group_source.source.type,
+            'source': ad_group_source.source.source_type.type,
             'action': constants.Action.CREATE_CAMPAIGN,
             'expiration_dt': expiration_dt,
             'credentials': ad_group_source.source_credentials.credentials,
@@ -282,7 +282,7 @@ class ActionLogApiTestCase(TestCase):
             settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
         )
         payload = {
-            'source': ad_group_source_extra.source.type,
+            'source': ad_group_source_extra.source.source_type.type,
             'action': constants.Action.CREATE_CAMPAIGN,
             'expiration_dt': expiration_dt,
             'credentials': ad_group_source_extra.source_credentials.credentials,

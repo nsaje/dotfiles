@@ -81,7 +81,7 @@ class FetchReportsTestCase(TestCase):
             ad_group_source=ad_group_source,
             payload={
                 'action': constants.Action.FETCH_REPORTS,
-                'source': ad_group_source.source.type,
+                'source': ad_group_source.source.source_type.type,
                 'args': {
                     'partner_campaign_id': '"[fake]"',
                     'date': datetime.date(2014, 7, 1)
