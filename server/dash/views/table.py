@@ -296,7 +296,7 @@ class SourcesTable(api_common.BaseApiView):
         sources_data, totals_data = self.level_sources_table.get_stats(start_date, end_date)
         is_sync_in_progress = self.level_sources_table.is_sync_in_progress()
 
-        ad_gorup_sources_settings = None
+        ad_group_sources_settings = None
         if ad_group_level:
             ad_group_sources_settings = self.level_sources_table.get_sources_settings()
 
@@ -361,8 +361,8 @@ class SourcesTable(api_common.BaseApiView):
             'goals': totals_data.get('goals', {})
         }
 
-    def get_state(self, settings):
-        if any(s.state == constants.AdGroupSourceSettingsState.ACTIVE for s in settings):
+    def get_state(self, states):
+        if any(s.state == constants.AdGroupSourceSettingsState.ACTIVE for s in states):
             return constants.AdGroupSourceSettingsState.ACTIVE
 
         return constants.AdGroupSourceSettingsState.INACTIVE
@@ -392,7 +392,10 @@ class SourcesTable(api_common.BaseApiView):
 
             source_settings = None
             if ad_group_level and ad_group_sources_settings:
-                source_settings = [s for s in ad_group_sources_settings if s.ad_group_source.source_id == source.id][0]
+                for s in ad_group_sources_settings:
+                    if s.ad_group_source.source_id == source.id:
+                        source_settings = s
+                        break
 
             # get source reports data
             source_data = {}
@@ -409,7 +412,7 @@ class SourcesTable(api_common.BaseApiView):
                 supply_dash_url += '?ad_group_id={}&source_id={}'.format(id_, source.id)
 
                 if user.has_perm('zemauth.set_ad_group_source_settings'):
-                    daily_budget = source_settings.daily_budget_cc
+                    daily_budget = source_settings.daily_budget_cc if source_settings else None
                 else:
                     daily_budget = states[0].daily_budget_cc if len(states) else None
             else:
@@ -449,7 +452,10 @@ class SourcesTable(api_common.BaseApiView):
 
             if ad_group_level:
                 if user.has_perm('zemauth.set_ad_group_source_settings'):
-                    row['bid_cpc'] = source_settings.cpc_cc
+                    row['status_setting'] = source_settings.state if source_settings else None
+
+                if user.has_perm('zemauth.set_ad_group_source_settings'):
+                    row['bid_cpc'] = source_settings.cpc_cc if source_settings else None
                 else:
                     row['bid_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None
 
