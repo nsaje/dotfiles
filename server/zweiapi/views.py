@@ -23,18 +23,8 @@ logger = logging.getLogger(__name__)
 
 @csrf_exempt
 def zwei_callback(request, action_id):
-    try:
-        request_signer.verify_wsgi_request(request, settings.ZWEI_API_SIGN_KEY)
-    except request_signer.SignatureError as e:
-        logger.exception('Invalid zwei callback signature.')
-
-        msg = 'Zwei callback failed for action: %s. Error: %s'
-        logger.error(msg, action_id, repr(e.message))
-
-    try:
-        action = actionlogmodels.ActionLog.objects.get(id=action_id)
-    except ObjectDoesNotExist:
-        raise Exception('Invalid action_id in callback')
+    _validate_callback(request, action_id)
+    action = _get_action(action_id)
 
     data = json.loads(request.body)
     try:
@@ -45,21 +35,23 @@ def zwei_callback(request, action_id):
                 actionlog.sync.AdGroupSourceSync(action.ad_group_source).get_latest_success()
             action.ad_group_source.save()
     except Exception as e:
-        tb = traceback.format_exc()
-        msg = 'Zwei callback failed for action: %(action_id)s. Error: %(error)s, message: %(message)s.'
-        args = {
-            'action_id': action.id,
-            'error': e.__class__.__name__,
-            'message': repr(e.message)
-        }
-        logger.exception(msg, args)
+        _handle_zwei_callback_error(e, action)
 
-        msg += '\n\nTraceback: %(traceback)s'
-        args.update({'traceback': tb})
+    response_data = {'status': 'OK'}
+    return JsonResponse(response_data)
 
-        action.state = actionlogconstants.ActionState.FAILED
-        action.message = msg % args
-        action.save()
+
+@csrf_exempt
+def zwei_settings_callback(request, action_id, settings_id):
+    _validate_callback(request, action_id)
+    action = _get_action(action_id)
+
+    data = json.loads(request.body)
+    try:
+        settings_id = int(settings_id)
+        _procress_zwei_settings_response(settings_id, action, data)
+    except Exception as e:
+        _handle_zwei_callback_error(e, action)
 
     response_data = {'status': 'OK'}
     return JsonResponse(response_data)
@@ -125,12 +117,86 @@ def _process_zwei_response(action, data):
 
         reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, rows)
     elif action.action == actionlogconstants.Action.FETCH_CAMPAIGN_STATUS:
-        dashapi.campaign_status_upsert(action.ad_group_source, data['data'])
+        #dashapi.campaign_status_upsert(action.ad_group_source, data['data'])
+        dashapi.update_ad_group_source_state(action.ad_group_source, data['data'])
     elif action.action == actionlogconstants.Action.SET_CAMPAIGN_STATE:
-        state = action.payload['args']['conf']['state']
-        dashapi.update_campaign_state(action.ad_group_source, state)
+        # state = action.payload['args']['state']
+
+        # # add the conf here
+        # #dashapi.update_campaign_state(action.ad_group_source, state)
+        conf = action.payload['args']['conf']
+        dashapi.update_ad_group_source_state(action.ad_group_source, conf)
     elif action.action == actionlogconstants.Action.CREATE_CAMPAIGN:
         dashapi.update_campaign_key(action.ad_group_source, data['data']['source_campaign_key'])
 
     action.state = actionlogconstants.ActionState.SUCCESS
     action.save()
+
+
+@transaction.atomic
+def _procress_zwei_settings_response(settings_id, action, data):
+    if action.action != actionlogconstants.Action.SET_CAMPAIGN_STATE:
+        raise Exception(
+            'Unexpected extion action. Expected: {}, got: {}'.format(
+                actionlogconstants.Action.SET_CAMPAIGN_STATE,
+                action.action
+            )
+        )
+
+    if action.state != actionlogconstants.ActionState.WAITING:
+        logger.warning('Action not waiting for a response. Action: %s, response: %s', action, data)
+        return
+
+    if data['status'] != 'success':
+        logger.warning('Action failed. Action: %s, response: %s', action, data)
+
+        action.state = actionlogconstants.ActionState.FAILED
+        action.message = _get_error_message(data)
+        action.save()
+
+        return
+
+    conf = action.payload['args']['conf']
+    dashapi.update_ad_group_source_state(action.ad_group_source, conf, settings_id)
+
+    action.state = actionlogconstants.ActionState.SUCCESS
+    action.save()
+
+
+def _handle_zwei_callback_error(e, action):
+    tb = traceback.format_exc()
+    msg = 'Zwei callback failed for action: %(action_id)s. Error: %(error)s, message: %(message)s.'
+    args = {
+        'action_id': action.id,
+        'error': e.__class__.__name__,
+        'message': repr(e.message)
+    }
+    logger.exception(msg, args)
+
+    msg += '\n\nTraceback: %(traceback)s'
+    args.update({'traceback': tb})
+
+    action.state = actionlogconstants.ActionState.FAILED
+    action.message = msg % args
+    action.save()
+
+
+def _validate_callback(request, action_id):
+    '''
+    if the request is not valid this raises an exception
+    '''
+    try:
+        request_signer.verify_wsgi_request(request, settings.ZWEI_API_SIGN_KEY)
+    except request_signer.SignatureError as e:
+        logger.exception('Invalid zwei callback signature.')
+
+        msg = 'Zwei callback failed for action: %s. Error: %s'
+        logger.error(msg, action_id, repr(e.message))
+
+
+def _get_action(action_id):
+    try:
+        action = actionlogmodels.ActionLog.objects.get(id=action_id)
+        return action
+    except ObjectDoesNotExist:
+        raise Exception('Invalid action_id in callback')
