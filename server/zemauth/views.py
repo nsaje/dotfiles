@@ -2,13 +2,18 @@ import urllib
 
 from django.conf import settings
 from django.contrib import auth
-from django.contrib.auth import views as auth_views
+from django.contrib.auth import views as auth_views, tokens as auth_tokens
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from django.http import HttpResponseRedirect
+from django.utils.http import urlsafe_base64_decode
+from django.template.response import TemplateResponse
+from django.shortcuts import resolve_url
 
 import gauth
 from utils import statsd_helper
+from zemauth.models import User
+from zemauth.forms import SetPasswordForm
 
 
 @statsd_helper.statsd_timer('auth', 'signin_response_time')
@@ -29,6 +34,42 @@ def login(request, *args, **kwargs):
         kwargs['extra_context']['gauth_url'] = gauth.get_uri(request)
 
     return auth_views.login(request, *args, **kwargs)
+
+
+@statsd_helper.statsd_timer('auth', 'set_password')
+def set_password(request, uidb64=None, token=None, template_name=None):
+    assert uidb64 is not None and token is not None  # checked by URLconf
+
+    try:
+        uid = urlsafe_base64_decode(uidb64)
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and auth_tokens.default_token_generator.check_token(user, token):
+        validlink = True
+        if request.method == 'POST':
+            form = SetPasswordForm(user, request.POST)
+            if form.is_valid():
+                form.save()
+
+                # login user
+                user = auth.authenticate(username=user.email, password=request.POST['new_password'])
+                auth.login(request, user)
+
+                return HttpResponseRedirect(resolve_url('/'))
+        else:
+            form = SetPasswordForm(user)
+    else:
+        validlink = False
+        form = None
+    context = {
+        'form': form,
+        'validlink': validlink,
+    }
+
+    return TemplateResponse(request, template_name, context)
+
 
 @statsd_helper.statsd_timer('auth', 'google_callback')
 def google_callback(request, *args, **kwargs):
