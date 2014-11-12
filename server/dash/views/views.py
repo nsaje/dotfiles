@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import decimal
 import json
 import logging
 import base64
@@ -32,6 +33,7 @@ import actionlog.zwei_actions
 
 from dash import models
 from dash import constants
+from dash import api
 
 from zemauth.models import User as ZemUser
 
@@ -559,6 +561,38 @@ class AccountCampaigns(api_common.BaseApiView):
         return self.create_api_response(response)
 
 
+class AdGroupSourceSettings(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_source_settings_put')
+    def put(self, request, ad_group_id, source_id):
+        if not request.user.has_perm('zemauth.set_ad_group_source_settings'):
+            return exc.ForbiddenError(message='Not allowed')
+
+        resource = json.loads(request.body)
+
+        try:
+            ad_group = models.AdGroup.objects.filter_by_user(request.user).get(id=ad_group_id)
+        except models.AdGroup.DoesNotExist:
+            raise exc.MissingDataError(message='Requested ad group not found')
+
+        try:
+            ad_group_source = models.AdGroupSource.objects.get(ad_group=ad_group, source_id=source_id)
+        except models.AdGroupSource.DoesNotExist:
+            raise exc.MissingDataError(message='Requested source not found')
+
+        settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
+
+        if 'bid_cpc' in resource:
+            settings_writer.set_cpc_cc(decimal.Decimal(resource['bid_cpc']))
+
+        if 'dailly_budget' in resource:
+            settings_writer.set_daily_budget_cc(decimal.Decimal(resource['dailly_budget_cc']))
+
+        if 'state' in resource:
+            settings_writer.set_state(resource['state'])
+
+        return self.create_api_response()
+
+
 class AdGroupSourceStatus(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_source_status')
     def get(self, request, ad_group_id, source_id):
@@ -566,9 +600,14 @@ class AdGroupSourceStatus(api_common.BaseApiView):
         source_state_inconsistent = False
 
         try:
-            ad_group_source = models.AdGroupSource.objects.get(ad_group_id=ad_group_id, source_id=source_id)
+            ad_group = models.AdGroup.objects.filter_by_user(request.user).get(id=ad_group_id)
+        except models.AdGroup.DoesNotExist:
+            raise exc.MissingDataError(message='Requested ad group not found')
+
+        try:
+            ad_group_source = models.AdGroupSource.objects.get(ad_group=ad_group, source_id=source_id)
         except models.AdGroupSource.DoesNotExist:
-            raise exc.MissingDataError('Requested ad group source does not exist')
+            raise exc.MissingDataError(message='Requested source not found')
 
         latest_settings_qs = models.AdGroupSourceSettings.objects.\
             filter(ad_group_source=ad_group_source).\
