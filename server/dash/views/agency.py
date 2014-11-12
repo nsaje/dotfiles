@@ -587,18 +587,22 @@ class AccountAgency(api_common.BaseApiView):
             old_settings = settings[i - 1] if i > 0 else None
             new_settings = settings[i]
 
-            changes = old_settings.get_setting_changes(new_settings) \
-                if old_settings is not None else None
-
-            if i > 0 and not changes:
-                continue
-
             settings_dict = self.convert_settings_to_dict(old_settings, new_settings)
+
+            changes_text = new_settings.changes_text
+            if changes_text is None:
+                changes = old_settings.get_setting_changes(new_settings) \
+                    if old_settings is not None else None
+
+                if i > 0 and not changes:
+                    continue
+
+                changes_text = self.convert_changes_to_string(changes, settings_dict)
 
             history.append({
                 'datetime': new_settings.created_dt,
                 'changed_by': new_settings.created_by.email,
-                'changes_text': self.convert_changes_to_string(changes, settings_dict),
+                'changes_text': changes_text,
                 'settings': settings_dict.values(),
                 'show_old_settings': old_settings is not None
             })
@@ -823,27 +827,21 @@ class AccountUsers(api_common.BaseApiView):
         # first name and last name, error is returned. In case
         # the form only contains email, user is added to the account.
         if form.cleaned_data.get('email') is None:
-            raise exc.ValidationError(
-                errors=dict(form.errors),
-                pretty_message='Please specify the user\'s first name, last name and email.'
-            )
+            self._raise_validation_error(form.errors)
 
         try:
             user = ZemUser.objects.get(email=form.cleaned_data['email'])
 
             if form.cleaned_data.get('last_name') or form.cleaned_data.get('first_name'):
-                raise exc.ValidationError(
-                    errors=dict(form.errors),
-                    pretty_message='The user with e-mail {} is already registred as \"{}\". Please contact technical support if you want to change the user\'s name or leave first and last names blank if you just want to add access to the account for this user.'.format(user.email, user.get_full_name())
+                self._raise_validation_error(
+                    form.errors,
+                    message='The user with e-mail {} is already registred as \"{}\". Please contact technical support if you want to change the user\'s name or leave first and last names blank if you just want to add access to the account for this user.'.format(user.email, user.get_full_name())
                 )
 
             created = False
         except ZemUser.DoesNotExist:
             if not is_valid:
-                raise exc.ValidationError(
-                    errors=dict(form.errors),
-                    pretty_message='Please specify the user\'s first name, last name and email.'
-                )
+                self._raise_validation_error(form.errors)
 
             user = ZemUser.objects.create_user(
                 form.cleaned_data['email'],
@@ -858,9 +856,20 @@ class AccountUsers(api_common.BaseApiView):
 
         account.users.add(user)
 
+        # add history entry
+        new_settings = account.get_current_settings().copy_settings()
+        new_settings.changes_text = 'Added user {} ({})'.format(user.get_full_name(), user.email)
+        new_settings.save()
+
         return self.create_api_response(
             {'user': self._get_user_dict(user)},
             status_code=201 if created else 200
+        )
+
+    def _raise_validation_error(self, errors, message=None):
+        raise exc.ValidationError(
+            errors=dict(errors),
+            pretty_message=message or 'Please specify the user\'s first name, last name and email.'
         )
 
     @statsd_helper.statsd_timer('dash.api', 'account_access_users_delete')
@@ -876,6 +885,11 @@ class AccountUsers(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         account.users.remove(user)
+
+        # add history entry
+        new_settings = account.get_current_settings().copy_settings()
+        new_settings.changes_text = 'Removed user {} ({})'.format(user.get_full_name(), user.email)
+        new_settings.save()
 
         return self.create_api_response({
             'user_id': user.id

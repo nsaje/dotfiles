@@ -124,6 +124,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                 user.emailSent = data.created;
                 $scope.addUserErrors = null;
                 $scope.addUserData = {};
+                $scope.getSettings(); // updates history
             },
             function (data) {
                 $scope.addUserErrors = data;
@@ -142,6 +143,8 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                     user.removed = true;
                     user.saved = false;
                 }
+
+                $scope.getSettings(); // updates history
             }
         );
     };
@@ -152,6 +155,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
         api.accountUsers.put($state.params.id, {email: user.email}).then(
             function (data) {
                 user.removed = false;
+                $scope.getSettings(); // updates history
             }
         );
     };
