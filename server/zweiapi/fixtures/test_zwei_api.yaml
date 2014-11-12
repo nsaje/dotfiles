@@ -37,13 +37,40 @@
     model: dash.campaign
     pk: 1
 
+# source types
+
+-   fields:
+        type: 'adblade'
+    model: dash.sourcetype
+    pk: 1
+
+-   fields:
+        type: 'gravity'
+    model: dash.sourcetype
+    pk: 2
+
+-   fields:
+        type: 'outbrain'
+    model: dash.sourcetype
+    pk: 3
+
+-   fields:
+        type: 'taboola'
+    model: dash.sourcetype
+    pk: 4
+
+-   fields:
+        type: 'yahoo'
+    model: dash.sourcetype
+    pk: 5
+
 # sources
 
 -   fields:
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: AdBlade
-        type: adblade
+        source_type: 1
     model: dash.source
     pk: 1
 
@@ -51,7 +78,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: Gravity
-        type: gravity
+        source_type: 2
     model: dash.source
     pk: 2
 
@@ -59,7 +86,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: Outbrain
-        type: outbrain
+        source_type: 3
     model: dash.source
     pk: 3
 
@@ -67,7 +94,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: Taboola
-        type: taboola
+        source_type: 4
     model: dash.source
     pk: 4
 
@@ -75,7 +102,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: Yahoo
-        type: yahoo
+        source_type: 5
     model: dash.source
     pk: 5
 

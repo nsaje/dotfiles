@@ -390,11 +390,39 @@ class CampaignSettings(SettingsBase):
         ordering = ('-created_dt',)
 
 
-class Source(models.Model):
-    id = models.AutoField(primary_key=True)
+class SourceAction(models.Model):
+    action = models.IntegerField(
+        primary_key=True,
+        choices=constants.SourceAction.get_choices()
+    )
+
+    def __str__(self):
+        return constants.SourceAction.get_text(self.action)
+
+
+class SourceType(models.Model):
     type = models.CharField(
         max_length=127,
-        blank=True,
+        unique=True
+    )
+
+    available_actions = models.ManyToManyField(
+        SourceAction,
+        blank=True
+    )
+
+    def __str__(self):
+        return self.type
+
+    class Meta:
+        verbose_name = "Source Type"
+        verbose_name_plural = "Source Types"
+
+
+class Source(models.Model):
+    id = models.AutoField(primary_key=True)
+    source_type = models.ForeignKey(
+        SourceType,
         null=True
     )
     name = models.CharField(
@@ -595,6 +623,19 @@ class AdGroupSource(models.Model):
 
     last_successful_sync_dt = models.DateTimeField(blank=True, null=True)
 
+    def get_tracking_ids(self):
+        if self.source.source_type and self.source.source_type.type == constants.SourceType.ZEMANTA:
+            msid = '{sourceDomain}'
+        else:
+            msid = self.source.name.lower()
+
+        tracking_ids = {
+            '_z1_msid': msid,
+            '_z1_agid': self.ad_group.id
+        }
+
+        return tracking_ids
+
     def __unicode__(self):
         return u'{} - {}'.format(self.ad_group, self.source)
 
@@ -700,6 +741,76 @@ class AdGroupSettings(SettingsBase):
             value = str(value)
 
         return value
+
+
+class AdGroupSourceState(models.Model):
+    id = models.AutoField(primary_key=True)
+
+    ad_group_source = models.ForeignKey(
+        AdGroupSource,
+        null=True,
+        related_name='states',
+        on_delete=models.PROTECT
+    )
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
+    state = models.IntegerField(
+        default=constants.AdGroupSourceSettingsState.INACTIVE,
+        choices=constants.AdGroupSourceSettingsState.get_choices()
+    )
+    cpc_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='CPC'
+    )
+    daily_budget_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Daily budget'
+    )
+
+    class Meta:
+        get_latest_by = 'created_dt'
+        ordering = ('-created_dt',)
+
+    @classmethod
+    def get_current_state(cls, ad_group, sources):
+        source_ids = [x.pk for x in sources]
+
+        source_settings = cls.objects.filter(
+            ad_group_source__ad_group=ad_group,
+        ).order_by('-created_dt')
+
+        result = {}
+        for s in source_settings:
+            source = s.ad_group_source.source
+
+            if source.id in result:
+                continue
+
+            result[source.id] = s
+
+            if len(result) == len(source_ids):
+                break
+
+        for sid in source_ids:
+            if sid in result:
+                continue
+
+            result[sid] = cls(
+                state=None,
+                ad_group_source=AdGroupSource(
+                    ad_group=ad_group,
+                    source=Source.objects.get(pk=sid)
+                )
+            )
+
+        return result
 
 
 class AdGroupSourceSettings(models.Model):

@@ -92,7 +92,7 @@ Zemanta
         send_mail(
             subject,
             body,
-            settings.AD_GROUP_SETTINGS_CHANGE_FROM_EMAIL,
+            settings.FROM_EMAIL,
             recipients,
             fail_silently=False
         )
@@ -791,3 +791,57 @@ class AdGroupAgency(api_common.BaseApiView):
 
         return settings_dict
 
+
+class AccountUsers(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'account_access_users_get')
+    def get(self, request, account_id):
+        if not request.user.has_perm('zemauth.account_agency_access_users'):
+            raise exc.MissingDataError()
+
+        account = helpers.get_account(request.user, account_id)
+        users = [self._get_user_dict(u) for u in account.users.all()]
+
+        return self.create_api_response({
+            'users': users
+        })
+
+    @statsd_helper.statsd_timer('dash.api', 'account_access_users_put')
+    def put(self, request, account_id, user_id):
+        if not request.user.has_perm('zemauth.account_agency_access_users'):
+            raise exc.MissingDataError()
+
+        account = helpers.get_account(request.user, account_id)
+
+        try:
+            user = ZemUser.objects.get(pk=user_id)
+        except ZemUser.DoesNotExist:
+            raise exc.MissingDataError()
+
+        account.users.add(user)
+
+        return self.create_api_response(self._get_user_dict(user))
+
+    @statsd_helper.statsd_timer('dash.api', 'account_access_users_delete')
+    def delete(self, request, account_id, user_id):
+        if not request.user.has_perm('zemauth.account_agency_access_users'):
+            raise exc.MissingDataError()
+
+        account = helpers.get_account(request.user, account_id)
+
+        try:
+            user = ZemUser.objects.get(pk=user_id)
+        except ZemUser.DoesNotExist:
+            raise exc.MissingDataError()
+
+        account.users.remove(user)
+
+        return self.create_api_response({
+            'user_id': user.id
+        })
+
+    def _get_user_dict(self, user):
+        return {
+            'id': user.id,
+            'name': user.get_full_name(),
+            'email': user.email
+        }

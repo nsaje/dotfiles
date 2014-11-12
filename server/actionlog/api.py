@@ -2,7 +2,7 @@ import logging
 import sys
 import traceback
 import urlparse
-import time
+import urllib
 import collections
 
 from datetime import datetime
@@ -11,7 +11,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q, Min
+from django.db.models import Q
 
 from . import models
 from . import constants
@@ -258,6 +258,7 @@ def _get_ad_group_settings(ad_group):
 
     return None
 
+
 def _get_campaign_settings(campaign):
     s = dash.models.CampaignSettings.objects.filter(campaign=campaign)
     if s:
@@ -284,7 +285,7 @@ def _init_stop_campaign(ad_group_source, order):
 
             payload = {
                 'action': action.action,
-                'source': ad_group_source.source.type,
+                'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_source.source_credentials and
@@ -380,7 +381,7 @@ def _init_fetch_status(ad_group_source, order):
 
             payload = {
                 'action': action.action,
-                'source': ad_group_source.source.type,
+                'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_source.source_credentials and
@@ -426,7 +427,7 @@ def _init_fetch_reports(ad_group_source, date, order):
 
             payload = {
                 'action': action.action,
-                'source': ad_group_source.source.type,
+                'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_source.source_credentials and
@@ -536,7 +537,7 @@ def _init_create_campaign(ad_group_source, name):
 
             payload = {
                 'action': action.action,
-                'source': ad_group_source.source.type,
+                'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_source.source_credentials and
@@ -553,10 +554,18 @@ def _init_create_campaign(ad_group_source, name):
                 if 'create_campaign' in params:
                     payload['args']['extra'].update(params['create_campaign'])
 
+            tracking_code = ad_group_source.get_tracking_ids()
+
             if ad_group_settings:
-                payload['args']['extra'].update({
-                    'tracking_code': ad_group_settings.tracking_code,
-                })
+                tracking_code.update(dict(urlparse.parse_qsl(ad_group_settings.tracking_code)))
+
+            payload['args']['extra'].update({
+                # Unquoting is necessary because we want to forward parameters as they were
+                # entered, even if they contain characters such as '{', '}' or ' ' because
+                # they should get handeled by supply source (urllib.urlencode() quotes by
+                # default)
+                'tracking_code': urllib.unquote(urllib.urlencode(tracking_code)),
+            })
 
             if campaign_settings:
                 payload['args']['extra'].update({

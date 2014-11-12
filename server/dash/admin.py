@@ -89,7 +89,8 @@ class SourceCredentialsForm(forms.ModelForm):
     oauth_refresh = forms.CharField(label='OAuth tokens', required=False, widget=StrFieldWidget)
 
     def _set_oauth_refresh(self, instance):
-        if not instance or not instance.pk or instance.source.type not in settings.SOURCE_OAUTH_URIS.keys():
+        if not instance or not instance.pk or\
+           not (instance.source.source_type and instance.source.source_type.type in settings.SOURCE_OAUTH_URIS.keys()):
             self.fields['oauth_refresh'].widget = forms.HiddenInput()
             return
 
@@ -106,13 +107,13 @@ class SourceCredentialsForm(forms.ModelForm):
             self.initial['oauth_refresh'] = 'Credentials instance doesn\'t contain access tokens. '\
                                             '<a href="' +\
                                             reverse('dash.views.oauth_authorize',
-                                                    kwargs={'source_name': instance.source.type}) +\
+                                                    kwargs={'source_name': instance.source.source_type.type}) +\
                                             '?credentials_id=' + str(instance.pk) + '">Generate tokens</a>'
         else:
             self.initial['oauth_refresh'] = 'Credentials instance contains access tokens. '\
                                             '<a href="' +\
                                             reverse('dash.views.oauth_authorize',
-                                                    kwargs={'source_name': instance.source.type}) +\
+                                                    kwargs={'source_name': instance.source.source_type.type}) +\
                                             '?credentials_id=' + str(instance.pk) + '">Refresh tokens</a>'
 
     def __init__(self, *args, **kwargs):
@@ -277,11 +278,21 @@ class SourceAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'name',
+        'source_type',
         'maintenance',
         'created_dt',
         'modified_dt',
     )
     readonly_fields = ('created_dt', 'modified_dt')
+
+
+class SourceTypeAdmin(admin.ModelAdmin):
+    fields = ('type', 'available_actions')
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return self.readonly_fields + ('type',)
+        return self.readonly_fields
 
 
 class SourceCredentialsAdmin(admin.ModelAdmin):
@@ -434,6 +445,17 @@ class AdGroupSourceSettingsAdmin(admin.ModelAdmin):
     )
 
 
+class AdGroupSourceStateAdmin(admin.ModelAdmin):
+    search_fields = ['ad_group']
+    list_display = (
+        'ad_group_source',
+        'state',
+        'cpc_cc',
+        'daily_budget_cc',
+        'created_dt',
+    )
+
+
 class DemoAdGroupRealAdGroupAdminForm(forms.ModelForm):
 
     def clean_demo_ad_group(self):
@@ -463,6 +485,8 @@ admin.site.register(models.Source, SourceAdmin)
 admin.site.register(models.AdGroup, AdGroupAdmin)
 admin.site.register(models.AdGroupSettings, AdGroupSettingsAdmin)
 admin.site.register(models.AdGroupSourceSettings, AdGroupSourceSettingsAdmin)
+admin.site.register(models.AdGroupSourceState, AdGroupSourceStateAdmin)
 admin.site.register(models.SourceCredentials, SourceCredentialsAdmin)
+admin.site.register(models.SourceType, SourceTypeAdmin)
 admin.site.register(models.DefaultSourceSettings, DefaultSourceSettingsAdmin)
 admin.site.register(models.DemoAdGroupRealAdGroup, DemoAdGroupRealAdGroupAdmin)
