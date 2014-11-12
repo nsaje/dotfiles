@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.test.client import RequestFactory
 from django.test.client import Client
 
-from dash.models import AdGroupSource, Article
+from dash.models import AdGroupSource, Article, AdGroupSourceState
 from actionlog.models import ActionLog
 from actionlog import constants
 from reports.models import ArticleStats
@@ -32,7 +32,10 @@ class CampaignStatusTest(TestCase):
         }
 
         ad_group_source = AdGroupSource.objects.get(id=1)
-        current_settings = ad_group_source.settings.latest()
+
+        current_state = AdGroupSourceState.objects \
+            .filter(ad_group_source=ad_group_source).latest('created_dt')
+
         action_log = ActionLog(
             action=constants.Action.FETCH_CAMPAIGN_STATUS,
             state=constants.ActionState.WAITING,
@@ -47,9 +50,12 @@ class CampaignStatusTest(TestCase):
             content_type='application/json',
             data=json.dumps(zwei_response_data)
         )
-
         self.assertEqual(response.status_code, 200)
-        self.assertNotEqual(ad_group_source.settings.latest(), current_settings)
+
+        latest_state = AdGroupSourceState.objects \
+            .filter(ad_group_source=ad_group_source).latest('created_dt')
+
+        self.assertNotEqual(latest_state, current_state)
 
 
 class FetchReportsTestCase(TestCase):

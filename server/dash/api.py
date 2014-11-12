@@ -22,56 +22,12 @@ def cc_to_decimal(val_cc):
     return decimal.Decimal(val_cc) / 10000
 
 
-# @transaction.atomic
-# def campaign_status_upsert(ad_group_source, data):
-#     '''
-#     Creates new AdGroupSourceSettings if settings are modified.
-#     '''
-
-#     new_settings = {
-#         'state': data.get('state'),
-#         'cpc_cc': cc_to_decimal(data.get('cpc_cc')),
-#         'daily_budget_cc': cc_to_decimal(data.get('daily_budget_cc')),
-#     }
-
-#     try:
-#         current_settings = ad_group_source.settings.latest()
-#     except models.AdGroupSourceSettings.DoesNotExist:
-#         current_settings = None
-
-#     if current_settings is not None and (
-#         current_settings.state == new_settings['state'] and
-#         current_settings.cpc_cc == new_settings['cpc_cc'] and
-#         current_settings.daily_budget_cc == new_settings['daily_budget_cc']
-#     ):
-#         logger.info('Campaign settings for ad_group_source %s unmodified', ad_group_source)
-#         return
-
-#     ad_group_source.settings.create(**new_settings)
-
-
-# @transaction.atomic
-# def update_campaign_state(ad_group_source, state):
-#     '''
-#     Creates new AdGroupSourceSettings if settings are modified.
-#     '''
-#     try:
-#         current_settings = ad_group_source.settings.latest()
-#     except models.AdGroupSourceSettings.DoesNotExist:
-#         current_settings = None
-
-#     if current_settings is not None:
-#         if state == current_settings.state:
-#             logger.info('Campaign settings for ad_group_source %s unmodified', ad_group_source)
-#             return
-#         else:
-#             current_settings.pk = None  # create a new settings object as a copy of the old one
-#             current_settings.state = state
-#             current_settings.save()
-
-
 @transaction.atomic
 def update_ad_group_source_state(ad_group_source, conf, settings_id=None):
+    for key, val in conf.items():
+        if key in ('cpc_cc', 'daily_budget_cc'):
+            conf[key] = cc_to_decimal(val)
+            
     if settings_id is None:
         _upsert_ad_group_source_state(ad_group_source, conf)
         return
@@ -113,14 +69,12 @@ def _upsert_ad_group_source_state(ad_group_source, conf):
                 ]):
                     need_update = True
                     break
+
     # make the changes
     if need_update:
         logger.info('we have to update %s', conf)
-        return 
-        ## TODO:
-        # below is the "real" code :)
         if ad_group_source_state is None:
-            new_state = models.AdGroupSourceState.create(ad_group_source=ad_group_source)
+            new_state = models.AdGroupSourceState.objects.create(ad_group_source=ad_group_source)
         else:
             new_state = ad_group_source_state
             new_state.pk = None   # create a new state object as a copy of the old one
@@ -137,9 +91,11 @@ def _upsert_ad_group_source_state(ad_group_source, conf):
 
 
 def _get_latest_ad_group_source_state(ad_group_source):
-    # TODO:
-    # stub
-    return None
+    try:
+        agss = models.AdGroupSourceState.objects.filter(ad_group_source=ad_group_source).latest()
+        return agss
+    except models.AdGroupSourceState.DoesNotExist:
+        return None
 
 
 def update_campaign_key(ad_group_source, source_campaign_key):
@@ -205,3 +161,81 @@ def get_state_by_account():
         return constants.AdGroupSettingsState.INACTIVE
     account_state = {aid:_acc_state(ag_states) for aid, ag_states in account_state.iteritems()}
     return account_state
+
+
+class AdGroupSourceSettingsWriter(object):
+
+    def __init__(self, ad_group_source):
+        self.ad_group_source = ad_group_source
+        assert type(self.ad_group_source) is models.AdGroupSource
+
+    def set_state(self, state):
+        latest_settings = self.get_latest_settings()
+        if latest_settings.state != state:
+            new_settings = latest_settings
+            new_settings.pk = None  # make a copy of the latest settings
+            new_settings.state = state
+            new_settings.save()
+
+            ## TODO:
+            # add an entry to AdGroup History
+
+            if self.can_trigger_action():
+                actionlog.api.set_ad_group_source_settings(new_settings)
+            else:
+                logger.info('state=%s on ad_group_source=%s will be triggered when the ad group will be enabled', state, self.ad_group_source)
+
+    def set_cpc_cc(self, cpc_cc):
+        latest_settings = self.get_latest_settings()
+        if latest_settings.cpc_cc != cpc_cc:
+            new_settings = latest_settings
+            new_settings.pk = None  # make a copy of the latest settings
+            new_settings.cpc_cc = cpc_cc
+            new_settings.save()
+
+            ## TODO:
+            # add an entry to AdGroup History
+
+            if self.can_trigger_action():
+                actionlog.api.set_ad_group_source_settings(new_settings)
+            else:
+                logger.info('cpc_cc=%s on ad_group_source=%s will be triggered when the ad group will be enabled', cpc_cc, self.ad_group_source)
+
+    def set_daily_budget_cc(self, daily_budget_cc):
+        latest_settings = self.get_latest_settings()
+
+        if latest_settings.daily_budget_cc != daily_budget_cc:
+            new_settings = latest_settings
+            new_settings.pk = None  # make a copy of the latest settings
+            new_settings.daily_budget_cc = daily_budget_cc
+            new_settings.save()
+
+            ## TODO:
+            # add an entry to AdGroup History
+
+            if self.can_trigger_action():
+                actionlog.api.set_ad_group_source_settings(new_settings)
+            else:
+                logger.info('daily_budget_cc=%s on ad_group_source=%s will be triggered when the ad group will be enabled', daily_budget_cc, self.ad_group_source)
+
+    def can_trigger_action(self):
+        ## TODO:
+        # is the operation supported?
+        try:
+            ad_group_settings = models.AdGroupSettings.objects \
+                .filter(ad_group=self.ad_group_source.ad_group) \
+                .latest('created_dt')
+            return ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE
+        except models.AdGroupSettings.DoesNotExist:
+            return False
+
+    def get_latest_settings(self):
+        try:
+            latest_settings = models.AdGroupSourceSettings.objects \
+                .filter(ad_group_source=self.ad_group_source) \
+                .latest('created_dt')
+            return latest_settings
+        except models.AdGroupSourceSettings.DoesNotExist:
+            latest_settings = models.AdGroupSourceSettings.objects.create(ad_group_source=self.ad_group_source)
+            latest_settings.save()
+            return latest_settings

@@ -72,6 +72,11 @@ def set_ad_group_source_settings(ad_group_source_settings):
         'daily_budget_cc': ad_group_source_settings.daily_budget_cc
     }
 
+    if conf['cpc_cc'] is not None:
+        conf['cpc_cc'] = int(conf['cpc_cc'] * 10000)
+    if conf['daily_budget_cc'] is not None:
+        conf['daily_budget_cc'] = int(conf['daily_budget_cc'] * 10000)
+
     actionlog = _init_set_ad_group_source_settings(
         ad_group_source=ad_group_source_settings.ad_group_source,
         settings_id=ad_group_source_settings.id,
@@ -334,7 +339,7 @@ def _init_set_ad_group_source_settings(ad_group_source, settings_id, conf):
 
             payload = {
                 'action': action.action,
-                'source': ad_group_source.source.type,
+                'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_source.source_credentials and

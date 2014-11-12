@@ -117,13 +117,8 @@ def _process_zwei_response(action, data):
 
         reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, rows)
     elif action.action == actionlogconstants.Action.FETCH_CAMPAIGN_STATUS:
-        #dashapi.campaign_status_upsert(action.ad_group_source, data['data'])
         dashapi.update_ad_group_source_state(action.ad_group_source, data['data'])
     elif action.action == actionlogconstants.Action.SET_CAMPAIGN_STATE:
-        # state = action.payload['args']['state']
-
-        # # add the conf here
-        # #dashapi.update_campaign_state(action.ad_group_source, state)
         conf = action.payload['args']['conf']
         dashapi.update_ad_group_source_state(action.ad_group_source, conf)
     elif action.action == actionlogconstants.Action.CREATE_CAMPAIGN:
