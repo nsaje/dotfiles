@@ -455,13 +455,21 @@ class SourcesTable(api_common.BaseApiView):
 
                 if user.has_perm('zemauth.set_ad_group_source_settings'):
                     row['can_update_state'] = False
-                    if constants.SourceAction.CAN_UPDATE_STATE in source.source_type.available_actions:
+                    if source.source_type.available_actions.filter(
+                            action=constants.SourceAction.CAN_UPDATE_STATE
+                    ).exists():
                         row['can_update_state'] = True
+
                     row['can_update_cpc'] = False
-                    if constants.SourceAction.CAN_UPDATE_CPC in source.source_type.available_actions:
+                    if source.source_type.available_actions.filter(
+                            action=constants.SourceAction.CAN_UPDATE_CPC
+                    ).exists():
                         row['can_update_cpc'] = True
+
                     row['can_update_daily_budget'] = False
-                    if constants.SourceAction.CAN_UPDATE_DAILY_BUDGET in source.source_type.available_actions:
+                    if source.source_type.available_actions.filter(
+                            action=constants.SourceAction.CAN_UPDATE_DAILY_BUDGET
+                    ).exists():
                         row['can_update_daily_budget'] = True
 
                 if user.has_perm('zemauth.see_current_ad_group_source_state'):
