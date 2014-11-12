@@ -14,7 +14,6 @@
 
         <div class="form-group" ng-if="hasPermission('zemauth.account_agency_access_permissions')">
             <label for="first-name-input" class="col-xs-2 control-label">
-                <zem-internal-feature ng-if="isPermissionInternal('zemauth.account_agency_access_permissions')"></zem-internal-feature>
                 Access Permissions
                 <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Users who have access to the account you're currently on." placement="top"></zem-help-popover>
             </label>
