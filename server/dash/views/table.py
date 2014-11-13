@@ -296,7 +296,7 @@ class AdGroupSourcesTable(object):
                 if notification:
                     notification += '\n'
 
-                if latest_settings.created_dt > latest_state.created_dt:
+                if latest_state and latest_settings.created_dt > latest_state.created_dt:
                     msg = 'Bid CPC is being changed from <strong>{settings_cpc}</strong> ' +\
                           'to <strong>{state_cpc}</strong>.'
                 else:
@@ -313,7 +313,7 @@ class AdGroupSourcesTable(object):
                 if notification:
                     notification += '\n'
 
-                if latest_settings.created_dt > latest_state.created_dt:
+                if latest_state and latest_settings.created_dt > latest_state.created_dt:
                     msg = 'Daily budget is being changed from <strong>{settings_daily_buget}</strong> ' +\
                           'to <strong>{state_daily_budget}</strong>.'
                 else:
@@ -321,7 +321,7 @@ class AdGroupSourcesTable(object):
                           'instead of <strong>{settings_daily_budget}</strong>.'
 
                 notification += msg.format(
-                    settings_daily_budget=latest_settings.daily_budget if latest_settings.daily_budget_cc else 'N/A',
+                    settings_daily_budget=latest_settings.daily_budget_cc if latest_settings.daily_budget_cc else 'N/A',
                     state_daily_budget=latest_state.daily_budget_cc if latest_state else 'N/A'
                 )
 
@@ -330,7 +330,7 @@ class AdGroupSourcesTable(object):
                 if notification:
                     notification += '\n'
 
-                if latest_settings.created_dt > latest_state.created_dt:
+                if latest_state and latest_settings.created_dt > latest_state.created_dt:
                     msg = 'Status is being changed from <strong>{settings_state}</strong> ' +\
                           'to <strong>{state_state}</strong>.'
                 else:
