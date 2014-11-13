@@ -685,6 +685,8 @@ class AdGroupSettings(SettingsBase):
     target_regions = jsonfield.JSONField(blank=True, default=[])
     tracking_code = models.TextField(blank=True)
     archived = models.BooleanField(default=False)
+    changes_text = models.TextField(blank=True, null=True)
+
 
     class Meta:
         ordering = ('-created_dt',)
