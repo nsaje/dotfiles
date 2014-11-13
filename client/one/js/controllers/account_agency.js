@@ -108,27 +108,23 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
     $scope.addUser = function () {
         $scope.addUserRequestInProgress = true;
 
-        api.user.put($scope.addUserData).then(
-            function (userData) {
-                $scope.addUserData = {};
+        api.accountUsers.put($state.params.id, $scope.addUserData).then(
+            function (data) {
+                var user = getUser(data.user.id);
+
+                if (!user) {
+                    user = data.user;
+                    $scope.users.push(user);
+                } else {
+                    user.name = data.user.name;
+                }
+
+                user.saved = true;
+                user.removed = false;
+                user.emailSent = data.created;
                 $scope.addUserErrors = null;
-
-                api.accountUsers.put($state.params.id, userData.user.id).then(
-                    function (accountUserData) {
-                        var user = getUser(accountUserData.id);
-
-                        if (!user) {
-                            user = accountUserData;
-                            $scope.users.push(user);
-                        } else {
-                            user.name = accountUserData.name;
-                        }
-
-                        user.saved = true;
-                        user.removed = false;
-                        user.emailSent = userData.created;
-                    }
-                )
+                $scope.addUserData = {};
+                $scope.getSettings(); // updates history
             },
             function (data) {
                 $scope.addUserErrors = data;
@@ -147,15 +143,19 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                     user.removed = true;
                     user.saved = false;
                 }
+
+                $scope.getSettings(); // updates history
             }
         );
     };
 
     $scope.undoRemove = function (userId) {
-        api.accountUsers.put($state.params.id, userId).then(
+        var user = getUser(userId);
+
+        api.accountUsers.put($state.params.id, {email: user.email}).then(
             function (data) {
-                var user = getUser(userId);
                 user.removed = false;
+                $scope.getSettings(); // updates history
             }
         );
     };

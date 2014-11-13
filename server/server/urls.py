@@ -8,7 +8,7 @@ from django.conf.urls import handler404
 
 import utils.statsd_helper
 
-from zemauth.forms import AuthenticationForm, SetPasswordForm
+from zemauth.forms import AuthenticationForm
 
 import zweiapi.views
 import actionlog.views
@@ -34,14 +34,10 @@ urlpatterns = patterns(
         'zemauth.views.login',
         {'authentication_form': AuthenticationForm, 'template_name': 'zemauth/signin.html'}),
     url(r'^signout$', 'django.contrib.auth.views.logout_then_login'),
-    url(r'^password_reset_confirm/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
-        'django.contrib.auth.views.password_reset_confirm',
-        {
-            'template_name': 'zemauth/password_reset_confirm.html',
-            'post_reset_redirect': '/',
-            'set_password_form': SetPasswordForm
-        },
-        name='password_reset_confirm'),
+    url(r'^set_password/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
+        'zemauth.views.set_password',
+        {'template_name': 'zemauth/set_password.html'},
+        name='set_password'),
     url(r'^admin$', RedirectView.as_view(url='/admin/')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^oauth2callback', 'zemauth.views.google_callback'),
@@ -211,7 +207,6 @@ urlpatterns += patterns(
     ),
     url(r'^api/nav_data$', login_required(dash.views.views.NavigationDataView.as_view())),
     url(r'^api/users/(?P<user_id>(\d+|current))/$', login_required(dash.views.views.User.as_view())),
-    url(r'^api/users/$', login_required(dash.views.views.User.as_view())),
 )
 
 # Action Log
