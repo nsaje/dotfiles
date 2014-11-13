@@ -314,7 +314,7 @@ class AdGroupSourcesTable(object):
                     notification += '\n'
 
                 if latest_state and latest_settings.created_dt > latest_state.created_dt:
-                    msg = 'Daily budget is being changed from <strong>{settings_daily_buget}</strong> ' +\
+                    msg = 'Daily budget is being changed from <strong>{settings_daily_budget}</strong> ' +\
                           'to <strong>{state_daily_budget}</strong>.'
                 else:
                     msg = 'The actual daily budget on Media Source is <strong>{state_daily_budget}</strong>, ' +\
