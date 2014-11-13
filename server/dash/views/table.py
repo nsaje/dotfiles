@@ -270,6 +270,84 @@ class AdGroupSourcesTable(object):
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(ad_groups=[self.ad_group])
 
+    def get_source_notifications(self):
+        notifications = {}
+
+        for ad_group_source in self.active_ad_group_sources:
+            notification = ''
+
+            latest_settings_qs = models.AdGroupSourceSettings.objects.\
+                filter(ad_group_source=ad_group_source).\
+                order_by('ad_group_source_id', '-created_dt')
+            latest_settings = latest_settings_qs[0] if latest_settings_qs.exists() else None
+
+            latest_state_qs = models.AdGroupSourceState.objects.\
+                filter(ad_group_source=ad_group_source).\
+                order_by('ad_group_source_id', '-created_dt')
+            latest_state = latest_state_qs[0] if latest_state_qs.exists() else None
+
+            if ad_group_source.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE and\
+               latest_settings and latest_settings.state == constants.AdGroupSettingsState.ACTIVE:
+                notification += 'This Media Source is enable but will not run' +\
+                                'until you enable the AdGroup in the Settings.'
+
+            if latest_settings is not None and\
+               (latest_state is None or latest_settings.cpc_cc != latest_state.cpc_cc):
+                if notification:
+                    notification += '\n'
+
+                if latest_state and latest_settings.created_dt > latest_state.created_dt:
+                    msg = 'Bid CPC is being changed from <strong>{settings_cpc}</strong> ' +\
+                          'to <strong>{state_cpc}</strong>.'
+                else:
+                    msg = 'The actual CPC on Media Source is <strong>{state_cpc}</strong>, ' +\
+                          'instead of <strong>{settings_cpc}</strong>.'
+
+                notification += msg.format(
+                    settings_cpc=latest_settings.cpc_cc if latest_settings.cpc_cc else 'N/A',
+                    state_cpc=latest_state.cpc_cc if latest_state else 'N/A'
+                )
+
+            if latest_settings is not None and\
+               (latest_state is None or latest_settings.daily_budget_cc != latest_state.daily_budget_cc):
+                if notification:
+                    notification += '\n'
+
+                if latest_state and latest_settings.created_dt > latest_state.created_dt:
+                    msg = 'Daily budget is being changed from <strong>{settings_daily_buget}</strong> ' +\
+                          'to <strong>{state_daily_budget}</strong>.'
+                else:
+                    msg = 'The actual daily budget on Media Source is <strong>{state_daily_budget}</strong>, ' +\
+                          'instead of <strong>{settings_daily_budget}</strong>.'
+
+                notification += msg.format(
+                    settings_daily_budget=latest_settings.daily_budget_cc if latest_settings.daily_budget_cc else 'N/A',
+                    state_daily_budget=latest_state.daily_budget_cc if latest_state else 'N/A'
+                )
+
+            if latest_settings is not None and\
+               (latest_state is None or latest_settings.state != latest_state.state):
+                if notification:
+                    notification += '\n'
+
+                if latest_state and latest_settings.created_dt > latest_state.created_dt:
+                    msg = 'Status is being changed from <strong>{settings_state}</strong> ' +\
+                          'to <strong>{state_state}</strong>.'
+                else:
+                    msg = 'The actual status on Media Source is <strong>{state_state}</strong>, ' +\
+                          'instead of <strong>{settings_state}</strong>.'
+
+                notification += msg.format(
+                    settings_state=constants.AdGroupSettingsState.get_text(latest_settings.state),
+                    state_state=constants.AdGroupSettingsState.get_text(
+                        (latest_state and latest_state.state) or 'N/A'
+                    )
+                )
+
+            notifications[ad_group_source.source_id] = notification
+
+        return notifications
+
 
 class SourcesTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'zemauth.sources_table_get')
@@ -316,6 +394,10 @@ class SourcesTable(api_common.BaseApiView):
                 not self.level_sources_table.has_complete_postclick_metrics(
                     start_date, end_date)
 
+        notifications = None
+        if ad_group_level:
+            notifications = self.level_sources_table.get_source_notifications()
+
         return self.create_api_response({
             'rows': self.get_rows(
                 id_,
@@ -327,7 +409,8 @@ class SourcesTable(api_common.BaseApiView):
                 last_success_actions,
                 yesterday_cost,
                 order=request.GET.get('order', None),
-                ad_group_level=ad_group_level
+                ad_group_level=ad_group_level,
+                notifications=notifications
             ),
             'totals': self.get_totals(
                 totals_data,
@@ -385,7 +468,8 @@ class SourcesTable(api_common.BaseApiView):
             last_actions,
             yesterday_cost,
             order=None,
-            ad_group_level=False):
+            ad_group_level=False,
+            notifications=None):
         rows = []
         for source in sources:
             states = [s for s in sources_states if s.ad_group_source.source_id == source.id]
@@ -477,6 +561,8 @@ class SourcesTable(api_common.BaseApiView):
                             action=constants.SourceAction.CAN_UPDATE_DAILY_BUDGET
                     ).exists():
                         row['can_update_daily_budget'] = True
+
+                    row['notification'] = notifications[source.id]
 
                 if user.has_perm('zemauth.see_current_ad_group_source_state'):
                     row['current_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None
