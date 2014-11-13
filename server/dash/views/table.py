@@ -75,8 +75,8 @@ class AllAccountsSourcesTable(object):
     def get_sources(self):
         return models.Source.objects.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
-    def get_sources_settings(self):
-        return models.AdGroupSourceSettings.objects.\
+    def get_sources_states(self):
+        return models.AdGroupSourceState.objects.\
             distinct('ad_group_source_id').\
             filter(ad_group_source__in=self.active_ad_group_sources).\
             order_by('ad_group_source_id', '-created_dt')
@@ -125,8 +125,8 @@ class AccountSourcesTable(object):
     def get_sources(self):
         return models.Source.objects.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
-    def get_sources_settings(self):
-        return models.AdGroupSourceSettings.objects.\
+    def get_sources_states(self):
+        return models.AdGroupSourceState.objects.\
             distinct('ad_group_source_id').\
             filter(ad_group_source__in=self.active_ad_group_sources).\
             order_by('ad_group_source_id', '-created_dt')
@@ -176,8 +176,8 @@ class CampaignSourcesTable(object):
     def get_sources(self):
         return models.Source.objects.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
-    def get_sources_settings(self):
-        return models.AdGroupSourceSettings.objects.\
+    def get_sources_states(self):
+        return models.AdGroupSourceState.objects.\
             distinct('ad_group_source_id').\
             filter(ad_group_source__in=self.active_ad_group_sources).\
             order_by('ad_group_source_id', '-created_dt')
@@ -227,6 +227,12 @@ class AdGroupSourcesTable(object):
     def get_sources(self):
         return models.Source.objects.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
+    def get_sources_states(self):
+        return models.AdGroupSourceState.objects.\
+            distinct('ad_group_source_id').\
+            filter(ad_group_source__in=self.active_ad_group_sources).\
+            order_by('ad_group_source_id', '-created_dt')
+
     def get_sources_settings(self):
         return models.AdGroupSourceSettings.objects.\
             distinct('ad_group_source_id').\
@@ -270,6 +276,7 @@ class SourcesTable(api_common.BaseApiView):
     def get(self, request, level_, id_=None):
         user = request.user
 
+        ad_group_level = False
         if level_ == 'all_accounts':
             self.level_sources_table = AllAccountsSourcesTable(user, id_)
         elif level_ == 'accounts':
@@ -277,16 +284,21 @@ class SourcesTable(api_common.BaseApiView):
         elif level_ == 'campaigns':
             self.level_sources_table = CampaignSourcesTable(user, id_)
         elif level_ == 'ad_groups':
+            ad_group_level = True
             self.level_sources_table = AdGroupSourcesTable(user, id_)
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
         sources = self.level_sources_table.get_sources()
-        sources_settings = self.level_sources_table.get_sources_settings()
+        sources_states = self.level_sources_table.get_sources_states()
         last_success_actions = self.level_sources_table.get_last_success_actions()
         sources_data, totals_data = self.level_sources_table.get_stats(start_date, end_date)
         is_sync_in_progress = self.level_sources_table.is_sync_in_progress()
+
+        ad_group_sources_settings = None
+        if ad_group_level:
+            ad_group_sources_settings = self.level_sources_table.get_sources_settings()
 
         yesterday_cost = {}
         yesterday_total_cost = None
@@ -307,17 +319,19 @@ class SourcesTable(api_common.BaseApiView):
         return self.create_api_response({
             'rows': self.get_rows(
                 id_,
+                user,
                 sources,
                 sources_data,
-                sources_settings,
+                sources_states,
+                ad_group_sources_settings,
                 last_success_actions,
                 yesterday_cost,
                 order=request.GET.get('order', None),
-                ad_group_level=level_ == 'ad_groups'
+                ad_group_level=ad_group_level
             ),
             'totals': self.get_totals(
                 totals_data,
-                sources_settings,
+                sources_states,
                 yesterday_total_cost
             ),
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
@@ -326,9 +340,9 @@ class SourcesTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics,
         })
 
-    def get_totals(self, totals_data, sources_settings, yesterday_cost):
+    def get_totals(self, totals_data, sources_states, yesterday_cost):
         return {
-            'daily_budget': self.get_daily_budget_total(sources_settings),
+            'daily_budget': self.get_daily_budget_total(sources_states),
             'cost': totals_data['cost'],
             'cpc': totals_data['cpc'],
             'clicks': totals_data['clicks'],
@@ -347,14 +361,14 @@ class SourcesTable(api_common.BaseApiView):
             'goals': totals_data.get('goals', {})
         }
 
-    def get_state(self, settings):
-        if any(s.state == constants.AdGroupSourceSettingsState.ACTIVE for s in settings):
+    def get_state(self, states):
+        if any(s.state == constants.AdGroupSourceSettingsState.ACTIVE for s in states):
             return constants.AdGroupSourceSettingsState.ACTIVE
 
         return constants.AdGroupSourceSettingsState.INACTIVE
 
-    def get_daily_budget_total(self, sources_settings):
-        budgets = [s.daily_budget_cc for s in sources_settings if
+    def get_daily_budget_total(self, sources_states):
+        budgets = [s.daily_budget_cc for s in sources_states if
                    s.daily_budget_cc is not None and
                    s.state == constants.AdGroupSourceSettingsState.ACTIVE]
 
@@ -363,16 +377,25 @@ class SourcesTable(api_common.BaseApiView):
     def get_rows(
             self,
             id_,
+            user,
             sources,
             sources_data,
-            sources_settings,
+            sources_states,
+            ad_group_sources_settings,
             last_actions,
             yesterday_cost,
             order=None,
             ad_group_level=False):
         rows = []
         for source in sources:
-            settings = [s for s in sources_settings if s.ad_group_source.source_id == source.id]
+            states = [s for s in sources_states if s.ad_group_source.source_id == source.id]
+
+            source_settings = None
+            if ad_group_level and ad_group_sources_settings:
+                for s in ad_group_sources_settings:
+                    if s.ad_group_source.source_id == source.id:
+                        source_settings = s
+                        break
 
             # get source reports data
             source_data = {}
@@ -388,15 +411,18 @@ class SourcesTable(api_common.BaseApiView):
                 supply_dash_url = urlresolvers.reverse('dash.views.views.supply_dash_redirect')
                 supply_dash_url += '?ad_group_id={}&source_id={}'.format(id_, source.id)
 
-                daily_budget = settings[0].daily_budget_cc if len(settings) else None
+                if user.has_perm('zemauth.set_ad_group_source_settings'):
+                    daily_budget = source_settings.daily_budget_cc if source_settings else None
+                else:
+                    daily_budget = states[0].daily_budget_cc if len(states) else None
             else:
-                daily_budget = self.get_daily_budget_total(settings)
+                daily_budget = self.get_daily_budget_total(states)
 
             row = {
                 'id': str(source.id),
                 'name': source.name,
                 'daily_budget': daily_budget,
-                'status': self.get_state(settings),
+                'status': self.get_state(states),
                 'cost': source_data.get('cost', None),
                 'cpc': source_data.get('cpc', None),
                 'clicks': source_data.get('clicks', None),
@@ -418,14 +444,43 @@ class SourcesTable(api_common.BaseApiView):
                 'goals': source_data.get('goals', {})
             }
 
-            bid_cpc_values = [s.cpc_cc for s in settings if s.cpc_cc is not None]
+            bid_cpc_values = [s.cpc_cc for s in states if s.cpc_cc is not None]
 
-            if len(bid_cpc_values) > 0:
+            if not ad_group_level and len(bid_cpc_values) > 0:
                 row['min_bid_cpc'] = float(min(bid_cpc_values))
                 row['max_bid_cpc'] = float(max(bid_cpc_values))
 
-            if len(bid_cpc_values) == 1:
-                row['bid_cpc'] = bid_cpc_values[0]
+            if ad_group_level:
+                if user.has_perm('zemauth.set_ad_group_source_settings'):
+                    row['status_setting'] = source_settings.state if source_settings else None
+
+                if user.has_perm('zemauth.set_ad_group_source_settings'):
+                    row['bid_cpc'] = source_settings.cpc_cc if source_settings else None
+                else:
+                    row['bid_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None
+
+                if user.has_perm('zemauth.set_ad_group_source_settings'):
+                    row['can_update_state'] = False
+                    if source.source_type.available_actions.filter(
+                            action=constants.SourceAction.CAN_UPDATE_STATE
+                    ).exists():
+                        row['can_update_state'] = True
+
+                    row['can_update_cpc'] = False
+                    if source.source_type.available_actions.filter(
+                            action=constants.SourceAction.CAN_UPDATE_CPC
+                    ).exists():
+                        row['can_update_cpc'] = True
+
+                    row['can_update_daily_budget'] = False
+                    if source.source_type.available_actions.filter(
+                            action=constants.SourceAction.CAN_UPDATE_DAILY_BUDGET
+                    ).exists():
+                        row['can_update_daily_budget'] = True
+
+                if user.has_perm('zemauth.see_current_ad_group_source_state'):
+                    row['current_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None
+                    row['current_daily_budget'] = states[0].daily_budget_cc if len(states) else None
 
             # add conversion fields
             for field, val in source_data.iteritems():

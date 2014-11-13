@@ -218,6 +218,36 @@ class AdGroupSourceSettingsWriter(object):
             else:
                 logger.info('daily_budget_cc=%s on ad_group_source=%s will be triggered when the ad group will be enabled', daily_budget_cc, self.ad_group_source)
 
+    def set(self, settings_obj):
+        latest_settings = self.get_latest_settings()
+
+        state = settings_obj.get('state')
+        cpc_cc = settings_obj.get('cpc_cc')
+        daily_budget_cc = settings_obj.get('daily_budget_cc')
+
+        if any([
+                state is not None and state != latest_settings.state,
+                cpc_cc is not None and cpc_cc != latest_settings.cpc_cc,
+                daily_budget_cc is not None and daily_budget_cc != latest_settings.daily_budget_cc,
+            ]):
+                new_settings = latest_settings
+                new_settings.pk = None  # make a copy of the latest settings
+                if state is not None:
+                    new_settings.state = state
+                if cpc_cc is not None:
+                    new_settings.cpc_cc = cpc_cc
+                if daily_budget_cc is not None:
+                    new_settings.daily_budget_cc = daily_budget_cc
+                new_settings.save()
+
+                ## TODO:
+                # add an entry to AdGroup History
+
+                if self.can_trigger_action():
+                    actionlog.api.set_ad_group_source_settings(new_settings)
+                else:
+                    logger.info('settings=%s on ad_group_source=%s will be triggered when the ad group will be enabled', settings_obj, self.ad_group_source)
+
     def can_trigger_action(self):
         ## TODO:
         # is the operation supported?

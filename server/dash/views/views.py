@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import decimal
 import json
 import logging
 import base64
@@ -26,6 +27,7 @@ import actionlog.zwei_actions
 
 from dash import models
 from dash import constants
+from dash import api
 
 logger = logging.getLogger(__name__)
 
@@ -291,6 +293,7 @@ class AdGroupRestore(api_common.BaseApiView):
 
         return self.create_api_response({})
 
+
 class CampaignAdGroups(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaigns_ad_group_put')
     def put(self, request, campaign_id):
@@ -443,6 +446,117 @@ class AccountCampaigns(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
+
+
+class AdGroupSourceSettings(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_source_settings_put')
+    def put(self, request, ad_group_id, source_id):
+        if not request.user.has_perm('zemauth.set_ad_group_source_settings'):
+            return exc.ForbiddenError(message='Not allowed')
+
+        resource = json.loads(request.body)
+
+        try:
+            ad_group = models.AdGroup.objects.all().filter_by_user(request.user).get(id=ad_group_id)
+        except models.AdGroup.DoesNotExist:
+            raise exc.MissingDataError(message='Requested ad group not found')
+
+        try:
+            ad_group_source = models.AdGroupSource.objects.get(ad_group=ad_group, source_id=source_id)
+        except models.AdGroupSource.DoesNotExist:
+            raise exc.MissingDataError(message='Requested source not found')
+
+        settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
+
+        if 'bid_cpc' in resource:
+            settings_writer.set_cpc_cc(decimal.Decimal(resource['bid_cpc']))
+
+        if 'dailly_budget' in resource:
+            settings_writer.set_daily_budget_cc(decimal.Decimal(resource['dailly_budget_cc']))
+
+        if 'state' in resource:
+            settings_writer.set_state(resource['state'])
+
+        return self.create_api_response()
+
+
+class AdGroupSourceStatus(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_source_status')
+    def get(self, request, ad_group_id, source_id):
+        message = ''
+        source_state_inconsistent = False
+
+        try:
+            ad_group = models.AdGroup.objects.filter_by_user(request.user).get(id=ad_group_id)
+        except models.AdGroup.DoesNotExist:
+            raise exc.MissingDataError(message='Requested ad group not found')
+
+        try:
+            ad_group_source = models.AdGroupSource.objects.get(ad_group=ad_group, source_id=source_id)
+        except models.AdGroupSource.DoesNotExist:
+            raise exc.MissingDataError(message='Requested source not found')
+
+        latest_settings_qs = models.AdGroupSourceSettings.objects.\
+            filter(ad_group_source=ad_group_source).\
+            order_by('ad_group_source_id', '-created_dt')
+        latest_settings = latest_settings_qs[0] if latest_settings_qs.exists() else None
+
+        latest_state_qs = models.AdGroupSourceState.objects.\
+            filter(ad_group_source=ad_group_source).\
+            order_by('ad_group_source_id', '-created_dt')
+        latest_state = latest_state_qs[0] if latest_state_qs.exists() else None
+
+        if latest_settings.cpc_cc != latest_state.cpc_cc:
+            source_state_inconsistent = True
+            if latest_settings.created_dt > latest_state.created_dt:
+                msg = 'Bid CPC is being changed from <strong>{settings_cpc}</strong> to <strong>{state_cpc}</strong>.'
+            else:
+                msg = 'The actual CPC on media source is <strong>{state_cpc}</strong>, ' +\
+                      'rather than <strong>{settings_cpc}</strong>.'
+
+            message += msg.format(
+                settings_cpc=latest_settings.cpc_cc if latest_settings.cpc_cc else 'N/A',
+                state_cpc=latest_state.cpc_cc if latest_state.cpc_cc else 'N/A'
+            )
+
+        if latest_settings.daily_budget_cc != latest_state.daily_budget_cc:
+            source_state_inconsistent = True
+            if message:
+                message += '\n'
+
+            if latest_settings.created_dt > latest_state.created_dt:
+                msg = 'Daily budget is being changed from <strong>{settings_daily_buget}</strong> ' +\
+                      'to <strong>{state_daily_budget}</strong>.'
+            else:
+                msg = 'The actual daily budget on media source is <strong>{state_daily_budget}</strong>, ' +\
+                      'rather than <strong>{settings_daily_budget}</strong>.'
+
+            message += msg.format(
+                settings_daily_budget=latest_settings.daily_budget if latest_settings.daily_budget_cc else 'N/A',
+                state_daily_budget=latest_state.daily_budget_cc if latest_state.daily_budget_cc else 'N/A'
+            )
+
+        if latest_settings.state != latest_state.state:
+            source_state_inconsistent = True
+            if message:
+                message += '\n'
+
+            if latest_settings.created_dt > latest_state.created_dt:
+                msg = 'Status is being changed from <strong>{settings_state}</strong> ' +\
+                      'to <strong>{state_state}</strong>.'
+            else:
+                msg = 'The actual status on media source is <strong>{state_state}</strong>, ' +\
+                      'rather than <strong>{settings_state}</strong>.'
+
+            message += msg.format(
+                settings_state=constants.AdGroupSettingsState.get_text(latest_settings.state),
+                state_state=constants.AdGroupSettingsState.get_text(latest_state.state)
+            )
+
+        return self.create_api_response({
+            'source_state_inconsistent': source_state_inconsistent,
+            'message': message
+        })
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')
