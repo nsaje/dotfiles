@@ -74,10 +74,6 @@ urlpatterns += patterns(
         login_required(dash.views.table.SourcesTable.as_view()),
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/(?P<source_id>\d+)/status/',
-        login_required(dash.views.views.AdGroupSourceStatus.as_view()),
-    ),
-    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/(?P<source_id>\d+)/settings/',
         login_required(dash.views.views.AdGroupSourceSettings.as_view()),
     ),
