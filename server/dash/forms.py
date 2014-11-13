@@ -85,6 +85,41 @@ class AdGroupSettingsForm(forms.Form):
         return end_date
 
 
+class AdGroupSourceSettingsCpcForm(forms.Form):
+    cpc_cc = forms.DecimalField(
+        min_value=0.03,
+        max_value=2,
+        decimal_places=4,
+        error_messages={
+            'required': 'Minimum CPC is $0.03.',
+            'min_value': 'Minimum CPC is $0.03.',
+            'max_value': 'Maximum CPC is $2.00.'
+        }
+    )
+
+
+class AdGroupSourceSettingsDailyBudgetForm(forms.Form):
+    daily_budget_cc = forms.DecimalField(
+        min_value=10,
+        decimal_places=4,
+        error_messages={
+            'required': 'Please provide budget of at least $10.00.',
+            'min_value': 'Please provide budget of at least $10.00.'
+        }
+    )
+
+
+class AdGroupSourceSettingsStateForm(forms.Form):
+    state = forms.TypedChoiceField(
+        choices=constants.AdGroupSettingsState.get_choices(),
+        coerce=int,
+        empty_value=None,
+        error_messages={
+            'required'
+        }
+    )
+
+
 class AdGroupAgencySettingsForm(forms.Form):
     id = forms.IntegerField()
     tracking_code = forms.CharField(required=False)

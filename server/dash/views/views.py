@@ -581,14 +581,31 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 
         settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
 
-        if 'bid_cpc' in resource:
-            settings_writer.set_cpc_cc(decimal.Decimal(resource['bid_cpc']))
+        errors = {}
 
-        if 'dailly_budget' in resource:
-            settings_writer.set_daily_budget_cc(decimal.Decimal(resource['dailly_budget_cc']))
+        state_form = forms.AdGroupSourceSettingsStateForm(resource)
+        if 'state' in resource and not state_form.is_valid():
+            errors.update(state_form.errors)
+
+        cpc_form = forms.AdGroupSourceSettingsCpcForm(resource)
+        if 'cpc_cc' in resource and not cpc_form.is_valid():
+            errors.update(cpc_form.errors)
+
+        daily_budget_form = forms.AdGroupSourceSettingsDailyBudgetForm(resource)
+        if 'daily_budget_cc' in resource and not daily_budget_form.is_valid():
+            errors.update(daily_budget_form.errors)
+
+        if errors:
+            raise exc.ValidationError(erorrs=errors)
 
         if 'state' in resource:
             settings_writer.set_state(resource['state'])
+
+        if 'cpc_cc' in resource:
+            settings_writer.set_cpc_cc(decimal.Decimal(resource['cpc_cc']))
+
+        if 'daily_budget_cc' in resource:
+            settings_writer.set_daily_budget_cc(decimal.Decimal(resource['daily_budget_cc']))
 
         return self.create_api_response()
 
