@@ -746,15 +746,15 @@ class AdGroupAgency(api_common.BaseApiView):
             changes = old_settings.get_setting_changes(new_settings) \
                 if old_settings is not None else None
 
-            if i > 0 and not changes:
+            if new_settings.changes_text is not None:
+                changes_text = new_settings.changes_text
+            else:
+                changes_text = self.convert_changes_to_string(changes)
+
+            if i > 0 and not changes and not changes_text:
                 continue
 
             settings_dict = self.convert_settings_to_dict(old_settings, new_settings)
-
-            if settings[i].changes_text is not None:
-                changes_text = settings[i].changes_text
-            else:
-                changes_text = self.convert_changes_to_string(changes)
 
             history.append({
                 'datetime': new_settings.created_dt,

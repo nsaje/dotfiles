@@ -27,7 +27,7 @@ def update_ad_group_source_state(ad_group_source, conf, settings_id=None):
     for key, val in conf.items():
         if key in ('cpc_cc', 'daily_budget_cc'):
             conf[key] = cc_to_decimal(val)
-            
+
     if settings_id is None:
         _upsert_ad_group_source_state(ad_group_source, conf)
         return
@@ -165,6 +165,8 @@ def get_state_by_account():
 
 class AdGroupSourceSettingsWriter(object):
 
+    DECIMAL_PLACES = 6
+
     def __init__(self, ad_group_source):
         self.ad_group_source = ad_group_source
         assert type(self.ad_group_source) is models.AdGroupSource
@@ -177,8 +179,7 @@ class AdGroupSourceSettingsWriter(object):
             new_settings.state = state
             new_settings.save()
 
-            ## TODO:
-            # add an entry to AdGroup History
+            self.add_to_history({'state': state})
 
             if self.can_trigger_action():
                 actionlog.api.set_ad_group_source_settings(new_settings)
@@ -187,14 +188,14 @@ class AdGroupSourceSettingsWriter(object):
 
     def set_cpc_cc(self, cpc_cc):
         latest_settings = self.get_latest_settings()
-        if latest_settings.cpc_cc != cpc_cc:
+
+        if not self._decimal_eq(latest_settings.cpc_cc, cpc_cc):
             new_settings = latest_settings
             new_settings.pk = None  # make a copy of the latest settings
             new_settings.cpc_cc = cpc_cc
             new_settings.save()
 
-            ## TODO:
-            # add an entry to AdGroup History
+            self.add_to_history({'cpc_cc': cpc_cc})
 
             if self.can_trigger_action():
                 actionlog.api.set_ad_group_source_settings(new_settings)
@@ -204,14 +205,13 @@ class AdGroupSourceSettingsWriter(object):
     def set_daily_budget_cc(self, daily_budget_cc):
         latest_settings = self.get_latest_settings()
 
-        if latest_settings.daily_budget_cc != daily_budget_cc:
+        if not self._decimal_eq(latest_settings.daily_budget_cc, daily_budget_cc):
             new_settings = latest_settings
             new_settings.pk = None  # make a copy of the latest settings
             new_settings.daily_budget_cc = daily_budget_cc
             new_settings.save()
 
-            ## TODO:
-            # add an entry to AdGroup History
+            self.add_to_history({'daily_budget_cc': daily_budget_cc})
 
             if self.can_trigger_action():
                 actionlog.api.set_ad_group_source_settings(new_settings)
@@ -227,8 +227,8 @@ class AdGroupSourceSettingsWriter(object):
 
         if any([
                 state is not None and state != latest_settings.state,
-                cpc_cc is not None and cpc_cc != latest_settings.cpc_cc,
-                daily_budget_cc is not None and daily_budget_cc != latest_settings.daily_budget_cc,
+                cpc_cc is not None and not self._decimal_eq(cpc_cc, latest_settings.cpc_cc),
+                daily_budget_cc is not None and not self._decimal_eq(daily_budget_cc, latest_settings.daily_budget_cc),
             ]):
                 new_settings = latest_settings
                 new_settings.pk = None  # make a copy of the latest settings
@@ -240,13 +240,15 @@ class AdGroupSourceSettingsWriter(object):
                     new_settings.daily_budget_cc = daily_budget_cc
                 new_settings.save()
 
-                ## TODO:
-                # add an entry to AdGroup History
+                self.add_to_history(settings_obj)
 
                 if self.can_trigger_action():
                     actionlog.api.set_ad_group_source_settings(new_settings)
                 else:
                     logger.info('settings=%s on ad_group_source=%s will be triggered when the ad group will be enabled', settings_obj, self.ad_group_source)
+
+    def _decimal_eq(self, val1, val2):
+        return round(val1, self.DECIMAL_PLACES) == round(val2, self.DECIMAL_PLACES)
 
     def can_trigger_action(self):
         ## TODO:
@@ -269,3 +271,28 @@ class AdGroupSourceSettingsWriter(object):
             latest_settings = models.AdGroupSourceSettings.objects.create(ad_group_source=self.ad_group_source)
             latest_settings.save()
             return latest_settings
+
+    def add_to_history(self, change_obj):
+        changes_text_parts = []
+        for key, val in change_obj.items():
+            if val is None:
+                continue
+            field = models.AdGroupSettings.get_human_prop_name(key)
+            val = models.AdGroupSettings.get_human_value(key, val)
+            source_name = self.ad_group_source.source.name
+            changes_text_parts.append('Set %s to %s on %s' % (field, val, source_name))
+        changes_text = ', '.join(changes_text_parts)
+
+        try:
+            latest_ad_group_settings = models.AdGroupSettings.objects \
+                .filter(ad_group=self.ad_group_source.ad_group) \
+                .latest('created_dt')
+        except models.AdGroupSettings.DoesNotExist:
+            # there are no settings, we create the first one
+            latest_ad_group_settings = models.AdGroupSettings(ad_group=self.ad_group_source.ad_group)
+
+        new_ad_group_settings = latest_ad_group_settings
+        new_ad_group_settings.pk = None
+        new_ad_group_settings.changes_text = changes_text
+        new_ad_group_settings.save()
+

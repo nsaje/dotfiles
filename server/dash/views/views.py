@@ -468,14 +468,20 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 
         settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
 
-        if 'bid_cpc' in resource:
-            settings_writer.set_cpc_cc(decimal.Decimal(resource['bid_cpc']))
+        settings_writer.set({
+            'state': resource.get('state'),
+            'cpc_cc': resource.get('bid_cpc'),
+            'daily_budget_cc': resource.get('daily_budget')
+        })
 
-        if 'dailly_budget' in resource:
-            settings_writer.set_daily_budget_cc(decimal.Decimal(resource['dailly_budget_cc']))
+        # if 'bid_cpc' in resource:
+        #     settings_writer.set_cpc_cc(resource['bid_cpc'])
 
-        if 'state' in resource:
-            settings_writer.set_state(resource['state'])
+        # if 'daily_budget' in resource:
+        #     settings_writer.set_daily_budget_cc(resource['daily_budget'])
+
+        # if 'state' in resource:
+        #     settings_writer.set_state(resource['state'])
 
         return self.create_api_response()
 
