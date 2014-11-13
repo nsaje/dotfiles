@@ -156,7 +156,20 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             help: 'Maximum budget per day.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc'
+            initialOrder: 'desc',
+            onSave: function (sourceId, value, onError) {
+                var data = {daily_budget_cc: value};
+
+                api.adGroupSourceSettings.save($state.params.id, sourceId, data).then(
+                    function (data) {
+                        getTableData();
+                    },
+                    function (errors) {
+                        console.log(errors);
+                        onError(errors.dailyBudget);
+                    }
+                );
+            }
         },
         {
             name: 'Spend',
@@ -256,6 +269,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             $scope.columns.splice(5, 0, {
                 name: 'Current Bid CPC',
                 field: 'current_bid_cpc',
+                fractionSize: 3,
                 checked: false,
                 type: 'currency',
                 internal: $scope.isPermissionInternal('zemauth.see_current_ad_group_source_state'),
