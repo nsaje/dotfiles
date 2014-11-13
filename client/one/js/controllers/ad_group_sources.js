@@ -134,7 +134,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             totalRow: false,
             order: true,
             initialOrder: 'desc',
-            editable: true,
             onSave: function (sourceId, value, onError) {
                 var data = {cpc_cc: value};
 

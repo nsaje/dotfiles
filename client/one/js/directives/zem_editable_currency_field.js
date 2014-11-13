@@ -5,9 +5,10 @@ oneApp.directive('zemEditableCurrencyField', function() {
     return {
         restrict: 'E',
         scope: {
-            onSave: '=zemEditableCurrencyFieldOnSave',
-            value: '@zemEditableCurrencyFieldValue',
-            id: '@zemEditableCurrencyFieldId'
+            onSave: '=',
+            value: '@',
+            rowId: '@',
+            fractionSize: '@'
         },
         templateUrl: '/partials/zem_editable_currency_field.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {

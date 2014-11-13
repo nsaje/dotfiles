@@ -6,16 +6,16 @@ oneApp.directive('zemCurrencyInput', ['$filter', function($filter) {
         require: 'ngModel',
         restrict: 'A',
         scope: {
-            prefix: '@zemCurrencyInputPrefix',
-            fractionSize: '@zemCurrencyInputFractionSize'
+            prefix: '@',
+            fractionSize: '@'
         },
         compile: function compile(tElem, tAttrs) {
             // sets defaults
-            if (!tAttrs.zemCurrencyInputPrefix) {
-                tAttrs.zemCurrencyInputPrefix = '';
+            if (!tAttrs.prefix) {
+                tAttrs.prefix = '';
             }
-            if (!tAttrs.zemCurrencyInputFractionSize) {
-                tAttrs.zemCurrencyInputFractionSize = '2';
+            if (!tAttrs.fractionSize) {
+                tAttrs.fractionSize = '2';
             }
 
             return function postLink(scope, element, attrs, controller) {

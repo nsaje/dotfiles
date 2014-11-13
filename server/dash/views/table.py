@@ -459,27 +459,25 @@ class SourcesTable(api_common.BaseApiView):
                 else:
                     row['bid_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None
 
+                row['editable_fields'] = []
                 if user.has_perm('zemauth.set_ad_group_source_settings'):
-                    row['can_update_state'] = False
                     if source.source_type.available_actions.filter(
                             action=constants.SourceAction.CAN_UPDATE_STATE
                     ).exists():
-                        row['can_update_state'] = True
+                        row['editable_fields'].append('state')
 
-                    row['can_update_cpc'] = False
                     if source.source_type.available_actions.filter(
                             action=constants.SourceAction.CAN_UPDATE_CPC
                     ).exists():
-                        row['can_update_cpc'] = True
+                        row['editable_fields'].append('bid_cpc')
 
-                    row['can_update_daily_budget'] = False
                     if source.source_type.available_actions.filter(
                             action=constants.SourceAction.CAN_UPDATE_DAILY_BUDGET
                     ).exists():
-                        row['can_update_daily_budget'] = True
+                        row['editable_fields'].append('daily_budget')
 
                 if user.has_perm('zemauth.see_current_ad_group_source_state'):
-                    row['current_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None
+                    row['current_bid_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None
                     row['current_daily_budget'] = states[0].daily_budget_cc if len(states) else None
 
             # add conversion fields
