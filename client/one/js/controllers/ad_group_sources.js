@@ -165,7 +165,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                         getTableData();
                     },
                     function (errors) {
-                        console.log(errors);
                         onError(errors.dailyBudget);
                     }
                 );
