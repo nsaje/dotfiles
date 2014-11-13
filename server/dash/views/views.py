@@ -597,7 +597,6 @@ class AdGroupSourceStatus(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_source_status')
     def get(self, request, ad_group_id, source_id):
         message = ''
-        source_state_inconsistent = False
 
         try:
             ad_group = models.AdGroup.objects.filter_by_user(request.user).get(id=ad_group_id)
@@ -619,8 +618,14 @@ class AdGroupSourceStatus(api_common.BaseApiView):
             order_by('ad_group_source_id', '-created_dt')
         latest_state = latest_state_qs[0] if latest_state_qs.exists() else None
 
+        if ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE and\
+           latest_settings.state == constants.AdGroupSettingsState.ACTIVE:
+            message += 'This Media Source is enable but will not run until you enable the AdGroup in the Settings.'
+
         if latest_settings.cpc_cc != latest_state.cpc_cc:
-            source_state_inconsistent = True
+            if message:
+                message += '\n'
+
             if latest_settings.created_dt > latest_state.created_dt:
                 msg = 'Bid CPC is being changed from <strong>{settings_cpc}</strong> to <strong>{state_cpc}</strong>.'
             else:
@@ -633,7 +638,6 @@ class AdGroupSourceStatus(api_common.BaseApiView):
             )
 
         if latest_settings.daily_budget_cc != latest_state.daily_budget_cc:
-            source_state_inconsistent = True
             if message:
                 message += '\n'
 
@@ -650,7 +654,6 @@ class AdGroupSourceStatus(api_common.BaseApiView):
             )
 
         if latest_settings.state != latest_state.state:
-            source_state_inconsistent = True
             if message:
                 message += '\n'
 
@@ -667,7 +670,6 @@ class AdGroupSourceStatus(api_common.BaseApiView):
             )
 
         return self.create_api_response({
-            'source_state_inconsistent': source_state_inconsistent,
             'message': message
         })
 
