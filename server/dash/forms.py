@@ -113,10 +113,7 @@ class AdGroupSourceSettingsStateForm(forms.Form):
     state = forms.TypedChoiceField(
         choices=constants.AdGroupSettingsState.get_choices(),
         coerce=int,
-        empty_value=None,
-        error_messages={
-            'required'
-        }
+        empty_value=None
     )
 
 
