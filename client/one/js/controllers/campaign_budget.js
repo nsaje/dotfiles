@@ -50,8 +50,6 @@ oneApp.controller('CampaignBudgetCtrl', ['$scope', '$state', 'api', function ($s
             function (data) {
                 // error
                 $scope.errors = data.data.errors;
-                console.log(JSON.stringify($scope.errors));
-                console.log($scope.errors);
             }
         ).finally(function () {
             $scope.requestInProgress = false;

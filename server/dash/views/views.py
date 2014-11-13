@@ -466,7 +466,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         except models.AdGroupSource.DoesNotExist:
             raise exc.MissingDataError(message='Requested source not found')
 
-        settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
+        #settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
 
         errors = {}
 
@@ -484,9 +484,9 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             errors.update(daily_budget_form.errors)
 
         if errors:
-            raise exc.ValidationError(erorrs=errors)
+            raise exc.ValidationError(errors=errors)
 
-        settings_writer.set(resource)
+        #settings_writer.set(resource)
         return self.create_api_response()
 
 

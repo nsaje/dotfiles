@@ -1550,6 +1550,41 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
+    function AdGroupSourceSettings() {
+        function convertValidationErrorFromApi(errors) {
+            var result = {
+                cpc: errors.cpc_cc,
+                dailyBudget: errors.daily_budget_cc,
+                state: errors.state
+            };
+
+            return result;
+        }
+
+        this.save = function (adGroupId, sourceId, data) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/sources/' + sourceId + '/settings/';
+
+            $http.put(url, data).
+                success(function (data) {
+                    var resource;
+                    if (data && data.data) {
+                        resource = data.data;
+                    }
+                    deferred.resolve(resource);
+                }).
+                error(function (data, status) {
+                    var resource;
+                    if (status === 400 && data && data.data.error_code === 'ValidationError') {
+                        resource = convertValidationErrorFromApi(data.data.errors);
+                    }
+                    deferred.reject(resource);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     return {
         navData: new NavData(),
         user: new User(),
@@ -1581,6 +1616,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         checkSyncProgress: new CheckSyncProgress(),
         dailyStats: new DailyStats(),
         allAccountsBudget: new AllAccountsBudget(),
-        accountUsers: new AccountUsers()
+        accountUsers: new AccountUsers(),
+        adGroupSourceSettings: new AdGroupSourceSettings()
     };
 }]);

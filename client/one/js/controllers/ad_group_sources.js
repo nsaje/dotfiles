@@ -133,7 +133,20 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             help: 'Maximum bid price (in USD) per click.',
             totalRow: false,
             order: true,
-            initialOrder: 'desc'
+            initialOrder: 'desc',
+            editable: true,
+            onSave: function (sourceId, value, onError) {
+                var data = {cpc_cc: value};
+
+                api.adGroupSourceSettings.save($state.params.id, sourceId, data).then(
+                    function (data) {
+                        getTableData();
+                    },
+                    function (errors) {
+                        onError(errors.cpc);
+                    }
+                );
+            }
         },
         {
             name: 'Daily Budget',
