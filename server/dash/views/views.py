@@ -570,7 +570,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         resource = json.loads(request.body)
 
         try:
-            ad_group = models.AdGroup.objects.filter_by_user(request.user).get(id=ad_group_id)
+            ad_group = models.AdGroup.objects.all().filter_by_user(request.user).get(id=ad_group_id)
         except models.AdGroup.DoesNotExist:
             raise exc.MissingDataError(message='Requested ad group not found')
 
@@ -579,7 +579,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         except models.AdGroupSource.DoesNotExist:
             raise exc.MissingDataError(message='Requested source not found')
 
-        settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
+        #settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
 
         errors = {}
 
@@ -596,9 +596,9 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             errors.update(daily_budget_form.errors)
 
         if errors:
-            raise exc.ValidationError(erorrs=errors)
+            raise exc.ValidationError(errors=errors)
 
-        settings_writer.set(resource)
+        #settings_writer.set(resource)
         return self.create_api_response()
 
 
