@@ -101,8 +101,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
             type: 'text',
             totalRow: false,
             help: 'Status of a particular media source (enabled or paused).',
-            extraThCss: 'text-center',
-            extraTdCss: 'text-center',
             order: true,
             orderField: 'status',
             initialOrder: 'asc'
