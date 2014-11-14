@@ -24,7 +24,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             return deferred.promise;
         };
-    } 
+    }
 
     function User() {
         this.get = function (id) {
@@ -1585,6 +1585,29 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
+    function AdGroupSourcesNotifications() {
+        this.get = function (adGroupId) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/sources/notifications/';
+
+            $http.get(url).
+                success(function (data) {
+                    var resource;
+
+                    if (data && data.data) {
+                        resource = data.data;
+                    }
+
+                    deferred.resolve(resource);
+                }).
+                error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     return {
         navData: new NavData(),
         user: new User(),
@@ -1617,6 +1640,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         dailyStats: new DailyStats(),
         allAccountsBudget: new AllAccountsBudget(),
         accountUsers: new AccountUsers(),
-        adGroupSourceSettings: new AdGroupSourceSettings()
+        adGroupSourceSettings: new AdGroupSourceSettings(),
+        adGroupSourcesNotifications: new AdGroupSourcesNotifications()
     };
 }]);

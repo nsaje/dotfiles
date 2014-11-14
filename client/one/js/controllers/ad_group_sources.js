@@ -119,11 +119,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             type: 'text',
             totalRow: false,
             help: 'Status of a particular media source (enabled or paused).',
-            extraThCss: 'text-center',
-            extraTdCss: 'text-center',
             order: true,
             orderField: 'status',
-            initialOrder: 'asc'
+            initialOrder: 'asc',
+            displayNotifications: true
         },
         {
             name: 'Bid CPC',
@@ -380,6 +379,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
                 $scope.isSyncRecent = data.is_sync_recent;
                 $scope.isSyncInProgress = data.is_sync_in_progress;
+                $scope.notifications = data.notifications;
 
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
 
@@ -647,7 +647,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                     function(data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 
-                        if($scope.isSyncInProgress == false){
+                        if($scope.isSyncInProgress === false){
                             // we found out that the sync is no longer in progress
                             // time to reload the data
                             getTableData();
@@ -663,15 +663,33 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 });
             }, 5000);
         }
-    }
+    };
 
     pollSyncStatus();
+
+    var pollSourcesNotifications = function () {
+        $scope.notificationTimeout = $timeout(function () {
+            api.adGroupSourcesNotifications.get($state.params.id)
+                .then(function (data) {
+                    $scope.notifications = data.notifications;
+                })
+                .finally(function() {
+                    pollSourcesNotifications();
+                });
+        }, 5000);
+    };
+
+    pollSourcesNotifications();
+
+    $scope.$on('$destroy', function () {
+        $timeout.cancel($scope.notificationTimeout);
+    });
 
     // trigger sync
     $scope.triggerSync = function() {
         $scope.isSyncInProgress = true;
         api.adGroupSync.get($state.params.id);
-    }
+    };
 
     $scope.init();
 }]);

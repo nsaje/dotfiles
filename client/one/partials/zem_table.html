@@ -92,7 +92,7 @@
                                     <input type="checkbox" data-ng-model="row[col.field]" ng-disabled="!row[col.field] && col.disabled" data-ng-change="callSelectCallback(col.selectCallback, row, row[col.field], true)"/>
                                 </span>
                             </span>
-                            <span ng-if="row.notifications[col.field]" class="notification" popover-append-to-body="true" popover-trigger="mouseenter" popover-html-unsafe="{{ row.notifications[col.field] }}" popover-placement="right"></span>
+                            <span ng-if="col.displayNotifications && notifications[row.id]" class="notification" popover-append-to-body="true" popover-trigger="mouseenter" popover-html-unsafe="{{ notifications[row.id] }}" popover-placement="right"></span>
                         </td>
                     </tr>
                 </tbody>

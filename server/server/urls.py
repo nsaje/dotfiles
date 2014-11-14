@@ -78,6 +78,10 @@ urlpatterns += patterns(
         login_required(dash.views.table.SourcesTable.as_view()),
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/notifications/',
+        login_required(dash.views.views.AdGroupSourceNotifications.as_view())
+    ),
+    url(
         r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/export/',
         login_required(dash.views.export.CampaignAdGroupsExport.as_view())
     ),

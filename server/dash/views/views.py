@@ -479,7 +479,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'cpc_cc' in resource and not cpc_form.is_valid():
             errors.update(cpc_form.errors)
 
-
         daily_budget_form = forms.AdGroupSourceSettingsDailyBudgetForm(resource)
         if 'daily_budget_cc' in resource and not daily_budget_form.is_valid():
             errors.update(daily_budget_form.errors)
@@ -494,6 +493,26 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 
         settings_writer.set(resource)
         return self.create_api_response()
+
+
+class AdGroupSourceNotifications(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash', 'ad_group_source_notifications')
+    def get(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.set_ad_group_source_settings'):
+            raise exc.ForbiddenError('Not allowed')
+
+        try:
+            ad_group = models.AdGroup.objects.all().filter_by_user(request.user).get(id=ad_group_id)
+        except models.AdGroup.DoesNotExist:
+            raise exc.MissingDataError(message='Requested ad group not found')
+
+        notifications = helpers.get_ad_group_sources_notifications(
+            helpers.get_active_ad_group_sources(models.AdGroup, [ad_group])
+        )
+
+        return self.create_api_response({
+            'notifications': notifications
+        })
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')
