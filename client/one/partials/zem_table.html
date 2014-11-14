@@ -29,10 +29,10 @@
                         <td ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type), 'input-one-char': col.type === 'checkbox', 'text-center': col.type === 'link'}" class="{{ col.extraTdCss }}" ng-repeat="col in columns | filter: {checked: true}">
                             <span ng-switch="col.type">
                                 <span ng-switch-when="currency">
-                                    <span ng-if="!col.editable" ng-class="{'currency-3': col.fractionSize === 3}">
+                                    <span ng-if="row.editable_fields.indexOf(col.field) === -1" ng-class="{'currency-3': col.fractionSize === 3}">
                                         {{ (row[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
                                     </span>
-                                    <zem-editable-currency-field ng-if="col.editable" zem-editable-currency-field-value="{{row[col.field]}}" zem-editable-currency-field-on-save="col.onSave" zem-editable-currency-field-id="{{row.id}}" />
+                                    <zem-editable-currency-field ng-if="row.editable_fields.indexOf(col.field) !== -1" ng-class="{'currency-3': col.fractionSize === 3}" value="{{row[col.field]}}" on-save="col.onSave" row-id="{{row.id}}" fraction-size="{{col.fractionSize}}" />
                                 </span>
                                 <span ng-switch-when="percent">
                                     <span ng-switch="row[col.field]">

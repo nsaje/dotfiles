@@ -68,6 +68,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                'bid_cpc', 'daily_budget', 'cost', 
                'cpc', 'clicks', 'impressions', 'ctr', 
                'yesterday_cost', 'supply_dash_url',
+               'current_bid_cpc', 'current_daily_budget'
             ]
         },
         {
@@ -134,7 +135,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             totalRow: false,
             order: true,
             initialOrder: 'desc',
-            editable: true,
             onSave: function (sourceId, value, onError) {
                 var data = {cpc_cc: value};
 
@@ -156,7 +156,19 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             help: 'Maximum budget per day.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc'
+            initialOrder: 'desc',
+            onSave: function (sourceId, value, onError) {
+                var data = {daily_budget_cc: value};
+
+                api.adGroupSourceSettings.save($state.params.id, sourceId, data).then(
+                    function (data) {
+                        getTableData();
+                    },
+                    function (errors) {
+                        onError(errors.dailyBudget);
+                    }
+                );
+            }
         },
         {
             name: 'Spend',
@@ -247,6 +259,31 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 type: 'link',
                 internal: $scope.isPermissionInternal('zemauth.supply_dash_link_view'),
                 totalRow: true,
+                order: true,
+                initialOrder: 'desc'
+            });
+        }
+
+        if ($scope.hasPermission('zemauth.see_current_ad_group_source_state')) {
+            $scope.columns.splice(5, 0, {
+                name: 'Current Bid CPC',
+                field: 'current_bid_cpc',
+                fractionSize: 3,
+                checked: false,
+                type: 'currency',
+                internal: $scope.isPermissionInternal('zemauth.see_current_ad_group_source_state'),
+                totalRow: false,
+                order: true,
+                initialOrder: 'desc'
+            });
+
+            $scope.columns.splice(7, 0, {
+                name: 'Current Daily Budget',
+                field: 'current_daily_budget',
+                checked: false,
+                type: 'currency',
+                internal: $scope.isPermissionInternal('zemauth.see_current_ad_group_source_state'),
+                totalRow: false,
                 order: true,
                 initialOrder: 'desc'
             });

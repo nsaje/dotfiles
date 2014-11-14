@@ -6,21 +6,31 @@ oneApp.directive('zemCurrencyInput', ['$filter', function($filter) {
         require: 'ngModel',
         restrict: 'A',
         scope: {
-            prefix: '@zemCurrencyInputPrefix',
-            fractionSize: '@zemCurrencyInputFractionSize'
+            prefix: '@?',
+            fractionSize: '@?'
         },
         compile: function compile(tElem, tAttrs) {
-            // sets defaults
-            if (!tAttrs.zemCurrencyInputPrefix) {
-                tAttrs.zemCurrencyInputPrefix = '';
+            // add attributes if not present
+            if (!tAttrs.prefix) {
+                tAttrs.prefix = '';
             }
-            if (!tAttrs.zemCurrencyInputFractionSize) {
-                tAttrs.zemCurrencyInputFractionSize = '2';
+            if (!tAttrs.fractionSize) {
+                tAttrs.fractionSize = '';
             }
 
             return function postLink(scope, element, attrs, controller) {
-                var decimalRegex = new RegExp('\\.[0-9]{0,' + scope.fractionSize + '}');
+                var decimalRegex;
 
+                // sets defaults
+                if (!scope.prefix) {
+                    scope.prefix = '';
+                }
+                if (!scope.fractionSize) {
+                    scope.fractionSize = '2';
+                }
+
+                decimalRegex = new RegExp('\\.[0-9]{0,' + scope.fractionSize + '}');
+                
                 function getCaretPos(element) {
                     if (element.selectionStart) {
                         return element.selectionStart;

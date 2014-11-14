@@ -487,7 +487,10 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if errors:
             raise exc.ValidationError(errors=errors)
 
-        resource['cpc_cc'] = decimal.Decimal(resource['cpc_cc'])
+        if 'cpc_cc' in resource:
+            resource['cpc_cc'] = decimal.Decimal(resource['cpc_cc'])
+        if 'daily_budget_cc' in resource:
+            resource['daily_budget_cc'] = decimal.Decimal(resource['daily_budget_cc'])
 
         settings_writer.set(resource)
         return self.create_api_response()
