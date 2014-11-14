@@ -1920,12 +1920,14 @@ zem-editable-currency-field {
     position: relative;
 
     .edit-field.hover-enabled {
-        &:hover {
-            border: 1px dashed #454545;
-            cursor: pointer;
-            padding: 3px;
-            .border-radius(2px);
+        white-space: nowrap;
+        padding: 3px;
+        .border-radius(2px);
+        border: 1px dashed transparent;
 
+        &:hover {
+            cursor: pointer;
+            border-color: #454545;
         }
 
         &:not(:hover) .edit-icon {
