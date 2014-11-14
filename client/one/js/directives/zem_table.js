@@ -54,6 +54,14 @@ oneApp.directive('zemTable', ['config', function(config) {
             $scope.callSelectCallback = function (callback, row, checked, count) {
                 callback(row, checked);
             };
+
+            $scope.isFieldEditable = function (editableFields, field) {
+                if (!editableFields) {
+                    return false;
+                }
+
+                return editableFields.indexOf(field) !== -1;
+            }
         }]
     };
 }]);
