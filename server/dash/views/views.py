@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 import json
+import decimal
 import logging
 import base64
 import httplib
@@ -466,7 +467,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         except models.AdGroupSource.DoesNotExist:
             raise exc.MissingDataError(message='Requested source not found')
 
-        #settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
+        settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
 
         errors = {}
 
@@ -486,7 +487,9 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if errors:
             raise exc.ValidationError(errors=errors)
 
-        #settings_writer.set(resource)
+        resource['cpc_cc'] = decimal.Decimal(resource['cpc_cc'])
+
+        settings_writer.set(resource)
         return self.create_api_response()
 
 
