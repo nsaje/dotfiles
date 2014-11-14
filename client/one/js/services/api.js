@@ -110,11 +110,11 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                         converted_row[field] = row[field];
 
                         if (row[field] === constants.adGroupSettingsState.ACTIVE) {
-                            converted_row.status_label = 'Active';
+                            converted_row.status = 'Active';
                         } else if (row[field] === constants.adGroupSettingsState.INACTIVE) {
-                            converted_row.status_label = 'Paused';
+                            converted_row.status = 'Paused';
                         } else {
-                            converted_row.status_label = 'N/A';
+                            converted_row.status = 'N/A';
                         }
                     } else {
                         converted_row[field] = row[field];
@@ -192,11 +192,11 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                         converted_row[field] = row[field];
 
                         if (row[field] === constants.adGroupSettingsState.ACTIVE) {
-                            converted_row.status_label = 'Active';
+                            converted_row.status = 'Active';
                         } else if (row[field] === constants.adGroupSettingsState.INACTIVE) {
-                            converted_row.status_label = 'Paused';
+                            converted_row.status = 'Paused';
                         } else {
-                            converted_row.status_label = 'N/A';
+                            converted_row.status = 'N/A';
                         }
                     } else {
                         converted_row[field] = row[field];
@@ -1304,11 +1304,11 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     function AccountAccountsTable() {
         function convertFromApi(row) {
             if (row.archived) {
-                row.status_label = 'Archived';
+                row.status = 'Archived';
             } else if (row.status === constants.adGroupSettingsState.ACTIVE) {
-                row.status_label = 'Active';
+                row.status = 'Active';
             } else {
-                row.status_label = 'Paused';
+                row.status = 'Paused';
             }
 
             return row;

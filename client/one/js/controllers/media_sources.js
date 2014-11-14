@@ -95,7 +95,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
         },
         {
             name: 'Status',
-            field: 'status_label',
+            field: 'status',
             unselectable: true,
             checked: true,
             type: 'text',
