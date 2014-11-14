@@ -536,7 +536,7 @@ def oauth_redirect(request, source_name):
     code = request.GET.get('code')
     state = request.GET.get('state')
 
-    if not state or 'credentials_id' not in state:
+    if not state:
         logger.error('Missing state in OAuth2 redirect')
         return redirect('index')
 
