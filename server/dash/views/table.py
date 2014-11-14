@@ -495,10 +495,7 @@ class SourcesTable(api_common.BaseApiView):
                 supply_dash_url = urlresolvers.reverse('dash.views.views.supply_dash_redirect')
                 supply_dash_url += '?ad_group_id={}&source_id={}'.format(id_, source.id)
 
-                if user.has_perm('zemauth.set_ad_group_source_settings'):
-                    daily_budget = source_settings.daily_budget_cc if source_settings else None
-                else:
-                    daily_budget = states[0].daily_budget_cc if len(states) else None
+                daily_budget = states[0].daily_budget_cc if len(states) else None
             else:
                 daily_budget = self.get_daily_budget_total(states)
 
@@ -539,11 +536,6 @@ class SourcesTable(api_common.BaseApiView):
                     row['status_setting'] = source_settings.state if source_settings else None
 
                 if user.has_perm('zemauth.set_ad_group_source_settings'):
-                    row['bid_cpc'] = source_settings.cpc_cc if source_settings else None
-                else:
-                    row['bid_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None
-
-                if user.has_perm('zemauth.set_ad_group_source_settings'):
                     row['can_update_state'] = False
                     if source.source_type.available_actions.filter(
                             action=constants.SourceAction.CAN_UPDATE_STATE
@@ -563,6 +555,15 @@ class SourcesTable(api_common.BaseApiView):
                         row['can_update_daily_budget'] = True
 
                     row['notification'] = notifications[source.id]
+
+                if user.has_perm('zemauth.set_ad_group_source_settings') and row['can_update_cpc']:
+                    row['bid_cpc'] = source_settings.cpc_cc if source_settings else None
+                else:
+                    row['bid_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None
+
+                if user.has_perm('zemauth.set_ad_group_source_settings') and row['can_update_daily_budget']:
+                    daily_budget = source_settings.daily_budget_cc if source_settings else None
+                    row['daily_budget'] = daily_budget
 
                 if user.has_perm('zemauth.see_current_ad_group_source_state'):
                     row['current_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None

@@ -11,6 +11,7 @@ import actionlog.constants
 from dash import exc
 from dash import models
 from dash import constants
+from dash import consistency
 from utils.url import clean_url
 
 logger = logging.getLogger(__name__)
@@ -171,53 +172,6 @@ class AdGroupSourceSettingsWriter(object):
         self.ad_group_source = ad_group_source
         assert type(self.ad_group_source) is models.AdGroupSource
 
-    def set_state(self, state):
-        latest_settings = self.get_latest_settings()
-        if latest_settings.state != state:
-            new_settings = latest_settings
-            new_settings.pk = None  # make a copy of the latest settings
-            new_settings.state = state
-            new_settings.save()
-
-            self.add_to_history({'state': state})
-
-            if self.can_trigger_action():
-                actionlog.api.set_ad_group_source_settings(new_settings)
-            else:
-                logger.info('state=%s on ad_group_source=%s will be triggered when the ad group will be enabled', state, self.ad_group_source)
-
-    def set_cpc_cc(self, cpc_cc):
-        latest_settings = self.get_latest_settings()
-
-        if not self._decimal_eq(latest_settings.cpc_cc, cpc_cc):
-            new_settings = latest_settings
-            new_settings.pk = None  # make a copy of the latest settings
-            new_settings.cpc_cc = cpc_cc
-            new_settings.save()
-
-            self.add_to_history({'cpc_cc': cpc_cc})
-
-            if self.can_trigger_action():
-                actionlog.api.set_ad_group_source_settings(new_settings)
-            else:
-                logger.info('cpc_cc=%s on ad_group_source=%s will be triggered when the ad group will be enabled', cpc_cc, self.ad_group_source)
-
-    def set_daily_budget_cc(self, daily_budget_cc):
-        latest_settings = self.get_latest_settings()
-
-        if not self._decimal_eq(latest_settings.daily_budget_cc, daily_budget_cc):
-            new_settings = latest_settings
-            new_settings.pk = None  # make a copy of the latest settings
-            new_settings.daily_budget_cc = daily_budget_cc
-            new_settings.save()
-
-            self.add_to_history({'daily_budget_cc': daily_budget_cc})
-
-            if self.can_trigger_action():
-                actionlog.api.set_ad_group_source_settings(new_settings)
-            else:
-                logger.info('daily_budget_cc=%s on ad_group_source=%s will be triggered when the ad group will be enabled', daily_budget_cc, self.ad_group_source)
-
     def set(self, settings_obj):
         latest_settings = self.get_latest_settings()
 
@@ -246,6 +200,12 @@ class AdGroupSourceSettingsWriter(object):
                     actionlog.api.set_ad_group_source_settings(new_settings)
                 else:
                     logger.info('settings=%s on ad_group_source=%s will be triggered when the ad group will be enabled', settings_obj, self.ad_group_source)
+        else:
+            ssc = consistency.SettingsStateConsistence(self.ad_group_source)
+            if not ssc.is_consistent() and self.can_trigger_action():
+                logger.info('settings for ad_group_source=%s did not change, but state is inconsistent, triggering actions', self.ad_group_source)
+                actionlog.api.set_ad_group_source_settings(latest_settings)
+
 
     def _decimal_eq(self, val1, val2):
         return round(val1, self.DECIMAL_PLACES) == round(val2, self.DECIMAL_PLACES)

@@ -172,7 +172,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         # delete all ad_group_source_settings
         models.AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).delete()
 
-        self.writer.set_state(1)
+        self.writer.set({'state': 1})
 
         self.assertTrue(
             models.AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).count() > 0
@@ -191,7 +191,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
             .filter(ad_group_source=self.ad_group_source) \
             .latest('created_dt')
 
-        self.writer.set_cpc_cc(0.1)
+        self.writer.set({'cpc_cc': 0.1})
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
@@ -208,7 +208,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
             .filter(ad_group_source=self.ad_group_source) \
             .latest('created_dt')
 
-        self.writer.set_daily_budget_cc(50)
+        self.writer.set({'daily_budget_cc': 50})
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
