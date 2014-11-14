@@ -87,7 +87,7 @@ def supply_dash_redirect(request):
         ad_group_source.source_credentials.credentials
 
     url_response = actionlog.zwei_actions.get_supply_dash_url(
-        ad_group_source.source.type, credentials, ad_group_source.source_campaign_key)
+        ad_group_source.source.source_type.type, credentials, ad_group_source.source_campaign_key)
 
     return render(request, 'redirect.html', {'url': url_response['url']})
 
