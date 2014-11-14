@@ -88,7 +88,7 @@ def supply_dash_redirect(request):
         ad_group_source.source_credentials.credentials
 
     url_response = actionlog.zwei_actions.get_supply_dash_url(
-        ad_group_source.source.type, credentials, ad_group_source.source_campaign_key)
+        ad_group_source.source.source_type.type, credentials, ad_group_source.source_campaign_key)
 
     return render(request, 'redirect.html', {'url': url_response['url']})
 
@@ -542,12 +542,12 @@ def oauth_redirect(request, source_name):
     code = request.GET.get('code')
     state = request.GET.get('state')
 
-    if not state or 'credentials_id' not in state:
+    if not state:
         logger.error('Missing state in OAuth2 redirect')
         return redirect('index')
 
     try:
-        state = base64.b64decode(json.loads(state))
+        state = json.loads(base64.b64decode(state))
     except (TypeError, ValueError):
         logger.error('Invalid state in OAuth2 redirect')
         return redirect('index')
