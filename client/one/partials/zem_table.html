@@ -32,7 +32,7 @@
                                     <span ng-if="!isFieldEditable(row.editable_fields, col.field)" ng-class="{'currency-3': col.fractionSize === 3}">
                                         {{ (row[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
                                     </span>
-                                    <zem-editable-currency-field ng-if="isFieldEditable(row.editable_fields, col.field)" ng-class="{'currency-3': col.fractionSize === 3}" value="{{row[col.field]}}" on-save="col.onSave" row-id="{{row.id}}" fraction-size="{{col.fractionSize}}" />
+                                    <zem-editable-currency-field ng-if="isFieldEditable(row.editable_fields, col.field)" value="row[col.field]" on-save="col.onSave" row-id="row.id" fraction-size="col.fractionSize" />
                                 </span>
                                 <span ng-switch-when="percent">
                                     <span ng-switch="row[col.field]">

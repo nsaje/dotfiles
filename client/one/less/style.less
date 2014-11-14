@@ -1907,19 +1907,39 @@ a.help-popover:visited {
 }
 
 zem-editable-currency-field {
+    .edit-icon {
+        width: 13px;
+        height: 14px;
+        background-size: 30px;
+        background-position: 50%;
+        background-image: url('img/edit_icon.svg');
+        display: inline-block;
+        margin: 0 3px -2px 3px;
+    }
+
     position: relative;
 
-    .edit-field.hover-enabled:hover {
-        border: 1px dashed #454545;
-        cursor: pointer;
+    .edit-field.hover-enabled {
+        white-space: nowrap;
         padding: 3px;
         .border-radius(2px);
+        border: 1px dashed transparent;
+
+        &:hover {
+            cursor: pointer;
+            border-color: #454545;
+        }
+
+        &:not(:hover) .edit-icon {
+            visibility: hidden;
+        }
+        
     }
 
     .edit-form {
         position: absolute;
         top: -15px;
-        left: -23px;
+        left: -2px;
         width: 252px;
         background-color: #fff;
         padding: 7px;
