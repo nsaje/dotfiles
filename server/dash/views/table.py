@@ -459,8 +459,8 @@ class SourcesTable(api_common.BaseApiView):
 
         return constants.AdGroupSourceSettingsState.INACTIVE
 
-    def get_daily_budget_total(self, sources_states):
-        budgets = [s.daily_budget_cc for s in sources_states if
+    def get_daily_budget_total(self, data):
+        budgets = [s.daily_budget_cc for s in data if
                    s.daily_budget_cc is not None and
                    s.state == constants.AdGroupSourceSettingsState.ACTIVE]
 
