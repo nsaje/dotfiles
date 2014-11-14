@@ -1,4 +1,4 @@
-/*global $,oneApp*/
+/*global $,oneApp,constants*/
 "use strict";
 
 oneApp.directive('zemTable', ['config', function(config) {
@@ -17,6 +17,7 @@ oneApp.directive('zemTable', ['config', function(config) {
             $scope.config = config;
             $scope.numberColumnTypes = ['currency', 'percent', 'number', 'seconds', 'datetime'];
             $scope.selectedRowsCount = 0;
+            $scope.constants = constants;
             
             $scope.isNumberColumnType = function (columnType) {
                 return $scope.numberColumnTypes.indexOf(columnType) > -1;

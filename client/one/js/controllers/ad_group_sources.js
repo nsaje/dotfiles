@@ -100,6 +100,26 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             disabled: false
         },
         {
+            name: '',
+            nameCssClass: 'active-circle-icon-gray',
+            field: 'status_setting',
+            type: 'state',
+            checked: true,
+            totalRow: false,
+            unselectable: true,
+            help: 'A setting for enabling and pausing media sources.',
+            onChange: function (sourceId, value) {
+                var data = {state: value};
+
+                api.adGroupSourceSettings.save($state.params.id, sourceId, data).then(
+                    function (data) {
+                        getTableData();
+                    }
+                );
+            },
+            disabled: false
+        },
+        {
             name: 'Media Source',
             field: 'name',
             unselectable: true,
@@ -238,7 +258,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         var cols;
 
         if ($scope.hasPermission('reports.yesterday_spend_view')) {
-            $scope.columns.splice(5, 0, {
+            $scope.columns.splice(6, 0, {
                 name: 'Yesterday Spend',
                 field: 'yesterday_cost',
                 checked: false,
@@ -252,7 +272,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         }
 
         if ($scope.hasPermission('zemauth.supply_dash_link_view')) {
-            $scope.columns.splice(3, 0, {
+            $scope.columns.splice(4, 0, {
                 name: 'Link',
                 field: 'supply_dash_url',
                 checked: false,
@@ -265,7 +285,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         }
 
         if ($scope.hasPermission('zemauth.see_current_ad_group_source_state')) {
-            $scope.columns.splice(5, 0, {
+            $scope.columns.splice(6, 0, {
                 name: 'Current Bid CPC',
                 field: 'current_bid_cpc',
                 fractionSize: 3,
@@ -274,17 +294,19 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 internal: $scope.isPermissionInternal('zemauth.see_current_ad_group_source_state'),
                 totalRow: false,
                 order: true,
+                help: 'Cost-per-click (CPC) bid is the approximate amount that you\'ll be charged for a click on your ad.',
                 initialOrder: 'desc'
             });
 
-            $scope.columns.splice(7, 0, {
+            $scope.columns.splice(8, 0, {
                 name: 'Current Daily Budget',
                 field: 'current_daily_budget',
                 checked: false,
                 type: 'currency',
                 internal: $scope.isPermissionInternal('zemauth.see_current_ad_group_source_state'),
-                totalRow: false,
+                totalRow: true,
                 order: true,
+                help: 'Maximum budget per day.',
                 initialOrder: 'desc'
             });
         }

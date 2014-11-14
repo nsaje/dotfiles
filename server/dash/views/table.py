@@ -413,8 +413,10 @@ class SourcesTable(api_common.BaseApiView):
                 notifications=notifications
             ),
             'totals': self.get_totals(
+                user,
                 totals_data,
                 sources_states,
+                ad_group_sources_settings,
                 yesterday_total_cost
             ),
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
@@ -423,9 +425,8 @@ class SourcesTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics,
         })
 
-    def get_totals(self, totals_data, sources_states, yesterday_cost):
-        return {
-            'daily_budget': self.get_daily_budget_total(sources_states),
+    def get_totals(self, user, totals_data, sources_states, sources_settings, yesterday_cost):
+        result = {
             'cost': totals_data['cost'],
             'cpc': totals_data['cpc'],
             'clicks': totals_data['clicks'],
@@ -443,6 +444,14 @@ class SourcesTable(api_common.BaseApiView):
 
             'goals': totals_data.get('goals', {})
         }
+
+        if user.has_perm('zemauth.set_ad_group_source_settings'):
+            result['daily_budget'] = self.get_daily_budget_total(sources_settings)
+            result['current_daily_budget'] = self.get_daily_budget_total(sources_states)
+        else:
+            result['daily_budget'] = self.get_daily_budget_total(sources_states)
+
+        return result
 
     def get_state(self, states):
         if any(s.state == constants.AdGroupSourceSettingsState.ACTIVE for s in states):
@@ -548,7 +557,7 @@ class SourcesTable(api_common.BaseApiView):
                     if source.source_type.available_actions.filter(
                             action=constants.SourceAction.CAN_UPDATE_STATE
                     ).exists():
-                        row['editable_fields'].append('state')
+                        row['editable_fields'].append('status_setting')
 
                     if source.source_type.available_actions.filter(
                             action=constants.SourceAction.CAN_UPDATE_CPC
