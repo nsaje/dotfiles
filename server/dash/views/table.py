@@ -292,15 +292,34 @@ class AdGroupSourcesTable(object):
                                 'until you enable the AdGroup in the Settings.'
 
             if latest_settings is not None and\
+               (latest_state is None or latest_settings.state != latest_state.state):
+                if notification:
+                    notification += '<br />'
+
+                if latest_state and latest_settings.created_dt > latest_state.created_dt:
+                    msg = 'Status is being changed from <strong>{state_state}</strong> ' +\
+                          'to <strong>{settings_state}</strong>.'
+                else:
+                    msg = 'The actual status on Media Source is <strong>{state_state}</strong> ' +\
+                          'instead of <strong>{settings_state}</strong>.'
+
+                notification += msg.format(
+                    settings_state=constants.AdGroupSettingsState.get_text(latest_settings.state),
+                    state_state=constants.AdGroupSettingsState.get_text(
+                        (latest_state and latest_state.state) or 'N/A'
+                    )
+                )
+
+            if latest_settings is not None and\
                (latest_state is None or latest_settings.cpc_cc != latest_state.cpc_cc):
                 if notification:
                     notification += '<br />'
 
                 if latest_state and latest_settings.created_dt > latest_state.created_dt:
-                    msg = 'Bid CPC is being changed from <strong>{settings_cpc}</strong> ' +\
-                          'to <strong>{state_cpc}</strong>.'
+                    msg = 'Bid CPC is being changed from <strong>{state_cpc}</strong> ' +\
+                          'to <strong>{settings_cpc}</strong>.'
                 else:
-                    msg = 'The actual CPC on Media Source is <strong>{state_cpc}</strong>, ' +\
+                    msg = 'The actual CPC on Media Source is <strong>{state_cpc}</strong> ' +\
                           'instead of <strong>{settings_cpc}</strong>.'
 
                 notification += msg.format(
@@ -314,34 +333,15 @@ class AdGroupSourcesTable(object):
                     notification += '<br />'
 
                 if latest_state and latest_settings.created_dt > latest_state.created_dt:
-                    msg = 'Daily budget is being changed from <strong>{settings_daily_budget}</strong> ' +\
-                          'to <strong>{state_daily_budget}</strong>.'
+                    msg = 'Daily budget is being changed from <strong>{state_daily_budget}</strong> ' +\
+                          'to <strong>{settings_daily_budget}</strong>.'
                 else:
-                    msg = 'The actual daily budget on Media Source is <strong>{state_daily_budget}</strong>, ' +\
+                    msg = 'The actual daily budget on Media Source is <strong>{state_daily_budget}</strong> ' +\
                           'instead of <strong>{settings_daily_budget}</strong>.'
 
                 notification += msg.format(
                     settings_daily_budget='{:.2f}'.format(latest_settings.daily_budget_cc) if latest_settings.daily_budget_cc else 'N/A',
                     state_daily_budget='{:.2f}'.format(latest_state.daily_budget_cc) if latest_state else 'N/A'
-                )
-
-            if latest_settings is not None and\
-               (latest_state is None or latest_settings.state != latest_state.state):
-                if notification:
-                    notification += '<br />'
-
-                if latest_state and latest_settings.created_dt > latest_state.created_dt:
-                    msg = 'Status is being changed from <strong>{settings_state}</strong> ' +\
-                          'to <strong>{state_state}</strong>.'
-                else:
-                    msg = 'The actual status on Media Source is <strong>{state_state}</strong>, ' +\
-                          'instead of <strong>{settings_state}</strong>.'
-
-                notification += msg.format(
-                    settings_state=constants.AdGroupSettingsState.get_text(latest_settings.state),
-                    state_state=constants.AdGroupSettingsState.get_text(
-                        (latest_state and latest_state.state) or 'N/A'
-                    )
                 )
 
             notifications[ad_group_source.source_id] = {'status': notification}
