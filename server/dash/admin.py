@@ -435,7 +435,7 @@ class AdGroupSettingsAdmin(admin.ModelAdmin):
 
 
 class AdGroupSourceSettingsAdmin(admin.ModelAdmin):
-    search_fields = ['ad_group']
+    search_fields = ['ad_group_source__ad_group__name', 'ad_group_source__source__name']
     list_display = (
         'ad_group_source',
         'state',
@@ -446,7 +446,7 @@ class AdGroupSourceSettingsAdmin(admin.ModelAdmin):
 
 
 class AdGroupSourceStateAdmin(admin.ModelAdmin):
-    search_fields = ['ad_group']
+    search_fields = ['ad_group_source__ad_group__name', 'ad_group_source__source__name']
     list_display = (
         'ad_group_source',
         'state',
