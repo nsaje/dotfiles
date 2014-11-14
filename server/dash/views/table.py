@@ -413,6 +413,7 @@ class SourcesTable(api_common.BaseApiView):
                 notifications=notifications
             ),
             'totals': self.get_totals(
+                ad_group_level,
                 user,
                 totals_data,
                 sources_states,
@@ -425,7 +426,7 @@ class SourcesTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics,
         })
 
-    def get_totals(self, user, totals_data, sources_states, sources_settings, yesterday_cost):
+    def get_totals(self, ad_group_level, user, totals_data, sources_states, sources_settings, yesterday_cost):
         result = {
             'cost': totals_data['cost'],
             'cpc': totals_data['cpc'],
@@ -445,7 +446,7 @@ class SourcesTable(api_common.BaseApiView):
             'goals': totals_data.get('goals', {})
         }
 
-        if user.has_perm('zemauth.set_ad_group_source_settings'):
+        if ad_group_level and user.has_perm('zemauth.set_ad_group_source_settings'):
             result['daily_budget'] = self.get_daily_budget_total(sources_settings)
             result['current_daily_budget'] = self.get_daily_budget_total(sources_states)
         else:
