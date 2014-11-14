@@ -27,22 +27,6 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     } 
 
     function User() {
-        function convertToApi (data) {
-            return {
-                first_name: data.firstName,
-                last_name: data.lastName,
-                email: data.email
-            };
-        }
-
-        function convertValidationErrorFromApi(errors) {
-            return {
-                firstName: errors.first_name,
-                lastName: errors.last_name,
-                email: errors.email
-            };
-        }
-
         this.get = function (id) {
             var deferred = $q.defer();
             var url = '/api/users/' + id + '/';
@@ -64,35 +48,6 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             return deferred.promise;
         };
-
-        this.put = function (userData) {
-            var deferred = $q.defer();
-            var url = '/api/users/';
-
-            var data = convertToApi(userData);
-
-            $http.put(url, data).
-                success(function (data, status) {
-                    var resource;
-                    if (data && data.data) {
-                        resource = data.data;
-                    }
-                    deferred.resolve({
-                        'user': resource.user,
-                        'created': status === 201
-                    });
-                }).
-                error(function (data, status) {
-                    var resource;
-                    if (status === 400 && data && data.data.error_code === 'ValidationError') {
-                        resource = convertValidationErrorFromApi(data.data.errors);
-                    }
-                    deferred.reject(resource);
-                });
-
-            return deferred.promise;
-        };
-
     }
 
     function AdGroupSources() {
@@ -155,11 +110,11 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                         converted_row[field] = row[field];
 
                         if (row[field] === constants.adGroupSettingsState.ACTIVE) {
-                            converted_row.status_label = 'Active';
+                            converted_row.status = 'Active';
                         } else if (row[field] === constants.adGroupSettingsState.INACTIVE) {
-                            converted_row.status_label = 'Paused';
+                            converted_row.status = 'Paused';
                         } else {
-                            converted_row.status_label = 'N/A';
+                            converted_row.status = 'N/A';
                         }
                     } else {
                         converted_row[field] = row[field];
@@ -237,11 +192,11 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                         converted_row[field] = row[field];
 
                         if (row[field] === constants.adGroupSettingsState.ACTIVE) {
-                            converted_row.status_label = 'Active';
+                            converted_row.status = 'Active';
                         } else if (row[field] === constants.adGroupSettingsState.INACTIVE) {
-                            converted_row.status_label = 'Paused';
+                            converted_row.status = 'Paused';
                         } else {
-                            converted_row.status_label = 'N/A';
+                            converted_row.status = 'N/A';
                         }
                     } else {
                         converted_row[field] = row[field];
@@ -1349,11 +1304,11 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     function AccountAccountsTable() {
         function convertFromApi(row) {
             if (row.archived) {
-                row.status_label = 'Archived';
+                row.status = 'Archived';
             } else if (row.status === constants.adGroupSettingsState.ACTIVE) {
-                row.status_label = 'Active';
+                row.status = 'Active';
             } else {
-                row.status_label = 'Paused';
+                row.status = 'Paused';
             }
 
             return row;
@@ -1508,6 +1463,22 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AccountUsers() {
+        function convertToApi (data) {
+            return {
+                first_name: data.firstName,
+                last_name: data.lastName,
+                email: data.email
+            };
+        }
+
+        function convertValidationErrorFromApi(errors) {
+            return {
+                firstName: errors.first_name,
+                lastName: errors.last_name,
+                email: errors.email
+            };
+        }
+
         this.list = function (accountId) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + accountId + '/users/';
@@ -1529,23 +1500,30 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             return deferred.promise;
         };
 
-        this.put = function (accountId, userId) {
+        this.put = function (accountId, userData) {
             var deferred = $q.defer();
-            var url = '/api/accounts/' + accountId + '/users/' + userId + '/';
+            var url = '/api/accounts/' + accountId + '/users/';
 
-            $http.put(url).
-                success(function (data) {
+            var data = convertToApi(userData);
+
+            $http.put(url, data).
+                success(function (data, status) {
                     var resource;
                     if (data && data.data) {
                         resource = data.data;
                     }
-                    deferred.resolve(resource);
+                    deferred.resolve({
+                        user: resource.user,
+                        created: status === 201
+                    });
                 }).
                 error(function (data, status) {
-                    var resource;
+                    var resource = {};
                     if (status === 400 && data && data.data.error_code === 'ValidationError') {
-                        resource = convertValidationErrorFromApi(data.data.errors);
+                        resource.errors = convertValidationErrorFromApi(data.data.errors);
+                        resource.message = data.data.message;
                     }
+
                     deferred.reject(resource);
                 });
 

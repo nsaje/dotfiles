@@ -111,6 +111,7 @@
                                     </div>
                                 </span>
                             </span>
+                            <span ng-if="row.notifications[col.field]" class="notification" popover-append-to-body="true" popover-trigger="mouseenter" popover-html-unsafe="{{ row.notifications[col.field] }}" popover-placement="right"></span>
                         </td>
                     </tr>
                 </tbody>

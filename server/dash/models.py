@@ -333,6 +333,7 @@ class AccountSettings(SettingsBase):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
     archived = models.BooleanField(default=False)
+    changes_text = models.TextField(blank=True, null=True)
 
     class Meta:
         ordering = ('-created_dt',)
@@ -684,6 +685,8 @@ class AdGroupSettings(SettingsBase):
     target_regions = jsonfield.JSONField(blank=True, default=[])
     tracking_code = models.TextField(blank=True)
     archived = models.BooleanField(default=False)
+    changes_text = models.TextField(blank=True, null=True)
+
 
     class Meta:
         ordering = ('-created_dt',)

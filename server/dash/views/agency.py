@@ -11,6 +11,9 @@ from django.db import transaction
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.contrib.auth import models as authmodels
 
 from dash.views import helpers
 from dash import forms
@@ -153,6 +156,16 @@ class AdGroupSettings(api_common.BaseApiView):
         with transaction.atomic():
             ad_group.save()
             settings.save()
+
+            if settings.state == constants.AdGroupSettingsState.ACTIVE:
+                # trigger actions for the latest settings for each source
+                source_settings_qs = models.AdGroupSourceSettings.objects \
+                    .distinct('ad_group_source_id') \
+                    .filter(ad_group_source__ad_group=ad_group) \
+                    .order_by('ad_group_source_id', '-created_dt')
+
+                for source_settings in source_settings_qs:
+                    actionlog.api.set_ad_group_source_settings(source_settings)
 
         api.order_ad_group_settings_update(ad_group, current_settings, settings)
 
@@ -584,18 +597,22 @@ class AccountAgency(api_common.BaseApiView):
             old_settings = settings[i - 1] if i > 0 else None
             new_settings = settings[i]
 
-            changes = old_settings.get_setting_changes(new_settings) \
-                if old_settings is not None else None
-
-            if i > 0 and not changes:
-                continue
-
             settings_dict = self.convert_settings_to_dict(old_settings, new_settings)
+
+            changes_text = new_settings.changes_text
+            if changes_text is None:
+                changes = old_settings.get_setting_changes(new_settings) \
+                    if old_settings is not None else None
+
+                if i > 0 and not changes:
+                    continue
+
+                changes_text = self.convert_changes_to_string(changes, settings_dict)
 
             history.append({
                 'datetime': new_settings.created_dt,
                 'changed_by': new_settings.created_by.email,
-                'changes_text': self.convert_changes_to_string(changes, settings_dict),
+                'changes_text': changes_text,
                 'settings': settings_dict.values(),
                 'show_old_settings': old_settings is not None
             })
@@ -739,7 +756,12 @@ class AdGroupAgency(api_common.BaseApiView):
             changes = old_settings.get_setting_changes(new_settings) \
                 if old_settings is not None else None
 
-            if i > 0 and not changes:
+            if new_settings.changes_text is not None:
+                changes_text = new_settings.changes_text
+            else:
+                changes_text = self.convert_changes_to_string(changes)
+
+            if i > 0 and not changes and not changes_text:
                 continue
 
             settings_dict = self.convert_settings_to_dict(old_settings, new_settings)
@@ -747,7 +769,7 @@ class AdGroupAgency(api_common.BaseApiView):
             history.append({
                 'datetime': new_settings.created_dt,
                 'changed_by': new_settings.created_by.email,
-                'changes_text': self.convert_changes_to_string(changes),
+                'changes_text': changes_text,
                 'settings': settings_dict.values(),
                 'show_old_settings': old_settings is not None
             })
@@ -806,20 +828,64 @@ class AccountUsers(api_common.BaseApiView):
         })
 
     @statsd_helper.statsd_timer('dash.api', 'account_access_users_put')
-    def put(self, request, account_id, user_id):
+    def put(self, request, account_id):
         if not request.user.has_perm('zemauth.account_agency_access_users'):
             raise exc.MissingDataError()
 
         account = helpers.get_account(request.user, account_id)
+        resource = json.loads(request.body)
+
+        form = forms.UserForm(resource)
+        is_valid = form.is_valid()
+
+        # in case the user already exists and form contains
+        # first name and last name, error is returned. In case
+        # the form only contains email, user is added to the account.
+        if form.cleaned_data.get('email') is None:
+            self._raise_validation_error(form.errors)
 
         try:
-            user = ZemUser.objects.get(pk=user_id)
+            user = ZemUser.objects.get(email=form.cleaned_data['email'])
+
+            if form.cleaned_data.get('last_name') or form.cleaned_data.get('first_name'):
+                self._raise_validation_error(
+                    form.errors,
+                    message='The user with e-mail {} is already registred as \"{}\". Please contact technical support if you want to change the user\'s name or leave first and last names blank if you just want to add access to the account for this user.'.format(user.email, user.get_full_name())
+                )
+
+            created = False
         except ZemUser.DoesNotExist:
-            raise exc.MissingDataError()
+            if not is_valid:
+                self._raise_validation_error(form.errors)
+
+            user = ZemUser.objects.create_user(
+                form.cleaned_data['email'],
+                first_name=form.cleaned_data['first_name'],
+                last_name=form.cleaned_data['last_name']
+            )
+
+            self._add_user_to_groups(user)
+            self._send_email_to_new_user(user, request)
+
+            created = True
 
         account.users.add(user)
 
-        return self.create_api_response(self._get_user_dict(user))
+        # add history entry
+        new_settings = account.get_current_settings().copy_settings()
+        new_settings.changes_text = 'Added user {} ({})'.format(user.get_full_name(), user.email)
+        new_settings.save()
+
+        return self.create_api_response(
+            {'user': self._get_user_dict(user)},
+            status_code=201 if created else 200
+        )
+
+    def _raise_validation_error(self, errors, message=None):
+        raise exc.ValidationError(
+            errors=dict(errors),
+            pretty_message=message or 'Please specify the user\'s first name, last name and email.'
+        )
 
     @statsd_helper.statsd_timer('dash.api', 'account_access_users_delete')
     def delete(self, request, account_id, user_id):
@@ -835,6 +901,11 @@ class AccountUsers(api_common.BaseApiView):
 
         account.users.remove(user)
 
+        # add history entry
+        new_settings = account.get_current_settings().copy_settings()
+        new_settings.changes_text = 'Removed user {} ({})'.format(user.get_full_name(), user.email)
+        new_settings.save()
+
         return self.create_api_response({
             'user_id': user.id
         })
@@ -845,3 +916,77 @@ class AccountUsers(api_common.BaseApiView):
             'name': user.get_full_name(),
             'email': user.email
         }
+
+    def _add_user_to_groups(self, user):
+        perm = authmodels.Permission.objects.get(codename='group_new_user_add')
+        groups = authmodels.Group.objects.filter(permissions=perm)
+
+        for group in groups:
+            group.user_set.add(user)
+
+    def _generate_password_reset_url(self, user, request):
+        encoded_id = urlsafe_base64_encode(str(user.pk))
+        token = default_token_generator.make_token(user)
+
+        url = request.build_absolute_uri(
+            reverse('set_password', args=(encoded_id, token))
+        )
+
+        return url.replace('http://', 'https://')
+
+    def _send_email_to_new_user(self, user, request):
+        body = u'''<p>Hi {name},</p>
+    <p>
+    Welcome to Zemanta's Content DSP!
+    </p>
+    <p>
+    We're excited to promote your quality content across our extended network. Through our reporting dashboard, you can monitor campaign performance across multiple supply channels.
+    </p>
+    <p>
+    Click <a href="{link_url}">here</a> to create a password to log into your Zemanta account.
+    </p>
+    <p>
+    As always, please don't hesitate to contact help@zemanta.com with any questions.
+    </p>
+    <p>
+    Thanks,<br/>
+    Zemanta Client Services
+    </p>
+        '''
+        body = body.format(
+            name=user.first_name,
+            link_url=self._generate_password_reset_url(user, request)
+        )
+
+        try:
+            send_mail(
+                'Welcome to Zemanta!',
+                body,
+                settings.FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+                html_message=body
+            )
+        except Exception as e:
+            message = 'Welcome email for user {} ({}) was not sent because an exception was raised: {}'.format(
+                user.get_full_name(),
+                user.email,
+                traceback.format_exc(e)
+            )
+
+            logger.error(message)
+
+            user_url = request.build_absolute_uri(
+                reverse('admin:zemauth_user_change', args=(user.pk,))
+            )
+            user_url = user_url.replace('http://', 'https://')
+
+            desc = {
+                'user_url': user_url
+            }
+            pagerduty_helper.trigger(
+                event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
+                incident_key='new_user_mail_failed',
+                description=message,
+                details=desc,
+            )

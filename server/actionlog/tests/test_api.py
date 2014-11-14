@@ -119,7 +119,9 @@ class ActionLogApiTestCase(TestCase):
                 'credentials': ad_group_source.source_credentials.credentials,
                 'args': {
                     'source_campaign_key': ad_group_source.source_campaign_key,
-                    'state': dashconstants.AdGroupSourceSettingsState.INACTIVE,
+                    'conf': {
+                        'state': dashconstants.AdGroupSourceSettingsState.INACTIVE,
+                    }
                 },
                 'callback_url': callback,
             }

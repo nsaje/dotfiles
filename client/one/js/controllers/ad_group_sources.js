@@ -133,7 +133,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         },
         {
             name: 'Status',
-            field: 'status_label',
+            field: 'status',
             unselectable: true,
             checked: true,
             type: 'text',

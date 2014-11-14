@@ -292,49 +292,15 @@ class AdGroupSourcesTable(object):
                                 'until you enable the AdGroup in the Settings.'
 
             if latest_settings is not None and\
-               (latest_state is None or latest_settings.cpc_cc != latest_state.cpc_cc):
-                if notification:
-                    notification += '\n'
-
-                if latest_state and latest_settings.created_dt > latest_state.created_dt:
-                    msg = 'Bid CPC is being changed from <strong>{settings_cpc}</strong> ' +\
-                          'to <strong>{state_cpc}</strong>.'
-                else:
-                    msg = 'The actual CPC on Media Source is <strong>{state_cpc}</strong>, ' +\
-                          'instead of <strong>{settings_cpc}</strong>.'
-
-                notification += msg.format(
-                    settings_cpc=latest_settings.cpc_cc if latest_settings.cpc_cc else 'N/A',
-                    state_cpc=latest_state.cpc_cc if latest_state else 'N/A'
-                )
-
-            if latest_settings is not None and\
-               (latest_state is None or latest_settings.daily_budget_cc != latest_state.daily_budget_cc):
-                if notification:
-                    notification += '\n'
-
-                if latest_state and latest_settings.created_dt > latest_state.created_dt:
-                    msg = 'Daily budget is being changed from <strong>{settings_daily_buget}</strong> ' +\
-                          'to <strong>{state_daily_budget}</strong>.'
-                else:
-                    msg = 'The actual daily budget on Media Source is <strong>{state_daily_budget}</strong>, ' +\
-                          'instead of <strong>{settings_daily_budget}</strong>.'
-
-                notification += msg.format(
-                    settings_daily_budget=latest_settings.daily_budget_cc if latest_settings.daily_budget_cc else 'N/A',
-                    state_daily_budget=latest_state.daily_budget_cc if latest_state else 'N/A'
-                )
-
-            if latest_settings is not None and\
                (latest_state is None or latest_settings.state != latest_state.state):
                 if notification:
-                    notification += '\n'
+                    notification += '<br />'
 
                 if latest_state and latest_settings.created_dt > latest_state.created_dt:
-                    msg = 'Status is being changed from <strong>{settings_state}</strong> ' +\
-                          'to <strong>{state_state}</strong>.'
+                    msg = 'Status is being changed from <strong>{state_state}</strong> ' +\
+                          'to <strong>{settings_state}</strong>.'
                 else:
-                    msg = 'The actual status on Media Source is <strong>{state_state}</strong>, ' +\
+                    msg = 'The actual status on Media Source is <strong>{state_state}</strong> ' +\
                           'instead of <strong>{settings_state}</strong>.'
 
                 notification += msg.format(
@@ -344,7 +310,41 @@ class AdGroupSourcesTable(object):
                     )
                 )
 
-            notifications[ad_group_source.source_id] = notification
+            if latest_settings is not None and\
+               (latest_state is None or latest_settings.cpc_cc != latest_state.cpc_cc):
+                if notification:
+                    notification += '<br />'
+
+                if latest_state and latest_settings.created_dt > latest_state.created_dt:
+                    msg = 'Bid CPC is being changed from <strong>{state_cpc}</strong> ' +\
+                          'to <strong>{settings_cpc}</strong>.'
+                else:
+                    msg = 'The actual CPC on Media Source is <strong>{state_cpc}</strong> ' +\
+                          'instead of <strong>{settings_cpc}</strong>.'
+
+                notification += msg.format(
+                    settings_cpc='{:.3f}'.format(latest_settings.cpc_cc) if latest_settings.cpc_cc else 'N/A',
+                    state_cpc='{:.3f}'.format(latest_state.cpc_cc) if latest_state else 'N/A'
+                )
+
+            if latest_settings is not None and\
+               (latest_state is None or latest_settings.daily_budget_cc != latest_state.daily_budget_cc):
+                if notification:
+                    notification += '<br />'
+
+                if latest_state and latest_settings.created_dt > latest_state.created_dt:
+                    msg = 'Daily budget is being changed from <strong>{state_daily_budget}</strong> ' +\
+                          'to <strong>{settings_daily_budget}</strong>.'
+                else:
+                    msg = 'The actual daily budget on Media Source is <strong>{state_daily_budget}</strong> ' +\
+                          'instead of <strong>{settings_daily_budget}</strong>.'
+
+                notification += msg.format(
+                    settings_daily_budget='{:.2f}'.format(latest_settings.daily_budget_cc) if latest_settings.daily_budget_cc else 'N/A',
+                    state_daily_budget='{:.2f}'.format(latest_state.daily_budget_cc) if latest_state else 'N/A'
+                )
+
+            notifications[ad_group_source.source_id] = {'status': notification}
 
         return notifications
 
@@ -504,10 +504,7 @@ class SourcesTable(api_common.BaseApiView):
                 supply_dash_url = urlresolvers.reverse('dash.views.views.supply_dash_redirect')
                 supply_dash_url += '?ad_group_id={}&source_id={}'.format(id_, source.id)
 
-                if user.has_perm('zemauth.set_ad_group_source_settings'):
-                    daily_budget = source_settings.daily_budget_cc if source_settings else None
-                else:
-                    daily_budget = states[0].daily_budget_cc if len(states) else None
+                daily_budget = states[0].daily_budget_cc if len(states) else None
             else:
                 daily_budget = self.get_daily_budget_total(states)
 
@@ -547,11 +544,6 @@ class SourcesTable(api_common.BaseApiView):
                 if user.has_perm('zemauth.set_ad_group_source_settings'):
                     row['status_setting'] = source_settings.state if source_settings else None
 
-                if user.has_perm('zemauth.set_ad_group_source_settings'):
-                    row['bid_cpc'] = source_settings.cpc_cc if source_settings else None
-                else:
-                    row['bid_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None
-
                 row['editable_fields'] = []
                 if user.has_perm('zemauth.set_ad_group_source_settings'):
                     if source.source_type.available_actions.filter(
@@ -569,7 +561,16 @@ class SourcesTable(api_common.BaseApiView):
                     ).exists():
                         row['editable_fields'].append('daily_budget')
 
-                    row['notification'] = notifications[source.id]
+                    row['notifications'] = notifications[source.id]
+
+                if user.has_perm('zemauth.set_ad_group_source_settings') and 'bid_cpc' in row['editable_fields']:
+                    row['bid_cpc'] = source_settings.cpc_cc if source_settings else None
+                else:
+                    row['bid_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None
+
+                if user.has_perm('zemauth.set_ad_group_source_settings') and 'daily_budget' in row['editable_fields']:
+                    daily_budget = source_settings.daily_budget_cc if source_settings else None
+                    row['daily_budget'] = daily_budget
 
                 if user.has_perm('zemauth.see_current_ad_group_source_state'):
                     row['current_bid_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None

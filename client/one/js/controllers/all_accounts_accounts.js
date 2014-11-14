@@ -33,7 +33,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         },
         {
             name: 'Status',
-            field: 'status_label',
+            field: 'status',
             unselectable: true,
             checked: true,
             type: 'text',

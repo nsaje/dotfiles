@@ -116,6 +116,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('unspent_budget_view', 'Can view unspent budget.'),
             ('switch_to_demo_mode', 'Can switch to demo mode.'),
             ('account_agency_access_permissions', 'Can view and set account access permissions.'),
+            ('group_new_user_add', 'New users are added to this group.'),
             ('set_ad_group_source_settings', 'Can set per-source settings.'),
             ('see_current_ad_group_source_state', 'Can see current per-source state.'),
         )
