@@ -541,7 +541,7 @@ def oauth_redirect(request, source_name):
         return redirect('index')
 
     try:
-        state = base64.b64decode(json.loads(state))
+        state = json.loads(base64.b64decode(state))
     except (TypeError, ValueError):
         logger.error('Invalid state in OAuth2 redirect')
         return redirect('index')
