@@ -100,26 +100,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             disabled: false
         },
         {
-            name: '',
-            nameCssClass: 'active-circle-icon-gray',
-            field: 'status_setting',
-            type: 'state',
-            checked: true,
-            totalRow: false,
-            unselectable: true,
-            help: 'A setting for enabling and pausing media sources.',
-            onChange: function (sourceId, value) {
-                var data = {state: value};
-
-                api.adGroupSourceSettings.save($state.params.id, sourceId, data).then(
-                    function (data) {
-                        getTableData();
-                    }
-                );
-            },
-            disabled: false
-        },
-        {
             name: 'Media Source',
             field: 'name',
             unselectable: true,
@@ -279,6 +259,29 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 totalRow: true,
                 order: true,
                 initialOrder: 'desc'
+            });
+        }
+
+        if ($scope.hasPermission('zemauth.set_ad_group_source_settings')) {
+            $scope.columns.splice(1, 0, {
+                name: '',
+                nameCssClass: 'active-circle-icon-gray',
+                field: 'status_setting',
+                type: 'state',
+                checked: true,
+                totalRow: false,
+                unselectable: true,
+                help: 'A setting for enabling and pausing media sources.',
+                onChange: function (sourceId, value) {
+                    var data = {state: value};
+
+                    api.adGroupSourceSettings.save($state.params.id, sourceId, data).then(
+                        function (data) {
+                            getTableData();
+                        }
+                    );
+                },
+                disabled: false
             });
         }
 
