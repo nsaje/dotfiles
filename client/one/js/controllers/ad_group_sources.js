@@ -693,15 +693,17 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     pollSyncStatus();
 
     var pollSourcesNotifications = function () {
-        $scope.notificationTimeout = $timeout(function () {
-            api.adGroupSourcesNotifications.get($state.params.id)
-                .then(function (data) {
-                    $scope.notifications = data.notifications;
-                })
-                .finally(function() {
-                    pollSourcesNotifications();
-                });
-        }, 5000);
+        if ($scope.hasPermission('zemauth.set_ad_group_source_settings')) {
+            $scope.notificationTimeout = $timeout(function () {
+                api.adGroupSourcesNotifications.get($state.params.id)
+                    .then(function (data) {
+                        $scope.notifications = data.notifications;
+                    })
+                    .finally(function() {
+                        pollSourcesNotifications();
+                    });
+            }, 2000);
+        }
     };
 
     pollSourcesNotifications();
