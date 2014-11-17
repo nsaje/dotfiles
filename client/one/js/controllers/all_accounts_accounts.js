@@ -24,6 +24,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             unselectable: true,
             checked: true,
             type: 'linkNav',
+            visible: true,
             hasTotalsLabel: true,
             totalRow: false,
             help: 'A partner account.',
@@ -37,6 +38,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             unselectable: true,
             checked: true,
             type: 'text',
+            visible: true,
             totalRow: false,
             help: 'Status of an account (enabled or paused). An account is paused only if all its campaigns are paused too; otherwise the account is enabled.',
             order: true,
@@ -44,10 +46,47 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             initialOrder: 'asc'
         },
         {
+            name: 'Total Budget',
+            field: 'budget',
+            checked: true,
+            type: 'currency',
+            totalRow: true,
+            help: 'Total amount of allocated budget.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view'),
+            visible: $scope.hasPermission('zemauth.all_accounts_budget_view')
+        },
+        {
+            name: 'Available Budget',
+            field: 'available_budget',
+            checked: true,
+            type: 'currency',
+            totalRow: true,
+            help: 'Total amount of budget still available.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view'),
+            visible: $scope.hasPermission('zemauth.all_accounts_budget_view')
+        },
+        {
+            name: 'Unspent Budget',
+            field: 'unspent_budget',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Total budget minus the spend within the date range.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.unspent_budget_view'),
+            visible: $scope.hasPermission('zemauth.unspent_budget_view')
+        },
+        {
             name: 'Spend',
             field: 'cost',
             checked: true,
             type: 'currency',
+            visible: true,
             help: "Amount spent per account",
             totalRow: true,
             order: true,
@@ -58,6 +97,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             field: 'cpc',
             checked: true,
             type: 'currency',
+            visible: true,
             fractionSize: 3,
             help: "The average CPC.",
             totalRow: true,
@@ -69,6 +109,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             field: 'clicks',
             checked: true,
             type: 'number',
+            visible: true,
             help: 'The number of times a content ad has been clicked.',
             totalRow: true,
             order: true,
@@ -79,6 +120,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             field: 'last_sync',
             checked: false,
             type: 'datetime',
+            visible: true,
             help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred (in Eastern Standard Time).',
             order: true,
             initialOrder: 'desc'
@@ -113,51 +155,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     var initColumns = function () {
         var cols;
 
-        if ($scope.hasPermission('zemauth.unspent_budget_view')) {
-            $scope.columns.splice(2, 0,
-                {
-                    name: 'Unspent Budget',
-                    field: 'unspent_budget',
-                    checked: false,
-                    type: 'currency',
-                    totalRow: true,
-                    help: 'Total budget minus the spend within the date range.',
-                    order: true,
-                    initialOrder: 'desc',
-                    internal: $scope.isPermissionInternal('zemauth.unspent_budget_view')
-                }
-            );
-        }
-
-        if ($scope.hasPermission('zemauth.all_accounts_budget_view')) {
-            $scope.columns.splice(2, 0,
-                {
-                    name: 'Total Budget',
-                    field: 'budget',
-                    checked: true,
-                    type: 'currency',
-                    totalRow: true,
-                    help: 'Total amount of allocated budget.',
-                    order: true,
-                    initialOrder: 'desc',
-                    internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view')
-                },
-                {
-                    name: 'Available Budget',
-                    field: 'available_budget',
-                    checked: true,
-                    type: 'currency',
-                    totalRow: true,
-                    help: 'Total amount of budget still available.',
-                    order: true,
-                    initialOrder: 'desc',
-                    internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view')
-                });
-        }
-
-        if ($scope.hasPermission('zemauth.postclick_metrics')) {
-            zemPostclickMetricsService.insertColumns($scope.columns, $scope.isPermissionInternal('zemauth.postclick_metrics'));
-        }
+        zemPostclickMetricsService.insertColumns($scope.columns, $scope.hasPermission('zemauth.postclick_metrics'), $scope.isPermissionInternal('zemauth.postclick_metrics'));
 
         cols = zemCustomTableColsService.load('allAccountsAccountsCols', $scope.columns);
         $scope.selectedColumnsCount = cols.length;

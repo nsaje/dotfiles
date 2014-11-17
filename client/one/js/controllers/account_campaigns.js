@@ -63,6 +63,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             name: '',
             field: 'checked',
             type: 'checkbox',
+            visible: true,
             checked: true,
             totalRow: true,
             unselectable: true,
@@ -76,6 +77,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             unselectable: true,
             checked: true,
             type: 'linkNav',
+            visible: true,
             hasTotalsLabel: true,
             totalRow: false,
             help: 'Name of the campaign.',
@@ -87,16 +89,54 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'state',
             checked: true,
             type: 'text',
+            visible: true,
             totalRow: false,
             help: 'Status of a campaign (enabled or paused). A campaign is paused only if all its ad groups are paused too; otherwise, the campaign is enabled.',
             order: true,
             initialOrder: 'asc'
         },
         {
+            name: 'Total Budget',
+            field: 'budget',
+            checked: true,
+            type: 'currency',
+            totalRow: true,
+            help: 'Total amount of allocated budget.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view'),
+            visible: $scope.hasPermission('zemauth.all_accounts_budget_view')
+        },
+        {
+            name: 'Available Budget',
+            field: 'available_budget',
+            checked: true,
+            type: 'currency',
+            totalRow: true,
+            help: 'Total amount of budget still available.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view'),
+            visible: $scope.hasPermission('zemauth.all_accounts_budget_view')
+        },
+        {
+            name: 'Unspent Budget',
+            field: 'unspent_budget',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Total budget minus the spend within the date range.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.unspent_budget_view'),
+            visible: $scope.hasPermission('zemauth.unspent_budget_view')
+        },
+        {
             name: 'Spend',
             field: 'cost',
             checked: true,
             type: 'currency',
+            visible: true,
             totalRow: true,
             help: 'The amount spent per campaign.',
             order: true,
@@ -108,6 +148,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'cpc',
             checked: true,
             type: 'currency',
+            visible: true,
             fractionSize: 3,
             totalRow: true,
             help: 'The average CPC for each campaign.',
@@ -119,6 +160,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'clicks',
             checked: true,
             type: 'number',
+            visible: true,
             totalRow: true,
             help: 'The number of times campaign\'s content ads have been clicked.',
             order: true,
@@ -129,6 +171,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'impressions',
             checked: true,
             type: 'number',
+            visible: true,
             totalRow: true,
             help: 'The number of times campaign\'s content ads have been displayed.',
             order: true,
@@ -139,6 +182,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'ctr',
             checked: true,
             type: 'percent',
+            visible: true,
             defaultValue: '0.0%',
             totalRow: true,
             help: 'The number of clicks divided by the number of impressions.',
@@ -150,6 +194,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'last_sync',
             checked: false,
             type: 'datetime',
+            visible: true,
             help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred (in Eastern Standard Time).',
             order: true,
             initialOrder: 'desc'
@@ -356,52 +401,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     var initColumns = function () {
         var cols;
 
-        if ($scope.hasPermission('zemauth.unspent_budget_view')) {
-            $scope.columns.splice(3, 0,
-                {
-                    name: 'Unspent Budget',
-                    field: 'unspent_budget',
-                    checked: false,
-                    type: 'currency',
-                    totalRow: true,
-                    help: 'Total budget minus the spend within the date range.',
-                    order: true,
-                    initialOrder: 'desc',
-                    internal: $scope.isPermissionInternal('zemauth.unspent_budget_view')
-                }
-            );
-        }
-
-        if ($scope.hasPermission('zemauth.all_accounts_budget_view')) {
-            $scope.columns.splice(3, 0,
-                {
-                    name: 'Total Budget',
-                    field: 'budget',
-                    checked: true,
-                    type: 'currency',
-                    totalRow: true,
-                    help: 'Total amount of allocated budget.',
-                    order: true,
-                    initialOrder: 'desc',
-                    internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view')
-                },
-                {
-                    name: 'Available Budget',
-                    field: 'available_budget',
-                    checked: true,
-                    type: 'currency',
-                    totalRow: true,
-                    help: 'Total amount of budget still available.',
-                    order: true,
-                    initialOrder: 'desc',
-                    internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view')
-                }
-            )
-        }
-
-        if ($scope.hasPermission('zemauth.postclick_metrics')) {
-            zemPostclickMetricsService.insertColumns($scope.columns, $scope.isPermissionInternal('zemauth.postclick_metrics'));
-        }
+        zemPostclickMetricsService.insertColumns($scope.columns, $scope.hasPermission('zemauth.postclick_metrics'), $scope.isPermissionInternal('zemauth.postclick_metrics'));
 
         cols = zemCustomTableColsService.load('accountCampaignsCols', $scope.columns);
         $scope.selectedColumnsCount = cols.length;
