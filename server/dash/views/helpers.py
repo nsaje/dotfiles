@@ -131,7 +131,7 @@ def get_ad_group_sources_notifications(ad_group_sources):
 
         if ags.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE and\
            latest_settings and latest_settings.state == constants.AdGroupSettingsState.ACTIVE:
-            notification += 'This Media Source is enable but will not run' +\
+            notification += 'This Media Source is enable but will not run ' +\
                             'until you enable the AdGroup in the Settings.'
 
         if ags.ad_group.get_current_settings().state != constants.AdGroupSettingsState.INACTIVE and\
