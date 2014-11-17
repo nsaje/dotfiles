@@ -17,43 +17,6 @@ from utils import exc
 from utils.sort_helper import sort_results
 
 
-def _get_adgroups_for(modelcls, modelobjects):
-    if modelcls is models.Account:
-        return models.AdGroup.objects.filter(campaign__account__in=modelobjects)
-    if modelcls is models.Campaign:
-        return models.AdGroup.objects.filter(campaign__in=modelobjects)
-    assert modelcls is models.AdGroup
-    return modelobjects
-
-
-def _get_active_ad_group_sources(modelcls, modelobjects):
-    all_demo_qs = modelcls.demo_objects.all()
-    demo_objects = filter(lambda x: x in all_demo_qs, modelobjects)
-    normal_objects = filter(lambda x: x not in all_demo_qs, modelobjects)
-
-    timer_name = 'get_active_ad_group_sources'
-    if len(demo_objects) > 0:
-        timer_name += '_demo'
-
-    with statsd_helper.statsd_block_timer('dash.views.table', timer_name):
-        demo_adgroups = _get_adgroups_for(modelcls, demo_objects)
-        real_corresponding_adgroups = [x.real_ad_group \
-            for x in models.DemoAdGroupRealAdGroup.objects \
-                .filter(demo_ad_group__in=demo_adgroups)]
-        normal_adgroups = _get_adgroups_for(modelcls, normal_objects)
-        adgroups = list(real_corresponding_adgroups) + list(normal_adgroups)
-
-        _inactive_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(
-            ad_group=adgroups
-        )
-
-        active_ad_group_sources = models.AdGroupSource.objects \
-            .filter(ad_group__in=adgroups) \
-            .exclude(pk__in=[ags.id for ags in _inactive_ad_group_sources])
-
-    return active_ad_group_sources
-
-
 def sort_rows_by_order_and_archived(rows, order):
     archived_order = 'archived'
     if order.startswith('-'):
@@ -66,7 +29,7 @@ class AllAccountsSourcesTable(object):
     def __init__(self, user, id_):
         self.user = user
         self.accounts = models.Account.objects.all().filter_by_user(user)
-        self.active_ad_group_sources = _get_active_ad_group_sources(models.Account, self.accounts)
+        self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.Account, self.accounts)
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return reports.api.has_complete_postclick_metrics_accounts(
@@ -116,7 +79,7 @@ class AccountSourcesTable(object):
     def __init__(self, user, id_):
         self.user = user
         self.account = helpers.get_account(user, id_)
-        self.active_ad_group_sources = _get_active_ad_group_sources(models.Account, [self.account])
+        self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.Account, [self.account])
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return reports.api.has_complete_postclick_metrics_accounts(
@@ -167,7 +130,7 @@ class CampaignSourcesTable(object):
     def __init__(self, user, id_):
         self.user = user
         self.campaign = helpers.get_campaign(user, id_)
-        self.active_ad_group_sources = _get_active_ad_group_sources(models.Campaign, [self.campaign])
+        self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.Campaign, [self.campaign])
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return reports.api.has_complete_postclick_metrics_campaigns(
@@ -218,7 +181,7 @@ class AdGroupSourcesTable(object):
     def __init__(self, user, id_):
         self.user = user
         self.ad_group = helpers.get_ad_group(user, id_)
-        self.active_ad_group_sources = _get_active_ad_group_sources(models.AdGroup, [self.ad_group])
+        self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.AdGroup, [self.ad_group])
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return reports.api.has_complete_postclick_metrics_ad_groups(
@@ -270,84 +233,6 @@ class AdGroupSourcesTable(object):
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(ad_groups=[self.ad_group])
 
-    def get_source_notifications(self):
-        notifications = {}
-
-        for ad_group_source in self.active_ad_group_sources:
-            notification = ''
-
-            latest_settings_qs = models.AdGroupSourceSettings.objects.\
-                filter(ad_group_source=ad_group_source).\
-                order_by('ad_group_source_id', '-created_dt')
-            latest_settings = latest_settings_qs[0] if latest_settings_qs.exists() else None
-
-            latest_state_qs = models.AdGroupSourceState.objects.\
-                filter(ad_group_source=ad_group_source).\
-                order_by('ad_group_source_id', '-created_dt')
-            latest_state = latest_state_qs[0] if latest_state_qs.exists() else None
-
-            if ad_group_source.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE and\
-               latest_settings and latest_settings.state == constants.AdGroupSettingsState.ACTIVE:
-                notification += 'This Media Source is enable but will not run' +\
-                                'until you enable the AdGroup in the Settings.'
-
-            if latest_settings is not None and\
-               (latest_state is None or latest_settings.state != latest_state.state):
-                if notification:
-                    notification += '<br />'
-
-                if latest_state and latest_settings.created_dt > latest_state.created_dt:
-                    msg = 'Status is being changed from <strong>{state_state}</strong> ' +\
-                          'to <strong>{settings_state}</strong>.'
-                else:
-                    msg = 'The actual status on Media Source is <strong>{state_state}</strong> ' +\
-                          'instead of <strong>{settings_state}</strong>.'
-
-                notification += msg.format(
-                    settings_state=constants.AdGroupSettingsState.get_text(latest_settings.state),
-                    state_state=constants.AdGroupSettingsState.get_text(
-                        (latest_state and latest_state.state) or 'N/A'
-                    )
-                )
-
-            if latest_settings is not None and\
-               (latest_state is None or latest_settings.cpc_cc != latest_state.cpc_cc):
-                if notification:
-                    notification += '<br />'
-
-                if latest_state and latest_settings.created_dt > latest_state.created_dt:
-                    msg = 'Bid CPC is being changed from <strong>{state_cpc}</strong> ' +\
-                          'to <strong>{settings_cpc}</strong>.'
-                else:
-                    msg = 'The actual CPC on Media Source is <strong>{state_cpc}</strong> ' +\
-                          'instead of <strong>{settings_cpc}</strong>.'
-
-                notification += msg.format(
-                    settings_cpc='{:.3f}'.format(latest_settings.cpc_cc) if latest_settings.cpc_cc else 'N/A',
-                    state_cpc='{:.3f}'.format(latest_state.cpc_cc) if latest_state else 'N/A'
-                )
-
-            if latest_settings is not None and\
-               (latest_state is None or latest_settings.daily_budget_cc != latest_state.daily_budget_cc):
-                if notification:
-                    notification += '<br />'
-
-                if latest_state and latest_settings.created_dt > latest_state.created_dt:
-                    msg = 'Daily budget is being changed from <strong>{state_daily_budget}</strong> ' +\
-                          'to <strong>{settings_daily_budget}</strong>.'
-                else:
-                    msg = 'The actual daily budget on Media Source is <strong>{state_daily_budget}</strong> ' +\
-                          'instead of <strong>{settings_daily_budget}</strong>.'
-
-                notification += msg.format(
-                    settings_daily_budget='{:.2f}'.format(latest_settings.daily_budget_cc) if latest_settings.daily_budget_cc else 'N/A',
-                    state_daily_budget='{:.2f}'.format(latest_state.daily_budget_cc) if latest_state else 'N/A'
-                )
-
-            notifications[ad_group_source.source_id] = {'status': notification}
-
-        return notifications
-
 
 class SourcesTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'zemauth.sources_table_get')
@@ -396,9 +281,9 @@ class SourcesTable(api_common.BaseApiView):
 
         notifications = None
         if ad_group_level:
-            notifications = self.level_sources_table.get_source_notifications()
+            notifications = helpers.get_ad_group_sources_notifications(self.level_sources_table.active_ad_group_sources)
 
-        return self.create_api_response({
+        response = {
             'rows': self.get_rows(
                 id_,
                 user,
@@ -410,7 +295,6 @@ class SourcesTable(api_common.BaseApiView):
                 yesterday_cost,
                 order=request.GET.get('order', None),
                 ad_group_level=ad_group_level,
-                notifications=notifications
             ),
             'totals': self.get_totals(
                 ad_group_level,
@@ -420,11 +304,17 @@ class SourcesTable(api_common.BaseApiView):
                 ad_group_sources_settings,
                 yesterday_total_cost
             ),
+            'notifications': notifications,
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
             'is_sync_recent': helpers.is_sync_recent(last_sync),
             'is_sync_in_progress': is_sync_in_progress,
             'incomplete_postclick_metrics': incomplete_postclick_metrics,
-        })
+        }
+
+        if ad_group_level and user.has_perm('zemauth.set_ad_group_source_setting'):
+            response['notifications'] = notifications
+
+        return self.create_api_response(response)
 
     def get_totals(self, ad_group_level, user, totals_data, sources_states, sources_settings, yesterday_cost):
         result = {
@@ -561,8 +451,6 @@ class SourcesTable(api_common.BaseApiView):
                             action=constants.SourceAction.CAN_UPDATE_DAILY_BUDGET
                     ).exists():
                         row['editable_fields'].append('daily_budget')
-
-                    row['notifications'] = notifications[source.id]
 
                 if user.has_perm('zemauth.set_ad_group_source_settings') and 'bid_cpc' in row['editable_fields']:
                     row['bid_cpc'] = source_settings.cpc_cc if source_settings else None

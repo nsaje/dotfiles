@@ -9,6 +9,7 @@ oneApp.directive('zemTable', ['config', function(config) {
             columns: '=zemTableColumns',
             rows: '=zemTableRows',
             totalRow: '=zemTableTotalRow',
+            notifications: '=zemTableNotifications',
             order: '=zemTableOrder',
             orderCallback: '&zemTableOrderCallback'
         },

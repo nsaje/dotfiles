@@ -89,8 +89,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             type: 'text',
             totalRow: false,
             help: 'Status of an ad group (enabled or paused).',
-            extraThCss: 'text-center',
-            extraTdCss: 'text-center',
             order: true,
             initialOrder: 'asc'
         },
