@@ -106,13 +106,13 @@ class SourceCredentialsForm(forms.ModelForm):
         if 'oauth_tokens' not in decrypted:
             self.initial['oauth_refresh'] = 'Credentials instance doesn\'t contain access tokens. '\
                                             '<a href="' +\
-                                            reverse('dash.views.oauth_authorize',
+                                            reverse('dash.views.views.oauth_authorize',
                                                     kwargs={'source_name': instance.source.source_type.type}) +\
                                             '?credentials_id=' + str(instance.pk) + '">Generate tokens</a>'
         else:
             self.initial['oauth_refresh'] = 'Credentials instance contains access tokens. '\
                                             '<a href="' +\
-                                            reverse('dash.views.oauth_authorize',
+                                            reverse('dash.views.views.oauth_authorize',
                                                     kwargs={'source_name': instance.source.source_type.type}) +\
                                             '?credentials_id=' + str(instance.pk) + '">Refresh tokens</a>'
 

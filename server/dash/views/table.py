@@ -297,8 +297,11 @@ class SourcesTable(api_common.BaseApiView):
                 ad_group_level=ad_group_level,
             ),
             'totals': self.get_totals(
+                ad_group_level,
+                user,
                 totals_data,
                 sources_states,
+                ad_group_sources_settings,
                 yesterday_total_cost
             ),
             'notifications': notifications,
@@ -313,9 +316,8 @@ class SourcesTable(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    def get_totals(self, totals_data, sources_states, yesterday_cost):
-        return {
-            'daily_budget': self.get_daily_budget_total(sources_states),
+    def get_totals(self, ad_group_level, user, totals_data, sources_states, sources_settings, yesterday_cost):
+        result = {
             'cost': totals_data['cost'],
             'cpc': totals_data['cpc'],
             'clicks': totals_data['clicks'],
@@ -334,14 +336,22 @@ class SourcesTable(api_common.BaseApiView):
             'goals': totals_data.get('goals', {})
         }
 
+        if ad_group_level and user.has_perm('zemauth.set_ad_group_source_settings'):
+            result['daily_budget'] = self.get_daily_budget_total(sources_settings)
+            result['current_daily_budget'] = self.get_daily_budget_total(sources_states)
+        else:
+            result['daily_budget'] = self.get_daily_budget_total(sources_states)
+
+        return result
+
     def get_state(self, states):
         if any(s.state == constants.AdGroupSourceSettingsState.ACTIVE for s in states):
             return constants.AdGroupSourceSettingsState.ACTIVE
 
         return constants.AdGroupSourceSettingsState.INACTIVE
 
-    def get_daily_budget_total(self, sources_states):
-        budgets = [s.daily_budget_cc for s in sources_states if
+    def get_daily_budget_total(self, data):
+        budgets = [s.daily_budget_cc for s in data if
                    s.daily_budget_cc is not None and
                    s.state == constants.AdGroupSourceSettingsState.ACTIVE]
 
@@ -430,7 +440,7 @@ class SourcesTable(api_common.BaseApiView):
                     if source.source_type.available_actions.filter(
                             action=constants.SourceAction.CAN_UPDATE_STATE
                     ).exists():
-                        row['editable_fields'].append('state')
+                        row['editable_fields'].append('status_setting')
 
                     if source.source_type.available_actions.filter(
                             action=constants.SourceAction.CAN_UPDATE_CPC

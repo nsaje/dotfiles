@@ -1,8 +1,9 @@
-<span class="edit-field" ng-class="{'hover-enabled': !editFormActive}" ng-click="editFormActive = true">
-    {{ (originalValue | decimalCurrency:"$":fractionSize:"") || 'N/A' }}
+<span class="edit-field" ng-class="{'hover-enabled': !editFormActive}" ng-click="showEditForm()">
+    <div class="edit-icon"></div>
+    <span ng-class="{'currency-3': fractionSize === 3}">{{ (originalValue | decimalCurrency:"$":fractionSize:"") || 'N/A' }}</span>
 </span>
 <div class="edit-form" ng-show="editFormActive">
-    <input type="text" id="currency-input" class="number form-control" zem-currency-input prefix="$" fraction-size="{{fractionSize}}" ng-model="value">
+    <input type="text" class="currency-input number form-control" zem-currency-input prefix="$" fraction-size="{{fractionSize}}" ng-model="value">
     <button class="btn btn-primary" ng-click="onSave(rowId, value, onError)">Save</button>
     <button class="btn btn-default" ng-click="cancel()">Cancel</button>
     <div ng-repeat="error in errors">

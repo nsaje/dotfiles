@@ -203,6 +203,9 @@ class AdGroupSourceSettingsWriter(object):
         else:
             ssc = consistency.SettingsStateConsistence(self.ad_group_source)
             if not ssc.is_consistent() and self.can_trigger_action():
+                new_settings = latest_settings
+                new_settings.pk = None  # make a copy of the latest settings
+                new_settings.save()
                 logger.info('settings for ad_group_source=%s did not change, but state is inconsistent, triggering actions', self.ad_group_source)
                 actionlog.api.set_ad_group_source_settings(latest_settings)
 
@@ -211,8 +214,6 @@ class AdGroupSourceSettingsWriter(object):
         return round(val1, self.DECIMAL_PLACES) == round(val2, self.DECIMAL_PLACES)
 
     def can_trigger_action(self):
-        ## TODO:
-        # is the operation supported?
         try:
             ad_group_settings = models.AdGroupSettings.objects \
                 .filter(ad_group=self.ad_group_source.ad_group) \

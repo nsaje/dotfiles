@@ -457,6 +457,9 @@ class ApiTestCase(test.TestCase):
         url_unsorted_with_z1_utm_cleaned = 'http://sd.domain.com/path/to?attr1=1&attr2=2#uff'
         self.assertEqual(url_unsorted_with_z1_utm_cleaned, clean_url(url_unsorted_with_z1_utm)[0])
 
+        url_with_utf8_param = u'http://sd.domain.com/path/to?attr1=%e2%80%99'
+        self.assertEqual(url_with_utf8_param.lower(), clean_url(url_with_utf8_param)[0].lower())
+
 
 class UpsertReportsTestCase(test.TestCase):
 
