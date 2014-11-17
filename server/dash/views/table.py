@@ -279,10 +279,6 @@ class SourcesTable(api_common.BaseApiView):
                 not self.level_sources_table.has_complete_postclick_metrics(
                     start_date, end_date)
 
-        notifications = None
-        if ad_group_level and user.has_perm('zemauth.set_ad_group_source_setting'):
-            notifications = helpers.get_ad_group_sources_notifications(self.level_sources_table.active_ad_group_sources)
-
         response = {
             'rows': self.get_rows(
                 id_,
@@ -304,7 +300,6 @@ class SourcesTable(api_common.BaseApiView):
                 ad_group_sources_settings,
                 yesterday_total_cost
             ),
-            'notifications': notifications,
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
             'is_sync_recent': helpers.is_sync_recent(last_sync),
             'is_sync_in_progress': is_sync_in_progress,
@@ -312,7 +307,9 @@ class SourcesTable(api_common.BaseApiView):
         }
 
         if ad_group_level and user.has_perm('zemauth.set_ad_group_source_setting'):
-            response['notifications'] = notifications
+            response['notifications'] = helpers.get_ad_group_sources_notifications(
+                self.level_sources_table.active_ad_group_sources
+            )
 
         return self.create_api_response(response)
 
