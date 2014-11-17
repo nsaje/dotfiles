@@ -33,7 +33,7 @@ oneApp.directive('zemCustomTableCols', ['config', function(config) {
                         var cat = $scope.categories[i];
 
                         var cols = $scope.columns.filter(function(col) {
-                            return cat.fields.indexOf(col.field) != -1;
+                            return cat.fields.indexOf(col.field) != -1 && col.visible;
                         });
 
                         if(cols.length > 0) {
