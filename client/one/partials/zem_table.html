@@ -6,7 +6,7 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th ng-if="col.visible" ng-class="{'text-right': isNumberColumnType(col.type), 'arrow': col.order, ordered: order === '-' + (col.orderField || col.field), 'ordered-reverse': order === (col.orderField || col.field)}" class="{{ col.extraThCss }}" ng-repeat="col in columns | filter: {checked: true}">
+                        <th ng-if="col.shown" ng-class="{'text-right': isNumberColumnType(col.type), 'arrow': col.order, ordered: order === '-' + (col.orderField || col.field), 'ordered-reverse': order === (col.orderField || col.field)}" class="{{ col.extraThCss }}" ng-repeat="col in columns | filter: {checked: true}">
                             <zem-internal-feature ng-if="col.internal"></zem-internal-feature>
                             <span ng-switch="col.order">
                                 <a ng-switch-when='true' href class="col-title order" ng-class="col.nameCssClass" ng-click="callOrderCallback((col.orderField || col.field))">{{ col.name }}</a>
@@ -26,7 +26,7 @@
                         <td class="no-data" colspan="100">No data</td>
                     </tr>
                     <tr ng-repeat="row in rows" ng-class="{'archived': row.archived}">
-                        <td ng-if="col.visible" ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type), 'input-one-char': col.type === 'checkbox', 'text-center': col.type === 'link'}" class="{{ col.extraTdCss }}" ng-repeat="col in columns | filter: {checked: true}">
+                        <td ng-if="col.shown" ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type), 'input-one-char': col.type === 'checkbox', 'text-center': col.type === 'link'}" class="{{ col.extraTdCss }}" ng-repeat="col in columns | filter: {checked: true}">
                             <span ng-switch="col.type">
                                 <span ng-switch-when="currency">
                                     <span ng-if="!isFieldEditable(row.editable_fields, col.field)" ng-class="{'currency-3': col.fractionSize === 3}">
@@ -117,7 +117,7 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td ng-if="col.visible" ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type)}" ng-repeat="col in columns | filter: {checked: true}">
+                        <td ng-if="col.shown" ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type)}" ng-repeat="col in columns | filter: {checked: true}">
                             <span ng-if="col.hasTotalsLabel">TOTALS</span>
 
                             <span ng-if="col.totalRow" ng-switch="col.type">
