@@ -63,6 +63,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             name: '',
             field: 'checked',
             type: 'checkbox',
+            shown: true,
             checked: true,
             totalRow: true,
             unselectable: true,
@@ -76,6 +77,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             unselectable: true,
             checked: true,
             type: 'linkNav',
+            shown: true,
             hasTotalsLabel: true,
             totalRow: false,
             help: 'Name of the ad group.',
@@ -87,6 +89,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'state',
             checked: true,
             type: 'text',
+            shown: true,
             totalRow: false,
             help: 'Status of an ad group (enabled or paused).',
             order: true,
@@ -97,6 +100,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'cost',
             checked: true,
             type: 'currency',
+            shown: true,
             totalRow: true,
             help: 'The amount spent per ad group.',
             order: true,
@@ -108,6 +112,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'cpc',
             checked: true,
             type: 'currency',
+            shown: true,
             fractionSize: 3,
             totalRow: true,
             help: 'The average CPC for each ad group.',
@@ -119,6 +124,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'clicks',
             checked: true,
             type: 'number',
+            shown: true,
             totalRow: true,
             help: 'The number of times ad group\'s content ads have been clicked.',
             order: true,
@@ -129,6 +135,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'impressions',
             checked: true,
             type: 'number',
+            shown: true,
             totalRow: true,
             help: 'The number of times ad group\'s content ads have been displayed.',
             order: true,
@@ -139,6 +146,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'ctr',
             checked: true,
             type: 'percent',
+            shown: true,
             defaultValue: '0.0%',
             totalRow: true,
             help: 'The number of clicks divided by the number of impressions.',
@@ -150,6 +158,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'last_sync',
             checked: false,
             type: 'datetime',
+            shown: true,
             help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred (in Eastern Standard Time).',
             order: true,
             initialOrder: 'desc'
@@ -180,9 +189,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     var initColumns = function () {
         var cols;
 
-        if ($scope.hasPermission('zemauth.postclick_metrics')) {
-            zemPostclickMetricsService.insertColumns($scope.columns, $scope.isPermissionInternal('zemauth.postclick_metrics'));
-        }
+        zemPostclickMetricsService.insertColumns($scope.columns, $scope.hasPermission('zemauth.postclick_metrics'), $scope.isPermissionInternal('zemauth.postclick_metrics'));
 
         cols = zemCustomTableColsService.load('campaignAdGroupsCols', $scope.columns);
         $scope.selectedColumnsCount = cols.length;

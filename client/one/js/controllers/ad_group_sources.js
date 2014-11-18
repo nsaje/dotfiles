@@ -92,6 +92,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             name: '',
             field: 'checked',
             type: 'checkbox',
+            shown: true,
             checked: true,
             totalRow: true,
             unselectable: true,
@@ -100,11 +101,34 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             disabled: false
         },
         {
+            name: '',
+            nameCssClass: 'active-circle-icon-gray',
+            field: 'status_setting',
+            type: 'state',
+            internal: $scope.isPermissionInternal('zemauth.set_ad_group_source_settings'),
+            shown: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
+            checked: true,
+            totalRow: false,
+            unselectable: true,
+            help: 'A setting for enabling and pausing media sources.',
+            onChange: function (sourceId, value) {
+                var data = {state: value};
+
+                api.adGroupSourceSettings.save($state.params.id, sourceId, data).then(
+                    function (data) {
+                        getTableData();
+                    }
+                );
+            },
+            disabled: false
+        },
+        {
             name: 'Media Source',
             field: 'name',
             unselectable: true,
             checked: true,
             type: 'text',
+            shown: true,
             hasTotalsLabel: true,
             totalRow: false,
             help: 'A media source where your content is being promoted.',
@@ -117,6 +141,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             unselectable: true,
             checked: true,
             type: 'text',
+            shown: true,
             totalRow: false,
             help: 'Status of a particular media source (enabled or paused).',
             order: true,
@@ -125,10 +150,22 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             displayNotifications: true
         },
         {
+            name: 'Link',
+            field: 'supply_dash_url',
+            checked: false,
+            type: 'link',
+            internal: $scope.isPermissionInternal('zemauth.supply_dash_link_view'),
+            shown: $scope.hasPermission('zemauth.supply_dash_link_view'),
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
+        },
+        {
             name: 'Bid CPC',
             field: 'bid_cpc',
             checked: true,
             type: 'currency',
+            shown: true,
             fractionSize: 3,
             help: 'Maximum bid price (in USD) per click.',
             totalRow: false,
@@ -148,10 +185,24 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             }
         },
         {
+            name: 'Current Bid CPC',
+            field: 'current_bid_cpc',
+            fractionSize: 3,
+            checked: false,
+            type: 'currency',
+            internal: $scope.isPermissionInternal('zemauth.see_current_ad_group_source_state'),
+            shown: $scope.hasPermission('zemauth.see_current_ad_group_source_state'),
+            totalRow: false,
+            order: true,
+            help: 'Cost-per-click (CPC) bid is the approximate amount that you\'ll be charged for a click on your ad.',
+            initialOrder: 'desc'
+        },
+        {
             name: 'Daily Budget',
             field: 'daily_budget',
             checked: true,
             type: 'currency',
+            shown: true,
             help: 'Maximum budget per day.',
             totalRow: true,
             order: true,
@@ -170,10 +221,35 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             }
         },
         {
+            name: 'Current Daily Budget',
+            field: 'current_daily_budget',
+            checked: false,
+            type: 'currency',
+            internal: $scope.isPermissionInternal('zemauth.see_current_ad_group_source_state'),
+            shown: $scope.hasPermission('zemauth.see_current_ad_group_source_state'),
+            totalRow: true,
+            order: true,
+            help: 'Maximum budget per day.',
+            initialOrder: 'desc'
+        },
+        {
+            name: 'Yesterday Spend',
+            field: 'yesterday_cost',
+            checked: false,
+            type: 'currency',
+            help: 'Amount that you have spent yesterday for promotion on specific media source.',
+            internal: $scope.isPermissionInternal('reports.yesterday_spend_view'),
+            shown: $scope.hasPermission('reports.yesterday_spend_view'),
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
+        },
+        {
             name: 'Spend',
             field: 'cost',
             checked: true,
             type: 'currency',
+            shown: true,
             help: "Amount spent per media source.",
             totalRow: true,
             order: true,
@@ -184,6 +260,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             field: 'cpc',
             checked: true,
             type: 'currency',
+            shown: true,
             fractionSize: 3,
             help: "The average CPC.",
             totalRow: true,
@@ -195,6 +272,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             field: 'clicks',
             checked: true,
             type: 'number',
+            shown: true,
             help: 'The number of times a content ad has been clicked.',
             totalRow: true,
             order: true,
@@ -205,6 +283,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             field: 'impressions',
             checked: true,
             type: 'number',
+            shown: true,
             help: 'The number of times a content ad has been displayed.',
             totalRow: true,
             order: true,
@@ -215,6 +294,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             field: 'ctr',
             checked: true,
             type: 'percent',
+            shown: true,
             defaultValue: '0.0%',
             help: 'The number of clicks divided by the number of impressions.',
             totalRow: true,
@@ -226,6 +306,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
             field: 'last_sync',
             checked: false,
             type: 'datetime',
+            shown: true,
             help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred (in Eastern Standard Time).',
             totalRow: false,
             order: true,
@@ -236,86 +317,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     $scope.initColumns = function () {
         var cols;
 
-        if ($scope.hasPermission('reports.yesterday_spend_view')) {
-            $scope.columns.splice(6, 0, {
-                name: 'Yesterday Spend',
-                field: 'yesterday_cost',
-                checked: false,
-                type: 'currency',
-                help: 'Amount that you have spent yesterday for promotion on specific media source.',
-                internal: $scope.isPermissionInternal('reports.yesterday_spend_view'),
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc'
-            });
-        }
-
-        if ($scope.hasPermission('zemauth.supply_dash_link_view')) {
-            $scope.columns.splice(4, 0, {
-                name: 'Link',
-                field: 'supply_dash_url',
-                checked: false,
-                type: 'link',
-                internal: $scope.isPermissionInternal('zemauth.supply_dash_link_view'),
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc'
-            });
-        }
-
-        if ($scope.hasPermission('zemauth.set_ad_group_source_settings')) {
-            $scope.columns.splice(1, 0, {
-                name: '',
-                nameCssClass: 'active-circle-icon-gray',
-                field: 'status_setting',
-                type: 'state',
-                checked: true,
-                totalRow: false,
-                unselectable: true,
-                help: 'A setting for enabling and pausing media sources.',
-                onChange: function (sourceId, value) {
-                    var data = {state: value};
-
-                    api.adGroupSourceSettings.save($state.params.id, sourceId, data).then(
-                        function (data) {
-                            getTableData();
-                        }
-                    );
-                },
-                disabled: false
-            });
-        }
-
-        if ($scope.hasPermission('zemauth.see_current_ad_group_source_state')) {
-            $scope.columns.splice(6, 0, {
-                name: 'Current Bid CPC',
-                field: 'current_bid_cpc',
-                fractionSize: 3,
-                checked: false,
-                type: 'currency',
-                internal: $scope.isPermissionInternal('zemauth.see_current_ad_group_source_state'),
-                totalRow: false,
-                order: true,
-                help: 'Cost-per-click (CPC) bid is the approximate amount that you\'ll be charged for a click on your ad.',
-                initialOrder: 'desc'
-            });
-
-            $scope.columns.splice(8, 0, {
-                name: 'Current Daily Budget',
-                field: 'current_daily_budget',
-                checked: false,
-                type: 'currency',
-                internal: $scope.isPermissionInternal('zemauth.see_current_ad_group_source_state'),
-                totalRow: true,
-                order: true,
-                help: 'Maximum budget per day.',
-                initialOrder: 'desc'
-            });
-        }
-
-        if ($scope.hasPermission('zemauth.postclick_metrics')) {
-            zemPostclickMetricsService.insertColumns($scope.columns, $scope.isPermissionInternal('zemauth.postclick_metrics'));
-        }
+        zemPostclickMetricsService.insertColumns($scope.columns, $scope.hasPermission('zemauth.postclick_metrics'), $scope.isPermissionInternal('zemauth.postclick_metrics'));
 
         cols = zemCustomTableColsService.load('adGroupSourcesCols', $scope.columns);
         $scope.selectedColumnsCount = cols.length;
@@ -368,7 +370,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                             totalRow: true,
                             order: true,
                             initialOrder: 'desc'
-                        }
+                        };
                         $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
                         $scope.columnCategories[$scope.postclickCategoryIndex].fields.push(col_descr.field);
                     } else if(field.indexOf(': Conversion Rate') != -1) {
@@ -382,7 +384,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                             totalRow: true,
                             order: true,
                             initialOrder: 'desc'
-                        }
+                        };
                         $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
                         $scope.columnCategories[$scope.postclickCategoryIndex].fields.push(col_descr.field);
                     }
