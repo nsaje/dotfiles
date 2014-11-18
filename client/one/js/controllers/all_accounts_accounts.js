@@ -24,7 +24,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             unselectable: true,
             checked: true,
             type: 'linkNav',
-            visible: true,
+            shown: true,
             hasTotalsLabel: true,
             totalRow: false,
             help: 'A partner account.',
@@ -38,7 +38,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             unselectable: true,
             checked: true,
             type: 'text',
-            visible: true,
+            shown: true,
             totalRow: false,
             help: 'Status of an account (enabled or paused). An account is paused only if all its campaigns are paused too; otherwise the account is enabled.',
             order: true,
@@ -55,7 +55,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             order: true,
             initialOrder: 'desc',
             internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view'),
-            visible: $scope.hasPermission('zemauth.all_accounts_budget_view')
+            shown: $scope.hasPermission('zemauth.all_accounts_budget_view')
         },
         {
             name: 'Available Budget',
@@ -67,7 +67,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             order: true,
             initialOrder: 'desc',
             internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view'),
-            visible: $scope.hasPermission('zemauth.all_accounts_budget_view')
+            shown: $scope.hasPermission('zemauth.all_accounts_budget_view')
         },
         {
             name: 'Unspent Budget',
@@ -79,14 +79,14 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             order: true,
             initialOrder: 'desc',
             internal: $scope.isPermissionInternal('zemauth.unspent_budget_view'),
-            visible: $scope.hasPermission('zemauth.unspent_budget_view')
+            shown: $scope.hasPermission('zemauth.unspent_budget_view')
         },
         {
             name: 'Spend',
             field: 'cost',
             checked: true,
             type: 'currency',
-            visible: true,
+            shown: true,
             help: "Amount spent per account",
             totalRow: true,
             order: true,
@@ -97,7 +97,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             field: 'cpc',
             checked: true,
             type: 'currency',
-            visible: true,
+            shown: true,
             fractionSize: 3,
             help: "The average CPC.",
             totalRow: true,
@@ -109,7 +109,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             field: 'clicks',
             checked: true,
             type: 'number',
-            visible: true,
+            shown: true,
             help: 'The number of times a content ad has been clicked.',
             totalRow: true,
             order: true,
@@ -120,7 +120,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             field: 'last_sync',
             checked: false,
             type: 'datetime',
-            visible: true,
+            shown: true,
             help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred (in Eastern Standard Time).',
             order: true,
             initialOrder: 'desc'
