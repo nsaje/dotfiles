@@ -2,8 +2,7 @@ import json
 
 from django.contrib import admin
 from django.core.urlresolvers import reverse
-from django.core.exceptions import ValidationError
-from django import forms
+from django.utils.html import escape
 
 from actionlog import models
 from actionlog import constants
@@ -125,7 +124,7 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
     payload_.allow_tags = True
 
     def _wrap_preformatted_text(self, text):
-        return '<div style="overflow: hidden;"><pre style="color: #000;">{}</pre></div>'.format(text)
+        return '<div style="overflow: hidden;"><pre style="color: #000;">{}</pre></div>'.format(escape(text))
 
 
 admin.site.register(models.ActionLog, ActionLogAdminAdmin)
