@@ -632,7 +632,7 @@ class AdGroupSource(models.Model):
 
         tracking_ids = {
             '_z1_msid': msid,
-            '_z1_agid': self.ad_group.id
+            '_z1_adgid': self.ad_group.id
         }
 
         return tracking_ids
