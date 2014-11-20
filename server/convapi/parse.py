@@ -206,6 +206,9 @@ class LandingPageUrl(object):
 
         if '_z1_adgid' in query_params:
             self.ad_group_id = int(query_params['_z1_adgid'])
+        # also check '_z1_agid'
+        if self.ad_group_id is None and '_z1_agid' in query_params:
+            self.ad_group_id = int(query_params['_z1_agid'])
         if '_z1_msid' in query_params:
             self.source_param = query_params['_z1_msid']
         if '_z1_did' in query_params:
