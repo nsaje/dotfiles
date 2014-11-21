@@ -836,7 +836,7 @@ class AdGroupSourceSettings(models.Model):
     )
 
     state = models.IntegerField(
-        default=constants.AdGroupSourceSettingsState.INACTIVE,
+        null=True,
         choices=constants.AdGroupSourceSettingsState.get_choices()
     )
     cpc_cc = models.DecimalField(
