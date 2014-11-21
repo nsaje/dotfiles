@@ -131,8 +131,8 @@ def get_ad_group_sources_notifications(ad_group_sources):
 
         if ags.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE and\
            latest_settings and latest_settings.state == constants.AdGroupSettingsState.ACTIVE:
-            notification += 'This Media Source is enable but will not run ' +\
-                            'until you enable the AdGroup in the Settings.'
+            notification += 'This media source is enabled but will not run ' +\
+                            'until you enable the ad group in the Settings.'
 
         if ags.ad_group.get_current_settings().state != constants.AdGroupSettingsState.INACTIVE and\
            ags.source.source_type.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_STATE).exists() and\
@@ -144,7 +144,7 @@ def get_ad_group_sources_notifications(ad_group_sources):
                 msg = 'Status is being changed from <strong>{state_state}</strong> ' +\
                       'to <strong>{settings_state}</strong>.'
             else:
-                msg = 'The actual status on Media Source is <strong>{state_state}</strong> ' +\
+                msg = 'The actual status on media source is <strong>{state_state}</strong> ' +\
                       'instead of <strong>{settings_state}</strong>.'
 
             notification += msg.format(
@@ -163,7 +163,7 @@ def get_ad_group_sources_notifications(ad_group_sources):
                 msg = 'Bid CPC is being changed from <strong>{state_cpc}</strong> ' +\
                       'to <strong>{settings_cpc}</strong>.'
             else:
-                msg = 'The actual CPC on Media Source is <strong>{state_cpc}</strong> ' +\
+                msg = 'The actual CPC on media source is <strong>{state_cpc}</strong> ' +\
                       'instead of <strong>{settings_cpc}</strong>.'
 
             notification += msg.format(
@@ -181,7 +181,7 @@ def get_ad_group_sources_notifications(ad_group_sources):
                 msg = 'Daily budget is being changed from <strong>{state_daily_budget}</strong> ' +\
                       'to <strong>{settings_daily_budget}</strong>.'
             else:
-                msg = 'The actual daily budget on Media Source is <strong>{state_daily_budget}</strong> ' +\
+                msg = 'The actual daily budget on media source is <strong>{state_daily_budget}</strong> ' +\
                       'instead of <strong>{settings_daily_budget}</strong>.'
 
             notification += msg.format(
