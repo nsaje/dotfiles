@@ -115,8 +115,13 @@ def get_active_ad_group_sources(modelcls, modelobjects):
 
 def get_ad_group_sources_last_change_dt(ad_group_sources):
     def last_change(ad_group_source):
-        current_state = ad_group_source.states.latest('created_dt')
-        current_settings = ad_group_source.settings.latest('created_dt')
+        current_state = None
+        if ad_group_source.states.exists():
+            current_state = ad_group_source.states.latest('created_dt')
+
+        current_settings = None
+        if ad_group_source.settings.exists():
+            current_settings = ad_group_source.settings.latest('created_dt')
 
         if current_state is None and current_settings is None:
             return None
@@ -158,7 +163,8 @@ def get_ad_group_sources_notifications(ad_group_sources):
 
         if ags.ad_group.get_current_settings().state != constants.AdGroupSettingsState.INACTIVE and\
            ags.source.source_type.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_STATE).exists() and\
-           latest_settings is not None and (latest_state is None or latest_settings.state != latest_state.state):
+           latest_settings is not None and latest_settings.state is not None and\
+           (latest_state is None or latest_settings.state != latest_state.state):
             if notification:
                 notification += '<br />'
 
@@ -177,7 +183,8 @@ def get_ad_group_sources_notifications(ad_group_sources):
             )
 
         if ags.source.source_type.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_CPC).exists() and\
-           latest_settings is not None and (latest_state is None or latest_settings.cpc_cc != latest_state.cpc_cc):
+           latest_settings is not None and latest_settings.cpc_cc is not None and\
+           (latest_state is None or latest_settings.cpc_cc != latest_state.cpc_cc):
             if notification:
                 notification += '<br />'
 
@@ -194,7 +201,7 @@ def get_ad_group_sources_notifications(ad_group_sources):
             )
 
         if ags.source.source_type.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_DAILY_BUDGET).exists() and\
-           latest_settings is not None and\
+           latest_settings is not None and latest_settings.daily_budget_cc is not None and\
            (latest_state is None or latest_settings.daily_budget_cc != latest_state.daily_budget_cc):
             if notification:
                 notification += '<br />'
