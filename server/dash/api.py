@@ -179,36 +179,45 @@ class AdGroupSourceSettingsWriter(object):
         cpc_cc = settings_obj.get('cpc_cc')
         daily_budget_cc = settings_obj.get('daily_budget_cc')
 
-        if any([
-                state is not None and state != latest_settings.state,
-                cpc_cc is not None and not self._decimal_eq(cpc_cc, latest_settings.cpc_cc),
-                daily_budget_cc is not None and not self._decimal_eq(daily_budget_cc, latest_settings.daily_budget_cc),
-            ]):
-                new_settings = latest_settings
-                new_settings.pk = None  # make a copy of the latest settings
-                if state is not None:
-                    new_settings.state = state
-                if cpc_cc is not None:
-                    new_settings.cpc_cc = cpc_cc
-                if daily_budget_cc is not None:
-                    new_settings.daily_budget_cc = daily_budget_cc
-                new_settings.save()
+        state_changed = state is not None and (latest_settings.state is None or state != latest_settings.state)
+        cpc_cc_changed = cpc_cc is not None and\
+            (latest_settings.cpc_cc is None or not self._decimal_eq(cpc_cc, latest_settings.cpc_cc))
+        daily_budget_cc_changed = daily_budget_cc is not None and\
+            (latest_settings.daily_budget_cc is None or
+             not self._decimal_eq(daily_budget_cc, latest_settings.daily_budget_cc))
 
-                self.add_to_history(settings_obj)
+        if state_changed or cpc_cc_changed or daily_budget_cc_changed:
+            new_settings = latest_settings
+            new_settings.pk = None  # make a copy of the latest settings
+            if state is not None:
+                new_settings.state = state
+            if cpc_cc is not None:
+                new_settings.cpc_cc = cpc_cc
+            if daily_budget_cc is not None:
+                new_settings.daily_budget_cc = daily_budget_cc
+            new_settings.save()
 
-                if self.can_trigger_action():
-                    actionlog.api.set_ad_group_source_settings(new_settings)
-                else:
-                    logger.info('settings=%s on ad_group_source=%s will be triggered when the ad group will be enabled', settings_obj, self.ad_group_source)
+            self.add_to_history(settings_obj)
+
+            if self.can_trigger_action():
+                actionlog.api.set_ad_group_source_settings(new_settings)
+            else:
+                logger.info(
+                    'settings=%s on ad_group_source=%s will be triggered when the ad group will be enabled',
+                    settings_obj,
+                    self.ad_group_source
+                )
         else:
             ssc = consistency.SettingsStateConsistence(self.ad_group_source)
             if not ssc.is_consistent() and self.can_trigger_action():
                 new_settings = latest_settings
                 new_settings.pk = None  # make a copy of the latest settings
                 new_settings.save()
-                logger.info('settings for ad_group_source=%s did not change, but state is inconsistent, triggering actions', self.ad_group_source)
+                logger.info(
+                    'settings for ad_group_source=%s did not change, but state is inconsistent, triggering actions',
+                    self.ad_group_source
+                )
                 actionlog.api.set_ad_group_source_settings(latest_settings)
-
 
     def _decimal_eq(self, val1, val2):
         return round(val1, self.DECIMAL_PLACES) == round(val2, self.DECIMAL_PLACES)
@@ -229,9 +238,7 @@ class AdGroupSourceSettingsWriter(object):
                 .latest('created_dt')
             return latest_settings
         except models.AdGroupSourceSettings.DoesNotExist:
-            latest_settings = models.AdGroupSourceSettings.objects.create(ad_group_source=self.ad_group_source)
-            latest_settings.save()
-            return latest_settings
+            return models.AdGroupSourceSettings(ad_group_source=self.ad_group_source)
 
     def add_to_history(self, change_obj):
         changes_text_parts = []
@@ -256,4 +263,3 @@ class AdGroupSourceSettingsWriter(object):
         new_ad_group_settings.pk = None
         new_ad_group_settings.changes_text = changes_text
         new_ad_group_settings.save()
-
