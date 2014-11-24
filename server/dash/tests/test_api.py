@@ -191,7 +191,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
             .filter(ad_group_source=self.ad_group_source) \
             .latest('created_dt')
 
-        self.writer.set({'cpc_cc': 0.1})
+        self.writer.set({'cpc_cc': decimal.Decimal(0.1)})
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
@@ -208,7 +208,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
             .filter(ad_group_source=self.ad_group_source) \
             .latest('created_dt')
 
-        self.writer.set({'daily_budget_cc': 50})
+        self.writer.set({'daily_budget_cc': decimal.Decimal(50)})
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
@@ -218,7 +218,6 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertEqual(latest_settings.state, new_latest_settings.state)
         self.assertEqual(latest_settings.cpc_cc, new_latest_settings.cpc_cc)
         self.assertEqual(latest_settings.daily_budget_cc, new_latest_settings.daily_budget_cc)
-
 
 
 class AdGroupSettingsOrderTest(TestCase):
