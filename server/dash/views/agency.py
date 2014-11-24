@@ -157,8 +157,10 @@ class AdGroupSettings(api_common.BaseApiView):
             ad_group.save()
             settings.save()
 
-            if settings.state == constants.AdGroupSettingsState.ACTIVE:
+            if current_settings.state == constants.AdGroupSettingsState.INACTIVE \
+            and settings.state == constants.AdGroupSettingsState.ACTIVE:
                 # trigger actions for the latest settings for each source
+                # only when the ad group is enabled
                 source_settings_qs = models.AdGroupSourceSettings.objects \
                     .distinct('ad_group_source_id') \
                     .filter(ad_group_source__ad_group=ad_group) \
