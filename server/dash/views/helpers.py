@@ -4,6 +4,7 @@ import dateutil.parser
 from django.conf import settings
 
 import actionlog.api
+import actionlog.constants
 from dash import models
 from dash import constants
 from utils import exc
@@ -129,65 +130,63 @@ def get_ad_group_sources_notifications(ad_group_sources):
             order_by('ad_group_source_id', '-created_dt')
         latest_state = latest_state_qs[0] if latest_state_qs.exists() else None
 
-        if ags.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE and\
-           latest_settings and latest_settings.state == constants.AdGroupSettingsState.ACTIVE:
-            notification += 'This media source is enabled but will not run ' +\
-                            'until you enable the ad group in the Settings.'
+        if ags.actionlog_set.filter(
+                state=actionlog.constants.ActionState.WAITING,
+                action=actionlog.constants.Action.SET_CAMPAIGN_STATE
+        ).exists():
+            if ags.source.can_update_state() and\
+               latest_settings is not None and latest_settings.state is not None and\
+               (latest_state is None or latest_state.state != latest_settings.state):
+                if notification:
+                    notification += '<br />'
 
-        if ags.ad_group.get_current_settings().state != constants.AdGroupSettingsState.INACTIVE and\
-           ags.source.source_type.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_STATE).exists() and\
-           latest_settings is not None and (latest_state is None or latest_settings.state != latest_state.state):
-            if notification:
-                notification += '<br />'
+                msg = 'Status is being changed from <strong>{old_state}</strong> ' +\
+                      'to <strong>{new_state}</strong>.'
 
-            if latest_state and latest_settings.created_dt > latest_state.created_dt:
-                msg = 'Status is being changed from <strong>{state_state}</strong> ' +\
-                      'to <strong>{settings_state}</strong>.'
-            else:
-                msg = 'The actual status on media source is <strong>{state_state}</strong> ' +\
-                      'instead of <strong>{settings_state}</strong>.'
-
-            notification += msg.format(
-                settings_state=constants.AdGroupSettingsState.get_text(latest_settings.state),
-                state_state=constants.AdGroupSettingsState.get_text(
-                    (latest_state and latest_state.state) or 'N/A'
+                notification += msg.format(
+                    new_state=constants.AdGroupSettingsState.get_text(latest_settings.state),
+                    old_state=constants.AdGroupSettingsState.get_text(
+                        (latest_state and latest_state.state) or 'N/A'
+                    )
                 )
-            )
 
-        if ags.source.source_type.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_CPC).exists() and\
-           latest_settings is not None and (latest_state is None or latest_settings.cpc_cc != latest_state.cpc_cc):
-            if notification:
-                notification += '<br />'
+            if ags.source.can_update_cpc() and\
+               latest_settings is not None and latest_settings.cpc_cc is not None and\
+               (latest_state is None or latest_state.cpc_cc != latest_settings.cpc_cc):
+                if notification:
+                    notification += '<br />'
 
-            if latest_state and latest_settings.created_dt > latest_state.created_dt:
-                msg = 'Bid CPC is being changed from <strong>{state_cpc}</strong> ' +\
-                      'to <strong>{settings_cpc}</strong>.'
-            else:
-                msg = 'The actual CPC on media source is <strong>{state_cpc}</strong> ' +\
-                      'instead of <strong>{settings_cpc}</strong>.'
+                msg = 'Bid CPC is being changed from <strong>{old_cpc}</strong> ' +\
+                      'to <strong>{new_cpc}</strong>.'
 
-            notification += msg.format(
-                settings_cpc='{:.3f}'.format(latest_settings.cpc_cc) if latest_settings.cpc_cc else 'N/A',
-                state_cpc='{:.3f}'.format(latest_state.cpc_cc) if latest_state else 'N/A'
-            )
+                if latest_state and latest_state.cpc_cc:
+                    old_cpc = '{:.3f}'.format(latest_state.cpc_cc)
+                else:
+                    old_cpc = 'N/A'
 
-        if ags.source.source_type.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_DAILY_BUDGET).exists() and\
-           latest_settings is not None and\
-           (latest_state is None or latest_settings.daily_budget_cc != latest_state.daily_budget_cc):
-            if notification:
-                notification += '<br />'
+                notification += msg.format(
+                    old_cpc=old_cpc,
+                    new_cpc='{:.3f}'.format(latest_settings.cpc_cc),
+                )
 
-            if latest_state and latest_settings.created_dt > latest_state.created_dt:
-                msg = 'Daily budget is being changed from <strong>{state_daily_budget}</strong> ' +\
-                      'to <strong>{settings_daily_budget}</strong>.'
-            else:
-                msg = 'The actual daily budget on media source is <strong>{state_daily_budget}</strong> ' +\
-                      'instead of <strong>{settings_daily_budget}</strong>.'
+            if ags.source.can_update_daily_budget() and\
+               latest_settings is not None and latest_settings.daily_budget_cc is not None and\
+               (latest_state is None or latest_state.daily_budget_cc != latest_settings.daily_budget_cc):
+                if notification:
+                    notification += '<br />'
 
-            notification += msg.format(
-                settings_daily_budget='{:.2f}'.format(latest_settings.daily_budget_cc) if latest_settings.daily_budget_cc else 'N/A',
-                state_daily_budget='{:.2f}'.format(latest_state.daily_budget_cc) if latest_state else 'N/A'
-            )
+                msg = 'Daily budget is being changed from <strong>{old_daily_budget}</strong> ' +\
+                      'to <strong>{new_daily_budget}</strong>.'
+
+                if latest_state and latest_state.daily_budget_cc is not None:
+                    old_daily_budget = '{:.2f}'.format(latest_state.daily_budget_cc)
+                else:
+                    old_daily_budget = 'N/A'
+
+                notification += msg.format(
+                    old_daily_budget=old_daily_budget,
+                    new_daily_budget='{:.2f}'.format(latest_settings.daily_budget_cc),
+                )
 
         notifications[ags.source_id] = notification
 
