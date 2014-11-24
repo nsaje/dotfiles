@@ -166,8 +166,6 @@ def get_state_by_account():
 
 class AdGroupSourceSettingsWriter(object):
 
-    DECIMAL_PLACES = 6
-
     def __init__(self, ad_group_source):
         self.ad_group_source = ad_group_source
         assert type(self.ad_group_source) is models.AdGroupSource
@@ -179,11 +177,14 @@ class AdGroupSourceSettingsWriter(object):
         cpc_cc = settings_obj.get('cpc_cc')
         daily_budget_cc = settings_obj.get('daily_budget_cc')
 
+        assert cpc_cc is None or isinstance(cpc_cc, decimal.Decimal)
+        assert daily_budget_cc is None or isinstance(daily_budget_cc, decimal.Decimal)
+
         if any([
                 state is not None and state != latest_settings.state,
-                cpc_cc is not None and not self._decimal_eq(cpc_cc, latest_settings.cpc_cc),
-                daily_budget_cc is not None and not self._decimal_eq(daily_budget_cc, latest_settings.daily_budget_cc),
-            ]):
+                cpc_cc is not None and cpc_cc != latest_settings.cpc_cc,
+                daily_budget_cc is not None and daily_budget_cc != latest_settings.daily_budget_cc
+        ]):
                 new_settings = latest_settings
                 new_settings.pk = None  # make a copy of the latest settings
                 if state is not None:
@@ -199,19 +200,22 @@ class AdGroupSourceSettingsWriter(object):
                 if self.can_trigger_action():
                     actionlog.api.set_ad_group_source_settings(new_settings)
                 else:
-                    logger.info('settings=%s on ad_group_source=%s will be triggered when the ad group will be enabled', settings_obj, self.ad_group_source)
+                    logger.info(
+                        'settings=%s on ad_group_source=%s will be triggered when the ad group will be enabled',
+                        settings_obj,
+                        self.ad_group_source
+                    )
         else:
             ssc = consistency.SettingsStateConsistence(self.ad_group_source)
             if not ssc.is_consistent() and self.can_trigger_action():
                 new_settings = latest_settings
                 new_settings.pk = None  # make a copy of the latest settings
                 new_settings.save()
-                logger.info('settings for ad_group_source=%s did not change, but state is inconsistent, triggering actions', self.ad_group_source)
+                logger.info(
+                    'settings for ad_group_source=%s did not change, but state is inconsistent, triggering actions',
+                    self.ad_group_source
+                )
                 actionlog.api.set_ad_group_source_settings(latest_settings)
-
-
-    def _decimal_eq(self, val1, val2):
-        return round(val1, self.DECIMAL_PLACES) == round(val2, self.DECIMAL_PLACES)
 
     def can_trigger_action(self):
         try:
@@ -229,9 +233,7 @@ class AdGroupSourceSettingsWriter(object):
                 .latest('created_dt')
             return latest_settings
         except models.AdGroupSourceSettings.DoesNotExist:
-            latest_settings = models.AdGroupSourceSettings.objects.create(ad_group_source=self.ad_group_source)
-            latest_settings.save()
-            return latest_settings
+            return models.AdGroupSourceSettings(ad_group_source=self.ad_group_source)
 
     def add_to_history(self, change_obj):
         changes_text_parts = []
@@ -256,4 +258,3 @@ class AdGroupSourceSettingsWriter(object):
         new_ad_group_settings.pk = None
         new_ad_group_settings.changes_text = changes_text
         new_ad_group_settings.save()
-
