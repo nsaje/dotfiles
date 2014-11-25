@@ -7,7 +7,8 @@ oneApp.directive('zemCurrencyInput', ['$filter', function($filter) {
         restrict: 'A',
         scope: {
             prefix: '@?',
-            fractionSize: '@?'
+            fractionSize: '@?',
+            replaceTrailingZeros: '=?'
         },
         compile: function compile(tElem, tAttrs) {
             // add attributes if not present
@@ -97,6 +98,10 @@ oneApp.directive('zemCurrencyInput', ['$filter', function($filter) {
                     return integerPart + (decimalPart || '');
                 }
 
+                function formatValue(value) {
+                    return $filter('decimalCurrency')(value, '', scope.fractionSize, scope.replaceTrailingZeros);
+                }
+
                 function getCommaCount(value, caretPos) {
                     var count = value.slice(0, caretPos).match(/,/g) || [];
                     return count.length;
@@ -125,12 +130,14 @@ oneApp.directive('zemCurrencyInput', ['$filter', function($filter) {
                     var value = element.val();
 
                     value = toDecimal(value);
-                    value = $filter('decimalCurrency')(value, scope.prefix, scope.fractionSize);
+                    value = formatValue(value);
 
-                    element.val(value || scope.prefix);
+                    element.val(scope.prefix + value);
                 });
 
                 controller.$formatters.push(fromDecimal);
+                controller.$formatters.push(formatValue);
+
                 controller.$parsers.push(toDecimal);
             };
         }

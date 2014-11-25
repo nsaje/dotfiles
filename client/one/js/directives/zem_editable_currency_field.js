@@ -8,7 +8,8 @@ oneApp.directive('zemEditableCurrencyField', function() {
             onSave: '=',
             value: '=',
             rowId: '=',
-            fractionSize: '='
+            fractionSize: '=',
+            replaceTrailingZeros: '=?'
         },
         templateUrl: '/partials/zem_editable_currency_field.html',
         controller: ['$scope', '$element', '$attrs', '$timeout', '$document', function ($scope, $element, $attrs, $timeout, $document) {
