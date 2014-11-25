@@ -495,8 +495,8 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         return self.create_api_response()
 
 
-class AdGroupSourceNotifications(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash', 'ad_group_source_notifications')
+class AdGroupSourcesLastChange(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash', 'ad_group_source_last_change')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.set_ad_group_source_settings'):
             raise exc.ForbiddenError('Not allowed')
@@ -506,12 +506,12 @@ class AdGroupSourceNotifications(api_common.BaseApiView):
         except models.AdGroup.DoesNotExist:
             raise exc.MissingDataError(message='Requested ad group not found')
 
-        notifications = helpers.get_ad_group_sources_notifications(
+        last_change = helpers.get_ad_group_sources_last_change_dt(
             helpers.get_active_ad_group_sources(models.AdGroup, [ad_group])
         )
 
         return self.create_api_response({
-            'notifications': notifications
+            'last_change': last_change
         })
 
 

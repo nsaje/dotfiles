@@ -307,6 +307,9 @@ class SourcesTable(api_common.BaseApiView):
         }
 
         if ad_group_level and user.has_perm('zemauth.set_ad_group_source_setting'):
+            response['last_change'] = helpers.get_ad_group_sources_last_change_dt(
+                self.level_sources_table.active_ad_group_sources
+            )
             response['notifications'] = helpers.get_ad_group_sources_notifications(
                 self.level_sources_table.active_ad_group_sources
             )
