@@ -434,19 +434,13 @@ class SourcesTable(api_common.BaseApiView):
 
                 row['editable_fields'] = []
                 if user.has_perm('zemauth.set_ad_group_source_settings'):
-                    if source.source_type.available_actions.filter(
-                            action=constants.SourceAction.CAN_UPDATE_STATE
-                    ).exists():
+                    if source.can_update_state():
                         row['editable_fields'].append('status_setting')
 
-                    if source.source_type.available_actions.filter(
-                            action=constants.SourceAction.CAN_UPDATE_CPC
-                    ).exists():
+                    if source.can_update_cpc():
                         row['editable_fields'].append('bid_cpc')
 
-                    if source.source_type.available_actions.filter(
-                            action=constants.SourceAction.CAN_UPDATE_DAILY_BUDGET
-                    ).exists():
+                    if source.can_update_daily_budget():
                         row['editable_fields'].append('daily_budget')
 
                 if user.has_perm('zemauth.set_ad_group_source_settings') and 'bid_cpc' in row['editable_fields']:
