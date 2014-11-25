@@ -407,6 +407,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
                 $scope.isSyncRecent = data.is_sync_recent;
                 $scope.isSyncInProgress = data.is_sync_in_progress;
                 $scope.notifications = data.notifications;
+                $scope.lastChange = data.lastChange;
 
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
 
@@ -694,24 +695,27 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
     pollSyncStatus();
 
-    var pollSourcesNotifications = function () {
+    var pollSourcesLastChange = function () {
         if ($scope.hasPermission('zemauth.set_ad_group_source_settings')) {
-            $scope.notificationTimeout = $timeout(function () {
-                api.adGroupSourcesNotifications.get($state.params.id)
+            $scope.lastChangeTimeout = $timeout(function () {
+                api.adGroupSourcesLastChange.get($state.params.id)
                     .then(function (data) {
-                        $scope.notifications = data.notifications;
+                        if (data.lastChange !== $scope.lastChange) {
+                            $scope.lastChange = data.lastChange;
+                            getTableData();
+                        }
                     })
-                    .finally(function() {
-                        pollSourcesNotifications();
+                    .finally(function () {
+                        pollSourcesLastChange();
                     });
             }, 2000);
         }
     };
 
-    pollSourcesNotifications();
+    pollSourcesLastChange();
 
     $scope.$on('$destroy', function () {
-        $timeout.cancel($scope.notificationTimeout);
+        $timeout.cancel($scope.lastChangeTimeout);
     });
 
     // trigger sync
