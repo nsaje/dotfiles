@@ -412,6 +412,15 @@ class SourceType(models.Model):
         blank=True
     )
 
+    def can_update_state(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_STATE).exists()
+
+    def can_update_cpc(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_CPC).exists()
+
+    def can_update_daily_budget(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_DAILY_BUDGET).exists()
+
     def __str__(self):
         return self.type
 
@@ -435,6 +444,15 @@ class Source(models.Model):
     maintenance = models.BooleanField(default=True)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+
+    def can_update_state(self):
+        return self.source_type.can_update_state()
+
+    def can_update_cpc(self):
+        return self.source_type.can_update_cpc()
+
+    def can_update_daily_budget(self):
+        return self.source_type.can_update_daily_budget()
 
     def __unicode__(self):
         return self.name
@@ -836,7 +854,7 @@ class AdGroupSourceSettings(models.Model):
     )
 
     state = models.IntegerField(
-        default=constants.AdGroupSourceSettingsState.INACTIVE,
+        null=True,
         choices=constants.AdGroupSourceSettingsState.get_choices()
     )
     cpc_cc = models.DecimalField(
