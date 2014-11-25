@@ -54,9 +54,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
         if ($scope.hasPermission('zemauth.all_accounts_sources_view')) {
             return 'main.allAccounts.sources';
         }
-        if ($scope.hasPermission('zemauth.all_accounts_budget_view')) {
-            return 'main.allAccounts.budget';
-        }
 
         // no permissions
         return null;
@@ -84,9 +81,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
         }
         if ($scope.hasPermission('zemauth.account_agency_view')) {
             return 'main.accounts.agency';
-        }
-        if ($scope.hasPermission('zemauth.account_budget_view')) {
-            return 'main.accounts.budget';
         }
 
         // no permissions
@@ -252,20 +246,13 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
                 state = 'main.allAccounts.accounts';
             } else {
                 $scope.accounts.some(function (account) {
-                    if (account.campaigns && account.campaigns.length) {
-                        account.campaigns.some(function (campaign) {
-                            if (campaign.adGroups && campaign.adGroups.length) {
-                                id = campaign.adGroups[0].id;
-                                return true;
-                            }
-                        });
-                    }
+                    id = account.id;
 
                     if (id) {
                         return true;
                     }
                 });
-                state = $scope.getDefaultAdGroupState();
+                state = $scope.getDefaultAccountState();
             }
         }
 
