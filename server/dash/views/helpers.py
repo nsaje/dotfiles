@@ -138,7 +138,7 @@ def get_ad_group_sources_last_change_dt(ad_group_sources):
             current_settings.created_dt
         )
 
-    latest_change =[last_change(ad_group_source) for ad_group_source in ad_group_sources]
+    latest_change = [last_change(ad_group_source) for ad_group_source in ad_group_sources]
     return max([l for l in latest_change if l is not None])
 
 
