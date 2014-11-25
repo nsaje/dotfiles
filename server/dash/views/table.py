@@ -652,6 +652,10 @@ class AdGroupAdsTable(api_common.BaseApiView):
 
         rows = result_pg
 
+        if ad_group in models.AdGroup.demo_objects.all():
+            for i, row in enumerate(rows):
+                row['url'] = 'http://www.example.com/{}/{}'.format(ad_group.name, i)
+
         totals_data = reports.api.filter_by_permissions(reports.api.query(start_date, end_date, ad_group=int(ad_group.id)), request.user)
 
         last_sync = actionlog.sync.AdGroupSync(ad_group).get_latest_success(
