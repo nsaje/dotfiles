@@ -135,10 +135,11 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
     };
 
     $scope.removeUser = function (userId) {
+        var user = getUser(userId);
+        user.requestInProgress = true;
+
         api.accountUsers.remove($state.params.id, userId).then(
             function (userId) {
-                var user = getUser(userId);
-
                 if (user) {
                     user.removed = true;
                     user.saved = false;
@@ -146,18 +147,23 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
 
                 $scope.getSettings(); // updates history
             }
-        );
+        ).finally(function () {
+            user.requestInProgress = false;
+        });
     };
 
     $scope.undoRemove = function (userId) {
         var user = getUser(userId);
+        user.requestInProgress = true;
 
         api.accountUsers.put($state.params.id, {email: user.email}).then(
             function (data) {
                 user.removed = false;
                 $scope.getSettings(); // updates history
             }
-        );
+        ).finally(function () {
+            user.requestInProgress = false;
+        });
     };
 
     $scope.getSettings();

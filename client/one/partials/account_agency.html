@@ -19,7 +19,10 @@
             </label>
             <div class="col-xs-8">
                 <div ng-repeat="user in users" class="form-group existing-user-row">
-                    <label ng-if="user.removed" class="col-xs-6 control-label undo">The user was removed. <a ng-click="undoRemove(user.id)">Undo?</a></label>
+                    <div ng-if="user.removed">
+                        <label class="col-xs-6 control-label undo">The user was removed. <a ng-show="!user.requestInProgress" ng-click="undoRemove(user.id)">Undo?</a></label>
+                        <div class="loader" ng-show="user.requestInProgress"></div>
+                    </div>
                     <div ng-if="!user.removed">
                         <div class="col-xs-6 user-name-col">
     <p class="control-label"><b>{{user.name}} </b>({{user.email}})</p>
@@ -27,7 +30,8 @@
                             <span ng-show="user.saved && !user.emailSent" class="success">This user can now access this account.</span>
                         </div>
                         <div class="col-xs-2">
-                            <button type="button" class="btn btn-default" ng-click="removeUser(user.id)">Remove</button>
+                            <div class="loader" ng-show="user.requestInProgress"></div>
+                            <button ng-show="!user.requestInProgress" type="button" class="btn btn-default" ng-click="removeUser(user.id)">Remove</button>
                         </div>
                     </div>
                 </div>
