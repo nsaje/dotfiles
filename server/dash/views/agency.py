@@ -848,25 +848,26 @@ class AccountUsers(api_common.BaseApiView):
         if form.cleaned_data.get('email') is None:
             self._raise_validation_error(form.errors)
 
-        try:
-            user = ZemUser.objects.get(email__iexact=form.cleaned_data['email'])
+        first_name = form.cleaned_data.get('first_name')
+        last_name = form.cleaned_data.get('last_name')
+        email = form.cleaned_data.get('email')
 
-            if form.cleaned_data.get('last_name') or form.cleaned_data.get('first_name'):
+        try:
+            user = ZemUser.objects.get(email__iexact=email)
+
+            if (first_name == user.first_name and last_name == user.last_name)\
+                    or (not first_name and not last_name):
+                created = False
+            else:
                 self._raise_validation_error(
                     form.errors,
                     message=u'The user with e-mail {} is already registred as \"{}\". Please contact technical support if you want to change the user\'s name or leave first and last names blank if you just want to add access to the account for this user.'.format(user.email, user.get_full_name())
                 )
-
-            created = False
         except ZemUser.DoesNotExist:
             if not is_valid:
                 self._raise_validation_error(form.errors)
 
-            user = ZemUser.objects.create_user(
-                form.cleaned_data['email'],
-                first_name=form.cleaned_data['first_name'],
-                last_name=form.cleaned_data['last_name']
-            )
+            user = ZemUser.objects.create_user(email, first_name=first_name, last_name=last_name)
 
             self._add_user_to_groups(user)
             self._send_email_to_new_user(user, request)
