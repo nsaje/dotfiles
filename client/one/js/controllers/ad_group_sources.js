@@ -423,21 +423,19 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     };
 
     var getDailyStatsMetrics = function () {
-        var metrics = [$scope.chartMetric1, $scope.chartMetric2];
-
-        var values = options.adGroupChartMetrics.map(function (option) {
+        var values = $scope.chartMetricOptions.map(function (option) {
             return option.value;
         });
 
-        if (values.indexOf($scope.chartMetric1) === -1) {
-            metrics.push(constants.chartMetric.CLICKS);
+        if ($scope.chartMetric1 !== 'none' && values.indexOf($scope.chartMetric1) === -1) {
+            $scope.chartMetric1 = constants.chartMetric.CLICKS;
         }
 
-        if (values.indexOf($scope.chartMetric2) === -1) {
-            metrics.push(constants.chartMetric.IMPRESSIONS);
+        if ($scope.chartMetric2 !== 'none' && values.indexOf($scope.chartMetric2) === -1) {
+            $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
         }
 
-        return metrics;
+        return [$scope.chartMetric1, $scope.chartMetric2];
     };
 
     var setChartOptions = function (goals) {
@@ -473,18 +471,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics()).then(
             function (data) {
                 setChartOptions(data.goals);
-            
-                // Select default metrics if selected metrics are not defined
-                var values = $scope.chartMetricOptions.map(function (option) {
-                    return option.value;
-                });
-
-                if (values.indexOf($scope.chartMetric1) === -1) {
-                    $scope.chartMetric1 = constants.chartMetric.CLICKS;
-                }
-                if (values.indexOf($scope.chartMetric2) === -1 && $scope.chartMetric2 !== 'none') {
-                    $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
-                }
 
                 $scope.chartData = data.chartData;
                 $scope.chartGoalMetrics = data.goals;

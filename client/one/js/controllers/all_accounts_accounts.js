@@ -188,6 +188,22 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         });
     };
 
+    var getDailyStatsMetrics = function () {
+        var values = $scope.chartMetricOptions.map(function (option) {
+            return option.value;
+        });
+
+        if ($scope.chartMetric1 !== 'none' && values.indexOf($scope.chartMetric1) === -1) {
+            $scope.chartMetric1 = constants.chartMetric.CLICKS;
+        }
+
+        if ($scope.chartMetric2 !== 'none' && values.indexOf($scope.chartMetric2) === -1) {
+            $scope.chartMetric2 = constants.chartMetric.COST;
+        }
+
+        return [$scope.chartMetric1, $scope.chartMetric2];
+    };
+
     var setChartOptions = function () {
         $scope.chartMetricOptions = options.allAccountsChartMetrics;
 
@@ -200,7 +216,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list($scope.level, null, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true, [$scope.chartMetric1, $scope.chartMetric2]).then(
+        api.dailyStats.list($scope.level, null, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true, getDailyStatsMetrics()).then(
             function (data) {
                 setChartOptions();
                 $scope.chartData = data.chartData;
