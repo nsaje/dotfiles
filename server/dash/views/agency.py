@@ -821,7 +821,7 @@ class AdGroupAgency(api_common.BaseApiView):
 class AccountUsers(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'account_access_users_get')
     def get(self, request, account_id):
-        if not request.user.has_perm('zemauth.account_agency_access_users'):
+        if not request.user.has_perm('zemauth.account_agency_access_permissions'):
             raise exc.MissingDataError()
 
         account = helpers.get_account(request.user, account_id)
@@ -833,7 +833,7 @@ class AccountUsers(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'account_access_users_put')
     def put(self, request, account_id):
-        if not request.user.has_perm('zemauth.account_agency_access_users'):
+        if not request.user.has_perm('zemauth.account_agency_access_permissions'):
             raise exc.MissingDataError()
 
         account = helpers.get_account(request.user, account_id)
@@ -896,7 +896,7 @@ class AccountUsers(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'account_access_users_delete')
     def delete(self, request, account_id, user_id):
-        if not request.user.has_perm('zemauth.account_agency_access_users'):
+        if not request.user.has_perm('zemauth.account_agency_access_permissions'):
             raise exc.MissingDataError()
 
         account = helpers.get_account(request.user, account_id)
