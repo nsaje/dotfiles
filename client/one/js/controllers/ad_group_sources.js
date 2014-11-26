@@ -361,29 +361,31 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
 
                     if(field.indexOf(': Conversions') != -1) {
                         var col_descr = {
-                            'name': field.substr('goal__'.length),
-                            'field': field,
-                            'checked': false,
-                            'type': 'number',
-                            'help': 'Number of completions of the conversion goal',
+                            name: field.substr('goal__'.length),
+                            field: field,
+                            checked: false,
+                            type: 'number',
+                            help: 'Number of completions of the conversion goal',
                             internal: $scope.isPermissionInternal('zemauth.postclick_metrics'),
                             totalRow: true,
                             order: true,
-                            initialOrder: 'desc'
+                            initialOrder: 'desc',
+                            shown: true
                         };
                         $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
                         $scope.columnCategories[$scope.postclickCategoryIndex].fields.push(col_descr.field);
                     } else if(field.indexOf(': Conversion Rate') != -1) {
                         var col_descr = {
-                            'name': field.substr('goal__'.length),
-                            'field': field,
-                            'checked': false,
-                            'type': 'percent',
-                            'help': 'Percentage of visits which resulted in a goal completion',
+                            name: field.substr('goal__'.length),
+                            field: field,
+                            checked: false,
+                            type: 'percent',
+                            help: 'Percentage of visits which resulted in a goal completion',
                             internal: $scope.isPermissionInternal('zemauth.postclick_metrics'),
                             totalRow: true,
                             order: true,
-                            initialOrder: 'desc'
+                            initialOrder: 'desc',
+                            shown: true
                         };
                         $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
                         $scope.columnCategories[$scope.postclickCategoryIndex].fields.push(col_descr.field);
