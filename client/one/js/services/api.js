@@ -172,38 +172,38 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AdGroupSourcesTable() {
+        function convertRow(row) {
+            var convertedRow = {};
 
-        function convertFromApi(data) {
-
-            function convertRow(row) {
-                var converted_row = {};
-                for(var field in row) {
-                    if(field.indexOf('goals') == '0') {
-                        for(var goalName in row['goals']) {
-                            for(var metricName in row['goals'][goalName]) {
-                                if(metricName == 'conversions') {
-                                    converted_row['goal__' + goalName + ': Conversions'] = row['goals'][goalName][metricName];
-                                } else if(metricName == 'conversion_rate') {
-                                    converted_row['goal__' + goalName + ': Conversion Rate'] = row['goals'][goalName][metricName];
-                                }
+            for(var field in row) {
+                if (field === 'goals') {
+                    for(var goalName in row['goals']) {
+                        for(var metricName in row['goals'][goalName]) {
+                            if(metricName == 'conversions') {
+                                convertedRow['goal__' + goalName + ': Conversions'] = row['goals'][goalName][metricName];
+                            } else if(metricName == 'conversion_rate') {
+                                convertedRow['goal__' + goalName + ': Conversion Rate'] = row['goals'][goalName][metricName];
                             }
                         }
-                    } else if (field === 'status') {
-                        converted_row[field] = row[field];
-
-                        if (row[field] === constants.adGroupSettingsState.ACTIVE) {
-                            converted_row.status = 'Active';
-                        } else if (row[field] === constants.adGroupSettingsState.INACTIVE) {
-                            converted_row.status = 'Paused';
-                        } else {
-                            converted_row.status = 'N/A';
-                        }
-                    } else {
-                        converted_row[field] = row[field];
                     }
+                } else if (field === 'status') {
+                    convertedRow[field] = row[field];
+
+                    if (row[field] === constants.adGroupSettingsState.ACTIVE) {
+                        convertedRow.status = 'Active';
+                    } else if (row[field] === constants.adGroupSettingsState.INACTIVE) {
+                        convertedRow.status = 'Paused';
+                    } else {
+                        convertedRow.status = 'N/A';
+                    }
+                } else {
+                    convertedRow[field] = row[field];
                 }
-                return converted_row;
             }
+            return convertedRow;
+        }
+
+        function convertFromApi(data) {
 
             for(var i = 0; i < data.rows.length; i++) {
                 var row = data.rows[i];
