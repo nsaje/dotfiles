@@ -14,6 +14,34 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     $scope.campaign = null;
     $scope.adGroup = null;
 
+    $scope.localStorage = {
+        get: function(key) {
+            if(!localStorageService.get($scope.user.id)) {
+                localStorageService.set($scope.user.id, {});
+            }
+            var value = localStorageService.get($scope.user.id)[key];
+            if(value === undefined) {
+                return null;
+            } else {
+                return value;
+            }
+        },
+        set: function(key, value) {
+            if(!localStorageService.get($scope.user.id)) {
+                localStorageService.set($scope.user.id, {});
+            }
+            var userSettings = localStorageService.get($scope.user.id);
+            userSettings[key] = value;
+            localStorageService.set($scope.user.id, userSettings);
+        },
+        keys: function() {
+            if(!localStorageService.get($scope.user.id)) {
+                localStorageService.set($scope.user.id, {});
+            }
+            return Object.keys(localStorageService.get($scope.user.id));
+        }
+    };
+
     $scope.refreshNavData = function (accounts) {
         $scope.accounts = accounts;
     };
@@ -194,8 +222,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     $scope.setShowArchived = function () {
         if (typeof $location.search().show_archived !== 'undefined') {
             $scope.showArchived = $location.search().show_archived === 'true';
-        } else if (localStorageService.keys().indexOf('main.showArchived') >= 0 && $scope.hasPermission('zemauth.view_archived_entities')) {
-            $scope.showArchived = localStorageService.get('main.showArchived') === 'true';
+        } else if ($scope.localStorage.keys().indexOf('main.showArchived') >= 0 && $scope.hasPermission('zemauth.view_archived_entities')) {
+            $scope.showArchived = $scope.localStorage.get('main.showArchived') === 'true';
         }
     };
 
@@ -296,7 +324,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
         if (oldValue !== newValue) {
             if ($scope.hasPermission('zemauth.view_archived_entities')) {
                 $location.search('show_archived', newValue.toString());
-                localStorageService.set('main.showArchived', newValue.toString());
+                $scope.localStorage.set('main.showArchived', newValue.toString());
             }
         }
     });

@@ -1,6 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', 'localStorageService', function ($scope, $state, $location, $window, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemChartService, localStorageService) {
+oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', function ($scope, $state, $location, $window, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemChartService) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.isIncompletePostclickMetrics = false;
@@ -338,7 +338,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         $scope.order = order;
 
         $location.search('order', $scope.order);
-        localStorageService.set('adGroupSources.order', $scope.order);
+        $scope.localStorage.set('adGroupSources.order', $scope.order);
         getTableData();
     };
 
@@ -519,7 +519,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         if (newValue !== oldValue) {
             $location.search('chart_metric1', $scope.chartMetric1);
 
-            localStorageService.set('adGroupSources.chartMetric1', $scope.chartMetric1);
+            $scope.localStorage.set('adGroupSources.chartMetric1', $scope.chartMetric1);
             if (!hasMetricData($scope.chartMetric1)) {
                 getDailyStats();
             } else {
@@ -533,7 +533,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         if (newValue !== oldValue) {
             $location.search('chart_metric2', $scope.chartMetric2);
 
-            localStorageService.set('adGroupSources.chartMetric2', $scope.chartMetric2);
+            $scope.localStorage.set('adGroupSources.chartMetric2', $scope.chartMetric2);
             if (!hasMetricData($scope.chartMetric2)) {
                 getDailyStats();
             } else {
@@ -560,10 +560,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
     });
 
     $scope.init = function() {
-        var chartMetric1 = $location.search().chart_metric1 || localStorageService.get('adGroupSources.chartMetric1') || $scope.chartMetric1;
-        var chartMetric2 = $location.search().chart_metric2 || localStorageService.get('adGroupSources.chartMetric2') || $scope.chartMetric2;
+        var chartMetric1 = $location.search().chart_metric1 || $scope.localStorage.get('adGroupSources.chartMetric1') || $scope.chartMetric1;
+        var chartMetric2 = $location.search().chart_metric2 || $scope.localStorage.get('adGroupSources.chartMetric2') || $scope.chartMetric2;
         var chartHidden = $location.search().chart_hidden;
-        var order = $location.search().order || localStorageService.get('adGroupSources.order') || $scope.order;
+        var order = $location.search().order || $scope.localStorage.get('adGroupSources.order') || $scope.order;
 
         var data = $scope.adGroupData[$state.params.id];
         var sourceIds = $location.search().source_ids || (data && data.sourceIds && data.sourceIds.join(','));

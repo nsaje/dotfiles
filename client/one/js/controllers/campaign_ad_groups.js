@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'localStorageService', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', '$window', function ($location, $scope, $state, $timeout, api, localStorageService, zemCustomTableColsService, zemPostclickMetricsService, zemChartService, $window) {
+oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', '$window', function ($location, $scope, $state, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemChartService, $window) {
     $scope.getTableDataRequestInProgress = false;
     $scope.addGroupRequestInProgress = false;
     $scope.isSyncInProgress = false;
@@ -232,7 +232,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         if (newValue !== oldValue) {
             getDailyStats();
             $location.search('chart_metric1', $scope.chartMetric1);
-            localStorageService.set('campaignAdGroups.chartMetric1', $scope.chartMetric1);
+            $scope.localStorage.set('campaignAdGroups.chartMetric1', $scope.chartMetric1);
         }
     });
 
@@ -240,7 +240,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         if (newValue !== oldValue) {
             getDailyStats();
             $location.search('chart_metric2', $scope.chartMetric2);
-            localStorageService.set('campaignAdGroups.chartMetric2', $scope.chartMetric2);
+            $scope.localStorage.set('campaignAdGroups.chartMetric2', $scope.chartMetric2);
         }
     });
 
@@ -344,7 +344,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         $scope.order = order;
 
         $location.search('order', $scope.order);
-        localStorageService.set('campaignAdGroups.order', $scope.order);
+        $scope.localStorage.set('campaignAdGroups.order', $scope.order);
         getTableData();
     };
 
@@ -393,10 +393,10 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     });
 
     $scope.init = function() {
-        var chartMetric1 = $location.search().chart_metric1 || localStorageService.get('campaignAdGroups.chartMetric1') || $scope.chartMetric1;
-        var chartMetric2 = $location.search().chart_metric2 || localStorageService.get('campaignAdGroups.chartMetric2') || $scope.chartMetric2;
+        var chartMetric1 = $location.search().chart_metric1 || $scope.localStorage.get('campaignAdGroups.chartMetric1') || $scope.chartMetric1;
+        var chartMetric2 = $location.search().chart_metric2 || $scope.localStorage.get('campaignAdGroups.chartMetric2') || $scope.chartMetric2;
         var chartHidden = $location.search().chart_hidden;
-        var order = $location.search().order || localStorageService.get('campaignAdGroups.order') || $scope.order;
+        var order = $location.search().order || $scope.localStorage.get('campaignAdGroups.order') || $scope.order;
 
         var data = $scope.adGroupData[$state.params.id];
         var adGroupIds = $location.search().ad_group_ids || (data && data.adGroupIds && data.adGroupIds.join(','));

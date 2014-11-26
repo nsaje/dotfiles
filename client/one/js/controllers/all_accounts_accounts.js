@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'localStorageService', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', function ($scope, $state, $location, $window, $timeout, api, localStorageService, zemCustomTableColsService, zemPostclickMetricsService, zemChartService) {
+oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', function ($scope, $state, $location, $window, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemChartService) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.requestInProgress = false;
@@ -232,7 +232,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         $scope.order = order;
 
         $location.search('order', $scope.order);
-        localStorageService.set('allAccountsAccounts.order', $scope.order);
+        $scope.localStorage.set('allAccountsAccounts.order', $scope.order);
         getTableData();
     };
 
@@ -291,7 +291,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         if (newValue !== oldValue) {
             getDailyStats();
             $location.search('chart_metric1', $scope.chartMetric1);
-            localStorageService.set('allAccountsAccounts.chartMetric1', $scope.chartMetric1);
+            $scope.localStorage.set('allAccountsAccounts.chartMetric1', $scope.chartMetric1);
         }
     });
 
@@ -305,7 +305,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         if (newValue !== oldValue) {
             getDailyStats();
             $location.search('chart_metric2', $scope.chartMetric2);
-            localStorageService.set('allAccountsAccounts.chartMetric2', $scope.chartMetric2);
+            $scope.localStorage.set('allAccountsAccounts.chartMetric2', $scope.chartMetric2);
         }
     });
 
@@ -364,7 +364,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         $scope.pagination.sizeTemp = '';
 
         $location.search('size', $scope.pagination.size);
-        localStorageService.set('allAccountsAccounts.paginationSize', $scope.pagination.size);
+        $scope.localStorage.set('allAccountsAccounts.paginationSize', $scope.pagination.size);
         $scope.loadPage();
     };
 
@@ -385,12 +385,12 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     };
 
     $scope.init = function() {
-        var chartMetric1 = $location.search().chart_metric1 || localStorageService.get('allAccountsAccounts.chartMetric1') || $scope.chartMetric1;
-        var chartMetric2 = $location.search().chart_metric2 || localStorageService.get('allAccountsAccounts.chartMetric2') || $scope.chartMetric2;
+        var chartMetric1 = $location.search().chart_metric1 || $scope.localStorage.get('allAccountsAccounts.chartMetric1') || $scope.chartMetric1;
+        var chartMetric2 = $location.search().chart_metric2 || $scope.localStorage.get('allAccountsAccounts.chartMetric2') || $scope.chartMetric2;
         var chartHidden = $location.search().chart_hidden;
-        var size = $location.search().size || localStorageService.get('allAccountsAccounts.paginationSize') || $scope.sizeRange[0];
+        var size = $location.search().size || $scope.localStorage.get('allAccountsAccounts.paginationSize') || $scope.sizeRange[0];
         var page = $location.search().page;
-        var order = $location.search().order || localStorageService.get('allAccountsAccounts.order') || $scope.order;
+        var order = $location.search().order || $scope.localStorage.get('allAccountsAccounts.order') || $scope.order;
 
         setChartOptions();
 
