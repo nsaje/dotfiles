@@ -307,6 +307,9 @@ class SourcesTable(api_common.BaseApiView):
         }
 
         if ad_group_level and user.has_perm('zemauth.set_ad_group_source_setting'):
+            response['last_change'] = helpers.get_ad_group_sources_last_change_dt(
+                self.level_sources_table.active_ad_group_sources
+            )
             response['notifications'] = helpers.get_ad_group_sources_notifications(
                 self.level_sources_table.active_ad_group_sources
             )
@@ -662,6 +665,10 @@ class AdGroupAdsTable(api_common.BaseApiView):
             utils.pagination.paginate(result, page, size)
 
         rows = result_pg
+
+        if ad_group in models.AdGroup.demo_objects.all():
+            for i, row in enumerate(rows):
+                row['url'] = 'http://www.example.com/{}/{}'.format(ad_group.name, i)
 
         totals_data = reports.api.filter_by_permissions(reports.api.query(start_date, end_date, ad_group=int(ad_group.id)), request.user)
 

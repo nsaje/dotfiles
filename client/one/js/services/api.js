@@ -176,7 +176,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         function convertFromApi(data) {
 
             function convertRow(row) {
-                var converted_row = {}
+                var converted_row = {};
                 for(var field in row) {
                     if(field.indexOf('goals') == '0') {
                         for(var goalName in row['goals']) {
@@ -210,9 +210,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 data.rows[i] = convertRow(row);
             }
             data.totals = convertRow(data.totals);
-            
+            data.lastChange = data.last_change;
+
             return data;
-        };
+        }
 
         this.get = function (id, startDate, endDate, order) {
             var deferred = $q.defer();
@@ -1585,17 +1586,23 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
-    function AdGroupSourcesNotifications() {
+    function AdGroupSourcesLastChange() {
+        function convertFromApi (data) {
+            return {
+                lastChange: data.last_change
+            };
+        }
+
         this.get = function (adGroupId) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/sources/notifications/';
+            var url = '/api/ad_groups/' + adGroupId + '/sources/last_change/';
 
             $http.get(url).
                 success(function (data) {
                     var resource;
 
                     if (data && data.data) {
-                        resource = data.data;
+                        resource = convertFromApi(data.data);
                     }
 
                     deferred.resolve(resource);
@@ -1641,6 +1648,6 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         allAccountsBudget: new AllAccountsBudget(),
         accountUsers: new AccountUsers(),
         adGroupSourceSettings: new AdGroupSourceSettings(),
-        adGroupSourcesNotifications: new AdGroupSourcesNotifications()
+        adGroupSourcesLastChange: new AdGroupSourcesLastChange()
     };
 }]);
