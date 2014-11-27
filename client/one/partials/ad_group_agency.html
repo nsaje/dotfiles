@@ -52,7 +52,7 @@
                     </tr>
 
                     <tr ng-repeat="item in history | orderBy:orderField:orderReverse">
-                        <td>{{ (item.datetime | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
+                        <td class="no-wrap">{{ (item.datetime | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
                         <td>{{ item.changedBy }}</td>
                         <td zem-html-popover="'popoverContent.html'" popover-trigger="mouseenter" popover-append-to-body="true">{{ item.changesText }}</td>
                     </tr>
