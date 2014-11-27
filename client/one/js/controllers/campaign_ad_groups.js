@@ -249,7 +249,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             return option.value;
         });
 
-        if ($scope.chartMetric1 !== 'none' && values.indexOf($scope.chartMetric1) === -1) {
+        if (values.indexOf($scope.chartMetric1) === -1) {
             $scope.chartMetric1 = constants.chartMetric.CLICKS;
         }
 

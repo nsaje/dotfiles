@@ -193,7 +193,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             return option.value;
         });
 
-        if ($scope.chartMetric1 !== 'none' && values.indexOf($scope.chartMetric1) === -1) {
+        if (values.indexOf($scope.chartMetric1) === -1) {
             $scope.chartMetric1 = constants.chartMetric.CLICKS;
         }
 

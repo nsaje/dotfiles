@@ -15,30 +15,22 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     $scope.adGroup = null;
 
     $scope.localStorage = {
-        get: function(key) {
+        getUserSettings: function() {
             if(!localStorageService.get($scope.user.id)) {
                 localStorageService.set($scope.user.id, {});
             }
-            var value = localStorageService.get($scope.user.id)[key];
-            if(value === undefined) {
-                return null;
-            } else {
-                return value;
-            }
+            return localStorageService.get($scope.user.id);
+        },
+        get: function(key) {
+            return this.getUserSettings()[key];
         },
         set: function(key, value) {
-            if(!localStorageService.get($scope.user.id)) {
-                localStorageService.set($scope.user.id, {});
-            }
-            var userSettings = localStorageService.get($scope.user.id);
+            var userSettings = this.getUserSettings();
             userSettings[key] = value;
             localStorageService.set($scope.user.id, userSettings);
         },
         keys: function() {
-            if(!localStorageService.get($scope.user.id)) {
-                localStorageService.set($scope.user.id, {});
-            }
-            return Object.keys(localStorageService.get($scope.user.id));
+            return Object.keys(this.getUserSettings());
         }
     };
 
