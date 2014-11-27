@@ -85,8 +85,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         }
     ];
 
-    $scope.postclickCategoryIndex = 1;
-
     $scope.columns = [
         {
             name: '',
@@ -344,65 +342,14 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         getTableData();
     };
 
-    $scope.addGoalColumns = function(rows) {
-        var alreadyAdded = function(field) {
-            for(var i = 0; i < $scope.columns.length; i++) {
-                if(field == $scope.columns[i]['field']){
-                    return true;
-                }
-            }
-            return false;
-        };
-
-        if($scope.hasPermission('zemauth.postclick_metrics')) {
-            for(var i = 0; i < rows.length; i++) {
-                for(var field in rows[i]) {
-                    if(alreadyAdded(field)) {
-                        continue;
-                    }
-
-                    if(field.indexOf(': Conversions') != -1) {
-                        var col_descr = {
-                            name: field.substr('goal__'.length),
-                            field: field,
-                            checked: false,
-                            type: 'number',
-                            help: 'Number of completions of the conversion goal',
-                            internal: $scope.isPermissionInternal('zemauth.postclick_metrics'),
-                            totalRow: true,
-                            order: true,
-                            initialOrder: 'desc',
-                            shown: true
-                        };
-                        $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
-                        $scope.columnCategories[$scope.postclickCategoryIndex].fields.push(col_descr.field);
-                    } else if(field.indexOf(': Conversion Rate') != -1) {
-                        var col_descr = {
-                            name: field.substr('goal__'.length),
-                            field: field,
-                            checked: false,
-                            type: 'percent',
-                            help: 'Percentage of visits which resulted in a goal completion',
-                            internal: $scope.isPermissionInternal('zemauth.postclick_metrics'),
-                            totalRow: true,
-                            order: true,
-                            initialOrder: 'desc',
-                            shown: true
-                        };
-                        $scope.columns.splice($scope.columns.length - 1, 0, col_descr);
-                        $scope.columnCategories[$scope.postclickCategoryIndex].fields.push(col_descr.field);
-                    }
-                }
-            }
-        }
-    };
-
     var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
         api.adGroupSourcesTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
-                $scope.addGoalColumns(data.rows);
+                if($scope.hasPermission('zemauth.postclick_metrics')) {
+                    zemPostclickMetricsService.insertGoalColumns($scope.columns, data.rows, $scope.columnCategories[1], $scope.isPermissionInternal('zemauth.postclick_metrics'));
+                }
 
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;

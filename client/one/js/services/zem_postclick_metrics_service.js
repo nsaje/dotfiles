@@ -91,8 +91,60 @@ oneApp.factory('zemPostclickMetricsService', function() {
         }));
     }
 
+    function insertGoalColumns(columns, rows, postclickCategory, isInternal) {
+        for(var i = 0; i < rows.length; i++) {
+            for(var field in rows[i]) {
+                if(columnsContainField(columns, field)) {
+                    continue;
+                }
+
+                if(field.indexOf(': Conversions') != -1) {
+                    var columnDescription = {
+                        name: field.substr('goal__'.length),
+                        field: field,
+                        checked: false,
+                        type: 'number',
+                        help: 'Number of completions of the conversion goal',
+                        internal: isInternal,
+                        totalRow: true,
+                        order: true,
+                        initialOrder: 'desc',
+                        shown: true
+                    };
+                    columns.splice(columns.length - 1, 0, columnDescription);
+                    postclickCategory.fields.push(columnDescription.field);
+                } else if(field.indexOf(': Conversion Rate') != -1) {
+                    var columnDescription = {
+                        name: field.substr('goal__'.length),
+                        field: field,
+                        checked: false,
+                        type: 'percent',
+                        help: 'Percentage of visits which resulted in a goal completion',
+                        internal: isInternal,
+                        totalRow: true,
+                        order: true,
+                        initialOrder: 'desc',
+                        shown: true
+                    };
+                    columns.splice(columns.length - 1, 0, columnDescription);
+                    postclickCategory.fields.push(columnDescription.field);
+                }
+            }
+        }
+    };
+
+    function columnsContainField(columns, field) {
+        for(var i = 0; i < columns.length; i++) {
+            if(field == columns[i]['field']){
+                return true;
+            }
+        }
+        return false;
+    };
+
     return {
         insertColumns: insertColumns,
-        concatChartOptions: concatChartOptions
+        concatChartOptions: concatChartOptions,
+        insertGoalColumns: insertGoalColumns
     }
 });

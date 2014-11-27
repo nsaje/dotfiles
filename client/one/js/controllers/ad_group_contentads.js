@@ -176,6 +176,10 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
 
         api.adGroupAdsTable.get($state.params.id, $scope.pagination.currentPage, $scope.pagination.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
+                if($scope.hasPermission('zemauth.postclick_metrics')) {
+                    zemPostclickMetricsService.insertGoalColumns($scope.columns, data.rows, $scope.columnCategories[1], $scope.isPermissionInternal('zemauth.postclick_metrics'));
+                }
+
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
                 $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
@@ -220,7 +224,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         return [$scope.chartMetric1, $scope.chartMetric2];
     };
 
-    var setChartOptions = function () {
+    var setChartOptions = function (goals) {
         $scope.chartMetricOptions = options.adGroupChartMetrics;
 
         if ($scope.hasPermission('zemauth.postclick_metrics')) {
@@ -229,13 +233,35 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
                 $scope.isPermissionInternal('zemauth.postclick_metrics')
             );
         }
+
+        if (goals) {
+            $scope.chartMetricOptions = $scope.chartMetricOptions.concat(Object.keys(goals).map(function (goalId) {
+                var typeName = {
+                    'conversions': 'Conversions',
+                    'conversion_rate': 'Conversion Rate'
+                }[goals[goalId].type];
+
+                if (typeName === undefined) {
+                    return;
+                }
+
+                return {
+                    name: goals[goalId].name + ': ' + typeName,
+                    value: goalId,
+                    internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+                }
+            }).filter(function (option) {
+                return option !== undefined;
+            }));
+        }
     };
 
     var getDailyStats = function () {
         api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true, getDailyStatsMetrics()).then(
             function (data) {
-                setChartOptions();
+                setChartOptions(data.goals);
                 $scope.chartData = data.chartData;
+                $scope.chartGoalMetrics = data.goals;
             },
             function (data) {
                 // error
