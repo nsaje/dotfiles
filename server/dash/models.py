@@ -412,6 +412,14 @@ class SourceType(models.Model):
         blank=True
     )
 
+    min_cpc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Minimum CPC'
+    )
+
     def can_update_state(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_STATE).exists()
 

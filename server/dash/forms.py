@@ -97,6 +97,17 @@ class AdGroupSourceSettingsCpcForm(forms.Form):
         }
     )
 
+    def __init__(self, *args, **kwargs):
+        self.ad_group_source = kwargs.pop('ad_group_source')
+        super(AdGroupSourceSettingsCpcForm, self).__init__(*args, **kwargs)
+
+    def clean_cpc_cc(self):
+        cpc_cc = self.cleaned_data.get('cpc_cc')
+        min_cpc = self.ad_group_source.source.source_type.min_cpc
+
+        if min_cpc is not None and cpc_cc < min_cpc:
+            raise forms.ValidationError('Minimum CPC is ${}'.format(min_cpc))
+
 
 class AdGroupSourceSettingsDailyBudgetForm(forms.Form):
     daily_budget_cc = forms.DecimalField(

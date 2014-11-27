@@ -475,7 +475,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'state' in resource and not state_form.is_valid():
             errors.update(state_form.errors)
 
-        cpc_form = forms.AdGroupSourceSettingsCpcForm(resource)
+        cpc_form = forms.AdGroupSourceSettingsCpcForm(resource, ad_group_source=ad_group_source)
         if 'cpc_cc' in resource and not cpc_form.is_valid():
             errors.update(cpc_form.errors)
 
