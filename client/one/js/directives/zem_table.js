@@ -62,7 +62,7 @@ oneApp.directive('zemTable', ['config', function(config) {
                 }
 
                 return editableFields.indexOf(field) !== -1;
-            }
+            };
         }]
     };
 }]);
