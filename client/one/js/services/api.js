@@ -91,26 +91,26 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
     function SourcesTable() {
         function convertRow(row) {
-            var converted_row = {}
+            var convertedRow = {}
 
             for(var field in row) {
                 if(field.indexOf('goals') == '0') {
                     convertGoals(row, convertedRow); 
                 } else if (field === 'status') {
-                    converted_row[field] = row[field];
+                    convertedRow[field] = row[field];
 
                     if (row[field] === constants.adGroupSettingsState.ACTIVE) {
-                        converted_row.status = 'Active';
+                        convertedRow.status = 'Active';
                     } else if (row[field] === constants.adGroupSettingsState.INACTIVE) {
-                        converted_row.status = 'Paused';
+                        convertedRow.status = 'Paused';
                     } else {
-                        converted_row.status = 'N/A';
+                        convertedRow.status = 'N/A';
                     }
                 } else {
-                    converted_row[field] = row[field];
+                    convertedRow[field] = row[field];
                 }
             }
-            return converted_row;
+            return convertedRow;
         }
 
         function convertFromApi(data) {
