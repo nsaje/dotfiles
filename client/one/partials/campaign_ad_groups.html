@@ -10,11 +10,11 @@
                 <div class="loader" ng-show="addGroupRequestInProgress"></div>
             </div>
             <div class="button-bar-item export-container">
-                <select ui-select2="{minimumResultsForSearch: -1}" ng-model="exportType" ng-change="downloadReport()" data-placeholder="Download Report">
-                    <option value=""></option>
-                    <option value="csv">CSV by day</option>
-                    <option value="excel">Excel by day</option>
-                </select>
+                <zem-export
+                    start-date="dateRange.startDate"
+                    end-date="dateRange.endDate"
+                    base-url="'api/campaigns/' + $state.params.id + '/ad_groups/'">
+                </zem-export>
             </div>
 
             <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories"></zem-custom-table-cols>

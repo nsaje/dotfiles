@@ -136,35 +136,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         }, true);
     };
 
-    $scope.exportSelect2Config = {
-        minimumResultsForSearch: -1,
-        formatResult: function (object) {
-            if (!object.disabled) {
-                return angular.element(document.createElement('span')).text(object.text);
-            }
-
-            var popoverEl = angular.element(document.createElement('div'));
-
-            popoverEl.attr('popover', 'There is too much data to export. Please choose a smaller date range.');
-            popoverEl.attr('popover-trigger', 'mouseenter');
-            popoverEl.attr('popover-append-to-body', 'true');
-            popoverEl.text(object.text);
-
-            return $compile(popoverEl)($scope);
-        },
-        sortResults: function (results) {
-            // used to set disabled property on results
-            var numDays = $scope.dateRange.endDate.diff($scope.dateRange.startDate, 'days');
-
-            return results.map(function (result) {
-                if (result.id === 'excel' && ($scope.pagination.count * numDays) > 7000) {
-                    result.disabled = true;
-                }
-                return result;
-            });
-        }
-    };
-
     $scope.$watch('isChartShown', function (newValue, oldValue) {
         zemChartService.save('zemChart', newValue);
     });
@@ -397,13 +368,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         $scope.loadPage();
     };
 
-    // export
-    $scope.downloadReport = function() {
-        $window.open('api/ad_groups/' + $state.params.id + '/contentads/export/?type=' + $scope.exportType + '&start_date=' + $scope.dateRange.startDate.format() + '&end_date=' + $scope.dateRange.endDate.format(), '_blank');
-        $scope.exportType = '';
-    };
-
-    
     var pollSyncStatus = function() {
         if($scope.isSyncInProgress){
             $timeout(function() {
@@ -434,6 +398,17 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         $scope.isSyncInProgress = true;
         api.adGroupSync.get($state.params.id);
     }
+
+    $scope.getDisabledExportOptions = function() {
+        var results = [];
+        var numDays = $scope.dateRange.endDate.diff($scope.dateRange.startDate, 'days');
+
+        if (($scope.pagination.count * numDays) > 7000) {
+            results.push('excel');
+        }
+
+        return results;
+    };
 
     $scope.init();
 }]);

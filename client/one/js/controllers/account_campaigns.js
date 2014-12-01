@@ -506,10 +506,5 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
         }
     });
 
-    $scope.downloadReport = function() {
-        $window.open('api/accounts/' + $state.params.id + '/campaigns/export/?type=' + $scope.exportType + '&start_date=' + $scope.dateRange.startDate.format() + '&end_date=' + $scope.dateRange.endDate.format(), '_blank');
-        $scope.exportType = '';
-    };
-
     $scope.init();
 }]);

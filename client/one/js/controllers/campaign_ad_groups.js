@@ -467,10 +467,5 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         }
     });
 
-    $scope.downloadReport = function() {
-        $window.open('api/campaigns/' + $state.params.id + '/ad_groups/export/?type=' + $scope.exportType + '&start_date=' + $scope.dateRange.startDate.format() + '&end_date=' + $scope.dateRange.endDate.format(), '_blank');
-        $scope.exportType = '';
-    };
-
     $scope.init();
 }]);

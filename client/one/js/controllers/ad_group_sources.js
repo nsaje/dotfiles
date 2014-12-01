@@ -564,12 +564,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$wind
         getSources();
     };
 
-    // export
-    $scope.downloadReport = function() {
-        $window.open('api/ad_groups/' + $state.params.id + '/sources/export/?type=' + $scope.exportType + '&start_date=' + $scope.dateRange.startDate.format() + '&end_date=' + $scope.dateRange.endDate.format(), '_blank');
-        $scope.exportType = '';
-    };
-
     var getSources = function () {
         if (!$scope.hasPermission('zemauth.ad_group_sources_add_source')) {
             return;

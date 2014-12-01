@@ -1,0 +1,9 @@
+<select ui-select2="config"
+        ng-model="exportType"
+        ng-change="downloadReport()"
+        data-placeholder="Download Report"
+        class="export">
+    <option value=""></option>
+    <option value="csv">CSV by day</option>
+    <option value="excel">Excel by day</option>
+</select>
