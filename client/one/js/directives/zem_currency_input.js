@@ -32,29 +32,18 @@ oneApp.directive('zemCurrencyInput', ['$filter', function($filter) {
 
                 decimalRegex = new RegExp('\\.[0-9]{0,' + scope.fractionSize + '}');
                 
-                function getCaretPos(element) {
-                    if (element.selectionStart) {
-                        return element.selectionStart;
-                    }
+                function setCaretPos(elem, caretPosStart, caretPosEnd) {
+                    if(elem) {
+                        if(elem.selectionStart !== undefined) {
+                            elem.focus();
 
-                    return 0;
-                }
-
-                function setCaretPos(elem, caretPos) {
-                    if(elem !== null) {
-                        if(elem.createTextRange) {
-                            var range = elem.createTextRange();
-                            range.move('character', caretPos);
-                            range.select();
+                            if (!caretPosEnd) {
+                                caretPosEnd = caretPosStart;
+                            }
+                            elem.setSelectionRange(caretPosStart, caretPosEnd);
                         }
                         else {
-                            if(elem.selectionStart) {
-                                elem.focus();
-                                elem.setSelectionRange(caretPos, caretPos);
-                            }
-                            else {
-                                elem.focus();
-                            }
+                            elem.focus();
                         }
                     }
                 }
@@ -99,6 +88,10 @@ oneApp.directive('zemCurrencyInput', ['$filter', function($filter) {
                 }
 
                 function formatValue(value) {
+                    if (!value || isNaN(value)) {
+                        value = 0;
+                    }
+
                     return $filter('decimalCurrency')(value, '', scope.fractionSize, scope.replaceTrailingZeros);
                 }
 
@@ -109,7 +102,7 @@ oneApp.directive('zemCurrencyInput', ['$filter', function($filter) {
 
                 element.bind('input', function(e) {
                     var value = element.val();
-                    var caretPos = getCaretPos(element[0]);
+                    var caretPos = element[0].selectionStart;
                     var decimalValue = toDecimal(value);
                     var formattedValue = fromDecimal(decimalValue);
 
@@ -124,6 +117,16 @@ oneApp.directive('zemCurrencyInput', ['$filter', function($filter) {
                     }
 
                     setCaretPos(element[0], caretPos);
+                });
+
+                element.bind('keydown click focus', function() {
+                    setTimeout(function() {
+                        var el = element[0];
+
+                        if (el.selectionStart === 0) {
+                            setCaretPos(el, scope.prefix.length, el.selectionEnd);
+                        }
+                    }, 0);
                 });
 
                 element.bind('blur', function(e) {
