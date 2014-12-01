@@ -290,9 +290,11 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         if (newValue.startDate.isSame(oldValue.startDate) && newValue.endDate.isSame(oldValue.endDate)) {
             return;
         }
+        console.log('asdasdasd');
 
         getDailyStats();
         getTableData();
+        getDisabledExportOptions();
     });
 
     $scope.init = function() {

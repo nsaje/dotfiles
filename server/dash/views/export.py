@@ -190,7 +190,27 @@ class AdGroupAdsExportAllowed(api_common.BaseApiView):
         ).count()
 
         return self.create_api_response({
-            'excel': row_count <= 7000,
+            'excel': row_count <= 10000,
+            'csv': True
+        })
+
+
+class CampaignAdGroupsExportAllowed(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campiagn_ad_group_export_allowed_get')
+    def get(self, request, campaign_id):
+        campaign = helpers.get_ad_group(request.user, campaign_id)
+
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
+        row_count = reports_models.ArticleStats.objects.filter(
+            ad_group__campaign=campaign,
+            datetime__gte=start_date,
+            datetime__lte=end_date
+        ).count()
+
+        return self.create_api_response({
+            'excel': row_count <= 10000,
             'csv': True
         })
 
