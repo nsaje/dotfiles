@@ -158,6 +158,11 @@ def get_ad_group_sources_notifications(ad_group_sources):
             order_by('ad_group_source_id', '-created_dt')
         latest_state = latest_state_qs[0] if latest_state_qs.exists() else None
 
+        if ags.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE and\
+           latest_settings and latest_settings.state == constants.AdGroupSettingsState.ACTIVE:
+            notification += 'This media source is enabled but will not run ' +\
+                            'until you enable the ad group in the Settings.'
+
         if ags.actionlog_set.filter(
                 state=actionlog.constants.ActionState.WAITING,
                 action=actionlog.constants.Action.SET_CAMPAIGN_STATE
