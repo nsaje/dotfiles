@@ -306,7 +306,7 @@ class SourcesTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics,
         }
 
-        if ad_group_level and user.has_perm('zemauth.set_ad_group_source_setting'):
+        if ad_group_level and user.has_perm('zemauth.set_ad_group_source_settings'):
             response['last_change'] = helpers.get_ad_group_sources_last_change_dt(
                 self.level_sources_table.active_ad_group_sources
             )
