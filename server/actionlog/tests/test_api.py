@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import datetime
 import httplib
 import urlparse
@@ -85,6 +87,8 @@ class ActionLogApiTestCase(TestCase):
 
         self.credentials_encription_key = settings.CREDENTIALS_ENCRYPTION_KEY
         settings.CREDENTIALS_ENCRYPTION_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+        self.maxDiff = None
 
     def tearDown(self):
         settings.CREDENTIALS_ENCRYPTION_KEY = self.credentials_encription_key
@@ -264,7 +268,9 @@ class ActionLogApiTestCase(TestCase):
             'args': {
                 'name': name,
                 'extra': {
-                    'tracking_code': urllib.urlencode(ad_group_source.get_tracking_ids())
+                    'tracking_code': urllib.urlencode(ad_group_source.get_tracking_ids()),
+                    'target_regions': [],
+                    'target_devices': []
                 },
             },
             'callback_url': callback
@@ -293,7 +299,9 @@ class ActionLogApiTestCase(TestCase):
                 'extra': {
                     'iab_category': 'IAB24',
                     'exclusive_blog_ids': [123456],
-                    'tracking_code': urllib.urlencode(ad_group_source_extra.get_tracking_ids())
+                    'tracking_code': urllib.urlencode(ad_group_source_extra.get_tracking_ids()),
+                    'target_devices': ['desktop', 'mobile'],
+                    'target_regions': ['UK', 'US', 'CA']
                 },
             },
             'callback_url': callback
