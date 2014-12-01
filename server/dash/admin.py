@@ -287,7 +287,7 @@ class SourceAdmin(admin.ModelAdmin):
 
 
 class SourceTypeAdmin(admin.ModelAdmin):
-    fields = ('type', 'available_actions', 'min_cpc')
+    fields = ('type', 'available_actions', 'min_cpc', 'min_daily_budget')
 
     def get_readonly_fields(self, request, obj=None):
         if obj:

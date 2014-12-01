@@ -87,12 +87,12 @@ class AdGroupSettingsForm(forms.Form):
 
 class AdGroupSourceSettingsCpcForm(forms.Form):
     cpc_cc = forms.DecimalField(
-        min_value=0.03,
+        min_value=0.001,
         max_value=2,
         decimal_places=4,
         error_messages={
-            'required': 'Minimum CPC is $0.03.',
-            'min_value': 'Minimum CPC is $0.03.',
+            'required': 'Minimum CPC is $0.001.',
+            'min_value': 'Minimum CPC is $0.001.',
             'max_value': 'Maximum CPC is $2.00.'
         }
     )
@@ -111,13 +111,24 @@ class AdGroupSourceSettingsCpcForm(forms.Form):
 
 class AdGroupSourceSettingsDailyBudgetForm(forms.Form):
     daily_budget_cc = forms.DecimalField(
-        min_value=10,
+        min_value=1,
         decimal_places=4,
         error_messages={
-            'required': 'Please provide budget of at least $10.00.',
-            'min_value': 'Please provide budget of at least $10.00.'
+            'required': 'Please provide budget of at least $1.',
+            'min_value': 'Please provide budget of at least $1.'
         }
     )
+
+    def __init__(self, *args, **kwargs):
+        self.ad_group_source = kwargs.pop('ad_group_source')
+        super(AdGroupSourceSettingsDailyBudgetForm, self).__init__(*args, **kwargs)
+
+    def clean_daily_budget_cc(self):
+        daily_budget_cc = self.cleaned_data.get('daily_budget_cc')
+        min_daily_budget = self.ad_group_source.source.source_type.min_daily_budget
+
+        if min_daily_budget is not None and daily_budget_cc < min_daily_budget:
+            raise forms.ValidationError('Please provide budget of at least ${}.'.format(min_daily_budget))
 
 
 class AdGroupSourceSettingsStateForm(forms.Form):

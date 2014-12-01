@@ -479,7 +479,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'cpc_cc' in resource and not cpc_form.is_valid():
             errors.update(cpc_form.errors)
 
-        daily_budget_form = forms.AdGroupSourceSettingsDailyBudgetForm(resource)
+        daily_budget_form = forms.AdGroupSourceSettingsDailyBudgetForm(resource, ad_group_source=ad_group_source)
         if 'daily_budget_cc' in resource and not daily_budget_form.is_valid():
             errors.update(daily_budget_form.errors)
 

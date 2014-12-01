@@ -420,6 +420,14 @@ class SourceType(models.Model):
         verbose_name='Minimum CPC'
     )
 
+    min_daily_budget = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Minimum Daily Budget'
+    )
+
     def can_update_state(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_STATE).exists()
 
