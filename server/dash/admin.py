@@ -471,11 +471,23 @@ class DemoAdGroupRealAdGroupAdminForm(forms.ModelForm):
 
 class DemoAdGroupRealAdGroupAdmin(admin.ModelAdmin):
     list_display = (
-        'demo_ad_group',
-        'real_ad_group',
+        'demo_ad_group_',
+        'real_ad_group_',
         'multiplication_factor'
     )
     form = DemoAdGroupRealAdGroupAdminForm
+
+    def demo_ad_group_(self, obj):
+        ad_group_name = obj.demo_ad_group.name
+        campaign_name = obj.demo_ad_group.campaign.name
+        account_name = obj.demo_ad_group.campaign.account.name
+        return '|'.join([account_name, campaign_name, ad_group_name])
+
+    def real_ad_group_(self, obj):
+        ad_group_name = obj.real_ad_group.name
+        campaign_name = obj.real_ad_group.campaign.name
+        account_name = obj.real_ad_group.campaign.account.name
+        return '|'.join([account_name, campaign_name, ad_group_name])
 
 
 admin.site.register(models.Account, AccountAdmin)
