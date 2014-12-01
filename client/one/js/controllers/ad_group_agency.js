@@ -12,8 +12,10 @@ oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', function ($sc
     $scope.canRestore = true;
     $scope.orderField = 'datetime';
     $scope.orderReverse = true;
+    $scope.requestInProgress = false;
 
     $scope.getSettings = function (id) {
+        $scope.requestInProgress = true;
         api.adGroupAgency.get(id).then(
             function (data) {
                 $scope.settings = data.settings;
@@ -21,9 +23,11 @@ oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                 $scope.canArchive = data.canArchive;
                 $scope.canRestore = data.canRestore;
                 $scope.actionIsWaiting = data.actionIsWaiting;
+                $scope.requestInProgress = false;
             },
             function (data) {
                 // error
+                $scope.requestInProgress = false;
                 return;
             }
         );

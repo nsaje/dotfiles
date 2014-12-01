@@ -3,6 +3,8 @@ import binascii
 import datetime
 from decimal import Decimal
 
+import utils.string
+
 from django.conf import settings
 from django.contrib import auth
 from django.db import models, transaction
@@ -764,9 +766,9 @@ class AdGroupSettings(SettingsBase):
         elif prop_name == 'end_date' and value is None:
             value = 'I\'ll stop it myself'
         elif prop_name == 'cpc_cc' and value is not None:
-            value = '${:.3f}'.format(value)
+            value = '$' + utils.string.format_decimal(value, 2, 3)
         elif prop_name == 'daily_budget_cc' and value is not None:
-            value = '${:.2f}'.format(value)
+            value = '$' + utils.string.format_decimal(value, 2, 2)
         elif prop_name == 'target_devices':
             value = ', '.join(constants.AdTargetDevice.get_text(x) for x in value)
         elif prop_name == 'target_regions':
