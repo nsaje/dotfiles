@@ -9,6 +9,7 @@ from dash import constants
 from utils import api_common
 from utils import statsd_helper
 from utils.sort_helper import sort_results
+from reports import models as reports_models
 
 
 class AccountCampaignsExport(api_common.BaseApiView):
@@ -172,6 +173,26 @@ class CampaignAdGroupsExport(api_common.BaseApiView):
 
         for result in results:
             result['ad_group'] = ad_groups[result['ad_group']].name
+
+
+class AdGroupAdsExportAllowed(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_export_allowed_get')
+    def get(self, request, ad_group_id):
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
+        row_count = reports_models.ArticleStats.objects.filter(
+            ad_group=ad_group,
+            datetime__gte=start_date,
+            datetime__lte=end_date
+        ).count()
+
+        return self.create_api_response({
+            'excel': row_count <= 7000,
+            'csv': True
+        })
 
 
 class AdGroupAdsExport(api_common.BaseApiView):

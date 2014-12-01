@@ -1599,6 +1599,41 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
+    function AdGroupAdsExportAllowed() {
+        this.get = function (adGroupId, startDate, endDate) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/export/allowed/';
+
+            var config = {
+                params: {}
+            };
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    var resource;
+
+                    if (data && data.data) {
+                        resource = data.data;
+                    }
+
+                    deferred.resolve(resource);
+                }).
+                error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     // Helpers
 
     function convertGoals(row, convertedRow) {
@@ -1646,6 +1681,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         allAccountsBudget: new AllAccountsBudget(),
         accountUsers: new AccountUsers(),
         adGroupSourceSettings: new AdGroupSourceSettings(),
-        adGroupSourcesLastChange: new AdGroupSourcesLastChange()
+        adGroupSourcesLastChange: new AdGroupSourcesLastChange(),
+        adGroupAdsExportAllowed: new AdGroupAdsExportAllowed()
     };
 }]);

@@ -13,6 +13,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     $scope.chartGoalMetrics = null;
     $scope.chartBtnTitle = 'Hide chart';
     $scope.isIncompletePostclickMetrics = false;
+    $scope.disabledExportOptions = null;
     $scope.pagination = {
         currentPage: 1,
     };
@@ -338,6 +339,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         $scope.loadPage();
         getDailyStats();
         initColumns();
+        getDisabledExportOptions();
     };
     
     // pagination
@@ -393,22 +395,26 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         }
     }
 
+    var getDisabledExportOptions = function() {
+        api.adGroupAdsExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
+            function (data) {
+                $scope.disabledExportOptions = [];
+
+                if (!data.excel) {
+                    $scope.disabledExportOptions.push('excel');
+                }
+                if (!data.csv) {
+                    $scope.disabledExportOptions.push('csv');
+                }
+            }
+        );
+    };
+
     // trigger sync
     $scope.triggerSync = function() {
         $scope.isSyncInProgress = true;
         api.adGroupSync.get($state.params.id);
     }
-
-    $scope.getDisabledExportOptions = function() {
-        var results = [];
-        var numDays = $scope.dateRange.endDate.diff($scope.dateRange.startDate, 'days');
-
-        if (($scope.pagination.count * numDays) > 7000) {
-            results.push('excel');
-        }
-
-        return results;
-    };
 
     $scope.init();
 }]);

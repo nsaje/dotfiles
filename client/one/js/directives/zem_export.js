@@ -4,7 +4,7 @@ oneApp.directive('zemExport', function() {
     return {
         restrict: 'E',
         scope: {
-            disabledOptions: '@',
+            disabledOptions: '=',
             baseUrl: '=',
             startDate: '=',
             endDate: '='
