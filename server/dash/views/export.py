@@ -8,6 +8,7 @@ from dash import export
 from dash import constants
 from utils import api_common
 from utils import statsd_helper
+from utils.sort_helper import sort_results
 
 
 class AccountCampaignsExport(api_common.BaseApiView):
@@ -116,7 +117,20 @@ class CampaignAdGroupsExport(api_common.BaseApiView):
             )
 
             self.add_ad_group_data(detailed_data, campaign)
+            detailed_data = sort_results(detailed_data, ['date', 'ad_group'])
 
+            per_content_ad_data = export.generate_rows(
+                ['date', 'ad_group', 'article'],
+                start_date,
+                end_date,
+                request.user,
+                campaign=campaign
+            )
+
+            self.add_ad_group_data(per_content_ad_data, campaign)
+            per_content_ad_data = sort_results(per_content_ad_data, ['date', 'ad_group', 'title'])
+
+            # define columns
             columns = [
                 {'key': 'date', 'name': 'Date', 'format': 'date'},
                 {'key': 'cost', 'name': 'Cost', 'format': 'currency'},
@@ -129,9 +143,14 @@ class CampaignAdGroupsExport(api_common.BaseApiView):
             detailed_columns = list(columns)  # make a copy
             detailed_columns.insert(1, {'key': 'ad_group', 'name': 'Ad Group', 'width': 30})
 
+            per_content_ad_columns = list(detailed_columns)
+            per_content_ad_columns.insert(2, {'key': 'title', 'name': 'Title', 'width': 30})
+            per_content_ad_columns.insert(3, {'key': 'url', 'name': 'URL', 'width': 40})
+
             content = export.get_excel_content([
                 ('Per Campaign Report', columns, data),
-                ('Detailed Report', detailed_columns, detailed_data)
+                ('Detailed Report', detailed_columns, detailed_data),
+                ('Per Content Ad Report', per_content_ad_columns, per_content_ad_data)
             ])
 
             return self.create_excel_response(filename, content=content)
