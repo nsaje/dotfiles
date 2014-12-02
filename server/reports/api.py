@@ -233,11 +233,10 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
     return results
 
 
-def count_reports_rows(start_date, end_date, breakdown, **constraints):
-    return query_stats(
-        start_date,
-        end_date,
-        breakdown,
+def count_reports_rows(start_date, end_date, **constraints):
+    return models.ArticleStats.objects.filter(
+        datetime__gte=start_date,
+        datetime__lte=end_date,
         **constraints
     ).count()
 
