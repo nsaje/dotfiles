@@ -456,7 +456,20 @@ class AdGroupSourceStateAdmin(admin.ModelAdmin):
     )
 
 
+class AdGroupModelChoiceField(forms.ModelChoiceField):
+
+    def label_from_instance(self, obj):
+        return "{} | {} | {}".format(obj.campaign.account.name, obj.campaign.name, obj.name)
+
+
 class DemoAdGroupRealAdGroupAdminForm(forms.ModelForm):
+
+    demo_ad_group = AdGroupModelChoiceField(
+        queryset=models.AdGroup.objects.order_by('campaign__account__name')
+    )
+    real_ad_group = AdGroupModelChoiceField(
+        queryset=models.AdGroup.objects.order_by('campaign__account__name')
+    )
 
     def clean_demo_ad_group(self):
         if not self.cleaned_data['demo_ad_group'].is_demo:
