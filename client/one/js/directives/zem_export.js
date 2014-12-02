@@ -7,11 +7,23 @@ oneApp.directive('zemExport', function() {
             disabledOptions: '=',
             baseUrl: '=',
             startDate: '=',
-            endDate: '='
+            endDate: '=',
+            options: '='
         },
         templateUrl: '/partials/zem_export.html',
         controller: ['$scope', '$window', '$compile', function($scope, $window, $compile) {
             $scope.exportType = '';
+
+            function getOptionByValue(value) {
+                var option = null;
+                $scope.options.forEach(function (opt) {
+                    if (opt.value === value) {
+                        option = opt;
+                    }
+                });
+
+                return option;
+            }
 
             $scope.config = {
                 minimumResultsForSearch: -1,
@@ -21,8 +33,15 @@ oneApp.directive('zemExport', function() {
                     }
 
                     var popoverEl = angular.element(document.createElement('div'));
+                    var option = getOptionByValue(object.id);
 
-                    popoverEl.attr('popover', 'There is too much data to export. Please choose a smaller date range.');
+                    var popoverText = 'There is too much data to export. Please choose a smaller date range';
+                    if (option.maxDays) {
+                        popoverText += ' (' + option.maxDays + ' days or less)';
+                    }
+                    popoverText += '.';
+
+                    popoverEl.attr('popover', popoverText);
                     popoverEl.attr('popover-trigger', 'mouseenter');
                     popoverEl.attr('popover-placement', 'right');
                     popoverEl.attr('popover-append-to-body', 'true');
@@ -31,15 +50,17 @@ oneApp.directive('zemExport', function() {
                     return $compile(popoverEl)($scope);
                 },
                 sortResults: function (results) {
+                    var option = null;
+
                     // used to set disabled property on results
-                    if ($scope.disabledOptions) {
-                        results = results.map(function (result) {
-                            if ($scope.disabledOptions.indexOf(result.id) !== -1) {
-                                result.disabled = true;
-                            }
-                            return result;
-                        });
-                    }
+                    results = results.map(function (result) {
+                        option = getOptionByValue(result.id);
+
+                        if (option.disabled) {
+                            result.disabled = true;
+                        }
+                        return result;
+                    });
 
                     return results;
                 }

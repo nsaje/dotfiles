@@ -14,7 +14,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.rows = null;
     $scope.totalRow = null;
     $scope.order = '-cost';
-    $scope.disabledExportOptions = [];
     $scope.isIncompletePostclickMetrics = false;
 
     $scope.updateSelectedAdGroups = function (adGroupId) {
@@ -58,6 +57,12 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             x.checked = $scope.selectedAdGroupIds.indexOf(x.ad_group.toString()) > -1;
         });
     };
+
+    $scope.exportOptions = [
+        {name: 'CSV by day', value: 'csv'},
+        {name: 'Excel by day', value: 'excel'},
+        {name: 'Detailed report', value: 'excel_detailed'}
+    ];
 
     $scope.columns = [
         {
@@ -438,7 +443,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         initColumns();
         pollSyncStatus();
         getDailyStats();
-        getDisabledExportOptions();
+        setDisabledExportOptions();
     };
 
     $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
@@ -461,7 +466,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         getDailyStats();
         getTableData();
-        getDisabledExportOptions();
+        setDisabledExportOptions();
     });
 
     $scope.$watch('showArchived', function (newValue, oldValue) {
@@ -470,16 +475,21 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         }
     });
 
-    var getDisabledExportOptions = function() {
+    var setDisabledExportOptions = function() {
         api.campaignAdGroupsExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
             function (data) {
-                $scope.disabledExportOptions = [];
+                var option = null;
+                $scope.exportOptions.forEach(function (opt) {
+                    if (opt.value === 'excel_detailed') {
+                        option = opt;
+                    }
+                });
 
-                if (!data.excel) {
-                    $scope.disabledExportOptions.push('excel');
-                }
-                if (!data.csv) {
-                    $scope.disabledExportOptions.push('csv');
+                if (data.allowed) {
+                    option.disabled = false;
+                } else {
+                    option.disabled = true;
+                    option.maxDays = data.maxDays;
                 }
             }
         );
