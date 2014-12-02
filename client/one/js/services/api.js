@@ -91,26 +91,26 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
     function SourcesTable() {
         function convertRow(row) {
-            var converted_row = {}
+            var convertedRow = {}
 
             for(var field in row) {
                 if(field.indexOf('goals') == '0') {
                     convertGoals(row, convertedRow); 
                 } else if (field === 'status') {
-                    converted_row[field] = row[field];
+                    convertedRow[field] = row[field];
 
                     if (row[field] === constants.adGroupSettingsState.ACTIVE) {
-                        converted_row.status = 'Active';
+                        convertedRow.status = 'Active';
                     } else if (row[field] === constants.adGroupSettingsState.INACTIVE) {
-                        converted_row.status = 'Paused';
+                        convertedRow.status = 'Paused';
                     } else {
-                        converted_row.status = 'N/A';
+                        convertedRow.status = 'N/A';
                     }
                 } else {
-                    converted_row[field] = row[field];
+                    convertedRow[field] = row[field];
                 }
             }
-            return converted_row;
+            return convertedRow;
         }
 
         function convertFromApi(data) {
@@ -1599,6 +1599,76 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
+    function CampaignAdGroupsExportAllowed() {
+        this.get = function (campaignId, startDate, endDate) {
+            var deferred = $q.defer();
+            var url = '/api/campaigns/' + campaignId + '/ad_groups/export/allowed/';
+
+            var config = {
+                params: {}
+            };
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    var resource;
+
+                    if (data && data.data) {
+                        resource = data.data;
+                    }
+
+                    deferred.resolve(resource);
+                }).
+                error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    function AdGroupAdsExportAllowed() {
+        this.get = function (adGroupId, startDate, endDate) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/export/allowed/';
+
+            var config = {
+                params: {}
+            };
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    var resource;
+
+                    if (data && data.data) {
+                        resource = data.data;
+                    }
+
+                    deferred.resolve(resource);
+                }).
+                error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     // Helpers
 
     function convertGoals(row, convertedRow) {
@@ -1646,6 +1716,8 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         allAccountsBudget: new AllAccountsBudget(),
         accountUsers: new AccountUsers(),
         adGroupSourceSettings: new AdGroupSourceSettings(),
-        adGroupSourcesLastChange: new AdGroupSourcesLastChange()
+        adGroupSourcesLastChange: new AdGroupSourcesLastChange(),
+        adGroupAdsExportAllowed: new AdGroupAdsExportAllowed(),
+        campaignAdGroupsExportAllowed: new CampaignAdGroupsExportAllowed()
     };
 }]);

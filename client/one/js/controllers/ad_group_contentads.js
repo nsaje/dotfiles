@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', '$compile', function ($scope, $state, $location, $window, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemChartService, $compile) {
+oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', function ($scope, $state, $location, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemChartService) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.order = '-cost';
@@ -13,6 +13,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     $scope.chartGoalMetrics = null;
     $scope.chartBtnTitle = 'Hide chart';
     $scope.isIncompletePostclickMetrics = false;
+    $scope.disabledExportOptions = null;
     $scope.pagination = {
         currentPage: 1,
     };
@@ -134,35 +135,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             cols = zemCustomTableColsService.save('adGroupAdsCols', newValue);
             $scope.selectedColumnsCount = cols.length;
         }, true);
-    };
-
-    $scope.exportSelect2Config = {
-        minimumResultsForSearch: -1,
-        formatResult: function (object) {
-            if (!object.disabled) {
-                return angular.element(document.createElement('span')).text(object.text);
-            }
-
-            var popoverEl = angular.element(document.createElement('div'));
-
-            popoverEl.attr('popover', 'There is too much data to export. Please choose a smaller date range.');
-            popoverEl.attr('popover-trigger', 'mouseenter');
-            popoverEl.attr('popover-append-to-body', 'true');
-            popoverEl.text(object.text);
-
-            return $compile(popoverEl)($scope);
-        },
-        sortResults: function (results) {
-            // used to set disabled property on results
-            var numDays = $scope.dateRange.endDate.diff($scope.dateRange.startDate, 'days');
-
-            return results.map(function (result) {
-                if (result.id === 'excel' && ($scope.pagination.count * numDays) > 7000) {
-                    result.disabled = true;
-                }
-                return result;
-            });
-        }
     };
 
     $scope.$watch('isChartShown', function (newValue, oldValue) {
@@ -321,6 +293,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
 
         getDailyStats();
         getTableData();
+        getDisabledExportOptions();
     });
 
     $scope.init = function() {
@@ -367,6 +340,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         $scope.loadPage();
         getDailyStats();
         initColumns();
+        getDisabledExportOptions();
     };
     
     // pagination
@@ -397,13 +371,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         $scope.loadPage();
     };
 
-    // export
-    $scope.downloadReport = function() {
-        $window.open('api/ad_groups/' + $state.params.id + '/contentads/export/?type=' + $scope.exportType + '&start_date=' + $scope.dateRange.startDate.format() + '&end_date=' + $scope.dateRange.endDate.format(), '_blank');
-        $scope.exportType = '';
-    };
-
-    
     var pollSyncStatus = function() {
         if($scope.isSyncInProgress){
             $timeout(function() {
@@ -428,6 +395,21 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             }, 5000);
         }
     }
+
+    var getDisabledExportOptions = function() {
+        api.adGroupAdsExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
+            function (data) {
+                $scope.disabledExportOptions = [];
+
+                if (!data.excel) {
+                    $scope.disabledExportOptions.push('excel');
+                }
+                if (!data.csv) {
+                    $scope.disabledExportOptions.push('csv');
+                }
+            }
+        );
+    };
 
     // trigger sync
     $scope.triggerSync = function() {

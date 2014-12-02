@@ -4,6 +4,8 @@ import re
 import dateutil.parser
 import rfc3987
 
+import utils.string
+
 from django import forms
 
 from dash import constants
@@ -87,13 +89,11 @@ class AdGroupSettingsForm(forms.Form):
 
 class AdGroupSourceSettingsCpcForm(forms.Form):
     cpc_cc = forms.DecimalField(
-        min_value=0.03,
         max_value=2,
         decimal_places=4,
         error_messages={
-            'required': 'Minimum CPC is $0.03.',
-            'min_value': 'Minimum CPC is $0.03.',
-            'max_value': 'Maximum CPC is $2.00.'
+            'required': 'This value is required',
+            'max_value': 'Maximum CPC is $2.00'
         }
     )
 
@@ -103,21 +103,38 @@ class AdGroupSourceSettingsCpcForm(forms.Form):
 
     def clean_cpc_cc(self):
         cpc_cc = self.cleaned_data.get('cpc_cc')
+        if cpc_cc < 0:
+            raise forms.ValidationError('This value must be positive')
+        
         min_cpc = self.ad_group_source.source.source_type.min_cpc
 
         if min_cpc is not None and cpc_cc < min_cpc:
-            raise forms.ValidationError('Minimum CPC is ${}'.format(min_cpc))
+            raise forms.ValidationError('Minimum CPC is ${}' \
+                .format(utils.string.format_decimal(min_cpc, 2, 3)))
 
 
 class AdGroupSourceSettingsDailyBudgetForm(forms.Form):
     daily_budget_cc = forms.DecimalField(
-        min_value=10,
         decimal_places=4,
         error_messages={
-            'required': 'Please provide budget of at least $10.00.',
-            'min_value': 'Please provide budget of at least $10.00.'
+            'required': 'This value is required',
         }
     )
+
+    def __init__(self, *args, **kwargs):
+        self.ad_group_source = kwargs.pop('ad_group_source')
+        super(AdGroupSourceSettingsDailyBudgetForm, self).__init__(*args, **kwargs)
+
+    def clean_daily_budget_cc(self):
+        daily_budget_cc = self.cleaned_data.get('daily_budget_cc')
+        if daily_budget_cc < 0:
+            raise forms.ValidationError('This value must be positive')
+
+        min_daily_budget = self.ad_group_source.source.source_type.min_daily_budget
+
+        if min_daily_budget is not None and daily_budget_cc < min_daily_budget:
+            raise forms.ValidationError('Please provide budget of at least ${}.' \
+                .format(utils.string.format_decimal(min_daily_budget, 2, 3)))
 
 
 class AdGroupSourceSettingsStateForm(forms.Form):

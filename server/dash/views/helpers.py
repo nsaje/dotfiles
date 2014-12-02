@@ -138,8 +138,13 @@ def get_ad_group_sources_last_change_dt(ad_group_sources):
             current_settings.created_dt
         )
 
-    latest_change = [last_change(ad_group_source) for ad_group_source in ad_group_sources]
-    return max([l for l in latest_change if l is not None])
+    latest_change = [last_change(ad_group_source) for ad_group_source in ad_group_sources
+                     if last_change(ad_group_source) is not None]
+
+    if len(latest_change) == 0:
+        return None
+
+    return max(latest_change)
 
 
 def get_ad_group_sources_notifications(ad_group_sources):
@@ -157,6 +162,11 @@ def get_ad_group_sources_notifications(ad_group_sources):
             filter(ad_group_source=ags).\
             order_by('ad_group_source_id', '-created_dt')
         latest_state = latest_state_qs[0] if latest_state_qs.exists() else None
+
+        if ags.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE and\
+           latest_settings and latest_settings.state == constants.AdGroupSettingsState.ACTIVE:
+            notification += 'This media source is enabled but will not run ' +\
+                            'until you enable the ad group in the Settings.'
 
         if ags.actionlog_set.filter(
                 state=actionlog.constants.ActionState.WAITING,
