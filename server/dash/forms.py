@@ -89,7 +89,7 @@ class AdGroupSettingsForm(forms.Form):
 
 class AdGroupSourceSettingsCpcForm(forms.Form):
     cpc_cc = forms.DecimalField(
-        min_value=0.001,
+        min_value=0.0009999999,  # this is because Decimal(0.001) is slightly larger than 0.001
         max_value=2,
         decimal_places=4,
         error_messages={
