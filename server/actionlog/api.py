@@ -563,6 +563,10 @@ def _init_create_campaign(ad_group_source, name):
 
             if ad_group_settings:
                 tracking_code.update(dict(urlparse.parse_qsl(ad_group_settings.tracking_code)))
+                payload['args']['extra'].update({
+                    'target_devices': ad_group_settings.target_devices,
+                    'target_regions': ad_group_settings.target_regions,
+                })
 
             payload['args']['extra'].update({
                 # Unquoting is necessary because we want to forward parameters as they were
