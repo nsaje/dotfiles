@@ -233,6 +233,15 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
     return results
 
 
+def count_reports_rows(start_date, end_date, breakdown, **constraints):
+    return query_stats(
+        start_date,
+        end_date,
+        breakdown,
+        **constraints
+    ).count()
+
+
 def filter_by_permissions(result, user):
     '''
     filters reports such that the user will only get fields that he is allowed to see

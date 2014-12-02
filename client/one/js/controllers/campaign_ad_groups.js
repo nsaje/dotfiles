@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', '$window', function ($location, $scope, $state, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemChartService, $window) {
+oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', function ($location, $scope, $state, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemChartService) {
     $scope.getTableDataRequestInProgress = false;
     $scope.addGroupRequestInProgress = false;
     $scope.isSyncInProgress = false;
@@ -14,6 +14,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.rows = null;
     $scope.totalRow = null;
     $scope.order = '-cost';
+    $scope.disabledExportOptions = [];
     $scope.isIncompletePostclickMetrics = false;
 
     $scope.updateSelectedAdGroups = function (adGroupId) {
@@ -437,6 +438,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         initColumns();
         pollSyncStatus();
         getDailyStats();
+        getDisabledExportOptions();
     };
 
     $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
@@ -459,6 +461,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         getDailyStats();
         getTableData();
+        getDisabledExportOptions();
     });
 
     $scope.$watch('showArchived', function (newValue, oldValue) {
@@ -467,9 +470,19 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         }
     });
 
-    $scope.downloadReport = function() {
-        $window.open('api/campaigns/' + $state.params.id + '/ad_groups/export/?type=' + $scope.exportType + '&start_date=' + $scope.dateRange.startDate.format() + '&end_date=' + $scope.dateRange.endDate.format(), '_blank');
-        $scope.exportType = '';
+    var getDisabledExportOptions = function() {
+        api.campaignAdGroupsExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
+            function (data) {
+                $scope.disabledExportOptions = [];
+
+                if (!data.excel) {
+                    $scope.disabledExportOptions.push('excel');
+                }
+                if (!data.csv) {
+                    $scope.disabledExportOptions.push('csv');
+                }
+            }
+        );
     };
 
     $scope.init();
