@@ -9,9 +9,6 @@ from dash import constants
 from utils import api_common
 from utils import statsd_helper
 from utils.sort_helper import sort_results
-import reports.api
-
-MAX_EXPORT_ROWS = 10000
 
 
 class AccountCampaignsExport(api_common.BaseApiView):
@@ -185,14 +182,20 @@ class AdGroupAdsExportAllowed(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        row_count = reports.api.count_reports_rows(
-            start_date,
-            end_date,
-            ad_group=ad_group
-        )
+        num_days = (end_date - start_date).days
+
+        num_articles = models.Article.objects.filter(ad_group=ad_group).count()
+
+        active_sources = helpers.get_active_ad_group_sources(models.AdGroup, [ad_group])
+        num_sources = models.Source.objects.filter(
+            adgroupsource__in=active_sources
+        ).count()
+
+        # estimate number of rows (worst case)
+        row_count = num_days * num_sources * num_articles
 
         return self.create_api_response({
-            'excel': row_count <= MAX_EXPORT_ROWS,
+            'excel': row_count <= 32268,
             'csv': True
         })
 
@@ -205,21 +208,15 @@ class CampaignAdGroupsExportAllowed(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        stat_count = reports.api.count_reports_rows(
-            start_date,
-            end_date,
-            ad_group__campaign=campaign
-        )
+        num_days = (end_date - start_date).days
 
-        active_sources = helpers.get_active_ad_group_sources(models.Campaign, [campaign])
-        sources_count = models.Source.objects.filter(
-            adgroupsource__in=active_sources
-        ).count()
+        num_articles = models.Article.objects.filter(ad_group__campaign=campaign).count()
 
-        row_count = stat_count / sources_count
+        # estimate number of rows (worst case)
+        row_count = num_days * num_articles
 
         return self.create_api_response({
-            'excel': row_count <= MAX_EXPORT_ROWS,
+            'excel': row_count <= 16134,
             'csv': True
         })
 
