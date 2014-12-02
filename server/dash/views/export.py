@@ -9,7 +9,9 @@ from dash import constants
 from utils import api_common
 from utils import statsd_helper
 from utils.sort_helper import sort_results
-from reports import models as reports_models
+import reports.api
+
+MAX_EXPORT_ROWS = 65536
 
 
 class AccountCampaignsExport(api_common.BaseApiView):
@@ -183,14 +185,15 @@ class AdGroupAdsExportAllowed(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        row_count = reports_models.ArticleStats.objects.filter(
-            ad_group=ad_group,
-            datetime__gte=start_date,
-            datetime__lte=end_date
-        ).count()
+        row_count = reports.api.count_reports_rows(
+            start_date,
+            end_date,
+            ['date', 'source', 'article'],
+            ad_group=ad_group
+        )
 
         return self.create_api_response({
-            'excel': row_count <= 10000,
+            'excel': row_count <= MAX_EXPORT_ROWS,
             'csv': True
         })
 
@@ -203,14 +206,15 @@ class CampaignAdGroupsExportAllowed(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        row_count = reports_models.ArticleStats.objects.filter(
-            ad_group__campaign=campaign,
-            datetime__gte=start_date,
-            datetime__lte=end_date
-        ).count()
+        row_count = reports.api.count_reports_rows(
+            start_date,
+            end_date,
+            ['date', 'ad_group', 'article'],
+            ad_group__campaign=campaign
+        )
 
         return self.create_api_response({
-            'excel': row_count <= 10000,
+            'excel': row_count <= MAX_EXPORT_ROWS,
             'csv': True
         })
 
