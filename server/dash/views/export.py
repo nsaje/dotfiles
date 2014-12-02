@@ -11,7 +11,7 @@ from utils import statsd_helper
 from utils.sort_helper import sort_results
 import reports.api
 
-MAX_EXPORT_ROWS = 65536
+MAX_EXPORT_ROWS = 10000
 
 
 class AccountCampaignsExport(api_common.BaseApiView):
@@ -188,7 +188,6 @@ class AdGroupAdsExportAllowed(api_common.BaseApiView):
         row_count = reports.api.count_reports_rows(
             start_date,
             end_date,
-            ['date', 'source', 'article'],
             ad_group=ad_group
         )
 
@@ -206,12 +205,18 @@ class CampaignAdGroupsExportAllowed(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        row_count = reports.api.count_reports_rows(
+        stat_count = reports.api.count_reports_rows(
             start_date,
             end_date,
-            ['date', 'ad_group', 'article'],
             ad_group__campaign=campaign
         )
+
+        active_sources = helpers.get_active_ad_group_sources(models.Campaign, [campaign])
+        sources_count = models.Source.objects.filter(
+            adgroupsource__in=active_sources
+        ).count()
+
+        row_count = stat_count / sources_count
 
         return self.create_api_response({
             'excel': row_count <= MAX_EXPORT_ROWS,
