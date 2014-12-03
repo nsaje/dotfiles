@@ -35,11 +35,10 @@ oneApp.directive('zemExport', function() {
                     var popoverEl = angular.element(document.createElement('div'));
                     var option = getOptionByValue(object.id);
 
-                    var popoverText = 'There is too much data to export. Please choose a smaller date range';
+                    var popoverText = 'There is too much data to export.';
                     if (option.maxDays) {
-                        popoverText += ' (' + option.maxDays + ' days or less)';
+                        popoverText += ' Please choose a smaller date range (' + option.maxDays + ' days or less).';
                     }
-                    popoverText += '.';
 
                     popoverEl.attr('popover', popoverText);
                     popoverEl.attr('popover-trigger', 'mouseenter');
