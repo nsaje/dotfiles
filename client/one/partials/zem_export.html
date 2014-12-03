@@ -4,6 +4,5 @@
         data-placeholder="Download Report"
         class="export">
     <option value=""></option>
-    <option value="csv">CSV by day</option>
-    <option value="excel">Excel by day</option>
+    <option ng-repeat="option in options" value="{{option.value}}">{{option.name}}</option>
 </select>

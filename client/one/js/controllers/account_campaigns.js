@@ -16,6 +16,11 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.order = '-cost';
     $scope.isIncompletePostclickMetrics = false;
 
+    $scope.exportOptions = [
+        {name: 'CSV by day', value: 'csv'},
+        {name: 'Excel by day', value: 'excel'}
+    ];
+
     $scope.updateSelectedCampaigns = function (campaignId) {
         campaignId = campaignId.toString();
 
