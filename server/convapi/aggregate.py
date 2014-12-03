@@ -74,11 +74,15 @@ class ReportEmail(object):
         data['duration'] += visits * self._parse_duration(entry['Avg. Session Duration'])
         for goal_name, metric_fields in goal_fields.items():
             data['goals'][goal_name]['conversions'] += int(entry[metric_fields['conversions']].replace(',', ''))
-            conv_value = entry[metric_fields['value']]
-            conv_value = conv_value[conv_value.index('$') + 1 : ]
-            conv_value = conv_value.replace(',', '')
-            conv_value = float(conv_value)
+            conv_value = self._parse_conversion_value(entry[metric_fields['value']])
             data['goals'][goal_name]['conversions_value_cc'] += int(10000 * conv_value)
+
+    def _parse_conversion_value(self, conv_val_str):
+        for i, c in enumerate(conv_val_str):
+            if c.isdigit():
+                break
+        conv_val_str = conv_val_str[i:].replace(',', '')
+        return float(conv_val_str)
 
     def get_stats_by_key(self):
 
