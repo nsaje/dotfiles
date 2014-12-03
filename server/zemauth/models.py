@@ -100,7 +100,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('account_campaigns_view', "Can view accounts's campaigns tab."),
             ('account_agency_view', "Can view accounts's agency tab."),
             ('ad_group_sources_add_source', "Can add media sources."),
-            ('postclick_metrics', 'Can view postclick metrics.'),
+            ('postclick_metrics', 'Can view postclick metrics.'),       
             ('campaign_sources_view', 'Can view campaign sources view.'),
             ('account_sources_view', 'Can view account sources view.'),
             ('all_accounts_sources_view', 'Can view all accounts sources view.'),
@@ -119,6 +119,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('group_new_user_add', 'New users are added to this group.'),
             ('set_ad_group_source_settings', 'Can set per-source settings.'),
             ('see_current_ad_group_source_state', 'Can see current per-source state.'),
+            ('has_intercom', 'Can see intercom.io widget')
         )
 
     def get_full_name(self):
