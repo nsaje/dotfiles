@@ -13,10 +13,15 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
     $scope.chartGoalMetrics = null;
     $scope.chartBtnTitle = 'Hide chart';
     $scope.isIncompletePostclickMetrics = false;
-    $scope.disabledExportOptions = null;
     $scope.pagination = {
         currentPage: 1,
     };
+
+    $scope.exportOptions = [
+        {name: 'CSV by day', value: 'csv'},
+        {name: 'Excel by day', value: 'excel'}
+    ];
+
     $scope.columns = [
         {
             name: 'Title',
@@ -293,7 +298,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
 
         getDailyStats();
         getTableData();
-        getDisabledExportOptions();
+        setDisabledExportOptions();
     });
 
     $scope.init = function() {
@@ -340,7 +345,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         $scope.loadPage();
         getDailyStats();
         initColumns();
-        getDisabledExportOptions();
+        setDisabledExportOptions();
     };
     
     // pagination
@@ -396,16 +401,21 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         }
     }
 
-    var getDisabledExportOptions = function() {
+    var setDisabledExportOptions = function() {
         api.adGroupAdsExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
             function (data) {
-                $scope.disabledExportOptions = [];
+                var option = null;
+                $scope.exportOptions.forEach(function (opt) {
+                    if (opt.value === 'excel') {
+                        option = opt;
+                    }
+                });
 
-                if (!data.excel) {
-                    $scope.disabledExportOptions.push('excel');
-                }
-                if (!data.csv) {
-                    $scope.disabledExportOptions.push('csv');
+                if (data.allowed) {
+                    option.disabled = false;
+                } else {
+                    option.disabled = true;
+                    option.maxDays = data.maxDays;
                 }
             }
         );

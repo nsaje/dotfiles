@@ -17,6 +17,12 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.pagination = {
         currentPage: 1,
     };
+
+    $scope.exportOptions = [
+        {name: 'CSV by day', value: 'csv'},
+        {name: 'Excel by day', value: 'excel'}
+    ];
+
     $scope.columns = [
         {
             name: 'Account',

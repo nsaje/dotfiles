@@ -18,6 +18,11 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.sources = [];
     $scope.sourcesWaiting = null;
 
+    $scope.exportOptions = [
+        {name: 'CSV by day', value: 'csv'},
+        {name: 'Excel by day', value: 'excel'}
+    ];
+
     $scope.updateSelectedSources = function (sourceId) {
         var i = $scope.selectedSourceIds.indexOf(sourceId);
 

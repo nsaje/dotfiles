@@ -233,14 +233,6 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
     return results
 
 
-def count_reports_rows(start_date, end_date, **constraints):
-    return models.ArticleStats.objects.filter(
-        datetime__gte=start_date,
-        datetime__lte=end_date,
-        **constraints
-    ).count()
-
-
 def filter_by_permissions(result, user):
     '''
     filters reports such that the user will only get fields that he is allowed to see

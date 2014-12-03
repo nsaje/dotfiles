@@ -1600,6 +1600,13 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function CampaignAdGroupsExportAllowed() {
+        function convertFromApi(data) {
+            return {
+                allowed: data.allowed,
+                maxDays: data.max_days
+            };
+        }
+
         this.get = function (campaignId, startDate, endDate) {
             var deferred = $q.defer();
             var url = '/api/campaigns/' + campaignId + '/ad_groups/export/allowed/';
@@ -1621,7 +1628,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                     var resource;
 
                     if (data && data.data) {
-                        resource = data.data;
+                        resource = convertFromApi(data.data);
                     }
 
                     deferred.resolve(resource);
@@ -1635,6 +1642,13 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AdGroupAdsExportAllowed() {
+        function convertFromApi(data) {
+            return {
+                allowed: data.allowed,
+                maxDays: data.max_days
+            };
+        }
+
         this.get = function (adGroupId, startDate, endDate) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/contentads/export/allowed/';
@@ -1656,7 +1670,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                     var resource;
 
                     if (data && data.data) {
-                        resource = data.data;
+                        resource = convertFromApi(data.data);
                     }
 
                     deferred.resolve(resource);
