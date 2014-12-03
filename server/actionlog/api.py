@@ -65,6 +65,26 @@ def stop_ad_group(ad_group, source=None, order=None, commit=True):
     return actionlogs
 
 
+def set_ad_group_source_settings(ad_group_source_settings):
+    conf = {
+        'state': ad_group_source_settings.state,
+        'cpc_cc': ad_group_source_settings.cpc_cc,
+        'daily_budget_cc': ad_group_source_settings.daily_budget_cc
+    }
+
+    if conf['cpc_cc'] is not None:
+        conf['cpc_cc'] = int(conf['cpc_cc'] * 10000)
+    if conf['daily_budget_cc'] is not None:
+        conf['daily_budget_cc'] = int(conf['daily_budget_cc'] * 10000)
+
+    actionlog = _init_set_ad_group_source_settings(
+        ad_group_source=ad_group_source_settings.ad_group_source,
+        settings_id=ad_group_source_settings.id,
+        conf=conf
+    )
+    zwei_actions.send_multiple([actionlog])
+
+
 def set_ad_group_property(ad_group, source=None, prop=None, value=None, order=None):
     ad_group_sources = _get_ad_group_sources(ad_group, source)
     for ad_group_source in ad_group_sources:
@@ -270,14 +290,16 @@ def _init_stop_campaign(ad_group_source, order):
 
             payload = {
                 'action': action.action,
-                'source': ad_group_source.source.type,
+                'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_source.source_credentials and
                     ad_group_source.source_credentials.credentials,
                 'args': {
                     'source_campaign_key': ad_group_source.source_campaign_key,
-                    'state': dash.constants.AdGroupSourceSettingsState.INACTIVE,
+                    'conf': {
+                        'state': dash.constants.AdGroupSourceSettingsState.INACTIVE,
+                    }
                 },
                 'callback_url': callback,
             }
@@ -293,6 +315,54 @@ def _init_stop_campaign(ad_group_source, order):
 
         et, ei, tb = sys.exc_info()
         raise InsertActionException, ei, tb
+
+
+def _init_set_ad_group_source_settings(ad_group_source, settings_id, conf):
+    msg = '_init_set_ad_group_source_settings started: ad_group_source.id: {}, settings: {}'.format(
+        ad_group_source.id, str(conf)
+    )
+    logger.info(msg)
+
+    action = models.ActionLog.objects.create(
+        action=constants.Action.SET_CAMPAIGN_STATE,
+        action_type=constants.ActionType.AUTOMATIC,
+        ad_group_source=ad_group_source
+    )
+
+    try:
+        with transaction.atomic():
+            callback = urlparse.urljoin(
+                settings.EINS_HOST, reverse(
+                    'api.zwei_settings_callback', 
+                    kwargs={'action_id': action.id, 'settings_id': settings_id})
+            )
+
+            payload = {
+                'action': action.action,
+                'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
+                'expiration_dt': action.expiration_dt,
+                'credentials':
+                    ad_group_source.source_credentials and
+                    ad_group_source.source_credentials.credentials,
+                'args': {
+                    'source_campaign_key': ad_group_source.source_campaign_key,
+                    'conf': conf
+                },
+                'callback_url': callback,
+            }
+
+            action.payload = payload
+            action.save()
+
+            return action
+    except Exception as e:
+        logger.exception('An exception occurred while initializing set_campaign_state action.')
+        _handle_error(action, e)
+
+        et, ei, tb = sys.exc_info()
+        raise InsertActionException, ei, tb
+
+
 
 
 def _init_fetch_status(ad_group_source, order):
@@ -316,7 +386,7 @@ def _init_fetch_status(ad_group_source, order):
 
             payload = {
                 'action': action.action,
-                'source': ad_group_source.source.type,
+                'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_source.source_credentials and
@@ -362,7 +432,7 @@ def _init_fetch_reports(ad_group_source, date, order):
 
             payload = {
                 'action': action.action,
-                'source': ad_group_source.source.type,
+                'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_source.source_credentials and
@@ -472,7 +542,7 @@ def _init_create_campaign(ad_group_source, name):
 
             payload = {
                 'action': action.action,
-                'source': ad_group_source.source.type,
+                'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
                 'credentials':
                     ad_group_source.source_credentials and
@@ -493,6 +563,10 @@ def _init_create_campaign(ad_group_source, name):
 
             if ad_group_settings:
                 tracking_code.update(dict(urlparse.parse_qsl(ad_group_settings.tracking_code)))
+                payload['args']['extra'].update({
+                    'target_devices': ad_group_settings.target_devices,
+                    'target_regions': ad_group_settings.target_regions,
+                })
 
             payload['args']['extra'].update({
                 # Unquoting is necessary because we want to forward parameters as they were

@@ -6,11 +6,11 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th ng-class="{'text-right': isNumberColumnType(col.type), 'arrow': col.order, ordered: order === '-' + (col.orderField || col.field), 'ordered-reverse': order === (col.orderField || col.field)}" class="{{ col.extraThCss }}" ng-repeat="col in columns | filter: {checked: true}">
+                        <th ng-if="col.shown" ng-class="{'text-right': isNumberColumnType(col.type), 'arrow': col.order, ordered: order === '-' + (col.orderField || col.field), 'ordered-reverse': order === (col.orderField || col.field)}" class="{{ col.extraThCss }}" ng-repeat="col in columns | filter: {checked: true}">
                             <zem-internal-feature ng-if="col.internal"></zem-internal-feature>
                             <span ng-switch="col.order">
-                                <a ng-switch-when='true' href class="col-title order" ng-click="callOrderCallback((col.orderField || col.field))">{{ col.name }}</a>
-                                <span ng-switch-default class="col-title">{{ col.name }}</span>
+                                <a ng-switch-when='true' href class="col-title order" ng-class="col.nameCssClass" ng-click="callOrderCallback((col.orderField || col.field))">{{ col.name }}</a>
+                                <span ng-switch-default class="col-title" ng-class="col.nameCssClass">{{ col.name }}</span>
                             </span>
                             <zem-help-popover ng-if="col.help" content="{{ col.help }}" placement="{{ $last ? 'left' : 'top' }}"></zem-help-popover>
                         </th>
@@ -26,12 +26,18 @@
                         <td class="no-data" colspan="100">No data</td>
                     </tr>
                     <tr ng-repeat="row in rows" ng-class="{'archived': row.archived}">
-                        <td ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type), 'input-one-char': col.type === 'checkbox', 'text-center': col.type === 'link'}" class="{{ col.extraTdCss }}" ng-repeat="col in columns | filter: {checked: true}">
+                        <td ng-if="col.shown" ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type), 'input-one-char': col.type === 'checkbox', 'text-center': col.type === 'link'}" class="{{ col.extraTdCss }}" ng-repeat="col in columns | filter: {checked: true}">
                             <span ng-switch="col.type">
                                 <span ng-switch-when="currency">
-                                    <span ng-class="{'currency-3': col.fractionSize === 3}">
-                                        {{ (row[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
+                                    <span class="non-editable-currency-field" ng-if="!isFieldEditable(row.editable_fields, col.field)" ng-class="{'currency-3': col.fractionSize === 3}">
+                                        <span ng-if="col.settingsField" popover-append-to-body="true" popover-trigger="mouseenter" popover-html-unsafe="This media source doesn't support setting this value through the dashboard" popover-placement="right">
+                                            {{ (row[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
+                                        </span>
+                                        <span ng-if="!col.settingsField">
+                                            {{ (row[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
+                                        </span>
                                     </span>
+                                    <zem-editable-currency-field ng-if="isFieldEditable(row.editable_fields, col.field)" value="row[col.field]" on-save="col.onSave" row-id="row.id" fraction-size="col.fractionSize" replace-trailing-zeros="''" />
                                 </span>
                                 <span ng-switch-when="percent">
                                     <span ng-switch="row[col.field]">
@@ -90,13 +96,33 @@
                                 <span ng-switch-when='checkbox'>
                                     <input type="checkbox" data-ng-model="row[col.field]" ng-disabled="!row[col.field] && col.disabled" data-ng-change="callSelectCallback(col.selectCallback, row, row[col.field], true)"/>
                                 </span>
+                                <span ng-switch-when="state">
+                                    <div class="dropdown">
+                                        <button class="btn btn-default dropdown-toggle">
+                                            <div ng-if="row[col.field] === constants.adGroupSettingsState.ACTIVE" class="active-circle-icon"></div>
+                                            <div ng-if="row[col.field] === constants.adGroupSettingsState.INACTIVE" class="pause-icon"></div>
+                                            <div class="drop-arrow"></div>
+                                        </button>
+                                        <ul ng-if="row.editable_fields.indexOf(col.field) !== -1" class="dropdown-menu enabled" role="menu">
+                                            <li><a ng-click="col.onChange(row.id, constants.adGroupSettingsState.ACTIVE)"><div class="active-circle-icon"></div><span>Enabled</span></a></li>
+                                            <li class="divider"></li>
+                                            <li><a ng-click="col.onChange(row.id, constants.adGroupSettingsState.INACTIVE)"><div class="pause-icon"></div><span>Paused</span></a></li>
+                                        </ul>
+                                        <ul ng-if="row.editable_fields.indexOf(col.field) === -1" class="dropdown-menu" role="menu">
+                                            <li ng-if="row[col.field] === constants.adGroupSettingsState.ACTIVE"><a><div class="active-circle-icon"></div><span>Enabled</span></a></li>
+                                            <li ng-if="row[col.field] === constants.adGroupSettingsState.INACTIVE"><a><div class="pause-icon"></div><span>Paused</span></a></li>
+                                            <li class="dropdown-header">This source must be managed manually.</li>
+                                        </ul>
+                                    </div>
+                                </span>
                             </span>
+                            <span ng-if="col.displayNotifications && notifications[row.id]" class="notification" popover-append-to-body="true" popover-trigger="mouseenter" popover-html-unsafe="{{ notifications[row.id] }}" popover-placement="right"></span>
                         </td>
                     </tr>
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type)}" ng-repeat="col in columns | filter: {checked: true}">
+                        <td ng-if="col.shown" ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type)}" ng-repeat="col in columns | filter: {checked: true}">
                             <span ng-if="col.hasTotalsLabel">TOTALS</span>
 
                             <span ng-if="col.totalRow" ng-switch="col.type">

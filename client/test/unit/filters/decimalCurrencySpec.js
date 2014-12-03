@@ -25,7 +25,7 @@ describe('decimalCurrency', function () {
         expect(filter('1234567.12345', '$', 4)).toEqual('$1,234,567.1235');
     });
 
-    it('should return null in case of non-number', function () {
+    it('should return undefined in case of non-number', function () {
         expect(filter('abcd', '$', 2)).toBe(undefined);
     });
 });

@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'localStorageService', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', '$window', function ($location, $scope, $state, $timeout, api, localStorageService, zemCustomTableColsService, zemPostclickMetricsService, zemChartService, $window) {
+oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', function ($location, $scope, $state, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemChartService) {
     $scope.getTableDataRequestInProgress = false;
     $scope.addGroupRequestInProgress = false;
     $scope.isSyncInProgress = false;
@@ -58,11 +58,18 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         });
     };
 
+    $scope.exportOptions = [
+        {name: 'CSV by day', value: 'csv'},
+        {name: 'Excel by day', value: 'excel'},
+        {name: 'Detailed report', value: 'excel_detailed'}
+    ];
+
     $scope.columns = [
         {
             name: '',
             field: 'checked',
             type: 'checkbox',
+            shown: true,
             checked: true,
             totalRow: true,
             unselectable: true,
@@ -76,6 +83,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             unselectable: true,
             checked: true,
             type: 'linkNav',
+            shown: true,
             hasTotalsLabel: true,
             totalRow: false,
             help: 'Name of the ad group.',
@@ -87,10 +95,9 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'state',
             checked: true,
             type: 'text',
+            shown: true,
             totalRow: false,
             help: 'Status of an ad group (enabled or paused).',
-            extraThCss: 'text-center',
-            extraTdCss: 'text-center',
             order: true,
             initialOrder: 'asc'
         },
@@ -99,6 +106,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'cost',
             checked: true,
             type: 'currency',
+            shown: true,
             totalRow: true,
             help: 'The amount spent per ad group.',
             order: true,
@@ -110,6 +118,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'cpc',
             checked: true,
             type: 'currency',
+            shown: true,
             fractionSize: 3,
             totalRow: true,
             help: 'The average CPC for each ad group.',
@@ -121,6 +130,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'clicks',
             checked: true,
             type: 'number',
+            shown: true,
             totalRow: true,
             help: 'The number of times ad group\'s content ads have been clicked.',
             order: true,
@@ -131,6 +141,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'impressions',
             checked: true,
             type: 'number',
+            shown: true,
             totalRow: true,
             help: 'The number of times ad group\'s content ads have been displayed.',
             order: true,
@@ -141,6 +152,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'ctr',
             checked: true,
             type: 'percent',
+            shown: true,
             defaultValue: '0.0%',
             totalRow: true,
             help: 'The number of clicks divided by the number of impressions.',
@@ -152,6 +164,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'last_sync',
             checked: false,
             type: 'datetime',
+            shown: true,
             help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred (in Eastern Standard Time).',
             order: true,
             initialOrder: 'desc'
@@ -182,9 +195,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     var initColumns = function () {
         var cols;
 
-        if ($scope.hasPermission('zemauth.postclick_metrics')) {
-            zemPostclickMetricsService.insertColumns($scope.columns, $scope.isPermissionInternal('zemauth.postclick_metrics'));
-        }
+        zemPostclickMetricsService.insertColumns($scope.columns, $scope.hasPermission('zemauth.postclick_metrics'), $scope.isPermissionInternal('zemauth.postclick_metrics'));
 
         cols = zemCustomTableColsService.load('campaignAdGroupsCols', $scope.columns);
         $scope.selectedColumnsCount = cols.length;
@@ -227,7 +238,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         if (newValue !== oldValue) {
             getDailyStats();
             $location.search('chart_metric1', $scope.chartMetric1);
-            localStorageService.set('campaignAdGroups.chartMetric1', $scope.chartMetric1);
+            $scope.localStorage.set('campaignAdGroups.chartMetric1', $scope.chartMetric1);
         }
     });
 
@@ -235,9 +246,25 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         if (newValue !== oldValue) {
             getDailyStats();
             $location.search('chart_metric2', $scope.chartMetric2);
-            localStorageService.set('campaignAdGroups.chartMetric2', $scope.chartMetric2);
+            $scope.localStorage.set('campaignAdGroups.chartMetric2', $scope.chartMetric2);
         }
     });
+
+    var getDailyStatsMetrics = function () {
+        var values = $scope.chartMetricOptions.map(function (option) {
+            return option.value;
+        });
+
+        if (values.indexOf($scope.chartMetric1) === -1) {
+            $scope.chartMetric1 = constants.chartMetric.CLICKS;
+        }
+
+        if ($scope.chartMetric2 !== 'none' && values.indexOf($scope.chartMetric2) === -1) {
+            $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
+        }
+
+        return [$scope.chartMetric1, $scope.chartMetric2];
+    }
 
     var setChartOptions = function () {
         $scope.chartMetricOptions = options.campaignChartMetrics;
@@ -251,7 +278,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedAdGroupIds, $scope.selectedTotals, [$scope.chartMetric1, $scope.chartMetric2]).then(
+        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedAdGroupIds, $scope.selectedTotals, getDailyStatsMetrics()).then(
             function (data) {
                 setChartOptions();
                 $scope.chartData = data.chartData;
@@ -323,7 +350,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         $scope.order = order;
 
         $location.search('order', $scope.order);
-        localStorageService.set('campaignAdGroups.order', $scope.order);
+        $scope.localStorage.set('campaignAdGroups.order', $scope.order);
         getTableData();
     };
 
@@ -372,10 +399,10 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     });
 
     $scope.init = function() {
-        var chartMetric1 = $location.search().chart_metric1 || localStorageService.get('campaignAdGroups.chartMetric1') || $scope.chartMetric1;
-        var chartMetric2 = $location.search().chart_metric2 || localStorageService.get('campaignAdGroups.chartMetric2') || $scope.chartMetric2;
+        var chartMetric1 = $location.search().chart_metric1 || $scope.localStorage.get('campaignAdGroups.chartMetric1') || $scope.chartMetric1;
+        var chartMetric2 = $location.search().chart_metric2 || $scope.localStorage.get('campaignAdGroups.chartMetric2') || $scope.chartMetric2;
         var chartHidden = $location.search().chart_hidden;
-        var order = $location.search().order || localStorageService.get('campaignAdGroups.order') || $scope.order;
+        var order = $location.search().order || $scope.localStorage.get('campaignAdGroups.order') || $scope.order;
 
         var data = $scope.adGroupData[$state.params.id];
         var adGroupIds = $location.search().ad_group_ids || (data && data.adGroupIds && data.adGroupIds.join(','));
@@ -416,6 +443,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         initColumns();
         pollSyncStatus();
         getDailyStats();
+        setDisabledExportOptions();
     };
 
     $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
@@ -438,6 +466,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         getDailyStats();
         getTableData();
+        setDisabledExportOptions();
     });
 
     $scope.$watch('showArchived', function (newValue, oldValue) {
@@ -446,9 +475,24 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         }
     });
 
-    $scope.downloadReport = function() {
-        $window.open('api/campaigns/' + $state.params.id + '/ad_groups/export/?type=' + $scope.exportType + '&start_date=' + $scope.dateRange.startDate.format() + '&end_date=' + $scope.dateRange.endDate.format(), '_blank');
-        $scope.exportType = '';
+    var setDisabledExportOptions = function() {
+        api.campaignAdGroupsExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
+            function (data) {
+                var option = null;
+                $scope.exportOptions.forEach(function (opt) {
+                    if (opt.value === 'excel_detailed') {
+                        option = opt;
+                    }
+                });
+
+                if (data.allowed) {
+                    option.disabled = false;
+                } else {
+                    option.disabled = true;
+                    option.maxDays = data.maxDays;
+                }
+            }
+        );
     };
 
     $scope.init();

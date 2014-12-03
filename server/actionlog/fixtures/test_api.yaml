@@ -89,13 +89,45 @@
     model: dash.campaign
     pk: 5
 
+# source types
+
+-   fields:
+        type: 'adblade'
+    model: dash.sourcetype
+    pk: 1
+
+-   fields:
+        type: 'gravity'
+    model: dash.sourcetype
+    pk: 2
+
+-   fields:
+        type: 'outbrain'
+    model: dash.sourcetype
+    pk: 3
+
+-   fields:
+        type: 'taboola'
+    model: dash.sourcetype
+    pk: 4
+
+-   fields:
+        type: 'yahoo'
+    model: dash.sourcetype
+    pk: 5
+
+-   fields:
+        type: 'maintenance'
+    model: dash.sourcetype
+    pk: 6
+
 # sources
 
 -   fields:
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: AdBlade
-        type: adblade
+        source_type: 1
         maintenance: false
     model: dash.source
     pk: 1
@@ -104,7 +136,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: Gravity
-        type: gravity
+        source_type: 2
         maintenance: false
     model: dash.source
     pk: 2
@@ -113,7 +145,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: Outbrain
-        type: outbrain
+        source_type: 3
         maintenance: false
     model: dash.source
     pk: 3
@@ -122,7 +154,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: Taboola
-        type: taboola
+        source_type: 4
         maintenance: false
     model: dash.source
     pk: 4
@@ -131,7 +163,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: Yahoo
-        type: yahoo
+        source_type: 5
         maintenance: false
     model: dash.source
     pk: 5
@@ -140,7 +172,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: MaintenanceSource
-        type: maintenance
+        source_type: 6
         maintenance: true
     model: dash.source
     pk: 6
@@ -459,6 +491,16 @@
         ad_group: 5
     model: dash.adgroupsettings
     pk: 5
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        archived: False
+        ad_group: 2
+        target_devices: ['desktop', 'mobile']
+        target_regions: ['UK', 'US', 'CA']
+    model: dash.adgroupsettings
+    pk: 6
 
 # test defaultsourcesettings
 

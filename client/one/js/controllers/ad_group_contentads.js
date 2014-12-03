@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'localStorageService', 'zemChartService', '$compile', function ($scope, $state, $location, $window, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, localStorageService, zemChartService, $compile) {
+oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', function ($scope, $state, $location, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemChartService) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.order = '-cost';
@@ -16,6 +16,12 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     $scope.pagination = {
         currentPage: 1,
     };
+
+    $scope.exportOptions = [
+        {name: 'CSV by day', value: 'csv'},
+        {name: 'Excel by day', value: 'excel'}
+    ];
+
     $scope.columns = [
         {
             name: 'Title',
@@ -23,6 +29,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             unselectable: true,
             checked: true,
             type: 'linkText',
+            shown: true,
             hasTotalsLabel: true,
             totalRow: false,
             help: 'The creative title/headline of a content ad.',
@@ -37,6 +44,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             field: 'url_link',
             checked: true,
             type: 'linkText',
+            shown: true,
             help: 'The web address of the content ad.',
             extraTdCss: 'trimmed url',
             totalRow: false,
@@ -50,6 +58,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             field: 'cost',
             checked: true,
             type: 'currency',
+            shown: true,
             help: "The amount spent per creative.",
             totalRow: true,
             order: true,
@@ -60,6 +69,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             field: 'cpc',
             checked: true,
             type: 'currency',
+            shown: true,
             fractionSize: 3,
             help: "The average CPC for each content ad.",
             totalRow: true,
@@ -71,6 +81,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             field: 'clicks',
             checked: true,
             type: 'number',
+            shown: true,
             help: 'The number of times a content ad has been clicked.',
             totalRow: true,
             order: true,
@@ -81,6 +92,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             field: 'impressions',
             checked: true,
             type: 'number',
+            shown: true,
             help: 'The number of times a content ad has been displayed.',
             totalRow: true,
             order: true,
@@ -91,6 +103,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             field: 'ctr',
             checked: true,
             type: 'percent',
+            shown: true,
             help: 'The number of clicks divided by the number of impressions.',
             totalRow: true,
             order: true,
@@ -118,9 +131,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
     var initColumns = function () {
         var cols;
 
-        if ($scope.hasPermission('zemauth.postclick_metrics')) {
-            zemPostclickMetricsService.insertColumns($scope.columns, $scope.isPermissionInternal('zemauth.postclick_metrics'));
-        }
+        zemPostclickMetricsService.insertColumns($scope.columns, $scope.hasPermission('zemauth.postclick_metrics'), $scope.isPermissionInternal('zemauth.postclick_metrics'));
 
         cols = zemCustomTableColsService.load('adGroupAdsCols', $scope.columns);
         $scope.selectedColumnsCount = cols.length;
@@ -129,35 +140,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             cols = zemCustomTableColsService.save('adGroupAdsCols', newValue);
             $scope.selectedColumnsCount = cols.length;
         }, true);
-    };
-
-    $scope.exportSelect2Config = {
-        minimumResultsForSearch: -1,
-        formatResult: function (object) {
-            if (!object.disabled) {
-                return angular.element(document.createElement('span')).text(object.text);
-            }
-
-            var popoverEl = angular.element(document.createElement('div'));
-
-            popoverEl.attr('popover', 'There is too much data to export. Please choose a smaller date range.');
-            popoverEl.attr('popover-trigger', 'mouseenter');
-            popoverEl.attr('popover-append-to-body', 'true');
-            popoverEl.text(object.text);
-
-            return $compile(popoverEl)($scope);
-        },
-        sortResults: function (results) {
-            // used to set disabled property on results
-            var numDays = $scope.dateRange.endDate.diff($scope.dateRange.startDate, 'days');
-
-            return results.map(function (result) {
-                if (result.id === 'excel' && ($scope.pagination.count * numDays) > 7000) {
-                    result.disabled = true;
-                }
-                return result;
-            });
-        }
     };
 
     $scope.$watch('isChartShown', function (newValue, oldValue) {
@@ -171,6 +153,10 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
 
         api.adGroupAdsTable.get($state.params.id, $scope.pagination.currentPage, $scope.pagination.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
+                if($scope.hasPermission('zemauth.postclick_metrics')) {
+                    zemPostclickMetricsService.insertGoalColumns($scope.columns, data.rows, $scope.columnCategories[1], $scope.isPermissionInternal('zemauth.postclick_metrics'));
+                }
+
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
                 $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
@@ -195,29 +181,27 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         $scope.order = order;
 
         $location.search('order', $scope.order);
-        localStorageService.set('adGroupContentAds.order', $scope.order);
+        $scope.localStorage.set('adGroupContentAds.order', $scope.order);
         getTableData();
     };
 
     var getDailyStatsMetrics = function () {
-        var metrics = [$scope.chartMetric1, $scope.chartMetric2];
-
-        var values = options.adGroupChartMetrics.map(function (option) {
+        var values = $scope.chartMetricOptions.map(function (option) {
             return option.value;
         });
 
         if (values.indexOf($scope.chartMetric1) === -1) {
-            metrics.push(constants.chartMetric.CLICKS);
+            $scope.chartMetric1 = constants.chartMetric.CLICKS;
         }
 
-        if (values.indexOf($scope.chartMetric2) === -1) {
-            metrics.push(constants.chartMetric.IMPRESSIONS);
+        if ($scope.chartMetric2 !== 'none' && values.indexOf($scope.chartMetric2) === -1) {
+            $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
         }
 
-        return metrics;
+        return [$scope.chartMetric1, $scope.chartMetric2];
     };
 
-    var setChartOptions = function () {
+    var setChartOptions = function (goals) {
         $scope.chartMetricOptions = options.adGroupChartMetrics;
 
         if ($scope.hasPermission('zemauth.postclick_metrics')) {
@@ -226,13 +210,35 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
                 $scope.isPermissionInternal('zemauth.postclick_metrics')
             );
         }
+
+        if (goals) {
+            $scope.chartMetricOptions = $scope.chartMetricOptions.concat(Object.keys(goals).map(function (goalId) {
+                var typeName = {
+                    'conversions': 'Conversions',
+                    'conversion_rate': 'Conversion Rate'
+                }[goals[goalId].type];
+
+                if (typeName === undefined) {
+                    return;
+                }
+
+                return {
+                    name: goals[goalId].name + ': ' + typeName,
+                    value: goalId,
+                    internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+                }
+            }).filter(function (option) {
+                return option !== undefined;
+            }));
+        }
     };
 
     var getDailyStats = function () {
         api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true, getDailyStatsMetrics()).then(
             function (data) {
-                setChartOptions();
+                setChartOptions(data.goals);
                 $scope.chartData = data.chartData;
+                $scope.chartGoalMetrics = data.goals;
             },
             function (data) {
                 // error
@@ -266,7 +272,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         if (newValue !== oldValue) {
             getDailyStats();
             $location.search('chart_metric1', $scope.chartMetric1);
-            localStorageService.set('adGroupContentAds.chartMetric1', $scope.chartMetric1);
+            $scope.localStorage.set('adGroupContentAds.chartMetric1', $scope.chartMetric1);
         }
     });
 
@@ -274,7 +280,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         if (newValue !== oldValue) {
             getDailyStats();
             $location.search('chart_metric2', $scope.chartMetric2);
-            localStorageService.set('adGroupContentAds.chartMetric2', $scope.chartMetric2);
+            $scope.localStorage.set('adGroupContentAds.chartMetric2', $scope.chartMetric2);
         }
     });
 
@@ -292,14 +298,15 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
 
         getDailyStats();
         getTableData();
+        setDisabledExportOptions();
     });
 
     $scope.init = function() {
-        var chartMetric1 = $location.search().chart_metric1 || localStorageService.get('adGroupContentAds.chartMetric1') || $scope.chartMetric1;
-        var chartMetric2 = $location.search().chart_metric2 || localStorageService.get('adGroupContentAds.chartMetric2') || $scope.chartMetric2;
+        var chartMetric1 = $location.search().chart_metric1 || $scope.localStorage.get('adGroupContentAds.chartMetric1') || $scope.chartMetric1;
+        var chartMetric2 = $location.search().chart_metric2 || $scope.localStorage.get('adGroupContentAds.chartMetric2') || $scope.chartMetric2;
         var chartHidden = $location.search().chart_hidden;
-        var size = $location.search().size || localStorageService.get('adGroupContentAds.paginationSize') || $scope.sizeRange[0];
-        var order = $location.search().order || localStorageService.get('adGroupContentAds.order') || $scope.order;
+        var size = $location.search().size || $scope.localStorage.get('adGroupContentAds.paginationSize') || $scope.sizeRange[0];
+        var order = $location.search().order || $scope.localStorage.get('adGroupContentAds.order') || $scope.order;
 
         var data = $scope.adGroupData[$state.params.id];
         var page = $location.search().page || (data && data.page);
@@ -338,6 +345,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         $scope.loadPage();
         getDailyStats();
         initColumns();
+        setDisabledExportOptions();
     };
     
     // pagination
@@ -364,17 +372,10 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
         $scope.pagination.sizeTemp = '';
 
         $location.search('size', $scope.pagination.size);
-        localStorageService.set('adGroupContentAds.paginationSize', $scope.pagination.size);
+        $scope.localStorage.set('adGroupContentAds.paginationSize', $scope.pagination.size);
         $scope.loadPage();
     };
 
-    // export
-    $scope.downloadReport = function() {
-        $window.open('api/ad_groups/' + $state.params.id + '/contentads/export/?type=' + $scope.exportType + '&start_date=' + $scope.dateRange.startDate.format() + '&end_date=' + $scope.dateRange.endDate.format(), '_blank');
-        $scope.exportType = '';
-    };
-
-    
     var pollSyncStatus = function() {
         if($scope.isSyncInProgress){
             $timeout(function() {
@@ -399,6 +400,26 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$window',
             }, 5000);
         }
     }
+
+    var setDisabledExportOptions = function() {
+        api.adGroupAdsExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
+            function (data) {
+                var option = null;
+                $scope.exportOptions.forEach(function (opt) {
+                    if (opt.value === 'excel') {
+                        option = opt;
+                    }
+                });
+
+                if (data.allowed) {
+                    option.disabled = false;
+                } else {
+                    option.disabled = true;
+                    option.maxDays = data.maxDays;
+                }
+            }
+        );
+    };
 
     // trigger sync
     $scope.triggerSync = function() {

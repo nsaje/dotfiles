@@ -69,13 +69,15 @@ class ActionLog(models.Model):
         auto_now_add=True,
         blank=True,
         null=True,
-        verbose_name='Created at'
+        verbose_name='Created at',
+        db_index=True
     )
     modified_dt = models.DateTimeField(
         auto_now=True,
         blank=True,
         null=True,
-        verbose_name='Modified at'
+        verbose_name='Modified at',
+        db_index=True
     )
 
     created_by = models.ForeignKey(

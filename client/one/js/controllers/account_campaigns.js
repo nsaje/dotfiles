@@ -1,5 +1,5 @@
 /*globals oneApp,constants,moment*/
-oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'localStorageService', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', '$window', function ($location, $scope, $state, $timeout, api, localStorageService, zemCustomTableColsService, zemPostclickMetricsService, zemChartService, $window) {
+oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', function ($location, $scope, $state, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemChartService) {
     $scope.getTableDataRequestInProgress = false;
     $scope.addCampaignRequestInProgress = false;
     $scope.isSyncInProgress = false;
@@ -15,6 +15,11 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.totalRow = null;
     $scope.order = '-cost';
     $scope.isIncompletePostclickMetrics = false;
+
+    $scope.exportOptions = [
+        {name: 'CSV by day', value: 'csv'},
+        {name: 'Excel by day', value: 'excel'}
+    ];
 
     $scope.updateSelectedCampaigns = function (campaignId) {
         campaignId = campaignId.toString();
@@ -63,6 +68,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             name: '',
             field: 'checked',
             type: 'checkbox',
+            shown: true,
             checked: true,
             totalRow: true,
             unselectable: true,
@@ -76,6 +82,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             unselectable: true,
             checked: true,
             type: 'linkNav',
+            shown: true,
             hasTotalsLabel: true,
             totalRow: false,
             help: 'Name of the campaign.',
@@ -87,18 +94,54 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'state',
             checked: true,
             type: 'text',
+            shown: true,
             totalRow: false,
             help: 'Status of a campaign (enabled or paused). A campaign is paused only if all its ad groups are paused too; otherwise, the campaign is enabled.',
-            extraThCss: 'text-center',
-            extraTdCss: 'text-center',
             order: true,
             initialOrder: 'asc'
+        },
+        {
+            name: 'Total Budget',
+            field: 'budget',
+            checked: true,
+            type: 'currency',
+            totalRow: true,
+            help: 'Total amount of allocated budget.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view'),
+            shown: $scope.hasPermission('zemauth.all_accounts_budget_view')
+        },
+        {
+            name: 'Available Budget',
+            field: 'available_budget',
+            checked: true,
+            type: 'currency',
+            totalRow: true,
+            help: 'Total amount of budget still available.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view'),
+            shown: $scope.hasPermission('zemauth.all_accounts_budget_view')
+        },
+        {
+            name: 'Unspent Budget',
+            field: 'unspent_budget',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Total budget minus the spend within the date range.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.unspent_budget_view'),
+            shown: $scope.hasPermission('zemauth.unspent_budget_view')
         },
         {
             name: 'Spend',
             field: 'cost',
             checked: true,
             type: 'currency',
+            shown: true,
             totalRow: true,
             help: 'The amount spent per campaign.',
             order: true,
@@ -110,6 +153,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'cpc',
             checked: true,
             type: 'currency',
+            shown: true,
             fractionSize: 3,
             totalRow: true,
             help: 'The average CPC for each campaign.',
@@ -121,6 +165,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'clicks',
             checked: true,
             type: 'number',
+            shown: true,
             totalRow: true,
             help: 'The number of times campaign\'s content ads have been clicked.',
             order: true,
@@ -131,6 +176,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'impressions',
             checked: true,
             type: 'number',
+            shown: true,
             totalRow: true,
             help: 'The number of times campaign\'s content ads have been displayed.',
             order: true,
@@ -141,6 +187,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'ctr',
             checked: true,
             type: 'percent',
+            shown: true,
             defaultValue: '0.0%',
             totalRow: true,
             help: 'The number of clicks divided by the number of impressions.',
@@ -152,6 +199,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'last_sync',
             checked: false,
             type: 'datetime',
+            shown: true,
             help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred (in Eastern Standard Time).',
             order: true,
             initialOrder: 'desc'
@@ -211,7 +259,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
         if (newValue !== oldValue) {
             getDailyStats();
             $location.search('chart_metric1', $scope.chartMetric1);
-            localStorageService.set('accountCampaigns.chartMetric1', $scope.chartMetric1);
+            $scope.localStorage.set('accountCampaigns.chartMetric1', $scope.chartMetric1);
         }
     });
 
@@ -219,9 +267,25 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
         if (newValue !== oldValue) {
             getDailyStats();
             $location.search('chart_metric2', $scope.chartMetric2);
-            localStorageService.set('accountCampaigns.chartMetric2', $scope.chartMetric2);
+            $scope.localStorage.set('accountCampaigns.chartMetric2', $scope.chartMetric2);
         }
     });
+
+    var getDailyStatsMetrics = function () {
+        var values = $scope.chartMetricOptions.map(function (option) {
+            return option.value;
+        });
+
+        if (values.indexOf($scope.chartMetric1) === -1) {
+            $scope.chartMetric1 = constants.chartMetric.CLICKS;
+        }
+
+        if ($scope.chartMetric2 !== 'none' && values.indexOf($scope.chartMetric2) === -1) {
+            $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
+        }
+
+        return [$scope.chartMetric1, $scope.chartMetric2];
+    };
 
     var setChartOptions = function () {
         $scope.chartMetricOptions = options.accountChartMetrics;
@@ -235,7 +299,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedCampaignIds, $scope.selectedTotals, [$scope.chartMetric1, $scope.chartMetric2]).then(
+        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedCampaignIds, $scope.selectedTotals, getDailyStatsMetrics()).then(
             function (data) {
                 setChartOptions();
                 $scope.chartData = data.chartData;
@@ -307,7 +371,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
         $scope.order = order;
 
         $location.search('order', $scope.order);
-        localStorageService.set('accountCampaigns.order', $scope.order);
+        $scope.localStorage.set('accountCampaigns.order', $scope.order);
         getTableData();
     };
 
@@ -358,52 +422,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     var initColumns = function () {
         var cols;
 
-        if ($scope.hasPermission('zemauth.unspent_budget_view')) {
-            $scope.columns.splice(3, 0,
-                {
-                    name: 'Unspent Budget',
-                    field: 'unspent_budget',
-                    checked: false,
-                    type: 'currency',
-                    totalRow: true,
-                    help: 'Total budget minus the spend within the date range.',
-                    order: true,
-                    initialOrder: 'desc',
-                    internal: $scope.isPermissionInternal('zemauth.unspent_budget_view')
-                }
-            );
-        }
-
-        if ($scope.hasPermission('zemauth.all_accounts_budget_view')) {
-            $scope.columns.splice(3, 0,
-                {
-                    name: 'Total Budget',
-                    field: 'budget',
-                    checked: true,
-                    type: 'currency',
-                    totalRow: true,
-                    help: 'Total amount of allocated budget.',
-                    order: true,
-                    initialOrder: 'desc',
-                    internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view')
-                },
-                {
-                    name: 'Available Budget',
-                    field: 'available_budget',
-                    checked: true,
-                    type: 'currency',
-                    totalRow: true,
-                    help: 'Total amount of budget still available.',
-                    order: true,
-                    initialOrder: 'desc',
-                    internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view')
-                }
-            )
-        }
-
-        if ($scope.hasPermission('zemauth.postclick_metrics')) {
-            zemPostclickMetricsService.insertColumns($scope.columns, $scope.isPermissionInternal('zemauth.postclick_metrics'));
-        }
+        zemPostclickMetricsService.insertColumns($scope.columns, $scope.hasPermission('zemauth.postclick_metrics'), $scope.isPermissionInternal('zemauth.postclick_metrics'));
 
         cols = zemCustomTableColsService.load('accountCampaignsCols', $scope.columns);
         $scope.selectedColumnsCount = cols.length;
@@ -415,10 +434,10 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     $scope.init = function() {
-        var chartMetric1 = $location.search().chart_metric1 || localStorageService.get('accountCampaigns.chartMetric1') || $scope.chartMetric1;
-        var chartMetric2 = $location.search().chart_metric2 || localStorageService.get('accountCampaigns.chartMetric2') || $scope.chartMetric2;
+        var chartMetric1 = $location.search().chart_metric1 || $scope.localStorage.get('accountCampaigns.chartMetric1') || $scope.chartMetric1;
+        var chartMetric2 = $location.search().chart_metric2 || $scope.localStorage.get('accountCampaigns.chartMetric2') || $scope.chartMetric2;
         var chartHidden = $location.search().chart_hidden;
-        var order = $location.search().order || localStorageService.get('accountCampaigns.order') || $scope.order;
+        var order = $location.search().order || $scope.localStorage.get('accountCampaigns.order') || $scope.order;
 
         var campaignIds = $location.search().campaign_ids;
         var campaignTotals = $location.search().campaign_totals;
@@ -491,11 +510,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             getTableData();
         }
     });
-
-    $scope.downloadReport = function() {
-        $window.open('api/accounts/' + $state.params.id + '/campaigns/export/?type=' + $scope.exportType + '&start_date=' + $scope.dateRange.startDate.format() + '&end_date=' + $scope.dateRange.endDate.format(), '_blank');
-        $scope.exportType = '';
-    };
 
     $scope.init();
 }]);

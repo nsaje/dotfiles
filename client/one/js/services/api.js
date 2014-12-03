@@ -24,25 +24,9 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             return deferred.promise;
         };
-    } 
+    }
 
     function User() {
-        function convertToApi (data) {
-            return {
-                first_name: data.firstName,
-                last_name: data.lastName,
-                email: data.email
-            };
-        }
-
-        function convertValidationErrorFromApi(errors) {
-            return {
-                firstName: errors.first_name,
-                lastName: errors.last_name,
-                email: errors.email
-            };
-        }
-
         this.get = function (id) {
             var deferred = $q.defer();
             var url = '/api/users/' + id + '/';
@@ -64,35 +48,6 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             return deferred.promise;
         };
-
-        this.put = function (userData) {
-            var deferred = $q.defer();
-            var url = '/api/users/';
-
-            var data = convertToApi(userData);
-
-            $http.put(url, data).
-                success(function (data, status) {
-                    var resource;
-                    if (data && data.data) {
-                        resource = data.data;
-                    }
-                    deferred.resolve({
-                        'user': resource.user,
-                        'created': status === 201
-                    });
-                }).
-                error(function (data, status) {
-                    var resource;
-                    if (status === 400 && data && data.data.error_code === 'ValidationError') {
-                        resource = convertValidationErrorFromApi(data.data.errors);
-                    }
-                    deferred.reject(resource);
-                });
-
-            return deferred.promise;
-        };
-
     }
 
     function AdGroupSources() {
@@ -135,39 +90,30 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function SourcesTable() {
+        function convertRow(row) {
+            var convertedRow = {}
+
+            for(var field in row) {
+                if(field.indexOf('goals') == '0') {
+                    convertGoals(row, convertedRow); 
+                } else if (field === 'status') {
+                    convertedRow[field] = row[field];
+
+                    if (row[field] === constants.adGroupSettingsState.ACTIVE) {
+                        convertedRow.status = 'Active';
+                    } else if (row[field] === constants.adGroupSettingsState.INACTIVE) {
+                        convertedRow.status = 'Paused';
+                    } else {
+                        convertedRow.status = 'N/A';
+                    }
+                } else {
+                    convertedRow[field] = row[field];
+                }
+            }
+            return convertedRow;
+        }
 
         function convertFromApi(data) {
-
-            function convertRow(row) {
-                var converted_row = {}
-                for(var field in row) {
-                    if(field.indexOf('goals') == '0') {
-                        for(var goalName in row['goals']) {
-                            for(var metricName in row['goals'][goalName]) {
-                                if(metricName == 'conversions') {
-                                    converted_row['goal__' + goalName + ': Conversions'] = row['goals'][goalName][metricName];
-                                } else if(metricName == 'conversion_rate') {
-                                    converted_row['goal__' + goalName + ': Conversion Rate'] = row['goals'][goalName][metricName];
-                                }
-                            }
-                        }
-                    } else if (field === 'status') {
-                        converted_row[field] = row[field];
-
-                        if (row[field] === constants.adGroupSettingsState.ACTIVE) {
-                            converted_row.status_label = 'Active';
-                        } else if (row[field] === constants.adGroupSettingsState.INACTIVE) {
-                            converted_row.status_label = 'Paused';
-                        } else {
-                            converted_row.status_label = 'N/A';
-                        }
-                    } else {
-                        converted_row[field] = row[field];
-                    }
-                }
-                return converted_row;
-            }
-
             for(var i = 0; i < data.rows.length; i++) {
                 var row = data.rows[i];
                 data.rows[i] = convertRow(row);
@@ -217,47 +163,39 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AdGroupSourcesTable() {
+        function convertRow(row) {
+            var convertedRow = {};
+
+            for(var field in row) {
+                if (field === 'goals') {
+                    convertGoals(row, convertedRow); 
+                } else if (field === 'status') {
+                    convertedRow[field] = row[field];
+
+                    if (row[field] === constants.adGroupSettingsState.ACTIVE) {
+                        convertedRow.status = 'Active';
+                    } else if (row[field] === constants.adGroupSettingsState.INACTIVE) {
+                        convertedRow.status = 'Paused';
+                    } else {
+                        convertedRow.status = 'N/A';
+                    }
+                } else {
+                    convertedRow[field] = row[field];
+                }
+            }
+            return convertedRow;
+        }
 
         function convertFromApi(data) {
-
-            function convertRow(row) {
-                var converted_row = {}
-                for(var field in row) {
-                    if(field.indexOf('goals') == '0') {
-                        for(var goalName in row['goals']) {
-                            for(var metricName in row['goals'][goalName]) {
-                                if(metricName == 'conversions') {
-                                    converted_row['goal__' + goalName + ': Conversions'] = row['goals'][goalName][metricName];
-                                } else if(metricName == 'conversion_rate') {
-                                    converted_row['goal__' + goalName + ': Conversion Rate'] = row['goals'][goalName][metricName];
-                                }
-                            }
-                        }
-                    } else if (field === 'status') {
-                        converted_row[field] = row[field];
-
-                        if (row[field] === constants.adGroupSettingsState.ACTIVE) {
-                            converted_row.status_label = 'Active';
-                        } else if (row[field] === constants.adGroupSettingsState.INACTIVE) {
-                            converted_row.status_label = 'Paused';
-                        } else {
-                            converted_row.status_label = 'N/A';
-                        }
-                    } else {
-                        converted_row[field] = row[field];
-                    }
-                }
-                return converted_row;
-            }
-
             for(var i = 0; i < data.rows.length; i++) {
                 var row = data.rows[i];
                 data.rows[i] = convertRow(row);
             }
             data.totals = convertRow(data.totals);
-            
+            data.lastChange = data.last_change;
+
             return data;
-        };
+        }
 
         this.get = function (id, startDate, endDate, order) {
             var deferred = $q.defer();
@@ -301,6 +239,8 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 text: row.url !== '' ? row.url : 'N/A',
                 url: row.url !== '' ? row.url : null
             };
+
+            convertGoals(row, row);
 
             return row;
         }
@@ -1349,11 +1289,11 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     function AccountAccountsTable() {
         function convertFromApi(row) {
             if (row.archived) {
-                row.status_label = 'Archived';
+                row.status = 'Archived';
             } else if (row.status === constants.adGroupSettingsState.ACTIVE) {
-                row.status_label = 'Active';
+                row.status = 'Active';
             } else {
-                row.status_label = 'Paused';
+                row.status = 'Paused';
             }
 
             return row;
@@ -1508,6 +1448,22 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AccountUsers() {
+        function convertToApi (data) {
+            return {
+                first_name: data.firstName,
+                last_name: data.lastName,
+                email: data.email
+            };
+        }
+
+        function convertValidationErrorFromApi(errors) {
+            return {
+                firstName: errors.first_name,
+                lastName: errors.last_name,
+                email: errors.email
+            };
+        }
+
         this.list = function (accountId) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + accountId + '/users/';
@@ -1529,23 +1485,30 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             return deferred.promise;
         };
 
-        this.put = function (accountId, userId) {
+        this.put = function (accountId, userData) {
             var deferred = $q.defer();
-            var url = '/api/accounts/' + accountId + '/users/' + userId + '/';
+            var url = '/api/accounts/' + accountId + '/users/';
 
-            $http.put(url).
-                success(function (data) {
+            var data = convertToApi(userData);
+
+            $http.put(url, data).
+                success(function (data, status) {
                     var resource;
                     if (data && data.data) {
                         resource = data.data;
                     }
-                    deferred.resolve(resource);
+                    deferred.resolve({
+                        user: resource.user,
+                        created: status === 201
+                    });
                 }).
                 error(function (data, status) {
-                    var resource;
+                    var resource = {};
                     if (status === 400 && data && data.data.error_code === 'ValidationError') {
-                        resource = convertValidationErrorFromApi(data.data.errors);
+                        resource.errors = convertValidationErrorFromApi(data.data.errors);
+                        resource.message = data.data.message;
                     }
+
                     deferred.reject(resource);
                 });
 
@@ -1570,6 +1533,168 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             return deferred.promise;
         };
+    }
+
+    function AdGroupSourceSettings() {
+        function convertValidationErrorFromApi(errors) {
+            var result = {
+                cpc: errors.cpc_cc,
+                dailyBudget: errors.daily_budget_cc,
+                state: errors.state
+            };
+
+            return result;
+        }
+
+        this.save = function (adGroupId, sourceId, data) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/sources/' + sourceId + '/settings/';
+
+            $http.put(url, data).
+                success(function (data) {
+                    var resource;
+                    if (data && data.data) {
+                        resource = data.data;
+                    }
+                    deferred.resolve(resource);
+                }).
+                error(function (data, status) {
+                    var resource;
+                    if (status === 400 && data && data.data.error_code === 'ValidationError') {
+                        resource = convertValidationErrorFromApi(data.data.errors);
+                    }
+                    deferred.reject(resource);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    function AdGroupSourcesLastChange() {
+        function convertFromApi (data) {
+            return {
+                lastChange: data.last_change
+            };
+        }
+
+        this.get = function (adGroupId) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/sources/last_change/';
+
+            $http.get(url).
+                success(function (data) {
+                    var resource;
+
+                    if (data && data.data) {
+                        resource = convertFromApi(data.data);
+                    }
+
+                    deferred.resolve(resource);
+                }).
+                error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    function CampaignAdGroupsExportAllowed() {
+        function convertFromApi(data) {
+            return {
+                allowed: data.allowed,
+                maxDays: data.max_days
+            };
+        }
+
+        this.get = function (campaignId, startDate, endDate) {
+            var deferred = $q.defer();
+            var url = '/api/campaigns/' + campaignId + '/ad_groups/export/allowed/';
+
+            var config = {
+                params: {}
+            };
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    var resource;
+
+                    if (data && data.data) {
+                        resource = convertFromApi(data.data);
+                    }
+
+                    deferred.resolve(resource);
+                }).
+                error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    function AdGroupAdsExportAllowed() {
+        function convertFromApi(data) {
+            return {
+                allowed: data.allowed,
+                maxDays: data.max_days
+            };
+        }
+
+        this.get = function (adGroupId, startDate, endDate) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/export/allowed/';
+
+            var config = {
+                params: {}
+            };
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    var resource;
+
+                    if (data && data.data) {
+                        resource = convertFromApi(data.data);
+                    }
+
+                    deferred.resolve(resource);
+                }).
+                error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    // Helpers
+
+    function convertGoals(row, convertedRow) {
+        for(var goalName in row['goals']) {
+            for(var metricName in row['goals'][goalName]) {
+                if(metricName == 'conversions') {
+                    convertedRow['goal__' + goalName + ': Conversions'] = row['goals'][goalName][metricName];
+                } else if(metricName == 'conversion_rate') {
+                    convertedRow['goal__' + goalName + ': Conversion Rate'] = row['goals'][goalName][metricName];
+                }
+            }
+        }
     }
 
     return {
@@ -1603,6 +1728,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         checkSyncProgress: new CheckSyncProgress(),
         dailyStats: new DailyStats(),
         allAccountsBudget: new AllAccountsBudget(),
-        accountUsers: new AccountUsers()
+        accountUsers: new AccountUsers(),
+        adGroupSourceSettings: new AdGroupSourceSettings(),
+        adGroupSourcesLastChange: new AdGroupSourcesLastChange(),
+        adGroupAdsExportAllowed: new AdGroupAdsExportAllowed(),
+        campaignAdGroupsExportAllowed: new CampaignAdGroupsExportAllowed()
     };
 }]);

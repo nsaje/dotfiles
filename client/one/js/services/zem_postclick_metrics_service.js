@@ -2,12 +2,13 @@
 "use strict";
 
 oneApp.factory('zemPostclickMetricsService', function() {
-    function insertColumns(columns, isInternal) {
+    function insertColumns(columns, isShown, isInternal) {
         columns.splice(columns.length - 1, 0, {
             name: 'Visits',
             field: 'visits',
             checked: true,
             type: 'number',
+            shown: isShown,
             internal: isInternal,
             help: 'Total number of sessions within a date range. A session is the period of time in which a user is actively engaged with your site.',
             totalRow: true,
@@ -18,6 +19,7 @@ oneApp.factory('zemPostclickMetricsService', function() {
             field: 'pageviews',
             checked: true,
             type: 'number',
+            shown: isShown,
             internal: isInternal,
             help: 'Total number of pageviews made during the selected date range. A pageview is a view of a single page. Repeated views are counted.',
             totalRow: true,
@@ -28,6 +30,7 @@ oneApp.factory('zemPostclickMetricsService', function() {
             field: 'percent_new_users',
             checked: false,
             type: 'percent',
+            shown: isShown,
             internal: isInternal,
             help: 'An estimate of first time visits during the selected date range.',
             totalRow: true,
@@ -38,6 +41,7 @@ oneApp.factory('zemPostclickMetricsService', function() {
             field: 'bounce_rate',
             checked: false,
             type: 'percent',
+            shown: isShown,
             internal: isInternal,
             help: 'Percantage of visits that resulted in only one page view.',
             totalRow: true,
@@ -49,6 +53,7 @@ oneApp.factory('zemPostclickMetricsService', function() {
             checked: false,
             type: 'number',
             fractionSize: 2,
+            shown: isShown,
             internal: isInternal,
             help: 'Average number of pageviews per visit.',
             totalRow: true,
@@ -59,6 +64,7 @@ oneApp.factory('zemPostclickMetricsService', function() {
             field: 'avg_tos',
             checked: false,
             type: 'seconds',
+            shown: isShown,
             internal: isInternal,
             help: 'Average time spent on site in seconds during the selected date range.',
             totalRow: true,
@@ -69,6 +75,7 @@ oneApp.factory('zemPostclickMetricsService', function() {
             field: 'click_discrepancy',
             checked: false,
             type: 'percent',
+            shown: isShown,
             internal: isInternal,
             help: 'Clicks detected only by media source as a percentage of total clicks.',
             totalRow: true,
@@ -84,8 +91,60 @@ oneApp.factory('zemPostclickMetricsService', function() {
         }));
     }
 
+    function insertGoalColumns(columns, rows, postclickCategory, isInternal) {
+        for(var i = 0; i < rows.length; i++) {
+            for(var field in rows[i]) {
+                if(columnsContainField(columns, field)) {
+                    continue;
+                }
+
+                if(field.indexOf(': Conversions') != -1) {
+                    var columnDescription = {
+                        name: field.substr('goal__'.length),
+                        field: field,
+                        checked: false,
+                        type: 'number',
+                        help: 'Number of completions of the conversion goal',
+                        internal: isInternal,
+                        totalRow: true,
+                        order: true,
+                        initialOrder: 'desc',
+                        shown: true
+                    };
+                    columns.splice(columns.length - 1, 0, columnDescription);
+                    postclickCategory.fields.push(columnDescription.field);
+                } else if(field.indexOf(': Conversion Rate') != -1) {
+                    var columnDescription = {
+                        name: field.substr('goal__'.length),
+                        field: field,
+                        checked: false,
+                        type: 'percent',
+                        help: 'Percentage of visits which resulted in a goal completion',
+                        internal: isInternal,
+                        totalRow: true,
+                        order: true,
+                        initialOrder: 'desc',
+                        shown: true
+                    };
+                    columns.splice(columns.length - 1, 0, columnDescription);
+                    postclickCategory.fields.push(columnDescription.field);
+                }
+            }
+        }
+    };
+
+    function columnsContainField(columns, field) {
+        for(var i = 0; i < columns.length; i++) {
+            if(field == columns[i]['field']){
+                return true;
+            }
+        }
+        return false;
+    };
+
     return {
         insertColumns: insertColumns,
-        concatChartOptions: concatChartOptions
+        concatChartOptions: concatChartOptions,
+        insertGoalColumns: insertGoalColumns
     }
 });

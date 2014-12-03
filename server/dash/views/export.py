@@ -8,6 +8,7 @@ from dash import export
 from dash import constants
 from utils import api_common
 from utils import statsd_helper
+from utils.sort_helper import sort_results
 
 
 class AccountCampaignsExport(api_common.BaseApiView):
@@ -90,6 +91,8 @@ class CampaignAdGroupsExport(api_common.BaseApiView):
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+        
+        export_type = request.GET.get('type')
 
         filename = '{0}_{1}_per_campaign_report_{2}_{3}'.format(
             slugify.slugify(campaign.account.name),
@@ -106,7 +109,7 @@ class CampaignAdGroupsExport(api_common.BaseApiView):
             campaign=campaign
         )
 
-        if request.GET.get('type') == 'excel':
+        if export_type == 'excel' or export_type == 'excel_detailed':
             detailed_data = export.generate_rows(
                 ['date', 'ad_group'],
                 start_date,
@@ -116,7 +119,9 @@ class CampaignAdGroupsExport(api_common.BaseApiView):
             )
 
             self.add_ad_group_data(detailed_data, campaign)
+            detailed_data = sort_results(detailed_data, ['date', 'ad_group'])
 
+            # define columns
             columns = [
                 {'key': 'date', 'name': 'Date', 'format': 'date'},
                 {'key': 'cost', 'name': 'Cost', 'format': 'currency'},
@@ -129,10 +134,30 @@ class CampaignAdGroupsExport(api_common.BaseApiView):
             detailed_columns = list(columns)  # make a copy
             detailed_columns.insert(1, {'key': 'ad_group', 'name': 'Ad Group', 'width': 30})
 
-            content = export.get_excel_content([
+            sheets = [
                 ('Per Campaign Report', columns, data),
                 ('Detailed Report', detailed_columns, detailed_data)
-            ])
+            ]
+
+            if export_type == 'excel_detailed':
+                per_content_ad_data = export.generate_rows(
+                    ['date', 'ad_group', 'article'],
+                    start_date,
+                    end_date,
+                    request.user,
+                    campaign=campaign
+                )
+
+                self.add_ad_group_data(per_content_ad_data, campaign)
+                per_content_ad_data = sort_results(per_content_ad_data, ['date', 'ad_group', 'title'])
+
+                per_content_ad_columns = list(detailed_columns)
+                per_content_ad_columns.insert(2, {'key': 'title', 'name': 'Title', 'width': 30})
+                per_content_ad_columns.insert(3, {'key': 'url', 'name': 'URL', 'width': 40})
+
+                sheets.append(('Per Content Ad Report', per_content_ad_columns, per_content_ad_data))
+
+            content = export.get_excel_content(sheets)
 
             return self.create_excel_response(filename, content=content)
         else:
@@ -153,6 +178,67 @@ class CampaignAdGroupsExport(api_common.BaseApiView):
 
         for result in results:
             result['ad_group'] = ad_groups[result['ad_group']].name
+
+
+class AdGroupAdsExportAllowed(api_common.BaseApiView):
+    MAX_ROWS = 32268
+
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_export_allowed_get')
+    def get(self, request, ad_group_id):
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
+        num_days = (end_date - start_date).days + 1
+
+        num_articles = models.Article.objects.filter(ad_group=ad_group).count()
+
+        active_sources = helpers.get_active_ad_group_sources(models.AdGroup, [ad_group])
+        num_sources = models.Source.objects.filter(
+            adgroupsource__in=active_sources
+        ).count()
+
+        # estimate number of rows (worst case)
+        row_count = num_days * num_sources * num_articles
+
+        try:
+            max_days = self.MAX_ROWS / (num_articles * num_sources)
+        except ZeroDivisionError:
+            max_days = None
+
+        return self.create_api_response({
+            'allowed': row_count <= self.MAX_ROWS,
+            'max_days': max_days
+        })
+
+
+class CampaignAdGroupsExportAllowed(api_common.BaseApiView):
+    MAX_ROWS = 16134
+
+    @statsd_helper.statsd_timer('dash.api', 'campiagn_ad_group_export_allowed_get')
+    def get(self, request, campaign_id):
+        campaign = helpers.get_ad_group(request.user, campaign_id)
+
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
+        num_days = (end_date - start_date).days + 1
+
+        num_articles = models.Article.objects.filter(ad_group__campaign=campaign).count()
+
+        # estimate number of rows (worst case)
+        row_count = num_days * num_articles
+
+        try:
+            max_days = self.MAX_ROWS / num_articles
+        except ZeroDivisionError:
+            max_days = None
+
+        return self.create_api_response({
+            'allowed': row_count <= self.MAX_ROWS,
+            'max_days': max_days
+        })
 
 
 class AdGroupAdsExport(api_common.BaseApiView):

@@ -4,85 +4,220 @@ import datetime
 from django.test import TestCase
 
 from dash import models
-from dash import constants
 from dash import api
 
 
-class CampaignStatusApiTest(TestCase):
-
+class UpdateAdGroupSourceState(TestCase):
     fixtures = ['test_api.yaml']
 
     def setUp(self):
         self.ad_group_source = models.AdGroupSource.objects.get(id=1)
 
-    def test_upsert_unmodified(self):
-        current_settings = self.ad_group_source.settings.latest()
+    def test_should_update_if_changed(self):
+        latest_state = models.AdGroupSourceState.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
 
-        api.campaign_status_upsert(self.ad_group_source, {
-            'cpc_cc': int(current_settings.cpc_cc * 10000),
-            'daily_budget_cc': int(current_settings.daily_budget_cc * 10000),
-            'state': current_settings.state,
-        })
+        conf = {
+            'state': 2,
+            'cpc_cc': 500,
+            'daily_budget_cc': 10000
+        }
 
-        self.assertEqual(current_settings, self.ad_group_source.settings.latest())
+        api.update_ad_group_source_state(self.ad_group_source, conf)
 
-    def test_upsert_modified_state(self):
-        current_settings = self.ad_group_source.settings.latest()
+        new_latest_state = models.AdGroupSourceState.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
 
-        new_state = constants.AdGroupSourceSettingsState.INACTIVE
+        self.assertNotEqual(new_latest_state.id, latest_state.id)
+        self.assertEqual(new_latest_state.state, conf['state'])
+        self.assertEqual(float(new_latest_state.cpc_cc), 0.05)
+        self.assertEqual(float(new_latest_state.daily_budget_cc), 1.0)
 
-        api.campaign_status_upsert(self.ad_group_source, {
-            'cpc_cc': int(current_settings.cpc_cc * 10000),
-            'daily_budget_cc': int(current_settings.daily_budget_cc * 10000),
-            'state': new_state,
-        })
+    def test_should_not_update_if_unchanged(self):
+        latest_state = models.AdGroupSourceState.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
 
-        self.assertNotEqual(current_settings, self.ad_group_source.settings.latest())
-        self.assertEqual(self.ad_group_source.settings.latest().state, new_state)
+        conf = {
+            'state': latest_state.state,
+            'cpc_cc': int(latest_state.cpc_cc * 10000),
+            'daily_budget_cc': int(latest_state.daily_budget_cc * 10000)
+        }
 
-    def test_upsert_modified_cpc(self):
-        current_settings = self.ad_group_source.settings.latest()
+        api.update_ad_group_source_state(self.ad_group_source, conf)
 
-        new_cpc_cc = 1234
+        new_latest_state = models.AdGroupSourceState.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
 
-        api.campaign_status_upsert(self.ad_group_source, {
-            'cpc_cc': new_cpc_cc,
-            'daily_budget_cc': int(current_settings.daily_budget_cc * 10000),
-            'state': current_settings.state,
-        })
+        self.assertEqual(new_latest_state.id, latest_state.id)
 
-        self.assertNotEqual(current_settings, self.ad_group_source.settings.latest())
-        self.assertEqual(self.ad_group_source.settings.latest().cpc_cc, decimal.Decimal(new_cpc_cc) / 10000)
+    def test_should_update_if_no_state_yet(self):
+        self.assertTrue(
+            models.AdGroupSourceState.objects.filter(ad_group_source=self.ad_group_source).count() > 0
+        )
+        models.AdGroupSourceState.objects.filter(ad_group_source=self.ad_group_source).delete()
 
-    def test_upsert_modified_daily_budget(self):
-        current_settings = self.ad_group_source.settings.latest()
+        conf = {
+            'state': 2,
+            'cpc_cc': 500,
+            'daily_budget_cc': 10000
+        }
 
-        new_daily_budget_cc = 1234
+        api.update_ad_group_source_state(self.ad_group_source, conf)
 
-        api.campaign_status_upsert(self.ad_group_source, {
-            'cpc_cc': int(current_settings.cpc_cc * 10000),
-            'daily_budget_cc': new_daily_budget_cc,
-            'state': current_settings.state,
-        })
+        new_latest_state = models.AdGroupSourceState.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
 
-        self.assertNotEqual(current_settings, self.ad_group_source.settings.latest())
+        self.assertEqual(new_latest_state.state, conf['state'])
+        self.assertEqual(float(new_latest_state.cpc_cc), 0.05)
+        self.assertEqual(float(new_latest_state.daily_budget_cc), 1.0)
+
         self.assertEqual(
-            self.ad_group_source.settings.latest().daily_budget_cc,
-            decimal.Decimal(new_daily_budget_cc) / 10000
+            models.AdGroupSourceState.objects.filter(ad_group_source=self.ad_group_source).count(),
+            1
         )
 
-    def test_update_campaign_state_unmodified(self):
-        current_settings = self.ad_group_source.settings.latest()
-        state = current_settings.state
-        api.update_campaign_state(self.ad_group_source, state)
-        self.assertEqual(current_settings, self.ad_group_source.settings.latest())
+    def test_should_not_update_if_not_latest_settings(self):
+        latest_state = models.AdGroupSourceState.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
 
-    def test_update_campaign_state_modified(self):
-        current_settings = self.ad_group_source.settings.latest()
-        new_state = current_settings.state % 2 + 1
-        api.update_campaign_state(self.ad_group_source, new_state)
-        self.assertNotEqual(current_settings, self.ad_group_source.settings.latest())
-        self.assertEqual(self.ad_group_source.settings.latest().state, new_state)
+        conf = {
+            'state': 2,
+            'cpc_cc': 500,
+            'daily_budget_cc': 10000
+        }
+
+        api.update_ad_group_source_state(self.ad_group_source, conf, settings_id=1)
+
+        new_latest_state = models.AdGroupSourceState.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        self.assertEqual(new_latest_state.id, latest_state.id)
+
+    def test_should_update_if_latest_settings(self):
+        latest_state = models.AdGroupSourceState.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        conf = {
+            'state': 2,
+            'cpc_cc': 500,
+            'daily_budget_cc': 10000
+        }
+
+        api.update_ad_group_source_state(self.ad_group_source, conf, settings_id=2)
+
+        new_latest_state = models.AdGroupSourceState.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        self.assertNotEqual(new_latest_state.id, latest_state.id)
+        self.assertEqual(new_latest_state.state, conf['state'])
+        self.assertEqual(float(new_latest_state.cpc_cc), 0.05)
+        self.assertEqual(float(new_latest_state.daily_budget_cc), 1.0)
+
+    def test_should_disregard_null_and_unspecified_fields(self):
+        latest_state = models.AdGroupSourceState.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        conf = {
+            'state': 2,
+            'cpc_cc': None,
+        }
+
+        api.update_ad_group_source_state(self.ad_group_source, conf)
+
+        new_latest_state = models.AdGroupSourceState.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        self.assertNotEqual(new_latest_state.id, latest_state.id)
+        self.assertEqual(new_latest_state.state, conf['state'])
+        self.assertEqual(new_latest_state.cpc_cc, latest_state.cpc_cc)
+        self.assertEqual(new_latest_state.daily_budget_cc, latest_state.daily_budget_cc)
+
+
+class AdGroupSourceSettingsWriterTest(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.ad_group_source = models.AdGroupSource.objects.get(id=1)
+        self.writer = api.AdGroupSourceSettingsWriter(self.ad_group_source)
+        self.ad_group_settings = \
+            models.AdGroupSettings.objects \
+                .filter(ad_group=self.ad_group_source.ad_group) \
+                .latest('created_dt')
+        assert self.ad_group_settings.state == 2
+
+    def test_can_not_trigger_action_if_ad_group_disabled(self):
+        self.assertFalse(self.writer.can_trigger_action())
+
+    def test_can_trigger_action_if_ad_group_enabled(self):
+        self.ad_group_settings.state = 1
+        self.ad_group_settings.save()
+        self.assertTrue(self.writer.can_trigger_action())
+
+    def test_should_write_if_no_settings_yet(self):
+        self.assertTrue(
+            models.AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).count() > 0
+        )
+        # delete all ad_group_source_settings
+        models.AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).delete()
+
+        self.writer.set({'state': 1})
+
+        self.assertTrue(
+            models.AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).count() > 0
+        )
+
+        latest_settings = models.AdGroupSourceSettings.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        self.assertEqual(latest_settings.state, 1)
+        self.assertTrue(latest_settings.cpc_cc is None)
+        self.assertTrue(latest_settings.daily_budget_cc is None)
+
+    def test_should_write_if_changed(self):
+        latest_settings = models.AdGroupSourceSettings.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        self.writer.set({'cpc_cc': decimal.Decimal(0.1)})
+
+        new_latest_settings = models.AdGroupSourceSettings.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        self.assertNotEqual(new_latest_settings.id, latest_settings.id)
+        self.assertEqual(float(new_latest_settings.cpc_cc), 0.1)
+        self.assertNotEqual(new_latest_settings.cpc_cc, latest_settings.cpc_cc)
+        self.assertEqual(new_latest_settings.state, latest_settings.state)
+        self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
+
+    def test_should_not_write_if_unchanged(self):
+        latest_settings = models.AdGroupSourceSettings.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        self.writer.set({'daily_budget_cc': decimal.Decimal(50)})
+
+        new_latest_settings = models.AdGroupSourceSettings.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        self.assertEqual(latest_settings.id, new_latest_settings.id)
+        self.assertEqual(latest_settings.state, new_latest_settings.state)
+        self.assertEqual(latest_settings.cpc_cc, new_latest_settings.cpc_cc)
+        self.assertEqual(latest_settings.daily_budget_cc, new_latest_settings.daily_budget_cc)
 
 
 class AdGroupSettingsOrderTest(TestCase):

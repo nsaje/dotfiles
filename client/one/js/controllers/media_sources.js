@@ -74,6 +74,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
             name: '',
             field: 'checked',
             type: 'checkbox',
+            shown: true,
             checked: true,
             totalRow: true,
             unselectable: true,
@@ -87,6 +88,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
             unselectable: true,
             checked: true,
             type: 'text',
+            shown: true,
             hasTotalsLabel: true,
             totalRow: false,
             help: 'A media source where your content is being promoted.',
@@ -95,14 +97,13 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
         },
         {
             name: 'Status',
-            field: 'status_label',
+            field: 'status',
             unselectable: true,
             checked: true,
             type: 'text',
+            shown: true,
             totalRow: false,
             help: 'Status of a particular media source (enabled or paused).',
-            extraThCss: 'text-center',
-            extraTdCss: 'text-center',
             order: true,
             orderField: 'status',
             initialOrder: 'asc'
@@ -112,6 +113,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
             field: 'min_bid_cpc',
             checked: true,
             type: 'currency',
+            shown: true,
             fractionSize: 3,
             help: 'Minimum bid price (in USD) per click.',
             totalRow: false,
@@ -123,6 +125,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
             field: 'max_bid_cpc',
             checked: true,
             type: 'currency',
+            shown: true,
             fractionSize: 3,
             help: 'Maximum bid price (in USD) per click.',
             totalRow: false,
@@ -134,7 +137,20 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
             field: 'daily_budget',
             checked: true,
             type: 'currency',
+            shown: true,
             help: 'Maximum budget per day.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
+        },
+        {
+            name: 'Yesterday Spend',
+            field: 'yesterday_cost',
+            checked: false,
+            type: 'currency',
+            help: 'Amount that you have spent yesterday for promotion on specific media source.',
+            internal: $scope.isPermissionInternal('reports.yesterday_spend_view'),
+            shown: $scope.hasPermission('reports.yesterday_spend_view'),
             totalRow: true,
             order: true,
             initialOrder: 'desc'
@@ -144,6 +160,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
             field: 'cost',
             checked: true,
             type: 'currency',
+            shown: true,
             help: "Amount spent per media source.",
             totalRow: true,
             order: true,
@@ -154,6 +171,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
             field: 'cpc',
             checked: true,
             type: 'currency',
+            shown: true,
             fractionSize: 3,
             help: "The average CPC.",
             totalRow: true,
@@ -165,6 +183,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
             field: 'clicks',
             checked: true,
             type: 'number',
+            shown: true,
             help: 'The number of times a content ad has been clicked.',
             totalRow: true,
             order: true,
@@ -175,6 +194,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
             field: 'impressions',
             checked: true,
             type: 'number',
+            shown: true,
             help: 'The number of times a content ad has been displayed.',
             totalRow: true,
             order: true,
@@ -185,6 +205,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
             field: 'ctr',
             checked: true,
             type: 'percent',
+            shown: true,
             defaultValue: '0.0%',
             help: 'The number of clicks divided by the number of impressions.',
             totalRow: true,
@@ -196,6 +217,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
             field: 'last_sync',
             checked: false,
             type: 'datetime',
+            shown: true,
             help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred (in Eastern Standard Time).',
             totalRow: false,
             order: true,
@@ -228,23 +250,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
     $scope.initColumns = function () {
         var cols;
 
-        if ($scope.hasPermission('reports.yesterday_spend_view')) {
-            $scope.columns.splice(6, 0, {
-                name: 'Yesterday Spend',
-                field: 'yesterday_cost',
-                checked: false,
-                type: 'currency',
-                help: 'Amount that you have spent yesterday for promotion on specific media source.',
-                internal: $scope.isPermissionInternal('reports.yesterday_spend_view'),
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc'
-            });
-        }
-
-        if ($scope.hasPermission('zemauth.postclick_metrics')) {
-            zemPostclickMetricsService.insertColumns($scope.columns, $scope.isPermissionInternal('zemauth.postclick_metrics'));
-        }
+        zemPostclickMetricsService.insertColumns($scope.columns, $scope.hasPermission('zemauth.postclick_metrics'), $scope.isPermissionInternal('zemauth.postclick_metrics'));
 
         cols = zemCustomTableColsService.load($scope.localStoragePrefix + 'Cols', $scope.columns);
         $scope.selectedColumnsCount = cols.length;

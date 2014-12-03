@@ -54,13 +54,20 @@
     model: dash.campaign
     pk: 2
 
+# source types
+
+-   fields:
+        type: 'adblade'
+    model: dash.sourcetype
+    pk: 1
+
 # sources
 
 -   fields:
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: AdBlade
-        type: adblade
+        source_type: 1
     model: dash.source
     pk: 1
 

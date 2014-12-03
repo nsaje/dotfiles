@@ -6,6 +6,9 @@ def clean_url(raw_url):
     '''
     Removes all utm_* and z1_* params, then alphabetically order the remaining params
     '''
+    if isinstance(raw_url, unicode):
+        raw_url = raw_url.encode('utf-8')
+
     split_url = list(urlparse.urlsplit(raw_url))
     query_parameters = urlparse.parse_qsl(split_url[3], keep_blank_values=True)
 

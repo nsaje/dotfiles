@@ -9,10 +9,11 @@ class AuthenticationForm(auth_forms.AuthenticationForm):
 
 class SetPasswordForm(forms.Form):
     new_password = forms.CharField(min_length=6, widget=forms.PasswordInput)
+    email = forms.EmailField(widget=forms.HiddenInput())  # needed for FullStory
 
     def __init__(self, user, *args, **kwargs):
         self.user = user
-        super(SetPasswordForm, self).__init__(*args, **kwargs)
+        super(SetPasswordForm, self).__init__(initial={'email': user.email}, *args, **kwargs)
 
     def save(self, commit=True):
         self.user.set_password(self.cleaned_data['new_password'])

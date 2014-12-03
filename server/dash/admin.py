@@ -89,7 +89,8 @@ class SourceCredentialsForm(forms.ModelForm):
     oauth_refresh = forms.CharField(label='OAuth tokens', required=False, widget=StrFieldWidget)
 
     def _set_oauth_refresh(self, instance):
-        if not instance or not instance.pk or instance.source.type not in settings.SOURCE_OAUTH_URIS.keys():
+        if not instance or not instance.pk or\
+           not (instance.source.source_type and instance.source.source_type.type in settings.SOURCE_OAUTH_URIS.keys()):
             self.fields['oauth_refresh'].widget = forms.HiddenInput()
             return
 
@@ -105,14 +106,14 @@ class SourceCredentialsForm(forms.ModelForm):
         if 'oauth_tokens' not in decrypted:
             self.initial['oauth_refresh'] = 'Credentials instance doesn\'t contain access tokens. '\
                                             '<a href="' +\
-                                            reverse('dash.views.oauth_authorize',
-                                                    kwargs={'source_name': instance.source.type}) +\
+                                            reverse('dash.views.views.oauth_authorize',
+                                                    kwargs={'source_name': instance.source.source_type.type}) +\
                                             '?credentials_id=' + str(instance.pk) + '">Generate tokens</a>'
         else:
             self.initial['oauth_refresh'] = 'Credentials instance contains access tokens. '\
                                             '<a href="' +\
-                                            reverse('dash.views.oauth_authorize',
-                                                    kwargs={'source_name': instance.source.type}) +\
+                                            reverse('dash.views.views.oauth_authorize',
+                                                    kwargs={'source_name': instance.source.source_type.type}) +\
                                             '?credentials_id=' + str(instance.pk) + '">Refresh tokens</a>'
 
     def __init__(self, *args, **kwargs):
@@ -277,11 +278,21 @@ class SourceAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'name',
+        'source_type',
         'maintenance',
         'created_dt',
         'modified_dt',
     )
     readonly_fields = ('created_dt', 'modified_dt')
+
+
+class SourceTypeAdmin(admin.ModelAdmin):
+    fields = ('type', 'available_actions', 'min_cpc', 'min_daily_budget')
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return self.readonly_fields + ('type',)
+        return self.readonly_fields
 
 
 class SourceCredentialsAdmin(admin.ModelAdmin):
@@ -424,7 +435,7 @@ class AdGroupSettingsAdmin(admin.ModelAdmin):
 
 
 class AdGroupSourceSettingsAdmin(admin.ModelAdmin):
-    search_fields = ['ad_group']
+    search_fields = ['ad_group_source__ad_group__name', 'ad_group_source__source__name']
     list_display = (
         'ad_group_source',
         'state',
@@ -434,7 +445,31 @@ class AdGroupSourceSettingsAdmin(admin.ModelAdmin):
     )
 
 
+class AdGroupSourceStateAdmin(admin.ModelAdmin):
+    search_fields = ['ad_group_source__ad_group__name', 'ad_group_source__source__name']
+    list_display = (
+        'ad_group_source',
+        'state',
+        'cpc_cc',
+        'daily_budget_cc',
+        'created_dt',
+    )
+
+
+class AdGroupModelChoiceField(forms.ModelChoiceField):
+
+    def label_from_instance(self, obj):
+        return "{} | {} | {}".format(obj.campaign.account.name, obj.campaign.name, obj.name)
+
+
 class DemoAdGroupRealAdGroupAdminForm(forms.ModelForm):
+
+    demo_ad_group = AdGroupModelChoiceField(
+        queryset=models.AdGroup.objects.order_by('campaign__account__name')
+    )
+    real_ad_group = AdGroupModelChoiceField(
+        queryset=models.AdGroup.objects.order_by('campaign__account__name')
+    )
 
     def clean_demo_ad_group(self):
         if not self.cleaned_data['demo_ad_group'].is_demo:
@@ -449,11 +484,23 @@ class DemoAdGroupRealAdGroupAdminForm(forms.ModelForm):
 
 class DemoAdGroupRealAdGroupAdmin(admin.ModelAdmin):
     list_display = (
-        'demo_ad_group',
-        'real_ad_group',
+        'demo_ad_group_',
+        'real_ad_group_',
         'multiplication_factor'
     )
     form = DemoAdGroupRealAdGroupAdminForm
+
+    def demo_ad_group_(self, obj):
+        ad_group_name = obj.demo_ad_group.name
+        campaign_name = obj.demo_ad_group.campaign.name
+        account_name = obj.demo_ad_group.campaign.account.name
+        return '|'.join([account_name, campaign_name, ad_group_name])
+
+    def real_ad_group_(self, obj):
+        ad_group_name = obj.real_ad_group.name
+        campaign_name = obj.real_ad_group.campaign.name
+        account_name = obj.real_ad_group.campaign.account.name
+        return '|'.join([account_name, campaign_name, ad_group_name])
 
 
 admin.site.register(models.Account, AccountAdmin)
@@ -463,6 +510,8 @@ admin.site.register(models.Source, SourceAdmin)
 admin.site.register(models.AdGroup, AdGroupAdmin)
 admin.site.register(models.AdGroupSettings, AdGroupSettingsAdmin)
 admin.site.register(models.AdGroupSourceSettings, AdGroupSourceSettingsAdmin)
+admin.site.register(models.AdGroupSourceState, AdGroupSourceStateAdmin)
 admin.site.register(models.SourceCredentials, SourceCredentialsAdmin)
+admin.site.register(models.SourceType, SourceTypeAdmin)
 admin.site.register(models.DefaultSourceSettings, DefaultSourceSettingsAdmin)
 admin.site.register(models.DemoAdGroupRealAdGroup, DemoAdGroupRealAdGroupAdmin)

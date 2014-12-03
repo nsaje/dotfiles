@@ -8,7 +8,7 @@ from django.conf.urls import handler404
 
 import utils.statsd_helper
 
-from zemauth.forms import AuthenticationForm, SetPasswordForm
+from zemauth.forms import AuthenticationForm
 
 import zweiapi.views
 import actionlog.views
@@ -34,14 +34,10 @@ urlpatterns = patterns(
         'zemauth.views.login',
         {'authentication_form': AuthenticationForm, 'template_name': 'zemauth/signin.html'}),
     url(r'^signout$', 'django.contrib.auth.views.logout_then_login'),
-    url(r'^password_reset_confirm/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
-        'django.contrib.auth.views.password_reset_confirm',
-        {
-            'template_name': 'zemauth/password_reset_confirm.html',
-            'post_reset_redirect': '/',
-            'set_password_form': SetPasswordForm
-        },
-        name='password_reset_confirm'),
+    url(r'^set_password/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
+        'zemauth.views.set_password',
+        {'template_name': 'zemauth/set_password.html'},
+        name='set_password'),
     url(r'^admin$', RedirectView.as_view(url='/admin/')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^oauth2callback', 'zemauth.views.google_callback'),
@@ -74,8 +70,24 @@ urlpatterns += patterns(
         login_required(dash.views.table.SourcesTable.as_view()),
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/(?P<source_id>\d+)/settings/',
+        login_required(dash.views.views.AdGroupSourceSettings.as_view()),
+    ),
+    url(
         r'^api/(?P<level_>(ad_groups|campaigns|accounts))/(?P<id_>\d+)/sources/table/',
         login_required(dash.views.table.SourcesTable.as_view()),
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/last_change/',
+        login_required(dash.views.views.AdGroupSourcesLastChange.as_view())
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/allowed/',
+        login_required(dash.views.export.AdGroupAdsExportAllowed.as_view())
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/export/allowed/',
+        login_required(dash.views.export.CampaignAdGroupsExportAllowed.as_view())
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/export/',
@@ -211,7 +223,6 @@ urlpatterns += patterns(
     ),
     url(r'^api/nav_data$', login_required(dash.views.views.NavigationDataView.as_view())),
     url(r'^api/users/(?P<user_id>(\d+|current))/$', login_required(dash.views.views.User.as_view())),
-    url(r'^api/users/$', login_required(dash.views.views.User.as_view())),
 )
 
 # Action Log
@@ -241,6 +252,11 @@ urlpatterns += patterns(
         r'^api/zwei_callback/(?P<action_id>\d+)$',
         zweiapi.views.zwei_callback,
         name='api.zwei_callback',
+    ),
+    url(
+        r'^api/zwei_settings_callback/(?P<action_id>\d+)/(?P<settings_id>\d+)$',
+        zweiapi.views.zwei_settings_callback,
+        name='api.zwei_settings_callback'
     )
 )
 

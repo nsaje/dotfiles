@@ -34,6 +34,8 @@ class AdTargetDevice(ConstantBase):
 
 
 class AdTargetCountry(ConstantBase):
+    # If adding a new target country, check if it will work with all supply sources
+    # in zwei, otherwise also update the mapping for each supply source
     AUSTRALIA = 'AU'
     CANADA = 'CA'
     IRELAND = 'IE'
@@ -117,6 +119,18 @@ class PromotionGoal(ConstantBase):
     }
 
 
+class SourceAction(ConstantBase):
+    CAN_UPDATE_STATE = 1
+    CAN_UPDATE_CPC = 2
+    CAN_UPDATE_DAILY_BUDGET = 3
+
+    _VALUES = {
+        CAN_UPDATE_STATE: 'Can update state',
+        CAN_UPDATE_CPC: 'Can update CPC',
+        CAN_UPDATE_DAILY_BUDGET: 'Can update daily budget'
+    }
+
+
 class SourceType(ConstantBase):
     ADBLADE = 'adblade'
     GRAVITY = 'gravity'
@@ -124,6 +138,7 @@ class SourceType(ConstantBase):
     OUTBRAIN = 'outbrain'
     YAHOO = 'yahoo'
     ZEMANTA = 'zemanta'
+    DISQUS = 'disqus'
 
     _VALUES = {
         ADBLADE: 'AdBlade',

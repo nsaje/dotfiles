@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import datetime
 import httplib
 import urlparse
@@ -86,6 +88,8 @@ class ActionLogApiTestCase(TestCase):
         self.credentials_encription_key = settings.CREDENTIALS_ENCRYPTION_KEY
         settings.CREDENTIALS_ENCRYPTION_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 
+        self.maxDiff = None
+
     def tearDown(self):
         settings.CREDENTIALS_ENCRYPTION_KEY = self.credentials_encription_key
 
@@ -113,13 +117,15 @@ class ActionLogApiTestCase(TestCase):
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
             payload = {
-                'source': ad_group_source.source.type,
+                'source': ad_group_source.source.source_type.type,
                 'action': constants.Action.SET_CAMPAIGN_STATE,
                 'expiration_dt': expiration_dt,
                 'credentials': ad_group_source.source_credentials.credentials,
                 'args': {
                     'source_campaign_key': ad_group_source.source_campaign_key,
-                    'state': dashconstants.AdGroupSourceSettingsState.INACTIVE,
+                    'conf': {
+                        'state': dashconstants.AdGroupSourceSettingsState.INACTIVE,
+                    }
                 },
                 'callback_url': callback,
             }
@@ -152,7 +158,7 @@ class ActionLogApiTestCase(TestCase):
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
             payload = {
-                'source': ad_group_source.source.type,
+                'source': ad_group_source.source.source_type.type,
                 'action': constants.Action.FETCH_CAMPAIGN_STATUS,
                 'expiration_dt': expiration_dt,
                 'credentials': ad_group_source.source_credentials.credentials,
@@ -191,7 +197,7 @@ class ActionLogApiTestCase(TestCase):
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
             payload = {
-                'source': ad_group_source.source.type,
+                'source': ad_group_source.source.source_type.type,
                 'action': constants.Action.FETCH_REPORTS,
                 'expiration_dt': expiration_dt,
                 'credentials': ad_group_source.source_credentials.credentials,
@@ -255,14 +261,16 @@ class ActionLogApiTestCase(TestCase):
             settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
         )
         payload = {
-            'source': ad_group_source.source.type,
+            'source': ad_group_source.source.source_type.type,
             'action': constants.Action.CREATE_CAMPAIGN,
             'expiration_dt': expiration_dt,
             'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'name': name,
                 'extra': {
-                    'tracking_code': urllib.urlencode(ad_group_source.get_tracking_ids())
+                    'tracking_code': urllib.urlencode(ad_group_source.get_tracking_ids()),
+                    'target_regions': [],
+                    'target_devices': []
                 },
             },
             'callback_url': callback
@@ -282,7 +290,7 @@ class ActionLogApiTestCase(TestCase):
             settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
         )
         payload = {
-            'source': ad_group_source_extra.source.type,
+            'source': ad_group_source_extra.source.source_type.type,
             'action': constants.Action.CREATE_CAMPAIGN,
             'expiration_dt': expiration_dt,
             'credentials': ad_group_source_extra.source_credentials.credentials,
@@ -291,7 +299,9 @@ class ActionLogApiTestCase(TestCase):
                 'extra': {
                     'iab_category': 'IAB24',
                     'exclusive_blog_ids': [123456],
-                    'tracking_code': urllib.urlencode(ad_group_source_extra.get_tracking_ids())
+                    'tracking_code': urllib.urlencode(ad_group_source_extra.get_tracking_ids()),
+                    'target_devices': ['desktop', 'mobile'],
+                    'target_regions': ['UK', 'US', 'CA']
                 },
             },
             'callback_url': callback

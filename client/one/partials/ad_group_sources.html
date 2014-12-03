@@ -13,11 +13,12 @@
                 </select>
             </div>
             <div class="button-bar-item export-container">
-                <select ui-select2="{minimumResultsForSearch: -1}" ng-model="exportType" ng-change="downloadReport()" data-placeholder="Download Report">
-                    <option value=""></option>
-                    <option value="csv">CSV by day</option>
-                    <option value="excel">Excel by day</option>
-                </select>
+                <zem-export
+                    start-date="dateRange.startDate"
+                    end-date="dateRange.endDate"
+                    base-url="'api/ad_groups/' + $state.params.id + '/sources/'"
+                    options="exportOptions">
+                </zem-export>
             </div>
 
             <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories"></zem-custom-table-cols>
@@ -44,7 +45,7 @@
             If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
         </alert>
 
-        <zem-table zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderTableData(order)"></zem-table>
+        <zem-table zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-notifications="notifications" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderTableData(order)"></zem-table>
 
         <div class="table-footnotes">
             <div ng-switch="lastSyncDate">

@@ -14,6 +14,26 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     $scope.campaign = null;
     $scope.adGroup = null;
 
+    $scope.localStorage = {
+        getUserSettings: function() {
+            if(!localStorageService.get($scope.user.id)) {
+                localStorageService.set($scope.user.id, {});
+            }
+            return localStorageService.get($scope.user.id);
+        },
+        get: function(key) {
+            return this.getUserSettings()[key];
+        },
+        set: function(key, value) {
+            var userSettings = this.getUserSettings();
+            userSettings[key] = value;
+            localStorageService.set($scope.user.id, userSettings);
+        },
+        keys: function() {
+            return Object.keys(this.getUserSettings());
+        }
+    };
+
     $scope.refreshNavData = function (accounts) {
         $scope.accounts = accounts;
     };
@@ -54,9 +74,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
         if ($scope.hasPermission('zemauth.all_accounts_sources_view')) {
             return 'main.allAccounts.sources';
         }
-        if ($scope.hasPermission('zemauth.all_accounts_budget_view')) {
-            return 'main.allAccounts.budget';
-        }
 
         // no permissions
         return null;
@@ -84,9 +101,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
         }
         if ($scope.hasPermission('zemauth.account_agency_view')) {
             return 'main.accounts.agency';
-        }
-        if ($scope.hasPermission('zemauth.account_budget_view')) {
-            return 'main.accounts.budget';
         }
 
         // no permissions
@@ -200,8 +214,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
     $scope.setShowArchived = function () {
         if (typeof $location.search().show_archived !== 'undefined') {
             $scope.showArchived = $location.search().show_archived === 'true';
-        } else if (localStorageService.keys().indexOf('main.showArchived') >= 0 && $scope.hasPermission('zemauth.view_archived_entities')) {
-            $scope.showArchived = localStorageService.get('main.showArchived') === 'true';
+        } else if ($scope.localStorage.keys().indexOf('main.showArchived') >= 0 && $scope.hasPermission('zemauth.view_archived_entities')) {
+            $scope.showArchived = $scope.localStorage.get('main.showArchived') === 'true';
         }
     };
 
@@ -252,20 +266,13 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
                 state = 'main.allAccounts.accounts';
             } else {
                 $scope.accounts.some(function (account) {
-                    if (account.campaigns && account.campaigns.length) {
-                        account.campaigns.some(function (campaign) {
-                            if (campaign.adGroups && campaign.adGroups.length) {
-                                id = campaign.adGroups[0].id;
-                                return true;
-                            }
-                        });
-                    }
+                    id = account.id;
 
                     if (id) {
                         return true;
                     }
                 });
-                state = $scope.getDefaultAdGroupState();
+                state = $scope.getDefaultAccountState();
             }
         }
 
@@ -309,7 +316,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
         if (oldValue !== newValue) {
             if ($scope.hasPermission('zemauth.view_archived_entities')) {
                 $location.search('show_archived', newValue.toString());
-                localStorageService.set('main.showArchived', newValue.toString());
+                $scope.localStorage.set('main.showArchived', newValue.toString());
             }
         }
     });
