@@ -34,6 +34,8 @@ class AdTargetDevice(ConstantBase):
 
 
 class AdTargetCountry(ConstantBase):
+    # If adding a new target country, check if it will work with all supply sources
+    # in zwei, otherwise also update the mapping for each supply source
     AUSTRALIA = 'AU'
     CANADA = 'CA'
     IRELAND = 'IE'
