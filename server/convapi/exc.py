@@ -1,5 +1,9 @@
 
 
+class EmptyReportException(Exception):
+    pass
+
+
 class CsvParseException(Exception):
     pass
 

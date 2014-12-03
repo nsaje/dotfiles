@@ -1,5 +1,7 @@
 from django.db import models
 
+from convapi import constants
+
 
 class RawPostclickStats(models.Model):
 
@@ -52,3 +54,38 @@ class RawGoalConversionStats(models.Model):
     # conversion metrics
     conversions = models.IntegerField(default=0, blank=False, null=False)
     conversions_value_cc = models.IntegerField(default=0, blank=False, null=False)
+
+
+class GAReportLog(models.Model):
+
+    datetime = models.DateTimeField(auto_now=True)
+
+    for_date = models.DateField(null=True)
+
+    email_subject = models.CharField(max_length=1024, blank=False, null=True)
+
+    csv_filename = models.CharField(max_length=1024, blank=False, null=True)
+
+    ad_groups = models.CharField(max_length=128, blank=False, null=True)
+
+    visits_reported = models.IntegerField(blank=False, null=True)
+    visits_imported = models.IntegerField(blank=False, null=True)
+
+    state = models.IntegerField(
+        default=constants.GAReportState.RECEIVED,
+        choices=constants.GAReportState.get_choices(),
+    )
+
+    errors = models.TextField(blank=False, null=True)
+
+    def add_error(self, error_msg):
+        if self.errors is None:
+            self.errors = error_msg
+        else:
+            self.errors += '\n\n' + error_msg
+
+    def add_ad_group_id(self, aid):
+        if self.ad_groups is None:
+            self.ad_groups = str(aid)
+        else:
+            self.ad_groups += ',' + str(aid)
