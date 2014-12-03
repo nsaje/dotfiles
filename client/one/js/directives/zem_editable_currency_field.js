@@ -13,7 +13,6 @@ oneApp.directive('zemEditableCurrencyField', function() {
         },
         templateUrl: '/partials/zem_editable_currency_field.html',
         controller: ['$scope', '$element', '$attrs', '$timeout', '$document', function ($scope, $element, $attrs, $timeout, $document) {
-            $scope.originalValue = $scope.value;
             $scope.editFormActive = false;
             $scope.errors = null;
 
@@ -22,21 +21,29 @@ oneApp.directive('zemEditableCurrencyField', function() {
             };
 
             $scope.showEditForm = function () {
+                $scope.originalValue = $scope.value;
                 $scope.editFormActive = true;
 
                 $timeout(function () {
                     $element.find('.currency-input')[0].focus();
+                    $document.bind('click', closeFormClickHandler);
                 });
             };
 
-            $scope.cancel = function () {
+            $scope.close = function () {
                 $scope.editFormActive = false;
                 $scope.errors = null;
-                $scope.value = $scope.originalValue;
+                $document.unbind('click', closeFormClickHandler);
             };
 
-            $document.bind('click', function(event){
+            $scope.cancel = function () {
+                $scope.value = $scope.originalValue;
+                $scope.close();
+            };
+
+            function closeFormClickHandler(event) {
                 var isClickedElementChildOfPopup = $element
+                    .find('.edit-form')
                     .find(event.target)
                     .length > 0;
 
@@ -47,7 +54,7 @@ oneApp.directive('zemEditableCurrencyField', function() {
                 $timeout(function () {
                     $scope.cancel();
                 });
-            });
+            }
         }]
     };
 });

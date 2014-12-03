@@ -115,13 +115,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             unselectable: true,
             help: 'A setting for enabling and pausing media sources.',
             onChange: function (sourceId, value) {
-                var data = {state: value};
-
-                api.adGroupSourceSettings.save($state.params.id, sourceId, data).then(
-                    function (data) {
-                        getTableData();
-                    }
-                );
+                api.adGroupSourceSettings.save($state.params.id, sourceId, {state: value});
             },
             disabled: false
         },
@@ -175,12 +169,12 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             order: true,
             settingsField: true,
             initialOrder: 'desc',
-            onSave: function (sourceId, value, onError) {
+            onSave: function (sourceId, value, onSuccess, onError) {
                 var data = {cpc_cc: value};
 
                 api.adGroupSourceSettings.save($state.params.id, sourceId, data).then(
                     function (data) {
-                        getTableData();
+                        onSuccess();
                     },
                     function (errors) {
                         onError(errors.cpc);
@@ -212,12 +206,12 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             order: true,
             settingsField: true,
             initialOrder: 'desc',
-            onSave: function (sourceId, value, onError) {
+            onSave: function (sourceId, value, onSuccess, onError) {
                 var data = {daily_budget_cc: value};
 
                 api.adGroupSourceSettings.save($state.params.id, sourceId, data).then(
                     function (data) {
-                        getTableData();
+                        onSuccess();
                     },
                     function (errors) {
                         onError(errors.dailyBudget);
@@ -638,7 +632,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                     .then(function (data) {
                         if (data.lastChange !== $scope.lastChange) {
                             $scope.lastChange = data.lastChange;
-                            getTableData();
+        console.log('adad');
+                            //getTableData();
                         }
                     })
                     .finally(function () {
