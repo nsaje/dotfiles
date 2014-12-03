@@ -202,9 +202,14 @@ class AdGroupAdsExportAllowed(api_common.BaseApiView):
         # estimate number of rows (worst case)
         row_count = num_days * num_sources * num_articles
 
+        try:
+            max_days = self.MAX_ROWS / (num_articles * num_sources)
+        except ZeroDivisionError:
+            max_days = None
+
         return self.create_api_response({
             'allowed': row_count <= self.MAX_ROWS,
-            'max_days': self.MAX_ROWS / (num_articles * num_sources),
+            'max_days': max_days
         })
 
 
@@ -225,9 +230,14 @@ class CampaignAdGroupsExportAllowed(api_common.BaseApiView):
         # estimate number of rows (worst case)
         row_count = num_days * num_articles
 
+        try:
+            max_days = self.MAX_ROWS / num_articles
+        except ZeroDivisionError:
+            max_days = None
+
         return self.create_api_response({
             'allowed': row_count <= self.MAX_ROWS,
-            'max_days': self.MAX_ROWS / num_articles,
+            'max_days': max_days
         })
 
 
