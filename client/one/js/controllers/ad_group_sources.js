@@ -633,12 +633,33 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                         if (data.lastChange) {
                             $scope.lastChange = data.lastChange;
                             $scope.notifications = data.notifications;
+
+                            updateTableData(data.rows, data.totals);
                         }
                     })
                     .finally(function () {
                         pollSourcesTableUpdates();
                     });
             }, 2000);
+        }
+    };
+
+    var updateTableData = function (rowsUpdates, totalsUpdates) {
+        $scope.rows.forEach(function (row) {
+            var rowUpdates = rowsUpdates[row.id];
+            if (rowUpdates) {
+                updateObject(row, rowUpdates);
+            }
+        });
+
+        updateObject($scope.totals, totalsUpdates);
+    };
+
+    var updateObject = function (object, updates) {
+        for (var key in updates) {
+            if (updates.hasOwnProperty(key)) {
+                object[key] = updates[key];
+            }
         }
     };
 

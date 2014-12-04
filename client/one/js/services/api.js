@@ -1572,6 +1572,23 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
     function AdGroupSourcesUpdates() {
         function convertFromApi (data) {
+            if (data.rows) {
+                for (var id in data.rows) {
+                    var row = data.rows[id];
+                    var status = row.status;
+
+                    if (status === constants.adGroupSettingsState.ACTIVE) {
+                        status = 'Active';
+                    } else if (status === constants.adGroupSettingsState.INACTIVE) {
+                        status = 'Paused';
+                    } else {
+                        status = 'N/A';
+                    }
+
+                    row.status = status;
+                }
+            }
+
             return {
                 rows: data.rows,
                 totals: data.totals,
