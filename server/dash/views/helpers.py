@@ -114,8 +114,8 @@ def get_active_ad_group_sources(modelcls, modelobjects):
     return active_ad_group_sources
 
 
-def get_ad_group_sources_last_change_dt(ad_group_sources):
-    def last_change(ad_group_source):
+def get_ad_group_sources_last_change_dt(ad_group_sources, last_change_dt):
+    def get_last_change(ad_group_source):
         current_state = None
         if ad_group_source.states.exists():
             current_state = ad_group_source.states.latest('created_dt')
@@ -138,13 +138,22 @@ def get_ad_group_sources_last_change_dt(ad_group_sources):
             current_settings.created_dt
         )
 
-    latest_change = [last_change(ad_group_source) for ad_group_source in ad_group_sources
-                     if last_change(ad_group_source) is not None]
+    changed_ad_group_sources = []
+    last_change_dts = []
 
-    if len(latest_change) == 0:
-        return None
+    for ad_group_source in ad_group_sources:
+        source_last_change = get_last_change(ad_group_source)
 
-    return max(latest_change)
+        if source_last_change is None or source_last_change <= last_change_dt:
+            continue
+
+        changed_ad_group_sources.append(ad_group_source)
+        last_change_dts.append(source_last_change)
+
+    if len(last_change_dts) == 0:
+        return None, []
+
+    return max(last_change_dts), changed_ad_group_sources
 
 
 def get_ad_group_sources_notifications(ad_group_sources):

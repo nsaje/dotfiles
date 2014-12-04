@@ -1,6 +1,7 @@
 import reports.api
 import actionlog.sync
 import pytz
+import dateutil.parser
 
 import utils.pagination
 
@@ -23,6 +24,36 @@ def sort_rows_by_order_and_archived(rows, order):
         archived_order = '-' + archived_order
 
     return sort_results(rows, [archived_order, order])
+
+
+def compute_daily_budget_total(data):
+    budgets = [s.daily_budget_cc for s in data if
+               s.daily_budget_cc is not None and
+               s.state == constants.AdGroupSourceSettingsState.ACTIVE]
+
+    return sum(budgets)
+
+
+def get_current_daily_budget_total(states):
+    return compute_daily_budget_total(states)
+
+
+def get_daily_budget_total(ad_group_sources, states, settings):
+    data = []
+
+    for ad_group_source in ad_group_sources:
+        # get settings
+        ad_group_source_settings = [s for s in settings if s.ad_group_source.id == ad_group_source.id]
+        obj = ad_group_source_settings[0] if len(ad_group_source_settings) else None
+
+        if obj is None or obj.daily_budget_cc is None:
+            # if no settings, get state
+            ad_group_source_states = [s for s in states if s.ad_group_source.id == ad_group_source.id]
+            obj = ad_group_source_states[0] if len(ad_group_source_states) else None
+
+        data.append(obj)
+
+    return compute_daily_budget_total(data)
 
 
 class AllAccountsSourcesTable(object):
@@ -234,6 +265,52 @@ class AdGroupSourcesTable(object):
         return actionlog.api.is_sync_in_progress(ad_groups=[self.ad_group])
 
 
+class AdGroupSourcesTableUpdates(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'zemauth.sources_table_notifications_get')
+    def get(self, request, ad_group_id_=None):
+        if not request.user.has_perm('zemauth.set_ad_group_source_settings'):
+            return exc.ForbiddenError('Not allowed')
+
+        last_change_dt = dateutil.parser.parse(request.GET.get('last_change_dt'))
+
+        ad_group_sources_table = AdGroupSourcesTable(request.user, ad_group_id_)
+        ad_group_sources = ad_group_sources_table.active_ad_group_sources
+
+        new_last_change_dt, changed_ad_group_sources = helpers.get_ad_group_sources_last_change_dt(
+            ad_group_sources,
+            last_change_dt
+        )
+
+        states = ad_group_sources_table.get_sources_states()
+        settings = ad_group_sources_table.get_sources_settings()
+
+        rows = {}
+        for ad_group_source in changed_ad_group_sources:
+            state = states.get(ad_group_source=ad_group_source)
+            setting = settings.get(ad_group_source=ad_group_source)
+
+            rows[ad_group_source.source_id] = {
+                'status_setting': setting.state if setting is not None and setting.state is not None else state.state,
+                'status': state.state,
+                'bid_cpc': setting.cpc_cc if setting is not None and setting.cpc_cc else state.cpc_cc,
+                'current_bid_cpc': state.cpc_cc,
+                'daily_budget': setting.daily_budget_cc if setting is not None and setting.daily_budget_cc is not None else state.daily_budget_cc,
+                'current_daily_budget': state.daily_budget_cc
+            }
+
+        totals = {
+            'daily_budget': get_daily_budget_total(ad_group_sources, states, settings),
+            'current_daily_budget': get_current_daily_budget_total(states)
+        }
+
+        return self.create_api_response({
+            'rows': rows,
+            'totals': totals,
+            'last_change': new_last_change_dt,
+            'notifications': helpers.get_ad_group_sources_notifications(ad_group_sources)
+        })
+
+
 class SourcesTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'zemauth.sources_table_get')
     def get(self, request, level_, id_=None):
@@ -295,6 +372,7 @@ class SourcesTable(api_common.BaseApiView):
             'totals': self.get_totals(
                 ad_group_level,
                 user,
+                self.level_sources_table.active_ad_group_sources,
                 totals_data,
                 sources_states,
                 ad_group_sources_settings,
@@ -306,17 +384,9 @@ class SourcesTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics,
         }
 
-        if ad_group_level and user.has_perm('zemauth.set_ad_group_source_settings'):
-            response['last_change'] = helpers.get_ad_group_sources_last_change_dt(
-                self.level_sources_table.active_ad_group_sources
-            )
-            response['notifications'] = helpers.get_ad_group_sources_notifications(
-                self.level_sources_table.active_ad_group_sources
-            )
-
         return self.create_api_response(response)
 
-    def get_totals(self, ad_group_level, user, totals_data, sources_states, sources_settings, yesterday_cost):
+    def get_totals(self, ad_group_level, user, ad_group_sources, totals_data, sources_states, sources_settings, yesterday_cost):
         result = {
             'cost': totals_data['cost'],
             'cpc': totals_data['cpc'],
@@ -337,10 +407,10 @@ class SourcesTable(api_common.BaseApiView):
         }
 
         if ad_group_level and user.has_perm('zemauth.set_ad_group_source_settings'):
-            result['daily_budget'] = self.get_daily_budget_total(sources_settings)
-            result['current_daily_budget'] = self.get_daily_budget_total(sources_states)
+            result['daily_budget'] = get_daily_budget_total(ad_group_sources, sources_states, sources_settings)
+            result['current_daily_budget'] = get_current_daily_budget_total(sources_states)
         else:
-            result['daily_budget'] = self.get_daily_budget_total(sources_states)
+            result['daily_budget'] = get_current_daily_budget_total(sources_states)
 
         return result
 
@@ -349,13 +419,6 @@ class SourcesTable(api_common.BaseApiView):
             return constants.AdGroupSourceSettingsState.ACTIVE
 
         return constants.AdGroupSourceSettingsState.INACTIVE
-
-    def get_daily_budget_total(self, data):
-        budgets = [s.daily_budget_cc for s in data if
-                   s.daily_budget_cc is not None and
-                   s.state == constants.AdGroupSourceSettingsState.ACTIVE]
-
-        return sum(budgets)
 
     def get_rows(
             self,
@@ -368,8 +431,7 @@ class SourcesTable(api_common.BaseApiView):
             last_actions,
             yesterday_cost,
             order=None,
-            ad_group_level=False,
-            notifications=None):
+            ad_group_level=False):
         rows = []
         for source in sources:
             states = [s for s in sources_states if s.ad_group_source.source_id == source.id]
@@ -397,7 +459,7 @@ class SourcesTable(api_common.BaseApiView):
 
                 daily_budget = states[0].daily_budget_cc if len(states) else None
             else:
-                daily_budget = self.get_daily_budget_total(states)
+                daily_budget = get_current_daily_budget_total(states)
 
             row = {
                 'id': str(source.id),
