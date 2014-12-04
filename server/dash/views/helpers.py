@@ -1,5 +1,6 @@
 import datetime
 import dateutil.parser
+import pytz
 
 from django.conf import settings
 
@@ -12,6 +13,17 @@ from utils import statsd_helper
 
 STATS_START_DELTA = 30
 STATS_END_DELTA = 1
+
+
+def parse_datetime(dt_string):
+    dt = dateutil.parser.parse(dt_string, ignoretz=True)
+
+    # since this is a client datetime where times are in EST,
+    # convert it to UTC
+    dt = pytz.timezone(settings.DEFAULT_TIME_ZONE).localize(dt)
+    dt = dt.astimezone(pytz.utc)
+
+    return dt.replace(tzinfo=None)
 
 
 def get_stats_start_date(start_date):
@@ -114,7 +126,7 @@ def get_active_ad_group_sources(modelcls, modelobjects):
     return active_ad_group_sources
 
 
-def get_ad_group_sources_last_change_dt(ad_group_sources, last_change_dt):
+def get_ad_group_sources_last_change_dt(ad_group_sources, last_change_dt=None):
     def get_last_change(ad_group_source):
         current_state = None
         if ad_group_source.states.exists():
@@ -144,7 +156,10 @@ def get_ad_group_sources_last_change_dt(ad_group_sources, last_change_dt):
     for ad_group_source in ad_group_sources:
         source_last_change = get_last_change(ad_group_source)
 
-        if source_last_change is None or source_last_change <= last_change_dt:
+        if source_last_change is None:
+            continue
+
+        if last_change_dt is not None and source_last_change <= last_change_dt:
             continue
 
         changed_ad_group_sources.append(ad_group_source)

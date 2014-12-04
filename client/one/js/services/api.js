@@ -1570,18 +1570,29 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
-    function AdGroupSourcesLastChange() {
+    function AdGroupSourcesUpdates() {
         function convertFromApi (data) {
             return {
-                lastChange: data.last_change
+                rows: data.rows,
+                totals: data.totals,
+                lastChange: data.last_change,
+                notifications: data.notifications
             };
         }
 
-        this.get = function (adGroupId) {
+        this.get = function (adGroupId, lastChange) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/sources/last_change/';
+            var url = '/api/ad_groups/' + adGroupId + '/sources/table/updates/';
 
-            $http.get(url).
+            var config = {
+                params: {}
+            };
+
+            if (lastChange) {
+                config.params.last_change_dt = lastChange;
+            }
+
+            $http.get(url, config).
                 success(function (data) {
                     var resource;
 
@@ -1730,7 +1741,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         allAccountsBudget: new AllAccountsBudget(),
         accountUsers: new AccountUsers(),
         adGroupSourceSettings: new AdGroupSourceSettings(),
-        adGroupSourcesLastChange: new AdGroupSourcesLastChange(),
+        adGroupSourcesUpdates: new AdGroupSourcesUpdates(),
         adGroupAdsExportAllowed: new AdGroupAdsExportAllowed(),
         campaignAdGroupsExportAllowed: new CampaignAdGroupsExportAllowed()
     };

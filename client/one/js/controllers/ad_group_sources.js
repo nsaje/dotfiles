@@ -625,25 +625,24 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
     pollSyncStatus();
 
-    var pollSourcesLastChange = function () {
+    var pollSourcesTableUpdates = function () {
         if ($scope.hasPermission('zemauth.set_ad_group_source_settings')) {
             $scope.lastChangeTimeout = $timeout(function () {
-                api.adGroupSourcesLastChange.get($state.params.id)
+                api.adGroupSourcesUpdates.get($state.params.id, $scope.lastChange)
                     .then(function (data) {
-                        if (data.lastChange !== $scope.lastChange) {
+                        if (data.lastChange) {
                             $scope.lastChange = data.lastChange;
-        console.log('adad');
-                            //getTableData();
+                            $scope.notifications = data.notifications;
                         }
                     })
                     .finally(function () {
-                        pollSourcesLastChange();
+                        pollSourcesTableUpdates();
                     });
             }, 2000);
         }
     };
 
-    pollSourcesLastChange();
+    pollSourcesTableUpdates();
 
     $scope.$on('$destroy', function () {
         $timeout.cancel($scope.lastChangeTimeout);
