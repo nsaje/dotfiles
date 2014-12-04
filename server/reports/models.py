@@ -44,6 +44,8 @@ class ArticleStats(StatsMetrics):
             ('datetime', 'ad_group', 'article', 'source'),
         )
 
+        index_together = (['ad_group', 'datetime'])
+
         permissions = (
             ("yesterday_spend_view", "Can view yesterday spend column."),
             ("per_day_sheet_source_export", "Has Per-Day Report sheet in Excel source export.")
