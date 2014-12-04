@@ -71,6 +71,10 @@ class GAReportLog(models.Model):
     visits_reported = models.IntegerField(blank=False, null=True)
     visits_imported = models.IntegerField(blank=False, null=True)
 
+    multimatch = models.IntegerField(default=0, blank=False, null=False)
+    multimatch_clicks = models.IntegerField(default=0, blank=False, null=False)
+    nomatch = models.IntegerField(default=0, blank=False, null=False)
+
     state = models.IntegerField(
         default=constants.GAReportState.RECEIVED,
         choices=constants.GAReportState.get_choices(),

@@ -15,6 +15,9 @@ class GAReportLogAdmin(admin.ModelAdmin):
         'ad_groups_',
         'visits_reported',
         'visits_imported_',
+        'nomatch',
+        'multimatch',
+        'multimatch_clicks',
         'email_subject',
         'csv_filename',
     )
