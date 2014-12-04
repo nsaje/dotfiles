@@ -89,3 +89,15 @@ class GAReportLog(models.Model):
             self.ad_groups = str(aid)
         else:
             self.ad_groups += ',' + str(aid)
+
+    def add_visits_imported(self, n):
+        if self.visits_imported is None:
+            self.visits_imported = n
+        else:
+            self.visits_imported += n
+
+    def add_visits_reported(self, n):
+        if self.visits_reported is None:
+            self.visits_reported = n
+        else:
+            self.visits_reported += n

@@ -207,7 +207,7 @@ bounced_visits=%s, pageviews=%s, duration=%s',
             rows=conv_rows
         )
 
-        self.report_log.visits_imported = sum(d['visits'] for d in data.values())
+        self.report_log.add_visits_imported(sum(d['visits'] for d in data.values()))
 
 
     def save_raw(self):
@@ -283,7 +283,7 @@ bounced_visits=%s, pageviews=%s, duration=%s',
                 )
                 raw_goal_stats.save()
 
-        self.report_log.visits_reported = n_visits
+        self.report_log.add_visits_reported(n_visits)
 
 
 def store_to_s3(date, filename, content):
