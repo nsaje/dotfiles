@@ -28,7 +28,7 @@ def resolve_article(clean_url, ad_group, date, source, report_log):
     candidates = filter(lambda a: _urls_match(a.url, clean_url), candidates)
 
     if len(candidates) != 1:
-        report_log.add_error('Cannot resolve url:%s' % clean_url)
+        report_log.add_error('Cannot resolve ad_group=%s; url=%s' % (ad_group, clean_url))
 
     if len(candidates) == 0:
         # there are no articles matching this url
