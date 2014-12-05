@@ -14,7 +14,8 @@ class GAReportsAggregationTest(TestCase):
     fixtures = ['test_ga_aggregation.yaml']
 
     def setUp(self):
-        self.csvreport = convapi.parse.CsvReport(open('convapi/fixtures/ga_report_20140901.csv').read())
+        self.report_log = convapi.models.GAReportLog()
+        self.csvreport = convapi.parse.CsvReport(open('convapi/fixtures/ga_report_20140901.csv').read(), self.report_log)
         self.report_date = datetime.date(2014, 9, 1)
         self.remail = convapi.aggregate.ReportEmail(
             sender='some sender',
@@ -22,7 +23,8 @@ class GAReportsAggregationTest(TestCase):
             subject='some subject',
             text='some text',
             date='some date',
-            report=self.csvreport
+            report=self.csvreport,
+            report_log=self.report_log
         )
 
     def test_report_aggregation(self):
