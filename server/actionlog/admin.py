@@ -189,7 +189,7 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
         return super(ActionLogAdminAdmin, self).changelist_view(
                 request, extra_context=extra_context)
 
-    def queryset(self, request):
+    def get_queryset(self, request):
         return CountFilterQuerySet(models.ActionLog)
 
 
