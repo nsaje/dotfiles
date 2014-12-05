@@ -1,5 +1,29 @@
 /*globals oneApp,$,FS*/
-oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'zemMoment', 'user', 'accounts', 'localStorageService', 'api', 'zemFullStoryService', function ($scope, $state, $location, $document, zemMoment, user, accounts, localStorageService, api, zemFullStoryService) {
+oneApp.controller('MainCtrl', 
+    ['$scope',
+     '$state',
+     '$location',
+     '$document',
+     'zemMoment',
+     'user',
+     'accounts',
+     'localStorageService',
+     'api',
+     'zemFullStoryService',
+     'zemIntercomService',
+      function (
+        $scope,
+        $state,
+        $location,
+        $document,
+        zemMoment,
+        user,
+        accounts,
+        localStorageService,
+        api,
+        zemFullStoryService,
+        zemIntercomService
+) {
     $scope.accounts = accounts;
     $scope.user = user;
     $scope.currentRoute = $scope.current;
@@ -321,6 +345,9 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', 'ze
         }
     });
 
-    // FullStory user identification
     zemFullStoryService.identify(user);
+
+    if ($scope.hasPermission('zemauth.has_intercom')) {
+        zemIntercomService.boot(user);
+    }
 }]);
