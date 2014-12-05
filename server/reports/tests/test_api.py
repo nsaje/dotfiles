@@ -16,7 +16,7 @@ from reports import exc as repsexc
 from utils.test_helper import dicts_match_for_keys, sequence_of_dicts_match_for_keys
 from utils.url import clean_url
 
-from zweiapi.views import _prepare_report_row
+from zweiapi.views import _prepare_report_rows
 
 import reports.update
 import utils.pagination
@@ -552,7 +552,7 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date1,
             ad_group=ags1.ad_group,
             source=ags1.source,
-            rows=map(_prepare_report_row(ags1.ad_group), rows_ags1_date1)
+            rows=_prepare_report_rows(ags1.ad_group, rows_ags1_date1)
         )
         for row in rows_ags1_date1:
             article = dashmodels.Article.objects.get(title=row['title'], url=row['url'])
@@ -570,7 +570,7 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date1,
             ad_group=ags2.ad_group,
             source=ags2.source,
-            rows=map(_prepare_report_row(ags2.ad_group), rows_ags2_date1)
+            rows=_prepare_report_rows(ags2.ad_group, rows_ags2_date1)
         )
         for row in rows_ags2_date1:
             article = dashmodels.Article.objects.get(title=row['title'])
@@ -588,13 +588,13 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date2,
             ad_group=ags1.ad_group,
             source=ags1.source,
-            rows=map(_prepare_report_row(ags1.ad_group), rows_ags1_date2)
+            rows=_prepare_report_rows(ags1.ad_group, rows_ags1_date2)
         )
         reports.update.stats_update_adgroup_source_traffic(
             datetime=date2,
             ad_group=ags2.ad_group,
             source=ags2.source,
-            rows=map(_prepare_report_row(ags2.ad_group), rows_ags2_date2)
+            rows=_prepare_report_rows(ags2.ad_group, rows_ags2_date2)
         )
 
         articles_ags1 = dashmodels.Article.objects.order_by('title')
@@ -674,7 +674,7 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date,
             ad_group=ags.ad_group,
             source=ags.source,
-            rows=map(_prepare_report_row(ags.ad_group), rows)
+            rows=_prepare_report_rows(ags.ad_group, rows)
         )
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
         self.assertEqual(len(stats), 2)
@@ -695,7 +695,7 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date,
             ad_group=ags.ad_group,
             source=ags.source,
-            rows=map(_prepare_report_row(ags.ad_group), rows_new_title)
+            rows=_prepare_report_rows(ags.ad_group, rows_new_title)
         )
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
         self.assertEqual(len(stats), 4)
@@ -729,7 +729,7 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date,
             ad_group=ags.ad_group,
             source=ags.source,
-            rows=map(_prepare_report_row(ags.ad_group), rows_new_url)
+            rows=_prepare_report_rows(ags.ad_group, rows_new_url)
         )
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
         self.assertEqual(len(stats), 6)
@@ -812,7 +812,7 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date1,
             ad_group=ags1.ad_group,
             source=ags1.source,
-            rows=map(_prepare_report_row(ags1.ad_group), rows)
+            rows=_prepare_report_rows(ags1.ad_group, rows)
         )
 
         article = dashmodels.Article.objects.get(title=title, url=url)
@@ -854,7 +854,7 @@ class ArticleReconciliationTestCase(test.TestCase):
         title = 'Example title'
 
         self.assertSequenceEqual(dashmodels.Article.objects.all(), [])
-        dashapi.reconcile_article(raw_url, title, ad_group)
+        dashapi.reconcile_articles(ad_group, [{'url': raw_url, 'title': title}])
 
     def test_reconcile_article(self):
         ad_group = dashmodels.AdGroup(id=1)
@@ -862,22 +862,22 @@ class ArticleReconciliationTestCase(test.TestCase):
         title = 'Five article titles you would never believe to exist'
 
         with self.assertRaises(dashexc.ArticleReconciliationException):
-            dashapi.reconcile_article(raw_url, title, None)
+            dashapi.reconcile_articles(None, [{'url': raw_url, 'title': title}])
 
         with self.assertRaises(dashexc.ArticleReconciliationException):
-            dashapi.reconcile_article(raw_url, None, ad_group)
+            dashapi.reconcile_articles(ad_group, [{'url': raw_url, 'title': None}])
 
         with self.assertRaises(dashexc.ArticleReconciliationException):
-            dashapi.reconcile_article(None, title, ad_group)
+            dashapi.reconcile_articles(ad_group, [{'url': None, 'title': title}])
 
         cleaned_url, _ = clean_url(raw_url)
         with self.assertRaises(ObjectDoesNotExist):
             article = dashmodels.Article.objects.get(url=cleaned_url, title=title, ad_group=ad_group)
 
-        article = dashapi.reconcile_article(raw_url, title, ad_group)
+        articles = dashapi.reconcile_articles(ad_group, [{'url': raw_url, 'title': title}])
 
         db_article = dashmodels.Article.objects.get(url=cleaned_url, title=title, ad_group=ad_group)
-        self.assertEqual(article, db_article)
+        self.assertEqual(articles[0], db_article)
 
-        same_article = dashapi.reconcile_article(raw_url, title, ad_group)
-        self.assertEqual(article, same_article)
+        same_articles = dashapi.reconcile_articles(ad_group, [{'url': raw_url, 'title': title}])
+        self.assertEqual(articles[0], same_articles[0])
