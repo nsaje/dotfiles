@@ -1,5 +1,6 @@
 import json
 import datetime
+from urlparse import urlparse
 
 from django.contrib import admin
 from django.core.urlresolvers import reverse
@@ -12,6 +13,47 @@ import dash.constants
 
 
 class ActionLogAdminAdmin(admin.ModelAdmin):
+    class AgeFilter(admin.SimpleListFilter):
+        title = 'Age'
+        parameter_name = 'age'
+
+        def lookups(self, request, model_admin):
+            return [(
+                '{num}d'.format(num=num),
+                '{num} day{suffix}'.format(num=num, suffix='s' if num > 1 else ''))
+                for num in [1, 3, 7, 30]]
+
+        def queryset(self, request, queryset):
+            days = None
+
+            if self.value() == '1d':
+                days = 1
+            if self.value() == '3d':
+                days = 3
+            if self.value() == '7d':
+                days = 7
+            if self.value() == '30d':
+                days = 30
+
+            if not days:
+                return
+
+            return queryset.filter(created_dt__gte=datetime.datetime.now() - datetime.timedelta(days=days))
+
+        def choices(self, cl):
+            """ Overridden to remove default All choice """
+            yield {
+                'selected': self.value() is None,
+                'query_string': cl.get_query_string({}, [self.parameter_name]),
+            }
+            for lookup, title in self.lookup_choices:
+                yield {
+                    'selected': self.value() == lookup,
+                    'query_string': cl.get_query_string({
+                        self.parameter_name: lookup,
+                    }, []),
+                    'display': title,
+                }
 
     search_fields = (
         'action',
@@ -21,7 +63,7 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
         'ad_group_source__source__name',
     )
 
-    list_filter = ('ad_group_source__source', 'state', 'action', 'action_type')
+    list_filter = ('ad_group_source__source', 'state', 'action', 'action_type', AgeFilter)
 
     list_display = ('action_', 'ad_group_source_', 'created_dt', 'modified_dt', 'action_type', 'state_', 'order_')
 
@@ -127,9 +169,15 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
     def _wrap_preformatted_text(self, text):
         return '<div style="overflow: hidden;"><pre style="color: #000;">{}</pre></div>'.format(escape(text))
 
-    def get_queryset(self, request):
-        return super(ActionLogAdminAdmin, self).queryset(models.ActionLog).filter(
-            created_dt__gte=datetime.datetime.now() - datetime.timedelta(days=3))
+    def changelist_view(self, request, extra_context=None):
+        if 'age' not in request.GET:
+            q = request.GET.copy()
+            q['age'] = '1d'  # default value
+            request.GET = q
+            request.META['QUERY_STRING'] = request.GET.urlencode()
+
+        return super(ActionLogAdminAdmin, self).changelist_view(
+                request, extra_context=extra_context)
 
 
 admin.site.register(models.ActionLog, ActionLogAdminAdmin)
