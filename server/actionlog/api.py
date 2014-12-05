@@ -154,11 +154,12 @@ def get_ad_group_sources_waiting(**kwargs):
 
 def is_waiting_for_set_actions(ad_group):
     action_types = (constants.Action.SET_CAMPAIGN_STATE, constants.Action.SET_PROPERTY)
+    ad_group_sources = ad_group.adgroupsource_set.all()
     # get latest action for ad_group where order != null
     try:
         latest_action = models.ActionLog.objects.filter(
             action__in=action_types,
-            ad_group_source__ad_group_id=ad_group.id,
+            ad_group_source_id__in=[ags.id for ags in ad_group_sources],
             order__isnull=False
         ).latest('created_dt')
     except ObjectDoesNotExist:
@@ -168,7 +169,7 @@ def is_waiting_for_set_actions(ad_group):
         filter(
             action__in=action_types,
             state=constants.ActionState.FAILED,
-            ad_group_source__ad_group_id=ad_group.id,
+            ad_group_source_id__in=[ags.id for ags in ad_group_sources],
             order=latest_action.order
         ).\
         exists()
@@ -177,7 +178,7 @@ def is_waiting_for_set_actions(ad_group):
         filter(
             action__in=action_types,
             state=constants.ActionState.WAITING,
-            ad_group_source__ad_group_id=ad_group.id,
+            ad_group_source_id__in=[ags.id for ags in ad_group_sources],
         ).\
         exists()
 

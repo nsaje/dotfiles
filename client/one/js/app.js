@@ -167,7 +167,7 @@ oneApp.config(['datepickerConfig', 'datepickerPopupConfig', function (datepicker
 
 var locationSearch;
 // Fixes https://github.com/angular-ui/ui-router/issues/679
-oneApp.run(['$state', '$rootScope', '$location', 'config', function($state, $rootScope, $location, config) {
+oneApp.run(['$state', '$rootScope', '$location', 'config', 'zemIntercomService', function($state, $rootScope, $location, config, zemIntercomService) {
     $rootScope.config = config;
     $rootScope.$state = $state;
 
@@ -180,5 +180,8 @@ oneApp.run(['$state', '$rootScope', '$location', 'config', function($state, $roo
         // Restore all query string parameters back to $location.search
         $location.search(locationSearch);
         $rootScope.stateChangeFired = true;
+
+        // update if we've sent user any messages
+        zemIntercomService.update();
     });
 }]);
