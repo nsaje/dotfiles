@@ -107,6 +107,10 @@ class ActionLog(models.Model):
     class Meta:
         ordering = ('-created_dt',)
 
+        index_together = [
+            ['id', 'created_dt']
+        ]
+
         permissions = (
             ("manual_view", "Can view manual ActionLog actions"),
             ("manual_acknowledge", "Can acknowledge manual ActionLog actions"),

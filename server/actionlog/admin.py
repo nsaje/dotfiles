@@ -1,4 +1,5 @@
 import json
+import datetime
 
 from django.contrib import admin
 from django.core.urlresolvers import reverse
@@ -125,6 +126,10 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
 
     def _wrap_preformatted_text(self, text):
         return '<div style="overflow: hidden;"><pre style="color: #000;">{}</pre></div>'.format(escape(text))
+
+    def get_queryset(self, request):
+        return super(ActionLogAdminAdmin, self).queryset(models.ActionLog).filter(
+            created_dt__gte=datetime.datetime.now() - datetime.timedelta(days=3))
 
 
 admin.site.register(models.ActionLog, ActionLogAdminAdmin)
