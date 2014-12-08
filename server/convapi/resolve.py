@@ -33,6 +33,9 @@ def resolve_article(clean_url, ad_group, date, source, report_log):
     if not candidates:
         url = _remove_blog_from_start(url)
         candidates = filter(lambda a: _urls_match(a.url, url), articles)
+    if not candidates:
+        url = _remove_slash_http_from_start(url)
+        candidates = filter(lambda a: _urls_match(a.url, url), articles)
 
     if len(candidates) == 0:
         # there are no articles matching this url
@@ -110,4 +113,9 @@ def _remove_home_aspx(url):
 def _remove_blog_from_start(url):
     if url.startswith('blog/'):
         return url[5:]
+    return url
+
+def _remove_slash_http_from_start(url):
+    if url.startswith('/http'):
+        return url[1:]
     return url
