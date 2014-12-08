@@ -31,6 +31,9 @@ def resolve_article(clean_url, ad_group, date, source, report_log):
         url = _remove_home_aspx(url)
         candidates = filter(lambda a: _urls_match(a.url, url), articles)
     if not candidates:
+        url = _remove_index_cfm(url)
+        candidates = filter(lambda a: _urls_match(a.url, url), articles)
+    if not candidates:
         url = _remove_blog_from_start(url)
         candidates = filter(lambda a: _urls_match(a.url, url), articles)
     if not candidates:
@@ -109,6 +112,10 @@ def _remove_home_aspx(url):
         return url.replace('/home.aspx', '/')
     return url
 
+def _remove_index_cfm(url):
+    if '/index.cfm' in url:
+        return url.replace('/index.cfm', '/')
+    return url
 
 def _remove_blog_from_start(url):
     if url.startswith('blog/'):
