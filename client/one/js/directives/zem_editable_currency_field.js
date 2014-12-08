@@ -52,7 +52,7 @@ oneApp.directive('zemEditableCurrencyField', function() {
                 }
 
                 $timeout(function () {
-                    $scope.cancel();
+                    $scope.close();
                 });
             }
         }]
