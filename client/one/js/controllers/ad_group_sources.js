@@ -137,14 +137,13 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             field: 'status',
             unselectable: true,
             checked: true,
-            type: 'text',
+            type: 'notification',
             shown: true,
             totalRow: false,
             help: 'Status of a particular media source (enabled or paused).',
             order: true,
             orderField: 'status',
-            initialOrder: 'asc',
-            displayNotifications: true
+            initialOrder: 'asc'
         },
         {
             name: 'Link',
