@@ -121,8 +121,8 @@ class CsvReport(IReport):
             raise exc.CsvParseException('Too few lines.')
         if not self.lines[0].startswith('# -----'):
             raise exc.CsvParseException('First line should start with "# -----"')
-        if not self.lines[2].startswith('# Landing Pages'):
-            raise exc.CsvParseException('Third line should start with "# Landing Pages"')
+        if not self.lines[2].startswith('#'):
+            raise exc.CsvParseException('Third line should start with "#"')
         if not self.lines[3].startswith('#'):
             raise exc.CsvParseException('Fourth line should start with "#"')
         self._parse_date()
