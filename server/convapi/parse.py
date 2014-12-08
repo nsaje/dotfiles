@@ -8,6 +8,8 @@ import logging
 
 import utils.url
 
+from convapi import constants
+
 logger = logging.getLogger(__name__)
 
 
@@ -35,13 +37,14 @@ class CsvReport(IReport):
         'Avg. Session Duration',
     ]
 
-    def __init__(self, raw):
+    def __init__(self, raw, report_log):
         self.raw = raw
         self.lines = raw.split('\n')
         self.date = None
         self.fieldnames = None
         self.entries = None
         self.ad_group_set = None
+        self.report_log = report_log
 
         self._parse()
 
@@ -118,14 +121,16 @@ class CsvReport(IReport):
             raise exc.CsvParseException('Too few lines.')
         if not self.lines[0].startswith('# -----'):
             raise exc.CsvParseException('First line should start with "# -----"')
-        if not self.lines[2].startswith('# Landing Pages'):
-            raise exc.CsvParseException('Third line should start with "# Landing Pages"')
+        if not self.lines[2].startswith('#'):
+            raise exc.CsvParseException('Third line should start with "#"')
         if not self.lines[3].startswith('#'):
             raise exc.CsvParseException('Fourth line should start with "#"')
+        self._parse_date()
+        self.report_log.for_date = self.get_date()
         if not self.lines[4].startswith('# -----'):
             raise exc.CsvParseException('Fifth line should start with "# -----"')
         if not reduce(operator.ior, [ln.startswith('Landing Page') for ln in self.lines], False):
-            raise exc.CsvParseException('There should be a line starting with "Landing Page"')
+            raise exc.EmptyReportException('Header Check: There should be a line starting with "Landing Page"')
         return True
 
     def _get_file_like_object(self):
@@ -140,7 +145,6 @@ class CsvReport(IReport):
 
     def _parse(self):
         self._check_header()
-        self._parse_date()
 
         reader = csv.DictReader(self._get_file_like_object())
 
@@ -156,6 +160,8 @@ class CsvReport(IReport):
 
         if not set(self.fieldnames) >= set(CsvReport.REQUIRED_FIELDS):
             raise exc.CsvParseException('Not all required fields are present')
+
+        self.report_log.state = constants.GAReportState.PARSED
 
 
 class AdGroupReport(IReport):

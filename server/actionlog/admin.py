@@ -1,8 +1,10 @@
 import json
+import datetime
 
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.utils.html import escape
+from django.db import models as db_models
 
 from actionlog import models
 from actionlog import constants
@@ -10,7 +12,51 @@ from actionlog import constants
 import dash.constants
 
 
+class CountFilterQuerySet(db_models.QuerySet):
+    def count(self):
+        """ Override count to return constant value
+            if there is no constraints on query """
+        query = self.query
+
+        if (not query.where
+                and query.high_mark is None
+                and query.low_mark == 0
+                and not query.select
+                and not query.group_by
+                and not query.having
+                and not query.distinct):
+            return 'unknown'
+
+        return super(CountFilterQuerySet, self).count()
+
+
 class ActionLogAdminAdmin(admin.ModelAdmin):
+    class AgeFilter(admin.SimpleListFilter):
+        title = 'Age'
+        parameter_name = 'age__exact'
+
+        def lookups(self, request, model_admin):
+            return [(num, '{num} day{suffix}'.format(num=num, suffix='s' if num > 1 else ''))
+                    for num in [1, 3, 7, 30]]
+
+        def queryset(self, request, queryset):
+            days = int(self.value())
+            return queryset.filter(created_dt__gte=datetime.datetime.now() - datetime.timedelta(days=days))
+
+        def choices(self, cl):
+            """ Overridden to remove default All choice """
+            yield {
+                'selected': self.value() is None,
+                'query_string': cl.get_query_string({}, [self.parameter_name]),
+            }
+            for lookup, title in self.lookup_choices:
+                yield {
+                    'selected': self.value() == lookup,
+                    'query_string': cl.get_query_string({
+                        self.parameter_name: lookup,
+                    }, []),
+                    'display': title,
+                }
 
     search_fields = (
         'action',
@@ -20,7 +66,7 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
         'ad_group_source__source__name',
     )
 
-    list_filter = ('ad_group_source__source', 'state', 'action', 'action_type')
+    list_filter = ('ad_group_source__source', 'state', 'action', 'action_type', AgeFilter)
 
     list_display = ('action_', 'ad_group_source_', 'created_dt', 'modified_dt', 'action_type', 'state_', 'order_')
 
@@ -77,7 +123,7 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
         return False
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        return True
 
     def get_actions(self, request):
         actions = super(ActionLogAdminAdmin, self).get_actions(request)
@@ -125,6 +171,26 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
 
     def _wrap_preformatted_text(self, text):
         return '<div style="overflow: hidden;"><pre style="color: #000;">{}</pre></div>'.format(escape(text))
+
+    def changelist_view(self, request, extra_context=None):
+        q = request.GET.copy()
+
+        age = 1  # default value
+        if 'age__exact' in request.GET:
+            try:
+                age = int(q['age__exact'])
+            except ValueError:
+                pass
+
+        q['age__exact'] = age
+        request.GET = q
+        request.META['QUERY_STRING'] = request.GET.urlencode()
+
+        return super(ActionLogAdminAdmin, self).changelist_view(
+                request, extra_context=extra_context)
+
+    def get_queryset(self, request):
+        return CountFilterQuerySet(models.ActionLog)
 
 
 admin.site.register(models.ActionLog, ActionLogAdminAdmin)

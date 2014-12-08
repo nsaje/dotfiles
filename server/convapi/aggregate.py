@@ -18,13 +18,14 @@ S3_REPORT_KEY_FORMAT = 'conversionreports/{date}/{filename}'
 
 class ReportEmail(object):
 
-    def __init__(self, sender, recipient, subject, date, text, report):
+    def __init__(self, sender, recipient, subject, date, text, report, report_log):
         self.sender = sender
         self.recipient = recipient
         self.subject = subject
         self.text = text
         self.date = date
         self.report = report
+        self.report_log = report_log
 
     def _get_goal_name(self, goal_field):
         ix_goal = goal_field.index('(Goal')
@@ -74,11 +75,15 @@ class ReportEmail(object):
         data['duration'] += visits * self._parse_duration(entry['Avg. Session Duration'])
         for goal_name, metric_fields in goal_fields.items():
             data['goals'][goal_name]['conversions'] += int(entry[metric_fields['conversions']].replace(',', ''))
-            conv_value = entry[metric_fields['value']]
-            conv_value = conv_value[conv_value.index('$') + 1 : ]
-            conv_value = conv_value.replace(',', '')
-            conv_value = float(conv_value)
+            conv_value = self._parse_conversion_value(entry[metric_fields['value']])
             data['goals'][goal_name]['conversions_value_cc'] += int(10000 * conv_value)
+
+    def _parse_conversion_value(self, conv_val_str):
+        for i, c in enumerate(conv_val_str):
+            if c.isdigit():
+                break
+        conv_val_str = conv_val_str[i:].replace(',', '')
+        return float(conv_val_str)
 
     def get_stats_by_key(self):
 
@@ -105,10 +110,11 @@ landing_page_url=%s',
                     self.date,
                     url.raw_url.decode('ascii', 'ignore')
                  )
+                self.report_log.add_error('Cannot resolve source for url=%s' % url.raw_url.decode('ascii', 'ignore'))
                 continue
 
             if url.raw_url not in article_resolve_lookup:
-                article_resolve_lookup[url.raw_url] = resolve_article(url.clean_url, url.ad_group_id, self.report.get_date(), source)
+                article_resolve_lookup[url.raw_url] = resolve_article(url.clean_url, url.ad_group_id, self.report.get_date(), source, self.report_log)
             article = article_resolve_lookup[url.raw_url]
             if article is None:
                 logger.warning('ERROR: Cannot resolve article for (ad_group=%s, sender=%s,\
@@ -121,6 +127,7 @@ landing_page_url=%s',
                     self.date,
                     url.raw_url.decode('ascii', 'ignore')
                  )
+                self.report_log.add_error('Cannot resolve article for url=%s' % url.raw_url.decode('ascii', 'ignore'))
                 continue
 
             key = (self.report.get_date(), article.id, url.ad_group_id, source.id)
@@ -200,6 +207,8 @@ bounced_visits=%s, pageviews=%s, duration=%s',
             rows=conv_rows
         )
 
+        self.report_log.add_visits_imported(sum(d['visits'] for d in data.values()))
+
 
     def save_raw(self):
         goal_fields = self.get_goal_fields()
@@ -216,6 +225,7 @@ bounced_visits=%s, pageviews=%s, duration=%s',
         RawPostclickStats.objects.filter(datetime=dt, ad_group_id=ad_group_id).delete()
         RawGoalConversionStats.objects.filter(datetime=dt, ad_group_id=ad_group_id).delete()
 
+        n_visits = 0
         for entry in entries:
             landing_page = LandingPageUrl(entry['Landing Page'])
 
@@ -231,6 +241,8 @@ bounced_visits=%s, pageviews=%s, duration=%s',
 
             metrics_data = self.get_initial_data(goal_fields)
             self.add_parsed_metrics(metrics_data, entry, goal_fields)
+
+            n_visits += metrics_data['visits']
 
             raw_postclick_stats = RawPostclickStats(
                 datetime=dt,
@@ -270,6 +282,8 @@ bounced_visits=%s, pageviews=%s, duration=%s',
                     conversions_value_cc=conversion_metrics['conversions_value_cc'],
                 )
                 raw_goal_stats.save()
+
+        self.report_log.add_visits_reported(n_visits)
 
 
 def store_to_s3(date, filename, content):
