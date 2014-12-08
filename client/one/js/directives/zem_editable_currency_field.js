@@ -21,7 +21,7 @@ oneApp.directive('zemEditableCurrencyField', function() {
             };
 
             $scope.showEditForm = function () {
-                $scope.originalValue = $scope.value;
+                $scope.formValue = $scope.value;
                 $scope.editFormActive = true;
 
                 $timeout(function () {
@@ -36,10 +36,10 @@ oneApp.directive('zemEditableCurrencyField', function() {
                 $document.unbind('click', closeFormClickHandler);
             };
 
-            $scope.cancel = function () {
-                $scope.value = $scope.originalValue;
-                $scope.close();
-            };
+            $scope.save = function (rowId) {
+                $scope.value = $scope.formValue;
+                $scope.onSave(rowId, $scope.formValue, $scope.close, $scope.onError)
+            }
 
             function closeFormClickHandler(event) {
                 var isClickedElementChildOfPopup = $element

@@ -640,7 +640,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                     .finally(function () {
                         pollSourcesTableUpdates();
                     });
-            }, 2000);
+            }, 3000);
         }
     };
 

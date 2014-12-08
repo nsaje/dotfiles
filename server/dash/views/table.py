@@ -288,15 +288,22 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
 
             rows = {}
             for ad_group_source in changed_ad_group_sources:
-                state = states.get(ad_group_source=ad_group_source)
-                setting = settings.get(ad_group_source=ad_group_source)
+                source_states = [s for s in states if s.ad_group_source.id == ad_group_source.id]
+                source_settings = [s for s in settings if s.ad_group_source.id == ad_group_source.id]
+
+                state = source_states[0]
+                if len(source_settings):
+                    setting = source_settings[0]
+                else:
+                    # use state if there is no settings for this ad group source
+                    setting = state
 
                 rows[ad_group_source.source_id] = {
-                    'status_setting': setting.state if setting is not None and setting.state is not None else state.state,
+                    'status_setting': setting.state,
                     'status': state.state,
-                    'bid_cpc': setting.cpc_cc if setting is not None and setting.cpc_cc else state.cpc_cc,
+                    'bid_cpc': setting.cpc_cc,
                     'current_bid_cpc': state.cpc_cc,
-                    'daily_budget': setting.daily_budget_cc if setting is not None and setting.daily_budget_cc is not None else state.daily_budget_cc,
+                    'daily_budget': setting.daily_budget_cc,
                     'current_daily_budget': state.daily_budget_cc
                 }
 
