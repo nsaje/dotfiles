@@ -119,7 +119,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('group_new_user_add', 'New users are added to this group.'),
             ('set_ad_group_source_settings', 'Can set per-source settings.'),
             ('see_current_ad_group_source_state', 'Can see current per-source state.'),
-            ('has_intercom', 'Can see intercom.io widget')
+            ('has_intercom', 'Can see intercom.io widget'),
+            ('campaign_ad_groups_detailed_report', 'Can download detailed report on campaign level.')
         )
 
     def get_full_name(self):
