@@ -37,7 +37,14 @@ oneApp.directive('zemExport', function() {
 
                     var popoverText = 'There is too much data to export.';
                     if (option.maxDays) {
-                        popoverText += ' Please choose a smaller date range (' + option.maxDays + ' days or less).';
+                        popoverText += ' Please choose a smaller date range (' + option.maxDays;
+                        if (option.maxDays > 1) {
+                            popoverText += ' days or less).'; 
+                        } else {
+                            popoverText += ' day).'; 
+                        }
+                    } else {
+                        popoverText = 'This report is not available since there are too many content ads in this campaign. Please contact support for more information.';
                     }
 
                     popoverEl.attr('popover', popoverText);
