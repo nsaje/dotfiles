@@ -175,7 +175,7 @@ def get_ad_group_sources_notifications(ad_group_sources):
     notifications = {}
 
     for ags in ad_group_sources:
-        notification = ''
+        notification = {}
 
         latest_settings_qs = models.AdGroupSourceSettings.objects.\
             filter(ad_group_source=ags).\
@@ -187,70 +187,98 @@ def get_ad_group_sources_notifications(ad_group_sources):
             order_by('ad_group_source_id', '-created_dt')
         latest_state = latest_state_qs[0] if latest_state_qs.exists() else None
 
-        if ags.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE and\
-           latest_settings and latest_settings.state == constants.AdGroupSettingsState.ACTIVE:
-            notification += 'This media source is enabled but will not run ' +\
-                            'until you enable the ad group in the Settings.'
+        if ags.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE:
+            if latest_settings and latest_settings.state == constants.AdGroupSettingsState.ACTIVE:
+                notification['message'] = 'This media source is enabled but will not run until you enable ad group in Settings tab. Other media source settings will be synced at the same time.'
+                notification['important'] = True
 
-        if ags.actionlog_set.filter(
+            elif (_get_state_update_notification(ags, latest_settings, latest_state) or
+                    _get_cpc_update_notification(ags, latest_settings, latest_state) or
+                    _get_budget_update_notification(ags, latest_settings, latest_state)):
+                notification['message'] = 'Media source settings will be synced once the ad group is enabled in Settings tab.'
+                notification['important'] = False
+
+            if not len(notification):
+                continue
+
+            notification['in_progress'] = False
+            notifications[ags.source_id] = notification
+
+        elif ags.actionlog_set.filter(
                 state=actionlog.constants.ActionState.WAITING,
                 action=actionlog.constants.Action.SET_CAMPAIGN_STATE
         ).exists():
-            if ags.source.can_update_state() and\
-               latest_settings is not None and latest_settings.state is not None and\
-               (latest_state is None or latest_state.state != latest_settings.state):
-                if notification:
-                    notification += '<br />'
+            messages = []
+            messages.append(_get_state_update_notification(ags, latest_settings, latest_state))
+            messages.append(_get_cpc_update_notification(ags, latest_settings, latest_state))
+            messages.append(_get_budget_update_notification(ags, latest_settings, latest_state))
 
-                msg = 'Status is being changed from <strong>{old_state}</strong> ' +\
-                      'to <strong>{new_state}</strong>.'
+            message = '<br />'.join([t for t in messages if t is not None])
 
-                notification += msg.format(
-                    new_state=constants.AdGroupSettingsState.get_text(latest_settings.state),
-                    old_state=constants.AdGroupSettingsState.get_text(
-                        (latest_state and latest_state.state) or 'N/A'
-                    )
-                )
+            if not len(message):
+                continue
 
-            if ags.source.can_update_cpc() and\
-               latest_settings is not None and latest_settings.cpc_cc is not None and\
-               (latest_state is None or latest_state.cpc_cc != latest_settings.cpc_cc):
-                if notification:
-                    notification += '<br />'
+            notification['message'] = message
+            notification['in_progress'] = True
+            notification['important'] = False
 
-                msg = 'Bid CPC is being changed from <strong>{old_cpc}</strong> ' +\
-                      'to <strong>{new_cpc}</strong>.'
-
-                if latest_state and latest_state.cpc_cc:
-                    old_cpc = '{:.3f}'.format(latest_state.cpc_cc)
-                else:
-                    old_cpc = 'N/A'
-
-                notification += msg.format(
-                    old_cpc=old_cpc,
-                    new_cpc='{:.3f}'.format(latest_settings.cpc_cc),
-                )
-
-            if ags.source.can_update_daily_budget() and\
-               latest_settings is not None and latest_settings.daily_budget_cc is not None and\
-               (latest_state is None or latest_state.daily_budget_cc != latest_settings.daily_budget_cc):
-                if notification:
-                    notification += '<br />'
-
-                msg = 'Daily budget is being changed from <strong>{old_daily_budget}</strong> ' +\
-                      'to <strong>{new_daily_budget}</strong>.'
-
-                if latest_state and latest_state.daily_budget_cc is not None:
-                    old_daily_budget = '{:.2f}'.format(latest_state.daily_budget_cc)
-                else:
-                    old_daily_budget = 'N/A'
-
-                notification += msg.format(
-                    old_daily_budget=old_daily_budget,
-                    new_daily_budget='{:.2f}'.format(latest_settings.daily_budget_cc),
-                )
-
-        if len(notification):
             notifications[ags.source_id] = notification
 
     return notifications
+
+
+def _get_state_update_notification(ags, settings, state):
+    if ags.source.can_update_state() and\
+       settings is not None and settings.state is not None and\
+       (state is None or state.state != settings.state):
+        msg = 'Status is being changed from <strong>{old_state}</strong> ' +\
+              'to <strong>{new_state}</strong>.'
+
+        return msg.format(
+            new_state=constants.AdGroupSettingsState.get_text(settings.state),
+            old_state=constants.AdGroupSettingsState.get_text(
+                (state and state.state) or 'N/A'
+            )
+        )
+
+    return None
+
+
+def _get_cpc_update_notification(ags, settings, state):
+    if ags.source.can_update_cpc() and\
+       settings is not None and settings.cpc_cc is not None and\
+       (state is None or state.cpc_cc != settings.cpc_cc):
+        msg = 'Bid CPC is being changed from <strong>{old_cpc}</strong> ' +\
+              'to <strong>{new_cpc}</strong>.'
+
+        if state and state.cpc_cc:
+            old_cpc = '{:.3f}'.format(state.cpc_cc)
+        else:
+            old_cpc = 'N/A'
+
+        return msg.format(
+            old_cpc=old_cpc,
+            new_cpc='{:.3f}'.format(settings.cpc_cc),
+        )
+
+    return None
+
+
+def _get_budget_update_notification(ags, settings, state):
+    if ags.source.can_update_daily_budget() and\
+       settings is not None and settings.daily_budget_cc is not None and\
+       (state is None or state.daily_budget_cc != settings.daily_budget_cc):
+        msg = 'Daily budget is being changed from <strong>{old_daily_budget}</strong> ' +\
+              'to <strong>{new_daily_budget}</strong>.'
+
+        if state and state.daily_budget_cc is not None:
+            old_daily_budget = '{:.2f}'.format(state.daily_budget_cc)
+        else:
+            old_daily_budget = 'N/A'
+
+        return msg.format(
+            old_daily_budget=old_daily_budget,
+            new_daily_budget='{:.2f}'.format(settings.daily_budget_cc),
+        )
+
+    return None

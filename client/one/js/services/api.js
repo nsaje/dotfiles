@@ -1572,6 +1572,8 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
     function AdGroupSourcesUpdates() {
         function convertFromApi (data) {
+            var notifications;
+
             if (data.rows) {
                 for (var id in data.rows) {
                     var row = data.rows[id];
@@ -1587,6 +1589,18 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
                     row.status = status;
                 }
+            }
+
+            if (data.notifications) {
+                Object.keys(data.notifications).forEach(function (key) {
+                    var notification = data.notifications[key];
+
+                    data.notifications[key] = {
+                        message: notification.message,
+                        inProgress: notification.in_progress,
+                        important: notification.important
+                    }
+                });
             }
 
             return {

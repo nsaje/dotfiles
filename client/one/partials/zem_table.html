@@ -94,8 +94,15 @@
                                     {{ row[col.field] }}
                                 </span>
                                 <span ng-switch-when="notification">
-                                    <span class="notification-text" popover-append-to-body="true" popover-trigger="mouseenter" popover-html-unsafe="{{ notifications[row.id] }}" popover-placement="bottom">{{ row[col.field] }}</span>
-                                    <span ng-if="notifications[row.id]" class="loader"></span>
+                                    <span
+                                        class="text"
+                                        ng-class="{'important': notifications[row.id].important}"
+                                        popover-append-to-body="true"
+                                        popover-trigger="mouseenter"
+                                        popover-html-unsafe="{{ notifications[row.id].message }}"
+                                        popover-placement="bottom">{{ row[col.field] }}
+                                    </span>
+                                    <span ng-if="notifications[row.id].inProgress" class="loader"></span>
                                 </span>
                                 <span ng-switch-when="checkbox">
                                     <input type="checkbox" data-ng-model="row[col.field]" ng-disabled="!row[col.field] && col.disabled" data-ng-change="callSelectCallback(col.selectCallback, row, row[col.field], true)"/>
