@@ -1,6 +1,7 @@
 import jsonfield
 import binascii
 import datetime
+import collections
 from decimal import Decimal
 
 import utils.string
@@ -666,10 +667,12 @@ class AdGroupSource(models.Model):
         else:
             msid = self.source.name.lower()
 
-        tracking_ids = {
-            '_z1_msid': msid,
-            '_z1_adgid': self.ad_group.id
-        }
+        tracking_ids = collections.OrderedDict(
+            [
+                ('_z1_adgid', self.ad_group.id),
+                ('_z1_msid', msid)
+            ]
+        )
 
         return tracking_ids
 
