@@ -194,6 +194,8 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             data.totals = convertRow(data.totals);
             data.lastChange = data.last_change;
 
+            data.notifications = convertNotifications(data.notifications);
+
             return data;
         }
 
@@ -1591,23 +1593,14 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 }
             }
 
-            if (data.notifications) {
-                Object.keys(data.notifications).forEach(function (key) {
-                    var notification = data.notifications[key];
-
-                    data.notifications[key] = {
-                        message: notification.message,
-                        inProgress: notification.in_progress,
-                        important: notification.important
-                    }
-                });
-            }
+            notifications = convertNotifications(data.notifications);
 
             return {
                 rows: data.rows,
                 totals: data.totals,
                 lastChange: data.last_change,
-                notifications: data.notifications
+                notifications: data.notifications,
+                inProgress: data.in_progress
             };
         }
 
@@ -1737,6 +1730,24 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 }
             }
         }
+    }
+
+    function convertNotifications (notifications) {
+        if (!notifications) {
+            return;
+        }
+
+        Object.keys(notifications).forEach(function (key) {
+            var notification = notifications[key];
+
+            notifications[key] = {
+                message: notification.message,
+                inProgress: notification.in_progress,
+                important: notification.important
+            }
+        });
+
+        return notifications;
     }
 
     return {

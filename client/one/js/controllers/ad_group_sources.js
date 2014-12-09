@@ -115,7 +115,11 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             unselectable: true,
             help: 'A setting for enabling and pausing media sources.',
             onChange: function (sourceId, value) {
-                api.adGroupSourceSettings.save($state.params.id, sourceId, {state: value});
+                api.adGroupSourceSettings.save($state.params.id, sourceId, {state: value}).then(
+                    function (data) {
+                        pollSourcesTableUpdates();
+                    }
+                );
             },
             disabled: false
         },
@@ -174,6 +178,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 api.adGroupSourceSettings.save($state.params.id, sourceId, data).then(
                     function (data) {
                         onSuccess();
+                        pollSourcesTableUpdates();
                     },
                     function (errors) {
                         onError(errors.cpc);
@@ -211,6 +216,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 api.adGroupSourceSettings.save($state.params.id, sourceId, data).then(
                     function (data) {
                         onSuccess();
+                        pollSourcesTableUpdates();
                     },
                     function (errors) {
                         onError(errors.dailyBudget);
@@ -361,6 +367,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
 
                 $scope.selectRows();
+                pollSourcesTableUpdates();
             },
             function (data) {
                 // error
@@ -625,22 +632,27 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     pollSyncStatus();
 
     var pollSourcesTableUpdates = function () {
-        if ($scope.hasPermission('zemauth.set_ad_group_source_settings')) {
-            $scope.lastChangeTimeout = $timeout(function () {
-                api.adGroupSourcesUpdates.get($state.params.id, $scope.lastChange)
-                    .then(function (data) {
-                        if (data.lastChange) {
-                            $scope.lastChange = data.lastChange;
-                            $scope.notifications = data.notifications;
-
-                            updateTableData(data.rows, data.totals);
-                        }
-                    })
-                    .finally(function () {
-                        pollSourcesTableUpdates();
-                    });
-            }, 3000);
+        if (!$scope.hasPermission('zemauth.set_ad_group_source_settings') ||
+            $scope.lastChangeTimeout) {
+            return;
         }
+
+        api.adGroupSourcesUpdates.get($state.params.id, $scope.lastChange)
+            .then(function (data) {
+                if (data.lastChange) {
+                    $scope.lastChange = data.lastChange;
+                    $scope.notifications = data.notifications;
+
+                    updateTableData(data.rows, data.totals);
+                }
+
+                if (data.inProgress) {
+                    $scope.lastChangeTimeout = $timeout(function () {
+                        $scope.lastChangeTimeout = null;
+                        pollSourcesTableUpdates();
+                    }, 2000);
+                }
+            });
     };
 
     var updateTableData = function (rowsUpdates, totalsUpdates) {
@@ -661,8 +673,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             }
         }
     };
-
-    pollSourcesTableUpdates();
 
     $scope.$on('$destroy', function () {
         $timeout.cancel($scope.lastChangeTimeout);

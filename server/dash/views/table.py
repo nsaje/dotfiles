@@ -280,7 +280,12 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
             last_change_dt
         )
 
-        response = {'last_change': new_last_change_dt}
+        notifications = helpers.get_ad_group_sources_notifications(ad_group_sources)
+
+        response = {
+            'last_change': new_last_change_dt,
+            'in_progress': any(n['in_progress'] for n in notifications.values())
+        }
 
         if new_last_change_dt is not None:
             states = ad_group_sources_table.get_sources_states()
@@ -314,7 +319,7 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
                 'current_daily_budget': get_current_daily_budget_total(states)
             }
 
-            response['notifications'] = helpers.get_ad_group_sources_notifications(ad_group_sources)
+            response['notifications'] = notifications
 
         return self.create_api_response(response)
 
