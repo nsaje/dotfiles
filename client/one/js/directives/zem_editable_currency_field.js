@@ -27,18 +27,40 @@ oneApp.directive('zemEditableCurrencyField', function() {
                 $timeout(function () {
                     $element.find('.currency-input')[0].focus();
                     $document.bind('click', closeFormClickHandler);
+                    $document.bind('keyup', keyupHandler);
                 });
             };
 
             $scope.close = function () {
                 $scope.editFormActive = false;
                 $scope.errors = null;
-                $document.unbind('click', closeFormClickHandler);
+
+                $timeout(function () {
+                    $document.unbind('click', closeFormClickHandler);
+                    $document.unbind('keyup', keyupHandler);
+                });
             };
 
-            $scope.save = function (rowId) {
-                $scope.value = $scope.formValue;
-                $scope.onSave(rowId, $scope.formValue, $scope.close, $scope.onError)
+            $scope.save = function () {
+                $scope.onSave(
+                    $scope.rowId,
+                    $scope.formValue,
+                    function () {
+                        $scope.value = $scope.formValue;
+                        $scope.close();
+                    },
+                    $scope.onError
+                );
+            }
+            
+            function keyupHandler (e) {
+                if (e.keyCode == 27) {
+                    // escape
+                    $scope.close();
+                } else if (e.keyCode == 13) {
+                    // enter
+                    $scope.save();
+                }
             }
 
             function closeFormClickHandler(event) {
