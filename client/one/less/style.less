@@ -1659,7 +1659,7 @@ a.help-popover:visited {
     }
 
     tr > td {
-        & .currency-3 {
+        .currency-3 {
             display: inline-block;
             min-width: 6ex;
             text-align: left;
@@ -1671,16 +1671,27 @@ a.help-popover:visited {
             white-space: nowrap;
         }
 
-        & .datetime {
+        .datetime {
             white-space: nowrap;
         }
 
-        .notification {
-            width: 8px;
-            height: 8px;
-            background-color: #2fa8c7;
+        &.notification {
+            white-space: nowrap;
             display: inline-block;
-            margin-left: 2px;
+            min-width: 85px;
+
+            .text {
+                display: inline-block;
+                min-width: 45px;
+
+                &.important {
+                    color: #c70000;
+                }
+            }
+
+            .loader {
+                height: 19px;
+            }
         }
     }
 }
