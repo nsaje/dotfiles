@@ -187,15 +187,20 @@ class AdGroupSourceSettingsWriter(object):
         ]):
                 new_settings = latest_settings
                 new_settings.pk = None  # make a copy of the latest settings
+
+                old_settings_obj = {}
+
                 if state is not None:
                     new_settings.state = state
                 if cpc_cc is not None:
+                    old_settings_obj['cpc_cc'] = new_settings.cpc_cc
                     new_settings.cpc_cc = cpc_cc
                 if daily_budget_cc is not None:
+                    old_settings_obj['daily_budget_cc'] = new_settings.daily_budget_cc
                     new_settings.daily_budget_cc = daily_budget_cc
                 new_settings.save()
 
-                self.add_to_history(settings_obj)
+                self.add_to_history(settings_obj, old_settings_obj)
 
                 if self.can_trigger_action():
                     actionlog.api.set_ad_group_source_settings(new_settings)
@@ -235,15 +240,26 @@ class AdGroupSourceSettingsWriter(object):
         except models.AdGroupSourceSettings.DoesNotExist:
             return models.AdGroupSourceSettings(ad_group_source=self.ad_group_source)
 
-    def add_to_history(self, change_obj):
+    def add_to_history(self, change_obj, old_change_obj):
         changes_text_parts = []
         for key, val in change_obj.items():
             if val is None:
                 continue
+
             field = models.AdGroupSettings.get_human_prop_name(key)
             val = models.AdGroupSettings.get_human_value(key, val)
             source_name = self.ad_group_source.source.name
-            changes_text_parts.append('Set %s to %s on %s' % (field, val, source_name))
+
+            old_val = old_change_obj.get(key)
+
+            if old_val is None:
+                text = '%s %s set to %s' % (source_name, field, val)
+            else:
+                old_val = models.AdGroupSettings.get_human_value(key, old_val)
+                text = '%s %s set from %s to %s' % (source_name, field, old_val, val)
+
+            changes_text_parts.append(text)
+
         changes_text = ', '.join(changes_text_parts)
 
         try:
