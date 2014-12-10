@@ -26,7 +26,7 @@
                         <td class="no-data" colspan="100">No data</td>
                     </tr>
                     <tr ng-repeat="row in rows" ng-class="{'archived': row.archived}">
-                        <td ng-if="col.shown" ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type), 'input-one-char': col.type === 'checkbox', 'text-center': col.type === 'link', 'notification': col.type === 'notification'}" class="{{ col.extraTdCss }}" ng-repeat="col in columns | filter: {checked: true}">
+                        <td ng-if="col.shown" ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type), 'input-one-char': col.type === 'checkbox', 'text-center': col.type === 'link'}" class="{{ col.extraTdCss }}" ng-repeat="col in columns | filter: {checked: true}">
                             <span ng-switch="col.type">
                                 <span ng-switch-when="currency">
                                     <span class="non-editable-currency-field" ng-if="!isFieldEditable(row.editable_fields, col.field)" ng-class="{'currency-3': col.fractionSize === 3}">
@@ -93,7 +93,7 @@
                                 <span ng-switch-when="text">
                                     {{ row[col.field] }}
                                 </span>
-                                <span ng-switch-when="notification">
+                                <span class="notification" ng-switch-when="notification">
                                     <span
                                         class="text"
                                         ng-class="{'important': notifications[row.id].important}"
