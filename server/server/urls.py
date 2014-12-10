@@ -66,6 +66,10 @@ urlpatterns += patterns(
         login_required(dash.views.views.AdGroupSources.as_view()),
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id_>\d+)/sources/table/updates/',
+        login_required(dash.views.table.AdGroupSourcesTableUpdates.as_view()),
+    ),
+    url(
         r'^api/(?P<level_>(all_accounts))/sources/table/',
         login_required(dash.views.table.SourcesTable.as_view()),
     ),
@@ -76,10 +80,6 @@ urlpatterns += patterns(
     url(
         r'^api/(?P<level_>(ad_groups|campaigns|accounts))/(?P<id_>\d+)/sources/table/',
         login_required(dash.views.table.SourcesTable.as_view()),
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/last_change/',
-        login_required(dash.views.views.AdGroupSourcesLastChange.as_view())
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/allowed/',

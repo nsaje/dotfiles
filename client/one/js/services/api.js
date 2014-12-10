@@ -194,6 +194,8 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             data.totals = convertRow(data.totals);
             data.lastChange = data.last_change;
 
+            data.notifications = convertNotifications(data.notifications);
+
             return data;
         }
 
@@ -1570,18 +1572,51 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
-    function AdGroupSourcesLastChange() {
+    function AdGroupSourcesUpdates() {
         function convertFromApi (data) {
+            var notifications;
+
+            if (data.rows) {
+                for (var id in data.rows) {
+                    var row = data.rows[id];
+                    var status = row.status;
+
+                    if (status === constants.adGroupSettingsState.ACTIVE) {
+                        status = 'Active';
+                    } else if (status === constants.adGroupSettingsState.INACTIVE) {
+                        status = 'Paused';
+                    } else {
+                        status = 'N/A';
+                    }
+
+                    row.status = status;
+                }
+            }
+
+            notifications = convertNotifications(data.notifications);
+
             return {
-                lastChange: data.last_change
+                rows: data.rows,
+                totals: data.totals,
+                lastChange: data.last_change,
+                notifications: data.notifications,
+                inProgress: data.in_progress
             };
         }
 
-        this.get = function (adGroupId) {
+        this.get = function (adGroupId, lastChange) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/sources/last_change/';
+            var url = '/api/ad_groups/' + adGroupId + '/sources/table/updates/';
 
-            $http.get(url).
+            var config = {
+                params: {}
+            };
+
+            if (lastChange) {
+                config.params.last_change_dt = lastChange;
+            }
+
+            $http.get(url, config).
                 success(function (data) {
                     var resource;
 
@@ -1697,6 +1732,24 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         }
     }
 
+    function convertNotifications (notifications) {
+        if (!notifications) {
+            return;
+        }
+
+        Object.keys(notifications).forEach(function (key) {
+            var notification = notifications[key];
+
+            notifications[key] = {
+                message: notification.message,
+                inProgress: notification.in_progress,
+                important: notification.important
+            }
+        });
+
+        return notifications;
+    }
+
     return {
         navData: new NavData(),
         user: new User(),
@@ -1730,7 +1783,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         allAccountsBudget: new AllAccountsBudget(),
         accountUsers: new AccountUsers(),
         adGroupSourceSettings: new AdGroupSourceSettings(),
-        adGroupSourcesLastChange: new AdGroupSourcesLastChange(),
+        adGroupSourcesUpdates: new AdGroupSourcesUpdates(),
         adGroupAdsExportAllowed: new AdGroupAdsExportAllowed(),
         campaignAdGroupsExportAllowed: new CampaignAdGroupsExportAllowed()
     };
