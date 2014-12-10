@@ -167,7 +167,7 @@ class CsvReport(IReport):
 
     def _check_incomplete(self):
         sessions_total = self._get_sessions_total()
-        sessions_sum = sum(int(entry['Sessions']) for entry in self.entries)
+        sessions_sum = sum(int(entry['Sessions'].strip().replace(',', '')) for entry in self.entries)
 
         if sessions_total != sessions_sum:
             raise exc.IncompleteReportException(
