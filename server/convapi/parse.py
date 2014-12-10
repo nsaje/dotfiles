@@ -1,3 +1,4 @@
+import sys
 import datetime
 import operator
 import exc
@@ -161,7 +162,36 @@ class CsvReport(IReport):
         if not set(self.fieldnames) >= set(CsvReport.REQUIRED_FIELDS):
             raise exc.CsvParseException('Not all required fields are present')
 
+        self._check_incomplete()
+
         self.report_log.state = constants.GAReportState.PARSED
+
+    def _check_incomplete(self):
+        sessions_total = self._get_sessions_total()
+        sessions_sum = sum(int(entry['Sessions']) for entry in self.entries)
+
+        if sessions_total != sessions_sum:
+            raise exc.IncompleteReportException(
+                'Number of total sessions ({}) is not equal to sum of session counts ({})'.format(
+                    sessions_total, sessions_sum)
+            )
+
+    def _get_sessions_total(self):
+        day_index_lines = []
+        inside = False
+
+        for line in self.lines:
+            if not inside and line.startswith('Day Index'):
+                inside = True
+            if inside:
+                day_index_lines.append(line)
+
+        reader = csv.DictReader(StringIO.StringIO('\n'.join(day_index_lines)))
+
+        try:
+            return int(reader.next()['Sessions'].strip().replace(',', ''))
+        except:
+            raise exc.CsvParseException('Could not parse total sessions')
 
 
 class AdGroupReport(IReport):

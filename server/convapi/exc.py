@@ -1,3 +1,5 @@
+class IncompleteReportException(Exception):
+    pass
 
 
 class EmptyReportException(Exception):
