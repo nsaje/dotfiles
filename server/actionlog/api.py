@@ -253,10 +253,16 @@ def _handle_error(action, e):
 
 
 def _get_ad_group_sources(ad_group, source):
-    if not source:
-        return ad_group.adgroupsource_set.all()
+    inactive_ad_group_sources = get_ad_group_sources_waiting(ad_group=ad_group)
 
-    return ad_group.adgroupsource_set.filter(source=source)
+    active_ad_group_sources = dash.models.AdGroupSource.objects \
+        .filter(ad_group=ad_group) \
+        .exclude(pk__in=[ags.id for ags in inactive_ad_group_sources])
+
+    if not source:
+        return active_ad_group_sources.all()
+
+    return active_ad_group_sources.filter(source=source)
 
 
 def _get_ad_group_settings(ad_group):
@@ -336,7 +342,7 @@ def _init_set_ad_group_source_settings(ad_group_source, settings_id, conf):
         with transaction.atomic():
             callback = urlparse.urljoin(
                 settings.EINS_HOST, reverse(
-                    'api.zwei_settings_callback', 
+                    'api.zwei_settings_callback',
                     kwargs={'action_id': action.id, 'settings_id': settings_id})
             )
 
@@ -364,8 +370,6 @@ def _init_set_ad_group_source_settings(ad_group_source, settings_id, conf):
 
         et, ei, tb = sys.exc_info()
         raise InsertActionException, ei, tb
-
-
 
 
 def _init_fetch_status(ad_group_source, order):
