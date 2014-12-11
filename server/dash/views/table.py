@@ -27,7 +27,7 @@ def sort_rows_by_order_and_archived(rows, order):
 
 def compute_daily_budget_total(data):
     budgets = [s.daily_budget_cc for s in data if
-               s.daily_budget_cc is not None and
+               s is not None and s.daily_budget_cc is not None and
                s.state == constants.AdGroupSourceSettingsState.ACTIVE]
 
     return sum(budgets)
