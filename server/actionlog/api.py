@@ -193,7 +193,7 @@ def count_waiting_stats_actions():
 
 
 def count_failed_stats_actions():
-    print models.ActionLog.objects.filter(
+    return models.ActionLog.objects.filter(
         Q(action_type=constants.ActionType.MANUAL) |
         Q(action=constants.Action.CREATE_CAMPAIGN) |
         Q(action=constants.Action.SET_CAMPAIGN_STATE),
