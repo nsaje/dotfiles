@@ -93,15 +93,14 @@
                                 <span ng-switch-when="text">
                                     {{ row[col.field] }}
                                 </span>
-                                <span class="notification" ng-switch-when="notification">
-                                    <span
-                                        class="text"
-                                        ng-class="{'important': notifications[row.id].important}"
-                                        popover-append-to-body="true"
-                                        popover-trigger="mouseenter"
-                                        popover-html-unsafe="{{ notifications[row.id].message }}"
-                                        popover-placement="bottom">{{ row[col.field] }}
-                                    </span>
+                                <span 
+                                    ng-switch-when="notification"
+                                    class="notification"
+                                    popover-append-to-body="true"
+                                    popover-trigger="mouseenter"
+                                    popover-html-unsafe="{{ notifications[row.id].message }}"
+                                    popover-placement="bottom">
+                                    <span class="text" ng-class="{'important': notifications[row.id].important}">{{ row[col.field] }}</span>
                                     <span ng-if="notifications[row.id].inProgress" class="loader"></span>
                                 </span>
                                 <span ng-switch-when="checkbox">

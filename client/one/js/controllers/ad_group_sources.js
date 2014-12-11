@@ -202,6 +202,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         {
             name: 'Daily Budget',
             field: 'daily_budget',
+            fractionSize: 0,
             checked: true,
             type: 'currency',
             shown: true,
@@ -228,6 +229,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             name: 'Current Daily Budget',
             field: 'current_daily_budget',
             checked: false,
+            fractionSize: 0,
             type: 'currency',
             internal: $scope.isPermissionInternal('zemauth.see_current_ad_group_source_state'),
             shown: $scope.hasPermission('zemauth.see_current_ad_group_source_state'),
