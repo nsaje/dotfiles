@@ -16,6 +16,9 @@ STATS_END_DELTA = 1
 
 
 def parse_datetime(dt_string):
+    if dt_string is None or not len(dt_string):
+        return
+
     dt = dateutil.parser.parse(dt_string, ignoretz=True)
 
     # since this is a client datetime where times are in EST,
