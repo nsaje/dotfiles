@@ -89,11 +89,9 @@ class AdGroupSettingsForm(forms.Form):
 
 class AdGroupSourceSettingsCpcForm(forms.Form):
     cpc_cc = forms.DecimalField(
-        max_value=2,
         decimal_places=4,
         error_messages={
-            'required': 'This value is required',
-            'max_value': 'Maximum CPC is $2.00'
+            'required': 'This value is required'
         }
     )
 
@@ -105,11 +103,15 @@ class AdGroupSourceSettingsCpcForm(forms.Form):
         cpc_cc = self.cleaned_data.get('cpc_cc')
         if cpc_cc < 0:
             raise forms.ValidationError('This value must be positive')
-        
-        min_cpc = self.ad_group_source.source.source_type.min_cpc
 
+        min_cpc = self.ad_group_source.source.source_type.min_cpc
         if min_cpc is not None and cpc_cc < min_cpc:
             raise forms.ValidationError('Minimum CPC is ${}' \
+                .format(utils.string.format_decimal(min_cpc, 2, 3)))
+
+        max_cpc = self.ad_group_source.source.source_type.max_cpc
+        if max_cpc is not None and cpc_cc < max_cpc:
+            raise forms.ValidationError('Maximum CPC is ${}' \
                 .format(utils.string.format_decimal(min_cpc, 2, 3)))
 
 
@@ -131,10 +133,14 @@ class AdGroupSourceSettingsDailyBudgetForm(forms.Form):
             raise forms.ValidationError('This value must be positive')
 
         min_daily_budget = self.ad_group_source.source.source_type.min_daily_budget
-
         if min_daily_budget is not None and daily_budget_cc < min_daily_budget:
             raise forms.ValidationError('Please provide budget of at least ${}.' \
-                .format(utils.string.format_decimal(min_daily_budget, 2, 3)))
+                .format(utils.string.format_decimal(min_daily_budget, 0, 0)))
+
+        max_daily_budget = self.ad_group_source.source.source_type.max_daily_budget
+        if max_daily_budget is not None and daily_budget_cc > max_daily_budget:
+            raise forms.ValidationError('Maximum allowed budget is ${}. If you want use a higher daily budget, please contact support.' \
+                .format(utils.string.format_decimal(max_daily_budget, 0, 0)))
 
 
 class AdGroupSourceSettingsStateForm(forms.Form):
