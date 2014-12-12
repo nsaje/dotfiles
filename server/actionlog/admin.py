@@ -98,7 +98,7 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
     state_.admin_order_field = 'state'
 
     def message_(self, obj):
-        return self._wrap_preformatted_text(obj.message)
+        return self._wrap_preformatted_text(obj.message.encode(errors='ignore'))
     message_.allow_tags = True
 
     def order_(self, obj):
