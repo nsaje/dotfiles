@@ -110,9 +110,9 @@ class AdGroupSourceSettingsCpcForm(forms.Form):
                 .format(utils.string.format_decimal(min_cpc, 2, 3)))
 
         max_cpc = self.ad_group_source.source.source_type.max_cpc
-        if max_cpc is not None and cpc_cc < max_cpc:
+        if max_cpc is not None and cpc_cc > max_cpc:
             raise forms.ValidationError('Maximum CPC is ${}' \
-                .format(utils.string.format_decimal(min_cpc, 2, 3)))
+                .format(utils.string.format_decimal(max_cpc, 2, 3)))
 
 
 class AdGroupSourceSettingsDailyBudgetForm(forms.Form):
