@@ -78,6 +78,22 @@ def mailgun_gareps(request):
         report_log.save()
         return HttpResponse(status=406)
 
+    if not csvreport.is_ad_group_specified():
+        message = 'ERROR: not all landing page urls have a valid ad_group specified'
+        logger.warning(message)
+        report_log.add_error(message)
+        report_log.state = constants.GAReportState.FAILED
+        report_log.save()
+        return HttpResponse(status=406)
+
+    if not csvreport.is_media_source_specified():
+        message = 'ERROR: not all landing page urls have a media source specified'
+        logger.warning(message)
+        report_log.add_error(message)
+        report_log.state = constants.GAReportState.FAILED
+        report_log.save()
+        return HttpResponse(status=406)
+
     store_to_s3(csvreport.get_date(), filename, content)
 
     if len(csvreport.get_entries()) == 0:
@@ -87,14 +103,6 @@ def mailgun_gareps(request):
         report_log.state = constants.GAReportState.EMPTY_REPORT
         report_log.save()
         return HttpResponse(status=200)
-
-    if not csvreport.is_ad_group_specified():
-        logger.warning('ERROR: not all landing page urls have an ad_group specified')
-        report_log.add_error('ERROR: not all landing page urls have an ad_group specified')
-
-    if not csvreport.is_media_source_specified():
-        logger.warning('ERROR: not all landing page urls have a media source specified')
-        report_log.add_error('ERROR: not all landing page urls have a media source specified')
 
     TriggerReportAggregateThread(
         csvreport=csvreport,
@@ -125,7 +133,7 @@ class TriggerReportAggregateThread(threading.Thread):
         try:
             for ad_group_report in self.csvreport.split_by_ad_group():
                 self.report_log.add_ad_group_id(ad_group_report.get_ad_group_id())
-                
+
                 report_email = ReportEmail(
                     sender=self.sender,
                     recipient=self.recipient,
