@@ -80,14 +80,14 @@ class CsvReport(IReport):
     def is_media_source_specified(self):
         for entry in self.get_entries():
             landing_page_url = LandingPageUrl(entry['Landing Page'])
-            if landing_page_url.ad_group_id is None:
+            if landing_page_url.source_param is None:
                 return False
         return True
 
     def is_ad_group_specified(self):
         for entry in self.get_entries():
             landing_page_url = LandingPageUrl(entry['Landing Page'])
-            if landing_page_url.source_param is None:
+            if landing_page_url.ad_group_id is None:
                 return False
         return True
 
@@ -101,7 +101,6 @@ class CsvReport(IReport):
                 entries=self._get_entries_for_ad_group(ad_group_id)
             ))
         return ad_group_reports
-
 
     def _parse_date(self):
         dateline = self.lines[3]
@@ -152,7 +151,7 @@ class CsvReport(IReport):
             self.fieldnames = reader.fieldnames
             self.entries = []
             for entry in reader:
-                if not entry['Landing Page'].strip():
+                if not entry['Landing Page'].strip() or entry['Landing Page'] == 'Day Index':
                     break
                 self.entries.append(entry)
         except:
@@ -161,7 +160,36 @@ class CsvReport(IReport):
         if not set(self.fieldnames) >= set(CsvReport.REQUIRED_FIELDS):
             raise exc.CsvParseException('Not all required fields are present')
 
+        self._check_incomplete()
+
         self.report_log.state = constants.GAReportState.PARSED
+
+    def _check_incomplete(self):
+        sessions_total = self._get_sessions_total()
+        sessions_sum = sum(int(entry['Sessions'].strip().replace(',', '')) for entry in self.entries)
+
+        if sessions_total != sessions_sum:
+            raise exc.IncompleteReportException(
+                'Number of total sessions ({}) is not equal to sum of session counts ({})'.format(
+                    sessions_total, sessions_sum)
+            )
+
+    def _get_sessions_total(self):
+        day_index_lines = []
+        inside = False
+
+        for line in self.lines:
+            if not inside and line.startswith('Day Index'):
+                inside = True
+            if inside:
+                day_index_lines.append(line)
+
+        reader = csv.DictReader(StringIO.StringIO('\n'.join(day_index_lines)))
+
+        try:
+            return int(reader.next()['Sessions'].strip().replace(',', ''))
+        except:
+            raise exc.CsvParseException('Could not parse total sessions')
 
 
 class AdGroupReport(IReport):
@@ -210,11 +238,16 @@ class LandingPageUrl(object):
     def _parse(self):
         self.clean_url, query_params = utils.url.clean_url(self.raw_url)
 
+        # parse ad group id
         if '_z1_adgid' in query_params:
-            self.ad_group_id = int(query_params['_z1_adgid'])
-        # also check '_z1_agid'
-        if self.ad_group_id is None and '_z1_agid' in query_params:
-            self.ad_group_id = int(query_params['_z1_agid'])
+            ad_group_id_raw = query_params['_z1_adgid']
+        elif '_z1_agid' in query_params:
+            ad_group_id_raw = query_params['_z1_agid']
+        try:
+            self.ad_group_id = int(ad_group_id_raw)
+        except ValueError:
+            pass
+
         if '_z1_msid' in query_params:
             self.source_param = query_params['_z1_msid']
         if '_z1_did' in query_params:
