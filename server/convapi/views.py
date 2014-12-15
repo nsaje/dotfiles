@@ -71,7 +71,7 @@ def mailgun_gareps(request):
         report_log.state = constants.GAReportState.EMPTY_REPORT
         report_log.save()
         return HttpResponse(status=200)
-    except exc.CsvParseException as e:
+    except (exc.CsvParseException, exc.IncompleteReportException) as e:
         logger.warning(e.message)
         report_log.add_error(e.message)
         report_log.state = constants.GAReportState.FAILED
