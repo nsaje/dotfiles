@@ -239,12 +239,11 @@ class LandingPageUrl(object):
         self.clean_url, query_params = utils.url.clean_url(self.raw_url)
 
         # parse ad group id
-        if '_z1_adgid' in query_params:
-            ad_group_id_raw = query_params['_z1_adgid']
-        elif '_z1_agid' in query_params:
-            ad_group_id_raw = query_params['_z1_agid']
         try:
-            self.ad_group_id = int(ad_group_id_raw)
+            if '_z1_adgid' in query_params:
+                self.ad_group_id = int(query_params['_z1_adgid'])
+            elif '_z1_agid' in query_params:
+                self.ad_group_id = int(query_params['_z1_agid'])
         except ValueError:
             pass
 
