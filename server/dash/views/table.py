@@ -55,6 +55,11 @@ def get_daily_budget_total(ad_group_sources, states, settings):
     return compute_daily_budget_total(data)
 
 
+def has_aggregate_postclick_permission(user):
+    return (user.has_perm('zemauth.aggregate_postclick_acquisition') or
+            user.has_perm('zemauth.aggregate_postclick_engagement'))
+
+
 class AllAccountsSourcesTable(object):
     def __init__(self, user, id_):
         self.user = user
@@ -364,7 +369,7 @@ class SourcesTable(api_common.BaseApiView):
             last_sync = min(last_success_actions.values())
 
         incomplete_postclick_metrics = False
-        if user.has_perm('zemauth.postclick_metrics'):
+        if has_aggregate_postclick_permission(user):
             incomplete_postclick_metrics = \
                 not self.level_sources_table.has_complete_postclick_metrics(
                     start_date, end_date)
@@ -642,7 +647,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
         incomplete_postclick_metrics = \
             not reports.api.has_complete_postclick_metrics_accounts(
                 start_date, end_date, accounts
-            ) if request.user.has_perm('zemauth.postclick_metrics') else False
+            ) if has_aggregate_postclick_permission(request.user) else False
 
         return self.create_api_response({
             'rows': rows,
@@ -751,7 +756,8 @@ class AdGroupAdsTable(api_common.BaseApiView):
             for i, row in enumerate(rows):
                 row['url'] = 'http://www.example.com/{}/{}'.format(ad_group.name, i)
 
-        totals_data = reports.api.filter_by_permissions(reports.api.query(start_date, end_date, ad_group=int(ad_group.id)), request.user)
+        totals_data = reports.api.filter_by_permissions(
+            reports.api.query(start_date, end_date, ad_group=int(ad_group.id)), request.user)
 
         last_sync = actionlog.sync.AdGroupSync(ad_group).get_latest_success(
             recompute=False)
@@ -759,7 +765,8 @@ class AdGroupAdsTable(api_common.BaseApiView):
         incomplete_postclick_metrics = \
             not reports.api.has_complete_postclick_metrics_ad_groups(
                 start_date, end_date, [ad_group]
-            ) if request.user.has_perm('zemauth.postclick_metrics') else False
+            ) if (request.user.has_perm('zemauth.content_ads_postclick_acquisition') or
+                  request.user.has_perm('zemauth.content_ads_postclick_engagement')) else False
 
         return self.create_api_response({
             'rows': rows,
@@ -831,7 +838,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         incomplete_postclick_metrics = \
             not reports.api.has_complete_postclick_metrics_campaigns(
                 start_date, end_date, [campaign]
-            ) if request.user.has_perm('zemauth.postclick_metrics') else False
+            ) if has_aggregate_postclick_permission(request.user) else False
 
         return self.create_api_response({
             'rows': self.get_rows(
@@ -962,7 +969,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
         incomplete_postclick_metrics = \
             not reports.api.has_complete_postclick_metrics_campaigns(
                 start_date, end_date, campaigns
-            ) if request.user.has_perm('zemauth.postclick_metrics') else False
+            ) if has_aggregate_postclick_permission(request.user) else False
 
         return self.create_api_response({
             'rows': self.get_rows(
