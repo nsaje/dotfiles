@@ -131,7 +131,17 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
     var initColumns = function () {
         var cols;
 
-        zemPostclickMetricsService.insertColumns($scope.columns, $scope.hasPermission('zemauth.postclick_metrics'), $scope.isPermissionInternal('zemauth.postclick_metrics'));
+        zemPostclickMetricsService.insertAcquisitionColumns(
+            $scope.columns,
+            $scope.hasPermission('zemauth.content_ads_postclick_acquisition'),
+            $scope.isPermissionInternal('zemauth.content_ads_postclick_acquisition')
+        );
+
+        zemPostclickMetricsService.insertEngagementColumns(
+            $scope.columns,
+            $scope.hasPermission('zemauth.content_ads_postclick_engagement'),
+            $scope.isPermissionInternal('zemauth.content_ads_postclick_engagement')
+        );
 
         cols = zemCustomTableColsService.load('adGroupAdsCols', $scope.columns);
         $scope.selectedColumnsCount = cols.length;
@@ -153,8 +163,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
 
         api.adGroupAdsTable.get($state.params.id, $scope.pagination.currentPage, $scope.pagination.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
-                if($scope.hasPermission('zemauth.postclick_metrics')) {
-                    zemPostclickMetricsService.insertGoalColumns($scope.columns, data.rows, $scope.columnCategories[1], $scope.isPermissionInternal('zemauth.postclick_metrics'));
+                if($scope.hasPermission('zemauth.content_ads_postclick_engagement')) {
+                    zemPostclickMetricsService.insertGoalColumns($scope.columns, data.rows, $scope.columnCategories[1], $scope.isPermissionInternal('zemauth.content_ads_postclick_engagement'));
                 }
 
                 $scope.rows = data.rows;
@@ -204,10 +214,17 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
     var setChartOptions = function (goals) {
         $scope.chartMetricOptions = options.adGroupChartMetrics;
 
-        if ($scope.hasPermission('zemauth.postclick_metrics')) {
-            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+        if ($scope.hasPermission('zemauth.content_ads_postclick_acquisition')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatAcquisitionChartOptions(
                 $scope.chartMetricOptions,
-                $scope.isPermissionInternal('zemauth.postclick_metrics')
+                $scope.isPermissionInternal('zemauth.content_ads_postclick_acquisition')
+            );
+        }
+
+        if ($scope.hasPermission('zemauth.content_ads_postclick_engagement')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatEngagementChartOptions(
+                $scope.chartMetricOptions,
+                $scope.isPermissionInternal('zemauth.content_ads_postclick_engagement')
             );
 
             if (goals) {
@@ -224,7 +241,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
                     return {
                         name: goals[goalId].name + ': ' + typeName,
                         value: goalId,
-                        internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+                        internal: $scope.isPermissionInternal('zemauth.content_ads_postclick_engagement')
                     }
                 }).filter(function (option) {
                     return option !== undefined;
