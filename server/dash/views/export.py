@@ -230,7 +230,7 @@ class CampaignAdGroupsExportAllowed(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campiagn_ad_group_export_allowed_get')
     def get(self, request, campaign_id):
-        campaign = helpers.get_ad_group(request.user, campaign_id)
+        campaign = helpers.get_campaign(request.user, campaign_id)
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
