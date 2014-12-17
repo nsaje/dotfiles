@@ -1,5 +1,6 @@
 import logging
 import threading
+import time
 
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
@@ -132,6 +133,8 @@ class TriggerReportAggregateThread(threading.Thread):
     def run(self):
         try:
             for ad_group_report in self.csvreport.split_by_ad_group():
+                time.sleep()  # Makes greenlet yield control to prevent blocking
+
                 self.report_log.add_ad_group_id(ad_group_report.get_ad_group_id())
 
                 report_email = ReportEmail(
