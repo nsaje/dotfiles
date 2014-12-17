@@ -209,27 +209,27 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
                 $scope.chartMetricOptions,
                 $scope.isPermissionInternal('zemauth.postclick_metrics')
             );
-        }
 
-        if (goals) {
-            $scope.chartMetricOptions = $scope.chartMetricOptions.concat(Object.keys(goals).map(function (goalId) {
-                var typeName = {
-                    'conversions': 'Conversions',
-                    'conversion_rate': 'Conversion Rate'
-                }[goals[goalId].type];
+            if (goals) {
+                $scope.chartMetricOptions = $scope.chartMetricOptions.concat(Object.keys(goals).map(function (goalId) {
+                    var typeName = {
+                        'conversions': 'Conversions',
+                        'conversion_rate': 'Conversion Rate'
+                    }[goals[goalId].type];
 
-                if (typeName === undefined) {
-                    return;
-                }
+                    if (typeName === undefined) {
+                        return;
+                    }
 
-                return {
-                    name: goals[goalId].name + ': ' + typeName,
-                    value: goalId,
-                    internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
-                }
-            }).filter(function (option) {
-                return option !== undefined;
-            }));
+                    return {
+                        name: goals[goalId].name + ': ' + typeName,
+                        value: goalId,
+                        internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
+                    }
+                }).filter(function (option) {
+                    return option !== undefined;
+                }));
+            }
         }
     };
 
