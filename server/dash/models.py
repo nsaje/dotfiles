@@ -481,13 +481,13 @@ class Source(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
 
     def can_update_state(self):
-        return self.source_type.can_update_state()
+        return self.source_type.can_update_state() and not self.maintenance
 
     def can_update_cpc(self):
-        return self.source_type.can_update_cpc()
+        return self.source_type.can_update_cpc() and not self.maintenance
 
     def can_update_daily_budget(self):
-        return self.source_type.can_update_daily_budget()
+        return self.source_type.can_update_daily_budget() and not self.maintenance
 
     def __unicode__(self):
         return self.name
