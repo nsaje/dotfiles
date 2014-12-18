@@ -44,8 +44,8 @@ def mailgun_gareps(request):
         report_log.email_subject = request.POST['subject']
 
         if int(request.POST.get('attachment-count', 0)) != 1:
-            logger.warning('ERROR: single attachment expected, several received')
-            report_log.add_error('ERROR: single attachment expected, several received')
+            logger.warning('ERROR: single attachment expected')
+            report_log.add_error('ERROR: single attachment expected')
             report_log.state = constants.GAReportState.FAILED
             report_log.save()
             return HttpResponse(status=406)
