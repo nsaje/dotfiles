@@ -508,7 +508,9 @@ class SourcesTable(api_common.BaseApiView):
                 'yesterday_cost': yesterday_cost.get(source.id),
                 'supply_dash_url': supply_dash_url,
 
-                'goals': source_data.get('goals', {})
+                'goals': source_data.get('goals', {}),
+
+                'maintenance': source.maintenance
             }
 
             bid_cpc_values = [s.cpc_cc for s in states if s.cpc_cc is not None]
