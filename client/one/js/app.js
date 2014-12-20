@@ -1,6 +1,6 @@
 /*global angular*/
 
-var oneApp = angular.module('one', ['templates-one', 'oneApi', 'ngBootstrap', 'ngSanitize', 'ui.router', 'ui.bootstrap', 'ui.bootstrap.datetimepicker', 'ui.select2', 'highcharts-ng', 'LocalStorageModule', 'config']);
+var oneApp = angular.module('one', ['templates-one', 'oneApi', 'ngBootstrap', 'ngSanitize', 'ui.router', 'ui.bootstrap', 'ui.bootstrap.datetimepicker', 'ui.select2', 'highcharts-ng', 'config']);
 
 oneApp.config(['$sceDelegateProvider', 'config', function ($sceDelegateProvider, config) {
     $sceDelegateProvider.resourceUrlWhitelist(['self', config.static_url + '/**']);
@@ -14,7 +14,6 @@ oneApp.config(['$httpProvider', function ($httpProvider) {
 oneApp.config(["$locationProvider", function($locationProvider) {
     $locationProvider.html5Mode(true);
     $locationProvider.hashPrefix('!');
-
 }]);
 
 oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stateProvider, $urlRouterProvider, config) {
@@ -48,8 +47,11 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             templateUrl: '/partials/main.html',
             controller: 'MainCtrl',
             resolve: {
-                user: ['api', function(api) {
-                    return api.user.get('current');
+                user: ['api', 'zemLocalStorageService', function(api, zemLocalStorageService) {
+                    return api.user.get('current').then(function (user) {
+                        zemLocalStorageService.init(user);
+                        return user;  // makes it accessibile in main controller
+                    });
                 }],
                 accounts: ['api', function (api) {
                     return api.navData.list();

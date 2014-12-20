@@ -1,6 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', function ($scope, $state, $location, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemChartService) {
+oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemUserSettings', function ($scope, $state, $location, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemUserSettings) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.isIncompletePostclickMetrics = false;
@@ -10,13 +10,15 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
     $scope.chartData = undefined;
-    $scope.isChartShown = zemChartService.load('zemChart');
+    $scope.chartHidden = false;
     $scope.chartMetricOptions = [];
     $scope.chartGoalMetrics = null;
     $scope.chartBtnTitle = 'Hide chart';
     $scope.order = '-cost';
     $scope.sources = [];
     $scope.sourcesWaiting = null;
+
+    var userSettings = zemUserSettings.getInstance($scope, 'adGroupSources');
 
     $scope.exportOptions = [
         {name: 'CSV by day', value: 'csv'},
@@ -335,26 +337,19 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
         );
 
-        cols = zemCustomTableColsService.load('adGroupSourcesCols', $scope.columns);
+        cols = zemCustomTableColsService.load('adGroupSources', $scope.columns);
         $scope.selectedColumnsCount = cols.length;
 
         $scope.$watch('columns', function (newValue, oldValue) {
-            cols = zemCustomTableColsService.save('adGroupSourcesCols', newValue);
+            cols = zemCustomTableColsService.save('adGroupSources', newValue);
             $scope.selectedColumnsCount = cols.length;
         }, true);
     };
-
-    $scope.$watch('isChartShown', function (newValue, oldValue) {
-        zemChartService.save('zemChart', newValue);
-    });
 
     $scope.loadRequestInProgress = false;
 
     $scope.orderTableData = function(order) {
         $scope.order = order;
-
-        $location.search('order', $scope.order);
-        $scope.localStorage.set('adGroupSources.order', $scope.order);
         getTableData();
     };
 
@@ -473,9 +468,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     };
 
     $scope.toggleChart = function () {
-        $scope.isChartShown = !$scope.isChartShown;
-        $scope.chartBtnTitle = $scope.isChartShown ? 'Hide chart' : 'Show chart';
-        $location.search('chart_hidden', !$scope.isChartShown ? '1' : null);
+        $scope.chartHidden = !$scope.chartHidden;
+        $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
 
         $timeout(function() {
             $scope.$broadcast('highchartsng.reflow');
@@ -495,9 +489,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            $location.search('chart_metric1', $scope.chartMetric1);
-
-            $scope.localStorage.set('adGroupSources.chartMetric1', $scope.chartMetric1);
             if (!hasMetricData($scope.chartMetric1)) {
                 getDailyStats();
             } else {
@@ -509,9 +500,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
     $scope.$watch('chartMetric2', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            $location.search('chart_metric2', $scope.chartMetric2);
-
-            $scope.localStorage.set('adGroupSources.chartMetric2', $scope.chartMetric2);
             if (!hasMetricData($scope.chartMetric2)) {
                 getDailyStats();
             } else {
@@ -538,30 +526,16 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     });
 
     $scope.init = function() {
-        var chartMetric1 = $location.search().chart_metric1 || $scope.localStorage.get('adGroupSources.chartMetric1') || $scope.chartMetric1;
-        var chartMetric2 = $location.search().chart_metric2 || $scope.localStorage.get('adGroupSources.chartMetric2') || $scope.chartMetric2;
-        var chartHidden = $location.search().chart_hidden;
-        var order = $location.search().order || $scope.localStorage.get('adGroupSources.order') || $scope.order;
-
         var data = $scope.adGroupData[$state.params.id];
         var sourceIds = $location.search().source_ids || (data && data.sourceIds && data.sourceIds.join(','));
         var sourceTotals = $location.search().source_totals || (data && data.sourceTotals ? 1 : null);
 
+        userSettings.register('chartMetric1');
+        userSettings.register('chartMetric2');
+        userSettings.register('order');
+        userSettings.registerGlobal('chartHidden');
+
         setChartOptions();
-
-        if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
-            $scope.chartMetric1 = chartMetric1;
-            $location.search('chart_metric1', chartMetric1);
-        }
-
-        if (chartMetric2 !== undefined && $scope.chartMetric2 !== chartMetric2) {
-            $scope.chartMetric2 = chartMetric2;
-            $location.search('chart_metric2', chartMetric2);
-        }
-
-        if (chartHidden) {
-            $scope.isChartShown = false;
-        }
 
         if (sourceIds) {
             $scope.selectedSourceIds = sourceIds.split(',');
@@ -571,11 +545,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             if ($scope.rows) {
                 $scope.selectRows();
             }
-        }
-
-        if (order !== undefined && $scope.order !== order) {
-            $scope.order = order;
-            $location.search('order', order);
         }
 
         $scope.selectedTotals = !$scope.selectedSourceIds.length || !!sourceTotals;

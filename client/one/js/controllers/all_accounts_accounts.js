@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', function ($scope, $state, $location, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemChartService) {
+oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemUserSettings', function ($scope, $state, $location, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemUserSettings) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.requestInProgress = false;
@@ -9,14 +9,17 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.chartMetric2 = constants.chartMetric.CLICKS;
     $scope.chartMetricOptions = options.allAccountsChartMetrics;
     $scope.chartData = undefined;
-    $scope.isChartShown = zemChartService.load('zemChart');
+    $scope.chartHidden = false;
     $scope.chartBtnTitle = 'Hide chart';
     $scope.order = '-cost';
     $scope.sizeRange = [5, 10, 20, 50];
+    $scope.size = $scope.sizeRange[0];
     $scope.isIncompletePostclickMetrics = false;
     $scope.pagination = {
         currentPage: 1,
     };
+
+    var userSettings = zemUserSettings.getInstance($scope, 'allAccountsAccounts');
 
     $scope.exportOptions = [
         {name: 'CSV by day', value: 'csv'},
@@ -173,11 +176,11 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
         );
 
-        cols = zemCustomTableColsService.load('allAccountsAccountsCols', $scope.columns);
+        cols = zemCustomTableColsService.load('allAccountsAccounts', $scope.columns);
         $scope.selectedColumnsCount = cols.length;
 
         $scope.$watch('columns', function (newValue, oldValue) {
-            cols = zemCustomTableColsService.save('allAccountsAccountsCols', newValue);
+            cols = zemCustomTableColsService.save('allAccountsAccounts', newValue);
             $scope.selectedColumnsCount = cols.length;
         }, true);
     };
@@ -253,20 +256,13 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
     $scope.orderRows = function (order) {
         $scope.order = order;
-
-        $location.search('order', $scope.order);
-        $scope.localStorage.set('allAccountsAccounts.order', $scope.order);
         getTableData();
     };
-
-    $scope.$watch('isChartShown', function (newValue, oldValue) {
-        zemChartService.save('zemChart', newValue);
-    });
 
     var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
-        api.accountAccountsTable.get($scope.pagination.currentPage, $scope.pagination.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order, $scope.showArchived).then(
+        api.accountAccountsTable.get($scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order, $scope.showArchived).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
@@ -313,8 +309,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             getDailyStats();
-            $location.search('chart_metric1', $scope.chartMetric1);
-            $scope.localStorage.set('allAccountsAccounts.chartMetric1', $scope.chartMetric1);
         }
     });
 
@@ -327,8 +321,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.$watch('chartMetric2', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             getDailyStats();
-            $location.search('chart_metric2', $scope.chartMetric2);
-            $scope.localStorage.set('allAccountsAccounts.chartMetric2', $scope.chartMetric2);
         }
     });
 
@@ -380,21 +372,15 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
     };
 
-    $scope.changePaginationSize = function() {
-        // Here we use additional scope variable pagination.sizeTemp
-        // to allow repeated selection of already selected options
-        $scope.pagination.size = $scope.pagination.sizeTemp;
-        $scope.pagination.sizeTemp = '';
-
-        $location.search('size', $scope.pagination.size);
-        $scope.localStorage.set('allAccountsAccounts.paginationSize', $scope.pagination.size);
-        $scope.loadPage();
-    };
+    $scope.$watch('size', function(newValue, oldValue) {
+        if (newValue !== oldValue) {
+            $scope.loadPage();
+        }
+    });
 
     $scope.toggleChart = function () {
-        $scope.isChartShown = !$scope.isChartShown;
-        $scope.chartBtnTitle = $scope.isChartShown ? 'Hide chart' : 'Show chart';
-        $location.search('chart_hidden', !$scope.isChartShown ? '1' : null);
+        $scope.chartHidden = !$scope.chartHidden;
+        $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
 
         $timeout(function() {
             $scope.$broadcast('highchartsng.reflow');
@@ -402,53 +388,28 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     };
 
     $scope.init = function() {
-        var chartMetric1 = $location.search().chart_metric1 || $scope.localStorage.get('allAccountsAccounts.chartMetric1') || $scope.chartMetric1;
-        var chartMetric2 = $location.search().chart_metric2 || $scope.localStorage.get('allAccountsAccounts.chartMetric2') || $scope.chartMetric2;
-        var chartHidden = $location.search().chart_hidden;
-        var size = $location.search().size || $scope.localStorage.get('allAccountsAccounts.paginationSize') || $scope.sizeRange[0];
         var page = $location.search().page;
-        var order = $location.search().order || $scope.localStorage.get('allAccountsAccounts.order') || $scope.order;
+
+        userSettings.register('chartMetric1');
+        userSettings.register('chartMetric2');
+        userSettings.register('order');
+        userSettings.register('size');
+        userSettings.registerGlobal('chartHidden');
 
         setChartOptions();
-
-        if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
-            $scope.chartMetric1 = chartMetric1;
-            $location.search('chart_metric1', chartMetric1);
-        }
-
-        if (chartMetric2 !== undefined && $scope.chartMetric2 !== chartMetric2) {
-            $scope.chartMetric2 = chartMetric2;
-            $location.search('chart_metric2', chartMetric2);
-        }
-
-        if (chartHidden) {
-            $scope.isChartShown = false;
-        }
-
-        if (order !== undefined && $scope.order !== order) {
-            $scope.order = order;
-            $location.search('order', order);
-        }
 
         if (page !== undefined && $scope.pagination.currentPage !== page) {
             $scope.pagination.currentPage = page;
         }
 
-        if (size !== undefined && $scope.pagination.size !== size) {
-            $scope.pagination.size = size;
-        }
-
         $scope.loadPage();
         getDailyStats();
+        getTableData();
         initColumns();
     };
 
     $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
-        $location.search('chart_metric1', null);
-        $location.search('chart_metric2', null);
         $location.search('page', null);
-        $location.search('size', null);
-        $location.search('order', null);
     });
 
     $scope.init();

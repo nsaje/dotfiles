@@ -6,8 +6,8 @@ oneApp.controller('MainCtrl',
      '$document',
      'zemMoment',
      'user',
+     'zemUserSettings',
      'accounts',
-     'localStorageService',
      'api',
      'zemFullStoryService',
      'zemIntercomService',
@@ -18,8 +18,8 @@ oneApp.controller('MainCtrl',
         $document,
         zemMoment,
         user,
+        zemUserSettings,
         accounts,
-        localStorageService,
         api,
         zemFullStoryService,
         zemIntercomService
@@ -38,25 +38,7 @@ oneApp.controller('MainCtrl',
     $scope.campaign = null;
     $scope.adGroup = null;
 
-    $scope.localStorage = {
-        getUserSettings: function() {
-            if(!localStorageService.get($scope.user.id)) {
-                localStorageService.set($scope.user.id, {});
-            }
-            return localStorageService.get($scope.user.id);
-        },
-        get: function(key) {
-            return this.getUserSettings()[key];
-        },
-        set: function(key, value) {
-            var userSettings = this.getUserSettings();
-            userSettings[key] = value;
-            localStorageService.set($scope.user.id, userSettings);
-        },
-        keys: function() {
-            return Object.keys(this.getUserSettings());
-        }
-    };
+    var userSettings = zemUserSettings.getInstance($scope, 'main');
 
     $scope.refreshNavData = function (accounts) {
         $scope.accounts = accounts;
@@ -235,16 +217,6 @@ oneApp.controller('MainCtrl',
     $scope.setDateRangeFromSearch();
     $scope.dateRanges = $scope.getDateRanges();
 
-    $scope.setShowArchived = function () {
-        if (typeof $location.search().show_archived !== 'undefined') {
-            $scope.showArchived = $location.search().show_archived === 'true';
-        } else if ($scope.localStorage.keys().indexOf('main.showArchived') >= 0 && $scope.hasPermission('zemauth.view_archived_entities')) {
-            $scope.showArchived = $scope.localStorage.get('main.showArchived') === 'true';
-        }
-    };
-
-    $scope.setShowArchived();
-
     $scope.breadcrumb = [];
 
     $scope.setBreadcrumbAndTitle = function (breadcrumb, title) {
@@ -336,18 +308,11 @@ oneApp.controller('MainCtrl',
         }
     });
 
-    $scope.$watch('showArchived', function (newValue, oldValue) {
-        if (oldValue !== newValue) {
-            if ($scope.hasPermission('zemauth.view_archived_entities')) {
-                $location.search('show_archived', newValue.toString());
-                $scope.localStorage.set('main.showArchived', newValue.toString());
-            }
-        }
-    });
+    userSettings.register('showArchived');
 
-    zemFullStoryService.identify(user);
+    zemFullStoryService.identify($scope.user);
 
     if ($scope.hasPermission('zemauth.has_intercom')) {
-        zemIntercomService.boot(user);
+        zemIntercomService.boot($scope.user);
     }
 }]);
