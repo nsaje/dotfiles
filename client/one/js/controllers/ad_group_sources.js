@@ -170,7 +170,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             help: 'Maximum bid price (in USD) per click.',
             totalRow: false,
             order: true,
-            settingsField: true,
+            settingsField: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
             initialOrder: 'desc',
             onSave: function (sourceId, value, onSuccess, onError) {
                 var data = {cpc_cc: value};
@@ -209,7 +209,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             help: 'Maximum budget per day.',
             totalRow: true,
             order: true,
-            settingsField: true,
+            settingsField: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
             initialOrder: 'desc',
             onSave: function (sourceId, value, onSuccess, onError) {
                 var data = {daily_budget_cc: value};
