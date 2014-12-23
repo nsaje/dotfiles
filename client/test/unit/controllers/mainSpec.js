@@ -12,7 +12,6 @@ describe('MainCtrl', function () {
     beforeEach(function () {
         module('one');
 
-
         inject(function ($rootScope, $controller, _$state_) {
             $scope = $rootScope.$new();
             $state = _$state_;
