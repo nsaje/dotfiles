@@ -398,8 +398,8 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     $scope.toggleChart = function () {
-        $scope.isChartShown = !$scope.isChartShown;
-        $scope.chartBtnTitle = $scope.isChartShown ? 'Hide chart' : 'Show chart';
+        $scope.chartHidden = !$scope.chartHidden;
+        $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
 
         $timeout(function() {
             $scope.$broadcast('highchartsng.reflow');
