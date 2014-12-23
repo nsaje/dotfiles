@@ -50,8 +50,6 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
 
     $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
         $location.search('page', null);
-        $location.search('size', null);
-        $location.search('order', null);
     });
 
     $scope.$on('$stateChangeSuccess', function () {

@@ -1,32 +1,30 @@
-/*globals angular,oneApp,options,moment*/
+/*globals angular,oneApp,options,moment,JSON*/
 "use strict";
 
-oneApp.factory("zemCustomTableColsService", function() {
-    function load(key, columns) {
-        var columnsCache = localStorage[key];
-        var cols = [];
-        if (columnsCache) {
-            cols = JSON.parse(columnsCache);
+oneApp.factory("zemCustomTableColsService", ['zemLocalStorageService', function(zemLocalStorageService) {
+    var key = 'columns';
+
+    function load(namespace, columns) {
+        var cols = zemLocalStorageService.get(key, namespace);
+        if (cols) {
             columns.forEach(function (x) {
-                if (x.unselectable || cols.indexOf(x.field) > -1) {
-                    x.checked = true;
-                } else {
-                    x.checked = false;
-                }
+                x.checked = x.unselectable || cols.indexOf(x.field) > -1;
             });
+        } else {
+            cols = [];
         }
 
         return cols;
     }
 
-    function save(key, columns) {
+    function save(namespace, columns) {
         var cols = [];
         columns.forEach(function (x) {
             if (x.checked) {
                 cols.push(x.field);
             }
         });
-        localStorage[key] = JSON.stringify(cols);
+        zemLocalStorageService.set(key, cols, namespace);
 
         return cols;
     }
@@ -35,4 +33,4 @@ oneApp.factory("zemCustomTableColsService", function() {
         load: load,
         save: save
     };
-});
+}]);
