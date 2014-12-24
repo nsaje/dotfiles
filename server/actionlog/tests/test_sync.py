@@ -74,30 +74,32 @@ class ActionLogSyncTestCase(TestCase):
         self.assertEqual(latest_report_sync_dt.isoformat(), '2014-07-01T13:00:00')
 
     def test_ad_group_source_latest_success(self):
-        latest_success_dt = sync.AdGroupSourceSync(
+        latest_success_dict = sync.AdGroupSourceSync(
             dash.models.AdGroupSource.objects.get(pk=1)
-        ).get_latest_success()
+        ).get_latest_success_by_child()
 
-        self.assertEqual(latest_success_dt.isoformat(), '2014-07-01T07:07:07')
+        self.assertEqual(len(latest_success_dict), 1)
+        self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
 
-        latest_success_dt = sync.AdGroupSourceSync(
+        latest_success_dict = sync.AdGroupSourceSync(
             dash.models.AdGroupSource.objects.get(pk=5)
-        ).get_latest_success()
+        ).get_latest_success_by_child()
 
-        self.assertEqual(latest_success_dt.isoformat(), '2014-07-01T11:11:11')
+        self.assertEqual(len(latest_success_dict), 1)
+        self.assertEqual(latest_success_dict[5].isoformat(), '2014-07-01T11:11:11')
 
     def test_cached_ad_group_source_latest_success(self):
-        latest_success_dt = sync.AdGroupSourceSync(
+        latest_success_dict = sync.AdGroupSourceSync(
             dash.models.AdGroupSource.objects.get(pk=1)
-        ).get_latest_success()
+        ).get_latest_success_by_child()
 
-        self.assertEqual(latest_success_dt.isoformat(), '2014-07-01T07:07:07')
+        self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
 
-        latest_success_dt = sync.AdGroupSourceSync(
+        latest_success_dict = sync.AdGroupSourceSync(
             dash.models.AdGroupSource.objects.get(pk=1)
-        ).get_latest_success(recompute=False)
+        ).get_latest_success_by_child(recompute=False)
 
-        self.assertEqual(latest_success_dt.isoformat(), '2014-06-10T09:58:21')
+        self.assertEqual(latest_success_dict[1].isoformat(), '2014-06-10T09:58:21')
 
     def test_ad_group_source_latest_source_success(self):
         latest_success_dict = sync.AdGroupSourceSync(
@@ -130,30 +132,49 @@ class ActionLogSyncTestCase(TestCase):
         self.assertEqual(latest_success_dict[1].isoformat(), '2014-06-10T09:58:21')
 
     def test_ad_group_latest_success(self):
-        latest_success_dt = sync.AdGroupSync(
+        latest_success_dict = sync.AdGroupSync(
             dash.models.AdGroup.objects.get(pk=1)
-        ).get_latest_success()
+        ).get_latest_success_by_child()
 
-        self.assertEqual(latest_success_dt.isoformat(), '2014-07-01T07:07:07')
+        self.assertEqual(len(latest_success_dict), 5)
+        self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
+        self.assertEqual(latest_success_dict[2].isoformat(), '2014-07-01T08:08:08')
+        self.assertEqual(latest_success_dict[3].isoformat(), '2014-07-01T09:09:09')
+        self.assertEqual(latest_success_dict[4].isoformat(), '2014-07-01T10:10:10')
+        self.assertEqual(latest_success_dict[5].isoformat(), '2014-07-01T11:11:11')
 
-        latest_success_dt = sync.AdGroupSync(
+        latest_success_dict = sync.AdGroupSync(
             dash.models.AdGroup.objects.get(pk=2)
-        ).get_latest_success()
+        ).get_latest_success_by_child()
 
-        self.assertEqual(latest_success_dt, None)
+        self.assertEqual(len(latest_success_dict), 3)
+        self.assertEqual(latest_success_dict[6], None)
+        self.assertEqual(latest_success_dict[7], None)
+        self.assertEqual(latest_success_dict[8], None)
 
     def test_cached_ad_group_latest_success(self):
-        latest_success_dt = sync.AdGroupSync(
+        latest_success_dict = sync.AdGroupSync(
             dash.models.AdGroup.objects.get(pk=1)
-        ).get_latest_success()
+        ).get_latest_success_by_child()
 
-        self.assertEqual(latest_success_dt.isoformat(), '2014-07-01T07:07:07')
+        self.assertEqual(len(latest_success_dict), 5)
+        self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
+        self.assertEqual(latest_success_dict[2].isoformat(), '2014-07-01T08:08:08')
+        self.assertEqual(latest_success_dict[3].isoformat(), '2014-07-01T09:09:09')
+        self.assertEqual(latest_success_dict[4].isoformat(), '2014-07-01T10:10:10')
+        self.assertEqual(latest_success_dict[5].isoformat(), '2014-07-01T11:11:11')
 
-        latest_success_dt = sync.AdGroupSync(
+        latest_success_dict = sync.AdGroupSync(
             dash.models.AdGroup.objects.get(pk=1)
-        ).get_latest_success(recompute=False)
+        ).get_latest_success_by_child(recompute=False)
 
-        self.assertEqual(latest_success_dt.isoformat(), '2014-06-10T09:58:21')
+        self.assertEqual(len(latest_success_dict), 5)
+        self.assertEqual(latest_success_dict[1].isoformat(), '2014-06-10T09:58:21')
+        self.assertEqual(latest_success_dict[2].isoformat(), '2014-06-10T09:58:21')
+        self.assertEqual(latest_success_dict[3].isoformat(), '2014-06-10T09:58:21')
+        self.assertEqual(latest_success_dict[4].isoformat(), '2014-06-10T09:58:21')
+        self.assertEqual(latest_success_dict[5].isoformat(), '2014-06-10T09:58:21')
+        self.assertEqual(latest_success_dict[1].isoformat(), '2014-06-10T09:58:21')
 
     def test_ad_group_latest_source_success(self):
         latest_success_dict = sync.AdGroupSync(
@@ -202,22 +223,32 @@ class ActionLogSyncTestCase(TestCase):
         self.assertEqual(latest_success_dict[5].isoformat(), '2014-06-10T09:58:21')
 
     def test_ad_group_latest_success_maintenance(self):
-        latest_success_dt = sync.AdGroupSync(
+        latest_success_dict = sync.AdGroupSync(
             dash.models.AdGroup.objects.get(pk=1)
-        ).get_latest_success()
+        ).get_latest_success_by_child()
 
-        self.assertEqual(latest_success_dt.isoformat(), '2014-07-01T07:07:07')
+        self.assertEqual(len(latest_success_dict), 5)
+        self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
+        self.assertEqual(latest_success_dict[2].isoformat(), '2014-07-01T08:08:08')
+        self.assertEqual(latest_success_dict[3].isoformat(), '2014-07-01T09:09:09')
+        self.assertEqual(latest_success_dict[4].isoformat(), '2014-07-01T10:10:10')
+        self.assertEqual(latest_success_dict[5].isoformat(), '2014-07-01T11:11:11')
 
         # turn off maintenance mode for Source 6
         m_source = dash.models.Source.objects.get(pk=6)
         m_source.maintenance = False
         m_source.save()
 
-        latest_success_dt = sync.AdGroupSync(
+        latest_success_dict = sync.AdGroupSync(
             dash.models.AdGroup.objects.get(pk=1)
-        ).get_latest_success()
+        ).get_latest_success_by_child()
 
-        self.assertEqual(latest_success_dt is None, True)
+        self.assertEqual(len(latest_success_dict), 6)
+        self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
+        self.assertEqual(latest_success_dict[2].isoformat(), '2014-07-01T08:08:08')
+        self.assertEqual(latest_success_dict[3].isoformat(), '2014-07-01T09:09:09')
+        self.assertEqual(latest_success_dict[4].isoformat(), '2014-07-01T10:10:10')
+        self.assertEqual(latest_success_dict[5].isoformat(), '2014-07-01T11:11:11')
 
         # put the maintenance mode back on
         m_source.maintenance = True
@@ -225,29 +256,35 @@ class ActionLogSyncTestCase(TestCase):
 
     def test_campaign_latest_success(self):
         campaign1 = dash.models.Campaign.objects.get(pk=1)
-        latest_success_dt = sync.CampaignSync(campaign1).get_latest_success()
-        self.assertEqual(latest_success_dt.isoformat(), '2014-07-01T07:07:07')
+        latest_success_dict = sync.CampaignSync(campaign1).get_latest_success_by_child()
+        self.assertEqual(len(latest_success_dict), 1)
+        self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
 
         campaign2 = dash.models.Campaign.objects.get(pk=2)
-        latest_success_dt = sync.CampaignSync(campaign2).get_latest_success()
-        self.assertEqual(latest_success_dt, None)
+        latest_success_dict = sync.CampaignSync(campaign2).get_latest_success_by_child()
+        self.assertEqual(len(latest_success_dict), 1)
+        self.assertEqual(latest_success_dict[2], None)
 
     def test_cached_campaign_latest_success(self):
-        latest_success_dt = sync.CampaignSync(
+        latest_success_dict = sync.CampaignSync(
             dash.models.Campaign.objects.get(pk=1)
-        ).get_latest_success()
+        ).get_latest_success_by_child()
 
-        self.assertEqual(latest_success_dt.isoformat(), '2014-07-01T07:07:07')
+        self.assertEqual(len(latest_success_dict), 1)
+        self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
 
-        latest_success_dt = sync.CampaignSync(
+        latest_success_dict = sync.CampaignSync(
             dash.models.Campaign.objects.get(pk=1)
-        ).get_latest_success(recompute=False)
+        ).get_latest_success_by_child(recompute=False)
 
-        self.assertEqual(latest_success_dt.isoformat(), '2014-06-10T09:58:21')
+        self.assertEqual(len(latest_success_dict), 1)
+        self.assertEqual(latest_success_dict[1].isoformat(), '2014-06-10T09:58:21')
 
     def test_global_latest_success(self):
-        latest_success_dt = sync.GlobalSync().get_latest_success()
-        self.assertEqual(latest_success_dt, None)
+        latest_success_dict = sync.GlobalSync().get_latest_success_by_child()
+        self.assertEqual(len(latest_success_dict), 2)
+        self.assertEqual(latest_success_dict[1], None)
+        self.assertEqual(latest_success_dict[2], None)
 
 
 class ActionLogTriggerSyncTestCase(TestCase):
