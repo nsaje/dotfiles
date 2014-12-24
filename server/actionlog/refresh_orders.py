@@ -5,8 +5,13 @@ from utils import statsd_helper
 
 
 def refresh_fetch_all_orders():
-    last_success_dt = sync.GlobalSync().get_latest_success()
-    _hours_since_statsd_ping(last_success_dt)
+    last_success_dict = sync.GlobalSync().get_latest_success_by_child()
+
+    last_sync = None
+    if len(last_success_dict) and None not in last_success_dict:
+        last_sync = min(last_success_dict)
+
+    _hours_since_statsd_ping(last_sync)
 
 
 def _hours_since_statsd_ping(last_success_dt):
