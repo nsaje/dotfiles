@@ -79,17 +79,27 @@ def get_campaign(user, campaign_id):
         raise exc.MissingDataError('Campaign does not exist')
 
 
-def is_sync_recent(last_sync_datetime):
+def get_last_sync(sync_times):
+    if not len(sync_times) or None in sync_times:
+        return None
+
+    return min(sync_times)
+
+
+def is_sync_recent(sync_times):
+    if not len(sync_times):
+        return True  # Sync is recent if there is no children
+
     min_sync_date = datetime.datetime.utcnow() - datetime.timedelta(
         hours=settings.ACTIONLOG_RECENT_HOURS
     )
 
-    if not last_sync_datetime:
-        return None
+    last_sync = get_last_sync(sync_times)
 
-    result = last_sync_datetime >= min_sync_date
+    if last_sync is None:
+        return False
 
-    return result
+    return last_sync >= min_sync_date
 
 
 def _get_adgroups_for(modelcls, modelobjects):
