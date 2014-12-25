@@ -31,8 +31,10 @@ def zwei_callback(request, action_id):
         _process_zwei_response(action, data)
 
         if action.order and action.order.order_type in actionlogconstants.ActionLogOrderType.get_sync_types():
-            action.ad_group_source.last_successful_sync_dt = \
-                actionlog.sync.AdGroupSourceSync(action.ad_group_source).get_latest_success()
+            last_success_dict = actionlog.sync.AdGroupSourceSync(action.ad_group_source).get_latest_success_by_child()
+
+            action.ad_group_source.last_successful_sync_dt = last_success_dict[action.ad_group_source.id]
+
             action.ad_group_source.save()
     except Exception as e:
         _handle_zwei_callback_error(e, action)
