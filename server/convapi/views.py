@@ -42,6 +42,7 @@ def mailgun_gareps(request):
     try:
         report_log = models.GAReportLog()
         report_log.email_subject = request.POST['subject']
+        report_log.from_address = request.POST['from']
 
         if int(request.POST.get('attachment-count', 0)) != 1:
             logger.warning('ERROR: single attachment expected')
