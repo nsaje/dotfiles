@@ -465,8 +465,7 @@ def _init_fetch_reports(ad_group_source, date, order):
 
 
 def _init_set_campaign_property(ad_group_source, prop, value, order):
-    msg = "_init_set_campaign_property started:"
-    "ad_group_source.id: {}, prop: {}, value: {}, order.id: {}".format(
+    msg = "_init_set_campaign_property started: ad_group_source.id: {}, prop: {}, value: {}, order.id: {}".format(
         ad_group_source.id,
         prop,
         value,
