@@ -280,9 +280,23 @@ def _get_campaign_settings(campaign):
 
     return None
 
+def _create_manual_action(ad_group_source, order):
+	action = models.ActionLog.create(
+	    action=constants.Action.SET_CAMPAIGN_STATE,
+	    action_type=constants.ActionType.MANUAL,
+	    expiration_dt=None,
+	    state=constants.ActionState.WAITING,
+	    ad_group_source=ad_group_source,
+	    payload={},
+	    order=order
+	)
+	return action
 
 def _init_stop_campaign(ad_group_source, order):
     logger.info('_init_stop started: ad_group_source.id: %s', ad_group_source.id)
+
+    if ad_group_source.source.maintenance:
+        return _create_manual_action(ad_group_source, order)
 
     action = models.ActionLog.objects.create(
         action=constants.Action.SET_CAMPAIGN_STATE,
