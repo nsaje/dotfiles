@@ -281,7 +281,7 @@ def _get_campaign_settings(campaign):
     return None
 
 def _create_manual_action(ad_group_source, order):
-	action = models.ActionLog.create(
+	action = models.ActionLog.objects.create(
 	    action=constants.Action.SET_CAMPAIGN_STATE,
 	    action_type=constants.ActionType.MANUAL,
 	    expiration_dt=None,
