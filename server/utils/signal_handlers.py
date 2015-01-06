@@ -19,9 +19,13 @@ LOG_ACTION_TYPES = [
 ]
 
 
-def _log_user_instance(func_name, instance, request):
+def _should_log(instance):
     # only logs if instance is an action with mandatory created_by and modified_by
-    if not isinstance(instance, ActionLog) or instance.action not in LOG_ACTION_TYPES:
+    return isinstance(instance, ActionLog) and instance.action in LOG_ACTION_TYPES
+
+
+def _log_user_instance(func_name, instance, request):
+    if not _should_log(instance):
         return
 
     logger.warn(
@@ -31,14 +35,18 @@ def _log_user_instance(func_name, instance, request):
 
 
 def _log_index_error(func_name, instance):
+    if not _should_log(instance):
+        return
+
     logger.warn(
-        'modified_by_pre_save_handler: IndexError occured. Instance: {}, {}'.format(
-            repr(instance), traceback.format_exc())
+        '{}: IndexError occured. Instance: {}, {}'.format(
+            func_name, repr(instance), traceback.format_exc())
     )
 
 
 def modified_by_pre_save_signal_handler(sender, instance, **kwargs):
     try:
+        raise IndexError
         request = get_request()
         if not isinstance(request.user, User):
             _log_user_instance('modified_by_pre_save_signal_handler', instance, request)
