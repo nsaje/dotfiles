@@ -28,7 +28,7 @@ def _log_user_instance(func_name, instance, request):
     if not _should_log(instance):
         return
 
-    logger.warn(
+    logger.info(
         '{}: request.user is not an instance of User. Instance: {}, request.user: {}, request: {}'.format(
             func_name, repr(instance), repr(request.user), request)
     )
@@ -38,7 +38,7 @@ def _log_index_error(func_name, instance):
     if not _should_log(instance):
         return
 
-    logger.warn(
+    logger.info(
         '{}: IndexError occured. Instance: {}, {}'.format(
             func_name, repr(instance), traceback.format_exc())
     )
@@ -46,7 +46,6 @@ def _log_index_error(func_name, instance):
 
 def modified_by_pre_save_signal_handler(sender, instance, **kwargs):
     try:
-        raise IndexError
         request = get_request()
         if not isinstance(request.user, User):
             _log_user_instance('modified_by_pre_save_signal_handler', instance, request)
