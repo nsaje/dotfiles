@@ -53,12 +53,12 @@ CLIENT_STATIC_URL = ''
 EINS_HOST = ''
 
 # Zwei API
-ZWEI_API_URL = ''
+ZWEI_API_URL = 'http://127.0.0.1/'
 ZWEI_API_GET_DASH_URL_URL = ZWEI_API_URL + 'purcel/dash_url/'
-ZWEI_API_SIGN_KEY = ''
+ZWEI_API_SIGN_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 
 # Source credentials encryption key
-CREDENTIALS_ENCRYPTION_KEY = ''  # has to be 32 bytes
+CREDENTIALS_ENCRYPTION_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'  # has to be 32 bytes
 
 # Pagerduty settings
 PAGER_DUTY_ENABLED = False

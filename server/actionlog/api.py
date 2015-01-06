@@ -280,7 +280,11 @@ def _get_campaign_settings(campaign):
 
     return None
 
-def _create_manual_action(ad_group_source, order):
+
+def _init_stop_campaign(ad_group_source, order):
+    logger.info('_init_stop started: ad_group_source.id: %s', ad_group_source.id)
+
+    if ad_group_source.source.maintenance:
 	action = models.ActionLog.objects.create(
 	    action=constants.Action.SET_CAMPAIGN_STATE,
 	    action_type=constants.ActionType.MANUAL,
@@ -288,15 +292,10 @@ def _create_manual_action(ad_group_source, order):
 	    state=constants.ActionState.WAITING,
 	    ad_group_source=ad_group_source,
 	    payload={},
-	    order=order
+	    order=order,
+	    message="Due to media source being in maintenance mode a manual type action is created."
 	)
 	return action
-
-def _init_stop_campaign(ad_group_source, order):
-    logger.info('_init_stop started: ad_group_source.id: %s', ad_group_source.id)
-
-    if ad_group_source.source.maintenance:
-        return _create_manual_action(ad_group_source, order)
 
     action = models.ActionLog.objects.create(
         action=constants.Action.SET_CAMPAIGN_STATE,

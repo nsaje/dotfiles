@@ -100,7 +100,7 @@ class ActionLogApiTestCase(TestCase):
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
 
         ad_group = dashmodels.AdGroup.objects.get(id=1)
-        ad_group_sources = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group)
+        ad_group_sources = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group, source__maintenance=False)
         api.stop_ad_group(ad_group)
 
         for ad_group_source in ad_group_sources.all():
@@ -130,6 +130,17 @@ class ActionLogApiTestCase(TestCase):
                 'callback_url': callback,
             }
             self.assertEqual(action.payload, payload)
+
+        ad_group_sources = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group, source__maintenance=True)
+        for ad_group_source in ad_group_sources.all():
+            action = models.ActionLog.objects.get(
+		ad_group_source=ad_group_source,
+            )
+
+            self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
+            self.assertEqual(action.action_type, constants.ActionType.MANUAL)
+            self.assertEqual(action.state, constants.ActionState.WAITING)
+
 
     @patch('actionlog.models.datetime', MockDateTime)
     def test_fetch_ad_group_status(self):
