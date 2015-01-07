@@ -150,7 +150,7 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
                 value or '\(O_o)/'
             )
         elif obj.action == constants.Action.SET_CAMPAIGN_STATE:
-            state = dash.constants.AdGroupSettingsState.get_text(
+            state = dash.constants.AdGroupSourceSettingsState.get_text(
                 obj.payload.get('args', {}).get('conf', {}).get('state')
             )
 
