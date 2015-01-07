@@ -71,15 +71,13 @@ def set_ad_group_source_settings(changes, ad_group_source_settings):
     if changes.get('daily_budget_cc') is not None:
         changes['daily_budget_cc'] = int(changes['daily_budget_cc'] * 10000)
 
-    actions = []
-    for name, value in changes.items():
-        actions.append(_init_set_ad_group_source_settings(
-            ad_group_source=ad_group_source_settings.ad_group_source,
-            settings_id=ad_group_source_settings.id,
-            conf={name: value}
-        ))
+    action = _init_set_ad_group_source_settings(
+        ad_group_source=ad_group_source_settings.ad_group_source,
+        settings_id=ad_group_source_settings.id,
+        conf=changes
+    )
 
-    zwei_actions.send_multiple(actions)
+    zwei_actions.send_multiple([action])
 
 
 def set_ad_group_property(ad_group, source=None, prop=None, value=None, order=None):
