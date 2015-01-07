@@ -65,24 +65,21 @@ def stop_ad_group(ad_group, source=None, order=None, commit=True):
     return actionlogs
 
 
-def set_ad_group_source_settings(ad_group_source_settings):
-    conf = {
-        'state': ad_group_source_settings.state,
-        'cpc_cc': ad_group_source_settings.cpc_cc,
-        'daily_budget_cc': ad_group_source_settings.daily_budget_cc
-    }
+def set_ad_group_source_settings(changes, ad_group_source_settings):
+    if changes.get('cpc_cc') is not None:
+        changes['cpc_cc'] = int(changes['cpc_cc'] * 10000)
+    if changes.get('daily_budget_cc') is not None:
+        changes['daily_budget_cc'] = int(changes['daily_budget_cc'] * 10000)
 
-    if conf['cpc_cc'] is not None:
-        conf['cpc_cc'] = int(conf['cpc_cc'] * 10000)
-    if conf['daily_budget_cc'] is not None:
-        conf['daily_budget_cc'] = int(conf['daily_budget_cc'] * 10000)
+    actions = []
+    for name, value in changes.items():
+        actions.append(_init_set_ad_group_source_settings(
+            ad_group_source=ad_group_source_settings.ad_group_source,
+            settings_id=ad_group_source_settings.id,
+            conf={name: value}
+        ))
 
-    actionlog = _init_set_ad_group_source_settings(
-        ad_group_source=ad_group_source_settings.ad_group_source,
-        settings_id=ad_group_source_settings.id,
-        conf=conf
-    )
-    zwei_actions.send_multiple([actionlog])
+    zwei_actions.send_multiple(actions)
 
 
 def set_ad_group_property(ad_group, source=None, prop=None, value=None, order=None):
