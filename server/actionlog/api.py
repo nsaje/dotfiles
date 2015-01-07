@@ -296,8 +296,10 @@ def _init_stop_campaign(ad_group_source, order):
 	    state=constants.ActionState.WAITING,
 	    ad_group_source=ad_group_source,
 	    payload={
-                "args": {
-			"state": dash.constants.AdGroupSourceSettingsState.INACTIVE,
+                'args': {
+		    'conf': {
+                        'state': dash.constants.AdGroupSourceSettingsState.INACTIVE,
+		    }
 		}
             },
 	    order=order,
