@@ -295,7 +295,10 @@ def _init_stop_campaign(ad_group_source, order):
 	    expiration_dt=None,
 	    state=constants.ActionState.WAITING,
 	    ad_group_source=ad_group_source,
-	    payload={},
+	    payload={
+                'property': 'state',
+                'value': dash.constants.AdGroupSourceSettingsState.INACTIVE,
+            },
 	    order=order,
 	    message="Due to media source being in maintenance mode a manual action is required."
 	)
