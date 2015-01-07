@@ -310,6 +310,20 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             initialOrder: 'desc'
         },
         {
+            name: '',
+            nameCssClass: 'data-status-icon',
+            field: 'status_setting',
+            type: 'dataStatus',
+            // TODO FIX PERMISSIONS
+            internal: $scope.isPermissionInternal('zemauth.set_ad_group_source_settings'),
+            shown: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
+            checked: true,
+            totalRow: false,
+            unselectable: true,
+            help: 'Status of third party data accuracy.',
+            disabled: false
+        },
+        {
             name: 'Last OK Sync (EST)',
             field: 'last_sync',
             checked: false,
