@@ -55,7 +55,11 @@ def stop_ad_group(ad_group, source=None, order=None, commit=True):
     actionlogs = []
     for ad_group_source in ad_group_sources:
         try:
-            actionlogs.append(_init_stop_campaign(ad_group_source, order))
+            action = _init_stop_campaign(ad_group_source, order)
+            if action.action_type == constants.ActionType.MANUAL:
+                continue
+
+            actionlogs.append(action)
         except InsertActionException:
             continue
 
@@ -283,6 +287,19 @@ def _get_campaign_settings(campaign):
 
 def _init_stop_campaign(ad_group_source, order):
     logger.info('_init_stop started: ad_group_source.id: %s', ad_group_source.id)
+
+    if ad_group_source.source.maintenance:
+	action = models.ActionLog.objects.create(
+	    action=constants.Action.SET_CAMPAIGN_STATE,
+	    action_type=constants.ActionType.MANUAL,
+	    expiration_dt=None,
+	    state=constants.ActionState.WAITING,
+	    ad_group_source=ad_group_source,
+	    payload={},
+	    order=order,
+	    message="Due to media source being in maintenance mode a manual action is required."
+	)
+	return action
 
     action = models.ActionLog.objects.create(
         action=constants.Action.SET_CAMPAIGN_STATE,
