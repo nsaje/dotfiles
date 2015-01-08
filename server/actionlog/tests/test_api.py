@@ -141,6 +141,15 @@ class ActionLogApiTestCase(TestCase):
             self.assertEqual(action.action_type, constants.ActionType.MANUAL)
             self.assertEqual(action.state, constants.ActionState.WAITING)
 
+            payload = {
+                u'args': {
+		    u'conf': {
+			u'state': dashconstants.AdGroupSourceSettingsState.INACTIVE
+		    }
+		}
+	    }
+            self.assertEqual(action.payload, payload)
+
 
     @patch('actionlog.models.datetime', MockDateTime)
     def test_fetch_ad_group_status(self):
