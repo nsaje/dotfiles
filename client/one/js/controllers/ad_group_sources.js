@@ -311,12 +311,11 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         },
         {
             name: '',
+            field: 'data_status',
             nameCssClass: 'data-status-icon',
-            field: 'status_setting',
             type: 'dataStatus',
-            // TODO FIX PERMISSIONS
-            internal: $scope.isPermissionInternal('zemauth.set_ad_group_source_settings'),
-            shown: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
+            internal: $scope.isPermissionInternal('zemauth.data_status_column'),
+            shown: $scope.hasPermission('zemauth.data_status_column'),
             checked: true,
             totalRow: false,
             unselectable: true,
@@ -341,12 +340,14 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
         zemPostclickMetricsService.insertAcquisitionColumns(
             $scope.columns,
+            $scope.columns.length - 2,
             $scope.hasPermission('zemauth.aggregate_postclick_acquisition'),
             $scope.isPermissionInternal('zemauth.aggregate_postclick_acquisition')
         );
 
         zemPostclickMetricsService.insertEngagementColumns(
             $scope.columns,
+            $scope.columns.length - 2,
             $scope.hasPermission('zemauth.aggregate_postclick_engagement'),
             $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
         );
@@ -373,7 +374,13 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         api.adGroupSourcesTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
                 if($scope.hasPermission('zemauth.aggregate_postclick_engagement')) {
-                    zemPostclickMetricsService.insertGoalColumns($scope.columns, data.rows, $scope.columnCategories[1], $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement'));
+                    zemPostclickMetricsService.insertGoalColumns(
+                        $scope.columns,
+                        $scope.columns.length - 2,
+                        data.rows,
+                        $scope.columnCategories[1],
+                        $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
+                    );
                 }
 
                 $scope.rows = data.rows;
@@ -384,6 +391,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 $scope.isSyncInProgress = data.is_sync_in_progress;
                 $scope.notifications = data.notifications;
                 $scope.lastChange = data.lastChange;
+                $scope.dataStatusMessages = data.dataStatusMessages;
 
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
 
@@ -647,6 +655,13 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 if (data.lastChange) {
                     $scope.lastChange = data.lastChange;
                     $scope.notifications = data.notifications;
+
+                    Object.keys(data.dataStatusMessages).forEach(function (sourceId) {
+                        if (!data.notifications[sourceId] || !data.notifications[sourceId].inProgress) {
+                            // only update messages for rows that are not in progress anymore
+                            $scope.dataStatusMessages[sourceId] = data.dataStatusMessages[sourceId];
+                        }
+                    });
 
                     updateTableData(data.rows, data.totals);
                 }
