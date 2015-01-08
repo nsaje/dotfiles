@@ -2,8 +2,8 @@
 "use strict";
 
 oneApp.factory('zemPostclickMetricsService', function() {
-    function insertAcquisitionColumns(columns, isShown, isInternal) {
-        columns.splice(columns.length - 1, 0, {
+    function insertAcquisitionColumns(columns, position, isShown, isInternal) {
+        columns.splice(position, 0, {
             name: 'Visits',
             field: 'visits',
             checked: true,
@@ -39,8 +39,8 @@ oneApp.factory('zemPostclickMetricsService', function() {
         });
     }
         
-    function insertEngagementColumns(columns, isShown, isInternal) {
-        columns.splice(columns.length - 1, 0, {
+    function insertEngagementColumns(columns, position, isShown, isInternal) {
+        columns.splice(position, 0, {
             name: '% New Users',
             field: 'percent_new_users',
             checked: false,
@@ -111,7 +111,7 @@ oneApp.factory('zemPostclickMetricsService', function() {
         }));
     }
 
-    function insertGoalColumns(columns, rows, postclickCategory, isInternal) {
+    function insertGoalColumns(columns, position, rows, postclickCategory, isInternal) {
         for(var i = 0; i < rows.length; i++) {
             for(var field in rows[i]) {
                 if(columnsContainField(columns, field)) {
@@ -131,7 +131,7 @@ oneApp.factory('zemPostclickMetricsService', function() {
                         initialOrder: 'desc',
                         shown: true
                     };
-                    columns.splice(columns.length - 1, 0, columnDescription);
+                    columns.splice(position, 0, columnDescription);
                     postclickCategory.fields.push(columnDescription.field);
                 } else if(field.indexOf(': Conversion Rate') != -1) {
                     var columnDescription = {
@@ -146,7 +146,7 @@ oneApp.factory('zemPostclickMetricsService', function() {
                         initialOrder: 'desc',
                         shown: true
                     };
-                    columns.splice(columns.length - 1, 0, columnDescription);
+                    columns.splice(position, 0, columnDescription);
                     postclickCategory.fields.push(columnDescription.field);
                 }
             }

@@ -152,6 +152,63 @@ class ActionLogApiTestCase(TestCase):
 
 
     @patch('actionlog.models.datetime', MockDateTime)
+    def test_set_ad_group_source_settings(self):
+        utcnow = datetime.datetime.utcnow()
+        models.datetime.utcnow = classmethod(lambda cls: utcnow)
+
+        changes = {
+            'cpc_cc': 0.33,
+            'daily_budget_cc': 100,
+        }
+
+        ad_group = dashmodels.AdGroup.objects.get(id=1)
+        ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group)[0]
+
+        source_settings = dashmodels.AdGroupSourceSettings(
+            ad_group_source=ad_group_source,
+            cpc_cc=0.20,
+            daily_budget_cc=50,
+            state=dashconstants.AdGroupSourceSettingsState.ACTIVE
+        )
+        source_settings.save()
+
+        api.set_ad_group_source_settings(changes, source_settings)
+
+        action = models.ActionLog.objects.get(
+            ad_group_source=ad_group_source
+        )
+
+        self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
+        self.assertEqual(action.state, constants.ActionState.WAITING)
+
+        expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime(
+            '%Y-%m-%dT%H:%M:%S')
+
+        callback = urlparse.urljoin(
+            settings.EINS_HOST, reverse(
+                'api.zwei_settings_callback',
+                kwargs={'settings_id': source_settings.id, 'action_id': action.id})
+        )
+
+        payload = {
+            'source': ad_group_source.source.source_type.type,
+            'action': constants.Action.SET_CAMPAIGN_STATE,
+            'expiration_dt': expiration_dt,
+            'credentials': ad_group_source.source_credentials.credentials,
+            'args': {
+                'source_campaign_key': ad_group_source.source_campaign_key,
+                'conf': {
+                    'cpc_cc': 3300,
+                    'daily_budget_cc': 1000000
+                }
+            },
+            'callback_url': callback,
+        }
+
+        self.assertEqual(action.payload, payload)
+
+    @patch('actionlog.models.datetime', MockDateTime)
     def test_fetch_ad_group_status(self):
         utcnow = datetime.datetime.utcnow()
         models.datetime.utcnow = classmethod(lambda cls: utcnow)

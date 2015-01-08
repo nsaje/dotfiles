@@ -193,6 +193,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             }
             data.totals = convertRow(data.totals);
             data.lastChange = data.last_change;
+            data.dataStatusMessages = data.data_status_messages;
 
             data.notifications = convertNotifications(data.notifications);
 
@@ -1600,6 +1601,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 totals: data.totals,
                 lastChange: data.last_change,
                 notifications: data.notifications,
+                dataStatusMessages: data.data_status_messages,
                 inProgress: data.in_progress
             };
         }

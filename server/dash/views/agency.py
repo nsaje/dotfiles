@@ -169,7 +169,13 @@ class AdGroupSettings(api_common.BaseApiView):
                     .order_by('ad_group_source_id', '-created_dt')
 
                 for source_settings in source_settings_qs:
-                    actionlog.api.set_ad_group_source_settings(source_settings)
+                    changes = {
+                        'state': source_settings.state,
+                        'cpc_cc': source_settings.cpc_cc,
+                        'daily_budget_cc': source_settings.daily_budget_cc
+                    }
+
+                    actionlog.api.set_ad_group_source_settings(changes, source_settings)
 
         api.order_ad_group_settings_update(ad_group, current_settings, settings)
 

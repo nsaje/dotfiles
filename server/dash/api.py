@@ -203,7 +203,7 @@ class AdGroupSourceSettingsWriter(object):
                 self.add_to_history(settings_obj, old_settings_obj)
 
                 if self.can_trigger_action():
-                    actionlog.api.set_ad_group_source_settings(new_settings)
+                    actionlog.api.set_ad_group_source_settings(settings_obj, new_settings)
                 else:
                     logger.info(
                         'settings=%s on ad_group_source=%s will be triggered when the ad group will be enabled',
@@ -220,7 +220,7 @@ class AdGroupSourceSettingsWriter(object):
                     'settings for ad_group_source=%s did not change, but state is inconsistent, triggering actions',
                     self.ad_group_source
                 )
-                actionlog.api.set_ad_group_source_settings(latest_settings)
+                actionlog.api.set_ad_group_source_settings(settings_obj, latest_settings)
 
     def can_trigger_action(self):
         try:

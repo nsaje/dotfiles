@@ -103,6 +103,16 @@
                                     <span class="text" ng-class="{'important': notifications[row.id].important}">{{ row[col.field] }}</span>
                                     <span ng-if="notifications[row.id].inProgress" class="loader"></span>
                                 </span>
+                                <span ng-switch-when="dataStatus">
+                                    <span
+                                        ng-style="{'margin-left': col.internal ? '20px' : '3px'}"
+                                        ng-class="{'okay-icon': row[col.field], 'alert-icon': !row[col.field]}"
+                                        popover-append-to-body="true"
+                                        popover-trigger="mouseenter"
+                                        popover-html-unsafe="{{ dataStatusMessages[row.id] }}"
+                                        popover-placement="left">
+                                    </span>
+                                </span>
                                 <span ng-switch-when="checkbox">
                                     <input type="checkbox" data-ng-model="row[col.field]" ng-disabled="!row[col.field] && col.disabled" data-ng-change="callSelectCallback(col.selectCallback, row, row[col.field], true)"/>
                                 </span>

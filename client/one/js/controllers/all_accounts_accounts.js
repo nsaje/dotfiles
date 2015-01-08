@@ -166,12 +166,14 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
         zemPostclickMetricsService.insertAcquisitionColumns(
             $scope.columns,
+            $scope.columns.length - 1,
             $scope.hasPermission('zemauth.aggregate_postclick_acquisition'),
             $scope.isPermissionInternal('zemauth.aggregate_postclick_acquisition')
         );
 
         zemPostclickMetricsService.insertEngagementColumns(
             $scope.columns,
+            $scope.columns.length - 1,
             $scope.hasPermission('zemauth.aggregate_postclick_engagement'),
             $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
         );

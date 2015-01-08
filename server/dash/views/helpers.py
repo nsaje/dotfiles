@@ -190,15 +190,8 @@ def get_ad_group_sources_notifications(ad_group_sources):
     for ags in ad_group_sources:
         notification = {}
 
-        latest_settings_qs = models.AdGroupSourceSettings.objects.\
-            filter(ad_group_source=ags).\
-            order_by('ad_group_source_id', '-created_dt')
-        latest_settings = latest_settings_qs[0] if latest_settings_qs.exists() else None
-
-        latest_state_qs = models.AdGroupSourceState.objects.\
-            filter(ad_group_source=ags).\
-            order_by('ad_group_source_id', '-created_dt')
-        latest_state = latest_state_qs[0] if latest_state_qs.exists() else None
+        latest_settings = _get_latest_settings(ags)
+        latest_state = _get_latest_state(ags)
 
         if ags.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE:
             if latest_settings and latest_settings.state == constants.AdGroupSettingsState.ACTIVE:
@@ -295,3 +288,54 @@ def _get_budget_update_notification(ags, settings, state):
         )
 
     return None
+
+
+def get_ad_group_sources_data_status_messages(ad_group_sources):
+    messages_dict = {}
+
+    for ags in ad_group_sources:
+        messages = []
+
+        latest_settings = _get_latest_settings(ags)
+        latest_state = _get_latest_state(ags)
+
+        message_template = '<b>{name}</b> for this Media Source differs from {name} in the Media Source\'s 3rd party dashboard.'
+
+        if latest_settings.cpc_cc != latest_state.cpc_cc:
+            messages.append(message_template.format(name='Bid CPC'))
+        if latest_settings.daily_budget_cc != latest_state.daily_budget_cc:
+            messages.append(message_template.format(name='Daily Budget'))
+        if latest_settings.state != latest_state.state:
+            messages.append(message_template.format(name='Status'))
+
+        if len(messages):
+            messages_dict[ags.source_id] = '<br/>'.join(messages)
+        else:
+            ok_message = 'Everything is OK.'
+
+            last_sync = actionlog.sync.AdGroupSourceSync(ags).get_latest_source_success(
+                recompute=False)[ags.source_id]
+
+            if last_sync is not None:
+                last_sync = pytz.utc.localize(last_sync).astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE))
+
+                ok_message += ' Last OK sync was on: <b>{}</b>'.format(
+                    last_sync.strftime('%m/%d/%Y %-I:%M %p'))
+
+            messages_dict[ags.source_id] = ok_message
+
+    return messages_dict
+
+
+def _get_latest_settings(ad_group_source):
+    latest_settings_qs = models.AdGroupSourceSettings.objects.\
+        filter(ad_group_source=ad_group_source).\
+        order_by('ad_group_source_id', '-created_dt')
+    return latest_settings_qs[0] if latest_settings_qs.exists() else None
+
+
+def _get_latest_state(ad_group_source):
+    latest_state_qs = models.AdGroupSourceState.objects.\
+        filter(ad_group_source=ad_group_source).\
+        order_by('ad_group_source_id', '-created_dt')
+    return latest_state_qs[0] if latest_state_qs.exists() else None
