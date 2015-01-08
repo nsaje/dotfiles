@@ -301,12 +301,13 @@ def get_ad_group_sources_data_status_messages(ad_group_sources):
 
         message_template = '<b>{name}</b> for this Media Source differs from {name} in the Media Source\'s 3rd party dashboard.'
 
-        if latest_settings.cpc_cc != latest_state.cpc_cc:
-            messages.append(message_template.format(name='Bid CPC'))
-        if latest_settings.daily_budget_cc != latest_state.daily_budget_cc:
-            messages.append(message_template.format(name='Daily Budget'))
-        if latest_settings.state != latest_state.state:
-            messages.append(message_template.format(name='Status'))
+        if latest_settings is not None and latest_state is not None:
+            if latest_settings.cpc_cc != latest_state.cpc_cc:
+                messages.append(message_template.format(name='Bid CPC'))
+            if latest_settings.daily_budget_cc != latest_state.daily_budget_cc:
+                messages.append(message_template.format(name='Daily Budget'))
+            if latest_settings.state != latest_state.state:
+                messages.append(message_template.format(name='Status'))
 
         if len(messages):
             messages_dict[ags.source_id] = '<br/>'.join(messages)
