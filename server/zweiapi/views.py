@@ -51,7 +51,7 @@ def zwei_settings_callback(request, action_id, settings_id):
     data = json.loads(request.body)
     try:
         settings_id = int(settings_id)
-        _procress_zwei_settings_response(settings_id, action, data)
+        _process_zwei_settings_response(settings_id, action, data)
     except Exception as e:
         _handle_zwei_callback_error(e, action)
 
@@ -131,7 +131,7 @@ def _process_zwei_response(action, data):
 
 
 @transaction.atomic
-def _procress_zwei_settings_response(settings_id, action, data):
+def _process_zwei_settings_response(settings_id, action, data):
     if action.action != actionlogconstants.Action.SET_CAMPAIGN_STATE:
         raise Exception(
             'Unexpected extion action. Expected: {}, got: {}'.format(
