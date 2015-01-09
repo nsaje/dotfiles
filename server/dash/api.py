@@ -202,7 +202,7 @@ class AdGroupSourceSettingsWriter(object):
 
                 self.add_to_history(settings_obj, old_settings_obj)
 
-                if self.can_trigger_action():
+                if 'state' not in settings_obj or self.can_trigger_action():
                     actionlog.api.set_ad_group_source_settings(settings_obj, new_settings)
                 else:
                     logger.info(
@@ -212,7 +212,7 @@ class AdGroupSourceSettingsWriter(object):
                     )
         else:
             ssc = consistency.SettingsStateConsistence(self.ad_group_source)
-            if not ssc.is_consistent() and self.can_trigger_action():
+            if not ssc.is_consistent() and ('state' not in settings_obj or self.can_trigger_action()):
                 new_settings = latest_settings
                 new_settings.pk = None  # make a copy of the latest settings
                 new_settings.save()

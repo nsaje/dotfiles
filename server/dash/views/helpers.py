@@ -308,7 +308,13 @@ def get_ad_group_sources_data_status_messages(ad_group_sources):
                 messages.append(message_template.format(name='Bid CPC'))
             if latest_state is None or latest_settings.daily_budget_cc != latest_state.daily_budget_cc:
                 messages.append(message_template.format(name='Daily Budget'))
-            if latest_state is None or latest_settings.state != latest_state.state:
+
+            if ags.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE:
+                expected_state = constants.AdGroupSourceSettingsState.INACTIVE
+            else:
+                expected_state = latest_settings.state
+
+            if latest_state is None or expected_state != latest_state.state:
                 messages.append(message_template.format(name='Status'))
 
         if len(messages):
@@ -339,8 +345,13 @@ def get_ad_group_source_data_status(ad_group_source):
     elif state is None:
         return False
 
+    if ad_group_source.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE:
+        expected_state = constants.AdGroupSourceSettingsState.INACTIVE
+    else:
+        expected_state = settings.state
+
     return (
-        settings.state == state.state
+        state.state == expected_state
         and settings.cpc_cc == state.cpc_cc
         and settings.daily_budget_cc == state.daily_budget_cc
     )
@@ -361,7 +372,10 @@ def _get_waiting_actions_settings_ids(ad_group_source):
 
     for action in waiting_actions:
         url_path = urlparse(action.payload['callback_url']).path
-        yield int(resolve(url_path).kwargs['settings_id'])
+        settings_id = resolve(url_path).kwargs.get('settings_id')
+
+        if settings_id is not None:
+            yield int(settings_id)
 
 
 def _get_latest_settings(ad_group_source):
