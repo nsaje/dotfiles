@@ -93,63 +93,6 @@ class ActionLogApiTestCase(TestCase):
     def tearDown(self):
         settings.CREDENTIALS_ENCRYPTION_KEY = self.credentials_encription_key
 
-    @patch('actionlog.models.datetime', MockDateTime)
-    def test_stop_ad_group(self):
-
-        utcnow = datetime.datetime.utcnow()
-        models.datetime.utcnow = classmethod(lambda cls: utcnow)
-
-        ad_group = dashmodels.AdGroup.objects.get(id=1)
-        ad_group_sources = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group, source__maintenance=False)
-        api.stop_ad_group(ad_group)
-
-        for ad_group_source in ad_group_sources.all():
-            action = models.ActionLog.objects.get(
-                ad_group_source=ad_group_source,
-            )
-
-            self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
-            self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
-            self.assertEqual(action.state, constants.ActionState.WAITING)
-
-            expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S')
-            callback = urlparse.urljoin(
-                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
-            )
-            payload = {
-                'source': ad_group_source.source.source_type.type,
-                'action': constants.Action.SET_CAMPAIGN_STATE,
-                'expiration_dt': expiration_dt,
-                'credentials': ad_group_source.source_credentials.credentials,
-                'args': {
-                    'source_campaign_key': ad_group_source.source_campaign_key,
-                    'conf': {
-                        'state': dashconstants.AdGroupSourceSettingsState.INACTIVE,
-                    }
-                },
-                'callback_url': callback,
-            }
-            self.assertEqual(action.payload, payload)
-
-        ad_group_sources = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group, source__maintenance=True)
-        for ad_group_source in ad_group_sources.all():
-            action = models.ActionLog.objects.get(
-		ad_group_source=ad_group_source,
-            )
-
-            self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
-            self.assertEqual(action.action_type, constants.ActionType.MANUAL)
-            self.assertEqual(action.state, constants.ActionState.WAITING)
-
-            payload = {
-                u'args': {
-		    u'conf': {
-			u'state': dashconstants.AdGroupSourceSettingsState.INACTIVE
-		    }
-		}
-	    }
-            self.assertEqual(action.payload, payload)
-
 
     @patch('actionlog.models.datetime', MockDateTime)
     def test_set_ad_group_source_settings(self):
@@ -157,12 +100,13 @@ class ActionLogApiTestCase(TestCase):
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
 
         changes = {
+            'state': dashconstants.AdGroupSourceSettingsState.ACTIVE,
             'cpc_cc': 0.33,
             'daily_budget_cc': 100,
         }
 
         ad_group = dashmodels.AdGroup.objects.get(id=1)
-        ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group)[0]
+        ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group, source__maintenance=False)[0]
 
         source_settings = dashmodels.AdGroupSourceSettings(
             ad_group_source=ad_group_source,
@@ -200,13 +144,37 @@ class ActionLogApiTestCase(TestCase):
                 'source_campaign_key': ad_group_source.source_campaign_key,
                 'conf': {
                     'cpc_cc': 3300,
-                    'daily_budget_cc': 1000000
+                    'daily_budget_cc': 1000000,
+                    'state': dashconstants.AdGroupSourceSettingsState.ACTIVE,
                 }
             },
             'callback_url': callback,
         }
 
         self.assertEqual(action.payload, payload)
+
+        ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group, source__maintenance=True)[0]
+
+        source_settings = dashmodels.AdGroupSourceSettings(
+            ad_group_source=ad_group_source,
+            cpc_cc=0.20,
+            daily_budget_cc=50,
+            state=dashconstants.AdGroupSourceSettingsState.ACTIVE
+        )
+        source_settings.save()
+
+        api.set_ad_group_source_settings(changes, source_settings)
+
+        action = models.ActionLog.objects.get(
+            ad_group_source=ad_group_source
+        )
+
+        self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(action.action_type, constants.ActionType.MANUAL)
+        self.assertEqual(action.state, constants.ActionState.WAITING)
+
+        self.assertEqual(action.payload, {'args': { 'conf': changes}})
+
 
     @patch('actionlog.models.datetime', MockDateTime)
     def test_fetch_ad_group_status(self):
