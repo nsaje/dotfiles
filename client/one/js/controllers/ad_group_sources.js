@@ -655,13 +655,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 if (data.lastChange) {
                     $scope.lastChange = data.lastChange;
                     $scope.notifications = data.notifications;
-
-                    Object.keys(data.dataStatusMessages).forEach(function (sourceId) {
-                        if (!data.notifications[sourceId] || !data.notifications[sourceId].inProgress) {
-                            // only update messages for rows that are not in progress anymore
-                            $scope.dataStatusMessages[sourceId] = data.dataStatusMessages[sourceId];
-                        }
-                    });
+                    $scope.dataStatusMessages = data.dataStatusMessages;
 
                     updateTableData(data.rows, data.totals);
                 }

@@ -1,8 +1,10 @@
 import datetime
 import dateutil.parser
 import pytz
+from urlparse import urlparse
 
 from django.conf import settings
+from django.core.urlresolvers import resolve
 
 import actionlog.api
 import actionlog.constants
@@ -296,7 +298,7 @@ def get_ad_group_sources_data_status_messages(ad_group_sources):
     for ags in ad_group_sources:
         messages = []
 
-        latest_settings = _get_latest_settings(ags)
+        latest_settings = _get_latest_non_waiting_settings(ags)
         latest_state = _get_latest_state(ags)
 
         message_template = '<b>{name}</b> for this Media Source differs from {name} in the Media Source\'s 3rd party dashboard.'
@@ -326,6 +328,40 @@ def get_ad_group_sources_data_status_messages(ad_group_sources):
             messages_dict[ags.source_id] = ok_message
 
     return messages_dict
+
+
+def get_ad_group_source_data_status(ad_group_source):
+    settings = _get_latest_non_waiting_settings(ad_group_source)
+    state = _get_latest_state(ad_group_source)
+
+    if settings is None:
+        return True
+    elif state is None:
+        return False
+
+    return (
+        settings.state == state.state
+        and settings.cpc_cc == state.cpc_cc
+        and settings.daily_budget_cc == state.daily_budget_cc
+    )
+
+
+def _get_latest_non_waiting_settings(ad_group_source):
+    latest_settings_qs = models.AdGroupSourceSettings.objects.\
+        filter(ad_group_source=ad_group_source).\
+        exclude(pk__in=_get_waiting_actions_settings_ids(ad_group_source)).\
+        order_by('ad_group_source_id', '-created_dt')
+    return latest_settings_qs[0] if latest_settings_qs.exists() else None
+
+
+def _get_waiting_actions_settings_ids(ad_group_source):
+    waiting_actions = ad_group_source.actionlog_set.filter(
+        state=actionlog.constants.ActionState.WAITING,
+        action=actionlog.constants.Action.SET_CAMPAIGN_STATE)
+
+    for action in waiting_actions:
+        url_path = urlparse(action.payload['callback_url']).path
+        yield int(resolve(url_path).kwargs['settings_id'])
 
 
 def _get_latest_settings(ad_group_source):

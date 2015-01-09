@@ -317,14 +317,8 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
                     'current_daily_budget': state.daily_budget_cc,
                 }
 
-                if not notifications.get(ad_group_source.source_id, {}).get('in_progress')\
-                        and request.user.has_perm('zemauth.data_status_column'):
-                    # only send data_status if there is no updates in progress
-                    updates['data_status'] = (
-                        setting.state == state.state
-                        and setting.cpc_cc == state.cpc_cc
-                        and setting.daily_budget_cc == state.daily_budget_cc
-                    )
+                if request.user.has_perm('zemauth.data_status_column'):
+                    updates['data_status'] = helpers.get_ad_group_source_data_status(ad_group_source)
 
                 rows[ad_group_source.source_id] = updates
 
@@ -394,6 +388,7 @@ class SourcesTable(api_common.BaseApiView):
                 id_,
                 user,
                 sources,
+                ad_group_sources,
                 sources_data,
                 sources_states,
                 ad_group_sources_settings,
@@ -466,6 +461,7 @@ class SourcesTable(api_common.BaseApiView):
             id_,
             user,
             sources,
+            ad_group_sources,
             sources_data,
             sources_states,
             ad_group_sources_settings,
@@ -572,10 +568,8 @@ class SourcesTable(api_common.BaseApiView):
                     row['current_daily_budget'] = states[0].daily_budget_cc if len(states) else None
 
                 if user.has_perms(['zemauth.set_ad_group_source_settings', 'zemauth.data_status_column']):
-                    row['data_status'] = (
-                        row['current_bid_cpc'] == row['bid_cpc']
-                        and row['current_daily_budget'] == row['daily_budget']
-                        and row['status'] == row['status_setting'])
+                    row['data_status'] = helpers.get_ad_group_source_data_status(
+                        [ags for ags in ad_group_sources if ags.source_id == source.id][0])
 
             elif len(bid_cpc_values) > 0:
                 row['min_bid_cpc'] = float(min(bid_cpc_values))
