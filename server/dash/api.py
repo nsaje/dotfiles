@@ -29,26 +29,7 @@ def update_ad_group_source_state(ad_group_source, conf, settings_id=None):
         if key in ('cpc_cc', 'daily_budget_cc'):
             conf[key] = cc_to_decimal(val)
 
-    if settings_id is None:
-        _upsert_ad_group_source_state(ad_group_source, conf)
-        return
-    try:
-        latest_ad_group_source_settings = models.AdGroupSourceSettings.objects\
-            .filter(ad_group_source=ad_group_source) \
-            .latest('created_dt')
-    except models.AdGroupSourceSettings.DoesNotExist:
-        logger.warning('no ad_group_source_settings found')
-        latest_ad_group_source_settings = None
-
-    if latest_ad_group_source_settings is None or latest_ad_group_source_settings.id == settings_id:
-        # we are updating for the latest settings
-        # or no settings are specified
-        # we have to update the state
-        _upsert_ad_group_source_state(ad_group_source, conf)
-        return
-
-    assert latest_ad_group_source_settings.id != settings_id
-    # we don't do any update for an ad_group_source_settings which isn't the most recent
+    _upsert_ad_group_source_state(ad_group_source, conf)
 
 
 def _upsert_ad_group_source_state(ad_group_source, conf):
