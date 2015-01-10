@@ -166,22 +166,13 @@ class AdGroupSettings(api_common.BaseApiView):
                 .filter(ad_group_source__ad_group=ad_group) \
                 .order_by('ad_group_source_id', '-created_dt')
 
-            for source_settings in source_settings_qs:
-                if current_settings.state == constants.AdGroupSettingsState.INACTIVE \
-                and settings.state == constants.AdGroupSettingsState.ACTIVE:
-                    changes = {
-                        'state': source_settings.state,
-                        'cpc_cc': source_settings.cpc_cc,
-                        'daily_budget_cc': source_settings.daily_budget_cc
-                    }
+            if current_settings.state == constants.AdGroupSettingsState.INACTIVE \
+            and settings.state == constants.AdGroupSettingsState.ACTIVE:
+                actionlog_api.init_enable_ad_group(source_settings_qs, order)
 
-                elif current_settings.state == constants.AdGroupSettingsState.ACTIVE \
-                and settings.state == constants.AdGroupSettingsState.INACTIVE:
-                    changes = {
-                        'state': constants.AdGroupSourceSettingsState.INACTIVE,
-                    }
-
-                actionlog_api.set_ad_group_source_settings(changes, source_settings, order=order)
+            if current_settings.state == constants.AdGroupSettingsState.ACTIVE \
+            and settings.state == constants.AdGroupSettingsState.INACTIVE:
+                actionlog_api.init_pause_ad_group(source_settings_qs, order)
 
         api.order_ad_group_settings_update(ad_group, current_settings, settings)
         

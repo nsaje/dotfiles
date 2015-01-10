@@ -31,6 +31,23 @@ class InsertCreateCampaignActionException(InsertActionException):
     pass
 
 
+def init_enable_ad_group(ad_group_source_settings, order=None):
+    for source_settings in ad_group_source_settings:
+        changes = {
+            'state': source_settings.state,
+            'cpc_cc': source_settings.cpc_cc,
+            'daily_budget_cc': source_settings.daily_budget_cc
+        }
+        set_ad_group_source_settings(changes, source_settings, order=order)
+
+def init_pause_ad_group(ad_group_source_settings, order=None):
+    for source_settings in ad_group_source_settings:
+        changes = {
+            'state': dash.constants.AdGroupSourceSettingsState.INACTIVE,
+        }
+        set_ad_group_source_settings(changes, source_settings, order=order)
+
+
 def init_set_ad_group_property_order(ad_group, source=None, prop=None, value=None):
     with transaction.atomic():
         order = models.ActionLogOrder.objects.create(
