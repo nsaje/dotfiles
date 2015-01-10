@@ -175,7 +175,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 actionlog_api.init_pause_ad_group(source_settings_qs, order)
 
         api.order_ad_group_settings_update(ad_group, current_settings, settings)
-        
+
         user = request.user
         changes = current_settings.get_setting_changes(settings)
         if changes:
