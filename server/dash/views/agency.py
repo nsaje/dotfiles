@@ -170,12 +170,12 @@ class AdGroupSettings(api_common.BaseApiView):
                 if current_settings.state == constants.AdGroupSettingsState.INACTIVE \
                 and settings.state == constants.AdGroupSettingsState.ACTIVE:
                     changes = {
-                        'state': constants.AdGroupSourceSettingsState.ACTIVE,
+                        'state': source_settings.state,
                         'cpc_cc': source_settings.cpc_cc,
                         'daily_budget_cc': source_settings.daily_budget_cc
                     }
 
-                if current_settings.state == constants.AdGroupSettingsState.ACTIVE \
+                elif current_settings.state == constants.AdGroupSettingsState.ACTIVE \
                 and settings.state == constants.AdGroupSettingsState.INACTIVE:
                     changes = {
                         'state': constants.AdGroupSourceSettingsState.INACTIVE,
@@ -183,6 +183,8 @@ class AdGroupSettings(api_common.BaseApiView):
 
                 actionlog_api.set_ad_group_source_settings(changes, source_settings, order=order)
 
+        api.order_ad_group_settings_update(ad_group, current_settings, settings)
+        
         user = request.user
         changes = current_settings.get_setting_changes(settings)
         if changes:
