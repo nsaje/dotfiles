@@ -12,7 +12,7 @@ oneApp.directive('zemTable', ['config', function(config) {
             notifications: '=zemTableNotifications',
             order: '=zemTableOrder',
             orderCallback: '&zemTableOrderCallback',
-            dataStatusMessages: '=zemTableDataStatusMessages'
+            dataStatus: '=zemTableDataStatus'
         },
         templateUrl: '/partials/zem_table.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {

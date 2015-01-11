@@ -252,11 +252,6 @@ urlpatterns += patterns(
         r'^api/zwei_callback/(?P<action_id>\d+)$',
         zweiapi.views.zwei_callback,
         name='api.zwei_callback',
-    ),
-    url(
-        r'^api/zwei_settings_callback/(?P<action_id>\d+)/(?P<settings_id>\d+)$',
-        zweiapi.views.zwei_settings_callback,
-        name='api.zwei_settings_callback'
     )
 )
 

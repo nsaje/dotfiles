@@ -206,15 +206,27 @@ def get_ad_group_sources_notifications(ad_group_sources):
                 messages.append(state_message)
                 important = True
 
-        if ags.actionlog_set.filter(
-                state=actionlog.constants.ActionState.WAITING,
-                action=actionlog.constants.Action.SET_CAMPAIGN_STATE
-        ).exists():
-            if state_message is None:
+        actions = ags.actionlog_set.filter(
+            state=actionlog.constants.ActionState.WAITING,
+            action=actionlog.constants.Action.SET_CAMPAIGN_STATE
+        )
+
+        keys_in_progress = set()
+        for action in actions:
+            keys = action.payload.get('args', {}).get('conf', {}).keys()
+
+            for key in keys:
+                keys_in_progress.add(key)
+
+        if len(keys_in_progress):
+            if state_message is None and 'state' in keys_in_progress:
                 messages.append(_get_state_update_notification(ags, latest_settings, latest_state))
 
-            messages.append(_get_cpc_update_notification(ags, latest_settings, latest_state))
-            messages.append(_get_budget_update_notification(ags, latest_settings, latest_state))
+            if 'cpc_cc' in keys_in_progress:
+                messages.append(_get_cpc_update_notification(ags, latest_settings, latest_state))
+
+            if 'daily_budget_cc' in keys_in_progress:
+                messages.append(_get_budget_update_notification(ags, latest_settings, latest_state))
 
             in_progress = True
 
@@ -289,35 +301,42 @@ def _get_budget_update_notification(ags, settings, state):
     return None
 
 
-def get_ad_group_sources_data_status_messages(ad_group_sources):
-    messages_dict = {}
+def get_ad_group_sources_data_status(ad_group_sources):
+    status_dict = {}
+    message_template = '<b>{name}</b> for this Media Source differs from {name} in the Media Source\'s 3rd party dashboard.'
 
     for ags in ad_group_sources:
         messages = []
+        ok = True
 
-        latest_settings = _get_latest_non_waiting_settings(ags)
-        latest_state = _get_latest_state(ags)
+        if not ags.actionlog_set.filter(
+                state=actionlog.constants.ActionState.WAITING,
+                action=actionlog.constants.Action.SET_CAMPAIGN_STATE
+        ).exists():
+            # there are no updates in progress
+            latest_settings = _get_latest_settings(ags)
+            latest_state = _get_latest_state(ags)
 
-        message_template = '<b>{name}</b> for this Media Source differs from {name} in the Media Source\'s 3rd party dashboard.'
+            if latest_settings is not None:
+                if latest_state is None or latest_settings.cpc_cc != latest_state.cpc_cc:
+                    messages.append(message_template.format(name='Bid CPC'))
+                if latest_state is None or latest_settings.daily_budget_cc != latest_state.daily_budget_cc:
+                    messages.append(message_template.format(name='Daily Budget'))
 
-        if latest_settings is not None:
-            if latest_state is None or latest_settings.cpc_cc != latest_state.cpc_cc:
-                messages.append(message_template.format(name='Bid CPC'))
-            if latest_state is None or latest_settings.daily_budget_cc != latest_state.daily_budget_cc:
-                messages.append(message_template.format(name='Daily Budget'))
+                if ags.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE:
+                    expected_state = constants.AdGroupSourceSettingsState.INACTIVE
+                else:
+                    expected_state = latest_settings.state
 
-            if ags.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE:
-                expected_state = constants.AdGroupSourceSettingsState.INACTIVE
-            else:
-                expected_state = latest_settings.state
+                if latest_state is None or expected_state != latest_state.state:
+                    messages.append(message_template.format(name='Status'))
 
-            if latest_state is None or expected_state != latest_state.state:
-                messages.append(message_template.format(name='Status'))
+            if len(messages):
+                message = '<br/>'.join(messages)
+                ok = False
 
-        if len(messages):
-            messages_dict[ags.source_id] = '<br/>'.join(messages)
-        else:
-            ok_message = 'Everything is OK.'
+        if ok:
+            message = 'Everything is OK.'
 
             last_sync = actionlog.sync.AdGroupSourceSync(ags).get_latest_source_success(
                 recompute=False)[ags.source_id]
@@ -325,54 +344,15 @@ def get_ad_group_sources_data_status_messages(ad_group_sources):
             if last_sync is not None:
                 last_sync = pytz.utc.localize(last_sync).astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE))
 
-                ok_message += ' Last OK sync was on: <b>{}</b>'.format(
+                message += ' Last OK sync was on: <b>{}</b>'.format(
                     last_sync.strftime('%m/%d/%Y %-I:%M %p'))
 
-            messages_dict[ags.source_id] = ok_message
+        status_dict[ags.source_id] = {
+            'ok': ok,
+            'message': message
+        }
 
-    return messages_dict
-
-
-def get_ad_group_source_data_status(ad_group_source):
-    settings = _get_latest_non_waiting_settings(ad_group_source)
-    state = _get_latest_state(ad_group_source)
-
-    if settings is None:
-        return True
-    elif state is None:
-        return False
-
-    if ad_group_source.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE:
-        expected_state = constants.AdGroupSourceSettingsState.INACTIVE
-    else:
-        expected_state = settings.state
-
-    return (
-        state.state == expected_state
-        and settings.cpc_cc == state.cpc_cc
-        and settings.daily_budget_cc == state.daily_budget_cc
-    )
-
-
-def _get_latest_non_waiting_settings(ad_group_source):
-    latest_settings_qs = models.AdGroupSourceSettings.objects.\
-        filter(ad_group_source=ad_group_source).\
-        exclude(pk__in=_get_waiting_actions_settings_ids(ad_group_source)).\
-        order_by('ad_group_source_id', '-created_dt')
-    return latest_settings_qs[0] if latest_settings_qs.exists() else None
-
-
-def _get_waiting_actions_settings_ids(ad_group_source):
-    waiting_actions = ad_group_source.actionlog_set.filter(
-        state=actionlog.constants.ActionState.WAITING,
-        action=actionlog.constants.Action.SET_CAMPAIGN_STATE)
-
-    for action in waiting_actions:
-        url_path = urlparse(action.payload['callback_url']).path
-        settings_id = resolve(url_path).kwargs.get('settings_id')
-
-        if settings_id is not None:
-            yield int(settings_id)
+    return status_dict
 
 
 def _get_latest_settings(ad_group_source):

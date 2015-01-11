@@ -130,36 +130,6 @@ def _process_zwei_response(action, data):
     action.save()
 
 
-@transaction.atomic
-def _procress_zwei_settings_response(settings_id, action, data):
-    if action.action != actionlogconstants.Action.SET_CAMPAIGN_STATE:
-        raise Exception(
-            'Unexpected extion action. Expected: {}, got: {}'.format(
-                actionlogconstants.Action.SET_CAMPAIGN_STATE,
-                action.action
-            )
-        )
-
-    if action.state != actionlogconstants.ActionState.WAITING:
-        logger.warning('Action not waiting for a response. Action: %s, response: %s', action, data)
-        return
-
-    if data['status'] != 'success':
-        logger.warning('Action failed. Action: %s, response: %s', action, data)
-
-        action.state = actionlogconstants.ActionState.FAILED
-        action.message = _get_error_message(data)
-        action.save()
-
-        return
-
-    conf = action.payload['args']['conf']
-    dashapi.update_ad_group_source_state(action.ad_group_source, conf, settings_id)
-
-    action.state = actionlogconstants.ActionState.SUCCESS
-    action.save()
-
-
 def _handle_zwei_callback_error(e, action):
     tb = traceback.format_exc()
     msg = 'Zwei callback failed for action: %(action_id)s. Error: %(error)s, message: %(message)s.'
