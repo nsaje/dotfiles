@@ -222,6 +222,15 @@
     model: dash.adgroupsourcesettings
     pk: 4
 
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 5
+        cpc_cc: null
+        daily_budget_cc: null
+        state: null
+    model: dash.adgroupsourcesettings
+    pk: 4
+
 # test adgroupsourcestate
 
 -   fields:
