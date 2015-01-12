@@ -1,10 +1,8 @@
 import datetime
 import dateutil.parser
 import pytz
-from urlparse import urlparse
 
 from django.conf import settings
-from django.core.urlresolvers import resolve
 
 import actionlog.api
 import actionlog.constants
@@ -186,6 +184,22 @@ def get_ad_group_sources_last_change_dt(ad_group_sources, last_change_dt=None):
     return max(last_change_dts), changed_ad_group_sources
 
 
+def _get_keys_in_progress(ad_group_source):
+    actions = ad_group_source.actionlog_set.filter(
+        state=actionlog.constants.ActionState.WAITING,
+        action=actionlog.constants.Action.SET_CAMPAIGN_STATE
+    )
+
+    keys_in_progress = set()
+    for action in actions:
+        keys = action.payload.get('args', {}).get('conf', {}).keys()
+
+        for key in keys:
+            keys_in_progress.add(key)
+
+    return keys_in_progress
+
+
 def get_ad_group_sources_notifications(ad_group_sources):
     notifications = {}
 
@@ -200,23 +214,18 @@ def get_ad_group_sources_notifications(ad_group_sources):
         important = False
         state_message = None
 
-        if ags.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE:
+        keys_in_progress = _get_keys_in_progress(ags)
+
+        ad_group_settings = ags.ad_group.get_current_settings()
+        if ad_group_settings.state == constants.AdGroupSettingsState.INACTIVE:
             if latest_settings and latest_settings.state == constants.AdGroupSettingsState.ACTIVE:
                 state_message = 'This media source is enabled but will not run until you enable ad group in Settings tab.'
                 messages.append(state_message)
+
+                if len(keys_in_progress):
+                    if 'state' in keys_in_progress:
+                        messages.append(_get_state_update_notification(ags, ad_group_settings, latest_state))
                 important = True
-
-        actions = ags.actionlog_set.filter(
-            state=actionlog.constants.ActionState.WAITING,
-            action=actionlog.constants.Action.SET_CAMPAIGN_STATE
-        )
-
-        keys_in_progress = set()
-        for action in actions:
-            keys = action.payload.get('args', {}).get('conf', {}).keys()
-
-            for key in keys:
-                keys_in_progress.add(key)
 
         if len(keys_in_progress):
             if state_message is None and 'state' in keys_in_progress:
