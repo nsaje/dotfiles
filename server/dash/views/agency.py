@@ -158,11 +158,9 @@ class AdGroupSettings(api_common.BaseApiView):
             settings.save()
 
             if current_settings.state == constants.AdGroupSettingsState.INACTIVE \
-            and settings.state == constants.AdGroupSettingsState.ACTIVE \
-            and request.user.has_perm('zemauth.set_ad_group_source_settings'):
+            and settings.state == constants.AdGroupSettingsState.ACTIVE:
                 # trigger actions for the latest settings for each source
                 # only when the ad group is switched to enabled
-                # and the user has permissions to change AdGroupSourceSettings
                 source_settings_qs = models.AdGroupSourceSettings.objects \
                     .distinct('ad_group_source_id') \
                     .filter(ad_group_source__ad_group=ad_group) \
