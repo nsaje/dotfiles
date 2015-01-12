@@ -205,9 +205,7 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
         self.assertEqual(action.state, constants.ActionState.WAITING)
         self.assertEqual(action.payload.get('args', {}).get('conf'),
-                         {'cpc_cc': source_settings.cpc_cc * 10000,
-                          'daily_budget_cc': source_settings.daily_budget_cc * 10000,
-                          'state': dashconstants.AdGroupSourceSettingsState.ACTIVE})
+                         {'state': dashconstants.AdGroupSourceSettingsState.ACTIVE})
 
         source_settings = dashmodels.AdGroupSourceSettings(
             ad_group_source=ad_group_source,
@@ -227,9 +225,7 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
         self.assertEqual(action.state, constants.ActionState.WAITING)
         self.assertEqual(action.payload.get('args', {}).get('conf'),
-                         {'cpc_cc': source_settings.cpc_cc * 10000,
-                          'daily_budget_cc': source_settings.daily_budget_cc * 10000,
-                          'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
+                         {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
 
         ##############################
         # Testing Maintenance Source #
@@ -255,9 +251,7 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action.action_type, constants.ActionType.MANUAL)
         self.assertEqual(action.state, constants.ActionState.WAITING)
         self.assertEqual(action.payload.get('args', {}).get('conf'),
-                         {'cpc_cc': source_settings.cpc_cc * 10000,
-                          'daily_budget_cc': source_settings.daily_budget_cc * 10000,
-                          'state': dashconstants.AdGroupSourceSettingsState.ACTIVE})
+                         {'state': dashconstants.AdGroupSourceSettingsState.ACTIVE})
 
         source_settings = dashmodels.AdGroupSourceSettings(
             ad_group_source=ad_group_source,
@@ -277,9 +271,7 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action.action_type, constants.ActionType.MANUAL)
         self.assertEqual(action.state, constants.ActionState.WAITING)
         self.assertEqual(action.payload.get('args', {}).get('conf'),
-                         {'cpc_cc': source_settings.cpc_cc * 10000,
-                          'daily_budget_cc': source_settings.daily_budget_cc * 10000,
-                          'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
+                         {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
 
 
     @patch('actionlog.models.datetime', MockDateTime)
