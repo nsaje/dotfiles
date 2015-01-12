@@ -7,13 +7,15 @@ from dash import models
 class ViewHelpersTestCase(TestCase):
     fixtures = ['test_api.yaml']
 
-    def test_get_ad_group_sources_data_status_messages(self):
+    def test_get_ad_group_sources_data_status(self):
         ad_group_source1 = models.AdGroupSource.objects.get(pk=1)
         ad_group_source2 = models.AdGroupSource.objects.get(pk=2)
         ad_group_source3 = models.AdGroupSource.objects.get(pk=3)
 
         data_status = helpers.get_ad_group_sources_data_status(
             [ad_group_source1, ad_group_source2, ad_group_source3])
+
+        self.assertEqual(data_status[ad_group_source1.source_id]['ok'], False)
 
         self.assertEqual(
             data_status[ad_group_source1.source_id]['message'],
@@ -27,5 +29,27 @@ class ViewHelpersTestCase(TestCase):
 
         self.assertEqual(
             data_status[ad_group_source3.source_id]['message'],
+            'Everything is OK. Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
+        )
+
+    def test_get_ad_group_sources_data_status_no_settings(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=4)
+        data_status = helpers.get_ad_group_sources_data_status([ad_group_source])
+
+        self.assertEqual(data_status[ad_group_source.source_id]['ok'], True)
+
+        self.assertEqual(
+            data_status[ad_group_source.source_id]['message'],
+            'Everything is OK. Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
+        )
+
+    def test_get_ad_group_sources_data_status_property_none(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=4)
+        data_status = helpers.get_ad_group_sources_data_status([ad_group_source])
+
+        self.assertEqual(data_status[ad_group_source.source_id]['ok'], True)
+
+        self.assertEqual(
+            data_status[ad_group_source.source_id]['message'],
             'Everything is OK. Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
         )

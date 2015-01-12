@@ -327,9 +327,12 @@ def get_ad_group_sources_data_status(ad_group_sources):
             latest_state = _get_latest_state(ags)
 
             if latest_settings is not None:
-                if latest_state is None or latest_settings.cpc_cc != latest_state.cpc_cc:
+                if latest_settings.cpc_cc is not None and (
+                        latest_state is None or latest_settings.cpc_cc != latest_state.cpc_cc):
                     messages.append(message_template.format(name='Bid CPC'))
-                if latest_state is None or latest_settings.daily_budget_cc != latest_state.daily_budget_cc:
+
+                if latest_settings.daily_budget_cc is not None and (
+                        latest_state is None or latest_settings.daily_budget_cc != latest_state.daily_budget_cc):
                     messages.append(message_template.format(name='Daily Budget'))
 
                 if ags.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE:
@@ -337,7 +340,8 @@ def get_ad_group_sources_data_status(ad_group_sources):
                 else:
                     expected_state = latest_settings.state
 
-                if latest_state is None or expected_state != latest_state.state:
+                if latest_settings.state is not None and (
+                        latest_state is None or expected_state != latest_state.state):
                     messages.append(message_template.format(name='Status'))
 
             if len(messages):
