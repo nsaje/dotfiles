@@ -161,18 +161,13 @@ class AdGroupSettings(api_common.BaseApiView):
             ad_group.save()
             settings.save()
 
-            source_settings_qs = models.AdGroupSourceSettings.objects \
-                .distinct('ad_group_source_id') \
-                .filter(ad_group_source__ad_group=ad_group) \
-                .order_by('ad_group_source_id', '-created_dt')
-
             if current_settings.state == constants.AdGroupSettingsState.INACTIVE \
             and settings.state == constants.AdGroupSettingsState.ACTIVE:
-                actionlog_api.init_enable_ad_group(source_settings_qs, order)
+                actionlog_api.init_enable_ad_group(ad_group, order=order)
 
             if current_settings.state == constants.AdGroupSettingsState.ACTIVE \
             and settings.state == constants.AdGroupSettingsState.INACTIVE:
-                actionlog_api.init_pause_ad_group(source_settings_qs, order)
+                actionlog_api.init_pause_ad_group(ad_group, order=order)
 
         api.order_ad_group_settings_update(ad_group, current_settings, settings)
 

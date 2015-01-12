@@ -95,7 +95,7 @@ class ActionLogApiTestCase(TestCase):
 
 
     @patch('actionlog.models.datetime', MockDateTime)
-    def test_set_ad_group_source_settings(self):
+    def test_set_ad_group_source_settings_non_maintenance(self):
         utcnow = datetime.datetime.utcnow()
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
 
@@ -150,9 +150,21 @@ class ActionLogApiTestCase(TestCase):
             },
             'callback_url': callback,
         }
-
         self.assertEqual(action.payload, payload)
 
+
+    @patch('actionlog.models.datetime', MockDateTime)
+    def test_set_ad_group_source_settings_maintenance(self):
+        utcnow = datetime.datetime.utcnow()
+        models.datetime.utcnow = classmethod(lambda cls: utcnow)
+
+        changes = {
+            'state': dashconstants.AdGroupSourceSettingsState.ACTIVE,
+            'cpc_cc': 0.33,
+            'daily_budget_cc': 100,
+        }
+
+        ad_group = dashmodels.AdGroup.objects.get(id=1)
         ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group, source__maintenance=True)[0]
 
         source_settings = dashmodels.AdGroupSourceSettings(
@@ -165,25 +177,22 @@ class ActionLogApiTestCase(TestCase):
 
         api.set_ad_group_source_settings(changes, source_settings)
 
-        action = models.ActionLog.objects.get(
+        action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
-        )
+        ).latest('created_dt')
 
         self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
         self.assertEqual(action.action_type, constants.ActionType.MANUAL)
         self.assertEqual(action.state, constants.ActionState.WAITING)
-
         self.assertEqual(action.payload, {'args': { 'conf': changes}})
 
+
     @patch('actionlog.models.datetime', MockDateTime)
-    def test_init_enable_ad_group(self):
+    def test_init_enable_ad_group_non_maintenance_source(self):
         utcnow = datetime.datetime.utcnow()
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
 
         ad_group = dashmodels.AdGroup.objects.get(id=1)
-        ##################################
-        # Testing non Maintenance Source #
-        ##################################
         ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group,
                                                                   source__maintenance=False)[0]
 
@@ -195,7 +204,7 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.init_enable_ad_group([source_settings])
+        api.init_enable_ad_group(ad_group)
 
         action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
@@ -215,7 +224,7 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.init_enable_ad_group([source_settings])
+        api.init_enable_ad_group(ad_group)
 
         action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
@@ -227,9 +236,13 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action.payload.get('args', {}).get('conf'),
                          {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
 
-        ##############################
-        # Testing Maintenance Source #
-        ##############################
+
+    @patch('actionlog.models.datetime', MockDateTime)
+    def test_init_enable_ad_group_maintenance_source(self):
+        utcnow = datetime.datetime.utcnow()
+        models.datetime.utcnow = classmethod(lambda cls: utcnow)
+
+        ad_group = dashmodels.AdGroup.objects.get(id=1)
         ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group,
                                                                   source__maintenance=True)[0]
 
@@ -241,7 +254,7 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.init_enable_ad_group([source_settings])
+        api.init_enable_ad_group(ad_group)
 
         action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
@@ -261,7 +274,7 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.init_enable_ad_group([source_settings])
+        api.init_enable_ad_group(ad_group)
 
         action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
@@ -275,14 +288,11 @@ class ActionLogApiTestCase(TestCase):
 
 
     @patch('actionlog.models.datetime', MockDateTime)
-    def test_init_pause_ad_group(self):
+    def test_init_pause_ad_group_non_maintenance_source(self):
         utcnow = datetime.datetime.utcnow()
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
 
         ad_group = dashmodels.AdGroup.objects.get(id=1)
-        ##################################
-        # Testing non Maintenance Source #
-        ##################################
         ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group,
                                                                   source__maintenance=False)[0]
 
@@ -294,7 +304,7 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.init_pause_ad_group([source_settings])
+        api.init_pause_ad_group(ad_group)
 
         action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
@@ -314,7 +324,7 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.init_pause_ad_group([source_settings])
+        api.init_pause_ad_group(ad_group)
 
         action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
@@ -326,9 +336,13 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action.payload.get('args', {}).get('conf'),
                          {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
 
-        ##############################
-        # Testing Maintenance Source #
-        ##############################
+
+    @patch('actionlog.models.datetime', MockDateTime)
+    def test_init_pause_ad_group_maintenance_source(self):
+        utcnow = datetime.datetime.utcnow()
+        models.datetime.utcnow = classmethod(lambda cls: utcnow)
+
+        ad_group = dashmodels.AdGroup.objects.get(id=1)
         ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group,
                                                                   source__maintenance=True)[0]
 
@@ -340,7 +354,7 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.init_pause_ad_group([source_settings])
+        api.init_pause_ad_group(ad_group)
 
         action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
@@ -360,7 +374,7 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.init_pause_ad_group([source_settings])
+        api.init_pause_ad_group(ad_group)
 
         action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source

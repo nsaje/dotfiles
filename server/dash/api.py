@@ -88,7 +88,8 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings):
         return
 
     for field_name, field_value in changes.iteritems():
-        if field_name == 'state': # State is set via Zwei
+        # State of an ad group is set automatically
+        if field_name == 'state':
             continue
 
         actionlog.api.init_set_ad_group_property_order(ad_group, prop=field_name, value=field_value)
