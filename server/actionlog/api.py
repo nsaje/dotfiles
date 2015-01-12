@@ -35,10 +35,9 @@ def init_enable_ad_group(ad_group_source_settings, order=None):
     for source_settings in ad_group_source_settings:
         changes = {
             'state': source_settings.state,
-            'cpc_cc': source_settings.cpc_cc,
-            'daily_budget_cc': source_settings.daily_budget_cc
         }
         set_ad_group_source_settings(changes, source_settings, order=order)
+
 
 def init_pause_ad_group(ad_group_source_settings, order=None):
     for source_settings in ad_group_source_settings:
@@ -64,7 +63,6 @@ def set_ad_group_source_settings(changes, ad_group_source_settings, order=None):
 
     action = _init_set_ad_group_source_settings(
         ad_group_source=ad_group_source_settings.ad_group_source,
-        settings_id=ad_group_source_settings.id,
         conf=changes,
         order=order
     )
@@ -268,7 +266,8 @@ def _get_campaign_settings(campaign):
     return None
 
 
-def _init_set_ad_group_source_settings(ad_group_source, settings_id, conf, order=None):
+
+def _init_set_ad_group_source_settings(ad_group_source, conf, order=None):
     msg = '_init_set_ad_group_source_settings started: ad_group_source.id: {}, settings: {}'.format(
         ad_group_source.id, str(conf)
     )
@@ -300,9 +299,7 @@ def _init_set_ad_group_source_settings(ad_group_source, settings_id, conf, order
     try:
         with transaction.atomic():
             callback = urlparse.urljoin(
-                settings.EINS_HOST, reverse(
-                    'api.zwei_settings_callback',
-                    kwargs={'action_id': action.id, 'settings_id': settings_id})
+                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
 
             payload = {

@@ -311,11 +311,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         },
         {
             name: '',
-            field: 'data_status',
             nameCssClass: 'data-status-icon',
             type: 'dataStatus',
             internal: $scope.isPermissionInternal('zemauth.data_status_column'),
-            shown: false,
+            shown: $scope.hasPermission('zemauth.data_status_column'),
             checked: true,
             totalRow: false,
             unselectable: true,
@@ -391,7 +390,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 $scope.isSyncInProgress = data.is_sync_in_progress;
                 $scope.notifications = data.notifications;
                 $scope.lastChange = data.lastChange;
-                $scope.dataStatusMessages = data.dataStatusMessages;
+                $scope.dataStatus = data.dataStatus;
 
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
 
@@ -655,13 +654,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 if (data.lastChange) {
                     $scope.lastChange = data.lastChange;
                     $scope.notifications = data.notifications;
-
-                    Object.keys(data.dataStatusMessages).forEach(function (sourceId) {
-                        if (!data.notifications[sourceId] || !data.notifications[sourceId].inProgress) {
-                            // only update messages for rows that are not in progress anymore
-                            $scope.dataStatusMessages[sourceId] = data.dataStatusMessages[sourceId];
-                        }
-                    });
+                    $scope.dataStatus = data.dataStatus;
 
                     updateTableData(data.rows, data.totals);
                 }

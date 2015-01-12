@@ -308,7 +308,7 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
                     # use state if there is no settings for this ad group source
                     setting = state
 
-                updates = {
+                rows[ad_group_source.source_id] = {
                     'status_setting': setting.state,
                     'status': state.state,
                     'bid_cpc': setting.cpc_cc,
@@ -316,17 +316,6 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
                     'daily_budget': setting.daily_budget_cc,
                     'current_daily_budget': state.daily_budget_cc,
                 }
-
-                if not notifications.get(ad_group_source.source_id, {}).get('in_progress')\
-                        and request.user.has_perm('zemauth.data_status_column'):
-                    # only send data_status if there is no updates in progress
-                    updates['data_status'] = (
-                        setting.state == state.state
-                        and setting.cpc_cc == state.cpc_cc
-                        and setting.daily_budget_cc == state.daily_budget_cc
-                    )
-
-                rows[ad_group_source.source_id] = updates
 
             response['rows'] = rows
 
@@ -338,7 +327,7 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
             response['notifications'] = notifications
 
             if request.user.has_perm('zemauth.data_status_column'):
-                response['data_status_messages'] = helpers.get_ad_group_sources_data_status_messages(
+                response['data_status'] = helpers.get_ad_group_sources_data_status(
                     ad_group_sources)
 
         return self.create_api_response(response)
@@ -394,6 +383,7 @@ class SourcesTable(api_common.BaseApiView):
                 id_,
                 user,
                 sources,
+                ad_group_sources,
                 sources_data,
                 sources_states,
                 ad_group_sources_settings,
@@ -422,7 +412,7 @@ class SourcesTable(api_common.BaseApiView):
             response['notifications'] = helpers.get_ad_group_sources_notifications(ad_group_sources)
 
             if user.has_perm('zemauth.data_status_column'):
-                response['data_status_messages'] = helpers.get_ad_group_sources_data_status_messages(
+                response['data_status'] = helpers.get_ad_group_sources_data_status(
                     ad_group_sources)
 
         return self.create_api_response(response)
@@ -466,6 +456,7 @@ class SourcesTable(api_common.BaseApiView):
             id_,
             user,
             sources,
+            ad_group_sources,
             sources_data,
             sources_states,
             ad_group_sources_settings,
@@ -570,12 +561,6 @@ class SourcesTable(api_common.BaseApiView):
                 if user.has_perm('zemauth.see_current_ad_group_source_state'):
                     row['current_bid_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None
                     row['current_daily_budget'] = states[0].daily_budget_cc if len(states) else None
-
-                if user.has_perms(['zemauth.set_ad_group_source_settings', 'zemauth.data_status_column']):
-                    row['data_status'] = (
-                        row['current_bid_cpc'] == row['bid_cpc']
-                        and row['current_daily_budget'] == row['daily_budget']
-                        and row['status'] == row['status_setting'])
 
             elif len(bid_cpc_values) > 0:
                 row['min_bid_cpc'] = float(min(bid_cpc_values))

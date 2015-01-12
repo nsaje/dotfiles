@@ -184,6 +184,22 @@ def get_ad_group_sources_last_change_dt(ad_group_sources, last_change_dt=None):
     return max(last_change_dts), changed_ad_group_sources
 
 
+def _get_keys_in_progress(ad_group_source):
+    actions = ad_group_source.actionlog_set.filter(
+        state=actionlog.constants.ActionState.WAITING,
+        action=actionlog.constants.Action.SET_CAMPAIGN_STATE
+    )
+
+    keys_in_progress = set()
+    for action in actions:
+        keys = action.payload.get('args', {}).get('conf', {}).keys()
+
+        for key in keys:
+            keys_in_progress.add(key)
+
+    return keys_in_progress
+
+
 def get_ad_group_sources_notifications(ad_group_sources):
     notifications = {}
 
@@ -193,42 +209,46 @@ def get_ad_group_sources_notifications(ad_group_sources):
         latest_settings = _get_latest_settings(ags)
         latest_state = _get_latest_state(ags)
 
-        if ags.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE:
+        messages = []
+        in_progress = False
+        important = False
+        state_message = None
+
+        keys_in_progress = _get_keys_in_progress(ags)
+
+        ad_group_settings = ags.ad_group.get_current_settings()
+        if ad_group_settings.state == constants.AdGroupSettingsState.INACTIVE:
             if latest_settings and latest_settings.state == constants.AdGroupSettingsState.ACTIVE:
-                notification['message'] = 'This media source is enabled but will not run until you enable ad group in Settings tab. Other media source settings will be synced at the same time.'
-                notification['important'] = True
+                state_message = 'This media source is enabled but will not run until you enable ad group in Settings tab.'
+                messages.append(state_message)
 
-            elif (_get_state_update_notification(ags, latest_settings, latest_state) or
-                    _get_cpc_update_notification(ags, latest_settings, latest_state) or
-                    _get_budget_update_notification(ags, latest_settings, latest_state)):
-                notification['message'] = 'Media source settings will be synced once the ad group is enabled in Settings tab.'
-                notification['important'] = False
+                if len(keys_in_progress):
+                    if 'state' in keys_in_progress:
+                        messages.append(_get_state_update_notification(ags, ad_group_settings, latest_state))
+                important = True
 
-            if not len(notification):
-                continue
+        if len(keys_in_progress):
+            if state_message is None and 'state' in keys_in_progress:
+                messages.append(_get_state_update_notification(ags, latest_settings, latest_state))
 
-            notification['in_progress'] = False
-            notifications[ags.source_id] = notification
+            if 'cpc_cc' in keys_in_progress:
+                messages.append(_get_cpc_update_notification(ags, latest_settings, latest_state))
 
-        elif ags.actionlog_set.filter(
-                state=actionlog.constants.ActionState.WAITING,
-                action=actionlog.constants.Action.SET_CAMPAIGN_STATE
-        ).exists():
-            messages = []
-            messages.append(_get_state_update_notification(ags, latest_settings, latest_state))
-            messages.append(_get_cpc_update_notification(ags, latest_settings, latest_state))
-            messages.append(_get_budget_update_notification(ags, latest_settings, latest_state))
+            if 'daily_budget_cc' in keys_in_progress:
+                messages.append(_get_budget_update_notification(ags, latest_settings, latest_state))
 
-            message = '<br />'.join([t for t in messages if t is not None])
+            in_progress = True
 
-            if not len(message):
-                continue
+        message = '<br />'.join([t for t in messages if t is not None])
 
-            notification['message'] = message
-            notification['in_progress'] = True
-            notification['important'] = False
+        if not len(message):
+            continue
 
-            notifications[ags.source_id] = notification
+        notification['message'] = message
+        notification['in_progress'] = in_progress
+        notification['important'] = important
+
+        notifications[ags.source_id] = notification
 
     return notifications
 
@@ -290,29 +310,42 @@ def _get_budget_update_notification(ags, settings, state):
     return None
 
 
-def get_ad_group_sources_data_status_messages(ad_group_sources):
-    messages_dict = {}
+def get_ad_group_sources_data_status(ad_group_sources):
+    status_dict = {}
+    message_template = '<b>{name}</b> for this Media Source differs from {name} in the Media Source\'s 3rd party dashboard.'
 
     for ags in ad_group_sources:
         messages = []
+        ok = True
 
-        latest_settings = _get_latest_settings(ags)
-        latest_state = _get_latest_state(ags)
+        if not ags.actionlog_set.filter(
+                state=actionlog.constants.ActionState.WAITING,
+                action=actionlog.constants.Action.SET_CAMPAIGN_STATE
+        ).exists():
+            # there are no updates in progress
+            latest_settings = _get_latest_settings(ags)
+            latest_state = _get_latest_state(ags)
 
-        message_template = '<b>{name}</b> for this Media Source differs from {name} in the Media Source\'s 3rd party dashboard.'
+            if latest_settings is not None:
+                if latest_state is None or latest_settings.cpc_cc != latest_state.cpc_cc:
+                    messages.append(message_template.format(name='Bid CPC'))
+                if latest_state is None or latest_settings.daily_budget_cc != latest_state.daily_budget_cc:
+                    messages.append(message_template.format(name='Daily Budget'))
 
-        if latest_settings is not None:
-            if latest_state is None or latest_settings.cpc_cc != latest_state.cpc_cc:
-                messages.append(message_template.format(name='Bid CPC'))
-            if latest_state is None or latest_settings.daily_budget_cc != latest_state.daily_budget_cc:
-                messages.append(message_template.format(name='Daily Budget'))
-            if latest_state is None or latest_settings.state != latest_state.state:
-                messages.append(message_template.format(name='Status'))
+                if ags.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE:
+                    expected_state = constants.AdGroupSourceSettingsState.INACTIVE
+                else:
+                    expected_state = latest_settings.state
 
-        if len(messages):
-            messages_dict[ags.source_id] = '<br/>'.join(messages)
-        else:
-            ok_message = 'Everything is OK.'
+                if latest_state is None or expected_state != latest_state.state:
+                    messages.append(message_template.format(name='Status'))
+
+            if len(messages):
+                message = '<br/>'.join(messages)
+                ok = False
+
+        if ok:
+            message = 'Everything is OK.'
 
             last_sync = actionlog.sync.AdGroupSourceSync(ags).get_latest_source_success(
                 recompute=False)[ags.source_id]
@@ -320,12 +353,15 @@ def get_ad_group_sources_data_status_messages(ad_group_sources):
             if last_sync is not None:
                 last_sync = pytz.utc.localize(last_sync).astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE))
 
-                ok_message += ' Last OK sync was on: <b>{}</b>'.format(
+                message += ' Last OK sync was on: <b>{}</b>'.format(
                     last_sync.strftime('%m/%d/%Y %-I:%M %p'))
 
-            messages_dict[ags.source_id] = ok_message
+        status_dict[ags.source_id] = {
+            'ok': ok,
+            'message': message
+        }
 
-    return messages_dict
+    return status_dict
 
 
 def _get_latest_settings(ad_group_source):

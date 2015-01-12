@@ -24,15 +24,11 @@ def cc_to_decimal(val_cc):
 
 
 @transaction.atomic
-def update_ad_group_source_state(ad_group_source, conf, settings_id=None):
+def update_ad_group_source_state(ad_group_source, conf):
     for key, val in conf.items():
         if key in ('cpc_cc', 'daily_budget_cc'):
             conf[key] = cc_to_decimal(val)
 
-    _upsert_ad_group_source_state(ad_group_source, conf)
-
-
-def _upsert_ad_group_source_state(ad_group_source, conf):
     ad_group_source_state = _get_latest_ad_group_source_state(ad_group_source)
 
     # determine if we need to update
@@ -183,7 +179,7 @@ class AdGroupSourceSettingsWriter(object):
 
                 self.add_to_history(settings_obj, old_settings_obj)
 
-                if self.can_trigger_action():
+                if 'state' not in settings_obj or self.can_trigger_action():
                     actionlog.api.set_ad_group_source_settings(settings_obj, new_settings)
                 else:
                     logger.info(
@@ -193,7 +189,7 @@ class AdGroupSourceSettingsWriter(object):
                     )
         else:
             ssc = consistency.SettingsStateConsistence(self.ad_group_source)
-            if not ssc.is_consistent() and self.can_trigger_action():
+            if not ssc.is_consistent() and ('state' not in settings_obj or self.can_trigger_action()):
                 new_settings = latest_settings
                 new_settings.pk = None  # make a copy of the latest settings
                 new_settings.save()
