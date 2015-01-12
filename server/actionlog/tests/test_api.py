@@ -226,15 +226,9 @@ class ActionLogApiTestCase(TestCase):
 
         api.init_enable_ad_group(ad_group)
 
-        action = models.ActionLog.objects.filter(
-            ad_group_source=ad_group_source
-        ).latest('created_dt')
-
-        self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
-        self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
-        self.assertEqual(action.state, constants.ActionState.WAITING)
-        self.assertEqual(action.payload.get('args', {}).get('conf'),
-                         {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
+        # Nothing changed, since the source is inactive
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ad_group_source).latest('created_dt'),
+                         action)
 
 
     @patch('actionlog.models.datetime', MockDateTime)
@@ -245,6 +239,19 @@ class ActionLogApiTestCase(TestCase):
         ad_group = dashmodels.AdGroup.objects.get(id=1)
         ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group,
                                                                   source__maintenance=True)[0]
+
+        source_settings = dashmodels.AdGroupSourceSettings(
+            ad_group_source=ad_group_source,
+            cpc_cc=0.20,
+            daily_budget_cc=50,
+            state=dashconstants.AdGroupSourceSettingsState.INACTIVE
+        )
+        source_settings.save()
+
+        api.init_enable_ad_group(ad_group)
+
+        self.assertEqual(list(models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source)), [])
 
         source_settings = dashmodels.AdGroupSourceSettings(
             ad_group_source=ad_group_source,
@@ -265,26 +272,6 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action.state, constants.ActionState.WAITING)
         self.assertEqual(action.payload.get('args', {}).get('conf'),
                          {'state': dashconstants.AdGroupSourceSettingsState.ACTIVE})
-
-        source_settings = dashmodels.AdGroupSourceSettings(
-            ad_group_source=ad_group_source,
-            cpc_cc=0.20,
-            daily_budget_cc=50,
-            state=dashconstants.AdGroupSourceSettingsState.INACTIVE
-        )
-        source_settings.save()
-
-        api.init_enable_ad_group(ad_group)
-
-        action = models.ActionLog.objects.filter(
-            ad_group_source=ad_group_source
-        ).latest('created_dt')
-
-        self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
-        self.assertEqual(action.action_type, constants.ActionType.MANUAL)
-        self.assertEqual(action.state, constants.ActionState.WAITING)
-        self.assertEqual(action.payload.get('args', {}).get('conf'),
-                         {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
 
 
     @patch('actionlog.models.datetime', MockDateTime)
@@ -326,15 +313,9 @@ class ActionLogApiTestCase(TestCase):
 
         api.init_pause_ad_group(ad_group)
 
-        action = models.ActionLog.objects.filter(
-            ad_group_source=ad_group_source
-        ).latest('created_dt')
-
-        self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
-        self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
-        self.assertEqual(action.state, constants.ActionState.WAITING)
-        self.assertEqual(action.payload.get('args', {}).get('conf'),
-                         {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
+        # Nothing changed, since the source is inactive
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ad_group_source).latest('created_dt'),
+                         action)
 
 
     @patch('actionlog.models.datetime', MockDateTime)
@@ -376,15 +357,9 @@ class ActionLogApiTestCase(TestCase):
 
         api.init_pause_ad_group(ad_group)
 
-        action = models.ActionLog.objects.filter(
-            ad_group_source=ad_group_source
-        ).latest('created_dt')
-
-        self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
-        self.assertEqual(action.action_type, constants.ActionType.MANUAL)
-        self.assertEqual(action.state, constants.ActionState.WAITING)
-        self.assertEqual(action.payload.get('args', {}).get('conf'),
-                         {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
+        # Nothing changed, since the source is inactive
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ad_group_source).latest('created_dt'),
+                         action)
 
 
     @patch('actionlog.models.datetime', MockDateTime)
