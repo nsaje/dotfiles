@@ -106,10 +106,10 @@
                                 <span ng-switch-when="dataStatus">
                                     <span
                                         ng-style="{'margin-left': col.internal ? '20px' : '3px'}"
-                                        ng-class="{'okay-icon': row[col.field], 'alert-icon': !row[col.field]}"
+                                        ng-class="{'okay-icon': dataStatus[row.id].ok, 'alert-icon': !dataStatus[row.id].ok}"
                                         popover-append-to-body="true"
                                         popover-trigger="mouseenter"
-                                        popover-html-unsafe="{{ dataStatusMessages[row.id] }}"
+                                        popover-html-unsafe="{{ dataStatus[row.id].message }}"
                                         popover-placement="left">
                                     </span>
                                 </span>

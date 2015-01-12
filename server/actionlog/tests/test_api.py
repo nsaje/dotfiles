@@ -187,8 +187,8 @@ class ActionLogApiTestCase(TestCase):
 
         callback = urlparse.urljoin(
             settings.EINS_HOST, reverse(
-                'api.zwei_settings_callback',
-                kwargs={'settings_id': source_settings.id, 'action_id': action.id})
+                'api.zwei_callback',
+                kwargs={'action_id': action.id})
         )
 
         payload = {

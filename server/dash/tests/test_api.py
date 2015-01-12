@@ -81,25 +81,6 @@ class UpdateAdGroupSourceState(TestCase):
             1
         )
 
-    def test_should_not_update_if_not_latest_settings(self):
-        latest_state = models.AdGroupSourceState.objects \
-            .filter(ad_group_source=self.ad_group_source) \
-            .latest('created_dt')
-
-        conf = {
-            'state': 2,
-            'cpc_cc': 500,
-            'daily_budget_cc': 10000
-        }
-
-        api.update_ad_group_source_state(self.ad_group_source, conf, settings_id=1)
-
-        new_latest_state = models.AdGroupSourceState.objects \
-            .filter(ad_group_source=self.ad_group_source) \
-            .latest('created_dt')
-
-        #self.assertEqual(new_latest_state.id, latest_state.id)
-
     def test_should_update_if_latest_settings(self):
         latest_state = models.AdGroupSourceState.objects \
             .filter(ad_group_source=self.ad_group_source) \
@@ -111,7 +92,7 @@ class UpdateAdGroupSourceState(TestCase):
             'daily_budget_cc': 10000
         }
 
-        api.update_ad_group_source_state(self.ad_group_source, conf, settings_id=2)
+        api.update_ad_group_source_state(self.ad_group_source, conf)
 
         new_latest_state = models.AdGroupSourceState.objects \
             .filter(ad_group_source=self.ad_group_source) \

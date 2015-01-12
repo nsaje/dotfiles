@@ -77,7 +77,6 @@ def set_ad_group_source_settings(changes, ad_group_source_settings):
 
     action = _init_set_ad_group_source_settings(
         ad_group_source=ad_group_source_settings.ad_group_source,
-        settings_id=ad_group_source_settings.id,
         conf=changes
     )
 
@@ -344,7 +343,7 @@ def _init_stop_campaign(ad_group_source, order):
         raise InsertActionException, ei, tb
 
 
-def _init_set_ad_group_source_settings(ad_group_source, settings_id, conf):
+def _init_set_ad_group_source_settings(ad_group_source, conf):
     msg = '_init_set_ad_group_source_settings started: ad_group_source.id: {}, settings: {}'.format(
         ad_group_source.id, str(conf)
     )
@@ -359,9 +358,7 @@ def _init_set_ad_group_source_settings(ad_group_source, settings_id, conf):
     try:
         with transaction.atomic():
             callback = urlparse.urljoin(
-                settings.EINS_HOST, reverse(
-                    'api.zwei_settings_callback',
-                    kwargs={'action_id': action.id, 'settings_id': settings_id})
+                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
 
             payload = {
