@@ -88,10 +88,11 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings):
         return
 
     for field_name, field_value in changes.iteritems():
-        if field_name == 'state' and field_value == constants.AdGroupSettingsState.INACTIVE:
-            actionlog.api.init_stop_ad_group_order(ad_group)
-        else:
-            actionlog.api.init_set_ad_group_property_order(ad_group, prop=field_name, value=field_value)
+        # State of an ad group is set automatically
+        if field_name == 'state':
+            continue
+
+        actionlog.api.init_set_ad_group_property_order(ad_group, prop=field_name, value=field_value)
 
 
 def reconcile_article(raw_url, title, ad_group):

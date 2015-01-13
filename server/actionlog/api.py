@@ -31,14 +31,38 @@ class InsertCreateCampaignActionException(InsertActionException):
     pass
 
 
-def init_stop_ad_group_order(ad_group, source=None):
-    with transaction.atomic():
-        order = models.ActionLogOrder.objects.create(
-            order_type=constants.ActionLogOrderType.STOP_ALL
-        )
-        actionlogs = stop_ad_group(ad_group, source, order, commit=False)
+def init_enable_ad_group(ad_group, order=None):
+    source_settings_qs = dash.models.AdGroupSourceSettings.objects \
+        .distinct('ad_group_source_id') \
+        .filter(ad_group_source__ad_group=ad_group) \
+        .order_by('ad_group_source_id', '-created_dt')
 
-    zwei_actions.send_multiple(actionlogs)
+    for source_settings in source_settings_qs:
+        if source_settings.state == dash.constants.AdGroupSourceSettingsState.INACTIVE and \
+        not source_settings.ad_group_source.source.maintenance:
+            continue
+
+        changes = {
+            'state': source_settings.state,
+        }
+        set_ad_group_source_settings(changes, source_settings, order=order)
+
+
+def init_pause_ad_group(ad_group, order=None):
+    source_settings_qs = dash.models.AdGroupSourceSettings.objects \
+        .distinct('ad_group_source_id') \
+        .filter(ad_group_source__ad_group=ad_group) \
+        .order_by('ad_group_source_id', '-created_dt')
+
+    for source_settings in source_settings_qs:
+        if source_settings.state == dash.constants.AdGroupSourceSettingsState.INACTIVE and \
+        not source_settings.ad_group_source.source.maintenance:
+            continue
+
+        changes = {
+            'state': dash.constants.AdGroupSourceSettingsState.INACTIVE,
+        }
+        set_ad_group_source_settings(changes, source_settings, order=order)
 
 
 def init_set_ad_group_property_order(ad_group, source=None, prop=None, value=None):
@@ -49,27 +73,7 @@ def init_set_ad_group_property_order(ad_group, source=None, prop=None, value=Non
         set_ad_group_property(ad_group, source=source, prop=prop, value=value, order=order)
 
 
-def stop_ad_group(ad_group, source=None, order=None, commit=True):
-    ad_group_sources = _get_ad_group_sources(ad_group, source)
-
-    actionlogs = []
-    for ad_group_source in ad_group_sources:
-        try:
-            action = _init_stop_campaign(ad_group_source, order)
-            if action.action_type == constants.ActionType.MANUAL:
-                continue
-
-            actionlogs.append(action)
-        except InsertActionException:
-            continue
-
-    if commit:
-        zwei_actions.send_multiple(actionlogs)
-
-    return actionlogs
-
-
-def set_ad_group_source_settings(changes, ad_group_source_settings):
+def set_ad_group_source_settings(changes, ad_group_source_settings, order=None):
     if changes.get('cpc_cc') is not None:
         changes['cpc_cc'] = int(changes['cpc_cc'] * 10000)
     if changes.get('daily_budget_cc') is not None:
@@ -77,10 +81,11 @@ def set_ad_group_source_settings(changes, ad_group_source_settings):
 
     action = _init_set_ad_group_source_settings(
         ad_group_source=ad_group_source_settings.ad_group_source,
-        conf=changes
+        conf=changes,
+        order=order
     )
-
-    zwei_actions.send_multiple([action])
+    if action.action_type == constants.ActionType.AUTOMATIC:
+        zwei_actions.send_multiple([action])
 
 
 def set_ad_group_property(ad_group, source=None, prop=None, value=None, order=None):
@@ -279,75 +284,31 @@ def _get_campaign_settings(campaign):
     return None
 
 
-def _init_stop_campaign(ad_group_source, order):
-    logger.info('_init_stop started: ad_group_source.id: %s', ad_group_source.id)
-
-    if ad_group_source.source.maintenance:
-	action = models.ActionLog.objects.create(
-	    action=constants.Action.SET_CAMPAIGN_STATE,
-	    action_type=constants.ActionType.MANUAL,
-	    expiration_dt=None,
-	    state=constants.ActionState.WAITING,
-	    ad_group_source=ad_group_source,
-	    payload={
-                'args': {
-		    'conf': {
-                        'state': dash.constants.AdGroupSourceSettingsState.INACTIVE,
-		    }
-		}
-            },
-	    order=order,
-	    message="Due to media source being in maintenance mode a manual action is required."
-	)
-	return action
-
+def _create_manual_action(ad_group_source, conf, order=None, message=''):
     action = models.ActionLog.objects.create(
         action=constants.Action.SET_CAMPAIGN_STATE,
-        action_type=constants.ActionType.AUTOMATIC,
+        action_type=constants.ActionType.MANUAL,
+        expiration_dt=None,
+        state=constants.ActionState.WAITING,
         ad_group_source=ad_group_source,
-        order=order
-    )
-
-    try:
-        with transaction.atomic():
-            callback = urlparse.urljoin(
-                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
-            )
-
-            payload = {
-                'action': action.action,
-                'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
-                'expiration_dt': action.expiration_dt,
-                'credentials':
-                    ad_group_source.source_credentials and
-                    ad_group_source.source_credentials.credentials,
-                'args': {
-                    'source_campaign_key': ad_group_source.source_campaign_key,
-                    'conf': {
-                        'state': dash.constants.AdGroupSourceSettingsState.INACTIVE,
-                    }
-                },
-                'callback_url': callback,
+        payload={
+            'args': {
+                'conf': conf
             }
-
-            action.payload = payload
-            action.save()
-
-            return action
-
-    except Exception as e:
-        logger.exception('An exception occurred while initializing set_campaign_state action.')
-        _handle_error(action, e)
-
-        et, ei, tb = sys.exc_info()
-        raise InsertActionException, ei, tb
-
-
-def _init_set_ad_group_source_settings(ad_group_source, conf):
-    msg = '_init_set_ad_group_source_settings started: ad_group_source.id: {}, settings: {}'.format(
-        ad_group_source.id, str(conf)
+        },
+        order=order,
+        message=message
     )
-    logger.info(msg)
+    return action
+
+
+def _init_set_ad_group_source_settings(ad_group_source, conf, order=None):
+    logger.info('_init_set_ad_group_source_settings started: ad_group_source.id: %s, settings: %s',
+                ad_group_source.id, str(conf))
+
+    if ad_group_source.source.maintenance:
+        return _create_manual_action(ad_group_source, conf, order=order,
+                              message="Due to media source being in maintenance mode a manual action is required.")
 
     action = models.ActionLog.objects.create(
         action=constants.Action.SET_CAMPAIGN_STATE,
