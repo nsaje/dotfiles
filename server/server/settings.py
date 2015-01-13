@@ -19,6 +19,9 @@ try:
 except:
     HOSTNAME = 'localhost'
 
+import sys
+TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 
@@ -35,7 +38,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'dash',
-    #'django_extensions',  # optional for visualizing models and other perks
     'zemauth',
     'actionlog',
     'reports',
@@ -101,6 +103,9 @@ COVERAGE_ENABLED = 'COVERAGE_ENABLED' in os.environ
 DEFAULT_FROM_EMAIL = ''
 
 from localsettings import *
+
+if TESTING:
+    PAGER_DUTY_URL = ''
 
 LOGGING = {
     'version': 1,
