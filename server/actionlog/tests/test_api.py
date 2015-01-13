@@ -250,15 +250,8 @@ class ActionLogApiTestCase(TestCase):
 
         api.init_enable_ad_group(ad_group)
 
-        action = models.ActionLog.objects.filter(
-            ad_group_source=ad_group_source
-        ).latest('created_dt')
-
-        self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
-        self.assertEqual(action.action_type, constants.ActionType.MANUAL)
-        self.assertEqual(action.state, constants.ActionState.WAITING)
-        self.assertEqual(action.payload.get('args', {}).get('conf'),
-                         {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
+        # No manual action is created
+        self.assertEqual(list(models.ActionLog.objects.filter(ad_group_source=ad_group_source)), [])
 
         source_settings = dashmodels.AdGroupSourceSettings(
             ad_group_source=ad_group_source,

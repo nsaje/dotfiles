@@ -38,8 +38,7 @@ def init_enable_ad_group(ad_group, order=None):
         .order_by('ad_group_source_id', '-created_dt')
 
     for source_settings in source_settings_qs:
-        if source_settings.state == dash.constants.AdGroupSourceSettingsState.INACTIVE and \
-        not source_settings.ad_group_source.source.maintenance:
+        if source_settings.state == dash.constants.AdGroupSourceSettingsState.INACTIVE:
             continue
 
         changes = {
