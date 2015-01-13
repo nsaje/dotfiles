@@ -105,7 +105,7 @@ DEFAULT_FROM_EMAIL = ''
 from localsettings import *
 
 if TESTING:
-    PAGER_DUTY_URL = ''
+    PAGER_DUTY_ENABLED = False
 
 LOGGING = {
     'version': 1,
