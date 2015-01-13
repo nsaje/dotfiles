@@ -43,22 +43,6 @@ def zwei_callback(request, action_id):
     return JsonResponse(response_data)
 
 
-@csrf_exempt
-def zwei_settings_callback(request, action_id, settings_id):
-    _validate_callback(request, action_id)
-    action = _get_action(action_id)
-
-    data = json.loads(request.body)
-    try:
-        settings_id = int(settings_id)
-        _process_zwei_settings_response(settings_id, action, data)
-    except Exception as e:
-        _handle_zwei_callback_error(e, action)
-
-    response_data = {'status': 'OK'}
-    return JsonResponse(response_data)
-
-
 def _get_error_message(data):
     message = []
     if data.get('error', {}).get('error'):
