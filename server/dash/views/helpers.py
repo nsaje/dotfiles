@@ -312,60 +312,71 @@ def _get_budget_update_notification(ags, settings, state):
 
 def get_ad_group_sources_data_status(ad_group_sources):
     status_dict = {}
-    message_template = '<b>{name}</b> for this Media Source differs from {name} in the Media Source\'s 3rd party dashboard.'
 
-    for ags in ad_group_sources:
-        messages = []
-        ok = True
+    for ad_group_source in ad_group_sources:
+        messages = _get_state_consistency_messages(ad_group_source) or []
 
-        if not ags.actionlog_set.filter(
-                state=actionlog.constants.ActionState.WAITING,
-                action=actionlog.constants.Action.SET_CAMPAIGN_STATE
-        ).exists():
-            # there are no updates in progress
-            latest_settings = _get_latest_settings(ags)
-            latest_state = _get_latest_state(ags)
+        ok = len(messages) == 0
+        messages.append(_get_last_sync_message(ad_group_source, ok))
 
-            if latest_settings is not None:
-                if latest_settings.cpc_cc is not None and (
-                        latest_state is None or latest_settings.cpc_cc != latest_state.cpc_cc):
-                    messages.append(message_template.format(name='Bid CPC'))
-
-                if latest_settings.daily_budget_cc is not None and (
-                        latest_state is None or latest_settings.daily_budget_cc != latest_state.daily_budget_cc):
-                    messages.append(message_template.format(name='Daily Budget'))
-
-                if ags.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE:
-                    expected_state = constants.AdGroupSourceSettingsState.INACTIVE
-                else:
-                    expected_state = latest_settings.state
-
-                if latest_settings.state is not None and (
-                        latest_state is None or expected_state != latest_state.state):
-                    messages.append(message_template.format(name='Status'))
-
-            if len(messages):
-                message = '<br/>'.join(messages)
-                ok = False
-
-        if ok:
-            message = 'Everything is OK.'
-
-            last_sync = actionlog.sync.AdGroupSourceSync(ags).get_latest_source_success(
-                recompute=False)[ags.source_id]
-
-            if last_sync is not None:
-                last_sync = pytz.utc.localize(last_sync).astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE))
-
-                message += ' Last OK sync was on: <b>{}</b>'.format(
-                    last_sync.strftime('%m/%d/%Y %-I:%M %p'))
-
-        status_dict[ags.source_id] = {
+        status_dict[ad_group_source.source_id] = {
             'ok': ok,
-            'message': message
+            'message': '<br/>'.join(messages)
         }
 
     return status_dict
+
+
+def _get_state_consistency_messages(ad_group_source):
+    message_template = '<b>{name}</b> for this Media Source differs from {name} in the Media Source\'s 3rd party dashboard.'
+
+    if ad_group_source.actionlog_set.filter(
+        state=actionlog.constants.ActionState.WAITING,
+        action=actionlog.constants.Action.SET_CAMPAIGN_STATE
+    ).exists():
+        # there are updates in progress
+        return
+
+    latest_settings = _get_latest_settings(ad_group_source)
+    latest_state = _get_latest_state(ad_group_source)
+
+    if latest_settings is None:
+        return
+
+    messages = []
+    if latest_settings.cpc_cc is not None and (
+            latest_state is None or latest_settings.cpc_cc != latest_state.cpc_cc):
+        messages.append(message_template.format(name='Bid CPC'))
+
+    if latest_settings.daily_budget_cc is not None and (
+            latest_state is None or latest_settings.daily_budget_cc != latest_state.daily_budget_cc):
+        messages.append(message_template.format(name='Daily Budget'))
+
+    if ad_group_source.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE:
+        expected_state = constants.AdGroupSourceSettingsState.INACTIVE
+    else:
+        expected_state = latest_settings.state
+
+    if latest_settings.state is not None and (
+            latest_state is None or expected_state != latest_state.state):
+        messages.append(message_template.format(name='Status'))
+
+    return messages
+
+
+def _get_last_sync_message(ad_group_source, ok):
+    message_ok = 'Everything is OK.' if ok else ''
+    message_last_sync = ''
+
+    last_sync = actionlog.sync.AdGroupSourceSync(ad_group_source).get_latest_source_success(
+        recompute=False)[ad_group_source.source_id]
+    if last_sync is not None:
+        last_sync = pytz.utc.localize(last_sync).astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE))
+
+        message_last_sync = 'Last OK sync was on: <b>{}</b>'.format(
+            last_sync.strftime('%m/%d/%Y %-I:%M %p'))
+
+    return '{} {}'.format(message_ok, message_last_sync).strip()
 
 
 def _get_latest_settings(ad_group_source):

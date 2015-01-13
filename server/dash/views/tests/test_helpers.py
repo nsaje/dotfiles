@@ -19,12 +19,12 @@ class ViewHelpersTestCase(TestCase):
 
         self.assertEqual(
             data_status[ad_group_source1.source_id]['message'],
-            '<b>Status</b> for this Media Source differs from Status in the Media Source\'s 3rd party dashboard.'
+            '<b>Status</b> for this Media Source differs from Status in the Media Source\'s 3rd party dashboard.<br/>Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
         )
 
         self.assertEqual(
             data_status[ad_group_source2.source_id]['message'],
-            '<b>Bid CPC</b> for this Media Source differs from Bid CPC in the Media Source\'s 3rd party dashboard.<br/><b>Daily Budget</b> for this Media Source differs from Daily Budget in the Media Source\'s 3rd party dashboard.'
+            '<b>Bid CPC</b> for this Media Source differs from Bid CPC in the Media Source\'s 3rd party dashboard.<br/><b>Daily Budget</b> for this Media Source differs from Daily Budget in the Media Source\'s 3rd party dashboard.<br/>Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
         )
 
         self.assertEqual(
