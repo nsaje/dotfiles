@@ -328,7 +328,7 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
 
             if request.user.has_perm('zemauth.data_status_column'):
                 response['data_status'] = helpers.get_ad_group_sources_data_status(
-                    ad_group_sources)
+                    ad_group_sources, include_state_messages=True)
 
         return self.create_api_response(response)
 
@@ -411,9 +411,10 @@ class SourcesTable(api_common.BaseApiView):
             response['last_change'] = helpers.get_ad_group_sources_last_change_dt(ad_group_sources)[0]
             response['notifications'] = helpers.get_ad_group_sources_notifications(ad_group_sources)
 
-            if user.has_perm('zemauth.data_status_column'):
-                response['data_status'] = helpers.get_ad_group_sources_data_status(
-                    ad_group_sources)
+        if user.has_perm('zemauth.data_status_column'):
+            response['data_status'] = helpers.get_ad_group_sources_data_status(
+                ad_group_sources,
+                include_state_messages=user.has_perm('zemauth.set_ad_group_source_settings'))
 
         return self.create_api_response(response)
 
