@@ -17,7 +17,8 @@ class ViewHelpersTestCase(TestCase):
         ad_group_source3 = models.AdGroupSource.objects.get(pk=3)
 
         data_status = helpers.get_ad_group_sources_data_status(
-            [ad_group_source1, ad_group_source2, ad_group_source3])
+            [ad_group_source1, ad_group_source2, ad_group_source3],
+            include_state_messages=True)
 
         self.assertEqual(data_status[ad_group_source1.source_id]['ok'], False)
 
@@ -42,7 +43,7 @@ class ViewHelpersTestCase(TestCase):
         last_sync = datetime.datetime.now()
         ad_group_source.last_successful_sync_dt = last_sync
 
-        data_status = helpers.get_ad_group_sources_data_status([ad_group_source])
+        data_status = helpers.get_ad_group_sources_data_status([ad_group_source], include_state_messages=True)
 
         self.assertEqual(data_status[ad_group_source.source_id]['ok'], True)
 
@@ -57,7 +58,7 @@ class ViewHelpersTestCase(TestCase):
     def test_get_ad_group_sources_data_status_no_settings(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=4)
 
-        data_status = helpers.get_ad_group_sources_data_status([ad_group_source])
+        data_status = helpers.get_ad_group_sources_data_status([ad_group_source], include_state_messages=True)
 
         self.assertEqual(data_status[ad_group_source.source_id]['ok'], False)
 
@@ -68,7 +69,7 @@ class ViewHelpersTestCase(TestCase):
 
     def test_get_ad_group_sources_data_status_property_none(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=4)
-        data_status = helpers.get_ad_group_sources_data_status([ad_group_source])
+        data_status = helpers.get_ad_group_sources_data_status([ad_group_source], include_state_messages=True)
 
         self.assertEqual(data_status[ad_group_source.source_id]['ok'], False)
 

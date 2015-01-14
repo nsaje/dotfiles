@@ -310,11 +310,15 @@ def _get_budget_update_notification(ags, settings, state):
     return None
 
 
-def get_ad_group_sources_data_status(ad_group_sources):
+def get_ad_group_sources_data_status(ad_group_sources, include_state_messages=False):
     status_dict = {}
 
     for ad_group_source in ad_group_sources:
-        messages, state_ok = _get_state_messages(ad_group_source)
+        messages = []
+        state_ok = True
+
+        if include_state_messages:
+            messages, state_ok = _get_state_messages(ad_group_source)
 
         if ad_group_source.source.maintenance:
             messages.insert(0, 'This source is in maintenance mode.')
