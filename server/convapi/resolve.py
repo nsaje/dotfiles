@@ -8,9 +8,11 @@ def resolve_source(source_param):
         return None
 
     if source_param.startswith('bigstory'):
-        return dash.models.Source.objects.get(name='Zemanta CDN')
+        #  Zemanta CDN
+        return dash.models.Source.objects.get(id=9)
     if source_param.startswith('industrybrains'):
-        return dash.models.Source.objects.get(name='AdBlade')
+        #  AdBlade
+        return dash.models.Source.objects.get(id=1)
     if source_param.startswith('adiant.com'):
         #  Adiant (b0)
         return dash.models.Source.objects.get(id=19)
