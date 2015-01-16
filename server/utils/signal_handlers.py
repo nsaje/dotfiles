@@ -2,7 +2,7 @@ import logging
 import traceback
 
 from django.core import urlresolvers
-from gadjo.requestprovider.signals import get_request
+from utils.request_provider import get_request
 
 from zemauth.models import User
 
