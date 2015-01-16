@@ -38,13 +38,11 @@ def init_enable_ad_group(ad_group, order=None):
         .order_by('ad_group_source_id', '-created_dt')
 
     for source_settings in source_settings_qs:
-        if source_settings.state == dash.constants.AdGroupSourceSettingsState.INACTIVE:
-            continue
-
-        changes = {
-            'state': source_settings.state,
-        }
-        set_ad_group_source_settings(changes, source_settings, order=order)
+        if source_settings.state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
+            changes = {
+                'state': dash.constants.AdGroupSourceSettingsState.ACTIVE,
+            }
+            set_ad_group_source_settings(changes, source_settings, order=order)
 
 
 def init_pause_ad_group(ad_group, order=None):
