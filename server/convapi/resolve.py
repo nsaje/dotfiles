@@ -6,10 +6,6 @@ import reports.api
 def resolve_source(source_param):
     if source_param is None:
         return None
-    source_param_lc = source_param.lower()
-    for source in dash.models.Source.objects.all():
-        if source_param_lc.startswith(source.name.lower()):
-            return source
 
     if source_param.startswith('bigstory'):
         return dash.models.Source.objects.get(name='Zemanta CDN')
@@ -21,6 +17,11 @@ def resolve_source(source_param):
     if source_param.startswith('b1_adiant'):
         #  Adiant (b1)
         return dash.models.Source.objects.get(id=22)
+
+    source_param_lc = source_param.lower()
+    for source in dash.models.Source.objects.all():
+        if source_param_lc.startswith(source.name.lower()):
+            return source
 
     return None
 
