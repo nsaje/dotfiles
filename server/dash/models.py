@@ -692,6 +692,11 @@ class AdGroupSource(models.Model):
 
         return tracking_ids
 
+    def save(self, *args, **kwargs):
+        super(AdGroupSource, self).save(*args, **kwargs)
+        if not AdGroupSourceSettings.objects.filter(ad_group_source=self).exists():
+            AdGroupSourceSettings.objects.create(ad_group_source=self)
+
     def __unicode__(self):
         return u'{} - {}'.format(self.ad_group, self.source)
 
@@ -891,7 +896,7 @@ class AdGroupSourceSettings(models.Model):
     )
 
     state = models.IntegerField(
-        null=True,
+        default=constants.AdGroupSourceSettingsState.INACTIVE,
         choices=constants.AdGroupSourceSettingsState.get_choices()
     )
     cpc_cc = models.DecimalField(
