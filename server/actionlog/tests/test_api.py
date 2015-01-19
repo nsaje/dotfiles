@@ -116,7 +116,7 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.set_ad_group_source_settings(changes, source_settings)
+        api.set_ad_group_source_settings(changes, source_settings.ad_group_source)
 
         action = models.ActionLog.objects.get(
             ad_group_source=ad_group_source
@@ -175,7 +175,7 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.set_ad_group_source_settings(changes, source_settings)
+        api.set_ad_group_source_settings(changes, source_settings.ad_group_source)
 
         action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
@@ -313,10 +313,11 @@ class ActionLogApiTestCase(TestCase):
 
         api.init_pause_ad_group(ad_group)
 
-        # Nothing changed, since the source is inactive
-        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ad_group_source).latest('created_dt'),
-                         action)
-
+        self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
+        self.assertEqual(action.state, constants.ActionState.WAITING)
+        self.assertEqual(action.payload.get('args', {}).get('conf'),
+                         {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
 
     @patch('actionlog.models.datetime', MockDateTime)
     def test_init_pause_ad_group_maintenance_source(self):
