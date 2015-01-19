@@ -47,6 +47,16 @@ class AdGroupSettingsTest(TestCase):
         )
 
 
+class AdGroupSourceTest(TestCase):
+
+    def test_adgroup_source_save(self):
+        ad_group = models.AdGroup.objects.create(campaign_id=1, modified_by_id=1)
+        source = models.Source.objects.create()
+        ad_group_source = models.AdGroupSource.objects.create(ad_group=ad_group, source=source)
+
+        self.assertTrue(models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source).exists())
+
+
 def created_by_patch(sender, instance, **kwargs):
     u = zemauthmodels.User.objects.get(id=1)
     if instance.pk is not None:
