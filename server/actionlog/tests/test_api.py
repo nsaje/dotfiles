@@ -293,14 +293,14 @@ class ActionLogApiTestCase(TestCase):
 
         api.init_pause_ad_group(ad_group)
 
-        action = models.ActionLog.objects.filter(
+        action1 = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
         ).latest('created_dt')
 
-        self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
-        self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
-        self.assertEqual(action.state, constants.ActionState.WAITING)
-        self.assertEqual(action.payload.get('args', {}).get('conf'),
+        self.assertEqual(action1.action, constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(action1.action_type, constants.ActionType.AUTOMATIC)
+        self.assertEqual(action1.state, constants.ActionState.WAITING)
+        self.assertEqual(action1.payload.get('args', {}).get('conf'),
                          {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
 
         source_settings = dashmodels.AdGroupSourceSettings(
@@ -313,10 +313,16 @@ class ActionLogApiTestCase(TestCase):
 
         api.init_pause_ad_group(ad_group)
 
-        self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
-        self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
-        self.assertEqual(action.state, constants.ActionState.WAITING)
-        self.assertEqual(action.payload.get('args', {}).get('conf'),
+        action2 = models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source
+        ).latest('created_dt')
+
+        # Check if action is sent even ad group source is already paused
+        self.assertNotEqual(action1.pk, action2.pk)
+        self.assertEqual(action2.action, constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(action2.action_type, constants.ActionType.AUTOMATIC)
+        self.assertEqual(action2.state, constants.ActionState.WAITING)
+        self.assertEqual(action2.payload.get('args', {}).get('conf'),
                          {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
 
     @patch('actionlog.models.datetime', MockDateTime)
