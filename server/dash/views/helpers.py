@@ -241,6 +241,8 @@ def get_ad_group_sources_notifications(ad_group_sources):
 
             in_progress = len(update_messages) > 0
 
+            messages += update_messages
+
         message = '<br />'.join([t for t in messages if t is not None])
 
         if not len(message):
