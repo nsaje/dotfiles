@@ -227,7 +227,7 @@
         ad_group_source: 5
         cpc_cc: null
         daily_budget_cc: null
-        state: null
+        state: 2
     model: dash.adgroupsourcesettings
     pk: 4
 
