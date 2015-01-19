@@ -42,24 +42,16 @@ def init_enable_ad_group(ad_group, order=None):
             changes = {
                 'state': dash.constants.AdGroupSourceSettingsState.ACTIVE,
             }
-            set_ad_group_source_settings(changes, source_settings, order=order)
+            set_ad_group_source_settings(changes, source_settings.ad_group_source, order=order)
 
 
 def init_pause_ad_group(ad_group, order=None):
-    source_settings_qs = dash.models.AdGroupSourceSettings.objects \
-        .distinct('ad_group_source_id') \
-        .filter(ad_group_source__ad_group=ad_group) \
-        .order_by('ad_group_source_id', '-created_dt')
-
-    for source_settings in source_settings_qs:
-        if source_settings.state == dash.constants.AdGroupSourceSettingsState.INACTIVE and \
-        not source_settings.ad_group_source.source.maintenance:
-            continue
-
+    for ad_group_source in dash.models.AdGroupSource.objects.filter(ad_group=ad_group):
         changes = {
             'state': dash.constants.AdGroupSourceSettingsState.INACTIVE,
         }
-        set_ad_group_source_settings(changes, source_settings, order=order)
+
+        set_ad_group_source_settings(changes, ad_group_source, order=order)
 
 
 def init_set_ad_group_property_order(ad_group, source=None, prop=None, value=None):
@@ -70,14 +62,14 @@ def init_set_ad_group_property_order(ad_group, source=None, prop=None, value=Non
         set_ad_group_property(ad_group, source=source, prop=prop, value=value, order=order)
 
 
-def set_ad_group_source_settings(changes, ad_group_source_settings, order=None):
+def set_ad_group_source_settings(changes, ad_group_source, order=None):
     if changes.get('cpc_cc') is not None:
         changes['cpc_cc'] = int(changes['cpc_cc'] * 10000)
     if changes.get('daily_budget_cc') is not None:
         changes['daily_budget_cc'] = int(changes['daily_budget_cc'] * 10000)
 
     action = _init_set_ad_group_source_settings(
-        ad_group_source=ad_group_source_settings.ad_group_source,
+        ad_group_source=ad_group_source,
         conf=changes,
         order=order
     )

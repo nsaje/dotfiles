@@ -116,7 +116,7 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.set_ad_group_source_settings(changes, source_settings)
+        api.set_ad_group_source_settings(changes, source_settings.ad_group_source)
 
         action = models.ActionLog.objects.get(
             ad_group_source=ad_group_source
@@ -175,7 +175,7 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.set_ad_group_source_settings(changes, source_settings)
+        api.set_ad_group_source_settings(changes, source_settings.ad_group_source)
 
         action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
@@ -293,14 +293,14 @@ class ActionLogApiTestCase(TestCase):
 
         api.init_pause_ad_group(ad_group)
 
-        action = models.ActionLog.objects.filter(
+        action1 = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
         ).latest('created_dt')
 
-        self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
-        self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
-        self.assertEqual(action.state, constants.ActionState.WAITING)
-        self.assertEqual(action.payload.get('args', {}).get('conf'),
+        self.assertEqual(action1.action, constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(action1.action_type, constants.ActionType.AUTOMATIC)
+        self.assertEqual(action1.state, constants.ActionState.WAITING)
+        self.assertEqual(action1.payload.get('args', {}).get('conf'),
                          {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
 
         source_settings = dashmodels.AdGroupSourceSettings(
@@ -313,10 +313,17 @@ class ActionLogApiTestCase(TestCase):
 
         api.init_pause_ad_group(ad_group)
 
-        # Nothing changed, since the source is inactive
-        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ad_group_source).latest('created_dt'),
-                         action)
+        action2 = models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source
+        ).latest('created_dt')
 
+        # Check if action is sent even ad group source is already paused
+        self.assertNotEqual(action1.pk, action2.pk)
+        self.assertEqual(action2.action, constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(action2.action_type, constants.ActionType.AUTOMATIC)
+        self.assertEqual(action2.state, constants.ActionState.WAITING)
+        self.assertEqual(action2.payload.get('args', {}).get('conf'),
+                         {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
 
     @patch('actionlog.models.datetime', MockDateTime)
     def test_init_pause_ad_group_maintenance_source(self):

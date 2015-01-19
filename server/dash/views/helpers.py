@@ -228,16 +228,18 @@ def get_ad_group_sources_notifications(ad_group_sources):
                 important = True
 
         if len(keys_in_progress):
+            update_messages = []
+
             if state_message is None and 'state' in keys_in_progress:
-                messages.append(_get_state_update_notification(ags, latest_settings, latest_state))
+                update_messages.append(_get_state_update_notification(ags, latest_settings, latest_state))
 
             if 'cpc_cc' in keys_in_progress:
-                messages.append(_get_cpc_update_notification(ags, latest_settings, latest_state))
+                update_messages.append(_get_cpc_update_notification(ags, latest_settings, latest_state))
 
             if 'daily_budget_cc' in keys_in_progress:
-                messages.append(_get_budget_update_notification(ags, latest_settings, latest_state))
+                update_messages.append(_get_budget_update_notification(ags, latest_settings, latest_state))
 
-            in_progress = True
+            in_progress = len(update_messages) > 0
 
         message = '<br />'.join([t for t in messages if t is not None])
 
