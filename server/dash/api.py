@@ -119,22 +119,21 @@ def reconcile_articles(ad_group, raw_articles):
         url_title_article[(article.url, article.title)] = article
 
     reconciled_articles = []
-    with transaction.atomic():
-        for raw_article in raw_articles:
-            url, title = raw_article.get('url'), raw_article.get('title')
-            article = url_title_article.get((url, title), None)
-            if article is None:
-                try:
-                    article = models.Article.objects.create(ad_group=ad_group, url=url, title=title)
-                except IntegrityError:
-                    logger.info(
-                        u'Integrity error upon inserting article: title = {title}, url = {url}, ad group id = {ad_group_id}. '
-                        u'Using existing article.'.
-                        format(title=title, url=url, ad_group_id=ad_group.id)
-                    )
-                    article = models.Article.objects.get(ad_group=ad_group, url=url, title=title)
-                url_title_article[(url, title)] = article
-            reconciled_articles.append(article)
+    for raw_article in raw_articles:
+        url, title = raw_article.get('url'), raw_article.get('title')
+        article = url_title_article.get((url, title), None)
+        if article is None:
+            try:
+                article = models.Article.objects.create(ad_group=ad_group, url=url, title=title)
+            except IntegrityError:
+                logger.info(
+                    u'Integrity error upon inserting article: title = {title}, url = {url}, ad group id = {ad_group_id}. '
+                    u'Using existing article.'.
+                    format(title=title, url=url, ad_group_id=ad_group.id)
+                )
+                article = models.Article.objects.get(ad_group=ad_group, url=url, title=title)
+            url_title_article[(url, title)] = article
+        reconciled_articles.append(article)
 
     return reconciled_articles
 
