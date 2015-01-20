@@ -1,5 +1,4 @@
 import logging
-import threading
 import time
 
 from django.views.decorators.csrf import csrf_exempt
@@ -10,6 +9,7 @@ from auth import MailGunRequestAuth, GASourceAuth
 from parse import CsvReport
 from aggregate import ReportEmail, store_to_s3
 from utils.statsd_helper import statsd_incr
+from utils.threads import BaseThread
 from convapi import exc
 from convapi import models
 from convapi import constants
@@ -119,7 +119,7 @@ def mailgun_gareps(request):
     return HttpResponse(status=200)
 
 
-class TriggerReportAggregateThread(threading.Thread):
+class TriggerReportAggregateThread(BaseThread):
 
     def __init__(self, csvreport, sender, recipient, subject, date, text, report_log):
         super(TriggerReportAggregateThread, self).__init__()

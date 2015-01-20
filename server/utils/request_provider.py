@@ -1,4 +1,3 @@
-import sys
 import threading
 import weakref
 
@@ -22,16 +21,16 @@ class RequestProviderMiddleware(object):
         return self.request_cache[self.get_thread_id()]
 
     def get_thread_id(self):
-        ''' Returns the thread ID of the current thread or greenlet ID if running
-        in greenlet.
-        '''
-        greenlet = sys.modules.get('greenlet')
-        if greenlet:
-            current_greenlet = greenlet.getcurrent()
-            if current_greenlet is not None and current_greenlet.parent:
-                return id(current_greenlet)
+        thread = threading.current_thread()
 
-        return threading.current_thread().ident
+        while hasattr(thread, 'parent'):
+            if thread == thread.parent:
+                # prevent infinite cycling
+                break
+
+            thread = thread.parent
+
+        return thread.ident
 
 
 def get_request():

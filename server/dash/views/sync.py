@@ -1,4 +1,3 @@
-import threading
 import logging
 
 import actionlog.sync
@@ -7,12 +6,13 @@ from dash.views import helpers
 from dash import models
 from utils import api_common
 from utils import statsd_helper
+from utils.threads import BaseThread
 
 
 logger = logging.getLogger(__name__)
 
 
-class TriggerAccountSyncThread(threading.Thread):
+class TriggerAccountSyncThread(BaseThread):
     """ Used to trigger sync for all accounts asynchronously. """
     def __init__(self, accounts, *args, **kwargs):
         self.accounts = accounts
@@ -26,7 +26,7 @@ class TriggerAccountSyncThread(threading.Thread):
             logger.exception('Exception in TriggerAccountSyncThread')
 
 
-class TriggerCampaignSyncThread(threading.Thread):
+class TriggerCampaignSyncThread(BaseThread):
     """ Used to trigger sync for ad_group's ad groups asynchronously. """
     def __init__(self, campaigns, *args, **kwargs):
         self.campaigns = campaigns
@@ -40,7 +40,7 @@ class TriggerCampaignSyncThread(threading.Thread):
             logger.exception('Exception in TriggerCampaignSyncThread')
 
 
-class TriggerAdGroupSyncThread(threading.Thread):
+class TriggerAdGroupSyncThread(BaseThread):
     """ Used to trigger sync for all campaign's ad groups asynchronously. """
     def __init__(self, ad_group, *args, **kwargs):
         self.ad_group = ad_group
