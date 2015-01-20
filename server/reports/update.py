@@ -16,12 +16,29 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
 
     *Note*: rows contains all traffic data for the given datetime, ad_group and source
     '''
-    # reset traffic metrics
-    for article_stats in ArticleStats.objects.filter(datetime=datetime, ad_group=ad_group, source=source):
-        article_stats.reset_traffic_metrics()
+    # bulk update to reset traffic metrics
+    ArticleStats.objects.filter(
+        datetime=datetime, ad_group=ad_group, source=source
+    ).update(
+        impressions=0,
+        clicks=0,
+        cost_cc=0
+    )
+
+    aggregated_stats = {}
+    max_has_postclick_metrics = 0
+    max_has_conversion_metrics = 0
 
     # save the data
     for row in rows:
+        # update the stats aggregate
+        for key, val in row.iteritems():
+            if key not in TRAFFIC_METRICS: 
+                continue
+            if key not in aggregated_stats:
+                aggregated_stats[key] = 0
+            aggregated_stats[key] += val
+
         dimensions = dict(
             datetime=datetime,
             article=row['article'],
@@ -30,6 +47,10 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
         )
         try:
             article_stats = ArticleStats.objects.get(**dimensions)
+            if article_stats.has_postclick_metrics == 1:
+                max_has_postclick_metrics = 1
+            if article_stats.has_conversion_metrics == 1:
+                max_has_conversion_metrics = 1
             for metric, value in row.items():
                 if metric in TRAFFIC_METRICS:
                     setattr(article_stats, metric, getattr(article_stats, metric) + value)
@@ -41,8 +62,24 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
         article_stats.has_traffic_metrics = 1
         article_stats.save()
 
-    # refresh the corresponding adgroup-level pre-aggregations
-    reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group, source=source)
+    # update the corresponding adgroup-level pre-aggregations
+    fields = dict(
+        datetime=datetime,
+        ad_group=ad_group,
+        source=source
+    )
+    try:
+        adgroup_stats = reports.models.AdGroupStats.objects.get(**fields)
+        for metric, value in aggregated_stats.items():
+            setattr(adgroup_stats, metric, value)
+    except reports.models.AdGroupStats.DoesNotExist:
+        fields.update(aggregated_stats)
+        adgroup_stats = reports.models.AdGroupStats(**fields)
+
+    adgroup_stats.has_traffic_metrics = 1
+    adgroup_stats.has_postclick_metrics = max_has_postclick_metrics
+    adgroup_stats.has_conversion_metrics = max_has_conversion_metrics
+    adgroup_stats.save()
 
 
 @transaction.atomic

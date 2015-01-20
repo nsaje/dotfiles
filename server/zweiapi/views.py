@@ -57,19 +57,26 @@ def _get_error_message(data):
     return '\n'.join(message)
 
 
-def _prepare_report_row(ad_group):
-    def _inner(row):
+def _prepare_report_rows(ad_group, data_rows):
+    raw_articles = [{'url': row['url'], 'title': row['title']} for row in data_rows]
+    articles = dashapi.reconcile_articles(ad_group, raw_articles)
+
+    if not len(articles) == len(data_rows):
+        raise Exception('Not all articles were reconciled')
+
+    stats_rows = []
+    for article, data_row in zip(articles, data_rows):
         r = {
-            'article': dashapi.reconcile_article(row['url'], row['title'], ad_group),
-            'impressions': row['impressions'],
-            'clicks': row['clicks'],
+            'article': article,
+            'impressions': data_row['impressions'],
+            'clicks': data_row['clicks'],
         }
-        if row.get('cost_cc') is None:
-            r['cost_cc'] = row['cpc_cc'] * row['clicks']
+        if data_row.get('cost_cc') is None:
+            r['cost_cc'] = data_row['cpc_cc'] * data_row['clicks']
         else:
-            r['cost_cc'] = row['cost_cc']
-        return r
-    return _inner
+            r['cost_cc'] = data_row['cost_cc']
+        stats_rows.append(r)
+    return stats_rows
 
 
 @transaction.atomic
@@ -96,7 +103,7 @@ def _process_zwei_response(action, data):
 
         for source_campaign_key, data_rows in data['data']:
             if source_campaign_key == action.ad_group_source.source_campaign_key:
-                rows = map(_prepare_report_row(ad_group), data_rows)
+                rows = _prepare_report_rows(ad_group, data_rows)
                 break
         else:
             raise Exception('Source campaign key not in results.')

@@ -95,33 +95,47 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings):
         actionlog.api.init_set_ad_group_property_order(ad_group, prop=field_name, value=field_value)
 
 
-def reconcile_article(raw_url, title, ad_group):
+def reconcile_articles(ad_group, raw_articles):
     if not ad_group:
         raise exc.ArticleReconciliationException('Missing ad group.')
 
-    if not title:
-        raise exc.ArticleReconciliationException('Missing article title. url={url}'.format(url=raw_url))
+    for raw_article in raw_articles:
+        url, title = raw_article.get('url'), raw_article.get('title')
+        if not title:
+            raise exc.ArticleReconciliationException(
+                'Missing article title. url={url}'.format(url=url)
+            )
+        if url is None:
+            raise exc.ArticleReconciliationException(
+                'Missing article url. title={title}'.format(title=title)
+            )
 
-    if raw_url is None:
-        raise exc.ArticleReconciliationException('Missing article url. title={title}'.format(title=title))
+        raw_article['url'] = clean_url(url)[0]
 
-    url, _ = clean_url(raw_url)
+    articles = list(models.Article.objects.filter(ad_group=ad_group))
 
-    try:
-        return models.Article.objects.get(ad_group=ad_group, title=title, url=url)
-    except models.Article.DoesNotExist:
-        pass
+    url_title_article = {}
+    for article in articles:
+        url_title_article[(article.url, article.title)] = article
 
-    try:
-        with transaction.atomic():
-            return models.Article.objects.create(ad_group=ad_group, url=url, title=title)
-    except IntegrityError:
-        logger.info(
-            u'Integrity error upon inserting article: title = {title}, url = {url}, ad group id = {ad_group_id}. '
-            u'Using existing article.'.
-            format(title=title, url=url, ad_group_id=ad_group.id)
-        )
-        return models.Article.objects.get(ad_group=ad_group, url=url, title=title)
+    reconciled_articles = []
+    for raw_article in raw_articles:
+        url, title = raw_article.get('url'), raw_article.get('title')
+        article = url_title_article.get((url, title), None)
+        if article is None:
+            try:
+                article = models.Article.objects.create(ad_group=ad_group, url=url, title=title)
+            except IntegrityError:
+                logger.info(
+                    u'Integrity error upon inserting article: title = {title}, url = {url}, ad group id = {ad_group_id}. '
+                    u'Using existing article.'.
+                    format(title=title, url=url, ad_group_id=ad_group.id)
+                )
+                article = models.Article.objects.get(ad_group=ad_group, url=url, title=title)
+            url_title_article[(url, title)] = article
+        reconciled_articles.append(article)
+
+    return reconciled_articles
 
 
 def get_state_by_account():
