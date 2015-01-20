@@ -31,14 +31,27 @@ class InsertCreateCampaignActionException(InsertActionException):
     pass
 
 
-def init_stop_ad_group_order(ad_group, source=None):
-    with transaction.atomic():
-        order = models.ActionLogOrder.objects.create(
-            order_type=constants.ActionLogOrderType.STOP_ALL
-        )
-        actionlogs = stop_ad_group(ad_group, source, order, commit=False)
+def init_enable_ad_group(ad_group, order=None):
+    source_settings_qs = dash.models.AdGroupSourceSettings.objects \
+        .distinct('ad_group_source_id') \
+        .filter(ad_group_source__ad_group=ad_group) \
+        .order_by('ad_group_source_id', '-created_dt')
 
-    zwei_actions.send_multiple(actionlogs)
+    for source_settings in source_settings_qs:
+        if source_settings.state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
+            changes = {
+                'state': dash.constants.AdGroupSourceSettingsState.ACTIVE,
+            }
+            set_ad_group_source_settings(changes, source_settings.ad_group_source, order=order)
+
+
+def init_pause_ad_group(ad_group, order=None):
+    for ad_group_source in dash.models.AdGroupSource.objects.filter(ad_group=ad_group):
+        changes = {
+            'state': dash.constants.AdGroupSourceSettingsState.INACTIVE,
+        }
+
+        set_ad_group_source_settings(changes, ad_group_source, order=order)
 
 
 def init_set_ad_group_property_order(ad_group, source=None, prop=None, value=None):
@@ -49,40 +62,19 @@ def init_set_ad_group_property_order(ad_group, source=None, prop=None, value=Non
         set_ad_group_property(ad_group, source=source, prop=prop, value=value, order=order)
 
 
-def stop_ad_group(ad_group, source=None, order=None, commit=True):
-    ad_group_sources = _get_ad_group_sources(ad_group, source)
+def set_ad_group_source_settings(changes, ad_group_source, order=None):
+    if changes.get('cpc_cc') is not None:
+        changes['cpc_cc'] = int(changes['cpc_cc'] * 10000)
+    if changes.get('daily_budget_cc') is not None:
+        changes['daily_budget_cc'] = int(changes['daily_budget_cc'] * 10000)
 
-    actionlogs = []
-    for ad_group_source in ad_group_sources:
-        try:
-            actionlogs.append(_init_stop_campaign(ad_group_source, order))
-        except InsertActionException:
-            continue
-
-    if commit:
-        zwei_actions.send_multiple(actionlogs)
-
-    return actionlogs
-
-
-def set_ad_group_source_settings(ad_group_source_settings):
-    conf = {
-        'state': ad_group_source_settings.state,
-        'cpc_cc': ad_group_source_settings.cpc_cc,
-        'daily_budget_cc': ad_group_source_settings.daily_budget_cc
-    }
-
-    if conf['cpc_cc'] is not None:
-        conf['cpc_cc'] = int(conf['cpc_cc'] * 10000)
-    if conf['daily_budget_cc'] is not None:
-        conf['daily_budget_cc'] = int(conf['daily_budget_cc'] * 10000)
-
-    actionlog = _init_set_ad_group_source_settings(
-        ad_group_source=ad_group_source_settings.ad_group_source,
-        settings_id=ad_group_source_settings.id,
-        conf=conf
+    action = _init_set_ad_group_source_settings(
+        ad_group_source=ad_group_source,
+        conf=changes,
+        order=order
     )
-    zwei_actions.send_multiple([actionlog])
+    if action.action_type == constants.ActionType.AUTOMATIC:
+        zwei_actions.send_multiple([action])
 
 
 def set_ad_group_property(ad_group, source=None, prop=None, value=None, order=None):
@@ -194,7 +186,9 @@ def count_waiting_stats_actions():
 
 def count_failed_stats_actions():
     return models.ActionLog.objects.filter(
-        Q(action_type=constants.ActionType.MANUAL) | Q(action=constants.Action.CREATE_CAMPAIGN),
+        Q(action_type=constants.ActionType.MANUAL) |
+        Q(action=constants.Action.CREATE_CAMPAIGN) |
+        Q(action=constants.Action.SET_CAMPAIGN_STATE),
         state=constants.ActionState.FAILED
     ).count()
 
@@ -251,10 +245,16 @@ def _handle_error(action, e):
 
 
 def _get_ad_group_sources(ad_group, source):
-    if not source:
-        return ad_group.adgroupsource_set.all()
+    inactive_ad_group_sources = get_ad_group_sources_waiting(ad_group=ad_group)
 
-    return ad_group.adgroupsource_set.filter(source=source)
+    active_ad_group_sources = dash.models.AdGroupSource.objects \
+        .filter(ad_group=ad_group) \
+        .exclude(pk__in=[ags.id for ags in inactive_ad_group_sources])
+
+    if not source:
+        return active_ad_group_sources.all()
+
+    return active_ad_group_sources.filter(source=source)
 
 
 def _get_ad_group_settings(ad_group):
@@ -273,56 +273,31 @@ def _get_campaign_settings(campaign):
     return None
 
 
-def _init_stop_campaign(ad_group_source, order):
-    logger.info('_init_stop started: ad_group_source.id: %s', ad_group_source.id)
-
+def _create_manual_action(ad_group_source, conf, order=None, message=''):
     action = models.ActionLog.objects.create(
         action=constants.Action.SET_CAMPAIGN_STATE,
-        action_type=constants.ActionType.AUTOMATIC,
+        action_type=constants.ActionType.MANUAL,
+        expiration_dt=None,
+        state=constants.ActionState.WAITING,
         ad_group_source=ad_group_source,
-        order=order
-    )
-
-    try:
-        with transaction.atomic():
-            callback = urlparse.urljoin(
-                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
-            )
-
-            payload = {
-                'action': action.action,
-                'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
-                'expiration_dt': action.expiration_dt,
-                'credentials':
-                    ad_group_source.source_credentials and
-                    ad_group_source.source_credentials.credentials,
-                'args': {
-                    'source_campaign_key': ad_group_source.source_campaign_key,
-                    'conf': {
-                        'state': dash.constants.AdGroupSourceSettingsState.INACTIVE,
-                    }
-                },
-                'callback_url': callback,
+        payload={
+            'args': {
+                'conf': conf
             }
-
-            action.payload = payload
-            action.save()
-
-            return action
-
-    except Exception as e:
-        logger.exception('An exception occurred while initializing set_campaign_state action.')
-        _handle_error(action, e)
-
-        et, ei, tb = sys.exc_info()
-        raise InsertActionException, ei, tb
-
-
-def _init_set_ad_group_source_settings(ad_group_source, settings_id, conf):
-    msg = '_init_set_ad_group_source_settings started: ad_group_source.id: {}, settings: {}'.format(
-        ad_group_source.id, str(conf)
+        },
+        order=order,
+        message=message
     )
-    logger.info(msg)
+    return action
+
+
+def _init_set_ad_group_source_settings(ad_group_source, conf, order=None):
+    logger.info('_init_set_ad_group_source_settings started: ad_group_source.id: %s, settings: %s',
+                ad_group_source.id, str(conf))
+
+    if ad_group_source.source.maintenance:
+        return _create_manual_action(ad_group_source, conf, order=order,
+                              message="Due to media source being in maintenance mode a manual action is required.")
 
     action = models.ActionLog.objects.create(
         action=constants.Action.SET_CAMPAIGN_STATE,
@@ -333,9 +308,7 @@ def _init_set_ad_group_source_settings(ad_group_source, settings_id, conf):
     try:
         with transaction.atomic():
             callback = urlparse.urljoin(
-                settings.EINS_HOST, reverse(
-                    'api.zwei_settings_callback', 
-                    kwargs={'action_id': action.id, 'settings_id': settings_id})
+                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
 
             payload = {
@@ -362,8 +335,6 @@ def _init_set_ad_group_source_settings(ad_group_source, settings_id, conf):
 
         et, ei, tb = sys.exc_info()
         raise InsertActionException, ei, tb
-
-
 
 
 def _init_fetch_status(ad_group_source, order):
@@ -459,8 +430,7 @@ def _init_fetch_reports(ad_group_source, date, order):
 
 
 def _init_set_campaign_property(ad_group_source, prop, value, order):
-    msg = "_init_set_campaign_property started:"
-    "ad_group_source.id: {}, prop: {}, value: {}, order.id: {}".format(
+    msg = "_init_set_campaign_property started: ad_group_source.id: {}, prop: {}, value: {}, order.id: {}".format(
         ad_group_source.id,
         prop,
         value,
@@ -560,21 +530,29 @@ def _init_create_campaign(ad_group_source, name):
                 if 'create_campaign' in params:
                     payload['args']['extra'].update(params['create_campaign'])
 
-            tracking_code = ad_group_source.get_tracking_ids()
-
+            tracking_code = ''
             if ad_group_settings:
-                tracking_code.update(dict(urlparse.parse_qsl(ad_group_settings.tracking_code)))
+                if ad_group_settings.tracking_code:
+                    # Strip the first '?' as we don't want to send it as a part of query string
+                    tracking_code = ad_group_settings.tracking_code.lstrip('?')
+
                 payload['args']['extra'].update({
                     'target_devices': ad_group_settings.target_devices,
                     'target_regions': ad_group_settings.target_regions,
                 })
+
+            # Using OrderedDict because order should remain the same (only append additional tracking codes)
+            tracking_code_dict = collections.OrderedDict(urlparse.parse_qsl(tracking_code))
+            for k, v in ad_group_source.get_tracking_ids().items():
+                if k not in tracking_code_dict:
+                    tracking_code_dict[k] = v
 
             payload['args']['extra'].update({
                 # Unquoting is necessary because we want to forward parameters as they were
                 # entered, even if they contain characters such as '{', '}' or ' ' because
                 # they should get handeled by supply source (urllib.urlencode() quotes by
                 # default)
-                'tracking_code': urllib.unquote(urllib.urlencode(tracking_code)),
+                'tracking_code': urllib.unquote(urllib.urlencode(tracking_code_dict)),
             })
 
             if campaign_settings:

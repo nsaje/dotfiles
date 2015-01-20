@@ -3,8 +3,6 @@ import logging
 import traceback
 import datetime
 
-import actionlog.api
-
 from collections import OrderedDict
 from decimal import Decimal
 from django.db import transaction
@@ -15,6 +13,9 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth import models as authmodels
 
+from actionlog import api as actionlog_api
+from actionlog import models as actionlog_models
+from actionlog import constants as actionlog_constants
 from dash.views import helpers
 from dash import forms
 from dash import models
@@ -125,7 +126,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group)
+            'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group)
         }
 
         return self.create_api_response(response)
@@ -154,22 +155,19 @@ class AdGroupSettings(api_common.BaseApiView):
         self.set_settings(settings, current_settings, ad_group, form.cleaned_data)
 
         with transaction.atomic():
+            order = actionlog_models.ActionLogOrder.objects.create(
+                order_type=actionlog_constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
+            )
             ad_group.save()
             settings.save()
 
             if current_settings.state == constants.AdGroupSettingsState.INACTIVE \
-            and settings.state == constants.AdGroupSettingsState.ACTIVE \
-            and request.user.has_perm('zemauth.set_ad_group_source_settings'):
-                # trigger actions for the latest settings for each source
-                # only when the ad group is switched to enabled
-                # and the user has permissions to change AdGroupSourceSettings
-                source_settings_qs = models.AdGroupSourceSettings.objects \
-                    .distinct('ad_group_source_id') \
-                    .filter(ad_group_source__ad_group=ad_group) \
-                    .order_by('ad_group_source_id', '-created_dt')
+            and settings.state == constants.AdGroupSettingsState.ACTIVE:
+                actionlog_api.init_enable_ad_group(ad_group, order=order)
 
-                for source_settings in source_settings_qs:
-                    actionlog.api.set_ad_group_source_settings(source_settings)
+            if current_settings.state == constants.AdGroupSettingsState.ACTIVE \
+            and settings.state == constants.AdGroupSettingsState.INACTIVE:
+                actionlog_api.init_pause_ad_group(ad_group, order=order)
 
         api.order_ad_group_settings_update(ad_group, current_settings, settings)
 
@@ -180,7 +178,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group)
+            'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group)
         }
 
         return self.create_api_response(response)
@@ -668,7 +666,7 @@ class AdGroupAgency(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group),
+            'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
             'history': self.get_history(ad_group),
             'can_archive': ad_group.can_archive(),
             'can_restore': ad_group.can_restore(),
@@ -706,7 +704,7 @@ class AdGroupAgency(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog.api.is_waiting_for_set_actions(ad_group),
+            'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
             'history': self.get_history(ad_group),
             'can_archive': ad_group.can_archive(),
             'can_restore': ad_group.can_restore(),

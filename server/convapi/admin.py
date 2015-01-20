@@ -20,6 +20,7 @@ class GAReportLogAdmin(admin.ModelAdmin):
         'multimatch_clicks',
         'email_subject',
         'csv_filename',
+        'from_address'
     )
 
     def no_errors_(self, obj):

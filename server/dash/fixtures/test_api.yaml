@@ -204,6 +204,33 @@
     model: dash.adgroupsourcesettings
     pk: 2
 
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 2
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 3
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 3
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 4
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 5
+        cpc_cc: null
+        daily_budget_cc: null
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 4
+
 # test adgroupsourcestate
 
 -   fields:
@@ -214,3 +241,21 @@
         state: 1
     model: dash.adgroupsourcestate
     pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        ad_group_source: 2
+        cpc_cc: '0.15'
+        daily_budget_cc: '80.'
+        state: 2
+    model: dash.adgroupsourcestate
+    pk: 2
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 3
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 2
+    model: dash.adgroupsourcestate
+    pk: 3

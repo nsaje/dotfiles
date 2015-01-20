@@ -7,25 +7,34 @@ describe('MainCtrl', function () {
     var user = { permissions: [] };
     var accounts;
     var zemFullStoryService;
+    var zemUserSettings;
 
     beforeEach(function () {
         module('one');
-
-        module(function ($provide) {
-            $provide.value('zemMoment', function () {
-                return moment('2013-02-08T09:30:26.123+01:00');
-            });
-        });
-
 
         inject(function ($rootScope, $controller, _$state_) {
             $scope = $rootScope.$new();
             $state = _$state_;
             zemFullStoryService = {identify: function(user) {}};
+            zemUserSettings = {
+                getInstance: function() {
+                    return {
+                        register: function() {},
+                        registerGlobal: function() {}
+                    };
+                }
+            };
 
             spyOn(zemFullStoryService, 'identify');
 
-            ctrl = $controller('MainCtrl', {$scope: $scope, $state: $state, user: user, accounts: accounts, zemFullStoryService: zemFullStoryService});
+            ctrl = $controller('MainCtrl', {
+                $scope: $scope,
+                $state: $state,
+                user: user,
+                accounts: accounts,
+                zemFullStoryService: zemFullStoryService,
+                zemUserSettings: zemUserSettings
+            });
         });
     });
 

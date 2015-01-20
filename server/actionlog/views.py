@@ -88,6 +88,13 @@ class ActionLogApiView(api_common.BaseApiView):
                 val = json.dumps(val)
 
             return '{} set to {}'.format(NAMES.get(prop) or prop, val)
+        elif action.action == constants.Action.SET_CAMPAIGN_STATE:
+            state = action.payload.get('args', {}).get('conf', {}).get('state')
+
+            if state not in dash.constants.AdGroupSourceSettingsState.get_all():
+                 raise Exception('Unsupported state %s for action SET_CAMPAIGN_STATE' % state)
+
+            return '{} set to {}'.format(NAMES.get('state'), dash.constants.AdGroupSourceSettingsState.get_text(state))
         else:
             raise Exception('Unsupported action %s' % action.action)
 

@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', function ($scope, $state, $location, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemChartService) {
+oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemUserSettings', function ($scope, $state, $location, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemUserSettings) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.order = '-cost';
@@ -8,14 +8,19 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
     $scope.chartData = undefined;
-    $scope.isChartShown = zemChartService.load('zemChart');
+    $scope.chartHidden = false;
     $scope.chartMetricOptions = options.adGroupChartMetrics;
     $scope.chartGoalMetrics = null;
     $scope.chartBtnTitle = 'Hide chart';
     $scope.isIncompletePostclickMetrics = false;
+    $scope.sizeRange = [5, 10, 20, 50];
+    $scope.size = $scope.sizeRange[0];
+
     $scope.pagination = {
         currentPage: 1,
     };
+
+    var userSettings = zemUserSettings.getInstance($scope, 'adGroupContentAds');
 
     $scope.exportOptions = [
         {name: 'CSV by day', value: 'csv'},
@@ -131,30 +136,44 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
     var initColumns = function () {
         var cols;
 
-        zemPostclickMetricsService.insertColumns($scope.columns, $scope.hasPermission('zemauth.postclick_metrics'), $scope.isPermissionInternal('zemauth.postclick_metrics'));
+        zemPostclickMetricsService.insertAcquisitionColumns(
+            $scope.columns,
+            $scope.columns.length - 1,
+            $scope.hasPermission('zemauth.content_ads_postclick_acquisition'),
+            $scope.isPermissionInternal('zemauth.content_ads_postclick_acquisition')
+        );
 
-        cols = zemCustomTableColsService.load('adGroupAdsCols', $scope.columns);
+        zemPostclickMetricsService.insertEngagementColumns(
+            $scope.columns,
+            $scope.columns.length - 1,
+            $scope.hasPermission('zemauth.content_ads_postclick_engagement'),
+            $scope.isPermissionInternal('zemauth.content_ads_postclick_engagement')
+        );
+
+        cols = zemCustomTableColsService.load('adGroupAds', $scope.columns);
         $scope.selectedColumnsCount = cols.length;
 
         $scope.$watch('columns', function (newValue, oldValue) {
-            cols = zemCustomTableColsService.save('adGroupAdsCols', newValue);
+            cols = zemCustomTableColsService.save('adGroupAds', newValue);
             $scope.selectedColumnsCount = cols.length;
         }, true);
     };
-
-    $scope.$watch('isChartShown', function (newValue, oldValue) {
-        zemChartService.save('zemChart', newValue);
-    });
 
     $scope.loadRequestInProgress = false;
 
     var getTableData = function () {
         $scope.loadRequestInProgress = true;
 
-        api.adGroupAdsTable.get($state.params.id, $scope.pagination.currentPage, $scope.pagination.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
+        api.adGroupAdsTable.get($state.params.id, $scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
-                if($scope.hasPermission('zemauth.postclick_metrics')) {
-                    zemPostclickMetricsService.insertGoalColumns($scope.columns, data.rows, $scope.columnCategories[1], $scope.isPermissionInternal('zemauth.postclick_metrics'));
+                if($scope.hasPermission('zemauth.content_ads_postclick_engagement')) {
+                    zemPostclickMetricsService.insertGoalColumns(
+                        $scope.columns,
+                        $scope.columns.length - 1,
+                        data.rows, 
+                        $scope.columnCategories[1], 
+                        $scope.isPermissionInternal('zemauth.content_ads_postclick_engagement')
+                    );
                 }
 
                 $scope.rows = data.rows;
@@ -181,7 +200,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         $scope.order = order;
 
         $location.search('order', $scope.order);
-        $scope.localStorage.set('adGroupContentAds.order', $scope.order);
         getTableData();
     };
 
@@ -204,32 +222,39 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
     var setChartOptions = function (goals) {
         $scope.chartMetricOptions = options.adGroupChartMetrics;
 
-        if ($scope.hasPermission('zemauth.postclick_metrics')) {
-            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+        if ($scope.hasPermission('zemauth.content_ads_postclick_acquisition')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatAcquisitionChartOptions(
                 $scope.chartMetricOptions,
-                $scope.isPermissionInternal('zemauth.postclick_metrics')
+                $scope.isPermissionInternal('zemauth.content_ads_postclick_acquisition')
             );
         }
 
-        if (goals) {
-            $scope.chartMetricOptions = $scope.chartMetricOptions.concat(Object.keys(goals).map(function (goalId) {
-                var typeName = {
-                    'conversions': 'Conversions',
-                    'conversion_rate': 'Conversion Rate'
-                }[goals[goalId].type];
+        if ($scope.hasPermission('zemauth.content_ads_postclick_engagement')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatEngagementChartOptions(
+                $scope.chartMetricOptions,
+                $scope.isPermissionInternal('zemauth.content_ads_postclick_engagement')
+            );
 
-                if (typeName === undefined) {
-                    return;
-                }
+            if (goals) {
+                $scope.chartMetricOptions = $scope.chartMetricOptions.concat(Object.keys(goals).map(function (goalId) {
+                    var typeName = {
+                        'conversions': 'Conversions',
+                        'conversion_rate': 'Conversion Rate'
+                    }[goals[goalId].type];
 
-                return {
-                    name: goals[goalId].name + ': ' + typeName,
-                    value: goalId,
-                    internal: $scope.isPermissionInternal('zemauth.postclick_metrics')
-                }
-            }).filter(function (option) {
-                return option !== undefined;
-            }));
+                    if (typeName === undefined) {
+                        return;
+                    }
+
+                    return {
+                        name: goals[goalId].name + ': ' + typeName,
+                        value: goalId,
+                        internal: $scope.isPermissionInternal('zemauth.content_ads_postclick_engagement')
+                    }
+                }).filter(function (option) {
+                    return option !== undefined;
+                }));
+            }
         }
     };
 
@@ -248,9 +273,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
     };
 
     $scope.toggleChart = function () {
-        $scope.isChartShown = !$scope.isChartShown;
-        $scope.chartBtnTitle = $scope.isChartShown ? 'Hide chart' : 'Show chart';
-        $location.search('chart_hidden', !$scope.isChartShown ? '1' : null);
+        $scope.chartHidden = !$scope.chartHidden;
+        $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
 
         $timeout(function() {
             $scope.$broadcast('highchartsng.reflow');
@@ -271,16 +295,12 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             getDailyStats();
-            $location.search('chart_metric1', $scope.chartMetric1);
-            $scope.localStorage.set('adGroupContentAds.chartMetric1', $scope.chartMetric1);
         }
     });
 
     $scope.$watch('chartMetric2', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             getDailyStats();
-            $location.search('chart_metric2', $scope.chartMetric2);
-            $scope.localStorage.set('adGroupContentAds.chartMetric2', $scope.chartMetric2);
         }
     });
 
@@ -302,30 +322,16 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
     });
 
     $scope.init = function() {
-        var chartMetric1 = $location.search().chart_metric1 || $scope.localStorage.get('adGroupContentAds.chartMetric1') || $scope.chartMetric1;
-        var chartMetric2 = $location.search().chart_metric2 || $scope.localStorage.get('adGroupContentAds.chartMetric2') || $scope.chartMetric2;
-        var chartHidden = $location.search().chart_hidden;
-        var size = $location.search().size || $scope.localStorage.get('adGroupContentAds.paginationSize') || $scope.sizeRange[0];
-        var order = $location.search().order || $scope.localStorage.get('adGroupContentAds.order') || $scope.order;
-
         var data = $scope.adGroupData[$state.params.id];
         var page = $location.search().page || (data && data.page);
 
+        userSettings.register('chartMetric1');
+        userSettings.register('chartMetric2');
+        userSettings.register('order');
+        userSettings.register('size');
+        userSettings.registerGlobal('chartHidden');
+
         setChartOptions();
-
-        if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
-            $scope.chartMetric1 = chartMetric1;
-            $location.search('chart_metric1', chartMetric1);
-        }
-
-        if (chartMetric2 !== undefined && $scope.chartMetric2 !== chartMetric2) {
-            $scope.chartMetric2 = chartMetric2;
-            $location.search('chart_metric2', chartMetric2);
-        }
-
-        if (chartHidden) {
-            $scope.isChartShown = false;
-        }
 
         if (page !== undefined && $scope.pagination.currentPage !== page) {
             $scope.pagination.currentPage = page;
@@ -333,24 +339,13 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
             $location.search('page', page);
         }
 
-        if (size !== undefined && $scope.pagination.size !== size) {
-            $scope.pagination.size = size;
-        }
-        
-        if (order !== undefined && $scope.order !== order) {
-            $scope.order = order;
-            $location.search('order', order);
-        }
-
         $scope.loadPage();
         getDailyStats();
+        getTableData();
         initColumns();
         setDisabledExportOptions();
     };
     
-    // pagination
-    $scope.sizeRange = [5, 10, 20, 50];
-
     $scope.loadPage = function(page) {
         if(page && page > 0 && page <= $scope.pagination.numPages) {
             $scope.pagination.currentPage = page;
@@ -365,16 +360,11 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         }
     };
 
-    $scope.changePaginationSize = function() {
-        // Here we use additional scope variable pagination.sizeTemp
-        // to allow repeated selection of already selected options
-        $scope.pagination.size = $scope.pagination.sizeTemp;
-        $scope.pagination.sizeTemp = '';
-
-        $location.search('size', $scope.pagination.size);
-        $scope.localStorage.set('adGroupContentAds.paginationSize', $scope.pagination.size);
-        $scope.loadPage();
-    };
+    $scope.$watch('size', function(newValue, oldValue) {
+        if (newValue !== oldValue) {
+            $scope.loadPage();
+        }
+    });
 
     var pollSyncStatus = function() {
         if($scope.isSyncInProgress){

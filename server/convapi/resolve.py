@@ -6,14 +6,25 @@ import reports.api
 def resolve_source(source_param):
     if source_param is None:
         return None
+
+    if source_param.startswith('bigstory'):
+        #  Zemanta CDN
+        return dash.models.Source.objects.get(id=9)
+    if source_param.startswith('industrybrains'):
+        #  AdBlade
+        return dash.models.Source.objects.get(id=1)
+    if source_param.startswith('adiant.com'):
+        #  Adiant (b0)
+        return dash.models.Source.objects.get(id=19)
+    if source_param.startswith('b1_adiant'):
+        #  Adiant (b1)
+        return dash.models.Source.objects.get(id=22)
+
     source_param_lc = source_param.lower()
     for source in dash.models.Source.objects.all():
         if source_param_lc.startswith(source.name.lower()):
             return source
-    if source_param.startswith('bigstory.ap.org'):
-        return dash.models.Source.objects.get(name='Zemanta CDN')
-    if source_param.startswith('industrybrains'):
-        return dash.models.Source.objects.get(name='AdBlade')
+
     return None
 
 
@@ -31,7 +42,13 @@ def resolve_article(clean_url, ad_group, date, source, report_log):
         url = _remove_home_aspx(url)
         candidates = filter(lambda a: _urls_match(a.url, url), articles)
     if not candidates:
+        url = _remove_index_cfm(url)
+        candidates = filter(lambda a: _urls_match(a.url, url), articles)
+    if not candidates:
         url = _remove_blog_from_start(url)
+        candidates = filter(lambda a: _urls_match(a.url, url), articles)
+    if not candidates:
+        url = _remove_slash_http_from_start(url)
         candidates = filter(lambda a: _urls_match(a.url, url), articles)
 
     if len(candidates) == 0:
@@ -106,8 +123,17 @@ def _remove_home_aspx(url):
         return url.replace('/home.aspx', '/')
     return url
 
+def _remove_index_cfm(url):
+    if '/index.cfm' in url:
+        return url.replace('/index.cfm', '/')
+    return url
 
 def _remove_blog_from_start(url):
     if url.startswith('blog/'):
         return url[5:]
+    return url
+
+def _remove_slash_http_from_start(url):
+    if url.startswith('/http'):
+        return url[1:]
     return url

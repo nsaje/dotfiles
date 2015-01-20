@@ -16,14 +16,11 @@ class BaseSync(object):
     def __init__(self, obj):
         self.obj = obj
 
-    def get_latest_success(self, recompute=True):
-        child_syncs = self.get_components()
-        child_sync_times = [child_sync.get_latest_success(recompute) for child_sync in child_syncs]
-        if not child_sync_times:
-            return None
-        if None in child_sync_times:
-            return None
-        return min(child_sync_times)
+    def get_latest_success_by_child(self, recompute=True):
+        return {
+            child_sync.obj.id: _min_none(child_sync.get_latest_success_by_child(recompute).values())
+            for child_sync in self.get_components()
+        }
 
     def get_latest_source_success(self, recompute=True):
         child_syncs = self.get_components()
@@ -32,21 +29,7 @@ class BaseSync(object):
             for child_sync in child_syncs
         ]
 
-        # merge dicts
-        source_sync_times = {}
-        for sync_times in child_source_sync_times_list:
-            for key, value in sync_times.items():
-                if key in source_sync_times:
-                    old_value = source_sync_times[key]
-
-                    if old_value is None or value is None:
-                        value = None
-                    else:
-                        value = min(old_value, value)
-
-                source_sync_times[key] = value
-
-        return source_sync_times
+        return self._merge_sync_times(child_source_sync_times_list)
 
     def trigger_all(self):
         child_syncs = self.get_components()
@@ -62,6 +45,22 @@ class BaseSync(object):
         child_syncs = self.get_components()
         for child_sync in child_syncs:
             child_sync.trigger_status()
+
+    def _merge_sync_times(self, sync_times_list):
+        merged_sync_times = {}
+        for sync_times in sync_times_list:
+            for key, value in sync_times.items():
+                if key in merged_sync_times:
+                    old_value = merged_sync_times[key]
+
+                    if old_value is None or value is None:
+                        value = None
+                    else:
+                        value = min(old_value, value)
+
+                merged_sync_times[key] = value
+
+        return merged_sync_times
 
 
 class ISyncComposite(object):
@@ -163,10 +162,7 @@ class AdGroupSync(BaseSync, ISyncComposite):
 
 class AdGroupSourceSync(BaseSync):
 
-    def __init__(self, ad_group_source):
-        self.ad_group_source = ad_group_source
-
-    def get_latest_success(self, recompute=True):
+    def _get_latest_success(self, recompute=True):
         if recompute:
             status_sync_dt = self.get_latest_status_sync()
             if not status_sync_dt:
@@ -176,10 +172,13 @@ class AdGroupSourceSync(BaseSync):
                 return None
             return min(status_sync_dt, report_sync_dt)
         else:
-            return self.ad_group_source.last_successful_sync_dt
+            return self.obj.last_successful_sync_dt
+
+    def get_latest_success_by_child(self, recompute=True):
+        return {self.obj.id: self._get_latest_success(recompute)}
 
     def get_latest_source_success(self, recompute=True):
-        return {self.ad_group_source.source_id: self.get_latest_success(recompute)}
+        return {self.obj.source_id: self._get_latest_success(recompute)}
 
     def get_latest_report_sync(self):
         # the query below works like this:
@@ -206,7 +205,7 @@ class AdGroupSourceSync(BaseSync):
         '''
         params = [
             actionlog.constants.Action.FETCH_REPORTS,
-            self.ad_group_source.id,
+            self.obj.id,
             actionlog.constants.ActionLogOrderType.FETCH_REPORTS
         ]
         results = actionlog.models.ActionLogOrder.objects.raw(sql, params)
@@ -219,7 +218,7 @@ class AdGroupSourceSync(BaseSync):
     def get_latest_status_sync(self):
         try:
             action = actionlog.models.ActionLog.objects.filter(
-                ad_group_source=self.ad_group_source,
+                ad_group_source=self.obj,
                 action=actionlog.constants.Action.FETCH_CAMPAIGN_STATUS,
                 action_type=actionlog.constants.ActionType.AUTOMATIC,
                 state=actionlog.constants.ActionState.SUCCESS
@@ -237,7 +236,7 @@ class AdGroupSourceSync(BaseSync):
             order_type=actionlog.constants.ActionLogOrderType.FETCH_STATUS
         )
         try:
-            action = _init_fetch_status(self.ad_group_source, order)
+            action = _init_fetch_status(self.obj, order)
         except InsertActionException:
             pass
         else:
@@ -255,7 +254,7 @@ class AdGroupSourceSync(BaseSync):
                 order = actionlog.models.ActionLogOrder.objects.create(order_type=order_type)
             for date in dates:
                 try:
-                    action = _init_fetch_reports(self.ad_group_source, date, order)
+                    action = _init_fetch_reports(self.obj, date, order)
                 except InsertActionException:
                     continue
 
@@ -269,8 +268,8 @@ class AdGroupSourceSync(BaseSync):
         if latest_report_sync_dt:
             start_dt = latest_report_sync_dt.date() - datetime.timedelta(days=settings.LAST_N_DAY_REPORTS - 1)
         else:
-            if self.ad_group_source.ad_group.created_dt is not None:
-                start_dt = self.ad_group_source.ad_group.created_dt.date()
+            if self.obj.ad_group.created_dt is not None:
+                start_dt = self.obj.ad_group.created_dt.date()
             else:
                 return last_n_days(settings.LAST_N_DAY_REPORTS)
         dates = [start_dt]

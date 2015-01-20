@@ -9,6 +9,7 @@ from dash import constants
 from utils import api_common
 from utils import statsd_helper
 from utils.sort_helper import sort_results
+from utils import exc
 
 
 class AccountCampaignsExport(api_common.BaseApiView):
@@ -91,15 +92,14 @@ class CampaignAdGroupsExport(api_common.BaseApiView):
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-        
+
         export_type = request.GET.get('type')
 
-        filename = '{0}_{1}_per_campaign_report_{2}_{3}'.format(
-            slugify.slugify(campaign.account.name),
-            slugify.slugify(campaign.name),
-            start_date,
-            end_date
-        )
+        if export_type == 'excel_detailed' and \
+                not request.user.has_perm('zemauth.campaign_ad_groups_detailed_report'):
+            raise exc.MissingDataError()
+
+        filename_format = '{0}_{1}_per_campaign_report_{2}_{3}'
 
         data = export.generate_rows(
             ['date'],
@@ -140,6 +140,8 @@ class CampaignAdGroupsExport(api_common.BaseApiView):
             ]
 
             if export_type == 'excel_detailed':
+                filename_format = '{0}_{1}_per_campaign_detailed_report_{2}_{3}'
+
                 per_content_ad_data = export.generate_rows(
                     ['date', 'ad_group', 'article'],
                     start_date,
@@ -159,7 +161,12 @@ class CampaignAdGroupsExport(api_common.BaseApiView):
 
             content = export.get_excel_content(sheets)
 
-            return self.create_excel_response(filename, content=content)
+            return self.create_excel_response(filename_format.format(
+                slugify.slugify(campaign.account.name),
+                slugify.slugify(campaign.name),
+                start_date,
+                end_date
+            ), content=content)
         else:
             fieldnames = OrderedDict([
                 ('date', 'Date'),
@@ -171,7 +178,12 @@ class CampaignAdGroupsExport(api_common.BaseApiView):
             ])
 
             content = export.get_csv_content(fieldnames, data)
-            return self.create_csv_response(filename, content=content)
+            return self.create_csv_response(filename_format.format(
+                slugify.slugify(campaign.account.name),
+                slugify.slugify(campaign.name),
+                start_date,
+                end_date
+            ), content=content)
 
     def add_ad_group_data(self, results, campaign):
         ad_groups = {ad_group.id: ad_group for ad_group in models.AdGroup.objects.filter(campaign=campaign)}
@@ -181,7 +193,7 @@ class CampaignAdGroupsExport(api_common.BaseApiView):
 
 
 class AdGroupAdsExportAllowed(api_common.BaseApiView):
-    MAX_ROWS = 32268
+    MAX_ROWS = 16134
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_export_allowed_get')
     def get(self, request, ad_group_id):
@@ -214,11 +226,11 @@ class AdGroupAdsExportAllowed(api_common.BaseApiView):
 
 
 class CampaignAdGroupsExportAllowed(api_common.BaseApiView):
-    MAX_ROWS = 16134
+    MAX_ROWS = 8072
 
     @statsd_helper.statsd_timer('dash.api', 'campiagn_ad_group_export_allowed_get')
     def get(self, request, campaign_id):
-        campaign = helpers.get_ad_group(request.user, campaign_id)
+        campaign = helpers.get_campaign(request.user, campaign_id)
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))

@@ -24,34 +24,11 @@ def cc_to_decimal(val_cc):
 
 
 @transaction.atomic
-def update_ad_group_source_state(ad_group_source, conf, settings_id=None):
+def update_ad_group_source_state(ad_group_source, conf):
     for key, val in conf.items():
         if key in ('cpc_cc', 'daily_budget_cc'):
             conf[key] = cc_to_decimal(val)
 
-    if settings_id is None:
-        _upsert_ad_group_source_state(ad_group_source, conf)
-        return
-    try:
-        latest_ad_group_source_settings = models.AdGroupSourceSettings.objects\
-            .filter(ad_group_source=ad_group_source) \
-            .latest('created_dt')
-    except models.AdGroupSourceSettings.DoesNotExist:
-        logger.warning('no ad_group_source_settings found')
-        latest_ad_group_source_settings = None
-
-    if latest_ad_group_source_settings is None or latest_ad_group_source_settings.id == settings_id:
-        # we are updating for the latest settings
-        # or no settings are specified
-        # we have to update the state
-        _upsert_ad_group_source_state(ad_group_source, conf)
-        return
-
-    assert latest_ad_group_source_settings.id != settings_id
-    # we don't do any update for an ad_group_source_settings which isn't the most recent
-
-
-def _upsert_ad_group_source_state(ad_group_source, conf):
     ad_group_source_state = _get_latest_ad_group_source_state(ad_group_source)
 
     # determine if we need to update
@@ -111,10 +88,11 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings):
         return
 
     for field_name, field_value in changes.iteritems():
-        if field_name == 'state' and field_value == constants.AdGroupSettingsState.INACTIVE:
-            actionlog.api.init_stop_ad_group_order(ad_group)
-        else:
-            actionlog.api.init_set_ad_group_property_order(ad_group, prop=field_name, value=field_value)
+        # State of an ad group is set automatically
+        if field_name == 'state':
+            continue
+
+        actionlog.api.init_set_ad_group_property_order(ad_group, prop=field_name, value=field_value)
 
 
 def reconcile_articles(ad_group, raw_articles):
@@ -202,18 +180,23 @@ class AdGroupSourceSettingsWriter(object):
         ]):
                 new_settings = latest_settings
                 new_settings.pk = None  # make a copy of the latest settings
+
+                old_settings_obj = {}
+
                 if state is not None:
                     new_settings.state = state
                 if cpc_cc is not None:
+                    old_settings_obj['cpc_cc'] = new_settings.cpc_cc
                     new_settings.cpc_cc = cpc_cc
                 if daily_budget_cc is not None:
+                    old_settings_obj['daily_budget_cc'] = new_settings.daily_budget_cc
                     new_settings.daily_budget_cc = daily_budget_cc
                 new_settings.save()
 
-                self.add_to_history(settings_obj)
+                self.add_to_history(settings_obj, old_settings_obj)
 
-                if self.can_trigger_action():
-                    actionlog.api.set_ad_group_source_settings(new_settings)
+                if 'state' not in settings_obj or self.can_trigger_action():
+                    actionlog.api.set_ad_group_source_settings(settings_obj, new_settings.ad_group_source)
                 else:
                     logger.info(
                         'settings=%s on ad_group_source=%s will be triggered when the ad group will be enabled',
@@ -222,7 +205,7 @@ class AdGroupSourceSettingsWriter(object):
                     )
         else:
             ssc = consistency.SettingsStateConsistence(self.ad_group_source)
-            if not ssc.is_consistent() and self.can_trigger_action():
+            if not ssc.is_consistent() and ('state' not in settings_obj or self.can_trigger_action()):
                 new_settings = latest_settings
                 new_settings.pk = None  # make a copy of the latest settings
                 new_settings.save()
@@ -230,7 +213,7 @@ class AdGroupSourceSettingsWriter(object):
                     'settings for ad_group_source=%s did not change, but state is inconsistent, triggering actions',
                     self.ad_group_source
                 )
-                actionlog.api.set_ad_group_source_settings(latest_settings)
+                actionlog.api.set_ad_group_source_settings(settings_obj, latest_settings.ad_group_source)
 
     def can_trigger_action(self):
         try:
@@ -250,15 +233,26 @@ class AdGroupSourceSettingsWriter(object):
         except models.AdGroupSourceSettings.DoesNotExist:
             return models.AdGroupSourceSettings(ad_group_source=self.ad_group_source)
 
-    def add_to_history(self, change_obj):
+    def add_to_history(self, change_obj, old_change_obj):
         changes_text_parts = []
         for key, val in change_obj.items():
             if val is None:
                 continue
+
             field = models.AdGroupSettings.get_human_prop_name(key)
             val = models.AdGroupSettings.get_human_value(key, val)
             source_name = self.ad_group_source.source.name
-            changes_text_parts.append('Set %s to %s on %s' % (field, val, source_name))
+
+            old_val = old_change_obj.get(key)
+
+            if old_val is None:
+                text = '%s %s set to %s' % (source_name, field, val)
+            else:
+                old_val = models.AdGroupSettings.get_human_value(key, old_val)
+                text = '%s %s set from %s to %s' % (source_name, field, old_val, val)
+
+            changes_text_parts.append(text)
+
         changes_text = ', '.join(changes_text_parts)
 
         try:

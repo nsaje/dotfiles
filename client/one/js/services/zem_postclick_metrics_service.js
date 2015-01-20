@@ -2,8 +2,8 @@
 "use strict";
 
 oneApp.factory('zemPostclickMetricsService', function() {
-    function insertColumns(columns, isShown, isInternal) {
-        columns.splice(columns.length - 1, 0, {
+    function insertAcquisitionColumns(columns, position, isShown, isInternal) {
+        columns.splice(position, 0, {
             name: 'Visits',
             field: 'visits',
             checked: true,
@@ -11,6 +11,17 @@ oneApp.factory('zemPostclickMetricsService', function() {
             shown: isShown,
             internal: isInternal,
             help: 'Total number of sessions within a date range. A session is the period of time in which a user is actively engaged with your site.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
+        }, {
+            name: 'Click Discrepancy',
+            field: 'click_discrepancy',
+            checked: false,
+            type: 'percent',
+            shown: isShown,
+            internal: isInternal,
+            help: 'Clicks detected only by media source as a percentage of total clicks.',
             totalRow: true,
             order: true,
             initialOrder: 'desc'
@@ -25,7 +36,11 @@ oneApp.factory('zemPostclickMetricsService', function() {
             totalRow: true,
             order: true,
             initialOrder: 'desc'
-        }, {
+        });
+    }
+        
+    function insertEngagementColumns(columns, position, isShown, isInternal) {
+        columns.splice(position, 0, {
             name: '% New Users',
             field: 'percent_new_users',
             checked: false,
@@ -70,28 +85,33 @@ oneApp.factory('zemPostclickMetricsService', function() {
             totalRow: true,
             order: true,
             initialOrder: 'desc'
-        }, {
-            name: 'Click Discrepancy',
-            field: 'click_discrepancy',
-            checked: false,
-            type: 'percent',
-            shown: isShown,
-            internal: isInternal,
-            help: 'Clicks detected only by media source as a percentage of total clicks.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc'
         });
     }
 
-    function concatChartOptions(chartOptions, isInternal) {
-        return chartOptions.concat(options.adGroupChartPostClickMetrics.map(function (option) {
+    function concatAcquisitionChartOptions(chartOptions, isInternal) {
+        return concatChartOptions(
+            chartOptions,
+            options.adGroupAcquisitionChartPostClickMetrics,
+            isInternal
+        );
+    }
+
+    function concatEngagementChartOptions(chartOptions, isInternal) {
+        return concatChartOptions(
+            chartOptions,
+            options.adGroupEngagementChartPostClickMetrics,
+            isInternal
+        );
+    }
+
+    function concatChartOptions(chartOptions, postclickOptions, isInternal) {
+        return chartOptions.concat(postclickOptions.map(function (option) {
             option.internal = isInternal;
             return option;
         }));
     }
 
-    function insertGoalColumns(columns, rows, postclickCategory, isInternal) {
+    function insertGoalColumns(columns, position, rows, postclickCategory, isInternal) {
         for(var i = 0; i < rows.length; i++) {
             for(var field in rows[i]) {
                 if(columnsContainField(columns, field)) {
@@ -111,7 +131,7 @@ oneApp.factory('zemPostclickMetricsService', function() {
                         initialOrder: 'desc',
                         shown: true
                     };
-                    columns.splice(columns.length - 1, 0, columnDescription);
+                    columns.splice(position, 0, columnDescription);
                     postclickCategory.fields.push(columnDescription.field);
                 } else if(field.indexOf(': Conversion Rate') != -1) {
                     var columnDescription = {
@@ -126,7 +146,7 @@ oneApp.factory('zemPostclickMetricsService', function() {
                         initialOrder: 'desc',
                         shown: true
                     };
-                    columns.splice(columns.length - 1, 0, columnDescription);
+                    columns.splice(position, 0, columnDescription);
                     postclickCategory.fields.push(columnDescription.field);
                 }
             }
@@ -143,8 +163,10 @@ oneApp.factory('zemPostclickMetricsService', function() {
     };
 
     return {
-        insertColumns: insertColumns,
-        concatChartOptions: concatChartOptions,
+        insertAcquisitionColumns: insertAcquisitionColumns,
+        insertEngagementColumns: insertEngagementColumns,
+        concatAcquisitionChartOptions: concatAcquisitionChartOptions,
+        concatEngagementChartOptions: concatEngagementChartOptions,
         insertGoalColumns: insertGoalColumns
     }
 });

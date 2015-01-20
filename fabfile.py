@@ -1,6 +1,7 @@
 import contextlib
 from datetime import datetime
 import httplib
+import itertools
 import os
 
 from fabric.api import abort, env, execute, cd, lcd, local, run, task, prefix, put, parallel, serial
@@ -46,19 +47,18 @@ GIT_REPOSITORY = 'git@github.com:Zemanta/zemanta-eins.git'
 DEFAULT_BRANCH = 'master'
 
 
+DEPLOYER_REQUIREMENTS = [
+    ['virtualenvwrapper==4.3'],
+    ['pip==1.5.6', 'setuptools==2.2', 'wheel==0.23.0']
+]
+
+
 selected_hosts = []
 
 
 env.forward_agent = True
 if env.ssh_config_path and os.path.isfile(os.path.expanduser(env.ssh_config_path)):
     env.use_ssh_config = True
-
-
-@contextlib.contextmanager
-def virtualenv(params):
-    venv_prefix = '. /etc/bash_completion.d/virtualenvwrapper && workon %s' % params['venv_name']
-    with prefix(venv_prefix):
-        yield
 
 
 # SETTINGS
@@ -228,10 +228,57 @@ def pack(app, params):
         params['tmp_filename'] = tmp_filename
 
 
-def create_virtualenv(app, params):
-    venv_name = '%s-%s-%s' % (app, params['timestamp'], params['commit_hash'])
-    run('. /etc/bash_completion.d/virtualenvwrapper && mkvirtualenv %s' % venv_name)
+def create_base_virtualenv(app):
+    """
+    What does this thing do:
+    - If base env exists
+        - Returns the base env name.
+    - Otherwise
+        - Creates deployer env with the new version of virtualenvwrapper.
+        - Uses the deployer env to create the base env.
+        - Installs all the deployer requirements to the base env.
+        - Returns the base env name.
 
+    Logic behind this strange stuff:
+    - Installing all packages with pip is very slow because it builds packages each time.
+    - To speed this up we can use pip wheels.
+    - Pip wheel requires updated pip, setuptools and wheel packages.
+    - Installing these is quite slow too, so we don't want to do it each time.
+    - So let's create a base env that we'll clone and reuse.
+    - Virtualenvwhrapper supports copying envs, but it's broken in old versions so we have to upgrade it.
+    - It's not enough to copy env with the new wrapper, we have to create the env with it too.
+    - Such speed, many complications, wow.
+    """
+
+    base_venv_name = '%s-base' % app
+
+    if exists(os.path.join('~/.virtualenvs', base_venv_name)):
+        return base_venv_name
+
+    deployer_venv_name = '%s-deployer' % app
+    mkvirtualenv(deployer_venv_name)
+
+    with virtualenv(deployer_venv_name):
+        for pkg_name in DEPLOYER_REQUIREMENTS[0]:
+            run('pip install --download-cache ~/.pip_download_cache -U %s' % pkg_name)
+
+        mkvirtualenv(base_venv_name)
+
+    with virtualenv(base_venv_name):
+        for pkg_name in itertools.chain(*DEPLOYER_REQUIREMENTS):
+            run('pip install --download-cache ~/.pip_download_cache -U %s' % pkg_name)
+
+    return base_venv_name
+
+
+def create_virtualenv(app, params):
+    base_venv_name = create_base_virtualenv(app)
+    venv_name = '%s-%s-%s' % (app, params['timestamp'], params['commit_hash'])
+
+    with virtualenv(base_venv_name):
+        cpvirtualenv(base_venv_name, venv_name)
+
+    env.venv_name = venv_name
     params['venv_name'] = venv_name
 
 
@@ -253,21 +300,23 @@ def copy_django_settings(app, params):
 @serial
 def install_dependencies(app, params):
     dest_folder = os.path.join(params['app_folder'], app)
-    with cd(dest_folder), virtualenv(params):
-        run('pip install -U pip==1.4.1')
-        run('pip install -r requirements.txt')
+    with cd(dest_folder), virtualenv():
+        # Build missing wheels
+        run('pip wheel --find-links=file://$HOME/.wheel/wheelhouse --use-wheel --download-cache ~/.pip_download_cache --wheel-dir ~/.wheel/wheelhouse -r requirements.txt')
+        # Install them
+        run('pip install --no-index --find-links=file://$HOME/.wheel/wheelhouse --download-cache ~/.pip_download_cache -r requirements.txt')
 
 
 @serial
 def unittests(app, params):
     dest_folder = os.path.join(params['app_folder'], app)
-    with cd(dest_folder), virtualenv(params):
+    with cd(dest_folder), virtualenv():
         run('python manage.py test')
 
 
 def manage_static(app, params):
     dest_folder = os.path.join(params['app_folder'], app)
-    with cd(dest_folder), virtualenv(params):
+    with cd(dest_folder), virtualenv():
         run('python manage.py collectstatic --noinput')
 
 
@@ -276,13 +325,13 @@ def is_db_migrated(app, params):
 
     dest_folder = os.path.join(params['app_folder'], app)
 
-    with cd(dest_folder), virtualenv(params):
+    with cd(dest_folder), virtualenv():
         unmigrated_count = run('python manage.py migrate --list | grep "\[ \]" | wc -l')
 
     return int(unmigrated_count) == 0
 
 
-@parallel
+@serial
 def switch_django_app(app, params):
     with cd('~/.virtualenvs'):
         virtualenv_folder = os.path.join('~/.virtualenvs', params['venv_name'])
@@ -343,7 +392,7 @@ def tag_deploy(app, params):
 
 def run_migrate(app, params):
     dest_folder = os.path.join(params['app_folder'], app)
-    with cd(dest_folder), virtualenv(params):
+    with cd(dest_folder), virtualenv():
         run('python manage.py migrate')
 
 
@@ -441,6 +490,29 @@ def invalidate_cdn_cache(app):
         print response.read()
     finally:
         conn.close()
+
+
+# VIRTUALENV HELPERS
+@contextlib.contextmanager
+def virtualenv(venv_name=None):
+    if not venv_name:
+        venv_name = env.venv_name
+
+    venv_prefix = '. /etc/bash_completion.d/virtualenvwrapper && workon %s' % venv_name
+
+    with prefix(venv_prefix):
+        yield
+
+
+def mkvirtualenv(venv_name=None):
+    if not venv_name:
+        venv_name = env.venv_name
+
+    run('. /etc/bash_completion.d/virtualenvwrapper && mkvirtualenv %s' % venv_name)
+
+
+def cpvirtualenv(venv_name_from, venv_name_to):
+    run('. /etc/bash_completion.d/virtualenvwrapper && cpvirtualenv %s %s' % (venv_name_from, venv_name_to))
 
 
 # PRINT STUFF

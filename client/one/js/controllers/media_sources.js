@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$location', 'localStorageService', 'api', 'zemPostclickMetricsService', 'zemCustomTableColsService', '$timeout', function ($scope, $state, zemChartService, $location, localStorageService, api, zemPostclickMetricsService, zemCustomTableColsService, $timeout) {
+oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$location', 'api', 'zemPostclickMetricsService', 'zemCustomTableColsService', '$timeout', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemCustomTableColsService, $timeout) {
     $scope.localStoragePrefix = null;
     $scope.selectedTotals = true;
     $scope.selectedSourceIds = [];
@@ -7,7 +7,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
     $scope.chartData = undefined;
-    $scope.isChartShown = zemChartService.load('zemChart');
+    $scope.chartHidden = false;
     $scope.chartMetricOptions = [];
     $scope.chartBtnTitle = 'Hide chart';
 
@@ -16,6 +16,8 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
     $scope.isSyncInProgress = false;
     $scope.isIncompletePostclickMetrics = false;
     $scope.sources = [];
+
+    var userSettings = null;
 
     $scope.updateSelectedSources = function (sourceId) {
         var i = $scope.selectedSourceIds.indexOf(sourceId);
@@ -250,23 +252,32 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
     $scope.initColumns = function () {
         var cols;
 
-        zemPostclickMetricsService.insertColumns($scope.columns, $scope.hasPermission('zemauth.postclick_metrics'), $scope.isPermissionInternal('zemauth.postclick_metrics'));
+        zemPostclickMetricsService.insertAcquisitionColumns(
+            $scope.columns,
+            $scope.columns.length - 1,
+            $scope.hasPermission('zemauth.aggregate_postclick_acquisition'),
+            $scope.isPermissionInternal('zemauth.aggregate_postclick_acquisition')
+        );
 
-        cols = zemCustomTableColsService.load($scope.localStoragePrefix + 'Cols', $scope.columns);
+        zemPostclickMetricsService.insertEngagementColumns(
+            $scope.columns,
+            $scope.columns.length - 1,
+            $scope.hasPermission('zemauth.aggregate_postclick_engagement'),
+            $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
+        );
+
+        cols = zemCustomTableColsService.load($scope.localStoragePrefix, $scope.columns);
         $scope.selectedColumnsCount = cols.length;
 
         $scope.$watch('columns', function (newValue, oldValue) {
-            cols = zemCustomTableColsService.save($scope.localStoragePrefix + 'Cols', newValue);
+            cols = zemCustomTableColsService.save($scope.localStoragePrefix, newValue);
             $scope.selectedColumnsCount = cols.length;
         }, true);
     };
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            $location.search('chart_metric1', $scope.chartMetric1);
-
             if (!hasMetricData($scope.chartMetric1)) {
-                localStorageService.set($scope.localStoragePrefix + '.chartMetric1', $scope.chartMetric1);
                 getDailyStats();
             } else {
                 // create a copy to trigger watch
@@ -277,10 +288,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
 
     $scope.$watch('chartMetric2', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            $location.search('chart_metric2', $scope.chartMetric2);
-
             if (!hasMetricData($scope.chartMetric2)) {
-                localStorageService.set($scope.localStoragePrefix + '.chartMetric2', $scope.chartMetric2);
                 getDailyStats();
             } else {
                 // create a copy to trigger watch
@@ -290,18 +298,13 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
     });
 
     $scope.toggleChart = function () {
-        $scope.isChartShown = !$scope.isChartShown;
-        $scope.chartBtnTitle = $scope.isChartShown ? 'Hide chart' : 'Show chart';
-        $location.search('chart_hidden', !$scope.isChartShown ? '1' : null);
+        $scope.chartHidden = !$scope.chartHidden;
+        $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
 
         $timeout(function() {
             $scope.$broadcast('highchartsng.reflow');
         }, 0);
     };
-
-    $scope.$watch('isChartShown', function (newValue, oldValue) {
-        zemChartService.save('zemChart', newValue);
-    });
 
     var hasMetricData = function (metric) {
         var hasData = false;
@@ -334,9 +337,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
 
     $scope.orderTableData = function(order) {
         $scope.order = order;
-
-        $location.search('order', $scope.order);
-        localStorageService.set($scope.localStoragePrefix + '.order', $scope.order);
         getTableData();
     };
 
@@ -393,14 +393,18 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
     var setChartOptions = function () {
         $scope.chartMetricOptions = $scope.chartMetrics;
 
-        if ($scope.hasPermission('zemauth.postclick_metrics')) {
-            $scope.chartMetricOptions = $scope.chartMetricOptions.concat(options.adGroupChartPostClickMetrics.map(function (option) {
-                if ($scope.isPermissionInternal('zemauth.postclick_metrics')) {
-                    option.internal = true;
-                }
+        if ($scope.hasPermission('zemauth.aggregate_postclick_acquisition')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatAcquisitionChartOptions(
+                $scope.chartMetricOptions,
+                $scope.isPermissionInternal('zemauth.aggregate_postclick_acquisition')
+            );
+        }
 
-                return option;
-            }));
+        if ($scope.hasPermission('zemauth.aggregate_postclick_engagement')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatEngagementChartOptions(
+                $scope.chartMetricOptions,
+                $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
+            );
         }
     };
 
@@ -408,6 +412,9 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
         if ($scope.level === constants.level.ALL_ACCOUNTS) {
             $scope.localStoragePrefix = 'allAccountSources';
             $scope.chartMetrics = options.allAccountsChartMetrics;
+
+            $scope.chartMetric1 = constants.chartMetric.COST;
+            $scope.chartMetric2 = constants.chartMetric.CLICKS;
         } else if ($scope.level === constants.level.ACCOUNTS) {
             $scope.localStoragePrefix = 'accountSources';
             $scope.chartMetrics = options.accountChartMetrics;
@@ -416,28 +423,17 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
             $scope.chartMetrics = options.campaignChartMetrics;
         }
 
-        var chartMetric1 = $location.search().chart_metric1 || localStorageService.get($scope.localStoragePrefix + '.chartMetric1') || $scope.chartMetric1;
-        var chartMetric2 = $location.search().chart_metric2 || localStorageService.get($scope.localStoragePrefix + '.chartMetric2') || $scope.chartMetric2;
-        var chartHidden = $location.search().chart_hidden;
+        userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
         var sourceIds = $location.search().source_ids;
         var sourceTotals = $location.search().source_totals;
 
+        userSettings.register('chartMetric1');
+        userSettings.register('chartMetric2');
+        userSettings.register('order');
+        userSettings.registerGlobal('chartHidden');
+
         setChartOptions();
-
-        if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
-            $scope.chartMetric1 = chartMetric1;
-            $location.search('chart_metric1', chartMetric1);
-        }
-
-        if (chartMetric2 !== undefined && $scope.chartMetric2 !== chartMetric2) {
-            $scope.chartMetric2 = chartMetric2;
-            $location.search('chart_metric2', chartMetric2);
-        }
-
-        if (chartHidden) {
-            $scope.isChartShown = false;
-        }
 
         if (sourceIds) {
             $scope.selectedSourceIds = sourceIds.split(',');
@@ -473,8 +469,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemChartService', '$
     $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
         $location.search('source_ids', null);
         $location.search('source_totals', null);
-        $location.search('chart_metric1', null);
-        $location.search('chart_metric2', null);
     });
 
     var pollSyncStatus = function() {

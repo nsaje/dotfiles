@@ -64,6 +64,8 @@ class GAReportLog(models.Model):
 
     email_subject = models.CharField(max_length=1024, blank=False, null=True)
 
+    from_address = models.CharField(max_length=1024, blank=False, null=True)
+
     csv_filename = models.CharField(max_length=1024, blank=False, null=True)
 
     ad_groups = models.CharField(max_length=128, blank=False, null=True)

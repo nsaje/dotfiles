@@ -1,5 +1,6 @@
 import logging
 import threading
+import time
 
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
@@ -38,32 +39,69 @@ def mailgun_gareps(request):
 
     statsd_incr('convapi.accepted_emails')
 
-    report_log = models.GAReportLog()
-    report_log.email_subject = request.POST['subject']
-
-    if int(request.POST.get('attachment-count', 0)) != 1:
-        logger.warning('ERROR: single attachment expected, several received')
-        report_log.add_error('ERROR: single attachment expected, several received')
-        report_log.state = constants.GAReportState.FAILED
-        report_log.save()
-        return HttpResponse(status=406)
-
-    attachment = request.FILES['attachment-1']
-    if attachment.content_type != 'text/csv':
-        logger.warning('ERROR: content type is not CSV')
-        report_log.add_error('ERROR: content type is not CSV')
-        report_log.state = constants.GAReportState.FAILED
-        report_log.save()
-        return HttpResponse(status=406)
-
-    filename = request.FILES['attachment-1'].name
-
-    report_log.csv_filename = filename
-
-    content = attachment.read()
-
     try:
+        report_log = models.GAReportLog()
+        report_log.email_subject = request.POST['subject']
+        report_log.from_address = request.POST['from']
+
+        if int(request.POST.get('attachment-count', 0)) != 1:
+            logger.warning('ERROR: single attachment expected')
+            report_log.add_error('ERROR: single attachment expected')
+            report_log.state = constants.GAReportState.FAILED
+            report_log.save()
+            return HttpResponse(status=406)
+
+        attachment = request.FILES['attachment-1']
+        if attachment.content_type != 'text/csv':
+            logger.warning('ERROR: content type is not CSV')
+            report_log.add_error('ERROR: content type is not CSV')
+            report_log.state = constants.GAReportState.FAILED
+            report_log.save()
+            return HttpResponse(status=406)
+
+        filename = request.FILES['attachment-1'].name
+
+        report_log.csv_filename = filename
+
+        content = attachment.read()
+
         csvreport = CsvReport(content, report_log)
+
+        if not csvreport.is_ad_group_specified():
+            message = 'ERROR: not all landing page urls have a valid ad_group specified'
+            logger.warning(message)
+            report_log.add_error(message)
+            report_log.state = constants.GAReportState.FAILED
+            report_log.save()
+            return HttpResponse(status=406)
+
+        if not csvreport.is_media_source_specified():
+            message = 'ERROR: not all landing page urls have a media source specified'
+            logger.warning(message)
+            report_log.add_error(message)
+            report_log.state = constants.GAReportState.FAILED
+            report_log.save()
+            return HttpResponse(status=406)
+
+        store_to_s3(csvreport.get_date(), filename, content)
+
+        if len(csvreport.get_entries()) == 0:
+            logger.warning('Report is empty (has no entries)')
+            statsd_incr('convapi.aggregated_emails')
+            report_log.add_error('Report is empty (has no entries)')
+            report_log.state = constants.GAReportState.EMPTY_REPORT
+            report_log.save()
+            return HttpResponse(status=200)
+
+        TriggerReportAggregateThread(
+            csvreport=csvreport,
+            sender=request.POST['sender'],
+            recipient=recipient,
+            subject=request.POST['subject'],
+            date=request.POST['Date'],
+            text=None,
+            report_log=report_log
+        ).start()
     except exc.EmptyReportException as e:
         logger.warning(e.message)
         statsd_incr('convapi.aggregated_emails')
@@ -71,40 +109,12 @@ def mailgun_gareps(request):
         report_log.state = constants.GAReportState.EMPTY_REPORT
         report_log.save()
         return HttpResponse(status=200)
-    except exc.CsvParseException as e:
+    except Exception as e:
         logger.warning(e.message)
         report_log.add_error(e.message)
         report_log.state = constants.GAReportState.FAILED
         report_log.save()
         return HttpResponse(status=406)
-
-    store_to_s3(csvreport.get_date(), filename, content)
-
-    if len(csvreport.get_entries()) == 0:
-        logger.warning('Report is empty (has no entries)')
-        statsd_incr('convapi.aggregated_emails')
-        report_log.add_error('Report is empty (has no entries)')
-        report_log.state = constants.GAReportState.EMPTY_REPORT
-        report_log.save()
-        return HttpResponse(status=200)
-
-    if not csvreport.is_ad_group_specified():
-        logger.warning('ERROR: not all landing page urls have an ad_group specified')
-        report_log.add_error('ERROR: not all landing page urls have an ad_group specified')
-
-    if not csvreport.is_media_source_specified():
-        logger.warning('ERROR: not all landing page urls have a media source specified')
-        report_log.add_error('ERROR: not all landing page urls have a media source specified')
-
-    TriggerReportAggregateThread(
-        csvreport=csvreport,
-        sender=request.POST['sender'],
-        recipient=recipient,
-        subject=request.POST['subject'],
-        date=request.POST['Date'],
-        text=None,
-        report_log=report_log
-    ).start()
 
     return HttpResponse(status=200)
 
@@ -124,8 +134,10 @@ class TriggerReportAggregateThread(threading.Thread):
     def run(self):
         try:
             for ad_group_report in self.csvreport.split_by_ad_group():
+                time.sleep(0)  # Makes greenlet yield control to prevent blocking
+
                 self.report_log.add_ad_group_id(ad_group_report.get_ad_group_id())
-                
+
                 report_email = ReportEmail(
                     sender=self.sender,
                     recipient=self.recipient,

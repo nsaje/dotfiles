@@ -1,10 +1,10 @@
 /*globals oneApp,constants,moment*/
-oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemChartService', function ($location, $scope, $state, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemChartService) {
+oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemUserSettings', function ($location, $scope, $state, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemUserSettings) {
     $scope.getTableDataRequestInProgress = false;
     $scope.addCampaignRequestInProgress = false;
     $scope.isSyncInProgress = false;
     $scope.isSyncRecent = true;
-    $scope.isChartShown = zemChartService.load('zemChart');
+    $scope.chartHidden = false;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
     $scope.chartData = undefined;
@@ -15,6 +15,8 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.totalRow = null;
     $scope.order = '-cost';
     $scope.isIncompletePostclickMetrics = false;
+
+    var userSettings = zemUserSettings.getInstance($scope, 'accountCampaigns');
 
     $scope.exportOptions = [
         {name: 'CSV by day', value: 'csv'},
@@ -258,16 +260,12 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             getDailyStats();
-            $location.search('chart_metric1', $scope.chartMetric1);
-            $scope.localStorage.set('accountCampaigns.chartMetric1', $scope.chartMetric1);
         }
     });
 
     $scope.$watch('chartMetric2', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             getDailyStats();
-            $location.search('chart_metric2', $scope.chartMetric2);
-            $scope.localStorage.set('accountCampaigns.chartMetric2', $scope.chartMetric2);
         }
     });
 
@@ -290,10 +288,17 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     var setChartOptions = function () {
         $scope.chartMetricOptions = options.accountChartMetrics;
 
-        if ($scope.hasPermission('zemauth.postclick_metrics')) {
-            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+        if ($scope.hasPermission('zemauth.aggregate_postclick_acquisition')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatAcquisitionChartOptions(
                 $scope.chartMetricOptions,
-                $scope.isPermissionInternal('zemauth.postclick_metrics')
+                $scope.isPermissionInternal('zemauth.aggregate_postclick_acquisition')
+            );
+        }
+
+        if ($scope.hasPermission('zemauth.aggregate_postclick_engagement')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatEngagementChartOptions(
+                $scope.chartMetricOptions,
+                $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
             );
         }
     };
@@ -370,8 +375,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.orderTableData = function(order) {
         $scope.order = order;
 
-        $location.search('order', $scope.order);
-        $scope.localStorage.set('accountCampaigns.order', $scope.order);
         getTableData();
     };
 
@@ -406,57 +409,50 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     $scope.toggleChart = function () {
-        $scope.isChartShown = !$scope.isChartShown;
-        $scope.chartBtnTitle = $scope.isChartShown ? 'Hide chart' : 'Show chart';
-        $location.search('chart_hidden', !$scope.isChartShown ? '1' : null);
+        $scope.chartHidden = !$scope.chartHidden;
+        $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
 
         $timeout(function() {
             $scope.$broadcast('highchartsng.reflow');
         }, 0);
     };
 
-    $scope.$watch('isChartShown', function (newValue, oldValue) {
-        zemChartService.save('zemChart', newValue);
-    });
-
     var initColumns = function () {
         var cols;
 
-        zemPostclickMetricsService.insertColumns($scope.columns, $scope.hasPermission('zemauth.postclick_metrics'), $scope.isPermissionInternal('zemauth.postclick_metrics'));
+        zemPostclickMetricsService.insertAcquisitionColumns(
+            $scope.columns,
+            $scope.columns.length - 1,
+            $scope.hasPermission('zemauth.aggregate_postclick_acquisition'),
+            $scope.isPermissionInternal('zemauth.aggregate_postclick_acquisition')
+        );
 
-        cols = zemCustomTableColsService.load('accountCampaignsCols', $scope.columns);
+        zemPostclickMetricsService.insertEngagementColumns(
+            $scope.columns,
+            $scope.columns.length - 1,
+            $scope.hasPermission('zemauth.aggregate_postclick_engagement'),
+            $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
+        );
+
+        cols = zemCustomTableColsService.load('accountCampaigns', $scope.columns);
         $scope.selectedColumnsCount = cols.length;
 
         $scope.$watch('columns', function (newValue, oldValue) {
-            cols = zemCustomTableColsService.save('accountCampaignsCols', newValue);
+            cols = zemCustomTableColsService.save('accountCampaigns', newValue);
             $scope.selectedColumnsCount = cols.length;
         }, true);
     };
 
     $scope.init = function() {
-        var chartMetric1 = $location.search().chart_metric1 || $scope.localStorage.get('accountCampaigns.chartMetric1') || $scope.chartMetric1;
-        var chartMetric2 = $location.search().chart_metric2 || $scope.localStorage.get('accountCampaigns.chartMetric2') || $scope.chartMetric2;
-        var chartHidden = $location.search().chart_hidden;
-        var order = $location.search().order || $scope.localStorage.get('accountCampaigns.order') || $scope.order;
-
         var campaignIds = $location.search().campaign_ids;
         var campaignTotals = $location.search().campaign_totals;
 
+        userSettings.register('chartMetric1');
+        userSettings.register('chartMetric2');
+        userSettings.register('order');
+        userSettings.registerGlobal('chartHidden');
+
         setChartOptions();
-
-        if (chartMetric1 !== undefined && $scope.chartMetric1 !== chartMetric1) {
-            $scope.chartMetric1 = chartMetric1;
-            $location.search('chart_metric1', chartMetric1);
-        }
-
-        if (chartMetric2 !== undefined && $scope.chartMetric2 !== chartMetric2) {
-            $scope.chartMetric2 = chartMetric2;
-            $location.search('chart_metric2', chartMetric2);
-        }
-
-        if (chartHidden) {
-            $scope.isChartShown = false;
-        }
 
         if (campaignIds) {
             campaignIds.split(',').forEach(function (id) {
@@ -472,11 +468,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
         $scope.selectedTotals = !$scope.selectedCampaignIds.length || !!campaignTotals;
         $location.search('campaign_totals', campaignTotals);
 
-        if (order !== undefined && $scope.order !== order) {
-            $scope.order = order;
-            $location.search('order', order);
-        }
-
         getTableData();
         initColumns();
         pollSyncStatus();
@@ -486,8 +477,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
         $location.search('campaign_ids', null);
         $location.search('campaign_totals', null);
-        $location.search('chart_metric1', null);
-        $location.search('chart_metric2', null);
     });
 
     $scope.$watch('isSyncInProgress', function(newValue, oldValue) {

@@ -52,6 +52,8 @@ oneApp.directive('zemCurrencyInput', ['$filter', function($filter) {
                     var integerPart;
                     var decimalPart;
                     var result;
+                    
+                    value = value.replace(/,/g, '');
 
                     if (!value || isNaN(value)) {
                         return scope.prefix;
@@ -105,7 +107,6 @@ oneApp.directive('zemCurrencyInput', ['$filter', function($filter) {
                     var caretPos = element[0].selectionStart;
                     var decimalValue = toDecimal(value);
                     var formattedValue = fromDecimal(decimalValue);
-
                     element.val(formattedValue);
 
                     // set caret position

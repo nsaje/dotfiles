@@ -30,7 +30,7 @@
                             <span ng-switch="col.type">
                                 <span ng-switch-when="currency">
                                     <span class="non-editable-currency-field" ng-if="!isFieldEditable(row.editable_fields, col.field)" ng-class="{'currency-3': col.fractionSize === 3}">
-                                        <span ng-if="col.settingsField" popover-append-to-body="true" popover-trigger="mouseenter" popover-html-unsafe="This media source doesn't support setting this value through the dashboard" popover-placement="right">
+                                        <span ng-if="col.settingsField" popover-append-to-body="true" popover-trigger="mouseenter" popover-html-unsafe="{{ getSettingsFieldMessage(row) }}" popover-placement="right">
                                             {{ (row[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
                                         </span>
                                         <span ng-if="!col.settingsField">
@@ -93,30 +93,39 @@
                                 <span ng-switch-when="text">
                                     {{ row[col.field] }}
                                 </span>
-                                <span ng-switch-when='checkbox'>
+                                <span 
+                                    ng-switch-when="notification"
+                                    class="notification"
+                                    popover-append-to-body="true"
+                                    popover-trigger="mouseenter"
+                                    popover-html-unsafe="{{ notifications[row.id].message }}"
+                                    popover-placement="bottom">
+                                    <span class="text" ng-class="{'important': notifications[row.id].important}">{{ row[col.field] }}</span>
+                                    <span ng-if="notifications[row.id].inProgress" class="loader"></span>
+                                </span>
+                                <span ng-switch-when="dataStatus">
+                                    <span
+                                        ng-style="{'margin-left': col.internal ? '20px' : '3px'}"
+                                        ng-class="{'okay-icon': dataStatus[row.id].ok, 'alert-icon': !dataStatus[row.id].ok}"
+                                        popover-append-to-body="true"
+                                        popover-trigger="mouseenter"
+                                        popover-html-unsafe="{{ dataStatus[row.id].message }}"
+                                        popover-placement="left">
+                                    </span>
+                                </span>
+                                <span ng-switch-when="checkbox">
                                     <input type="checkbox" data-ng-model="row[col.field]" ng-disabled="!row[col.field] && col.disabled" data-ng-change="callSelectCallback(col.selectCallback, row, row[col.field], true)"/>
                                 </span>
                                 <span ng-switch-when="state">
-                                    <div class="dropdown">
-                                        <button class="btn btn-default dropdown-toggle">
-                                            <div ng-if="row[col.field] === constants.adGroupSettingsState.ACTIVE" class="active-circle-icon"></div>
-                                            <div ng-if="row[col.field] === constants.adGroupSettingsState.INACTIVE" class="pause-icon"></div>
-                                            <div class="drop-arrow"></div>
-                                        </button>
-                                        <ul ng-if="row.editable_fields.indexOf(col.field) !== -1" class="dropdown-menu enabled" role="menu">
-                                            <li><a ng-click="col.onChange(row.id, constants.adGroupSettingsState.ACTIVE)"><div class="active-circle-icon"></div><span>Enabled</span></a></li>
-                                            <li class="divider"></li>
-                                            <li><a ng-click="col.onChange(row.id, constants.adGroupSettingsState.INACTIVE)"><div class="pause-icon"></div><span>Paused</span></a></li>
-                                        </ul>
-                                        <ul ng-if="row.editable_fields.indexOf(col.field) === -1" class="dropdown-menu" role="menu">
-                                            <li ng-if="row[col.field] === constants.adGroupSettingsState.ACTIVE"><a><div class="active-circle-icon"></div><span>Enabled</span></a></li>
-                                            <li ng-if="row[col.field] === constants.adGroupSettingsState.INACTIVE"><a><div class="pause-icon"></div><span>Paused</span></a></li>
-                                            <li class="dropdown-header">This source must be managed manually.</li>
-                                        </ul>
-                                    </div>
+                                    <zem-state-selector 
+                                        id="row.id"
+                                        on-change="col.onChange",
+                                        is-editable="row.editable_fields.indexOf(col.field) !== -1"
+                                        value="row[col.field]"
+                                        maintenance="row.maintenance">
+                                    </zem-state-selector>
                                 </span>
                             </span>
-                            <span ng-if="col.displayNotifications && notifications[row.id]" class="notification" popover-append-to-body="true" popover-trigger="mouseenter" popover-html-unsafe="{{ notifications[row.id] }}" popover-placement="right"></span>
                         </td>
                     </tr>
                 </tbody>

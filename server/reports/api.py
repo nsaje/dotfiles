@@ -22,9 +22,9 @@ logger = logging.getLogger(__name__)
 
 DIMENSIONS = set(['article', 'ad_group', 'date', 'source', 'account', 'campaign'])
 TRAFFIC_FIELDS = ['clicks', 'impressions', 'cost', 'cpc', 'ctr', 'title', 'url']
-POSTCLICK_FIELDS = [
-    'visits', 'percent_new_users', 'pv_per_visit', 'avg_tos',
-    'bounce_rate', 'goals', 'click_discrepancy', 'pageviews',
+POSTCLICK_ACQUISITION_FIELDS = ['visits', 'click_discrepancy', 'pageviews']
+POSTCLICK_ENGAGEMENT_FIELDS = [
+    'percent_new_users', 'pv_per_visit', 'avg_tos', 'bounce_rate', 'goals'
 ]
 
 AGGREGATE_FIELDS = dict(
@@ -245,8 +245,14 @@ def filter_by_permissions(result, user):
         for field in TRAFFIC_FIELDS:
             if field in row:
                 filtered_row[field] = row[field]
-        if user.has_perm('zemauth.postclick_metrics'):
-            for field in POSTCLICK_FIELDS:
+        if (user.has_perm('zemauth.content_ads_postclick_acquisition') or
+                user.has_perm('zemauth.aggregate_postclick_acquisition')):
+            for field in POSTCLICK_ACQUISITION_FIELDS:
+                if field in row:
+                    filtered_row[field] = row[field]
+        if (user.has_perm('zemauth.content_ads_postclick_engagement') or
+                user.has_perm('zemauth.aggregate_postclick_engagement')):
+            for field in POSTCLICK_ENGAGEMENT_FIELDS:
                 if field in row:
                     filtered_row[field] = row[field]
         return filtered_row
@@ -349,7 +355,8 @@ def row_has_traffic_data(row):
 
 
 def row_has_postclick_data(row):
-    return any(row.get(field) is not None for field in POSTCLICK_FIELDS)
+    return any(row.get(field) is not None for field in
+               POSTCLICK_ACQUISITION_FIELDS + POSTCLICK_ENGAGEMENT_FIELDS)
 
 
 def _get_ad_group_ids_with_postclick_data(key, objects):

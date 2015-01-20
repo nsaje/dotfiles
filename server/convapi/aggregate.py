@@ -147,6 +147,9 @@ landing_page_url=%s',
     def aggregate(self):
         data = self.get_stats_by_key()
 
+        if not len(data):
+            return
+
         logger.info('Aggregating report email ( \
 sender=%s, recipient=%s, \
 subject=%s, maildate=%s \

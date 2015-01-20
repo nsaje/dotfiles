@@ -11,7 +11,8 @@ oneApp.directive('zemTable', ['config', function(config) {
             totalRow: '=zemTableTotalRow',
             notifications: '=zemTableNotifications',
             order: '=zemTableOrder',
-            orderCallback: '&zemTableOrderCallback'
+            orderCallback: '&zemTableOrderCallback',
+            dataStatus: '=zemTableDataStatus'
         },
         templateUrl: '/partials/zem_table.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
@@ -62,6 +63,12 @@ oneApp.directive('zemTable', ['config', function(config) {
                 }
 
                 return editableFields.indexOf(field) !== -1;
+            };
+
+            $scope.getSettingsFieldMessage = function (row) {
+                return row.maintenance ? 
+                    'This value cannot be edited because the media source is currently in maintenance.' : 
+                    'This media source doesn\'t support setting this value through the dashboard.';
             };
         }]
     };

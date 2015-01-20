@@ -12,7 +12,8 @@ oneApp.filter('decimalCurrency', function () {
         var num = parseFloat(input);
 
         if (!isNaN(num)) {
-            num = sign + num.toFixed(fractionSize || 2);
+            fractionSize = parseInt(fractionSize);
+            num = sign + num.toFixed(isNaN(fractionSize) ? 2 : fractionSize);
 
             if (replaceTrailingZeros !== undefined && replaceTrailingZeros !== null) {
                 num = num.replace(/(\.{1}\d{2})([0]+)$/g, function (m, p1, p2) {

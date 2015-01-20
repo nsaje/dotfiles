@@ -1,6 +1,7 @@
 import jsonfield
 import binascii
 import datetime
+import collections
 from decimal import Decimal
 
 import utils.string
@@ -430,6 +431,22 @@ class SourceType(models.Model):
         verbose_name='Minimum Daily Budget'
     )
 
+    max_cpc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Maximum CPC'
+    )
+
+    max_daily_budget = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Maximum Daily Budget'
+    )
+
     def can_update_state(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_STATE).exists()
 
@@ -464,13 +481,13 @@ class Source(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
 
     def can_update_state(self):
-        return self.source_type.can_update_state()
+        return self.source_type.can_update_state() and not self.maintenance
 
     def can_update_cpc(self):
-        return self.source_type.can_update_cpc()
+        return self.source_type.can_update_cpc() and not self.maintenance
 
     def can_update_daily_budget(self):
-        return self.source_type.can_update_daily_budget()
+        return self.source_type.can_update_daily_budget() and not self.maintenance
 
     def __unicode__(self):
         return self.name
@@ -666,12 +683,19 @@ class AdGroupSource(models.Model):
         else:
             msid = self.source.name.lower()
 
-        tracking_ids = {
-            '_z1_msid': msid,
-            '_z1_adgid': self.ad_group.id
-        }
+        tracking_ids = collections.OrderedDict(
+            [
+                ('_z1_adgid', self.ad_group.id),
+                ('_z1_msid', msid)
+            ]
+        )
 
         return tracking_ids
+
+    def save(self, *args, **kwargs):
+        super(AdGroupSource, self).save(*args, **kwargs)
+        if not AdGroupSourceSettings.objects.filter(ad_group_source=self).exists():
+            AdGroupSourceSettings.objects.create(ad_group_source=self)
 
     def __unicode__(self):
         return u'{} - {}'.format(self.ad_group, self.source)
@@ -872,7 +896,7 @@ class AdGroupSourceSettings(models.Model):
     )
 
     state = models.IntegerField(
-        null=True,
+        default=constants.AdGroupSourceSettingsState.INACTIVE,
         choices=constants.AdGroupSourceSettingsState.get_choices()
     )
     cpc_cc = models.DecimalField(

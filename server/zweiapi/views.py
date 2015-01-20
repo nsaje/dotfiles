@@ -31,25 +31,11 @@ def zwei_callback(request, action_id):
         _process_zwei_response(action, data)
 
         if action.order and action.order.order_type in actionlogconstants.ActionLogOrderType.get_sync_types():
-            action.ad_group_source.last_successful_sync_dt = \
-                actionlog.sync.AdGroupSourceSync(action.ad_group_source).get_latest_success()
+            last_success_dict = actionlog.sync.AdGroupSourceSync(action.ad_group_source).get_latest_success_by_child()
+
+            action.ad_group_source.last_successful_sync_dt = last_success_dict[action.ad_group_source.id]
+
             action.ad_group_source.save()
-    except Exception as e:
-        _handle_zwei_callback_error(e, action)
-
-    response_data = {'status': 'OK'}
-    return JsonResponse(response_data)
-
-
-@csrf_exempt
-def zwei_settings_callback(request, action_id, settings_id):
-    _validate_callback(request, action_id)
-    action = _get_action(action_id)
-
-    data = json.loads(request.body)
-    try:
-        settings_id = int(settings_id)
-        _procress_zwei_settings_response(settings_id, action, data)
     except Exception as e:
         _handle_zwei_callback_error(e, action)
 
@@ -130,36 +116,6 @@ def _process_zwei_response(action, data):
         dashapi.update_ad_group_source_state(action.ad_group_source, conf)
     elif action.action == actionlogconstants.Action.CREATE_CAMPAIGN:
         dashapi.update_campaign_key(action.ad_group_source, data['data']['source_campaign_key'])
-
-    action.state = actionlogconstants.ActionState.SUCCESS
-    action.save()
-
-
-@transaction.atomic
-def _procress_zwei_settings_response(settings_id, action, data):
-    if action.action != actionlogconstants.Action.SET_CAMPAIGN_STATE:
-        raise Exception(
-            'Unexpected extion action. Expected: {}, got: {}'.format(
-                actionlogconstants.Action.SET_CAMPAIGN_STATE,
-                action.action
-            )
-        )
-
-    if action.state != actionlogconstants.ActionState.WAITING:
-        logger.warning('Action not waiting for a response. Action: %s, response: %s', action, data)
-        return
-
-    if data['status'] != 'success':
-        logger.warning('Action failed. Action: %s, response: %s', action, data)
-
-        action.state = actionlogconstants.ActionState.FAILED
-        action.message = _get_error_message(data)
-        action.save()
-
-        return
-
-    conf = action.payload['args']['conf']
-    dashapi.update_ad_group_source_state(action.ad_group_source, conf, settings_id)
 
     action.state = actionlogconstants.ActionState.SUCCESS
     action.save()
