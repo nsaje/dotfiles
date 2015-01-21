@@ -124,7 +124,11 @@ def reconcile_articles(ad_group, raw_articles):
         article = url_title_article.get((url, title), None)
         if article is None:
             try:
-                article = models.Article.objects.create(ad_group=ad_group, url=url, title=title)
+                # transacton.atomic is necessary to roll back
+                # the query in case IntegrityError happens.
+                # See https://docs.djangoproject.com/en/1.7/topics/db/transactions/#controlling-transactions-explicitly
+                with transaction.atomic():
+                    article = models.Article.objects.create(ad_group=ad_group, url=url, title=title)
             except IntegrityError:
                 logger.info(
                     u'Integrity error upon inserting article: title = {title}, url = {url}, ad group id = {ad_group_id}. '
