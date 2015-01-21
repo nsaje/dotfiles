@@ -106,6 +106,12 @@ from localsettings import *
 
 if TESTING:
     PAGER_DUTY_ENABLED = False
+    USE_HASH_CACHE = False
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
+        }
+    }
 
 LOGGING = {
     'version': 1,

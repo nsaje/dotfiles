@@ -3,7 +3,7 @@ import logging
 import traceback
 
 import hashlib
-import json
+from django.core.cache import cache
 
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
@@ -104,25 +104,15 @@ def _process_zwei_response(action, data):
         ad_group = action.ad_group_source.ad_group
         source = action.ad_group_source.source
 
-        md5_hash = hashlib.md5()
-        md5_hash.update(json.dumps(data['data']))
+        if _has_changed(data, ad_group, source, date):
+            for source_campaign_key, data_rows in data['data']:
+                if source_campaign_key == action.ad_group_source.source_campaign_key:
+                    rows = _prepare_report_rows(ad_group, data_rows)
+                    break
+            else:
+                raise Exception('Source campaign key not in results.')
 
-        logger.info(
-            u'Response data hash: %s for ad_group_id: %s, source_id: %s, date: %s',
-            md5_hash.hexdigest(),
-            ad_group.id,
-            source.id,
-            date
-        )
-
-        for source_campaign_key, data_rows in data['data']:
-            if source_campaign_key == action.ad_group_source.source_campaign_key:
-                rows = _prepare_report_rows(ad_group, data_rows)
-                break
-        else:
-            raise Exception('Source campaign key not in results.')
-
-        reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, rows)
+            reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, rows)
     elif action.action == actionlogconstants.Action.FETCH_CAMPAIGN_STATUS:
         dashapi.update_ad_group_source_state(action.ad_group_source, data['data'])
     elif action.action == actionlogconstants.Action.SET_CAMPAIGN_STATE:
@@ -133,6 +123,25 @@ def _process_zwei_response(action, data):
 
     action.state = actionlogconstants.ActionState.SUCCESS
     action.save()
+
+
+def _has_changed(data, ad_group, source, date):
+    if not settings.USE_HASH_CACHE:
+        # treat everything as new data
+        return True
+
+    md5_hash = hashlib.md5()
+    md5_hash.update(json.dumps(data['data']))
+
+    val = md5_hash.hexdigest()
+    key = 'fetch_reports_response_hash_{}_{}_{}'.format(ad_group.id, source.id, date)
+
+    old_val = cache.get(key)
+    if old_val is None or val != old_val:
+        cache.set(key, val, 86400)  # cache for a day
+        return True
+
+    return False
 
 
 def _handle_zwei_callback_error(e, action):
