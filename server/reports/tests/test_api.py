@@ -554,6 +554,7 @@ class UpsertReportsTestCase(test.TestCase):
             source=ags1.source,
             rows=_prepare_report_rows(ags1.ad_group, rows_ags1_date1)
         )
+
         for row in rows_ags1_date1:
             article = dashmodels.Article.objects.get(title=row['title'], url=row['url'])
             stats = models.ArticleStats.objects.get(

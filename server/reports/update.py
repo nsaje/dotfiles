@@ -16,37 +16,48 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
 
     *Note*: rows contains all traffic data for the given datetime, ad_group and source
     '''
-    # bulk update to reset traffic metrics
-    ArticleStats.objects.filter(
+    stats = ArticleStats.objects.filter(
         datetime=datetime, ad_group=ad_group, source=source
-    ).update(
+    )
+
+    # bulk update to reset traffic metrics
+    stats.update(
         impressions=0,
         clicks=0,
         cost_cc=0
     )
 
+    stats_dict = {stat.article.id: stat for stat in stats}
+
     aggregated_stats = {}
     max_has_postclick_metrics = 0
     max_has_conversion_metrics = 0
 
-    # save the data
     for row in rows:
         # update the stats aggregate
         for key, val in row.iteritems():
-            if key not in TRAFFIC_METRICS: 
+            if key not in TRAFFIC_METRICS:
                 continue
             if key not in aggregated_stats:
                 aggregated_stats[key] = 0
             aggregated_stats[key] += val
 
-        dimensions = dict(
-            datetime=datetime,
-            article=row['article'],
-            ad_group=ad_group,
-            source=source
-        )
-        try:
-            article_stats = ArticleStats.objects.get(**dimensions)
+        article_stats = stats_dict.get(row['article'].id)
+
+        if article_stats is None:
+            fields = dict(
+                datetime=datetime,
+                article=row['article'],
+                ad_group=ad_group,
+                source=source
+            )
+            fields.update(row)
+
+            article_stats = ArticleStats(**fields)
+
+            # update stats dict with newly created ArticleStats object
+            stats_dict[article_stats.article.id] = article_stats
+        else:
             if article_stats.has_postclick_metrics == 1:
                 max_has_postclick_metrics = 1
             if article_stats.has_conversion_metrics == 1:
@@ -54,10 +65,6 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
             for metric, value in row.items():
                 if metric in TRAFFIC_METRICS:
                     setattr(article_stats, metric, getattr(article_stats, metric) + value)
-        except ArticleStats.DoesNotExist:
-            fields = copy.copy(dimensions)
-            fields.update(row)
-            article_stats = ArticleStats(**fields)
 
         article_stats.has_traffic_metrics = 1
         article_stats.save()
