@@ -2,6 +2,9 @@ import json
 import logging
 import traceback
 
+import hashlib
+import json
+
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
@@ -100,6 +103,17 @@ def _process_zwei_response(action, data):
         date = action.payload['args']['date']
         ad_group = action.ad_group_source.ad_group
         source = action.ad_group_source.source
+
+        md5_hash = hashlib.md5()
+        md5_hash.update(json.dumps(data['data']))
+
+        logger.info(
+            u'Response data hash: %s for ad_group_id: %s, source_id: %s, date: %s',
+            md5_hash.hexdigest(),
+            ad_group.id,
+            source.id,
+            date
+        )
 
         for source_campaign_key, data_rows in data['data']:
             if source_campaign_key == action.ad_group_source.source_campaign_key:
