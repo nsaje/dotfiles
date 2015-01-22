@@ -83,3 +83,12 @@ QUERY_AGGREGATE_REPORTS=False
 # email of the demo user
 DEMO_USER_EMAIL = ''
 DEMO_USER_PASSWORD = ''
+
+# cache settings
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
+    }
+}
+USE_HASH_CACHE = False
+HASH_CACHE_TTL = 24 * 60 * 60
