@@ -18,7 +18,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     '''
     stats = ArticleStats.objects.filter(
         datetime=datetime, ad_group=ad_group, source=source
-    )
+    ).select_related('article')
 
     # bulk update to reset traffic metrics
     stats.update(
