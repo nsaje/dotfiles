@@ -141,7 +141,7 @@ def _has_changed(data, ad_group, source, date):
         logger.info('Reports data has changed since last sync for ad group: {}, source: {}, date: {}'.format(
             ad_group.id, source.id, date))
 
-        cache.set(key, val, 86400)  # cache for a day
+        cache.set(key, val, 24 * 60 * 60)
         return True
 
     return False
