@@ -138,6 +138,9 @@ def _has_changed(data, ad_group, source, date):
 
     old_val = cache.get(key)
     if old_val is None or val != old_val:
+        logger.info('Reports data has changed since last sync for ad group: {}, source: {}, date: {}'.format(
+            ad_group.id, source.id, date))
+
         cache.set(key, val, 86400)  # cache for a day
         return True
 
