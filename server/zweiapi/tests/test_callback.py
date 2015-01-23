@@ -59,6 +59,43 @@ class CampaignStatusTest(TestCase):
         self.assertNotEqual(latest_state, current_state)
 
 
+class TestUpdateLastSuccessfulSync(TestCase):
+
+    fixtures = ['test_zwei_api.yaml']
+
+    def test_update_last_successful_sync_fetch_reports_successful_order(self):
+        action = ActionLog.objects.get(pk=1)
+
+        views._update_last_successful_sync_dt(action)
+
+        ad_group_source = AdGroupSource.objects.get(pk=1)
+        self.assertEqual(ad_group_source.last_successful_sync_dt.isoformat(), '2014-07-03T10:00:00')
+
+    def test_update_last_successful_sync_fetch_status_successful_order(self):
+        action = ActionLog.objects.get(pk=5)
+
+        views._update_last_successful_sync_dt(action)
+
+        ad_group_source = AdGroupSource.objects.get(pk=1)
+        self.assertEqual(ad_group_source.last_successful_sync_dt.isoformat(), '2014-07-03T10:00:00')
+
+    def test_update_last_successful_sync_fetch_reports_waiting_action_in_order(self):
+        action = ActionLog.objects.get(pk=4)
+
+        views._update_last_successful_sync_dt(action)
+
+        ad_group_source = AdGroupSource.objects.get(pk=1)
+        self.assertEqual(ad_group_source.last_successful_sync_dt.isoformat(), '2014-07-03T06:00:00')
+
+    def test_update_last_successful_sync_fetch_status_waiting_action_in_order(self):
+        action = ActionLog.objects.get(pk=6)
+
+        views._update_last_successful_sync_dt(action)
+
+        ad_group_source = AdGroupSource.objects.get(pk=1)
+        self.assertEqual(ad_group_source.last_successful_sync_dt.isoformat(), '2014-07-03T10:00:00')
+
+
 class FetchReportsTestCase(TestCase):
 
     fixtures = ['test_zwei_api.yaml']
