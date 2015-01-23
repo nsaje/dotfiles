@@ -32,18 +32,38 @@ def zwei_callback(request, action_id):
     data = json.loads(request.body)
     try:
         _process_zwei_response(action, data)
-
-        if action.order and action.order.order_type in actionlogconstants.ActionLogOrderType.get_sync_types():
-            last_success_dict = actionlog.sync.AdGroupSourceSync(action.ad_group_source).get_latest_success_by_child()
-
-            action.ad_group_source.last_successful_sync_dt = last_success_dict[action.ad_group_source.id]
-
-            action.ad_group_source.save()
+        _update_last_successful_sync_dt(action)
     except Exception as e:
         _handle_zwei_callback_error(e, action)
 
     response_data = {'status': 'OK'}
     return JsonResponse(response_data)
+
+
+def _update_last_successful_sync_dt(action):
+    if not action.order or action.state == actionlogconstants.ActionState.FAILED:
+        return
+
+    status_sync_dt = None
+    report_sync_dt = None
+
+    if (action.order.order_type == actionlogconstants.ActionLogOrderType.FETCH_REPORTS and
+        all(a.state == actionlogconstants.ActionState.SUCCESS
+            for a in actionlogmodels.ActionLog.objects.filter(order=action.order))):
+        report_sync_dt = action.order.created_dt
+        status_sync_dt = actionlog.sync.AdGroupSourceSync(
+            action.ad_group_source).get_latest_status_sync()
+
+    elif action.order.order_type == actionlogconstants.ActionLogOrderType.FETCH_STATUS:
+        report_sync_dt = actionlog.sync.AdGroupSourceSync(
+            action.ad_group_source).get_latest_report_sync()
+        status_sync_dt = action.order.created_dt
+
+    if status_sync_dt is None or report_sync_dt is None:
+        return
+
+    action.ad_group_source.last_successful_sync_dt = min(status_sync_dt, report_sync_dt)
+    action.ad_group_source.save()
 
 
 def _get_error_message(data):

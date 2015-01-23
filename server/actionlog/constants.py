@@ -57,7 +57,3 @@ class ActionLogOrderType(ConstantBase):
         FETCH_STATUS: 'Fetch status',
         CREATE_CAMPAIGN: 'Create campaign'
     }
-
-    @classmethod
-    def get_sync_types(cls):
-        return (cls.FETCH_ALL, cls.FETCH_REPORTS, cls.FETCH_STATUS, cls.STOP_ALL)
