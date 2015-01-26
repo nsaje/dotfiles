@@ -6,7 +6,7 @@
     <ol class="breadcrumb" ng-show="breadcrumb">
         <li ng-repeat="item in breadcrumb track by $index">
             <span ng-if="item.disabled" ng-class="{'active': $last}">{{ item.name }}</span>
-            <a ng-if="!item.disabled" ui-sref="{{item.state}}" ng-class="{'active': $last}">{{ item.name }}</a>
+            <a ng-if="!item.disabled" ng-href="{{$state.href(item.state, item.params)}}" ng-class="{'active': $last}">{{ item.name }}</a>
         </li>
     </ol>
 </div>

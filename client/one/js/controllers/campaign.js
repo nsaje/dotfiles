@@ -34,9 +34,17 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
         if (!$scope.accounts) {
             return;
         }
-        $scope.setBreadcrumbAndTitle(
-            [{name: $scope.account.name, state: $scope.getDefaultAccountState() + '({id: ' + $scope.account.id + '})', disabled: !$scope.canAccessAccounts()},
-            {name: $scope.campaign.name, state: $scope.getDefaultCampaignState() + '({id: ' + $scope.campaign.id + '})', disabled: true}],
+        $scope.setBreadcrumbAndTitle([{
+                name: $scope.account.name,
+                state: $scope.getDefaultAccountState(),
+                params: {id: $scope.account.id},
+                disabled: !$scope.canAccessAccounts()
+            }, {
+                name: $scope.campaign.name,
+                state: $scope.getDefaultCampaignState(),
+                params: {id: $scope.campaign.id},
+                disabled: true
+            }],
             $scope.campaign.name
         );
     };

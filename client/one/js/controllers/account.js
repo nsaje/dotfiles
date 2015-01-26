@@ -30,8 +30,12 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) 
         if (!$scope.account) {
             return;
         }
-        $scope.setBreadcrumbAndTitle(
-            [{name: $scope.account.name, state: $scope.getDefaultAccountState() + '({id: ' + $scope.account.id + '})', disabled: true }],
+        $scope.setBreadcrumbAndTitle([{
+                name: $scope.account.name,
+                state: $scope.getDefaultAccountState(),
+                params: {id: $scope.account.id},
+                disabled: true
+            }],
             $scope.account.name
         );
     };

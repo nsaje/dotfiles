@@ -53,10 +53,22 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
         if (!$scope.account || !$scope.campaign || !$scope.adGroup) {
             return;
         }
-        $scope.setBreadcrumbAndTitle(
-            [{name: $scope.account.name, state: $scope.getDefaultAccountState() + '({id: ' + $scope.account.id + '})', disabled: !$scope.canAccessAccounts()},
-            {name: $scope.campaign.name, state: $scope.getDefaultCampaignState() + '({id: ' + $scope.campaign.id + '})', disabled: !$scope.canAccessCampaigns()},
-            {name: $scope.adGroup.name, state: $scope.getDefaultAdGroupState() + '({id: ' + $scope.adGroup.id + '})', disabled: true}],
+        $scope.setBreadcrumbAndTitle([{
+                name: $scope.account.name,
+                state: $scope.getDefaultAccountState(),
+                params: {id: $scope.account.id},
+                disabled: !$scope.canAccessAccounts()
+            }, {
+                name: $scope.campaign.name,
+                state: $scope.getDefaultCampaignState(),
+                params: {id: $scope.campaign.id},
+                disabled: !$scope.canAccessCampaigns()
+            }, {
+                name: $scope.adGroup.name,
+                state: $scope.getDefaultAdGroupState(),
+                params: {id: $scope.adGroup.id},
+                disabled: true
+            }],
             $scope.adGroup.name + ' - ' + $scope.campaign.name
         );
     };
