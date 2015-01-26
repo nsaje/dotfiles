@@ -355,11 +355,11 @@ def _get_state_messages(ad_group_source):
         return [], True
 
     messages = []
-    if latest_settings.cpc_cc is not None and (
+    if ad_group_source.source.can_update_cpc() and latest_settings.cpc_cc is not None and (
             latest_state is None or latest_settings.cpc_cc != latest_state.cpc_cc):
         messages.append(message_template.format(name='Bid CPC'))
 
-    if latest_settings.daily_budget_cc is not None and (
+    if ad_group_source.source.can_update_daily_budget() and latest_settings.daily_budget_cc is not None and (
             latest_state is None or latest_settings.daily_budget_cc != latest_state.daily_budget_cc):
         messages.append(message_template.format(name='Daily Budget'))
 

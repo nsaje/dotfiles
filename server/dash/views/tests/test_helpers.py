@@ -37,6 +37,21 @@ class ViewHelpersTestCase(TestCase):
             'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
         )
 
+    def test_get_ad_group_sources_data_status_cannot_edit_cpc_budget(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=2)
+
+        # clear all available actions - this makes editing disabled
+        ad_group_source.source.source_type.available_actions.clear()
+
+        data_status = helpers.get_ad_group_sources_data_status(
+            [ad_group_source],
+            include_state_messages=True)
+
+        self.assertEqual(
+            data_status[ad_group_source.source_id]['message'],
+            'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
+        )
+
     def test_get_ad_group_sources_data_status_not_stale(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=3)
 

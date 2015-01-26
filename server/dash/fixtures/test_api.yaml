@@ -37,6 +37,18 @@
     model: dash.campaign
     pk: 1
 
+# source actions
+
+- fields: {}
+  model: dash.sourceaction
+  pk: 1
+- fields: {}
+  model: dash.sourceaction
+  pk: 2
+- fields: {}
+  model: dash.sourceaction
+  pk: 3
+
 # source types
 
 -   fields:
@@ -46,6 +58,7 @@
 
 -   fields:
         type: 'gravity'
+        available_actions: [1, 2, 3]
     model: dash.sourcetype
     pk: 2
 
