@@ -179,8 +179,16 @@ Zemanta One keeps track of the actions, that need to be performed by Zemanta Zwe
 
 [Number of failed tasks](https://metrics.librato.com/metrics/n_cmd_failed?duration=86400)
 
+It's important that data and actions are in sync with external systems. This is why we need to track, how many hours passed from last sync. (If the delay is high, it could mean problems in backend (zwei) or error in payloads sent via eins)
+
+[Last successful sync](https://metrics.librato.com/metrics/actionlog.hours_since_last_sync?duration=86400)
+
+Zemanta zwei has its own queue, filled with tasks from zemanta one. The queues should not get too full, since this means delay in reporting, which directly effects end user. 
+
+[Number of messages](https://metrics.librato.com/metrics/AWS.SQS.ApproximateNumberOfMessagesVisible?duration=10800)
+
 ##### Data consistency
-We are aggregating lots of data (impressions, visits, conversions) via external systems. It is important that what we aggregate and report to the end user consistently. Composite difference in preaggregation graph, shows the difference between aggregated and reported values. This means, that graphs should have the value of 0.
+We are aggregating lots of data (impressions, visits, conversions) via external systems. It is important, that what we aggregate and report to the end user consistently. Composite difference in preaggregation graph, shows the difference between aggregated and reported values. This means, that graphs should have the value of 0.
 
 [Data consistency dashboard](https://metrics.librato.com/dashboards/46795)
 
@@ -189,6 +197,8 @@ New Relic supports alerting based on APDEX (Apdex is an industry standard to mea
 ERROR RATE > 13.6%
 
 [New Relic](https://rpm.newrelic.com/accounts/719319/applications/4618367)
+
+
 
 
 
