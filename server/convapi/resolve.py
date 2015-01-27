@@ -11,24 +11,6 @@ def resolve_source(source_param):
         if source.tracking_slug is not None and source_param.startswith(source.tracking_slug):
             return source
 
-    if source_param.startswith('bigstory'):
-        #  Zemanta CDN
-        return dash.models.Source.objects.get(id=9)
-    if source_param.startswith('industrybrains'):
-        #  AdBlade
-        return dash.models.Source.objects.get(id=1)
-    if source_param.startswith('adiant.com'):
-        #  Adiant (b0)
-        return dash.models.Source.objects.get(id=19)
-    if source_param.startswith('b1_adiant'):
-        #  Adiant (b1)
-        return dash.models.Source.objects.get(id=22)
-
-    source_param_lc = source_param.lower()
-    for source in dash.models.Source.objects.all():
-        if source_param_lc.startswith(source.name.lower()):
-            return source
-
     return None
 
 
