@@ -7,10 +7,9 @@ def resolve_source(source_param):
     if source_param is None:
         return None
 
-    try:
-        return dash.models.Source.objects.get(tracking_slug=source_param)
-    except dash.models.Source.DoesNotExist:
-        pass
+    for source in dash.models.Source.objects.all():
+        if source_param.startswith(source.tracking_slug):
+            return source
 
     if source_param.startswith('bigstory'):
         #  Zemanta CDN
