@@ -419,7 +419,14 @@ class SourcesTable(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    def get_totals(self, ad_group_level, user, ad_group_sources, totals_data, sources_states, sources_settings, yesterday_cost):
+    def get_totals(self,
+                   ad_group_level,
+                   user,
+                   ad_group_sources,
+                   totals_data,
+                   sources_states,
+                   sources_settings,
+                   yesterday_cost):
         result = {
             'cost': totals_data['cost'],
             'cpc': totals_data['cpc'],
@@ -538,24 +545,24 @@ class SourcesTable(api_common.BaseApiView):
                         row['editable_fields'].append('daily_budget')
 
                 if user.has_perm('zemauth.set_ad_group_source_settings')\
-                and source_settings is not None \
-                and source_settings.state is not None:
+                   and source_settings is not None \
+                   and source_settings.state is not None:
                     row['status_setting'] = source_settings.state
                 else:
                     row['status_setting'] = row['status']
 
                 if user.has_perm('zemauth.set_ad_group_source_settings') \
-                and 'bid_cpc' in row['editable_fields'] \
-                and source_settings is not None \
-                and source_settings.cpc_cc is not None:
+                   and 'bid_cpc' in row['editable_fields'] \
+                   and source_settings is not None \
+                   and source_settings.cpc_cc is not None:
                     row['bid_cpc'] = source_settings.cpc_cc
                 else:
                     row['bid_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None
 
                 if user.has_perm('zemauth.set_ad_group_source_settings') \
-                and 'daily_budget' in row['editable_fields'] \
-                and source_settings is not None \
-                and source_settings.daily_budget_cc is not None:
+                   and 'daily_budget' in row['editable_fields'] \
+                   and source_settings is not None \
+                   and source_settings.daily_budget_cc is not None:
                     row['daily_budget'] = source_settings.daily_budget_cc
                 else:
                     row['daily_budget'] = states[0].daily_budget_cc if len(states) else None
@@ -596,7 +603,8 @@ class AccountsAccountsTable(api_common.BaseApiView):
         order = request.GET.get('order')
 
         has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
-        show_archived = request.GET.get('show_archived') == 'true' and request.user.has_perm('zemauth.view_archived_entities')
+        show_archived = request.GET.get('show_archived') == 'true' and\
+            request.user.has_perm('zemauth.view_archived_entities')
 
         user = request.user
 
@@ -809,7 +817,8 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         order = request.GET.get('order') or '-cost'
 
         has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
-        show_archived = request.GET.get('show_archived') == 'true' and request.user.has_perm('zemauth.view_archived_entities')
+        show_archived = request.GET.get('show_archived') == 'true' and\
+            request.user.has_perm('zemauth.view_archived_entities')
 
         stats = reports.api.filter_by_permissions(reports.api.query(
             start_date=start_date,
@@ -926,7 +935,8 @@ class AccountCampaignsTable(api_common.BaseApiView):
         order = request.GET.get('order') or '-clicks'
 
         has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
-        show_archived = request.GET.get('show_archived') == 'true' and request.user.has_perm('zemauth.view_archived_entities')
+        show_archived = request.GET.get('show_archived') == 'true' and\
+            request.user.has_perm('zemauth.view_archived_entities')
 
         campaigns = models.Campaign.objects.all().filter_by_user(user).\
             filter(account=account_id)
@@ -951,8 +961,8 @@ class AccountCampaignsTable(api_common.BaseApiView):
 
         totals_stats['budget'] = sum(budget.CampaignBudget(campaign).get_total()
                                      for campaign in campaigns)
-        total_spend = sum(budget.CampaignBudget(campaign).get_spend() \
-                                     for campaign in campaigns)
+        total_spend = sum(budget.CampaignBudget(campaign).get_spend()
+                          for campaign in campaigns)
         totals_stats['available_budget'] = totals_stats['budget'] - total_spend
         totals_stats['unspent_budget'] = totals_stats['budget'] - (totals_stats.get('cost') or 0)
 
