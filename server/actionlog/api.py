@@ -193,9 +193,13 @@ def count_failed_stats_actions():
     ).count()
 
 
-def age_oldest_waiting_stats_action():
-    waiting_actions = models.ActionLog.objects.filter(
-        Q(action_type=constants.ActionType.MANUAL) | Q(action=constants.Action.CREATE_CAMPAIGN),
+def age_oldest_waiting_action(manual_action=True):
+    if manual_action:
+        filter_constraints = Q(action_type=constants.ActionType.MANUAL) | Q(action=constants.Action.CREATE_CAMPAIGN)
+    else:
+        filter_constraints = Q(action_type=constants.ActionType.AUTOMATIC)
+
+    waiting_actions = models.ActionLog.objects.filter(filter_constraints,
         state=constants.ActionState.WAITING
     ).order_by('created_dt')
 
