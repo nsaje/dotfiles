@@ -476,6 +476,7 @@ class Source(models.Model):
         blank=False,
         null=False
     )
+    tracking_slug = models.SlugField(max_length=50, null=True, blank=False, unique=True, verbose_name='Tracking slug')
     maintenance = models.BooleanField(default=True)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
@@ -678,9 +679,13 @@ class AdGroupSource(models.Model):
     last_successful_sync_dt = models.DateTimeField(blank=True, null=True)
 
     def get_tracking_ids(self):
-        if self.source.source_type and self.source.source_type.type == constants.SourceType.ZEMANTA:
+        if self.source.source_type and\
+           self.source.source_type.type in [constants.SourceType.ZEMANTA, constants.SourceType.B1]:
             msid = '{sourceDomain}'
+        elif self.source.tracking_slug is not None and self.source.tracking_slug != '':
+            msid = self.source.tracking_slug
         else:
+            # Once we have tracking slugs for all sources in db, we can remove this
             msid = self.source.name.lower()
 
         tracking_ids = collections.OrderedDict(

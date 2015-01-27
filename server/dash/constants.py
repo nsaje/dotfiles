@@ -139,6 +139,7 @@ class SourceType(ConstantBase):
     YAHOO = 'yahoo'
     ZEMANTA = 'zemanta'
     DISQUS = 'disqus'
+    B1 = 'b1'
 
     _VALUES = {
         ADBLADE: 'AdBlade',
