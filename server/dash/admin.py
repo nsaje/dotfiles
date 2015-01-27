@@ -279,6 +279,7 @@ class SourceAdmin(admin.ModelAdmin):
     list_display = (
         'name',
         'source_type',
+        'tracking_slug',
         'maintenance',
         'created_dt',
         'modified_dt',
