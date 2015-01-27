@@ -684,6 +684,9 @@ class AdGroupSource(models.Model):
             msid = '{sourceDomain}'
         elif self.source.tracking_slug is not None and self.source.tracking_slug != '':
             msid = self.source.tracking_slug
+        else:
+            # Once we have tracking slugs for all sources in db, we can remove this
+            msid = self.source.name.lower()
 
         tracking_ids = collections.OrderedDict(
             [
