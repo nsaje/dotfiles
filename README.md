@@ -163,3 +163,33 @@ grunt e2e --sauce
 Clients send us daily reports by landing pages from their Google Analytics. We import the postclick and conversion metrics into ONE's reports. The general process is described in the sequence diagram below
 
 ![Image](docs/ga_import_sequence.png)
+
+## Alerting
+
+In the following section, we will review the most important metrics and responses to alerts, attached to them.
+
+##### Demo Data
+Demo is an important sales tool to convince clients to test or even buy our services. That is way it is important, 
+that data is refreshed. 
+
+[Is there recent data for demo?](https://metrics.librato.com/metrics/demo.total_recent_impressions?duration=604800)
+
+##### Tasks
+Zemanta One keeps track of the actions, that need to be performed by Zemanta Zwei. These tasks constist of adjusting CPC bids, to daily budgets, and getting newest reports, etc. The important metric here is the number of failed tasks that occur through time.
+
+[Number of failed tasks](https://metrics.librato.com/metrics/n_cmd_failed?duration=86400)
+
+##### Data consistency
+We are aggregating lots of data (impressions, visits, conversions) via external systems. It is important that what we aggregate and report to the end user consistently. Composite difference in preaggregation graph, shows the difference between aggregated and reported values. This means, that graphs should have the value of 0.
+
+[Data consistency dashboard](https://metrics.librato.com/dashboards/46795)
+
+##### New Relic
+New Relic supports alerting based on APDEX (Apdex is an industry standard to measure users' satisfaction with the response time of an application or service) and ERROR RATE. Alerts are fired, when APDEX < 0.5
+ERROR RATE > 13.6%
+
+[New Relic](https://rpm.newrelic.com/accounts/719319/applications/4618367)
+
+
+
+
