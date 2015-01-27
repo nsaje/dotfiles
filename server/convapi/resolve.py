@@ -8,7 +8,7 @@ def resolve_source(source_param):
         return None
 
     for source in dash.models.Source.objects.all():
-        if source_param.startswith(source.tracking_slug):
+        if source.tracking_slug is not None and source_param.startswith(source.tracking_slug):
             return source
 
     if source_param.startswith('bigstory'):
