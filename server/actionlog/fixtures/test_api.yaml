@@ -127,6 +127,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: AdBlade
+        tracking_slug: 'industrybrains'
         source_type: 1
         maintenance: false
     model: dash.source
@@ -136,6 +137,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: Gravity
+        tracking_slug: 'gravity'
         source_type: 2
         maintenance: false
     model: dash.source
@@ -145,6 +147,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: Outbrain
+        tracking_slug: 'outbrain'
         source_type: 3
         maintenance: false
     model: dash.source
@@ -154,6 +157,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: Taboola
+        tracking_slug: 'taboola'
         source_type: 4
         maintenance: false
     model: dash.source
@@ -163,6 +167,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: Yahoo
+        tracking_slug: 'yahoo'
         source_type: 5
         maintenance: false
     model: dash.source
@@ -172,6 +177,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: MaintenanceSource
+        tracking_slug: 'maintenancesource'
         source_type: 6
         maintenance: true
     model: dash.source

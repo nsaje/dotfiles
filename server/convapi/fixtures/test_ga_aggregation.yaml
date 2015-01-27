@@ -71,6 +71,7 @@
 - fields:
     source_type: 1
     name: 'Yahoo'
+    tracking_slug: 'yahoo'
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
   model: dash.source
@@ -79,6 +80,7 @@
 - fields:
     source_type: 2
     name: 'Infolinks'
+    tracking_slug: 'infolinks'
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
   model: dash.source
@@ -87,6 +89,7 @@
 - fields:
     source_type: 3
     name: 'Outbrain'
+    tracking_slug: 'outbrain'
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
   model: dash.source
@@ -95,6 +98,7 @@
 - fields:
     source_type: 4
     name: 'AdBlade'
+    tracking_slug: 'adblade'
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
   model: dash.source

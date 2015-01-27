@@ -67,6 +67,7 @@
 - fields:
     source_type: null
     name: 'Test 1'
+    tracking_slug: 'test1'
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
   model: dash.source
@@ -75,6 +76,7 @@
 - fields:
     source_type: null
     name: 'Test 2'
+    tracking_slug: 'test2'
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
   model: dash.source

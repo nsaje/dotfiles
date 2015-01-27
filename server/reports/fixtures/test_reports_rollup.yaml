@@ -142,6 +142,7 @@
 - fields:
     source_type: null
     name: 'A Source'
+    tracking_slug: 'asource'
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
   model: dash.source
@@ -150,6 +151,7 @@
 - fields:
     source_type: null
     name: 'B Source'
+    tracking_slug: 'bsource'
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
   model: dash.source
