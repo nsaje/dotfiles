@@ -1,5 +1,4 @@
 import decimal
-import json
 import logging
 
 from django.db import transaction, IntegrityError
@@ -77,7 +76,7 @@ def _get_latest_ad_group_source_state(ad_group_source):
 
 
 def update_campaign_key(ad_group_source, source_campaign_key):
-    ad_group_source.source_campaign_key = json.dumps(source_campaign_key)
+    ad_group_source.source_campaign_key = source_campaign_key
     ad_group_source.save()
 
 

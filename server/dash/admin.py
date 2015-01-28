@@ -159,32 +159,10 @@ class DefaultSourceSettingsAdmin(admin.ModelAdmin):
     credentials_.admin_order_field = 'credentials'
 
 
-class AdGroupSourceForm(forms.ModelForm):
-
-    def clean(self):
-
-        # This is a hack to bypass a bug in django-jsonfield which doesn't
-        # handle unique constraints on models very well. The unique field
-        # in this case should actually be removed, but the current Django
-        # version we are using (1.7 RC1) has a bug that crashes the
-        # application when trying to remove the unique constraints.
-        #
-        # When a more stable version of Django is used, this should be
-        # removed, along with the unique constraint in the models on
-        # source_id and source_campaign_key
-        if 'source_campaign_key' in self.cleaned_data:
-            self.cleaned_data['source_campaign_key'] = json.dumps(self.cleaned_data['source_campaign_key'])
-
-        return self.cleaned_data
-
-
 # Account
 
 class AccountUserInline(admin.TabularInline):
     model = models.Account.users.through
-    # fields = (
-    #     'get_full_name',
-    # )
     form = AbstractUserForm
     extra = 0
     raw_id_fields = ("user", )
@@ -349,7 +327,6 @@ class CampaignSettingsAdmin(admin.ModelAdmin):
 
 
 class AdGroupSourcesInline(admin.TabularInline):
-    form = AdGroupSourceForm
     verbose_name = "Ad Group's Source"
     verbose_name_plural = "Ad Group's Sources"
     model = models.AdGroupSource
