@@ -195,7 +195,7 @@ def count_failed_stats_actions():
 
 def age_oldest_waiting_action(manual_action=True):
     if manual_action:
-        filter_constraints = Q(action_type=constants.ActionType.MANUAL) | Q(action=constants.Action.CREATE_CAMPAIGN)
+        filter_constraints = Q(action_type=constants.ActionType.MANUAL)
     else:
         filter_constraints = Q(action_type=constants.ActionType.AUTOMATIC)
 
