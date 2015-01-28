@@ -124,13 +124,7 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return True
-
-    def get_actions(self, request):
-        actions = super(ActionLogAdminAdmin, self).get_actions(request)
-        if 'delete_selected' in actions:
-            del actions['delete_selected']
-        return actions
-
+  
     def action_(self, obj):
         if obj.action == constants.Action.FETCH_REPORTS:
             description = 'for {}'.format(
