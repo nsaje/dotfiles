@@ -19,8 +19,13 @@ class Command(BaseCommand):
 
         # monitor the state of manual actions
         n_cmd_waiting = api.count_waiting_stats_actions()
-        statsd_helper.statsd_gauge('n_cmd_waiting', n_cmd_waiting)
+        statsd_helper.statsd_gauge('actionlog.n_cmd_waiting', n_cmd_waiting)
+
         n_cmd_failed = api.count_failed_stats_actions()
-        statsd_helper.statsd_gauge('n_cmd_failed', n_cmd_failed)
-        hours_oldest_cmd_waiting = api.age_oldest_waiting_stats_action()
-        statsd_helper.statsd_gauge('hours_oldest_cmd_waiting', hours_oldest_cmd_waiting)
+        statsd_helper.statsd_gauge('actionlog.n_cmd_failed', n_cmd_failed)
+
+        hours_oldest_manual_cmd_waiting = api.age_oldest_waiting_action(manual_action=True)
+        statsd_helper.statsd_gauge('actionlog.hours_oldest_cmd_waiting', hours_oldest_manual_cmd_waiting)
+
+        hours_oldest_auto_cmd_waiting = api.age_oldest_waiting_action(manual_action=False)
+        statsd_helper.statsd_gauge('actionlog.hours_oldest_auto_cmd_waiting', hours_oldest_auto_cmd_waiting)
