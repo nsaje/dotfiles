@@ -177,7 +177,7 @@ that data is refreshed.
 ##### Tasks
 Zemanta One keeps track of the actions, that need to be performed by Zemanta Zwei. These tasks constist of adjusting CPC bids, to daily budgets, and getting newest reports, etc. The important metric here is the number of failed tasks that occur through time.
 
-[Number of failed tasks](https://metrics.librato.com/metrics/n_cmd_failed?duration=86400)
+[Number of failed manual tasks](https://metrics.librato.com/metrics/n_cmd_failed?duration=86400)
 
 It's important that data and actions are in sync with external systems. This is why we need to track, how many hours passed from last sync. (If the delay is high, it could mean problems in backend (zwei) or error in payloads sent via eins)
 
