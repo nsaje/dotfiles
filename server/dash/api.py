@@ -88,8 +88,9 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings):
         return
 
     for field_name, field_value in changes.iteritems():
-        # State of an ad group is set automatically
-        if field_name == 'state':
+        # State of an ad group is set automatically.
+        # For changes of cpc_cc and daily_budget_cc, mail is sufficient
+        if field_name in ['state', 'cpc_cc', 'daily_budget_cc']:
             continue
 
         actionlog.api.init_set_ad_group_property_order(ad_group, prop=field_name, value=field_value)
