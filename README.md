@@ -183,6 +183,10 @@ It's important that data and actions are in sync with external systems. This is 
 
 [Last successful sync](https://metrics.librato.com/metrics/actionlog.hours_since_last_sync?duration=86400)
 
+There is also an alert, which prevents for automatic action to stay in waiting state for more than 24 hours (from it's creation till the hourly sync)
+
+[Oldest automatic action waiting](https://metrics.librato.com/metrics/actionlog.hours_oldest_auto_cmd_waiting)
+
 Zemanta zwei has its own queue, filled with tasks from zemanta one. The queues should not get too full, since this means delay in reporting, which directly effects end user. 
 
 [Number of messages](https://metrics.librato.com/metrics/AWS.SQS.ApproximateNumberOfMessagesVisible?duration=10800)
