@@ -127,7 +127,7 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action.state, constants.ActionState.WAITING)
 
         expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime(
-            '%Y-%m-%dT%H:%M:%S')
+            '%Y-%m-%dT%H:%M:%S.%f')[:-3]
 
         callback = urlparse.urljoin(
             settings.EINS_HOST, reverse(
@@ -397,7 +397,7 @@ class ActionLogApiTestCase(TestCase):
             self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
             self.assertEqual(action.state, constants.ActionState.WAITING)
 
-            expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S')
+            expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
             callback = urlparse.urljoin(
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
@@ -436,7 +436,7 @@ class ActionLogApiTestCase(TestCase):
             self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
             self.assertEqual(action.state, constants.ActionState.WAITING)
 
-            expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S')
+            expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
             callback = urlparse.urljoin(
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
@@ -500,7 +500,7 @@ class ActionLogApiTestCase(TestCase):
             action=constants.Action.CREATE_CAMPAIGN
         )
 
-        expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S')
+        expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
         callback = urlparse.urljoin(
             settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
         )
@@ -529,7 +529,7 @@ class ActionLogApiTestCase(TestCase):
             action=constants.Action.CREATE_CAMPAIGN
         )
 
-        expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S')
+        expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
         callback = urlparse.urljoin(
             settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
         )
