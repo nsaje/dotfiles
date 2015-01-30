@@ -20,15 +20,13 @@ class BaseSync(object):
         return {
             child_sync.obj.id: _min_none(child_sync.get_latest_success_by_child(
                 recompute,
-                maintenance=maintenance,
-                archived=archived
             ).values()) for child_sync in self.get_components(maintenance=maintenance, archived=archived)
         }
 
     def get_latest_source_success(self, recompute=True, maintenance=False, archived=False):
         child_syncs = self.get_components(maintenance)
         child_source_sync_times_list = [
-            child_sync.get_latest_source_success(recompute, maintenance=maintenance, archived=archived)
+            child_sync.get_latest_source_success(recompute)
             for child_sync in child_syncs
         ]
 
