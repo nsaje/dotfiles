@@ -82,20 +82,20 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                     deferred.resolve(data);
                 }).
                 error(function (data, status) {
-                    deferred.reject(data); 
+                    deferred.reject(data);
                 });
 
             return deferred.promise;
-        }
+        };
     }
 
     function SourcesTable() {
         function convertRow(row) {
-            var convertedRow = {}
+            var convertedRow = {};
 
             for(var field in row) {
                 if(field.indexOf('goals') == '0') {
-                    convertGoals(row, convertedRow); 
+                    convertGoals(row, convertedRow);
                 } else if (field === 'status') {
                     convertedRow[field] = row[field];
 
@@ -119,9 +119,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 data.rows[i] = convertRow(row);
             }
             data.totals = convertRow(data.totals);
-            
+            data.dataStatus = data.data_status;
+
             return data;
-        };
+        }
 
         this.get = function (level, id, startDate, endDate, order) {
             var deferred = $q.defer();
@@ -168,7 +169,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             for(var field in row) {
                 if (field === 'goals') {
-                    convertGoals(row, convertedRow); 
+                    convertGoals(row, convertedRow);
                 } else if (field === 'status') {
                     convertedRow[field] = row[field];
 
@@ -1337,6 +1338,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 success(function (data, status) {
                     if (data && data.data) {
                         data.data.rows = data.data.rows.map(convertFromApi);
+                        data.data.dataStatus = data.data.data_status;
                         deferred.resolve(data.data);
                     }
                 }).
@@ -1388,6 +1390,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                         // data.data.rows = data.data.rows.map(function (x) {
                         //     return convertRowsFromApi(x);
                         // });
+                        data.data.dataStatus = data.data.data_status;
                         deferred.resolve(data.data);
                     }
                 }).
@@ -1439,6 +1442,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                         // data.data.rows = data.data.rows.map(function (x) {
                         //     return convertRowsFromApi(x);
                         // });
+                        data.data.dataStatus = data.data.data_status;
                         deferred.resolve(data.data);
                     }
                 }).
