@@ -157,7 +157,7 @@ def is_waiting_for_set_actions(ad_group):
             order__isnull=False
         ).latest('created_dt')
     except ObjectDoesNotExist:
-        latest_set_property_action = None
+        latest_set_campaign_state_action = None
 
     try:
         latest_set_property_action = models.ActionLog.objects.filter(
