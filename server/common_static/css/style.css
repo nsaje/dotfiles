@@ -6,6 +6,7 @@ body {
 
 a {
     text-decoration: none;
+    color: #2fa8c7;
 }
 
 a img {
@@ -14,6 +15,10 @@ a img {
 
 header {
     border-bottom: 1px solid #dadada;
+}
+
+p {
+    font-size: 15px;
 }
 
 .item.logo {
@@ -132,10 +137,6 @@ header {
     font-style: italic;
     font-size: 13px;
     margin: 5px 0;
-}
-
-.support-text .contact {
-    color: #2fa8c7;
 }
 
 .failure-text {
