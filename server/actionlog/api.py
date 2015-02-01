@@ -4,6 +4,7 @@ import traceback
 import urlparse
 import urllib
 import collections
+from operator import attrgetter
 
 from datetime import datetime
 
@@ -148,14 +149,31 @@ def is_waiting_for_set_actions(ad_group):
     action_types = (constants.Action.SET_CAMPAIGN_STATE, constants.Action.SET_PROPERTY)
     ad_group_sources = ad_group.adgroupsource_set.all()
     # get latest action for ad_group where order != null
+    # using two queries for performance reasons
     try:
-        latest_action = models.ActionLog.objects.filter(
-            action__in=action_types,
+        latest_set_campaign_state_action = models.ActionLog.objects.filter(
+            action=constants.Action.SET_CAMPAIGN_STATE,
             ad_group_source_id__in=[ags.id for ags in ad_group_sources],
             order__isnull=False
         ).latest('created_dt')
     except ObjectDoesNotExist:
+        latest_set_property_action = None
+
+    try:
+        latest_set_property_action = models.ActionLog.objects.filter(
+            action=constants.Action.SET_PROPERTY,
+            ad_group_source_id__in=[ags.id for ags in ad_group_sources],
+            order__isnull=False
+        ).latest('created_dt')
+    except ObjectDoesNotExist:
+        latest_set_property_action = None
+
+    if latest_set_campaign_state_action is None and latest_set_property_action is None:
         return False
+
+    latest_action = max(
+        [a for a in [latest_set_campaign_state_action, latest_set_property_action] if a is not None],
+        key=attrgetter('created_dt'))
 
     # check whether there are unsuccessful actions in this order
     is_fail_in_latest_group = models.ActionLog.objects.filter(
