@@ -156,23 +156,20 @@ def is_waiting_for_set_actions(ad_group):
         ).latest('created_dt')
     except ObjectDoesNotExist:
         return False
-    # check whether there are unsuccessful actions in this order
-    is_fail_in_latest_group = models.ActionLog.objects.\
-        filter(
-            action__in=action_types,
-            state=constants.ActionState.FAILED,
-            ad_group_source_id__in=[ags.id for ags in ad_group_sources],
-            order=latest_action.order
-        ).\
-        exists()
 
-    is_any_waiting_action = models.ActionLog.objects.\
-        filter(
-            action__in=action_types,
-            state=constants.ActionState.WAITING,
-            ad_group_source_id__in=[ags.id for ags in ad_group_sources],
-        ).\
-        exists()
+    # check whether there are unsuccessful actions in this order
+    is_fail_in_latest_group = models.ActionLog.objects.filter(
+        action__in=action_types,
+        state=constants.ActionState.FAILED,
+        ad_group_source_id__in=[ags.id for ags in ad_group_sources],
+        order=latest_action.order
+    ).exists()
+
+    is_any_waiting_action = models.ActionLog.objects.filter(
+        action__in=action_types,
+        state=constants.ActionState.WAITING,
+        ad_group_source_id__in=[ags.id for ags in ad_group_sources],
+    ).exists()
 
     return is_fail_in_latest_group or is_any_waiting_action
 
@@ -306,7 +303,8 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, order=None):
     action = models.ActionLog.objects.create(
         action=constants.Action.SET_CAMPAIGN_STATE,
         action_type=constants.ActionType.AUTOMATIC,
-        ad_group_source=ad_group_source
+        ad_group_source=ad_group_source,
+        order=order
     )
 
     try:
