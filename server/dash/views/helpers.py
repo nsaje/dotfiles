@@ -315,7 +315,7 @@ def _get_budget_update_notification(ags, settings, state):
 
 
 def get_data_status(objects, last_sync_messages, state_messages=None):
-    res_messages = {}
+    data_status = {}
     for obj in objects:
         messages, state_ok = [], True
         if state_messages:
@@ -334,9 +334,12 @@ def get_data_status(objects, last_sync_messages, state_messages=None):
 
         messages.append(' '.join(last_sync_message_parts))
 
-        res_messages[obj.id] = messages, last_sync_ok and state_ok
+        data_status[obj.id] = {
+            'message': '<br />'.join(messages),
+            'ok': last_sync_ok and state_ok,
+        }
 
-    return res_messages
+    return data_status
 
 
 def get_last_sync_messages(objects, last_sync_times):

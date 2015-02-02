@@ -110,19 +110,10 @@ class AllAccountsSourcesTable(object):
         return actionlog.api.is_sync_in_progress(accounts=self.accounts)
 
     def get_data_status(self):
-        data_status_messages = helpers.get_data_status(
+        return helpers.get_data_status(
             self.get_sources(),
             helpers.get_last_sync_messages(self.get_sources(), self.get_last_success_actions()),
         )
-
-        data_status = {}
-        for source_id, data_status_message in data_status_messages.iteritems():
-            data_status[source_id] = {
-                'message': '<br />'.join(data_status_message[0]),
-                'ok': data_status_message[1],
-            }
-
-        return data_status
 
 
 class AccountSourcesTable(object):
@@ -178,19 +169,10 @@ class AccountSourcesTable(object):
         return actionlog.api.is_sync_in_progress(accounts=[self.account])
 
     def get_data_status(self):
-        data_status_messages = helpers.get_data_status(
+        return helpers.get_data_status(
             self.get_sources(),
             helpers.get_last_sync_messages(self.get_sources(), self.get_last_success_actions()),
         )
-
-        data_status = {}
-        for source_id, data_status_message in data_status_messages.iteritems():
-            data_status[source_id] = {
-                'message': '<br />'.join(data_status_message[0]),
-                'ok': data_status_message[1],
-            }
-
-        return data_status
 
 
 class CampaignSourcesTable(object):
@@ -246,19 +228,10 @@ class CampaignSourcesTable(object):
         return actionlog.api.is_sync_in_progress(campaigns=[self.campaign])
 
     def get_data_status(self):
-        data_status_messages = helpers.get_data_status(
+        return helpers.get_data_status(
             self.get_sources(),
             helpers.get_last_sync_messages(self.get_sources(), self.get_last_success_actions()),
         )
-
-        data_status = {}
-        for source_id, data_status_message in data_status_messages.iteritems():
-            data_status[source_id] = {
-                'message': '<br />'.join(data_status_message[0]),
-                'ok': data_status_message[1],
-            }
-
-        return data_status
 
 
 class AdGroupSourcesTable(object):
@@ -324,20 +297,11 @@ class AdGroupSourcesTable(object):
         if include_state_messages:
             state_messages = helpers.get_ad_group_sources_state_messages(self.active_ad_group_sources)
 
-        data_status_messages = helpers.get_data_status(
+        return helpers.get_data_status(
             self.get_sources(),
             helpers.get_last_sync_messages(self.get_sources(), self.get_last_success_actions()),
             state_messages
         )
-
-        data_status = {}
-        for source_id, data_status_message in data_status_messages.iteritems():
-            data_status[source_id] = {
-                'message': '<br />'.join(data_status_message[0]),
-                'ok': data_status_message[1],
-            }
-
-        return data_status
 
 
 class AdGroupSourcesTableUpdates(api_common.BaseApiView):
@@ -771,19 +735,10 @@ class AccountsAccountsTable(api_common.BaseApiView):
         return self.create_api_response(response)
 
     def get_data_status(self, accounts, last_success_actions):
-        data_status_messages = helpers.get_data_status(
+        return helpers.get_data_status(
             accounts,
             helpers.get_last_sync_messages(accounts, last_success_actions),
         )
-
-        data_status = {}
-        for source_id, data_status_message in data_status_messages.iteritems():
-            data_status[source_id] = {
-                'message': '<br />'.join(data_status_message[0]),
-                'ok': data_status_message[1],
-            }
-
-        return data_status
 
     def get_rows(self, accounts, accounts_settings, accounts_data, last_actions, account_budget,
                  account_total_spend, has_view_archived_permission, show_archived, order=None):
@@ -982,19 +937,11 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         return self.create_api_response(response)
 
     def get_data_status(self, ad_groups, last_success_actions):
-        data_status_messages = helpers.get_data_status(
+        return helpers.get_data_status(
             ad_groups,
             helpers.get_last_sync_messages(ad_groups, last_success_actions),
         )
 
-        data_status = {}
-        for source_id, data_status_message in data_status_messages.iteritems():
-            data_status[source_id] = {
-                'message': '<br />'.join(data_status_message[0]),
-                'ok': data_status_message[1],
-            }
-
-        return data_status
 
     def get_rows(self, ad_groups, ad_groups_settings, stats, last_actions,
                  order, has_view_archived_permission, show_archived):
@@ -1135,19 +1082,11 @@ class AccountCampaignsTable(api_common.BaseApiView):
         return self.create_api_response(response)
 
     def get_data_status(self, campaigns, last_success_actions):
-        data_status_messages = helpers.get_data_status(
+        return helpers.get_data_status(
             campaigns,
             helpers.get_last_sync_messages(campaigns, last_success_actions),
         )
 
-        data_status = {}
-        for source_id, data_status_message in data_status_messages.iteritems():
-            data_status[source_id] = {
-                'message': '<br />'.join(data_status_message[0]),
-                'ok': data_status_message[1],
-            }
-
-        return data_status
 
     def get_rows(self, campaigns, campaigns_settings, ad_groups_settings, stats,
                  last_actions, order, has_view_archived_permission, show_archived):
