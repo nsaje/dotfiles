@@ -104,10 +104,16 @@ class AllAccountsSourcesTable(object):
         return yesterday_cost, yesterday_total_cost
 
     def get_last_success_actions(self):
-        return actionlog.sync.GlobalSync().get_latest_success_by_source()
+        return actionlog.sync.GlobalSync().get_latest_success_by_source(include_maintenance=True)
 
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(accounts=self.accounts)
+
+    def get_data_status(self):
+        return helpers.get_data_status(
+            self.get_sources(),
+            helpers.get_last_sync_messages(self.get_sources(), self.get_last_success_actions()),
+        )
 
 
 class AccountSourcesTable(object):
@@ -155,10 +161,18 @@ class AccountSourcesTable(object):
 
     def get_last_success_actions(self):
         return actionlog.sync.AccountSync(self.account).get_latest_source_success(
-            recompute=False)
+            recompute=False,
+            include_maintenance=True
+        )
 
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(accounts=[self.account])
+
+    def get_data_status(self):
+        return helpers.get_data_status(
+            self.get_sources(),
+            helpers.get_last_sync_messages(self.get_sources(), self.get_last_success_actions()),
+        )
 
 
 class CampaignSourcesTable(object):
@@ -206,10 +220,18 @@ class CampaignSourcesTable(object):
 
     def get_last_success_actions(self):
         return actionlog.sync.CampaignSync(self.campaign).get_latest_source_success(
-            recompute=False)
+            recompute=False,
+            include_maintenance=True
+        )
 
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(campaigns=[self.campaign])
+
+    def get_data_status(self):
+        return helpers.get_data_status(
+            self.get_sources(),
+            helpers.get_last_sync_messages(self.get_sources(), self.get_last_success_actions()),
+        )
 
 
 class AdGroupSourcesTable(object):
@@ -263,10 +285,23 @@ class AdGroupSourcesTable(object):
 
     def get_last_success_actions(self):
         return actionlog.sync.AdGroupSync(self.ad_group).get_latest_source_success(
-            recompute=False)
+            recompute=False,
+            include_maintenance=True
+        )
 
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(ad_groups=[self.ad_group])
+
+    def get_data_status(self, include_state_messages=False):
+        state_messages = None
+        if include_state_messages:
+            state_messages = helpers.get_ad_group_sources_state_messages(self.active_ad_group_sources)
+
+        return helpers.get_data_status(
+            self.get_sources(),
+            helpers.get_last_sync_messages(self.get_sources(), self.get_last_success_actions()),
+            state_messages
+        )
 
 
 class AdGroupSourcesTableUpdates(api_common.BaseApiView):
@@ -279,6 +314,8 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
 
         ad_group_sources_table = AdGroupSourcesTable(request.user, ad_group_id_)
         ad_group_sources = ad_group_sources_table.active_ad_group_sources
+        sources = ad_group_sources_table.get_sources()
+        last_success_actions = ad_group_sources_table.get_last_success_actions()
 
         new_last_change_dt, changed_ad_group_sources = helpers.get_ad_group_sources_last_change_dt(
             ad_group_sources,
@@ -327,8 +364,11 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
             response['notifications'] = notifications
 
             if request.user.has_perm('zemauth.data_status_column'):
-                response['data_status'] = helpers.get_ad_group_sources_data_status(
-                    ad_group_sources, include_state_messages=True)
+                response['data_status'] = helpers.get_data_status(
+                    sources,
+                    helpers.get_last_sync_messages(sources, last_success_actions),
+                    helpers.get_ad_group_sources_state_messages(ad_group_sources)
+                )
 
         return self.create_api_response(response)
 
@@ -368,7 +408,8 @@ class SourcesTable(api_common.BaseApiView):
             yesterday_cost, yesterday_total_cost = self.level_sources_table.\
                 get_yesterday_cost()
 
-        last_sync = helpers.get_last_sync(last_success_actions.values())
+        not_in_maintenance = [source.id for source in sources.filter(maintenance=False)]
+        last_sync = helpers.get_last_sync([v for k, v in last_success_actions.iteritems() if k in not_in_maintenance])
 
         incomplete_postclick_metrics = False
         if has_aggregate_postclick_permission(user):
@@ -407,15 +448,18 @@ class SourcesTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics,
         }
 
+        if user.has_perm('zemauth.data_status_column'):
+            if ad_group_level:
+                response['data_status'] = self.level_sources_table.get_data_status(
+                    include_state_messages=user.has_perm('zemauth.set_ad_group_source_settings') and ad_group_level,
+                )
+            else:
+                response['data_status'] = self.level_sources_table.get_data_status()
+
         if ad_group_level:
             if user.has_perm('zemauth.set_ad_group_source_settings'):
                 response['last_change'] = helpers.get_ad_group_sources_last_change_dt(ad_group_sources)[0]
                 response['notifications'] = helpers.get_ad_group_sources_notifications(ad_group_sources)
-
-            if user.has_perm('zemauth.data_status_column'):
-                response['data_status'] = helpers.get_ad_group_sources_data_status(
-                    ad_group_sources,
-                    include_state_messages=user.has_perm('zemauth.set_ad_group_source_settings'))
 
         return self.create_api_response(response)
 
@@ -667,7 +711,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
                 start_date, end_date, accounts
             ) if has_aggregate_postclick_permission(request.user) else False
 
-        return self.create_api_response({
+        response = {
             'rows': rows,
             'totals': totals_data,
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
@@ -683,7 +727,21 @@ class AccountsAccountsTable(api_common.BaseApiView):
                 'size': size
             },
             'incomplete_postclick_metrics': incomplete_postclick_metrics
-        })
+        }
+
+        if user.has_perm('zemauth.data_status_column'):
+            response['data_status'] = self.get_data_status(
+                accounts,
+                actionlog.sync.GlobalSync().get_latest_success_by_account()
+            )
+
+        return self.create_api_response(response)
+
+    def get_data_status(self, accounts, last_success_actions):
+        return helpers.get_data_status(
+            accounts,
+            helpers.get_last_sync_messages(accounts, last_success_actions),
+        )
 
     def get_rows(self, accounts, accounts_settings, accounts_data, last_actions, account_budget,
                  account_total_spend, has_view_archived_permission, show_archived, order=None):
@@ -853,7 +911,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
                 start_date, end_date, [campaign]
             ) if has_aggregate_postclick_permission(request.user) else False
 
-        return self.create_api_response({
+        response = {
             'rows': self.get_rows(
                 ad_groups,
                 ad_groups_settings,
@@ -870,7 +928,23 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
                 campaigns=[campaign]),
             'order': order,
             'incomplete_postclick_metrics': incomplete_postclick_metrics
-        })
+        }
+
+        if request.user.has_perm('zemauth.data_status_column'):
+            response['data_status'] = self.get_data_status(
+                ad_groups,
+                actionlog.sync.CampaignSync(campaign).get_latest_success_by_child(recompute=False,
+                                                                                  include_level_archived=True)
+            )
+
+        return self.create_api_response(response)
+
+    def get_data_status(self, ad_groups, last_success_actions):
+        return helpers.get_data_status(
+            ad_groups,
+            helpers.get_last_sync_messages(ad_groups, last_success_actions),
+        )
+
 
     def get_rows(self, ad_groups, ad_groups_settings, stats, last_actions,
                  order, has_view_archived_permission, show_archived):
@@ -981,7 +1055,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
                 start_date, end_date, campaigns
             ) if has_aggregate_postclick_permission(request.user) else False
 
-        return self.create_api_response({
+        response = {
             'rows': self.get_rows(
                 campaigns,
                 campaigns_settings,
@@ -999,7 +1073,23 @@ class AccountCampaignsTable(api_common.BaseApiView):
                 campaigns=campaigns),
             'order': order,
             'incomplete_postclick_metrics': incomplete_postclick_metrics
-        })
+        }
+
+        if user.has_perm('zemauth.data_status_column'):
+            response['data_status'] = self.get_data_status(
+                campaigns,
+                actionlog.sync.AccountSync(account).get_latest_success_by_child(recompute=False,
+                                                                                include_level_archived=True)
+            )
+
+        return self.create_api_response(response)
+
+    def get_data_status(self, campaigns, last_success_actions):
+        return helpers.get_data_status(
+            campaigns,
+            helpers.get_last_sync_messages(campaigns, last_success_actions),
+        )
+
 
     def get_rows(self, campaigns, campaigns_settings, ad_groups_settings, stats,
                  last_actions, order, has_view_archived_permission, show_archived):

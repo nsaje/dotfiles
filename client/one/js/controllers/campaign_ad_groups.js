@@ -162,6 +162,18 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             initialOrder: 'desc'
         },
         {
+            name: '',
+            nameCssClass: 'data-status-icon',
+            type: 'dataStatus',
+            internal: $scope.isPermissionInternal('zemauth.data_status_column'),
+            shown: $scope.hasPermission('zemauth.data_status_column'),
+            checked: true,
+            totalRow: false,
+            unselectable: true,
+            help: 'Status of third party data accuracy.',
+            disabled: false
+        },
+        {
             name: 'Last OK Sync (EST)',
             field: 'last_sync',
             checked: false,
@@ -184,7 +196,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             'name': 'Audience Metrics',
             'fields': [
                 'visits', 'pageviews', 'percent_new_users',
-                'bounce_rate', 'pv_per_visit', 'avg_tos', 
+                'bounce_rate', 'pv_per_visit', 'avg_tos',
                 'click_discrepancy'
             ]
         },
@@ -199,14 +211,14 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         zemPostclickMetricsService.insertAcquisitionColumns(
             $scope.columns,
-            $scope.columns.length - 1,
+            $scope.columns.length - 2,
             $scope.hasPermission('zemauth.aggregate_postclick_acquisition'),
             $scope.isPermissionInternal('zemauth.aggregate_postclick_acquisition')
         );
 
         zemPostclickMetricsService.insertEngagementColumns(
             $scope.columns,
-            $scope.columns.length - 1,
+            $scope.columns.length - 2,
             $scope.hasPermission('zemauth.aggregate_postclick_engagement'),
             $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
         );
@@ -274,7 +286,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         }
 
         return [$scope.chartMetric1, $scope.chartMetric2];
-    }
+    };
 
     var setChartOptions = function () {
         $scope.chartMetricOptions = options.campaignChartMetrics;
@@ -326,6 +338,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 $scope.rows = data.rows;
                 $scope.totalRow = data.totals;
                 $scope.totalRow.checked = $scope.selectedTotals;
+                $scope.dataStatus = data.dataStatus;
                 $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
                 $scope.isSyncRecent = data.is_sync_recent;
                 $scope.isSyncInProgress = data.is_sync_in_progress;
@@ -335,6 +348,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
 
                 $scope.rows = $scope.rows.map(function (x) {
+                    x.id = x.ad_group;
                     x.name = {
                         text: x.name,
                         state: $scope.getDefaultAdGroupState(),

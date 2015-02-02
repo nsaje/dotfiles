@@ -215,6 +215,18 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             initialOrder: 'desc'
         },
         {
+            name: '',
+            nameCssClass: 'data-status-icon',
+            type: 'dataStatus',
+            internal: $scope.isPermissionInternal('zemauth.data_status_column'),
+            shown: $scope.hasPermission('zemauth.data_status_column'),
+            checked: true,
+            totalRow: false,
+            unselectable: true,
+            help: 'Status of third party data accuracy.',
+            disabled: false
+        },
+        {
             name: 'Last OK Sync (EST)',
             field: 'last_sync',
             checked: false,
@@ -254,14 +266,14 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
         zemPostclickMetricsService.insertAcquisitionColumns(
             $scope.columns,
-            $scope.columns.length - 1,
+            $scope.columns.length - 2,
             $scope.hasPermission('zemauth.aggregate_postclick_acquisition'),
             $scope.isPermissionInternal('zemauth.aggregate_postclick_acquisition')
         );
 
         zemPostclickMetricsService.insertEngagementColumns(
             $scope.columns,
-            $scope.columns.length - 1,
+            $scope.columns.length - 2,
             $scope.hasPermission('zemauth.aggregate_postclick_engagement'),
             $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
         );
@@ -349,6 +361,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
                 $scope.totals.checked = $scope.selectedTotals;
+                $scope.dataStatus = data.dataStatus;
                 $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
                 $scope.isSyncRecent = data.is_sync_recent;
                 $scope.isSyncInProgress = data.is_sync_in_progress;
