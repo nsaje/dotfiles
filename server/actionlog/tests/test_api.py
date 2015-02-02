@@ -446,7 +446,7 @@ class ActionLogApiTestCase(TestCase):
                 'expiration_dt': expiration_dt,
                 'credentials': ad_group_source.source_credentials.credentials,
                 'args': {
-                    'source_campaign_keys': [ad_group_source.source_campaign_key],
+                    'source_campaign_key': ad_group_source.source_campaign_key,
                     'date': date.strftime('%Y-%m-%d'),
                 },
                 'callback_url': callback

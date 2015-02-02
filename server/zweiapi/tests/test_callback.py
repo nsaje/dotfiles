@@ -114,7 +114,7 @@ class FetchReportsTestCase(TestCase):
         }
         zwei_response_data = {
             'status': 'success',
-            'data': [[["fake"], [article_row]]]
+            'data': [article_row]
         }
 
         ad_group_source = AdGroupSource.objects.get(id=1)
@@ -140,7 +140,7 @@ class FetchReportsTestCase(TestCase):
         }
         zwei_response_data = {
             'status': 'success',
-            'data': [[["fake"], [article_row]]]
+            'data': [article_row]
         }
 
         ad_group_source = AdGroupSource.objects.get(id=1)
@@ -151,7 +151,7 @@ class FetchReportsTestCase(TestCase):
 
         self.assertEqual(
             views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
-            '1d46fd9f369f21627f7a1ecaf11dbfc6'
+            '7a97d7b612f435a2dba269614e90e3ac'
         )
 
         # again with different data
@@ -164,14 +164,14 @@ class FetchReportsTestCase(TestCase):
 
         self.assertEqual(
             views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
-            'a48a540ed57fd4bb0fdb36a6df6fef0a'
+            'c1cbb0b3e637466d86d39026d93f0772'
         )
 
     @override_settings(USE_HASH_CACHE=True)
     @mock.patch('utils.request_signer.verify_wsgi_request')
     def test_fetch_reports_hash_cache_no_change(self, _):
         views.cache.clear()
-        views.cache.set('fetch_reports_response_hash_1_1_2014-07-01', '1d46fd9f369f21627f7a1ecaf11dbfc6')
+        views.cache.set('fetch_reports_response_hash_1_1_2014-07-01', '7a97d7b612f435a2dba269614e90e3ac')
 
         article_row = {
             'title': 'Article 1',
@@ -182,7 +182,7 @@ class FetchReportsTestCase(TestCase):
         }
         zwei_response_data = {
             'status': 'success',
-            'data': [[["fake"], [article_row]]]
+            'data': [article_row]
         }
 
         ad_group_source = AdGroupSource.objects.get(id=1)
@@ -194,7 +194,7 @@ class FetchReportsTestCase(TestCase):
 
         self.assertEqual(
             views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
-            '1d46fd9f369f21627f7a1ecaf11dbfc6'
+            '7a97d7b612f435a2dba269614e90e3ac'
         )
 
     def _assertArticleStats(self, ad_group_source, article_dict):
