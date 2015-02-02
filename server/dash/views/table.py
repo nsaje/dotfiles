@@ -408,9 +408,9 @@ class SourcesTable(api_common.BaseApiView):
             yesterday_cost, yesterday_total_cost = self.level_sources_table.\
                 get_yesterday_cost()
 
-        not_in_maintenance = [source.id for source in sources.filter(maintenance=False)]
-        not_in_maintenance_last_success_actions = [v for k, v in last_success_actions.iteritems() if k in not_in_maintenance]
-        last_sync = helpers.get_last_sync(not_in_maintenance_last_success_actions)
+        sources_not_maintenance = [source.id for source in sources.filter(maintenance=False)]
+        last_success_actions_not_maintenance = [v for k, v in last_success_actions.iteritems() if k in sources_not_maintenance]
+        last_sync = helpers.get_last_sync(last_success_actions_not_maintenance)
 
         incomplete_postclick_metrics = False
         if has_aggregate_postclick_permission(user):
@@ -444,7 +444,7 @@ class SourcesTable(api_common.BaseApiView):
                 yesterday_total_cost
             ),
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
-            'is_sync_recent': helpers.is_sync_recent([v for k, v in last_success_actions.iteritems() if k in not_in_maintenance]),
+            'is_sync_recent': helpers.is_sync_recent(last_success_actions_not_maintenance),
             'is_sync_in_progress': is_sync_in_progress,
             'incomplete_postclick_metrics': incomplete_postclick_metrics,
         }
