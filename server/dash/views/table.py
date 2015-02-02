@@ -732,7 +732,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
         if user.has_perm('zemauth.data_status_column'):
             response['data_status'] = self.get_data_status(
                 accounts,
-                actionlog.sync.GlobalSync().get_latest_success_by_account(archived_accounts=True)
+                actionlog.sync.GlobalSync().get_latest_success_by_account()
             )
 
         return self.create_api_response(response)

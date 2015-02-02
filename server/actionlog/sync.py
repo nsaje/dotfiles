@@ -85,7 +85,7 @@ class GlobalSync(BaseSync, ISyncComposite):
             if len(list(account_sync.get_components(maintenance=maintenance))) > 0:
                 yield account_sync
 
-    def get_latest_success_by_account(self, archived_accounts=False):
+    def get_latest_success_by_account(self):
         '''
         this function is a faster way to get last succcessful sync times
         on the account level
