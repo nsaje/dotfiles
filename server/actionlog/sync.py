@@ -16,15 +16,15 @@ class BaseSync(object):
     def __init__(self, obj):
         self.obj = obj
 
-    def get_latest_success_by_child(self, recompute=True, maintenance=False, archived=False):
+    def get_latest_success_by_child(self, recompute=True, include_level_archived=False):
         return {
             child_sync.obj.id: _min_none(child_sync.get_latest_success_by_child(
                 recompute,
-            ).values()) for child_sync in self.get_components(maintenance=maintenance, archived=archived)
+            ).values()) for child_sync in self.get_components(archived=include_level_archived)
         }
 
-    def get_latest_source_success(self, recompute=True, maintenance=False, archived=False):
-        child_syncs = self.get_components(maintenance)
+    def get_latest_source_success(self, recompute=True, include_maintenance=False):
+        child_syncs = self.get_components(maintenance=include_maintenance)
         child_source_sync_times_list = [
             child_sync.get_latest_source_success(recompute)
             for child_sync in child_syncs
@@ -82,27 +82,23 @@ class GlobalSync(BaseSync, ISyncComposite):
 
         for account in accounts:
             account_sync = AccountSync(account)
-            if len(list(account_sync.get_components(
-                    maintenance=maintenance,
-                    archived=archived))) > 0:
+            if len(list(account_sync.get_components(maintenance=maintenance))) > 0:
                 yield account_sync
 
-    def get_latest_success_by_account(self, maintenance=False, archived=False):
+    def get_latest_success_by_account(self, archived_accounts=False):
         '''
         this function is a faster way to get last succcessful sync times
         on the account level
         '''
-        ad_groups = dash.models.AdGroup.objects.all()
-        if not archived:
-            ad_groups = ad_groups.exclude_archived()
+        ad_groups = dash.models.AdGroup.objects.all().exclude_archived()
+        if not archived_accounts:
+            ad_groups = ad_groups.filter(campaign__account__in=dash.models.Account.objects.all().exclude_archived())
 
         qs = dash.models.AdGroupSource.objects.\
+            filter(source__maintenance=False).\
             filter(ad_group__in=ad_groups).\
             select_related('ad_group__campaign__account', 'source').\
             values('ad_group__campaign__account', 'last_successful_sync_dt')
-
-        if not maintenance:
-            qs = qs.filter(source__maintenance=False)
 
         latest_success = {}
         for row in qs:
@@ -114,21 +110,17 @@ class GlobalSync(BaseSync, ISyncComposite):
         result = self._add_demo_accounts_sync_times(result)
         return result
 
-    def get_latest_success_by_source(self, maintenance=False, archived=False):
+    def get_latest_success_by_source(self, include_maintenance=False):
         '''
         this function is a faster way to get last succcessful sync times
         by source on globally
         '''
-        ad_groups = dash.models.AdGroup.objects.all()
-        if not archived:
-            ad_groups = ad_groups.exclude_archived()
-
         qs = dash.models.AdGroupSource.objects.\
-            filter(ad_group__in=ad_groups).\
+            filter(ad_group__in=dash.models.AdGroup.objects.exclude_archived()).\
             select_related('source').\
             values('source', 'last_successful_sync_dt')
 
-        if not maintenance:
+        if not include_maintenance:
             qs = qs.filter(source__maintenance=False)
 
         latest_success = {}
@@ -207,10 +199,10 @@ class AdGroupSourceSync(BaseSync):
         else:
             return self.obj.last_successful_sync_dt
 
-    def get_latest_success_by_child(self, recompute=True, maintenance=False, archived=False):
+    def get_latest_success_by_child(self, recompute=True, include_level_archive=False):
         return {self.obj.id: self._get_latest_success(recompute)}
 
-    def get_latest_source_success(self, recompute=True, maintenance=False, archived=False):
+    def get_latest_source_success(self, recompute=True, include_maintenance=False):
         return {self.obj.source_id: self._get_latest_success(recompute)}
 
     def get_latest_report_sync(self):

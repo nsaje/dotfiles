@@ -104,7 +104,7 @@ class AllAccountsSourcesTable(object):
         return yesterday_cost, yesterday_total_cost
 
     def get_last_success_actions(self):
-        return actionlog.sync.GlobalSync().get_latest_success_by_source(maintenance=True)
+        return actionlog.sync.GlobalSync().get_latest_success_by_source(include_maintenance=True)
 
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(accounts=self.accounts)
@@ -162,7 +162,7 @@ class AccountSourcesTable(object):
     def get_last_success_actions(self):
         return actionlog.sync.AccountSync(self.account).get_latest_source_success(
             recompute=False,
-            maintenance=True
+            include_maintenance=True
         )
 
     def is_sync_in_progress(self):
@@ -221,7 +221,7 @@ class CampaignSourcesTable(object):
     def get_last_success_actions(self):
         return actionlog.sync.CampaignSync(self.campaign).get_latest_source_success(
             recompute=False,
-            maintenance=True
+            include_maintenance=True
         )
 
     def is_sync_in_progress(self):
@@ -286,7 +286,7 @@ class AdGroupSourcesTable(object):
     def get_last_success_actions(self):
         return actionlog.sync.AdGroupSync(self.ad_group).get_latest_source_success(
             recompute=False,
-            maintenance=True
+            include_maintenance=True
         )
 
     def is_sync_in_progress(self):
@@ -314,6 +314,8 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
 
         ad_group_sources_table = AdGroupSourcesTable(request.user, ad_group_id_)
         ad_group_sources = ad_group_sources_table.active_ad_group_sources
+        sources = ad_group_sources_table.get_sources()
+        last_success_actions = ad_group_sources_table.get_last_success_actions()
 
         new_last_change_dt, changed_ad_group_sources = helpers.get_ad_group_sources_last_change_dt(
             ad_group_sources,
@@ -363,8 +365,9 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
 
             if request.user.has_perm('zemauth.data_status_column'):
                 response['data_status'] = helpers.get_data_status(
-                    [ags.source for ags in ad_group_sources],
-                    helpers.get_last_sync_messages()
+                    sources,
+                    helpers.get_last_sync_messages(sources, last_success_actions),
+                    helpers.get_ad_group_sources_state_messages(ad_group_sources)
                 )
 
         return self.create_api_response(response)
@@ -729,7 +732,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
         if user.has_perm('zemauth.data_status_column'):
             response['data_status'] = self.get_data_status(
                 accounts,
-                actionlog.sync.GlobalSync().get_latest_success_by_account(archived=True)
+                actionlog.sync.GlobalSync().get_latest_success_by_account(archived_accounts=True)
             )
 
         return self.create_api_response(response)
@@ -931,7 +934,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             response['data_status'] = self.get_data_status(
                 ad_groups,
                 actionlog.sync.CampaignSync(campaign).get_latest_success_by_child(recompute=False,
-                                                                                  archived=True)
+                                                                                  include_level_archived=True)
             )
 
         return self.create_api_response(response)
@@ -1076,7 +1079,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
             response['data_status'] = self.get_data_status(
                 campaigns,
                 actionlog.sync.AccountSync(account).get_latest_success_by_child(recompute=False,
-                                                                                archived=True)
+                                                                                include_level_archived=True)
             )
 
         return self.create_api_response(response)
