@@ -354,7 +354,7 @@ def get_last_sync_messages(objects, last_sync_times):
             last_sync = pytz.utc.localize(last_sync).astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE))
             message_parts.append('Last OK sync was on: <b>{}</b>'.format(last_sync.strftime('%m/%d/%Y %-I:%M %p')))
 
-        if hasattr(obj, 'settings') and obj.settings.exists() and obj.settings.latest('created_dt').archived:
+        if hasattr(obj, 'is_archived') and obj.is_archived():
             ok = True
 
         last_sync_messages[obj.id] = message_parts, ok
