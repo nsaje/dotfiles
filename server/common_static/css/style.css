@@ -38,7 +38,7 @@ p {
     padding: 19px;
 }
 
-.wf-loading .center-container {
+.wf-loading .enter-container {
     visibility: hidden;
 }
 
@@ -49,13 +49,11 @@ p {
 }
 
 .center-container h1 {
-    text-align: center;
     font-weight: 200;
     margin-bottom: 8px;
 }
 
 .center-container h2 {
-    text-align: center;
     font-weight: 200;
     font-size: 20px;
     margin-bottom: 8px;
@@ -131,13 +129,6 @@ p {
     text-align: center;
 }
 
-
-.support-text {
-    font-weight: 100;
-    font-style: italic;
-    font-size: 13px;
-    margin: 5px 0;
-}
 
 .failure-text {
     color: #EC0A0A;
