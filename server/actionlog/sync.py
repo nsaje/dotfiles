@@ -116,7 +116,7 @@ class GlobalSync(BaseSync, ISyncComposite):
         by source on globally
         '''
         qs = dash.models.AdGroupSource.objects.\
-            filter(ad_group__in=dash.models.AdGroup.objects.exclude_archived()).\
+            filter(ad_group__in=dash.models.AdGroup.objects.all().exclude_archived()).\
             select_related('source').\
             values('source', 'last_successful_sync_dt')
 
