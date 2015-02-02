@@ -90,13 +90,9 @@ class GlobalSync(BaseSync, ISyncComposite):
         this function is a faster way to get last succcessful sync times
         on the account level
         '''
-        ad_groups = dash.models.AdGroup.objects.all().exclude_archived()
-        if not archived_accounts:
-            ad_groups = ad_groups.filter(campaign__account__in=dash.models.Account.objects.all().exclude_archived())
-
         qs = dash.models.AdGroupSource.objects.\
             filter(source__maintenance=False).\
-            filter(ad_group__in=ad_groups).\
+            filter(ad_group__in=dash.models.AdGroup.objects.all().exclude_archived()).\
             select_related('ad_group__campaign__account', 'source').\
             values('ad_group__campaign__account', 'last_successful_sync_dt')
 
