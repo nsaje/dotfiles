@@ -1,16 +1,12 @@
 import json
 import logging
-import traceback
 import datetime
 
 from collections import OrderedDict
 from decimal import Decimal
 from django.db import transaction
 from django.conf import settings
-from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth import models as authmodels
 
 from actionlog import api as actionlog_api
@@ -26,6 +22,7 @@ from utils import api_common
 from utils import statsd_helper
 from utils import exc
 from utils import pagerduty_helper
+from utils import email_helper
 
 from zemauth.models import User as ZemUser
 
@@ -66,52 +63,13 @@ def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
     if user.pk == campaign_settings[0].account_manager.pk:
         return
 
-    recipients = [campaign_settings[0].account_manager.email]
-
-    subject = u'Settings change - ad group {}, campaign {}, account {}'.format(
-        ad_group.name,
-        ad_group.campaign.name,
-        ad_group.campaign.account.name
+    email_helper.send_ad_group_settings_change_email(
+        user,
+        campaign_settings[0].account_manager,
+        request,
+        ad_group,
+        get_campaign_url(ad_group, request)
     )
-
-    link_url = request.build_absolute_uri('/ad_groups/{}/agency'.format(ad_group.pk))
-    link_url = link_url.replace('http://', 'https://')
-
-    body = u'''Hi account manager of {ad_group.name}
-
-We'd like to notify you that {user.email} has made a change in the settings of the ad group {ad_group.name}, campaign {campaign.name}, account {account.name}. Please check {link_url} for details.
-
-Yours truly,
-Zemanta
-    '''
-    body = body.format(
-        user=user,
-        ad_group=ad_group,
-        campaign=ad_group.campaign,
-        account=ad_group.campaign.account,
-        link_url=link_url
-    )
-
-    try:
-        send_mail(
-            subject,
-            body,
-            settings.FROM_EMAIL,
-            recipients,
-            fail_silently=False
-        )
-    except Exception as e:
-        logger.error('E-mail notification for ad group settings (ad group id: %d) change was not sent because an exception was raised: %s', ad_group.pk, traceback.format_exc(e))
-
-        desc = {
-            'campaign_settings_url': get_campaign_url(ad_group, request)
-        }
-        pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
-            incident_key='ad_group_settings_change_mail_failed',
-            description='E-mail notification for ad group settings change was not sent because an exception was raised: {}'.format(traceback.format_exc(e)),
-            details=desc,
-        )
 
 
 class AdGroupSettings(api_common.BaseApiView):
@@ -868,7 +826,7 @@ class AccountUsers(api_common.BaseApiView):
             user = ZemUser.objects.create_user(email, first_name=first_name, last_name=last_name)
 
             self._add_user_to_groups(user)
-            self._send_email_to_new_user(user, request)
+            email_helper.send_email_to_new_user(user, request)
 
             created = True
 
@@ -929,70 +887,3 @@ class AccountUsers(api_common.BaseApiView):
 
         for group in groups:
             group.user_set.add(user)
-
-    def _generate_password_reset_url(self, user, request):
-        encoded_id = urlsafe_base64_encode(str(user.pk))
-        token = default_token_generator.make_token(user)
-
-        url = request.build_absolute_uri(
-            reverse('set_password', args=(encoded_id, token))
-        )
-
-        return url.replace('http://', 'https://')
-
-    def _send_email_to_new_user(self, user, request):
-        body = u'''<p>Hi {name},</p>
-    <p>
-    Welcome to Zemanta's Content DSP!
-    </p>
-    <p>
-    We're excited to promote your quality content across our extended network. Through our reporting dashboard, you can monitor campaign performance across multiple supply channels.
-    </p>
-    <p>
-    Click <a href="{link_url}">here</a> to create a password to log into your Zemanta account.
-    </p>
-    <p>
-    As always, please don't hesitate to contact help@zemanta.com with any questions.
-    </p>
-    <p>
-    Thanks,<br/>
-    Zemanta Client Services
-    </p>
-        '''
-        body = body.format(
-            name=user.first_name,
-            link_url=self._generate_password_reset_url(user, request)
-        )
-
-        try:
-            send_mail(
-                'Welcome to Zemanta!',
-                body,
-                settings.FROM_EMAIL,
-                [user.email],
-                fail_silently=False,
-                html_message=body
-            )
-        except Exception as e:
-            message = 'Welcome email for user {} ({}) was not sent because an exception was raised: {}'.format(
-                user.get_full_name(),
-                user.email,
-                traceback.format_exc(e)
-            )
-
-            logger.error(message)
-
-            user_url = request.build_absolute_uri(
-                reverse('admin:zemauth_user_change', args=(user.pk,))
-            )
-            user_url = user_url.replace('http://', 'https://')
-
-            desc = {
-                'user_url': user_url
-            }
-            pagerduty_helper.trigger(
-                event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
-                incident_key='new_user_mail_failed',
-                description=message,
-                details=desc,
-            )

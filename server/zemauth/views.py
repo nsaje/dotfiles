@@ -12,8 +12,9 @@ from django.shortcuts import resolve_url
 
 import gauth
 from utils import statsd_helper
+from utils import email_helper
 from zemauth.models import User
-from zemauth.forms import SetPasswordForm
+from zemauth import forms
 
 
 @statsd_helper.statsd_timer('auth', 'signin_response_time')
@@ -49,7 +50,7 @@ def set_password(request, uidb64=None, token=None, template_name=None):
     if user is not None and auth_tokens.default_token_generator.check_token(user, token):
         validlink = True
         if request.method == 'POST':
-            form = SetPasswordForm(user, request.POST)
+            form = forms.SetPasswordForm(user, request.POST)
             if form.is_valid():
                 form.save()
 
@@ -59,15 +60,36 @@ def set_password(request, uidb64=None, token=None, template_name=None):
 
                 return HttpResponseRedirect(resolve_url('/'))
         else:
-            form = SetPasswordForm(user)
+            form = forms.SetPasswordForm(user)
     else:
         validlink = False
         form = None
     context = {
         'form': form,
         'validlink': validlink,
+        'new_user': not user.has_usable_password(),
+        'user_email': user.email
     }
 
+    return TemplateResponse(request, template_name, context)
+
+
+@statsd_helper.statsd_timer('auth', 'password_reset')
+def password_reset(request, template_name=None):
+    form = forms.PasswordResetForm()
+    success = False
+
+    if request.method == 'POST':
+        form = forms.PasswordResetForm(request.POST)
+        if form.is_valid():
+            user = User.objects.get(email__iexact=form.cleaned_data['username'])
+            email_helper.send_password_reset_email(user, request)
+            success = True
+
+    context = {
+        'form': form,
+        'success': success
+    }
     return TemplateResponse(request, template_name, context)
 
 

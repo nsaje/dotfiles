@@ -6,6 +6,7 @@ body {
 
 a {
     text-decoration: none;
+    color: #2fa8c7;
 }
 
 a img {
@@ -14,6 +15,10 @@ a img {
 
 header {
     border-bottom: 1px solid #dadada;
+}
+
+p {
+    font-size: 15px;
 }
 
 .item.logo {
@@ -33,7 +38,7 @@ header {
     padding: 19px;
 }
 
-.wf-loading .center-container {
+.wf-loading .enter-container {
     visibility: hidden;
 }
 
@@ -44,13 +49,11 @@ header {
 }
 
 .center-container h1 {
-    text-align: center;
     font-weight: 200;
     margin-bottom: 8px;
 }
 
 .center-container h2 {
-    text-align: center;
     font-weight: 200;
     font-size: 20px;
     margin-bottom: 8px;
@@ -126,17 +129,6 @@ header {
     text-align: center;
 }
 
-
-.support-text {
-    font-weight: 100;
-    font-style: italic;
-    font-size: 13px;
-    margin: 5px 0;
-}
-
-.support-text .contact {
-    color: #2fa8c7;
-}
 
 .failure-text {
     color: #EC0A0A;
