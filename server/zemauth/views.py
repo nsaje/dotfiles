@@ -12,6 +12,7 @@ from django.shortcuts import resolve_url
 
 import gauth
 from utils import statsd_helper
+from utils import email_helper
 from zemauth.models import User
 from zemauth import forms
 
@@ -66,6 +67,8 @@ def set_password(request, uidb64=None, token=None, template_name=None):
     context = {
         'form': form,
         'validlink': validlink,
+        'new_user': not user.has_usable_password(),
+        'user_email': user.email
     }
 
     return TemplateResponse(request, template_name, context)
@@ -79,7 +82,8 @@ def password_reset(request, template_name=None):
     if request.method == 'POST':
         form = forms.PasswordResetForm(request.POST)
         if form.is_valid():
-            # TODO send mail
+            user = User.objects.get(email__iexact=form.cleaned_data['username'])
+            email_helper.send_password_reset_email(user, request)
             success = True
 
     context = {
