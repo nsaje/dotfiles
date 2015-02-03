@@ -102,8 +102,6 @@
         end_date: '2014-06-05'
         cpc_cc: '0.12'
         daily_budget_cc: '50.'
-        target_devices: ''
-        target_regions: ''
         tracking_code: ''
         archived: false
     model: dash.adgroupsettings
@@ -118,8 +116,6 @@
         end_date: '2014-06-05'
         cpc_cc: '0.12'
         daily_budget_cc: '50.'
-        target_devices: ''
-        target_regions: ''
         tracking_code: ''
         archived: false
     model: dash.adgroupsettings

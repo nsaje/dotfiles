@@ -205,7 +205,6 @@
         action_type: 1
         ad_group_source: 1
         message: ''
-        payload: ''
         order: 1
         created_dt: '2014-07-03T10:00:00'
         modified_dt: '2014-07-03T10:00:00'
@@ -220,7 +219,6 @@
         action_type: 1
         ad_group_source: 1
         message: ''
-        payload: ''
         order: 1
         created_dt: '2014-07-03T10:00:00'
         modified_dt: '2014-07-03T10:00:00'
@@ -235,7 +233,6 @@
         action_type: 1
         ad_group_source: 1
         message: ''
-        payload: ''
         order: 2
         created_dt: '2014-07-03T18:00:00'
         modified_dt: '2014-07-03T18:00:00'
@@ -250,7 +247,6 @@
         action_type: 1
         ad_group_source: 1
         message: ''
-        payload: ''
         order: 2
         created_dt: '2014-07-03T18:00:00'
         modified_dt: '2014-07-03T18:00:00'
@@ -265,7 +261,6 @@
         action_type: 1
         ad_group_source: 1
         message: ''
-        payload: ''
         order: 3
         created_dt: '2014-07-03T10:00:00'
         modified_dt: '2014-07-03T10:00:00'
@@ -280,7 +275,6 @@
         action_type: 1
         ad_group_source: 1
         message: ''
-        payload: ''
         order: 4
         created_dt: '2014-07-03T18:00:00'
         modified_dt: '2014-07-03T18:00:00'
