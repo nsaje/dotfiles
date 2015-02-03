@@ -124,22 +124,28 @@ def _send_email_to_user(user, request, subject, body):
             html_message=body
         )
     except Exception as e:
-        message = 'Email for user {} ({}) was not sent because an exception was raised: {}'.format(
-            user.get_full_name(),
-            user.email,
-            traceback.format_exc(e)
-        )
+        if user is None:
+            message = 'Email for user was not sent because exception was raised: {}'.format(
+                traceback.format_exc(e))
+            desc = {}
+        else:
+            message = 'Email for user {} ({}) was not sent because an exception was raised: {}'.format(
+                user.get_full_name(),
+                user.email,
+                traceback.format_exc(e)
+            )
+
+            user_url = request.build_absolute_uri(
+                reverse('admin:zemauth_user_change', args=(user.pk,))
+            )
+            user_url = user_url.replace('http://', 'https://')
+
+            desc = {
+                'user_url': user_url
+            }
 
         logger.error(message)
 
-        user_url = request.build_absolute_uri(
-            reverse('admin:zemauth_user_change', args=(user.pk,))
-        )
-        user_url = user_url.replace('http://', 'https://')
-
-        desc = {
-            'user_url': user_url
-        }
         pagerduty_helper.trigger(
             event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
             incident_key='user_mail_failed',

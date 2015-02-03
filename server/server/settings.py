@@ -113,6 +113,8 @@ if TESTING:
         }
     }
 
+    EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
