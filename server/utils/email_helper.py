@@ -60,7 +60,7 @@ Zemanta
 
 
 def send_password_reset_email(user, request):
-    body = '''<p>Hi {name},</p>
+    body = u'''<p>Hi {name},</p>
 <p>You told us you forgot your password. If you really did, click here to choose a new one:</p>
 <a href="{link_url}">Choose a New Password</a>
 <p>If you didn't mean to reset your password, then you can just ignore this email; your password will not change.</p>
