@@ -448,7 +448,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                     if (typeName === undefined) {
                         return;
                     }
-                    
+
                     return {
                         name: goals[goalId].name + ': ' + typeName,
                         value: goalId,

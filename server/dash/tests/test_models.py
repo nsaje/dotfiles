@@ -37,9 +37,9 @@ class AdGroupSettingsTest(TestCase):
             'daily_budget_cc': Decimal('50'),
             'start_date': datetime.date(2014, 6, 4),
             'end_date': datetime.date(2014, 6, 5),
-            'target_devices': u'',
+            'target_devices': [],
             'tracking_code': u'',
-            'target_regions': u'',
+            'target_regions': [],
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),

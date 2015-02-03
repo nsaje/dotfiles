@@ -125,14 +125,9 @@ def _process_zwei_response(action, data):
         source = action.ad_group_source.source
 
         if _has_changed(data, ad_group, source, date):
-            for source_campaign_key, data_rows in data['data']:
-                if source_campaign_key == action.ad_group_source.source_campaign_key:
-                    rows = _prepare_report_rows(ad_group, data_rows)
-                    break
-            else:
-                raise Exception('Source campaign key not in results.')
-
+            rows = _prepare_report_rows(ad_group, data['data'])
             reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, rows)
+
     elif action.action == actionlogconstants.Action.FETCH_CAMPAIGN_STATUS:
         dashapi.update_ad_group_source_state(action.ad_group_source, data['data'])
     elif action.action == actionlogconstants.Action.SET_CAMPAIGN_STATE:
