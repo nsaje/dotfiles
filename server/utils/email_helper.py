@@ -125,7 +125,7 @@ def _send_email_to_user(user, request, subject, body):
         send_mail(
             subject,
             body,
-            settings.FROM_EMAIL,
+            'Zemanta <{}>'.format(settings.FROM_EMAIL),
             [user.email],
             fail_silently=False,
             html_message=body

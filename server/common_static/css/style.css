@@ -38,7 +38,7 @@ p {
     padding: 19px;
 }
 
-.wf-loading .enter-container {
+.wf-loading .center-container {
     visibility: hidden;
 }
 
@@ -51,6 +51,7 @@ p {
 .center-container h1 {
     font-weight: 200;
     margin-bottom: 8px;
+    font-size: 29px;
 }
 
 .center-container h2 {

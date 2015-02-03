@@ -54,9 +54,10 @@ def set_password(request, uidb64=None, token=None, template_name=None):
             if form.is_valid():
                 form.save()
 
-                # login user
-                user = auth.authenticate(username=user.email, password=request.POST['new_password'])
-                auth.login(request, user)
+                if not user.email.endswith('@zemanta.com'):
+                    # login user
+                    user = auth.authenticate(username=user.email, password=request.POST['new_password'])
+                    auth.login(request, user)
 
                 return HttpResponseRedirect(resolve_url('/'))
         else:

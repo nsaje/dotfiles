@@ -32,7 +32,7 @@ class EmailHelperTestCase(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, subject)
         self.assertEqual(mail.outbox[0].body, body)
-        self.assertEqual(mail.outbox[0].from_email, settings.FROM_EMAIL)
+        self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
         self.assertEqual(mail.outbox[0].to, [self.user.email])
 
     @override_settings(
@@ -80,7 +80,7 @@ class EmailHelperTestCase(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, subject)
         self.assertEqual(mail.outbox[0].body, body)
-        self.assertEqual(mail.outbox[0].from_email, settings.FROM_EMAIL)
+        self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
         self.assertEqual(mail.outbox[0].to, [account_manager.email])
 
     @override_settings(
