@@ -339,25 +339,27 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
                 source_settings = [s for s in settings if s.ad_group_source.id == ad_group_source.id]
 
                 state = source_states[0] if len(source_states) else None
-                if len(source_settings):
-                    setting = source_settings[0]
-                else:
-                    # use state if there is no settings for this ad group source
-                    setting = state
+                setting = source_settings[0] if len(source_settings) else None
 
                 status = state.state if state is not None else None
                 status_setting = status
-                if ad_group_source.source.can_update_state():
+                if ad_group_source.source.can_update_state() and\
+                   setting is not None and\
+                   setting.state is not None:
                     status_setting = setting.state
 
                 current_daily_budget = state.daily_budget_cc if state is not None else None
                 daily_budget = current_daily_budget
-                if ad_group_source.source.can_update_daily_budget():
+                if ad_group_source.source.can_update_daily_budget() and\
+                   setting is not None and\
+                   setting.daily_budget_cc is not None:
                     daily_budget = setting.daily_budget_cc
 
                 current_bid_cpc = state.cpc_cc if state is not None else None
                 bid_cpc = current_bid_cpc
-                if ad_group_source.source.can_update_cpc():
+                if ad_group_source.source.can_update_cpc() and\
+                   setting is not None and\
+                   setting.cpc_cc is not None:
                     bid_cpc = setting.cpc_cc
 
                 rows[ad_group_source.source_id] = {
