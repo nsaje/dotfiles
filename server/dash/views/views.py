@@ -398,8 +398,25 @@ class AdGroupSources(api_common.BaseApiView):
         )
 
         actionlog.api.create_campaign(ad_group_source, name)
+        self._add_to_history(ad_group_source)
 
         return self.create_api_response(None)
+
+    def _add_to_history(self, ad_group_source):
+        changes_text = '{} campaign created.'.format(ad_group_source.source.name)
+
+        try:
+            latest_ad_group_settings = models.AdGroupSettings.objects \
+                .filter(ad_group=ad_group_source.ad_group) \
+                .latest('created_dt')
+        except models.AdGroupSettings.DoesNotExist:
+            # there are no settings, we create the first one
+            latest_ad_group_settings = models.AdGroupSettings(ad_group=ad_group_source.ad_group)
+
+        new_ad_group_settings = latest_ad_group_settings
+        new_ad_group_settings.pk = None
+        new_ad_group_settings.changes_text = changes_text
+        new_ad_group_settings.save()
 
 
 class Account(api_common.BaseApiView):

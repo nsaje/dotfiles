@@ -755,7 +755,6 @@ class AdGroupSettings(SettingsBase):
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
 
-
     class Meta:
         ordering = ('-created_dt',)
 
