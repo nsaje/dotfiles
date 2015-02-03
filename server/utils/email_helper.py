@@ -41,7 +41,7 @@ Zemanta
         send_mail(
             subject,
             body,
-            settings.FROM_EMAIL,
+            'Zemanta <{}>'.format(settings.FROM_EMAIL),
             [account_manager.email],
             fail_silently=False
         )
