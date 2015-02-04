@@ -323,30 +323,33 @@ def get_yesterday_cost(**constraints):
     return result
 
 
-def has_complete_postclick_metrics_accounts(start_date, end_date, accounts):
+def has_complete_postclick_metrics_accounts(start_date, end_date, accounts, sources):
     return _has_complete_postclick_metrics(
         start_date,
         end_date,
         'ad_group__campaign__account',
-        accounts
+        accounts,
+        sources,
     )
 
 
-def has_complete_postclick_metrics_campaigns(start_date, end_date, campaigns):
+def has_complete_postclick_metrics_campaigns(start_date, end_date, campaigns, sources):
     return _has_complete_postclick_metrics(
         start_date,
         end_date,
         'ad_group__campaign',
-        campaigns
+        campaigns,
+        sources
     )
 
 
-def has_complete_postclick_metrics_ad_groups(start_date, end_date, ad_groups):
+def has_complete_postclick_metrics_ad_groups(start_date, end_date, ad_groups, sources):
     return _has_complete_postclick_metrics(
         start_date,
         end_date,
         'ad_group',
-        ad_groups
+        ad_groups,
+        sources
     )
 
 
@@ -376,7 +379,7 @@ def _get_ad_group_ids_with_postclick_data(key, objects):
     return [item['ad_group'] for item in queryset]
 
 
-def _has_complete_postclick_metrics(start_date, end_date, key, objects):
+def _has_complete_postclick_metrics(start_date, end_date, key, objects, sources):
     """
     Returns True if passed-in objects have complete postclick data for the
     specfied date range. All objects that don't have this data at all are ignored.
@@ -391,7 +394,8 @@ def _has_complete_postclick_metrics(start_date, end_date, key, objects):
     aggr = queryset.filter(
         datetime__gte=start_date,
         datetime__lte=end_date,
-        ad_group__in=ids
+        ad_group__in=ids,
+        source__in=sources
     ).values('datetime', 'ad_group').\
         annotate(has_any_postclick_metrics=Max('has_postclick_metrics')).\
         aggregate(has_all_postclick_metrics=Min('has_any_postclick_metrics'))

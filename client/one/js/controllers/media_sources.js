@@ -356,7 +356,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
-        api.sourcesTable.get($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
+        api.sourcesTable.get($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order, $scope.filteredSources).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
@@ -378,7 +378,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics(), true).then(
+        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics(), true, $scope.filteredSources).then(
             function (data) {
                 setChartOptions();
             
@@ -440,6 +440,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
         var sourceIds = $location.search().source_ids;
         var sourceTotals = $location.search().source_totals;
+        var filteredSources = $location.search().sources_filter;
 
         userSettings.register('chartMetric1');
         userSettings.register('chartMetric2');
@@ -451,6 +452,10 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         if (sourceIds) {
             $scope.selectedSourceIds = sourceIds.split(',');
             $location.search('source_ids', sourceIds);
+        }
+
+        if (filteredSources) {
+            $scope.filteredSources = filteredSources.split(',');
         }
 
         $scope.selectedTotals = !$scope.selectedSourceIds.length || !!sourceTotals;

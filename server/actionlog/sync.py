@@ -13,8 +13,11 @@ from django.db import transaction
 
 class BaseSync(object):
 
-    def __init__(self, obj):
+    def __init__(self, obj, sources=None):
         self.obj = obj
+        if sources is None:
+            sources = dash.models.Source.objects.all()
+        self.sources = sources
 
     def get_latest_success_by_child(self, recompute=True, include_level_archived=False):
         return {
@@ -72,8 +75,10 @@ class ISyncComposite(object):
 
 class GlobalSync(BaseSync, ISyncComposite):
 
-    def __init__(self):
-        pass
+    def __init__(self, sources=None):
+        if sources is None:
+            sources = dash.models.Source.objects.all()
+        self.sources = sources
 
     def get_components(self, maintenance=False, archived=False):
         accounts = dash.models.Account.objects.all()
@@ -92,6 +97,7 @@ class GlobalSync(BaseSync, ISyncComposite):
         '''
         qs = dash.models.AdGroupSource.objects.\
             filter(source__maintenance=False).\
+            filter(source__in=self.sources).\
             filter(ad_group__in=dash.models.AdGroup.objects.all().exclude_archived()).\
             select_related('ad_group__campaign__account', 'source').\
             values('ad_group__campaign__account', 'last_successful_sync_dt')
@@ -113,6 +119,7 @@ class GlobalSync(BaseSync, ISyncComposite):
         '''
         qs = dash.models.AdGroupSource.objects.\
             filter(ad_group__in=dash.models.AdGroup.objects.all().exclude_archived()).\
+            filter(source__in=self.sources).\
             select_related('source').\
             values('source', 'last_successful_sync_dt')
 
@@ -146,7 +153,7 @@ class AccountSync(BaseSync, ISyncComposite):
             campaigns = campaigns.exclude_archived()
 
         for campaign in campaigns:
-            campaign_sync = CampaignSync(campaign)
+            campaign_sync = CampaignSync(campaign, sources=self.sources)
             if len(list(campaign_sync.get_components(maintenance))) > 0:
                 yield campaign_sync
 
@@ -159,7 +166,7 @@ class CampaignSync(BaseSync, ISyncComposite):
             ad_groups = ad_groups.exclude_archived()
 
         for ad_group in ad_groups:
-            ad_group_sync = AdGroupSync(ad_group)
+            ad_group_sync = AdGroupSync(ad_group, sources=self.sources)
             if len(list(ad_group_sync.get_components(maintenance))) > 0:
                 yield ad_group_sync
 
@@ -173,12 +180,12 @@ class AdGroupSync(BaseSync, ISyncComposite):
             self.real_ad_group = dash.models.DemoAdGroupRealAdGroup.objects.get(demo_ad_group=self.obj).real_ad_group
 
     def get_components(self, maintenance=False, archived=False):
-        qs = dash.models.AdGroupSource.objects.filter(ad_group=self.real_ad_group)
+        qs = dash.models.AdGroupSource.objects.filter(ad_group=self.real_ad_group, source__in=self.sources)
         if not maintenance:
             qs = qs.filter(source__maintenance=False)
 
         for ags in qs:
-            yield AdGroupSourceSync(ags)
+            yield AdGroupSourceSync(ags, sources=self.sources)
 
 
 class AdGroupSourceSync(BaseSync):

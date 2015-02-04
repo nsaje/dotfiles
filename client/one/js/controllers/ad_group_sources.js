@@ -370,7 +370,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
-        api.adGroupSourcesTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
+        api.adGroupSourcesTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order, $scope.filteredSources).then(
             function (data) {
                 if($scope.hasPermission('zemauth.aggregate_postclick_engagement')) {
                     zemPostclickMetricsService.insertGoalColumns(
@@ -453,7 +453,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                         name: goals[goalId].name + ': ' + typeName,
                         value: goalId,
                         internal: $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
-                    }
+                    };
                 }).filter(function (option) {
                     return option !== undefined;
                 }));
@@ -462,7 +462,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics()).then(
+        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics(), null, $scope.filteredSources).then(
             function (data) {
                 setChartOptions(data.goals);
 
@@ -550,6 +550,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         var data = $scope.adGroupData[$state.params.id];
         var sourceIds = $location.search().source_ids || (data && data.sourceIds && data.sourceIds.join(','));
         var sourceTotals = $location.search().source_totals || (data && data.sourceTotals ? 1 : null);
+        var filteredSources = $location.search().sources_filter;
 
         userSettings.register('chartMetric1');
         userSettings.register('chartMetric2');
@@ -566,6 +567,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             if ($scope.rows) {
                 $scope.selectRows();
             }
+        }
+
+        if (filteredSources) {
+            $scope.filteredSources = filteredSources.split(',');
         }
 
         $scope.selectedTotals = !$scope.selectedSourceIds.length || !!sourceTotals;

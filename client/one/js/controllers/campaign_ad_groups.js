@@ -307,7 +307,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedAdGroupIds, $scope.selectedTotals, getDailyStatsMetrics()).then(
+        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedAdGroupIds, $scope.selectedTotals, getDailyStatsMetrics(), null, $scope.filteredSources).then(
             function (data) {
                 setChartOptions();
                 $scope.chartData = data.chartData;
@@ -333,7 +333,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     var getTableData = function () {
         $scope.getTableDataRequestInProgress = true;
 
-        api.campaignAdGroupsTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order, $scope.showArchived).then(
+        api.campaignAdGroupsTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order, $scope.showArchived, $scope.filteredSources).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totalRow = data.totals;
@@ -425,6 +425,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.init = function() {
         var adGroupIds = $location.search().ad_group_ids;
         var adGroupTotals = $location.search().ad_group_totals;
+        var filteredSources = $location.search().sources_filter;
 
         userSettings.register('chartMetric1');
         userSettings.register('chartMetric2');
@@ -438,6 +439,10 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                  $scope.updateSelectedAdGroups(id);
             });
             $location.search('ad_group_ids', adGroupIds);
+        }
+
+        if (filteredSources) {
+            $scope.filteredSources = filteredSources.split(',');
         }
 
         $scope.selectedTotals = !$scope.selectedAdGroupIds.length || !!adGroupTotals;

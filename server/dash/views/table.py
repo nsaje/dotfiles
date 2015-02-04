@@ -61,17 +61,18 @@ def has_aggregate_postclick_permission(user):
 
 
 class AllAccountsSourcesTable(object):
-    def __init__(self, user, id_):
+    def __init__(self, user, id_, filtered_sources):
         self.user = user
         self.accounts = models.Account.objects.all().filter_by_user(user)
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.Account, self.accounts)
+        self.filtered_sources = filtered_sources
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return reports.api.has_complete_postclick_metrics_accounts(
-            start_date, end_date, self.accounts)
+            start_date, end_date, self.accounts, self.filtered_sources)
 
     def get_sources(self):
-        return models.Source.objects.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
+        return self.filtered_sources.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
     def get_sources_states(self):
         return models.AdGroupSourceState.objects.\
@@ -84,13 +85,15 @@ class AllAccountsSourcesTable(object):
             start_date,
             end_date,
             ['source'],
-            account=self.accounts
+            account=self.accounts,
+            source=self.filtered_sources
         ), self.user)
 
         totals_stats = reports.api.filter_by_permissions(reports.api.query(
             start_date,
             end_date,
-            account=self.accounts
+            account=self.accounts,
+            source=self.filtered_sources,
         ), self.user)
 
         return sources_stats, totals_stats
@@ -104,10 +107,12 @@ class AllAccountsSourcesTable(object):
         return yesterday_cost, yesterday_total_cost
 
     def get_last_success_actions(self):
-        return actionlog.sync.GlobalSync().get_latest_success_by_source(include_maintenance=True)
+        return actionlog.sync.GlobalSync(sources=self.filtered_sources).get_latest_success_by_source(
+            include_maintenance=True
+        )
 
     def is_sync_in_progress(self):
-        return actionlog.api.is_sync_in_progress(accounts=self.accounts)
+        return actionlog.api.is_sync_in_progress(accounts=self.accounts, sources=self.filtered_sources)
 
     def get_data_status(self):
         return helpers.get_data_status(
@@ -117,17 +122,18 @@ class AllAccountsSourcesTable(object):
 
 
 class AccountSourcesTable(object):
-    def __init__(self, user, id_):
+    def __init__(self, user, id_, filtered_sources):
         self.user = user
         self.account = helpers.get_account(user, id_)
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.Account, [self.account])
+        self.filtered_sources = filtered_sources
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return reports.api.has_complete_postclick_metrics_accounts(
-            start_date, end_date, [self.account])
+            start_date, end_date, [self.account], self.filtered_sources)
 
     def get_sources(self):
-        return models.Source.objects.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
+        return self.filtered_sources.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
     def get_sources_states(self):
         return models.AdGroupSourceState.objects.\
@@ -140,13 +146,15 @@ class AccountSourcesTable(object):
             start_date,
             end_date,
             ['source'],
-            account=self.account
+            account=self.account,
+            source=self.filtered_sources
         ), self.user)
 
         totals_stats = reports.api.filter_by_permissions(reports.api.query(
             start_date,
             end_date,
-            account=self.account
+            account=self.account,
+            source=self.filtered_sources,
         ), self.user)
 
         return sources_stats, totals_stats
@@ -160,13 +168,13 @@ class AccountSourcesTable(object):
         return yesterday_cost, yesterday_total_cost
 
     def get_last_success_actions(self):
-        return actionlog.sync.AccountSync(self.account).get_latest_source_success(
+        return actionlog.sync.AccountSync(self.account, sources=self.filtered_sources).get_latest_source_success(
             recompute=False,
             include_maintenance=True
         )
 
     def is_sync_in_progress(self):
-        return actionlog.api.is_sync_in_progress(accounts=[self.account])
+        return actionlog.api.is_sync_in_progress(accounts=[self.account], sources=self.filtered_sources)
 
     def get_data_status(self):
         return helpers.get_data_status(
@@ -176,17 +184,18 @@ class AccountSourcesTable(object):
 
 
 class CampaignSourcesTable(object):
-    def __init__(self, user, id_):
+    def __init__(self, user, id_, filtered_sources):
         self.user = user
         self.campaign = helpers.get_campaign(user, id_)
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.Campaign, [self.campaign])
+        self.filtered_sources = filtered_sources
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return reports.api.has_complete_postclick_metrics_campaigns(
-            start_date, end_date, [self.campaign])
+            start_date, end_date, [self.campaign], self.filtered_sources)
 
     def get_sources(self):
-        return models.Source.objects.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
+        return self.filtered_sources.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
     def get_sources_states(self):
         return models.AdGroupSourceState.objects.\
@@ -199,13 +208,15 @@ class CampaignSourcesTable(object):
             start_date,
             end_date,
             ['source'],
-            campaign=self.campaign
+            campaign=self.campaign,
+            source=self.filtered_sources,
         ), self.user)
 
         totals_stats = reports.api.filter_by_permissions(reports.api.query(
             start_date,
             end_date,
-            campaign=self.campaign
+            campaign=self.campaign,
+            source=self.filtered_sources,
         ), self.user)
 
         return sources_stats, totals_stats
@@ -219,13 +230,13 @@ class CampaignSourcesTable(object):
         return yesterday_cost, yesterday_total_cost
 
     def get_last_success_actions(self):
-        return actionlog.sync.CampaignSync(self.campaign).get_latest_source_success(
+        return actionlog.sync.CampaignSync(self.campaign, sources=self.filtered_sources).get_latest_source_success(
             recompute=False,
             include_maintenance=True
         )
 
     def is_sync_in_progress(self):
-        return actionlog.api.is_sync_in_progress(campaigns=[self.campaign])
+        return actionlog.api.is_sync_in_progress(campaigns=[self.campaign], sources=self.filtered_sources)
 
     def get_data_status(self):
         return helpers.get_data_status(
@@ -235,17 +246,18 @@ class CampaignSourcesTable(object):
 
 
 class AdGroupSourcesTable(object):
-    def __init__(self, user, id_):
+    def __init__(self, user, id_, filtered_sources):
         self.user = user
         self.ad_group = helpers.get_ad_group(user, id_)
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.AdGroup, [self.ad_group])
+        self.filtered_sources = filtered_sources
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return reports.api.has_complete_postclick_metrics_ad_groups(
-            start_date, end_date, [self.ad_group])
+            start_date, end_date, [self.ad_group], self.filtered_sources)
 
     def get_sources(self):
-        return models.Source.objects.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
+        return self.filtered_sources.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
     def get_sources_states(self):
         return models.AdGroupSourceState.objects.\
@@ -264,13 +276,15 @@ class AdGroupSourcesTable(object):
             start_date,
             end_date,
             ['source'],
-            ad_group=self.ad_group
+            ad_group=self.ad_group,
+            source=self.filtered_sources,
         ), self.user)
 
         totals_stats = reports.api.filter_by_permissions(reports.api.query(
             start_date,
             end_date,
-            ad_group=self.ad_group
+            ad_group=self.ad_group,
+            source=self.filtered_sources,
         ), self.user)
 
         return sources_stats, totals_stats
@@ -284,13 +298,13 @@ class AdGroupSourcesTable(object):
         return yesterday_cost, yesterday_total_cost
 
     def get_last_success_actions(self):
-        return actionlog.sync.AdGroupSync(self.ad_group).get_latest_source_success(
+        return actionlog.sync.AdGroupSync(self.ad_group, sources=self.filtered_sources).get_latest_source_success(
             recompute=False,
             include_maintenance=True
         )
 
     def is_sync_in_progress(self):
-        return actionlog.api.is_sync_in_progress(ad_groups=[self.ad_group])
+        return actionlog.api.is_sync_in_progress(ad_groups=[self.ad_group], sources=self.filtered_sources)
 
     def get_data_status(self, include_state_messages=False):
         state_messages = None
@@ -312,7 +326,7 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
 
         last_change_dt = helpers.parse_datetime(request.GET.get('last_change_dt'))
 
-        ad_group_sources_table = AdGroupSourcesTable(request.user, ad_group_id_)
+        ad_group_sources_table = AdGroupSourcesTable(request.user, ad_group_id_, None)
         ad_group_sources = ad_group_sources_table.active_ad_group_sources
         sources = ad_group_sources_table.get_sources()
         last_success_actions = ad_group_sources_table.get_last_success_actions()
@@ -395,16 +409,18 @@ class SourcesTable(api_common.BaseApiView):
     def get(self, request, level_, id_=None):
         user = request.user
 
+        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+
         ad_group_level = False
         if level_ == 'all_accounts':
-            self.level_sources_table = AllAccountsSourcesTable(user, id_)
+            self.level_sources_table = AllAccountsSourcesTable(user, id_, filtered_sources)
         elif level_ == 'accounts':
-            self.level_sources_table = AccountSourcesTable(user, id_)
+            self.level_sources_table = AccountSourcesTable(user, id_, filtered_sources)
         elif level_ == 'campaigns':
-            self.level_sources_table = CampaignSourcesTable(user, id_)
+            self.level_sources_table = CampaignSourcesTable(user, id_, filtered_sources)
         elif level_ == 'ad_groups':
             ad_group_level = True
-            self.level_sources_table = AdGroupSourcesTable(user, id_)
+            self.level_sources_table = AdGroupSourcesTable(user, id_, filtered_sources)
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
@@ -426,7 +442,8 @@ class SourcesTable(api_common.BaseApiView):
                 get_yesterday_cost()
 
         sources_not_maintenance = [source.id for source in sources.filter(maintenance=False)]
-        last_success_actions_not_maintenance = [v for k, v in last_success_actions.iteritems() if k in sources_not_maintenance]
+        last_success_actions_not_maintenance = [v for k, v in last_success_actions.iteritems()
+                                                if k in sources_not_maintenance]
         last_sync = helpers.get_last_sync(last_success_actions_not_maintenance)
 
         incomplete_postclick_metrics = False
@@ -660,6 +677,8 @@ class AccountsAccountsTable(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
+        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+
         page = request.GET.get('page')
         size = request.GET.get('size')
         order = request.GET.get('order')
@@ -670,7 +689,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
 
         user = request.user
 
-        accounts = models.Account.objects.all().filter_by_user(user)
+        accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
         account_ids = set(acc.id for acc in accounts)
 
         accounts_settings = models.AccountSettings.objects.\
@@ -686,13 +705,15 @@ class AccountsAccountsTable(api_common.BaseApiView):
             start_date,
             end_date,
             ['account'],
-            account=accounts
+            account=accounts,
+            source=filtered_sources,
         ), request.user)
 
         totals_data = reports.api.filter_by_permissions(reports.api.query(
             start_date,
             end_date,
-            account=accounts
+            account=accounts,
+            source=filtered_sources,
         ), request.user)
 
         all_accounts_budget = budget.GlobalBudget().get_total_by_account()
@@ -705,7 +726,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
         totals_data['available_budget'] = totals_data['budget'] - sum(account_total_spend.values())
         totals_data['unspent_budget'] = totals_data['budget'] - (totals_data.get('cost') or 0)
 
-        last_success_actions = actionlog.sync.GlobalSync().get_latest_success_by_account()
+        last_success_actions = actionlog.sync.GlobalSync(sources=self.filtered_sources).get_latest_success_by_account()
         last_success_actions = {aid: val for aid, val in last_success_actions.items() if aid in account_ids}
 
         last_sync = helpers.get_last_sync(last_success_actions.values())
@@ -726,7 +747,10 @@ class AccountsAccountsTable(api_common.BaseApiView):
 
         incomplete_postclick_metrics = \
             not reports.api.has_complete_postclick_metrics_accounts(
-                start_date, end_date, accounts
+                start_date,
+                end_date,
+                accounts,
+                filtered_sources
             ) if has_aggregate_postclick_permission(request.user) else False
 
         response = {
@@ -734,7 +758,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
             'totals': totals_data,
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
             'is_sync_recent': helpers.is_sync_recent(last_success_actions.values()),
-            'is_sync_in_progress': actionlog.api.is_sync_in_progress(accounts=accounts),
+            'is_sync_in_progress': actionlog.api.is_sync_in_progress(accounts=accounts, sources=self.filtered_sources),
             'order': order,
             'pagination': {
                 'currentPage': current_page,
@@ -750,7 +774,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
         if user.has_perm('zemauth.data_status_column'):
             response['data_status'] = self.get_data_status(
                 accounts,
-                actionlog.sync.GlobalSync().get_latest_success_by_account()
+                actionlog.sync.GlobalSync(sources=self.filtered_sources).get_latest_success_by_account()
             )
 
         return self.create_api_response(response)
@@ -830,6 +854,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-clicks'
+        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
 
         size = max(min(int(size or 5), 50), 1)
 
@@ -838,7 +863,8 @@ class AdGroupAdsTable(api_common.BaseApiView):
             end_date=end_date,
             breakdown=['article'],
             order=[order],
-            ad_group=ad_group.id
+            ad_group=ad_group.id,
+            source=filtered_sources,
         ), request.user)
 
         result_pg, current_page, num_pages, count, start_index, end_index = \
@@ -851,16 +877,24 @@ class AdGroupAdsTable(api_common.BaseApiView):
                 row['url'] = 'http://www.example.com/{}/{}'.format(ad_group.name, i)
 
         totals_data = reports.api.filter_by_permissions(
-            reports.api.query(start_date, end_date, ad_group=int(ad_group.id)), request.user)
+            reports.api.query(
+                start_date,
+                end_date,
+                ad_group=int(ad_group.id),
+                source=filtered_sources,
+            ), request.user)
 
-        ad_group_sync = actionlog.sync.AdGroupSync(ad_group)
+        ad_group_sync = actionlog.sync.AdGroupSync(ad_group, sources=self.filtered_sources)
         last_success_actions = ad_group_sync.get_latest_success_by_child(recompute=False)
 
         last_sync = helpers.get_last_sync(last_success_actions.values())
 
         incomplete_postclick_metrics = \
             not reports.api.has_complete_postclick_metrics_ad_groups(
-                start_date, end_date, [ad_group]
+                start_date,
+                end_date,
+                [ad_group],
+                filtered_sources,
             ) if (request.user.has_perm('zemauth.content_ads_postclick_acquisition') or
                   request.user.has_perm('zemauth.content_ads_postclick_engagement')) else False
 
@@ -869,7 +903,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
             'totals': totals_data,
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
             'is_sync_recent': helpers.is_sync_recent(last_success_actions.values()),
-            'is_sync_in_progress': actionlog.api.is_sync_in_progress([ad_group]),
+            'is_sync_in_progress': actionlog.api.is_sync_in_progress([ad_group], sources=self.filtered_sources),
             'order': order,
             'pagination': {
                 'currentPage': current_page,
@@ -891,6 +925,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-cost'
+        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
 
         has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
         show_archived = request.GET.get('show_archived') == 'true' and\
@@ -901,10 +936,11 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             end_date=end_date,
             breakdown=['ad_group'],
             order=[order],
-            campaign=campaign
+            campaign=campaign,
+            source=filtered_sources,
         ), request.user)
 
-        ad_groups = campaign.adgroup_set.all()
+        ad_groups = campaign.adgroup_set.all().filter_by_sources(filtered_sources)
         ad_groups_settings = models.AdGroupSettings.objects.\
             distinct('ad_group_id').\
             filter(ad_group__campaign=campaign).\
@@ -914,19 +950,23 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             reports.api.query(
                 start_date,
                 end_date,
-                ad_group=ad_groups
+                ad_group=ad_groups,
+                source=filtered_sources,
             ),
             request.user
         )
 
-        campaign_sync = actionlog.sync.CampaignSync(campaign)
+        campaign_sync = actionlog.sync.CampaignSync(campaign, sources=self.filtered_sources)
         last_success_actions = campaign_sync.get_latest_success_by_child(recompute=False)
 
         last_sync = helpers.get_last_sync(last_success_actions.values())
 
         incomplete_postclick_metrics = \
             not reports.api.has_complete_postclick_metrics_campaigns(
-                start_date, end_date, [campaign]
+                start_date,
+                end_date,
+                [campaign],
+                filtered_sources
             ) if has_aggregate_postclick_permission(request.user) else False
 
         response = {
@@ -943,7 +983,9 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
             'is_sync_recent': helpers.is_sync_recent(last_success_actions.values()),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(
-                campaigns=[campaign]),
+                campaigns=[campaign],
+                sources=self.filtered_sources
+            ),
             'order': order,
             'incomplete_postclick_metrics': incomplete_postclick_metrics
         }
@@ -951,8 +993,10 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         if request.user.has_perm('zemauth.data_status_column'):
             response['data_status'] = self.get_data_status(
                 ad_groups,
-                actionlog.sync.CampaignSync(campaign).get_latest_success_by_child(recompute=False,
-                                                                                  include_level_archived=True)
+                actionlog.sync.CampaignSync(campaign, sources=self.filtered_sources).get_latest_success_by_child(
+                    recompute=False,
+                    include_level_archived=True
+                )
             )
 
         return self.create_api_response(response)
@@ -962,7 +1006,6 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             ad_groups,
             helpers.get_last_sync_messages(ad_groups, last_success_actions),
         )
-
 
     def get_rows(self, ad_groups, ad_groups_settings, stats, last_actions,
                  order, has_view_archived_permission, show_archived):
@@ -1026,12 +1069,14 @@ class AccountCampaignsTable(api_common.BaseApiView):
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-clicks'
 
+        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+
         has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
         show_archived = request.GET.get('show_archived') == 'true' and\
             request.user.has_perm('zemauth.view_archived_entities')
 
         campaigns = models.Campaign.objects.all().filter_by_user(user).\
-            filter(account=account_id)
+            filter(account=account_id).filter_by_sources(filtered_sources)
 
         campaigns_settings = models.CampaignSettings.objects.\
             distinct('campaign_id').\
@@ -1043,13 +1088,17 @@ class AccountCampaignsTable(api_common.BaseApiView):
             end_date=end_date,
             breakdown=['campaign'],
             order=[order],
-            campaign=campaigns
+            campaign=campaigns,
+            source=filtered_sources,
         ), request.user)
 
         totals_stats = reports.api.filter_by_permissions(
-            reports.api.query(start_date, end_date, campaign=campaigns),
-            request.user
-        )
+            reports.api.query(
+                start_date,
+                end_date,
+                campaign=campaigns,
+                source=filtered_sources,
+            ), request.user)
 
         totals_stats['budget'] = sum(budget.CampaignBudget(campaign).get_total()
                                      for campaign in campaigns)
@@ -1063,14 +1112,17 @@ class AccountCampaignsTable(api_common.BaseApiView):
             filter(ad_group__campaign__in=campaigns).\
             order_by('ad_group_id', '-created_dt')
 
-        account_sync = actionlog.sync.AccountSync(account)
+        account_sync = actionlog.sync.AccountSync(account, sources=self.filtered_sources)
         last_success_actions = account_sync.get_latest_success_by_child(recompute=False)
 
         last_sync = helpers.get_last_sync(last_success_actions.values())
 
         incomplete_postclick_metrics = \
             not reports.api.has_complete_postclick_metrics_campaigns(
-                start_date, end_date, campaigns
+                start_date,
+                end_date,
+                campaigns,
+                filtered_sources,
             ) if has_aggregate_postclick_permission(request.user) else False
 
         response = {
@@ -1088,7 +1140,9 @@ class AccountCampaignsTable(api_common.BaseApiView):
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
             'is_sync_recent': helpers.is_sync_recent(last_success_actions.values()),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(
-                campaigns=campaigns),
+                campaigns=campaigns,
+                sources=self.filtered_sources
+            ),
             'order': order,
             'incomplete_postclick_metrics': incomplete_postclick_metrics
         }
@@ -1096,8 +1150,10 @@ class AccountCampaignsTable(api_common.BaseApiView):
         if user.has_perm('zemauth.data_status_column'):
             response['data_status'] = self.get_data_status(
                 campaigns,
-                actionlog.sync.AccountSync(account).get_latest_success_by_child(recompute=False,
-                                                                                include_level_archived=True)
+                actionlog.sync.AccountSync(account, sources=self.filtered_sources).get_latest_success_by_child(
+                    recompute=False,
+                    include_level_archived=True
+                )
             )
 
         return self.create_api_response(response)
@@ -1107,7 +1163,6 @@ class AccountCampaignsTable(api_common.BaseApiView):
             campaigns,
             helpers.get_last_sync_messages(campaigns, last_success_actions),
         )
-
 
     def get_rows(self, campaigns, campaigns_settings, ad_groups_settings, stats,
                  last_actions, order, has_view_archived_permission, show_archived):

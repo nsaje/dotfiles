@@ -124,7 +124,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             return data;
         }
 
-        this.get = function (level, id, startDate, endDate, order) {
+        this.get = function (level, id, startDate, endDate, order, filteredSources) {
             var deferred = $q.defer();
             var url = null;
             if (level === 'all_accounts') {
@@ -147,6 +147,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             if (order) {
                 config.params.order = order;
+            }
+
+            if (filteredSources) {
+                config.params.filtered_sources = filteredSources.join(',');
             }
 
             $http.get(url, config).
@@ -201,7 +205,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             return data;
         }
 
-        this.get = function (id, startDate, endDate, order) {
+        this.get = function (id, startDate, endDate, order, filteredSources) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/sources/table/';
             var config = {
@@ -216,6 +220,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             if (endDate) {
                 config.params.end_date = endDate.format();
+            }
+
+            if (filteredSources) {
+                config.params.filtered_sources = filteredSources.join(',');
             }
 
             $http.get(url, config).
@@ -249,7 +257,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             return row;
         }
 
-        this.get = function (id, page, size, startDate, endDate, order) {
+        this.get = function (id, page, size, startDate, endDate, order, filteredSources) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/contentads/table/';
             var config = {
@@ -274,6 +282,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             if (order) {
                 config.params.order = order;
+            }
+
+            if (filteredSources) {
+                config.params.filtered_sources = filteredSources.join(',');
             }
 
             $http.get(url, config).
@@ -420,7 +432,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             };
         }
 
-        this.list = function (level, id, startDate, endDate, selectedIds, totals, metrics, groupSources) {
+        this.list = function (level, id, startDate, endDate, selectedIds, totals, metrics, groupSources, filteredSources) {
             var deferred = $q.defer();
             var url = '/api/' + level + (id ? ('/' + id) : '') + '/daily_stats/';
             var config = {
@@ -449,6 +461,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             
             if (groupSources) {
                 config.params.sources = groupSources;
+            }
+
+            if (filteredSources) {
+                config.params.filtered_sources = filteredSources.join(',');
             }
 
             $http.get(url, config).
@@ -1303,7 +1319,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             return row;
         }
 
-        this.get = function (page, size, startDate, endDate, order, showArchived) {
+        this.get = function (page, size, startDate, endDate, order, showArchived, filteredSources) {
             var deferred = $q.defer();
             var url = '/api/accounts/table/';
             var config = {
@@ -1334,6 +1350,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 config.params.show_archived = showArchived;
             }
 
+            if (filteredSources) {
+                config.params.filtered_sources = filteredSources.join(',');
+            }
+
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
@@ -1361,7 +1381,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             return result;
         }
 
-        this.get = function (id, startDate, endDate, order, showArchived) {
+        this.get = function (id, startDate, endDate, order, showArchived, filteredSources) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + id + '/campaigns/table/';
             var config = {
@@ -1382,6 +1402,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             if (typeof(showArchived) !== 'undefined') {
                 config.params.show_archived = showArchived;
+            }
+
+            if (filteredSources) {
+                config.params.filtered_sources = filteredSources.join(',');
             }
 
             $http.get(url, config).
@@ -1413,7 +1437,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             return result;
         }
 
-        this.get = function (id, startDate, endDate, order, showArchived) {
+        this.get = function (id, startDate, endDate, order, showArchived, filteredSources) {
             var deferred = $q.defer();
             var url = '/api/campaigns/' + id + '/ad_groups/table/';
             var config = {
@@ -1434,6 +1458,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             if (showArchived) {
                 config.params.show_archived = showArchived;
+            }
+
+            if (filteredSources) {
+                config.params.filtered_sources = filteredSources.join(',');
             }
 
             $http.get(url, config).

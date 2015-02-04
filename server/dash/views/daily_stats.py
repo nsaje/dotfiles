@@ -15,6 +15,8 @@ class BaseDailyStatsView(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
+        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+
         breakdown = ['date']
 
         totals_stats = []
@@ -24,6 +26,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
                 end_date,
                 breakdown,
                 ['date'],
+                source=filtered_sources,
                 **totals_kwargs
             )
 
@@ -36,6 +39,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
                 end_date,
                 breakdown,
                 ['date'],
+                source=filtered_sources,
                 **selected_kwargs
             )
 

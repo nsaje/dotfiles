@@ -47,6 +47,24 @@ def get_stats_end_date(end_time):
     return date.date()
 
 
+def get_filtered_sources(sources_filter):
+    filtered_sources = models.Source.objects.all()
+    if not sources_filter:
+        return filtered_sources
+
+    filtered_ids = []
+    for i in sources_filter.split(','):
+        try:
+            filtered_ids.append(int(i))
+        except ValueError:
+            pass
+
+    if filtered_ids:
+        filtered_sources = filtered_sources.filter(id__in=filtered_ids)
+
+    return filtered_sources
+
+
 def get_account(user, account_id, select_related=False):
     try:
         account = models.Account.objects.all().filter_by_user(user)
