@@ -58,6 +58,13 @@ class DemoManager(models.Manager):
         return queryset
 
 
+class OutbrainAccount(models.Model):
+    marketer_id = models.CharField(blank=False, null=False, max_length=255)
+    used = models.BooleanField(default=False)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+
+
 class Account(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(
@@ -75,6 +82,8 @@ class Account(models.Model):
 
     objects = QuerySetManager()
     demo_objects = DemoManager()
+
+    outbrain_marketer_id = models.CharField(null=True, blank=True, max_length=255)
 
     class Meta:
         ordering = ('-created_dt',)

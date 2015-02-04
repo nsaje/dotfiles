@@ -481,6 +481,15 @@ class DemoAdGroupRealAdGroupAdmin(admin.ModelAdmin):
         return '|'.join([account_name, campaign_name, ad_group_name])
 
 
+class OutbrainAccountAdmin(admin.ModelAdmin):
+    list_display = (
+        'marketer_id',
+        'used',
+        'created_dt',
+        'modified_dt',
+    )
+
+
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
 admin.site.register(models.CampaignSettings, CampaignSettingsAdmin)
@@ -493,3 +502,4 @@ admin.site.register(models.SourceCredentials, SourceCredentialsAdmin)
 admin.site.register(models.SourceType, SourceTypeAdmin)
 admin.site.register(models.DefaultSourceSettings, DefaultSourceSettingsAdmin)
 admin.site.register(models.DemoAdGroupRealAdGroup, DemoAdGroupRealAdGroupAdmin)
+admin.site.register(models.OutbrainAccount, OutbrainAccountAdmin)
