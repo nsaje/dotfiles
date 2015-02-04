@@ -23,6 +23,10 @@ class PasswordResetForm(forms.Form):
 
     def clean_username(self):
         form_username = self.cleaned_data.get('username')
+
+        if form_username.endswith('@zemanta.com'):
+            raise ValidationError('You cannot change your password as a Zemanta employee.', code='invalid')
+
         if not models.User.objects.filter(email__iexact=form_username).exists():
             raise ValidationError('We can\'t find an account registered with that address.', code='invalid')
 
