@@ -25,7 +25,10 @@ class PasswordResetForm(forms.Form):
         form_username = self.cleaned_data.get('username')
 
         if form_username.endswith('@zemanta.com'):
-            raise ValidationError('You cannot change your password as a Zemanta employee.', code='invalid')
+            raise ValidationError(
+                'For security reasons, you must login using Google authentication. Please return to the sign in page, enter your Zemanta email address, and click "Login with Google".',
+                code='invalid'
+            )
 
         if not models.User.objects.filter(email__iexact=form_username).exists():
             raise ValidationError('We can\'t find an account registered with that address.', code='invalid')
