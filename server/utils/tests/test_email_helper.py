@@ -21,7 +21,7 @@ class EmailHelperTestCase(TestCase):
         reset_url = email_helper._generate_password_reset_url(self.user, self.request)
         self.assertRegexpMatches(
             reset_url,
-            r'https://testserver/set_password/[a-zA-Z0-9]{2}-3yy-[0-9a-z]{20}/')
+            r'https://testserver/set_password/[a-zA-Z0-9]{2}-[a-zA-Z0-9]{3}-[0-9a-zA-Z]{20}/')
 
     def test_send_email_to_user(self):
         subject = 'This is subject'
