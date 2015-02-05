@@ -26,7 +26,7 @@ class PasswordResetForm(forms.Form):
 
         if form_username.endswith('@zemanta.com'):
             raise ValidationError(
-                'For security reasons, you must login using Google authentication. Please return to the sign in page, enter your Zemanta email address, and click "Login with Google".',
+                'For security reasons, you must login using Google authentication. Please return to the sign in page, enter your Zemanta email address, and click "Sign in with Google".',
                 code='invalid'
             )
 
