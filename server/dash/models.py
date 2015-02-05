@@ -456,6 +456,12 @@ class SourceType(models.Model):
         verbose_name='Maximum Daily Budget'
     )
 
+    cpc_decimal_places = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='CPC Decimal Places'
+    )
+
     def can_update_state(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_STATE).exists()
 
