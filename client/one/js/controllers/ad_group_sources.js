@@ -591,7 +591,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             return;
         }
 
-        api.adGroupSources.get($state.params.id).then(
+        api.adGroupSources.get($state.params.id, $scope.filteredSources).then(
             function (data) {
                 $scope.sources = data.sources;
                 $scope.sourcesWaiting = data.sourcesWaiting;
@@ -624,7 +624,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     var pollSyncStatus = function() {
         if($scope.isSyncInProgress){
             $timeout(function() {
-                api.checkSyncProgress.get($state.params.id).then(
+                api.checkSyncProgress.get($state.params.id, $scope.filteredSources).then(
                     function(data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 
@@ -654,7 +654,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             return;
         }
 
-        api.adGroupSourcesUpdates.get($state.params.id, $scope.lastChange)
+        api.adGroupSourcesUpdates.get($state.params.id, $scope.lastChange, $scope.filteredSources)
             .then(function (data) {
                 if (data.lastChange) {
                     $scope.lastChange = data.lastChange;
@@ -699,7 +699,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     // trigger sync
     $scope.triggerSync = function() {
         $scope.isSyncInProgress = true;
-        api.adGroupSync.get($state.params.id);
+        api.adGroupSync.get($state.params.id, $scope.filteredSources);
     };
 
     $scope.init();

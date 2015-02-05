@@ -173,8 +173,8 @@ class CampaignSync(BaseSync, ISyncComposite):
 
 class AdGroupSync(BaseSync, ISyncComposite):
 
-    def __init__(self, obj):
-        super(AdGroupSync, self).__init__(obj)
+    def __init__(self, obj, sources=None):
+        super(AdGroupSync, self).__init__(obj, sources=sources)
         self.real_ad_group = self.obj
         if self.obj in dash.models.AdGroup.demo_objects.all():
             self.real_ad_group = dash.models.DemoAdGroupRealAdGroup.objects.get(demo_ad_group=self.obj).real_ad_group

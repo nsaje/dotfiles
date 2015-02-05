@@ -17,7 +17,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
     $scope.size = $scope.sizeRange[0];
 
     $scope.pagination = {
-        currentPage: 1,
+        currentPage: 1
     };
 
     var userSettings = zemUserSettings.getInstance($scope, 'adGroupContentAds');
@@ -350,7 +350,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         initColumns();
         setDisabledExportOptions();
     };
-    
+
     $scope.loadPage = function(page) {
         if(page && page > 0 && page <= $scope.pagination.numPages) {
             $scope.pagination.currentPage = page;
@@ -374,11 +374,11 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
     var pollSyncStatus = function() {
         if($scope.isSyncInProgress){
             $timeout(function() {
-                api.checkSyncProgress.get($state.params.id).then(
+                api.checkSyncProgress.get($state.params.id, $scope.filteredSources).then(
                     function(data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 
-                        if($scope.isSyncInProgress == false){
+                        if($scope.isSyncInProgress === false){
                             // we found out that the sync is no longer in progress
                             // time to reload the data
                             getTableData();
@@ -394,7 +394,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
                 });
             }, 5000);
         }
-    }
+    };
 
     var setDisabledExportOptions = function() {
         api.adGroupAdsExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
@@ -419,8 +419,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
     // trigger sync
     $scope.triggerSync = function() {
         $scope.isSyncInProgress = true;
-        api.adGroupSync.get($state.params.id);
-    }
+        api.adGroupSync.get($state.params.id, $scope.filteredSources);
+    };
 
     $scope.init();
 }]);

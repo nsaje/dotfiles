@@ -385,13 +385,13 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
     $scope.triggerSync = function() {
         $scope.isSyncInProgress = true;
-        api.campaignSync.get($state.params.id);
+        api.campaignSync.get($state.params.id, null, $scope.filteredSources);
     };
 
     var pollSyncStatus = function() {
         if ($scope.isSyncInProgress){
             $timeout(function() {
-                api.checkCampaignSyncProgress.get($state.params.id).then(
+                api.checkCampaignSyncProgress.get($state.params.id, $scope.filteredSources).then(
                     function(data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 

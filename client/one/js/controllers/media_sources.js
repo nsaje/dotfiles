@@ -495,11 +495,11 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 var promise = null;
 
                 if ($scope.level === constants.level.ALL_ACCOUNTS) {
-                    promise = api.checkAccountsSyncProgress.get();
+                    promise = api.checkAccountsSyncProgress.get($scope.filteredSources);
                 } else if ($scope.level === constants.level.ACCOUNTS) {
-                    promise = api.checkCampaignSyncProgress.get(undefined, $state.params.id);
+                    promise = api.checkCampaignSyncProgress.get(undefined, $state.params.id, $scope.filteredSources);
                 } else if ($scope.level === constants.level.CAMPAIGNS) {
-                    promise = api.checkCampaignSyncProgress.get($state.params.id);
+                    promise = api.checkCampaignSyncProgress.get($state.params.id, null, $scope.filteredSources);
                 }
 
                 promise.then(
@@ -528,11 +528,11 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         $scope.isSyncInProgress = true;
 
         if ($scope.level === constants.level.ALL_ACCOUNTS) {
-            api.accountSync.get();
+            api.accountSync.get($scope.filteredSources);
         } else if ($scope.level === constants.level.ACCOUNTS) {
-            api.accountSync.get($state.params.id);
+            api.campaignSync.get(null, $state.params.id, $scope.filteredSources);
         } else if ($scope.level === constants.level.CAMPAIGNS) {
-            api.campaignSync.get($state.params.id);
+            api.campaignSync.get($state.params.id, null, $scope.filteredSources);
         }
     };
 

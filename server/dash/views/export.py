@@ -19,6 +19,8 @@ class AccountCampaignsExport(api_common.BaseApiView):
 
         campaigns = models.Campaign.objects.all().filter_by_user(request.user).filter(account=account)
 
+        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
@@ -33,7 +35,8 @@ class AccountCampaignsExport(api_common.BaseApiView):
             start_date,
             end_date,
             request.user,
-            campaign=campaigns
+            campaign=campaigns,
+            source=filtered_sources,
         )
 
         if request.GET.get('type') == 'excel':
@@ -42,7 +45,8 @@ class AccountCampaignsExport(api_common.BaseApiView):
                 start_date,
                 end_date,
                 request.user,
-                campaign=campaigns
+                campaign=campaigns,
+                source=filtered_sources,
             )
 
             self.add_campaign_data(detailed_data, campaigns)
@@ -93,6 +97,8 @@ class CampaignAdGroupsExport(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
+        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+
         export_type = request.GET.get('type')
 
         if export_type == 'excel_detailed' and \
@@ -106,7 +112,8 @@ class CampaignAdGroupsExport(api_common.BaseApiView):
             start_date,
             end_date,
             request.user,
-            campaign=campaign
+            campaign=campaign,
+            source=filtered_sources,
         )
 
         if export_type == 'excel' or export_type == 'excel_detailed':
@@ -115,7 +122,8 @@ class CampaignAdGroupsExport(api_common.BaseApiView):
                 start_date,
                 end_date,
                 request.user,
-                campaign=campaign
+                campaign=campaign,
+                source=filtered_sources,
             )
 
             self.add_ad_group_data(detailed_data, campaign)
@@ -261,6 +269,8 @@ class AdGroupAdsExport(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
+        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+
         filename = '{0}_{1}_detailed_report_{2}_{3}'.format(
             slugify.slugify(ad_group.campaign.account.name),
             slugify.slugify(ad_group.name),
@@ -273,7 +283,8 @@ class AdGroupAdsExport(api_common.BaseApiView):
             start_date,
             end_date,
             request.user,
-            ad_group=ad_group
+            ad_group=ad_group,
+            source=filtered_sources,
         )
 
         if request.GET.get('type') == 'excel':
@@ -282,7 +293,8 @@ class AdGroupAdsExport(api_common.BaseApiView):
                 start_date,
                 end_date,
                 request.user,
-                ad_group=ad_group
+                ad_group=ad_group,
+                source=filtered_sources,
             )
 
             self.add_source_data(sources_results)
@@ -337,6 +349,8 @@ class AdGroupSourcesExport(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
+        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+
         filename = '{0}_{1}_per_sources_report_{2}_{3}'.format(
             slugify.slugify(ad_group.campaign.account.name),
             slugify.slugify(ad_group.name),
@@ -349,7 +363,8 @@ class AdGroupSourcesExport(api_common.BaseApiView):
             start_date,
             end_date,
             request.user,
-            ad_group=ad_group
+            ad_group=ad_group,
+            source=filtered_sources,
         )
 
         self.add_source_data(date_source_results)
@@ -373,7 +388,8 @@ class AdGroupSourcesExport(api_common.BaseApiView):
                     start_date,
                     end_date,
                     request.user,
-                    ad_group=ad_group
+                    ad_group=ad_group,
+                    source=filtered_sources,
                 )
 
                 date_columns = list(date_source_columns)  # make a shallow copy
@@ -411,6 +427,8 @@ class AllAccountsExport(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
+        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+
         filename = 'all_accounts_report_{0}_{1}'.format(start_date, end_date)
 
         results = export.generate_rows(
@@ -418,7 +436,8 @@ class AllAccountsExport(api_common.BaseApiView):
             start_date,
             end_date,
             request.user,
-            account=accounts
+            account=accounts,
+            source=filtered_sources,
         )
 
         self.add_account_data(results, accounts)
@@ -429,7 +448,8 @@ class AllAccountsExport(api_common.BaseApiView):
                 start_date,
                 end_date,
                 request.user,
-                account=accounts
+                account=accounts,
+                source=filtered_sources,
             )
 
             self.add_account_data(detailed_results, accounts)

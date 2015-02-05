@@ -348,7 +348,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     var pollSyncStatus = function() {
         if($scope.isSyncInProgress){
             $timeout(function() {
-                api.checkAccountsSyncProgress.get().then(
+                api.checkAccountsSyncProgress.get($scope.filteredSources).then(
                     function(data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 
@@ -372,7 +372,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
     $scope.triggerSync = function() {
         $scope.isSyncInProgress = true;
-        api.accountSync.get();
+        api.accountSync.get($scope.filteredSources);
     };
 
     $scope.loadPage = function(page) {

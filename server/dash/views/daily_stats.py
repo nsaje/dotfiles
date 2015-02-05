@@ -15,8 +15,6 @@ class BaseDailyStatsView(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
-
         breakdown = ['date']
 
         totals_stats = []
@@ -26,7 +24,6 @@ class BaseDailyStatsView(api_common.BaseApiView):
                 end_date,
                 breakdown,
                 ['date'],
-                source=filtered_sources,
                 **totals_kwargs
             )
 
@@ -39,7 +36,6 @@ class BaseDailyStatsView(api_common.BaseApiView):
                 end_date,
                 breakdown,
                 ['date'],
-                source=filtered_sources,
                 **selected_kwargs
             )
 
@@ -118,6 +114,8 @@ class AccountDailyStats(BaseDailyStatsView):
         totals = request.GET.get('totals')
         sources = request.GET.get('sources')
 
+        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+
         totals_kwargs = None
         selected_kwargs = None
         group_key = 'campaign'
@@ -127,11 +125,11 @@ class AccountDailyStats(BaseDailyStatsView):
             group_key = 'source'
 
         if totals:
-            totals_kwargs = {'account': int(account.id)}
+            totals_kwargs = {'account': int(account.id), 'source': filtered_sources}
 
         if selected_ids:
             ids = [int(x) for x in selected_ids]
-            selected_kwargs = {'account': int(account.id), group_key: ids}
+            selected_kwargs = {'account': int(account.id), '{}__id'.format(group_key): ids}
 
             if sources:
                 sources = models.Source.objects.filter(pk__in=ids)
@@ -161,6 +159,8 @@ class CampaignDailyStats(BaseDailyStatsView):
         totals = request.GET.get('totals')
         sources = request.GET.get('sources')
 
+        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+
         totals_kwargs = None
         selected_kwargs = None
         group_key = 'ad_group'
@@ -170,7 +170,7 @@ class CampaignDailyStats(BaseDailyStatsView):
             group_key = 'source'
 
         if totals:
-            totals_kwargs = {'campaign': int(campaign.id)}
+            totals_kwargs = {'campaign': int(campaign.id), 'source': filtered_sources}
 
         if selected_ids:
             ids = [int(x) for x in selected_ids]
@@ -203,12 +203,14 @@ class AdGroupDailyStats(BaseDailyStatsView):
         selected_ids = request.GET.getlist('selected_ids')
         totals = request.GET.get('totals')
 
+        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+
         totals_kwargs = None
         selected_kwargs = None
         sources = []
 
         if totals:
-            totals_kwargs = {'ad_group': int(ad_group.id)}
+            totals_kwargs = {'ad_group': int(ad_group.id), 'source': filtered_sources}
 
         if selected_ids:
             ids = [int(x) for x in selected_ids]
@@ -238,6 +240,8 @@ class AccountsDailyStats(BaseDailyStatsView):
         selected_ids = request.GET.getlist('selected_ids')
         totals = request.GET.get('totals')
 
+        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+
         totals_kwargs = None
         selected_kwargs = None
         group_key = None
@@ -246,7 +250,7 @@ class AccountsDailyStats(BaseDailyStatsView):
         accounts = models.Account.objects.all().filter_by_user(request.user)
 
         if totals:
-            totals_kwargs = {'account': accounts}
+            totals_kwargs = {'account': accounts, 'source': filtered_sources}
 
         if selected_ids:
             ids = [int(x) for x in selected_ids]

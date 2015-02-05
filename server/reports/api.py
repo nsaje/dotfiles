@@ -362,7 +362,7 @@ def row_has_postclick_data(row):
                POSTCLICK_ACQUISITION_FIELDS + POSTCLICK_ENGAGEMENT_FIELDS)
 
 
-def _get_ad_group_ids_with_postclick_data(key, objects):
+def _get_ad_group_ids_with_postclick_data(key, objects, exclude_archived=True):
     """
     Filters the objects that are passed in and returns ids
     of only those that have any postclick metric data in ArticleStats.
@@ -372,9 +372,13 @@ def _get_ad_group_ids_with_postclick_data(key, objects):
 
     queryset = _get_initial_qs([])
 
-    queryset = queryset.filter(**kwargs).values('ad_group').annotate(
-        has_any_postclick_metrics=Max('has_postclick_metrics')
-    ).filter(has_any_postclick_metrics=1)
+    if exclude_archived:
+        queryset = queryset.filter(ad_group__in=dashmodels.AdGroup.objects.all().exclude_archived())
+
+    queryset = queryset.filter(**kwargs).\
+        values('ad_group').annotate(
+            has_any_postclick_metrics=Max('has_postclick_metrics')
+        ).filter(has_any_postclick_metrics=1)
 
     return [item['ad_group'] for item in queryset]
 

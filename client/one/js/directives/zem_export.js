@@ -8,7 +8,8 @@ oneApp.directive('zemExport', function() {
             baseUrl: '=',
             startDate: '=',
             endDate: '=',
-            options: '='
+            options: '=',
+            filteredSources: '='
         },
         templateUrl: '/partials/zem_export.html',
         controller: ['$scope', '$window', '$compile', function($scope, $window, $compile) {
@@ -73,7 +74,13 @@ oneApp.directive('zemExport', function() {
             };
 
             $scope.downloadReport = function() {
-                $window.open($scope.baseUrl + 'export/?type=' + $scope.exportType + '&start_date=' + $scope.startDate.format() + '&end_date=' + $scope.endDate.format(), '_blank');
+                var url = $scope.baseUrl + 'export/?type=' + $scope.exportType + '&start_date=' + $scope.startDate.format() + '&end_date=' + $scope.endDate.format();
+
+                if ($scope.filteredSources) {
+                    url += '&filtered_sources=' + $scope.filteredSources.join(',');
+                }
+
+                $window.open(url, '_blank');
 
                 $scope.exportType = '';
             };

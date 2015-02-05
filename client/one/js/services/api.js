@@ -51,11 +51,18 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AdGroupSources() {
-        this.get = function (id) {
+        this.get = function (id, filteredSources) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/sources/';
+            var config = {
+                params: {}
+            };
 
-            $http.get(url).
+            if (filteredSources) {
+                config.params.filtered_sources = filteredSources.join(',');
+            }
+
+            $http.get(url, config).
                 success(function (data, status) {
                     deferred.resolve({
                         sources: data.data.sources,
@@ -305,11 +312,18 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AdGroupSync() {
-        this.get = function (id) {
+        this.get = function (id, filteredSources) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/sync/';
+            var config = {
+                params: {}
+            };
 
-            $http.get(url).
+            if (filteredSources) {
+                config.params.filtered_sources = filteredSources.join(',');
+            }
+
+            $http.get(url, config).
                 success(function (data, status) {
                     var resource;
                     if (data && data.success) {
@@ -325,17 +339,24 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function CheckSyncProgress() {
-        this.get = function(id) {
+        this.get = function(id, filteredSources) {
             var deferred = $q.defer();
+            var config = {
+                params: {}
+            };
 
             if (id === undefined) {
                 deferred.reject();
                 return deferred.promise;
             }
 
+            if (filteredSources) {
+                config.params.filtered_sources = filteredSources.join(',');
+            }
+
             var url = '/api/ad_groups/' + id + '/check_sync_progress/';
 
-            $http.get(url).
+            $http.get(url, config).
                 success(function(data, status){
                     var resource;
                     if (data && data.success) {
@@ -351,11 +372,18 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function AccountSync() {
-        this.get = function () {
+        this.get = function (filteredSources) {
             var deferred = $q.defer();
             var url = '/api/accounts/sync/';
+            var config = {
+                params: {}
+            };
 
-            $http.get(url).
+            if (filteredSources) {
+                config.params.filtered_sources = filteredSources.join(',');
+            }
+
+            $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.success) {
                         deferred.resolve();
@@ -370,11 +398,18 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function CheckAccountsSyncProgress() {
-        this.get = function() {
+        this.get = function(filteredSources) {
             var deferred = $q.defer();
             var url = '/api/accounts/check_sync_progress/';
+            var config = {
+                params: {}
+            };
 
-            $http.get(url).
+            if (filteredSources) {
+                config.params.filtered_sources = filteredSources.join(',');
+            }
+
+            $http.get(url, config).
                 success(function(data, status){
                     if (data && data.success) {
                         deferred.resolve(data.data);
@@ -389,7 +424,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function CheckCampaignSyncProgress() {
-        this.get = function(campaignId, accountId) {
+        this.get = function(campaignId, accountId, filteredSources) {
             var deferred = $q.defer();
 
             if (campaignId === undefined && accountId === undefined) {
@@ -407,6 +442,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 config.params.campaign_id = campaignId;
             } else if (accountId) {
                 config.params.account_id = accountId;
+            }
+
+            if (filteredSources) {
+                config.params.filtered_sources = filteredSources.join(',');
             }
 
             $http.get(url, config).
@@ -1114,7 +1153,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     }
 
     function CampaignSync() {
-        this.get = function (campaignId, accountId) {
+        this.get = function (campaignId, accountId, filteredSources) {
             var deferred = $q.defer();
             var url = '/api/campaigns/sync/';
 
@@ -1126,6 +1165,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 config.params.campaign_id = campaignId;
             } else if (accountId) {
                 config.params.account_id = accountId;
+            }
+
+            if (filteredSources) {
+                config.params.filtered_sources = filteredSources.join(',');
             }
 
             $http.get(url, config).
@@ -1638,7 +1681,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             };
         }
 
-        this.get = function (adGroupId, lastChange) {
+        this.get = function (adGroupId, lastChange, filteredSources) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/sources/table/updates/';
 
@@ -1648,6 +1691,10 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
 
             if (lastChange) {
                 config.params.last_change_dt = lastChange;
+            }
+
+            if (filteredSources) {
+                config.params.filtered_sources = filteredSources.join(',');
             }
 
             $http.get(url, config).
@@ -1691,7 +1738,6 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             if (endDate) {
                 config.params.end_date = endDate.format();
             }
-
             $http.get(url, config).
                 success(function (data, status) {
                     var resource;
