@@ -19,7 +19,7 @@ class AccountCampaignsExport(api_common.BaseApiView):
 
         campaigns = models.Campaign.objects.all().filter_by_user(request.user).filter(account=account)
 
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
@@ -97,7 +97,7 @@ class CampaignAdGroupsExport(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         export_type = request.GET.get('type')
 
@@ -269,7 +269,7 @@ class AdGroupAdsExport(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         filename = '{0}_{1}_detailed_report_{2}_{3}'.format(
             slugify.slugify(ad_group.campaign.account.name),
@@ -349,7 +349,7 @@ class AdGroupSourcesExport(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         filename = '{0}_{1}_per_sources_report_{2}_{3}'.format(
             slugify.slugify(ad_group.campaign.account.name),
@@ -427,7 +427,7 @@ class AllAccountsExport(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         filename = 'all_accounts_report_{0}_{1}'.format(start_date, end_date)
 
