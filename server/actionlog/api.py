@@ -546,7 +546,7 @@ def _init_create_campaign(ad_group_source, name):
             }
 
             if ad_group_source.source.source_type.type == dash.constants.SourceType.OUTBRAIN:
-                payload['args']['marketer_id'] = get_outbrain_marketer_id(
+                payload['args']['marketer_id'] = _get_outbrain_marketer_id(
                     ad_group_source.ad_group.campaign.account)
 
             if hasattr(ad_group_source.source, 'defaultsourcesettings'):
@@ -598,7 +598,7 @@ def _init_create_campaign(ad_group_source, name):
 
 
 @transaction.atomic()
-def get_outbrain_marketer_id(account):
+def _get_outbrain_marketer_id(account):
     if account.outbrain_marketer_id:
         return account.outbrain_marketer_id
 
