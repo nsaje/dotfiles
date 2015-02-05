@@ -542,7 +542,6 @@ class ActionLogApiTestCase(TestCase):
                 'name': name,
                 'extra': {
                     'iab_category': 'IAB24',
-                    'exclusive_blog_ids': [123456],
                     'tracking_code': urllib.urlencode(ad_group_source_extra.get_tracking_ids()),
                     'target_devices': ['desktop', 'mobile'],
                     'target_regions': ['UK', 'US', 'CA']

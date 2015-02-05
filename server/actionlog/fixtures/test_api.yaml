@@ -314,7 +314,7 @@
     pk: 7
 
 -   fields:
-        source: 3
+        source: 1
         ad_group: 2
         source_campaign_key: {}
         source_credentials: 3

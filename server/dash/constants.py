@@ -147,5 +147,6 @@ class SourceType(ConstantBase):
         NRELATE: 'nRelate',
         OUTBRAIN: 'Outbrain',
         YAHOO: 'Yahoo',
-        ZEMANTA: 'Zemanta'
+        ZEMANTA: 'Zemanta',
+        B1: 'B1'
     }
