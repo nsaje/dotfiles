@@ -53,10 +53,14 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
                         return user;  // makes it accessibile in main controller
                     });
                 }],
-                accounts: ['api', function (api) {
-                    return api.navData.list();
-                }],
-            },
+                accounts: ['$location', 'api', function ($location, api) {
+                    var sources = $location.search().sources_filter;
+                    if (sources) {
+                        sources = sources.split(',');
+                    }
+                    return api.navData.list(sources);
+                }]
+            }
         });
 
     $stateProvider

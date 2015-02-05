@@ -114,7 +114,7 @@ class AccountDailyStats(BaseDailyStatsView):
         totals = request.GET.get('totals')
         sources = request.GET.get('sources')
 
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         totals_kwargs = None
         selected_kwargs = None
@@ -159,7 +159,7 @@ class CampaignDailyStats(BaseDailyStatsView):
         totals = request.GET.get('totals')
         sources = request.GET.get('sources')
 
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         totals_kwargs = None
         selected_kwargs = None
@@ -203,7 +203,7 @@ class AdGroupDailyStats(BaseDailyStatsView):
         selected_ids = request.GET.getlist('selected_ids')
         totals = request.GET.get('totals')
 
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         totals_kwargs = None
         selected_kwargs = None
@@ -240,7 +240,7 @@ class AccountsDailyStats(BaseDailyStatsView):
         selected_ids = request.GET.getlist('selected_ids')
         totals = request.GET.get('totals')
 
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         totals_kwargs = None
         selected_kwargs = None

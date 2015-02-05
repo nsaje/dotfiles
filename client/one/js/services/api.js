@@ -3,12 +3,16 @@
 
 angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) {
     function NavData() {
-        this.list = function () {
+        this.list = function (filteredSources) {
             var deferred = $q.defer();
             var url = '/api/nav_data';
             var config = {
                 params: {}
             };
+
+            if (filteredSources) {
+                config.params.filtered_sources = filteredSources.join(',');
+            }
 
             $http.get(url, config).
                 success(function (data, status) {

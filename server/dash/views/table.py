@@ -325,7 +325,7 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
             return exc.ForbiddenError('Not allowed')
 
         last_change_dt = helpers.parse_datetime(request.GET.get('last_change_dt'))
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         ad_group_sources_table = AdGroupSourcesTable(request.user, ad_group_id_, filtered_sources)
         ad_group_sources = ad_group_sources_table.active_ad_group_sources
@@ -410,7 +410,7 @@ class SourcesTable(api_common.BaseApiView):
     def get(self, request, level_, id_=None):
         user = request.user
 
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         ad_group_level = False
         if level_ == 'all_accounts':
@@ -678,7 +678,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         page = request.GET.get('page')
         size = request.GET.get('size')
@@ -855,7 +855,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-clicks'
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         size = max(min(int(size or 5), 50), 1)
 
@@ -926,7 +926,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-cost'
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
         show_archived = request.GET.get('show_archived') == 'true' and\
@@ -1070,7 +1070,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-clicks'
 
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
         show_archived = request.GET.get('show_archived') == 'true' and\

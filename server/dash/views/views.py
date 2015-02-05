@@ -129,11 +129,12 @@ class NavigationDataView(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'navigation_data_view_get')
     def get(self, request):
         include_archived_flag = request.user.has_perm('zemauth.view_archived_entities')
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         data = {}
-        self.fetch_ad_groups(data, request.user)
-        self.fetch_campaigns(data, request.user)
-        self.fetch_accounts(data, request.user)
+        self.fetch_ad_groups(data, request.user, filtered_sources)
+        self.fetch_campaigns(data, request.user, filtered_sources)
+        self.fetch_accounts(data, request.user, filtered_sources)
 
         self.add_settings_data(data, include_archived_flag)
 
@@ -178,8 +179,11 @@ class NavigationDataView(api_common.BaseApiView):
                     if include_archived_flag:
                         ad_group['archived'] = ad_group_settings.archived if ad_group_settings else False
 
-    def fetch_ad_groups(self, data, user):
-        ad_groups = models.AdGroup.objects.all().filter_by_user(user).select_related('campaign__account')
+    def fetch_ad_groups(self, data, user, sources):
+        ad_groups = models.AdGroup.objects.all().\
+            filter_by_user(user).\
+            filter_by_sources(sources).\
+            select_related('campaign__account')
 
         for ad_group in ad_groups:
             campaign = ad_group.campaign
@@ -192,8 +196,11 @@ class NavigationDataView(api_common.BaseApiView):
 
             campaigns[campaign.id]['adGroups'].append({'id': ad_group.id, 'name': ad_group.name})
 
-    def fetch_campaigns(self, data, user):
-        campaigns = models.Campaign.objects.all().filter_by_user(user).select_related('account')
+    def fetch_campaigns(self, data, user, sources):
+        campaigns = models.Campaign.objects.all().\
+            filter_by_user(user).\
+            filter_by_sources(sources).\
+            select_related('account')
 
         for campaign in campaigns:
             account = campaign.account
@@ -201,8 +208,10 @@ class NavigationDataView(api_common.BaseApiView):
             self.add_account_dict(data, account)
             self.add_campaign_dict(data[account.id]['campaigns'], campaign)
 
-    def fetch_accounts(self, data, user):
-        accounts = models.Account.objects.all().filter_by_user(user)
+    def fetch_accounts(self, data, user, sources):
+        accounts = models.Account.objects.all().\
+            filter_by_user(user).\
+            filter_by_sources(sources)
 
         for account in accounts:
             self.add_account_dict(data, account)
@@ -341,7 +350,7 @@ class AdGroupSources(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.ad_group_sources_add_source'):
             raise exc.MissingDataError()
 
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 

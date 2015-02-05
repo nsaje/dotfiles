@@ -60,7 +60,7 @@ class AccountSync(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'account_sync_get')
     def get(self, request):
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         accounts = models.Account.objects.all().filter_by_user(request.user)
         if not actionlog.api.is_sync_in_progress(accounts=accounts, sources=filtered_sources):
             # trigger account sync asynchronously and immediately return
@@ -72,7 +72,7 @@ class AccountSync(api_common.BaseApiView):
 class AccountSyncProgress(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'account_is_sync_in_progress')
     def get(self, request):
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         accounts = models.Account.objects.all().filter_by_user(request.user)
 
         in_progress = actionlog.api.is_sync_in_progress(accounts=accounts, sources=filtered_sources)
@@ -87,7 +87,7 @@ class CampaignSync(api_common.BaseApiView):
         account_id = request.GET.get('account_id')
         campaign_id = request.GET.get('campaign_id')
 
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         if account_id:
             campaigns = models.Campaign.objects.all().filter_by_user(request.user).\
@@ -110,7 +110,7 @@ class CampaignSyncProgress(api_common.BaseApiView):
     def get(self, request):
         account_id = request.GET.get('account_id')
         campaign_id = request.GET.get('campaign_id')
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         if account_id:
             campaigns = models.Campaign.objects.all().filter_by_user(request.user).\
@@ -129,7 +129,7 @@ class CampaignSyncProgress(api_common.BaseApiView):
 class AdGroupSync(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_sync')
     def get(self, request, ad_group_id):
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
@@ -143,7 +143,7 @@ class AdGroupSync(api_common.BaseApiView):
 class AdGroupCheckSyncProgress(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_is_sync_in_progress')
     def get(self, request, ad_group_id):
-        filtered_sources = helpers.get_filtered_sources(request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 

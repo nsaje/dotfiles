@@ -124,7 +124,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('content_ads_postclick_engagement', 'Can view content ads postclick eng. metrics.'),
             ('aggregate_postclick_acquisition', 'Can view aggregate postclick acq. metrics.'),
             ('aggregate_postclick_engagement', 'Can view aggregate postclick eng. metrics.'),
-            ('data_status_column', 'Can see data status column in table.')
+            ('data_status_column', 'Can see data status column in table.'),
+            ('filter_sources', 'Can filter sources'),
         )
 
     def get_full_name(self):

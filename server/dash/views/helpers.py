@@ -47,9 +47,9 @@ def get_stats_end_date(end_time):
     return date.date()
 
 
-def get_filtered_sources(sources_filter):
+def get_filtered_sources(user, sources_filter):
     filtered_sources = models.Source.objects.all()
-    if not sources_filter:
+    if not user.has_perm('zemauth.filter_sources') or not sources_filter:
         return filtered_sources
 
     filtered_ids = []
