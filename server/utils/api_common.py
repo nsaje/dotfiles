@@ -99,5 +99,4 @@ class BaseApiView(View):
         try:
             return super(BaseApiView, self).dispatch(request, *args, **kwargs)
         except Exception as e:
-            logger.exception("exception")
             return self.get_exception_response(request, e)
