@@ -3,6 +3,7 @@ import re
 
 import dateutil.parser
 import rfc3987
+from decimal import Decimal
 
 import utils.string
 
@@ -104,15 +105,25 @@ class AdGroupSourceSettingsCpcForm(forms.Form):
         if cpc_cc < 0:
             raise forms.ValidationError('This value must be positive')
 
+        decimal_places = self.ad_group_source.source.source_type.cpc_decimal_places
+        if decimal_places is not None and self._has_too_many_decimal_places(cpc_cc, decimal_places):
+            raise forms.ValidationError(
+                'CPC on {} cannot exceed {} decimal place{}.'.format(
+                    self.ad_group_source.source.name, decimal_places, 's' if decimal_places != 1 else ''))
+
         min_cpc = self.ad_group_source.source.source_type.min_cpc
         if min_cpc is not None and cpc_cc < min_cpc:
-            raise forms.ValidationError('Minimum CPC is ${}' \
-                .format(utils.string.format_decimal(min_cpc, 2, 3)))
+            raise forms.ValidationError(
+                'Minimum CPC is ${}.'.format(utils.string.format_decimal(min_cpc, 2, 3)))
 
         max_cpc = self.ad_group_source.source.source_type.max_cpc
         if max_cpc is not None and cpc_cc > max_cpc:
-            raise forms.ValidationError('Maximum CPC is ${}' \
-                .format(utils.string.format_decimal(max_cpc, 2, 3)))
+            raise forms.ValidationError(
+                'Maximum CPC is ${}.'.format(utils.string.format_decimal(max_cpc, 2, 3)))
+
+    def _has_too_many_decimal_places(self, num, decimal_places):
+        rounded_num = num.quantize(Decimal('1.{}'.format('0' * decimal_places)))
+        return rounded_num != num
 
 
 class AdGroupSourceSettingsDailyBudgetForm(forms.Form):
