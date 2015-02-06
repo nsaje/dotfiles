@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import permission_required
 from django.utils.decorators import method_decorator
 from django.shortcuts import render
 from django.conf import settings
+from django.core import urlresolvers
 
 from utils import api_common
 from utils import exc
@@ -171,6 +172,8 @@ class ActionLogApiView(api_common.BaseApiView):
             'order': action.order and action.order.id,
 
             'take_action': self._get_take_action(action),
+            'supply_dash_url': urlresolvers.reverse('dash.views.views.supply_dash_redirect') \
+                + '?ad_group_id={}&source_id={}'.format(action.ad_group_source.ad_group.id, action.ad_group_source.source.id)
         }
 
     @statsd_helper.statsd_timer('actionlog.api', 'view_put')

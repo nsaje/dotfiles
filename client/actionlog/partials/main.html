@@ -58,7 +58,11 @@
                         </div>
                     </td>
                     <td><strong>{{log.take_action}}</strong></td>
-                    <td>{{log.source[0]}}</td>
+                    <td>
+                        <a ng-href="{{log.supply_dash_url}}">
+                            {{log.source[0]}} 
+                        </a>
+                    </td>
                     <td>{{log.ad_group[0]}}</td>
                     <td>{{log.created_dt | date:'M/d/yyyy h:mm a'}}</td>
                     <td>{{log.created_by[0]}}</td>
