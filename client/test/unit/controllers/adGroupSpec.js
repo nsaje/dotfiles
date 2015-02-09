@@ -1,28 +1,15 @@
 'use strict';
 
 describe('AdGroupCtrl', function () {
-    var $scope, ctrl, $state;
+    var $scope, parentScope, $state, user, accounts;
 
     beforeEach(function () {
         module('one');
 
-        inject(function ($rootScope, $controller, _$state_) {
-            $scope = $rootScope.$new();
-            $scope.hasPermission = function () {
-                return true;
-            };
-            $scope.isPermissionInternal = function () {
-                return true;
-            };
-            $scope.canAccessAllAccounts = function () {
-                return true;
-            };
-            $scope.canAccessAccounts = function () {
-                return true;
-            };
-            $scope.canAccessCampaigns = function () {
-                return true;
-            };
+        inject(function ($rootScope, $controller, _$state_, zemLocalStorageService) {
+            parentScope = $rootScope.$new();
+            $scope = parentScope.$new();
+
             $scope.adGroupData = {};
             $scope.accounts = [{
                 id: 1,
@@ -34,36 +21,39 @@ describe('AdGroupCtrl', function () {
                 }]
             }];
 
-            $scope.setBreadcrumbAndTitle = function () {
-                return;
-            };
-            $scope.getDefaultAccountState = function () {
-                return;
-            };
-            $scope.getDefaultCampaignState = function () {
-                return;
-            };
-            $scope.getDefaultAdGroupState = function () {
-                return;
-            };
-
-            $scope.setAccount = function () {
-                return;
-            };
-
-            $scope.setCampaign = function () {
-                return;
-            };
-
-            $scope.setAdGroup = function () {
-                return;
-            };
-
             $state = _$state_;
             $state.params.id = 1;
 
-            ctrl = $controller('AdGroupCtrl', {$scope: $scope, $state: $state});
+            user = {
+                permissions: {}
+            };
+
+            accounts = [];
+
+            zemLocalStorageService.init(user);
+            $controller('MainCtrl', {
+                $scope: parentScope,
+                $state: $state,
+                user: user,
+                accounts: accounts,
+                zemFullStoryService: {identify: function(){}}
+            });
+            $controller('AdGroupCtrl', {$scope: $scope, $state: $state});
         });
+    });
+
+    it('hides Content Ads+ tab when no permission', function() {
+        var tabs = $scope.getTabs();
+        expect(tabs[4].hidden).toEqual(true);
+    });
+
+    it('sets hidden and internal for Content Ads+ tab', function() {
+        $scope.user.permissions['zemauth.new_content_ads_tab'] = false;
+
+        var tabs = $scope.getTabs();
+
+        expect(tabs[4].hidden).toEqual(false);
+        expect(tabs[4].internal).toEqual(true);
     });
 
     describe('setAdGroupData', function () {
