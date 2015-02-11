@@ -177,7 +177,7 @@ oneApp.controller('MainCtrl',
         var currentMonth = null;
 
         result['Yesterday'] = [zemMoment().subtract('days', 1).startOf('day'), zemMoment().subtract('days', 1).endOf('day')];
-        result['Last 30 Days'] = [zemMoment().subtract('days', 29), zemMoment().subtract('days', 1)];
+        result['Last 30 Days'] = [zemMoment().subtract('days', 30), zemMoment().subtract('days', 1)];
         currentMonth = zemMoment().startOf('month');
         result[currentMonth.format(formatStr)] = [currentMonth, zemMoment().subtract('days', 1)];
 
