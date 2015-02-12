@@ -513,6 +513,25 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         return self.create_api_response()
 
 
+class AdGroupAdsPlusUpload(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_post')
+    def post(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.new_content_ads_tab'):
+            return exc.ForbiddenError(message='Not allowed')
+
+        form = forms.AdGroupAdsPlusUpload(request.POST, request.FILES)
+
+        if not form.is_valid():
+            raise exc.ValidationError(errors=form.errors)
+
+        batch_name = form.cleaned_data['batch_name']
+        file = form.cleaned_data['file']
+
+        # TODO do something with data
+
+        return self.create_api_response()
+
+
 @statsd_helper.statsd_timer('dash', 'healthcheck')
 def healthcheck(request):
     return HttpResponse('OK')

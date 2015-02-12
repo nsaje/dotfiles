@@ -1,7 +1,7 @@
 /*globals angular,oneApp,constants,options,moment*/
 "use strict";
 
-angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) {
+oneApp.factory('api', ['$http', '$q', function($http, $q) {
     function NavData() {
         this.list = function () {
             var deferred = $q.defer();
@@ -1724,6 +1724,35 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
+    function AdGroupAdsPlusUpload() {
+        this.upload = function(adGroupId, file, batchName) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/'
+
+            var formData = new FormData();
+            formData.append('file', file);
+            formData.append('batch_name', batchName ? batchName : '');
+
+            $http.post(url, formData, {
+                transformRequest: angular.identity,
+                headers: {'Content-Type': undefined}
+            }).success(function(data) {
+                deferred.resolve(data);
+            }).error(function(data) {
+                deferred.reject(convertValidationErrorsFromApi(data.data.errors));
+            });
+ 
+            return deferred.promise;
+        };
+
+        function convertValidationErrorsFromApi(errors) {
+            return {
+                file: errors.file,
+                batchName: errors.batch_name
+            };
+        }
+     }
+ 
     // Helpers
 
     function convertGoals(row, convertedRow) {
@@ -1791,6 +1820,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         adGroupSourceSettings: new AdGroupSourceSettings(),
         adGroupSourcesUpdates: new AdGroupSourcesUpdates(),
         adGroupAdsExportAllowed: new AdGroupAdsExportAllowed(),
-        campaignAdGroupsExportAllowed: new CampaignAdGroupsExportAllowed()
+        campaignAdGroupsExportAllowed: new CampaignAdGroupsExportAllowed(),
+        adGroupAdsPlusUpload: new AdGroupAdsPlusUpload()
     };
 }]);

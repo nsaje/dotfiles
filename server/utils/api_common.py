@@ -2,6 +2,7 @@ import json
 import logging
 
 from django.http import HttpResponse
+from django.http.request import RawPostDataException
 from django.views.generic import View
 from django.conf import settings
 
@@ -12,14 +13,18 @@ logger = logging.getLogger(__name__)
 
 
 class BaseApiView(View):
-    
     def log_message(self, level, request, *args, **kwargs):
+        try:
+            body = str(request.body)
+        except RawPostDataException:
+            body = 'N/A'
+
         logger.log(level, 'GET: %s POST: %s Body: %s Args: %s Kwargs: %s',
-                str(request.GET.items()),
-                str(request.POST.items()),
-                str(request.body),
-                '\n'.join(str(x) for x in args),
-                '\n'.join('{0}: {1}'.format(k, str(v)) for k, v in kwargs.iteritems())
+                   str(request.GET.items()),
+                   str(request.POST.items()),
+                   body,
+                   '\n'.join(str(x) for x in args),
+                   '\n'.join('{0}: {1}'.format(k, str(v)) for k, v in kwargs.iteritems())
             )
 
     def create_api_response(

@@ -2023,7 +2023,6 @@ zem-editable-currency-field {
     }
 }
 
-
 .upload-ads-modal {
     // prevent animation
     &.fade .modal-dialog {
@@ -2051,6 +2050,11 @@ zem-editable-currency-field {
                 &:first-child {
                     padding-left: 15px;
                 }
+            }
+
+            input[type=text][readonly] {
+                cursor: default;
+                background-color: #fff;
             }
 
             #download-sample-link {
