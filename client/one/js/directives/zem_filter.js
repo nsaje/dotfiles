@@ -19,12 +19,18 @@ oneApp.directive('zemFilter', ['config', function(config) {
             $scope.showArchived = zemFilterService.showArchived;
 
             // this updates everytime user changes the settings
-            $scope.filteredSourcesNoUserSettings = $scope.filteredSources;
+            $scope.filteredSourcesNoUserSettings = $scope.filteredSources.slice();
             $scope.showArchivedNoUserSettings = $scope.showArchived;
 
             var userSettings = zemUserSettings.getInstance($scope, 'main');
-            userSettings.registerGlobal('filteredSources');
-            userSettings.registerGlobal('showArchived');
+
+            if ($scope.hasPermission('zemauth.filter_sources')) {
+                userSettings.registerGlobal('filteredSources');
+            }
+
+            if ($scope.hasPermission('zemauth.view_archived_entities')) {
+                userSettings.registerGlobal('showArchived');
+            }
 
             $scope.onToggle = function (open) {
                 if (!open) {
@@ -95,11 +101,11 @@ oneApp.directive('zemFilter', ['config', function(config) {
                 $scope.updateService();
             };
 
-            $scope.$watch('filteredSources', function (newValue, oldValue) {
+            $scope.$watch('filteredSourcesNoUserSettings', function (newValue, oldValue) {
                 $scope.updateService();
             }, true);
 
-            $scope.$watch('showArchived', function () {
+            $scope.$watch('showArchivedNoUserSettings', function () {
                 $scope.updateService();
             });
         }]

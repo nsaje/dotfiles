@@ -1249,6 +1249,9 @@ a.help-popover:visited {
             }
 
             div.btn {
+                min-width: 34px;
+                height: 34px;
+                padding: 3px 1px 1px 1px;
 
                 &:hover {
                     border-color: @add-filter-color;
@@ -1269,7 +1272,7 @@ a.help-popover:visited {
                         width: 10px;
                         cursor: pointer;
                         display: inline-block;
-                        margin-left: 5px;
+                        margin-left: 8px;
                         margin-right: 5px;
 
                         img {
@@ -1286,17 +1289,22 @@ a.help-popover:visited {
                     }
                 }
 
-                padding: 1px;
-
                 img.filter-icon {
-                    width: 30px;
-                    height: 30px;
+                    width: 25px;
+                    height: 25px;
                 }
             }
 
             ul.filter-menu {
 
                 li {
+
+                    &:not(:last-child) {
+                        margin-bottom: 15px;
+                    }
+
+                    margin-top: 5px;
+                    margin-bottom: 5px;
 
                     .select2-container {
                         &.add-source-filter .select2-choice {
@@ -1359,12 +1367,6 @@ a.help-popover:visited {
                             }
                         }
                     }
-
-                    &:first-child {
-                        margin-top: 5px;
-                    }
-
-                    margin-top: 15px;
 
                     .title {
                         color: #454545;

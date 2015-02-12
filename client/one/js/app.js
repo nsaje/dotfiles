@@ -51,8 +51,10 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
                     return api.user.get('current');
                 }],
                 accounts: ['$location', 'zemLocalStorageService', 'zemFilterService', 'api', 'user', function ($location, zemLocalStorageService, zemFilterService, api, user) {
+                    // init filter service only after we have user
+                    // this way we can get settings from local storage
                     zemLocalStorageService.init(user);
-                    zemFilterService.init();
+                    zemFilterService.init(user);
                     return api.navData.list();
                 }]
             }
