@@ -158,6 +158,11 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/agency',
             templateUrl: '/partials/ad_group_agency.html',
             controller: 'AdGroupAgencyCtrl'
+        })
+        .state('main.adGroups.adsPlus', {
+            url: '/ads_plus',
+            templateUrl: '/partials/ad_group_contentadsplus.html',
+            controller: 'AdGroupAdsPlusCtrl'
         });
 }]);
 
