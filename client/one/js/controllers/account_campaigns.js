@@ -316,7 +316,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedCampaignIds, $scope.selectedTotals, getDailyStatsMetrics(), null, $scope.filteredSources).then(
+        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedCampaignIds, $scope.selectedTotals, getDailyStatsMetrics(), null).then(
             function (data) {
                 setChartOptions();
                 $scope.chartData = data.chartData;
@@ -342,7 +342,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     var getTableData = function () {
         $scope.getTableDataRequestInProgress = true;
 
-        api.accountCampaignsTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order, $scope.showArchived, $scope.filteredSources).then(
+        api.accountCampaignsTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order, $scope.showArchived).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totalRow = data.totals;
@@ -395,13 +395,13 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
 
     $scope.triggerSync = function() {
         $scope.isSyncInProgress = true;
-        api.campaignSync.get(null, $state.params.id, $scope.filteredSources);
+        api.campaignSync.get(null, $state.params.id);
     };
 
     var pollSyncStatus = function() {
         if ($scope.isSyncInProgress){
             $timeout(function() {
-                api.checkCampaignSyncProgress.get(null, $state.params.id, $scope.filteredSources).then(
+                api.checkCampaignSyncProgress.get(null, $state.params.id).then(
                     function(data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 
@@ -461,7 +461,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.init = function() {
         var campaignIds = $location.search().campaign_ids;
         var campaignTotals = $location.search().campaign_totals;
-        var filteredSources = $location.search().sources_filter;
 
         userSettings.register('chartMetric1');
         userSettings.register('chartMetric2');
@@ -479,10 +478,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
             if ($scope.rows) {
                 $scope.selectRows();
             }
-        }
-
-        if (filteredSources) {
-            $scope.filteredSources = filteredSources.split(',');
         }
 
         $scope.selectedTotals = !$scope.selectedCampaignIds.length || !!campaignTotals;
@@ -514,11 +509,20 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
         getDailyStats();
     });
 
-    $scope.$watch('showArchived', function (newValue, oldValue) {
+    $scope.$watch('showArchivedNoUserSettings', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             getTableData();
         }
     });
+
+    $scope.$watch('filteredSourcesNoUserSettings', function (newValue, oldValue) {
+        if (newValue === oldValue) {
+            return;
+        }
+
+        getTableData();
+        getDailyStats();
+    }, true);
 
     $scope.init();
 }]);

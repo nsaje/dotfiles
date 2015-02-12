@@ -256,7 +256,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list($scope.level, null, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true, getDailyStatsMetrics(), null, $scope.filteredSources).then(
+        api.dailyStats.list($scope.level, null, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true, getDailyStatsMetrics(), null).then(
             function (data) {
                 setChartOptions();
                 $scope.chartData = data.chartData;
@@ -276,7 +276,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
-        api.accountAccountsTable.get($scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order, $scope.showArchived, $scope.filteredSources).then(
+        api.accountAccountsTable.get($scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order, $scope.showArchived).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
@@ -339,7 +339,16 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
     });
 
-    $scope.$watch('showArchived', function (newValue, oldValue) {
+    $scope.$watch('filteredSourcesNoUserSettings', function (newValue, oldValue) {
+        if (newValue === oldValue) {
+            return;
+        }
+
+        getTableData();
+        getDailyStats();
+    }, true);
+
+    $scope.$watch('showArchivedNoUserSettings', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             getTableData();
         }
@@ -348,7 +357,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     var pollSyncStatus = function() {
         if($scope.isSyncInProgress){
             $timeout(function() {
-                api.checkAccountsSyncProgress.get($scope.filteredSources).then(
+                api.checkAccountsSyncProgress.get().then(
                     function(data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 
@@ -372,7 +381,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
     $scope.triggerSync = function() {
         $scope.isSyncInProgress = true;
-        api.accountSync.get($scope.filteredSources);
+        api.accountSync.get();
     };
 
     $scope.loadPage = function(page) {
@@ -404,7 +413,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
     $scope.init = function() {
         var page = $location.search().page;
-        var filteredSources = $location.search().sources_filter;
 
         userSettings.register('chartMetric1');
         userSettings.register('chartMetric2');
@@ -416,10 +424,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
         if (page !== undefined && $scope.pagination.currentPage !== page) {
             $scope.pagination.currentPage = page;
-        }
-
-        if (filteredSources) {
-            $scope.filteredSources = filteredSources.split(',');
         }
 
         $scope.loadPage();

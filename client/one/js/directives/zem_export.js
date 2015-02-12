@@ -12,7 +12,7 @@ oneApp.directive('zemExport', function() {
             filteredSources: '='
         },
         templateUrl: '/partials/zem_export.html',
-        controller: ['$scope', '$window', '$compile', function($scope, $window, $compile) {
+        controller: ['$scope', '$window', '$compile', 'zemFilterService', function($scope, $window, $compile, zemFilterService) {
             $scope.exportType = '';
 
             function getOptionByValue(value) {
@@ -40,9 +40,9 @@ oneApp.directive('zemExport', function() {
                     if (option.maxDays) {
                         popoverText += ' Please choose a smaller date range (' + option.maxDays;
                         if (option.maxDays > 1) {
-                            popoverText += ' days or less).'; 
+                            popoverText += ' days or less).';
                         } else {
-                            popoverText += ' day).'; 
+                            popoverText += ' day).';
                         }
                     } else {
                         popoverText = 'This report is not available for download, due to the volume of content indexed in this campaign. Please contact your account manager for assistance.';
@@ -76,8 +76,8 @@ oneApp.directive('zemExport', function() {
             $scope.downloadReport = function() {
                 var url = $scope.baseUrl + 'export/?type=' + $scope.exportType + '&start_date=' + $scope.startDate.format() + '&end_date=' + $scope.endDate.format();
 
-                if ($scope.filteredSources) {
-                    url += '&filtered_sources=' + $scope.filteredSources.join(',');
+                if (zemFilterService.getFilteredSources()) {
+                    url += '&filtered_sources=' + zemFilterService.getFilteredSources().join(',');
                 }
 
                 $window.open(url, '_blank');
@@ -85,5 +85,5 @@ oneApp.directive('zemExport', function() {
                 $scope.exportType = '';
             };
         }]
-    }
+    };
 });

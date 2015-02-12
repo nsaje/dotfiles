@@ -307,7 +307,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedAdGroupIds, $scope.selectedTotals, getDailyStatsMetrics(), null, $scope.filteredSources).then(
+        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedAdGroupIds, $scope.selectedTotals, getDailyStatsMetrics(), null).then(
             function (data) {
                 setChartOptions();
                 $scope.chartData = data.chartData;
@@ -333,7 +333,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     var getTableData = function () {
         $scope.getTableDataRequestInProgress = true;
 
-        api.campaignAdGroupsTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order, $scope.showArchived, $scope.filteredSources).then(
+        api.campaignAdGroupsTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order, $scope.showArchived).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totalRow = data.totals;
@@ -385,13 +385,13 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
     $scope.triggerSync = function() {
         $scope.isSyncInProgress = true;
-        api.campaignSync.get($state.params.id, null, $scope.filteredSources);
+        api.campaignSync.get($state.params.id, null);
     };
 
     var pollSyncStatus = function() {
         if ($scope.isSyncInProgress){
             $timeout(function() {
-                api.checkCampaignSyncProgress.get($state.params.id, $scope.filteredSources).then(
+                api.checkCampaignSyncProgress.get($state.params.id).then(
                     function(data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 
@@ -425,7 +425,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.init = function() {
         var adGroupIds = $location.search().ad_group_ids;
         var adGroupTotals = $location.search().ad_group_totals;
-        var filteredSources = $location.search().sources_filter;
 
         userSettings.register('chartMetric1');
         userSettings.register('chartMetric2');
@@ -439,10 +438,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                  $scope.updateSelectedAdGroups(id);
             });
             $location.search('ad_group_ids', adGroupIds);
-        }
-
-        if (filteredSources) {
-            $scope.filteredSources = filteredSources.split(',');
         }
 
         $scope.selectedTotals = !$scope.selectedAdGroupIds.length || !!adGroupTotals;
@@ -476,11 +471,21 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         setDisabledExportOptions();
     });
 
-    $scope.$watch('showArchived', function (newValue, oldValue) {
+    $scope.$watch('showArchivedNoUserSettings', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             getTableData();
         }
     });
+
+
+    $scope.$watch('filteredSourcesNoUserSettings', function (newValue, oldValue) {
+        if (newValue === oldValue) {
+            return;
+        }
+
+        getTableData();
+        getDailyStats();
+    }, true);
 
     var setDisabledExportOptions = function() {
         api.campaignAdGroupsExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(

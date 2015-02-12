@@ -106,6 +106,12 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
         }
     }
 
+    $scope.$watch('accounts', function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            $scope.getModels();
+        }
+    });
+
     $scope.$watch('adGroup.archived', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             $scope.tabs = $scope.getTabs();

@@ -356,7 +356,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
-        api.sourcesTable.get($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order, $scope.filteredSources).then(
+        api.sourcesTable.get($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
@@ -378,7 +378,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics(), true, $scope.filteredSources).then(
+        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics(), true).then(
             function (data) {
                 setChartOptions();
             
@@ -440,7 +440,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
         var sourceIds = $location.search().source_ids;
         var sourceTotals = $location.search().source_totals;
-        var filteredSources = $location.search().sources_filter;
 
         userSettings.register('chartMetric1');
         userSettings.register('chartMetric2');
@@ -452,10 +451,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         if (sourceIds) {
             $scope.selectedSourceIds = sourceIds.split(',');
             $location.search('source_ids', sourceIds);
-        }
-
-        if (filteredSources) {
-            $scope.filteredSources = filteredSources.split(',');
         }
 
         $scope.selectedTotals = !$scope.selectedSourceIds.length || !!sourceTotals;
@@ -484,6 +479,15 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         getTableData();
     });
 
+    $scope.$watch('filteredSourcesNoUserSettings', function (newValue, oldValue) {
+        if (newValue === oldValue) {
+            return;
+        }
+
+        getTableData();
+        getDailyStats();
+    }, true);
+
     $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
         $location.search('source_ids', null);
         $location.search('source_totals', null);
@@ -495,11 +499,11 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 var promise = null;
 
                 if ($scope.level === constants.level.ALL_ACCOUNTS) {
-                    promise = api.checkAccountsSyncProgress.get($scope.filteredSources);
+                    promise = api.checkAccountsSyncProgress.get();
                 } else if ($scope.level === constants.level.ACCOUNTS) {
-                    promise = api.checkCampaignSyncProgress.get(undefined, $state.params.id, $scope.filteredSources);
+                    promise = api.checkCampaignSyncProgress.get(undefined, $state.params.id);
                 } else if ($scope.level === constants.level.CAMPAIGNS) {
-                    promise = api.checkCampaignSyncProgress.get($state.params.id, null, $scope.filteredSources);
+                    promise = api.checkCampaignSyncProgress.get($state.params.id, null);
                 }
 
                 promise.then(
@@ -528,11 +532,11 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         $scope.isSyncInProgress = true;
 
         if ($scope.level === constants.level.ALL_ACCOUNTS) {
-            api.accountSync.get($scope.filteredSources);
+            api.accountSync.get();
         } else if ($scope.level === constants.level.ACCOUNTS) {
-            api.campaignSync.get(null, $state.params.id, $scope.filteredSources);
+            api.campaignSync.get(null, $state.params.id);
         } else if ($scope.level === constants.level.CAMPAIGNS) {
-            api.campaignSync.get($state.params.id, null, $scope.filteredSources);
+            api.campaignSync.get($state.params.id, null);
         }
     };
 

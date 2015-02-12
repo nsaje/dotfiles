@@ -344,6 +344,22 @@ class AdGroupState(api_common.BaseApiView):
         return self.create_api_response(response)
 
 
+class AvailableSources(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'available_sources_get')
+    def get(self, request):
+        ad_groups = models.AdGroup.objects.all().filter_by_user(request.user)
+        sources = []
+        for source in models.Source.objects.filter(adgroupsource__ad_group__in=ad_groups).distinct():
+            sources.append({
+                'id': str(source.id),
+                'name': source.name,
+            })
+
+        return self.create_api_response({
+            'sources': sources
+        })
+
+
 class AdGroupSources(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_get')
     def get(self, request, ad_group_id):

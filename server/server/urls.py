@@ -215,6 +215,10 @@ urlpatterns += patterns(
         login_required(dash.views.views.AdGroupArchive.as_view()),
     ),
     url(
+        r'^api/sources/',
+        login_required(dash.views.views.AvailableSources.as_view()),
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/restore/',
         login_required(dash.views.views.AdGroupRestore.as_view()),
     ),

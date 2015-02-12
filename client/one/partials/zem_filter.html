@@ -1,0 +1,42 @@
+<div id="filter" class="pull-right" ng-show="hasPermission('zemauth.view_archived_entities') || hasPermission('zemauth.filter_sources')">
+    <div id="filter-dropdown" class="dropdown" on-toggle="onToggle(open)">
+
+        <zem-internal-feature popover-placement="left" ng-if="isPermissionInternal('zemauth.view_archived_entities') && isPermissionInternal('zemauth.filter_sources')"></zem-internal-feature>
+        <div class="btn btn-default" ng-class="{'filter-enabled': isFilterOn()}">
+            <div class="btn-remove" ng-click="removeFilters()" ng-show="isFilterOn()">
+                <img ng-src="{{ config.static_url }}/one/img/x.svg">
+            </div>
+            <div class="dropdown-toggle">
+                <span ng-show="isFilterOn()">Filter ON</span>
+                <img ng-show="!isFilterOn()" class="filter-icon" ng-src="{{ config.static_url }}/one/img/filter_icon.svg"></img>
+                <img ng-show="isFilterOn()" class="filter-icon" ng-src="{{ config.static_url }}/one/img/filter_icon_white.svg"></img>
+            </div>
+        </div>
+
+        <ul class="filter-menu dropdown-menu">
+
+            <li>
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.filter_sources')" popover-placement="left"></zem-internal-feature>
+                <div class="title">Filter by Source</div>
+                <select ui-select2="{minimumResultsForSearch: -1, formatNoMatches: 'No sources', dropdownCssClass: 'select2-filter'}" ng-model="sourceId" ng-change="addFilteredSource(sourceId)" class="add-source-filter" data-placeholder="+ Media Source">
+                    <option value=""></option>
+                    <option ng-repeat="source in sources | orderBy:'name' | filter:isSourceNotFiltered" value="{{source.id}}">{{source.name}}</option>
+                </select>
+                <div class="filtered-source" ng-repeat="source in sources | orderBy:'name' | filter:isSourceFiltered">{{source.name}}
+                    <div class="btn-remove" ng-click="removeFilteredSource(source.id)">
+                        <img ng-src="{{ config.static_url }}/one/img/x_gray.svg">
+                    </div>
+                </div>
+            </li>
+
+            <li>
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.view_archived_entities')" popover-placement="left"></zem-internal-feature>
+                <div class="title">Filter by Status</div>
+                <div class="checkbox">
+                    <label><input type="checkbox" ng-model="showArchivedNoUserSettings">Show archived accounts, campaigns and ad groups</label>
+                </div>
+            </li>
+
+        </ul>
+    </div>
+</div>

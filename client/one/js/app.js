@@ -1,6 +1,6 @@
 /*global angular*/
 
-var oneApp = angular.module('one', ['templates-one', 'oneApi', 'ngBootstrap', 'ngSanitize', 'ui.router', 'ui.bootstrap', 'ui.bootstrap.datetimepicker', 'ui.select2', 'highcharts-ng', 'config']);
+var oneApp = angular.module('one', ['templates-one', 'ngBootstrap', 'ngSanitize', 'ui.router', 'ui.bootstrap', 'ui.bootstrap.datetimepicker', 'ui.select2', 'highcharts-ng', 'config']);
 
 oneApp.config(['$sceDelegateProvider', 'config', function ($sceDelegateProvider, config) {
     $sceDelegateProvider.resourceUrlWhitelist(['self', config.static_url + '/**']);
@@ -47,18 +47,13 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             templateUrl: '/partials/main.html',
             controller: 'MainCtrl',
             resolve: {
-                user: ['api', 'zemLocalStorageService', function(api, zemLocalStorageService) {
-                    return api.user.get('current').then(function (user) {
-                        zemLocalStorageService.init(user);
-                        return user;  // makes it accessibile in main controller
-                    });
+                user: ['api', function(api) {
+                    return api.user.get('current');
                 }],
-                accounts: ['$location', 'api', function ($location, api) {
-                    var sources = $location.search().sources_filter;
-                    if (sources) {
-                        sources = sources.split(',');
-                    }
-                    return api.navData.list(sources);
+                accounts: ['$location', 'zemLocalStorageService', 'zemFilterService', 'api', 'user', function ($location, zemLocalStorageService, zemFilterService, api, user) {
+                    zemLocalStorageService.init(user);
+                    zemFilterService.init();
+                    return api.navData.list();
                 }]
             }
         });
@@ -134,7 +129,7 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         })
         .state('main.campaigns.settings', {
             url: '/settings',
-            templateUrl: '/partials/campaign_settings.html',
+            templateUrl: '/partials/campaign_settings.html'
         });
 
 

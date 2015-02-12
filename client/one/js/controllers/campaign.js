@@ -76,6 +76,12 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
         }
     }
 
+    $scope.$watch('accounts', function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            $scope.getModels();
+        }
+    });
+
     $scope.$watch('campaign.archived', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             $scope.tabs = $scope.getTabs();

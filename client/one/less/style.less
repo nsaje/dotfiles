@@ -6,6 +6,7 @@
 
 @add-color: #f68620;
 @add-color-hover: #dd771b;
+@add-filter-color: #2fa8c7;
 
 // Mixins
 
@@ -780,6 +781,12 @@ div[datepicker] {
     border-bottom: 0;
 }
 
+.select2-filter {
+    .select2-result-label {
+        padding: 1px 7px 0;
+    }
+}
+
 // navigation filter select
 
 .select2-nav-search {
@@ -1063,6 +1070,20 @@ a.help-popover:visited {
         width: 205px;
         padding-left: 15px;
 
+        & > .loader {
+            display: block;
+            position: absolute;
+            top: 0px;
+            bottom: 0px;
+            left: 0px;
+            right: 0px;
+            width: auto;
+            height: auto;
+            background: rgba(255, 255, 255, 0.4) url('img/loader.gif') no-repeat center center;
+            background-size: 20px auto;
+            z-index: 1;
+        }
+
         &.sidebar-new {
             padding-left: 0;
         }
@@ -1222,30 +1243,153 @@ a.help-popover:visited {
                     width: 0;
                     height: 0;
                     display: block;
-                    border-top: 7px solid #16a085;
-                    border-right: 7px solid transparent;
+                    border-top: 8px solid #16a085;
+                    border-right: 8px solid transparent;
                 }
             }
 
-            a.btn {
+            div.btn {
+
+                &:hover {
+                    border-color: @add-filter-color;
+                }
+
+                &.filter-enabled {
+                    background-color: @add-filter-color;
+
+                    span {
+                        color: #fff;
+                        top: 2px;
+                        position: relative;
+                        margin-right: 5px;
+                    }
+
+                    .btn-remove {
+                        display: inline-block;
+                        width: 10px;
+                        cursor: pointer;
+                        display: inline-block;
+                        margin-left: 5px;
+                        margin-right: 5px;
+
+                        img {
+                            width: 10px;
+                        }
+                    }
+
+                    .dropdown-toggle {
+                        display: inline-block;
+
+                        .filter-icon {
+                            border-left: 1px solid white;
+                        }
+                    }
+                }
+
                 padding: 1px;
 
-                img {
+                img.filter-icon {
                     width: 30px;
                     height: 30px;
                 }
             }
 
-            ul.dropdown-menu {
-                width: 250px;
+            ul.filter-menu {
+
+                li {
+
+                    .select2-container {
+                        &.add-source-filter .select2-choice {
+                            background-color: @add-filter-color;
+                            border-color: @add-filter-color;
+                            height: 25px;
+                            line-height: 25px;
+                            border-radius: 1px;
+
+                            .select2-chosen {
+                                margin-right: 15px;
+                            }
+
+                            span {
+                                color: #fff;
+                            }
+
+                            span.select2-arrow b {
+                                background-image: none !important;
+                            }
+
+                            @media(-webkit-min-device-pixel-ratio: 2) {
+                                span.select2-arrow b {
+                                    background-image: none !important;
+                                }
+                            }
+                        }
+
+                        vertical-align: top;
+                        margin-top: 5px;
+                        margin-right: 5px;
+                    }
+
+                    .filtered-source {
+                        &:first-child {
+                            margin-left: 5px;
+                        }
+
+                        margin-right: 5px;
+                        margin-top: 5px;
+                        padding-right: 20px;
+                        padding-left: 10px;
+                        height: 25px;
+                        line-height: 25px;
+                        display: inline-block;
+                        position: relative;
+                        border-radius: 1px;
+                        border: 1px solid @add-filter-color;
+
+                        .btn-remove {
+                            width: 7px;
+                            cursor: pointer;
+                            position: absolute;
+                            right: 5px;
+                            top: 0px;
+                            display: inline-block;
+
+                            img {
+                                width: 7px;
+                            }
+                        }
+                    }
+
+                    &:first-child {
+                        margin-top: 5px;
+                    }
+
+                    margin-top: 15px;
+
+                    .title {
+                        color: #454545;
+                        font-size: 15px;
+                        line-height: 15px;
+                        font-weight: 600;
+                    }
+
+                    .checkbox {
+                        margin-top: 0;
+                        padding-left: 15px;
+                        margin-left: 5px;
+                    }
+                }
+
+                width: 400px;
                 left: auto;
                 right: 0;
                 top: 100%;
                 margin-left: -125px;
                 border: 1px solid #2fa8c7;
-                padding: 15px 30px;
+                padding: 5px 10px;
             }
         }
+
 
         #datepicker {
             margin-left: 5px;
