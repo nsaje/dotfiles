@@ -546,7 +546,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         getTableData();
     });
 
-    $scope.$watch('filteredSourcesNoUserSettings', function (newValue, oldValue) {
+    $scope.$watch('filteredSources', function (newValue, oldValue) {
         if (newValue === oldValue) {
             return;
         }

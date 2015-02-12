@@ -339,7 +339,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
     });
 
-    $scope.$watch('filteredSourcesNoUserSettings', function (newValue, oldValue) {
+    $scope.$watch('filteredSources', function (newValue, oldValue) {
         if (newValue === oldValue) {
             return;
         }
@@ -348,7 +348,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         getDailyStats();
     }, true);
 
-    $scope.$watch('showArchivedNoUserSettings', function (newValue, oldValue) {
+    $scope.$watch('showArchived', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             getTableData();
         }

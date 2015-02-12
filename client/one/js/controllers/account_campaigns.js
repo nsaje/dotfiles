@@ -509,13 +509,13 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
         getDailyStats();
     });
 
-    $scope.$watch('showArchivedNoUserSettings', function (newValue, oldValue) {
+    $scope.$watch('showArchived', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             getTableData();
         }
     });
 
-    $scope.$watch('filteredSourcesNoUserSettings', function (newValue, oldValue) {
+    $scope.$watch('filteredSources', function (newValue, oldValue) {
         if (newValue === oldValue) {
             return;
         }

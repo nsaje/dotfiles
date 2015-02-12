@@ -1,5 +1,5 @@
 <div id="filter" class="pull-right" ng-show="hasPermission('zemauth.view_archived_entities') || hasPermission('zemauth.filter_sources')">
-    <div id="filter-dropdown" class="dropdown" on-toggle="onToggle(open)">
+    <div id="filter-dropdown" class="dropdown" on-toggle="onToggle(open)" is-open="isOpen">
 
         <zem-internal-feature popover-placement="left" ng-if="isPermissionInternal('zemauth.view_archived_entities') && isPermissionInternal('zemauth.filter_sources')"></zem-internal-feature>
         <div class="btn btn-default" ng-class="{'filter-enabled': isFilterOn() && hasPermission('zemauth.filter_sources')}">
@@ -39,7 +39,7 @@
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.view_archived_entities')" popover-placement="left"></zem-internal-feature>
                 <div class="title">Filter by Status</div>
                 <div class="checkbox">
-                    <label><input type="checkbox" ng-model="showArchivedNoUserSettings">Show archived accounts, campaigns and ad groups</label>
+                    <label><input type="checkbox" ng-model="showArchived">Show archived accounts, campaigns and ad groups</label>
                 </div>
             </li>
 

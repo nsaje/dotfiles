@@ -471,14 +471,14 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         setDisabledExportOptions();
     });
 
-    $scope.$watch('showArchivedNoUserSettings', function (newValue, oldValue) {
+    $scope.$watch('showArchived', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             getTableData();
         }
     });
 
 
-    $scope.$watch('filteredSourcesNoUserSettings', function (newValue, oldValue) {
+    $scope.$watch('filteredSources', function (newValue, oldValue) {
         if (newValue === oldValue) {
             return;
         }

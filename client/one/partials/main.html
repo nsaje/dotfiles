@@ -5,23 +5,23 @@
         <div class="sidebar" ng-show="accounts" ng-class="{'sidebar-new': hasPermission('zemauth.all_new_sidebar') }">
             <div class="loader" ng-if="loadSidebarInProgress"></div>
             <div id="nav-new" ng-if="hasPermission('zemauth.all_new_sidebar')">
-                <zem-nav-search zem-current-account="account" zem-all-accounts="accounts" zem-can-access-accounts="{{ canAccessAccounts() }}" zem-can-access-campaigns="{{ canAccessCampaigns() }}" zem-default-account-state="{{ getDefaultAccountState() }}" zem-default-campaign-state="{{ getDefaultCampaignState() }}" zem-show-archived="showArchivedNoUserSettings" zem-default-ad-group-state="{{ getDefaultAdGroupState() }}"></zem-nav-search>
+                <zem-nav-search zem-current-account="account" zem-all-accounts="accounts" zem-can-access-accounts="{{ canAccessAccounts() }}" zem-can-access-campaigns="{{ canAccessCampaigns() }}" zem-default-account-state="{{ getDefaultAccountState() }}" zem-default-campaign-state="{{ getDefaultCampaignState() }}" zem-show-archived="showArchived" zem-default-ad-group-state="{{ getDefaultAdGroupState() }}"></zem-nav-search>
                 <div id="nav-menu">
-                    <div class="nav-group account-group" ng-if="$state.includes('main.allAccounts.*') && (!account.archived || showArchivedNoUserSettings)" ng-repeat="account in accounts">
-                        <div class="nav-group campaign-group" ng-if="!campaign.archived || showArchivedNoUserSettings" ng-repeat="campaign in account.campaigns">
+                    <div class="nav-group account-group" ng-if="$state.includes('main.allAccounts.*') && (!account.archived || showArchived)" ng-repeat="account in accounts">
+                        <div class="nav-group campaign-group" ng-if="!campaign.archived || showArchived" ng-repeat="campaign in account.campaigns">
                             <span class="nav-name campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() }), 'archived': campaign.archived || account.archived }" ng-if="!canAccessCampaigns()">{{ campaign.name }}</span>
                             <a class="nav-name campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString()}), 'archived': campaign.archived || account.archived }" ng-if="canAccessCampaigns()" ui-sref="{{ getDefaultCampaignState() }}({ id: campaign.id})">{{ campaign.name }}</a>
-                            <div class="nav-group ad-group-group" ng-if="!adGroup.archived || showArchivedNoUserSettings" ng-repeat="adGroup in campaign.adGroups">
+                            <div class="nav-group ad-group-group" ng-if="!adGroup.archived || showArchived" ng-repeat="adGroup in campaign.adGroups">
                                 <a class="nav-name ad-group-name" ui-sref="{{ getDefaultAdGroupState() }}({ id: adGroup.id })" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() }), 'archived': adGroup.archived || campaign.archived || account.archived }">{{ adGroup.name }}</a>
                             </div>
                         </div>
                     </div>
                     <div ng-if="!$state.includes('main.allAccounts.*')">
                         <div class="nav-group account-group">
-                            <div class="nav-group campaign-group" ng-if="!campaign.archived || showArchivedNoUserSettings" ng-repeat="campaign in account.campaigns">
+                            <div class="nav-group campaign-group" ng-if="!campaign.archived || showArchived" ng-repeat="campaign in account.campaigns">
                                 <span class="nav-name campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() }), 'archived': campaign.archived || account.archived }" ng-if="!canAccessCampaigns() ">{{ campaign.name }}</span>
                                 <a class="nav-name campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() }), 'archived': campaign.archived }" ng-if="canAccessCampaigns()" ui-sref="{{ getDefaultCampaignState() }}({ id: campaign.id})">{{ campaign.name }}</a>
-                                <div class="nav-group ad-group-group" ng-if="!adGroup.archived || showArchivedNoUserSettings" ng-repeat="adGroup in campaign.adGroups">
+                                <div class="nav-group ad-group-group" ng-if="!adGroup.archived || showArchived" ng-repeat="adGroup in campaign.adGroups">
                                     <a class="nav-name ad-group-name" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() }), 'archived': adGroup.archived }" ui-sref="{{ getDefaultAdGroupState() }}({ id: adGroup.id })">{{ adGroup.name }}</a>
                                 </div>
                             </div>
@@ -30,15 +30,15 @@
                 </div>
             </div>
             <div id="nav" ng-if="!hasPermission('zemauth.all_new_sidebar')">
-                <div class="account-group" ng-if="!account.archived || showArchivedNoUserSettings" ng-repeat="account in accounts">
+                <div class="account-group" ng-if="!account.archived || showArchived" ng-repeat="account in accounts">
                     <div ng-if="!canAccessAccounts()" class="account-name" ng-class="{'archived': account.archived}">{{ account.name }}</div>
                     <a ng-if="canAccessAccounts()" class="account-name" ng-class="{'active': $state.includes('main.accounts', { id: account.id.toString() }), 'archived': account.archived }" ui-sref="{{ $state.includes('*.accounts.**') ? $state.current.name : getDefaultAccountState() }}({ id: account.id })">{{ account.name }}</a>
                     <ul class="list-group">
-                        <li class="campaign-group list-group-item" ng-if="!campaign.archived || showArchivedNoUserSettings" ng-repeat="campaign in account.campaigns">
+                        <li class="campaign-group list-group-item" ng-if="!campaign.archived || showArchived" ng-repeat="campaign in account.campaigns">
                             <div ng-if="!canAccessCampaigns()" class="campaign-name" ng-class="{'archived': campaign.archived}">{{ campaign.name }}</div>
                             <a ng-if="canAccessCampaigns()" class="campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() }), 'archived': campaign.archived }" ui-sref="{{ $state.includes('*.campaigns.**') ? $state.current.name : getDefaultCampaignState() }}({ id: campaign.id })">{{ campaign.name }}</a>
                             <ul class="list-group ad-groups">
-                                <a class="ad-group-item list-group-item" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() }) }" ui-sref="{{ $state.includes('*.adGroups.**') ? $state.current.name : getDefaultAdGroupState() }}({ id: adGroup.id })" ng-if="!adGroup.archived || showArchivedNoUserSettings" ng-repeat="adGroup in campaign.adGroups">
+                                <a class="ad-group-item list-group-item" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() }) }" ui-sref="{{ $state.includes('*.adGroups.**') ? $state.current.name : getDefaultAdGroupState() }}({ id: adGroup.id })" ng-if="!adGroup.archived || showArchived" ng-repeat="adGroup in campaign.adGroups">
                                     <img ng-src="{{ config.static_url }}/one/img/ad_group.svg">
                                     <span class="ad-group-name" ng-class="{'archived': adGroup.archived}">{{ adGroup.name }}</span>
                                 </a>

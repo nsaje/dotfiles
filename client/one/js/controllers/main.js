@@ -300,7 +300,7 @@ oneApp.controller('MainCtrl',
         }
     });
 
-    $scope.$watch('filteredSourcesNoUserSettings', function (newValue, oldValue) {
+    $scope.$watch('filteredSources', function (newValue, oldValue) {
         $scope.loadSidebarInProgress = true;
         api.navData.list().then(function (accounts) {
             $scope.refreshNavData(accounts);
