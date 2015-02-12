@@ -19,7 +19,7 @@ def _handle_error(action, e):
     msg = traceback.format_exc(e)
 
     logger.error(msg)
-    
+
     action.state = constants.ActionState.FAILED
     action.message = msg
     action.save()
