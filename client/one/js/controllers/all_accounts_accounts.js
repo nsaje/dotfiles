@@ -276,7 +276,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
-        api.accountAccountsTable.get($scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order, $scope.showArchived).then(
+        api.accountAccountsTable.get($scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;

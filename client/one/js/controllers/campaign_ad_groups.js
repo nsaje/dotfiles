@@ -333,7 +333,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     var getTableData = function () {
         $scope.getTableDataRequestInProgress = true;
 
-        api.campaignAdGroupsTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order, $scope.showArchived).then(
+        api.campaignAdGroupsTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totalRow = data.totals;
