@@ -2,6 +2,12 @@
 "use strict";
 
 oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, zemFilterService) {
+    function addFilteredSources(params) {
+        if (zemFilterService.filteredSources) {
+            params.filtered_sources = zemFilterService.filteredSources.join(',');
+        }
+    }
+
     function NavData() {
         this.list = function () {
             var deferred = $q.defer();
@@ -63,9 +69,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 params: {}
             };
 
-            if (zemFilterService.filteredSources) {
-                config.params.filtered_sources = zemFilterService.filteredSources.join(',');
-            }
+            addFilteredSources(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -161,9 +165,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 config.params.order = order;
             }
 
-            if (zemFilterService.filteredSources) {
-                config.params.filtered_sources = zemFilterService.filteredSources.join(',');
-            }
+            addFilteredSources(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -234,9 +236,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 config.params.end_date = endDate.format();
             }
 
-            if (zemFilterService.filteredSources) {
-                config.params.filtered_sources = zemFilterService.filteredSources.join(',');
-            }
+            addFilteredSources(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -296,9 +296,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 config.params.order = order;
             }
 
-            if (zemFilterService.filteredSources) {
-                config.params.filtered_sources = zemFilterService.filteredSources.join(',');
-            }
+            addFilteredSources(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -324,9 +322,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 params: {}
             };
 
-            if (zemFilterService.filteredSources) {
-                config.params.filtered_sources = zemFilterService.filteredSources.join(',');
-            }
+            addFilteredSources(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -355,9 +351,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 return deferred.promise;
             }
 
-            if (zemFilterService.filteredSources) {
-                config.params.filtered_sources = zemFilterService.filteredSources.join(',');
-            }
+            addFilteredSources(config.params);
 
             var url = '/api/ad_groups/' + id + '/check_sync_progress/';
 
@@ -384,9 +378,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 params: {}
             };
 
-            if (zemFilterService.filteredSources) {
-                config.params.filtered_sources = zemFilterService.filteredSources.join(',');
-            }
+            addFilteredSources(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -410,9 +402,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 params: {}
             };
 
-            if (zemFilterService.filteredSources) {
-                config.params.filtered_sources = zemFilterService.filteredSources.join(',');
-            }
+            addFilteredSources(config.params);
 
             $http.get(url, config).
                 success(function(data, status){
@@ -449,9 +439,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 config.params.account_id = accountId;
             }
 
-            if (zemFilterService.filteredSources) {
-                config.params.filtered_sources = zemFilterService.filteredSources.join(',');
-            }
+            addFilteredSources(config.params);
 
             $http.get(url, config).
                 success(function(data, status){
@@ -507,9 +495,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 config.params.sources = groupSources;
             }
 
-            if (zemFilterService.filteredSources) {
-                config.params.filtered_sources = zemFilterService.filteredSources.join(',');
-            }
+            addFilteredSources(config.params);
 
             $http.get(url, config).
                 success(function (response, status) {
@@ -1172,9 +1158,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 config.params.account_id = accountId;
             }
 
-            if (zemFilterService.filteredSources) {
-                config.params.filtered_sources = zemFilterService.filteredSources.join(',');
-            }
+            addFilteredSources(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -1398,9 +1382,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 config.params.show_archived = zemFilterService.showArchived;
             }
 
-            if (zemFilterService.filteredSources) {
-                config.params.filtered_sources = zemFilterService.filteredSources.join(',');
-            }
+            addFilteredSources(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -1452,9 +1434,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 config.params.show_archived = zemFilterService.showArchived;
             }
 
-            if (zemFilterService.filteredSources) {
-                config.params.filtered_sources = zemFilterService.filteredSources.join(',');
-            }
+            addFilteredSources(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -1508,9 +1488,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 config.params.show_archived = zemFilterService.showArchived;
             }
 
-            if (zemFilterService.filteredSources) {
-                config.params.filtered_sources = zemFilterService.filteredSources.join(',');
-            }
+            addFilteredSources(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -1698,9 +1676,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 config.params.last_change_dt = lastChange;
             }
 
-            if (zemFilterService.filteredSources) {
-                config.params.filtered_sources = zemFilterService.filteredSources.join(',');
-            }
+            addFilteredSources(config.params);
 
             $http.get(url, config).
                 success(function (data) {
