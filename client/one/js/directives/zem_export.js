@@ -76,8 +76,8 @@ oneApp.directive('zemExport', function() {
             $scope.downloadReport = function() {
                 var url = $scope.baseUrl + 'export/?type=' + $scope.exportType + '&start_date=' + $scope.startDate.format() + '&end_date=' + $scope.endDate.format();
 
-                if (zemFilterService.getFilteredSources()) {
-                    url += '&filtered_sources=' + zemFilterService.getFilteredSources().join(',');
+                if (zemFilterService.filteredSources) {
+                    url += '&filtered_sources=' + zemFilterService.filteredSources.join(',');
                 }
 
                 $window.open(url, '_blank');
