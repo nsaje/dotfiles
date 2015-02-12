@@ -111,7 +111,7 @@ oneApp.directive('zemFilter', ['config', function(config) {
 
             $scope.$on('$stateChangeSuccess', function() {
                 // Upon state change we do want to close the dropdown.
-                $scope.isOpen = false;
+                $scope.isFilterOpen = false;
             });
         }]
     };
