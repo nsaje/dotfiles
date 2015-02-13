@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+import unicodecsv
 
 import dateutil.parser
 import rfc3987
@@ -295,7 +296,7 @@ class UserForm(forms.Form):
 
 
 class AdGroupAdsPlusUpload(forms.Form):
-    file = forms.FileField(
+    content_ads = forms.FileField(
         error_messages={'required': 'Please choose a file to upload.'}
     )
     batch_name = forms.CharField(
@@ -303,3 +304,21 @@ class AdGroupAdsPlusUpload(forms.Form):
         max_length=255,
         error_messages={'required': 'Please enter a name for this upload.'}
     )
+
+    def clean_content_ads(self):
+        content_ads = self.cleaned_data['content_ads']
+
+        rows = []
+        try:
+            reader = unicodecsv.DictReader(content_ads, ['url', 'title', 'image_url', 'crop_areas'])
+            next(reader, None)  # ignore header
+
+            for row in reader:
+                if row['url'] is None or row['title'] is None:
+                    raise forms.ValidationError('File is not formatted correctly.')
+
+                rows.append(row)
+        except unicodecsv.Error:
+            raise forms.ValidationError('File is not formatted correctly.')
+
+        return rows

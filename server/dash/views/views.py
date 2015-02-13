@@ -15,12 +15,14 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth import login, authenticate
 from django.views.decorators.http import require_GET
+from django.db import transaction
 
 from dash.views import helpers
 
 from utils import statsd_helper
 from utils import api_common
 from utils import exc
+from utils.threads import BaseThread
 import actionlog.api
 import actionlog.sync
 import actionlog.zwei_actions
@@ -557,11 +559,41 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
             raise exc.ValidationError(errors=form.errors)
 
         batch_name = form.cleaned_data['batch_name']
-        file = form.cleaned_data['file']
+        content_ads = form.cleaned_data['content_ads']
 
-        # TODO do something with data
+        ProcessUploadThread(content_ads, batch_name, ad_group_id).start()
 
         return self.create_api_response()
+
+
+class ProcessUploadThread(BaseThread):
+    def __init__(self, content_ads, batch_name, ad_group_id, *args, **kwargs):
+        self.content_ads = content_ads
+        self.batch_name = batch_name
+        self.ad_group_id = ad_group_id
+        super(ProcessUploadThread, self).__init__(*args, **kwargs)
+
+    @transaction.atomic()
+    def run(self):
+        try:
+            for ad in self.content_ads:
+                image_id = self.process_image_url(ad.get('image_url'))
+                # TODO save creative to DB
+
+        except Exception:
+            logger.exception('Exception in ProcessUploadThread')
+
+    def process_image_url(self, url):
+        if not url:
+            return
+
+        payload = {'image-url': url}
+        data = json.dumps(payload)
+        request = urllib2.Request(settings.Z3_API_URL, data)
+
+        response = urllib2.urlopen(request)
+
+        return json.loads(response.read())['key']
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')
