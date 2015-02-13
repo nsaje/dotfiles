@@ -3,6 +3,7 @@
 
     <div class="row body">
         <div class="sidebar" ng-show="accounts" ng-class="{'sidebar-new': hasPermission('zemauth.all_new_sidebar') }">
+            <div class="loader" ng-if="loadSidebarInProgress"></div>
             <div id="nav-new" ng-if="hasPermission('zemauth.all_new_sidebar')">
                 <zem-nav-search zem-current-account="account" zem-all-accounts="accounts" zem-can-access-accounts="{{ canAccessAccounts() }}" zem-can-access-campaigns="{{ canAccessCampaigns() }}" zem-default-account-state="{{ getDefaultAccountState() }}" zem-default-campaign-state="{{ getDefaultCampaignState() }}" zem-show-archived="showArchived" zem-default-ad-group-state="{{ getDefaultAdGroupState() }}"></zem-nav-search>
                 <div id="nav-menu">
@@ -54,16 +55,7 @@
                     <input type="daterange" class="form-control" ng-model="dateRange" max-date="{{ maxDateStr }}" format="{{ inputDateFormat }}" ranges="{{ dateRanges }}" opens="left">
                 </div>
             </form>
-            <div id="filter" class="pull-right" ng-show="hasPermission('zemauth.view_archived_entities')">
-                <div class="dropdown">
-                    <zem-internal-feature popover-placement="left" ng-if="isPermissionInternal('zemauth.view_archived_entities')"></zem-internal-feature>
-                    <a href class="dropdown-toggle btn btn-default"><img ng-src="{{ config.static_url }}/one/img/filter_icon.svg"></img></a>
-                    <ul class="dropdown-menu">
-                        <li><div class="checkbox"><label><input type="checkbox" ng-model="showArchived">Show archived accounts, campaigns and ad groups</label></div></li>
-                    </ul>
-                </div>
-            </div>
-
+            <zem-filter></zem-filter>
             <div ui-view></div>
         </div>
 

@@ -2,41 +2,60 @@
 "use strict"
 
 oneApp.factory('zemUserSettings', ['zemLocalStorageService', '$location', function(zemLocalStorageService, $location) {
+    function toUnderscore(string){
+        return string.replace(/([A-Z])/g, function($1) {
+            return '_' + $1.toLowerCase();
+        });
+    }
+
+    function getFromUrl(key, isArray) {
+        var value = $location.search()[toUnderscore(key)];
+
+        if (value && isArray) {
+            value = value.split(',');
+        }
+
+        if (value === 'true') {
+            return true;
+        } else if (value === 'false') {
+            return false;
+        }
+
+        return value;
+    }
+
+    function removeFromUrl(key) {
+        $location.search(toUnderscore(key), null);
+    }
+
+    function getValue(name, namespace, isArray) {
+        var value = getFromUrl(name, isArray);
+
+        if (value === undefined) {
+            value = zemLocalStorageService.get(name, namespace);
+        }
+
+        return value;
+    }
+
     function UserSettings($scope, namespace) {
         var registeredNames = [];
 
-        function toUnderscore(string){
-            return string.replace(/([A-Z])/g, function($1) {
-                return '_' + $1.toLowerCase();
-            });
-        }
+        function addToUrl(key, value, isArray) {
+            if (isArray && value.length > 0) {
+                value = value.join(',');
+            }
 
-        function addToUrl(key, value) {
             $location.search(toUnderscore(key), value);
         }
 
-        function getFromUrl(key) {
-            var value = $location.search()[toUnderscore(key)];
-
-            if (value === 'true') {
-                return true;
-            } else if (value === 'false') {
-                return false;
-            }
-
-            return value;
-        }
-
-        function removeFromUrl(key) {
-            $location.search(toUnderscore(key), null);
-        }
-
         function register(name, global) {
-            var value = getFromUrl(name);
-
-            if (value === undefined) {
-                value = zemLocalStorageService.get(name, global ? null : namespace);
+            var isArray = false;
+            if (Object.prototype.toString.call($scope[name]) === '[object Array]') {
+                isArray = true;
             }
+
+            var value = getValue(name, global ? null : namespace, isArray);
 
             if (value !== undefined && $scope[name] !== value) {
                 $scope[name] = value;
@@ -45,9 +64,9 @@ oneApp.factory('zemUserSettings', ['zemLocalStorageService', '$location', functi
             $scope.$watch(name, function(newValue, oldValue) {
                 if (oldValue !== newValue) {
                     zemLocalStorageService.set(name, newValue, global ? null : namespace);
-                    addToUrl(name, newValue);
+                    addToUrl(name, newValue, isArray);
                 }
-            });
+            }, true);
 
             registeredNames.push(name);
         }
@@ -71,6 +90,7 @@ oneApp.factory('zemUserSettings', ['zemLocalStorageService', '$location', functi
     return {
         getInstance: function($scope, namespace) {
             return new UserSettings($scope, namespace);
-        }
+        },
+        getValue: getValue
     };
 }]);

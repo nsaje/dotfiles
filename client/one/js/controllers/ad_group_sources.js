@@ -453,7 +453,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                         name: goals[goalId].name + ': ' + typeName,
                         value: goalId,
                         internal: $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
-                    }
+                    };
                 }).filter(function (option) {
                     return option !== undefined;
                 }));
@@ -462,7 +462,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics()).then(
+        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics(), null).then(
             function (data) {
                 setChartOptions(data.goals);
 
@@ -545,6 +545,15 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         getDailyStats();
         getTableData();
     });
+
+    $scope.$watch('filteredSources', function (newValue, oldValue) {
+        if (newValue === oldValue) {
+            return;
+        }
+
+        getTableData();
+        getDailyStats();
+    }, true);
 
     $scope.init = function() {
         var data = $scope.adGroupData[$state.params.id];

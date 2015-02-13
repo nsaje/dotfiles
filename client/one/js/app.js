@@ -47,16 +47,17 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             templateUrl: '/partials/main.html',
             controller: 'MainCtrl',
             resolve: {
-                user: ['api', 'zemLocalStorageService', function(api, zemLocalStorageService) {
-                    return api.user.get('current').then(function (user) {
-                        zemLocalStorageService.init(user);
-                        return user;  // makes it accessibile in main controller
-                    });
+                user: ['api', function(api) {
+                    return api.user.get('current');
                 }],
-                accounts: ['api', function (api) {
+                accounts: ['$location', 'zemLocalStorageService', 'zemFilterService', 'api', 'user', function ($location, zemLocalStorageService, zemFilterService, api, user) {
+                    // init filter service only after we have user
+                    // this way we can get settings from local storage
+                    zemLocalStorageService.init(user);
+                    zemFilterService.init(user);
                     return api.navData.list();
-                }],
-            },
+                }]
+            }
         });
 
     $stateProvider
@@ -130,7 +131,7 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         })
         .state('main.campaigns.settings', {
             url: '/settings',
-            templateUrl: '/partials/campaign_settings.html',
+            templateUrl: '/partials/campaign_settings.html'
         });
 
 

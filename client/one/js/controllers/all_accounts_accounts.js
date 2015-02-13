@@ -256,7 +256,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list($scope.level, null, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true, getDailyStatsMetrics()).then(
+        api.dailyStats.list($scope.level, null, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true, getDailyStatsMetrics(), null).then(
             function (data) {
                 setChartOptions();
                 $scope.chartData = data.chartData;
@@ -276,7 +276,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
-        api.accountAccountsTable.get($scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order, $scope.showArchived).then(
+        api.accountAccountsTable.get($scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
@@ -338,6 +338,15 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             getDailyStats();
         }
     });
+
+    $scope.$watch('filteredSources', function (newValue, oldValue) {
+        if (newValue === oldValue) {
+            return;
+        }
+
+        getTableData();
+        getDailyStats();
+    }, true);
 
     $scope.$watch('showArchived', function (newValue, oldValue) {
         if (newValue !== oldValue) {
