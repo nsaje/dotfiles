@@ -115,6 +115,10 @@ urlpatterns += patterns(
         login_required(dash.views.table.AdGroupAdsTable.as_view()),
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload/',
+        login_required(dash.views.views.AdGroupAdsPlusUpload.as_view()),
+    ),
+    url(
         r'^api/accounts/table/',
         login_required(dash.views.table.AccountsAccountsTable.as_view()),
     ),

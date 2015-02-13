@@ -40,7 +40,7 @@ a,
 a:hover,
 a:active,
 a:visited {
-    color: #2fa8c7;
+    color: @default-color;
 }
 
 // TypeKit
@@ -2177,6 +2177,51 @@ zem-editable-currency-field {
             font-size: 12px;
             font-weight: 400;
             margin: 5px 0 0 0;
+        }
+    }
+}
+
+.upload-ads-modal {
+    // prevent animation
+    &.fade .modal-dialog {
+      -webkit-transform: translate(0, 0);
+      -ms-transform: translate(0, 0);
+      transform: translate(0, 0);
+    }
+
+    .modal-dialog {
+        margin-top: 32vh;
+
+        .modal-content {
+            border-top: 3px solid @default-color;
+            border-radius: 3px;
+
+            .form-group:last-child {
+                margin-top: 50px;
+                margin-bottom: 0;
+            }
+
+            [class^='col-xs-'] {
+                padding-left: 5px;
+                padding-right: 5px;
+
+                &:first-child {
+                    padding-left: 15px;
+                }
+            }
+
+            input[type=text][readonly] {
+                cursor: default;
+                background-color: #fff;
+            }
+
+            #download-sample-link {
+                float: right;
+            }
+
+            .btn {
+                width: 100%;
+            }
         }
     }
 }

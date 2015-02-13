@@ -292,3 +292,14 @@ class UserForm(forms.Form):
         max_length=127,
         error_messages={'required': 'Please specify last name.'}
     )
+
+
+class AdGroupAdsPlusUpload(forms.Form):
+    file = forms.FileField(
+        error_messages={'required': 'Please choose a file to upload.'}
+    )
+    batch_name = forms.CharField(
+        required=True,
+        max_length=255,
+        error_messages={'required': 'Please enter a name for this upload.'}
+    )

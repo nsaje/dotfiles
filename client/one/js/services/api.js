@@ -1779,6 +1779,35 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         };
     }
 
+    function AdGroupAdsPlusUpload() {
+        this.upload = function(adGroupId, file, batchName) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/'
+
+            var formData = new FormData();
+            formData.append('file', file);
+            formData.append('batch_name', batchName ? batchName : '');
+
+            $http.post(url, formData, {
+                transformRequest: angular.identity,
+                headers: {'Content-Type': undefined}
+            }).success(function(data) {
+                deferred.resolve(data);
+            }).error(function(data) {
+                deferred.reject(convertValidationErrorsFromApi(data.data.errors));
+            });
+ 
+            return deferred.promise;
+        };
+
+        function convertValidationErrorsFromApi(errors) {
+            return {
+                file: errors.file,
+                batchName: errors.batch_name
+            };
+        }
+     }
+ 
     function AvailableSources() {
         this.list = function () {
             var deferred = $q.defer();
@@ -1864,6 +1893,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         adGroupSourcesUpdates: new AdGroupSourcesUpdates(),
         adGroupAdsExportAllowed: new AdGroupAdsExportAllowed(),
         campaignAdGroupsExportAllowed: new CampaignAdGroupsExportAllowed(),
+        adGroupAdsPlusUpload: new AdGroupAdsPlusUpload(),
         availableSources: new AvailableSources()
     };
 }]);

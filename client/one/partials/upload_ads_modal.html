@@ -1,0 +1,36 @@
+<div class="modal-body">
+    <form class="form-horizontal">
+        <div class="form-group" ng-class="{'has-error': !!errors.file}">
+            <div class="col-xs-4">
+                <input type="text" id="file-input" readonly class="form-control" placeholder="No file chosen" ng-model="formData.file.name">
+            </div>
+            <div class="col-xs-4">
+                <button type="button" class="btn btn-default" zem-file-input="formData.file">Choose file</button>
+            </div>
+            <div class="col-xs-4">
+                <label ng-repeat="error in errors.file" class="control-label error" for="file-input">{{ error }}</label>
+            </div>
+        </div>
+        <div class="form-group" ng-class="{'has-error': !!errors.batchName}">
+            <label for="batch-name-input" class="col-xs-4 control-label">
+                Upload batch name
+                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The name of the upload batch." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-4">
+                <input type="text" id="batch-name-input" class="form-control" ng-model="formData.batchName">
+            </div>
+            <div class="col-xs-4">
+                <label ng-repeat="error in errors.batchName" class="control-label error" for="batch-name-input">{{ error }}</label>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-xs-3">
+                <button type="button" class="btn btn-add" ng-click="upload()">Upload</button>
+            </div>
+            <div class="col-xs-3">
+                <button type="button" class="btn btn-default" ng-click="$dismiss()">Cancel</button>
+            </div>
+            <a href="" id="download-sample-link" class="col-xs-4 control-label">Download sample CSV</a>
+        </div>
+    </form>
+</div>
