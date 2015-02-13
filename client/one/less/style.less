@@ -769,6 +769,13 @@ div[datepicker] {
 .select2-drop,
 .select2-drop.select2-drop-above {
     border: 1px solid @default-color;
+    .select2-results {
+        li.select2-highlighted {
+            background-color: @add-color;
+            border-radius: 2px;
+            color: white;
+        }
+    }
 }
 
 .select2-drop:not(.select2-drop-above) {
@@ -862,12 +869,6 @@ div[datepicker] {
                 }
 
                 ul.select2-result-sub {
-                    li.select2-highlighted {
-                        background-color: #2fa8c7;
-                        border-radius: 2px;
-                        color: white;
-                    }
-
                     li.select2-result {
                         &.archived {
                             color: #d9d9d9;
