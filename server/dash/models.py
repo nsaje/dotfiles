@@ -165,7 +165,10 @@ class Account(models.Model):
             ).distinct()
 
         def filter_by_sources(self, sources):
-            return self.filter(campaign__adgroup__adgroupsource__source__id__in=sources).distinct()
+            return self.filter(
+                models.Q(id__in=Account.demo_objects.all()) |
+                models.Q(campaign__adgroup__adgroupsource__source__id__in=sources)
+            ).distinct()
 
         def exclude_archived(self):
             archived_settings = AccountSettings.objects.\
@@ -282,7 +285,10 @@ class Campaign(models.Model, PermissionMixin):
             ).distinct()
 
         def filter_by_sources(self, sources):
-            return self.filter(adgroup__adgroupsource__source__in=sources).distinct()
+            return self.filter(
+                models.Q(id__in=Campaign.demo_objects.all()) |
+                models.Q(adgroup__adgroupsource__source__in=sources)
+            ).distinct()
 
         def exclude_archived(self):
             archived_settings = CampaignSettings.objects.\
@@ -685,7 +691,10 @@ class AdGroup(models.Model):
             ).distinct()
 
         def filter_by_sources(self, sources):
-            return self.filter(adgroupsource__source__in=sources).distinct()
+            return self.filter(
+                models.Q(id__in=AdGroup.demo_objects.all()) |
+                models.Q(adgroupsource__source__in=sources)
+            ).distinct()
 
         def exclude_archived(self):
             archived_settings = AdGroupSettings.objects.\
