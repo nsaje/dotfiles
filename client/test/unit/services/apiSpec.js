@@ -41,7 +41,7 @@ describe('api', function() {
                 var data = {
                     data: {
                         errors: {
-                            file: 'Error message.',
+                            content_ads: 'Error message.',
                             batch_name: 'Batch name error message.'
                         }
                     }

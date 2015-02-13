@@ -1730,7 +1730,7 @@ oneApp.factory('api', ['$http', '$q', function($http, $q) {
             var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/'
 
             var formData = new FormData();
-            formData.append('file', file);
+            formData.append('content_ads', file);
             formData.append('batch_name', batchName ? batchName : '');
 
             $http.post(url, formData, {
@@ -1747,7 +1747,7 @@ oneApp.factory('api', ['$http', '$q', function($http, $q) {
 
         function convertValidationErrorsFromApi(errors) {
             return {
-                file: errors.file,
+                file: errors.content_ads,
                 batchName: errors.batch_name
             };
         }
