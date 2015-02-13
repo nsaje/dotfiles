@@ -479,6 +479,15 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         getTableData();
     });
 
+    $scope.$watch('filteredSources', function (newValue, oldValue) {
+        if (newValue === oldValue) {
+            return;
+        }
+
+        getTableData();
+        getDailyStats();
+    }, true);
+
     $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
         $location.search('source_ids', null);
         $location.search('source_totals', null);
@@ -494,7 +503,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 } else if ($scope.level === constants.level.ACCOUNTS) {
                     promise = api.checkCampaignSyncProgress.get(undefined, $state.params.id);
                 } else if ($scope.level === constants.level.CAMPAIGNS) {
-                    promise = api.checkCampaignSyncProgress.get($state.params.id);
+                    promise = api.checkCampaignSyncProgress.get($state.params.id, null);
                 }
 
                 promise.then(
@@ -525,9 +534,9 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         if ($scope.level === constants.level.ALL_ACCOUNTS) {
             api.accountSync.get();
         } else if ($scope.level === constants.level.ACCOUNTS) {
-            api.accountSync.get($state.params.id);
+            api.campaignSync.get(null, $state.params.id);
         } else if ($scope.level === constants.level.CAMPAIGNS) {
-            api.campaignSync.get($state.params.id);
+            api.campaignSync.get($state.params.id, null);
         }
     };
 

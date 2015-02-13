@@ -1,7 +1,13 @@
 /*globals angular,oneApp,constants,options,moment*/
 "use strict";
 
-angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) {
+oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, zemFilterService) {
+    function addFilteredSources(params) {
+        if (zemFilterService.filteredSources) {
+            params.filtered_sources = zemFilterService.filteredSources.join(',');
+        }
+    }
+
     function NavData() {
         this.list = function () {
             var deferred = $q.defer();
@@ -9,6 +15,11 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             var config = {
                 params: {}
             };
+
+
+            if (zemFilterService.filteredSources) {
+                config.params.filtered_sources = zemFilterService.filteredSources.join(',');
+            }
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -54,8 +65,13 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         this.get = function (id) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/sources/';
+            var config = {
+                params: {}
+            };
 
-            $http.get(url).
+            addFilteredSources(config.params);
+
+            $http.get(url, config).
                 success(function (data, status) {
                     deferred.resolve({
                         sources: data.data.sources,
@@ -149,6 +165,8 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 config.params.order = order;
             }
 
+            addFilteredSources(config.params);
+
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
@@ -218,6 +236,8 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 config.params.end_date = endDate.format();
             }
 
+            addFilteredSources(config.params);
+
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
@@ -276,6 +296,8 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 config.params.order = order;
             }
 
+            addFilteredSources(config.params);
+
             $http.get(url, config).
                 success(function (data, status) {
                     var resource;
@@ -296,8 +318,13 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         this.get = function (id) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/sync/';
+            var config = {
+                params: {}
+            };
 
-            $http.get(url).
+            addFilteredSources(config.params);
+
+            $http.get(url, config).
                 success(function (data, status) {
                     var resource;
                     if (data && data.success) {
@@ -315,15 +342,20 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
     function CheckSyncProgress() {
         this.get = function(id) {
             var deferred = $q.defer();
+            var config = {
+                params: {}
+            };
 
             if (id === undefined) {
                 deferred.reject();
                 return deferred.promise;
             }
 
+            addFilteredSources(config.params);
+
             var url = '/api/ad_groups/' + id + '/check_sync_progress/';
 
-            $http.get(url).
+            $http.get(url, config).
                 success(function(data, status){
                     var resource;
                     if (data && data.success) {
@@ -342,8 +374,13 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         this.get = function () {
             var deferred = $q.defer();
             var url = '/api/accounts/sync/';
+            var config = {
+                params: {}
+            };
 
-            $http.get(url).
+            addFilteredSources(config.params);
+
+            $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.success) {
                         deferred.resolve();
@@ -361,8 +398,13 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         this.get = function() {
             var deferred = $q.defer();
             var url = '/api/accounts/check_sync_progress/';
+            var config = {
+                params: {}
+            };
 
-            $http.get(url).
+            addFilteredSources(config.params);
+
+            $http.get(url, config).
                 success(function(data, status){
                     if (data && data.success) {
                         deferred.resolve(data.data);
@@ -396,6 +438,8 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             } else if (accountId) {
                 config.params.account_id = accountId;
             }
+
+            addFilteredSources(config.params);
 
             $http.get(url, config).
                 success(function(data, status){
@@ -450,6 +494,8 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             if (groupSources) {
                 config.params.sources = groupSources;
             }
+
+            addFilteredSources(config.params);
 
             $http.get(url, config).
                 success(function (response, status) {
@@ -1112,6 +1158,8 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 config.params.account_id = accountId;
             }
 
+            addFilteredSources(config.params);
+
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.success) {
@@ -1303,7 +1351,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             return row;
         }
 
-        this.get = function (page, size, startDate, endDate, order, showArchived) {
+        this.get = function (page, size, startDate, endDate, order) {
             var deferred = $q.defer();
             var url = '/api/accounts/table/';
             var config = {
@@ -1330,9 +1378,11 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 config.params.order = order;
             }
 
-            if (typeof(showArchived) !== 'undefined') {
-                config.params.show_archived = showArchived;
+            if (zemFilterService.showArchived) {
+                config.params.show_archived = zemFilterService.showArchived;
             }
+
+            addFilteredSources(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -1361,7 +1411,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             return result;
         }
 
-        this.get = function (id, startDate, endDate, order, showArchived) {
+        this.get = function (id, startDate, endDate, order) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + id + '/campaigns/table/';
             var config = {
@@ -1380,9 +1430,11 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 config.params.order = order;
             }
 
-            if (typeof(showArchived) !== 'undefined') {
-                config.params.show_archived = showArchived;
+            if (zemFilterService.showArchived) {
+                config.params.show_archived = zemFilterService.showArchived;
             }
+
+            addFilteredSources(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -1413,7 +1465,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             return result;
         }
 
-        this.get = function (id, startDate, endDate, order, showArchived) {
+        this.get = function (id, startDate, endDate, order) {
             var deferred = $q.defer();
             var url = '/api/campaigns/' + id + '/ad_groups/table/';
             var config = {
@@ -1432,9 +1484,11 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 config.params.order = order;
             }
 
-            if (showArchived) {
-                config.params.show_archived = showArchived;
+            if (zemFilterService.showArchived) {
+                config.params.show_archived = zemFilterService.showArchived;
             }
+
+            addFilteredSources(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -1622,6 +1676,8 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 config.params.last_change_dt = lastChange;
             }
 
+            addFilteredSources(config.params);
+
             $http.get(url, config).
                 success(function (data) {
                     var resource;
@@ -1663,7 +1719,6 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
             if (endDate) {
                 config.params.end_date = endDate.format();
             }
-
             $http.get(url, config).
                 success(function (data, status) {
                     var resource;
@@ -1724,6 +1779,23 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         };
     }
 
+    function AvailableSources() {
+        this.list = function () {
+            var deferred = $q.defer();
+            var url = '/api/sources/';
+
+            $http.get(url).
+                success(function (data, status) {
+                    deferred.resolve(data);
+                }).
+                error(function (data, status) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     // Helpers
 
     function convertGoals(row, convertedRow) {
@@ -1750,7 +1822,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
                 message: notification.message,
                 inProgress: notification.in_progress,
                 important: notification.important
-            }
+            };
         });
 
         return notifications;
@@ -1791,6 +1863,7 @@ angular.module('oneApi', []).factory("api", ["$http", "$q", function($http, $q) 
         adGroupSourceSettings: new AdGroupSourceSettings(),
         adGroupSourcesUpdates: new AdGroupSourcesUpdates(),
         adGroupAdsExportAllowed: new AdGroupAdsExportAllowed(),
-        campaignAdGroupsExportAllowed: new CampaignAdGroupsExportAllowed()
+        campaignAdGroupsExportAllowed: new CampaignAdGroupsExportAllowed(),
+        availableSources: new AvailableSources()
     };
 }]);

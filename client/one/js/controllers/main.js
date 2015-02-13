@@ -1,5 +1,5 @@
 /*globals oneApp,$,FS*/
-oneApp.controller('MainCtrl', 
+oneApp.controller('MainCtrl',
     ['$scope',
      '$state',
      '$location',
@@ -31,14 +31,10 @@ oneApp.controller('MainCtrl',
     $scope.maxDate = zemMoment();
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
 
-    $scope.showArchived = false;
-
     $scope.adGroupData = {};
     $scope.account = null;
     $scope.campaign = null;
     $scope.adGroup = null;
-
-    var userSettings = zemUserSettings.getInstance($scope, 'main');
 
     $scope.refreshNavData = function (accounts) {
         $scope.accounts = accounts;
@@ -277,10 +273,6 @@ oneApp.controller('MainCtrl',
         }
     });
 
-    $('#filter').on('click', function(e) {
-        e.stopPropagation();
-    });
-
     $document.bind('keyup', function (e) {
         if (e) {
             if (String.fromCharCode(e.keyCode).toLowerCase() === 'f') {
@@ -308,7 +300,15 @@ oneApp.controller('MainCtrl',
         }
     });
 
-    userSettings.register('showArchived');
+    $scope.$watch('filteredSources', function (newValue, oldValue) {
+        $scope.loadSidebarInProgress = true;
+        api.navData.list().then(function (accounts) {
+            $scope.refreshNavData(accounts);
+        })
+        .finally(function () {
+            $scope.loadSidebarInProgress = false;
+        });
+    }, true);
 
     zemFullStoryService.identify($scope.user);
 

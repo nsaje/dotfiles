@@ -8,10 +8,11 @@ oneApp.directive('zemExport', function() {
             baseUrl: '=',
             startDate: '=',
             endDate: '=',
-            options: '='
+            options: '=',
+            filteredSources: '='
         },
         templateUrl: '/partials/zem_export.html',
-        controller: ['$scope', '$window', '$compile', function($scope, $window, $compile) {
+        controller: ['$scope', '$window', '$compile', 'zemFilterService', function($scope, $window, $compile, zemFilterService) {
             $scope.exportType = '';
 
             function getOptionByValue(value) {
@@ -39,9 +40,9 @@ oneApp.directive('zemExport', function() {
                     if (option.maxDays) {
                         popoverText += ' Please choose a smaller date range (' + option.maxDays;
                         if (option.maxDays > 1) {
-                            popoverText += ' days or less).'; 
+                            popoverText += ' days or less).';
                         } else {
-                            popoverText += ' day).'; 
+                            popoverText += ' day).';
                         }
                     } else {
                         popoverText = 'This report is not available for download, due to the volume of content indexed in this campaign. Please contact your account manager for assistance.';
@@ -73,10 +74,16 @@ oneApp.directive('zemExport', function() {
             };
 
             $scope.downloadReport = function() {
-                $window.open($scope.baseUrl + 'export/?type=' + $scope.exportType + '&start_date=' + $scope.startDate.format() + '&end_date=' + $scope.endDate.format(), '_blank');
+                var url = $scope.baseUrl + 'export/?type=' + $scope.exportType + '&start_date=' + $scope.startDate.format() + '&end_date=' + $scope.endDate.format();
+
+                if (zemFilterService.filteredSources) {
+                    url += '&filtered_sources=' + zemFilterService.filteredSources.join(',');
+                }
+
+                $window.open(url, '_blank');
 
                 $scope.exportType = '';
             };
         }]
-    }
+    };
 });

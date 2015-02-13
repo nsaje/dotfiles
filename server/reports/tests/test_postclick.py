@@ -2,6 +2,7 @@ import datetime
 
 from django import test
 
+import dash.models
 from reports import api
 from reports import refresh
 from utils.test_helper import dicts_match_for_keys, sequence_of_dicts_match_for_keys
@@ -80,35 +81,37 @@ class PostclickTestCase(test.TestCase):
         self.assertTrue(dicts_match_for_keys(result, expected, expected.keys()))
 
     def test_incomplete_metrics(self):
-        is_complete = api.has_complete_postclick_metrics_ad_groups(self.start_date, self.end_date, [1])
+        sources = dash.models.Source.objects.all()
+
+        is_complete = api.has_complete_postclick_metrics_ad_groups(self.start_date, self.end_date, [1], sources)
         self.assertFalse(is_complete)
 
-        is_complete = api.has_complete_postclick_metrics_ad_groups(self.start_date, datetime.date(2014, 6, 5), [1])
+        is_complete = api.has_complete_postclick_metrics_ad_groups(self.start_date, datetime.date(2014, 6, 5), [1], sources)
         self.assertFalse(is_complete)
 
-        is_complete = api.has_complete_postclick_metrics_ad_groups(datetime.date(2014, 6, 6), datetime.date(2014, 6, 6), [1])
+        is_complete = api.has_complete_postclick_metrics_ad_groups(datetime.date(2014, 6, 6), datetime.date(2014, 6, 6), [1], sources)
         self.assertTrue(is_complete)
 
-        is_complete = api.has_complete_postclick_metrics_campaigns(self.start_date, self.end_date, [1])
+        is_complete = api.has_complete_postclick_metrics_campaigns(self.start_date, self.end_date, [1], sources)
         self.assertFalse(is_complete)
 
-        is_complete = api.has_complete_postclick_metrics_campaigns(self.start_date, datetime.date(2014, 6, 5), [1])
+        is_complete = api.has_complete_postclick_metrics_campaigns(self.start_date, datetime.date(2014, 6, 5), [1], sources)
         self.assertFalse(is_complete)
 
-        is_complete = api.has_complete_postclick_metrics_campaigns(datetime.date(2014, 6, 6), datetime.date(2014, 6, 6), [1])
+        is_complete = api.has_complete_postclick_metrics_campaigns(datetime.date(2014, 6, 6), datetime.date(2014, 6, 6), [1], sources)
         self.assertTrue(is_complete)
 
         # case where one ad group has postclick data and the other does not
-        is_complete = api.has_complete_postclick_metrics_campaigns(datetime.date(2014, 6, 7), datetime.date(2014, 6, 7), [1])
+        is_complete = api.has_complete_postclick_metrics_campaigns(datetime.date(2014, 6, 7), datetime.date(2014, 6, 7), [1], sources)
         self.assertFalse(is_complete)
 
-        is_complete = api.has_complete_postclick_metrics_accounts(self.start_date, self.end_date, [1])
+        is_complete = api.has_complete_postclick_metrics_accounts(self.start_date, self.end_date, [1], sources)
         self.assertFalse(is_complete)
 
-        is_complete = api.has_complete_postclick_metrics_accounts(self.start_date, datetime.date(2014, 6, 5), [1])
+        is_complete = api.has_complete_postclick_metrics_accounts(self.start_date, datetime.date(2014, 6, 5), [1], sources)
         self.assertFalse(is_complete)
 
-        is_complete = api.has_complete_postclick_metrics_accounts(datetime.date(2014, 6, 6), datetime.date(2014, 6, 6), [1])
+        is_complete = api.has_complete_postclick_metrics_accounts(datetime.date(2014, 6, 6), datetime.date(2014, 6, 6), [1], sources)
         self.assertTrue(is_complete)
 
 

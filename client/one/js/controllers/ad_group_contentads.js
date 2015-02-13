@@ -17,7 +17,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
     $scope.size = $scope.sizeRange[0];
 
     $scope.pagination = {
-        currentPage: 1,
+        currentPage: 1
     };
 
     var userSettings = zemUserSettings.getInstance($scope, 'adGroupContentAds');
@@ -259,7 +259,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true, getDailyStatsMetrics()).then(
+        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true, getDailyStatsMetrics(), null).then(
             function (data) {
                 setChartOptions(data.goals);
                 $scope.chartData = data.chartData;
@@ -345,7 +345,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         initColumns();
         setDisabledExportOptions();
     };
-    
+
     $scope.loadPage = function(page) {
         if(page && page > 0 && page <= $scope.pagination.numPages) {
             $scope.pagination.currentPage = page;
@@ -366,6 +366,15 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         }
     });
 
+    $scope.$watch('filteredSources', function (newValue, oldValue) {
+        if (newValue === oldValue) {
+            return;
+        }
+
+        getTableData();
+        getDailyStats();
+    }, true);
+
     var pollSyncStatus = function() {
         if($scope.isSyncInProgress){
             $timeout(function() {
@@ -373,7 +382,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
                     function(data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 
-                        if($scope.isSyncInProgress == false){
+                        if($scope.isSyncInProgress === false){
                             // we found out that the sync is no longer in progress
                             // time to reload the data
                             getTableData();
@@ -389,7 +398,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
                 });
             }, 5000);
         }
-    }
+    };
 
     var setDisabledExportOptions = function() {
         api.adGroupAdsExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
@@ -415,7 +424,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
     $scope.triggerSync = function() {
         $scope.isSyncInProgress = true;
         api.adGroupSync.get($state.params.id);
-    }
+    };
 
     $scope.init();
 }]);

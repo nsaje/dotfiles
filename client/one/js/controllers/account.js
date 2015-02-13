@@ -60,6 +60,12 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) 
         }
     }
 
+    $scope.$watch('accounts', function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            $scope.getAccount();
+        }
+    });
+
     $scope.$watch('account.archived', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             $scope.tabs = $scope.getTabs();
