@@ -23,15 +23,14 @@
 
             <li ng-show="hasPermission('zemauth.filter_sources')">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.filter_sources')" popover-placement="left"></zem-internal-feature>
-                <div class="title">Filter by Source</div>
+                <div class="title">Filter by Media Source</div>
                 <select ui-select2="{minimumResultsForSearch: -1, formatNoMatches: 'No sources', dropdownCssClass: 'select2-filter'}" ng-model="sourceId" ng-change="addFilteredSource(sourceId)" class="add-source-filter" data-placeholder="+ Media Source">
                     <option value=""></option>
                     <option ng-repeat="source in sources | orderBy:'name' | filter:isSourceNotFiltered" value="{{source.id}}">{{source.name}}</option>
                 </select>
-                <div class="filtered-source" ng-repeat="source in sources | orderBy:'name' | filter:isSourceFiltered">{{source.name}}
-                    <div class="btn-remove" ng-click="removeFilteredSource(source.id)">
-                        <img ng-src="{{ config.static_url }}/one/img/x_gray.svg">
-                    </div>
+                <div class="filtered-source" ng-repeat="source in sources | orderBy:'name' | filter:isSourceFiltered" ng-click="removeFilteredSource(source.id)">
+                    {{source.name}}
+                    <img class="remove" ng-src="{{ config.static_url }}/one/img/x_gray.svg">
                 </div>
             </li>
 
