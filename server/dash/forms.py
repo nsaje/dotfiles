@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 import unicodecsv
+import json
 
 import dateutil.parser
 import rfc3987
@@ -305,20 +306,44 @@ class AdGroupAdsPlusUpload(forms.Form):
         error_messages={'required': 'Please enter a name for this upload.'}
     )
 
+    def _validate_crops(self, crop_list):
+        for i in range(2):
+            for j in range(2):
+                for k in range(2):
+                    if not isinstance(crop_list[i][j][k], (int, long)):
+                        raise ValueError('Coordinate is not an integer')
+
+    def _parse_crop_areas(self, crop_string):
+        crop_string = crop_string.replace('(', '[').replace(')', ']')
+
+        try:
+            crop_list = json.loads(crop_string)
+            self._validate_crops(crop_list)
+        except (ValueError, IndexError):
+            raise forms.ValidationError('File is not formatted correctly.')
+
+        return crop_list
+
+    def _validate_and_transform_row(self, row):
+        if row['url'] is None or row['title'] is None:
+            raise forms.ValidationError('File is not formatted correctly.')
+
+        if row['crop_areas'] is not None:
+            row['crop_areas'] = self._parse_crop_areas(row['crop_areas'])
+
+        return row
+
     def clean_content_ads(self):
         content_ads = self.cleaned_data['content_ads']
 
-        rows = []
+        ads = []
         try:
             reader = unicodecsv.DictReader(content_ads, ['url', 'title', 'image_url', 'crop_areas'])
             next(reader, None)  # ignore header
 
             for row in reader:
-                if row['url'] is None or row['title'] is None:
-                    raise forms.ValidationError('File is not formatted correctly.')
-
-                rows.append(row)
+                ads.append(self._validate_and_transform_row(row))
         except unicodecsv.Error:
             raise forms.ValidationError('File is not formatted correctly.')
 
-        return rows
+        return ads

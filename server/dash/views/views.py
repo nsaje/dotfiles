@@ -577,23 +577,55 @@ class ProcessUploadThread(BaseThread):
     def run(self):
         try:
             for ad in self.content_ads:
-                image_id = self.process_image_url(ad.get('image_url'))
+                image_id = self._process_image(ad.get('image_url'), ad.get('crop_areas'))
                 # TODO save creative to DB
 
         except Exception:
             logger.exception('Exception in ProcessUploadThread')
 
-    def process_image_url(self, url):
+    def _process_image(self, url, crop_areas):
         if not url:
             return
 
         payload = {'image-url': url}
+
+        crops_dict = self._get_crops_dict(crop_areas)
+        if crops_dict is not None:
+            payload['crops'] = crops_dict
+
         data = json.dumps(payload)
         request = urllib2.Request(settings.Z3_API_URL, data)
 
         response = urllib2.urlopen(request)
 
         return json.loads(response.read())['key']
+
+    def _get_crops_dict(self, crop_areas):
+        if crop_areas is None:
+            return
+
+        return {
+            'square': {
+                'tl': {
+                    'x': crop_areas[0][0][0],
+                    'y': crop_areas[0][0][1]
+                },
+                'br': {
+                    'x': crop_areas[0][1][0],
+                    'y': crop_areas[0][1][1]
+                }
+            },
+            'landscape': {
+                'tl': {
+                    'x': crop_areas[1][0][0],
+                    'y': crop_areas[1][0][1]
+                },
+                'br': {
+                    'x': crop_areas[1][1][0],
+                    'y': crop_areas[1][1][1]
+                }
+            }
+        }
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')
