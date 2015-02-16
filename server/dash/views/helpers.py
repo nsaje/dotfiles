@@ -363,7 +363,7 @@ def get_data_status(objects, last_sync_messages, state_messages=None):
 def get_last_sync_messages(objects, last_sync_times):
     last_sync_messages = {}
     for obj in objects:
-        message_parts, ok = [], False
+        message_parts, ok = [], True
 
         last_sync = last_sync_times.get(obj.id)
         if last_sync is not None:
