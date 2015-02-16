@@ -90,6 +90,10 @@
                                 <span ng-switch-when="linkNav">
                                     <a ui-sref="{{row[col.field].state}}({id: {{row[col.field].id}}})">{{ row[col.field].text }}</a>
                                 </span>
+                                <span ng-switch-when="clickPermissionOrText">
+                                    <a ng-if="col.hasPermission" ng-click="col.clickCallback(row.id)" href>{{ row[col.field] }}</a>
+                                    <span ng-if="!col.hasPermission">{{ row[col.field] }}</span>
+                                </span>
                                 <span ng-switch-when="text">
                                     {{ row[col.field] }}
                                 </span>

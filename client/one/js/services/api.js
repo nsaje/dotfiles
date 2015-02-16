@@ -3,8 +3,14 @@
 
 oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, zemFilterService) {
     function addFilteredSources(params) {
-        if (zemFilterService.filteredSources) {
-            params.filtered_sources = zemFilterService.filteredSources.join(',');
+        if (zemFilterService.getFilteredSources().length > 0) {
+            params.filtered_sources = zemFilterService.getFilteredSources().join(',');
+        }
+    }
+
+    function addShowArchived(params) {
+        if (zemFilterService.getShowArchived()) {
+            params.show_archived = zemFilterService.getShowArchived();
         }
     }
 
@@ -16,10 +22,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 params: {}
             };
 
-
-            if (zemFilterService.filteredSources) {
-                config.params.filtered_sources = zemFilterService.filteredSources.join(',');
-            }
+            addFilteredSources(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -1378,10 +1381,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 config.params.order = order;
             }
 
-            if (zemFilterService.showArchived) {
-                config.params.show_archived = zemFilterService.showArchived;
-            }
-
+            addShowArchived(config.params);
             addFilteredSources(config.params);
 
             $http.get(url, config).
@@ -1430,10 +1430,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 config.params.order = order;
             }
 
-            if (zemFilterService.showArchived) {
-                config.params.show_archived = zemFilterService.showArchived;
-            }
-
+            addShowArchived(config.params);
             addFilteredSources(config.params);
 
             $http.get(url, config).
@@ -1484,10 +1481,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 config.params.order = order;
             }
 
-            if (zemFilterService.showArchived) {
-                config.params.show_archived = zemFilterService.showArchived;
-            }
-
+            addShowArchived(config.params);
             addFilteredSources(config.params);
 
             $http.get(url, config).

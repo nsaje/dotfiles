@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemUserSettings', function ($location, $scope, $state, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemUserSettings) {
+oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($location, $scope, $state, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
     $scope.getTableDataRequestInProgress = false;
     $scope.addGroupRequestInProgress = false;
     $scope.isSyncInProgress = false;
@@ -471,21 +471,14 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         setDisabledExportOptions();
     });
 
-    $scope.$watch('showArchived', function (newValue, oldValue) {
-        if (newValue !== oldValue) {
-            getTableData();
-        }
-    });
-
-
-    $scope.$watch('filteredSources', function (newValue, oldValue) {
-        if (newValue === oldValue) {
-            return;
-        }
-
+    $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
         getTableData();
         getDailyStats();
     }, true);
+
+    $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
+        getTableData();
+    });
 
     var setDisabledExportOptions = function() {
         api.campaignAdGroupsExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(

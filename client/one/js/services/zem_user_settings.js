@@ -38,16 +38,21 @@ oneApp.factory('zemUserSettings', ['zemLocalStorageService', '$location', functi
         return value;
     }
 
+    function addToUrl(key, value, isArray) {
+        if (isArray && value && value.length > 0) {
+            value = value.join(',');
+        }
+
+        $location.search(toUnderscore(key), value);
+    }
+
+    function setValue(name, value, namespace, isArray) {
+        zemLocalStorageService.set(name, value, namespace);
+        addToUrl(name, value, isArray);
+    }
+
     function UserSettings($scope, namespace) {
         var registeredNames = [];
-
-        function addToUrl(key, value, isArray) {
-            if (isArray && value.length > 0) {
-                value = value.join(',');
-            }
-
-            $location.search(toUnderscore(key), value);
-        }
 
         function register(name, global) {
             var isArray = false;
@@ -63,8 +68,7 @@ oneApp.factory('zemUserSettings', ['zemLocalStorageService', '$location', functi
 
             $scope.$watch(name, function(newValue, oldValue) {
                 if (oldValue !== newValue) {
-                    zemLocalStorageService.set(name, newValue, global ? null : namespace);
-                    addToUrl(name, newValue, isArray);
+                    setValue(name, newValue, global ? null : namespace, isArray);
                 }
             }, true);
 
@@ -91,6 +95,7 @@ oneApp.factory('zemUserSettings', ['zemLocalStorageService', '$location', functi
         getInstance: function($scope, namespace) {
             return new UserSettings($scope, namespace);
         },
-        getValue: getValue
+        getValue: getValue,
+        setValue: setValue
     };
 }]);

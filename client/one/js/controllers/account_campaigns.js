@@ -1,5 +1,5 @@
 /*globals oneApp,constants,moment*/
-oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemUserSettings', function ($location, $scope, $state, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemUserSettings) {
+oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($location, $scope, $state, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
     $scope.getTableDataRequestInProgress = false;
     $scope.addCampaignRequestInProgress = false;
     $scope.isSyncInProgress = false;
@@ -509,20 +509,14 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
         getDailyStats();
     });
 
-    $scope.$watch('showArchived', function (newValue, oldValue) {
-        if (newValue !== oldValue) {
-            getTableData();
-        }
-    });
-
-    $scope.$watch('filteredSources', function (newValue, oldValue) {
-        if (newValue === oldValue) {
-            return;
-        }
-
+    $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
         getTableData();
         getDailyStats();
     }, true);
+
+    $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
+        getTableData();
+    });
 
     $scope.init();
 }]);

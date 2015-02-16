@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemUserSettings', function ($scope, $state, $location, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemUserSettings) {
+oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($scope, $state, $location, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.order = '-cost';
@@ -366,14 +366,14 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         }
     });
 
-    $scope.$watch('filteredSources', function (newValue, oldValue) {
-        if (newValue === oldValue) {
-            return;
-        }
-
+    $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
         getTableData();
         getDailyStats();
     }, true);
+
+    $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
+        getTableData();
+    });
 
     var pollSyncStatus = function() {
         if($scope.isSyncInProgress){
