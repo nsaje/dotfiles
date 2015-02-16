@@ -5,42 +5,23 @@ oneApp.directive('zemFilter', ['config', function(config) {
     return {
         restrict: 'E',
         templateUrl: '/partials/zem_filter.html',
+        scope: {
+            hasPermission: '=zemHasPermission',
+            isPermissionInternal: '=zemIsPermissionInternal'
+        },
         link: function ($scope, element) {
             element.on('click', function(e) {
                 e.stopPropagation();
             });
         },
-        controller: ['$scope', '$location', 'zemFilterService', 'zemUserSettings', 'api', function ($scope, $location, zemFilterService, zemUserSettings, api) {
-            $scope.sources = [];
+        controller: ['$scope', 'zemFilterService', 'zemUserSettings', 'api', function ($scope, zemFilterService, zemUserSettings, api) {
+            $scope.availableSources = [];
             $scope.config = config;
 
-            // this updates when user closes the dropdown
-            $scope.filteredSources = zemFilterService.filteredSources;
-            $scope.showArchived = zemFilterService.showArchived;
-
-            var userSettings = zemUserSettings.getInstance($scope, 'main');
-
-            if ($scope.hasPermission('zemauth.filter_sources')) {
-                userSettings.registerGlobal('filteredSources');
-            }
-
-            if ($scope.hasPermission('zemauth.view_archived_entities')) {
-                userSettings.registerGlobal('showArchived');
-            }
-
-            $scope.onToggle = function (open) {
-                if (!open) {
-                    $scope.updateService();
-                }
-            };
-
-            $scope.updateService = function () {
-                zemFilterService.filteredSources = $scope.filteredSources.slice();
-                zemFilterService.showArchived = $scope.showArchived;
-            };
+            $scope.showArchivedSelected = zemFilterService.getShowArchived();
 
             api.availableSources.list().then(function (data) {
-                $scope.sources = data.data.sources;
+                $scope.availableSources = data.data.sources;
             });
 
             $scope.addFilteredSource = function (sourceId) {
@@ -48,22 +29,16 @@ oneApp.directive('zemFilter', ['config', function(config) {
                     return;
                 }
 
-                $scope.filteredSources.push(sourceId);
-                $scope.filteredSources.sort(function (a, b) { return parseInt(a) - parseInt(b); });
+                zemFilterService.addFilteredSource(sourceId);
+                $scope.sourceIdToFilter = '';
+            };
 
-                $scope.updateService();
-
-                $scope.sourceId = '';
+            $scope.exclusivelyFilterSource = function (sourceId) {
+                zemFilterService.exclusivelyFilterSource(sourceId);
             };
 
             $scope.isSourceFiltered = function (source) {
-                for (var i = 0; i < $scope.filteredSources.length; i++) {
-                    if ($scope.filteredSources[i] === source.id) {
-                        return true;
-                    }
-                }
-
-                return false;
+                return zemFilterService.isSourceFiltered(source.id);
             };
 
             $scope.isSourceNotFiltered = function (source) {
@@ -71,41 +46,31 @@ oneApp.directive('zemFilter', ['config', function(config) {
             };
 
             $scope.isFilterOn = function () {
-                return $scope.filteredSources.length > 0;
+                return zemFilterService.isSourceFilterOn();
             };
 
-            $scope.removeFilters = function () {
-                $scope.filteredSources = [];
-                $scope.updateService();
+            $scope.removeFiltering = function () {
+                zemFilterService.removeFiltering();
             };
 
             $scope.removeFilteredSource = function (sourceId) {
-                for (var i = 0; i < $scope.filteredSources.length; i++) {
-                    if ($scope.filteredSources[i] === sourceId) {
-                        $scope.filteredSources.splice(i, 1);
-                        break;
-                    }
-                }
-
-                $scope.updateService();
+                zemFilterService.removeFilteredSource(sourceId);
             };
 
-            $scope.$watch('filteredSources', function (newValue, oldValue) {
-                $scope.updateService();
-            }, true);
-
-            $scope.$watch('showArchived', function () {
-                $scope.updateService();
+            $scope.$watch('showArchivedSelected', function (newValue, oldValue) {
+                if (newValue !== oldValue) {
+                    zemFilterService.setShowArchived(newValue);
+                }
             });
 
             $scope.$on('$locationChangeStart', function() {
                 // ui-bootstrap registers a listener on $locationChangeSuccess event
-                // which closes the dropdown.
-                // We don't want the dropdown to close on changing only the query string
-                // parameters, so we delete this event listener.
-                // We do this here because dropdown controller sets after this scope has
-                // already initialized (however it doesn't use an isolated scope, so the
-                // event listener is registered on this scope)
+                // which closes the dropdown when the event triggers.
+                // We don't want the dropdown to close upon changing the query string
+                // parameters, so we remove all listeners on this event.
+                // This can be done here because dropdown registers the listener on
+                // the scope of the controller/directive that initialized it rather
+                // than on it's isolated scope.
                 $scope.$$listeners.$locationChangeSuccess = [];
             });
 

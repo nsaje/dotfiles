@@ -13,7 +13,7 @@ oneApp.directive('zemNavSearch', ['config', '$state', function(config, $state) {
             canAccessCampaigns: '@zemCanAccessCampaigns',
             defaultAccountState: '@zemDefaultAccountState',
             defaultCampaignState: '@zemDefaultCampaignState',
-            defaultAdGroupState: '@zemDefaultAdGroupState',
+            defaultAdGroupState: '@zemDefaultAdGroupState'
         },
         controller: ['$scope', '$element', '$attrs', '$http', 'api', function ($scope, $element, $attrs, $http, api) {
             $scope.accounts = null;

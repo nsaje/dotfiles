@@ -9,6 +9,7 @@ oneApp.controller('MainCtrl',
      'zemUserSettings',
      'accounts',
      'api',
+     'zemFilterService',
      'zemFullStoryService',
      'zemIntercomService',
       function (
@@ -21,6 +22,7 @@ oneApp.controller('MainCtrl',
         zemUserSettings,
         accounts,
         api,
+        zemFilterService,
         zemFullStoryService,
         zemIntercomService
 ) {
@@ -300,7 +302,11 @@ oneApp.controller('MainCtrl',
         }
     });
 
-    $scope.$watch('filteredSources', function (newValue, oldValue) {
+    $scope.getShowArchived = function () {
+        return zemFilterService.getShowArchived();
+    };
+
+    $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
         $scope.loadSidebarInProgress = true;
         api.navData.list().then(function (accounts) {
             $scope.refreshNavData(accounts);
