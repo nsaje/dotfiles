@@ -565,6 +565,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
+        if (angular.equals(newValue, oldValue)) {
+            return;
+        }
+
         $scope.removeFilteredSelectedSources();
         $scope.updateSelectedRowsLocation();
 

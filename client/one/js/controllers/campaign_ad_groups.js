@@ -472,11 +472,19 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
+        if (angular.equals(newValue, oldValue)) {
+            return;
+        }
+
         getTableData();
         getDailyStats();
     }, true);
 
     $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
+        if (newValue === oldValue) {
+            return;
+        }
+
         getTableData();
     });
 

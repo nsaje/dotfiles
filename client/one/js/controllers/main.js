@@ -307,6 +307,10 @@ oneApp.controller('MainCtrl',
     };
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
+        if (angular.equals(newValue, oldValue)) {
+            return;
+        }
+
         $scope.loadSidebarInProgress = true;
         api.navData.list().then(function (accounts) {
             $scope.refreshNavData(accounts);
