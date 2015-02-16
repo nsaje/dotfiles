@@ -11,12 +11,15 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
 
     function init(user) {
         if ('zemauth.filter_sources' in user.permissions) {
+            var filteredSourcesLocation = $location.search().filtered_sources;
+            if (filteredSourcesLocation) {
             // replace the array in place
-            Array.prototype.splice.apply(filteredSources, [0, filteredSources.length].concat($location.search('filtered_sources') || []));
+                Array.prototype.splice.apply(filteredSources, [0, filteredSources.length].concat(filteredSourcesLocation.split(',')));
+            }
         }
 
         if ('zemauth.view_archived_entities' in user.permissions) {
-            showArchived = $location.search('show_archived') || false;
+            showArchived = $location.search().show_archived || false;
         }
     }
 
@@ -24,7 +27,7 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         if (filteredSources.length > 0) {
             $location.search('filtered_sources', filteredSources.join(','));
         } else {
-            $location.search('filtered_sources');
+            $location.search('filtered_sources', null);
         }
     }
 

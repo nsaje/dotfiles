@@ -46,9 +46,13 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.selectedTotals = true;
             $scope.totals.checked = true;
         }
-
-        $location.search('source_ids', $scope.selectedSourceIds.join(','));
-        $location.search('source_totals', $scope.selectedTotals ? 1 : null);
+        if ($scope.selectedSourceIds.length > 0) {
+            $location.search('source_ids', $scope.selectedSourceIds.join(','));
+            $location.search('source_totals', $scope.selectedTotals ? 1 : null);
+        } else {
+            $location.search('source_ids', null);
+            $location.search('source_totals', null);
+        }
     };
 
     $scope.updateSelectedRowsData = function () {
@@ -75,7 +79,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     };
 
     $scope.removeFilteredSelectedSources = function () {
-        if (zemFilterService.isSourceFilterOn()){
+        if (zemFilterService.isSourceFilterOn()) {
             $scope.selectedSourceIds = $scope.selectedSourceIds.filter(function (sourceId) {
                 return zemFilterService.isSourceFiltered(sourceId);
             });
@@ -496,7 +500,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
         $scope.removeFilteredSelectedSources();
         $scope.updateSelectedRowsLocation();
-        $scope.selectRows();
 
         getTableData();
         getDailyStats();

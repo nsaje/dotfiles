@@ -53,8 +53,13 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             $scope.totals.checked = true;
         }
 
-        $location.search('source_ids', $scope.selectedSourceIds.join(','));
-        $location.search('source_totals', $scope.selectedTotals ? 1 : null);
+        if ($scope.selectedSourceIds.length > 0) {
+            $location.search('source_ids', $scope.selectedSourceIds.join(','));
+            $location.search('source_totals', $scope.selectedTotals ? 1 : null);
+        } else {
+            $location.search('source_ids', null);
+            $location.search('source_totals', null);
+        }
 
         $scope.setAdGroupData('sourceIds', $scope.selectedSourceIds);
         $scope.setAdGroupData('sourceTotals', $scope.selectedTotals);
@@ -72,7 +77,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     };
 
     $scope.removeFilteredSelectedSources = function () {
-        if (zemFilterService.isSourceFilterOn()){
+        if (zemFilterService.isSourceFilterOn()) {
             $scope.selectedSourceIds = $scope.selectedSourceIds.filter(function (sourceId) {
                 return zemFilterService.isSourceFiltered(sourceId);
             });
@@ -562,7 +567,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
         $scope.removeFilteredSelectedSources();
         $scope.updateSelectedRowsLocation();
-        $scope.selectRows();
 
         getTableData();
         getDailyStats();
