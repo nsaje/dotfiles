@@ -114,6 +114,7 @@ if TESTING:
     }
 
     EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+    Z3_API_URL = ''
 
 LOGGING = {
     'version': 1,

@@ -1015,9 +1015,6 @@ class Article(models.Model):
 
     content_ad = models.OneToOneField(ContentAd, on_delete=models.PROTECT, null=True)
 
-    image_id = models.CharField(max_length=256, editable=False, null=True)
-    batch = models.ForeignKey(UploadBatch, on_delete=models.PROTECT, null=True)
-
     class Meta:
         get_latest_by = 'created_dt'
 

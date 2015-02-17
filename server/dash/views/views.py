@@ -31,6 +31,7 @@ from dash import models
 from dash import constants
 from dash import api
 from dash import forms
+from dash import image
 
 logger = logging.getLogger(__name__)
 
@@ -505,7 +506,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_source_settings_put')
     def put(self, request, ad_group_id, source_id):
         if not request.user.has_perm('zemauth.set_ad_group_source_settings'):
-            return exc.ForbiddenError(message='Not allowed')
+            raise exc.ForbiddenError(message='Not allowed')
 
         resource = json.loads(request.body)
 
@@ -551,7 +552,9 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.new_content_ads_tab'):
-            return exc.ForbiddenError(message='Not allowed')
+            raise exc.ForbiddenError(message='Not allowed')
+
+        helpers.get_ad_group(request.user, ad_group_id)
 
         form = forms.AdGroupAdsPlusUploadForm(request.POST, request.FILES)
 
@@ -578,7 +581,7 @@ class ProcessUploadThread(BaseThread):
         batch = models.UploadBatch.objects.create(name=self.batch_name)
 
         for ad in self.content_ads:
-            image_id = self._process_image(ad.get('image_url'), ad.get('crop_areas'))
+            image_id = image.process_image(ad.get('image_url'), ad.get('crop_areas'))
             content_ad = models.ContentAd.objects.create(
                 image_id=image_id,
                 batch=batch
@@ -590,50 +593,6 @@ class ProcessUploadThread(BaseThread):
                 ad_group_id=self.ad_group_id,
                 content_ad=content_ad
             )
-
-    def _process_image(self, url, crop_areas):
-        if not url:
-            return
-
-        payload = {'image-url': url}
-
-        crops_dict = self._get_crops_dict(crop_areas)
-        if crops_dict is not None:
-            payload['crops'] = crops_dict
-
-        data = json.dumps(payload)
-        request = urllib2.Request(settings.Z3_API_URL, data)
-
-        response = urllib2.urlopen(request)
-
-        return json.loads(response.read())['key']
-
-    def _get_crops_dict(self, crop_areas):
-        if crop_areas is None:
-            return
-
-        return {
-            'square': {
-                'tl': {
-                    'x': crop_areas[0][0][0],
-                    'y': crop_areas[0][0][1]
-                },
-                'br': {
-                    'x': crop_areas[0][1][0],
-                    'y': crop_areas[0][1][1]
-                }
-            },
-            'landscape': {
-                'tl': {
-                    'x': crop_areas[1][0][0],
-                    'y': crop_areas[1][0][1]
-                },
-                'br': {
-                    'x': crop_areas[1][1][0],
-                    'y': crop_areas[1][1][1]
-                }
-            }
-        }
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')
