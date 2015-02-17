@@ -575,13 +575,21 @@ class ProcessUploadThread(BaseThread):
 
     @transaction.atomic()
     def run(self):
-        try:
-            for ad in self.content_ads:
-                image_id = self._process_image(ad.get('image_url'), ad.get('crop_areas'))
-                # TODO save creative to DB
+        batch = models.UploadBatch.objects.create(name=self.batch_name)
 
-        except Exception:
-            logger.exception('Exception in ProcessUploadThread')
+        for ad in self.content_ads:
+            image_id = self._process_image(ad.get('image_url'), ad.get('crop_areas'))
+            content_ad = models.ContentAd.objects.create(
+                image_id=image_id,
+                batch=batch
+            )
+
+            models.Article.objects.create(
+                url=ad.get('url'),
+                title=ad.get('title'),
+                ad_group_id=self.ad_group_id,
+                content_ad=content_ad
+            )
 
     def _process_image(self, url, crop_areas):
         if not url:
