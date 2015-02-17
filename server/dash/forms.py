@@ -296,7 +296,7 @@ class UserForm(forms.Form):
     )
 
 
-class AdGroupAdsPlusUpload(forms.Form):
+class AdGroupAdsPlusUploadForm(forms.Form):
     content_ads = forms.FileField(
         error_messages={'required': 'Please choose a file to upload.'}
     )
@@ -325,10 +325,10 @@ class AdGroupAdsPlusUpload(forms.Form):
         return crop_list
 
     def _validate_and_transform_row(self, row):
-        if row['url'] is None or row['title'] is None:
+        if not len(row['url']) or not len(row['title']):
             raise forms.ValidationError('File is not formatted correctly.')
 
-        if row['crop_areas'] is not None:
+        if len(row['crop_areas']):
             row['crop_areas'] = self._parse_crop_areas(row['crop_areas'])
 
         return row

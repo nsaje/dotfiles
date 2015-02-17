@@ -553,7 +553,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.new_content_ads_tab'):
             return exc.ForbiddenError(message='Not allowed')
 
-        form = forms.AdGroupAdsPlusUpload(request.POST, request.FILES)
+        form = forms.AdGroupAdsPlusUploadForm(request.POST, request.FILES)
 
         if not form.is_valid():
             raise exc.ValidationError(errors=form.errors)
