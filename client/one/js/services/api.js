@@ -1806,8 +1806,13 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         this.list = function () {
             var deferred = $q.defer();
             var url = '/api/sources/';
+            var config = {
+                params: {}
+            };
 
-            $http.get(url).
+            addShowArchived(config.params);
+
+            $http.get(url, config).
                 success(function (data, status) {
                     deferred.resolve(data);
                 }).

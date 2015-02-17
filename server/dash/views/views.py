@@ -349,7 +349,12 @@ class AdGroupState(api_common.BaseApiView):
 class AvailableSources(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'available_sources_get')
     def get(self, request):
+        show_archived = request.GET.get('show_archived') == 'true' and\
+            request.user.has_perm('zemauth.view_archived_entities')
         ad_groups = models.AdGroup.objects.all().filter_by_user(request.user)
+        if not show_archived:
+            ad_groups = ad_groups.exclude_archived()
+
         sources = []
         for source in models.Source.objects.filter(adgroupsource__ad_group__in=ad_groups).distinct():
             sources.append({

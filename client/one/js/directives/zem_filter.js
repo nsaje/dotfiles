@@ -18,11 +18,11 @@ oneApp.directive('zemFilter', ['config', function(config) {
             $scope.availableSources = [];
             $scope.config = config;
 
-            $scope.showArchivedSelected = zemFilterService.getShowArchived();
-
-            api.availableSources.list().then(function (data) {
-                $scope.availableSources = data.data.sources;
-            });
+            $scope.refreshAvailableSources = function () {
+                api.availableSources.list().then(function (data) {
+                    $scope.availableSources = data.data.sources;
+                });
+            };
 
             $scope.addFilteredSource = function (sourceId) {
                 if (!sourceId || sourceId === '') {
@@ -63,6 +63,14 @@ oneApp.directive('zemFilter', ['config', function(config) {
                 }
             });
 
+            $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
+                if (newValue === oldValue) {
+                    return;
+                }
+
+                $scope.refreshAvailableSources();
+            });
+
             $scope.$on('$locationChangeStart', function() {
                 // ui-bootstrap registers a listener on $locationChangeSuccess event
                 // which closes the dropdown when the event triggers.
@@ -78,6 +86,13 @@ oneApp.directive('zemFilter', ['config', function(config) {
                 // Upon state change we do want to close the dropdown.
                 $scope.isFilterOpen = false;
             });
+
+            $scope.init = function () {
+                $scope.showArchivedSelected = zemFilterService.getShowArchived();
+                $scope.refreshAvailableSources();
+            };
+
+            $scope.init();
         }]
     };
 }]);
