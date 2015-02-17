@@ -351,12 +351,18 @@ class AvailableSources(api_common.BaseApiView):
     def get(self, request):
         show_archived = request.GET.get('show_archived') == 'true' and\
             request.user.has_perm('zemauth.view_archived_entities')
-        ad_groups = models.AdGroup.objects.all().filter_by_user(request.user)
+        user_ad_groups = models.AdGroup.objects.all().filter_by_user(request.user)
         if not show_archived:
-            ad_groups = ad_groups.exclude_archived()
+            user_ad_groups = user_ad_groups.exclude_archived()
+
+        demo_to_real_ad_groups = []
+        for d2r in models.DemoAdGroupRealAdGroup.objects.filter(demo_ad_group__in=user_ad_groups):
+            demo_to_real_ad_groups.append(d2r.real_ad_group)
+
+        ad_groups = list(user_ad_groups) + demo_to_real_ad_groups
 
         sources = []
-        for source in models.Source.objects.filter(adgroupsource__ad_group__in=ad_groups).distinct():
+        for source in models.Source.objects.filter(adgroupsource__ad_group__in=[ag.id for ag in ad_groups]).distinct():
             sources.append({
                 'id': str(source.id),
                 'name': source.name,
