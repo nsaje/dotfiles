@@ -843,8 +843,8 @@ class UpsertReportsTestCase(test.TestCase):
 
 class ArticleReconciliationTestCase(test.TestCase):
 
-    def _mocked_create(url, title, ad_group):
-        dashmodels.Article(url=url, title=title, ad_group=ad_group).save()
+    def _mocked_create(url, title, ad_group, content_ad=None):
+        dashmodels.Article(url=url, title=title, ad_group=ad_group, content_ad=content_ad).save()
         raise IntegrityError
 
     @patch('dash.models.Article.objects.create', _mocked_create)
