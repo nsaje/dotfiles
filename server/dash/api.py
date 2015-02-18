@@ -112,7 +112,7 @@ def reconcile_articles(ad_group, raw_articles):
 
         raw_article['url'] = clean_url(url)[0]
 
-    articles = list(models.Article.objects.filter(ad_group=ad_group))
+    articles = list(models.Article.objects.filter(ad_group=ad_group, content_ad__isnull=True))
 
     url_title_article = {}
     for article in articles:

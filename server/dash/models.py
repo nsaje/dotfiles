@@ -993,19 +993,30 @@ class AdGroupSourceSettings(models.Model):
         return result
 
 
-class Article(models.Model):
+class UploadBatch(models.Model):
+    name = models.CharField(max_length=1024)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
+    class Meta:
+        get_latest_by = 'created_dt'
+
+
+class ContentAd(models.Model):
+    image_id = models.CharField(max_length=256, editable=False, null=True)
+    batch = models.ForeignKey(UploadBatch, on_delete=models.PROTECT, null=True)
+
+
+class Article(models.Model):
     url = models.CharField(max_length=2048, editable=False)
     title = models.CharField(max_length=256, editable=False)
 
     ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT)
-
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
-    class Meta:
+    content_ad = models.OneToOneField(ContentAd, on_delete=models.PROTECT, null=True)
 
+    class Meta:
         get_latest_by = 'created_dt'
-        unique_together = ('ad_group', 'url', 'title')
 
 
 class CampaignBudgetSettings(models.Model):
