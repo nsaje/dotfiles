@@ -7,7 +7,7 @@ from django.conf import settings
 
 from . import constants
 
-ACTION_TIMEOUT_MINUTES = 90
+ACTION_TIMEOUT_MINUTES = 30
 
 
 def _due_date_default():
