@@ -30,7 +30,7 @@ class AdGroupAdsPlusUploadTest(TestCase):
         MockProcessUploadThread.return_value.start.return_value = None
 
         response = self._get_client().post(
-            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}))
+            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}), follow=True)
 
         self.assertEqual(response.status_code, 200)
         self.assertTrue(MockProcessUploadThread.return_value.start.called)
@@ -41,13 +41,13 @@ class AdGroupAdsPlusUploadTest(TestCase):
         MockAdGroupAdsPlusUploadForm.return_value.errors = []
 
         response = self._get_client().post(
-            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}))
+            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}), follow=True)
 
         self.assertEqual(response.status_code, 400)
 
     def test_permission(self):
         response = self._get_client(superuser=False).post(
-            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}))
+            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}), follow=True)
 
         self.assertEqual(response.status_code, 403)
 
@@ -55,7 +55,9 @@ class AdGroupAdsPlusUploadTest(TestCase):
         non_existent_ad_group_id = 0
 
         response = self._get_client().post(
-            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': non_existent_ad_group_id}))
+            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': non_existent_ad_group_id}),
+            follow=True
+        )
 
         self.assertEqual(response.status_code, 404)
 
