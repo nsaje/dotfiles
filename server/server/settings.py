@@ -156,6 +156,7 @@ LOGGING = {
 
 if TESTING:
     LOGGING = None
+    GOOGLE_OAUTH_ENABLED = False
     PAGER_DUTY_ENABLED = False
     USE_HASH_CACHE = False
     CACHES = {

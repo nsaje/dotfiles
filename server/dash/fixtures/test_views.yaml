@@ -2,7 +2,7 @@
 
 -   fields:
         date_joined: '2014-06-16T12:21:29'
-        email: superuser@zemanta.com
+        email: superuser@test.com
         first_name: ''
         groups: []
         is_active: true
@@ -18,7 +18,7 @@
 
 -   fields:
         date_joined: '2014-06-16T12:21:29'
-        email: user@zemanta.com
+        email: user@test.com
         first_name: ''
         groups: []
         is_active: true
