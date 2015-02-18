@@ -128,14 +128,14 @@ def reconcile_articles(ad_group, raw_articles):
                 # the query in case IntegrityError happens.
                 # See https://docs.djangoproject.com/en/1.7/topics/db/transactions/#controlling-transactions-explicitly
                 with transaction.atomic():
-                    article = models.Article.objects.create(ad_group=ad_group, url=url, title=title)
+                    article = models.Article.objects.create(ad_group=ad_group, url=url, title=title, content_ad=None)
             except IntegrityError:
                 logger.info(
                     u'Integrity error upon inserting article: title = {title}, url = {url}, ad group id = {ad_group_id}. '
                     u'Using existing article.'.
                     format(title=title, url=url, ad_group_id=ad_group.id)
                 )
-                article = models.Article.objects.get(ad_group=ad_group, url=url, title=title)
+                article = models.Article.objects.get(ad_group=ad_group, url=url, title=title, content_ad=None)
             url_title_article[(url, title)] = article
         reconciled_articles.append(article)
 
