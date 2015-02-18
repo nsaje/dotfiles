@@ -104,18 +104,6 @@ DEFAULT_FROM_EMAIL = ''
 
 from localsettings import *
 
-if TESTING:
-    PAGER_DUTY_ENABLED = False
-    USE_HASH_CACHE = False
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
-        }
-    }
-
-    EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
-    Z3_API_URL = ''
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -165,6 +153,19 @@ LOGGING = {
         }
     }
 }
+
+if TESTING:
+    LOGGING = None
+    PAGER_DUTY_ENABLED = False
+    USE_HASH_CACHE = False
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
+        }
+    }
+
+    EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+    Z3_API_URL = ''
 
 
 # App specific
