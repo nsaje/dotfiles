@@ -317,6 +317,60 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         };
     }
 
+    function AdGroupAdsPlusTable() {
+        function convertFromApi(row) {
+            row.title_link = {
+                text: row.title,
+                url: row.url !== '' ? row.url : null
+            };
+
+            row.url_link = {
+                text: row.url !== '' ? row.url : 'N/A',
+                url: row.url !== '' ? row.url : null
+            };
+
+            convertGoals(row, row);
+
+            return row;
+        }
+
+        this.get = function (id, page, size, order) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + id + '/contentadsplus/table/';
+            var config = {
+                params: {}
+            };
+
+            if (page) {
+                config.params.page = page;
+            }
+
+            if (size) {
+                config.params.size = size;
+            }
+
+            if (order) {
+                config.params.order = order;
+            }
+
+            addFilteredSources(config.params);
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    var resource;
+                    if (data && data.data) {
+                        data.data.rows = data.data.rows.map(convertFromApi);
+                        deferred.resolve(data.data);
+                    }
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function AdGroupSync() {
         this.get = function (id) {
             var deferred = $q.defer();
@@ -1866,6 +1920,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         sourcesTable: new SourcesTable(),
         adGroupSourcesTable: new AdGroupSourcesTable(),
         adGroupAdsTable: new AdGroupAdsTable(),
+        adGroupAdsPlusTable: new AdGroupAdsPlusTable(),
         adGroupSync: new AdGroupSync(),
         adGroupArchive: new AdGroupArchive(),
         campaignAdGroups: new CampaignAdGroups(),

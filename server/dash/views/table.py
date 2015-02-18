@@ -2,15 +2,16 @@ import reports.api
 import actionlog.sync
 import pytz
 
-import utils.pagination
-
 from django.core import urlresolvers
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 from dash.views import helpers
 from dash import models
 from dash import budget
 from dash import constants
 from dash import api
+
+import utils.pagination
 from utils import api_common
 from utils import statsd_helper
 from utils import exc
@@ -916,6 +917,72 @@ class AdGroupAdsTable(api_common.BaseApiView):
             },
             'incomplete_postclick_metrics': incomplete_postclick_metrics
         })
+
+
+class AdGroupAdsPlusTable(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_table_get')
+    def get(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.new_content_ads_tab'):
+            raise exc.ForbiddenError(message='Not allowed')
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+
+        page = request.GET.get('page')
+        order = request.GET.get('order') or '-upload_time'
+        size = request.GET.get('size')
+        size = max(min(int(size or 5), 50), 1)
+
+        content_ads = models.ContentAd.objects.filter(
+            article__ad_group=ad_group).order_by(self._transform_order(order))
+
+        page_content_ads, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
+            content_ads, page, size)
+
+        rows = self._get_rows(page_content_ads)
+
+        if ad_group in models.AdGroup.demo_objects.all():
+            for i, row in enumerate(rows):
+                row['url'] = 'http://www.example.com/{}/{}'.format(ad_group.name, i)
+
+        return self.create_api_response({
+            'rows': rows,
+            'order': order,
+            'pagination': {
+                'currentPage': current_page,
+                'numPages': num_pages,
+                'count': count,
+                'startIndex': start_index,
+                'endIndex': end_index,
+                'size': size
+            }
+        })
+
+    def _get_rows(self, content_ads):
+        rows = []
+        for content_ad in content_ads:
+            rows.append({
+                'title': content_ad.article.title,
+                'url': content_ad.article.url,
+                'batch_name': content_ad.batch.name,
+                'upload_time': content_ad.batch.created_dt
+            })
+
+        return rows
+
+    def _transform_order(self, order):
+        desc = False
+        if order.startswith('-'):
+            order = order.replace('-', '')
+            desc = True
+
+        db_order = {
+            'title': 'article__title',
+            'url': 'article__url',
+            'batch_name': 'batch__name',
+            'upload_time': 'batch__created_dt'
+        }[order]
+
+        return '{}{}'.format('-' if desc else '', db_order)
 
 
 class CampaignAdGroupsTable(api_common.BaseApiView):
