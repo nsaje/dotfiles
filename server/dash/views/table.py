@@ -964,7 +964,11 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 'title': content_ad.article.title,
                 'url': content_ad.article.url,
                 'batch_name': content_ad.batch.name,
-                'upload_time': content_ad.batch.created_dt
+                'upload_time': content_ad.batch.created_dt,
+                'image_urls': {
+                    'landscape': 'http://www.codetapper.com/assets/chris_sorrell/spitting_image_stallone.png',
+                    'square': 'http://rs66.pbsrc.com/albums/h279/GrizzlyAdman/RMNP%20Wildlife/BigBullMoose.jpg~c200'
+                }
             })
 
         return rows

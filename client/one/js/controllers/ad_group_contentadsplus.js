@@ -12,13 +12,22 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
 
     $scope.columns = [
         {
+            name: '',
+            field: 'image_urls',
+            unselectable: true,
+            checked: true,
+            type: 'image',
+            shown: true,
+            totalRow: false,
+            titleField: 'title',
+            order: false,
+        }, {
             name: 'Title',
             field: 'title_link',
             unselectable: true,
             checked: true,
             type: 'linkText',
             shown: true,
-            hasTotalsLabel: true,
             totalRow: false,
             help: 'The creative title/headline of a content ad.',
             extraTdCss: 'trimmed title',
@@ -42,7 +51,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
         }, {
             name: 'Upload Time (EST)',
             field: 'upload_time',
-            checked: false,
+            checked: true,
             type: 'datetime',
             shown: true,
             help: 'The time when the content ad was uploaded.',

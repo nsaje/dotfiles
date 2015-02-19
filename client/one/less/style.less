@@ -1791,6 +1791,15 @@ a.help-popover:visited {
         .text-center {
             text-align: center;
         }
+
+        &.image {
+            padding: 0;
+
+            img {
+                height: 34px;
+                width: 34px;
+            }
+        }
     }
 
     &.table-hover tbody tr:hover td,
@@ -2223,5 +2232,12 @@ zem-editable-currency-field {
                 width: 100%;
             }
         }
+    }
+}
+
+.thumbnail-popover {
+    margin: 0 -5px;
+    img {
+        height: 75px;
     }
 }
