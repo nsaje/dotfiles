@@ -58,7 +58,7 @@ class ContentAdApprovalStatus(ConstantBase):
     APPROVED = 2
     REJECTED = 3
 
-    _VALUED = {
+    _VALUES = {
         PENDING: 'Pending',
         APPROVED: 'Approved',
         REJECTED: 'Rejected'
