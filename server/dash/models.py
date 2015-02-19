@@ -165,6 +165,9 @@ class Account(models.Model):
             ).distinct()
 
         def filter_by_sources(self, sources):
+            if set(self) == set(Source.objects.all()):
+                return self
+
             return self.filter(
                 models.Q(id__in=Account.demo_objects.all()) |
                 models.Q(campaign__adgroup__adgroupsource__source__id__in=sources)
@@ -285,6 +288,9 @@ class Campaign(models.Model, PermissionMixin):
             ).distinct()
 
         def filter_by_sources(self, sources):
+            if set(self) == set(Source.objects.all()):
+                return self
+
             return self.filter(
                 models.Q(id__in=Campaign.demo_objects.all()) |
                 models.Q(adgroup__adgroupsource__source__in=sources)
@@ -691,6 +697,9 @@ class AdGroup(models.Model):
             ).distinct()
 
         def filter_by_sources(self, sources):
+            if set(self) == set(Source.objects.all()):
+                return self
+
             return self.filter(
                 models.Q(id__in=AdGroup.demo_objects.all()) |
                 models.Q(adgroupsource__source__in=sources)
