@@ -1005,6 +1005,28 @@ class ContentAd(models.Model):
     image_id = models.CharField(max_length=256, editable=False, null=True)
     batch = models.ForeignKey(UploadBatch, on_delete=models.PROTECT, null=True)
 
+    sources = models.ManyToManyField(Source, through='ContentAdSource')
+    bidder_id = models.IntegerField(null=True)
+
+
+class ContentAdSource(models.Model):
+    source = models.ForeignKey(Source, on_delete=models.PROTECT)
+    content_ad = models.ForeignKey(ContentAd, on_delete=models.PROTECT)
+
+    approval_status = models.IntegerField(
+        default=constants.ContentAdApprovalStatus.PENDING,
+        choices=constants.ContentAdApprovalStatus.get_choices()
+    )
+    state = models.IntegerField(
+        default=constants.ContentAdSourceState.INACTIVE,
+        choices=constants.ContentAdSourceState.get_choices()
+    )
+
+    source_creative_id = models.CharField(max_length=50, null=True)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+
 
 class Article(models.Model):
     url = models.CharField(max_length=2048, editable=False)
