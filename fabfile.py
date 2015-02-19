@@ -28,9 +28,13 @@ import yaml
 # > fab staging:all deploy:server
 # > fab production:all deploy:client
 # > fab staging:ovh01,ovh02 deploy:client
+# > fab production:all cleanup:keep=5
 
 
-APPS = {'server': 'django', 'client': 'angular'}
+APPS = {
+    'server': 'django',
+    'client': 'angular',
+}
 
 STAGING_USER = 'one'
 PRODUCTION_USER = STAGING_USER
@@ -182,8 +186,33 @@ def revert(*args):
         elif app_type == 'angular':
             execute(switchback_angular_app, app)
 
+@task
+def cleanup(**kvargs):
+    env.hosts = selected_hosts
+    execute(do_cleanup, kvargs)
+
 
 # COMMON STUFF
+@parallel
+def do_cleanup(params):
+    keep = int(params.get('keep', 2))
+    live = dict()
+    candidates = dict()
+    for folder in ['~/apps/', '~/.virtualenvs/']:
+        with cd(folder):
+            for app in APPS.keys():
+                live[app] = run('readlink {0}'.format(app), quiet=True)
+                candidates[app] = sorted(run('ls -d {0}-2* 2>/dev/null| grep -v "{1}"| grep -v "\.tar"'.format(app, os.path.basename(live[app])), quiet=True).split())
+
+            rm = set()
+            for app in APPS.keys():
+                for inst in candidates[app][keep:]:
+                    rm.add(inst)
+
+            if len(rm) > 0:
+                run("rm -fr {0}".format("* ".join(rm)))
+
+
 def clone_code(params):
     timestamp = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')
     repo_name = os.path.basename(GIT_REPOSITORY)
