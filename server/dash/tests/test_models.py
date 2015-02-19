@@ -66,22 +66,22 @@ class AdGroupSourceTest(TestCase):
 
     def test_get_tracking_ids(self):
         ad_group = models.AdGroup.objects.create(campaign_id=1, modified_by_id=1)
-        source = models.Source.objects.create()
+        source_type = models.SourceType.objects.create()
+        source = models.Source.objects.create(source_type=source_type)
         ad_group_source = models.AdGroupSource.objects.create(ad_group=ad_group, source=source)
         self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=%s&_z1_msid=%s' % (ad_group.id, ''))
 
-        source_type = source.source_type
         source_type.type = constants.SourceType.ZEMANTA
         source_type.save()
-        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=zemanta&_z1_msid=zemanta')
+        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=%s&_z1_msid={sourceDomain}' % ad_group.id)
 
         source_type.type = constants.SourceType.B1
         source_type.save()
-        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=b1&_z1_msid=b1')
+        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=%s&_z1_msid={sourceDomain}' % ad_group.id)
 
         source_type.type = 'not' + constants.SourceType.ZEMANTA + 'and not ' + constants.SourceType.B1
         source_type.save()
-        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid={sourceDomain}&_z1_msid={sourceDomain}')
+        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=%s&_z1_msid=%s' % (ad_group.id, ''))
 
 
 def created_by_patch(sender, instance, **kwargs):
