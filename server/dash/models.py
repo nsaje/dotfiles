@@ -165,7 +165,7 @@ class Account(models.Model):
             ).distinct()
 
         def filter_by_sources(self, sources):
-            if set(self) == set(Source.objects.all()):
+            if set(sources) == set(Source.objects.all()):
                 return self
 
             return self.filter(
@@ -288,7 +288,7 @@ class Campaign(models.Model, PermissionMixin):
             ).distinct()
 
         def filter_by_sources(self, sources):
-            if set(self) == set(Source.objects.all()):
+            if set(sources) == set(Source.objects.all()):
                 return self
 
             return self.filter(
@@ -697,7 +697,7 @@ class AdGroup(models.Model):
             ).distinct()
 
         def filter_by_sources(self, sources):
-            if set(self) == set(Source.objects.all()):
+            if set(sources) == set(Source.objects.all()):
                 return self
 
             return self.filter(
