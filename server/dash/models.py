@@ -718,20 +718,15 @@ class AdGroupSource(models.Model):
     last_successful_sync_dt = models.DateTimeField(blank=True, null=True)
 
     def get_tracking_ids(self):
+        msid = ''
         if self.source.source_type and\
            self.source.source_type.type in [constants.SourceType.ZEMANTA, constants.SourceType.B1]:
             msid = '{sourceDomain}'
         elif self.source.tracking_slug is not None and self.source.tracking_slug != '':
             msid = self.source.tracking_slug
 
-        tracking_ids = collections.OrderedDict(
-            [
-                ('_z1_adgid', self.ad_group.id),
-                ('_z1_msid', msid)
-            ]
-        )
+        return '_z1_adgid=%s&_z1_msid=%s' % (self.ad_group.id, msid)
 
-        return tracking_ids
 
     def save(self, *args, **kwargs):
         super(AdGroupSource, self).save(*args, **kwargs)
@@ -844,6 +839,10 @@ class AdGroupSettings(SettingsBase):
             value = str(value)
 
         return value
+
+    def get_tracking_ids(self):
+        # Strip the first '?' as we don't want to send it as a part of query string
+        return self.tracking_code.lstrip('?')
 
 
 class AdGroupSourceState(models.Model):
