@@ -516,6 +516,13 @@ class Source(models.Model):
         unique=True,
         verbose_name='Tracking slug'
     )
+    bidder_slug = models.CharField(
+        max_length=50,
+        null=True,
+        blank=False,
+        unique=True,
+        verbose_name='B1 Slug'
+    )
     maintenance = models.BooleanField(default=True)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
