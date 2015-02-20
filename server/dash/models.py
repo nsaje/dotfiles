@@ -1021,6 +1021,10 @@ class ContentAdSource(models.Model):
         default=constants.ContentAdSourceState.INACTIVE,
         choices=constants.ContentAdSourceState.get_choices()
     )
+    source_state = models.IntegerField(
+        default=constants.ContentAdSourceState.INACTIVE,
+        choices=constants.ContentAdSourceState.get_choices()
+    )
 
     source_creative_id = models.CharField(max_length=50, null=True)
 
