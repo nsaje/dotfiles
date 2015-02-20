@@ -7,7 +7,7 @@
       <div ng-switch-when="true">
         <div ng-repeat="cat in categoryColumns">
           <div class="category-name">{{ cat.name }}</div>
-          <li ng-repeat="col in cat.columns | filter:!col.unselectable">
+          <li ng-repeat="col in cat.columns | filter:filterColumns">
             <div class="checkbox">
               <label>
                 <input type="checkbox" ng-model="col.checked">
@@ -20,7 +20,7 @@
        </div>
       </div>
       <div ng-switch-default>
-        <li ng-repeat="col in columns | filter:!col.unselectable">
+        <li ng-repeat="col in columns | filter:filterColumns">
           <div class="checkbox">
             <label>
               <input type="checkbox" ng-model="col.checked">

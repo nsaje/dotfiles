@@ -49,6 +49,14 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             orderField: 'url',
             initialOrder: 'asc'
         }, {
+            name: 'Submission Status',
+            field: 'submission_status',
+            checked: true,
+            type: 'submissionStatus',
+            shown: true,
+            help: 'Current submission status.',
+            totalRow: false,
+        }, {
             name: 'Upload Time (EST)',
             field: 'upload_time',
             checked: true,

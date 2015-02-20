@@ -31,6 +31,12 @@
                                 <span ng-switch-when="image">
                                     <img src="{{row[col.field].square}}" popover-append-to-body="true" popover-trigger="mouseenter" zem-html-popover="'thumbnailPopover.html'" popover-placement="left">
                                 </span>
+                                <span ng-switch-when="submissionStatus">
+                                    <div class="submission-status" popover-append-to-body="true" popover-trigger="mouseenter" zem-html-popover="'submissionStatusPopover.html'" popover-placement="top">
+                                        <span ng-if="row[col.field].approved" class="cell approved">{{row[col.field].approved.length}}</span>
+                                        <span ng-if="row[col.field].rejected" class="cell rejected">{{row[col.field].rejected.length}}</span>
+                                    </div>
+                                </span>
                                 <span ng-switch-when="currency">
                                     <span class="non-editable-currency-field" ng-if="!isFieldEditable(row.editable_fields, col.field)" ng-class="{'currency-3': col.fractionSize === 3}">
                                         <span ng-if="col.settingsField" popover-append-to-body="true" popover-trigger="mouseenter" popover-html-unsafe="{{ getSettingsFieldMessage(row) }}" popover-placement="right">
@@ -204,5 +210,24 @@
     <div class="thumbnail-popover">
         <img src="{{ row[col.field].landscape }}">
         <img src="{{ row[col.field].square }}">
+    </div>
+</script>
+
+<script id="submissionStatusPopover.html" type="text/ng-template">
+    <div class="submission-status-popover">
+        <div class="submission-status-popover-table">
+            <div class="submission-status-popover-row" ng-repeat="item in row[col.field].rejected">
+                <span class="submission-status-popover-cell">{{item.name}}:&nbsp</span>
+                <span class="submission-status-popover-cell bold">{{item.text}}</span>
+            </div>
+            <div ng-if="row[col.field].approved && row[col.field].rejected" class="submission-status-popover-row">
+                <span class="submission-status-popover-cell divider"><hr></span>
+                <span class="submission-status-popover-cell divider"><hr></span>
+            </div>
+            <div class="submission-status-popover-row" ng-repeat="item in row[col.field].approved">
+                <span class="submission-status-popover-cell">{{item.name}}:&nbsp</span>
+                <span class="submission-status-popover-cell">{{item.text}}</span>
+            </div>
+        </div>
     </div>
 </script>

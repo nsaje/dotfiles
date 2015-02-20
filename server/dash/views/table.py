@@ -968,6 +968,17 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 'image_urls': {
                     'landscape': 'http://www.codetapper.com/assets/chris_sorrell/spitting_image_stallone.png',
                     'square': 'http://rs66.pbsrc.com/albums/h279/GrizzlyAdman/RMNP%20Wildlife/BigBullMoose.jpg~c200'
+                },
+                'submission_status': {
+                    'approved': [
+                        {'name': 'Yahoo', 'text': 'Approved / Running'},
+                        {'name': 'Adiant', 'text': 'Approved / Running'},
+                        {'name': 'Outbrain', 'text': 'Approved / Running'}
+                    ],
+                    'rejected': [
+                        {'name': 'AdsNative', 'text': 'Rejected (title too Buzzfeedy)'},
+                        {'name': 'Gravity', 'text': 'Rejected'}
+                    ]
                 }
             })
 
