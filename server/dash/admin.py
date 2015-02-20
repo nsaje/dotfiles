@@ -498,6 +498,17 @@ class OutbrainAccountAdmin(admin.ModelAdmin):
     )
 
 
+class ContentAdSourceAdmin(admin.ModelAdmin):
+    list_display = (
+        'content_ad',
+        'source',
+        'submission_status',
+        'source_content_ad_id',
+        'created_dt',
+        'modified_dt'
+    )
+
+
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
 admin.site.register(models.CampaignSettings, CampaignSettingsAdmin)
@@ -511,3 +522,4 @@ admin.site.register(models.SourceType, SourceTypeAdmin)
 admin.site.register(models.DefaultSourceSettings, DefaultSourceSettingsAdmin)
 admin.site.register(models.DemoAdGroupRealAdGroup, DemoAdGroupRealAdGroupAdmin)
 admin.site.register(models.OutbrainAccount, OutbrainAccountAdmin)
+admin.site.register(models.ContentAdSource, ContentAdSourceAdmin)

@@ -53,6 +53,28 @@ class AdTargetCountry(ConstantBase):
     }
 
 
+class ContentAdApprovalStatus(ConstantBase):
+    PENDING = 1
+    APPROVED = 2
+    REJECTED = 3
+
+    _VALUES = {
+        PENDING: 'Pending',
+        APPROVED: 'Approved',
+        REJECTED: 'Rejected'
+    }
+
+
+class ContentAdSourceState(ConstantBase):
+    ACTIVE = 1
+    INACTIVE = 2
+
+    _VALUES = {
+        ACTIVE: 'Enabled',
+        INACTIVE: 'Paused'
+    }
+
+
 class IABCategory(ConstantBase):
     IAB1 = 'IAB1'
     IAB2 = 'IAB2'
