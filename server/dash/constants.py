@@ -70,7 +70,7 @@ class ContentAdSourceState(ConstantBase):
     INACTIVE = 2
 
     _VALUES = {
-        ACTIVE: 'Enabled',
+        ACTIVE: 'Running',
         INACTIVE: 'Paused'
     }
 

@@ -2248,17 +2248,19 @@ zem-editable-currency-field {
     display: table;
     width: 60px;
     cursor: default;
+    border-collapse: separate;
 
     .cell {
         display: table-cell;
         text-align: center;
-        color: #fff;
+        color: #0ab00a;
+        font-size: 10px;
+        padding: 1px;
+        border: 1px solid #0ab00a;
 
         &.approved {
             background-color: #0ab00a;
-        }
-        &.rejected {
-            background-color: #e00;
+            color: #fff;
         }
 
         &:first-child {

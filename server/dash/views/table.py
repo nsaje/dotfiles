@@ -957,9 +957,21 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             }
         })
 
+    def _get_submission_status_item(self, content_ad_source):
+        return {
+            'name': content_ad_source.source.name,
+            'status': content_ad_source.submission_status,
+            'text': '{} / {}'.format(
+                constants.ContentAdApprovalStatus.get_text(content_ad_source.submission_status),
+                constants.ContentAdSourceState.get_text(content_ad_source.source_state))
+        }
+
     def _get_rows(self, content_ads):
         rows = []
         for content_ad in content_ads:
+            submission_status = [self._get_submission_status_item(content_ad_source)
+                                 for content_ad_source in content_ad.contentadsource_set.all()]
+
             rows.append({
                 'title': content_ad.article.title,
                 'url': content_ad.article.url,
@@ -969,17 +981,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                     'landscape': 'http://www.codetapper.com/assets/chris_sorrell/spitting_image_stallone.png',
                     'square': 'http://rs66.pbsrc.com/albums/h279/GrizzlyAdman/RMNP%20Wildlife/BigBullMoose.jpg~c200'
                 },
-                'submission_status': {
-                    'approved': [
-                        {'name': 'Yahoo', 'text': 'Approved / Running'},
-                        {'name': 'Adiant', 'text': 'Approved / Running'},
-                        {'name': 'Outbrain', 'text': 'Approved / Running'}
-                    ],
-                    'rejected': [
-                        {'name': 'AdsNative', 'text': 'Rejected (title too Buzzfeedy)'},
-                        {'name': 'Gravity', 'text': 'Rejected'}
-                    ]
-                }
+                'submission_status': submission_status
             })
 
         return rows
