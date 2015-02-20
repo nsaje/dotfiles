@@ -502,8 +502,8 @@ def _combine_tracking_codes(ad_group_source, ad_group_settings):
     ad_group_source_tracking_ids = ad_group_source.get_tracking_ids()
 
     if ad_group_settings_tracking_ids:
-        # Ad group source tracking code is always first
-        return ad_group_source_tracking_ids + '&' + ad_group_settings_tracking_ids
+        # Ad group settings tracking code is always first
+        return ad_group_settings_tracking_ids + '&' + ad_group_source_tracking_ids
 
     return ad_group_source_tracking_ids
 

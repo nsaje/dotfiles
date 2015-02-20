@@ -563,9 +563,9 @@ class ActionLogApiTestCase(TestCase):
         ad_group_settings.tracking_code = '?param&a=1&b=2'
         ad_group_settings.save()
 
-        # first ad group source tracking codes and then ad group settings tracking codes
-        self.assertEqual(api._combine_tracking_codes(ad_group_source, ad_group_settings), '_z1_adgid=%s&_z1_msid=%s&param&a=1&b=2' %
-                         (ad_group_source.ad_group.id, ad_group_source.source.source_type.type))
+        # first ad group settings tracking codes and then ad group source tracking codes
+        self.assertEqual(api._combine_tracking_codes(ad_group_source, ad_group_settings), 'param&a=1&b=2&_z1_adgid=%s&_z1_msid=%s' %
+                         (ad_group_source.ad_group.id. ad_group_source.source.source_type.type))
 
 
 class ActionLogApiCancelExpiredTestCase(TestCase):

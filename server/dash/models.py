@@ -718,12 +718,13 @@ class AdGroupSource(models.Model):
     last_successful_sync_dt = models.DateTimeField(blank=True, null=True)
 
     def get_tracking_ids(self):
-        msid = ''
         if self.source.source_type and\
            self.source.source_type.type in [constants.SourceType.ZEMANTA, constants.SourceType.B1]:
             msid = '{sourceDomain}'
         elif self.source.tracking_slug is not None and self.source.tracking_slug != '':
             msid = self.source.tracking_slug
+        else:
+            msid = ''
 
         return '_z1_adgid=%s&_z1_msid=%s' % (self.ad_group.id, msid)
 
