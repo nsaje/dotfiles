@@ -8,12 +8,20 @@ class Action(ConstantBase):
     SET_PROPERTY = 'set_property'
     CREATE_CAMPAIGN = 'create_campaign'
 
+    GET_CONTENT_AD_STATUS = 'get_content_ad_status'
+    INSERT_CONTENT_AD = 'insert_content_ad'
+    UPDATE_CONTENT_AD = 'update_content_ad'
+
     _VALUES = {
         FETCH_REPORTS: 'Get reports',
         FETCH_CAMPAIGN_STATUS: 'Get campaign status',
         SET_CAMPAIGN_STATE: 'Set campaign state',
         SET_PROPERTY: 'Set property',
         CREATE_CAMPAIGN: 'Create campaign',
+
+        GET_CONTENT_AD_STATUS: 'get_content_ad_status',
+        INSERT_CONTENT_AD: 'Insert content_ad',
+        UPDATE_CONTENT_AD: 'Update content_ad'
     }
 
 

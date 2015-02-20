@@ -1047,6 +1047,12 @@ class ContentAdSource(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
 
+    def get_source_key(self):
+        if self.source.source_type and self.source.source_type.type == constants.SourceType.B1:
+            return [self.source_content_ad_id, self.source.bidder_slug]
+        else:
+            return self.source_content_ad_id
+
 
 class Article(models.Model):
     url = models.CharField(max_length=2048, editable=False)
