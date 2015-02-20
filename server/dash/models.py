@@ -165,6 +165,9 @@ class Account(models.Model):
             ).distinct()
 
         def filter_by_sources(self, sources):
+            if set(sources) == set(Source.objects.all()):
+                return self
+
             return self.filter(
                 models.Q(id__in=Account.demo_objects.all()) |
                 models.Q(campaign__adgroup__adgroupsource__source__id__in=sources)
@@ -285,6 +288,9 @@ class Campaign(models.Model, PermissionMixin):
             ).distinct()
 
         def filter_by_sources(self, sources):
+            if set(sources) == set(Source.objects.all()):
+                return self
+
             return self.filter(
                 models.Q(id__in=Campaign.demo_objects.all()) |
                 models.Q(adgroup__adgroupsource__source__in=sources)
@@ -691,6 +697,9 @@ class AdGroup(models.Model):
             ).distinct()
 
         def filter_by_sources(self, sources):
+            if set(sources) == set(Source.objects.all()):
+                return self
+
             return self.filter(
                 models.Q(id__in=AdGroup.demo_objects.all()) |
                 models.Q(adgroupsource__source__in=sources)
@@ -723,15 +732,11 @@ class AdGroupSource(models.Model):
             msid = '{sourceDomain}'
         elif self.source.tracking_slug is not None and self.source.tracking_slug != '':
             msid = self.source.tracking_slug
+        else:
+            msid = ''
 
-        tracking_ids = collections.OrderedDict(
-            [
-                ('_z1_adgid', self.ad_group.id),
-                ('_z1_msid', msid)
-            ]
-        )
+        return '_z1_adgid=%s&_z1_msid=%s' % (self.ad_group.id, msid)
 
-        return tracking_ids
 
     def save(self, *args, **kwargs):
         super(AdGroupSource, self).save(*args, **kwargs)
@@ -844,6 +849,10 @@ class AdGroupSettings(SettingsBase):
             value = str(value)
 
         return value
+
+    def get_tracking_ids(self):
+        # Strip the first '?' as we don't want to send it as a part of query string
+        return self.tracking_code.lstrip('?')
 
 
 class AdGroupSourceState(models.Model):
@@ -1004,6 +1013,32 @@ class UploadBatch(models.Model):
 class ContentAd(models.Model):
     image_id = models.CharField(max_length=256, editable=False, null=True)
     batch = models.ForeignKey(UploadBatch, on_delete=models.PROTECT, null=True)
+
+    sources = models.ManyToManyField(Source, through='ContentAdSource')
+    bidder_id = models.IntegerField(null=True)
+
+
+class ContentAdSource(models.Model):
+    source = models.ForeignKey(Source, on_delete=models.PROTECT)
+    content_ad = models.ForeignKey(ContentAd, on_delete=models.PROTECT)
+
+    submission_status = models.IntegerField(
+        default=constants.ContentAdApprovalStatus.PENDING,
+        choices=constants.ContentAdApprovalStatus.get_choices()
+    )
+    state = models.IntegerField(
+        default=constants.ContentAdSourceState.INACTIVE,
+        choices=constants.ContentAdSourceState.get_choices()
+    )
+    source_state = models.IntegerField(
+        default=constants.ContentAdSourceState.INACTIVE,
+        choices=constants.ContentAdSourceState.get_choices()
+    )
+
+    source_content_ad_id = models.CharField(max_length=50, null=True)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
 
 
 class Article(models.Model):
