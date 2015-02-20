@@ -493,6 +493,7 @@ class ActionLogApiTestCase(TestCase):
         ).exists())
 
         ad_group_source = dashmodels.AdGroupSource.objects.get(id=5)
+        ad_group_settings = api._get_ad_group_settings(ad_group_source.ad_group)
 
         api.create_campaign(ad_group_source, name)
         action = models.ActionLog.objects.get(
@@ -512,7 +513,7 @@ class ActionLogApiTestCase(TestCase):
             'args': {
                 'name': name,
                 'extra': {
-                    'tracking_code': urllib.urlencode(ad_group_source.get_tracking_ids()),
+                    'tracking_code': api._combine_tracking_codes(ad_group_source, ad_group_settings),
                     'target_regions': [],
                     'target_devices': []
                 },
@@ -522,6 +523,7 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action.payload, payload)
 
         ad_group_source_extra = dashmodels.AdGroupSource.objects.get(id=8)
+        ad_group_settings = api._get_ad_group_settings(ad_group_source_extra.ad_group)
 
         api.create_campaign(ad_group_source_extra, name)
         action = models.ActionLog.objects.get(
@@ -542,7 +544,7 @@ class ActionLogApiTestCase(TestCase):
                 'name': name,
                 'extra': {
                     'iab_category': 'IAB24',
-                    'tracking_code': urllib.urlencode(ad_group_source_extra.get_tracking_ids()),
+                    'tracking_code':  api._combine_tracking_codes(ad_group_source_extra, ad_group_settings),
                     'target_devices': ['desktop', 'mobile'],
                     'target_regions': ['UK', 'US', 'CA']
                 },
@@ -550,6 +552,20 @@ class ActionLogApiTestCase(TestCase):
             'callback_url': callback
         }
         self.assertEqual(action.payload, payload)
+
+    def test_combine_tracking_codes(self):
+        ad_group_source = dashmodels.AdGroupSource.objects.get(id=5)
+        ad_group_settings = api._get_ad_group_settings(ad_group_source.ad_group)
+
+        self.assertEqual(api._combine_tracking_codes(ad_group_source, ad_group_settings), '_z1_adgid=%s&_z1_msid=%s' %
+                         (ad_group_source.ad_group.id, ad_group_source.source.source_type.type))
+
+        ad_group_settings.tracking_code = '?param&a=1&b=2'
+        ad_group_settings.save()
+
+        # first ad group settings tracking codes and then ad group source tracking codes
+        self.assertEqual(api._combine_tracking_codes(ad_group_source, ad_group_settings), 'param&a=1&b=2&_z1_adgid=%s&_z1_msid=%s' %
+                         (ad_group_source.ad_group.id, ad_group_source.source.source_type.type))
 
 
 class ActionLogApiCancelExpiredTestCase(TestCase):

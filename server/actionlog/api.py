@@ -497,6 +497,17 @@ def _init_set_campaign_property(ad_group_source, prop, value, order):
         raise InsertActionException, ei, tb
 
 
+def _combine_tracking_codes(ad_group_source, ad_group_settings):
+    ad_group_settings_tracking_ids = ad_group_settings.get_tracking_ids()
+    ad_group_source_tracking_ids = ad_group_source.get_tracking_ids()
+
+    if ad_group_settings_tracking_ids:
+        # Ad group settings tracking code is always first
+        return ad_group_settings_tracking_ids + '&' + ad_group_source_tracking_ids
+
+    return ad_group_source_tracking_ids
+
+
 def _init_create_campaign(ad_group_source, name):
     if ad_group_source.source_campaign_key:
         msg = 'Unable to create external campaign for AdGroupSource with existing connection'\
@@ -557,29 +568,14 @@ def _init_create_campaign(ad_group_source, name):
                 if 'create_campaign' in params:
                     payload['args']['extra'].update(params['create_campaign'])
 
-            tracking_code = ''
             if ad_group_settings:
-                if ad_group_settings.tracking_code:
-                    # Strip the first '?' as we don't want to send it as a part of query string
-                    tracking_code = ad_group_settings.tracking_code.lstrip('?')
-
                 payload['args']['extra'].update({
                     'target_devices': ad_group_settings.target_devices,
                     'target_regions': ad_group_settings.target_regions,
                 })
 
-            # Using OrderedDict because order should remain the same (only append additional tracking codes)
-            tracking_code_dict = collections.OrderedDict(urlparse.parse_qsl(tracking_code))
-            for k, v in ad_group_source.get_tracking_ids().items():
-                if k not in tracking_code_dict:
-                    tracking_code_dict[k] = v
-
             payload['args']['extra'].update({
-                # Unquoting is necessary because we want to forward parameters as they were
-                # entered, even if they contain characters such as '{', '}' or ' ' because
-                # they should get handeled by supply source (urllib.urlencode() quotes by
-                # default)
-                'tracking_code': urllib.unquote(urllib.urlencode(tracking_code_dict)),
+                'tracking_code': _combine_tracking_codes(ad_group_source, ad_group_settings)
             })
 
             if campaign_settings:
@@ -591,6 +587,7 @@ def _init_create_campaign(ad_group_source, name):
             action.save()
 
             return action
+
 
     except Exception as e:
         logger.exception('An exception occurred while initializing create_campaign action.')
