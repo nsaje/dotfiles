@@ -502,8 +502,8 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
     list_display = (
         'content_ad',
         'source',
-        'approval_status',
-        'source_creative_id',
+        'submission_status',
+        'source_content_ad_id',
         'created_dt',
         'modified_dt'
     )

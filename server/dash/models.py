@@ -1013,7 +1013,7 @@ class ContentAdSource(models.Model):
     source = models.ForeignKey(Source, on_delete=models.PROTECT)
     content_ad = models.ForeignKey(ContentAd, on_delete=models.PROTECT)
 
-    approval_status = models.IntegerField(
+    submission_status = models.IntegerField(
         default=constants.ContentAdApprovalStatus.PENDING,
         choices=constants.ContentAdApprovalStatus.get_choices()
     )
@@ -1026,7 +1026,7 @@ class ContentAdSource(models.Model):
         choices=constants.ContentAdSourceState.get_choices()
     )
 
-    source_creative_id = models.CharField(max_length=50, null=True)
+    source_content_ad_id = models.CharField(max_length=50, null=True)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
