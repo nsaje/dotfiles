@@ -15,7 +15,7 @@ def process_image(url, crop_areas):
         payload['crops'] = crops_dict
 
     data = json.dumps(payload)
-    response = urllib2.urlopen(settings.Z3_API_URL, data)
+    response = urllib2.urlopen(settings.Z3_API_IMAGE_URL, data)
 
     return json.loads(response.read())['key']
 

@@ -8,7 +8,7 @@ from dash import image
 
 
 @override_settings(
-    Z3_API_URL='http://z3.example.com',
+    Z3_API_IMAGE_URL='http://z3.example.com',
 )
 class ImageTest(TestCase):
     @patch('utils.pagerduty_helper.urllib2.urlopen')
@@ -24,7 +24,7 @@ class ImageTest(TestCase):
         self.assertEqual(image.process_image(url, crop_areas), image_id)
 
         mock_urlopen.assert_called_with(
-            settings.Z3_API_URL,
+            settings.Z3_API_IMAGE_URL,
             json.dumps({
                 'crops': {
                     'square': {

@@ -166,7 +166,8 @@ if TESTING:
     }
 
     EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
-    Z3_API_URL = ''
+    Z3_API_IMAGE_URL = ''
+    Z3_API_THUMBNAIL_URL = ''
 
 
 # App specific
