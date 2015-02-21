@@ -74,6 +74,16 @@ def set_ad_group_source_settings(changes, ad_group_source, order=None):
         conf=changes,
         order=order
     )
+
+    similar_waiting_actions = models.ActionLog.objects.filter(ad_group_source=ad_group_source,
+								state=constants.ActionState.WAITING,
+								action_type=constants.ActionType.AUTOMATIC,
+								action=constants.Action.SET_CAMPAIGN_STATE)
+
+    if len(similar_waiting_actions) >= 2:
+        logger.info("There are two or more similar actions in progress. Action (%s) will be called from their callback.", action.id)
+        return
+
     if action.action_type == constants.ActionType.AUTOMATIC:
         zwei_actions.send_multiple([action])
 

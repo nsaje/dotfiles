@@ -15,6 +15,7 @@ from django.conf import settings
 from utils import request_signer
 from actionlog import models as actionlogmodels
 from actionlog import constants as actionlogconstants
+from actionlog import zwei_actions as zwei_actions
 from dash import api as dashapi
 
 import actionlog.sync
@@ -131,8 +132,20 @@ def _process_zwei_response(action, data):
     elif action.action == actionlogconstants.Action.FETCH_CAMPAIGN_STATUS:
         dashapi.update_ad_group_source_state(action.ad_group_source, data['data'])
     elif action.action == actionlogconstants.Action.SET_CAMPAIGN_STATE:
+        ad_group_source = action.ad_group_source
         conf = action.payload['args']['conf']
-        dashapi.update_ad_group_source_state(action.ad_group_source, conf)
+        dashapi.update_ad_group_source_state(ad_group_source, conf)
+
+        try:
+            similar_waiting_action = actionlogmodels.ActionLog.objects.filter(ad_group_source=ad_group_source,
+                                                            state=actionlogconstants.ActionState.WAITING,
+                                                            action_type=actionlogconstants.ActionType.AUTOMATIC).earliest('created_dt')
+
+            zwei_actions.send_multiple([similar_waiting_action])
+        except actionlogmodels.ActionLog.DoesNotExist:
+            logger.debug("No similar waiting action. No need for Zwei API call.")
+            pass
+
     elif action.action == actionlogconstants.Action.CREATE_CAMPAIGN:
         dashapi.update_campaign_key(action.ad_group_source, data['data']['source_campaign_key'])
 
