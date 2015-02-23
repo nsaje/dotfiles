@@ -1005,6 +1005,10 @@ class AdGroupSourceSettings(models.Model):
 class UploadBatch(models.Model):
     name = models.CharField(max_length=1024)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    status = models.IntegerField(
+        default=constants.UploadBatchStatus.IN_PROGRESS,
+        choices=constants.UploadBatchStatus.get_choices()
+    )
 
     class Meta:
         get_latest_by = 'created_dt'
@@ -1016,6 +1020,13 @@ class ContentAd(models.Model):
 
     sources = models.ManyToManyField(Source, through='ContentAdSource')
     bidder_id = models.IntegerField(null=True)
+
+    def get_image_url(self, width, height):
+        return '/'.join([
+            settings.Z3_API_THUMBNAIL_URL,
+            self.image_id,
+            '{}x{}.jpg'.format(width, height)
+        ])
 
 
 class ContentAdSource(models.Model):

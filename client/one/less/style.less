@@ -30,6 +30,15 @@
     -webkit-border-bottom-right-radius: @radius;
 }
 
+.border-left-radius(@radius) {
+    border-top-left-radius: @radius;
+    -moz-border-top-left-radius: @radius;
+    -webkit-border-top-left-radius: @radius;
+    border-bottom-left-radius: @radius;
+    -moz-border-bottom-left-radius: @radius;
+    -webkit-border-bottom-left-radius: @radius;
+}
+
 // HTML
 
 body {
@@ -1791,6 +1800,15 @@ a.help-popover:visited {
         .text-center {
             text-align: center;
         }
+
+        &.image {
+            padding: 0;
+
+            img {
+                height: 34px;
+                width: 34px;
+            }
+        }
     }
 
     &.table-hover tbody tr:hover td,
@@ -2219,9 +2237,77 @@ zem-editable-currency-field {
                 float: right;
             }
 
+            .loader {
+                margin: 7px 0;
+            }
+
             .btn {
                 width: 100%;
             }
+
+            .control-label.error {
+                font-size: 12px;
+                font-weight: 400;
+            }
         }
+    }
+}
+
+.table .submission-status {
+    display: table;
+    width: 60px;
+    cursor: default;
+    border-collapse: separate;
+
+    .cell {
+        display: table-cell;
+        text-align: center;
+        color: #0ab00a;
+        font-size: 10px;
+        padding: 1px;
+        border: 1px solid #0ab00a;
+
+        &.approved {
+            background-color: #0ab00a;
+            color: #fff;
+        }
+
+        &:first-child {
+            .border-left-radius(2px);
+        }
+
+        &:last-child {
+            .border-right-radius(2px);
+        }
+    }
+}
+
+.submission-status-popover {
+    .submission-status-popover-table {
+        display: table;
+        font-size: 11px;
+
+        .submission-status-popover-row {
+            display: table-row;
+
+            .submission-status-popover-cell {
+                display: table-cell;
+
+                &.bold {
+                    font-weight: 600;
+                }
+
+                hr {
+                    margin: 3px 0;
+                }
+            }
+        }
+    }
+}
+
+.thumbnail-popover {
+    margin: 0 -5px;
+    img {
+        height: 60px;
     }
 }

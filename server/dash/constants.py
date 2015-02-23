@@ -70,7 +70,7 @@ class ContentAdSourceState(ConstantBase):
     INACTIVE = 2
 
     _VALUES = {
-        ACTIVE: 'Enabled',
+        ACTIVE: 'Running',
         INACTIVE: 'Paused'
     }
 
@@ -171,4 +171,16 @@ class SourceType(ConstantBase):
         YAHOO: 'Yahoo',
         ZEMANTA: 'Zemanta',
         B1: 'B1'
+    }
+
+
+class UploadBatchStatus(ConstantBase):
+    DONE = 1
+    FAILED = 2
+    IN_PROGRESS = 3
+
+    _VALUES = {
+        DONE: 'Done',
+        FAILED: 'Failed',
+        IN_PROGRESS: 'In progress'
     }

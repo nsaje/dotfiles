@@ -72,6 +72,16 @@ var constants = {
         CAMPAIGNS: 'campaigns',
         ACCOUNTS: 'accounts',
         ALL_ACCOUNTS: 'all_accounts'
+    },
+    contentAdApprovalStatus: {
+        PENDING: 1,
+        APPROVED: 2,
+        REJECTED: 3
+    },
+    uploadBatchStatus: {
+        DONE: 1,
+        FAILED: 2,
+        IN_PROGRESS: 3
     }
 };
 

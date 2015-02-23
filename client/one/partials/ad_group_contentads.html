@@ -67,6 +67,6 @@
             <span class="current-rows">{{ pagination.startIndex}} - {{ pagination.endIndex }} of {{ pagination.count }}</span>
             <div ng-disabled="pagination.currentPage == pagination.numPages" class="btn btn-default" ng-click="loadPage(pagination.currentPage + 1)"><img ng-src="{{ config.static_url }}/one/img/arrow-next.svg"></div>
             <div ng-disabled="pagination.currentPage == pagination.numPages" class="btn btn-default" ng-click="loadPage(pagination.numPages)"><img ng-src="{{ config.static_url }}/one/img/arrow-last.svg"></div>
-        </pagination>
+        </div>
     </div>
 </div>

@@ -24,6 +24,10 @@ oneApp.directive('zemCustomTableCols', ['config', function(config) {
             $scope.categoryColumns = [];
             $scope.hasCategories = false;
 
+            $scope.filterColumns = function(col) {
+                return !col.unselectable;
+            };
+
             $scope.$watch('categories', function (newValue, oldValue) {
                 if(newValue) {
                     $scope.categoryColumns = [];
