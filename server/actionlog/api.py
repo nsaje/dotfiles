@@ -80,8 +80,8 @@ def set_ad_group_source_settings(changes, ad_group_source, order=None):
 								action_type=constants.ActionType.AUTOMATIC,
 								action=constants.Action.SET_CAMPAIGN_STATE)
 
-    if len(similar_waiting_actions) >= 2:
-        logger.info("There are two or more similar actions in progress. Action (%s) will be called from their callback.", action.id)
+    if len(similar_waiting_actions) > 1:
+        logger.info("There is more then 1 similar action in progress. Action (%s) will be called from it's callback.", action.id)
         return
 
     if action.action_type == constants.ActionType.AUTOMATIC:

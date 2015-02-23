@@ -137,9 +137,10 @@ def _process_zwei_response(action, data):
         dashapi.update_ad_group_source_state(ad_group_source, conf)
 
         try:
-            similar_waiting_action = actionlogmodels.ActionLog.objects.filter(ad_group_source=ad_group_source,
-                                                            state=actionlogconstants.ActionState.WAITING,
-                                                            action_type=actionlogconstants.ActionType.AUTOMATIC).earliest('created_dt')
+            similar_waiting_action = actionlogmodels.ActionLog.objects.filter(
+                                    ad_group_source=ad_group_source,
+                                    state=actionlogconstants.ActionState.WAITING,
+                                    action_type=actionlogconstants.ActionType.AUTOMATIC).earliest('created_dt')
 
             zwei_actions.send_multiple([similar_waiting_action])
         except actionlogmodels.ActionLog.DoesNotExist:
