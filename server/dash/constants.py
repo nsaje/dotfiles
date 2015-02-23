@@ -172,3 +172,15 @@ class SourceType(ConstantBase):
         ZEMANTA: 'Zemanta',
         B1: 'B1'
     }
+
+
+class UploadBatchStatus(ConstantBase):
+    DONE = 1
+    FAILED = 2
+    IN_PROGRESS = 3
+
+    _VALUES = {
+        DONE: 'Done',
+        FAILED: 'Failed',
+        IN_PROGRESS: 'In progress'
+    }

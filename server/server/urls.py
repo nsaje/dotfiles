@@ -119,6 +119,10 @@ urlpatterns += patterns(
         login_required(dash.views.table.AdGroupAdsPlusTable.as_view()),
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload/status/(?P<batch_id>\d+)/',
+        login_required(dash.views.views.AdGroupAdsPlusUploadStatus.as_view()), name='ad_group_ads_plus_upload_status'
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload/',
         login_required(dash.views.views.AdGroupAdsPlusUpload.as_view()), name='ad_group_ads_plus_upload'
     ),

@@ -77,6 +77,11 @@ var constants = {
         PENDING: 1,
         APPROVED: 2,
         REJECTED: 3
+    },
+    uploadBatchStatus: {
+        DONE: 1,
+        FAILED: 2,
+        IN_PROGRESS: 3
     }
 };
 

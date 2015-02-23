@@ -1830,7 +1830,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
     function AdGroupAdsPlusUpload() {
         this.upload = function(adGroupId, file, batchName) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/'
+            var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/';
 
             var formData = new FormData();
             formData.append('content_ads', file);
@@ -1840,12 +1840,30 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 transformRequest: angular.identity,
                 headers: {'Content-Type': undefined}
             }).success(function(data) {
-                deferred.resolve(data);
+                deferred.resolve(data.data.batch_id);
             }).error(function(data) {
                 deferred.reject(convertValidationErrorsFromApi(data.data.errors));
             });
  
             return deferred.promise;
+        };
+
+        this.checkStatus = function(adGroupId, batchId) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/status/' + batchId + '/';
+
+            $http.get(url).
+                success(function(data) {
+                    deferred.resolve({
+                        status: data.data.status,
+                        errors: convertValidationErrorsFromApi(data.data.errors)
+                    });
+                }).error(function(data) {
+                    deferred.reject(data);
+                });
+ 
+            return deferred.promise;
+            
         };
 
         function convertValidationErrorsFromApi(errors) {

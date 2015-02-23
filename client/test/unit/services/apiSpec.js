@@ -26,14 +26,14 @@ describe('api', function() {
             it('uploads given file to a correct url', function() {
                 var resolvedData;
 
-                $httpBackend.expectPOST(url).respond(200, 'resolve');
+                $httpBackend.expectPOST(url).respond(200, {data: {batch_id: 123}});
 
                 api.adGroupAdsPlusUpload.upload(adGroupId, file, batchName).then(function(data) {
                     resolvedData = data;
                 });
                 $httpBackend.flush();
 
-                expect(resolvedData).toBe('resolve');
+                expect(resolvedData).toBe(123);
             });
 
             it('returns converted validation errors on failure', function() {

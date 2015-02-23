@@ -89,6 +89,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             scope: $scope
         });
 
+        modalInstance.result.then(function () {
+            getTableData();
+        });
+
         return modalInstance;
     };
 
@@ -125,10 +129,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
         api.adGroupAdsPlusTable.get($state.params.id, $scope.pagination.currentPage, $scope.size, $scope.order).then(
             function (data) {
                 $scope.rows = data.rows;
-                $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
-                $scope.isSyncRecent = data.is_sync_recent;
-                $scope.isSyncInProgress = data.is_sync_in_progress;
-
                 $scope.order = data.order;
                 $scope.pagination = data.pagination;
             },

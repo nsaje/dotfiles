@@ -1005,6 +1005,10 @@ class AdGroupSourceSettings(models.Model):
 class UploadBatch(models.Model):
     name = models.CharField(max_length=1024)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    status = models.IntegerField(
+        default=constants.UploadBatchStatus.IN_PROGRESS,
+        choices=constants.UploadBatchStatus.get_choices()
+    )
 
     class Meta:
         get_latest_by = 'created_dt'
