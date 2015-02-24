@@ -594,10 +594,12 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
         except models.UploadBatch.DoesNotExist():
             raise exc.MissingDataException()
 
-        return self.create_api_response({
-            'status': batch.status,
-            'errors': {'content_ads': ['An error occured while processing file.']}
-        })
+        response_data = {'status': batch.status}
+
+        if batch.status == constants.UploadBatchStatus.FAILED:
+            response_data['errors'] = {'content_ads': ['An error occured while processing file.']}
+
+        return self.create_api_response(response_data)
 
 
 class ProcessUploadThread(BaseThread):
