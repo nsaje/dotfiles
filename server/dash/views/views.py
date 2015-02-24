@@ -607,32 +607,33 @@ class ProcessUploadThread(BaseThread):
         self.ad_group_id = ad_group_id
         super(ProcessUploadThread, self).__init__(*args, **kwargs)
 
-    @transaction.atomic()
     def run(self):
         try:
-            for ad in self.content_ads:
-                image_id = image.process_image(ad.get('image_url'), ad.get('crop_areas'))
-                content_ad = models.ContentAd.objects.create(
-                    image_id=image_id,
-                    batch=self.batch
-                )
+            # ensure content ads are only commited to DB
+            # if all of them are successfully processed
+            with transaction.atomic():
+                for ad in self.content_ads:
+                    image_id = image.process_image(ad.get('image_url'), ad.get('crop_areas'))
+                    content_ad = models.ContentAd.objects.create(
+                        image_id=image_id,
+                        batch=self.batch
+                    )
 
-                models.Article.objects.create(
-                    url=ad.get('url'),
-                    title=ad.get('title'),
-                    ad_group_id=self.ad_group_id,
-                    content_ad=content_ad
-                )
+                    models.Article.objects.create(
+                        url=ad.get('url'),
+                        title=ad.get('title'),
+                        ad_group_id=self.ad_group_id,
+                        content_ad=content_ad
+                    )
 
-                self.batch.status = constants.UploadBatchStatus.DONE
-                self.batch.save()
-        except image.ImageProcessingException:
-            self.batch.status = constants.UploadBatchStatus.FAILED
-            self.batch.save()
+                    self.batch.status = constants.UploadBatchStatus.DONE
+                    self.batch.save()
         except Exception as e:
             self.batch.status = constants.UploadBatchStatus.FAILED
             self.batch.save()
-            raise e
+
+            if not isinstance(e, image.ImageProcessingException):
+                raise e
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')
