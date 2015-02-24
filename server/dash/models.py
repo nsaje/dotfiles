@@ -516,6 +516,13 @@ class Source(models.Model):
         unique=True,
         verbose_name='Tracking slug'
     )
+    bidder_slug = models.CharField(
+        max_length=50,
+        null=True,
+        blank=False,
+        unique=True,
+        verbose_name='B1 Slug'
+    )
     maintenance = models.BooleanField(default=True)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
@@ -1019,7 +1026,13 @@ class ContentAd(models.Model):
     batch = models.ForeignKey(UploadBatch, on_delete=models.PROTECT, null=True)
 
     sources = models.ManyToManyField(Source, through='ContentAdSource')
-    bidder_id = models.IntegerField(null=True)
+
+    def get_image_url(self, width=None, height=None):
+        params = [settings.Z3_API_THUMBNAIL_URL, self.image_id]
+        if width and height:
+            params.append('{}x{}.jpg'.format(width, height))
+
+        return '/'.join(params)
 
     def get_image_url(self, width, height):
         return '/'.join([
@@ -1038,10 +1051,12 @@ class ContentAdSource(models.Model):
         choices=constants.ContentAdApprovalStatus.get_choices()
     )
     state = models.IntegerField(
+        null=True,
         default=constants.ContentAdSourceState.INACTIVE,
         choices=constants.ContentAdSourceState.get_choices()
     )
     source_state = models.IntegerField(
+        null=True,
         default=constants.ContentAdSourceState.INACTIVE,
         choices=constants.ContentAdSourceState.get_choices()
     )
@@ -1050,6 +1065,12 @@ class ContentAdSource(models.Model):
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+
+    def get_source_key(self):
+        if self.source.source_type and self.source.source_type.type == constants.SourceType.B1:
+            return [self.source_content_ad_id, self.source.bidder_slug]
+        else:
+            return self.source_content_ad_id
 
 
 class Article(models.Model):
