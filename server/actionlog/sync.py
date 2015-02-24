@@ -3,7 +3,8 @@ import dash.models
 import actionlog.models
 import actionlog.constants
 
-from actionlog.api import _init_fetch_status, _init_fetch_reports, InsertActionException
+from actionlog.api import _init_fetch_status, _init_fetch_reports
+from actionlog.exceptions import InsertActionException
 from utils.command_helpers import last_n_days
 from . import zwei_actions
 

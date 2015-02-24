@@ -9,33 +9,65 @@ from django.db import transaction
 
 import actionlog.api
 import actionlog.constants
+import actionlog.exceptions
 import actionlog.models
+import actionlog.zwei_actions
+
 import dash.constants
 import dash.models
 
 logger = logging.getLogger(__name__)
 
 
-def _init_get_content_ad_status_action(content_ad_source):
-    pass
+def init_insert_content_ad_action(content_ad_source):
+    args = {
+        'content_ad_key': content_ad_source.get_source_key(),
+        'content_ad': {
+            'title': content_ad_source.content_ad.article.title,
+            'url': content_ad_source.content_ad.article.url,
+            'image': content_ad_source.content_ad.image_id,
+        }
+    }
+
+    action = _create_action(
+        content_ad_source,
+        actionlog.constants.Action.INSERT_CONTENT_AD,
+        args
+    )
+
+    actionlog.zwei_actions.send(action)
 
 
-def _init_insert_content_ad_action(content_ad_source):
-    pass
+def init_update_content_ad_action(content_ad_source):
+    args = {
+        'content_ad_key': content_ad_source.get_source_key(),
+        'content_ad': {
+            'state': content_ad_source.state,
+        }
+    }
 
+    action = _create_action(
+        content_ad_source,
+        actionlog.constants.Action.UPDATE_CONTENT_AD,
+        args
+    )
 
-def _init_update_content_ad_action(content_ad_sources):
-    pass
+    actionlog.zwei_actions.send(action)
 
 
 def _create_action(content_ad_source, action, args={}):
+    msg = "create upsert_content_ad action started: content_ad_source.id: {}".format(
+        content_ad_source.id,
+    )
+    logger.info(msg)
+
     ad_group_source = dash.models.AdGroupSource.objects.get(
-        ad_group_id=content_ad_source.content_ad.ad_group,
+        ad_group_id=content_ad_source.content_ad.article.ad_group,
         source=content_ad_source.source,
     )
 
     action = actionlog.models.ActionLog.objects.create(
-        action=actionlog.constants.GET_CONTENT_AD_STATUS,
+        action=action,
         action_type=actionlog.constants.ActionType.AUTOMATIC,
         ad_group_source=ad_group_source,
     )
@@ -45,10 +77,6 @@ def _create_action(content_ad_source, action, args={}):
             callback = urlparse.urljoin(
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
-
-            args.update({
-                'content_ad_key': content_ad_source.get_source_key()
-            })
 
             payload = {
                 'action': action.action,
@@ -72,4 +100,4 @@ def _create_action(content_ad_source, action, args={}):
         action.save()
 
         et, ei, tb = sys.exc_info()
-        raise actionlog.api.InsertActionException, ei, tb
+        raise actionlog.exceptions.InsertActionException, ei, tb

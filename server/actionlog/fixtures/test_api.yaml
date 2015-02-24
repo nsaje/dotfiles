@@ -516,3 +516,56 @@
         params: '{"create_campaign": {"exclusive_blog_ids": [123456]}}'
     model: dash.defaultsourcesettings
     pk: 1
+
+# test article
+
+-   fields:
+        url: 'http://testurl.com'
+        title: 'Test Article'
+        ad_group: 1
+        content_ad: 1
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.article
+    pk: 1
+
+# test uploadbatch
+
+-   fields:
+        name: 'batch 1'
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.uploadbatch
+    pk: 1
+
+# test contentad
+
+-   fields:
+        image_id: '123456789'
+        batch: 1
+    model: dash.contentad
+    pk: 1
+
+# test contentadsource
+
+-   fields:
+        source: 1
+        content_ad: 1
+        submission_status: 1
+        state: NULL
+        source_state: NULL
+        source_content_ad_id: NULL
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 1
+
+-   fields:
+        source: 2
+        content_ad: 1
+        submission_status: 2
+        state: 2
+        source_state: 2
+        source_content_ad_id: '123456789'
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 2

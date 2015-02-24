@@ -1022,7 +1022,6 @@ class ContentAd(models.Model):
     batch = models.ForeignKey(UploadBatch, on_delete=models.PROTECT, null=True)
 
     sources = models.ManyToManyField(Source, through='ContentAdSource')
-    bidder_id = models.IntegerField(null=True)
 
 
 class ContentAdSource(models.Model):
@@ -1034,10 +1033,12 @@ class ContentAdSource(models.Model):
         choices=constants.ContentAdApprovalStatus.get_choices()
     )
     state = models.IntegerField(
+        null=True,
         default=constants.ContentAdSourceState.INACTIVE,
         choices=constants.ContentAdSourceState.get_choices()
     )
     source_state = models.IntegerField(
+        null=True,
         default=constants.ContentAdSourceState.INACTIVE,
         choices=constants.ContentAdSourceState.get_choices()
     )

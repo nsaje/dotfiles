@@ -1,6 +1,7 @@
 import datetime
+import httplib
 import operator
-
+import mock
 
 class MockDateTime(datetime.datetime):
 
@@ -24,6 +25,15 @@ def dicts_match_for_keys(dct1, dct2, keys):
 def sequence_of_dicts_match_for_keys(dicts1, dicts2, keys):
     if len(dicts1) != len(dicts2):
         return False
-    return reduce(operator.iand, 
+    return reduce(operator.iand,
         (dicts_match_for_keys(dct1, dct2, keys) for dct1, dct2 in zip(dicts1, dicts2)),
         True)
+
+def prepare_mock_urlopen(mock_urlopen, exception=None):
+    if exception:
+        mock_urlopen.side_effect = exception
+        return
+
+    mock_request = mock.Mock()
+    mock_request.status_code = httplib.OK
+    mock_urlopen.return_value = mock_request
