@@ -7,7 +7,7 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dash', '0014_source_bidder_slug'),
+        ('dash', '0015_merge'),
     ]
 
     operations = [
@@ -18,11 +18,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='contentadsource',
             name='source_state',
-            field=models.IntegerField(default=2, null=True, choices=[(1, b'Enabled'), (2, b'Paused')]),
+            field=models.IntegerField(default=2, null=True, choices=[(1, b'Running'), (2, b'Paused')]),
         ),
         migrations.AlterField(
             model_name='contentadsource',
             name='state',
-            field=models.IntegerField(default=2, null=True, choices=[(1, b'Enabled'), (2, b'Paused')]),
+            field=models.IntegerField(default=2, null=True, choices=[(1, b'Running'), (2, b'Paused')]),
         ),
     ]
