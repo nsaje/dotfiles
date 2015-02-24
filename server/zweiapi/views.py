@@ -141,6 +141,7 @@ def _process_zwei_response(action, data):
                 action.ad_group_source,
                 action.payload['args']['content_ad_id'],
                 data['data']['source_content_ad_id'],
+                data['data'].get(['submission_status']),
                 data['data'].get('submission_errors')
             )
     elif action.action == actionlogconstants.Action.UPDATE_CONTENT_AD:

@@ -962,7 +962,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             'name': content_ad_source.source.name,
             'status': content_ad_source.submission_status,
             'text': '{} / {}'.format(
-                constants.ContentAdApprovalStatus.get_text(content_ad_source.submission_status),
+                constants.ContentAdSubmissionStatus.get_text(content_ad_source.submission_status),
                 constants.ContentAdSourceState.get_text(content_ad_source.source_state))
         }
 

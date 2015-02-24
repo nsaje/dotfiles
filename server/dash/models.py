@@ -1040,8 +1040,8 @@ class ContentAdSource(models.Model):
     content_ad = models.ForeignKey(ContentAd, on_delete=models.PROTECT)
 
     submission_status = models.IntegerField(
-        default=constants.ContentAdApprovalStatus.PENDING,
-        choices=constants.ContentAdApprovalStatus.get_choices()
+        default=constants.ContentAdSubmissionStatus.PENDING,
+        choices=constants.ContentAdSubmissionStatus.get_choices()
     )
     submission_errors = models.TextField(
         blank=True,
