@@ -1023,6 +1023,13 @@ class ContentAd(models.Model):
 
     sources = models.ManyToManyField(Source, through='ContentAdSource')
 
+    def get_image_url(self, width=None, height=None):
+        params = [settings.Z3_API_THUMBNAIL_URL, self.image_id]
+        if width and height:
+            params.append('{}x{}.jpg'.format(width, height))
+
+        return '/'.join(params)
+
 
 class ContentAdSource(models.Model):
     source = models.ForeignKey(Source, on_delete=models.PROTECT)
