@@ -1032,6 +1032,9 @@ class ContentAd(models.Model):
         if width and height:
             parts.append('{}x{}.jpg'.format(width, height))
 
+        if None in parts:
+            return None
+
         return '/'.join(parts)
 
 

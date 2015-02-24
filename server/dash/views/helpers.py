@@ -6,6 +6,7 @@ from django.conf import settings
 
 import actionlog.api
 import actionlog.constants
+import actionlog.models
 from dash import models
 from dash import constants
 from utils import exc
@@ -273,6 +274,91 @@ def get_ad_group_sources_notifications(ad_group_sources):
         notifications[ags.source_id] = notification
 
     return notifications
+
+
+def get_content_ad_notifications(content_ads):
+    notifications = {}
+    for content_ad in content_ads:
+        actions = actionlog.models.ActionLog.objects.filter(
+            state=actionlog.constants.ActionState.WAITING,
+            ad_group_source=content_ad.article.ad_group.adgroupsource_set.all(),
+            action=actionlog.constants.Action.UPDATE_CONTENT_AD
+        )
+
+        content_ad_sources = [a.content_ad_source for a in actions]
+
+        if any(c.state != c.source_state for c in content_ad_sources):
+            current_state = content_ad_sources[0].state  # take first since all are equal
+
+            if current_state == constants.ContentAdSourceState.ACTIVE:
+                new_state = constants.ContentAdSourceState.INACTIVE
+            else:
+                new_state = constants.ContentAdSourceState.ACTIVE
+
+            notifications[str(content_ad.id)] = {
+                'message': 'Status is being changed from {} to {}'.format(
+                    constants.ContentAdSourceState.get_text(current_state),
+                    constants.ContentAdSourceState.get_text(new_state)
+                ),
+                'in_progress': True
+            }
+
+    return notifications
+
+
+def get_content_ad_last_change_dt(content_ads, last_change_dt=None):
+    changed_content_ads = []
+    last_change_dts = []
+
+    for content_ad in content_ads:
+        modified_by_dts = [s.modified_dt for s in content_ad.contentadsource_set.all()]
+
+        if not len(modified_by_dts):
+            continue
+
+        content_ad_last_change = max(modified_by_dts)
+
+        if last_change_dt is not None and content_ad_last_change <= last_change_dt:
+            continue
+
+        changed_content_ads.append(content_ad)
+        last_change_dts.append(content_ad_last_change)
+
+    if not len(last_change_dts):
+        return None, []
+
+    return max(last_change_dts), changed_content_ads
+
+
+def get_content_ad_submission_status(content_ad_sources):
+    submission_status = []
+
+    for content_ad_source in content_ad_sources:
+        submission_status.append({
+            'name': content_ad_source.source.name,
+            'status': content_ad_source.submission_status,
+            'text': '{} / {}'.format(
+                constants.ContentAdApprovalStatus.get_text(content_ad_source.submission_status),
+                constants.ContentAdSourceState.get_text(content_ad_source.source_state))
+        })
+
+    return submission_status
+
+
+def transform_content_ad_order(order):
+    desc = False
+    if order.startswith('-'):
+        order = order.replace('-', '')
+        desc = True
+
+    db_order = {
+        'title': 'article__title',
+        'url': 'article__url',
+        'batch_name': 'batch__name',
+        'upload_time': 'batch__created_dt'
+    }[order]
+
+    return '{}{}'.format('-' if desc else '', db_order)
 
 
 def _get_state_update_notification(ags, settings, state):

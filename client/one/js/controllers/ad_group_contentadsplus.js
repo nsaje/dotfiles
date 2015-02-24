@@ -1,10 +1,11 @@
 /* globals oneApp */
-oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$location', 'api', 'zemUserSettings', 'zemCustomTableColsService', function ($scope, $state, $modal, $location, api, zemUserSettings, zemCustomTableColsService) {
+oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$location', 'api', 'zemUserSettings', 'zemCustomTableColsService', '$timeout', function ($scope, $state, $modal, $location, api, zemUserSettings, zemCustomTableColsService, $timeout) {
     $scope.order = '-upload_time';
     $scope.loadRequestInProgress = false;
     $scope.selectedColumnsCount = 0;
     $scope.sizeRange = [5, 10, 20, 50];
     $scope.size = $scope.sizeRange[0];
+    $scope.lastChangeTimeout = null;
 
     $scope.pagination = {
         currentPage: 1
@@ -21,6 +22,38 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             totalRow: false,
             titleField: 'title',
             order: false,
+        }, {
+            name: '',
+            nameCssClass: 'active-circle-icon-gray',
+            field: 'status_setting',
+            type: 'state',
+            enabledValue: constants.contentAdSourceState.ACTIVE,
+            pausedValue: constants.contentAdSourceState.INACTIVE,
+            internal: $scope.isPermissionInternal('zemauth.new_content_ads_tab'),
+            shown: $scope.hasPermission('zemauth.new_content_ads_tab'),
+            checked: true,
+            totalRow: false,
+            unselectable: true,
+            help: 'A setting for enabling and pausing content ads.',
+            onChange: function (sourceId, state) {
+                console.log(state);
+                api.adGroupContentAdState.save($state.params.id, sourceId, state).then(
+                    function () {
+                        pollTableUpdates();
+                    }
+                );
+            },
+            getDisabledMessage: function (row) {
+                return 'This ad must be managed manually.';
+            },
+            disabled: false
+        }, {
+            name: '',
+            unselectable: true,
+            checked: true,
+            type: 'notification',
+            shown: true,
+            totalRow: false,
         }, {
             name: 'Title',
             field: 'title_link',
@@ -131,6 +164,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
                 $scope.rows = data.rows;
                 $scope.order = data.order;
                 $scope.pagination = data.pagination;
+                $scope.notifications = data.notifications;
+                $scope.lastChange = data.lastChange;
             },
             function (data) {
                 // error
@@ -169,6 +204,48 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
         $scope.loadPage();
         getTableData();
         initColumns();
+    };
+
+    var pollTableUpdates = function () {
+        if ($scope.lastChangeTimeout) {
+            return;
+        }
+
+        api.adGroupAdsPlusTable.getUpdates($state.params.id, $scope.lastChange)
+            .then(function (data) {
+                if (data.lastChange) {
+                    $scope.lastChange = data.lastChange;
+                    $scope.notifications = data.notifications;
+
+                    updateTableData(data.rows, data.totals);
+                }
+
+                if (data.inProgress) {
+                    $scope.lastChangeTimeout = $timeout(function () {
+                        $scope.lastChangeTimeout = null;
+                        pollTableUpdates();
+                    }, 2000);
+                }
+            });
+    };
+
+    var updateTableData = function (rowsUpdates, totalsUpdates) {
+        $scope.rows.forEach(function (row) {
+            var rowUpdates = rowsUpdates[row.id];
+            if (rowUpdates) {
+                updateObject(row, rowUpdates);
+            }
+        });
+
+        updateObject($scope.totals, totalsUpdates);
+    };
+
+    var updateObject = function (object, updates) {
+        for (var key in updates) {
+            if (updates.hasOwnProperty(key)) {
+                object[key] = updates[key];
+            }
+        }
     };
 
     init();

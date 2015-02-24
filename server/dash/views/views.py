@@ -24,6 +24,7 @@ from utils import api_common
 from utils import exc
 from utils.threads import BaseThread
 import actionlog.api
+import actionlog.api_contentads
 import actionlog.sync
 import actionlog.zwei_actions
 
@@ -394,8 +395,6 @@ class AdGroupSources(api_common.BaseApiView):
             if source_settings.source in ad_group_sources:
                 continue
 
-            print source_settings.source.id, source_settings.source.name
-
             sources.append({
                 'id': source_settings.source.id,
                 'name': source_settings.source.name
@@ -598,6 +597,37 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
             'status': batch.status,
             'errors': {'content_ads': ['An error occured while processing file.']}
         })
+
+
+class AdGroupContentAdState(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
+    def post(self, request, ad_group_id, content_ad_id):
+        if not request.user.has_perm('zemauth.new_content_ads_tab'):
+            raise exc.ForbiddenError(message='Not allowed')
+
+        helpers.get_ad_group(request.user, ad_group_id)
+
+        data = json.loads(request.body)
+
+        state = data.get('state')
+        if state is None or state not in constants.ContentAdSourceState.get_all():
+            raise exc.ValidationError()
+
+        try:
+            content_ad = models.ContentAd.objects.get(pk=content_ad_id)
+        except models.ContentAd.DoesNotExist():
+            raise exc.MissingDataException()
+
+        for content_ad_source in content_ad.contentadsource_set.all():
+            prev_state = content_ad_source.state
+            content_ad_source.state = state
+            content_ad_source.save()
+
+            if prev_state != state and\
+                    content_ad_source.submission_status == constants.ContentAdApprovalStatus.APPROVED:
+                actionlog.api_contentads.init_update_content_ad_action(content_ad_source)
+
+        return self.create_api_response()
 
 
 class ProcessUploadThread(BaseThread):

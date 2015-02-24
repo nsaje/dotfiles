@@ -6,13 +6,13 @@
     </button>
     <ul ng-if="isEditable" class="dropdown-menu enabled" role="menu">
         <li>
-            <a ng-click="setState(constants.adGroupSettingsState.ACTIVE)">
+            <a ng-click="setState(enabledValue)">
                 <div class="active-circle-icon"></div><span>Enabled</span>
             </a>
         </li>
         <li class="divider"></li>
         <li>
-            <a ng-click="setState(constants.adGroupSettingsState.INACTIVE)">
+            <a ng-click="setState(pausedValue)">
                 <div class="pause-icon"></div><span>Paused</span>
             </a>
         </li>
@@ -20,6 +20,6 @@
     <ul ng-if="!isEditable" class="dropdown-menu" role="menu">
         <li ng-if="active"><a ng-click="setState(value)"><div class="active-circle-icon"></div><span>Enabled</span></a></li>
         <li ng-if="!active"><a ng-click="setState(value)"><div class="pause-icon"></div><span>Paused</span></a></li>
-        <li class="dropdown-header">{{ getDisabledMessage() }}</li>
+        <li class="dropdown-header">{{ disabledMessage }}</li>
     </ul>
 </div>

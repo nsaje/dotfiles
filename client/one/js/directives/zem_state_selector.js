@@ -9,15 +9,16 @@ oneApp.directive('zemStateSelector', function () {
             onChange: '=',
             isEditable: '=',
             value: '=',
-            maintenance: '='
+            enabledValue: '=',
+            pausedValue: '=',
+            disabledMessage: '='
         },
         templateUrl: '/partials/zem_state_selector.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
-            $scope.constants = constants;
             $scope.active = false;
 
             var setActive = function () {
-                $scope.active = $scope.value === constants.adGroupSettingsState.ACTIVE;
+                $scope.active = $scope.value === $scope.enabledValue;
             };
 
             $scope.setState = function (state) {
@@ -31,12 +32,6 @@ oneApp.directive('zemStateSelector', function () {
                 setActive();
 
                 $scope.onChange($scope.id, state);
-            };
-
-            $scope.getDisabledMessage = function (row) {
-                return $scope.maintenance ? 
-                    'This source is currently in maintenance mode.' : 
-                    'This source must be managed manually.';
             };
 
             setActive();
