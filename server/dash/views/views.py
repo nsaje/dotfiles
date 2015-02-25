@@ -394,8 +394,6 @@ class AdGroupSources(api_common.BaseApiView):
             if source_settings.source in ad_group_sources:
                 continue
 
-            print source_settings.source.id, source_settings.source.name
-
             sources.append({
                 'id': source_settings.source.id,
                 'name': source_settings.source.name
