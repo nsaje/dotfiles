@@ -20,7 +20,10 @@ logger = logging.getLogger(__name__)
 
 
 def init_insert_content_ad_action(content_ad_source):
+    ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.article.ad_group,
+                                                            source=content_ad_source.source)
     args = {
+        'source_campaign_key': ad_group_source.source_campaign_key,
         'content_ad_key': content_ad_source.get_source_key(),
         'content_ad': {
             'state': content_ad_source.state,
@@ -71,6 +74,7 @@ def _create_action(content_ad_source, action, args={}):
         action=action,
         action_type=actionlog.constants.ActionType.AUTOMATIC,
         ad_group_source=ad_group_source,
+        content_ad_source=content_ad_source
     )
 
     try:
