@@ -37,7 +37,7 @@ class ImageTest(TestCase):
                         'br': {'y': 8, 'x': 7}
                     }
                 },
-                'image-url': 'http://example.com/image'
+                'image_url': 'http://example.com/image'
             })
         )
 
