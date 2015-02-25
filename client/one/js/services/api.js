@@ -1854,10 +1854,16 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
             $http.get(url).
                 success(function(data) {
-                    deferred.resolve({
-                        status: data.data.status,
-                        errors: convertValidationErrorsFromApi(data.data.errors)
-                    });
+                    var result = {};
+
+                    if (data && data.data) {
+                        result.status = data.data.status;
+
+                        if (data.data.errors) {
+                            result.errors = convertValidationErrorsFromApi(data.data.errors);
+                        }
+                    }
+                    deferred.resolve(result);
                 }).error(function(data) {
                     deferred.reject(data);
                 });

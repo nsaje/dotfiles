@@ -325,11 +325,15 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         return crop_list
 
     def _validate_and_transform_row(self, row):
-        if not len(row['url']) or not len(row['title']):
+        url = row.get('url')
+        title = row.get('title')
+
+        if url is None or not len(url) or title is None or not len(title):
             raise forms.ValidationError('File is not formatted correctly.')
 
-        if len(row['crop_areas']):
-            row['crop_areas'] = self._parse_crop_areas(row['crop_areas'])
+        crop_areas = row.get('crop_areas')
+        if crop_areas is not None and len(crop_areas):
+            row['crop_areas'] = self._parse_crop_areas(crop_areas)
 
         return row
 
