@@ -53,7 +53,7 @@ class AdTargetCountry(ConstantBase):
     }
 
 
-class ContentAdApprovalStatus(ConstantBase):
+class ContentAdSubmissionStatus(ConstantBase):
     PENDING = 1
     APPROVED = 2
     REJECTED = 3

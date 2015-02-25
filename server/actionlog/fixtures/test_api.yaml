@@ -550,7 +550,7 @@
         source: 1
         content_ad: 1
         submission_status: 1
-        state: NULL
+        state: 1
         source_state: NULL
         source_content_ad_id: NULL
         created_dt: '2015-02-23T00:00:00'

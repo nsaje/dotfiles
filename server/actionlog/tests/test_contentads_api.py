@@ -68,6 +68,7 @@ class ContentAdsApiTestCase(TestCase):
             'args': {
                 'content_ad_key': content_ad_source.get_source_key(),
                 'content_ad': {
+                    'state': dash.constants.ContentAdSourceState.ACTIVE,
                     'title': content_ad_source.content_ad.article.title,
                     'url': content_ad_source.content_ad.article.url,
                     'image': content_ad_source.content_ad.get_image_url(),
