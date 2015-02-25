@@ -12,7 +12,7 @@ def process_image(url, crop_areas):
     if not url:
         return
 
-    payload = {'image_url': url}
+    payload = {'image-url': url, 'image_url': url}
 
     crops_dict = _get_crops_dict(crop_areas)
     if crops_dict is not None:
