@@ -23,6 +23,7 @@ from utils import statsd_helper
 from utils import api_common
 from utils import exc
 from utils.threads import BaseThread
+
 import actionlog.api
 import actionlog.api_contentads
 import actionlog.sync
@@ -593,10 +594,12 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
         except models.UploadBatch.DoesNotExist():
             raise exc.MissingDataException()
 
-        return self.create_api_response({
-            'status': batch.status,
-            'errors': {'content_ads': ['An error occured while processing file.']}
-        })
+        response_data = {'status': batch.status}
+
+        if batch.status == constants.UploadBatchStatus.FAILED:
+            response_data['errors'] = {'content_ads': ['An error occured while processing file.']}
+
+        return self.create_api_response(response_data)
 
 
 class AdGroupContentAdState(api_common.BaseApiView):
@@ -664,6 +667,19 @@ class ProcessUploadThread(BaseThread):
 
             if not isinstance(e, image.ImageProcessingException):
                 raise e
+
+        for content_ad in models.ContentAd.objects.filter(batch=self.batch):
+            for ad_group_source in models.AdGroupSource.objects.filter(ad_group_id=self.ad_group_id):
+                if not ad_group_source.source.can_manage_content_ads():
+                    continue
+
+                content_ad_source = models.ContentAdSource.objects.create(
+                    source=ad_group_source.source,
+                    content_ad=content_ad,
+                    submission_status=constants.ContentAdSubmissionStatus.PENDING,
+                    state=constants.ContentAdSourceState.INACTIVE
+                )
+                actionlog.api_contentads.init_insert_content_ad_action(content_ad_source)
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')

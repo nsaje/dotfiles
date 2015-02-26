@@ -489,6 +489,9 @@ class SourceType(models.Model):
     def can_update_daily_budget(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_DAILY_BUDGET).exists()
 
+    def can_manage_content_ads(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MANAGE_CONTENT_ADS).exists()
+
     def __str__(self):
         return self.type
 
@@ -535,6 +538,9 @@ class Source(models.Model):
 
     def can_update_daily_budget(self):
         return self.source_type.can_update_daily_budget() and not self.maintenance
+
+    def can_manage_content_ads(self):
+        return self.source_type.can_manage_content_ads() and not self.maintenance
 
     def __unicode__(self):
         return self.name
@@ -1043,9 +1049,14 @@ class ContentAdSource(models.Model):
     content_ad = models.ForeignKey(ContentAd, on_delete=models.PROTECT)
 
     submission_status = models.IntegerField(
-        default=constants.ContentAdApprovalStatus.PENDING,
-        choices=constants.ContentAdApprovalStatus.get_choices()
+        default=constants.ContentAdSubmissionStatus.PENDING,
+        choices=constants.ContentAdSubmissionStatus.get_choices()
     )
+    submission_errors = models.TextField(
+        blank=True,
+        null=True
+    )
+
     state = models.IntegerField(
         null=True,
         default=constants.ContentAdSourceState.INACTIVE,
@@ -1064,7 +1075,7 @@ class ContentAdSource(models.Model):
 
     def get_source_key(self):
         if self.source.source_type and self.source.source_type.type == constants.SourceType.B1:
-            return [self.source_content_ad_id, self.source.bidder_slug]
+            return [self.content_ad.id, self.source.bidder_slug]
         else:
             return self.source_content_ad_id
 

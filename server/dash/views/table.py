@@ -1,9 +1,9 @@
 import reports.api
 import actionlog.sync
 import pytz
+from slugify import slugify
 
 from django.core import urlresolvers
-from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 from dash.views import helpers
 from dash import models
@@ -876,7 +876,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
 
         if ad_group in models.AdGroup.demo_objects.all():
             for i, row in enumerate(rows):
-                row['url'] = 'http://www.example.com/{}/{}'.format(ad_group.name, i)
+                row['url'] = 'http://www.example.com/{}/{}'.format(slugify(ad_group.name), i)
 
         totals_data = reports.api.filter_by_permissions(
             reports.api.query(

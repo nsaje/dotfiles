@@ -66,8 +66,10 @@ class ContentAdsApiTestCase(TestCase):
             'expiration_dt': expiration_dt,
             'credentials': ad_group_source.source_credentials.credentials,
             'args': {
+                'source_campaign_key': ad_group_source.source_campaign_key,
                 'content_ad_key': content_ad_source.get_source_key(),
                 'content_ad': {
+                    'state': dash.constants.ContentAdSourceState.ACTIVE,
                     'title': content_ad_source.content_ad.article.title,
                     'url': content_ad_source.content_ad.article.url,
                     'image': content_ad_source.content_ad.get_image_url(),

@@ -80,6 +80,30 @@ def update_campaign_key(ad_group_source, source_campaign_key):
     ad_group_source.save()
 
 
+def insert_content_ad_callback(
+        ad_group_source,
+        content_ad_source,
+        source_content_ad_id,
+        source_state,
+        submission_status,
+        submission_errors
+):
+    content_ad_source.source_content_ad_id = str(source_content_ad_id)
+    content_ad_source.source_state = source_state
+
+    if submission_status is not None:
+        content_ad_source.submission_status = submission_status
+        content_ad_source.submission_errors = submission_errors
+
+    content_ad_source.save()
+
+
+def update_content_ad_state(ad_group_source, content_ad_id, state):
+    content_ad_source = models.ContentAdSource.objects.get(content_ad_id=content_ad_id, source=ad_group_source.source)
+    content_ad_source.source_state = state
+    content_ad_source.save()
+
+
 def order_ad_group_settings_update(ad_group, current_settings, new_settings):
     changes = current_settings.get_setting_changes(new_settings)
 
