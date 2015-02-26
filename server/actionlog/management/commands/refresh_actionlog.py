@@ -15,6 +15,12 @@ class Command(BaseCommand):
         logger.info('Refreshing actionlog entries.')
 
         api.cancel_expired_actionlogs()
+
+        try:
+            api.send_delayed_actionlogs()
+        except Exception, e:
+            logger.exception("Failed to execute periodical sent to zwei of delayed actionlogs.")
+
         refresh_orders.refresh_fetch_all_orders()
 
         # monitor the state of manual actions
@@ -23,6 +29,9 @@ class Command(BaseCommand):
 
         n_cmd_failed = api.count_failed_stats_actions()
         statsd_helper.statsd_gauge('actionlog.n_cmd_failed', n_cmd_failed)
+
+        n_cmd_delayed = api.count_delayed_stats_actions()
+        statsd_helper.statsd_gauge('actionlog.n_cmd_delayed', n_cmd_delayed)
 
         hours_oldest_manual_cmd_waiting = api.age_oldest_waiting_action(manual_action=True)
         statsd_helper.statsd_gauge('actionlog.hours_oldest_cmd_waiting', hours_oldest_manual_cmd_waiting)

@@ -80,7 +80,9 @@ def set_ad_group_source_settings(changes, ad_group_source, order=None):
 								action_type=constants.ActionType.AUTOMATIC,
 								action=constants.Action.SET_CAMPAIGN_STATE)
 
-    if len(similar_waiting_actions) > 1:
+    if len(similar_waiting_actions) > models.MAX_SIMILAR_WAITING_ACTIONS:
+        similar_waiting_actions.update(state=constants.ActionState.DELAYED)
+
         logger.info("There is one or more similar action(s) in progress. Action (%s) will be called from it's callback.", action.id)
         return len(similar_waiting_actions)
 
@@ -125,6 +127,31 @@ def cancel_expired_actionlogs():
         actionlog.state = constants.ActionState.FAILED
         actionlog.save()
 
+@transaction.atomic
+def send_delayed_actionlogs():
+    delayed_actionlogs = models.ActionLog.objects.\
+        filter(
+            state=constants.ActionState.DELAYED,
+            action_type=constants.ActionType.AUTOMATIC,
+            expiration_dt__lt=datetime.utcnow()
+        )
+
+    processed_adgroupsource_actionlogs = set()
+    for actionlog in delayed_actionlogs:
+        if actionlog.ad_group_source.id in processed_adgroupsource_actionlogs:
+            continue
+
+        logger.info(
+            'Action log %s delayed state expired. Updating state to: %s.',
+            actionlog,
+            constants.ActionState.WAITING
+        )
+
+        zwei_actions.send_multiple([actionlog])
+        actionlog.state = constants.ActionState.WAITING
+        actionlog.save()
+
+        processed_adgroupsource_actionlogs.add(actionlog.ad_group_source.id)
 
 def get_ad_group_sources_waiting(**kwargs):
     constraints = {}
@@ -208,6 +235,11 @@ def count_waiting_stats_actions():
         state=constants.ActionState.WAITING
     ).count()
 
+
+def count_delayed_stats_actions():
+    return models.ActionLog.objects.filter(
+        state=constants.ActionState.DELAYED
+    ).count()
 
 def count_failed_stats_actions():
     return models.ActionLog.objects.filter(

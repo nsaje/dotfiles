@@ -573,6 +573,45 @@ class ActionLogApiCancelExpiredTestCase(TestCase):
     fixtures = ['test_api.yaml', 'test_actionlog.yaml']
 
     @patch('actionlog.api.datetime', MockDateTime)
+    def send_delayed_actionlogs(self):
+
+        delayed_actionlogs_before = models.ActionLog.objects.filter(
+            state=constants.ActionState.DELAYED
+        )
+        self.assertEqual(len(delayed_actionlogs_before), 3)
+
+        waiting_actionlogs_before = models.ActionLog.objects.filter(
+            state=constants.ActionState.WAITING
+        )
+        self.assertEqual(len(waiting_actionlogs_before), 10)
+
+        api.datetime.utcnow = classmethod(lambda cls: datetime.datetime(2015, 2, 26, 6, 36, 0))
+        api.send_delayed_actionlogs()
+
+        waiting_actionlogs_after = models.ActionLog.objects.filter(
+            state=constants.ActionState.WAITING
+        )
+        self.assertEqual(len(waiting_actionlogs_after), len(waiting_actionlogs_before) + 2) # one from each adgroup source
+
+        waiting_actionlogs_before = models.ActionLog.objects.filter(
+            state=constants.ActionState.WAITING
+        )
+        self.assertEqual(len(waiting_actionlogs_before), 12)
+
+        api.datetime.utcnow = classmethod(lambda cls: datetime.datetime(2015, 2, 26, 6, 37, 0))
+        api.send_delayed_actionlogs()
+
+        waiting_actionlogs_after = models.ActionLog.objects.filter(
+            state=constants.ActionState.WAITING
+        )
+        self.assertEqual(len(waiting_actionlogs_after), len(waiting_actionlogs_before) + 1)
+
+
+class ActionLogApiSendDelayedExpiredTestCase(TestCase):
+
+    fixtures = ['test_api.yaml', 'test_actionlog.yaml']
+
+    @patch('actionlog.api.datetime', MockDateTime)
     def test_cancel_expired_actionlogs(self):
 
         waiting_actionlogs_before = models.ActionLog.objects.filter(
@@ -601,6 +640,7 @@ class ActionLogApiCancelExpiredTestCase(TestCase):
             {action.id for action in failed_actionlogs},
             {action.id for action in waiting_actionlogs_after}
         )
+
 
 
 class SetCampaignPropertyTestCase(TestCase):
