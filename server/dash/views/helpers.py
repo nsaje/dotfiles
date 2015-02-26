@@ -281,24 +281,24 @@ def get_content_ad_notifications(content_ads):
     for content_ad in content_ads:
         actions = actionlog.models.ActionLog.objects.filter(
             state=actionlog.constants.ActionState.WAITING,
-            ad_group_source=content_ad.article.ad_group.adgroupsource_set.all(),
+            content_ad_source__content_ad=content_ad,
             action=actionlog.constants.Action.UPDATE_CONTENT_AD
         )
 
         content_ad_sources = [a.content_ad_source for a in actions]
 
         if any(c.state != c.source_state for c in content_ad_sources):
-            current_state = content_ad_sources[0].state  # take first since all are equal
+            state = content_ad_sources[0].state  # take first since all are equal
 
-            if current_state == constants.ContentAdSourceState.ACTIVE:
-                new_state = constants.ContentAdSourceState.INACTIVE
+            if state == constants.ContentAdSourceState.ACTIVE:
+                old_state = constants.ContentAdSourceState.INACTIVE
             else:
-                new_state = constants.ContentAdSourceState.ACTIVE
+                old_state = constants.ContentAdSourceState.ACTIVE
 
             notifications[str(content_ad.id)] = {
                 'message': 'Status is being changed from {} to {}'.format(
-                    constants.ContentAdSourceState.get_text(current_state),
-                    constants.ContentAdSourceState.get_text(new_state)
+                    constants.ContentAdSourceState.get_text(old_state),
+                    constants.ContentAdSourceState.get_text(state)
                 ),
                 'in_progress': True
             }
@@ -316,13 +316,13 @@ def get_content_ad_last_change_dt(content_ads, last_change_dt=None):
         if not len(modified_by_dts):
             continue
 
-        content_ad_last_change = max(modified_by_dts)
+        content_ad_last_change_dt = max(modified_by_dts)
 
-        if last_change_dt is not None and content_ad_last_change <= last_change_dt:
+        if last_change_dt is not None and content_ad_last_change_dt <= last_change_dt:
             continue
 
         changed_content_ads.append(content_ad)
-        last_change_dts.append(content_ad_last_change)
+        last_change_dts.append(content_ad_last_change_dt)
 
     if not len(last_change_dts):
         return None, []
@@ -338,7 +338,7 @@ def get_content_ad_submission_status(content_ad_sources):
             'name': content_ad_source.source.name,
             'status': content_ad_source.submission_status,
             'text': '{} / {}'.format(
-                constants.ContentAdApprovalStatus.get_text(content_ad_source.submission_status),
+                constants.ContentAdSubmissionStatus.get_text(content_ad_source.submission_status),
                 constants.ContentAdSourceState.get_text(content_ad_source.source_state))
         })
 

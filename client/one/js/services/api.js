@@ -257,12 +257,12 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
     function AdGroupAdsTable() {
         function convertFromApi(row) {
-            row.title_link = {
+            row.titleLink = {
                 text: row.title,
                 url: row.url !== '' ? row.url : null
             };
 
-            row.url_link = {
+            row.urlLink = {
                 text: row.url !== '' ? row.url : 'N/A',
                 url: row.url !== '' ? row.url : null
             };
@@ -319,12 +319,12 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
     function AdGroupAdsPlusTable() {
         function convertFromApi(row) {
-            row.title_link = {
+            row.titleLink = {
                 text: row.title,
                 url: row.url !== '' ? row.url : null
             };
 
-            row.url_link = {
+            row.urlLink = {
                 text: row.url !== '' ? row.url : 'N/A',
                 url: row.url !== '' ? row.url : null
             };

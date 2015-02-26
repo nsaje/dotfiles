@@ -36,7 +36,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             unselectable: true,
             help: 'A setting for enabling and pausing content ads.',
             onChange: function (sourceId, state) {
-                console.log(state);
                 api.adGroupContentAdState.save($state.params.id, sourceId, state).then(
                     function () {
                         pollTableUpdates();
@@ -54,9 +53,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             type: 'notification',
             shown: true,
             totalRow: false,
+            extraTdCss: 'notification-no-text'
         }, {
             name: 'Title',
-            field: 'title_link',
+            field: 'titleLink',
             unselectable: true,
             checked: true,
             type: 'linkText',
@@ -70,7 +70,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             initialOrder: 'asc'
         }, {
             name: 'URL',
-            field: 'url_link',
+            field: 'urlLink',
             checked: true,
             type: 'linkText',
             shown: true,
@@ -130,7 +130,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
     };
 
     $scope.loadPage = function(page) {
-        if(page && page > 0 && page <= $scope.pagination.numPages) {
+        if (page && page > 0 && page <= $scope.pagination.numPages) {
             $scope.pagination.currentPage = page;
         }
 
@@ -166,6 +166,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
                 $scope.pagination = data.pagination;
                 $scope.notifications = data.notifications;
                 $scope.lastChange = data.lastChange;
+
+                pollTableUpdates();
             },
             function (data) {
                 // error
@@ -201,8 +203,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             $location.search('page', page);
         }
 
-        $scope.loadPage();
         getTableData();
+        $scope.getAdGroupState();
         initColumns();
     };
 

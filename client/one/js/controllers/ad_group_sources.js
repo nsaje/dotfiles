@@ -694,7 +694,9 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                     $scope.notifications = data.notifications;
                     $scope.dataStatus = data.dataStatus;
 
+                    data.rows[4].bid_cpc = '0.9999';
                     updateTableData(data.rows, data.totals);
+                    console.log($scope.rows);
                 }
 
                 if (data.inProgress) {

@@ -9,12 +9,14 @@ oneApp.directive('zemSubmissionStatus', function() {
             statusItems: '='
         },
         controller: ['$scope', function($scope) {
-            $scope.approved = $scope.statusItems.filter(function(row) {
-                return row.status === constants.contentAdApprovalStatus.APPROVED;
-            });
+            $scope.$watch('statusItems', function(newVal) {
+                $scope.approved = $scope.statusItems.filter(function(row) {
+                    return row.status === constants.contentAdApprovalStatus.APPROVED;
+                });
 
-            $scope.nonApproved = $scope.statusItems.filter(function(row) {
-                return row.status !== constants.contentAdApprovalStatus.APPROVED;
+                $scope.nonApproved = $scope.statusItems.filter(function(row) {
+                    return row.status !== constants.contentAdApprovalStatus.APPROVED;
+                });
             });
         }]
     };

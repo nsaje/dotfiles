@@ -926,7 +926,7 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
             raise exc.ForbiddenError(message='Not allowed')
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        last_change_dt = helpers.parse_datetime(request.GET.get('last_change_dt'))
+        last_change_dt = helpers.parse_datetime(request.GET.get('last_change'))
 
         page = request.GET.get('page')
         order = request.GET.get('order') or '-upload_time'
@@ -952,7 +952,7 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
             else:
                 status_setting = constants.ContentAdSourceState.INACTIVE
 
-            rows[content_ad.id] = {
+            rows[str(content_ad.id)] = {
                 'status_setting': status_setting,
                 'submission_status': submission_status
             }
@@ -1014,8 +1014,8 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             else:
                 status_setting = constants.ContentAdSourceState.INACTIVE
 
-            url = content_ad.article.url if ad_group in models.AdGroup.demo_objects.all()\
-                else 'http://www.example.com/{}/{}'.format(ad_group.name, content_ad.id)
+            url = 'http://www.example.com/{}/{}'.format(ad_group.name, content_ad.id)\
+                if ad_group in models.AdGroup.demo_objects.all() else content_ad.article.url
 
             rows.append({
                 'id': str(content_ad.id),

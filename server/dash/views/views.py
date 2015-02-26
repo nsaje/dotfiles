@@ -627,7 +627,7 @@ class AdGroupContentAdState(api_common.BaseApiView):
             content_ad_source.save()
 
             if prev_state != state and\
-                    content_ad_source.submission_status == constants.ContentAdApprovalStatus.APPROVED:
+                    content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
                 actionlog.api_contentads.init_update_content_ad_action(content_ad_source)
 
         return self.create_api_response()
@@ -661,25 +661,25 @@ class ProcessUploadThread(BaseThread):
 
                     self.batch.status = constants.UploadBatchStatus.DONE
                     self.batch.save()
+
+                for content_ad in models.ContentAd.objects.filter(batch=self.batch):
+                    for ad_group_source in models.AdGroupSource.objects.filter(ad_group_id=self.ad_group_id):
+                        if not ad_group_source.source.can_manage_content_ads():
+                            continue
+
+                        content_ad_source = models.ContentAdSource.objects.create(
+                            source=ad_group_source.source,
+                            content_ad=content_ad,
+                            submission_status=constants.ContentAdSubmissionStatus.PENDING,
+                            state=constants.ContentAdSourceState.INACTIVE
+                        )
+                        actionlog.api_contentads.init_insert_content_ad_action(content_ad_source)
         except Exception as e:
             self.batch.status = constants.UploadBatchStatus.FAILED
             self.batch.save()
 
             if not isinstance(e, image.ImageProcessingException):
                 raise e
-
-        for content_ad in models.ContentAd.objects.filter(batch=self.batch):
-            for ad_group_source in models.AdGroupSource.objects.filter(ad_group_id=self.ad_group_id):
-                if not ad_group_source.source.can_manage_content_ads():
-                    continue
-
-                content_ad_source = models.ContentAdSource.objects.create(
-                    source=ad_group_source.source,
-                    content_ad=content_ad,
-                    submission_status=constants.ContentAdSubmissionStatus.PENDING,
-                    state=constants.ContentAdSourceState.INACTIVE
-                )
-                actionlog.api_contentads.init_insert_content_ad_action(content_ad_source)
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')
