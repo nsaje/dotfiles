@@ -74,9 +74,8 @@ def set_ad_group_source_settings(changes, ad_group_source, order=None):
 
     if len(similar_waiting_actions) > models.MAX_SIMILAR_WAITING_ACTIONS:
         similar_waiting_actions.update(state=constants.ActionState.DELAYED)
-
         logger.info("There is one or more similar action(s) in progress. Action (%s) will be called from it's callback.", action.id)
-        return len(similar_waiting_actions)
+        return
 
     if action.action_type == constants.ActionType.AUTOMATIC:
         zwei_actions.send_multiple([action])
