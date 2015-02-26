@@ -522,7 +522,7 @@ class Source(models.Model):
     bidder_slug = models.CharField(
         max_length=50,
         null=True,
-        blank=False,
+        blank=True,
         unique=True,
         verbose_name='B1 Slug'
     )
