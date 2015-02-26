@@ -26,8 +26,15 @@
                         <td class="no-data" colspan="100">No data</td>
                     </tr>
                     <tr ng-repeat="row in rows" ng-class="{'archived': row.archived}">
-                        <td ng-if="col.shown" ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type), 'input-one-char': col.type === 'checkbox', 'text-center': col.type === 'link'}" class="{{ col.extraTdCss }}" ng-repeat="col in columns | filter: {checked: true}">
+                        <td ng-if="col.shown" ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type), 'input-one-char': col.type === 'checkbox', 'text-center': col.type === 'link', 'image': col.type === 'image'}" class="{{ col.extraTdCss }}" ng-repeat="col in columns | filter: {checked: true}">
                             <span ng-switch="col.type">
+                                <span ng-switch-when="image">
+                                    <img ng-if="row[col.field].square" ng-src="{{row[col.field].square}}" popover-append-to-body="true" popover-trigger="mouseenter" zem-html-popover="'thumbnailPopover.html'" popover-placement="left">
+                                    <img ng-if="!row[col.field].square">
+                                </span>
+                                <span ng-switch-when="submissionStatus">
+                                    <zem-submission-status status-items="row[col.field]" />
+                                </span>
                                 <span ng-switch-when="currency">
                                     <span class="non-editable-currency-field" ng-if="!isFieldEditable(row.editable_fields, col.field)" ng-class="{'currency-3': col.fractionSize === 3}">
                                         <span ng-if="col.settingsField" popover-append-to-body="true" popover-trigger="mouseenter" popover-html-unsafe="{{ getSettingsFieldMessage(row) }}" popover-placement="right">
@@ -196,3 +203,10 @@
         </div>
     </div>
 </div>
+
+<script id="thumbnailPopover.html" type="text/ng-template">
+    <div class="thumbnail-popover">
+        <img ng-src="{{ row[col.field].landscape }}">
+        <img ng-src="{{ row[col.field].square }}">
+    </div>
+</script>

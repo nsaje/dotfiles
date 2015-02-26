@@ -2,7 +2,6 @@ import logging
 import sys
 import traceback
 import urlparse
-import urllib
 import collections
 from operator import attrgetter
 
@@ -14,6 +13,7 @@ from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
+from . import exceptions
 from . import models
 from . import constants
 from . import zwei_actions
@@ -22,14 +22,6 @@ import dash.constants
 import dash.models
 
 logger = logging.getLogger(__name__)
-
-
-class InsertActionException(Exception):
-    pass
-
-
-class InsertCreateCampaignActionException(InsertActionException):
-    pass
 
 
 def init_enable_ad_group(ad_group, order=None):
@@ -95,14 +87,14 @@ def set_ad_group_property(ad_group, source=None, prop=None, value=None, order=No
     for ad_group_source in ad_group_sources:
         try:
             _init_set_campaign_property(ad_group_source, prop, value, order)
-        except InsertActionException:
+        except exceptions.InsertActionException:
             continue
 
 
 def create_campaign(ad_group_source, name):
     try:
         action = _init_create_campaign(ad_group_source, name)
-    except InsertActionException:
+    except exceptions.InsertActionException:
         pass
     else:
         zwei_actions.send(action)
@@ -256,7 +248,8 @@ def age_oldest_waiting_action(manual_action=True):
     else:
         filter_constraints = Q(action_type=constants.ActionType.AUTOMATIC)
 
-    waiting_actions = models.ActionLog.objects.filter(filter_constraints,
+    waiting_actions = models.ActionLog.objects.filter(
+        filter_constraints,
         state=constants.ActionState.WAITING
     ).order_by('created_dt')
 
@@ -360,8 +353,12 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, order=None):
                 ad_group_source.id, str(conf))
 
     if ad_group_source.source.maintenance:
-        return _create_manual_action(ad_group_source, conf, order=order,
-                              message="Due to media source being in maintenance mode a manual action is required.")
+        return _create_manual_action(
+            ad_group_source,
+            conf,
+            order=order,
+            message="Due to media source being in maintenance mode a manual action is required."
+        )
 
     action = models.ActionLog.objects.create(
         action=constants.Action.SET_CAMPAIGN_STATE,
@@ -399,7 +396,7 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, order=None):
         _handle_error(action, e)
 
         et, ei, tb = sys.exc_info()
-        raise InsertActionException, ei, tb
+        raise exceptions.InsertActionException, ei, tb
 
 
 def _init_fetch_status(ad_group_source, order):
@@ -444,7 +441,7 @@ def _init_fetch_status(ad_group_source, order):
         _handle_error(action, e)
 
         et, ei, tb = sys.exc_info()
-        raise InsertActionException, ei, tb
+        raise exceptions.InsertActionException, ei, tb
 
 
 def _init_fetch_reports(ad_group_source, date, order):
@@ -491,7 +488,7 @@ def _init_fetch_reports(ad_group_source, date, order):
         _handle_error(action, e)
 
         et, ei, tb = sys.exc_info()
-        raise InsertActionException, ei, tb
+        raise exceptions.InsertActionException, ei, tb
 
 
 def _init_set_campaign_property(ad_group_source, prop, value, order):
@@ -536,7 +533,7 @@ def _init_set_campaign_property(ad_group_source, prop, value, order):
         _handle_error(action, e)
 
         et, ei, tb = sys.exc_info()
-        raise InsertActionException, ei, tb
+        raise exceptions.InsertActionException, ei, tb
 
 
 def _combine_tracking_codes(ad_group_source, ad_group_settings):
@@ -559,7 +556,7 @@ def _init_create_campaign(ad_group_source, name):
               )
         logger.error(msg)
 
-        raise InsertCreateCampaignActionException(msg)
+        raise exceptions.InsertCreateCampaignActionException(msg)
 
     msg = "_init_create_campaign started: ad_group_source.id: {}, name: {}".format(
         ad_group_source.id,
@@ -630,13 +627,12 @@ def _init_create_campaign(ad_group_source, name):
 
             return action
 
-
     except Exception as e:
         logger.exception('An exception occurred while initializing create_campaign action.')
         _handle_error(action, e)
 
         et, ei, tb = sys.exc_info()
-        raise InsertActionException, ei, tb
+        raise exceptions.InsertActionException, ei, tb
 
 
 @transaction.atomic()

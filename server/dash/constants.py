@@ -53,6 +53,28 @@ class AdTargetCountry(ConstantBase):
     }
 
 
+class ContentAdSubmissionStatus(ConstantBase):
+    PENDING = 1
+    APPROVED = 2
+    REJECTED = 3
+
+    _VALUES = {
+        PENDING: 'Pending',
+        APPROVED: 'Approved',
+        REJECTED: 'Rejected'
+    }
+
+
+class ContentAdSourceState(ConstantBase):
+    ACTIVE = 1
+    INACTIVE = 2
+
+    _VALUES = {
+        ACTIVE: 'Running',
+        INACTIVE: 'Paused'
+    }
+
+
 class IABCategory(ConstantBase):
     IAB1 = 'IAB1'
     IAB2 = 'IAB2'
@@ -149,4 +171,16 @@ class SourceType(ConstantBase):
         YAHOO: 'Yahoo',
         ZEMANTA: 'Zemanta',
         B1: 'B1'
+    }
+
+
+class UploadBatchStatus(ConstantBase):
+    DONE = 1
+    FAILED = 2
+    IN_PROGRESS = 3
+
+    _VALUES = {
+        DONE: 'Done',
+        FAILED: 'Failed',
+        IN_PROGRESS: 'In progress'
     }

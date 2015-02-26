@@ -1,3 +1,4 @@
+import json
 import urllib
 
 from django.contrib import admin
@@ -10,7 +11,7 @@ from zemauth.models import User as ZemUser
 
 import constants
 import models
-import json
+import actionlog.api_contentads
 
 
 # Forms for inline user functionality.
@@ -498,6 +499,26 @@ class OutbrainAccountAdmin(admin.ModelAdmin):
     )
 
 
+class ContentAdSourceAdmin(admin.ModelAdmin):
+    list_display = (
+        'content_ad',
+        'source',
+        'submission_status',
+        'submission_errors',
+        'source_content_ad_id',
+        'created_dt',
+        'modified_dt'
+    )
+
+    def save_model(self, request, content_ad_source, form, change):
+        current_content_ad_source = models.ContentAdSource.objects.get(id=content_ad_source.id)
+        content_ad_source.save()
+
+        if current_content_ad_source.submission_status != content_ad_source.submission_status and\
+           content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
+            actionlog.api_contentads.init_update_content_ad_action(content_ad_source)
+
+
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
 admin.site.register(models.CampaignSettings, CampaignSettingsAdmin)
@@ -511,3 +532,4 @@ admin.site.register(models.SourceType, SourceTypeAdmin)
 admin.site.register(models.DefaultSourceSettings, DefaultSourceSettingsAdmin)
 admin.site.register(models.DemoAdGroupRealAdGroup, DemoAdGroupRealAdGroupAdmin)
 admin.site.register(models.OutbrainAccount, OutbrainAccountAdmin)
+admin.site.register(models.ContentAdSource, ContentAdSourceAdmin)

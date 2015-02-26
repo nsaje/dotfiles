@@ -1,12 +1,10 @@
 # coding: utf-8
 
 import datetime
-import httplib
+import mock
 import urlparse
-import urllib
 import urllib2
 
-from mock import patch, Mock
 from django.test import TestCase
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -14,17 +12,7 @@ from django.core.urlresolvers import reverse
 from actionlog import api, constants, models, sync
 from dash import models as dashmodels
 from dash import constants as dashconstants
-from utils.test_helper import MockDateTime
-
-
-def _prepare_mock_urlopen(mock_urlopen, exception=None):
-    if exception:
-        mock_urlopen.side_effect = exception
-        return
-
-    mock_request = Mock()
-    mock_request.status_code = httplib.OK
-    mock_urlopen.return_value = mock_request
+from utils import test_helper
 
 
 class ZweiActionsTestCase(TestCase):
@@ -38,9 +26,9 @@ class ZweiActionsTestCase(TestCase):
     def tearDown(self):
         settings.CREDENTIALS_ENCRYPTION_KEY = self.credentials_encription_key
 
-    @patch('utils.request_signer._secure_opener.open')
+    @mock.patch('utils.request_signer._secure_opener.open')
     def test_log_encrypted_credentials_on_conneciton_success(self, mock_urlopen):
-        _prepare_mock_urlopen(mock_urlopen)
+        test_helper.prepare_mock_urlopen(mock_urlopen)
         ad_group_source = dashmodels.AdGroupSource.objects.get(id=1)
 
         sync.AdGroupSourceSync(ad_group_source).trigger_status()
@@ -55,10 +43,10 @@ class ZweiActionsTestCase(TestCase):
             ad_group_source.source_credentials.credentials
         )
 
-    @patch('utils.request_signer._secure_opener.open')
+    @mock.patch('utils.request_signer._secure_opener.open')
     def test_log_encrypted_credentials_on_conneciton_fail(self, mock_urlopen):
         exception = urllib2.HTTPError(settings.ZWEI_API_URL, 500, "Server is down.", None, None)
-        _prepare_mock_urlopen(mock_urlopen, exception=exception)
+        test_helper.prepare_mock_urlopen(mock_urlopen, exception=exception)
         ad_group_source = dashmodels.AdGroupSource.objects.get(id=1)
 
         sync.AdGroupSourceSync(ad_group_source).trigger_status()
@@ -79,11 +67,11 @@ class ActionLogApiTestCase(TestCase):
     fixtures = ['test_api.yaml']
 
     def setUp(self):
-        patcher_urlopen = patch('utils.request_signer._secure_opener.open')
+        patcher_urlopen = mock.patch('utils.request_signer._secure_opener.open')
         self.addCleanup(patcher_urlopen.stop)
 
         mock_urlopen = patcher_urlopen.start()
-        _prepare_mock_urlopen(mock_urlopen)
+        test_helper.prepare_mock_urlopen(mock_urlopen)
 
         self.credentials_encription_key = settings.CREDENTIALS_ENCRYPTION_KEY
         settings.CREDENTIALS_ENCRYPTION_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
@@ -93,8 +81,7 @@ class ActionLogApiTestCase(TestCase):
     def tearDown(self):
         settings.CREDENTIALS_ENCRYPTION_KEY = self.credentials_encription_key
 
-
-    @patch('actionlog.models.datetime', MockDateTime)
+    @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
     def test_set_ad_group_source_settings_non_maintenance(self):
         utcnow = datetime.datetime.utcnow()
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
@@ -152,8 +139,7 @@ class ActionLogApiTestCase(TestCase):
         }
         self.assertEqual(action.payload, payload)
 
-
-    @patch('actionlog.models.datetime', MockDateTime)
+    @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
     def test_set_ad_group_source_settings_maintenance(self):
         utcnow = datetime.datetime.utcnow()
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
@@ -184,10 +170,9 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
         self.assertEqual(action.action_type, constants.ActionType.MANUAL)
         self.assertEqual(action.state, constants.ActionState.WAITING)
-        self.assertEqual(action.payload, {'args': { 'conf': changes}})
+        self.assertEqual(action.payload, {'args': {'conf': changes}})
 
-
-    @patch('actionlog.models.datetime', MockDateTime)
+    @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
     def test_init_enable_ad_group_non_maintenance_source(self):
         utcnow = datetime.datetime.utcnow()
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
@@ -230,8 +215,7 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ad_group_source).latest('created_dt'),
                          action)
 
-
-    @patch('actionlog.models.datetime', MockDateTime)
+    @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
     def test_init_enable_ad_group_maintenance_source(self):
         utcnow = datetime.datetime.utcnow()
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
@@ -273,8 +257,7 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action.payload.get('args', {}).get('conf'),
                          {'state': dashconstants.AdGroupSourceSettingsState.ACTIVE})
 
-
-    @patch('actionlog.models.datetime', MockDateTime)
+    @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
     def test_init_pause_ad_group_non_maintenance_source(self):
         utcnow = datetime.datetime.utcnow()
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
@@ -325,7 +308,7 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action2.payload.get('args', {}).get('conf'),
                          {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
 
-    @patch('actionlog.models.datetime', MockDateTime)
+    @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
     def test_init_pause_ad_group_maintenance_source(self):
         utcnow = datetime.datetime.utcnow()
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
@@ -374,8 +357,7 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action.payload.get('args', {}).get('conf'),
                          {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
 
-
-    @patch('actionlog.models.datetime', MockDateTime)
+    @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
     def test_fetch_ad_group_status(self):
         utcnow = datetime.datetime.utcnow()
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
@@ -397,7 +379,8 @@ class ActionLogApiTestCase(TestCase):
             self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
             self.assertEqual(action.state, constants.ActionState.WAITING)
 
-            expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+            expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).\
+                strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
             callback = urlparse.urljoin(
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
@@ -414,7 +397,7 @@ class ActionLogApiTestCase(TestCase):
 
             self.assertEqual(action.payload, payload)
 
-    @patch('actionlog.models.datetime', MockDateTime)
+    @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
     def test_fetch_ad_group_reports(self):
         utcnow = datetime.datetime.utcnow()
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
@@ -436,7 +419,8 @@ class ActionLogApiTestCase(TestCase):
             self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
             self.assertEqual(action.state, constants.ActionState.WAITING)
 
-            expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+            expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).\
+                strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
             callback = urlparse.urljoin(
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
@@ -476,7 +460,7 @@ class ActionLogApiTestCase(TestCase):
             }
             self.assertEqual(action.payload, payload)
 
-    @patch('actionlog.models.datetime', MockDateTime)
+    @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
     def test_create_campaign(self):
 
         utcnow = datetime.datetime.utcnow()
@@ -501,7 +485,8 @@ class ActionLogApiTestCase(TestCase):
             action=constants.Action.CREATE_CAMPAIGN
         )
 
-        expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+        expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).\
+            strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
         callback = urlparse.urljoin(
             settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
         )
@@ -531,7 +516,8 @@ class ActionLogApiTestCase(TestCase):
             action=constants.Action.CREATE_CAMPAIGN
         )
 
-        expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+        expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).\
+            strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
         callback = urlparse.urljoin(
             settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
         )
@@ -564,54 +550,18 @@ class ActionLogApiTestCase(TestCase):
         ad_group_settings.save()
 
         # first ad group settings tracking codes and then ad group source tracking codes
-        self.assertEqual(api._combine_tracking_codes(ad_group_source, ad_group_settings), 'param&a=1&b=2&_z1_adgid=%s&_z1_msid=%s' %
-                         (ad_group_source.ad_group.id, ad_group_source.source.source_type.type))
+        self.assertEqual(
+            api._combine_tracking_codes(ad_group_source, ad_group_settings),
+            'param&a=1&b=2&_z1_adgid=%s&_z1_msid=%s' % (ad_group_source.ad_group.id,
+                                                        ad_group_source.source.source_type.type)
+        )
 
 
 class ActionLogApiCancelExpiredTestCase(TestCase):
 
     fixtures = ['test_api.yaml', 'test_actionlog.yaml']
 
-    @patch('actionlog.api.datetime', MockDateTime)
-    def send_delayed_actionlogs(self):
-
-        delayed_actionlogs_before = models.ActionLog.objects.filter(
-            state=constants.ActionState.DELAYED
-        )
-        self.assertEqual(len(delayed_actionlogs_before), 3)
-
-        waiting_actionlogs_before = models.ActionLog.objects.filter(
-            state=constants.ActionState.WAITING
-        )
-        self.assertEqual(len(waiting_actionlogs_before), 10)
-
-        api.datetime.utcnow = classmethod(lambda cls: datetime.datetime(2015, 2, 26, 6, 36, 0))
-        api.send_delayed_actionlogs()
-
-        waiting_actionlogs_after = models.ActionLog.objects.filter(
-            state=constants.ActionState.WAITING
-        )
-        self.assertEqual(len(waiting_actionlogs_after), len(waiting_actionlogs_before) + 2) # one from each adgroup source
-
-        waiting_actionlogs_before = models.ActionLog.objects.filter(
-            state=constants.ActionState.WAITING
-        )
-        self.assertEqual(len(waiting_actionlogs_before), 12)
-
-        api.datetime.utcnow = classmethod(lambda cls: datetime.datetime(2015, 2, 26, 6, 37, 0))
-        api.send_delayed_actionlogs()
-
-        waiting_actionlogs_after = models.ActionLog.objects.filter(
-            state=constants.ActionState.WAITING
-        )
-        self.assertEqual(len(waiting_actionlogs_after), len(waiting_actionlogs_before) + 1)
-
-
-class ActionLogApiSendDelayedExpiredTestCase(TestCase):
-
-    fixtures = ['test_api.yaml', 'test_actionlog.yaml']
-
-    @patch('actionlog.api.datetime', MockDateTime)
+    @mock.patch('actionlog.api.datetime', test_helper.MockDateTime)
     def test_cancel_expired_actionlogs(self):
 
         waiting_actionlogs_before = models.ActionLog.objects.filter(
@@ -662,7 +612,7 @@ class SetCampaignPropertyTestCase(TestCase):
         self.assertEqual(len(alogs) == 1, True)
         self.assertEqual(alogs[0].payload['property'], 'test_property')
         self.assertEqual(alogs[0].payload['value'], 'test_value')
-        for alog in alogs: 
+        for alog in alogs:
             alog.delete()
 
     def test_abort_waiting_actionlog(self):
@@ -686,7 +636,7 @@ class SetCampaignPropertyTestCase(TestCase):
         self.assertEqual(alogs[0].payload['value'], 'test_value_1')
         for alog in alogs:
             alog.delete()
-        #new action is waiting
+        # new action is waiting
         alogs = models.ActionLog.objects.filter(
             action=constants.Action.SET_PROPERTY,
             state=constants.ActionState.WAITING,
@@ -730,7 +680,10 @@ class SyncInProgressTestCase(TestCase):
         ad_group = dashmodels.AdGroup.objects.get(pk=1)
         ad_group2 = dashmodels.AdGroup.objects.get(pk=2)
 
-        self.assertEqual(models.ActionLog.objects.filter(ad_group_source__ad_group__in=[ad_group, ad_group2]).count(), 0)
+        self.assertEqual(
+            models.ActionLog.objects.filter(ad_group_source__ad_group__in=[ad_group, ad_group2]).count(),
+            0
+        )
 
         alog = models.ActionLog(
             action=constants.Action.FETCH_REPORTS,
@@ -758,7 +711,10 @@ class SyncInProgressTestCase(TestCase):
 
     def test_accounts_sync_in_progress(self):
         account = dashmodels.Account.objects.get(pk=1)
-        self.assertEqual(models.ActionLog.objects.filter(ad_group_source__ad_group__campaign__account=account).count(), 0)
+        self.assertEqual(
+            models.ActionLog.objects.filter(ad_group_source__ad_group__campaign__account=account).count(),
+            0
+        )
 
         self.assertEqual(api.is_sync_in_progress(accounts=[account]), False)
 
@@ -779,7 +735,10 @@ class SyncInProgressTestCase(TestCase):
     def test_multiple_accounts_sync_in_progress(self):
         account = dashmodels.Account.objects.get(pk=1)
         account2 = dashmodels.Account.objects.get(pk=2)
-        self.assertEqual(models.ActionLog.objects.filter(ad_group_source__ad_group__campaign__account__in=[account, account2]).count(), 0)
+        self.assertEqual(
+            models.ActionLog.objects.filter(
+                ad_group_source__ad_group__campaign__account__in=[account, account2]
+            ).count(), 0)
 
         self.assertEqual(api.is_sync_in_progress(accounts=[account]), False)
 

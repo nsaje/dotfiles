@@ -4,6 +4,9 @@ describe('AdGroupAdsPlusCtrl', function() {
     var $scope;
 
     beforeEach(module('one'));
+    beforeEach(module(function ($provide) {
+        $provide.value('zemLocalStorageService', {get: function(){}})
+    }));
 
     beforeEach(inject(function($controller, $rootScope) {
         $scope = $rootScope.$new();

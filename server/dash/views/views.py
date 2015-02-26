@@ -394,8 +394,6 @@ class AdGroupSources(api_common.BaseApiView):
             if source_settings.source in ad_group_sources:
                 continue
 
-            print source_settings.source.id, source_settings.source.name
-
             sources.append({
                 'id': source_settings.source.id,
                 'name': source_settings.source.name
@@ -575,35 +573,67 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
         batch_name = form.cleaned_data['batch_name']
         content_ads = form.cleaned_data['content_ads']
 
-        ProcessUploadThread(content_ads, batch_name, ad_group_id).start()
+        batch = models.UploadBatch.objects.create(name=batch_name)
+        ProcessUploadThread(content_ads, batch, ad_group_id).start()
 
-        return self.create_api_response()
+        return self.create_api_response({'batch_id': batch.pk})
+
+
+class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_status_get')
+    def get(self, request, ad_group_id, batch_id):
+        if not request.user.has_perm('zemauth.new_content_ads_tab'):
+            raise exc.ForbiddenError(message='Not allowed')
+
+        helpers.get_ad_group(request.user, ad_group_id)
+
+        try:
+            batch = models.UploadBatch.objects.get(pk=batch_id)
+        except models.UploadBatch.DoesNotExist():
+            raise exc.MissingDataException()
+
+        response_data = {'status': batch.status}
+
+        if batch.status == constants.UploadBatchStatus.FAILED:
+            response_data['errors'] = {'content_ads': ['An error occured while processing file.']}
+
+        return self.create_api_response(response_data)
 
 
 class ProcessUploadThread(BaseThread):
-    def __init__(self, content_ads, batch_name, ad_group_id, *args, **kwargs):
+    def __init__(self, content_ads, batch, ad_group_id, *args, **kwargs):
         self.content_ads = content_ads
-        self.batch_name = batch_name
+        self.batch = batch
         self.ad_group_id = ad_group_id
         super(ProcessUploadThread, self).__init__(*args, **kwargs)
 
-    @transaction.atomic()
     def run(self):
-        batch = models.UploadBatch.objects.create(name=self.batch_name)
+        try:
+            # ensure content ads are only commited to DB
+            # if all of them are successfully processed
+            with transaction.atomic():
+                for ad in self.content_ads:
+                    image_id = image.process_image(ad.get('image_url'), ad.get('crop_areas'))
+                    content_ad = models.ContentAd.objects.create(
+                        image_id=image_id,
+                        batch=self.batch
+                    )
 
-        for ad in self.content_ads:
-            image_id = image.process_image(ad.get('image_url'), ad.get('crop_areas'))
-            content_ad = models.ContentAd.objects.create(
-                image_id=image_id,
-                batch=batch
-            )
+                    models.Article.objects.create(
+                        url=ad.get('url'),
+                        title=ad.get('title'),
+                        ad_group_id=self.ad_group_id,
+                        content_ad=content_ad
+                    )
 
-            models.Article.objects.create(
-                url=ad.get('url'),
-                title=ad.get('title'),
-                ad_group_id=self.ad_group_id,
-                content_ad=content_ad
-            )
+                    self.batch.status = constants.UploadBatchStatus.DONE
+                    self.batch.save()
+        except Exception as e:
+            self.batch.status = constants.UploadBatchStatus.FAILED
+            self.batch.save()
+
+            if not isinstance(e, image.ImageProcessingException):
+                raise e
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')

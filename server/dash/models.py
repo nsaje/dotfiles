@@ -516,6 +516,13 @@ class Source(models.Model):
         unique=True,
         verbose_name='Tracking slug'
     )
+    bidder_slug = models.CharField(
+        max_length=50,
+        null=True,
+        blank=False,
+        unique=True,
+        verbose_name='B1 Slug'
+    )
     maintenance = models.BooleanField(default=True)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
@@ -1005,6 +1012,10 @@ class AdGroupSourceSettings(models.Model):
 class UploadBatch(models.Model):
     name = models.CharField(max_length=1024)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    status = models.IntegerField(
+        default=constants.UploadBatchStatus.IN_PROGRESS,
+        choices=constants.UploadBatchStatus.get_choices()
+    )
 
     class Meta:
         get_latest_by = 'created_dt'
@@ -1013,6 +1024,54 @@ class UploadBatch(models.Model):
 class ContentAd(models.Model):
     image_id = models.CharField(max_length=256, editable=False, null=True)
     batch = models.ForeignKey(UploadBatch, on_delete=models.PROTECT, null=True)
+
+    sources = models.ManyToManyField(Source, through='ContentAdSource')
+
+    def get_image_url(self, width=None, height=None):
+        parts = [settings.Z3_API_THUMBNAIL_URL, self.image_id]
+        if width and height:
+            parts.append('{}x{}.jpg'.format(width, height))
+
+        if None in parts:
+            return None
+
+        return '/'.join(parts)
+
+
+class ContentAdSource(models.Model):
+    source = models.ForeignKey(Source, on_delete=models.PROTECT)
+    content_ad = models.ForeignKey(ContentAd, on_delete=models.PROTECT)
+
+    submission_status = models.IntegerField(
+        default=constants.ContentAdSubmissionStatus.PENDING,
+        choices=constants.ContentAdSubmissionStatus.get_choices()
+    )
+    submission_errors = models.TextField(
+        blank=True,
+        null=True
+    )
+
+    state = models.IntegerField(
+        null=True,
+        default=constants.ContentAdSourceState.INACTIVE,
+        choices=constants.ContentAdSourceState.get_choices()
+    )
+    source_state = models.IntegerField(
+        null=True,
+        default=constants.ContentAdSourceState.INACTIVE,
+        choices=constants.ContentAdSourceState.get_choices()
+    )
+
+    source_content_ad_id = models.CharField(max_length=50, null=True)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+
+    def get_source_key(self):
+        if self.source.source_type and self.source.source_type.type == constants.SourceType.B1:
+            return [self.content_ad.id, self.source.bidder_slug]
+        else:
+            return self.source_content_ad_id
 
 
 class Article(models.Model):

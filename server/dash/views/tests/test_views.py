@@ -80,9 +80,11 @@ class ProcessUploadThreadTest(TestCase):
         batch_name = 'Test batch name'
         ad_group_id = 1
 
+        batch = models.UploadBatch.objects.create(name=batch_name)
+
         mock_process_image.return_value = image_id
 
-        thread = views.ProcessUploadThread(content_ads, batch_name, ad_group_id)
+        thread = views.ProcessUploadThread(content_ads, batch, ad_group_id)
         thread.run()
 
         mock_process_image.assert_called_with(image_url, crop_areas)
