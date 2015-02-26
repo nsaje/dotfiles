@@ -522,7 +522,7 @@ class Source(models.Model):
     bidder_slug = models.CharField(
         max_length=50,
         null=True,
-        blank=False,
+        blank=True,
         unique=True,
         verbose_name='B1 Slug'
     )
@@ -1073,9 +1073,9 @@ class ContentAdSource(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
 
-    def get_source_key(self):
+    def get_source_id(self):
         if self.source.source_type and self.source.source_type.type == constants.SourceType.B1:
-            return [self.content_ad.id, self.source.bidder_slug]
+            return self.content_ad.id
         else:
             return self.source_content_ad_id
 

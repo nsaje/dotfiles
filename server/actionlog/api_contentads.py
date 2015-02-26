@@ -24,7 +24,7 @@ def init_insert_content_ad_action(content_ad_source):
                                                             source=content_ad_source.source)
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key,
-        'content_ad_key': content_ad_source.get_source_key(),
+        'content_ad_id': content_ad_source.get_source_id(),
         'content_ad': {
             'state': content_ad_source.state,
             'title': content_ad_source.content_ad.article.title,
@@ -43,8 +43,15 @@ def init_insert_content_ad_action(content_ad_source):
 
 
 def init_update_content_ad_action(content_ad_source):
+    if content_ad_source.submission_status != dash.constants.ContentAdSubmissionStatus.APPROVED:
+        # don't update state for unapproved ads
+        return
+
+    ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.article.ad_group,
+                                                            source=content_ad_source.source)
     args = {
-        'content_ad_key': content_ad_source.get_source_key(),
+        'source_campaign_key': ad_group_source.source_campaign_key,
+        'content_ad_id': content_ad_source.get_source_id(),
         'content_ad': {
             'state': content_ad_source.state,
         }
