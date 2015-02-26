@@ -145,11 +145,13 @@ class SourceAction(ConstantBase):
     CAN_UPDATE_STATE = 1
     CAN_UPDATE_CPC = 2
     CAN_UPDATE_DAILY_BUDGET = 3
+    CAN_MANAGE_CONTENT_ADS = 4
 
     _VALUES = {
         CAN_UPDATE_STATE: 'Can update state',
         CAN_UPDATE_CPC: 'Can update CPC',
-        CAN_UPDATE_DAILY_BUDGET: 'Can update daily budget'
+        CAN_UPDATE_DAILY_BUDGET: 'Can update daily budget',
+        CAN_MANAGE_CONTENT_ADS: 'Can manage content ads',
     }
 
 
