@@ -602,6 +602,37 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
         return self.create_api_response(response_data)
 
 
+class AdGroupContentAdState(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
+    def post(self, request, ad_group_id, content_ad_id):
+        if not request.user.has_perm('zemauth.new_content_ads_tab'):
+            raise exc.ForbiddenError(message='Not allowed')
+
+        helpers.get_ad_group(request.user, ad_group_id)
+
+        data = json.loads(request.body)
+
+        state = data.get('state')
+        if state is None or state not in constants.ContentAdSourceState.get_all():
+            raise exc.ValidationError()
+
+        try:
+            content_ad = models.ContentAd.objects.get(pk=content_ad_id)
+        except models.ContentAd.DoesNotExist():
+            raise exc.MissingDataException()
+
+        for content_ad_source in content_ad.contentadsource_set.all():
+            prev_state = content_ad_source.state
+            content_ad_source.state = state
+            content_ad_source.save()
+
+            if prev_state != state and\
+                    content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
+                actionlog.api_contentads.init_update_content_ad_action(content_ad_source)
+
+        return self.create_api_response()
+
+
 class ProcessUploadThread(BaseThread):
     def __init__(self, content_ads, batch, ad_group_id, *args, **kwargs):
         self.content_ads = content_ads
@@ -610,6 +641,8 @@ class ProcessUploadThread(BaseThread):
         super(ProcessUploadThread, self).__init__(*args, **kwargs)
 
     def run(self):
+        content_ad_sources = []
+
         try:
             # ensure content ads are only commited to DB
             # if all of them are successfully processed
@@ -628,8 +661,21 @@ class ProcessUploadThread(BaseThread):
                         content_ad=content_ad
                     )
 
-                    self.batch.status = constants.UploadBatchStatus.DONE
-                    self.batch.save()
+                    for ad_group_source in models.AdGroupSource.objects.filter(ad_group_id=self.ad_group_id):
+                        if not ad_group_source.source.can_manage_content_ads():
+                            continue
+
+                        content_ad_source = models.ContentAdSource.objects.create(
+                            source=ad_group_source.source,
+                            content_ad=content_ad,
+                            submission_status=constants.ContentAdSubmissionStatus.PENDING,
+                            state=constants.ContentAdSourceState.ACTIVE
+                        )
+
+                        content_ad_sources.append(content_ad_source)
+
+                self.batch.status = constants.UploadBatchStatus.DONE
+                self.batch.save()
         except Exception as e:
             self.batch.status = constants.UploadBatchStatus.FAILED
             self.batch.save()
@@ -637,18 +683,8 @@ class ProcessUploadThread(BaseThread):
             if not isinstance(e, image.ImageProcessingException):
                 raise e
 
-        for content_ad in models.ContentAd.objects.filter(batch=self.batch):
-            for ad_group_source in models.AdGroupSource.objects.filter(ad_group_id=self.ad_group_id):
-                if not ad_group_source.source.can_manage_content_ads():
-                    continue
-
-                content_ad_source = models.ContentAdSource.objects.create(
-                    source=ad_group_source.source,
-                    content_ad=content_ad,
-                    submission_status=constants.ContentAdSubmissionStatus.PENDING,
-                    state=constants.ContentAdSourceState.INACTIVE
-                )
-                actionlog.api_contentads.init_insert_content_ad_action(content_ad_source)
+        for content_ad_source in content_ad_sources:
+            actionlog.api_contentads.init_insert_content_ad_action(content_ad_source)
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')

@@ -10,6 +10,11 @@ describe('AdGroupAdsPlusCtrl', function() {
 
     beforeEach(inject(function($controller, $rootScope) {
         $scope = $rootScope.$new();
+
+        $scope.isPermissionInternal = function() {return true;};
+        $scope.hasPermission = function() {return true;};
+        $scope.getAdGroupState = function() {};
+
         $controller('AdGroupAdsPlusCtrl', {$scope: $scope});
     }));
 

@@ -126,6 +126,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             nameCssClass: 'active-circle-icon-gray',
             field: 'status_setting',
             type: 'state',
+            enabledValue: constants.adGroupSettingsState.ACTIVE,
+            pausedValue: constants.adGroupSettingsState.INACTIVE,
             internal: $scope.isPermissionInternal('zemauth.set_ad_group_source_settings'),
             shown: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
             checked: true,
@@ -138,6 +140,11 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                         pollSourcesTableUpdates();
                     }
                 );
+            },
+            getDisabledMessage: function (row) {
+                return row.maintenance ? 
+                    'This source is currently in maintenance mode.' : 
+                    'This source must be managed manually.';
             },
             disabled: false
         },
@@ -687,7 +694,9 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                     $scope.notifications = data.notifications;
                     $scope.dataStatus = data.dataStatus;
 
+                    data.rows[4].bid_cpc = '0.9999';
                     updateTableData(data.rows, data.totals);
+                    console.log($scope.rows);
                 }
 
                 if (data.inProgress) {

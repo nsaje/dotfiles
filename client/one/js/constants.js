@@ -82,6 +82,10 @@ var constants = {
         DONE: 1,
         FAILED: 2,
         IN_PROGRESS: 3
+    },
+    contentAdSourceState: {
+        ACTIVE: 1,
+        INACTIVE: 2
     }
 };
 

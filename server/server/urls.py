@@ -115,16 +115,26 @@ urlpatterns += patterns(
         login_required(dash.views.table.AdGroupAdsTable.as_view()),
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/table/updates/',
+        login_required(dash.views.table.AdGroupAdsPlusTableUpdates.as_view()),
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/table/',
         login_required(dash.views.table.AdGroupAdsPlusTable.as_view()),
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload/status/(?P<batch_id>\d+)/',
-        login_required(dash.views.views.AdGroupAdsPlusUploadStatus.as_view()), name='ad_group_ads_plus_upload_status'
+        login_required(dash.views.views.AdGroupAdsPlusUploadStatus.as_view()),
+        name='ad_group_ads_plus_upload_status'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload/',
         login_required(dash.views.views.AdGroupAdsPlusUpload.as_view()), name='ad_group_ads_plus_upload'
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/(?P<content_ad_id>\d+)/state/',
+        login_required(dash.views.views.AdGroupContentAdState.as_view()),
+        name='ad_group_content_ad_state'
     ),
     url(
         r'^api/accounts/table/',

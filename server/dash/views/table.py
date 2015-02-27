@@ -919,6 +919,54 @@ class AdGroupAdsTable(api_common.BaseApiView):
         })
 
 
+class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_table_updates_get')
+    def get(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.new_content_ads_tab'):
+            raise exc.ForbiddenError(message='Not allowed')
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        last_change_dt = helpers.parse_datetime(request.GET.get('last_change'))
+
+        page = request.GET.get('page')
+        order = request.GET.get('order') or '-upload_time'
+        size = request.GET.get('size')
+        size = max(min(int(size or 5), 50), 1)
+
+        content_ads = models.ContentAd.objects.filter(
+            article__ad_group=ad_group).order_by(helpers.transform_content_ad_order(order))
+
+        page_content_ads, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
+            content_ads, page, size)
+
+        last_change_dt, changed_content_ads = helpers.get_content_ad_last_change_dt(
+            page_content_ads, last_change_dt)
+
+        rows = {}
+        for content_ad in changed_content_ads:
+            submission_status = helpers.get_content_ad_submission_status(content_ad.contentadsource_set.all())
+
+            if any(content_ad_source.state == constants.ContentAdSourceState.ACTIVE
+                   for content_ad_source in content_ad.contentadsource_set.all()):
+                status_setting = constants.ContentAdSourceState.ACTIVE
+            else:
+                status_setting = constants.ContentAdSourceState.INACTIVE
+
+            rows[str(content_ad.id)] = {
+                'status_setting': status_setting,
+                'submission_status': submission_status
+            }
+
+        notifications = helpers.get_content_ad_notifications(page_content_ads)
+
+        return self.create_api_response({
+            'rows': rows,
+            'notifications': notifications,
+            'last_change': last_change_dt,
+            'in_progress': any(n['in_progress'] for n in notifications.values())
+        })
+
+
 class AdGroupAdsPlusTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_table_get')
     def get(self, request, ad_group_id):
@@ -933,16 +981,12 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         size = max(min(int(size or 5), 50), 1)
 
         content_ads = models.ContentAd.objects.filter(
-            article__ad_group=ad_group).order_by(self._transform_order(order))
+            article__ad_group=ad_group).order_by(helpers.transform_content_ad_order(order))
 
         page_content_ads, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
             content_ads, page, size)
 
-        rows = self._get_rows(page_content_ads)
-
-        if ad_group in models.AdGroup.demo_objects.all():
-            for i, row in enumerate(rows):
-                row['url'] = 'http://www.example.com/{}/{}'.format(slugify(ad_group.name), i)
+        rows = self._get_rows(page_content_ads, ad_group)
 
         return self.create_api_response({
             'rows': rows,
@@ -954,52 +998,41 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 'startIndex': start_index,
                 'endIndex': end_index,
                 'size': size
-            }
+            },
+            'notifications': helpers.get_content_ad_notifications(page_content_ads),
+            'last_change': helpers.get_content_ad_last_change_dt(page_content_ads)[0]
         })
 
-    def _get_submission_status_item(self, content_ad_source):
-        return {
-            'name': content_ad_source.source.name,
-            'status': content_ad_source.submission_status,
-            'text': '{} / {}'.format(
-                constants.ContentAdSubmissionStatus.get_text(content_ad_source.submission_status),
-                constants.ContentAdSourceState.get_text(content_ad_source.source_state))
-        }
-
-    def _get_rows(self, content_ads):
+    def _get_rows(self, content_ads, ad_group):
         rows = []
         for content_ad in content_ads:
-            submission_status = [self._get_submission_status_item(content_ad_source)
-                                 for content_ad_source in content_ad.contentadsource_set.all()]
+            submission_status = helpers.get_content_ad_submission_status(content_ad.contentadsource_set.all())
+
+            if any(content_ad_source.state == constants.ContentAdSourceState.ACTIVE
+                   for content_ad_source in content_ad.contentadsource_set.all()):
+                status_setting = constants.ContentAdSourceState.ACTIVE
+            else:
+                status_setting = constants.ContentAdSourceState.INACTIVE
+
+            url = 'http://www.example.com/{}/{}'.format(ad_group.name, content_ad.id)\
+                if ad_group in models.AdGroup.demo_objects.all() else content_ad.article.url
 
             rows.append({
+                'id': str(content_ad.id),
                 'title': content_ad.article.title,
-                'url': content_ad.article.url,
+                'url': url,
                 'batch_name': content_ad.batch.name,
                 'upload_time': content_ad.batch.created_dt,
                 'image_urls': {
                     'square': content_ad.get_image_url(120, 120),
                     'landscape': content_ad.get_image_url(193, 120)
                 },
-                'submission_status': submission_status
+                'submission_status': submission_status,
+                'status_setting': status_setting,
+                'editable_fields': ['status_setting']
             })
 
         return rows
-
-    def _transform_order(self, order):
-        desc = False
-        if order.startswith('-'):
-            order = order.replace('-', '')
-            desc = True
-
-        db_order = {
-            'title': 'article__title',
-            'url': 'article__url',
-            'batch_name': 'batch__name',
-            'upload_time': 'batch__created_dt'
-        }[order]
-
-        return '{}{}'.format('-' if desc else '', db_order)
 
 
 class CampaignAdGroupsTable(api_common.BaseApiView):

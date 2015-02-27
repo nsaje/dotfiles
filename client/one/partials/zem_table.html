@@ -111,7 +111,7 @@
                                     popover-trigger="mouseenter"
                                     popover-html-unsafe="{{ notifications[row.id].message }}"
                                     popover-placement="bottom">
-                                    <span class="text" ng-class="{'important': notifications[row.id].important}">{{ row[col.field] }}</span>
+                                    <span ng-if="row[col.field]" class="text" ng-class="{'important': notifications[row.id].important}">{{ row[col.field] }}</span>
                                     <span ng-if="notifications[row.id].inProgress" class="loader"></span>
                                 </span>
                                 <span ng-switch-when="dataStatus">
@@ -131,9 +131,11 @@
                                     <zem-state-selector 
                                         id="row.id"
                                         on-change="col.onChange",
-                                        is-editable="row.editable_fields.indexOf(col.field) !== -1"
+                                        is-editable="row.editable_fields && row.editable_fields.indexOf(col.field) !== -1"
                                         value="row[col.field]"
-                                        maintenance="row.maintenance">
+                                        enabled-value="col.enabledValue"
+                                        paused-value="col.pausedValue"
+                                        disabled-message="col.getDisabledMessage(row)">
                                     </zem-state-selector>
                                 </span>
                             </span>

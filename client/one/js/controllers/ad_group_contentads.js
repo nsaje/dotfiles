@@ -30,7 +30,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
     $scope.columns = [
         {
             name: 'Title',
-            field: 'title_link',
+            field: 'titleLink',
             unselectable: true,
             checked: true,
             type: 'linkText',
@@ -46,7 +46,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         },
         {
             name: 'URL',
-            field: 'url_link',
+            field: 'urlLink',
             checked: true,
             type: 'linkText',
             shown: true,
