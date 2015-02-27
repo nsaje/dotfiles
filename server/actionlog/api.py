@@ -124,8 +124,7 @@ def cancel_expired_actionlogs():
 def send_delayed_actionlogs(ad_group_sources=None):
     delayed_actionlogs = models.ActionLog.objects.filter(
         state=constants.ActionState.DELAYED,
-        action_type=constants.ActionType.AUTOMATIC,
-        expiration_dt__lt=datetime.utcnow()
+        action_type=constants.ActionType.AUTOMATIC
     )
 
     if ad_group_sources is not None:
