@@ -29,7 +29,7 @@ def init_insert_content_ad_action(content_ad_source):
             'state': content_ad_source.state,
             'title': content_ad_source.content_ad.article.title,
             'url': content_ad_source.content_ad.article.url,
-            'image': content_ad_source.content_ad.get_image_url(),
+            'image_id': content_ad_source.content_ad.image_id,
         }
     }
 
