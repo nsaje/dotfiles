@@ -73,7 +73,8 @@ def set_ad_group_source_settings(changes, ad_group_source, order=None):
 								action=constants.Action.SET_CAMPAIGN_STATE)
 
     if len(similar_waiting_actions) > models.MAX_SIMILAR_WAITING_ACTIONS:
-        similar_waiting_actions.update(state=constants.ActionState.DELAYED)
+        action.state=constants.ActionState.DELAYED
+        action.save()
         logger.info("There is one or more similar action(s) in progress. Action (%s) will be called from it's callback.", action.id)
         return
 
@@ -119,17 +120,19 @@ def cancel_expired_actionlogs():
         actionlog.save()
 
 @transaction.atomic
-def send_delayed_actionlogs():
-    delayed_actionlogs = models.ActionLog.objects.\
-        filter(
-            state=constants.ActionState.DELAYED,
-            action_type=constants.ActionType.AUTOMATIC,
-            expiration_dt__lt=datetime.utcnow()
-        )
+def send_delayed_actionlogs(ad_group_sources=None):
+    delayed_actionlogs = models.ActionLog.objects.filter(
+        state=constants.ActionState.DELAYED,
+        action_type=constants.ActionType.AUTOMATIC,
+        expiration_dt__lt=datetime.utcnow()
+    )
 
-    processed_adgroupsource_actionlogs = set()
+    if ad_group_sources is not None:
+        delayed_actionlogs.filter(ad_group_source__in=ad_group_sources)
+
+    processed_adgroupsource_ids = set()
     for actionlog in delayed_actionlogs:
-        if actionlog.ad_group_source.id in processed_adgroupsource_actionlogs:
+        if actionlog.ad_group_source.id in processed_adgroupsource_ids:
             continue
 
         logger.info(
@@ -140,9 +143,10 @@ def send_delayed_actionlogs():
 
         zwei_actions.send_multiple([actionlog])
         actionlog.state = constants.ActionState.WAITING
+        actionlog.expiration_dt = models._due_date_default()
         actionlog.save()
 
-        processed_adgroupsource_actionlogs.add(actionlog.ad_group_source.id)
+        processed_adgroupsource_ids.add(actionlog.ad_group_source.id)
 
 def get_ad_group_sources_waiting(**kwargs):
     constraints = {}

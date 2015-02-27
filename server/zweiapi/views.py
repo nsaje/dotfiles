@@ -137,7 +137,7 @@ def _process_zwei_response(action, data):
         conf = action.payload['args']['conf']
 
         dashapi.update_ad_group_source_state(ad_group_source, conf)
-        _process_delayed_action(ad_group_source)
+        actionlog.api.send_delayed_actionlogs([ad_group_source])
 
     elif action.action == actionlogconstants.Action.CREATE_CAMPAIGN:
         dashapi.update_campaign_key(action.ad_group_source, data['data']['source_campaign_key'])
@@ -160,20 +160,6 @@ def _process_zwei_response(action, data):
     action.state = actionlogconstants.ActionState.SUCCESS
     action.save()
 
-def _process_delayed_action(ad_group_source):
-    try:
-        similar_delayed_action = actionlogmodels.ActionLog.objects.filter(
-                                ad_group_source=ad_group_source,
-                                state=actionlogconstants.ActionState.DELAYED,
-                                action_type=actionlogconstants.ActionType.AUTOMATIC).earliest('created_dt')
-
-        zwei_actions.send(similar_delayed_action)
-        similar_delayed_action.state = actionlogconstants.ActionState.WAITING
-        similar_delayed_action.expiration_dt = actionlogmodels._due_date_default()
-        similar_delayed_action.save()
-
-    except actionlogmodels.ActionLog.DoesNotExist:
-        logger.debug("No similar waiting action. No need for Zwei API call.")
 
 def _has_changed(data, ad_group, source, date):
     if not settings.USE_HASH_CACHE:
