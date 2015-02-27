@@ -135,6 +135,7 @@ def _process_zwei_response(action, data):
         dashapi.update_ad_group_source_state(action.ad_group_source, conf)
     elif action.action == actionlogconstants.Action.CREATE_CAMPAIGN:
         dashapi.update_campaign_key(action.ad_group_source, data['data']['source_campaign_key'])
+        dashapi.add_content_ad_sources(action.ad_group_source)
     elif action.action == actionlogconstants.Action.INSERT_CONTENT_AD:
         if 'source_content_ad_id' in data['data']:
             dashapi.insert_content_ad_callback(

@@ -23,6 +23,24 @@ def cc_to_decimal(val_cc):
 
 
 @transaction.atomic
+def add_content_ad_sources(ad_group_source):
+    if not ad_group_source.source.can_manage_content_ads():
+        return
+
+    content_ads = models.ContentAd.objects.filter(article__ad_group=ad_group_source.ad_group)
+
+    for content_ad in content_ads:
+        content_ad_source = models.ContentAdSource.objects.create(
+            source=ad_group_source.source,
+            content_ad=content_ad,
+            submission_status=constants.ContentAdSubmissionStatus.PENDING,
+            state=constants.ContentAdSourceState.ACTIVE
+        )
+
+        actionlog.api_contentads.init_insert_content_ad_action(content_ad_source)
+
+
+@transaction.atomic
 def update_ad_group_source_state(ad_group_source, conf):
     for key, val in conf.items():
         if key in ('cpc_cc', 'daily_budget_cc'):
