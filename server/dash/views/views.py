@@ -641,6 +641,8 @@ class ProcessUploadThread(BaseThread):
         super(ProcessUploadThread, self).__init__(*args, **kwargs)
 
     def run(self):
+        content_ad_sources = []
+
         try:
             # ensure content ads are only commited to DB
             # if all of them are successfully processed
@@ -659,10 +661,6 @@ class ProcessUploadThread(BaseThread):
                         content_ad=content_ad
                     )
 
-                    self.batch.status = constants.UploadBatchStatus.DONE
-                    self.batch.save()
-
-                for content_ad in models.ContentAd.objects.filter(batch=self.batch):
                     for ad_group_source in models.AdGroupSource.objects.filter(ad_group_id=self.ad_group_id):
                         if not ad_group_source.source.can_manage_content_ads():
                             continue
@@ -671,15 +669,22 @@ class ProcessUploadThread(BaseThread):
                             source=ad_group_source.source,
                             content_ad=content_ad,
                             submission_status=constants.ContentAdSubmissionStatus.PENDING,
-                            state=constants.ContentAdSourceState.INACTIVE
+                            state=constants.ContentAdSourceState.ACTIVE
                         )
-                        actionlog.api_contentads.init_insert_content_ad_action(content_ad_source)
+
+                        content_ad_sources.append(content_ad_source)
+
+                self.batch.status = constants.UploadBatchStatus.DONE
+                self.batch.save()
         except Exception as e:
             self.batch.status = constants.UploadBatchStatus.FAILED
             self.batch.save()
 
             if not isinstance(e, image.ImageProcessingException):
                 raise e
+
+        for content_ad_source in content_ad_sources:
+            actionlog.api_contentads.init_insert_content_ad_action(content_ad_source)
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')
