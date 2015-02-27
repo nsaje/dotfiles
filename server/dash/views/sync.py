@@ -7,6 +7,7 @@ from dash import models
 from utils import api_common
 from utils import statsd_helper
 from utils.threads import BaseThread
+from utils import request_provider
 
 
 logger = logging.getLogger(__name__)
@@ -25,6 +26,8 @@ class TriggerAccountSyncThread(BaseThread):
                 actionlog.sync.AccountSync(account, sources=self.sources).trigger_all()
         except Exception:
             logger.exception('Exception in TriggerAccountSyncThread')
+        finally:
+            request_provider.delete()
 
 
 class TriggerCampaignSyncThread(BaseThread):
@@ -40,6 +43,8 @@ class TriggerCampaignSyncThread(BaseThread):
                 actionlog.sync.CampaignSync(campaign, sources=self.sources).trigger_all()
         except Exception:
             logger.exception('Exception in TriggerCampaignSyncThread')
+        finally:
+            request_provider.delete()
 
 
 class TriggerAdGroupSyncThread(BaseThread):
@@ -54,6 +59,8 @@ class TriggerAdGroupSyncThread(BaseThread):
             actionlog.sync.AdGroupSync(self.ad_group, sources=self.sources).trigger_all()
         except Exception:
             logger.exception('Exception in TriggerAdGroupSyncThread')
+        finally:
+            request_provider.delete()
 
 
 class AccountSync(api_common.BaseApiView):

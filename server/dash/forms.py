@@ -71,6 +71,22 @@ class AdGroupSettingsForm(forms.Form):
         choices=constants.AdTargetCountry.get_choices()
     )
     tracking_code = forms.CharField(required=False)
+    display_url = forms.CharField(
+        max_length=25,
+        required=False
+    )
+    brand_name = forms.CharField(
+        max_length=25,
+        required=False
+    )
+    description = forms.CharField(
+        max_length=100,
+        required=False
+    )
+    call_to_action = forms.CharField(
+        max_length=25,
+        required=False
+    )
 
     def __init__(self, current_settings, *args, **kwargs):
         self.current_settings = current_settings

@@ -23,6 +23,7 @@ from utils import statsd_helper
 from utils import api_common
 from utils import exc
 from utils.threads import BaseThread
+from utils import request_provider
 
 import actionlog.api
 import actionlog.api_contentads
@@ -680,11 +681,15 @@ class ProcessUploadThread(BaseThread):
             self.batch.status = constants.UploadBatchStatus.FAILED
             self.batch.save()
 
+            request_provider.delete()
+
             if not isinstance(e, image.ImageProcessingException):
                 raise e
 
         for content_ad_source in content_ad_sources:
             actionlog.api_contentads.init_insert_content_ad_action(content_ad_source)
+
+        request_provider.delete()
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')

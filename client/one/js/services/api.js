@@ -662,7 +662,11 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 }),
                 targetRegionsMode: settings.target_regions && settings.target_regions.length ? 'custom' : 'worldwide',
                 targetRegions: settings.target_regions,
-                trackingCode: settings.tracking_code
+                trackingCode: settings.tracking_code,
+                displayUrl: settings.display_url,
+                brandName: settings.brand_name,
+                description: settings.description,
+                callToAction: settings.call_to_action
             };
         }
 
@@ -684,7 +688,11 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 daily_budget_cc: settings.dailyBudget,
                 target_devices: targetDevices,
                 target_regions: settings.targetRegionsMode === 'worldwide' ? [] : settings.targetRegions,
-                tracking_code: settings.trackingCode
+                tracking_code: settings.trackingCode,
+                display_url: settings.displayUrl,
+                brand_name: settings.brandName,
+                description: settings.description,
+                call_to_action: settings.callToAction
             };
 
             return result;
@@ -700,7 +708,11 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 dailyBudget: errors.daily_budget_cc,
                 targetDevices: errors.target_devices,
                 targetRegions: errors.target_regions,
-                trackingCode: errors.tracking_code
+                trackingCode: errors.tracking_code,
+                displayUrl: errors.display_url,
+                brandName: errors.brand_name,
+                description: errors.description,
+                callToAction: errors.call_to_action
             };
 
             return result;

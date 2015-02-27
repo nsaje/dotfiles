@@ -22,6 +22,8 @@ logger = logging.getLogger(__name__)
 def init_insert_content_ad_action(content_ad_source):
     ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.article.ad_group,
                                                             source=content_ad_source.source)
+    settings = ad_group_source.ad_group.get_current_settings()
+
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key,
         'content_ad_id': content_ad_source.get_source_id(),
@@ -30,6 +32,10 @@ def init_insert_content_ad_action(content_ad_source):
             'title': content_ad_source.content_ad.article.title,
             'url': content_ad_source.content_ad.article.url,
             'image_id': content_ad_source.content_ad.image_id,
+            'display_url': settings.display_url,
+            'brand_name': settings.brand_name,
+            'description': settings.description,
+            'call_to_action': settings.call_to_action
         }
     }
 
