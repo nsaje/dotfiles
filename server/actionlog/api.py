@@ -73,7 +73,7 @@ def set_ad_group_source_settings(changes, ad_group_source, order=None):
 								action=constants.Action.SET_CAMPAIGN_STATE)
 
     if len(similar_waiting_actions) > models.MAX_SIMILAR_WAITING_ACTIONS:
-        action.state=constants.ActionState.DELAYED
+        action.state = constants.ActionState.DELAYED
         action.expiration = None
         action.save()
         logger.info("There is one or more similar action(s) in progress. Action (%s) will be called from it's callback.", action.id)
