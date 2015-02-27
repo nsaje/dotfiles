@@ -74,7 +74,7 @@ class ContentAdsApiTestCase(TestCase):
                     'state': dash.constants.ContentAdSourceState.ACTIVE,
                     'title': content_ad_source.content_ad.article.title,
                     'url': content_ad_source.content_ad.article.url,
-                    'image': content_ad_source.content_ad.get_image_url(),
+                    'image_id': content_ad_source.content_ad.image_id,
                     'display_url': ad_group_settings.display_url,
                     'brand_name': ad_group_settings.brand_name,
                     'description': ad_group_settings.description,

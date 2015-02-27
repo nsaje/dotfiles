@@ -1042,10 +1042,8 @@ class ContentAd(models.Model):
 
     sources = models.ManyToManyField(Source, through='ContentAdSource')
 
-    def get_image_url(self, width=None, height=None):
-        parts = [settings.Z3_API_THUMBNAIL_URL, self.image_id]
-        if width and height:
-            parts.append('{}x{}.jpg'.format(width, height))
+    def get_image_url(self, width, height):
+        parts = [settings.Z3_API_THUMBNAIL_URL, self.image_id, '{}x{}.jpg'.format(width, height)]
 
         if None in parts:
             return None

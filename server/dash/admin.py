@@ -259,6 +259,7 @@ class SourceAdmin(admin.ModelAdmin):
         'name',
         'source_type',
         'tracking_slug',
+        'bidder_slug',
         'maintenance',
         'created_dt',
         'modified_dt',
