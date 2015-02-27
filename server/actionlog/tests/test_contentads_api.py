@@ -72,7 +72,7 @@ class ContentAdsApiTestCase(TestCase):
                     'state': dash.constants.ContentAdSourceState.ACTIVE,
                     'title': content_ad_source.content_ad.article.title,
                     'url': content_ad_source.content_ad.article.url,
-                    'image': content_ad_source.content_ad.image_id,
+                    'image_id': content_ad_source.content_ad.image_id,
                 },
             },
             'callback_url': callback
