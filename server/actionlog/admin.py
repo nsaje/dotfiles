@@ -87,6 +87,7 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
         constants.ActionState.FAILED: '#d9534f',
         constants.ActionState.ABORTED: '#777',
         constants.ActionState.WAITING: '#428bca',
+        constants.ActionState.DELAYED: '#E6C440',
     }
 
     def state_(self, obj):

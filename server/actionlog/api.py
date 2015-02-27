@@ -140,11 +140,11 @@ def send_delayed_actionlogs(ad_group_sources=None):
             actionlog,
             constants.ActionState.WAITING
         )
-
-        zwei_actions.send_multiple([actionlog])
         actionlog.state = constants.ActionState.WAITING
         actionlog.expiration_dt = models._due_date_default()
         actionlog.save()
+
+        zwei_actions.send_multiple([actionlog])
 
         processed_adgroupsource_ids.add(actionlog.ad_group_source.id)
 
