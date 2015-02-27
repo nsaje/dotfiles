@@ -57,8 +57,8 @@ def get_request():
 
 
 def mark_as_unsafe_to_delete():
-    return request_accessor.send(None, unsafe_to_delete=True)[0][1]
+    request_accessor.send(None, unsafe_to_delete=True)
 
 
 def delete():
-    return request_accessor.send(None, delete=True)[0][1]
+    request_accessor.send(None, delete=True)

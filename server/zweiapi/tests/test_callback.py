@@ -154,7 +154,25 @@ class FetchReportsTestCase(TestCase):
             '7a97d7b612f435a2dba269614e90e3ac'
         )
 
-        # again with different data
+    @override_settings(USE_HASH_CACHE=True)
+    @mock.patch('utils.request_signer.verify_wsgi_request')
+    def test_fetch_reports_hash_cache_changed_data(self, _):
+        views.cache.clear()
+        views.cache.set('fetch_reports_response_hash_1_1_2014-07-01', '7a97d7b612f435a2dba269614e90e3ac')
+
+        article_row = {
+            'title': 'Article 1',
+            'url': 'http://example.com',
+            'impressions': 50,
+            'clicks': 2,
+            'cost_cc': 2800
+        }
+        zwei_response_data = {
+            'status': 'success',
+            'data': [article_row]
+        }
+
+        ad_group_source = AdGroupSource.objects.get(id=1)
         article_row['title'] = 'Article 2'
 
         response = self._executeAction(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)

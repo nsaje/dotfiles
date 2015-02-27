@@ -60,6 +60,8 @@ class ContentAdsApiTestCase(TestCase):
         callback = urlparse.urljoin(
             settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
         )
+
+        ad_group_settings = dash.models.AdGroupSettings.objects.get(pk=1)
         payload = {
             'source': ad_group_source.source.source_type.type,
             'action': constants.Action.INSERT_CONTENT_AD,
@@ -73,6 +75,10 @@ class ContentAdsApiTestCase(TestCase):
                     'title': content_ad_source.content_ad.article.title,
                     'url': content_ad_source.content_ad.article.url,
                     'image': content_ad_source.content_ad.get_image_url(),
+                    'display_url': ad_group_settings.display_url,
+                    'brand_name': ad_group_settings.brand_name,
+                    'description': ad_group_settings.description,
+                    'call_to_action': ad_group_settings.call_to_action
                 },
             },
             'callback_url': callback

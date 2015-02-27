@@ -40,6 +40,10 @@ class AdGroupSettingsTest(TestCase):
             'target_devices': [],
             'tracking_code': u'',
             'target_regions': [],
+            'display_url': 'example.com',
+            'brand_name': 'Example',
+            'description': 'Example description',
+            'call_to_action': 'Call to action'
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),

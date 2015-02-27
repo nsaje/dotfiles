@@ -649,8 +649,7 @@ class ProcessUploadThread(BaseThread):
             # if all of them are successfully processed
             with transaction.atomic():
                 for ad in self.content_ads:
-                    #image_id = image.process_image(ad.get('image_url'), ad.get('crop_areas'))
-                    image_id = '123'
+                    image_id = image.process_image(ad.get('image_url'), ad.get('crop_areas'))
                     content_ad = models.ContentAd.objects.create(
                         image_id=image_id,
                         batch=self.batch
