@@ -73,19 +73,19 @@ class AdGroupSettingsForm(forms.Form):
     tracking_code = forms.CharField(required=False)
     display_url = forms.CharField(
         max_length=25,
-        error_messages={'required': 'Please specify display url.'}
+        required=False
     )
     brand_name = forms.CharField(
         max_length=25,
-        error_messages={'required': 'Please specify brand name.'}
+        required=False
     )
     description = forms.CharField(
         max_length=100,
-        error_messages={'required': 'Please specify description.'}
+        required=False
     )
     call_to_action = forms.CharField(
         max_length=25,
-        error_messages={'required': 'Please specify call to action text.'}
+        required=False
     )
 
     def __init__(self, current_settings, *args, **kwargs):
