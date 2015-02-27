@@ -773,7 +773,11 @@ class AdGroupSettings(SettingsBase):
         'target_devices',
         'target_regions',
         'tracking_code',
-        'archived'
+        'archived',
+        'display_url',
+        'brand_name',
+        'description',
+        'call_to_action'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -804,6 +808,11 @@ class AdGroupSettings(SettingsBase):
     target_regions = jsonfield.JSONField(blank=True, default=[])
     tracking_code = models.TextField(blank=True)
     archived = models.BooleanField(default=False)
+    display_url = models.CharField(max_length=25, blank=True, default='')
+    brand_name = models.CharField(max_length=25, blank=True, default='')
+    description = models.CharField(max_length=100, blank=True, default='')
+    call_to_action = models.CharField(max_length=25, blank=True, default='')
+
     changes_text = models.TextField(blank=True, null=True)
 
     class Meta:

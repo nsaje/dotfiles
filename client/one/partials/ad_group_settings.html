@@ -86,6 +86,54 @@
             <label ng-repeat="error in errors.cpc" class="control-label error" for="cpc-input">{{ error }}</label>
         </div>
 
+        <div class="form-group" ng-class="{'has-error': !!errors.displayUrl}">
+            <label for="display-url-input" class="col-xs-2 control-label">
+                Display URL
+                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Advertiser's display URL." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-2">
+                <input id="display-url-input" type="text" class="form-control" ng-model="settings.displayUrl">
+            </div>
+
+            <label ng-repeat="error in errors.displayUrl" class="control-label error" for="display-url-input">{{ error }}</label>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.brandName}">
+            <label for="brand-name-input" class="col-xs-2 control-label">
+                Brand name
+                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Advertiser's brand name." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-2">
+                <input id="brand-name-input" type="text" class="form-control" ng-model="settings.brandName">
+            </div>
+
+            <label ng-repeat="error in errors.brandName" class="control-label error" for="brand-name-input">{{ error }}</label>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.description}">
+            <label for="description-input" class="col-xs-2 control-label">
+                Description
+                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Description of the ad group." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-3">
+                <input id="description-input" type="text" class="form-control" ng-model="settings.description">
+            </div>
+
+            <label ng-repeat="error in errors.description" class="control-label error" for="description-input">{{ error }}</label>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.callToAction}">
+            <label for="call-to-action-input" class="col-xs-2 control-label">
+                Call to action
+                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Call to action text." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-2">
+                <input id="call-to-action-input" type="text" class="form-control" ng-model="settings.callToAction">
+            </div>
+
+            <label ng-repeat="error in errors.callToAction" class="control-label error" for="call-to-action-input">{{ error }}</label>
+        </div>
+
         <div class="form-vertical">
             <div class="form-group" ng-class="{'has-error': !!errors.targetDevices}">
                 <label class="col-xs-2 control-label">
