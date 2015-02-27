@@ -66,6 +66,19 @@ def set_ad_group_source_settings(changes, ad_group_source, order=None):
         conf=changes,
         order=order
     )
+
+    similar_waiting_actions = models.ActionLog.objects.filter(ad_group_source=ad_group_source,
+								state=constants.ActionState.WAITING,
+								action_type=constants.ActionType.AUTOMATIC,
+								action=constants.Action.SET_CAMPAIGN_STATE)
+
+    if len(similar_waiting_actions) > models.MAX_SIMILAR_WAITING_ACTIONS:
+        action.state = constants.ActionState.DELAYED
+        action.expiration = None
+        action.save()
+        logger.info("There is one or more similar action(s) in progress. Action (%s) will be called from it's callback.", action.id)
+        return
+
     if action.action_type == constants.ActionType.AUTOMATIC:
         zwei_actions.send_multiple([action])
 
@@ -107,6 +120,33 @@ def cancel_expired_actionlogs():
         actionlog.state = constants.ActionState.FAILED
         actionlog.save()
 
+@transaction.atomic
+def send_delayed_actionlogs(ad_group_sources=None):
+    delayed_actionlogs = models.ActionLog.objects.filter(
+        state=constants.ActionState.DELAYED,
+        action_type=constants.ActionType.AUTOMATIC
+    )
+
+    if ad_group_sources is not None:
+        delayed_actionlogs.filter(ad_group_source__in=ad_group_sources)
+
+    processed_adgroupsource_ids = set()
+    for actionlog in delayed_actionlogs:
+        if actionlog.ad_group_source.id in processed_adgroupsource_ids:
+            continue
+
+        logger.info(
+            'Action log %s delayed state expired. Updating state to: %s.',
+            actionlog,
+            constants.ActionState.WAITING
+        )
+
+        zwei_actions.send_multiple([actionlog])
+        actionlog.state = constants.ActionState.WAITING
+        actionlog.expiration_dt = models._due_date_default()
+        actionlog.save()
+
+        processed_adgroupsource_ids.add(actionlog.ad_group_source.id)
 
 def get_ad_group_sources_waiting(**kwargs):
     constraints = {}
@@ -190,6 +230,11 @@ def count_waiting_stats_actions():
         state=constants.ActionState.WAITING
     ).count()
 
+
+def count_delayed_stats_actions():
+    return models.ActionLog.objects.filter(
+        state=constants.ActionState.DELAYED
+    ).count()
 
 def count_failed_stats_actions():
     return models.ActionLog.objects.filter(

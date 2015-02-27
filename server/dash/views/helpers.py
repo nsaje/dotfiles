@@ -204,7 +204,7 @@ def get_ad_group_sources_last_change_dt(ad_group_sources, last_change_dt=None):
 
 def _get_keys_in_progress(ad_group_source):
     actions = ad_group_source.actionlog_set.filter(
-        state=actionlog.constants.ActionState.WAITING,
+        state__in=(actionlog.constants.ActionState.WAITING, actionlog.constants.ActionState.DELAYED),
         action=actionlog.constants.Action.SET_CAMPAIGN_STATE
     )
 

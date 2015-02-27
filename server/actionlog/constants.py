@@ -29,12 +29,14 @@ class ActionState(ConstantBase):
     WAITING = 1
     SUCCESS = 2
     ABORTED = 3
+    DELAYED = 4
 
     _VALUES = {
         FAILED: 'Failed',
         WAITING: 'Waiting',
         SUCCESS: 'Success',
         ABORTED: 'Aborted',
+        DELAYED: 'Delayed',
     }
 
 

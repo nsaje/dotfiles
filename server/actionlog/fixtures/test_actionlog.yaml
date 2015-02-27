@@ -303,3 +303,48 @@
         modified_by: null
     model: actionlog.actionlog
     pk: 20
+
+-   fields:
+        action: 'set_campaign_state'
+        state: 4
+        action_type: 1
+        ad_group_source: 1
+        message: ''
+        order: 2
+        expiration_dt: '2015-02-25T18:30:00'
+        created_dt: '2015-02-25T18:28:00'
+        modified_dt: '2015-02-25T18:30:00'
+        created_by: null
+        modified_by: null
+    model: actionlog.actionlog
+    pk: 21
+
+-   fields:
+        action: 'set_campaign_state'
+        state: 4
+        action_type: 1
+        ad_group_source: 1
+        message: ''
+        order: 2
+        expiration_dt: '2015-02-25T18:30:00'
+        created_dt: '2015-02-25T18:29:00'
+        modified_dt: '2015-02-25T18:30:00'
+        created_by: null
+        modified_by: null
+    model: actionlog.actionlog
+    pk: 22
+
+-   fields:
+        action: 'set_campaign_state'
+        state: 4
+        action_type: 1
+        ad_group_source: 2
+        message: ''
+        order: 2
+        expiration_dt: '2015-02-25T18:30:00'
+        created_dt: '2015-02-25T18:31:00'
+        modified_dt: '2015-02-25T18:30:00'
+        created_by: null
+        modified_by: null
+    model: actionlog.actionlog
+    pk: 23

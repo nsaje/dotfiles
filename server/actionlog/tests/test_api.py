@@ -282,7 +282,8 @@ class ActionLogApiTestCase(TestCase):
 
         self.assertEqual(action1.action, constants.Action.SET_CAMPAIGN_STATE)
         self.assertEqual(action1.action_type, constants.ActionType.AUTOMATIC)
-        self.assertEqual(action1.state, constants.ActionState.WAITING)
+        # Action can be delayed since we are changing two settings in source settings
+        self.assertTrue(action1.state in (constants.ActionState.DELAYED, constants.ActionState.WAITING))
         self.assertEqual(action1.payload.get('args', {}).get('conf'),
                          {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
 
@@ -304,7 +305,8 @@ class ActionLogApiTestCase(TestCase):
         self.assertNotEqual(action1.pk, action2.pk)
         self.assertEqual(action2.action, constants.Action.SET_CAMPAIGN_STATE)
         self.assertEqual(action2.action_type, constants.ActionType.AUTOMATIC)
-        self.assertEqual(action2.state, constants.ActionState.WAITING)
+        # Action can be delayed since we are changing two settings in source settings
+        self.assertTrue(action1.state in (constants.ActionState.DELAYED, constants.ActionState.WAITING))
         self.assertEqual(action2.payload.get('args', {}).get('conf'),
                          {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
 
@@ -356,6 +358,68 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action.state, constants.ActionState.WAITING)
         self.assertEqual(action.payload.get('args', {}).get('conf'),
                          {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
+
+    @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
+    def test_delaying_set_ad_group_source_settings(self):
+        utcnow = datetime.datetime.utcnow()
+        models.datetime.utcnow = classmethod(lambda cls: utcnow)
+        ad_group = dashmodels.AdGroup.objects.get(id=1)
+
+        # Source is IS in maintenance mode
+        ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group,
+                                                                  source__maintenance=True)[0]
+        # Only one change per ad_group_source
+        changes = {'cpc_cc': 0.3}
+        api.set_ad_group_source_settings(changes, ad_group_source)
+        action = models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source
+        ).latest('created_dt')
+
+        self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(action.action_type, constants.ActionType.MANUAL)
+        self.assertEqual(action.state, constants.ActionState.WAITING)
+        self.assertEqual(action.payload.get('args', {}).get('conf'), changes)
+
+        # Two changes
+        changes = {'cpc_cc': 0.3, 'daily_budget_cc': 100.0}
+        api.set_ad_group_source_settings(changes, ad_group_source)
+        action = models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source
+        ).latest('created_dt')
+
+        self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(action.action_type, constants.ActionType.MANUAL)
+        self.assertEqual(action.state, constants.ActionState.WAITING)
+        self.assertEqual(action.payload.get('args', {}).get('conf'),changes)
+
+        # Source is NOT in maintenance mode
+        ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group,
+                                                                  source__maintenance=False)[0]
+
+        # Only one change per ad_group_source
+        changes = {'cpc_cc': 0.3}
+        api.set_ad_group_source_settings(changes, ad_group_source)
+        action = models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source
+        ).latest('created_dt')
+
+        self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
+        self.assertEqual(action.state, constants.ActionState.WAITING)
+        self.assertEqual(action.payload.get('args', {}).get('conf'), changes)
+
+        # Two changes
+        changes = {'cpc_cc': 0.3, 'daily_budget_cc': 100.0}
+        api.set_ad_group_source_settings(changes, ad_group_source)
+        action = models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source
+        ).latest('created_dt')
+
+        self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
+        self.assertEqual(action.state, constants.ActionState.DELAYED)
+        self.assertEqual(action.payload.get('args', {}).get('conf'), changes)
+
 
     @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
     def test_fetch_ad_group_status(self):
@@ -590,6 +654,7 @@ class ActionLogApiCancelExpiredTestCase(TestCase):
             {action.id for action in failed_actionlogs},
             {action.id for action in waiting_actionlogs_after}
         )
+
 
 
 class SetCampaignPropertyTestCase(TestCase):

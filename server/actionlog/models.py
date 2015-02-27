@@ -8,7 +8,7 @@ from django.conf import settings
 from . import constants
 
 ACTION_TIMEOUT_MINUTES = 30
-
+MAX_SIMILAR_WAITING_ACTIONS = 1
 
 def _due_date_default():
     return datetime.utcnow() + timedelta(minutes=ACTION_TIMEOUT_MINUTES)
