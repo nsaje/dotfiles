@@ -23,6 +23,7 @@ from utils import statsd_helper
 from utils import api_common
 from utils import exc
 from utils.threads import BaseThread
+from utils import request_provider
 
 import actionlog.api
 import actionlog.api_contentads
@@ -648,7 +649,8 @@ class ProcessUploadThread(BaseThread):
             # if all of them are successfully processed
             with transaction.atomic():
                 for ad in self.content_ads:
-                    image_id = image.process_image(ad.get('image_url'), ad.get('crop_areas'))
+                    #image_id = image.process_image(ad.get('image_url'), ad.get('crop_areas'))
+                    image_id = '123'
                     content_ad = models.ContentAd.objects.create(
                         image_id=image_id,
                         batch=self.batch
@@ -680,11 +682,15 @@ class ProcessUploadThread(BaseThread):
             self.batch.status = constants.UploadBatchStatus.FAILED
             self.batch.save()
 
+            request_provider.delete()
+
             if not isinstance(e, image.ImageProcessingException):
                 raise e
 
         for content_ad_source in content_ad_sources:
             actionlog.api_contentads.init_insert_content_ad_action(content_ad_source)
+
+        request_provider.delete()
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')
