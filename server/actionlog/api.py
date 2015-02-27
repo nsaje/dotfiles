@@ -125,7 +125,7 @@ def send_delayed_actionlogs(ad_group_sources=None):
     delayed_actionlogs = models.ActionLog.objects.filter(
         state=constants.ActionState.DELAYED,
         action_type=constants.ActionType.AUTOMATIC
-    )
+    ).order_by('created_dt')
 
     if ad_group_sources is not None:
         delayed_actionlogs.filter(ad_group_source__in=ad_group_sources)
