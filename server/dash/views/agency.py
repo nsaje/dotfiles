@@ -633,7 +633,7 @@ class AdGroupAgency(api_common.BaseApiView):
         response = {
             'settings': self.get_dict(settings, ad_group),
             'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
-            'history': self.get_history(ad_group),
+            'history': self.get_history(ad_group, request.user),
             'can_archive': ad_group.can_archive(),
             'can_restore': ad_group.can_restore(),
         }
@@ -671,7 +671,7 @@ class AdGroupAgency(api_common.BaseApiView):
         response = {
             'settings': self.get_dict(settings, ad_group),
             'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
-            'history': self.get_history(ad_group),
+            'history': self.get_history(ad_group, request.user),
             'can_archive': ad_group.can_archive(),
             'can_restore': ad_group.can_restore(),
         }
@@ -711,7 +711,7 @@ class AdGroupAgency(api_common.BaseApiView):
         settings.target_regions = current_settings.target_regions
         settings.tracking_code = resource['tracking_code']
 
-    def get_history(self, ad_group):
+    def get_history(self, ad_group, user):
         settings = models.AdGroupSettings.objects.\
             filter(ad_group=ad_group).\
             order_by('created_dt')
@@ -727,12 +727,12 @@ class AdGroupAgency(api_common.BaseApiView):
             if new_settings.changes_text is not None:
                 changes_text = new_settings.changes_text
             else:
-                changes_text = self.convert_changes_to_string(changes)
+                changes_text = self.convert_changes_to_string(changes, user)
 
-            if i > 0 and not changes and not changes_text:
+            if i > 0 and not len(changes_text):
                 continue
 
-            settings_dict = self.convert_settings_to_dict(old_settings, new_settings)
+            settings_dict = self.convert_settings_to_dict(old_settings, new_settings, user)
 
             history.append({
                 'datetime': new_settings.created_dt,
@@ -744,13 +744,17 @@ class AdGroupAgency(api_common.BaseApiView):
 
         return history
 
-    def convert_changes_to_string(self, changes):
+    def convert_changes_to_string(self, changes, user):
         if changes is None:
             return 'Created settings'
 
         change_strings = []
 
         for key, value in changes.iteritems():
+            if key in ['display_url', 'brand_name', 'description', 'call_to_action'] and\
+                    not user.has_perm('zemauth.new_content_ads_tab'):
+                continue
+
             prop = models.AdGroupSettings.get_human_prop_name(key)
             val = models.AdGroupSettings.get_human_value(key, value)
             change_strings.append(
@@ -759,9 +763,13 @@ class AdGroupAgency(api_common.BaseApiView):
 
         return ', '.join(change_strings)
 
-    def convert_settings_to_dict(self, old_settings, new_settings):
+    def convert_settings_to_dict(self, old_settings, new_settings, user):
         settings_dict = OrderedDict()
         for field in models.AdGroupSettings._settings_fields:
+            if field in ['display_url', 'brand_name', 'description', 'call_to_action'] and\
+                    not user.has_perm('zemauth.new_content_ads_tab'):
+                continue
+
             settings_dict[field] = {
                 'name': models.AdGroupSettings.get_human_prop_name(field),
                 'value': models.AdGroupSettings.get_human_value(field, getattr(

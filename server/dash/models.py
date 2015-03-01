@@ -846,6 +846,10 @@ class AdGroupSettings(SettingsBase):
             'tracking_code': 'Tracking code',
             'state': 'State',
             'archived': 'Archived',
+            'display_url': 'Display URL',
+            'brand_name': 'Brand name',
+            'description': 'Description',
+            'call_to_action': 'Call to action'
         }
 
         return NAMES[prop_name]
