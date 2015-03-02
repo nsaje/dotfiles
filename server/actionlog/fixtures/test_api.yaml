@@ -505,6 +505,10 @@
         ad_group: 2
         target_devices: ['desktop', 'mobile']
         target_regions: ['UK', 'US', 'CA']
+        brand_name: 'Brand Name'
+        display_url: 'displayurl.com'
+        start_date: '2015-03-02'
+        end_date: '2015-04-02'
     model: dash.adgroupsettings
     pk: 6
 
