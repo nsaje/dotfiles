@@ -605,6 +605,10 @@ def _init_create_campaign(ad_group_source, name):
                 payload['args']['marketer_id'] = _get_outbrain_marketer_id(
                     ad_group_source.ad_group.campaign.account)
 
+            if ad_group_source.source.source_type.type == dash.constants.SourceType.B1:
+                payload['args']['extra']['ad_group_id'] = ad_group_source.ad_group.id
+                payload['args']['extra']['exchange'] = ad_group_source.source.bidder_slug
+
             if hasattr(ad_group_source.source, 'defaultsourcesettings'):
                 params = ad_group_source.source.defaultsourcesettings.params
                 if 'create_campaign' in params:
@@ -614,6 +618,10 @@ def _init_create_campaign(ad_group_source, name):
                 payload['args']['extra'].update({
                     'target_devices': ad_group_settings.target_devices,
                     'target_regions': ad_group_settings.target_regions,
+                    'brand_name': ad_group_settings.brand_name,
+                    'display_url': ad_group_settings.display_url,
+                    'start_date': ad_group_settings.start_date,
+                    'end_date': ad_group_settings.end_date,
                 })
 
             payload['args']['extra'].update({
