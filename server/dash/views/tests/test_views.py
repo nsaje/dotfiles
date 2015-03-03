@@ -63,9 +63,12 @@ class AdGroupAdsPlusUploadTest(TestCase):
 
 
 class ProcessUploadThreadTest(TestCase):
-    @patch('dash.views.views.image.process_image')
+    @patch('dash.views.views.image_helper.process_image')
     def test_run(self, mock_process_image):
         image_id = 'test_image_id'
+        image_width = 100
+        image_height = 200
+
         url = 'http://example.com'
         title = 'test title'
         image_url = 'http://example.com/image'
@@ -82,7 +85,7 @@ class ProcessUploadThreadTest(TestCase):
 
         batch = models.UploadBatch.objects.create(name=batch_name)
 
-        mock_process_image.return_value = image_id
+        mock_process_image.return_value = image_id, image_width, image_height
 
         thread = views.ProcessUploadThread(content_ads, batch, ad_group_id)
         thread.run()
@@ -95,4 +98,6 @@ class ProcessUploadThreadTest(TestCase):
         self.assertEqual(article.ad_group_id, ad_group_id)
 
         self.assertEqual(article.content_ad.image_id, image_id)
+        self.assertEqual(article.content_ad.image_width, image_width)
+        self.assertEqual(article.content_ad.image_height, image_height)
         self.assertEqual(article.content_ad.batch.name, batch_name)

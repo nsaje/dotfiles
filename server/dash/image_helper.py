@@ -10,7 +10,7 @@ class ImageProcessingException(Exception):
 
 def process_image(url, crop_areas):
     if not url:
-        return
+        return None, 0, 0
 
     payload = {'image_url': url}
 
@@ -26,13 +26,17 @@ def process_image(url, crop_areas):
         raise ImageProcessingException()
 
     result = json.loads(response.read())
+
     status = result.get('status')
     image_id = result.get('key')
+    width = result.get('width')
+    height = result.get('height')
 
-    if status is None or status != 'success' or image_id is None:
+    if status is None or status != 'success' or\
+       image_id is None or width is None or height is None:
         raise ImageProcessingException()
 
-    return image_id
+    return image_id, width, height
 
 
 def _get_crops_dict(crop_areas):

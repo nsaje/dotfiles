@@ -1042,17 +1042,27 @@ class UploadBatch(models.Model):
 
 class ContentAd(models.Model):
     image_id = models.CharField(max_length=256, editable=False, null=True)
+    image_width = models.PositiveIntegerField(null=True)
+    image_height = models.PositiveIntegerField(null=True)
     batch = models.ForeignKey(UploadBatch, on_delete=models.PROTECT, null=True)
 
     sources = models.ManyToManyField(Source, through='ContentAdSource')
 
     def get_image_url(self, width, height):
-        parts = [settings.Z3_API_THUMBNAIL_URL, self.image_id, '{}x{}.jpg'.format(width, height)]
-
-        if None in parts:
+        if self.image_id is None:
             return None
 
-        return '/'.join(parts)
+        if width is None:
+            width = self.image_width
+
+        if height is None:
+            height = self.image_height
+
+        return '/'.join([
+            settings.Z3_API_THUMBNAIL_URL,
+            self.image_id,
+            '{}x{}.jpg'.format(width, height)
+        ])
 
 
 class ContentAdSource(models.Model):
