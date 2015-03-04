@@ -92,6 +92,7 @@ class ProcessUploadThreadTest(TestCase):
         mock_process_image.return_value = image_id, image_width, image_height
 
         thread = views.ProcessUploadThread(content_ads, batch, ad_group_id)
+        prev_actionlog_count = actionlog.models.ActionLog.objects.all().count()
         thread.run()
 
         mock_process_image.assert_called_with(image_url, crop_areas)
@@ -106,10 +107,12 @@ class ProcessUploadThreadTest(TestCase):
         self.assertEqual(article.content_ad.image_height, image_height)
         self.assertEqual(article.content_ad.batch.name, batch_name)
 
+        self.assertEqual(prev_actionlog_count, actionlog.models.ActionLog.objects.all().count())
         self.assertEqual(batch.status, constants.UploadBatchStatus.DONE)
 
     @patch('dash.views.views.image_helper.process_image')
-    def test_image_processing_exception(self, mock_process_image):
+    @patch('dash.views.views.actionlog.api_contentads.init_insert_content_ad_action')
+    def test_image_processing_exception(self, mock_insert_action, mock_process_image):
         image_id = 'test_image_id'
         image_width = 100
         image_height = 200
@@ -142,19 +145,15 @@ class ProcessUploadThreadTest(TestCase):
             image_helper.ImageProcessingException
         ]
 
-        prev_actionlog_count = actionlog.models.ActionLog.objects.all().count()
-        prev_content_ad_count = models.ContentAd.objects.all().count()
-
         thread = views.ProcessUploadThread(content_ads, batch, ad_group_id)
         thread.run()
 
         self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
-
-        self.assertEqual(prev_actionlog_count, actionlog.models.ActionLog.objects.all().count())
-        self.assertEqual(prev_content_ad_count, models.ContentAd.objects.all().count())
+        self.assertFalse(mock_insert_action.called)
 
     @patch('dash.views.views.image_helper.process_image')
-    def test_exception(self, mock_process_image):
+    @patch('dash.views.views.actionlog.api_contentads.init_insert_content_ad_action')
+    def test_exception(self, mock_insert_action, mock_process_image):
         url = 'http://example.com'
         title = 'test title'
         image_url = 'http://example.com/image'
@@ -175,15 +174,10 @@ class ProcessUploadThreadTest(TestCase):
         # raise ImageProcessingException for the second ad
         mock_process_image.side_effect = Exception
 
-        prev_actionlog_count = actionlog.models.ActionLog.objects.all().count()
-        prev_content_ad_count = models.ContentAd.objects.all().count()
-
         thread = views.ProcessUploadThread(content_ads, batch, ad_group_id)
 
         with self.assertRaises(Exception):
             thread.run()
 
         self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
-
-        self.assertEqual(prev_actionlog_count, actionlog.models.ActionLog.objects.all().count())
-        self.assertEqual(prev_content_ad_count, models.ContentAd.objects.all().count())
+        self.assertFalse(mock_insert_action.called)
