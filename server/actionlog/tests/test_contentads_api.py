@@ -75,6 +75,8 @@ class ContentAdsApiTestCase(TestCase):
                     'title': content_ad_source.content_ad.article.title,
                     'url': content_ad_source.content_ad.article.url,
                     'image_id': content_ad_source.content_ad.image_id,
+                    'image_width': content_ad_source.content_ad.image_width,
+                    'image_height': content_ad_source.content_ad.image_height,
                     'display_url': ad_group_settings.display_url,
                     'brand_name': ad_group_settings.brand_name,
                     'description': ad_group_settings.description,

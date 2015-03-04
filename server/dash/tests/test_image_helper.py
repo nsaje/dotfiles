@@ -4,7 +4,7 @@ from mock import patch, Mock
 from django.test import TestCase, override_settings
 from django.conf import settings
 
-from dash import image
+from dash import image_helper
 
 
 @override_settings(
@@ -16,13 +16,15 @@ class ImageTest(TestCase):
         url = 'http://example.com/image'
         crop_areas = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
         image_id = 'test_image_id'
+        width = 100
+        height = 200
 
         response = Mock()
-        response.read.return_value = '{"key": "%s", "status": "success"}' % image_id
+        response.read.return_value = '{"key": "%s", "status": "success", "width": %d, "height": %d}' % (image_id, width, height)
         response.code = 200
         mock_urlopen.return_value = response
 
-        self.assertEqual(image.process_image(url, crop_areas), image_id)
+        self.assertEqual(image_helper.process_image(url, crop_areas), (image_id, width, height))
 
         mock_urlopen.assert_called_with(
             settings.Z3_API_IMAGE_URL,
@@ -48,8 +50,8 @@ class ImageTest(TestCase):
         response.code = 500
         mock_urlopen.return_value = response
 
-        with self.assertRaises(image.ImageProcessingException):
-            image.process_image(url, None)
+        with self.assertRaises(image_helper.ImageProcessingException):
+            image_helper.process_image(url, None)
 
     def test_status_not_success(self, mock_urlopen):
         url = 'http://example.com/image'
@@ -59,8 +61,8 @@ class ImageTest(TestCase):
         response.read.return_value = '{"key": "%s", "status": "error"}' % image_id
         mock_urlopen.return_value = response
 
-        with self.assertRaises(image.ImageProcessingException):
-            image.process_image(url, None)
+        with self.assertRaises(image_helper.ImageProcessingException):
+            image_helper.process_image(url, None)
 
     def test_status_key_empty(self, mock_urlopen):
         url = 'http://example.com/image'
@@ -69,5 +71,5 @@ class ImageTest(TestCase):
         response.read.return_value = '{"key": "", "status": "error"}'
         mock_urlopen.return_value = response
 
-        with self.assertRaises(image.ImageProcessingException):
-            image.process_image(url, None)
+        with self.assertRaises(image_helper.ImageProcessingException):
+            image_helper.process_image(url, None)

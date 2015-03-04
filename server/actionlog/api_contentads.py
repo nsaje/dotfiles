@@ -32,6 +32,8 @@ def init_insert_content_ad_action(content_ad_source):
             'title': content_ad_source.content_ad.article.title,
             'url': content_ad_source.content_ad.article.url,
             'image_id': content_ad_source.content_ad.image_id,
+            'image_width': content_ad_source.content_ad.image_width,
+            'image_height': content_ad_source.content_ad.image_height,
             'display_url': settings.display_url,
             'brand_name': settings.brand_name,
             'description': settings.description,

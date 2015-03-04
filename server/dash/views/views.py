@@ -34,7 +34,7 @@ from dash import models
 from dash import constants
 from dash import api
 from dash import forms
-from dash import image
+from dash import image_helper
 
 logger = logging.getLogger(__name__)
 
@@ -649,9 +649,11 @@ class ProcessUploadThread(BaseThread):
             # if all of them are successfully processed
             with transaction.atomic():
                 for ad in self.content_ads:
-                    image_id = image.process_image(ad.get('image_url'), ad.get('crop_areas'))
+                    image_id, width, height = image_helper.process_image(ad.get('image_url'), ad.get('crop_areas'))
                     content_ad = models.ContentAd.objects.create(
                         image_id=image_id,
+                        image_width=width,
+                        image_height=height,
                         batch=self.batch
                     )
 
@@ -681,10 +683,9 @@ class ProcessUploadThread(BaseThread):
             self.batch.status = constants.UploadBatchStatus.FAILED
             self.batch.save()
 
-            request_provider.delete()
-
-            if not isinstance(e, image.ImageProcessingException):
-                raise e
+            if not isinstance(e, image_helper.ImageProcessingException):
+                request_provider.delete()
+                raise
 
         for content_ad_source in content_ad_sources:
             actionlog.api_contentads.init_insert_content_ad_action(content_ad_source)
