@@ -7,6 +7,10 @@ from zemauth.models import User
 
 from dash.views import views
 from dash import models
+from dash import image_helper
+from dash import constants
+
+import actionlog.models
 
 
 class AdGroupAdsPlusUploadTest(TestCase):
@@ -101,3 +105,85 @@ class ProcessUploadThreadTest(TestCase):
         self.assertEqual(article.content_ad.image_width, image_width)
         self.assertEqual(article.content_ad.image_height, image_height)
         self.assertEqual(article.content_ad.batch.name, batch_name)
+
+        self.assertEqual(batch.status, constants.UploadBatchStatus.DONE)
+
+    @patch('dash.views.views.image_helper.process_image')
+    def test_image_processing_exception(self, mock_process_image):
+        image_id = 'test_image_id'
+        image_width = 100
+        image_height = 200
+
+        url = 'http://example.com'
+        title = 'test title'
+        image_url = 'http://example.com/image'
+        crop_areas = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
+
+        # two content ads
+        content_ads = [{
+            'url': url,
+            'title': title,
+            'image_url': image_url,
+            'crop_areas': crop_areas
+        }, {
+            'url': url,
+            'title': title,
+            'image_url': image_url,
+            'crop_areas': crop_areas
+        }]
+        batch_name = 'Test batch name'
+        ad_group_id = 1
+
+        batch = models.UploadBatch.objects.create(name=batch_name)
+
+        # raise ImageProcessingException for the second ad
+        mock_process_image.side_effect = [
+            (image_id, image_width, image_height),
+            image_helper.ImageProcessingException
+        ]
+
+        prev_actionlog_count = actionlog.models.ActionLog.objects.all().count()
+        prev_content_ad_count = models.ContentAd.objects.all().count()
+
+        thread = views.ProcessUploadThread(content_ads, batch, ad_group_id)
+        thread.run()
+
+        self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
+
+        self.assertEqual(prev_actionlog_count, actionlog.models.ActionLog.objects.all().count())
+        self.assertEqual(prev_content_ad_count, models.ContentAd.objects.all().count())
+
+    @patch('dash.views.views.image_helper.process_image')
+    def test_exception(self, mock_process_image):
+        url = 'http://example.com'
+        title = 'test title'
+        image_url = 'http://example.com/image'
+        crop_areas = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
+
+        # two content ads
+        content_ads = [{
+            'url': url,
+            'title': title,
+            'image_url': image_url,
+            'crop_areas': crop_areas
+        }]
+        batch_name = 'Test batch name'
+        ad_group_id = 1
+
+        batch = models.UploadBatch.objects.create(name=batch_name)
+
+        # raise ImageProcessingException for the second ad
+        mock_process_image.side_effect = Exception
+
+        prev_actionlog_count = actionlog.models.ActionLog.objects.all().count()
+        prev_content_ad_count = models.ContentAd.objects.all().count()
+
+        thread = views.ProcessUploadThread(content_ads, batch, ad_group_id)
+
+        with self.assertRaises(Exception):
+            thread.run()
+
+        self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
+
+        self.assertEqual(prev_actionlog_count, actionlog.models.ActionLog.objects.all().count())
+        self.assertEqual(prev_content_ad_count, models.ContentAd.objects.all().count())
