@@ -98,7 +98,7 @@ class BaseApiViewTestCase(test.TestCase):
         request = http.HttpRequest()
         request._body = ''
 
-        api_common.BaseApiView().log_message(request)
+        api_common.BaseApiView().log_error(request)
         logger_mock.error.assert_called_with(
             'API exception',
             exc_info=True,
@@ -119,7 +119,7 @@ class BaseApiViewTestCase(test.TestCase):
         request.POST = {'test_post': 'test_post_value'}
         request._body = 'test'
 
-        api_common.BaseApiView().log_message(request)
+        api_common.BaseApiView().log_error(request)
         logger_mock.error.assert_called_with(
             'API exception',
             exc_info=True,

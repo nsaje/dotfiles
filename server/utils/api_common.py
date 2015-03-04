@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class BaseApiView(View):
-    def log_message(self, request):
+    def log_error(self, request):
         try:
             body = str(request.body)
         except RawPostDataException:
@@ -90,7 +90,7 @@ class BaseApiView(View):
 
             status_code = exception.http_status_code
         else:
-            self.log_message(request)
+            self.log_error(request)
 
             error["error_code"] = "ServerError"
             error["message"] = "An error occurred."
