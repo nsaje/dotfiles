@@ -129,7 +129,7 @@ class AccountDailyStats(BaseDailyStatsView):
 
         if selected_ids:
             ids = [int(x) for x in selected_ids]
-            selected_kwargs = {'account': int(account.id), '{}__id'.format(group_key): ids}
+            selected_kwargs = {'account': int(account.id), 'ad_group__campaign__id': ids}
 
             if sources:
                 sources = models.Source.objects.filter(pk__in=ids)
@@ -174,7 +174,7 @@ class CampaignDailyStats(BaseDailyStatsView):
 
         if selected_ids:
             ids = [int(x) for x in selected_ids]
-            selected_kwargs = {'campaign': int(campaign.id), '{}_id'.format(group_key): ids}
+            selected_kwargs = {'campaign': int(campaign.id), 'ad_group_id': ids}
 
             if sources:
                 sources = models.Source.objects.filter(pk__in=ids)
