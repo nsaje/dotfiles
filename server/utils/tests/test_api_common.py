@@ -69,7 +69,7 @@ class BaseApiViewTestCase(test.TestCase):
         error = exc.MissingDataError()
         response = api_common.BaseApiView().get_exception_response(request, error)
 
-        self.assertTrue(logger_mock.log.called)
+        self.assertFalse(logger_mock.error.called)
 
         expected_content = '{"data": {"message": null, "error_code": "MissingDataError"}, "success": false}'
         self.assertEqual(response.status_code, 404)
@@ -89,7 +89,7 @@ class BaseApiViewTestCase(test.TestCase):
         response = api_common.BaseApiView().get_exception_response(request, error)
 
         expected_content = '{"data": {"message": "An error occurred.", "error_code": "ServerError"}, "success": false}'
-        self.assertTrue(logger_mock.log.called)
+        self.assertTrue(logger_mock.error.called)
         self.assertEqual(response.status_code, 500)
         self.assertEqual(response.content, expected_content)
 
@@ -98,16 +98,19 @@ class BaseApiViewTestCase(test.TestCase):
         request = http.HttpRequest()
         request._body = ''
 
-        expected_msg = 'GET: []\nPOST: []\nBody: \nArgs:\n\nKwargs:\n'
-
-        api_common.BaseApiView().log_message(logging.WARN, request)
-        logger_mock.log.assert_called_with(logging.WARN, 'GET: %s POST: %s Body: %s Args: %s Kwargs: %s',
-                str(request.GET.items()),
-                str(request.POST.items()),
-                str(request.body),
-                '',
-                '',
-            )
+        api_common.BaseApiView().log_message(request)
+        logger_mock.error.assert_called_with(
+            'API exception',
+            exc_info=True,
+            extra={
+                'data': {
+                    'path': request.path,
+                    'body': '',
+                    'GET': request.GET,
+                    'POST': dict(request.POST),
+                }
+            }
+        )
 
     @mock.patch('utils.api_common.logger')
     def test_log(self, logger_mock):
@@ -116,13 +119,16 @@ class BaseApiViewTestCase(test.TestCase):
         request.POST = {'test_post': 'test_post_value'}
         request._body = 'test'
 
-        expected_msg = "GET: [('test_get', 'test_get_value')]\nPOST: [('test_post', 'test_post_value')]\nBody: test\nArgs:\nTest\nKwargs:\nexc: Test2"
-
-        api_common.BaseApiView().log_message(logging.INFO, request, Exception('Test'), exc=Exception('Test2'))
-        logger_mock.log.assert_called_with(logging.INFO, 'GET: %s POST: %s Body: %s Args: %s Kwargs: %s',
-                str(request.GET.items()),
-                str(request.POST.items()),
-                str(request.body),
-                str(Exception('Test')),
-                'exc: ' + str(Exception('Test2'))
-            )
+        api_common.BaseApiView().log_message(request)
+        logger_mock.error.assert_called_with(
+            'API exception',
+            exc_info=True,
+            extra={
+                'data': {
+                    'path': request.path,
+                    'body': 'test',
+                    'GET': request.GET,
+                    'POST': dict(request.POST),
+                }
+            }
+        )
