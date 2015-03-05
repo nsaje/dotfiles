@@ -82,7 +82,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             orderField: 'url',
             initialOrder: 'asc'
         }, {
-            name: 'Submission Status',
+            name: 'Status',
             field: 'submission_status',
             checked: true,
             type: 'submissionStatus',
@@ -90,7 +90,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             help: 'Current submission status.',
             totalRow: false,
         }, {
-            name: 'Upload Time (EST)',
+            name: 'Uploaded',
             field: 'upload_time',
             checked: true,
             type: 'datetime',
@@ -100,7 +100,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             order: true,
             initialOrder: 'desc'
         }, {
-            name: 'Upload Batch Name',
+            name: 'Batch Name',
             field: 'batch_name',
             checked: true,
             type: 'text',
