@@ -120,7 +120,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         {
             'name': 'Traffic Acquisition',
             'fields': [
-               'url_link', 'cost', 'cpc', 'clicks', 'impressions', 'ctr'
+               'urlLink', 'cost', 'cpc', 'clicks', 'impressions', 'ctr'
             ]
         },
         {

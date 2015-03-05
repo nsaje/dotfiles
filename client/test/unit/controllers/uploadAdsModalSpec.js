@@ -14,6 +14,10 @@ describe('UploadAdsModalCtrl', function() {
         api = {adGroupAdsPlusUpload: {upload: function() {}, checkStatus: function() {}}};
         $state = {params: {id: 123}};
 
+        $scope.user = {
+            timezoneOffset: 0
+        };
+
         $controller(
             'UploadAdsModalCtrl',
             {$scope: $scope, $modalInstance: $modalInstance, api: api, $state: $state}

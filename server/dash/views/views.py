@@ -7,6 +7,7 @@ import base64
 import httplib
 import urllib
 import urllib2
+import pytz
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -117,7 +118,9 @@ class User(api_common.BaseApiView):
                 'id': str(user.pk),
                 'email': user.email,
                 'name': user.get_full_name(),
-                'permissions': user.get_all_permissions_with_access_levels()
+                'permissions': user.get_all_permissions_with_access_levels(),
+                'timezone_offset': pytz.timezone(settings.DEFAULT_TIME_ZONE).utcoffset(
+                    datetime.datetime.utcnow()).total_seconds()
             }
 
         return result

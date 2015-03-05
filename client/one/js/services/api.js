@@ -54,13 +54,23 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     if (data && data.data) {
                         resource = data.data.user;
                     }
-                    deferred.resolve(resource);
+                    deferred.resolve(convertFromApi(resource));
                 }).
                 error(function(data, status, headers, config) {
                     deferred.reject(data);
                 });
 
             return deferred.promise;
+        };
+
+        function convertFromApi(data) {
+            return {
+                id: data.id,
+                name: data.name,
+                email: data.email,
+                permissions: data.permissions,
+                timezoneOffset: data.timezone_offset
+            };
         };
     }
 

@@ -118,7 +118,8 @@ def insert_content_ad_callback(
 
 
 def update_content_ad_state(ad_group_source, content_ad_id, state):
-    content_ad_source = models.ContentAdSource.objects.get(content_ad_id=content_ad_id, source=ad_group_source.source)
+    content_ad_source = models.ContentAdSource.objects.get(
+        content_ad_id=content_ad_id, source=ad_group_source.source)
     content_ad_source.source_state = state
     content_ad_source.save()
 
@@ -126,13 +127,18 @@ def update_content_ad_state(ad_group_source, content_ad_id, state):
 def order_ad_group_settings_update(ad_group, current_settings, new_settings):
     changes = current_settings.get_setting_changes(new_settings)
 
+    print 'ChaNGS', changes
+
     if not changes:
         return
 
     for field_name, field_value in changes.iteritems():
         # State of an ad group is set automatically.
         # For changes of cpc_cc and daily_budget_cc, mail is sufficient
-        if field_name in ['state', 'cpc_cc', 'daily_budget_cc']:
+        # There should be no manual actions for
+        # display_url, brand_name, description and call_to_action
+        if field_name in ['state', 'cpc_cc', 'daily_budget_cc', 'display_url',
+                          'brand_name', 'description', 'call_to_action']:
             continue
 
         actionlog.api.init_set_ad_group_property_order(ad_group, prop=field_name, value=field_value)

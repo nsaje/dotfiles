@@ -99,7 +99,8 @@ module.exports = function (grunt) {
         copy: {
             one: {
                 files: [
-                    {expand: true, flatten: true, src: 'one/img/*', dest: 'dist/one/img/'}
+                    {expand: true, flatten: true, src: 'one/img/*', dest: 'dist/one/img/'},
+                    {expand: true, flatten: true, src: 'one/assets/*', dest: 'dist/one/assets/'}
                 ]
             },
             one_lib: {
