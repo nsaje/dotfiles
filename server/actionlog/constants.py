@@ -19,6 +19,7 @@ class Action(ConstantBase):
         SET_PROPERTY: 'Set property',
         CREATE_CAMPAIGN: 'Create campaign',
 
+        GET_CONTENT_AD_STATUS: 'Get content ad status',
         INSERT_CONTENT_AD: 'Insert content ad',
         UPDATE_CONTENT_AD: 'Update content ad'
     }
