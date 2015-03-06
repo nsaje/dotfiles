@@ -105,6 +105,15 @@ class ActionLog(models.Model):
             id=self.id,
         )
 
+    def save(self, request=None, *args, **kwargs):
+        if request is not None:
+            self.modified_by = request.user
+
+            if self.pk is None:
+                self.created_by = request.user
+
+        super(ActionLog, self).save(*args, **kwargs)
+
     class Meta:
         ordering = ('-created_dt',)
 

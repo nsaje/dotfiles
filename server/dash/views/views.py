@@ -24,7 +24,6 @@ from utils import statsd_helper
 from utils import api_common
 from utils import exc
 from utils.threads import BaseThread
-from utils import request_provider
 
 import actionlog.api
 import actionlog.api_contentads
@@ -580,7 +579,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
         content_ads = form.cleaned_data['content_ads']
 
         batch = models.UploadBatch.objects.create(name=batch_name)
-        ProcessUploadThread(content_ads, batch, ad_group_id).start()
+        ProcessUploadThread(content_ads, batch, ad_group_id, request).start()
 
         return self.create_api_response({'batch_id': batch.pk})
 
@@ -638,10 +637,11 @@ class AdGroupContentAdState(api_common.BaseApiView):
 
 
 class ProcessUploadThread(BaseThread):
-    def __init__(self, content_ads, batch, ad_group_id, *args, **kwargs):
+    def __init__(self, content_ads, batch, ad_group_id, request, *args, **kwargs):
         self.content_ads = content_ads
         self.batch = batch
         self.ad_group_id = ad_group_id
+        self.request = request
         super(ProcessUploadThread, self).__init__(*args, **kwargs)
 
     def run(self):
@@ -687,13 +687,10 @@ class ProcessUploadThread(BaseThread):
             self.batch.save()
 
             if not isinstance(e, image_helper.ImageProcessingException):
-                request_provider.delete()
                 raise
 
         for content_ad_source in content_ad_sources:
-            actionlog.api_contentads.init_insert_content_ad_action(content_ad_source)
-
-        request_provider.delete()
+            actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, self.request)
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')

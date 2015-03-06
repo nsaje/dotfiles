@@ -19,7 +19,7 @@ import dash.models
 logger = logging.getLogger(__name__)
 
 
-def init_insert_content_ad_action(content_ad_source):
+def init_insert_content_ad_action(content_ad_source, request=None):
     ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.article.ad_group,
                                                             source=content_ad_source.source)
     settings = ad_group_source.ad_group.get_current_settings()
@@ -44,7 +44,8 @@ def init_insert_content_ad_action(content_ad_source):
     action = _create_action(
         content_ad_source,
         actionlog.constants.Action.INSERT_CONTENT_AD,
-        args
+        args,
+        request
     )
 
     actionlog.zwei_actions.send(action)
@@ -74,7 +75,7 @@ def init_update_content_ad_action(content_ad_source):
     actionlog.zwei_actions.send(action)
 
 
-def _create_action(content_ad_source, action, args={}):
+def _create_action(content_ad_source, action, args={}, request=None):
     msg = "create upsert_content_ad action started: content_ad_source.id: {}".format(
         content_ad_source.id,
     )
@@ -85,12 +86,13 @@ def _create_action(content_ad_source, action, args={}):
         source=content_ad_source.source,
     )
 
-    action = actionlog.models.ActionLog.objects.create(
+    action = actionlog.models.ActionLog(
         action=action,
         action_type=actionlog.constants.ActionType.AUTOMATIC,
         ad_group_source=ad_group_source,
         content_ad_source=content_ad_source
     )
+    action.save(request)
 
     try:
         with transaction.atomic():
@@ -108,7 +110,8 @@ def _create_action(content_ad_source, action, args={}):
             }
 
             action.payload = payload
-            action.save()
+
+            action.save(request)
 
             return action
     except Exception as e:
@@ -117,7 +120,7 @@ def _create_action(content_ad_source, action, args={}):
 
         action.state = actionlog.constants.ActionState.FAILED
         action.message = msg
-        action.save()
+        action.save(request)
 
         et, ei, tb = sys.exc_info()
         raise actionlog.exceptions.InsertActionException, ei, tb
