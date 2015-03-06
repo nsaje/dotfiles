@@ -158,7 +158,7 @@ class CsvReport(IReport):
             raise exc.CsvParseException('Could not parse CSV')
 
         if not set(self.fieldnames) >= set(CsvReport.REQUIRED_FIELDS):
-            missing_fieldnames = list(CsvReport.REQUIRED_FIELDS - (set(self.fieldnames) & set(CsvReport.REQUIRED_FIELDS)))
+            missing_fieldnames = list(set(CsvReport.REQUIRED_FIELDS) - (set(self.fieldnames) & set(CsvReport.REQUIRED_FIELDS)))
             raise exc.CsvParseException('Not all required fields are present. Missing: %s' % ','.join(missing_fieldnames))
 
         self._check_incomplete()
