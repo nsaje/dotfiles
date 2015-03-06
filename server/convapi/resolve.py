@@ -20,6 +20,7 @@ def resolve_article(clean_url, ad_group, date, source, report_log):
 
     articles = list(dash.models.Article.objects.filter(
         ad_group=ad_group,
+        content_ad__isnull=True
     ))
 
     url = clean_url
@@ -42,9 +43,8 @@ def resolve_article(clean_url, ad_group, date, source, report_log):
         # we just resolve it any one article from this ad_group
 
         matched_article = None
-        all_articles = list(dash.models.Article.objects.filter(ad_group=ad_group))
-        if all_articles:
-            matched_article = all_articles[0]
+        if articles:
+            matched_article = articles[0]
         report_log.add_error('NO_MATCH: ad_group=%s; source=%s; url=%s; resolved_to=%s' % (
             ad_group,
             source,
