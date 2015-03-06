@@ -91,7 +91,7 @@ class ProcessUploadThreadTest(TestCase):
 
         mock_process_image.return_value = image_id, image_width, image_height
 
-        thread = views.ProcessUploadThread(content_ads, batch, ad_group_id)
+        thread = views.ProcessUploadThread(content_ads, batch, ad_group_id, None)
         prev_actionlog_count = actionlog.models.ActionLog.objects.all().count()
         thread.run()
 
@@ -145,7 +145,7 @@ class ProcessUploadThreadTest(TestCase):
             image_helper.ImageProcessingException
         ]
 
-        thread = views.ProcessUploadThread(content_ads, batch, ad_group_id)
+        thread = views.ProcessUploadThread(content_ads, batch, ad_group_id, None)
         thread.run()
 
         self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
@@ -174,7 +174,7 @@ class ProcessUploadThreadTest(TestCase):
         # raise ImageProcessingException for the second ad
         mock_process_image.side_effect = Exception
 
-        thread = views.ProcessUploadThread(content_ads, batch, ad_group_id)
+        thread = views.ProcessUploadThread(content_ads, batch, ad_group_id, None)
 
         with self.assertRaises(Exception):
             thread.run()
