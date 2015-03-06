@@ -4,12 +4,13 @@ import httplib
 import itertools
 import os
 
-from fabric.api import abort, env, execute, cd, lcd, local, run, task, prefix, put, parallel, serial
+from fabric.api import abort, env, execute, cd, lcd, local, run, task, prefix, put, parallel, serial, runs_once
 from fabric.contrib.files import exists
 import fabric.colors
 import fabric.utils
 
 import yaml
+import json
 
 # Taken from ratel and modified.
 
@@ -29,6 +30,7 @@ import yaml
 # > fab production:all deploy:client
 # > fab staging:ovh01,ovh02 deploy:client
 # > fab production:all cleanup:keep=5
+# > fab purgecache
 
 
 APPS = {
@@ -191,6 +193,21 @@ def cleanup(**kvargs):
     env.hosts = selected_hosts
     execute(do_cleanup, kvargs)
 
+@task
+@runs_once
+def purgecache(**kvargs):
+    req = httplib.HTTPSConnection( 'www.cloudflare.com' )
+    req.request( 'GET', '/api_json.html?a=fpurge_ts&tkn=46f74438514cdd4f68695b9756cc1c2274cf5&email=cloudflare@zemanta.com&z=zemanta.com&v=1')
+    response = req.getresponse()
+    data = response.read()
+    try:
+        data = json.loads( data )
+    except ValueError:
+        raise Exception('JSON parse failed.')
+    if data['result'] == 'error':
+        raise Exception(data['msg'])
+    ok("Cache purged!")
+    return data
 
 # COMMON STUFF
 @parallel
