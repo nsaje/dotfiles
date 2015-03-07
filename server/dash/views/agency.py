@@ -758,7 +758,7 @@ class AdGroupAgency(api_common.BaseApiView):
             prop = models.AdGroupSettings.get_human_prop_name(key)
             val = models.AdGroupSettings.get_human_value(key, value)
             change_strings.append(
-                '{} set to "{}"'.format(prop, val)
+                u'{} set to "{}"'.format(prop, val)
             )
 
         return ', '.join(change_strings)
