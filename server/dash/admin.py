@@ -530,6 +530,7 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         constants.ContentAdSubmissionStatus.APPROVED: '#5cb85c',
         constants.ContentAdSubmissionStatus.REJECTED: '#d9534f',
         constants.ContentAdSubmissionStatus.PENDING: '#428bca',
+        constants.ContentAdSubmissionStatus.LIMIT_REACHED: '#e6c440',
     }
 
     def submission_status_(self, obj):

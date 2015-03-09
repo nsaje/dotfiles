@@ -57,11 +57,13 @@ class ContentAdSubmissionStatus(ConstantBase):
     PENDING = 1
     APPROVED = 2
     REJECTED = 3
+    LIMIT_REACHED = 4
 
     _VALUES = {
         PENDING: 'Pending',
         APPROVED: 'Approved',
-        REJECTED: 'Rejected'
+        REJECTED: 'Rejected',
+        LIMIT_REACHED: 'Limit reached',
     }
 
 
