@@ -512,7 +512,6 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
     )
 
     list_filter = ('content_ad_source__source', 'submission_status')
-    ordering = ('-content_ad_id', )
 
     display_submission_status_colors = {
         constants.ContentAdSubmissionStatus.APPROVED: '#5cb85c',
