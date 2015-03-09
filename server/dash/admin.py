@@ -500,6 +500,16 @@ class OutbrainAccountAdmin(admin.ModelAdmin):
     )
 
 
+def approve_content_ad_sources(modeladmin, request, queryset):
+    queryset.update(submission_status=constants.ContentAdSubmissionStatus.APPROVED)
+approve_content_ad_sources.short_description = 'Mark selected content ad sources as APPROVED'
+
+
+def reject_content_ad_sources(modeladmin, request, queryset):
+    queryset.update(submission_status=constants.ContentAdSubmissionStatus.REJECTD)
+reject_content_ad_sources.short_description = 'Mark selected content ad sources as REJECTED'
+
+
 class ContentAdSourceAdmin(admin.ModelAdmin):
     list_display = (
         'content_ad_id_',
@@ -510,6 +520,10 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         'created_dt',
         'modified_dt'
     )
+
+    list_filter = ('source', 'submission_status')
+
+    actions = [approve_content_ad_sources, reject_content_ad_sources]
 
     display_submission_status_colors = {
         constants.ContentAdSubmissionStatus.APPROVED: '#5cb85c',
@@ -536,8 +550,6 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         if current_content_ad_source.submission_status != content_ad_source.submission_status and\
            content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
             actionlog.api_contentads.init_update_content_ad_action(content_ad_source)
-
-    def approve_content_ads
 
     def __init__(self, *args, **kwargs):
         super(ContentAdSourceAdmin, self).__init__(*args, **kwargs)
