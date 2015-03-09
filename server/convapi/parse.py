@@ -139,6 +139,9 @@ class CsvReport(IReport):
             if not inside and line.startswith('Landing Page'):
                 inside = True
             if inside:
+                # There are instances of CSV files, that have 'Pages/Session' instead of 'Pages / Session'
+                if 'Pages/Session' in line:
+                    line = line.replace('Pages/Session', 'Pages / Session')
                 mainlines.append(line)
         return StringIO.StringIO('\n'.join(mainlines))
 
