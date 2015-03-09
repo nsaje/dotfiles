@@ -505,7 +505,7 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         'content_ad_id_',
         'source_content_ad_id',
         'source',
-        'submission_status',
+        'submission_status_',
         'submission_errors',
         'created_dt',
         'modified_dt'
