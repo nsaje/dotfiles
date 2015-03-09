@@ -253,7 +253,11 @@ urlpatterns += patterns(
         login_required(dash.views.views.Account.as_view()),
     ),
     url(r'^api/nav_data$', login_required(dash.views.views.NavigationDataView.as_view())),
-    url(r'^api/users/(?P<user_id>(\d+|current))/$', login_required(dash.views.views.User.as_view())),
+    url(
+        r'^api/users/(?P<user_id>(\d+|current))/$',
+        login_required(dash.views.views.User.as_view()),
+        name='user'
+    ),
 )
 
 # Action Log

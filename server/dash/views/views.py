@@ -119,7 +119,7 @@ class User(api_common.BaseApiView):
                 'name': user.get_full_name(),
                 'permissions': user.get_all_permissions_with_access_levels(),
                 'timezone_offset': pytz.timezone(settings.DEFAULT_TIME_ZONE).utcoffset(
-                    datetime.datetime.utcnow()).total_seconds()
+                    datetime.datetime.utcnow(), is_dst=True).total_seconds()
             }
 
         return result

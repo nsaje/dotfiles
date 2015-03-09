@@ -1,4 +1,6 @@
+import json
 from mock import patch
+import datetime
 
 from django.test import TestCase, Client
 from django.core.urlresolvers import reverse
@@ -11,6 +13,86 @@ from dash import image_helper
 from dash import constants
 
 import actionlog.models
+
+
+class UserTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    class MockDatetime(datetime.datetime):
+        @classmethod
+        def utcnow(cls):
+            return datetime.datetime(2015, 3, 1)
+
+    class MockDatetimeNonExistent(datetime.datetime):
+        @classmethod
+        def utcnow(cls):
+            return datetime.datetime(2015, 3, 8, 2, 30)
+
+    class MockDatetimeAmbiguous(datetime.datetime):
+        @classmethod
+        def utcnow(cls):
+            return datetime.datetime(2002, 10, 27, 1, 30, 00)
+
+    @patch('dash.views.views.datetime.datetime', MockDatetime)
+    def test_get(self):
+        username = User.objects.get(pk=2).email
+        self.client.login(username=username, password='secret')
+
+        response = self.client.get(reverse('user', kwargs={'user_id': 'current'}))
+
+        self.assertEqual(json.loads(response.content), {
+            'data': {
+                'user': {
+                    'id': '2',
+                    'email': 'user@test.com',
+                    'name': '',
+                    'permissions': {},
+                    'timezone_offset': -18000.0
+                }
+            },
+            'success': True
+        })
+
+    @patch('dash.views.views.datetime.datetime', MockDatetimeNonExistent)
+    def test_get_non_existent_time(self):
+        username = User.objects.get(pk=2).email
+        self.client.login(username=username, password='secret')
+
+        response = self.client.get(reverse('user', kwargs={'user_id': 'current'}))
+
+        self.assertEqual(json.loads(response.content), {
+            'data': {
+                'user': {
+                    'id': '2',
+                    'email': 'user@test.com',
+                    'name': '',
+                    'permissions': {},
+                    'timezone_offset': -14400.0
+                }
+            },
+            'success': True
+        })
+
+    @patch('dash.views.views.datetime.datetime', MockDatetimeAmbiguous)
+    def test_get_ambiguous_time(self):
+        self.maxDiff = None
+        username = User.objects.get(pk=2).email
+        self.client.login(username=username, password='secret')
+
+        response = self.client.get(reverse('user', kwargs={'user_id': 'current'}))
+
+        self.assertEqual(json.loads(response.content), {
+            'data': {
+                'user': {
+                    'id': '2',
+                    'email': 'user@test.com',
+                    'name': '',
+                    'permissions': {},
+                    'timezone_offset': -14400.0
+                }
+            },
+            'success': True
+        })
 
 
 class AdGroupAdsPlusUploadTest(TestCase):
