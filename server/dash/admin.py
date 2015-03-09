@@ -511,16 +511,16 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         'modified_dt'
     )
 
-    display_sumbission_status_colors = {
+    display_submission_status_colors = {
         constants.ContentAdSubmissionStatus.APPROVED: '#5cb85c',
         constants.ContentAdSubmissionStatus.REJECTED: '#d9534f',
         constants.ContentAdSubmissionStatus.PENDING: '#428bca',
     }
 
     def submission_status_(self, obj):
-        return '<span style="color:{color}">{sumbission_status}</span>'.format(
-            color=self.display_sumbission_status_colors[obj.sumbission_status],
-            sumbission_status=obj.get_sumbission_status_display(),
+        return '<span style="color:{color}">{submission_status}</span>'.format(
+            color=self.display_submission_status_colors[obj.submission_status],
+            submission_status=obj.get_submission_status_display(),
         )
     submission_status_.allow_tags = True
     submission_status_.admin_order_field = 'submission_status'
@@ -535,6 +535,10 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         if current_content_ad_source.submission_status != content_ad_source.submission_status and\
            content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
             actionlog.api_contentads.init_update_content_ad_action(content_ad_source)
+
+    def __init__(self, *args, **kwargs):
+        super(ContentAdSourceAdmin, self).__init__(*args, **kwargs)
+        self.list_display_links = (None, )
 
 
 admin.site.register(models.Account, AccountAdmin)
