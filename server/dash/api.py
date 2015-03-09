@@ -106,7 +106,10 @@ def insert_content_ad_callback(
         submission_status,
         submission_errors
 ):
-    content_ad_source.source_content_ad_id = str(source_content_ad_id)
+    if source_content_ad_id is not None:
+        source_content_ad_id = str(source_content_ad_id)
+
+    content_ad_source.source_content_ad_id = source_content_ad_id
     content_ad_source.source_state = source_state
 
     if submission_status is not None:
