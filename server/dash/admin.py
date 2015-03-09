@@ -511,8 +511,6 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         'modified_dt'
     )
 
-    list_filter = ('content_ad_source__source', 'submission_status')
-
     display_submission_status_colors = {
         constants.ContentAdSubmissionStatus.APPROVED: '#5cb85c',
         constants.ContentAdSubmissionStatus.REJECTED: '#d9534f',
@@ -538,6 +536,8 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         if current_content_ad_source.submission_status != content_ad_source.submission_status and\
            content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
             actionlog.api_contentads.init_update_content_ad_action(content_ad_source)
+
+    def approve_content_ads
 
     def __init__(self, *args, **kwargs):
         super(ContentAdSourceAdmin, self).__init__(*args, **kwargs)
