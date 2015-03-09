@@ -502,14 +502,31 @@ class OutbrainAccountAdmin(admin.ModelAdmin):
 
 class ContentAdSourceAdmin(admin.ModelAdmin):
     list_display = (
-        'content_ad',
+        'content_ad_id_',
+        'source_content_ad_id',
         'source',
         'submission_status',
         'submission_errors',
-        'source_content_ad_id',
         'created_dt',
         'modified_dt'
     )
+
+    display_sumbission_status_colors = {
+        constants.ContentAdSubmissionStatus.APPROVED: '#5cb85c',
+        constants.ContentAdSubmissionStatus.REJECTED: '#d9534f',
+        constants.ContentAdSubmissionStatus.PENDING: '#428bca',
+    }
+
+    def submission_status_(self, obj):
+        return '<span style="color:{color}">{sumbission_status}</span>'.format(
+            color=self.display_sumbission_status_colors[obj.sumbission_status],
+            sumbission_status=obj.get_sumbission_status_display(),
+        )
+    submission_status_.allow_tags = True
+    submission_status_.admin_order_field = 'submission_status'
+
+    def content_ad_id_(self, obj):
+        return obj.content_ad.id
 
     def save_model(self, request, content_ad_source, form, change):
         current_content_ad_source = models.ContentAdSource.objects.get(id=content_ad_source.id)

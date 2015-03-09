@@ -71,13 +71,13 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
     list_display = ('action_', 'ad_group_source_', 'created_dt', 'modified_dt', 'action_type', 'state_', 'order_')
 
     fields = (
-        'action_', 'ad_group_source_', 'state', 'action_type',
+        'action_', 'ad_group_source_', 'content_ad_source', 'state', 'action_type', 'expiration_dt',
         'created_by', 'created_dt', 'modified_by', 'modified_dt',
         'payload_', 'message_', 'order_'
     )
 
     readonly_fields = (
-        'action_', 'ad_group_source_', 'action_type',
+        'action_', 'ad_group_source_', 'content_ad_source', 'action_type', 'expiration_dt',
         'created_by', 'created_dt', 'modified_by', 'modified_dt',
         'payload_', 'message_', 'order_'
     )
