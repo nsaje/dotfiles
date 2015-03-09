@@ -514,6 +514,7 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
     list_display = (
         'content_ad_id_',
         'source_content_ad_id',
+        'ad_group_name',
         'source',
         'submission_status_',
         'submission_errors',
@@ -542,6 +543,10 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
     def content_ad_id_(self, obj):
         return obj.content_ad.id
     content_ad_id_.admin_order_field = 'content_ad_id'
+
+    def ad_group_name(self, obj):
+        ad_group = obj.content_ad.article.ad_group
+        return ad_group.campaign.account.name + ' / ' + ad_group.campaign.name + ' / ' + ad_group.name + ' (' + str(ad_group.id) + ')'
 
     def save_model(self, request, content_ad_source, form, change):
         current_content_ad_source = models.ContentAdSource.objects.get(id=content_ad_source.id)
