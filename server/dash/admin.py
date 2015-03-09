@@ -502,7 +502,7 @@ class OutbrainAccountAdmin(admin.ModelAdmin):
 
 class ContentAdSourceAdmin(admin.ModelAdmin):
     list_display = (
-        'content_ad_id',
+        'content_ad_id_',
         'source_content_ad_id',
         'source',
         'submission_status_',
@@ -524,6 +524,10 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         )
     submission_status_.allow_tags = True
     submission_status_.admin_order_field = 'submission_status'
+
+    def content_ad_id_(self, obj):
+        return obj.content_ad.id
+    content_ad_id_.admin_order_field = 'content_ad_id'
 
     def save_model(self, request, content_ad_source, form, change):
         current_content_ad_source = models.ContentAdSource.objects.get(id=content_ad_source.id)
