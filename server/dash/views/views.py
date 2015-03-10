@@ -568,7 +568,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.new_content_ads_tab'):
             raise exc.ForbiddenError(message='Not allowed')
 
-        helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         form = forms.AdGroupAdsPlusUploadForm(request.POST, request.FILES)
 
@@ -651,7 +651,8 @@ class ProcessUploadThread(BaseThread):
             # ensure content ads are only commited to DB
             # if all of them are successfully processed
             with transaction.atomic():
-                for ad in self.content_ads:
+                for i, ad in enumerate(self.content_ads):
+                    logging.debug('ProcessUploadThread: processing ad no. {}: {}'.format(i + 1, ad))
                     image_id, width, height = image_helper.process_image(ad.get('image_url'), ad.get('crop_areas'))
                     content_ad = models.ContentAd.objects.create(
                         image_id=image_id,
@@ -687,6 +688,7 @@ class ProcessUploadThread(BaseThread):
             self.batch.save()
 
             if not isinstance(e, image_helper.ImageProcessingException):
+                logger.exception('Exception in ProcessUploadThread')
                 raise
 
         for content_ad_source in content_ad_sources:
