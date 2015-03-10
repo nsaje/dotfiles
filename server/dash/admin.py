@@ -509,6 +509,11 @@ approve_content_ad_sources.short_description = 'Mark selected content ad sources
 
 def reject_content_ad_sources(modeladmin, request, queryset):
     queryset.update(submission_status=constants.ContentAdSubmissionStatus.REJECTED)
+    for content_ad_source in queryset:
+        content_ad_source.state = constants.ContentAdSourceState.INACTIVE
+        content_ad_source.source_state = constants.ContentAdSourceState.INACTIVE
+        content_ad_source.save()
+        actionlog.api_contentads.init_update_content_ad_action(content_ad_source)
 reject_content_ad_sources.short_description = 'Mark selected content ad sources as REJECTED'
 
 
