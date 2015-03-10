@@ -506,12 +506,13 @@ class OutbrainAccountAdmin(admin.ModelAdmin):
 def approve_content_ad_sources(modeladmin, request, queryset):
     logger.info('BULK APPROVE CONTENT ADS: Bulk approve content ads started. Contentads: {}'.format([el.id for el in queryset]))
     for content_ad_source in queryset:
-        content_ad_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
         logger.info(
             'BULK APPROVE CONTENT ADS: Initializing update content ad update action through bulk approve. Content ad id: {}'.format(
                 content_ad_source.content_ad.id
             )
         )
+        content_ad_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
+        content_ad_source.save()
         actionlog.api_contentads.init_update_content_ad_action(content_ad_source)
 approve_content_ad_sources.short_description = 'Mark selected content ad sources as APPROVED'
 
