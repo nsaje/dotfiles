@@ -505,10 +505,8 @@ class OutbrainAccountAdmin(admin.ModelAdmin):
 
 def approve_content_ad_sources(modeladmin, request, queryset):
     logger.info('BULK APPROVE CONTENT ADS: Bulk approve content ads started. Contentads: {}'.format([el.id for el in queryset]))
-    content_ads = [content_ad for content_ad in queryset]
-    queryset.update(submission_status=constants.ContentAdSubmissionStatus.APPROVED)
-    logger.info('BULK APPROVE CONTENT ADS: Sending action logs. Content ads: {}'.format([el.id for el in queryset]))
-    for content_ad_source in content_ads:
+    for content_ad_source in queryset:
+        content_ad_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
         logger.info(
             'BULK APPROVE CONTENT ADS: Initializing update content ad update action through bulk approve. Content ad id: {}'.format(
                 content_ad_source.content_ad.id
@@ -520,15 +518,13 @@ approve_content_ad_sources.short_description = 'Mark selected content ad sources
 
 def reject_content_ad_sources(modeladmin, request, queryset):
     logger.info('BULK REJECT CONTENT ADS: Bulk reject content ads started. Contentads: {}'.format([el.id for el in queryset]))
-    content_ads = [content_ad for content_ad in queryset]
-    queryset.update(submission_status=constants.ContentAdSubmissionStatus.REJECTED)
-    logger.info('BULK REJECT CONTENT ADS: Setting state and sending action logs. Content ads: {}'.format([el.id for el in queryset]))
-    for content_ad_source in content_ads:
+    for content_ad_source in queryset:
         logger.info(
             'BULK REJECT CONTENT ADS: Setting content ad to inactive through bulk reject. Content ad id: {}'.format(
                 content_ad_source.content_ad.id
             )
         )
+        content_ad_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
         content_ad_source.state = constants.ContentAdSourceState.INACTIVE
         content_ad_source.source_state = constants.ContentAdSourceState.INACTIVE
         content_ad_source.save()
