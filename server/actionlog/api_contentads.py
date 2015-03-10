@@ -52,7 +52,13 @@ def init_insert_content_ad_action(content_ad_source, request=None):
 
 
 def init_update_content_ad_action(content_ad_source):
-    if content_ad_source.submission_status != dash.constants.ContentAdSubmissionStatus.APPROVED:
+    if content_ad_source.submission_status == dash.constants.ContentAdSubmissionStatus.PENDING:
+        logger.info(
+            'Content ad source has pending submission status. '
+            'Cancelling updating state. content_ad_source_id: {}'.format(
+                content_ad_source.id,
+            )
+        )
         # don't update state for unapproved ads
         return
 
