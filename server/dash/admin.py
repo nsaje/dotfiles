@@ -502,11 +502,13 @@ class OutbrainAccountAdmin(admin.ModelAdmin):
 
 def approve_content_ad_sources(modeladmin, request, queryset):
     queryset.update(submission_status=constants.ContentAdSubmissionStatus.APPROVED)
+    for content_ad_source in queryset:
+        actionlog.api_contentads.init_update_content_ad_action(content_ad_source)
 approve_content_ad_sources.short_description = 'Mark selected content ad sources as APPROVED'
 
 
 def reject_content_ad_sources(modeladmin, request, queryset):
-    queryset.update(submission_status=constants.ContentAdSubmissionStatus.REJECTD)
+    queryset.update(submission_status=constants.ContentAdSubmissionStatus.REJECTED)
 reject_content_ad_sources.short_description = 'Mark selected content ad sources as REJECTED'
 
 
