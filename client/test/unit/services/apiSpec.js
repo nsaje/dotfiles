@@ -40,6 +40,7 @@ describe('api', function() {
                 var result;
                 var data = {
                     data: {
+                        missing_settings_message: 'missing settings test message',
                         errors: {
                             content_ads: 'Error message.',
                             batch_name: 'Batch name error message.'
@@ -54,8 +55,11 @@ describe('api', function() {
                 $httpBackend.flush();
 
                 expect(result).toEqual({
-                    file: 'Error message.',
-                    batchName: 'Batch name error message.'
+                    missingSettingsMessage: 'missing settings test message',
+                    errors: {
+                        file: 'Error message.',
+                        batchName: 'Batch name error message.'
+                    }
                 });
             });
         });

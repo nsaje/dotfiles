@@ -103,6 +103,7 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
 
     $scope.$on('$stateChangeSuccess', function () {
         $scope.updateBreadcrumbAndTitle();
+        $scope.setActiveTab();
     });
 
     $scope.getAdGroupState = function() {

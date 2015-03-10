@@ -1885,7 +1885,16 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             }).success(function(data) {
                 deferred.resolve(data.data.batch_id);
             }).error(function(data) {
-                deferred.reject(convertValidationErrorsFromApi(data.data.errors));
+                var result = {};
+
+                if (data && data.data) {
+                    result.missingSettingsMessage = data.data.missing_settings_message;
+
+                    if (data.data.errors) {
+                        result.errors = convertValidationErrorsFromApi(data.data.errors);
+                    }
+                }
+                deferred.reject(result);
             });
  
             return deferred.promise;
