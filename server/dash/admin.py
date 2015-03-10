@@ -1,4 +1,5 @@
 import json
+import logging
 import urllib
 
 from django.contrib import admin
@@ -12,6 +13,8 @@ from zemauth.models import User as ZemUser
 import constants
 import models
 import actionlog.api_contentads
+
+logger = logging.getLogger(__name__)
 
 
 # Forms for inline user functionality.
@@ -501,15 +504,27 @@ class OutbrainAccountAdmin(admin.ModelAdmin):
 
 
 def approve_content_ad_sources(modeladmin, request, queryset):
+    logger.info('Bulk approve content ads started')
     queryset.update(submission_status=constants.ContentAdSubmissionStatus.APPROVED)
     for content_ad_source in queryset:
+        logger.info(
+            'Initializing update content ad update action through bulk approve. Content ad id: {}'.format(
+                content_ad_source.content_ad.id
+            )
+        )
         actionlog.api_contentads.init_update_content_ad_action(content_ad_source)
 approve_content_ad_sources.short_description = 'Mark selected content ad sources as APPROVED'
 
 
 def reject_content_ad_sources(modeladmin, request, queryset):
+    logger.info('Bulk reject content ads started')
     queryset.update(submission_status=constants.ContentAdSubmissionStatus.REJECTED)
     for content_ad_source in queryset:
+        logger.info(
+            'Setting content ad to inactive through bulk reject. Content ad id: {}'.format(
+                content_ad_source.content_ad.id
+            )
+        )
         content_ad_source.state = constants.ContentAdSourceState.INACTIVE
         content_ad_source.source_state = constants.ContentAdSourceState.INACTIVE
         content_ad_source.save()
