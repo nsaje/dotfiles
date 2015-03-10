@@ -137,7 +137,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             onChange: function (sourceId, value) {
                 api.adGroupSourceSettings.save($state.params.id, sourceId, {state: value}).then(
                     function (data) {
-                        pollSourcesTableUpdates();
+                        $scope.pollSourcesTableUpdates();
                     }
                 );
             },
@@ -205,7 +205,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 api.adGroupSourceSettings.save($state.params.id, sourceId, data).then(
                     function (data) {
                         onSuccess();
-                        pollSourcesTableUpdates();
+                        $scope.pollSourcesTableUpdates();
                     },
                     function (errors) {
                         onError(errors.cpc);
@@ -244,7 +244,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 api.adGroupSourceSettings.save($state.params.id, sourceId, data).then(
                     function (data) {
                         onSuccess();
-                        pollSourcesTableUpdates();
+                        $scope.pollSourcesTableUpdates();
                     },
                     function (errors) {
                         onError(errors.dailyBudget);
@@ -420,7 +420,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
 
                 $scope.selectRows();
-                pollSourcesTableUpdates();
+                $scope.pollSourcesTableUpdates();
             },
             function (data) {
                 // error
@@ -681,7 +681,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
     pollSyncStatus();
 
-    var pollSourcesTableUpdates = function () {
+    $scope.pollSourcesTableUpdates = function () {
         if (!$scope.hasPermission('zemauth.set_ad_group_source_settings') ||
             $scope.lastChangeTimeout) {
             return;
@@ -694,15 +694,13 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                     $scope.notifications = data.notifications;
                     $scope.dataStatus = data.dataStatus;
 
-                    data.rows[4].bid_cpc = '0.9999';
                     updateTableData(data.rows, data.totals);
-                    console.log($scope.rows);
                 }
 
                 if (data.inProgress) {
                     $scope.lastChangeTimeout = $timeout(function () {
                         $scope.lastChangeTimeout = null;
-                        pollSourcesTableUpdates();
+                        $scope.pollSourcesTableUpdates();
                     }, 2000);
                 }
             });
