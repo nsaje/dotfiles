@@ -504,7 +504,7 @@ class OutbrainAccountAdmin(admin.ModelAdmin):
 
 
 def approve_content_ad_sources(modeladmin, request, queryset):
-    logger.info('Bulk approve content ads started. Contentads:'.format([el.id for el in queryset]))
+    logger.info('Bulk approve content ads started. Contentads: {}'.format([el.id for el in queryset]))
     queryset.update(submission_status=constants.ContentAdSubmissionStatus.APPROVED)
     for content_ad_source in queryset:
         logger.info(
@@ -517,7 +517,7 @@ approve_content_ad_sources.short_description = 'Mark selected content ad sources
 
 
 def reject_content_ad_sources(modeladmin, request, queryset):
-    logger.info('Bulk reject content ads started. Contentads:'.format([el.id for el in queryset]))
+    logger.info('Bulk reject content ads started. Contentads: {}'.format([el.id for el in queryset]))
     queryset.update(submission_status=constants.ContentAdSubmissionStatus.REJECTED)
     for content_ad_source in queryset:
         logger.info(
