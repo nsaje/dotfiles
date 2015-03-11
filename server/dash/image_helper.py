@@ -20,7 +20,10 @@ def process_image(url, crop_areas):
 
     data = json.dumps(payload)
 
-    response = urllib2.urlopen(settings.Z3_API_IMAGE_URL, data)
+    try:
+        response = urllib2.urlopen(settings.Z3_API_IMAGE_URL, data)
+    except urllib2.HTTPError as e:
+        raise ImageProcessingException(e)
 
     if response.code != 200:
         raise ImageProcessingException()
