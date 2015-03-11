@@ -57,7 +57,6 @@ describe('UploadAdsModalCtrl', function() {
             var deferred = $q.defer();
             var data = {
                 errors: {'batchName': ['This is required']},
-                missingSettingsMessage: 'missing settings test message'
             }
 
             spyOn(api.adGroupAdsPlusUpload, 'upload').and.callFake(function() {
@@ -69,7 +68,6 @@ describe('UploadAdsModalCtrl', function() {
             $scope.$root.$digest();
 
             expect($scope.errors).toEqual(data.errors);
-            expect($scope.missingSettingsMessage).toEqual(data.missingSettingsMessage);
         });
     });
 

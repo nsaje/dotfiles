@@ -1,7 +1,5 @@
 /* globals oneApp */
 oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$state', '$timeout', '$filter', function($scope, $modalInstance, api, $state, $timeout, $filter) {
-    $scope.missingSettingsMessage = 'This Ad Group needs a Brand Name, Call To Action, Display URL and Description before you can add new Content Ads.';
-
     var getCurrentTimeString = function() {
         var datetime = new Date();  // get current local time
 
@@ -49,7 +47,6 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
         }, function(data) {
             $scope.isInProgress = false;
             $scope.errors = data.errors;
-            $scope.missingSettingsMessage = data.missingSettingsMessage;
         });
     };
     

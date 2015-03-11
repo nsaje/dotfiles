@@ -1887,12 +1887,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             }).error(function(data) {
                 var result = {};
 
-                if (data && data.data) {
-                    result.missingSettingsMessage = data.data.missing_settings_message;
-
-                    if (data.data.errors) {
-                        result.errors = convertValidationErrorsFromApi(data.data.errors);
-                    }
+                if (data && data.data && data.data.errors) {
+                    result.errors = convertValidationErrorsFromApi(data.data.errors);
                 }
                 deferred.reject(result);
             });
@@ -1926,7 +1922,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         function convertValidationErrorsFromApi(errors) {
             return {
                 file: errors.content_ads,
-                batchName: errors.batch_name
+                batchName: errors.batch_name,
+                adGroupSettings: errors.ad_group_settings
             };
         }
     }
