@@ -52,10 +52,6 @@ def init_insert_content_ad_action(content_ad_source, request=None):
 
 
 def init_update_content_ad_action(content_ad_source):
-    if content_ad_source.submission_status != dash.constants.ContentAdSubmissionStatus.APPROVED:
-        # don't update state for unapproved ads
-        return
-
     ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.article.ad_group,
                                                             source=content_ad_source.source)
     args = {

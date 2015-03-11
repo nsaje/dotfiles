@@ -686,7 +686,8 @@ class ProcessUploadThread(BaseThread):
             # ensure content ads are only commited to DB
             # if all of them are successfully processed
             with transaction.atomic():
-                for ad in self.content_ads:
+                for i, ad in enumerate(self.content_ads):
+                    logging.debug('ProcessUploadThread: processing ad {} of {}: {}'.format(i + 1, len(self.content_ads), ad))
                     image_id, width, height = image_helper.process_image(ad.get('image_url'), ad.get('crop_areas'))
                     content_ad = models.ContentAd.objects.create(
                         image_id=image_id,
@@ -722,6 +723,7 @@ class ProcessUploadThread(BaseThread):
             self.batch.save()
 
             if not isinstance(e, image_helper.ImageProcessingException):
+                logger.exception('Exception in ProcessUploadThread')
                 raise
 
         for content_ad_source in content_ad_sources:
