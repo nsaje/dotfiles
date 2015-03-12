@@ -334,16 +334,21 @@ def get_content_ad_submission_status(content_ad_sources):
     submission_status = []
 
     for content_ad_source in content_ad_sources:
+        cas_source_state = content_ad_source.source_state
+        if cas_source_state is None:
+            cas_source_state = constants.ContentAdSourceState.INACTIVE
+
         cas_submission_status = content_ad_source.submission_status
-        if cas_submission_status != constants.ContentAdSubmissionStatus.APPROVED or\
+        if cas_submission_status != constants.ContentAdSubmissionStatus.APPROVED and\
            cas_submission_status != constants.ContentAdSubmissionStatus.REJECTED:
             cas_submission_status = constants.ContentAdSubmissionStatus.PENDING
+
         submission_status.append({
             'name': content_ad_source.source.name,
             'status': cas_submission_status,
             'text': '{} / {}'.format(
                 constants.ContentAdSubmissionStatus.get_text(cas_submission_status),
-                constants.ContentAdSourceState.get_text(content_ad_source.source_state))
+                constants.ContentAdSourceState.get_text(cas_source_state))
         })
 
     return submission_status
