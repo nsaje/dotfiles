@@ -42,11 +42,17 @@ def init_insert_content_ad_action(content_ad_source, request=None):
     }
 
     action = _create_action(
-        content_ad_source,
+        ad_group_source,
         actionlog.constants.Action.INSERT_CONTENT_AD,
         args,
-        request
+        request=request,
+        content_ad_source=content_ad_source
     )
+
+    msg = "insert_content_ad action created: content_ad_source.id: {}".format(
+        content_ad_source.id,
+    )
+    logger.info(msg)
 
     actionlog.zwei_actions.send(action)
 
@@ -58,30 +64,46 @@ def init_update_content_ad_action(content_ad_source):
         'source_campaign_key': ad_group_source.source_campaign_key,
         'content_ad_id': content_ad_source.get_source_id(),
         'content_ad': {
-            'state': content_ad_source.state
+            'state': content_ad_source.state,
+            'submission_status': content_ad_source.submission_status
         }
     }
 
     action = _create_action(
-        content_ad_source,
+        ad_group_source,
         actionlog.constants.Action.UPDATE_CONTENT_AD,
-        args
+        args,
+        content_ad_source=content_ad_source
     )
 
-    actionlog.zwei_actions.send(action)
-
-
-def _create_action(content_ad_source, action, args={}, request=None):
-    msg = "create upsert_content_ad action started: content_ad_source.id: {}".format(
+    msg = "update_content_ad action created: content_ad_source.id: {}".format(
         content_ad_source.id,
     )
     logger.info(msg)
 
-    ad_group_source = dash.models.AdGroupSource.objects.get(
-        ad_group_id=content_ad_source.content_ad.article.ad_group,
-        source=content_ad_source.source,
+    actionlog.zwei_actions.send(action)
+
+
+def init_get_content_ad_status_action(ad_group_source):
+    args = {
+        'source_campaign_key': ad_group_source.source_campaign_key
+    }
+
+    action = _create_action(
+        ad_group_source,
+        actionlog.constants.Action.GET_CONTENT_AD_STATUS,
+        args
     )
 
+    msg = "get_content_ad_status action created: ad_group_source.id: {}".format(
+        ad_group_source.id,
+    )
+    logger.info(msg)
+
+    actionlog.zwei_actions.send(action)
+
+
+def _create_action(ad_group_source, action, args={}, content_ad_source=None, request=None):
     action = actionlog.models.ActionLog(
         action=action,
         action_type=actionlog.constants.ActionType.AUTOMATIC,

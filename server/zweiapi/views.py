@@ -154,9 +154,14 @@ def _process_zwei_response(action, data):
             )
     elif action.action == actionlogconstants.Action.UPDATE_CONTENT_AD:
         dashapi.update_content_ad_state(
+            action.content_ad_source,
+            data['data'].get('source_state'),
+            data['data'].get('submission_status')
+        )
+    elif action.action == actionlogconstants.Action.GET_CONTENT_AD_STATUS:
+        dashapi.update_content_ad_source_states(
             action.ad_group_source,
-            action.content_ad_source.id,
-            action.payload['args']['content_ad']['state'],
+            data['data']
         )
 
     action.state = actionlogconstants.ActionState.SUCCESS
