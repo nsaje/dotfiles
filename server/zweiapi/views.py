@@ -155,7 +155,7 @@ def _process_zwei_response(action, data):
     elif action.action == actionlogconstants.Action.UPDATE_CONTENT_AD:
         dashapi.update_content_ad_state(
             action.ad_group_source,
-            action.payload['args']['content_ad_id'],
+            action.content_ad_source.id,
             action.payload['args']['content_ad']['state'],
         )
 

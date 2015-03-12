@@ -129,8 +129,6 @@ def update_content_ad_state(ad_group_source, content_ad_id, state):
 def order_ad_group_settings_update(ad_group, current_settings, new_settings):
     changes = current_settings.get_setting_changes(new_settings)
 
-    print 'ChaNGS', changes
-
     if not changes:
         return
 

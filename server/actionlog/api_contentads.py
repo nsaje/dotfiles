@@ -58,7 +58,7 @@ def init_update_content_ad_action(content_ad_source):
         'source_campaign_key': ad_group_source.source_campaign_key,
         'content_ad_id': content_ad_source.get_source_id(),
         'content_ad': {
-            'state': content_ad_source.state,
+            'state': content_ad_source.state
         }
     }
 
