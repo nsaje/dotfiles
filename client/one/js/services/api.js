@@ -1876,14 +1876,14 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/';
 
             $http.get(url).success(function(data) {
-                deferred.resolve(data);
-            }).error(function(data) {
                 var result = {};
 
                 if (data && data.data && data.data.errors) {
-                    result.errors = convertValidationErrorsFromApi(data.data.errors);
+                    result = convertValidationErrorsFromApi(data.data.errors);
                 }
-                deferred.reject(result);
+                deferred.resolve(result);
+            }).error(function(data) {
+                deferred.reject(data);
             });
  
             return deferred.promise;

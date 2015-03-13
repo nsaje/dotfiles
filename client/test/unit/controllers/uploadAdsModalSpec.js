@@ -33,30 +33,9 @@ describe('UploadAdsModalCtrl', function() {
 
         $controller(
             'UploadAdsModalCtrl',
-            {$scope: $scope, $modalInstance: $modalInstance, api: api, $state: $state}
+            {$scope: $scope, $modalInstance: $modalInstance, api: api, $state: $state, errors: {}}
         );
     }));
-
-    describe('opened handler', function() {
-        it('validates settings and sets errors', function() {
-            var apiDeferred = $q.defer();
-            var data = {
-                errors: {
-                    something: 'error'
-                }
-            };
-
-            spyOn(api.adGroupAdsPlusUpload, 'validateSettings').and.callFake(function() {
-                return apiDeferred.promise;
-            });
-
-            openedDeferred.resolve();
-            apiDeferred.reject(data);
-            $scope.$root.$digest();
-
-            expect($scope.errors).toEqual(data.errors);
-        })
-    });
 
     describe('upload', function() {
         it('calls api and polls for updates on success', function() {

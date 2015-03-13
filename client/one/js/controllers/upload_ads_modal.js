@@ -1,5 +1,7 @@
 /* globals oneApp */
-oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$state', '$timeout', '$filter', function($scope, $modalInstance, api, $state, $timeout, $filter) {
+oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$state', '$timeout', '$filter', 'errors', function($scope, $modalInstance, api, $state, $timeout, $filter, errors) {
+    $scope.errors = errors;
+
     var getCurrentTimeString = function() {
         var datetime = new Date();  // get current local time
 
@@ -56,12 +58,4 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
             $state.go('main.adGroups.settings', {id: $state.params.id});
         }, 300);
     };
-
-    $modalInstance.opened.then(function() {
-            console.log('32');
-        api.adGroupAdsPlusUpload.validateSettings($state.params.id).then(function() {}, function(data) {
-            console.log('ad');
-            $scope.errors = data.errors;
-        });
-    });
 }]);
