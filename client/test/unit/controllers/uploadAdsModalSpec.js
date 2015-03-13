@@ -1,7 +1,7 @@
 'use strict'
 
 describe('UploadAdsModalCtrl', function() {
-    var $scope, $modalInstance, api, $state, $q, $timeout;
+    var $scope, $modalInstance, api, $state, $q, $timeout, openedDeferred;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
@@ -10,8 +10,19 @@ describe('UploadAdsModalCtrl', function() {
         $q = _$q_;
         $timeout = _$timeout_;
         $scope = $rootScope.$new();
-        $modalInstance = {close: function(){}};
-        api = {adGroupAdsPlusUpload: {upload: function() {}, checkStatus: function() {}}};
+
+        openedDeferred = $q.defer();
+        $modalInstance = {
+            close: function(){},
+            opened: openedDeferred.promise
+        };
+        api = {
+            adGroupAdsPlusUpload: {
+                upload: function() {},
+                checkStatus: function() {},
+                validateSettings: function() {}
+            }
+        };
 
         $scope.user = {
             timezoneOffset: 0
@@ -25,6 +36,27 @@ describe('UploadAdsModalCtrl', function() {
             {$scope: $scope, $modalInstance: $modalInstance, api: api, $state: $state}
         );
     }));
+
+    describe('opened handler', function() {
+        it('validates settings and sets errors', function() {
+            var apiDeferred = $q.defer();
+            var data = {
+                errors: {
+                    something: 'error'
+                }
+            };
+
+            spyOn(api.adGroupAdsPlusUpload, 'validateSettings').and.callFake(function() {
+                return apiDeferred.promise;
+            });
+
+            openedDeferred.resolve();
+            apiDeferred.reject(data);
+            $scope.$root.$digest();
+
+            expect($scope.errors).toEqual(data.errors);
+        })
+    });
 
     describe('upload', function() {
         it('calls api and polls for updates on success', function() {

@@ -56,4 +56,12 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
             $state.go('main.adGroups.settings', {id: $state.params.id});
         }, 300);
     };
+
+    $modalInstance.opened.then(function() {
+            console.log('32');
+        api.adGroupAdsPlusUpload.validateSettings($state.params.id).then(function() {}, function(data) {
+            console.log('ad');
+            $scope.errors = data.errors;
+        });
+    });
 }]);

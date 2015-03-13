@@ -563,6 +563,21 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 
 
 class AdGroupAdsPlusUpload(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_get')
+    def get(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.new_content_ads_tab'):
+            raise exc.ForbiddenError(message='Not allowed')
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+
+        settings_error_message = self._get_settings_error_message(ad_group)
+        if settings_error_message is not None:
+            raise exc.ValidationError(errors={
+                'ad_group_settings': settings_error_message
+            })
+
+        return self.create_api_response()
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.new_content_ads_tab'):
