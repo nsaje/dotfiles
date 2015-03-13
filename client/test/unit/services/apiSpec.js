@@ -42,7 +42,8 @@ describe('api', function() {
                     data: {
                         errors: {
                             content_ads: 'Error message.',
-                            batch_name: 'Batch name error message.'
+                            batch_name: 'Batch name error message.',
+                            ad_group_settings: 'missing settings test message'
                         }
                     }
                 };
@@ -54,8 +55,11 @@ describe('api', function() {
                 $httpBackend.flush();
 
                 expect(result).toEqual({
-                    file: 'Error message.',
-                    batchName: 'Batch name error message.'
+                    errors: {
+                        file: 'Error message.',
+                        batchName: 'Batch name error message.',
+                        adGroupSettings: 'missing settings test message'
+                    }
                 });
             });
         });

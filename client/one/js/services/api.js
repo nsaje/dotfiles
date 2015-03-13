@@ -1885,7 +1885,12 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             }).success(function(data) {
                 deferred.resolve(data.data.batch_id);
             }).error(function(data) {
-                deferred.reject(convertValidationErrorsFromApi(data.data.errors));
+                var result = {};
+
+                if (data && data.data && data.data.errors) {
+                    result.errors = convertValidationErrorsFromApi(data.data.errors);
+                }
+                deferred.reject(result);
             });
  
             return deferred.promise;
@@ -1917,7 +1922,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         function convertValidationErrorsFromApi(errors) {
             return {
                 file: errors.content_ads,
-                batchName: errors.batch_name
+                batchName: errors.batch_name,
+                adGroupSettings: errors.ad_group_settings
             };
         }
     }

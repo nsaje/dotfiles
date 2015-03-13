@@ -115,6 +115,15 @@ class AdGroupAdsPlusUploadTest(TestCase):
         MockAdGroupAdsPlusUploadForm.return_value.is_valid.return_value = True
         MockProcessUploadThread.return_value.start.return_value = None
 
+        models.AdGroupSettings.objects.create(
+            ad_group_id=1,
+            created_by_id=1,
+            brand_name='name',
+            display_url='example.com',
+            description='test description',
+            call_to_action='click here'
+        )
+
         response = self._get_client().post(
             reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}), follow=True)
 
@@ -130,6 +139,33 @@ class AdGroupAdsPlusUploadTest(TestCase):
             reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}), follow=True)
 
         self.assertEqual(response.status_code, 400)
+
+    @patch('dash.views.views.forms.AdGroupAdsPlusUploadForm')
+    def test_validation_error_missing_settings(self, MockAdGroupAdsPlusUploadForm):
+        MockAdGroupAdsPlusUploadForm.return_value.is_valid.return_value = True
+        MockAdGroupAdsPlusUploadForm.return_value.errors = None
+
+        models.AdGroupSettings.objects.create(
+            ad_group_id=1,
+            created_by_id=1,
+            brand_name='name',
+            description='test description',
+        )
+
+        response = self._get_client().post(
+            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}), follow=True)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json.loads(response.content), {
+            u'data': {
+                u'message': None,
+                u'errors': {
+                    u'ad_group_settings': u'This ad group needs a Display URL and Call to action before you can add new content ads.'
+                },
+                u'error_code': u'ValidationError'
+            },
+            u'success': False
+        })
 
     def test_permission(self):
         response = self._get_client(superuser=False).post(
