@@ -21,8 +21,9 @@ class Command(BaseCommand):
 
         logger.info('Fetching status and reports for all ad groups.')
 
-        ad_group_sources = get_ad_group_sources(ad_group_ids, source_ids)
-        if ad_group_sources:
+        if (isinstance(ad_group_ids, list) and len(ad_group_ids) > 0) or\
+           (isinstance(source_ids, list) and len(source_ids) > 0):
+            ad_group_sources = get_ad_group_sources(ad_group_ids, source_ids)
             for ad_group_source in ad_group_sources:
                 sync.AdGroupSourceSync(ad_group_source).trigger_all()
         else:
