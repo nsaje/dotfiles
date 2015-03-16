@@ -3,6 +3,7 @@ import dateutil.parser
 import pytz
 
 from django.conf import settings
+from django.db.models import Q
 
 import actionlog.api
 import actionlog.constants
@@ -152,8 +153,11 @@ def get_active_ad_group_sources(modelcls, modelobjects):
         )
 
         active_ad_group_sources = models.AdGroupSource.objects \
-            .filter(ad_group__in=adgroups) \
-            .exclude(pk__in=[ags.id for ags in _inactive_ad_group_sources])
+            .filter(
+                # deprecated sources are not shown in the demo at all
+                Q(ad_group__in=real_corresponding_adgroups, source__deprecated=False) | 
+                Q(ad_group__in=normal_adgroups)
+            ).exclude(pk__in=[ags.id for ags in _inactive_ad_group_sources])
 
     return active_ad_group_sources
 
