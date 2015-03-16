@@ -109,7 +109,8 @@ class AllAccountsSourcesTable(object):
 
     def get_last_success_actions(self):
         return actionlog.sync.GlobalSync(sources=self.filtered_sources).get_latest_success_by_source(
-            include_maintenance=True
+            include_maintenance=True,
+            include_deprecated=True,
         )
 
     def is_sync_in_progress(self):
@@ -171,7 +172,8 @@ class AccountSourcesTable(object):
     def get_last_success_actions(self):
         return actionlog.sync.AccountSync(self.account, sources=self.filtered_sources).get_latest_source_success(
             recompute=False,
-            include_maintenance=True
+            include_maintenance=True,
+            include_deprecated=True,
         )
 
     def is_sync_in_progress(self):
@@ -233,7 +235,8 @@ class CampaignSourcesTable(object):
     def get_last_success_actions(self):
         return actionlog.sync.CampaignSync(self.campaign, sources=self.filtered_sources).get_latest_source_success(
             recompute=False,
-            include_maintenance=True
+            include_maintenance=True,
+            include_deprecated=True,
         )
 
     def is_sync_in_progress(self):
@@ -301,7 +304,8 @@ class AdGroupSourcesTable(object):
     def get_last_success_actions(self):
         return actionlog.sync.AdGroupSync(self.ad_group, sources=self.filtered_sources).get_latest_source_success(
             recompute=False,
-            include_maintenance=True
+            include_maintenance=True,
+            include_deprecated=True,
         )
 
     def is_sync_in_progress(self):
@@ -443,10 +447,10 @@ class SourcesTable(api_common.BaseApiView):
             yesterday_cost, yesterday_total_cost = self.level_sources_table.\
                 get_yesterday_cost()
 
-        sources_not_maintenance = [source.id for source in sources.filter(maintenance=False)]
-        last_success_actions_not_maintenance = [v for k, v in last_success_actions.iteritems()
-                                                if k in sources_not_maintenance]
-        last_sync = helpers.get_last_sync(last_success_actions_not_maintenance)
+        operational_sources = [source.id for source in sources.filter(maintenance=False, deprecated=False)]
+        last_success_actions_operational = [v for k, v in last_success_actions.iteritems()
+                                                if k in operational_sources]
+        last_sync = helpers.get_last_sync(last_success_actions_operational)
 
         incomplete_postclick_metrics = False
         if has_aggregate_postclick_permission(user):
@@ -480,7 +484,7 @@ class SourcesTable(api_common.BaseApiView):
                 yesterday_total_cost
             ),
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
-            'is_sync_recent': helpers.is_sync_recent(last_success_actions_not_maintenance),
+            'is_sync_recent': helpers.is_sync_recent(last_success_actions_operational),
             'is_sync_in_progress': is_sync_in_progress,
             'incomplete_postclick_metrics': incomplete_postclick_metrics,
         }
@@ -572,6 +576,9 @@ class SourcesTable(api_common.BaseApiView):
                     source_data = item
                     break
 
+            if source.deprecated and source_data.get('impressions', 0) == 0:
+                continue    # deprecated sources without data don't have to be shown
+
             last_sync = last_actions.get(source.id)
 
             supply_dash_url = None
@@ -608,7 +615,8 @@ class SourcesTable(api_common.BaseApiView):
 
                 'goals': source_data.get('goals', {}),
 
-                'maintenance': source.maintenance
+                'maintenance': source.maintenance,
+                'archived': source.deprecated,
             }
 
             bid_cpc_values = [s.cpc_cc for s in states if s.cpc_cc is not None]

@@ -20,17 +20,17 @@ class BaseSync(object):
             sources = dash.models.Source.objects.all()
         self.sources = sources
 
-    def get_latest_success_by_child(self, recompute=True, include_level_archived=False):
+    def get_latest_success_by_child(self, recompute=True, include_level_archived=False, include_deprecated=False):
         return {
             child_sync.obj.id: _min_none(child_sync.get_latest_success_by_child(
                 recompute,
-            ).values()) for child_sync in self.get_components(archived=include_level_archived)
+            ).values()) for child_sync in self.get_components(archived=include_level_archived, deprecated=include_deprecated)
         }
 
-    def get_latest_source_success(self, recompute=True, include_maintenance=False):
-        child_syncs = self.get_components(maintenance=include_maintenance)
+    def get_latest_source_success(self, recompute=True, include_maintenance=False, include_deprecated=False):
+        child_syncs = self.get_components(maintenance=include_maintenance, deprecated=include_deprecated)
         child_source_sync_times_list = [
-            child_sync.get_latest_source_success(recompute)
+            child_sync.get_latest_source_success(recompute=recompute, include_maintenance=include_maintenance, include_deprecated=include_deprecated)
             for child_sync in child_syncs
         ]
 
@@ -81,14 +81,14 @@ class GlobalSync(BaseSync, ISyncComposite):
             sources = dash.models.Source.objects.all()
         self.sources = sources
 
-    def get_components(self, maintenance=False, archived=False):
+    def get_components(self, maintenance=False, archived=False, deprecated=False):
         accounts = dash.models.Account.objects.all()
         if not archived:
             accounts = accounts.exclude_archived()
 
         for account in accounts:
             account_sync = AccountSync(account)
-            if len(list(account_sync.get_components(maintenance=maintenance))) > 0:
+            if len(list(account_sync.get_components(maintenance=maintenance, deprecated=deprecated))) > 0:
                 yield account_sync
 
     def get_latest_success_by_account(self):
@@ -113,7 +113,7 @@ class GlobalSync(BaseSync, ISyncComposite):
         result = self._add_demo_accounts_sync_times(result)
         return result
 
-    def get_latest_success_by_source(self, include_maintenance=False):
+    def get_latest_success_by_source(self, include_maintenance=False, include_deprecated=False):
         '''
         this function is a faster way to get last succcessful sync times
         by source on globally
@@ -126,6 +126,9 @@ class GlobalSync(BaseSync, ISyncComposite):
 
         if not include_maintenance:
             qs = qs.filter(source__maintenance=False)
+
+        if not include_deprecated:
+            qs = qs.filter(source__deprecated=False)
 
         latest_success = {}
         for row in qs:
@@ -148,27 +151,27 @@ class GlobalSync(BaseSync, ISyncComposite):
 
 class AccountSync(BaseSync, ISyncComposite):
 
-    def get_components(self, maintenance=False, archived=False):
+    def get_components(self, maintenance=False, archived=False, deprecated=False):
         campaigns = dash.models.Campaign.objects.filter(account=self.obj)
         if not archived:
             campaigns = campaigns.exclude_archived()
 
         for campaign in campaigns:
             campaign_sync = CampaignSync(campaign, sources=self.sources)
-            if len(list(campaign_sync.get_components(maintenance))) > 0:
+            if len(list(campaign_sync.get_components(maintenance=maintenance, deprecated=deprecated))) > 0:
                 yield campaign_sync
 
 
 class CampaignSync(BaseSync, ISyncComposite):
 
-    def get_components(self, maintenance=False, archived=False):
+    def get_components(self, maintenance=False, archived=False, deprecated=False):
         ad_groups = dash.models.AdGroup.objects.filter(campaign=self.obj)
         if not archived:
             ad_groups = ad_groups.exclude_archived()
 
         for ad_group in ad_groups:
             ad_group_sync = AdGroupSync(ad_group, sources=self.sources)
-            if len(list(ad_group_sync.get_components(maintenance))) > 0:
+            if len(list(ad_group_sync.get_components(maintenance=maintenance, deprecated=deprecated))) > 0:
                 yield ad_group_sync
 
 
@@ -180,10 +183,12 @@ class AdGroupSync(BaseSync, ISyncComposite):
         if self.obj in dash.models.AdGroup.demo_objects.all():
             self.real_ad_group = dash.models.DemoAdGroupRealAdGroup.objects.get(demo_ad_group=self.obj).real_ad_group
 
-    def get_components(self, maintenance=False, archived=False):
+    def get_components(self, maintenance=False, archived=False, deprecated=False):
         qs = dash.models.AdGroupSource.objects.filter(ad_group=self.real_ad_group, source__in=self.sources)
         if not maintenance:
             qs = qs.filter(source__maintenance=False)
+        if not deprecated:
+            qs = qs.filter(source__deprecated=False)
 
         for ags in qs:
             yield AdGroupSourceSync(ags, sources=self.sources)
@@ -204,10 +209,10 @@ class AdGroupSourceSync(BaseSync):
             return self.obj.last_successful_sync_dt
 
     def get_latest_success_by_child(self, recompute=True, include_level_archive=False):
-        return {self.obj.id: self._get_latest_success(recompute)}
+        return {self.obj.id: self._get_latest_success(recompute=recompute)}
 
-    def get_latest_source_success(self, recompute=True, include_maintenance=False):
-        return {self.obj.source_id: self._get_latest_success(recompute)}
+    def get_latest_source_success(self, recompute=True, include_maintenance=False, include_deprecated=False):
+        return {self.obj.source_id: self._get_latest_success(recompute=recompute)}
 
     def get_latest_report_sync(self):
         # the query below works like this:
