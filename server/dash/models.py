@@ -527,20 +527,21 @@ class Source(models.Model):
         verbose_name='B1 Slug'
     )
     maintenance = models.BooleanField(default=True)
+    deprecated = models.BooleanField(default=False, null=False)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
 
     def can_update_state(self):
-        return self.source_type.can_update_state() and not self.maintenance
+        return self.source_type.can_update_state() and not self.maintenance and not self.deprecated
 
     def can_update_cpc(self):
-        return self.source_type.can_update_cpc() and not self.maintenance
+        return self.source_type.can_update_cpc() and not self.maintenance and not self.deprecated
 
     def can_update_daily_budget(self):
-        return self.source_type.can_update_daily_budget() and not self.maintenance
+        return self.source_type.can_update_daily_budget() and not self.maintenance and not self.deprecated
 
     def can_manage_content_ads(self):
-        return self.source_type.can_manage_content_ads() and not self.maintenance
+        return self.source_type.can_manage_content_ads() and not self.maintenance and not self.deprecated
 
     def __unicode__(self):
         return self.name
