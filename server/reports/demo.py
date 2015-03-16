@@ -33,6 +33,8 @@ def _refresh_stats_data(start_date, end_date):
 
             demo_rows = []
             for row in qs:
+                if not _can_demo_stats(row.source):
+                    continue
                 d_row = {
                     'article': row.article,
                     'source': row.source
@@ -66,6 +68,8 @@ def _refresh_conversion_data(start_date, end_date):
 
             demo_rows = []
             for row in qs:
+                if not _can_demo_stats(row.source):
+                    continue
                 d_row = {
                     'article': row.article,
                     'source': row.source,
@@ -79,3 +83,7 @@ def _refresh_conversion_data(start_date, end_date):
                 demo_rows.append(d_row)
 
             reports.update.goals_update_adgroup(dt, demo_ad_group, demo_rows)
+
+
+def _can_demo_stats(source):
+    return not source.deprecated
