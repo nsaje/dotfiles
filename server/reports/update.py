@@ -20,7 +20,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
         datetime=datetime, ad_group=ad_group, source=source
     ).select_related('article')
 
-    # bulk update to reset traffic metrics, IF ROWS PRESENT
+    # bulk update to reset traffic metrics
     if len(rows) != 0:
         stats.update(
             impressions=0,
