@@ -25,17 +25,15 @@ class StatsUpdateTestCase(test.TestCase):
         # before update
         article_stats_totals = reports.models.ArticleStats.objects \
             .filter(datetime=dt, ad_group=ad_group, source=source) \
-            .aggregate(
-                impressions=Sum('impressions'),
-                clicks=Sum('clicks'),
-                cost_cc=Sum('cost_cc')
+            .aggregate(impressions=Sum('impressions'),
+                       clicks=Sum('clicks'),
+                       cost_cc=Sum('cost_cc')
             )
         adgroup_stats_totals = reports.models.AdGroupStats.objects \
             .filter(datetime=dt, ad_group=ad_group, source=source) \
-            .aggregate(
-                impressions=Sum('impressions'),
-                clicks=Sum('clicks'),
-                cost_cc=Sum('cost_cc')
+            .aggregate(impressions=Sum('impressions'),
+                       clicks=Sum('clicks'),
+                       cost_cc=Sum('cost_cc')
             )
         self.assertEqual(article_stats_totals, adgroup_stats_totals)
 
@@ -53,18 +51,41 @@ class StatsUpdateTestCase(test.TestCase):
 
         article_stats_totals = reports.models.ArticleStats.objects \
             .filter(datetime=dt, ad_group=ad_group, source=source) \
-            .aggregate(
-                impressions=Sum('impressions'),
-                clicks=Sum('clicks'),
-                cost_cc=Sum('cost_cc')
+            .aggregate(impressions=Sum('impressions'),
+                       clicks=Sum('clicks'),
+                       cost_cc=Sum('cost_cc')
             )
         adgroup_stats_totals = reports.models.AdGroupStats.objects \
             .filter(datetime=dt, ad_group=ad_group, source=source) \
-            .aggregate(
-                impressions=Sum('impressions'),
-                clicks=Sum('clicks'),
-                cost_cc=Sum('cost_cc')
+            .aggregate(impressions=Sum('impressions'),
+                       clicks=Sum('clicks'),
+                       cost_cc=Sum('cost_cc')
             )
+        expected = {'impressions': 1000, 'clicks': 10, 'cost_cc': 9999}
+        self.assertEqual(article_stats_totals, expected)
+        self.assertEqual(adgroup_stats_totals, expected)
+
+        # update with empty rows
+        reports.update.stats_update_adgroup_source_traffic(
+            datetime=dt,
+            ad_group=ad_group,
+            source=source,
+            rows=[]
+        )
+        article_stats_totals = reports.models.ArticleStats.objects \
+            .filter(datetime=dt, ad_group=ad_group, source=source) \
+            .aggregate(impressions=Sum('impressions'),
+                       clicks=Sum('clicks'),
+                       cost_cc=Sum('cost_cc')
+            )
+        adgroup_stats_totals = reports.models.AdGroupStats.objects \
+            .filter(datetime=dt, ad_group=ad_group, source=source) \
+            .aggregate(impressions=Sum('impressions'),
+                       clicks=Sum('clicks'),
+                       cost_cc=Sum('cost_cc')
+            )
+
+        # Nothing changes
         expected = {'impressions': 1000, 'clicks': 10, 'cost_cc': 9999}
         self.assertEqual(article_stats_totals, expected)
         self.assertEqual(adgroup_stats_totals, expected)
@@ -77,21 +98,19 @@ class StatsUpdateTestCase(test.TestCase):
         # before update
         article_stats_totals = reports.models.ArticleStats.objects \
             .filter(datetime=dt, ad_group=ad_group) \
-            .aggregate(
-                visits=Sum('visits'),
-                new_visits=Sum('new_visits'),
-                bounced_visits=Sum('bounced_visits'),
-                pageviews=Sum('pageviews'),
-                duration=Sum('duration')
+            .aggregate(visits=Sum('visits'),
+                       new_visits=Sum('new_visits'),
+                       bounced_visits=Sum('bounced_visits'),
+                       pageviews=Sum('pageviews'),
+                       duration=Sum('duration')
             )
         adgroup_stats_totals = reports.models.AdGroupStats.objects \
             .filter(datetime=dt, ad_group=ad_group) \
-            .aggregate(
-                visits=Sum('visits'),
-                new_visits=Sum('new_visits'),
-                bounced_visits=Sum('bounced_visits'),
-                pageviews=Sum('pageviews'),
-                duration=Sum('duration')
+            .aggregate(visits=Sum('visits'),
+                       new_visits=Sum('new_visits'),
+                       bounced_visits=Sum('bounced_visits'),
+                       pageviews=Sum('pageviews'),
+                       duration=Sum('duration')
             )
         self.assertEqual(article_stats_totals, adgroup_stats_totals)
 
@@ -111,22 +130,55 @@ class StatsUpdateTestCase(test.TestCase):
 
         article_stats_totals = reports.models.ArticleStats.objects \
             .filter(datetime=dt, ad_group=ad_group) \
-            .aggregate(
-                visits=Sum('visits'),
-                new_visits=Sum('new_visits'),
-                bounced_visits=Sum('bounced_visits'),
-                pageviews=Sum('pageviews'),
-                duration=Sum('duration')
+            .aggregate(visits=Sum('visits'),
+                       new_visits=Sum('new_visits'),
+                       bounced_visits=Sum('bounced_visits'),
+                       pageviews=Sum('pageviews'),
+                       duration=Sum('duration')
             )
         adgroup_stats_totals = reports.models.AdGroupStats.objects \
             .filter(datetime=dt, ad_group=ad_group) \
-            .aggregate(
-                visits=Sum('visits'),
-                new_visits=Sum('new_visits'),
-                bounced_visits=Sum('bounced_visits'),
-                pageviews=Sum('pageviews'),
-                duration=Sum('duration')
+            .aggregate(visits=Sum('visits'),
+                       new_visits=Sum('new_visits'),
+                       bounced_visits=Sum('bounced_visits'),
+                       pageviews=Sum('pageviews'),
+                       duration=Sum('duration')
             )
+        expected = {
+            'visits': 1000,
+            'new_visits': 900,
+            'bounced_visits': 800,
+            'pageviews': 2000,
+            'duration': 1234
+        }
+        self.assertEqual(article_stats_totals, expected)
+        self.assertEqual(adgroup_stats_totals, expected)
+
+        # Update with empty rows
+        reports.update.stats_update_adgroup_postclick(
+            datetime=dt,
+            ad_group=ad_group,
+            rows=[]
+        )
+
+        article_stats_totals = reports.models.ArticleStats.objects \
+            .filter(datetime=dt, ad_group=ad_group) \
+            .aggregate(visits=Sum('visits'),
+                       new_visits=Sum('new_visits'),
+                       bounced_visits=Sum('bounced_visits'),
+                       pageviews=Sum('pageviews'),
+                       duration=Sum('duration')
+            )
+        adgroup_stats_totals = reports.models.AdGroupStats.objects \
+            .filter(datetime=dt, ad_group=ad_group) \
+            .aggregate(visits=Sum('visits'),
+                       new_visits=Sum('new_visits'),
+                       bounced_visits=Sum('bounced_visits'),
+                       pageviews=Sum('pageviews'),
+                       duration=Sum('duration')
+            )
+
+        #Nothing changes
         expected = {
             'visits': 1000,
             'new_visits': 900,
@@ -145,27 +197,25 @@ class StatsUpdateTestCase(test.TestCase):
         # before update
         article_stats_totals = reports.models.ArticleStats.objects \
             .filter(datetime=dt, ad_group=ad_group) \
-            .aggregate(
-                impressions=Sum('impressions'),
-                clicks=Sum('clicks'),
-                cost_cc=Sum('cost_cc'),
-                visits=Sum('visits'),
-                new_visits=Sum('new_visits'),
-                bounced_visits=Sum('bounced_visits'),
-                pageviews=Sum('pageviews'),
-                duration=Sum('duration')
+            .aggregate(impressions=Sum('impressions'),
+                       clicks=Sum('clicks'),
+                       cost_cc=Sum('cost_cc'),
+                       visits=Sum('visits'),
+                       new_visits=Sum('new_visits'),
+                       bounced_visits=Sum('bounced_visits'),
+                       pageviews=Sum('pageviews'),
+                       duration=Sum('duration')
             )
         adgroup_stats_totals = reports.models.AdGroupStats.objects \
             .filter(datetime=dt, ad_group=ad_group) \
-            .aggregate(
-                impressions=Sum('impressions'),
-                clicks=Sum('clicks'),
-                cost_cc=Sum('cost_cc'),
-                visits=Sum('visits'),
-                new_visits=Sum('new_visits'),
-                bounced_visits=Sum('bounced_visits'),
-                pageviews=Sum('pageviews'),
-                duration=Sum('duration')
+            .aggregate(impressions=Sum('impressions'),
+                       clicks=Sum('clicks'),
+                       cost_cc=Sum('cost_cc'),
+                       visits=Sum('visits'),
+                       new_visits=Sum('new_visits'),
+                       bounced_visits=Sum('bounced_visits'),
+                       pageviews=Sum('pageviews'),
+                       duration=Sum('duration')
             )
         self.assertEqual(article_stats_totals, adgroup_stats_totals)
 
@@ -189,28 +239,71 @@ class StatsUpdateTestCase(test.TestCase):
         # after update
         article_stats_totals = reports.models.ArticleStats.objects \
             .filter(datetime=dt, ad_group=ad_group) \
-            .aggregate(
-                impressions=Sum('impressions'),
-                clicks=Sum('clicks'),
-                cost_cc=Sum('cost_cc'),
-                visits=Sum('visits'),
-                new_visits=Sum('new_visits'),
-                bounced_visits=Sum('bounced_visits'),
-                pageviews=Sum('pageviews'),
-                duration=Sum('duration')
+            .aggregate(impressions=Sum('impressions'),
+                       clicks=Sum('clicks'),
+                       cost_cc=Sum('cost_cc'),
+                       visits=Sum('visits'),
+                       new_visits=Sum('new_visits'),
+                       bounced_visits=Sum('bounced_visits'),
+                       pageviews=Sum('pageviews'),
+                       duration=Sum('duration')
             )
         adgroup_stats_totals = reports.models.AdGroupStats.objects \
             .filter(datetime=dt, ad_group=ad_group) \
-            .aggregate(
-                impressions=Sum('impressions'),
-                clicks=Sum('clicks'),
-                cost_cc=Sum('cost_cc'),
-                visits=Sum('visits'),
-                new_visits=Sum('new_visits'),
-                bounced_visits=Sum('bounced_visits'),
-                pageviews=Sum('pageviews'),
-                duration=Sum('duration')
+            .aggregate(impressions=Sum('impressions'),
+                       clicks=Sum('clicks'),
+                       cost_cc=Sum('cost_cc'),
+                       visits=Sum('visits'),
+                       new_visits=Sum('new_visits'),
+                       bounced_visits=Sum('bounced_visits'),
+                       pageviews=Sum('pageviews'),
+                       duration=Sum('duration')
             )
+        expected = {
+            'impressions': 20000,
+            'clicks': 1500,
+            'cost_cc': 7654321,
+            'visits': 1000,
+            'new_visits': 900,
+            'bounced_visits': 800,
+            'pageviews': 2000,
+            'duration': 1234
+        }
+        self.assertEqual(article_stats_totals, expected)
+        self.assertEqual(adgroup_stats_totals, expected)
+
+        # update with empty rows
+        reports.update.stats_update_adgroup_all(
+            datetime=dt,
+            ad_group=ad_group,
+            rows=[]
+        )
+
+        # after update
+        article_stats_totals = reports.models.ArticleStats.objects \
+            .filter(datetime=dt, ad_group=ad_group) \
+            .aggregate(impressions=Sum('impressions'),
+                       clicks=Sum('clicks'),
+                       cost_cc=Sum('cost_cc'),
+                       visits=Sum('visits'),
+                       new_visits=Sum('new_visits'),
+                       bounced_visits=Sum('bounced_visits'),
+                       pageviews=Sum('pageviews'),
+                       duration=Sum('duration')
+            )
+        adgroup_stats_totals = reports.models.AdGroupStats.objects \
+            .filter(datetime=dt, ad_group=ad_group) \
+            .aggregate(impressions=Sum('impressions'),
+                       clicks=Sum('clicks'),
+                       cost_cc=Sum('cost_cc'),
+                       visits=Sum('visits'),
+                       new_visits=Sum('new_visits'),
+                       bounced_visits=Sum('bounced_visits'),
+                       pageviews=Sum('pageviews'),
+                       duration=Sum('duration')
+            )
+
+        # Nothing changes
         expected = {
             'impressions': 20000,
             'clicks': 1500,

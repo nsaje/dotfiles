@@ -20,12 +20,13 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
         datetime=datetime, ad_group=ad_group, source=source
     ).select_related('article')
 
-    # bulk update to reset traffic metrics
-    stats.update(
-        impressions=0,
-        clicks=0,
-        cost_cc=0
-    )
+    # bulk update to reset traffic metrics, IF ROWS PRESENT
+    if len(rows) != 0:
+        stats.update(
+            impressions=0,
+            clicks=0,
+            cost_cc=0
+        )
 
     stats_dict = {stat.article.id: stat for stat in stats}
 
@@ -102,8 +103,9 @@ def stats_update_adgroup_postclick(datetime, ad_group, rows):
     *Note*: rows contains all postclick data for the given datetime and ad_group
     '''
     # reset postclick metrics
-    for article_stats in ArticleStats.objects.filter(datetime=datetime, ad_group=ad_group):
-        article_stats.reset_postclick_metrics()
+    if len(rows) != 0:
+        for article_stats in ArticleStats.objects.filter(datetime=datetime, ad_group=ad_group):
+            article_stats.reset_postclick_metrics()
 
     # save the data
     for row in rows:
@@ -143,9 +145,10 @@ def stats_update_adgroup_all(datetime, ad_group, rows):
     *Note*: rows contains all traffic and postclick data for the given datetime and ad_group
     '''
     # reset metrics
-    for article_stats in ArticleStats.objects.filter(datetime=datetime, ad_group=ad_group):
-        article_stats.reset_traffic_metrics()
-        article_stats.reset_postclick_metrics()
+    if len(rows) != 0:
+        for article_stats in ArticleStats.objects.filter(datetime=datetime, ad_group=ad_group):
+            article_stats.reset_traffic_metrics()
+            article_stats.reset_postclick_metrics()
 
     # save the data
     for row in rows:
@@ -185,8 +188,9 @@ def goals_update_adgroup(datetime, ad_group, rows):
     *Note*: rows contains all conversion data for the given datetime and ad_group
     '''
     # reset conversion metrics
-    for conv_stats in GoalConversionStats.objects.filter(datetime=datetime, ad_group=ad_group):
-        conv_stats.reset_metrics()
+    if len(rows) != 0:
+        for conv_stats in GoalConversionStats.objects.filter(datetime=datetime, ad_group=ad_group):
+            conv_stats.reset_metrics()
 
     for row in rows:
         # set has_conversion_metrics flag in ArticleStats
