@@ -79,10 +79,14 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
         ad_group=ad_group,
         source=source
     )
-    reports.refresh.refresh_adgroup_stats(**fields)
 
     try:
         adgroup_stats = reports.models.AdGroupStats.objects.get(**fields)
+        # we don't call this refresh function on purpose,
+        # because we don't actually need to query the db to compute the aggregates,
+        # and it is cheaper to just compute the aggregate_stats as we update the article stats
+        for metric, value in aggregated_stats.items():
+            setattr(adgroup_stats, metric, value)
     except reports.models.AdGroupStats.DoesNotExist:
         fields.update(aggregated_stats)
         adgroup_stats = reports.models.AdGroupStats(**fields)
