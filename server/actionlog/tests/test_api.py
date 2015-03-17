@@ -605,6 +605,8 @@ class ActionLogApiTestCase(TestCase):
                     'end_date': '2015-04-02',
                     'brand_name': 'Brand Name',
                     'display_url': 'displayurl.com',
+                    'ad_group_id': 2,
+                    'exchange': 'adsnative'
                 },
             },
             'callback_url': callback

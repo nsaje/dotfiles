@@ -126,7 +126,7 @@ def update_content_ad_source_states(ad_group_source, content_ad_data):
     for content_ad_source in models.ContentAdSource.objects.filter(
             content_ad__article__ad_group=ad_group_source.ad_group,
             source=ad_group_source.source):
-        content_ad_sources[content_ad_source.source_content_ad_id] = content_ad_source
+        content_ad_sources[content_ad_source.get_source_id()] = content_ad_source
 
     for data in content_ad_data:
         content_ad_source = content_ad_sources.get(data['id'])
