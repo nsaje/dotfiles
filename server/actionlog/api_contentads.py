@@ -44,7 +44,7 @@ def init_insert_content_ad_action(content_ad_source, request=None):
     action = _create_action(
         ad_group_source,
         actionlog.constants.Action.INSERT_CONTENT_AD,
-        args,
+        args=args,
         request=request,
         content_ad_source=content_ad_source
     )
@@ -72,7 +72,7 @@ def init_update_content_ad_action(content_ad_source):
     action = _create_action(
         ad_group_source,
         actionlog.constants.Action.UPDATE_CONTENT_AD,
-        args,
+        args=args,
         content_ad_source=content_ad_source
     )
 
@@ -84,7 +84,7 @@ def init_update_content_ad_action(content_ad_source):
     actionlog.zwei_actions.send(action)
 
 
-def init_get_content_ad_status_action(ad_group_source):
+def init_get_content_ad_status_action(ad_group_source, order):
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key
     }
@@ -92,7 +92,8 @@ def init_get_content_ad_status_action(ad_group_source):
     action = _create_action(
         ad_group_source,
         actionlog.constants.Action.GET_CONTENT_AD_STATUS,
-        args
+        args=args,
+        order=order
     )
 
     msg = "get_content_ad_status action created: ad_group_source.id: {}".format(
@@ -103,12 +104,13 @@ def init_get_content_ad_status_action(ad_group_source):
     actionlog.zwei_actions.send(action)
 
 
-def _create_action(ad_group_source, action, args={}, content_ad_source=None, request=None):
+def _create_action(ad_group_source, action, args={}, content_ad_source=None, request=None, order=None):
     action = actionlog.models.ActionLog(
         action=action,
         action_type=actionlog.constants.ActionType.AUTOMATIC,
         ad_group_source=ad_group_source,
-        content_ad_source=content_ad_source
+        content_ad_source=content_ad_source,
+        order=order
     )
     action.save(request)
 

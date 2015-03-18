@@ -15,7 +15,6 @@ from django.conf import settings
 from utils import request_signer
 from actionlog import models as actionlogmodels
 from actionlog import constants as actionlogconstants
-from actionlog import zwei_actions as zwei_actions
 from dash import api as dashapi
 
 import actionlog.sync
