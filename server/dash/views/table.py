@@ -576,7 +576,7 @@ class SourcesTable(api_common.BaseApiView):
                     source_data = item
                     break
 
-            if source.deprecated and source_data.get('impressions', 0) == 0:
+            if source.deprecated and not reports.api.row_has_traffic_data(source_data) and not reports.api.row_has_postclick_data(source_data):
                 continue    # deprecated sources without data don't have to be shown
 
             last_sync = last_actions.get(source.id)
