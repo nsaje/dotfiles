@@ -30,12 +30,15 @@ def add_content_ad_sources(ad_group_source):
     content_ads = models.ContentAd.objects.filter(article__ad_group=ad_group_source.ad_group)
 
     for content_ad in content_ads:
-        content_ad_source = models.ContentAdSource.objects.create(
-            source=ad_group_source.source,
-            content_ad=content_ad,
-            submission_status=constants.ContentAdSubmissionStatus.PENDING,
-            state=constants.ContentAdSourceState.ACTIVE
-        )
+        try:
+            content_ad_source = models.ContentAdSource.objects.get(content_ad=content_ad, source=ad_group_source.source)
+        except models.ContentAdSource.DoesNotExist:
+            content_ad_source = models.ContentAdSource.objects.create(
+                source=ad_group_source.source,
+                content_ad=content_ad,
+                submission_status=constants.ContentAdSubmissionStatus.PENDING,
+                state=constants.ContentAdSourceState.ACTIVE
+            )
 
         actionlog.api_contentads.init_insert_content_ad_action(content_ad_source)
 

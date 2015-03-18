@@ -41,6 +41,9 @@ def init_insert_content_ad_action(content_ad_source, request=None):
         }
     }
 
+    if content_ad_source.source_content_ad_id:
+        args['content_ad']['source_content_ad_id'] = content_ad_source.source_content_ad_id
+
     action = _create_action(
         content_ad_source,
         actionlog.constants.Action.INSERT_CONTENT_AD,
