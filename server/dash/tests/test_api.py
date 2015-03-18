@@ -10,7 +10,7 @@ from dash import api
 class UpdateContentAdSourceState(TestCase):
     fixtures = ['test_api.yaml']
 
-    def test_update(self):
+    def test_update_multiple_content_ad_source_states(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         content_ad_data = [{
             'id': 1,
@@ -18,12 +18,22 @@ class UpdateContentAdSourceState(TestCase):
             'submission_status': 2
         }]
 
-        api.update_content_ad_source_states(ad_group_source, content_ad_data)
+        api.update_multiple_content_ad_source_states(ad_group_source, content_ad_data)
 
         content_ad_source = models.ContentAdSource.objects.get(pk=1)
 
         self.assertEqual(content_ad_source.source_state, content_ad_data[0]['state'])
         self.assertEqual(content_ad_source.submission_status, content_ad_data[0]['submission_status'])
+
+    def test_update_content_ad_source_state(self):
+        content_ad_source = models.ContentAdSource.objects.get(pk=1)
+        data = {'source_state': 2, 'submission_status': 2}
+
+        api.update_content_ad_source_state(content_ad_source, data)
+
+        content_ad_source = models.ContentAdSource.objects.get(pk=1)
+        self.assertEqual(content_ad_source.source_state, data['source_state'])
+        self.assertEqual(content_ad_source.submission_status, data['submission_status'])
 
 
 class UpdateAdGroupSourceState(TestCase):

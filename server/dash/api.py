@@ -120,7 +120,7 @@ def insert_content_ad_callback(
 
 
 @transaction.atomic()
-def update_content_ad_source_states(ad_group_source, content_ad_data):
+def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
     content_ad_sources = {}
 
     for content_ad_source in models.ContentAdSource.objects.filter(
@@ -142,11 +142,19 @@ def update_content_ad_source_states(ad_group_source, content_ad_data):
         content_ad_source.save()
 
 
-def update_content_ad_state(content_ad_source, state, submission_status):
+def update_content_ad_source_state(content_ad_source, data):
+    state = data['source_state']
+    submission_status = data['submission_status']
+
     content_ad_source = models.ContentAdSource.objects.get(
         content_ad_id=content_ad_source.content_ad.id, source=content_ad_source.source)
-    content_ad_source.source_state = state
-    content_ad_source.submission_status = submission_status
+
+    if state:
+        content_ad_source.source_state = state
+
+    if submission_status:
+        content_ad_source.submission_status = submission_status
+
     content_ad_source.save()
 
 

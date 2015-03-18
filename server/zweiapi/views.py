@@ -153,13 +153,12 @@ def _process_zwei_response(action, data):
                 data['data'].get('submission_errors')
             )
     elif action.action == actionlogconstants.Action.UPDATE_CONTENT_AD:
-        dashapi.update_content_ad_state(
+        dashapi.update_content_ad_source_state(
             action.content_ad_source,
-            data['data'].get('source_state'),
-            data['data'].get('submission_status')
+            data['data']
         )
     elif action.action == actionlogconstants.Action.GET_CONTENT_AD_STATUS:
-        dashapi.update_content_ad_source_states(
+        dashapi.update_multiple_content_ad_source_states(
             action.ad_group_source,
             data['data']
         )
