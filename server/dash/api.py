@@ -146,9 +146,6 @@ def update_content_ad_source_state(content_ad_source, data):
     state = data['source_state']
     submission_status = data['submission_status']
 
-    content_ad_source = models.ContentAdSource.objects.get(
-        content_ad_id=content_ad_source.content_ad.id, source=content_ad_source.source)
-
     if state:
         content_ad_source.source_state = state
 
