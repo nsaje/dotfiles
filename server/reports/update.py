@@ -1,4 +1,5 @@
 import copy
+import logging
 
 from django.db import transaction
 
@@ -7,6 +8,7 @@ from reports.models import TRAFFIC_METRICS, POSTCLICK_METRICS, CONVERSION_METRIC
 import reports.refresh
 import reports.models
 
+logger = logging.getLogger(__name__)
 
 @transaction.atomic
 def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
@@ -18,6 +20,8 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     '''
 
     if len(rows) == 0:
+        logger.warning('Update of source traffic for adgroup %d, source %d, datetime %s skipped, due to empty rows.',
+                       ad_group.id, source.id, datetime)
         return
 
     stats = ArticleStats.objects.filter(
@@ -111,6 +115,8 @@ def stats_update_adgroup_postclick(datetime, ad_group, rows):
     '''
 
     if len(rows) == 0:
+        logger.warning('Update of adgroup postclick for adgroup %d, datetime %s skipped, due to empty rows.',
+                       ad_group.id, datetime)
         return
 
     # reset postclick metrics
@@ -156,6 +162,8 @@ def stats_update_adgroup_all(datetime, ad_group, rows):
     '''
 
     if len(rows) == 0:
+        logger.warning('Update of adgroup all stats for adgroup %d, datetime %s skipped, due to empty rows.',
+                       ad_group.id, datetime)
         return
 
     # reset metrics
@@ -202,6 +210,8 @@ def goals_update_adgroup(datetime, ad_group, rows):
     '''
 
     if len(rows) == 0:
+        logger.warning('Update of adgroup goals for adgroup %d, datetime %s skipped, due to empty rows.',
+                       ad_group.id, datetime)
         return
 
     # reset conversion metrics
