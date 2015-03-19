@@ -98,6 +98,7 @@ class GlobalSync(BaseSync, ISyncComposite):
         '''
         qs = dash.models.AdGroupSource.objects.\
             filter(source__maintenance=False).\
+            filter(source__deprecated=False).\
             filter(source__in=self.sources).\
             filter(ad_group__in=dash.models.AdGroup.objects.all().exclude_archived()).\
             select_related('ad_group__campaign__account', 'source').\
