@@ -446,6 +446,10 @@ def get_data_status(objects, last_sync_messages, state_messages=None):
             last_sync_ok = True
             messages.insert(0, 'This source is in maintenance mode.')
 
+        if hasattr(obj, 'deprecated') and obj.deprecated and not last_sync_ok:
+            last_sync_ok = True
+            messages.insert(0, 'This source is deprecated.')
+
         if not last_sync_ok:
             last_sync_message_parts.insert(0, 'Reporting data is stale.')
 
