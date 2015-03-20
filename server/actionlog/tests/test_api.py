@@ -563,6 +563,7 @@ class ActionLogApiTestCase(TestCase):
                 'name': name,
                 'extra': {
                     'tracking_code': api._combine_tracking_codes(ad_group_source, ad_group_settings),
+                    'tracking_slug': 'yahoo',
                     'target_regions': [],
                     'target_devices': [],
                     'start_date': None,
@@ -599,6 +600,7 @@ class ActionLogApiTestCase(TestCase):
                 'extra': {
                     'iab_category': 'IAB24',
                     'tracking_code':  api._combine_tracking_codes(ad_group_source_extra, ad_group_settings),
+                    'tracking_slug': 'industrybrains',
                     'target_devices': ['desktop', 'mobile'],
                     'target_regions': ['UK', 'US', 'CA'],
                     'start_date': '2015-03-02',
