@@ -80,7 +80,8 @@ class ContentAdsApiTestCase(TestCase):
                     'display_url': ad_group_settings.display_url,
                     'brand_name': ad_group_settings.brand_name,
                     'description': ad_group_settings.description,
-                    'call_to_action': ad_group_settings.call_to_action
+                    'call_to_action': ad_group_settings.call_to_action,
+                    'tracking_slug': ad_group_source.source.tracking_slug
                 },
             },
             'callback_url': callback
