@@ -17,11 +17,37 @@ describe('api', function() {
     });
 
     describe('adGroupAdsPlusUpload', function() {
+        var adGroupId = 123;
+        var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/';
+
+        describe('validateSettings', function() {
+            it('validates settings and returns converted validation errors', function() {
+                var result;
+                var data = {
+                    data: {
+                        errors: {
+                            ad_group_settings: 'missing settings test message'
+                        }
+                    }
+                };
+
+                $httpBackend.expectGET(url).respond(200, data);
+                api.adGroupAdsPlusUpload.validateSettings(adGroupId).then(function(errors) {
+                    result = errors;
+                });
+                $httpBackend.flush();
+
+                expect(result).toEqual({
+                    file: undefined,
+                    batchName: undefined,
+                    adGroupSettings: 'missing settings test message'
+                });
+            });
+        });
+
         describe('upload', function() {
-            var adGroupId = 123;
             var file = new Blob([], {type: 'text/csv'});
             var batchName = 'testname';
-            var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/';
 
             it('uploads given file to a correct url', function() {
                 var resolvedData;
@@ -42,7 +68,8 @@ describe('api', function() {
                     data: {
                         errors: {
                             content_ads: 'Error message.',
-                            batch_name: 'Batch name error message.'
+                            batch_name: 'Batch name error message.',
+                            ad_group_settings: 'missing settings test message'
                         }
                     }
                 };
@@ -54,8 +81,11 @@ describe('api', function() {
                 $httpBackend.flush();
 
                 expect(result).toEqual({
-                    file: 'Error message.',
-                    batchName: 'Batch name error message.'
+                    errors: {
+                        file: 'Error message.',
+                        batchName: 'Batch name error message.',
+                        adGroupSettings: 'missing settings test message'
+                    }
                 });
             });
         });

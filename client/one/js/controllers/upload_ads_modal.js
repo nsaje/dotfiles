@@ -1,5 +1,7 @@
 /* globals oneApp */
-oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$state', '$timeout', '$filter', function($scope, $modalInstance, api, $state, $timeout, $filter) {
+oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$state', '$timeout', '$filter', 'errors', function($scope, $modalInstance, api, $state, $timeout, $filter, errors) {
+    $scope.errors = errors;
+
     var getCurrentTimeString = function() {
         var datetime = new Date();  // get current local time
 
@@ -10,7 +12,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
         return $filter('date')(datetime, 'M/d/yyyy h:mm a');
     };
 
-    var pollBatchStatus = function(batchId) {
+    $scope.pollBatchStatus = function(batchId) {
         if ($scope.isInProgress) {
             $timeout(function() {
                 api.adGroupAdsPlusUpload.checkStatus($state.params.id, batchId).then(
@@ -27,7 +29,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
                         $scope.isInProgress = false;
                     }
                 ).finally(function() {
-                    pollBatchStatus(batchId);
+                    $scope.pollBatchStatus(batchId);
                 });
             }, 1000);
         }
@@ -43,10 +45,17 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
         api.adGroupAdsPlusUpload.upload(
             $state.params.id, $scope.formData.file, $scope.formData.batchName
         ).then(function(batchId) {
-            pollBatchStatus(batchId);
-        }, function(errors) {
+            $scope.pollBatchStatus(batchId);
+        }, function(data) {
             $scope.isInProgress = false;
-            $scope.errors = errors;
+            $scope.errors = data.errors;
         });
+    };
+    
+    $scope.goToAdGroupSettings = function() {
+        $modalInstance.close();
+        $timeout(function() {
+            $state.go('main.adGroups.settings', {id: $state.params.id});
+        }, 300);
     };
 }]);

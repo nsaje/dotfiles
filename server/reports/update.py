@@ -1,4 +1,5 @@
 import copy
+import logging
 
 from django.db import transaction
 
@@ -7,6 +8,7 @@ from reports.models import TRAFFIC_METRICS, POSTCLICK_METRICS, CONVERSION_METRIC
 import reports.refresh
 import reports.models
 
+logger = logging.getLogger(__name__)
 
 @transaction.atomic
 def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
@@ -16,6 +18,12 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
 
     *Note*: rows contains all traffic data for the given datetime, ad_group and source
     '''
+
+    if len(rows) == 0:
+        logger.warning('Update of source traffic for adgroup %d, source %d, datetime %s skipped, due to empty rows.',
+                       ad_group.id, source.id, datetime)
+        return
+
     stats = ArticleStats.objects.filter(
         datetime=datetime, ad_group=ad_group, source=source
     ).select_related('article')
@@ -75,8 +83,12 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
         ad_group=ad_group,
         source=source
     )
+
     try:
         adgroup_stats = reports.models.AdGroupStats.objects.get(**fields)
+        # we don't call this refresh function on purpose,
+        # because we don't actually need to query the db to compute the aggregates,
+        # and it is cheaper to just compute the aggregate_stats as we update the article stats
         for metric, value in aggregated_stats.items():
             setattr(adgroup_stats, metric, value)
     except reports.models.AdGroupStats.DoesNotExist:
@@ -101,6 +113,12 @@ def stats_update_adgroup_postclick(datetime, ad_group, rows):
 
     *Note*: rows contains all postclick data for the given datetime and ad_group
     '''
+
+    if len(rows) == 0:
+        logger.warning('Update of adgroup postclick for adgroup %d, datetime %s skipped, due to empty rows.',
+                       ad_group.id, datetime)
+        return
+
     # reset postclick metrics
     for article_stats in ArticleStats.objects.filter(datetime=datetime, ad_group=ad_group):
         article_stats.reset_postclick_metrics()
@@ -142,6 +160,12 @@ def stats_update_adgroup_all(datetime, ad_group, rows):
 
     *Note*: rows contains all traffic and postclick data for the given datetime and ad_group
     '''
+
+    if len(rows) == 0:
+        logger.warning('Update of adgroup all stats for adgroup %d, datetime %s skipped, due to empty rows.',
+                       ad_group.id, datetime)
+        return
+
     # reset metrics
     for article_stats in ArticleStats.objects.filter(datetime=datetime, ad_group=ad_group):
         article_stats.reset_traffic_metrics()
@@ -184,6 +208,12 @@ def goals_update_adgroup(datetime, ad_group, rows):
 
     *Note*: rows contains all conversion data for the given datetime and ad_group
     '''
+
+    if len(rows) == 0:
+        logger.warning('Update of adgroup goals for adgroup %d, datetime %s skipped, due to empty rows.',
+                       ad_group.id, datetime)
+        return
+
     # reset conversion metrics
     for conv_stats in GoalConversionStats.objects.filter(datetime=datetime, ad_group=ad_group):
         conv_stats.reset_metrics()

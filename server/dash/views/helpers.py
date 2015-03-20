@@ -3,6 +3,7 @@ import dateutil.parser
 import pytz
 
 from django.conf import settings
+from django.db.models import Q
 
 import actionlog.api
 import actionlog.constants
@@ -152,8 +153,11 @@ def get_active_ad_group_sources(modelcls, modelobjects):
         )
 
         active_ad_group_sources = models.AdGroupSource.objects \
-            .filter(ad_group__in=adgroups) \
-            .exclude(pk__in=[ags.id for ags in _inactive_ad_group_sources])
+            .filter(
+                # deprecated sources are not shown in the demo at all
+                Q(ad_group__in=real_corresponding_adgroups, source__deprecated=False) | 
+                Q(ad_group__in=normal_adgroups)
+            ).exclude(pk__in=[ags.id for ags in _inactive_ad_group_sources])
 
     return active_ad_group_sources
 
@@ -334,12 +338,21 @@ def get_content_ad_submission_status(content_ad_sources):
     submission_status = []
 
     for content_ad_source in content_ad_sources:
+        cas_source_state = content_ad_source.source_state
+        if cas_source_state is None:
+            cas_source_state = constants.ContentAdSourceState.INACTIVE
+
+        cas_submission_status = content_ad_source.submission_status
+        if cas_submission_status != constants.ContentAdSubmissionStatus.APPROVED and\
+           cas_submission_status != constants.ContentAdSubmissionStatus.REJECTED:
+            cas_submission_status = constants.ContentAdSubmissionStatus.PENDING
+
         submission_status.append({
             'name': content_ad_source.source.name,
-            'status': content_ad_source.submission_status,
+            'status': cas_submission_status,
             'text': '{} / {}'.format(
-                constants.ContentAdSubmissionStatus.get_text(content_ad_source.submission_status),
-                constants.ContentAdSourceState.get_text(content_ad_source.source_state))
+                constants.ContentAdSubmissionStatus.get_text(cas_submission_status),
+                constants.ContentAdSourceState.get_text(cas_source_state))
         })
 
     return submission_status
@@ -432,6 +445,10 @@ def get_data_status(objects, last_sync_messages, state_messages=None):
         if hasattr(obj, 'maintenance') and obj.maintenance and not last_sync_ok:
             last_sync_ok = True
             messages.insert(0, 'This source is in maintenance mode.')
+
+        if hasattr(obj, 'deprecated') and obj.deprecated and not last_sync_ok:
+            last_sync_ok = True
+            messages.insert(0, 'This source is deprecated.')
 
         if not last_sync_ok:
             last_sync_message_parts.insert(0, 'Reporting data is stale.')

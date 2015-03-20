@@ -119,7 +119,12 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             templateUrl: '/partials/upload_ads_modal.html',
             controller: 'UploadAdsModalCtrl',
             windowClass: 'upload-ads-modal',
-            scope: $scope
+            scope: $scope,
+            resolve: {
+                errors: ['api', function(api) {
+                    return api.adGroupAdsPlusUpload.validateSettings($state.params.id);
+                }]
+            }
         });
 
         modalInstance.result.then(function () {

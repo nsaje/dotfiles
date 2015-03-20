@@ -264,6 +264,7 @@ class SourceAdmin(admin.ModelAdmin):
         'tracking_slug',
         'bidder_slug',
         'maintenance',
+        'deprecated',
         'created_dt',
         'modified_dt',
     )
