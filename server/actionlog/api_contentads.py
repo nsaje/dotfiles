@@ -37,7 +37,8 @@ def init_insert_content_ad_action(content_ad_source, request=None):
             'display_url': settings.display_url,
             'brand_name': settings.brand_name,
             'description': settings.description,
-            'call_to_action': settings.call_to_action
+            'call_to_action': settings.call_to_action,
+            'tracking_slug': ad_group_source.source.tracking_slug
         }
     }
 
