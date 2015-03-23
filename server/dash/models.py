@@ -492,6 +492,9 @@ class SourceType(models.Model):
     def can_manage_content_ads(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_MANAGE_CONTENT_ADS).exists()
 
+    def has_3rd_party_dashboard(self):
+        return self.available_actions.filter(action=constants.SourceAction.HAS_3RD_PARTY_DASHBOARD).exists()
+
     def __str__(self):
         return self.type
 
@@ -542,6 +545,10 @@ class Source(models.Model):
 
     def can_manage_content_ads(self):
         return self.source_type.can_manage_content_ads() and not self.maintenance and not self.deprecated
+
+    def has_3rd_party_dashboard(self):
+        return self.source_type.has_3rd_party_dashboard()
+
 
     def __unicode__(self):
         return self.name
