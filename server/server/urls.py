@@ -159,18 +159,22 @@ urlpatterns += patterns(
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/daily_stats/',
         login_required(dash.views.daily_stats.AdGroupDailyStats.as_view()),
+        name='ad_group_daily_stats'
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/daily_stats/',
         login_required(dash.views.daily_stats.CampaignDailyStats.as_view()),
+        name='campaign_daily_stats'
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/daily_stats/',
         login_required(dash.views.daily_stats.AccountDailyStats.as_view()),
+        name='account_daily_stats'
     ),
     url(
         r'^api/all_accounts/daily_stats/',
         login_required(dash.views.daily_stats.AccountsDailyStats.as_view()),
+        name='accounts_daily_stats'
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/campaigns/table/',
