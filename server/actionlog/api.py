@@ -294,14 +294,14 @@ def is_sync_in_progress(ad_groups=None, campaigns=None, accounts=None, sources=N
     return waiting_actions
 
 
-def _handle_error(action, e):
+def _handle_error(action, e, request=None):
     msg = traceback.format_exc(e)
 
     logger.error(msg)
 
     action.state = constants.ActionState.FAILED
     action.message = msg
-    action.save()
+    action.save(request)
 
 
 def _get_ad_group_sources(ad_group, source):
@@ -402,18 +402,19 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, order=None):
         raise exceptions.InsertActionException, ei, tb
 
 
-def _init_fetch_status(ad_group_source, order):
+def _init_fetch_status(ad_group_source, order, request=None):
     msg = '_init_fetch_status started: ad_group_source.id: {}'.format(
         ad_group_source.id
     )
     logger.info(msg)
 
-    action = models.ActionLog.objects.create(
+    action = models.ActionLog(
         action=constants.Action.FETCH_CAMPAIGN_STATUS,
         action_type=constants.ActionType.AUTOMATIC,
         ad_group_source=ad_group_source,
         order=order
     )
+    action.save(request)
 
     try:
         with transaction.atomic():
@@ -435,31 +436,32 @@ def _init_fetch_status(ad_group_source, order):
             }
 
             action.payload = payload
-            action.save()
+            action.save(request)
 
             return action
 
     except Exception as e:
         logger.exception('An exception occurred while initializing get_campaign_status action.')
-        _handle_error(action, e)
+        _handle_error(action, e, request)
 
         et, ei, tb = sys.exc_info()
         raise exceptions.InsertActionException, ei, tb
 
 
-def _init_fetch_reports(ad_group_source, date, order):
+def _init_fetch_reports(ad_group_source, date, order, request=None):
     msg = '_init_fetch_reports started: ad_group_source.id: {}, date: {}'.format(
         ad_group_source.id,
         repr(date)
     )
     logger.info(msg)
 
-    action = models.ActionLog.objects.create(
+    action = models.ActionLog(
         action=constants.Action.FETCH_REPORTS,
         action_type=constants.ActionType.AUTOMATIC,
         ad_group_source=ad_group_source,
         order=order
     )
+    action.save(request)
 
     try:
         with transaction.atomic():
@@ -482,13 +484,13 @@ def _init_fetch_reports(ad_group_source, date, order):
             }
 
             action.payload = payload
-            action.save()
+            action.save(request)
 
             return action
 
     except Exception as e:
         logger.exception('An exception occurred while initializing get_reports action')
-        _handle_error(action, e)
+        _handle_error(action, e, request)
 
         et, ei, tb = sys.exc_info()
         raise exceptions.InsertActionException, ei, tb

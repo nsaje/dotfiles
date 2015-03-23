@@ -1,7 +1,6 @@
 import jsonfield
 import binascii
 import datetime
-import collections
 from decimal import Decimal
 
 import utils.string

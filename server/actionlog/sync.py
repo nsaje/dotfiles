@@ -36,20 +36,20 @@ class BaseSync(object):
 
         return self._merge_sync_times(child_source_sync_times_list)
 
-    def trigger_all(self):
+    def trigger_all(self, request=None):
         child_syncs = self.get_components()
         for child_sync in child_syncs:
-            child_sync.trigger_all()
+            child_sync.trigger_all(request)
 
-    def trigger_reports(self):
+    def trigger_reports(self, request=None):
         child_syncs = self.get_components()
         for child_sync in child_syncs:
-            child_sync.trigger_reports()
+            child_sync.trigger_reports(request)
 
-    def trigger_status(self):
+    def trigger_status(self, request=None):
         child_syncs = self.get_components()
         for child_sync in child_syncs:
-            child_sync.trigger_status()
+            child_sync.trigger_status(request)
 
     def _merge_sync_times(self, sync_times_list):
         merged_sync_times = {}
@@ -262,26 +262,26 @@ class AdGroupSourceSync(BaseSync):
         except:
             return None
 
-    def trigger_all(self):
-        self.trigger_status()
-        self.trigger_reports()
+    def trigger_all(self, request=None):
+        self.trigger_status(request)
+        self.trigger_reports(request)
 
-    def trigger_status(self):
+    def trigger_status(self, request=None):
         order = actionlog.models.ActionLogOrder.objects.create(
             order_type=actionlog.constants.ActionLogOrderType.FETCH_STATUS
         )
         try:
-            action = _init_fetch_status(self.obj, order)
+            action = _init_fetch_status(self.obj, order, request=request)
         except InsertActionException:
             pass
         else:
             zwei_actions.send(action)
 
-    def trigger_reports(self):
+    def trigger_reports(self, request=None):
         dates = self.get_dates_to_sync_reports()
-        self.trigger_reports_for_dates(dates, actionlog.constants.ActionLogOrderType.FETCH_REPORTS)
+        self.trigger_reports_for_dates(dates, actionlog.constants.ActionLogOrderType.FETCH_REPORTS, request)
 
-    def trigger_reports_for_dates(self, dates, order_type=None):
+    def trigger_reports_for_dates(self, dates, order_type=None, request=None):
         actions = []
         with transaction.atomic():
             order = None
@@ -289,7 +289,7 @@ class AdGroupSourceSync(BaseSync):
                 order = actionlog.models.ActionLogOrder.objects.create(order_type=order_type)
             for date in dates:
                 try:
-                    action = _init_fetch_reports(self.obj, date, order)
+                    action = _init_fetch_reports(self.obj, date, order, request)
                 except InsertActionException:
                     continue
 
