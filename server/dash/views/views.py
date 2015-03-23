@@ -8,6 +8,7 @@ import httplib
 import urllib
 import urllib2
 import pytz
+from threading import Thread
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -23,7 +24,6 @@ from dash.views import helpers
 from utils import statsd_helper
 from utils import api_common
 from utils import exc
-from utils.threads import BaseThread
 
 import actionlog.api
 import actionlog.api_contentads
@@ -685,7 +685,7 @@ class AdGroupContentAdState(api_common.BaseApiView):
         return self.create_api_response()
 
 
-class ProcessUploadThread(BaseThread):
+class ProcessUploadThread(Thread):
     def __init__(self, content_ads, batch, ad_group_id, request, *args, **kwargs):
         self.content_ads = content_ads
         self.batch = batch
