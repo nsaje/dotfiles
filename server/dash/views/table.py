@@ -582,10 +582,12 @@ class SourcesTable(api_common.BaseApiView):
             last_sync = last_actions.get(source.id)
 
             supply_dash_url = None
-            if ad_group_level:
+            if ad_group_level and source.has_3rd_party_dashboard():
                 supply_dash_url = urlresolvers.reverse('dash.views.views.supply_dash_redirect')
                 supply_dash_url += '?ad_group_id={}&source_id={}'.format(id_, source.id)
 
+
+            if ad_group_level:
                 daily_budget = states[0].daily_budget_cc if len(states) else None
             else:
                 daily_budget = get_current_daily_budget_total(states)

@@ -148,12 +148,14 @@ class SourceAction(ConstantBase):
     CAN_UPDATE_CPC = 2
     CAN_UPDATE_DAILY_BUDGET = 3
     CAN_MANAGE_CONTENT_ADS = 4
+    HAS_3RD_PARTY_DASHBOARD = 5
 
     _VALUES = {
         CAN_UPDATE_STATE: 'Can update state',
         CAN_UPDATE_CPC: 'Can update CPC',
         CAN_UPDATE_DAILY_BUDGET: 'Can update daily budget',
         CAN_MANAGE_CONTENT_ADS: 'Can manage content ads',
+        HAS_3RD_PARTY_DASHBOARD: 'Has 3rd party dashboard',
     }
 
 
