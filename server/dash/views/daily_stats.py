@@ -15,14 +15,12 @@ class BaseDailyStatsView(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        breakdown = ['date']
-
         totals_stats = []
         if totals_kwargs:
             totals_stats = reports.api.query(
                 start_date,
                 end_date,
-                breakdown,
+                ['date'],
                 ['date'],
                 **totals_kwargs
             )
@@ -30,18 +28,17 @@ class BaseDailyStatsView(api_common.BaseApiView):
         breakdown_stats = []
 
         if selected_kwargs:
-            breakdown.append(group_key)
             breakdown_stats = reports.api.query(
                 start_date,
                 end_date,
-                breakdown,
+                ['date', group_key],
                 ['date'],
                 **selected_kwargs
             )
 
         return breakdown_stats + totals_stats
 
-    def get_series_groups_dict(self, totals, groups_dict):
+    def _get_series_groups_dict(self, totals, groups_dict):
         result = {}
 
         if groups_dict is not None:
@@ -60,7 +57,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
 
         return result
 
-    def process_stat_goals(self, stat_goals, goals, stat):
+    def _process_stat_goals(self, stat_goals, goals, stat):
         # may modify goal_metrics and stat
         for goal_name, goal_metrics in stat_goals.items():
             for metric_type, metric_value in goal_metrics.items():
@@ -79,12 +76,12 @@ class BaseDailyStatsView(api_common.BaseApiView):
                 stat[metric_id] = metric_value
 
     def get_response_dict(self, stats, totals, groups_dict, metrics, group_key=None):
-        series_groups = self.get_series_groups_dict(totals, groups_dict)
+        series_groups = self._get_series_groups_dict(totals, groups_dict)
         goals = {}
 
         for stat in stats:
             if stat.get('goals') is not None:
-                self.process_stat_goals(stat['goals'], goals, stat)
+                self._process_stat_goals(stat['goals'], goals, stat)
 
             # get id of group it belongs to
             group_id = stat.get(group_key) or 'totals'
