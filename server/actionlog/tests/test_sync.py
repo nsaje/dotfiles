@@ -333,18 +333,18 @@ class ActionLogTriggerSyncTestCase(TestCase):
         mock_request.status_code = httplib.OK
         mock_urlopen.return_value = mock_request
 
+        ad_group_source = dash.models.AdGroupSource.objects.get(pk=1)
+
         self.assertFalse(actionlog.models.ActionLog.objects.filter(
-            ad_group_source__ad_group_id=1,
+            ad_group_source=ad_group_source,
             action=constants.Action.GET_CONTENT_AD_STATUS).exists())
 
-        ags_sync = sync.AdGroupSourceSync(
-            dash.models.AdGroupSource.objects.get(pk=1)
-        )
+        ags_sync = sync.AdGroupSourceSync(ad_group_source)
 
         ags_sync.trigger_content_ad_status()
 
         action_logs = actionlog.models.ActionLog.objects.filter(
-            ad_group_source__ad_group_id=1,
+            ad_group_source=ad_group_source,
             action=constants.Action.GET_CONTENT_AD_STATUS)
 
         self.assertEqual(len(action_logs), 1)
@@ -352,6 +352,28 @@ class ActionLogTriggerSyncTestCase(TestCase):
         self.assertEqual(action_logs[0].state, constants.ActionState.WAITING)
         self.assertEqual(action_logs[0].action, constants.Action.GET_CONTENT_AD_STATUS)
         self.assertEqual(action_logs[0].action_type, constants.ActionType.AUTOMATIC)
+
+    @mock.patch('utils.request_signer._secure_opener.open')
+    def test_ad_group_source_trigger_content_ad_status_no_ads(self, mock_urlopen):
+        mock_request = mock.Mock()
+        mock_request.status_code = httplib.OK
+        mock_urlopen.return_value = mock_request
+
+        ad_group_source = dash.models.AdGroupSource.objects.get(pk=6)
+
+        self.assertFalse(actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action=constants.Action.GET_CONTENT_AD_STATUS).exists())
+
+        ags_sync = sync.AdGroupSourceSync(ad_group_source)
+
+        ags_sync.trigger_content_ad_status()
+
+        exists = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action=constants.Action.GET_CONTENT_AD_STATUS).exists()
+
+        self.assertFalse(exists)
 
     @mock.patch('utils.request_signer._secure_opener.open')
     def test_ad_group_source_trigger_status(self, mock_urlopen):

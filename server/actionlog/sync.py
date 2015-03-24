@@ -290,6 +290,12 @@ class AdGroupSourceSync(BaseSync):
         order = actionlog.models.ActionLogOrder.objects.create(
             order_type=actionlog.constants.ActionLogOrderType.GET_CONTENT_AD_STATUS
         )
+
+        if not dash.models.ContentAdSource.objects.filter(
+                content_ad__article__ad_group=self.obj.ad_group,
+                source=self.obj.source).exists():
+            return
+
         try:
             api_contentads.init_get_content_ad_status_action(self.obj, order)
         except InsertActionException:
