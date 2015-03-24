@@ -15,7 +15,6 @@ from django.conf import settings
 from utils import request_signer
 from actionlog import models as actionlogmodels
 from actionlog import constants as actionlogconstants
-from actionlog import zwei_actions as zwei_actions
 from dash import api as dashapi
 
 import actionlog.sync
@@ -153,10 +152,14 @@ def _process_zwei_response(action, data):
                 data['data'].get('submission_errors')
             )
     elif action.action == actionlogconstants.Action.UPDATE_CONTENT_AD:
-        dashapi.update_content_ad_state(
+        dashapi.update_content_ad_source_state(
+            action.content_ad_source,
+            data['data']
+        )
+    elif action.action == actionlogconstants.Action.GET_CONTENT_AD_STATUS:
+        dashapi.update_multiple_content_ad_source_states(
             action.ad_group_source,
-            action.payload['args']['content_ad_id'],
-            action.payload['args']['content_ad']['state'],
+            data['data']
         )
 
     action.state = actionlogconstants.ActionState.SUCCESS

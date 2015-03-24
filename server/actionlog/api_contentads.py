@@ -19,7 +19,7 @@ import dash.models
 logger = logging.getLogger(__name__)
 
 
-def init_insert_content_ad_action(content_ad_source, request=None):
+def init_insert_content_ad_action(content_ad_source, request):
     ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.article.ad_group,
                                                             source=content_ad_source.source)
     settings = ad_group_source.ad_group.get_current_settings()
@@ -37,7 +37,8 @@ def init_insert_content_ad_action(content_ad_source, request=None):
             'display_url': settings.display_url,
             'brand_name': settings.brand_name,
             'description': settings.description,
-            'call_to_action': settings.call_to_action
+            'call_to_action': settings.call_to_action,
+            'tracking_slug': ad_group_source.source.tracking_slug
         }
     }
 
@@ -45,11 +46,17 @@ def init_insert_content_ad_action(content_ad_source, request=None):
         args['content_ad']['source_content_ad_id'] = content_ad_source.source_content_ad_id
 
     action = _create_action(
-        content_ad_source,
+        ad_group_source,
         actionlog.constants.Action.INSERT_CONTENT_AD,
-        request,
-        args
+        args=args,
+        request=request,
+        content_ad_source=content_ad_source
     )
+
+    msg = "insert_content_ad action created: content_ad_source.id: {}".format(
+        content_ad_source.id,
+    )
+    logger.info(msg)
 
     actionlog.zwei_actions.send(action)
 
@@ -62,35 +69,54 @@ def init_update_content_ad_action(content_ad_source, request):
         'content_ad_id': content_ad_source.get_source_id(),
         'content_ad': {
             'state': content_ad_source.state,
+            'submission_status': content_ad_source.submission_status
         }
     }
 
     action = _create_action(
-        content_ad_source,
+        ad_group_source,
         actionlog.constants.Action.UPDATE_CONTENT_AD,
-        request,
-        args
+        args=args,
+        request=request,
+        content_ad_source=content_ad_source
     )
 
-    actionlog.zwei_actions.send(action)
-
-
-def _create_action(content_ad_source, action, request=None, args={}):
-    msg = "create upsert_content_ad action started: content_ad_source.id: {}".format(
+    msg = "update_content_ad action created: content_ad_source.id: {}".format(
         content_ad_source.id,
     )
     logger.info(msg)
 
-    ad_group_source = dash.models.AdGroupSource.objects.get(
-        ad_group_id=content_ad_source.content_ad.article.ad_group,
-        source=content_ad_source.source,
+    actionlog.zwei_actions.send(action)
+
+
+def init_get_content_ad_status_action(ad_group_source, order, request):
+    args = {
+        'source_campaign_key': ad_group_source.source_campaign_key
+    }
+
+    action = _create_action(
+        ad_group_source,
+        actionlog.constants.Action.GET_CONTENT_AD_STATUS,
+        args=args,
+        order=order,
+        request=request
     )
 
+    msg = "get_content_ad_status action created: ad_group_source.id: {}".format(
+        ad_group_source.id,
+    )
+    logger.info(msg)
+
+    actionlog.zwei_actions.send(action)
+
+
+def _create_action(ad_group_source, action, args={}, content_ad_source=None, request=None, order=None):
     action = actionlog.models.ActionLog(
         action=action,
         action_type=actionlog.constants.ActionType.AUTOMATIC,
         ad_group_source=ad_group_source,
-        content_ad_source=content_ad_source
+        content_ad_source=content_ad_source,
+        order=order
     )
     action.save(request)
 

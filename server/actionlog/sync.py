@@ -3,7 +3,7 @@ import dash.models
 import actionlog.models
 import actionlog.constants
 
-from actionlog.api import _init_fetch_status, _init_fetch_reports
+from actionlog import api, api_contentads
 from actionlog.exceptions import InsertActionException
 from utils.command_helpers import last_n_days
 from . import zwei_actions
@@ -50,6 +50,11 @@ class BaseSync(object):
         child_syncs = self.get_components()
         for child_sync in child_syncs:
             child_sync.trigger_status(request)
+
+    def trigger_content_ad_status(self, request=None):
+        child_syncs = self.get_components()
+        for child_sync in child_syncs:
+            child_sync.trigger_content_ad_status(request)
 
     def _merge_sync_times(self, sync_times_list):
         merged_sync_times = {}
@@ -265,17 +270,30 @@ class AdGroupSourceSync(BaseSync):
     def trigger_all(self, request=None):
         self.trigger_status(request)
         self.trigger_reports(request)
+        self.trigger_content_ad_status(request)
 
     def trigger_status(self, request=None):
         order = actionlog.models.ActionLogOrder.objects.create(
             order_type=actionlog.constants.ActionLogOrderType.FETCH_STATUS
         )
         try:
-            action = _init_fetch_status(self.obj, order, request=request)
+            action = api._init_fetch_status(self.obj, order, request=request)
         except InsertActionException:
-            pass
-        else:
-            zwei_actions.send(action)
+            return
+
+        zwei_actions.send(action)
+
+    def trigger_content_ad_status(self, request=None):
+        if not self.obj.source.source_type.can_manage_content_ads():
+            return
+
+        order = actionlog.models.ActionLogOrder.objects.create(
+            order_type=actionlog.constants.ActionLogOrderType.GET_CONTENT_AD_STATUS
+        )
+        try:
+            api_contentads.init_get_content_ad_status_action(self.obj, order, request)
+        except InsertActionException:
+            return
 
     def trigger_reports(self, request=None):
         dates = self.get_dates_to_sync_reports()
@@ -289,7 +307,7 @@ class AdGroupSourceSync(BaseSync):
                 order = actionlog.models.ActionLogOrder.objects.create(order_type=order_type)
             for date in dates:
                 try:
-                    action = _init_fetch_reports(self.obj, date, order, request)
+                    action = api._init_fetch_reports(self.obj, date, order, request)
                 except InsertActionException:
                     continue
 

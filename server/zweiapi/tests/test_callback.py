@@ -1,13 +1,11 @@
 import datetime
 import json
-import mock
 
 from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
-from django.test.client import RequestFactory
-from django.test.client import Client
 
-from dash.models import AdGroupSource, Article, AdGroupSourceState
+import dash.constants
+from dash.models import AdGroupSource, Article, AdGroupSourceState, ContentAdSource
 from actionlog.models import ActionLog
 from actionlog import constants
 from reports.models import ArticleStats
@@ -18,11 +16,7 @@ class CampaignStatusTest(TestCase):
 
     fixtures = ['test_zwei_api.yaml']
 
-    def setUp(self):
-        self.factory = RequestFactory()
-
-    @mock.patch('utils.request_signer.verify_wsgi_request')
-    def test_update_status(self, _):
+    def test_update_status(self):
         zwei_response_data = {
             'status': 'success',
             'data': {
@@ -45,8 +39,7 @@ class CampaignStatusTest(TestCase):
         )
         action_log.save()
 
-        c = Client()
-        response = c.post(
+        response = self.client.post(
             reverse('api.zwei_callback', kwargs={'action_id': action_log.id}),
             content_type='application/json',
             data=json.dumps(zwei_response_data)
@@ -57,6 +50,115 @@ class CampaignStatusTest(TestCase):
             .filter(ad_group_source=ad_group_source).latest('created_dt')
 
         self.assertNotEqual(latest_state, current_state)
+
+
+class GetContentAdStatusTest(TestCase):
+
+    fixtures = ['test_zwei_api.yaml']
+
+    def test_get_content_ad_status(self):
+        zwei_response_data = {
+            'status': 'success',
+            'data': [{
+                'id': '987654321',
+                'state': dash.constants.ContentAdSourceState.INACTIVE,
+                'submission_status': dash.constants.ContentAdSubmissionStatus.APPROVED
+            }]
+        }
+
+        ad_group_source = AdGroupSource.objects.get(id=1)
+        content_ad_source = ContentAdSource.objects.get(id=1)
+
+        self.assertEqual(
+            content_ad_source.source_state,
+            dash.constants.ContentAdSourceState.ACTIVE
+        )
+
+        self.assertEqual(
+            content_ad_source.submission_status,
+            dash.constants.ContentAdSubmissionStatus.PENDING
+        )
+
+        action_log = ActionLog(
+            action=constants.Action.GET_CONTENT_AD_STATUS,
+            state=constants.ActionState.WAITING,
+            action_type=constants.ActionType.AUTOMATIC,
+            ad_group_source=ad_group_source,
+            content_ad_source=content_ad_source
+        )
+        action_log.save()
+
+        response = self.client.post(
+            reverse('api.zwei_callback', kwargs={'action_id': action_log.id}),
+            content_type='application/json',
+            data=json.dumps(zwei_response_data)
+        )
+        self.assertEqual(response.status_code, 200)
+
+        content_ad_source = ContentAdSource.objects.get(id=1)
+        self.assertEqual(
+            content_ad_source.source_state,
+            dash.constants.ContentAdSourceState.INACTIVE
+        )
+
+        self.assertEqual(
+            content_ad_source.submission_status,
+            dash.constants.ContentAdSubmissionStatus.APPROVED
+        )
+
+
+class UpdateContentAdTest(TestCase):
+
+    fixtures = ['test_zwei_api.yaml']
+
+    def test_update_content_ad(self):
+        zwei_response_data = {
+            'status': 'success',
+            'data': {
+                'source_state': dash.constants.ContentAdSourceState.INACTIVE,
+                'submission_status': dash.constants.ContentAdSubmissionStatus.APPROVED
+            }
+        }
+
+        ad_group_source = AdGroupSource.objects.get(id=1)
+        content_ad_source = ContentAdSource.objects.get(id=1)
+
+        self.assertEqual(
+            content_ad_source.source_state,
+            dash.constants.ContentAdSourceState.ACTIVE
+        )
+
+        self.assertEqual(
+            content_ad_source.submission_status,
+            dash.constants.ContentAdSubmissionStatus.PENDING
+        )
+
+        action_log = ActionLog(
+            action=constants.Action.UPDATE_CONTENT_AD,
+            state=constants.ActionState.WAITING,
+            action_type=constants.ActionType.AUTOMATIC,
+            ad_group_source=ad_group_source,
+            content_ad_source=content_ad_source
+        )
+        action_log.save()
+
+        response = self.client.post(
+            reverse('api.zwei_callback', kwargs={'action_id': action_log.id}),
+            content_type='application/json',
+            data=json.dumps(zwei_response_data)
+        )
+        self.assertEqual(response.status_code, 200)
+
+        content_ad_source = ContentAdSource.objects.get(id=1)
+        self.assertEqual(
+            content_ad_source.source_state,
+            dash.constants.ContentAdSourceState.INACTIVE
+        )
+
+        self.assertEqual(
+            content_ad_source.submission_status,
+            dash.constants.ContentAdSubmissionStatus.APPROVED
+        )
 
 
 class TestUpdateLastSuccessfulSync(TestCase):
@@ -100,11 +202,7 @@ class FetchReportsTestCase(TestCase):
 
     fixtures = ['test_zwei_api.yaml']
 
-    def setUp(self):
-        self.factory = RequestFactory()
-
-    @mock.patch('utils.request_signer.verify_wsgi_request')
-    def test_fetch_reports(self, _):
+    def test_fetch_reports(self):
         article_row = {
             'title': 'Article 1',
             'url': 'http://example.com',
@@ -124,8 +222,7 @@ class FetchReportsTestCase(TestCase):
         self._assertArticleStats(ad_group_source, article_row)
 
     @override_settings(USE_HASH_CACHE=True)
-    @mock.patch('utils.request_signer.verify_wsgi_request')
-    def test_fetch_reports_hash_cache(self, _):
+    def test_fetch_reports_hash_cache(self):
         views.cache.clear()
 
         self.assertEqual(
@@ -155,8 +252,7 @@ class FetchReportsTestCase(TestCase):
         )
 
     @override_settings(USE_HASH_CACHE=True)
-    @mock.patch('utils.request_signer.verify_wsgi_request')
-    def test_fetch_reports_hash_cache_changed_data(self, _):
+    def test_fetch_reports_hash_cache_changed_data(self):
         views.cache.clear()
         views.cache.set('fetch_reports_response_hash_1_1_2014-07-01', '7a97d7b612f435a2dba269614e90e3ac')
 
@@ -186,8 +282,7 @@ class FetchReportsTestCase(TestCase):
         )
 
     @override_settings(USE_HASH_CACHE=True)
-    @mock.patch('utils.request_signer.verify_wsgi_request')
-    def test_fetch_reports_hash_cache_no_change(self, _):
+    def test_fetch_reports_hash_cache_no_change(self):
         views.cache.clear()
         views.cache.set('fetch_reports_response_hash_1_1_2014-07-01', '7a97d7b612f435a2dba269614e90e3ac')
 
@@ -245,8 +340,7 @@ class FetchReportsTestCase(TestCase):
 
         action_log.save()
 
-        c = Client()
-        return c.post(
+        return self.client.post(
             reverse('api.zwei_callback', kwargs={'action_id': action_log.id}),
             content_type='application/json',
             data=json.dumps(zwei_response_data)

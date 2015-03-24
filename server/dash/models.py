@@ -748,7 +748,8 @@ class AdGroupSource(models.Model):
 
     def get_tracking_ids(self):
         if self.source.source_type and\
-           self.source.source_type.type in [constants.SourceType.ZEMANTA, constants.SourceType.B1]:
+           self.source.source_type.type in [
+                constants.SourceType.ZEMANTA, constants.SourceType.B1, constants.SourceType.OUTBRAIN]:
             msid = '{sourceDomain}'
         elif self.source.tracking_slug is not None and self.source.tracking_slug != '':
             msid = self.source.tracking_slug

@@ -637,7 +637,8 @@ def _init_create_campaign(ad_group_source, name, request):
                 })
 
             payload['args']['extra'].update({
-                'tracking_code': _combine_tracking_codes(ad_group_source, ad_group_settings)
+                'tracking_code': _combine_tracking_codes(ad_group_source, ad_group_settings),
+                'tracking_slug': ad_group_source.source.tracking_slug
             })
 
             if campaign_settings:

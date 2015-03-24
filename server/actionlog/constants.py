@@ -58,6 +58,7 @@ class ActionLogOrderType(ConstantBase):
     FETCH_REPORTS = 4
     FETCH_STATUS = 5
     CREATE_CAMPAIGN = 6
+    GET_CONTENT_AD_STATUS = 7
 
     _VALUES = {
         FETCH_ALL: 'Fetch all',
@@ -65,5 +66,6 @@ class ActionLogOrderType(ConstantBase):
         AD_GROUP_SETTINGS_UPDATE: 'AdGroup Settings Update',
         FETCH_REPORTS: 'Fetch reports',
         FETCH_STATUS: 'Fetch status',
-        CREATE_CAMPAIGN: 'Create campaign'
+        CREATE_CAMPAIGN: 'Create campaign',
+        GET_CONTENT_AD_STATUS: 'Get content ad status'
     }

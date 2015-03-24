@@ -89,15 +89,29 @@
     model: dash.campaign
     pk: 5
 
+# source actions
+
+- fields: {}
+  model: dash.sourceaction
+  pk: 1
+- fields: {}
+  model: dash.sourceaction
+  pk: 2
+- fields: {}
+  model: dash.sourceaction
+  pk: 3
+
 # source types
 
 -   fields:
-        type: 'adblade'
+        type: 'b1'
+        available_actions: [4]
     model: dash.sourcetype
     pk: 1
 
 -   fields:
         type: 'gravity'
+        available_actions: [1, 2, 3]
     model: dash.sourcetype
     pk: 2
 
@@ -126,10 +140,11 @@
 -   fields:
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
-        name: AdBlade
+        name: AdsNative
         tracking_slug: 'industrybrains'
         source_type: 1
         maintenance: false
+        bidder_slug: 'adsnative'
     model: dash.source
     pk: 1
 
@@ -182,6 +197,20 @@
         maintenance: true
     model: dash.source
     pk: 6
+
+# test adgroupsettings
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        ad_group: 1
+        state: 2
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
+    model: dash.adgroupsettings
+    pk: 1
 
 # test adgroup
 
@@ -573,3 +602,80 @@
         modified_dt: '2015-02-23T00:00:00'
     model: dash.contentadsource
     pk: 2
+
+# test adgroupsourcesettings
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        ad_group_source: 1
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 1
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 2
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 2
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 3
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 3
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 4
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 5
+        cpc_cc: null
+        daily_budget_cc: null
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 4
+
+# test adgroupsourcestate
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        ad_group_source: 1
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 1
+    model: dash.adgroupsourcestate
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        ad_group_source: 2
+        cpc_cc: '0.15'
+        daily_budget_cc: '80.'
+        state: 2
+    model: dash.adgroupsourcestate
+    pk: 2
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 3
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 2
+    model: dash.adgroupsourcestate
+    pk: 3
+
