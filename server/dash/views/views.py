@@ -446,7 +446,7 @@ class AdGroupSources(api_common.BaseApiView):
             source.name.encode('utf-8')
         )
 
-        actionlog.api.create_campaign(ad_group_source, name)
+        actionlog.api.create_campaign(ad_group_source, name, request)
         self._add_to_history(ad_group_source)
 
         return self.create_api_response(None)
@@ -558,7 +558,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'daily_budget_cc' in resource:
             resource['daily_budget_cc'] = decimal.Decimal(resource['daily_budget_cc'])
 
-        settings_writer.set(resource)
+        settings_writer.set(resource, request)
         return self.create_api_response()
 
 
@@ -680,7 +680,7 @@ class AdGroupContentAdState(api_common.BaseApiView):
 
             if prev_state != state and\
                     content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
-                actionlog.api_contentads.init_update_content_ad_action(content_ad_source)
+                actionlog.api_contentads.init_update_content_ad_action(content_ad_source, request)
 
         return self.create_api_response()
 

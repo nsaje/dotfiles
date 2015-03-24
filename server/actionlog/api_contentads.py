@@ -47,14 +47,14 @@ def init_insert_content_ad_action(content_ad_source, request=None):
     action = _create_action(
         content_ad_source,
         actionlog.constants.Action.INSERT_CONTENT_AD,
-        args,
-        request
+        request,
+        args
     )
 
     actionlog.zwei_actions.send(action)
 
 
-def init_update_content_ad_action(content_ad_source):
+def init_update_content_ad_action(content_ad_source, request):
     ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.article.ad_group,
                                                             source=content_ad_source.source)
     args = {
@@ -68,13 +68,14 @@ def init_update_content_ad_action(content_ad_source):
     action = _create_action(
         content_ad_source,
         actionlog.constants.Action.UPDATE_CONTENT_AD,
+        request,
         args
     )
 
     actionlog.zwei_actions.send(action)
 
 
-def _create_action(content_ad_source, action, args={}, request=None):
+def _create_action(content_ad_source, action, request=None, args={}):
     msg = "create upsert_content_ad action started: content_ad_source.id: {}".format(
         content_ad_source.id,
     )

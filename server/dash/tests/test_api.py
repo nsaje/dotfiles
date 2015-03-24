@@ -2,9 +2,11 @@ import decimal
 import datetime
 
 from django.test import TestCase
+from django.http.request import HttpRequest
 
 from dash import models
 from dash import api
+from zemauth.models import User
 
 
 class UpdateAdGroupSourceState(TestCase):
@@ -153,7 +155,9 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         # delete all ad_group_source_settings
         models.AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).delete()
 
-        self.writer.set({'state': 1})
+        request = HttpRequest()
+
+        self.writer.set({'state': 1}, request)
 
         self.assertTrue(
             models.AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).count() > 0
@@ -172,7 +176,10 @@ class AdGroupSourceSettingsWriterTest(TestCase):
             .filter(ad_group_source=self.ad_group_source) \
             .latest('created_dt')
 
-        self.writer.set({'cpc_cc': decimal.Decimal(0.1)})
+        request = HttpRequest()
+        request.user = User()
+
+        self.writer.set({'cpc_cc': decimal.Decimal(0.1)}, request)
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
@@ -189,7 +196,9 @@ class AdGroupSourceSettingsWriterTest(TestCase):
             .filter(ad_group_source=self.ad_group_source) \
             .latest('created_dt')
 
-        self.writer.set({'daily_budget_cc': decimal.Decimal(50)})
+        request = HttpRequest()
+
+        self.writer.set({'daily_budget_cc': decimal.Decimal(50)}, request)
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \

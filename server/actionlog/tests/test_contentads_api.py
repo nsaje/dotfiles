@@ -5,6 +5,7 @@ import urlparse
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase
+from django.http.request import HttpRequest
 
 from actionlog import api_contentads
 from actionlog import constants
@@ -13,6 +14,7 @@ from utils import test_helper
 
 import dash.models
 import dash.constants
+from zemauth.models import User
 
 
 class ContentAdsApiTestCase(TestCase):
@@ -98,7 +100,9 @@ class ContentAdsApiTestCase(TestCase):
             source=content_ad_source.source
         )
 
-        api_contentads.init_update_content_ad_action(content_ad_source)
+        request = HttpRequest()
+        request.user = User()
+        api_contentads.init_update_content_ad_action(content_ad_source, request)
 
         action = models.ActionLog.objects.get(
             ad_group_source=ad_group_source,

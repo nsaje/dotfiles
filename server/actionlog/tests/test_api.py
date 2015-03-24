@@ -8,11 +8,13 @@ import urllib2
 from django.test import TestCase
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.http.request import HttpRequest
 
 from actionlog import api, constants, models, sync
 from dash import models as dashmodels
 from dash import constants as dashconstants
 from utils import test_helper
+from zemauth.models import User
 
 
 class ZweiActionsTestCase(TestCase):
@@ -103,7 +105,10 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.set_ad_group_source_settings(changes, source_settings.ad_group_source)
+        request = HttpRequest()
+        request.user = User()
+
+        api.set_ad_group_source_settings(changes, source_settings.ad_group_source, request)
 
         action = models.ActionLog.objects.get(
             ad_group_source=ad_group_source
@@ -161,7 +166,10 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.set_ad_group_source_settings(changes, source_settings.ad_group_source)
+        request = HttpRequest()
+        request.user = User()
+
+        api.set_ad_group_source_settings(changes, source_settings.ad_group_source, request)
 
         action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
@@ -189,7 +197,10 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.init_enable_ad_group(ad_group)
+        request = HttpRequest()
+        request.user = User()
+
+        api.init_enable_ad_group(ad_group, request)
 
         action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
@@ -209,7 +220,7 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.init_enable_ad_group(ad_group)
+        api.init_enable_ad_group(ad_group, request)
 
         # Nothing changed, since the source is inactive
         self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ad_group_source).latest('created_dt'),
@@ -232,7 +243,10 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.init_enable_ad_group(ad_group)
+        request = HttpRequest()
+        request.user = User()
+
+        api.init_enable_ad_group(ad_group, request)
 
         # No manual action is created
         self.assertEqual(list(models.ActionLog.objects.filter(ad_group_source=ad_group_source)), [])
@@ -245,7 +259,7 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.init_enable_ad_group(ad_group)
+        api.init_enable_ad_group(ad_group, request)
 
         action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
@@ -274,7 +288,10 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.init_pause_ad_group(ad_group)
+        request = HttpRequest()
+        request.user = User()
+
+        api.init_pause_ad_group(ad_group, request)
 
         action1 = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
@@ -295,7 +312,7 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.init_pause_ad_group(ad_group)
+        api.init_pause_ad_group(ad_group, request)
 
         action2 = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
@@ -327,7 +344,10 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.init_pause_ad_group(ad_group)
+        request = HttpRequest()
+        request.user = User()
+
+        api.init_pause_ad_group(ad_group, request)
 
         action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
@@ -347,7 +367,7 @@ class ActionLogApiTestCase(TestCase):
         )
         source_settings.save()
 
-        api.init_pause_ad_group(ad_group)
+        api.init_pause_ad_group(ad_group, request)
 
         action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
@@ -368,9 +388,13 @@ class ActionLogApiTestCase(TestCase):
         # Source is IS in maintenance mode
         ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group,
                                                                   source__maintenance=True)[0]
+
+        request = HttpRequest()
+        request.user = User()
+
         # Only one change per ad_group_source
         changes = {'cpc_cc': 0.3}
-        api.set_ad_group_source_settings(changes, ad_group_source)
+        api.set_ad_group_source_settings(changes, ad_group_source, request)
         action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
         ).latest('created_dt')
@@ -382,7 +406,7 @@ class ActionLogApiTestCase(TestCase):
 
         # Two changes
         changes = {'cpc_cc': 0.3, 'daily_budget_cc': 100.0}
-        api.set_ad_group_source_settings(changes, ad_group_source)
+        api.set_ad_group_source_settings(changes, ad_group_source, request)
         action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
         ).latest('created_dt')
@@ -398,7 +422,7 @@ class ActionLogApiTestCase(TestCase):
 
         # Only one change per ad_group_source
         changes = {'cpc_cc': 0.3}
-        api.set_ad_group_source_settings(changes, ad_group_source)
+        api.set_ad_group_source_settings(changes, ad_group_source, request)
         action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
         ).latest('created_dt')
@@ -410,7 +434,7 @@ class ActionLogApiTestCase(TestCase):
 
         # Two changes
         changes = {'cpc_cc': 0.3, 'daily_budget_cc': 100.0}
-        api.set_ad_group_source_settings(changes, ad_group_source)
+        api.set_ad_group_source_settings(changes, ad_group_source, request)
         action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
         ).latest('created_dt')
@@ -508,7 +532,10 @@ class ActionLogApiTestCase(TestCase):
         prop = 'fake_property'
         value = 'fake_value'
 
-        api.set_ad_group_property(ad_group, prop=prop, value=value)
+        request = HttpRequest()
+        request.user = User()
+
+        api._set_ad_group_property(ad_group, request, prop=prop, value=value)
 
         for ad_group_source in ad_group_sources.all():
             action = models.ActionLog.objects.get(
@@ -534,7 +561,10 @@ class ActionLogApiTestCase(TestCase):
 
         name = 'Test'
 
-        api.create_campaign(ad_group_source_failing, name)
+        request = HttpRequest()
+        request.user = User()
+
+        api.create_campaign(ad_group_source_failing, name, request)
         self.assertFalse(models.ActionLog.objects.filter(
             ad_group_source=ad_group_source_failing,
             action=constants.Action.CREATE_CAMPAIGN
@@ -543,7 +573,7 @@ class ActionLogApiTestCase(TestCase):
         ad_group_source = dashmodels.AdGroupSource.objects.get(id=5)
         ad_group_settings = api._get_ad_group_settings(ad_group_source.ad_group)
 
-        api.create_campaign(ad_group_source, name)
+        api.create_campaign(ad_group_source, name, request)
         action = models.ActionLog.objects.get(
             ad_group_source=ad_group_source,
             action=constants.Action.CREATE_CAMPAIGN
@@ -578,7 +608,7 @@ class ActionLogApiTestCase(TestCase):
         ad_group_source_extra = dashmodels.AdGroupSource.objects.get(id=8)
         ad_group_settings = api._get_ad_group_settings(ad_group_source_extra.ad_group)
 
-        api.create_campaign(ad_group_source_extra, name)
+        api.create_campaign(ad_group_source_extra, name, request)
         action = models.ActionLog.objects.get(
             ad_group_source=ad_group_source_extra,
             action=constants.Action.CREATE_CAMPAIGN
@@ -664,15 +694,16 @@ class ActionLogApiCancelExpiredTestCase(TestCase):
         )
 
 
-
 class SetCampaignPropertyTestCase(TestCase):
 
     fixtures = ['test_api.yaml']
 
     def test_actionlog_added(self):
+        request = HttpRequest()
+        request.user = User()
         ad_group_source = dashmodels.AdGroupSource.objects.get(pk=1)
         now = datetime.datetime.now()
-        api._init_set_campaign_property(ad_group_source, 'test_property', 'test_value', None)
+        api._init_set_campaign_property(ad_group_source, 'test_property', 'test_value', None, request)
         # check if a new action log object was added
         alogs = models.ActionLog.objects.filter(
             action=constants.Action.SET_PROPERTY,
@@ -688,13 +719,15 @@ class SetCampaignPropertyTestCase(TestCase):
             alog.delete()
 
     def test_abort_waiting_actionlog(self):
+        request = HttpRequest()
+        request.user = User()
         ad_group_source = dashmodels.AdGroupSource.objects.get(pk=1)
         now = datetime.datetime.now()
-        api._init_set_campaign_property(ad_group_source, 'test_property', 'test_value_1', None)
+        api._init_set_campaign_property(ad_group_source, 'test_property', 'test_value_1', None, request)
         # insert a new action
         # if the ad_group_source and property are the same
         # the old one should be set to aborted and the new one should be set to waiting
-        api._init_set_campaign_property(ad_group_source, 'test_property', 'test_value_2', None)
+        api._init_set_campaign_property(ad_group_source, 'test_property', 'test_value_2', None, request)
         # old action is aborted
         alogs = models.ActionLog.objects.filter(
             action=constants.Action.SET_PROPERTY,

@@ -121,13 +121,13 @@ class AdGroupSettings(api_common.BaseApiView):
 
             if current_settings.state == constants.AdGroupSettingsState.INACTIVE \
             and settings.state == constants.AdGroupSettingsState.ACTIVE:
-                actionlog_api.init_enable_ad_group(ad_group, order=order)
+                actionlog_api.init_enable_ad_group(ad_group, request, order=order)
 
             if current_settings.state == constants.AdGroupSettingsState.ACTIVE \
             and settings.state == constants.AdGroupSettingsState.INACTIVE:
-                actionlog_api.init_pause_ad_group(ad_group, order=order)
+                actionlog_api.init_pause_ad_group(ad_group, request, order=order)
 
-        api.order_ad_group_settings_update(ad_group, current_settings, settings)
+        api.order_ad_group_settings_update(ad_group, current_settings, settings, request)
 
         user = request.user
         changes = current_settings.get_setting_changes(settings)
@@ -661,7 +661,7 @@ class AdGroupAgency(api_common.BaseApiView):
         with transaction.atomic():
             settings.save()
 
-        api.order_ad_group_settings_update(ad_group, current_settings, settings)
+        api.order_ad_group_settings_update(ad_group, current_settings, settings, request)
 
         user = request.user
         changes = current_settings.get_setting_changes(settings)

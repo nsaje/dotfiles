@@ -23,7 +23,7 @@ def cc_to_decimal(val_cc):
 
 
 @transaction.atomic
-def add_content_ad_sources(ad_group_source):
+def add_content_ad_sources(ad_group_source, request=None):
     if not ad_group_source.source.can_manage_content_ads():
         return
 
@@ -40,7 +40,7 @@ def add_content_ad_sources(ad_group_source):
                 state=constants.ContentAdSourceState.ACTIVE
             )
 
-        actionlog.api_contentads.init_insert_content_ad_action(content_ad_source)
+        actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, request)
 
 
 @transaction.atomic
@@ -129,7 +129,7 @@ def update_content_ad_state(ad_group_source, content_ad_id, state):
     content_ad_source.save()
 
 
-def order_ad_group_settings_update(ad_group, current_settings, new_settings):
+def order_ad_group_settings_update(ad_group, current_settings, new_settings, request):
     changes = current_settings.get_setting_changes(new_settings)
 
     if not changes:
@@ -144,7 +144,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings):
                           'brand_name', 'description', 'call_to_action']:
             continue
 
-        actionlog.api.init_set_ad_group_property_order(ad_group, prop=field_name, value=field_value)
+        actionlog.api.init_set_ad_group_property_order(ad_group, request, prop=field_name, value=field_value)
 
 
 def reconcile_articles(ad_group, raw_articles):
@@ -218,7 +218,7 @@ class AdGroupSourceSettingsWriter(object):
         self.ad_group_source = ad_group_source
         assert type(self.ad_group_source) is models.AdGroupSource
 
-    def set(self, settings_obj):
+    def set(self, settings_obj, request):
         latest_settings = self.get_latest_settings()
 
         state = settings_obj.get('state')
@@ -251,7 +251,7 @@ class AdGroupSourceSettingsWriter(object):
                 self.add_to_history(settings_obj, old_settings_obj)
 
                 if 'state' not in settings_obj or self.can_trigger_action():
-                    actionlog.api.set_ad_group_source_settings(settings_obj, new_settings.ad_group_source)
+                    actionlog.api.set_ad_group_source_settings(settings_obj, new_settings.ad_group_source, request)
                 else:
                     logger.info(
                         'settings=%s on ad_group_source=%s will be triggered when the ad group will be enabled',
@@ -268,7 +268,7 @@ class AdGroupSourceSettingsWriter(object):
                     'settings for ad_group_source=%s did not change, but state is inconsistent, triggering actions',
                     self.ad_group_source
                 )
-                actionlog.api.set_ad_group_source_settings(settings_obj, latest_settings.ad_group_source)
+                actionlog.api.set_ad_group_source_settings(settings_obj, latest_settings.ad_group_source, request)
 
     def can_trigger_action(self):
         try:
