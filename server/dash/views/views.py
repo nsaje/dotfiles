@@ -739,6 +739,8 @@ class ProcessUploadThread(Thread):
                 logger.exception('Exception in ProcessUploadThread')
                 raise
 
+            return
+
         for content_ad_source in content_ad_sources:
             actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, self.request)
 
