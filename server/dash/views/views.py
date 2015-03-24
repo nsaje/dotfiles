@@ -678,8 +678,7 @@ class AdGroupContentAdState(api_common.BaseApiView):
             content_ad_source.state = state
             content_ad_source.save()
 
-            if prev_state != state and\
-                    content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
+            if prev_state != state:
                 actionlog.api_contentads.init_update_content_ad_action(content_ad_source)
 
         return self.create_api_response()

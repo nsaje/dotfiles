@@ -563,6 +563,7 @@ class ActionLogApiTestCase(TestCase):
                 'name': name,
                 'extra': {
                     'tracking_code': api._combine_tracking_codes(ad_group_source, ad_group_settings),
+                    'tracking_slug': 'yahoo',
                     'target_regions': [],
                     'target_devices': [],
                     'start_date': None,
@@ -599,12 +600,15 @@ class ActionLogApiTestCase(TestCase):
                 'extra': {
                     'iab_category': 'IAB24',
                     'tracking_code':  api._combine_tracking_codes(ad_group_source_extra, ad_group_settings),
+                    'tracking_slug': 'industrybrains',
                     'target_devices': ['desktop', 'mobile'],
                     'target_regions': ['UK', 'US', 'CA'],
                     'start_date': '2015-03-02',
                     'end_date': '2015-04-02',
                     'brand_name': 'Brand Name',
                     'display_url': 'displayurl.com',
+                    'ad_group_id': 2,
+                    'exchange': 'adsnative'
                 },
             },
             'callback_url': callback
