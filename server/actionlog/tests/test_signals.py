@@ -12,7 +12,7 @@ from actionlog import signals
     PAGER_DUTY_URL='http://pagerduty.example.com',
     PAGER_DUTY_ADOPS_SERVICE_KEY='123abc'
 )
-@patch('utils.signal_handlers.pagerduty_helper.trigger')
+@patch('actionlog.signals.pagerduty_helper.trigger')
 class ActionLogSignalsTestCase(TestCase):
     def test_trigger_alert_pre_save_signal_handler(self, mock_trigger_event):
         instance_id = 1
