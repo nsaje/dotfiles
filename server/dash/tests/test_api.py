@@ -173,8 +173,11 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertFalse(self.writer.can_trigger_action())
 
     def test_can_trigger_action_if_ad_group_enabled(self):
+        request = HttpRequest()
+        request.user = User(id=1)
+
         self.ad_group_settings.state = 1
-        self.ad_group_settings.save()
+        self.ad_group_settings.save(request)
         self.assertTrue(self.writer.can_trigger_action())
 
     def test_should_write_if_no_settings_yet(self):
@@ -185,6 +188,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         models.AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).delete()
 
         request = HttpRequest()
+        request.user = User(id=1)
 
         self.writer.set({'state': 1}, request)
 
@@ -206,7 +210,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
             .latest('created_dt')
 
         request = HttpRequest()
-        request.user = User()
+        request.user = User(id=1)
 
         self.writer.set({'cpc_cc': decimal.Decimal(0.1)}, request)
 

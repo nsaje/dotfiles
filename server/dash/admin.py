@@ -202,6 +202,17 @@ class AccountAdmin(admin.ModelAdmin):
     exclude = ('users', 'groups')
     inlines = (AccountUserInline, AccountGroupInline, CampaignInline)
 
+    def save_model(self, request, obj, form, change):
+        obj.save(request)
+
+    def save_formset(self, request, form, formset, change):
+        if formset.model == models.Campaign:
+            instances = formset.save(commit=False)
+            for instance in instances:
+                instance.save(request)
+        else:
+            formset.save()
+
 
 # Campaign
 
@@ -241,6 +252,17 @@ class CampaignAdmin(admin.ModelAdmin):
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'settings_')
     exclude = ('users', 'groups')
     inlines = (CampaignUserInline, CampaignGroupInline, AdGroupInline)
+
+    def save_model(self, request, obj, form, change):
+        obj.save(request)
+
+    def save_formset(self, request, form, formset, change):
+        if formset.model == models.AdGroup:
+            instances = formset.save(commit=False)
+            for instance in instances:
+                instance.save(request)
+        else:
+            formset.save()
 
     def settings_(self, obj):
         return '<a href="{admin_url}">List ({num_settings})</a>'.format(
@@ -335,8 +357,14 @@ class CampaignSettingsAdmin(admin.ModelAdmin):
         'created_dt',
     )
 
+    def has_add_permission(self, request):
+        return False
+
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def save_model(self, request, obj, form, change):
+        obj.save(request)
 
 # Ad Group
 
@@ -406,6 +434,17 @@ class AdGroupAdmin(admin.ModelAdmin):
     campaign_.allow_tags = True
     campaign_.admin_order_field = 'campaign'
 
+    def save_model(self, request, obj, form, change):
+        obj.save(request)
+
+    def save_formset(self, request, form, formset, change):
+        if formset.model == models.AdGroupSource:
+            instances = formset.save(commit=False)
+            for instance in instances:
+                instance.save(request)
+        else:
+            formset.save()
+
 
 class AdGroupSettingsAdmin(admin.ModelAdmin):
 
@@ -425,6 +464,9 @@ class AdGroupSettingsAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+    def save_model(self, request, obj, form, change):
+        obj.save(request)
+
 
 class AdGroupSourceSettingsAdmin(admin.ModelAdmin):
     search_fields = ['ad_group_source__ad_group__name', 'ad_group_source__source__name']
@@ -435,6 +477,9 @@ class AdGroupSourceSettingsAdmin(admin.ModelAdmin):
         'daily_budget_cc',
         'created_dt',
     )
+
+    def save_model(self, request, obj, form, change):
+        obj.save(request)
 
 
 class AdGroupSourceStateAdmin(admin.ModelAdmin):

@@ -103,10 +103,11 @@ class ActionLogApiTestCase(TestCase):
             daily_budget_cc=50,
             state=dashconstants.AdGroupSourceSettingsState.ACTIVE
         )
-        source_settings.save()
 
         request = HttpRequest()
-        request.user = User()
+        request.user = User(id=1)
+
+        source_settings.save(request)
 
         api.set_ad_group_source_settings(changes, source_settings.ad_group_source, request)
 
@@ -164,10 +165,11 @@ class ActionLogApiTestCase(TestCase):
             daily_budget_cc=50,
             state=dashconstants.AdGroupSourceSettingsState.ACTIVE
         )
-        source_settings.save()
 
         request = HttpRequest()
-        request.user = User()
+        request.user = User(id=1)
+
+        source_settings.save(request)
 
         api.set_ad_group_source_settings(changes, source_settings.ad_group_source, request)
 
@@ -195,10 +197,11 @@ class ActionLogApiTestCase(TestCase):
             daily_budget_cc=50,
             state=dashconstants.AdGroupSourceSettingsState.ACTIVE
         )
-        source_settings.save()
 
         request = HttpRequest()
-        request.user = User()
+        request.user = User(id=1)
+
+        source_settings.save(request)
 
         api.init_enable_ad_group(ad_group, request)
 
@@ -218,7 +221,7 @@ class ActionLogApiTestCase(TestCase):
             daily_budget_cc=50,
             state=dashconstants.AdGroupSourceSettingsState.INACTIVE
         )
-        source_settings.save()
+        source_settings.save(request)
 
         api.init_enable_ad_group(ad_group, request)
 
@@ -241,10 +244,11 @@ class ActionLogApiTestCase(TestCase):
             daily_budget_cc=50,
             state=dashconstants.AdGroupSourceSettingsState.INACTIVE
         )
-        source_settings.save()
 
         request = HttpRequest()
-        request.user = User()
+        request.user = User(id=1)
+
+        source_settings.save(request)
 
         api.init_enable_ad_group(ad_group, request)
 
@@ -257,7 +261,7 @@ class ActionLogApiTestCase(TestCase):
             daily_budget_cc=50,
             state=dashconstants.AdGroupSourceSettingsState.ACTIVE
         )
-        source_settings.save()
+        source_settings.save(request)
 
         api.init_enable_ad_group(ad_group, request)
 
@@ -286,10 +290,11 @@ class ActionLogApiTestCase(TestCase):
             daily_budget_cc=50,
             state=dashconstants.AdGroupSourceSettingsState.ACTIVE
         )
-        source_settings.save()
 
         request = HttpRequest()
-        request.user = User()
+        request.user = User(id=1)
+
+        source_settings.save(request)
 
         api.init_pause_ad_group(ad_group, request)
 
@@ -310,7 +315,7 @@ class ActionLogApiTestCase(TestCase):
             daily_budget_cc=50,
             state=dashconstants.AdGroupSourceSettingsState.INACTIVE
         )
-        source_settings.save()
+        source_settings.save(request)
 
         api.init_pause_ad_group(ad_group, request)
 
@@ -342,10 +347,11 @@ class ActionLogApiTestCase(TestCase):
             daily_budget_cc=50,
             state=dashconstants.AdGroupSourceSettingsState.ACTIVE
         )
-        source_settings.save()
 
         request = HttpRequest()
-        request.user = User()
+        request.user = User(id=1)
+
+        source_settings.save(request)
 
         api.init_pause_ad_group(ad_group, request)
 
@@ -365,7 +371,7 @@ class ActionLogApiTestCase(TestCase):
             daily_budget_cc=50,
             state=dashconstants.AdGroupSourceSettingsState.INACTIVE
         )
-        source_settings.save()
+        source_settings.save(request)
 
         api.init_pause_ad_group(ad_group, request)
 
@@ -646,6 +652,9 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action.payload, payload)
 
     def test_combine_tracking_codes(self):
+        request = HttpRequest()
+        request.user = User(id=1)
+
         ad_group_source = dashmodels.AdGroupSource.objects.get(id=5)
         ad_group_settings = api._get_ad_group_settings(ad_group_source.ad_group)
 
@@ -653,7 +662,7 @@ class ActionLogApiTestCase(TestCase):
                          (ad_group_source.ad_group.id, ad_group_source.source.source_type.type))
 
         ad_group_settings.tracking_code = '?param&a=1&b=2'
-        ad_group_settings.save()
+        ad_group_settings.save(request)
 
         # first ad group settings tracking codes and then ad group source tracking codes
         self.assertEqual(

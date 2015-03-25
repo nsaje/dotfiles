@@ -80,7 +80,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        settings = self.get_current_settings(ad_group)
+        settings = ad_group.get_current_settings()
 
         response = {
             'settings': self.get_dict(settings, ad_group),
@@ -96,7 +96,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
 
-        current_settings = self.get_current_settings(ad_group)
+        current_settings = ad_group.get_current_settings()
 
         resource = json.loads(request.body)
 
@@ -116,8 +116,8 @@ class AdGroupSettings(api_common.BaseApiView):
             order = actionlog_models.ActionLogOrder.objects.create(
                 order_type=actionlog_constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
             )
-            ad_group.save()
-            settings.save()
+            ad_group.save(request)
+            settings.save(request)
 
             if current_settings.state == constants.AdGroupSettingsState.INACTIVE \
             and settings.state == constants.AdGroupSettingsState.ACTIVE:
@@ -140,23 +140,6 @@ class AdGroupSettings(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
-
-    def get_current_settings(self, ad_group):
-        settings = models.AdGroupSettings.objects.\
-            filter(ad_group=ad_group).\
-            order_by('-created_dt')
-        if settings:
-            settings = settings[0]
-        else:
-            settings = models.AdGroupSettings(
-                state=constants.AdGroupSettingsState.INACTIVE,
-                start_date=datetime.datetime.utcnow().date(),
-                cpc_cc=0.4000,
-                daily_budget_cc=10.0000,
-                target_devices=constants.AdTargetDevice.get_all()
-            )
-
-        return settings
 
     def get_dict(self, settings, ad_group):
         result = {}
@@ -212,7 +195,7 @@ class CampaignSettings(api_common.BaseApiView):
 
         campaign = helpers.get_campaign(request.user, campaign_id)
 
-        campaign_settings = self.get_current_settings(campaign)
+        campaign_settings = campaign.get_current_settings()
 
         response = {
             'settings': self.get_dict(campaign_settings, campaign),
@@ -244,8 +227,8 @@ class CampaignSettings(api_common.BaseApiView):
         self.set_settings(settings, campaign, form.cleaned_data)
 
         with transaction.atomic():
-            campaign.save()
-            settings.save()
+            campaign.save(request)
+            settings.save(request)
 
         response = {
             'settings': self.get_dict(settings, campaign),
@@ -364,17 +347,6 @@ class CampaignSettings(api_common.BaseApiView):
 
         return ', '.join(change_strings)
 
-    def get_current_settings(self, campaign):
-        settings = models.CampaignSettings.objects.\
-            filter(campaign=campaign).\
-            order_by('-created_dt')
-        if settings:
-            settings = settings[0]
-        else:
-            settings = models.CampaignSettings()
-
-        return settings
-
     def get_dict(self, settings, campaign):
         result = {}
 
@@ -439,7 +411,7 @@ class CampaignBudget(api_common.BaseApiView):
         campaign_budget.edit(
             allocate_amount=form.get_allocate_amount(),
             revoke_amount=form.get_revoke_amount(),
-            user=request.user,
+            request=request,
             comment='',
         )
 
@@ -483,7 +455,7 @@ class AccountAgency(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         account = helpers.get_account(request.user, account_id)
-        account_settings = self.get_current_settings(account)
+        account_settings = account.get_current_settings()
 
         response = {
             'settings': self.get_dict(account_settings, account),
@@ -513,8 +485,8 @@ class AccountAgency(api_common.BaseApiView):
         self.set_settings(settings, account, form.cleaned_data)
 
         with transaction.atomic():
-            account.save()
-            settings.save()
+            account.save(request)
+            settings.save(request)
 
         response = {
             'settings': self.get_dict(settings, account),
@@ -531,17 +503,6 @@ class AccountAgency(api_common.BaseApiView):
     def set_settings(self, settings, account, resource):
         settings.account = account
         settings.name = resource['name']
-
-    def get_current_settings(self, account):
-        settings = models.AccountSettings.objects.\
-            filter(account=account).\
-            order_by('-created_dt')
-        if settings:
-            settings = settings[0]
-        else:
-            settings = models.AccountSettings()
-
-        return settings
 
     def get_dict(self, settings, account):
         result = {}
@@ -628,7 +589,7 @@ class AdGroupAgency(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        settings = self.get_current_settings(ad_group)
+        settings = ad_group.get_current_settings()
 
         response = {
             'settings': self.get_dict(settings, ad_group),
@@ -647,7 +608,7 @@ class AdGroupAgency(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        current_settings = self.get_current_settings(ad_group)
+        current_settings = ad_group.get_current_settings()
 
         resource = json.loads(request.body)
 
@@ -659,7 +620,7 @@ class AdGroupAgency(api_common.BaseApiView):
         self.set_settings(settings, current_settings, ad_group, form.cleaned_data)
 
         with transaction.atomic():
-            settings.save()
+            settings.save(request)
 
         api.order_ad_group_settings_update(ad_group, current_settings, settings, request)
 
@@ -677,17 +638,6 @@ class AdGroupAgency(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
-
-    def get_current_settings(self, ad_group):
-        settings = models.AdGroupSettings.objects.\
-            filter(ad_group=ad_group).\
-            order_by('-created_dt')
-        if settings:
-            settings = settings[0]
-        else:
-            settings = models.AdGroupSettings()
-
-        return settings
 
     def get_dict(self, settings, ad_group):
         result = {}
@@ -853,7 +803,7 @@ class AccountUsers(api_common.BaseApiView):
             # add history entry
             new_settings = account.get_current_settings().copy_settings()
             new_settings.changes_text = u'Added user {} ({})'.format(user.get_full_name(), user.email)
-            new_settings.save()
+            new_settings.save(request)
 
         return self.create_api_response(
             {'user': self._get_user_dict(user)},
@@ -884,7 +834,7 @@ class AccountUsers(api_common.BaseApiView):
             # add history entry
             new_settings = account.get_current_settings().copy_settings()
             new_settings.changes_text = u'Removed user {} ({})'.format(user.get_full_name(), user.email)
-            new_settings.save()
+            new_settings.save(request)
 
         return self.create_api_response({
             'user_id': user.id

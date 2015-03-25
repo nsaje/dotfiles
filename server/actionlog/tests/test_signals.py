@@ -2,8 +2,8 @@ from mock import Mock, patch
 
 from django.test import TestCase, override_settings
 
-from utils import signal_handlers
 from actionlog import constants
+from actionlog import signals
 
 
 @override_settings(
@@ -13,12 +13,12 @@ from actionlog import constants
     PAGER_DUTY_ADOPS_SERVICE_KEY='123abc'
 )
 @patch('utils.signal_handlers.pagerduty_helper.trigger')
-class SignalHandlersTestCase(TestCase):
+class ActionLogSignalsTestCase(TestCase):
     def test_trigger_alert_pre_save_signal_handler(self, mock_trigger_event):
         instance_id = 1
         mock_instance = self._get_instance_mock(instance_id)
 
-        signal_handlers.trigger_alert_pre_save_signal_handler(None, mock_instance)
+        signals.trigger_alert_pre_save_signal_handler(None, mock_instance)
 
         mock_trigger_event.assert_called_with(
             details={'action_log_admin_url': 'https://one.zemanta.com/admin/actionlog/actionlog/1/'},
@@ -33,7 +33,7 @@ class SignalHandlersTestCase(TestCase):
 
         mock_instance.action_type = constants.ActionType.MANUAL
 
-        signal_handlers.trigger_alert_pre_save_signal_handler(None, mock_instance)
+        signals.trigger_alert_pre_save_signal_handler(None, mock_instance)
 
         assert not mock_trigger_event.called, 'event should not be triggered'
 

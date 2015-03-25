@@ -153,7 +153,7 @@ def send_delayed_actionlogs(ad_group_sources=None):
         processed_adgroupsource_ids.add(actionlog.ad_group_source.id)
 
 
-def _get_ad_group_sources_waiting(**kwargs):
+def get_ad_group_sources_waiting(**kwargs):
     constraints = {}
 
     if 'ad_group' in kwargs:
@@ -311,7 +311,7 @@ def _handle_error(action, e, request=None):
 
 
 def _get_ad_group_sources(ad_group, source):
-    inactive_ad_group_sources = _get_ad_group_sources_waiting(ad_group=ad_group)
+    inactive_ad_group_sources = get_ad_group_sources_waiting(ad_group=ad_group)
 
     active_ad_group_sources = dash.models.AdGroupSource.objects \
         .filter(ad_group=ad_group) \
