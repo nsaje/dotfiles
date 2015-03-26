@@ -10,9 +10,6 @@ from zemauth.models import User
 from dash import models
 
 
-@override_settings(
-    DEFAULT_TIME_ZONE='UTC'
-)
 class AdGroupAgencyTest(TestCase):
     fixtures = ['test_views.yaml']
 
@@ -20,6 +17,7 @@ class AdGroupAgencyTest(TestCase):
         password = 'secret'
         self.user = User.objects.get(pk=1)
 
+        self.maxDiff = None
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
             self.client.login(username=self.user.email, password=password)
@@ -76,7 +74,7 @@ class AdGroupAgencyTest(TestCase):
                 'history': [{
                     'changed_by': 'superuser@test.com',
                     'changes_text': 'Created settings',
-                    'datetime': '2015-06-05T13:22:23',
+                    'datetime': '2015-06-05T09:22:23',
                     'settings': [
                         {'name': 'State', 'value': 'Paused'},
                         {'name': 'Start date', 'value': None},
@@ -97,7 +95,7 @@ class AdGroupAgencyTest(TestCase):
                 {
                     'changed_by': 'superuser@test.com',
                     'changes_text': 'Daily budget set to "$120.00", Max CPC bid set to "$0.30"',
-                    'datetime': '2015-06-05T13:22:24',
+                    'datetime': '2015-06-05T09:22:24',
                     'settings': [
                         {'name': 'State', 'old_value': 'Paused', 'value': 'Paused'},
                         {'name': 'Start date', 'old_value': None, 'value': None},
@@ -161,7 +159,7 @@ class AdGroupAgencyTest(TestCase):
                 'history': [{
                     'changed_by': 'superuser@test.com',
                     'changes_text': 'Created settings',
-                    'datetime': '2015-06-05T13:22:24',
+                    'datetime': '2015-06-05T09:22:24',
                     'settings': [
                         {'name': 'State', 'value': 'Paused'},
                         {'name': 'Start date', 'value': '2015-03-26'},
