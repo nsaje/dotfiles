@@ -615,7 +615,9 @@ def _init_create_campaign(ad_group_source, name, request):
 
             if ad_group_source.source.source_type.type == dash.constants.SourceType.OUTBRAIN:
                 payload['args']['marketer_id'] = _get_outbrain_marketer_id(
-                    ad_group_source.ad_group.campaign.account)
+                    ad_group_source.ad_group.campaign.account,
+                    request
+                )
 
             if ad_group_source.source.source_type.type == dash.constants.SourceType.B1:
                 payload['args']['extra']['ad_group_id'] = ad_group_source.ad_group.id
@@ -660,7 +662,7 @@ def _init_create_campaign(ad_group_source, name, request):
 
 
 @transaction.atomic()
-def _get_outbrain_marketer_id(account):
+def _get_outbrain_marketer_id(account, request):
     if account.outbrain_marketer_id:
         return account.outbrain_marketer_id
 
@@ -674,6 +676,6 @@ def _get_outbrain_marketer_id(account):
     outbrain_account.save()
 
     account.outbrain_marketer_id = outbrain_account.marketer_id
-    account.save()
+    account.save(request)
 
     return account.outbrain_marketer_id
