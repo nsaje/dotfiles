@@ -94,11 +94,13 @@ def _prepare_report_rows(ad_group, data_rows):
             'article': article,
             'impressions': data_row['impressions'],
             'clicks': data_row['clicks'],
+            'data_cost_cc': data_row.get('data_cost_cc')
         }
         if data_row.get('cost_cc') is None:
             r['cost_cc'] = data_row['cpc_cc'] * data_row['clicks']
         else:
             r['cost_cc'] = data_row['cost_cc']
+
         stats_rows.append(r)
     return stats_rows
 

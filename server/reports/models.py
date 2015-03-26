@@ -13,6 +13,7 @@ class StatsMetrics(models.Model):
     impressions = models.IntegerField(default=0, blank=False, null=False)
     clicks = models.IntegerField(default=0, blank=False, null=False)
     cost_cc = models.IntegerField(default=0, blank=False, null=False)
+    data_cost_cc = models.IntegerField(blank=True, null=True)
 
     # postclick metrics
     visits = models.IntegerField(default=0, blank=False, null=False)
