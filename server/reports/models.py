@@ -1,6 +1,6 @@
 from django.db import models
 
-TRAFFIC_METRICS = {'impressions', 'clicks', 'cost_cc'}
+TRAFFIC_METRICS = {'impressions', 'clicks', 'cost_cc', 'data_cost_cc'}
 POSTCLICK_METRICS = {'visits', 'pageviews', 'new_visits', 'bounced_visits', 'duration'}
 CONVERSION_METRICS = {'conversions', 'conversions_value_cc'}
 
@@ -13,7 +13,7 @@ class StatsMetrics(models.Model):
     impressions = models.IntegerField(default=0, blank=False, null=False)
     clicks = models.IntegerField(default=0, blank=False, null=False)
     cost_cc = models.IntegerField(default=0, blank=False, null=False)
-    data_cost_cc = models.IntegerField(blank=True, null=True)
+    data_cost_cc = models.IntegerField(default=0, blank=False, null=False)
 
     # postclick metrics
     visits = models.IntegerField(default=0, blank=False, null=False)

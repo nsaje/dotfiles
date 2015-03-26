@@ -16,6 +16,7 @@ def refresh_adgroup_stats(**constraints):
         impressions=Sum('impressions'),
         clicks=Sum('clicks'),
         cost_cc=Sum('cost_cc'),
+        data_cost_cc=Sum('data_cost_cc'),
         visits=Sum('visits'),
         new_visits=Sum('new_visits'),
         bounced_visits=Sum('bounced_visits'),

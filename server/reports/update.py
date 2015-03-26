@@ -33,7 +33,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
         impressions=0,
         clicks=0,
         cost_cc=0,
-        data_cost_cc=None
+        data_cost_cc=0
     )
 
     stats_dict = {stat.article.id: stat for stat in stats}
