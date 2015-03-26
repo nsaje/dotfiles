@@ -88,7 +88,7 @@ class CampaignBudget(object):
         r = reports.api.query(start_date=start_date, end_date=end_date, campaign=self.campaign)
         return r.get('cost') or 0
 
-    def edit(self, allocate_amount, revoke_amount, comment, user):
+    def edit(self, allocate_amount, revoke_amount, comment, request):
         if not allocate_amount and not revoke_amount and not comment:
             # nothing to change
             return
@@ -101,12 +101,17 @@ class CampaignBudget(object):
                 parts.append('Revoked $%.2f from the campaign' % revoke_amount)
             comment = ' and '.join(parts) + '.'
 
-        logger.info('Budget change: allocate=%s, revoke=%s, user=%s, comment=%s',
-            allocate_amount, revoke_amount, user.email, comment
+        logger.info(
+            'Budget change: allocate=%s, revoke=%s, user=%s, comment=%s',
+            allocate_amount, revoke_amount, request.user.email, comment
         )
 
-        if not self._can_edit(user):
-            logger.error('User %s does not have the right to edit the budget for campaign %s', user.email, self.campaign.name)
+        if not self._can_edit(request.user):
+            logger.error(
+                'User %s does not have the right to edit the budget for campaign %s',
+                request.user.email,
+                self.campaign.name
+            )
 
         cbs_latest = self._get_latest()
 
@@ -120,9 +125,9 @@ class CampaignBudget(object):
                 revoke=revoke_amount,
                 total=total,
                 comment=comment,
-                created_by=user
+                created_by=request.user
             )
-            cbs_new.save()
+            cbs_new.save(request)
 
     def get_history(self):
         return dash.models.CampaignBudgetSettings.objects.filter(campaign=self.campaign)

@@ -248,7 +248,7 @@ class AccountArchive(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
-        account.archive()
+        account.archive(request)
 
         return self.create_api_response({})
 
@@ -260,7 +260,7 @@ class AccountRestore(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
-        account.restore()
+        account.restore(request)
 
         return self.create_api_response({})
 
@@ -272,7 +272,7 @@ class CampaignArchive(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
-        campaign.archive()
+        campaign.archive(request)
 
         return self.create_api_response({})
 
@@ -284,7 +284,7 @@ class CampaignRestore(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
-        campaign.restore()
+        campaign.restore(request)
 
         return self.create_api_response({})
 
@@ -296,7 +296,7 @@ class AdGroupArchive(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        ad_group.archive()
+        ad_group.archive(request)
 
         return self.create_api_response({})
 
@@ -308,7 +308,7 @@ class AdGroupRestore(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        ad_group.restore()
+        ad_group.restore(request)
 
         return self.create_api_response({})
 
@@ -325,7 +325,7 @@ class CampaignAdGroups(api_common.BaseApiView):
             name=create_name(models.AdGroup.objects.filter(campaign=campaign), 'New ad group'),
             campaign=campaign
         )
-        ad_group.save()
+        ad_group.save(request)
 
         response = {
             'name': ad_group.name,
@@ -436,7 +436,7 @@ class AdGroupSources(api_common.BaseApiView):
             source_credentials=default_settings.credentials
         )
 
-        ad_group_source.save()
+        ad_group_source.save(request)
 
         name = 'ONE: {} / {} / {} / {} / {}'.format(
             ad_group.campaign.account.name.encode('utf-8'),
@@ -446,12 +446,12 @@ class AdGroupSources(api_common.BaseApiView):
             source.name.encode('utf-8')
         )
 
-        actionlog.api.create_campaign(ad_group_source, name)
-        self._add_to_history(ad_group_source)
+        actionlog.api.create_campaign(ad_group_source, name, request)
+        self._add_to_history(ad_group_source, request)
 
         return self.create_api_response(None)
 
-    def _add_to_history(self, ad_group_source):
+    def _add_to_history(self, ad_group_source, request):
         changes_text = '{} campaign created.'.format(ad_group_source.source.name)
 
         try:
@@ -465,7 +465,7 @@ class AdGroupSources(api_common.BaseApiView):
         new_ad_group_settings = latest_ad_group_settings
         new_ad_group_settings.pk = None
         new_ad_group_settings.changes_text = changes_text
-        new_ad_group_settings.save()
+        new_ad_group_settings.save(request)
 
 
 class Account(api_common.BaseApiView):
@@ -475,7 +475,7 @@ class Account(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         account = models.Account(name=create_name(models.Account.objects, 'New account'))
-        account.save()
+        account.save(request)
 
         response = {
             'name': account.name,
@@ -499,14 +499,14 @@ class AccountCampaigns(api_common.BaseApiView):
             name=name,
             account=account
         )
-        campaign.save()
+        campaign.save(request)
 
         settings = models.CampaignSettings(
             name=name,
             campaign=campaign,
             account_manager=request.user,
         )
-        settings.save()
+        settings.save(request)
 
         response = {
             'name': campaign.name,
@@ -558,7 +558,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'daily_budget_cc' in resource:
             resource['daily_budget_cc'] = decimal.Decimal(resource['daily_budget_cc'])
 
-        settings_writer.set(resource)
+        settings_writer.set(resource, request)
         return self.create_api_response()
 
 
@@ -679,7 +679,7 @@ class AdGroupContentAdState(api_common.BaseApiView):
             content_ad_source.save()
 
             if prev_state != state:
-                actionlog.api_contentads.init_update_content_ad_action(content_ad_source)
+                actionlog.api_contentads.init_update_content_ad_action(content_ad_source, request)
 
         return self.create_api_response()
 

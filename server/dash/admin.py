@@ -202,6 +202,17 @@ class AccountAdmin(admin.ModelAdmin):
     exclude = ('users', 'groups')
     inlines = (AccountUserInline, AccountGroupInline, CampaignInline)
 
+    def save_model(self, request, obj, form, change):
+        obj.save(request)
+
+    def save_formset(self, request, form, formset, change):
+        if formset.model == models.Campaign:
+            instances = formset.save(commit=False)
+            for instance in instances:
+                instance.save(request)
+        else:
+            formset.save()
+
 
 # Campaign
 
@@ -241,6 +252,17 @@ class CampaignAdmin(admin.ModelAdmin):
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'settings_')
     exclude = ('users', 'groups')
     inlines = (CampaignUserInline, CampaignGroupInline, AdGroupInline)
+
+    def save_model(self, request, obj, form, change):
+        obj.save(request)
+
+    def save_formset(self, request, form, formset, change):
+        if formset.model == models.AdGroup:
+            instances = formset.save(commit=False)
+            for instance in instances:
+                instance.save(request)
+        else:
+            formset.save()
 
     def settings_(self, obj):
         return '<a href="{admin_url}">List ({num_settings})</a>'.format(
@@ -335,8 +357,14 @@ class CampaignSettingsAdmin(admin.ModelAdmin):
         'created_dt',
     )
 
+    def has_add_permission(self, request):
+        return False
+
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def save_model(self, request, obj, form, change):
+        obj.save(request)
 
 # Ad Group
 
@@ -406,6 +434,17 @@ class AdGroupAdmin(admin.ModelAdmin):
     campaign_.allow_tags = True
     campaign_.admin_order_field = 'campaign'
 
+    def save_model(self, request, obj, form, change):
+        obj.save(request)
+
+    def save_formset(self, request, form, formset, change):
+        if formset.model == models.AdGroupSource:
+            instances = formset.save(commit=False)
+            for instance in instances:
+                instance.save(request)
+        else:
+            formset.save()
+
 
 class AdGroupSettingsAdmin(admin.ModelAdmin):
 
@@ -425,6 +464,9 @@ class AdGroupSettingsAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+    def save_model(self, request, obj, form, change):
+        obj.save(request)
+
 
 class AdGroupSourceSettingsAdmin(admin.ModelAdmin):
     search_fields = ['ad_group_source__ad_group__name', 'ad_group_source__source__name']
@@ -435,6 +477,9 @@ class AdGroupSourceSettingsAdmin(admin.ModelAdmin):
         'daily_budget_cc',
         'created_dt',
     )
+
+    def save_model(self, request, obj, form, change):
+        obj.save(request)
 
 
 class AdGroupSourceStateAdmin(admin.ModelAdmin):
@@ -514,7 +559,7 @@ def approve_content_ad_sources(modeladmin, request, queryset):
         )
         content_ad_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
         content_ad_source.save()
-        actionlog.api_contentads.init_update_content_ad_action(content_ad_source)
+        actionlog.api_contentads.init_update_content_ad_action(content_ad_source, request)
 approve_content_ad_sources.short_description = 'Mark selected content ad sources as APPROVED'
 
 
@@ -530,7 +575,7 @@ def reject_content_ad_sources(modeladmin, request, queryset):
         content_ad_source.state = constants.ContentAdSourceState.INACTIVE
         content_ad_source.source_state = constants.ContentAdSourceState.INACTIVE
         content_ad_source.save()
-        actionlog.api_contentads.init_update_content_ad_action(content_ad_source)
+        actionlog.api_contentads.init_update_content_ad_action(content_ad_source, request)
 reject_content_ad_sources.short_description = 'Mark selected content ad sources as REJECTED'
 
 
@@ -579,7 +624,7 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
 
         if current_content_ad_source.submission_status != content_ad_source.submission_status and\
            content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
-            actionlog.api_contentads.init_update_content_ad_action(content_ad_source)
+            actionlog.api_contentads.init_update_content_ad_action(content_ad_source, request)
 
     def __init__(self, *args, **kwargs):
         super(ContentAdSourceAdmin, self).__init__(*args, **kwargs)

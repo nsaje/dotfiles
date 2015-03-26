@@ -3,6 +3,7 @@ import json
 
 from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
+from django.http.request import HttpRequest
 
 import dash.constants
 from dash.models import AdGroupSource, Article, AdGroupSourceState, ContentAdSource
@@ -10,6 +11,7 @@ from actionlog.models import ActionLog
 from actionlog import constants
 from reports.models import ArticleStats
 from zweiapi import views
+from zemauth.models import User
 
 
 class CampaignStatusTest(TestCase):
@@ -165,10 +167,14 @@ class TestUpdateLastSuccessfulSync(TestCase):
 
     fixtures = ['test_zwei_api.yaml']
 
+    def setUp(self):
+        self.request = HttpRequest()
+        self.request.user = User(id=1)
+
     def test_update_last_successful_sync_fetch_reports_successful_order(self):
         action = ActionLog.objects.get(pk=1)
 
-        views._update_last_successful_sync_dt(action)
+        views._update_last_successful_sync_dt(action, self.request)
 
         ad_group_source = AdGroupSource.objects.get(pk=1)
         self.assertEqual(ad_group_source.last_successful_sync_dt.isoformat(), '2014-07-03T10:00:00')
@@ -176,7 +182,7 @@ class TestUpdateLastSuccessfulSync(TestCase):
     def test_update_last_successful_sync_fetch_status_successful_order(self):
         action = ActionLog.objects.get(pk=5)
 
-        views._update_last_successful_sync_dt(action)
+        views._update_last_successful_sync_dt(action, self.request)
 
         ad_group_source = AdGroupSource.objects.get(pk=1)
         self.assertEqual(ad_group_source.last_successful_sync_dt.isoformat(), '2014-07-03T10:00:00')
@@ -184,7 +190,7 @@ class TestUpdateLastSuccessfulSync(TestCase):
     def test_update_last_successful_sync_fetch_reports_waiting_action_in_order(self):
         action = ActionLog.objects.get(pk=4)
 
-        views._update_last_successful_sync_dt(action)
+        views._update_last_successful_sync_dt(action, self.request)
 
         ad_group_source = AdGroupSource.objects.get(pk=1)
         self.assertEqual(ad_group_source.last_successful_sync_dt.isoformat(), '2014-07-03T06:00:00')
@@ -192,7 +198,7 @@ class TestUpdateLastSuccessfulSync(TestCase):
     def test_update_last_successful_sync_fetch_status_waiting_action_in_order(self):
         action = ActionLog.objects.get(pk=6)
 
-        views._update_last_successful_sync_dt(action)
+        views._update_last_successful_sync_dt(action, self.request)
 
         ad_group_source = AdGroupSource.objects.get(pk=1)
         self.assertEqual(ad_group_source.last_successful_sync_dt.isoformat(), '2014-07-03T10:00:00')

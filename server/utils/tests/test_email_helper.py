@@ -41,7 +41,7 @@ class EmailHelperTestCase(TestCase):
         PAGER_DUTY_URL='http://pagerduty.example.com',
         PAGER_DUTY_ADOPS_SERVICE_KEY='123abc'
     )
-    @patch('utils.signal_handlers.pagerduty_helper.trigger')
+    @patch('utils.email_helper.pagerduty_helper.trigger')
     def test_send_email_to_user_failed(self, mock_trigger_event):
         self.user.email = None
         email_helper._send_email_to_user(self.user, self.request, None, None)
@@ -54,7 +54,7 @@ class EmailHelperTestCase(TestCase):
         PAGER_DUTY_URL='http://pagerduty.example.com',
         PAGER_DUTY_ADOPS_SERVICE_KEY='123abc'
     )
-    @patch('utils.signal_handlers.pagerduty_helper.trigger')
+    @patch('utils.email_helper.pagerduty_helper.trigger')
     def test_send_email_to_user_failed_user_none(self, mock_trigger_event):
         email_helper._send_email_to_user(None, self.request, None, None)
         mock_trigger_event.called
@@ -89,7 +89,7 @@ class EmailHelperTestCase(TestCase):
         PAGER_DUTY_URL='http://pagerduty.example.com',
         PAGER_DUTY_ADOPS_SERVICE_KEY='123abc'
     )
-    @patch('utils.signal_handlers.pagerduty_helper.trigger')
+    @patch('utils.email_helper.pagerduty_helper.trigger')
     def test_send_ad_group_settings_change_email_failed(self, mock_trigger_event):
         account_manager = User.objects.create_user('manager@user.com')
         account = dash_models.Account()

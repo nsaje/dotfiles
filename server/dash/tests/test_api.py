@@ -2,9 +2,11 @@ import decimal
 import datetime
 
 from django.test import TestCase
+from django.http.request import HttpRequest
 
 from dash import models
 from dash import api
+from zemauth.models import User
 
 
 class UpdateContentAdSourceState(TestCase):
@@ -171,8 +173,11 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertFalse(self.writer.can_trigger_action())
 
     def test_can_trigger_action_if_ad_group_enabled(self):
+        request = HttpRequest()
+        request.user = User(id=1)
+
         self.ad_group_settings.state = 1
-        self.ad_group_settings.save()
+        self.ad_group_settings.save(request)
         self.assertTrue(self.writer.can_trigger_action())
 
     def test_should_write_if_no_settings_yet(self):
@@ -182,7 +187,10 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         # delete all ad_group_source_settings
         models.AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).delete()
 
-        self.writer.set({'state': 1})
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        self.writer.set({'state': 1}, request)
 
         self.assertTrue(
             models.AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).count() > 0
@@ -201,7 +209,10 @@ class AdGroupSourceSettingsWriterTest(TestCase):
             .filter(ad_group_source=self.ad_group_source) \
             .latest('created_dt')
 
-        self.writer.set({'cpc_cc': decimal.Decimal(0.1)})
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        self.writer.set({'cpc_cc': decimal.Decimal(0.1)}, request)
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
@@ -218,7 +229,9 @@ class AdGroupSourceSettingsWriterTest(TestCase):
             .filter(ad_group_source=self.ad_group_source) \
             .latest('created_dt')
 
-        self.writer.set({'daily_budget_cc': decimal.Decimal(50)})
+        request = HttpRequest()
+
+        self.writer.set({'daily_budget_cc': decimal.Decimal(50)}, request)
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \

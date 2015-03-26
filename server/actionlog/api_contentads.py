@@ -19,7 +19,7 @@ import dash.models
 logger = logging.getLogger(__name__)
 
 
-def init_insert_content_ad_action(content_ad_source, request=None):
+def init_insert_content_ad_action(content_ad_source, request):
     ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.article.ad_group,
                                                             source=content_ad_source.source)
     settings = ad_group_source.ad_group.get_current_settings()
@@ -61,7 +61,7 @@ def init_insert_content_ad_action(content_ad_source, request=None):
     actionlog.zwei_actions.send(action)
 
 
-def init_update_content_ad_action(content_ad_source):
+def init_update_content_ad_action(content_ad_source, request):
     ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.article.ad_group,
                                                             source=content_ad_source.source)
     args = {
@@ -77,6 +77,7 @@ def init_update_content_ad_action(content_ad_source):
         ad_group_source,
         actionlog.constants.Action.UPDATE_CONTENT_AD,
         args=args,
+        request=request,
         content_ad_source=content_ad_source
     )
 
@@ -88,7 +89,7 @@ def init_update_content_ad_action(content_ad_source):
     actionlog.zwei_actions.send(action)
 
 
-def init_get_content_ad_status_action(ad_group_source, order):
+def init_get_content_ad_status_action(ad_group_source, order, request):
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key
     }
@@ -97,7 +98,8 @@ def init_get_content_ad_status_action(ad_group_source, order):
         ad_group_source,
         actionlog.constants.Action.GET_CONTENT_AD_STATUS,
         args=args,
-        order=order
+        order=order,
+        request=request
     )
 
     msg = "get_content_ad_status action created: ad_group_source.id: {}".format(

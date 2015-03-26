@@ -1,7 +1,6 @@
 import jsonfield
 import binascii
 import datetime
-import collections
 from decimal import Decimal
 
 import utils.string
@@ -129,7 +128,7 @@ class Account(models.Model):
         return current_settings.archived
 
     @transaction.atomic
-    def archive(self):
+    def archive(self, request):
         if not self.can_archive():
             raise exc.ForbiddenError(
                 'Account can\'t be archived.'
@@ -138,14 +137,14 @@ class Account(models.Model):
         if not self.is_archived():
             current_settings = self.get_current_settings()
             for campaign in self.campaign_set.all():
-                campaign.archive()
+                campaign.archive(request)
 
             new_settings = current_settings.copy_settings()
             new_settings.archived = True
-            new_settings.save()
+            new_settings.save(request)
 
     @transaction.atomic
-    def restore(self):
+    def restore(self, request):
         if not self.can_restore():
             raise exc.ForbiddenError(
                 'Account can\'t be restored.'
@@ -155,7 +154,11 @@ class Account(models.Model):
             current_settings = self.get_current_settings()
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
-            new_settings.save()
+            new_settings.save(request)
+
+    def save(self, request, *args, **kwargs):
+        self.modified_by = request.user
+        super(Account, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
         def filter_by_user(self, user):
@@ -250,7 +253,7 @@ class Campaign(models.Model, PermissionMixin):
         return current_settings.archived
 
     @transaction.atomic
-    def archive(self):
+    def archive(self, request):
         if not self.can_archive():
             raise exc.ForbiddenError(
                 'Campaign can\'t be archived.'
@@ -259,14 +262,14 @@ class Campaign(models.Model, PermissionMixin):
         if not self.is_archived():
             current_settings = self.get_current_settings()
             for ad_group in self.adgroup_set.all():
-                ad_group.archive()
+                ad_group.archive(request)
 
             new_settings = current_settings.copy_settings()
             new_settings.archived = True
-            new_settings.save()
+            new_settings.save(request)
 
     @transaction.atomic
-    def restore(self):
+    def restore(self, request):
         if not self.can_restore():
             raise exc.ForbiddenError(
                 'Campaign can\'t be restored.'
@@ -276,7 +279,11 @@ class Campaign(models.Model, PermissionMixin):
             current_settings = self.get_current_settings()
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
-            new_settings.save()
+            new_settings.save(request)
+
+    def save(self, request, *args, **kwargs):
+        self.modified_by = request.user
+        super(Campaign, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
         def filter_by_user(self, user):
@@ -365,6 +372,12 @@ class AccountSettings(SettingsBase):
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
 
+    def save(self, request, *args, **kwargs):
+        if self.pk is None:
+            self.created_by = request.user
+
+        super(AccountSettings, self).save(*args, **kwargs)
+
     class Meta:
         ordering = ('-created_dt',)
 
@@ -416,6 +429,12 @@ class CampaignSettings(SettingsBase):
         choices=constants.PromotionGoal.get_choices()
     )
     archived = models.BooleanField(default=False)
+
+    def save(self, request, *args, **kwargs):
+        if self.pk is None:
+            self.created_by = request.user
+
+        super(CampaignSettings, self).save(*args, **kwargs)
 
     class Meta:
         ordering = ('-created_dt',)
@@ -663,7 +682,12 @@ class AdGroup(models.Model):
             settings = settings[0]
         else:
             settings = AdGroupSettings(
-                ad_group=self
+                ad_group=self,
+                state=constants.AdGroupSettingsState.INACTIVE,
+                start_date=datetime.datetime.utcnow().date(),
+                cpc_cc=0.4000,
+                daily_budget_cc=10.0000,
+                target_devices=constants.AdTargetDevice.get_all()
             )
 
         return settings
@@ -683,7 +707,7 @@ class AdGroup(models.Model):
         return current_settings.archived
 
     @transaction.atomic
-    def archive(self):
+    def archive(self, request):
         if not self.can_archive():
             raise exc.ForbiddenError(
                 'Ad group has to be in state "Paused" in order to archive it.'
@@ -693,10 +717,10 @@ class AdGroup(models.Model):
             current_settings = self.get_current_settings()
             new_settings = current_settings.copy_settings()
             new_settings.archived = True
-            new_settings.save()
+            new_settings.save(request)
 
     @transaction.atomic
-    def restore(self):
+    def restore(self, request):
         if not self.can_restore():
             raise exc.ForbiddenError(
                 'Account and campaign have to not be archived in order to restore an ad group.'
@@ -706,7 +730,11 @@ class AdGroup(models.Model):
             current_settings = self.get_current_settings()
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
-            new_settings.save()
+            new_settings.save(request)
+
+    def save(self, request, *args, **kwargs):
+        self.modified_by = request.user
+        super(AdGroup, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
         def filter_by_user(self, user):
@@ -759,11 +787,11 @@ class AdGroupSource(models.Model):
 
         return '_z1_adgid=%s&_z1_msid=%s' % (self.ad_group.id, msid)
 
-
-    def save(self, *args, **kwargs):
+    def save(self, request, *args, **kwargs):
         super(AdGroupSource, self).save(*args, **kwargs)
         if not AdGroupSourceSettings.objects.filter(ad_group_source=self).exists():
-            AdGroupSourceSettings.objects.create(ad_group_source=self)
+            settings = AdGroupSourceSettings(ad_group_source=self)
+            settings.save(request)
 
     def __unicode__(self):
         return u'{} - {}'.format(self.ad_group, self.source)
@@ -889,6 +917,12 @@ class AdGroupSettings(SettingsBase):
         # Strip the first '?' as we don't want to send it as a part of query string
         return self.tracking_code.lstrip('?')
 
+    def save(self, request, *args, **kwargs):
+        if self.pk is None:
+            self.created_by = request.user
+
+        super(AdGroupSettings, self).save(*args, **kwargs)
+
 
 class AdGroupSourceState(models.Model):
     id = models.AutoField(primary_key=True)
@@ -924,40 +958,6 @@ class AdGroupSourceState(models.Model):
     class Meta:
         get_latest_by = 'created_dt'
         ordering = ('-created_dt',)
-
-    @classmethod
-    def get_current_state(cls, ad_group, sources):
-        source_ids = [x.pk for x in sources]
-
-        source_settings = cls.objects.filter(
-            ad_group_source__ad_group=ad_group,
-        ).order_by('-created_dt')
-
-        result = {}
-        for s in source_settings:
-            source = s.ad_group_source.source
-
-            if source.id in result:
-                continue
-
-            result[source.id] = s
-
-            if len(result) == len(source_ids):
-                break
-
-        for sid in source_ids:
-            if sid in result:
-                continue
-
-            result[sid] = cls(
-                state=None,
-                ad_group_source=AdGroupSource(
-                    ad_group=ad_group,
-                    source=Source.objects.get(pk=sid)
-                )
-            )
-
-        return result
 
 
 class AdGroupSourceSettings(models.Model):
@@ -997,6 +997,12 @@ class AdGroupSourceSettings(models.Model):
         null=True,
         verbose_name='Daily budget'
     )
+
+    def save(self, request, *args, **kwargs):
+        if self.pk is None:
+            self.created_by = request.user
+
+        super(AdGroupSourceSettings, self).save(*args, **kwargs)
 
     class Meta:
         get_latest_by = 'created_dt'
@@ -1151,9 +1157,15 @@ class CampaignBudgetSettings(models.Model):
         verbose_name='Total budget'
     )
     comment = models.CharField(max_length=256)
-    created_by = created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
+    def save(self, request, *args, **kwargs):
+        if self.pk is None:
+            self.created_by = request.user
+
+        super(CampaignBudgetSettings, self).save(*args, **kwargs)
 
     class Meta:
         get_latest_by = 'created_dt'

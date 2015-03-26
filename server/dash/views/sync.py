@@ -1,4 +1,5 @@
 import logging
+from threading import Thread
 
 import actionlog.sync
 
@@ -6,61 +7,56 @@ from dash.views import helpers
 from dash import models
 from utils import api_common
 from utils import statsd_helper
-from utils.threads import BaseThread
-from utils import request_provider
 
 
 logger = logging.getLogger(__name__)
 
 
-class TriggerAccountSyncThread(BaseThread):
+class TriggerAccountSyncThread(Thread):
     """ Used to trigger sync for all accounts asynchronously. """
-    def __init__(self, accounts, sources, *args, **kwargs):
+    def __init__(self, accounts, sources, request, *args, **kwargs):
         self.accounts = accounts
         self.sources = sources
+        self.request = request
         super(TriggerAccountSyncThread, self).__init__(*args, **kwargs)
 
     def run(self):
         try:
             for account in self.accounts:
-                actionlog.sync.AccountSync(account, sources=self.sources).trigger_all()
+                actionlog.sync.AccountSync(account, sources=self.sources).trigger_all(self.request)
         except Exception:
             logger.exception('Exception in TriggerAccountSyncThread')
-        finally:
-            request_provider.delete()
 
 
-class TriggerCampaignSyncThread(BaseThread):
+class TriggerCampaignSyncThread(Thread):
     """ Used to trigger sync for ad_group's ad groups asynchronously. """
-    def __init__(self, campaigns, sources, *args, **kwargs):
+    def __init__(self, campaigns, sources, request, *args, **kwargs):
         self.campaigns = campaigns
         self.sources = sources
+        self.request = request
         super(TriggerCampaignSyncThread, self).__init__(*args, **kwargs)
 
     def run(self):
         try:
             for campaign in self.campaigns:
-                actionlog.sync.CampaignSync(campaign, sources=self.sources).trigger_all()
+                actionlog.sync.CampaignSync(campaign, sources=self.sources).trigger_all(self.request)
         except Exception:
             logger.exception('Exception in TriggerCampaignSyncThread')
-        finally:
-            request_provider.delete()
 
 
-class TriggerAdGroupSyncThread(BaseThread):
+class TriggerAdGroupSyncThread(Thread):
     """ Used to trigger sync for all campaign's ad groups asynchronously. """
-    def __init__(self, ad_group, sources, *args, **kwargs):
+    def __init__(self, ad_group, sources, request, *args, **kwargs):
         self.ad_group = ad_group
         self.sources = sources
+        self.request = request
         super(TriggerAdGroupSyncThread, self).__init__(*args, **kwargs)
 
     def run(self):
         try:
-            actionlog.sync.AdGroupSync(self.ad_group, sources=self.sources).trigger_all()
+            actionlog.sync.AdGroupSync(self.ad_group, sources=self.sources).trigger_all(self.request)
         except Exception:
             logger.exception('Exception in TriggerAdGroupSyncThread')
-        finally:
-            request_provider.delete()
 
 
 class AccountSync(api_common.BaseApiView):
@@ -71,7 +67,7 @@ class AccountSync(api_common.BaseApiView):
         accounts = models.Account.objects.all().filter_by_user(request.user)
         if not actionlog.api.is_sync_in_progress(accounts=accounts, sources=filtered_sources):
             # trigger account sync asynchronously and immediately return
-            TriggerAccountSyncThread(accounts, filtered_sources).start()
+            TriggerAccountSyncThread(accounts, filtered_sources, request).start()
 
         return self.create_api_response({})
 
@@ -107,7 +103,7 @@ class CampaignSync(api_common.BaseApiView):
 
         if not actionlog.api.is_sync_in_progress(campaigns=campaigns, sources=filtered_sources):
             # trigger account sync asynchronously and immediately return
-            TriggerCampaignSyncThread(campaigns, filtered_sources).start()
+            TriggerCampaignSyncThread(campaigns, filtered_sources, request).start()
 
         return self.create_api_response({})
 
@@ -142,7 +138,7 @@ class AdGroupSync(api_common.BaseApiView):
 
         if not actionlog.api.is_sync_in_progress(ad_groups=[ad_group], sources=filtered_sources):
             # trigger ad group sync asynchronously and immediately return
-            TriggerAdGroupSyncThread(ad_group, filtered_sources).start()
+            TriggerAdGroupSyncThread(ad_group, filtered_sources, request).start()
 
         return self.create_api_response({})
 

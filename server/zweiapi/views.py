@@ -31,8 +31,8 @@ def zwei_callback(request, action_id):
 
     data = json.loads(request.body)
     try:
-        _process_zwei_response(action, data)
-        _update_last_successful_sync_dt(action)
+        _process_zwei_response(action, data, request)
+        _update_last_successful_sync_dt(action, request)
     except Exception as e:
         _handle_zwei_callback_error(e, action)
 
@@ -40,7 +40,7 @@ def zwei_callback(request, action_id):
     return JsonResponse(response_data)
 
 
-def _update_last_successful_sync_dt(action):
+def _update_last_successful_sync_dt(action, request):
     if not action.order or action.state == actionlogconstants.ActionState.FAILED:
         return
 
@@ -63,7 +63,7 @@ def _update_last_successful_sync_dt(action):
         return
 
     action.ad_group_source.last_successful_sync_dt = min(status_sync_dt, report_sync_dt)
-    action.ad_group_source.save()
+    action.ad_group_source.save(request)
 
 
 def _get_error_message(data):
@@ -103,7 +103,7 @@ def _prepare_report_rows(ad_group, data_rows):
 
 
 @transaction.atomic
-def _process_zwei_response(action, data):
+def _process_zwei_response(action, data, request):
     logger.info('Processing Action Response: %s', action)
 
     if action.state != actionlogconstants.ActionState.WAITING:
@@ -139,7 +139,11 @@ def _process_zwei_response(action, data):
         actionlog.api.send_delayed_actionlogs([ad_group_source])
 
     elif action.action == actionlogconstants.Action.CREATE_CAMPAIGN:
-        dashapi.update_campaign_key(action.ad_group_source, data['data']['source_campaign_key'])
+        dashapi.update_campaign_key(
+            action.ad_group_source,
+            data['data']['source_campaign_key'],
+            request
+        )
         dashapi.add_content_ad_sources(action.ad_group_source)
     elif action.action == actionlogconstants.Action.INSERT_CONTENT_AD:
         if 'source_content_ad_id' in data['data']:

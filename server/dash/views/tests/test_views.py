@@ -3,6 +3,7 @@ from mock import patch
 import datetime
 
 from django.test import TestCase, Client
+from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
 
 from zemauth.models import User
@@ -115,7 +116,10 @@ class AdGroupAdsPlusUploadTest(TestCase):
         MockAdGroupAdsPlusUploadForm.return_value.is_valid.return_value = True
         MockProcessUploadThread.return_value.start.return_value = None
 
-        models.AdGroupSettings.objects.create(
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        ad_group_settings = models.AdGroupSettings(
             ad_group_id=1,
             created_by_id=1,
             brand_name='name',
@@ -123,6 +127,7 @@ class AdGroupAdsPlusUploadTest(TestCase):
             description='test description',
             call_to_action='click here'
         )
+        ad_group_settings.save(request)
 
         response = self._get_client().post(
             reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}), follow=True)
@@ -145,12 +150,16 @@ class AdGroupAdsPlusUploadTest(TestCase):
         MockAdGroupAdsPlusUploadForm.return_value.is_valid.return_value = True
         MockAdGroupAdsPlusUploadForm.return_value.errors = None
 
-        models.AdGroupSettings.objects.create(
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        ad_group_settings = models.AdGroupSettings(
             ad_group_id=1,
             created_by_id=1,
             brand_name='name',
             description='test description',
         )
+        ad_group_settings.save(request)
 
         response = self._get_client().post(
             reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}), follow=True)

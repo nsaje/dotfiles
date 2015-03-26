@@ -36,33 +36,3 @@
     name: 'test account 1'
   model: dash.account
   pk: 1
-
-# test campaign
-
-- fields:
-    created_dt: '2014-06-04T09:58:21'
-    modified_dt: '2014-06-04T09:58:21'
-    modified_by: 1 # test user
-    account: 1 # test account 1
-    name: 'test campaign 1'
-  model: dash.campaign
-  pk: 1
-
-# test adgroup
-- fields:
-    created_dt: '2014-06-04T09:58:21'
-    modified_dt: '2014-06-04T09:58:21'
-    modified_by: 1 # test user
-    campaign: 1 # test campaign 1
-    name: 'test adgroup 1'
-  model: dash.adgroup
-  pk: 1
-
-# test source
-- fields:
-    source_type: null
-    name: 'Test'
-    created_dt: '2014-06-04T09:58:21'
-    modified_dt: '2014-06-04T09:58:21'
-  model: dash.source
-  pk: 1

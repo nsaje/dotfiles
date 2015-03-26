@@ -3,9 +3,11 @@ from decimal import Decimal
 
 from django.db.models.signals import pre_save
 from django.test import TestCase
+from django.http.request import HttpRequest
 
 from dash import models, constants
 from zemauth import models as zemauthmodels
+from zemauth.models import User
 from utils import exc
 
 
@@ -54,25 +56,43 @@ class AdGroupSettingsTest(TestCase):
         ad_group_settings = models.AdGroupSettings.objects.get(id=1)
         self.assertEqual(ad_group_settings.get_tracking_ids(), u'')
 
+        request = HttpRequest()
+        request.user = User()
+
         ad_group_settings.tracking_code = '?param1=value1&param2=value2#hash?a=b&c=d'
-        ad_group_settings.save()
+        ad_group_settings.save(request)
         self.assertEqual(ad_group_settings.get_tracking_ids(), u'param1=value1&param2=value2#hash?a=b&c=d')
 
 
 class AdGroupSourceTest(TestCase):
 
     def test_adgroup_source_save(self):
-        ad_group = models.AdGroup.objects.create(campaign_id=1, modified_by_id=1)
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        ad_group = models.AdGroup(campaign_id=1, modified_by_id=1)
+        ad_group.save(request)
+
         source = models.Source.objects.create()
-        ad_group_source = models.AdGroupSource.objects.create(ad_group=ad_group, source=source)
+
+        ad_group_source = models.AdGroupSource(ad_group=ad_group, source=source)
+        ad_group_source.save(request)
 
         self.assertTrue(models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source).exists())
 
     def test_get_tracking_ids(self):
-        ad_group = models.AdGroup.objects.create(campaign_id=1, modified_by_id=1)
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        ad_group = models.AdGroup(campaign_id=1, modified_by_id=1)
+        ad_group.save(request)
+
         source_type = models.SourceType.objects.create()
         source = models.Source.objects.create(source_type=source_type)
-        ad_group_source = models.AdGroupSource.objects.create(ad_group=ad_group, source=source)
+
+        ad_group_source = models.AdGroupSource(ad_group=ad_group, source=source)
+        ad_group_source.save(request)
+
         self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=%s&_z1_msid=%s' % (ad_group.id, ''))
 
         source_type.type = constants.SourceType.ZEMANTA
@@ -105,6 +125,9 @@ class ArchiveRestoreTestCase(TestCase):
         pre_save.connect(created_by_patch, sender=models.CampaignSettings)
         pre_save.connect(created_by_patch, sender=models.AccountSettings)
 
+        self.request = HttpRequest()
+        self.request.user = User()
+
     def tearDown(self):
         pre_save.disconnect(created_by_patch, sender=models.AdGroupSettings)
         pre_save.disconnect(created_by_patch, sender=models.CampaignSettings)
@@ -121,9 +144,9 @@ class ArchiveRestoreTestCase(TestCase):
         self.assertTrue(ag2.can_archive())
 
         with self.assertRaises(exc.ForbiddenError):
-            ag1.archive()
+            ag1.archive(self.request)
 
-        ag2.archive()
+        ag2.archive(self.request)
         self.assertTrue(ag2.get_current_settings().archived)
 
     def test_archive_campaign(self):
@@ -137,9 +160,9 @@ class ArchiveRestoreTestCase(TestCase):
         self.assertTrue(c2.can_archive())
 
         with self.assertRaises(exc.ForbiddenError):
-            c1.archive()
+            c1.archive(self.request)
 
-        c2.archive()
+        c2.archive(self.request)
         self.assertTrue(c2.get_current_settings().archived)
 
         ag = c2.adgroup_set.all()[0]
@@ -156,9 +179,9 @@ class ArchiveRestoreTestCase(TestCase):
         self.assertTrue(a2.can_archive())
 
         with self.assertRaises(exc.ForbiddenError):
-            a1.archive()
+            a1.archive(self.request)
 
-        a2.archive()
+        a2.archive(self.request)
         self.assertTrue(a2.get_current_settings().archived)
 
         c = a2.campaign_set.all()[0]
@@ -171,10 +194,10 @@ class ArchiveRestoreTestCase(TestCase):
         a = models.Account.objects.get(id=2)
 
         self.assertTrue(a.can_archive())
-        a.archive()
+        a.archive(self.request)
 
         self.assertTrue(a.can_restore())
-        a.restore()
+        a.restore(self.request)
 
         self.assertFalse(a.get_current_settings().archived)
 
@@ -188,10 +211,10 @@ class ArchiveRestoreTestCase(TestCase):
         c = models.Campaign.objects.get(id=2)
 
         self.assertTrue(c.can_archive())
-        c.archive()
+        c.archive(self.request)
 
         self.assertTrue(c.can_restore())
-        c.restore()
+        c.restore(self.request)
 
         self.assertFalse(c.get_current_settings().archived)
 
@@ -202,49 +225,49 @@ class ArchiveRestoreTestCase(TestCase):
         ag = models.AdGroup.objects.get(id=2)
 
         self.assertTrue(ag.can_archive())
-        ag.archive()
+        ag.archive(self.request)
 
         self.assertTrue(ag.can_restore())
-        ag.restore()
+        ag.restore(self.request)
 
         self.assertFalse(ag.get_current_settings().archived)
 
     def test_restore_campaign_fail(self):
         a = models.Account.objects.get(id=2)
 
-        a.archive()
+        a.archive(self.request)
 
         c = a.campaign_set.all()[0]
         self.assertTrue(c.get_current_settings().archived)
         self.assertFalse(c.can_restore())
 
         with self.assertRaises(exc.ForbiddenError):
-            c.restore()
+            c.restore(self.request)
 
-        a.restore()
+        a.restore(self.request)
         self.assertTrue(c.get_current_settings().archived)
         self.assertTrue(c.can_restore())
 
-        c.restore()
+        c.restore(self.request)
         self.assertFalse(c.get_current_settings().archived)
 
     def test_restore_ad_group_fail(self):
         c = models.Campaign.objects.get(id=2)
 
-        c.archive()
+        c.archive(self.request)
 
         ag = c.adgroup_set.all()[0]
         self.assertTrue(ag.get_current_settings().archived)
         self.assertFalse(ag.can_restore())
 
         with self.assertRaises(exc.ForbiddenError):
-            ag.restore()
+            ag.restore(self.request)
 
-        c.restore()
+        c.restore(self.request)
         self.assertTrue(ag.get_current_settings().archived)
         self.assertTrue(ag.can_restore())
 
-        ag.restore()
+        ag.restore(self.request)
         self.assertFalse(ag.get_current_settings().archived)
 
 
