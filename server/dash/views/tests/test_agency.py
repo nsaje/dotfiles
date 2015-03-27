@@ -1,8 +1,8 @@
 import json
 import datetime
-from mock import patch
+from mock import patch, ANY
 
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
 
@@ -162,7 +162,7 @@ class AdGroupAgencyTest(TestCase):
                     'datetime': '2015-06-05T09:22:24',
                     'settings': [
                         {'name': 'State', 'value': 'Paused'},
-                        {'name': 'Start date', 'value': '2015-03-26'},
+                        {'name': 'Start date', 'value': ANY},
                         {'name': 'End date', 'value': 'I\'ll stop it myself'},
                         {'name': 'Max CPC bid', 'value': '$0.40'},
                         {'name': 'Daily budget', 'value': '$10.00'},
