@@ -210,6 +210,9 @@ class AccountAdmin(admin.ModelAdmin):
             instances = formset.save(commit=False)
             for instance in instances:
                 instance.save(request)
+
+            for obj in formset.deleted_objects:
+                obj.delete()
         else:
             formset.save()
 
@@ -261,6 +264,9 @@ class CampaignAdmin(admin.ModelAdmin):
             instances = formset.save(commit=False)
             for instance in instances:
                 instance.save(request)
+
+            for obj in formset.deleted_objects:
+                obj.delete()
         else:
             formset.save()
 
@@ -442,6 +448,9 @@ class AdGroupAdmin(admin.ModelAdmin):
             instances = formset.save(commit=False)
             for instance in instances:
                 instance.save(request)
+
+            for obj in formset.deleted_objects:
+                obj.delete()
         else:
             formset.save()
 
