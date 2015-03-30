@@ -332,6 +332,11 @@ class AdGroupAdsPlusUploadForm(forms.Form):
                         raise ValueError('Coordinate is not an integer')
 
     def _parse_crop_areas(self, crop_string):
+        if not crop_string:
+            # crop areas are optional, so return None
+            # if they are not provided
+            return None
+
         crop_string = crop_string.replace('(', '[').replace(')', ']')
 
         try:
@@ -358,9 +363,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         if title is None or not len(title):
             raise forms.ValidationError('File is not formatted correctly.')
 
-        crop_areas = row.get('crop_areas')
-        if crop_areas is not None and len(crop_areas):
-            row['crop_areas'] = self._parse_crop_areas(crop_areas)
+        row['crop_areas'] = self._parse_crop_areas(row.get('crop_areas'))
 
         return row
 
