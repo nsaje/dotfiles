@@ -100,10 +100,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         resource = json.loads(request.body)
 
-        form = forms.AdGroupSettingsForm(
-            current_settings, resource.get('settings', {})
-            # initial=current_settings
-        )
+        form = forms.AdGroupSettingsForm(resource.get('settings', {}))
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 

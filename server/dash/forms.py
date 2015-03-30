@@ -10,6 +10,7 @@ from decimal import Decimal
 import utils.string
 
 from django import forms
+from django.core.validators import URLValidator
 
 from dash import constants
 from zemauth.models import User as ZemUser
@@ -71,7 +72,7 @@ class AdGroupSettingsForm(forms.Form):
         choices=constants.AdTargetCountry.get_choices()
     )
     tracking_code = forms.CharField(required=False)
-    display_url = forms.CharField(
+    display_url = forms.URLField(
         max_length=25,
         required=False
     )
@@ -88,10 +89,11 @@ class AdGroupSettingsForm(forms.Form):
         required=False
     )
 
-    def __init__(self, current_settings, *args, **kwargs):
-        self.current_settings = current_settings
-
+    def __init__(self, *args, **kwargs):
         super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
+
+    def clean_display_url(self):
+        return self.data['display_url']
 
     def clean_end_date(self):
         end_date = self.cleaned_data.get('end_date')
@@ -330,6 +332,11 @@ class AdGroupAdsPlusUploadForm(forms.Form):
                         raise ValueError('Coordinate is not an integer')
 
     def _parse_crop_areas(self, crop_string):
+        if not crop_string:
+            # crop areas are optional, so return None
+            # if they are not provided
+            return None
+
         crop_string = crop_string.replace('(', '[').replace(')', ']')
 
         try:
@@ -343,13 +350,20 @@ class AdGroupAdsPlusUploadForm(forms.Form):
     def _validate_and_transform_row(self, row):
         url = row.get('url')
         title = row.get('title')
+        image_url = row.get('image_url')
 
-        if url is None or not len(url) or title is None or not len(title):
+        validate_url = URLValidator(
+            schemes=['http', 'https'],
+            message='File is not formatted correctly'
+        )
+
+        validate_url(url)
+        validate_url(image_url)
+
+        if title is None or not len(title):
             raise forms.ValidationError('File is not formatted correctly.')
 
-        crop_areas = row.get('crop_areas')
-        if crop_areas is not None and len(crop_areas):
-            row['crop_areas'] = self._parse_crop_areas(crop_areas)
+        row['crop_areas'] = self._parse_crop_areas(row.get('crop_areas'))
 
         return row
 

@@ -1,10 +1,59 @@
 import unicodecsv
+import datetime
+from decimal import Decimal
 import StringIO
 
 from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from dash.forms import AdGroupAdsPlusUploadForm
+from dash import forms
+
+
+class AdGroupSettingsFormTest(TestCase):
+    def setUp(self):
+        self.data = {
+            'display_url': 'example.com',
+            'brand_name': 'example',
+            'call_to_action': 'click here',
+            'cpc_cc': '0.40',
+            'daily_budget_cc': '10.00',
+            'description': 'example description',
+            'end_date': '2014-12-31',
+            'id': '248',
+            'name': 'Test ad group',
+            'start_date': '2014-12-11',
+            'state': 2,
+            'target_devices': ['desktop', 'mobile'],
+            'target_regions': ['US'],
+            'tracking_code': 'code=test',
+        }
+
+    def test_form(self):
+        form = forms.AdGroupSettingsForm(self.data)
+
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data, {
+            'brand_name': 'example',
+            'call_to_action': 'click here',
+            'cpc_cc': Decimal('0.40'),
+            'daily_budget_cc': Decimal('10.00'),
+            'description': 'example description',
+            'display_url': 'example.com',
+            'end_date': datetime.date(2014, 12, 31),
+            'id': 248,
+            'name': 'Test ad group',
+            'start_date': datetime.date(2014, 12, 11),
+            'state': 2,
+            'target_devices': ['desktop', 'mobile'],
+            'target_regions': ['US'],
+            'tracking_code': 'code=test'
+        })
+
+    def test_invalid_display_url(self):
+        self.data['display_url'] = 'teststring'
+        form = forms.AdGroupSettingsForm(self.data)
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {'display_url': ['Enter a valid URL.']})
 
 
 class AdGroupAdsPlusUploadFormTest(TestCase):
@@ -46,6 +95,18 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
 
         self.assertFalse(form.is_valid())
 
+    def test_invalid_url(self):
+        csv_file = self._get_csv_file([['someteststring', self.title, self.image_url, self.crop_areas]])
+        form = self._init_form(csv_file, self.batch_name)
+
+        self.assertFalse(form.is_valid())
+
+    def test_invalid_image_url(self):
+        csv_file = self._get_csv_file([[self.url, self.title, 'someteststring', self.crop_areas]])
+        form = self._init_form(csv_file, self.batch_name)
+
+        self.assertFalse(form.is_valid())
+
     def test_no_title(self):
         csv_file = self._get_csv_file([[self.url, None, self.image_url, self.crop_areas]])
         form = self._init_form(csv_file, self.batch_name)
@@ -73,7 +134,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         self.assertFalse(form.is_valid())
 
     def _init_form(self, csv_file, batch_name):
-        return AdGroupAdsPlusUploadForm(
+        return forms.AdGroupAdsPlusUploadForm(
             {'batch_name': batch_name},
             {'content_ads': SimpleUploadedFile('test_file.csv', csv_file.getvalue())}
         )
