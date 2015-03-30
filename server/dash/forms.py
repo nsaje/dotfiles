@@ -89,9 +89,7 @@ class AdGroupSettingsForm(forms.Form):
         required=False
     )
 
-    def __init__(self, current_settings, *args, **kwargs):
-        self.current_settings = current_settings
-
+    def __init__(self, *args, **kwargs):
         super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
 
     def clean_display_url(self):
