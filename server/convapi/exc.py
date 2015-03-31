@@ -16,3 +16,6 @@ class AuthException(Exception):
 
 class LandingPageUrlParseError(Exception):
     pass
+
+class TooManyErrorsException(Exception):
+    pass

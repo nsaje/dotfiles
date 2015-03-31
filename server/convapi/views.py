@@ -18,12 +18,11 @@ from convapi import constants
 logger = logging.getLogger(__name__)
 
 
-ALLOWED_ERRORS_COUNT = 2
 def allowed_errors_count(*errors):
     errors_count = 0
     for error_list in errors:
         errors_count = len(error_list)
-    return errors_count <= ALLOWED_ERRORS_COUNT
+    return errors_count <= constants.ALLOWED_ERRORS_COUNT
 
 def ad_group_specified_errors(csvreport):
     errors = []
