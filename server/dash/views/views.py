@@ -372,6 +372,7 @@ class AvailableSources(api_common.BaseApiView):
             sources.append({
                 'id': str(source.id),
                 'name': source.name,
+                'deprecated': source.deprecated,
             })
 
         return self.create_api_response({
