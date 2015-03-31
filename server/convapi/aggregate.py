@@ -2,8 +2,8 @@ import logging
 import os.path
 import hashlib
 
+import exc
 from constants import ALLOWED_ERRORS_COUNT
-from exc import TooManyMissingSourcesException
 from parse import LandingPageUrl
 from models import RawPostclickStats, RawGoalConversionStats
 from resolve import resolve_source, resolve_article
@@ -115,7 +115,7 @@ landing_page_url=%s',
                  )
                 self.report_log.add_error('Cannot resolve source for url=%s' % url.raw_url.decode('ascii', 'ignore'))
                 if errors_count > ALLOWED_ERRORS_COUNT:
-                    raise TooManyMissingSourcesException("There are too many sources missing in GA report.")
+                    raise exc.TooManyMissingSourcesException("There are too many sources missing in GA report.")
                 else:
                     continue
 
