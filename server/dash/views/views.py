@@ -701,19 +701,18 @@ class ProcessUploadThread(Thread):
             with transaction.atomic():
                 for i, ad in enumerate(self.content_ads):
                     logging.debug('ProcessUploadThread: processing ad {} of {}: {}'.format(i + 1, len(self.content_ads), ad))
-                    image_id, width, height = image_helper.process_image(ad.get('image_url'), ad.get('crop_areas'))
+
+                    image_id, width, height = image_helper.process_image(
+                        ad.get('image_url'), ad.get('crop_areas'))
+
                     content_ad = models.ContentAd.objects.create(
                         image_id=image_id,
                         image_width=width,
                         image_height=height,
-                        batch=self.batch
-                    )
-
-                    models.Article.objects.create(
+                        batch=self.batch,
                         url=ad.get('url'),
                         title=ad.get('title'),
                         ad_group_id=self.ad_group_id,
-                        content_ad=content_ad
                     )
 
                     for ad_group_source in models.AdGroupSource.objects.filter(ad_group_id=self.ad_group_id):

@@ -292,7 +292,7 @@ class AdGroupSourceSync(BaseSync):
         )
 
         if not dash.models.ContentAdSource.objects.filter(
-                content_ad__article__ad_group=self.obj.ad_group,
+                content_ad__ad_group=self.obj.ad_group,
                 source=self.obj.source).exists():
             return
 

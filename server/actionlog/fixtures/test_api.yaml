@@ -556,7 +556,6 @@
         url: 'http://testurl.com'
         title: 'Test Article'
         ad_group: 1
-        content_ad: 1
         created_dt: '2015-02-23T00:00:00'
     model: dash.article
     pk: 1
@@ -574,6 +573,10 @@
 -   fields:
         image_id: '123456789'
         batch: 1
+        url: 'http://testurl.com'
+        title: 'Test Article'
+        ad_group: 1
+        created_dt: '2015-02-23T00:00:00'
     model: dash.contentad
     pk: 1
 
