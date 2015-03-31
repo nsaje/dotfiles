@@ -17,8 +17,8 @@ from convapi import constants
 
 logger = logging.getLogger(__name__)
 
-
-def allowed_errors_count(*errors):
+allowed_errors_count
+def too_many_errors(*errors):
     errors_count = 0
     for error_list in errors:
         errors_count = len(error_list)
@@ -102,7 +102,7 @@ def mailgun_gareps(request):
             for landing_url in media_source_errors:
                 message += landing_url + '\n'
 
-        if allowed_errors_count(ad_group_errors, media_source_errors):
+        if too_many_errors(ad_group_errors, media_source_errors):
             logger.warning(message)
             report_log.add_error(message)
             report_log.state = constants.GAReportState.FAILED
