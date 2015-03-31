@@ -17,7 +17,7 @@ from convapi import constants
 
 logger = logging.getLogger(__name__)
 
-allowed_errors_count
+
 def too_many_errors(*errors):
     errors_count = 0
     for error_list in errors:
