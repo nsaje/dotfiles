@@ -78,18 +78,20 @@ class CsvReport(IReport):
         return self.ad_group_set
 
     def is_media_source_specified(self):
+        media_source_not_specified = []
         for entry in self.get_entries():
             landing_page_url = LandingPageUrl(entry['Landing Page'])
             if landing_page_url.source_param is None:
-                return False
-        return True
+                media_source_not_specified.append(landing_page_url.raw_url)
+        return (len(media_source_not_specified) == 0, media_source_not_specified)
 
     def is_ad_group_specified(self):
+        ad_group_not_specified = []
         for entry in self.get_entries():
             landing_page_url = LandingPageUrl(entry['Landing Page'])
             if landing_page_url.ad_group_id is None:
-                return False
-        return True
+                ad_group_not_specified.append(landing_page_url.raw_url)
+        return (len(ad_group_not_specified) == 0, ad_group_not_specified)
 
     def split_by_ad_group(self):
         ad_group_reports = []
