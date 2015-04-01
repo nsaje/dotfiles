@@ -170,6 +170,7 @@ def _process_zwei_response(action, data, request):
             data['data']
         )
 
+    logger.info('Process action successful. Action: %s', action)
     action.state = actionlogconstants.ActionState.SUCCESS
     action.save()
 
