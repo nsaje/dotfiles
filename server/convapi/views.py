@@ -169,9 +169,11 @@ class TriggerReportAggregateThread(Thread):
         logger.info("TriggerReportAggregateThread")
         try:
             for ad_group_report in self.csvreport.split_by_ad_group():
+                logger.info("TriggerReportAggregateThread - split by ad group")
                 time.sleep(0)  # Makes greenlet yield control to prevent blocking
-
+                logger.info("TriggerReportAggregateThread - sleep")
                 self.report_log.add_ad_group_id(ad_group_report.get_ad_group_id())
+                logger.info("TriggerReportAggregateThread - add ad group id")
 
                 report_email = ReportEmail(
                     sender=self.sender,
@@ -182,10 +184,11 @@ class TriggerReportAggregateThread(Thread):
                     report=ad_group_report,
                     report_log=self.report_log
                 )
-
+                logger.info("TriggerReportAggregateThread - ReportEmail")
                 report_email.save_raw()
-
+                logger.info("TriggerReportAggregateThread - save_raw")
                 report_email.aggregate()
+                logger.info("TriggerReportAggregateThread - aggregate")
             statsd_incr('convapi.aggregated_emails')
             self.report_log.state = constants.GAReportState.SUCCESS
             self.report_log.save()
