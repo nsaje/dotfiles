@@ -21,8 +21,8 @@ logger = logging.getLogger(__name__)
 def too_many_errors(*errors):
     errors_count = 0
     for error_list in errors:
-        errors_count = len(error_list)
-    return errors_count <= constants.ALLOWED_ERRORS_COUNT
+        errors_count += len(error_list)
+    return errors_count > constants.ALLOWED_ERRORS_COUNT
 
 def ad_group_specified_errors(csvreport):
     errors = []
@@ -103,8 +103,8 @@ def mailgun_gareps(request):
                 message += landing_url + '\n'
 
         if too_many_errors(ad_group_errors, media_source_errors):
-            logger.warning(message)
-            report_log.add_error(message)
+            logger.warning("Too many errors in ad_group_errors and media_source_errors lists.")
+            report_log.add_error("Too many errors in urls. Cannot recognize adgroup and media sources for some urls:\n %s \n\n %s" % ('\n'.join(ad_group_errors), '\n'.join(media_source_errors)))
             report_log.state = constants.GAReportState.FAILED
             report_log.save()
             return HttpResponse(status=406)

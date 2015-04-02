@@ -38,8 +38,8 @@ class GAReportsAggregationTest(TestCase):
                          self.csvreport_errors.is_media_source_specified())
 
     def test_too_many_errors(self):
-        self.assertTrue(convapi.views.too_many_errors(['error-url.com', 'error-url1.com']))
-        self.assertFalse(convapi.views.too_many_errors(['error-url.com', 'error-url1.com1', 'error-url2.com']))
+        self.assertFalse(convapi.views.too_many_errors(['error-url.com', 'error-url1.com']))
+        self.assertTrue(convapi.views.too_many_errors(['error-url.com', 'error-url1.com1', 'error-url2.com']))
 
     def test_ad_group_specified_errors(self):
         self.assertEqual(['/lasko?_z1_a&_z1_msid=yahoo.com&_z1_kid=beer'],
