@@ -103,6 +103,7 @@ def mailgun_gareps(request):
             for landing_url in media_source_errors:
                 message += landing_url + '\n'
 
+        logging.info("AD GROUP AND MEDIA SOURCE ERRORS: %s\n%s" %  ('\n'.join(ad_group_errors), '\n'.join(media_source_errors)))
         if too_many_errors(ad_group_errors, media_source_errors):
             logger.warning("Too many errors in ad_group_errors and media_source_errors lists.")
             report_log.add_error("Too many errors in urls. Cannot recognize adgroup and media sources for some urls:\n %s \n\n %s" % ('\n'.join(ad_group_errors), '\n'.join(media_source_errors)))
