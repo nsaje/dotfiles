@@ -98,7 +98,7 @@ def mailgun_gareps(request):
                 message += landing_url + '\n'
 
         if media_source_errors is not []:
-            message = +'\nERROR: not all landing page urls have a media source specified\n'
+            message += '\nERROR: not all landing page urls have a media source specified\n'
             for landing_url in media_source_errors:
                 message += landing_url + '\n'
 
