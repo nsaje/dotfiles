@@ -165,30 +165,29 @@ class TriggerReportAggregateThread(Thread):
         self.report_log = report_log
 
     def run(self):
-        with transaction.atomic():
-            try:
-                for ad_group_report in self.csvreport.split_by_ad_group():
-                    time.sleep(0)  # Makes greenlet yield control to prevent blocking
+        try:
+            for ad_group_report in self.csvreport.split_by_ad_group():
+                time.sleep(0)  # Makes greenlet yield control to prevent blocking
 
-                    self.report_log.add_ad_group_id(ad_group_report.get_ad_group_id())
+                self.report_log.add_ad_group_id(ad_group_report.get_ad_group_id())
 
-                    report_email = ReportEmail(
-                        sender=self.sender,
-                        recipient=self.recipient,
-                        subject=self.subject,
-                        date=self.date,
-                        text=self.text,
-                        report=ad_group_report,
-                        report_log=self.report_log
-                    )
+                report_email = ReportEmail(
+                    sender=self.sender,
+                    recipient=self.recipient,
+                    subject=self.subject,
+                    date=self.date,
+                    text=self.text,
+                    report=ad_group_report,
+                    report_log=self.report_log
+                )
 
-                    report_email.save_raw()
+                report_email.save_raw()
 
-                    report_email.aggregate()
-                statsd_incr('convapi.aggregated_emails')
-                self.report_log.state = constants.GAReportState.SUCCESS
-                self.report_log.save()
-            except Exception as e:
-                self.report_log.add_error(e.message)
-                self.report_log.state = constants.GAReportState.FAILED
-                self.report_log.save()
+                report_email.aggregate()
+            statsd_incr('convapi.aggregated_emails')
+            self.report_log.state = constants.GAReportState.SUCCESS
+            self.report_log.save()
+        except Exception as e:
+            self.report_log.add_error(e.message)
+            self.report_log.state = constants.GAReportState.FAILED
+            self.report_log.save()
