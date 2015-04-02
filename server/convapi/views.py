@@ -89,7 +89,7 @@ def mailgun_gareps(request):
         csvreport = CsvReport(content, report_log)
 
         ad_group_errors = ad_group_specified_errors(csvreport)
-        media_source_errors = ad_group_specified_errors(csvreport)
+        media_source_errors = media_source_specified_errors(csvreport)
 
         message = ''
         if len(ad_group_errors) > 0:
