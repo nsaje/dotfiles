@@ -64,6 +64,7 @@ def mailgun_gareps(request):
         report_log = models.GAReportLog()
         report_log.email_subject = request.POST['subject']
         report_log.from_address = request.POST['from']
+        report_log.state = constants.GAReportState.RECEIVED
 
         if int(request.POST.get('attachment-count', 0)) != 1:
             logger.warning('ERROR: single attachment expected')
@@ -109,7 +110,8 @@ def mailgun_gareps(request):
             report_log.save()
             return HttpResponse(status=406)
 
-        store_to_s3(csvreport.get_date(), filename, content)
+        csvreport_date = csvreport.get_date()
+        store_to_s3(csvreport_date, filename, content)
 
         if len(csvreport.get_entries()) == 0:
             logger.warning('Report is empty (has no entries)')
@@ -118,6 +120,11 @@ def mailgun_gareps(request):
             report_log.state = constants.GAReportState.EMPTY_REPORT
             report_log.save()
             return HttpResponse(status=200)
+
+        report_log.sender = request.POST['sender']
+        report_log.email_subject = request.POST['subject']
+        report_log.for_date = csvreport_date
+        report_log.save()
 
         TriggerReportAggregateThread(
             csvreport=csvreport,
