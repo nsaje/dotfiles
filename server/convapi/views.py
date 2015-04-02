@@ -166,6 +166,7 @@ class TriggerReportAggregateThread(Thread):
         self.report_log = report_log
 
     def run(self):
+        logger.info("TriggerReportAggregateThread")
         try:
             for ad_group_report in self.csvreport.split_by_ad_group():
                 time.sleep(0)  # Makes greenlet yield control to prevent blocking
@@ -188,7 +189,10 @@ class TriggerReportAggregateThread(Thread):
             statsd_incr('convapi.aggregated_emails')
             self.report_log.state = constants.GAReportState.SUCCESS
             self.report_log.save()
+            logger.info("SUCCESS")
         except Exception as e:
             self.report_log.add_error(e.message)
             self.report_log.state = constants.GAReportState.FAILED
             self.report_log.save()
+            logger.info("EXCEPTION")
+        logger.info("TriggerReportAggregateThread")
