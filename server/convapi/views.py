@@ -18,6 +18,27 @@ from convapi import constants
 logger = logging.getLogger(__name__)
 
 
+def too_many_errors(*errors):
+    errors_count = 0
+    for error_list in errors:
+        errors_count = len(error_list)
+    return errors_count <= constants.ALLOWED_ERRORS_COUNT
+
+def ad_group_specified_errors(csvreport):
+    errors = []
+    is_ad_group_specified, ad_group_not_specified = csvreport.is_ad_group_specified()
+    if not is_ad_group_specified:
+        errors.extend(ad_group_not_specified)
+    return errors
+
+def media_source_specified_errors(csvreport):
+    errors = []
+    is_media_source_specified, media_source_not_specified = csvreport.is_media_source_specified()
+    if not is_media_source_specified:
+        errors.extend(media_source_not_specified)
+    return errors
+
+
 @csrf_exempt
 @transaction.atomic
 def mailgun_gareps(request):
@@ -67,16 +88,21 @@ def mailgun_gareps(request):
 
         csvreport = CsvReport(content, report_log)
 
-        if not csvreport.is_ad_group_specified():
-            message = 'ERROR: not all landing page urls have a valid ad_group specified'
-            logger.warning(message)
-            report_log.add_error(message)
-            report_log.state = constants.GAReportState.FAILED
-            report_log.save()
-            return HttpResponse(status=406)
+        ad_group_errors = ad_group_specified_errors(csvreport)
+        media_source_errors = ad_group_specified_errors(csvreport)
 
-        if not csvreport.is_media_source_specified():
-            message = 'ERROR: not all landing page urls have a media source specified'
+        message = ''
+        if ad_group_errors is not []:
+            message += '\nERROR: not all landing page urls have a valid ad_group specified:\n'
+            for landing_url in ad_group_errors:
+                message += landing_url + '\n'
+
+        if media_source_errors is not []:
+            message = +'\nERROR: not all landing page urls have a media source specified\n'
+            for landing_url in media_source_errors:
+                message += landing_url + '\n'
+
+        if too_many_errors(ad_group_errors, media_source_errors):
             logger.warning(message)
             report_log.add_error(message)
             report_log.state = constants.GAReportState.FAILED

@@ -2,6 +2,8 @@ import logging
 import os.path
 import hashlib
 
+import exc
+from constants import ALLOWED_ERRORS_COUNT
 from parse import LandingPageUrl
 from models import RawPostclickStats, RawGoalConversionStats
 from resolve import resolve_source, resolve_article
@@ -14,7 +16,6 @@ import reports.update
 logger = logging.getLogger(__name__)
 
 S3_REPORT_KEY_FORMAT = 'conversionreports/{date}/{filename}'
-
 
 class ReportEmail(object):
 
@@ -94,12 +95,14 @@ class ReportEmail(object):
         source_resolve_lookup = {}
         article_resolve_lookup = {}
 
+        errors_count = 0
         for entry in self.report.get_entries():
             url = LandingPageUrl(entry['Landing Page'])
             if url.source_param not in source_resolve_lookup:
                 source_resolve_lookup[url.source_param] = resolve_source(url.source_param)
             source = source_resolve_lookup[url.source_param]
             if source is None:
+                errors_count += 1
                 logger.warning('ERROR: Cannot resolve source for (ad_group=%s, sender=%s,\
 recipient=%s, subject=%s, maildate=%s, \
 landing_page_url=%s',
@@ -111,7 +114,10 @@ landing_page_url=%s',
                     url.raw_url.decode('ascii', 'ignore')
                  )
                 self.report_log.add_error('Cannot resolve source for url=%s' % url.raw_url.decode('ascii', 'ignore'))
-                continue
+                if errors_count > ALLOWED_ERRORS_COUNT:
+                    raise exc.TooManyMissingSourcesException("There are too many sources missing in GA report.")
+                else:
+                    continue
 
             if url.raw_url not in article_resolve_lookup:
                 article_resolve_lookup[url.raw_url] = resolve_article(url.clean_url, url.ad_group_id, self.report.get_date(), source, self.report_log)

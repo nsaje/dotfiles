@@ -1,5 +1,6 @@
 from utils.constant_base import ConstantBase
 
+ALLOWED_ERRORS_COUNT = 2
 
 class GAReportState(ConstantBase):
     FAILED = -1
