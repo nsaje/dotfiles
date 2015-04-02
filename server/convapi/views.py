@@ -124,7 +124,6 @@ def mailgun_gareps(request):
         report_log.sender = request.POST['sender']
         report_log.email_subject = request.POST['subject']
         report_log.for_date = csvreport_date
-        report_log.save()
 
         TriggerReportAggregateThread(
             csvreport=csvreport,
