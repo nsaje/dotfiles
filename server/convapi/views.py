@@ -92,13 +92,13 @@ def mailgun_gareps(request):
         media_source_errors = ad_group_specified_errors(csvreport)
 
         message = ''
-        if ad_group_errors is not []:
+        if len(ad_group_errors) > 0:
             message += '\nERROR: not all landing page urls have a valid ad_group specified:\n'
             for landing_url in ad_group_errors:
                 message += landing_url + '\n'
 
-        if media_source_errors is not []:
-            message += '\nERROR: not all landing page urls have a media source specified\n'
+        if len(media_source_errors) > 0:
+            message += '\nERROR: not all landing page urls have a media source specified: \n'
             for landing_url in media_source_errors:
                 message += landing_url + '\n'
 
