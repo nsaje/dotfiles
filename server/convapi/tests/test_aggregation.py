@@ -34,7 +34,7 @@ class GAReportsAggregationTest(TestCase):
                          self.csvreport_errors.is_ad_group_specified())
 
     def test_is_media_source_specified(self):
-        self.assertEqual((False, ['/union?_z1_adgid=1&_z1_msid=', '/lasko?_z1_adgid=1&_z1_msid=']),
+        self.assertEqual((False, ['/lasko?_z1_adgid=1&_z1_msid=', '/lasko?_z1_adgid=1&_z1_msid=', '/union?_z1_adgid=1&_z1_msid=']),
                          self.csvreport_errors.is_media_source_specified())
 
     def test_too_many_errors(self):
@@ -46,7 +46,7 @@ class GAReportsAggregationTest(TestCase):
                          convapi.views.ad_group_specified_errors(self.csvreport_errors))
 
     def test_media_source_specified_errors(self):
-        self.assertEqual(['/union?_z1_adgid=1&_z1_msid=', '/lasko?_z1_adgid=1&_z1_msid='],
+        self.assertEqual(['/lasko?_z1_adgid=1&_z1_msid=', '/lasko?_z1_adgid=1&_z1_msid=', '/union?_z1_adgid=1&_z1_msid='],
                          convapi.views.media_source_specified_errors(self.csvreport_errors))
 
     def test_report_aggregation(self):

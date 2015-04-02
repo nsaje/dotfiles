@@ -29,7 +29,6 @@ def ad_group_specified_errors(csvreport):
     is_ad_group_specified, ad_group_not_specified = csvreport.is_ad_group_specified()
     if not is_ad_group_specified:
         errors.extend(ad_group_not_specified)
-    logging.info("ERRORS: %s" %  '\n'.join(errors))
     return errors
 
 def media_source_specified_errors(csvreport):
@@ -37,7 +36,6 @@ def media_source_specified_errors(csvreport):
     is_media_source_specified, media_source_not_specified = csvreport.is_media_source_specified()
     if not is_media_source_specified:
         errors.extend(media_source_not_specified)
-    logging.info("ERRORS: %s" %  '\n'.join(errors))
     return errors
 
 
