@@ -189,10 +189,13 @@ class TriggerReportAggregateThread(Thread):
                 logger.info("TriggerReportAggregateThread - save_raw")
                 report_email.aggregate()
                 logger.info("TriggerReportAggregateThread - aggregate")
+
             statsd_incr('convapi.aggregated_emails')
+            logger.info("TriggerReportAggregateThread - statsd")
             self.report_log.state = constants.GAReportState.SUCCESS
+            logger.info("TriggerReportAggregateThread - report_log.state")
             self.report_log.save()
-            logger.info("SUCCESS")
+            logger.info("TriggerReportAggregateThread - save")
         except Exception as e:
             self.report_log.add_error(e.message)
             self.report_log.state = constants.GAReportState.FAILED
