@@ -7,6 +7,7 @@ from constants import ALLOWED_ERRORS_COUNT
 from parse import LandingPageUrl
 from models import RawPostclickStats, RawGoalConversionStats
 from resolve import resolve_source, resolve_article
+from convapi import constants as convapi_constants
 
 import dash.models
 import reports.models
@@ -116,6 +117,9 @@ landing_page_url=%s',
                  )
                 self.report_log.add_error('Cannot resolve source for url=%s' % url.raw_url.decode('ascii', 'ignore'))
                 if errors_count > ALLOWED_ERRORS_COUNT:
+                    self.report_log = convapi_constants.GAReportState.FAILED
+                    self.report_log.add_error('There are too many errors in urls. Adgroup or sources missing in GA report.')
+                    self.report_log.save()
                     raise exc.TooManyMissingSourcesException("There are too many sources missing in GA report.")
                 else:
                     continue
