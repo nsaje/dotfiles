@@ -126,7 +126,6 @@ def mailgun_gareps(request):
         report_log.for_date = csvreport_date
         report_log.save()
 
-        logger.info("GA-TriggerReportAggregateThread")
         TriggerReportAggregateThread(
             csvreport=csvreport,
             sender=request.POST['sender'],
@@ -136,7 +135,6 @@ def mailgun_gareps(request):
             text=None,
             report_log=report_log
         ).start()
-        logger.info("GA-TriggerReportAggregateThread")
     except exc.EmptyReportException as e:
         logger.warning(e.message)
         statsd_incr('convapi.aggregated_emails')

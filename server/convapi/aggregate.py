@@ -206,29 +206,22 @@ bounced_visits=%s, pageviews=%s, duration=%s',
                     'conversions_value_cc': goal_stats['conversions_value_cc']
                 })
 
-        logger.info("GA-assert - before")
         assert len(ad_group_id_set) == 1
         assert len(date_set) == 1
-        logger.info("GA-assert - after")
+
         dt = list(date_set)[0]
         ad_group = dash.models.AdGroup.objects.get(id=list(ad_group_id_set)[0])
-        logger.info("GA-stats_update_adgroup_postclick - before")
         reports.update.stats_update_adgroup_postclick(
             datetime=dt,
             ad_group=ad_group,
             rows=stat_rows
         )
-        logger.info("GA-stats_update_adgroup_postclick - after")
-        logger.info("GA-goals_update_adgroup - before")
         reports.update.goals_update_adgroup(
             datetime=dt,
             ad_group=ad_group,
             rows=conv_rows
         )
-        logger.info("GA-goals_update_adgroup - after")
-        logger.info("GA-add_visits_imported - before")
         self.report_log.add_visits_imported(sum(d['visits'] for d in data.values()))
-        logger.info("GA-add_visits_imported - after")
 
     def save_raw(self):
         goal_fields = self.get_goal_fields()

@@ -148,7 +148,6 @@ def stats_update_adgroup_postclick(datetime, ad_group, rows):
     # refresh the corresponding adgroup-level pre-aggregations
     reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group)
 
-
 def stats_update_adgroup_all(datetime, ad_group, rows):
     '''
     rows is a list of dictionaries of the form
