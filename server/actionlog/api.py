@@ -140,7 +140,7 @@ def send_delayed_actionlogs(ad_group_sources=None):
             continue
 
         logger.info(
-            'Change action log %s state. Updating state to: %s.',
+            'Sending delayed action log %s. Updating state to: %s.',
             actionlog,
             constants.ActionState.WAITING
         )
