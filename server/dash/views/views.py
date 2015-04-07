@@ -439,18 +439,33 @@ class AdGroupSources(api_common.BaseApiView):
 
         ad_group_source.save(request)
 
-        name = 'ONE: {} / {} / {} / {} / {}'.format(
-            ad_group.campaign.account.name.encode('utf-8'),
-            ad_group.campaign.name.encode('utf-8'),
-            ad_group.name.encode('utf-8'),
+        name = self._get_name(
+            ad_group.campaign.account.name,
+            ad_group.campaign.name,
+            ad_group.name,
             ad_group.id,
-            source.name.encode('utf-8')
+            source.name
         )
 
         actionlog.api.create_campaign(ad_group_source, name, request)
         self._add_to_history(ad_group_source, request)
 
         return self.create_api_response(None)
+
+    def _get_name(self, account_name, campaign_name, ad_group_name, ad_group_id, source_name):
+        return u'ONE: {} / {} / {} / {} / {}'.format(
+            self._shorten_name(account_name),
+            self._shorten_name(campaign_name),
+            self._shorten_name(ad_group_name),
+            ad_group_id,
+            source_name
+        )
+
+    def _shorten_name(self, name):
+        while len(name) > 22:
+            name = name.rsplit(None, 1)[0]
+
+        return name
 
     def _add_to_history(self, ad_group_source, request):
         changes_text = '{} campaign created.'.format(ad_group_source.source.name)
