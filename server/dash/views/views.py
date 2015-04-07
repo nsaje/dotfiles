@@ -463,7 +463,7 @@ class AdGroupSources(api_common.BaseApiView):
 
     def _shorten_name(self, name):
         while len(name) > 22:
-            name = name.rsplit(' ', 1)[0]
+            name = name.rsplit(None, 1)[0]
 
         return name
 
