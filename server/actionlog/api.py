@@ -77,7 +77,7 @@ def set_ad_group_source_settings(changes, ad_group_source, request, order=None):
 
     if len(similar_waiting_actions) > models.MAX_SIMILAR_WAITING_ACTIONS:
         action.state = constants.ActionState.DELAYED
-        action.expiration = None
+        action.expiration_dt = None
         action.save(request)
         logger.info("There is one or more similar action(s) in progress. Action (%s) will be called from it's callback.", action.id)
         return
@@ -132,7 +132,7 @@ def send_delayed_actionlogs(ad_group_sources=None):
     ).order_by('created_dt')
 
     if ad_group_sources is not None:
-        delayed_actionlogs.filter(ad_group_source__in=ad_group_sources)
+        delayed_actionlogs = delayed_actionlogs.filter(ad_group_source__in=ad_group_sources)
 
     processed_adgroupsource_ids = set()
     for actionlog in delayed_actionlogs:
@@ -140,7 +140,7 @@ def send_delayed_actionlogs(ad_group_sources=None):
             continue
 
         logger.info(
-            'Action log %s delayed state expired. Updating state to: %s.',
+            'Change action log %s state. Updating state to: %s.',
             actionlog,
             constants.ActionState.WAITING
         )
