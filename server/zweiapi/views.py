@@ -140,8 +140,6 @@ def _process_zwei_response(action, data, request):
         conf = action.payload['args']['conf']
 
         dashapi.update_ad_group_source_state(ad_group_source, conf)
-        actionlog.api.send_delayed_actionlogs([ad_group_source])
-
     elif action.action == actionlogconstants.Action.CREATE_CAMPAIGN:
         dashapi.update_campaign_key(
             action.ad_group_source,
@@ -174,6 +172,7 @@ def _process_zwei_response(action, data, request):
     action.state = actionlogconstants.ActionState.SUCCESS
     action.save()
 
+    actionlog.api.send_delayed_actionlogs([ad_group_source])
 
 def _has_changed(data, ad_group, source, date):
     if not settings.USE_HASH_CACHE:
