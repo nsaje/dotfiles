@@ -208,6 +208,7 @@ bounced_visits=%s, pageviews=%s, duration=%s',
 
         assert len(ad_group_id_set) == 1
         assert len(date_set) == 1
+
         dt = list(date_set)[0]
         ad_group = dash.models.AdGroup.objects.get(id=list(ad_group_id_set)[0])
         reports.update.stats_update_adgroup_postclick(
@@ -220,9 +221,7 @@ bounced_visits=%s, pageviews=%s, duration=%s',
             ad_group=ad_group,
             rows=conv_rows
         )
-
         self.report_log.add_visits_imported(sum(d['visits'] for d in data.values()))
-
 
     def save_raw(self):
         goal_fields = self.get_goal_fields()
