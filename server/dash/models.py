@@ -514,6 +514,18 @@ class SourceType(models.Model):
     def has_3rd_party_dashboard(self):
         return self.available_actions.filter(action=constants.SourceAction.HAS_3RD_PARTY_DASHBOARD).exists()
 
+    def can_modify_start_date(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_START_DATE).exists()
+
+    def can_modify_end_date(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_END_DATE).exists()
+
+    def can_modify_targeting(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_TARGETING).exists()
+
+    def can_modify_tracking_codes(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_TRACKING_CODES).exists()
+
     def __str__(self):
         return self.type
 
