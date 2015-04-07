@@ -186,6 +186,9 @@ class TriggerReportAggregateThread(Thread):
             statsd_incr('convapi.aggregated_emails')
             self.report_log.state = constants.GAReportState.SUCCESS
             self.report_log.save()
+        except BaseException as e:
+            logger.exception('Base exception occured')
+            raise
         except Exception as e:
             self.report_log.add_error(e.message)
             self.report_log.state = constants.GAReportState.FAILED
