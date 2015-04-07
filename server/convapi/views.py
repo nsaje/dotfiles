@@ -166,6 +166,7 @@ class TriggerReportAggregateThread(Thread):
 
     def run(self):
         try:
+            logger.info("GA-aggregate - started")
             for ad_group_report in self.csvreport.split_by_ad_group():
                 time.sleep(0)  # Makes greenlet yield control to prevent blocking
                 self.report_log.add_ad_group_id(ad_group_report.get_ad_group_id())
@@ -187,6 +188,7 @@ class TriggerReportAggregateThread(Thread):
             statsd_incr('convapi.aggregated_emails')
             self.report_log.state = constants.GAReportState.SUCCESS
             self.report_log.save()
+            logger.info("GA-aggregate - finished")
         except BaseException as e:
             logger.exception('Base exception occured')
             raise
