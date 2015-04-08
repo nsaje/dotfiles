@@ -43,7 +43,7 @@ class ContentAdsApiTestCase(TestCase):
 
         content_ad_source = dash.models.ContentAdSource.objects.get(id=1)
         ad_group_source = dash.models.AdGroupSource.objects.get(
-            ad_group=content_ad_source.content_ad.article.ad_group,
+            ad_group=content_ad_source.content_ad.ad_group,
             source=content_ad_source.source
         )
 
@@ -77,9 +77,9 @@ class ContentAdsApiTestCase(TestCase):
                 'content_ad_id': content_ad_source.get_source_id(),
                 'content_ad': {
                     'state': dash.constants.ContentAdSourceState.ACTIVE,
+                    'title': content_ad_source.content_ad.title,
+                    'url': content_ad_source.content_ad.url,
                     'submission_status': dash.constants.ContentAdSubmissionStatus.PENDING,
-                    'title': content_ad_source.content_ad.article.title,
-                    'url': content_ad_source.content_ad.article.url,
                     'image_id': content_ad_source.content_ad.image_id,
                     'image_width': content_ad_source.content_ad.image_width,
                     'image_height': content_ad_source.content_ad.image_height,
@@ -101,7 +101,7 @@ class ContentAdsApiTestCase(TestCase):
 
         content_ad_source = dash.models.ContentAdSource.objects.get(id=2)
         ad_group_source = dash.models.AdGroupSource.objects.get(
-            ad_group=content_ad_source.content_ad.article.ad_group,
+            ad_group=content_ad_source.content_ad.ad_group,
             source=content_ad_source.source
         )
 

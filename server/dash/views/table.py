@@ -944,7 +944,7 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
         size = max(min(int(size or 5), 50), 1)
 
         content_ads = models.ContentAd.objects.filter(
-            article__ad_group=ad_group).order_by(helpers.transform_content_ad_order(order))
+            ad_group=ad_group).order_by(helpers.transform_content_ad_order(order))
 
         page_content_ads, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
             content_ads, page, size)
@@ -991,7 +991,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         size = max(min(int(size or 5), 50), 1)
 
         content_ads = models.ContentAd.objects.filter(
-            article__ad_group=ad_group).order_by(helpers.transform_content_ad_order(order))
+            ad_group=ad_group).order_by(helpers.transform_content_ad_order(order))
 
         page_content_ads, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
             content_ads, page, size)
@@ -1025,11 +1025,11 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 status_setting = constants.ContentAdSourceState.INACTIVE
 
             url = 'http://www.example.com/{}/{}'.format(ad_group.name, content_ad.id)\
-                if ad_group in models.AdGroup.demo_objects.all() else content_ad.article.url
+                if ad_group in models.AdGroup.demo_objects.all() else content_ad.url
 
             rows.append({
                 'id': str(content_ad.id),
-                'title': content_ad.article.title,
+                'title': content_ad.title,
                 'url': url,
                 'batch_name': content_ad.batch.name,
                 'upload_time': content_ad.batch.created_dt,

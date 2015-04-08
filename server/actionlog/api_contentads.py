@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 def init_insert_content_ad_action(content_ad_source, request):
-    ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.article.ad_group,
+    ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.ad_group,
                                                             source=content_ad_source.source)
     settings = ad_group_source.ad_group.get_current_settings()
 
@@ -29,9 +29,9 @@ def init_insert_content_ad_action(content_ad_source, request):
         'content_ad_id': content_ad_source.get_source_id(),
         'content_ad': {
             'state': content_ad_source.state,
+            'title': content_ad_source.content_ad.title,
+            'url': content_ad_source.content_ad.url,
             'submission_status': content_ad_source.submission_status,
-            'title': content_ad_source.content_ad.article.title,
-            'url': content_ad_source.content_ad.article.url,
             'image_id': content_ad_source.content_ad.image_id,
             'image_width': content_ad_source.content_ad.image_width,
             'image_height': content_ad_source.content_ad.image_height,
@@ -63,7 +63,7 @@ def init_insert_content_ad_action(content_ad_source, request):
 
 
 def init_update_content_ad_action(content_ad_source, request):
-    ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.article.ad_group,
+    ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.ad_group,
                                                             source=content_ad_source.source)
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key,

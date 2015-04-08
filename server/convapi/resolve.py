@@ -18,10 +18,7 @@ def resolve_article(clean_url, ad_group, date, source, report_log):
     if ad_group is None or source is None:
         return None
 
-    articles = list(dash.models.Article.objects.filter(
-        ad_group=ad_group,
-        content_ad__isnull=True
-    ))
+    articles = list(dash.models.Article.objects.filter(ad_group=ad_group))
 
     url = clean_url
     candidates = filter(lambda a: _urls_match(a.url, url), articles)

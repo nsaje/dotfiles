@@ -843,8 +843,8 @@ class UpsertReportsTestCase(test.TestCase):
 
 class ArticleReconciliationTestCase(test.TestCase):
 
-    def _mocked_create(url, title, ad_group, content_ad=None):
-        dashmodels.Article(url=url, title=title, ad_group=ad_group, content_ad=content_ad).save()
+    def _mocked_create(url, title, ad_group):
+        dashmodels.Article(url=url, title=title, ad_group=ad_group).save()
         raise IntegrityError
 
     @patch('dash.models.Article.objects.create', _mocked_create)
@@ -873,7 +873,7 @@ class ArticleReconciliationTestCase(test.TestCase):
 
         cleaned_url, _ = clean_url(raw_url)
         with self.assertRaises(ObjectDoesNotExist):
-            article = dashmodels.Article.objects.get(url=cleaned_url, title=title, ad_group=ad_group)
+            dashmodels.Article.objects.get(url=cleaned_url, title=title, ad_group=ad_group)
 
         articles = dashapi.reconcile_articles(ad_group, [{'url': raw_url, 'title': title}])
 

@@ -27,7 +27,7 @@ def add_content_ad_sources(ad_group_source, request=None):
     if not ad_group_source.source.can_manage_content_ads():
         return
 
-    content_ads = models.ContentAd.objects.filter(article__ad_group=ad_group_source.ad_group)
+    content_ads = models.ContentAd.objects.filter(ad_group=ad_group_source.ad_group)
 
     for content_ad in content_ads:
         try:
@@ -127,7 +127,7 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
     content_ad_sources = {}
 
     for content_ad_source in models.ContentAdSource.objects.filter(
-            content_ad__article__ad_group=ad_group_source.ad_group,
+            content_ad__ad_group=ad_group_source.ad_group,
             source=ad_group_source.source):
         content_ad_sources[content_ad_source.get_source_id()] = content_ad_source
 
@@ -193,7 +193,7 @@ def reconcile_articles(ad_group, raw_articles):
 
         raw_article['url'] = clean_url(url)[0]
 
-    articles = list(models.Article.objects.filter(ad_group=ad_group, content_ad__isnull=True))
+    articles = list(models.Article.objects.filter(ad_group=ad_group))
 
     url_title_article = {}
     for article in articles:
@@ -209,14 +209,14 @@ def reconcile_articles(ad_group, raw_articles):
                 # the query in case IntegrityError happens.
                 # See https://docs.djangoproject.com/en/1.7/topics/db/transactions/#controlling-transactions-explicitly
                 with transaction.atomic():
-                    article = models.Article.objects.create(ad_group=ad_group, url=url, title=title, content_ad=None)
+                    article = models.Article.objects.create(ad_group=ad_group, url=url, title=title)
             except IntegrityError:
                 logger.info(
                     u'Integrity error upon inserting article: title = {title}, url = {url}, ad group id = {ad_group_id}. '
                     u'Using existing article.'.
                     format(title=title, url=url, ad_group_id=ad_group.id)
                 )
-                article = models.Article.objects.get(ad_group=ad_group, url=url, title=title, content_ad=None)
+                article = models.Article.objects.get(ad_group=ad_group, url=url, title=title)
             url_title_article[(url, title)] = article
         reconciled_articles.append(article)
 

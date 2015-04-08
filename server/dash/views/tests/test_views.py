@@ -226,15 +226,15 @@ class ProcessUploadThreadTest(TestCase):
 
         mock_process_image.assert_called_with(image_url, crop_areas)
 
-        article = models.Article.objects.latest()
-        self.assertEqual(article.title, title)
-        self.assertEqual(article.url, url)
-        self.assertEqual(article.ad_group_id, ad_group_id)
+        content_ad = models.ContentAd.objects.latest()
+        self.assertEqual(content_ad.title, title)
+        self.assertEqual(content_ad.url, url)
+        self.assertEqual(content_ad.ad_group_id, ad_group_id)
 
-        self.assertEqual(article.content_ad.image_id, image_id)
-        self.assertEqual(article.content_ad.image_width, image_width)
-        self.assertEqual(article.content_ad.image_height, image_height)
-        self.assertEqual(article.content_ad.batch.name, batch_name)
+        self.assertEqual(content_ad.image_id, image_id)
+        self.assertEqual(content_ad.image_width, image_width)
+        self.assertEqual(content_ad.image_height, image_height)
+        self.assertEqual(content_ad.batch.name, batch_name)
 
         self.assertEqual(prev_actionlog_count, actionlog.models.ActionLog.objects.all().count())
         self.assertEqual(batch.status, constants.UploadBatchStatus.DONE)
