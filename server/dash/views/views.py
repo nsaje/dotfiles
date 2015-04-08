@@ -38,6 +38,8 @@ from dash import image_helper
 
 logger = logging.getLogger(__name__)
 
+SHORT_NAME_MAX_LENGTH = 22
+
 
 def create_name(objects, name):
     objects = objects.filter(name__regex=r'^{}( [0-9]+)?$'.format(name))
@@ -462,7 +464,12 @@ class AdGroupSources(api_common.BaseApiView):
         )
 
     def _shorten_name(self, name):
-        while len(name) > 22:
+        # if the first word is too long, cut it
+        words = name.split()
+        if not len(words) or len(words[0]) > SHORT_NAME_MAX_LENGTH:
+            return name[:SHORT_NAME_MAX_LENGTH]
+
+        while len(name) > SHORT_NAME_MAX_LENGTH:
             name = name.rsplit(None, 1)[0]
 
         return name
