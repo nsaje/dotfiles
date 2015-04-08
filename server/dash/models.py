@@ -1074,12 +1074,18 @@ class UploadBatch(models.Model):
 
 
 class ContentAd(models.Model):
+    url = models.CharField(max_length=2048, editable=False)
+    title = models.CharField(max_length=256, editable=False)
+
+    ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT)
+    batch = models.ForeignKey(UploadBatch, on_delete=models.PROTECT)
+    sources = models.ManyToManyField(Source, through='ContentAdSource')
+
     image_id = models.CharField(max_length=256, editable=False, null=True)
     image_width = models.PositiveIntegerField(null=True)
     image_height = models.PositiveIntegerField(null=True)
-    batch = models.ForeignKey(UploadBatch, on_delete=models.PROTECT, null=True)
 
-    sources = models.ManyToManyField(Source, through='ContentAdSource')
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
     def get_image_url(self, width, height):
         if self.image_id is None:
@@ -1096,6 +1102,9 @@ class ContentAd(models.Model):
             self.image_id,
             '{}x{}.jpg'.format(width, height)
         ])
+
+    class Meta:
+        get_latest_by = 'created_dt'
 
 
 class ContentAdSource(models.Model):
@@ -1141,10 +1150,9 @@ class Article(models.Model):
     ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
-    content_ad = models.OneToOneField(ContentAd, on_delete=models.PROTECT, null=True)
-
     class Meta:
         get_latest_by = 'created_dt'
+        unique_together = ('ad_group', 'url', 'title')
 
 
 class CampaignBudgetSettings(models.Model):
