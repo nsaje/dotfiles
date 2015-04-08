@@ -1,7 +1,7 @@
 /*global $,oneApp*/
 "use strict";
 
-oneApp.directive('zemInternalFeature', function(config) {
+oneApp.directive('zemInternalFeature', function() {
     return {
         restrict: 'E',
         scope: {

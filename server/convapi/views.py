@@ -18,6 +18,27 @@ from convapi import constants
 logger = logging.getLogger(__name__)
 
 
+def too_many_errors(*errors):
+    errors_count = 0
+    for error_list in errors:
+        errors_count += len(error_list)
+    return errors_count > constants.ALLOWED_ERRORS_COUNT
+
+def ad_group_specified_errors(csvreport):
+    errors = []
+    is_ad_group_specified, ad_group_not_specified = csvreport.is_ad_group_specified()
+    if not is_ad_group_specified:
+        errors.extend(ad_group_not_specified)
+    return errors
+
+def media_source_specified_errors(csvreport):
+    errors = []
+    is_media_source_specified, media_source_not_specified = csvreport.is_media_source_specified()
+    if not is_media_source_specified:
+        errors.extend(media_source_not_specified)
+    return errors
+
+
 @csrf_exempt
 @transaction.atomic
 def mailgun_gareps(request):
@@ -43,6 +64,7 @@ def mailgun_gareps(request):
         report_log = models.GAReportLog()
         report_log.email_subject = request.POST['subject']
         report_log.from_address = request.POST['from']
+        report_log.state = constants.GAReportState.RECEIVED
 
         if int(request.POST.get('attachment-count', 0)) != 1:
             logger.warning('ERROR: single attachment expected')
@@ -67,23 +89,29 @@ def mailgun_gareps(request):
 
         csvreport = CsvReport(content, report_log)
 
-        if not csvreport.is_ad_group_specified():
-            message = 'ERROR: not all landing page urls have a valid ad_group specified'
-            logger.warning(message)
-            report_log.add_error(message)
+        ad_group_errors = ad_group_specified_errors(csvreport)
+        media_source_errors = media_source_specified_errors(csvreport)
+
+        message = ''
+        if len(ad_group_errors) > 0:
+            message += '\nERROR: not all landing page urls have a valid ad_group specified:\n'
+            for landing_url in ad_group_errors:
+                message += landing_url + '\n'
+
+        if len(media_source_errors) > 0:
+            message += '\nERROR: not all landing page urls have a media source specified: \n'
+            for landing_url in media_source_errors:
+                message += landing_url + '\n'
+
+        if too_many_errors(ad_group_errors, media_source_errors):
+            logger.warning("Too many errors in ad_group_errors and media_source_errors lists.")
+            report_log.add_error("Too many errors in urls. Cannot recognize adgroup and media sources for some urls:\n %s \n\n %s" % ('\n'.join(ad_group_errors), '\n'.join(media_source_errors)))
             report_log.state = constants.GAReportState.FAILED
             report_log.save()
             return HttpResponse(status=406)
 
-        if not csvreport.is_media_source_specified():
-            message = 'ERROR: not all landing page urls have a media source specified'
-            logger.warning(message)
-            report_log.add_error(message)
-            report_log.state = constants.GAReportState.FAILED
-            report_log.save()
-            return HttpResponse(status=406)
-
-        store_to_s3(csvreport.get_date(), filename, content)
+        csvreport_date = csvreport.get_date()
+        store_to_s3(csvreport_date, filename, content)
 
         if len(csvreport.get_entries()) == 0:
             logger.warning('Report is empty (has no entries)')
@@ -92,6 +120,11 @@ def mailgun_gareps(request):
             report_log.state = constants.GAReportState.EMPTY_REPORT
             report_log.save()
             return HttpResponse(status=200)
+
+        report_log.sender = request.POST['sender']
+        report_log.email_subject = request.POST['subject']
+        report_log.for_date = csvreport_date
+        report_log.save()
 
         TriggerReportAggregateThread(
             csvreport=csvreport,
@@ -133,9 +166,9 @@ class TriggerReportAggregateThread(Thread):
 
     def run(self):
         try:
+            logger.info("GA-aggregate - started")
             for ad_group_report in self.csvreport.split_by_ad_group():
                 time.sleep(0)  # Makes greenlet yield control to prevent blocking
-
                 self.report_log.add_ad_group_id(ad_group_report.get_ad_group_id())
 
                 report_email = ReportEmail(
@@ -147,13 +180,18 @@ class TriggerReportAggregateThread(Thread):
                     report=ad_group_report,
                     report_log=self.report_log
                 )
-
                 report_email.save_raw()
-
+                logger.info("GA-aggregate - before")
                 report_email.aggregate()
+                logger.info("GA-aggregate - after")
+
             statsd_incr('convapi.aggregated_emails')
             self.report_log.state = constants.GAReportState.SUCCESS
             self.report_log.save()
+            logger.info("GA-aggregate - finished")
+        except BaseException as e:
+            logger.exception('Base exception occured')
+            raise
         except Exception as e:
             self.report_log.add_error(e.message)
             self.report_log.state = constants.GAReportState.FAILED

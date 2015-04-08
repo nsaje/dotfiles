@@ -38,6 +38,8 @@ from dash import image_helper
 
 logger = logging.getLogger(__name__)
 
+SHORT_NAME_MAX_LENGTH = 22
+
 
 def create_name(objects, name):
     objects = objects.filter(name__regex=r'^{}( [0-9]+)?$'.format(name))
@@ -372,6 +374,7 @@ class AvailableSources(api_common.BaseApiView):
             sources.append({
                 'id': str(source.id),
                 'name': source.name,
+                'deprecated': source.deprecated,
             })
 
         return self.create_api_response({
@@ -438,18 +441,38 @@ class AdGroupSources(api_common.BaseApiView):
 
         ad_group_source.save(request)
 
-        name = 'ONE: {} / {} / {} / {} / {}'.format(
-            ad_group.campaign.account.name.encode('utf-8'),
-            ad_group.campaign.name.encode('utf-8'),
-            ad_group.name.encode('utf-8'),
+        name = self._get_name(
+            ad_group.campaign.account.name,
+            ad_group.campaign.name,
+            ad_group.name,
             ad_group.id,
-            source.name.encode('utf-8')
+            source.name
         )
 
         actionlog.api.create_campaign(ad_group_source, name, request)
         self._add_to_history(ad_group_source, request)
 
         return self.create_api_response(None)
+
+    def _get_name(self, account_name, campaign_name, ad_group_name, ad_group_id, source_name):
+        return u'ONE: {} / {} / {} / {} / {}'.format(
+            self._shorten_name(account_name),
+            self._shorten_name(campaign_name),
+            self._shorten_name(ad_group_name),
+            ad_group_id,
+            source_name
+        )
+
+    def _shorten_name(self, name):
+        # if the first word is too long, cut it
+        words = name.split()
+        if not len(words) or len(words[0]) > SHORT_NAME_MAX_LENGTH:
+            return name[:SHORT_NAME_MAX_LENGTH]
+
+        while len(name) > SHORT_NAME_MAX_LENGTH:
+            name = name.rsplit(None, 1)[0]
+
+        return name
 
     def _add_to_history(self, ad_group_source, request):
         changes_text = '{} campaign created.'.format(ad_group_source.source.name)

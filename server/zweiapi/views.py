@@ -26,6 +26,8 @@ logger = logging.getLogger(__name__)
 
 @csrf_exempt
 def zwei_callback(request, action_id):
+    logger.info('Received zwei callback: %s', action_id)
+
     _validate_callback(request, action_id)
     action = _get_action(action_id)
 
@@ -168,6 +170,7 @@ def _process_zwei_response(action, data, request):
             data['data']
         )
 
+    logger.info('Process action successful. Action: %s', action)
     action.state = actionlogconstants.ActionState.SUCCESS
     action.save()
 

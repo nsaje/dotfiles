@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import json
 from mock import patch
 import datetime
@@ -308,3 +310,35 @@ class ProcessUploadThreadTest(TestCase):
 
         self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
         self.assertFalse(mock_insert_action.called)
+
+
+class AdGroupSourcesTest(TestCase):
+    def test_get_name(self):
+        name = views.AdGroupSources()._get_name(
+            u'Account š name that is toooooooo long',
+            u'Campaign š name that is toooooooo long',
+            u'Ad group š name that is toooooooo long',
+            123,
+            'Outbrain'
+        )
+
+        self.assertEqual(
+            name, u'ONE: Account š name that is / Campaign š name that / Ad group š name that / 123 / Outbrain')
+
+    def test_get_name_long_first_word(self):
+        name = views.AdGroupSources()._get_name(
+            u'Accountšnamethatistoooooooolong',
+            u'Campaignšnamethatistoooooooolong',
+            u'Adgroupšnamethatistoooooooolong',
+            123,
+            'Outbrain'
+        )
+
+        self.assertEqual(
+            name, u'ONE: Accountšnamethatistooo / Campaignšnamethatistoo / Adgroupšnamethatistooo / 123 / Outbrain')
+
+    def test_get_name_empty_strings(self):
+        name = views.AdGroupSources()._get_name(u'', u'', u'', 123, 'Outbrain')
+
+        self.assertEqual(
+            name, u'ONE:  /  /  / 123 / Outbrain')

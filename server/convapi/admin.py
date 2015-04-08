@@ -23,6 +23,17 @@ class GAReportLogAdmin(admin.ModelAdmin):
         'from_address'
     )
 
+    search_fields = (
+        'ad_groups',
+        'email_subject',
+        'csv_filename',
+        'from_address'
+    )
+
+    list_filter = (
+        'state',
+    )
+
     def no_errors_(self, obj):
         return obj.errors is None
     no_errors_.boolean = True
