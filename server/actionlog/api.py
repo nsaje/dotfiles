@@ -146,7 +146,7 @@ def send_delayed_actionlogs(ad_group_sources=None):
             ad_group_source=actionlog.ad_group_source,
         )
 
-        if waiting_actionlogs.count() > 0:
+        if waiting_actionlogs.exists():
             continue
 
         logger.info(
