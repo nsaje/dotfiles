@@ -829,7 +829,8 @@ class AdGroupSettings(SettingsBase):
         'display_url',
         'brand_name',
         'description',
-        'call_to_action'
+        'call_to_action',
+        'ad_group_name'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -864,6 +865,7 @@ class AdGroupSettings(SettingsBase):
     brand_name = models.CharField(max_length=25, blank=True, default='')
     description = models.CharField(max_length=100, blank=True, default='')
     call_to_action = models.CharField(max_length=25, blank=True, default='')
+    ad_group_name = models.CharField(max_length=127, blank=True, default='')
 
     changes_text = models.TextField(blank=True, null=True)
 
@@ -901,7 +903,8 @@ class AdGroupSettings(SettingsBase):
             'display_url': 'Display URL',
             'brand_name': 'Brand name',
             'description': 'Description',
-            'call_to_action': 'Call to action'
+            'call_to_action': 'Call to action',
+            'ad_group_name': 'AdGroup name'
         }
 
         return NAMES[prop_name]

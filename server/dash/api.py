@@ -175,29 +175,36 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                           'brand_name', 'description', 'call_to_action']:
             continue
 
-        for source in ad_group.sources:
-            action_type = constants.ActionType.MANUAL
+        ad_group_sources = ad_group.adgroupsource_set.all()
+        for ad_group_source in ad_group_sources:
+            action_type = actionlog.constants.ActionType.MANUAL
             # if source supports setting action do an automatic update,
             # otherwise do manual actiontype
-            ad_group_source = ad_group.source
-            source_type = ad_group_source.source.source_type
-            if prop == 'start_date' and source_type.can_modify_start_date():
-                action_type = constants.ActionType.AUTOMATIC
-            elif prop == 'end_date' and source_type.can_modify_end_date():
-                action_type = constants.ActionType.AUTOMATIC
-            elif prop in ('target_devices', 'target_regions') and source_type.can_modify_targeting():
-                action_type = constants.ActionType.AUTOMATIC
-            elif prop == 'tracking_code' and source_type.can_modify_tracking_codes():
-                action_type = constants.ActionType.AUTOMATIC
-            elif prop == 'name' and source_type.can_modify_ad_group_name():
-                action_type = constants.ActionType.AUTOMATIC
+            source = ad_group_source.source
+            source_type = source.source_type
+            if field_name == 'start_date' and source_type.can_modify_start_date():
+                action_type = actionlog.constants.ActionType.AUTOMATIC
+            elif field_name == 'end_date' and source_type.can_modify_end_date():
+                action_type = actionlog.constants.ActionType.AUTOMATIC
+            elif field_name in ('target_devices', 'target_regions') and source_type.can_modify_targeting():
+                action_type = actionlog.constants.ActionType.AUTOMATIC
+            elif field_name == 'tracking_code' and source_type.can_modify_tracking_codes():
+                action_type = actionlog.constants.ActionType.AUTOMATIC
+            elif field_name == 'ad_group_name' and source_type.can_modify_ad_group_name():
+                action_type = actionlog.constants.ActionType.AUTOMATIC
+            else:
+                pass
 
-            if action_type == constants.ActionType.MANUAL:
+
+            if action_type == actionlog.constants.ActionType.MANUAL:
                 # order can be None
                 order = None
-                actionlog.api._init_set_campaign_property_order(source, field_name, field_value, order, request)
+                actionlog.api._init_set_ad_group_source_settings(ad_group_source, {field_name: field_value}, request)
             else:
-                actionlog.api._init_set_ad_group_source_settings(source, {field_name: field_value}, request)
+                try:
+                    actionlog.api._init_set_campaign_property(ad_group_source, field_name, field_value, order, request)
+                except exceptions.InsertActionException:
+                    continue
 
 def reconcile_articles(ad_group, raw_articles):
     if not ad_group:
