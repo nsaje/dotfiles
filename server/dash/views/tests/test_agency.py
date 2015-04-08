@@ -173,7 +173,8 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Display URL', 'value': ''},
                         {'name': 'Brand name', 'value': ''},
                         {'name': 'Description', 'value': ''},
-                        {'name': 'Call to action', 'value': ''}
+                        {'name': 'Call to action', 'value': ''},
+                        {'name': 'AdGroup name', 'value': ''}
                     ],
                     'show_old_settings': False
                 }]

@@ -108,6 +108,7 @@
         brand_name: 'Example'
         description: 'Example description'
         call_to_action: 'Call to action'
+        ad_group_name: 'AdGroup name'
     model: dash.adgroupsettings
     pk: 1
 

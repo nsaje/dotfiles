@@ -45,7 +45,8 @@ class AdGroupSettingsTest(TestCase):
             'display_url': 'example.com',
             'brand_name': 'Example',
             'description': 'Example description',
-            'call_to_action': 'Call to action'
+            'call_to_action': 'Call to action',
+            'ad_group_name': 'AdGroup name',
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),
