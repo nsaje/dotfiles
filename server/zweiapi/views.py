@@ -172,7 +172,9 @@ def _process_zwei_response(action, data, request):
     action.state = actionlogconstants.ActionState.SUCCESS
     action.save()
 
-    actionlog.api.send_delayed_actionlogs([ad_group_source])
+    if action.action in actionlog.models.DELAYED_ACTIONS:
+        actionlog.api.send_delayed_actionlogs([ad_group_source])
+
 
 def _has_changed(data, ad_group, source, date):
     if not settings.USE_HASH_CACHE:
