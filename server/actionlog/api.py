@@ -521,24 +521,9 @@ def _init_set_campaign_property(ad_group_source, prop, value, order, request):
             action_type=constants.ActionType.MANUAL
         )
         existing_actions = [a for a in existing_actions if a.payload['property'] == prop]
-
-        action_type = constants.ActionType.MANUAL
-
-        # if source supports setting action do an autmatic update,
-        # otherwise do manual actiontype
-        source_type = ad_group_source.source.source_type
-        if prop == 'start_date' and source_type.can_modify_start_date():
-            action_type = constants.ActionType.AUTOMATIC
-        elif prop == 'end_date' and source_type.can_modify_end_date():
-            action_type = constants.ActionType.AUTOMATIC
-        elif prop in ('target_devices', 'target_regions') and source_type.can_modify_targeting():
-            action_type = constants.ActionType.AUTOMATIC
-        elif prop == 'tracking_code' and source_type.can_modify_tracking_codes():
-            action_type = constants.ActionType.AUTOMATIC
-
         action = models.ActionLog(
             action=constants.Action.SET_PROPERTY,
-            action_type=action_type,
+            action_type=constants.ActionType.MANUAL,
             expiration_dt=None,
             state=constants.ActionState.WAITING,
             ad_group_source=ad_group_source,

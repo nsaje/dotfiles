@@ -164,6 +164,8 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
     if not changes:
         return
 
+    per_source_actions = {}
+
     for field_name, field_value in changes.iteritems():
         # State of an ad group is set automatically.
         # For changes of cpc_cc and daily_budget_cc, mail is sufficient
@@ -173,8 +175,29 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                           'brand_name', 'description', 'call_to_action']:
             continue
 
-        actionlog.api.init_set_ad_group_property_order(ad_group, request, prop=field_name, value=field_value)
+        for source in ad_group.sources:
+            action_type = constants.ActionType.MANUAL
+            # if source supports setting action do an automatic update,
+            # otherwise do manual actiontype
+            ad_group_source = ad_group.source
+            source_type = ad_group_source.source.source_type
+            if prop == 'start_date' and source_type.can_modify_start_date():
+                action_type = constants.ActionType.AUTOMATIC
+            elif prop == 'end_date' and source_type.can_modify_end_date():
+                action_type = constants.ActionType.AUTOMATIC
+            elif prop in ('target_devices', 'target_regions') and source_type.can_modify_targeting():
+                action_type = constants.ActionType.AUTOMATIC
+            elif prop == 'tracking_code' and source_type.can_modify_tracking_codes():
+                action_type = constants.ActionType.AUTOMATIC
+            elif prop == 'name' and source_type.can_modify_ad_group_name():
+                action_type = constants.ActionType.AUTOMATIC
 
+            if action_type == constants.ActionType.MANUAL:
+                # order can be None
+                order = None
+                actionlog.api._init_set_campaign_property_order(source, field_name, field_value, order, request)
+            else:
+                actionlog.api._init_set_ad_group_source_settings(source, {field_name: field_value}, request)
 
 def reconcile_articles(ad_group, raw_articles):
     if not ad_group:

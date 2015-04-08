@@ -526,6 +526,9 @@ class SourceType(models.Model):
     def can_modify_tracking_codes(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_TRACKING_CODES).exists()
 
+    def can_modify_ad_group_name(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_AD_GROUP_NAME).exists()
+
     def __str__(self):
         return self.type
 

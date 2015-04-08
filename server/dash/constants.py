@@ -153,6 +153,7 @@ class SourceAction(ConstantBase):
     CAN_MODIFY_END_DATE = 7
     CAN_MODIFY_TARGETING = 8
     CAN_MODIFY_TRACKING_CODES = 9
+    CAN_MODIFY_AD_GROUP_NAME = 10
 
     _VALUES = {
         CAN_UPDATE_STATE: 'Can update state',
@@ -164,6 +165,7 @@ class SourceAction(ConstantBase):
         CAN_MODIFY_END_DATE: 'Can modify end date',
         CAN_MODIFY_TARGETING: 'Can modify device and geo targeting',
         CAN_MODIFY_TRACKING_CODES: 'Can modify tracking codes',
+        CAN_MODIFY_AD_GROUP_NAME: 'Can modify adgroup name',
     }
 
 
