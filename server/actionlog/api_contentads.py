@@ -29,6 +29,7 @@ def init_insert_content_ad_action(content_ad_source, request):
         'content_ad_id': content_ad_source.get_source_id(),
         'content_ad': {
             'state': content_ad_source.state,
+            'submission_status': content_ad_source.submission_status,
             'title': content_ad_source.content_ad.article.title,
             'url': content_ad_source.content_ad.article.url,
             'image_id': content_ad_source.content_ad.image_id,
