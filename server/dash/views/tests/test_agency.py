@@ -62,7 +62,7 @@ class AdGroupAgencyTest(TestCase):
 
         mock_is_waiting.assert_called_once(ad_group)
 
-        self.assertEqual(json.loads(response.content, encoding='utf8'), {
+        self.assertEqual(json.loads(response.content), {
             'data': {
                 'action_is_waiting': True,
                 'settings': {
@@ -89,7 +89,7 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Brand name', 'value': ''},
                         {'name': 'Description', 'value': ''},
                         {'name': 'Call to action', 'value': ''},
-                        {'name': 'AdGroup name', 'old_value': '', 'value': ''}
+                        {'name': 'AdGroup name', 'value': ''}
                     ],
                     'show_old_settings': False
                 },

@@ -165,6 +165,9 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
         return
 
     per_source_actions = {}
+    order = actionlog.models.ActionLogOrder.objects.create(
+        order_type=actionlog.constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
+    )
 
     for field_name, field_value in changes.iteritems():
         # State of an ad group is set automatically.
@@ -195,10 +198,9 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
             else:
                 pass
 
-
+            # from pudb import set_trace; set_trace()
             if action_type == actionlog.constants.ActionType.MANUAL:
                 # order can be None
-                order = None
                 actionlog.api._init_set_ad_group_source_settings(ad_group_source, {field_name: field_value}, request)
             else:
                 try:
