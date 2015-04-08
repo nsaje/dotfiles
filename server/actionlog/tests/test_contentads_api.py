@@ -79,6 +79,7 @@ class ContentAdsApiTestCase(TestCase):
                     'state': dash.constants.ContentAdSourceState.ACTIVE,
                     'title': content_ad_source.content_ad.title,
                     'url': content_ad_source.content_ad.url,
+                    'submission_status': dash.constants.ContentAdSubmissionStatus.PENDING,
                     'image_id': content_ad_source.content_ad.image_id,
                     'image_width': content_ad_source.content_ad.image_width,
                     'image_height': content_ad_source.content_ad.image_height,
