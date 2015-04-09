@@ -55,6 +55,22 @@ class AdGroupSettingsFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {'display_url': ['Enter a valid URL.']})
 
+    def test_cleaned_display_url(self):
+        self.data['display_url'] = 'https://teststring.com/this/'
+        form = forms.AdGroupSettingsForm(self.data)
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data['display_url'], 'teststring.com/this')
+
+    def test_display_url_over_max_length(self):
+        domain = 'aaaaaaaaaaaaaaaaaaaaaa.com'
+        self.assertEqual(len(domain), 26, 'domain is not over max length = 25')
+        url = 'https://' + domain
+        self.data['display_url'] = url 
+
+        form = forms.AdGroupSettingsForm(self.data)
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {'display_url': ['Ensure this value has at most 25 characters (it has 26).']})
+
 
 class AdGroupAdsPlusUploadFormTest(TestCase):
     def setUp(self):

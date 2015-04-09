@@ -10,7 +10,7 @@ from decimal import Decimal
 import utils.string
 
 from django import forms
-from django.core.validators import URLValidator
+from django.core import validators
 
 from dash import constants
 from zemauth.models import User as ZemUser
@@ -24,6 +24,7 @@ class BaseApiForm(forms.Form):
 class AdvancedDateTimeField(forms.fields.DateTimeField):
     def strptime(self, value, format):
         return dateutil.parser.parse(value)
+
 
 
 class AdGroupSettingsForm(forms.Form):
@@ -73,7 +74,7 @@ class AdGroupSettingsForm(forms.Form):
     )
     tracking_code = forms.CharField(required=False)
     display_url = forms.URLField(
-        max_length=25,
+        #max_length=25,
         required=False
     )
     brand_name = forms.CharField(
@@ -93,7 +94,16 @@ class AdGroupSettingsForm(forms.Form):
         super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
 
     def clean_display_url(self):
-        return self.data['display_url']
+        display_url = self.cleaned_data['display_url']
+        display_url = display_url.strip()
+        display_url = re.sub(r'^https?://', '', display_url)
+        display_url = re.sub(r'/$', '', display_url)
+        
+        validate_length = validators.MaxLengthValidator(25)
+        validate_length(display_url)
+
+        return display_url
+
 
     def clean_end_date(self):
         end_date = self.cleaned_data.get('end_date')
@@ -352,7 +362,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         title = row.get('title')
         image_url = row.get('image_url')
 
-        validate_url = URLValidator(
+        validate_url = validators.URLValidator(
             schemes=['http', 'https'],
             message='File is not formatted correctly'
         )
