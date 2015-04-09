@@ -179,28 +179,19 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
             continue
 
         ad_group_sources = ad_group.adgroupsource_set.all()
-        with transaction.atomic():
-            for ad_group_source in ad_group_sources:
-                action_type = actionlog.constants.ActionType.MANUAL
-                # if source supports setting action do an automatic update,
-                # otherwise do manual actiontype
-                source = ad_group_source.source
-                source_type = source.source_type
-                if field_name == 'start_date' and source_type.can_modify_start_date() or\
-                    field_name == 'end_date' and source_type.can_modify_end_date() or\
-                    field_name in ('target_devices', 'target_regions') and source_type.can_modify_targeting() or\
-                    field_name == 'tracking_code' and source_type.can_modify_tracking_codes() or\
-                    field_name == 'ad_group_name' and source_type.can_modify_ad_group_name():
-                    action_type = actionlog.constants.ActionType.AUTOMATIC
-
-                if action_type == actionlog.constants.ActionType.MANUAL:
-                    # order can be None
-                    actionlog.api._init_set_ad_group_source_settings(ad_group_source, {field_name: field_value}, request)
-                else:
-                    try:
-                        actionlog.api._init_set_campaign_property(ad_group_source, field_name, field_value, order, request)
-                    except exceptions.InsertActionException:
-                        continue
+        for ad_group_source in ad_group_sources:
+            # if source supports setting action do an automatic update,
+            # otherwise do manual actiontype
+            source = ad_group_source.source
+            source_type = source.source_type
+            if field_name == 'start_date' and source_type.can_modify_start_date() or\
+                field_name == 'end_date' and source_type.can_modify_end_date() or\
+                field_name in ('target_devices', 'target_regions') and source_type.can_modify_targeting() or\
+                field_name == 'tracking_code' and source_type.can_modify_tracking_codes() or\
+                field_name == 'ad_group_name' and source_type.can_modify_ad_group_name():
+                actionlog.api.set_ad_group_source_settings(ad_group_source, {field_name: field_value}, request, request)
+            else:
+                actionlog.api.init_set_ad_group_property_order(ad_group_source.ad_group, request, source=ad_group_source, prop=field_name, value=field_value)
 
 def reconcile_articles(ad_group, raw_articles):
     if not ad_group:
