@@ -137,7 +137,7 @@ def send_delayed_actionlogs(ad_group_sources=None):
         actionlog.expiration_dt = models._due_date_default()
         actionlog.save()
 
-        zwei_actions.send_multiple([actionlog])
+        zwei_actions.send(actionlog)
 
 
 def get_ad_group_sources_waiting(**kwargs):
