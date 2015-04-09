@@ -328,7 +328,7 @@ def _get_campaign_settings(campaign):
 
 def _create_manual_actions(ad_group_source, conf, request, order=None, message=''):
     for prop, val in conf.iteritems():
-        models.ActionLog.objects.create(
+        action = models.ActionLog(
             action=constants.Action.SET_PROPERTY,
             action_type=constants.ActionType.MANUAL,
             expiration_dt=None,
@@ -343,6 +343,7 @@ def _create_manual_actions(ad_group_source, conf, request, order=None, message='
             order=order,
             message=message
         )
+        action.save(request)
 
 
 def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=None):
