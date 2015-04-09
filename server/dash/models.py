@@ -904,7 +904,7 @@ class AdGroupSettings(SettingsBase):
             'brand_name': 'Brand name',
             'description': 'Description',
             'call_to_action': 'Call to action',
-            'ad_group_name': 'AdGroup name'
+            'ad_group_name': 'External AdGroup name'
         }
 
         return NAMES[prop_name]

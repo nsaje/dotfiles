@@ -189,7 +189,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                 field_name in ('target_devices', 'target_regions') and source_type.can_modify_targeting() or\
                 field_name == 'tracking_code' and source_type.can_modify_tracking_codes() or\
                 field_name == 'ad_group_name' and source_type.can_modify_ad_group_name():
-                actionlog.api.set_ad_group_source_settings(ad_group_source, {field_name: field_value}, request, request)
+                actionlog.api.set_ad_group_source_settings({field_name: field_value}, ad_group_source, request, order)
             else:
                 actionlog.api.init_set_ad_group_property_order(ad_group_source.ad_group, request, source=ad_group_source, prop=field_name, value=field_value)
 
