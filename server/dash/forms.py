@@ -74,8 +74,7 @@ class AdGroupSettingsForm(forms.Form):
     )
     tracking_code = forms.CharField(required=False)
     display_url = forms.URLField(
-        #max_length=25,
-        required=False
+        required=False # max length is validated in clean_display_url
     )
     brand_name = forms.CharField(
         max_length=25,
