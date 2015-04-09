@@ -15,6 +15,9 @@ from utils import statsd_helper
 from utils import exc
 
 
+SHORT_NAME_MAX_LENGTH = 22
+
+
 class PermissionMixin(object):
     USERS_FIELD = ''
 
@@ -801,6 +804,33 @@ class AdGroupSource(models.Model):
             msid = ''
 
         return '_z1_adgid=%s&_z1_msid=%s' % (self.ad_group.id, msid)
+
+    def get_external_name(self): 
+        #, account_name, campaign_name, ad_group_name, ad_group_id, source_name):
+        account_name = self.ad_group.campaign.account.name
+        campaign_name = self.ad_group.campaign.name
+        ad_group_name = self.ad_group.name
+        ad_group_id = self.ad_group.id
+        source_name = self.source.name
+        return u'ONE: {} / {} / {} / {} / {}'.format(
+            self._shorten_name(account_name),
+            self._shorten_name(campaign_name),
+            self._shorten_name(ad_group_name),
+            ad_group_id,
+            source_name
+        )
+
+    def _shorten_name(self, name):
+        # if the first word is too long, cut it
+        words = name.split()
+        if not len(words) or len(words[0]) > SHORT_NAME_MAX_LENGTH:
+            return name[:SHORT_NAME_MAX_LENGTH]
+
+        while len(name) > SHORT_NAME_MAX_LENGTH:
+            name = name.rsplit(None, 1)[0]
+
+        return name
+
 
     def save(self, request, *args, **kwargs):
         super(AdGroupSource, self).save(*args, **kwargs)
