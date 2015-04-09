@@ -8,6 +8,7 @@ CONVERSION_METRICS = {'conversions', 'conversions_value_cc'}
 # For querying use the functions from reports.api
 # For inserting/updating data use the functions from reports.update
 
+
 class StatsMetrics(models.Model):
     # traffic metrics
     impressions = models.IntegerField(default=0, blank=False, null=False)
@@ -124,4 +125,25 @@ class AdGroupGoalConversionStats(models.Model):
     class Meta:
         unique_together = (
             ('datetime', 'ad_group', 'source', 'goal_name'),
+        )
+
+
+class ContentAdStats(models.Model):
+    impressions = models.IntegerField(null=True)
+    clicks = models.IntegerField(null=True)
+    cost_cc = models.IntegerField(null=True)
+    data_cost_cc = models.IntegerField(null=True)
+
+    date = models.DateField()
+    content_ad_source = models.ForeignKey('dash.ContentAdSource', on_delete=models.PROTECT)
+
+    # these two foreign keys are added to reduce joins
+    content_ad = models.ForeignKey('dash.ContentAd', on_delete=models.PROTECT)
+    source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
+    class Meta:
+        unique_together = (
+            ('date', 'content_ad_source'),
         )
