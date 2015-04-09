@@ -336,7 +336,8 @@ def _create_manual_actions(ad_group_source, conf, request, order=None, message='
             ad_group_source=ad_group_source,
             payload={
                 'args': {
-                    'conf': conf
+                    'property': prop,
+                    'value': val,
                 }
             },
             order=order,
