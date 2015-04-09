@@ -342,7 +342,6 @@ def _create_manual_action(ad_group_source, conf, request, order=None, message=''
         message=message
     )
     action.save(request)
-    return action
 
 
 def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=None):
@@ -350,7 +349,7 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=Non
                 ad_group_source.id, str(conf))
 
     if ad_group_source.source.maintenance:
-        _create_manual_actions(
+        _create_manual_action(
             ad_group_source,
             conf,
             request,
