@@ -61,29 +61,13 @@ def set_ad_group_source_settings(changes, ad_group_source, request, order=None):
     if changes.get('daily_budget_cc') is not None:
         changes['daily_budget_cc'] = int(changes['daily_budget_cc'] * 10000)
 
-    action = _init_set_ad_group_source_settings(
+    _init_set_ad_group_source_settings(
         ad_group_source=ad_group_source,
         conf=changes,
         request=request,
         order=order
     )
-
-    similar_waiting_actions = models.ActionLog.objects.filter(
-        ad_group_source=ad_group_source,
-        state=constants.ActionState.WAITING,
-        action_type=constants.ActionType.AUTOMATIC,
-        action=constants.Action.SET_CAMPAIGN_STATE
-    )
-
-    if len(similar_waiting_actions) > models.MAX_SIMILAR_WAITING_ACTIONS:
-        action.state = constants.ActionState.DELAYED
-        action.expiration_dt = None
-        action.save(request)
-        logger.info("There is one or more similar action(s) in progress. Action (%s) will be called from it's callback.", action.id)
-        return
-
-    if action.action_type == constants.ActionType.AUTOMATIC:
-        zwei_actions.send_multiple([action])
+    send_delayed_actionlogs(ad_group_source)
 
 
 def _set_ad_group_property(ad_group, request, source=None, prop=None, value=None, order=None):
@@ -342,23 +326,22 @@ def _get_campaign_settings(campaign):
     return None
 
 
-def _create_manual_action(ad_group_source, conf, request, order=None, message=''):
-    action = models.ActionLog(
-        action=constants.Action.SET_CAMPAIGN_STATE,
-        action_type=constants.ActionType.MANUAL,
-        expiration_dt=None,
-        state=constants.ActionState.WAITING,
-        ad_group_source=ad_group_source,
-        payload={
-            'args': {
-                'conf': conf
-            }
-        },
-        order=order,
-        message=message
-    )
-    action.save(request)
-    return action
+def _create_manual_actions(ad_group_source, conf, request, order=None, message=''):
+    for prop, val in conf.iteritems():
+        models.ActionLog.objects.create(
+            action=constants.Action.SET_PROPERTY,
+            action_type=constants.ActionType.MANUAL,
+            expiration_dt=None,
+            state=constants.ActionState.WAITING,
+            ad_group_source=ad_group_source,
+            payload={
+                'args': {
+                    'conf': conf
+                }
+            },
+            order=order,
+            message=message
+        )
 
 
 def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=None):
@@ -366,7 +349,7 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=Non
                 ad_group_source.id, str(conf))
 
     if ad_group_source.source.maintenance:
-        return _create_manual_action(
+        _create_manual_actions(
             ad_group_source,
             conf,
             request,
@@ -377,6 +360,7 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=Non
     action = models.ActionLog(
         action=constants.Action.SET_CAMPAIGN_STATE,
         action_type=constants.ActionType.AUTOMATIC,
+        state=constants.ActionState.DELAYED,
         ad_group_source=ad_group_source,
         order=order
     )
@@ -405,7 +389,6 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=Non
             action.payload = payload
             action.save(request)
 
-            return action
     except Exception as e:
         logger.exception('An exception occurred while initializing set_campaign_state action.')
         _handle_error(action, e, request)
