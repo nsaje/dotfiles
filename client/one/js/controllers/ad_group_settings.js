@@ -75,7 +75,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
         $scope.saveRequestInProgress = true;
 
         cleanDisplayUrl($scope.settings);
-        console.log($scope.settings);
 
         api.adGroupSettings.save($scope.settings).then(
             function (data) {
