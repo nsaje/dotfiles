@@ -139,6 +139,16 @@ def send_delayed_actionlogs(ad_group_sources=None):
         if actionlog.ad_group_source.id in processed_adgroupsource_ids:
             continue
 
+        processed_adgroupsource_ids.add(actionlog.ad_group_source.id)
+        waiting_actionlogs = models.ActionLog.objects.filter(
+            state=constants.ActionState.WAITING,
+            action_type=constants.ActionType.AUTOMATIC,
+            ad_group_source=actionlog.ad_group_source,
+        )
+
+        if waiting_actionlogs.exists():
+            continue
+
         logger.info(
             'Sending delayed action log %s. Updating state to: %s.',
             actionlog,
@@ -149,8 +159,6 @@ def send_delayed_actionlogs(ad_group_sources=None):
         actionlog.save()
 
         zwei_actions.send_multiple([actionlog])
-
-        processed_adgroupsource_ids.add(actionlog.ad_group_source.id)
 
 
 def get_ad_group_sources_waiting(**kwargs):
