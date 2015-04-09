@@ -624,7 +624,7 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
     content_ad_id_.admin_order_field = 'content_ad_id'
 
     def ad_group_name(self, obj):
-        ad_group = obj.content_ad.article.ad_group
+        ad_group = obj.content_ad.ad_group
         return ad_group.campaign.account.name + ' / ' + ad_group.campaign.name + ' / ' + ad_group.name + ' (' + str(ad_group.id) + ')'
 
     def save_model(self, request, content_ad_source, form, change):

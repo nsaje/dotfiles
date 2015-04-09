@@ -132,6 +132,9 @@ def _process_zwei_response(action, data, request):
             rows = _prepare_report_rows(ad_group, data['data'])
             reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, rows)
 
+            if source.source_type.can_manage_content_ads():
+                reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, data['data'])
+
     elif action.action == actionlogconstants.Action.FETCH_CAMPAIGN_STATUS:
         dashapi.update_ad_group_source_state(action.ad_group_source, data['data'])
 
@@ -140,8 +143,6 @@ def _process_zwei_response(action, data, request):
         conf = action.payload['args']['conf']
 
         dashapi.update_ad_group_source_state(ad_group_source, conf)
-        actionlog.api.send_delayed_actionlogs([ad_group_source])
-
     elif action.action == actionlogconstants.Action.CREATE_CAMPAIGN:
         dashapi.update_campaign_key(
             action.ad_group_source,
@@ -173,6 +174,9 @@ def _process_zwei_response(action, data, request):
     logger.info('Process action successful. Action: %s', action)
     action.state = actionlogconstants.ActionState.SUCCESS
     action.save()
+
+    if action.action in actionlog.models.DELAYED_ACTIONS:
+        actionlog.api.send_delayed_actionlogs([ad_group_source])
 
 
 def _has_changed(data, ad_group, source, date):
