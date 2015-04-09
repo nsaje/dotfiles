@@ -3,12 +3,12 @@ import logging
 
 from django.db import transaction
 
-from reports.models import TRAFFIC_METRICS, POSTCLICK_METRICS, CONVERSION_METRICS, ArticleStats, GoalConversionStats
-
 import reports.refresh
 import reports.models
+import dash.models
 
 logger = logging.getLogger(__name__)
+
 
 @transaction.atomic
 def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
@@ -20,11 +20,12 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     '''
 
     if len(rows) == 0:
-        logger.warning('Update of source traffic for adgroup %d, source %d, datetime %s skipped, due to empty rows.',
-                       ad_group.id, source.id, datetime)
+        logger.warning(
+            'Update of source traffic for adgroup %d, source %d, datetime %s skipped, due to empty rows.',
+            ad_group.id, source.id, datetime)
         return
 
-    stats = ArticleStats.objects.filter(
+    stats = reports.models.ArticleStats.objects.filter(
         datetime=datetime, ad_group=ad_group, source=source
     ).select_related('article')
 
@@ -45,7 +46,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     for row in rows:
         # update the stats aggregate
         for key, val in row.iteritems():
-            if key not in TRAFFIC_METRICS:
+            if key not in reports.models.TRAFFIC_METRICS:
                 continue
             if key not in aggregated_stats:
                 aggregated_stats[key] = 0
@@ -62,7 +63,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
             )
             fields.update(row)
 
-            article_stats = ArticleStats(**fields)
+            article_stats = reports.models.ArticleStats(**fields)
 
             # update stats dict with newly created ArticleStats object
             stats_dict[article_stats.article.id] = article_stats
@@ -72,7 +73,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
             if article_stats.has_conversion_metrics == 1:
                 max_has_conversion_metrics = 1
             for metric, value in row.items():
-                if metric in TRAFFIC_METRICS:
+                if metric in reports.models.TRAFFIC_METRICS:
                     setattr(article_stats, metric, getattr(article_stats, metric) + value)
 
         article_stats.has_traffic_metrics = 1
@@ -121,7 +122,7 @@ def stats_update_adgroup_postclick(datetime, ad_group, rows):
         return
 
     # reset postclick metrics
-    for article_stats in ArticleStats.objects.filter(datetime=datetime, ad_group=ad_group):
+    for article_stats in reports.models.ArticleStats.objects.filter(datetime=datetime, ad_group=ad_group):
         article_stats.reset_postclick_metrics()
 
     # save the data
@@ -133,14 +134,14 @@ def stats_update_adgroup_postclick(datetime, ad_group, rows):
             source=row['source']
         )
         try:
-            article_stats = ArticleStats.objects.get(**dimensions)
+            article_stats = reports.models.ArticleStats.objects.get(**dimensions)
             for metric, value in row.items():
-                if metric in POSTCLICK_METRICS:
+                if metric in reports.models.POSTCLICK_METRICS:
                     setattr(article_stats, metric, getattr(article_stats, metric) + value)
-        except ArticleStats.DoesNotExist:
+        except reports.models.ArticleStats.DoesNotExist:
             fields = copy.copy(dimensions)
             fields.update(row)
-            article_stats = ArticleStats(**fields)
+            article_stats = reports.models.ArticleStats(**fields)
 
         article_stats.has_postclick_metrics = 1
         article_stats.save()
@@ -168,7 +169,7 @@ def stats_update_adgroup_all(datetime, ad_group, rows):
         return
 
     # reset metrics
-    for article_stats in ArticleStats.objects.filter(datetime=datetime, ad_group=ad_group):
+    for article_stats in reports.models.ArticleStats.objects.filter(datetime=datetime, ad_group=ad_group):
         article_stats.reset_traffic_metrics()
         article_stats.reset_postclick_metrics()
 
@@ -181,14 +182,14 @@ def stats_update_adgroup_all(datetime, ad_group, rows):
             source=row['source']
         )
         try:
-            article_stats = ArticleStats.objects.get(**dimensions)
+            article_stats = reports.models.ArticleStats.objects.get(**dimensions)
             for metric, value in row.items():
-                if metric in TRAFFIC_METRICS or metric in POSTCLICK_METRICS:
+                if metric in reports.models.TRAFFIC_METRICS or metric in reports.models.POSTCLICK_METRICS:
                     setattr(article_stats, metric, getattr(article_stats, metric) + value)
-        except ArticleStats.DoesNotExist:
+        except reports.models.ArticleStats.DoesNotExist:
             fields = copy.copy(dimensions)
             fields.update(row)
-            article_stats = ArticleStats(**fields)
+            article_stats = reports.models.ArticleStats(**fields)
 
         article_stats.has_traffic_metrics = 1
         article_stats.has_postclick_metrics = 1
@@ -216,17 +217,18 @@ def goals_update_adgroup(datetime, ad_group, rows):
         return
 
     # reset conversion metrics
-    for conv_stats in GoalConversionStats.objects.filter(datetime=datetime, ad_group=ad_group):
+    for conv_stats in reports.models.GoalConversionStats.objects.filter(datetime=datetime, ad_group=ad_group):
         conv_stats.reset_metrics()
 
     for row in rows:
         # set has_conversion_metrics flag in ArticleStats
         try:
-            article_stats = ArticleStats.objects.get(
+            article_stats = reports.models.ArticleStats.objects.get(
                 datetime=datetime, article=row['article'],
                 ad_group=ad_group, source=row['source'])
-        except ArticleStats.DoesNotExist:
-            article_stats = ArticleStats(datetime=datetime,
+        except reports.models.ArticleStats.DoesNotExist:
+            article_stats = reports.models.ArticleStats(
+                datetime=datetime,
                 article=row['article'], ad_group=ad_group,
                 source=row['source'])
         article_stats.has_conversion_metrics = 1
@@ -241,16 +243,46 @@ def goals_update_adgroup(datetime, ad_group, rows):
             goal_name=row['goal_name'],
         )
         try:
-            conv_stats = GoalConversionStats.objects.get(**dimensions)
+            conv_stats = reports.models.GoalConversionStats.objects.get(**dimensions)
             for metric, value in row.items():
-                if metric in CONVERSION_METRICS:
+                if metric in reports.models.CONVERSION_METRICS:
                     setattr(conv_stats, metric, getattr(conv_stats, metric) + value)
-        except GoalConversionStats.DoesNotExist:
+        except reports.models.GoalConversionStats.DoesNotExist:
             fields = copy.copy(dimensions)
             fields.update(row)
-            conv_stats = GoalConversionStats(**fields)
+            conv_stats = reports.models.GoalConversionStats(**fields)
         conv_stats.save()
 
     # refresh the corresponding adgroup-level pre-aggregations
     reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group)
     reports.refresh.refresh_adgroup_conversion_stats(datetime=datetime, ad_group=ad_group)
+
+
+@transaction.atomic
+def update_content_ads_source_traffic_stats(date, ad_group, source, rows):
+    content_ad_sources = {}
+    for content_ad_source in dash.models.ContentAdSource.objects.filter(
+            content_ad__ad_group=ad_group, source=source):
+        content_ad_sources[content_ad_source.get_source_id()] = content_ad_source
+
+    for row in rows:
+        content_ad_source = content_ad_sources.get(row['id'])
+
+        if content_ad_source is None:
+            logger.info(
+                'Ignoring content ad data with unknown id: {} for ad group id: {} source id: {}, date: {}',
+                row['id'], ad_group.id, source.id, date)
+            continue
+
+        reports.models.ContentAdStats.objects.update_or_create(
+            date=date,
+            content_ad_source=content_ad_source,
+            content_ad=content_ad_source.content_ad,
+            source=content_ad_source.source,
+            defaults={
+                'impressions': row['impressions'],
+                'clicks': row['clicks'],
+                'cost_cc': row['cost_cc'],
+                'data_cost_cc': row['data_cost_cc']
+            }
+        )
