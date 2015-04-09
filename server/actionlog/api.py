@@ -326,24 +326,23 @@ def _get_campaign_settings(campaign):
     return None
 
 
-def _create_manual_actions(ad_group_source, conf, request, order=None, message=''):
-    for prop, val in conf.iteritems():
-        action = models.ActionLog(
-            action=constants.Action.SET_PROPERTY,
-            action_type=constants.ActionType.MANUAL,
-            expiration_dt=None,
-            state=constants.ActionState.WAITING,
-            ad_group_source=ad_group_source,
-            payload={
-                'args': {
-                    'property': prop,
-                    'value': val,
-                }
-            },
-            order=order,
-            message=message
-        )
-        action.save(request)
+def _create_manual_action(ad_group_source, conf, request, order=None, message=''):
+    action = models.ActionLog(
+        action=constants.Action.SET_CAMPAIGN_STATE,
+        action_type=constants.ActionType.MANUAL,
+        expiration_dt=None,
+        state=constants.ActionState.WAITING,
+        ad_group_source=ad_group_source,
+        payload={
+            'args': {
+                'conf': conf
+            }
+        },
+        order=order,
+        message=message
+    )
+    action.save(request)
+    return action
 
 
 def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=None):
