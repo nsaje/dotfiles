@@ -365,11 +365,9 @@ def transform_content_ad_order(order):
         desc = True
 
     db_order = {
-        'title': 'article__title',
-        'url': 'article__url',
         'batch_name': 'batch__name',
         'upload_time': 'batch__created_dt'
-    }[order]
+    }.get(order, order)
 
     return '{}{}'.format('-' if desc else '', db_order)
 
