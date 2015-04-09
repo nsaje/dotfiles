@@ -134,12 +134,7 @@ def send_delayed_actionlogs(ad_group_sources=None):
     if ad_group_sources is not None:
         delayed_actionlogs = delayed_actionlogs.filter(ad_group_source__in=ad_group_sources)
 
-    processed_adgroupsource_ids = set()
     for actionlog in delayed_actionlogs:
-        if actionlog.ad_group_source.id in processed_adgroupsource_ids:
-            continue
-
-        processed_adgroupsource_ids.add(actionlog.ad_group_source.id)
         waiting_actionlogs = models.ActionLog.objects.filter(
             state=constants.ActionState.WAITING,
             action_type=constants.ActionType.AUTOMATIC,

@@ -707,6 +707,150 @@ class ActionLogApiCancelExpiredTestCase(TestCase):
         )
 
 
+class SendDelayedActionsTestCase(TestCase):
+
+    fixtures = ['test_api.yaml', 'test_actionlog_send_delayed.yaml']
+
+    def setUp(self):
+        patcher_urlopen = mock.patch('utils.request_signer._secure_opener.open')
+        self.addCleanup(patcher_urlopen.stop)
+
+        mock_urlopen = patcher_urlopen.start()
+        test_helper.prepare_mock_urlopen(mock_urlopen)
+
+        self.credentials_encription_key = settings.CREDENTIALS_ENCRYPTION_KEY
+        settings.CREDENTIALS_ENCRYPTION_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+        self.maxDiff = None
+
+    def tearDown(self):
+        settings.CREDENTIALS_ENCRYPTION_KEY = self.credentials_encription_key
+
+    def test_ad_group_specified(self):
+        ags1 = dashmodels.AdGroupSource.objects.get(id=1)
+        ags2 = dashmodels.AdGroupSource.objects.get(id=2)
+
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.DELAYED,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         2)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         0)
+
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.DELAYED,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         2)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         0)
+
+        api.send_delayed_actionlogs([ags1])
+
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.DELAYED,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         1)
+
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.DELAYED,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         2)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         0)
+
+        api.send_delayed_actionlogs([ags1])
+
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.DELAYED,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         1)
+
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.DELAYED,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         2)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         0)
+
+        api.send_delayed_actionlogs([ags2])
+
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.DELAYED,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         1)
+
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.DELAYED,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         1)
+
+    def test_ad_group_not_specified(self):
+        ags1 = dashmodels.AdGroupSource.objects.get(id=1)
+        ags2 = dashmodels.AdGroupSource.objects.get(id=2)
+
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.DELAYED,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         2)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         0)
+
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.DELAYED,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         2)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         0)
+
+        api.send_delayed_actionlogs()
+
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.DELAYED,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         1)
+
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.DELAYED,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         1)
+
+
 class SetCampaignPropertyTestCase(TestCase):
 
     fixtures = ['test_api.yaml']
