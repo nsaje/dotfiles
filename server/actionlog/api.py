@@ -67,7 +67,7 @@ def set_ad_group_source_settings(changes, ad_group_source, request, order=None):
         request=request,
         order=order
     )
-    send_delayed_actionlogs(ad_group_source)
+    send_delayed_actionlogs([ad_group_source])
 
 
 def _set_ad_group_property(ad_group, request, source=None, prop=None, value=None, order=None):
