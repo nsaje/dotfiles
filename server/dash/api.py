@@ -164,7 +164,6 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
     if not changes:
         return
 
-    per_source_actions = {}
     order = actionlog.models.ActionLogOrder.objects.create(
         order_type=actionlog.constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
     )
