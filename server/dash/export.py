@@ -3,11 +3,12 @@ from xlsxwriter import Workbook
 import StringIO
 
 import reports.api
+import reports.api_helpers
 
 
 def generate_rows(dimensions, start_date, end_date, user, **kwargs):
     ordering = ['date'] if 'date' in dimensions else []
-    data = reports.api.filter_by_permissions(reports.api.query(
+    data = reports.api_helpers.filter_by_permissions(reports.api.query(
         start_date,
         end_date,
         dimensions,

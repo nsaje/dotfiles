@@ -280,17 +280,25 @@ def get_ad_group_sources_notifications(ad_group_sources):
     return notifications
 
 
-def get_content_ad_notifications(content_ads):
+def get_content_ad_notifications(ad_group):
+    actions = actionlog.models.ActionLog.objects.filter(
+        state=actionlog.constants.ActionState.WAITING,
+        content_ad_source__isnull=False,
+        ad_group_source__ad_group=ad_group,
+        action=actionlog.constants.Action.UPDATE_CONTENT_AD
+    ).select_related('content_ad_source__content_ad')
+
+    content_ads = {}
+    for action in actions:
+        content_ad_id = action.content_ad_source.content_ad.id
+
+        if content_ad_id not in content_ads:
+            content_ads[content_ad_id] = []
+
+        content_ads[content_ad_id].append(action.content_ad_source)
+
     notifications = {}
-    for content_ad in content_ads:
-        actions = actionlog.models.ActionLog.objects.filter(
-            state=actionlog.constants.ActionState.WAITING,
-            content_ad_source__content_ad=content_ad,
-            action=actionlog.constants.Action.UPDATE_CONTENT_AD
-        )
-
-        content_ad_sources = [a.content_ad_source for a in actions]
-
+    for content_ad_id, content_ad_sources in content_ads.items():
         if any(c.state != c.source_state for c in content_ad_sources):
             state = content_ad_sources[0].state  # take first since all are equal
 
@@ -299,7 +307,7 @@ def get_content_ad_notifications(content_ads):
             else:
                 old_state = constants.ContentAdSourceState.ACTIVE
 
-            notifications[str(content_ad.id)] = {
+            notifications[str(content_ad_id)] = {
                 'message': 'Status is being changed from {} to {}'.format(
                     constants.ContentAdSourceState.get_text(old_state),
                     constants.ContentAdSourceState.get_text(state)
@@ -310,28 +318,22 @@ def get_content_ad_notifications(content_ads):
     return notifications
 
 
-def get_content_ad_last_change_dt(content_ads, last_change_dt=None):
-    changed_content_ads = []
-    last_change_dts = []
+def get_content_ad_last_change_dt(ad_group, sources, last_change_dt=None):
+    content_ad_sources = models.ContentAdSource.objects.filter(
+        content_ad__ad_group=ad_group,
+        source=sources
+    ).select_related('content_ad')
 
-    for content_ad in content_ads:
-        modified_by_dts = [s.modified_dt for s in content_ad.contentadsource_set.all()]
+    if last_change_dt is not None:
+        content_ad_sources = content_ad_sources.filter(modified_dt__gt=last_change_dt)
 
-        if not len(modified_by_dts):
-            continue
+    changed_content_ads = set(s.content_ad for s in content_ad_sources)
 
-        content_ad_last_change_dt = max(modified_by_dts)
+    last_change_dt = None
+    if len(content_ad_sources):
+        last_change_dt = max([s.modified_dt for s in content_ad_sources])
 
-        if last_change_dt is not None and content_ad_last_change_dt <= last_change_dt:
-            continue
-
-        changed_content_ads.append(content_ad)
-        last_change_dts.append(content_ad_last_change_dt)
-
-    if not len(last_change_dts):
-        return None, []
-
-    return max(last_change_dts), changed_content_ads
+    return last_change_dt, changed_content_ads
 
 
 def get_content_ad_submission_status(content_ad_sources):
@@ -356,22 +358,6 @@ def get_content_ad_submission_status(content_ad_sources):
         })
 
     return submission_status
-
-
-def transform_content_ad_order(order):
-    desc = False
-    if order.startswith('-'):
-        order = order.replace('-', '')
-        desc = True
-
-    db_order = {
-        'title': 'article__title',
-        'url': 'article__url',
-        'batch_name': 'batch__name',
-        'upload_time': 'batch__created_dt'
-    }[order]
-
-    return '{}{}'.format('-' if desc else '', db_order)
 
 
 def _get_state_update_notification(ags, settings, state):
