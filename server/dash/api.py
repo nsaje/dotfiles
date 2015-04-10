@@ -190,6 +190,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
 
                 if field_name == 'ad_group_name':
                     # adgroup name should have been changed by this point
+                    field_name = 'name'
                     field_value = ad_group_source.get_external_name()
 
                 actionlog.api.set_ad_group_source_settings({field_name: field_value}, ad_group_source, request, order)
