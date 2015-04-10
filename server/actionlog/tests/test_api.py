@@ -405,20 +405,14 @@ class ActionLogApiTestCase(TestCase):
         changes = {'cpc_cc': 0.3}
         api.set_ad_group_source_settings(changes, ad_group_source, request)
 
-        actions = models.ActionLog.objects.filter(
+        action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
-        ).order_by('created_dt')[:1]
+        ).latest('created_dt')
 
-        for action in actions:
-            self.assertEqual(action.action, constants.Action.SET_PROPERTY)
-            self.assertEqual(action.action_type, constants.ActionType.MANUAL)
-            self.assertEqual(action.state, constants.ActionState.WAITING)
-            self.assertTrue('property' in action.payload)
-            self.assertTrue('value' in action.payload)
-
-            for k, v in changes.iteritems():
-                if k == action.payload['property']:
-                    self.assertEqual(action.payload['value'], v)
+        self.assertEqual(action.action, constants.Action.SET_PROPERTY)
+        self.assertEqual(action.action_type, constants.ActionType.MANUAL)
+        self.assertEqual(action.state, constants.ActionState.WAITING)
+        self.assertEqual(action.payload, {'property': 'cpc_cc', 'value': 0.3})
 
         # Two changes
         changes = {'cpc_cc': 0.3, 'daily_budget_cc': 100.0}
