@@ -88,7 +88,8 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Display URL', 'value': ''},
                         {'name': 'Brand name', 'value': ''},
                         {'name': 'Description', 'value': ''},
-                        {'name': 'Call to action', 'value': ''}
+                        {'name': 'Call to action', 'value': ''},
+                        {'name': 'AdGroup name', 'value': ''}
                     ],
                     'show_old_settings': False
                 },
@@ -109,7 +110,8 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Display URL', 'old_value': '', 'value': ''},
                         {'name': 'Brand name', 'old_value': '', 'value': ''},
                         {'name': 'Description', 'old_value': '', 'value': ''},
-                        {'name': 'Call to action', 'old_value': '', 'value': ''}
+                        {'name': 'Call to action', 'old_value': '', 'value': ''},
+                        {'name': 'AdGroup name', 'old_value': '', 'value': ''}
                     ],
                     'show_old_settings': True
                 }]
@@ -173,7 +175,8 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Display URL', 'value': ''},
                         {'name': 'Brand name', 'value': ''},
                         {'name': 'Description', 'value': ''},
-                        {'name': 'Call to action', 'value': ''}
+                        {'name': 'Call to action', 'value': ''},
+                        {'name': 'AdGroup name', 'value': ''}
                     ],
                     'show_old_settings': False
                 }]

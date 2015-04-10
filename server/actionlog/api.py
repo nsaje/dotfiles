@@ -516,7 +516,6 @@ def _init_set_campaign_property(ad_group_source, prop, value, order, request):
         order.id if order else order
     )
     logger.info(msg)
-
     try:
         existing_actions = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source,
@@ -525,7 +524,6 @@ def _init_set_campaign_property(ad_group_source, prop, value, order, request):
             action_type=constants.ActionType.MANUAL
         )
         existing_actions = [a for a in existing_actions if a.payload['property'] == prop]
-
         action = models.ActionLog(
             action=constants.Action.SET_PROPERTY,
             action_type=constants.ActionType.MANUAL,
