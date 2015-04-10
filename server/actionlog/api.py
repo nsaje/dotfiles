@@ -111,8 +111,9 @@ def cancel_expired_actionlogs():
 @transaction.atomic
 def send_delayed_actionlogs(ad_group_sources=None):
     delayed_actionlogs = models.ActionLog.objects.filter(
+        action=constants.Action.SET_CAMPAIGN_STATE,
+        action_type=constants.ActionType.AUTOMATIC,
         state=constants.ActionState.DELAYED,
-        action_type=constants.ActionType.AUTOMATIC
     ).order_by('created_dt')
 
     if ad_group_sources is not None:
@@ -121,6 +122,7 @@ def send_delayed_actionlogs(ad_group_sources=None):
     for actionlog in delayed_actionlogs:
         waiting_actionlogs = models.ActionLog.objects.filter(
             state=constants.ActionState.WAITING,
+            action=constants.Action.SET_CAMPAIGN_STATE,
             action_type=constants.ActionType.AUTOMATIC,
             ad_group_source=actionlog.ad_group_source,
         )
@@ -135,6 +137,7 @@ def send_delayed_actionlogs(ad_group_sources=None):
         )
         actionlog.state = constants.ActionState.WAITING
         actionlog.expiration_dt = models._due_date_default()
+        actionlog.payload['expiration_dt'] = actionlog.expiration_dt
         actionlog.save()
 
         zwei_actions.send(actionlog)
@@ -327,20 +330,20 @@ def _get_campaign_settings(campaign):
 
 
 def _create_manual_action(ad_group_source, conf, request, order=None, message=''):
-    action = models.ActionLog(
-        action=constants.Action.SET_CAMPAIGN_STATE,
-        action_type=constants.ActionType.MANUAL,
-        expiration_dt=None,
-        state=constants.ActionState.WAITING,
-        ad_group_source=ad_group_source,
-        payload={
-            'args': {
-                'conf': conf
-            }
-        },
-        order=order,
-        message=message
-    )
+    for prop, val in conf.iteritems():
+        action = models.ActionLog(
+            action=constants.Action.SET_PROPERTY,
+            action_type=constants.ActionType.MANUAL,
+            expiration_dt=None,
+            state=constants.ActionState.WAITING,
+            ad_group_source=ad_group_source,
+            payload={
+                'property': prop,
+                'value': val
+            },
+            order=order,
+            message=message
+        )
     action.save(request)
 
 
@@ -356,10 +359,12 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=Non
             order=order,
             message="Due to media source being in maintenance mode a manual action is required."
         )
+        return
 
     action = models.ActionLog(
         action=constants.Action.SET_CAMPAIGN_STATE,
         action_type=constants.ActionType.AUTOMATIC,
+        expiration_dt=None,
         state=constants.ActionState.DELAYED,
         ad_group_source=ad_group_source,
         order=order

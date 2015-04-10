@@ -7,8 +7,8 @@
         ad_group_source: 1
         message: ''
         order: null
-        expiration_dt: '2015-02-25T18:30:00'
-        created_dt: '2015-02-25T18:28:00'
+        expiration_dt: null
+        created_dt: '2015-02-25T18:30:00'
         modified_dt: '2015-02-25T18:30:00'
         created_by: null
         modified_by: null
@@ -22,8 +22,8 @@
         ad_group_source: 1
         message: ''
         order: null
-        expiration_dt: '2015-02-25T18:30:00'
-        created_dt: '2015-02-25T18:29:00'
+        expiration_dt: null
+        created_dt: '2015-02-25T18:30:00'
         modified_dt: '2015-02-25T18:30:00'
         created_by: null
         modified_by: null
@@ -37,8 +37,8 @@
         ad_group_source: 2
         message: ''
         order: null
-        expiration_dt: '2015-02-25T18:30:00'
-        created_dt: '2015-02-25T18:31:00'
+        expiration_dt: null
+        created_dt: '2015-02-25T18:30:00'
         modified_dt: '2015-02-25T18:30:00'
         created_by: null
         modified_by: null
@@ -52,10 +52,70 @@
         ad_group_source: 2
         message: ''
         order: null
-        expiration_dt: '2015-02-25T18:30:00'
-        created_dt: '2015-02-25T18:31:00'
+        expiration_dt: null
+        created_dt: '2015-02-25T18:30:00'
         modified_dt: '2015-02-25T18:30:00'
         created_by: null
         modified_by: null
     model: actionlog.actionlog
     pk: 4
+
+-   fields:
+        action: 'get_reports'
+        state: 1
+        action_type: 1
+        ad_group_source: 1
+        message: ''
+        order: null
+        expiration_dt: '2015-02-25T18:30:00'
+        created_dt: '2015-02-25T18:30:00'
+        modified_dt: '2015-02-25T18:30:00'
+        created_by: null
+        modified_by: null
+    model: actionlog.actionlog
+    pk: 5
+
+-   fields:
+        action: 'get_campaign_status'
+        state: 1
+        action_type: 1
+        ad_group_source: 1
+        message: ''
+        order: null
+        expiration_dt: '2015-02-25T18:30:00'
+        created_dt: '2015-02-25T18:30:00'
+        modified_dt: '2015-02-25T18:30:00'
+        created_by: null
+        modified_by: null
+    model: actionlog.actionlog
+    pk: 6
+
+-   fields:
+        action: 'get_reports'
+        state: 1
+        action_type: 1
+        ad_group_source: 2
+        message: ''
+        order: null
+        expiration_dt: '2015-02-25T18:30:00'
+        created_dt: '2015-02-25T18:30:00'
+        modified_dt: '2015-02-25T18:30:00'
+        created_by: null
+        modified_by: null
+    model: actionlog.actionlog
+    pk: 7
+
+-   fields:
+        action: 'get_campaign_status'
+        state: 1
+        action_type: 1
+        ad_group_source: 2
+        message: ''
+        order: null
+        expiration_dt: '2015-02-25T18:30:00'
+        created_dt: '2015-02-25T18:30:00'
+        modified_dt: '2015-02-25T18:30:00'
+        created_by: null
+        modified_by: null
+    model: actionlog.actionlog
+    pk: 8
