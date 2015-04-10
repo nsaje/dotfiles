@@ -182,12 +182,11 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
             # if source supports setting action do an automatic update,
             # otherwise do manual actiontype
             source = ad_group_source.source
-            source_type = source.source_type
-            if field_name == 'start_date' and source_type.can_modify_start_date() or\
-                field_name == 'end_date' and source_type.can_modify_end_date() or\
-                field_name in ('target_devices', 'target_regions') and source_type.can_modify_targeting() or\
-                field_name == 'tracking_code' and source_type.can_modify_tracking_codes() or\
-                field_name == 'ad_group_name' and source_type.can_modify_ad_group_name():
+            if field_name == 'start_date' and source.can_modify_start_date() or\
+                field_name == 'end_date' and source.can_modify_end_date() or\
+                field_name in ('target_devices', 'target_regions') and source.can_modify_targeting() or\
+                field_name == 'tracking_code' and source.can_modify_tracking_codes() or\
+                field_name == 'ad_group_name' and source.can_modify_ad_group_name():
 
                 if field_name == 'ad_group_name':
                     # adgroup name should have been changed by this point

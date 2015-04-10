@@ -608,6 +608,7 @@ class AdGroupAgency(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        previous_ad_group_name = ad_group.name
 
         current_settings = ad_group.get_current_settings()
 
@@ -623,6 +624,8 @@ class AdGroupAgency(api_common.BaseApiView):
         with transaction.atomic():
             settings.save(request)
 
+        current_settings.ad_group_name = previous_ad_group_name
+        settings.ad_group_name = ad_group.name
         api.order_ad_group_settings_update(ad_group, current_settings, settings, request)
 
         user = request.user

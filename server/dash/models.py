@@ -586,6 +586,20 @@ class Source(models.Model):
     def has_3rd_party_dashboard(self):
         return self.source_type.has_3rd_party_dashboard()
 
+    def can_modify_start_date(self):
+        return self.source_type.can_modify_start_date() and not self.maintenance and not self.deprecated
+
+    def can_modify_end_date(self):
+        return self.source_type.can_modify_end_date() and not self.maintenance and not self.deprecated
+
+    def can_modify_targeting(self):
+        return self.source_type.can_modify_targeting() and not self.maintenance and not self.deprecated
+
+    def can_modify_tracking_codes(self):
+        return self.source_type.can_modify_tracking_codes() and not self.maintenance and not self.deprecated
+
+    def can_modify_ad_group_name(self):
+        return self.source_type.can_modify_ad_group_name() and not self.maintenance and not self.deprecated
 
     def __unicode__(self):
         return self.name
