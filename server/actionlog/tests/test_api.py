@@ -412,7 +412,7 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action.action, constants.Action.SET_PROPERTY)
         self.assertEqual(action.action_type, constants.ActionType.MANUAL)
         self.assertEqual(action.state, constants.ActionState.WAITING)
-        self.assertEqual(action.payload, {'property': 'cpc_cc', 'value': 0.3})
+        self.assertEqual(action.payload, {'property': 'cpc_cc', 'value': 3000})
 
         # Two changes
         changes = {'cpc_cc': 0.3, 'daily_budget_cc': 100.0}
