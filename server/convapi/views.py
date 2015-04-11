@@ -61,7 +61,7 @@ def mailgun_gareps(request):
 
     statsd_incr('convapi.accepted_emails')
     try:
-        tasks.process_ga_report.apply_async((request), queue=settings.CELERY_CONVAPI_QUEUE)
+        tasks.process_ga_report.apply_async((request))
     except Exception as e:
         logger.exception(e.message)
 

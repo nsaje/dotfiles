@@ -153,21 +153,25 @@ LOGGING = {
     }
 }
 
-CELERY_ROUTES = {
-    'server.tasks.add': {'queue': 'hipri'},
-}
+
 ## Broker settings.
 BROKER_URL = 'amqp://guest:guest@localhost:5672//'
+
+CELERYD_LOG_FORMAT = LOGGING['formatters']['standard']['format']
 
 # List of modules to import when celery starts.
 CELERY_IMPORTS = ('convapi.tasks', )
 
-## Using the database to store task state and results.
-BROKER_URL = 'amqp://guest:guest@localhost:5672//'
-
+CELERY_QUEUE_CONFIG = {
+    'convapi': {
+                'workers': 1,
+    }
+}
+CELERY_ROUTES = {
+    'server.tasks.add': {'queue': 'convapi'},
+}
 CELERY_ANNOTATIONS = {'convapi.tasks': {'rate_limit': '10/s'}}
 
-CELERYD_LOG_FORMAT = LOGGING['formatters']['standard']['format']
 
 if TESTING:
     LOGGING = None

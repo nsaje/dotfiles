@@ -9,10 +9,7 @@ from django.conf import settings
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'server.settings')
 
-app = Celery('eins',
-             broker=settings.BROKER_URL,
-             backend=settings.BROKER_URL,
-             include=settings.CELERY_IMPORTS)
+app = Celery('eins')
 
 # Using a string here means the worker will not have to
 # pickle the object when using Windows.
