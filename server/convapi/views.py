@@ -5,6 +5,7 @@ from threading import Thread
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from django.db import transaction
+from django.conf import settings
 
 from auth import MailGunRequestAuth, GASourceAuth
 from parse import CsvReport
@@ -13,7 +14,7 @@ from utils.statsd_helper import statsd_incr
 from convapi import exc
 from convapi import models
 from convapi import constants
-
+from convapi import tasks
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +60,10 @@ def mailgun_gareps(request):
         return HttpResponse(status=406)
 
     statsd_incr('convapi.accepted_emails')
+    try:
+        tasks.process_ga_report.apply_async((request), queue=settings.CELERY_CONVAPI_QUEUE)
+    except Exception as e:
+        logger.exception(e.message)
 
     try:
         report_log = models.GAReportLog()

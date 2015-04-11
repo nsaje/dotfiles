@@ -10,9 +10,9 @@ from django.conf import settings
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'server.settings')
 
 app = Celery('eins',
-             broker='amqp://',
-             backend='amqp://',
-             include=['convapi.tasks'])
+             broker=settings.BROKER_URL,
+             backend=settings.BROKER_URL,
+             include=settings.CELERY_IMPORTS)
 
 # Using a string here means the worker will not have to
 # pickle the object when using Windows.
