@@ -43,7 +43,6 @@ def media_source_specified_errors(csvreport):
 @csrf_exempt
 @transaction.atomic
 def mailgun_gareps(request):
-
     if request.method != 'POST':
         logger.warning('ERROR: only POST is supported')
         return HttpResponse(status=406)
@@ -61,7 +60,15 @@ def mailgun_gareps(request):
 
     statsd_incr('convapi.accepted_emails')
     try:
-        tasks.process_ga_report.apply_async((request))
+        tasks.process_ga_report.apply_async((request.POST.get('subject'),
+                                             request.POST.get('Date'),
+                                             request.POST.get('sender'),
+                                             request.POST.get('recipient'),
+                                             request.POST.get('from'),
+                                             request.POST.get('attachment-count', 0),
+                                             request.FILES.get('attachment-1'),
+                                             request.FILES.get('attachment-1').name),
+                                             queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE)
     except Exception as e:
         logger.exception(e.message)
 

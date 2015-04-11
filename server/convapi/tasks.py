@@ -61,27 +61,28 @@ def report_aggregate(csvreport, sender, recipient, subject, date, text, report_l
         report_log.save()
 
 @app.task
-def process_ga_report(request):
+def process_ga_report(subject, date, sender, recipient, from_address, attachment_count,
+                      attachment_files, attachment_name):
     try:
         report_log = models.GAReportLog()
-        report_log.email_subject = request.POST['subject']
-        report_log.from_address = request.POST['from']
+        report_log.email_subject = subject
+        report_log.from_address = from_address
         report_log.state = constants.GAReportState.RECEIVED
 
-        if int(request.POST.get('attachment-count', 0)) != 1:
+        if int(attachment_count) != 1:
             logger.warning('ERROR: single attachment expected')
             report_log.add_error('ERROR: single attachment expected')
             report_log.state = constants.GAReportState.FAILED
             report_log.save()
 
-        attachment = request.FILES['attachment-1']
+        attachment = attachment_files
         if attachment.content_type != 'text/csv':
             logger.warning('ERROR: content type is not CSV')
             report_log.add_error('ERROR: content type is not CSV')
             report_log.state = constants.GAReportState.FAILED
             report_log.save()
 
-        filename = request.FILES['attachment-1'].name
+        filename = attachment_name
         report_log.csv_filename = filename
 
         content = attachment.read()
@@ -117,17 +118,17 @@ def process_ga_report(request):
             report_log.state = constants.GAReportState.EMPTY_REPORT
             report_log.save()
 
-        report_log.sender = request.POST['sender']
-        report_log.email_subject = request.POST['subject']
+        report_log.sender = sender
+        report_log.email_subject = subject
         report_log.for_date = csvreport_date
         report_log.save()
 
         report_aggregate(
             csvreport=csvreport,
-            sender=request.POST['sender'],
-            recipient=request.POST['recipient'],
-            subject=request.POST['subject'],
-            date=request.POST['Date'],
+            sender=sender,
+            recipient=recipient,
+            subject=subject,
+            date=date,
             text=None,
             report_log=report_log
         )
