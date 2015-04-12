@@ -6,6 +6,7 @@ from decimal import Decimal
 import utils.string
 
 from django.conf import settings
+from django.contrib.auth import models as auth_models
 from django.contrib import auth
 from django.db import models, transaction
 
@@ -77,7 +78,7 @@ class Account(models.Model):
         null=False
     )
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
-    groups = models.ManyToManyField(auth.models.Group)
+    groups = models.ManyToManyField(auth_models.Group)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
@@ -198,7 +199,7 @@ class Campaign(models.Model, PermissionMixin):
     )
     account = models.ForeignKey(Account, on_delete=models.PROTECT)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
-    groups = models.ManyToManyField(auth.models.Group)
+    groups = models.ManyToManyField(auth_models.Group)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
