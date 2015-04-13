@@ -67,7 +67,6 @@ def report_aggregate(csvreport, sender, recipient, subject, date, text, report_l
           max_retries=settings.CELERY_TASK_MAX_RETRIES,
           default_retry_delay=settings.CELERY_TASK_RETRY_DEPLAY)
 def process_ga_report(ga_report_task):
-    logger.critical("lololol")
     try:
         report_log = models.GAReportLog()
         report_log.email_subject = ga_report_task.subject

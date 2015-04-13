@@ -67,7 +67,7 @@ def mailgun_gareps(request):
                                              request.POST.get('from'),
                                              None,
                                              request.FILES.get('attachment-1'),
-                                             request.FILES.get('attachment-1').name)
+                                             request.FILES.get('attachment-1').name,
                                              request.POST.get('attachment-count', 0))
 
         tasks.process_ga_report.apply_async((ga_report_task, ),

@@ -154,7 +154,7 @@ LOGGING = {
 }
 
 
-import celeryconfig
+from celeryconfig import *
 CELERYD_LOG_FORMAT = LOGGING['formatters']['standard']['format']
 
 if TESTING:
@@ -172,7 +172,7 @@ if TESTING:
     Z3_API_IMAGE_URL = ''
     Z3_API_THUMBNAIL_URL = ''
 
-    celeryconfig.CELERY_DEFAULT_CONVAPI_QUEUE = celeryconfig.CELERY_QUEUE_TESTING_PREFIX + celeryconfig.CELERY_DEFAULT_CONVAPI_QUEUE
+    CELERY_DEFAULT_CONVAPI_QUEUE = CELERY_QUEUE_TESTING_PREFIX + CELERY_DEFAULT_CONVAPI_QUEUE
 
 # App specific
 ACTIONLOG_RECENT_HOURS = 2
