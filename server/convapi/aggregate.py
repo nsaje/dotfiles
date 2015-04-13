@@ -2,19 +2,22 @@ import logging
 import os.path
 import hashlib
 
+import exc
+from constants import ALLOWED_ERRORS_COUNT
 from parse import LandingPageUrl
 from models import RawPostclickStats, RawGoalConversionStats
 from resolve import resolve_source, resolve_article
+from convapi import constants as convapi_constants
 
 import dash.models
 import reports.models
 import utils.s3helpers
 import reports.update
 
+
 logger = logging.getLogger(__name__)
 
 S3_REPORT_KEY_FORMAT = 'conversionreports/{date}/{filename}'
-
 
 class ReportEmail(object):
 
@@ -94,12 +97,14 @@ class ReportEmail(object):
         source_resolve_lookup = {}
         article_resolve_lookup = {}
 
+        errors_count = 0
         for entry in self.report.get_entries():
             url = LandingPageUrl(entry['Landing Page'])
             if url.source_param not in source_resolve_lookup:
                 source_resolve_lookup[url.source_param] = resolve_source(url.source_param)
             source = source_resolve_lookup[url.source_param]
             if source is None:
+                errors_count += 1
                 logger.warning('ERROR: Cannot resolve source for (ad_group=%s, sender=%s,\
 recipient=%s, subject=%s, maildate=%s, \
 landing_page_url=%s',
@@ -111,7 +116,13 @@ landing_page_url=%s',
                     url.raw_url.decode('ascii', 'ignore')
                  )
                 self.report_log.add_error('Cannot resolve source for url=%s' % url.raw_url.decode('ascii', 'ignore'))
-                continue
+                if errors_count > ALLOWED_ERRORS_COUNT:
+                    self.report_log = convapi_constants.GAReportState.FAILED
+                    self.report_log.add_error('There are too many errors in urls. Adgroup or sources missing in GA report.')
+                    self.report_log.save()
+                    raise exc.TooManyMissingSourcesException("There are too many sources missing in GA report.")
+                else:
+                    continue
 
             if url.raw_url not in article_resolve_lookup:
                 article_resolve_lookup[url.raw_url] = resolve_article(url.clean_url, url.ad_group_id, self.report.get_date(), source, self.report_log)
@@ -197,21 +208,26 @@ bounced_visits=%s, pageviews=%s, duration=%s',
 
         assert len(ad_group_id_set) == 1
         assert len(date_set) == 1
+
         dt = list(date_set)[0]
         ad_group = dash.models.AdGroup.objects.get(id=list(ad_group_id_set)[0])
+        logger.info("\tGA-aggregate - stats_update_adgroup_postclick - before")
         reports.update.stats_update_adgroup_postclick(
             datetime=dt,
             ad_group=ad_group,
             rows=stat_rows
         )
+        logger.info("\tGA-aggregate - stats_update_adgroup_postclick - after")
+        logger.info("\tGA-aggregate - goals_update_adgroup - before")
         reports.update.goals_update_adgroup(
             datetime=dt,
             ad_group=ad_group,
             rows=conv_rows
         )
-
+        logger.info("\tGA-aggregate - goals_update_adgroup - after")
+        logger.info("\tGA-aggregate - add_visits_imported - before")
         self.report_log.add_visits_imported(sum(d['visits'] for d in data.values()))
-
+        logger.info("\tGA-aggregate - add_visits_imported - after")
 
     def save_raw(self):
         goal_fields = self.get_goal_fields()

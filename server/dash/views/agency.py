@@ -95,6 +95,7 @@ class AdGroupSettings(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
+        previous_ad_group_name = ad_group.name
 
         current_settings = ad_group.get_current_settings()
 
@@ -124,6 +125,8 @@ class AdGroupSettings(api_common.BaseApiView):
             and settings.state == constants.AdGroupSettingsState.INACTIVE:
                 actionlog_api.init_pause_ad_group(ad_group, request, order=order)
 
+        current_settings.ad_group_name = previous_ad_group_name
+        settings.ad_group_name = ad_group.name
         api.order_ad_group_settings_update(ad_group, current_settings, settings, request)
 
         user = request.user
@@ -182,6 +185,7 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.brand_name = resource['brand_name']
         settings.description = resource['description']
         settings.call_to_action = resource['call_to_action']
+        settings.ad_group_name = resource['name']
 
 
 class CampaignSettings(api_common.BaseApiView):
@@ -604,6 +608,7 @@ class AdGroupAgency(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        previous_ad_group_name = ad_group.name
 
         current_settings = ad_group.get_current_settings()
 
@@ -619,6 +624,8 @@ class AdGroupAgency(api_common.BaseApiView):
         with transaction.atomic():
             settings.save(request)
 
+        current_settings.ad_group_name = previous_ad_group_name
+        settings.ad_group_name = ad_group.name
         api.order_ad_group_settings_update(ad_group, current_settings, settings, request)
 
         user = request.user

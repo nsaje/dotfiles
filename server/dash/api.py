@@ -164,6 +164,10 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
     if not changes:
         return
 
+    order = actionlog.models.ActionLogOrder.objects.create(
+        order_type=actionlog.constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
+    )
+
     for field_name, field_value in changes.iteritems():
         # State of an ad group is set automatically.
         # For changes of cpc_cc and daily_budget_cc, mail is sufficient
@@ -173,8 +177,25 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                           'brand_name', 'description', 'call_to_action']:
             continue
 
-        actionlog.api.init_set_ad_group_property_order(ad_group, request, prop=field_name, value=field_value)
+        ad_group_sources = ad_group.adgroupsource_set.all()
+        for ad_group_source in ad_group_sources:
+            # if source supports setting action do an automatic update,
+            # otherwise do manual actiontype
+            source = ad_group_source.source
+            if field_name == 'start_date' and source.can_modify_start_date() or\
+                field_name == 'end_date' and source.can_modify_end_date() or\
+                field_name in ('target_devices', 'target_regions') and source.can_modify_targeting() or\
+                field_name == 'tracking_code' and source.can_modify_tracking_codes() or\
+                field_name == 'ad_group_name' and source.can_modify_ad_group_name():
 
+                if field_name == 'ad_group_name':
+                    # adgroup name should have been changed by this point
+                    field_name = 'name'
+                    field_value = ad_group_source.get_external_name()
+
+                actionlog.api.set_ad_group_source_settings({field_name: field_value}, ad_group_source, request, order)
+            else:
+                actionlog.api.init_set_ad_group_property_order(ad_group_source.ad_group, request, source=ad_group_source, prop=field_name, value=field_value)
 
 def reconcile_articles(ad_group, raw_articles):
     if not ad_group:

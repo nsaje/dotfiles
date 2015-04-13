@@ -173,14 +173,20 @@ class ActionLogApiTestCase(TestCase):
 
         api.set_ad_group_source_settings(changes, source_settings.ad_group_source, request)
 
-        action = models.ActionLog.objects.filter(
+        actions = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
-        ).latest('created_dt')
+        ).order_by('created_dt')[:3]
 
-        self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
-        self.assertEqual(action.action_type, constants.ActionType.MANUAL)
-        self.assertEqual(action.state, constants.ActionState.WAITING)
-        self.assertEqual(action.payload, {'args': {'conf': changes}})
+        for action in actions:
+            self.assertEqual(action.action, constants.Action.SET_PROPERTY)
+            self.assertEqual(action.action_type, constants.ActionType.MANUAL)
+            self.assertEqual(action.state, constants.ActionState.WAITING)
+            self.assertTrue('property' in action.payload)
+            self.assertTrue('value' in action.payload)
+
+            for k, v in changes.iteritems():
+                if k == action.payload['property']:
+                    self.assertEqual(action.payload['value'], v)
 
     @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
     def test_init_enable_ad_group_non_maintenance_source(self):
@@ -269,11 +275,10 @@ class ActionLogApiTestCase(TestCase):
             ad_group_source=ad_group_source
         ).latest('created_dt')
 
-        self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(action.action, constants.Action.SET_PROPERTY)
         self.assertEqual(action.action_type, constants.ActionType.MANUAL)
         self.assertEqual(action.state, constants.ActionState.WAITING)
-        self.assertEqual(action.payload.get('args', {}).get('conf'),
-                         {'state': dashconstants.AdGroupSourceSettingsState.ACTIVE})
+        self.assertEqual(action.payload, {'property': 'state', 'value': dashconstants.AdGroupSourceSettingsState.ACTIVE})
 
     @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
     def test_init_pause_ad_group_non_maintenance_source(self):
@@ -359,11 +364,10 @@ class ActionLogApiTestCase(TestCase):
             ad_group_source=ad_group_source
         ).latest('created_dt')
 
-        self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(action.action, constants.Action.SET_PROPERTY)
         self.assertEqual(action.action_type, constants.ActionType.MANUAL)
         self.assertEqual(action.state, constants.ActionState.WAITING)
-        self.assertEqual(action.payload.get('args', {}).get('conf'),
-                         {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
+        self.assertEqual(action.payload, {'property': 'state', 'value': dashconstants.AdGroupSourceSettingsState.INACTIVE})
 
         source_settings = dashmodels.AdGroupSourceSettings(
             ad_group_source=ad_group_source,
@@ -379,11 +383,10 @@ class ActionLogApiTestCase(TestCase):
             ad_group_source=ad_group_source
         ).latest('created_dt')
 
-        self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(action.action, constants.Action.SET_PROPERTY)
         self.assertEqual(action.action_type, constants.ActionType.MANUAL)
         self.assertEqual(action.state, constants.ActionState.WAITING)
-        self.assertEqual(action.payload.get('args', {}).get('conf'),
-                         {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
+        self.assertEqual(action.payload, {'property': 'state', 'value': dashconstants.AdGroupSourceSettingsState.INACTIVE})
 
     @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
     def test_delaying_set_ad_group_source_settings(self):
@@ -401,26 +404,34 @@ class ActionLogApiTestCase(TestCase):
         # Only one change per ad_group_source
         changes = {'cpc_cc': 0.3}
         api.set_ad_group_source_settings(changes, ad_group_source, request)
+
         action = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source
         ).latest('created_dt')
 
-        self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(action.action, constants.Action.SET_PROPERTY)
         self.assertEqual(action.action_type, constants.ActionType.MANUAL)
         self.assertEqual(action.state, constants.ActionState.WAITING)
-        self.assertEqual(action.payload.get('args', {}).get('conf'), changes)
+        self.assertEqual(action.payload, {'property': 'cpc_cc', 'value': 3000})
 
         # Two changes
         changes = {'cpc_cc': 0.3, 'daily_budget_cc': 100.0}
         api.set_ad_group_source_settings(changes, ad_group_source, request)
-        action = models.ActionLog.objects.filter(
-            ad_group_source=ad_group_source
-        ).latest('created_dt')
 
-        self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
-        self.assertEqual(action.action_type, constants.ActionType.MANUAL)
-        self.assertEqual(action.state, constants.ActionState.WAITING)
-        self.assertEqual(action.payload.get('args', {}).get('conf'),changes)
+        actions = models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source
+        ).order_by('created_dt')[:3]
+
+        for action in actions:
+            self.assertEqual(action.action, constants.Action.SET_PROPERTY)
+            self.assertEqual(action.action_type, constants.ActionType.MANUAL)
+            self.assertEqual(action.state, constants.ActionState.WAITING)
+            self.assertTrue('property' in action.payload)
+            self.assertTrue('value' in action.payload)
+
+            for k, v in changes.iteritems():
+                if k == action.payload['property']:
+                    self.assertEqual(action.payload['value'], v)
 
         # Source is NOT in maintenance mode
         ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group,
@@ -705,6 +716,322 @@ class ActionLogApiCancelExpiredTestCase(TestCase):
             {action.id for action in failed_actionlogs},
             {action.id for action in waiting_actionlogs_after}
         )
+
+
+class SendDelayedActionsTestCase(TestCase):
+
+    fixtures = ['test_api.yaml', 'test_actionlog_send_delayed.yaml']
+
+    def setUp(self):
+        patcher_urlopen = mock.patch('utils.request_signer._secure_opener.open')
+        self.addCleanup(patcher_urlopen.stop)
+
+        mock_urlopen = patcher_urlopen.start()
+        test_helper.prepare_mock_urlopen(mock_urlopen)
+
+        self.credentials_encription_key = settings.CREDENTIALS_ENCRYPTION_KEY
+        settings.CREDENTIALS_ENCRYPTION_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+        self.maxDiff = None
+
+    def tearDown(self):
+        settings.CREDENTIALS_ENCRYPTION_KEY = self.credentials_encription_key
+
+    @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
+    def test_ad_group_specified(self):
+        utcnow = datetime.datetime(2015, 2, 25, 18, 45)
+        models.datetime.utcnow = classmethod(lambda cls: utcnow)
+
+        ags1 = dashmodels.AdGroupSource.objects.get(id=1)
+        ags2 = dashmodels.AdGroupSource.objects.get(id=2)
+
+        delayed_actions = models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                          state=constants.ActionState.DELAYED,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(delayed_actions.count(), 2)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         0)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_REPORTS).count(),
+                         1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_CAMPAIGN_STATUS).count(),
+                         1)
+
+        for action in delayed_actions:
+            self.assertIsNone(action.expiration_dt)
+
+        delayed_actions = models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                          state=constants.ActionState.DELAYED,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(delayed_actions.count(), 2)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.SET_CAMPAIGN_STATE).count(),
+                         0)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_REPORTS).count(),
+                         1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_CAMPAIGN_STATUS).count(),
+                         1)
+
+        for action in delayed_actions:
+            self.assertIsNone(action.expiration_dt)
+
+        api.send_delayed_actionlogs([ags1])
+
+        delayed_actions = models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                          state=constants.ActionState.DELAYED,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(delayed_actions.count(), 1)
+        waiting_actions = models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                          state=constants.ActionState.WAITING,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(waiting_actions.count(), 1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_REPORTS).count(),
+                         1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_CAMPAIGN_STATUS).count(),
+                         1)
+
+        for action in delayed_actions:
+            self.assertIsNone(action.expiration_dt)
+
+        for action in waiting_actions:
+            self.assertEquals(action.expiration_dt, datetime.datetime(2015, 2, 25, 19, 15))
+            self.assertEquals(action.payload['expiration_dt'], '2015-02-25T19:15:00')
+
+        delayed_actions = models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                          state=constants.ActionState.DELAYED,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(delayed_actions.count(), 2)
+        waiting_actions = models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                          state=constants.ActionState.WAITING,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(waiting_actions.count(), 0)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_REPORTS).count(),
+                         1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_CAMPAIGN_STATUS).count(),
+                         1)
+
+        for action in delayed_actions:
+            self.assertIsNone(action.expiration_dt)
+
+        for action in waiting_actions:
+            self.assertEquals(action.expiration_dt, datetime.datetime(2015, 2, 25, 19, 15))
+            self.assertEquals(action.payload['expiration_dt'], '2015-02-25T19:15:00')
+
+        api.send_delayed_actionlogs([ags1])
+
+        delayed_actions = models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                          state=constants.ActionState.DELAYED,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(delayed_actions.count(), 1)
+        waiting_actions = models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                          state=constants.ActionState.WAITING,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(waiting_actions.count(), 1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_REPORTS).count(),
+                         1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_CAMPAIGN_STATUS).count(),
+                         1)
+
+        for action in delayed_actions:
+            self.assertIsNone(action.expiration_dt)
+
+        for action in waiting_actions:
+            self.assertEquals(action.expiration_dt, datetime.datetime(2015, 2, 25, 19, 15))
+            self.assertEquals(action.payload['expiration_dt'], '2015-02-25T19:15:00')
+
+        delayed_actions = models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                          state=constants.ActionState.DELAYED,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(delayed_actions.count(), 2)
+        waiting_actions = models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                          state=constants.ActionState.WAITING,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(waiting_actions.count(), 0)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_REPORTS).count(),
+                         1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_CAMPAIGN_STATUS).count(),
+                         1)
+
+        for action in delayed_actions:
+            self.assertIsNone(action.expiration_dt)
+
+        for action in waiting_actions:
+            self.assertEquals(action.expiration_dt, datetime.datetime(2015, 2, 25, 19, 15))
+            self.assertEquals(action.payload['expiration_dt'], '2015-02-25T19:15:00')
+
+        api.send_delayed_actionlogs([ags2])
+
+        delayed_actions = models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                          state=constants.ActionState.DELAYED,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(delayed_actions.count(), 1)
+        waiting_actions = models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                          state=constants.ActionState.WAITING,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(waiting_actions.count(), 1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_REPORTS).count(),
+                         1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_CAMPAIGN_STATUS).count(),
+                         1)
+
+        for action in delayed_actions:
+            self.assertIsNone(action.expiration_dt)
+
+        for action in waiting_actions:
+            self.assertEquals(action.expiration_dt, datetime.datetime(2015, 2, 25, 19, 15))
+            self.assertEquals(action.payload['expiration_dt'], '2015-02-25T19:15:00')
+
+        delayed_actions = models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                          state=constants.ActionState.DELAYED,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(delayed_actions.count(), 1)
+        waiting_actions = models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                          state=constants.ActionState.WAITING,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(waiting_actions.count(), 1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_REPORTS).count(),
+                         1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_CAMPAIGN_STATUS).count(),
+                         1)
+
+        for action in delayed_actions:
+            self.assertIsNone(action.expiration_dt)
+
+        for action in waiting_actions:
+            self.assertEquals(action.expiration_dt, datetime.datetime(2015, 2, 25, 19, 15))
+            self.assertEquals(action.payload['expiration_dt'], '2015-02-25T19:15:00')
+
+    @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
+    def test_ad_group_not_specified(self):
+        utcnow = datetime.datetime(2015, 2, 25, 18, 45)
+        models.datetime.utcnow = classmethod(lambda cls: utcnow)
+
+        ags1 = dashmodels.AdGroupSource.objects.get(id=1)
+        ags2 = dashmodels.AdGroupSource.objects.get(id=2)
+
+        delayed_actions = models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                          state=constants.ActionState.DELAYED,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(delayed_actions.count(), 2)
+        waiting_actions = models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                          state=constants.ActionState.WAITING,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(waiting_actions.count(), 0)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_REPORTS).count(),
+                         1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_CAMPAIGN_STATUS).count(),
+                         1)
+
+        for action in delayed_actions:
+            self.assertIsNone(action.expiration_dt)
+
+        delayed_actions = models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                          state=constants.ActionState.DELAYED,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(delayed_actions.count(), 2)
+        waiting_actions = models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                          state=constants.ActionState.WAITING,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(waiting_actions.count(), 0)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_REPORTS).count(),
+                         1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_CAMPAIGN_STATUS).count(),
+                         1)
+
+        for action in delayed_actions:
+            self.assertIsNone(action.expiration_dt)
+
+        api.send_delayed_actionlogs()
+
+        delayed_actions = models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                          state=constants.ActionState.DELAYED,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(delayed_actions.count(), 1)
+        waiting_actions = models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                          state=constants.ActionState.WAITING,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(waiting_actions.count(), 1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_REPORTS).count(),
+                         1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags1,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_CAMPAIGN_STATUS).count(),
+                         1)
+
+        for action in delayed_actions:
+            self.assertIsNone(action.expiration_dt)
+
+        for action in waiting_actions:
+            self.assertEquals(action.expiration_dt, datetime.datetime(2015, 2, 25, 19, 15))
+            self.assertEquals(action.payload['expiration_dt'], '2015-02-25T19:15:00')
+
+        delayed_actions = models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                          state=constants.ActionState.DELAYED,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(delayed_actions.count(), 1)
+        waiting_actions = models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                          state=constants.ActionState.WAITING,
+                                                          action=constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(waiting_actions.count(), 1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_REPORTS).count(),
+                         1)
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ags2,
+                                                         state=constants.ActionState.WAITING,
+                                                         action=constants.Action.FETCH_CAMPAIGN_STATUS).count(),
+                         1)
+
+        for action in delayed_actions:
+            self.assertIsNone(action.expiration_dt)
+
+        for action in waiting_actions:
+            self.assertEquals(action.expiration_dt, datetime.datetime(2015, 2, 25, 19, 15))
+            self.assertEquals(action.payload['expiration_dt'], '2015-02-25T19:15:00')
 
 
 class SetCampaignPropertyTestCase(TestCase):

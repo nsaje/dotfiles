@@ -26,6 +26,8 @@ logger = logging.getLogger(__name__)
 
 @csrf_exempt
 def zwei_callback(request, action_id):
+    logger.info('Received zwei callback: %s', action_id)
+
     _validate_callback(request, action_id)
     action = _get_action(action_id)
 
@@ -141,8 +143,6 @@ def _process_zwei_response(action, data, request):
         conf = action.payload['args']['conf']
 
         dashapi.update_ad_group_source_state(ad_group_source, conf)
-        actionlog.api.send_delayed_actionlogs([ad_group_source])
-
     elif action.action == actionlogconstants.Action.CREATE_CAMPAIGN:
         dashapi.update_campaign_key(
             action.ad_group_source,
@@ -171,8 +171,12 @@ def _process_zwei_response(action, data, request):
             data['data']
         )
 
+    logger.info('Process action successful. Action: %s', action)
     action.state = actionlogconstants.ActionState.SUCCESS
     action.save()
+
+    if action.action in actionlog.models.DELAYED_ACTIONS:
+        actionlog.api.send_delayed_actionlogs([ad_group_source])
 
 
 def _has_changed(data, ad_group, source, date):

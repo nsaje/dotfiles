@@ -58,10 +58,23 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
         );
     };
 
+    var replaceStart = /^https?:\/\//;
+    var replaceEnd = /\/$/;
+    function cleanDisplayUrl(settings) {
+        if(settings.displayUrl === undefined) {
+            return;
+        }
+
+        settings.displayUrl = settings.displayUrl.replace(replaceStart,'');
+        settings.displayUrl = settings.displayUrl.replace(replaceEnd, '');
+    };
+
     $scope.saveSettings = function () {
         $scope.saved = null;
         $scope.discarded = null;
         $scope.saveRequestInProgress = true;
+
+        cleanDisplayUrl($scope.settings);
 
         api.adGroupSettings.save($scope.settings).then(
             function (data) {

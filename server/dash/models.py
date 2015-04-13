@@ -6,6 +6,7 @@ from decimal import Decimal
 import utils.string
 
 from django.conf import settings
+from django.contrib.auth import models as auth_models
 from django.contrib import auth
 from django.db import models, transaction
 
@@ -13,6 +14,9 @@ from dash import constants
 from utils import encryption_helpers
 from utils import statsd_helper
 from utils import exc
+
+
+SHORT_NAME_MAX_LENGTH = 22
 
 
 class PermissionMixin(object):
@@ -74,7 +78,7 @@ class Account(models.Model):
         null=False
     )
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
-    groups = models.ManyToManyField(auth.models.Group)
+    groups = models.ManyToManyField(auth_models.Group)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
@@ -195,7 +199,7 @@ class Campaign(models.Model, PermissionMixin):
     )
     account = models.ForeignKey(Account, on_delete=models.PROTECT)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
-    groups = models.ManyToManyField(auth.models.Group)
+    groups = models.ManyToManyField(auth_models.Group)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
@@ -514,6 +518,21 @@ class SourceType(models.Model):
     def has_3rd_party_dashboard(self):
         return self.available_actions.filter(action=constants.SourceAction.HAS_3RD_PARTY_DASHBOARD).exists()
 
+    def can_modify_start_date(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_START_DATE).exists()
+
+    def can_modify_end_date(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_END_DATE).exists()
+
+    def can_modify_targeting(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_TARGETING).exists()
+
+    def can_modify_tracking_codes(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_TRACKING_CODES).exists()
+
+    def can_modify_ad_group_name(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_AD_GROUP_NAME).exists()
+
     def __str__(self):
         return self.type
 
@@ -568,6 +587,20 @@ class Source(models.Model):
     def has_3rd_party_dashboard(self):
         return self.source_type.has_3rd_party_dashboard()
 
+    def can_modify_start_date(self):
+        return self.source_type.can_modify_start_date() and not self.maintenance and not self.deprecated
+
+    def can_modify_end_date(self):
+        return self.source_type.can_modify_end_date() and not self.maintenance and not self.deprecated
+
+    def can_modify_targeting(self):
+        return self.source_type.can_modify_targeting() and not self.maintenance and not self.deprecated
+
+    def can_modify_tracking_codes(self):
+        return self.source_type.can_modify_tracking_codes() and not self.maintenance and not self.deprecated
+
+    def can_modify_ad_group_name(self):
+        return self.source_type.can_modify_ad_group_name() and not self.maintenance and not self.deprecated
 
     def __unicode__(self):
         return self.name
@@ -787,6 +820,33 @@ class AdGroupSource(models.Model):
 
         return '_z1_adgid=%s&_z1_msid=%s' % (self.ad_group.id, msid)
 
+    def get_external_name(self): 
+        #, account_name, campaign_name, ad_group_name, ad_group_id, source_name):
+        account_name = self.ad_group.campaign.account.name
+        campaign_name = self.ad_group.campaign.name
+        ad_group_name = self.ad_group.name
+        ad_group_id = self.ad_group.id
+        source_name = self.source.name
+        return u'ONE: {} / {} / {} / {} / {}'.format(
+            self._shorten_name(account_name),
+            self._shorten_name(campaign_name),
+            self._shorten_name(ad_group_name),
+            ad_group_id,
+            source_name
+        )
+
+    def _shorten_name(self, name):
+        # if the first word is too long, cut it
+        words = name.split()
+        if not len(words) or len(words[0]) > SHORT_NAME_MAX_LENGTH:
+            return name[:SHORT_NAME_MAX_LENGTH]
+
+        while len(name) > SHORT_NAME_MAX_LENGTH:
+            name = name.rsplit(None, 1)[0]
+
+        return name
+
+
     def save(self, request, *args, **kwargs):
         super(AdGroupSource, self).save(*args, **kwargs)
         if not AdGroupSourceSettings.objects.filter(ad_group_source=self).exists():
@@ -814,7 +874,8 @@ class AdGroupSettings(SettingsBase):
         'display_url',
         'brand_name',
         'description',
-        'call_to_action'
+        'call_to_action',
+        'ad_group_name'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -849,6 +910,7 @@ class AdGroupSettings(SettingsBase):
     brand_name = models.CharField(max_length=25, blank=True, default='')
     description = models.CharField(max_length=100, blank=True, default='')
     call_to_action = models.CharField(max_length=25, blank=True, default='')
+    ad_group_name = models.CharField(max_length=127, blank=True, default='')
 
     changes_text = models.TextField(blank=True, null=True)
 
@@ -886,7 +948,8 @@ class AdGroupSettings(SettingsBase):
             'display_url': 'Display URL',
             'brand_name': 'Brand name',
             'description': 'Description',
-            'call_to_action': 'Call to action'
+            'call_to_action': 'Call to action',
+            'ad_group_name': 'AdGroup name'
         }
 
         return NAMES[prop_name]

@@ -372,6 +372,7 @@ class AvailableSources(api_common.BaseApiView):
             sources.append({
                 'id': str(source.id),
                 'name': source.name,
+                'deprecated': source.deprecated,
             })
 
         return self.create_api_response({
@@ -438,22 +439,14 @@ class AdGroupSources(api_common.BaseApiView):
 
         ad_group_source.save(request)
 
-        name = 'ONE: {} / {} / {} / {} / {}'.format(
-            ad_group.campaign.account.name.encode('utf-8'),
-            ad_group.campaign.name.encode('utf-8'),
-            ad_group.name.encode('utf-8'),
-            ad_group.id,
-            source.name.encode('utf-8')
-        )
-
-        actionlog.api.create_campaign(ad_group_source, name, request)
+        external_name = ad_group_source.get_external_name()
+        actionlog.api.create_campaign(ad_group_source, external_name, request)
         self._add_to_history(ad_group_source, request)
 
         return self.create_api_response(None)
 
     def _add_to_history(self, ad_group_source, request):
         changes_text = '{} campaign created.'.format(ad_group_source.source.name)
-
         try:
             latest_ad_group_settings = models.AdGroupSettings.objects \
                 .filter(ad_group=ad_group_source.ad_group) \

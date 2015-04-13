@@ -101,6 +101,7 @@ COVERAGE_ENABLED = 'COVERAGE_ENABLED' in os.environ
 
 DEFAULT_FROM_EMAIL = ''
 
+from celeryconfig import *
 from localsettings import *
 
 LOGGING = {
@@ -152,6 +153,7 @@ LOGGING = {
         }
     }
 }
+CELERYD_LOG_FORMAT = LOGGING['formatters']['standard']['format']
 
 if TESTING:
     LOGGING = None
@@ -168,6 +170,7 @@ if TESTING:
     Z3_API_IMAGE_URL = ''
     Z3_API_THUMBNAIL_URL = ''
 
+    CELERY_DEFAULT_CONVAPI_QUEUE = CELERY_QUEUE_PREFIX + CELERY_DEFAULT_CONVAPI_QUEUE
 
 # App specific
 ACTIONLOG_RECENT_HOURS = 2

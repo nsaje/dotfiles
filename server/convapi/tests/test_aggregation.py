@@ -5,6 +5,7 @@ from django.test import TestCase
 import convapi.parse
 import convapi.models
 import convapi.aggregate
+import convapi.views
 import reports.api
 import reports.models
 
@@ -16,6 +17,7 @@ class GAReportsAggregationTest(TestCase):
     def setUp(self):
         self.report_log = convapi.models.GAReportLog()
         self.csvreport = convapi.parse.CsvReport(open('convapi/fixtures/ga_report_20140901.csv').read(), self.report_log)
+        self.csvreport_errors = convapi.parse.CsvReport(open('convapi/fixtures/errors_ga_report_20140901.csv').read(), self.report_log)
         self.report_date = datetime.date(2014, 9, 1)
         self.remail = convapi.aggregate.ReportEmail(
             sender='some sender',
@@ -27,11 +29,31 @@ class GAReportsAggregationTest(TestCase):
             report_log=self.report_log
         )
 
+    def test_is_ad_group_specified(self):
+        self.assertEqual((False, ['/lasko?_z1_a&_z1_msid=yahoo.com&_z1_kid=beer']),
+                         self.csvreport_errors.is_ad_group_specified())
+
+    def test_is_media_source_specified(self):
+        self.assertEqual((False, ['/lasko?_z1_adgid=1&_z1_msid=', '/lasko?_z1_adgid=1&_z1_msid=', '/union?_z1_adgid=1&_z1_msid=']),
+                         self.csvreport_errors.is_media_source_specified())
+
+    def test_too_many_errors(self):
+        self.assertFalse(convapi.views.too_many_errors(['error-url.com', 'error-url1.com']))
+        self.assertTrue(convapi.views.too_many_errors(['error-url.com', 'error-url1.com1', 'error-url2.com']))
+
+    def test_ad_group_specified_errors(self):
+        self.assertEqual(['/lasko?_z1_a&_z1_msid=yahoo.com&_z1_kid=beer'],
+                         convapi.views.ad_group_specified_errors(self.csvreport_errors))
+
+    def test_media_source_specified_errors(self):
+        self.assertEqual(['/lasko?_z1_adgid=1&_z1_msid=', '/lasko?_z1_adgid=1&_z1_msid=', '/union?_z1_adgid=1&_z1_msid='],
+                         convapi.views.media_source_specified_errors(self.csvreport_errors))
+
     def test_report_aggregation(self):
         self.assertEqual(reports.models.ArticleStats.objects.filter(datetime=self.report_date).count(), 1)
 
-        self.assertTrue(self.csvreport.is_ad_group_specified())
-        self.assertTrue(self.csvreport.is_media_source_specified())
+        self.assertEqual((True, []), self.csvreport.is_ad_group_specified())
+        self.assertEqual((True, []), self.csvreport.is_media_source_specified())
         self.assertEqual(self.remail.report.get_date(), self.report_date)
         self.assertEqual(len(self.remail.report.get_entries()), 7)
         self.assertEqual(self.remail.report.get_fieldnames(), [

@@ -26,7 +26,7 @@
                 <div class="title">Filter by Media Source</div>
                 <select ui-select2="{minimumResultsForSearch: -1, formatNoMatches: 'No sources', dropdownCssClass: 'select2-filter'}" ng-model="sourceIdToFilter" ng-change="addFilteredSource(sourceIdToFilter)" class="add-source-filter" data-placeholder="+ Media Source">
                     <option value=""></option>
-                    <option ng-repeat="source in availableSources | orderBy:'name' | filter:isSourceNotFiltered" value="{{source.id}}">{{source.name}}</option>
+                    <option ng-repeat="source in availableSources | orderBy:'name' | filter:isSourceValidFilterChoice" value="{{source.id}}">{{source.name}}</option>
                 </select>
                 <div class="filtered-source" ng-repeat="source in availableSources | orderBy:'name' | filter:isSourceFiltered" ng-click="removeFilteredSource(source.id)">
                     {{source.name}}
