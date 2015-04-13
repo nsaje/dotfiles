@@ -73,6 +73,12 @@ def mailgun_gareps(request):
         tasks.process_ga_report.apply_async((ga_report_task, ),
                                              queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE)
     except Exception as e:
+        report_log = models.GAReportLog()
+        report_log.email_subject = ga_report_task.subject
+        report_log.from_address = ga_report_task.from_address
+        report_log.csv_filename = request.FILES.get('attachment-1').name
+        report_log.state = constants.GAReportState.FAILED
+        report_log.save()
         logger.exception(e.message)
 
     return HttpResponse(status=200)
