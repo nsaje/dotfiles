@@ -1,0 +1,258 @@
+# test user
+
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: luka.silovinac@zemanta.com
+        first_name: ''
+        groups: []
+        is_active: true
+        is_staff: true
+        is_superuser: true
+        last_login: '2014-06-16T12:21:29'
+        last_name: ''
+        password: pbkdf2_sha256$12000$ekG2j1OyTgy0$dzdTxiFUkB0uQXWdvV4enBMdOs/8D/J7Jl5zDtKsMZA=
+        user_permissions: []
+        username: ''
+    model: zemauth.user
+    pk: 1
+
+# test account
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test account 1'
+    model: dash.account
+    pk: 1
+
+# test campaign
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        account: 1 # test account 1
+        name: 'test campaign 1'
+    model: dash.campaign
+    pk: 1
+
+# test adgroup
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'test adgroup 1'
+    model: dash.adgroup
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'test adgroup 2'
+    model: dash.adgroup
+    pk: 2
+
+# test uploadbatch
+
+-   fields:
+        name: 'batch 1'
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.uploadbatch
+    pk: 1
+
+# test contentad
+
+-   fields:
+        image_id: '123456789'
+        batch: 1
+        url: 'http://testurl.com'
+        title: 'Test Article'
+        ad_group: 1
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.contentad
+    pk: 1
+
+-   fields:
+        image_id: '123456789'
+        batch: 1
+        url: 'http://testurl.com'
+        title: 'Test Article'
+        ad_group: 1
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.contentad
+    pk: 2
+
+-   fields:
+        image_id: '123456789'
+        batch: 1
+        url: 'http://testurl.com'
+        title: 'Test Article'
+        ad_group: 2
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.contentad
+    pk: 3
+
+# test source
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: AdsNative
+        tracking_slug: 'industrybrains'
+        maintenance: false
+        bidder_slug: 'adsnative'
+    model: dash.source
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Gravity
+        tracking_slug: 'gravity'
+        maintenance: false
+    model: dash.source
+    pk: 2
+
+# test contentadsource
+
+-   fields:
+        source: 1
+        content_ad: 1
+        submission_status: 1
+        state: 1
+        source_state: NULL
+        source_content_ad_id: NULL
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 1
+
+-   fields:
+        source: 1
+        content_ad: 2
+        submission_status: 2
+        state: 2
+        source_state: 2
+        source_content_ad_id: '123456789'
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 2
+
+-   fields:
+        source: 2
+        content_ad: 1
+        submission_status: 1
+        state: 1
+        source_state: NULL
+        source_content_ad_id: NULL
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 3
+
+-   fields:
+        source: 2
+        content_ad: 2
+        submission_status: 2
+        state: 2
+        source_state: 2
+        source_content_ad_id: '123456789'
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 4
+
+-   fields:
+        source: 2
+        content_ad: 3
+        submission_status: 2
+        state: 2
+        source_state: 2
+        source_content_ad_id: '123456789'
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 5
+
+# test contentadstats
+
+-   fields:
+        content_ad_source: 1
+        content_ad: 1
+        source: 1
+
+        impressions: 1000000
+        clicks: 100
+        cost_cc: 150000
+        data_cost_cc: 150000
+
+        date: '2015-02-01'
+        created_dt: '2015-02-23T00:00:00'
+    model: reports.contentadstats
+    pk: 1
+
+-   fields:
+        content_ad_source: 2
+        content_ad: 2
+        source: 1
+
+        impressions: 2000000
+        clicks: 200
+        cost_cc: 250000
+        data_cost_cc: 250000
+
+        date: '2015-02-01'
+        created_dt: '2015-02-23T00:00:00'
+    model: reports.contentadstats
+    pk: 2
+
+-   fields:
+        content_ad_source: 3
+        content_ad: 1
+        source: 2
+
+        impressions: 3000000
+        clicks: 300
+        cost_cc: 350000
+        data_cost_cc: 350000
+
+        date: '2015-02-02'
+        created_dt: '2015-02-23T00:00:00'
+    model: reports.contentadstats
+    pk: 3
+
+-   fields:
+        content_ad_source: 4
+        content_ad: 2
+        source: 2
+
+        impressions: 4000000
+        clicks: 400
+        cost_cc: 450000
+        data_cost_cc: 450000
+
+        date: '2015-02-02'
+        created_dt: '2015-02-23T00:00:00'
+    model: reports.contentadstats
+    pk: 4
+
+-   fields:
+        content_ad_source: 5
+        content_ad: 3
+        source: 2
+
+        impressions: 4000000
+        clicks: 400
+        cost_cc: 450000
+        data_cost_cc: 450000
+
+        date: '2015-02-02'
+        created_dt: '2015-02-23T00:00:00'
+    model: reports.contentadstats
+    pk: 5
