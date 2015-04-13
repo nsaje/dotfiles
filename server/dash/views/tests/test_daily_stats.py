@@ -293,3 +293,71 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
 
         source = models.Source.objects.get(pk=source_id)
         self._assert_response(response, source_id, source.name)
+
+
+@patch('dash.views.daily_stats.reports.api_contentads.query')
+class AdGroupAdsPlusDailyStatsTest(TestCase):
+    fixtures = ['test_views']
+
+    def setUp(self):
+        password = 'secret'
+        self.user = User.objects.get(pk=1)
+
+        self.client.login(username=self.user.email, password=password)
+
+    def test_get(self, mock_query):
+        start_date = datetime.date(2015, 2, 1)
+        end_date = datetime.date(2015, 2, 2)
+
+        mock_stats = [{
+            'date': start_date.isoformat(),
+            'cpc': '0.0100',
+            'clicks': 1000
+        }, {
+            'date': end_date.isoformat(),
+            'cpc': '0.0200',
+            'clicks': 1500
+        }]
+        mock_query.return_value = mock_stats
+
+        params = {
+            'metrics': ['cpc', 'clicks'],
+            'start_date': start_date.isoformat(),
+            'end_date': end_date.isoformat()
+        }
+
+        response = self.client.get(
+            reverse('ad_group_ads_plus_daily_stats', kwargs={'ad_group_id': 1}),
+            params,
+            follow=True
+        )
+
+        matcher = QuerySetMatcher(models.Source.objects.all())
+        mock_query.assert_called_with(
+            start_date,
+            end_date,
+            ['date'],
+            ad_group=1,
+            source=matcher
+        )
+
+        self.assertJSONEqual(response.content, {
+            'data': {
+                'goals': {},
+                'chart_data': [{
+                    'id': 'totals',
+                    'name': 'Totals',
+                    'series_data': {
+                        'clicks': [
+                            [start_date.isoformat(), 1000],
+                            [end_date.isoformat(), 1500]
+                        ],
+                        'cpc': [
+                            [start_date.isoformat(), '0.0100'],
+                            [end_date.isoformat(), '0.0200']
+                        ]
+                    }
+                }]
+            },
+            'success': True
+        })

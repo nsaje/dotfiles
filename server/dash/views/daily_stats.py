@@ -8,6 +8,7 @@ from dash import models
 from utils import statsd_helper
 from utils import api_common
 from utils import exc
+from utils.sort_helper import sort_results
 
 
 class BaseDailyStatsView(api_common.BaseApiView):
@@ -271,3 +272,38 @@ class AccountsDailyStats(BaseDailyStatsView):
             metrics,
             group_key
         ))
+
+
+class AdGroupAdsPlusDailyStats(BaseDailyStatsView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_daily_stats_get')
+    def get(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.new_content_ads_tab'):
+            raise exc.ForbiddenError(message='Not allowed')
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+
+        metrics = request.GET.getlist('metrics')
+
+        stats = self._get_stats(request, ad_group.id, filtered_sources)
+
+        return self.create_api_response(self.get_response_dict(
+            stats,
+            totals=True,
+            groups_dict=None,
+            metrics=metrics
+        ))
+
+    def _get_stats(self, request, ad_group_id, sources, group_key=None):
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
+        stats = reports.api_contentads.query(
+            start_date,
+            end_date,
+            ['date'],
+            ad_group=ad_group_id,
+            source=sources
+        )
+
+        return sort_results(stats, ['date'])
