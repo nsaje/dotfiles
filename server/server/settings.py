@@ -154,21 +154,8 @@ LOGGING = {
 }
 
 
-## Broker settings.
-BROKER_URL = 'amqp://guest:guest@localhost:5672//'
-
+import celeryconfig
 CELERYD_LOG_FORMAT = LOGGING['formatters']['standard']['format']
-
-# List of modules to import when celery starts.
-CELERY_IMPORTS = ('convapi.tasks', )
-
-CELERY_DEFAULT_CONVAPI_QUEUE = 'convapi'
-
-CELERY_ROUTES = {
-    'server.tasks.process_ga_report': {'queue': 'convapi'},
-}
-CELERY_ANNOTATIONS = {'convapi.tasks': {'rate_limit': '10/s'}}
-
 
 if TESTING:
     LOGGING = None
@@ -185,6 +172,7 @@ if TESTING:
     Z3_API_IMAGE_URL = ''
     Z3_API_THUMBNAIL_URL = ''
 
+    celeryconfig.CELERY_DEFAULT_CONVAPI_QUEUE = celeryconfig.CELERY_QUEUE_TESTING_PREFIX + celeryconfig.CELERY_DEFAULT_CONVAPI_QUEUE
 
 # App specific
 ACTIONLOG_RECENT_HOURS = 2

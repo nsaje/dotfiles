@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 import logging
 
+from django.conf import settings
+
 from server.celery import app
 from convapi import exc
 from convapi import models
@@ -60,32 +62,35 @@ def report_aggregate(csvreport, sender, recipient, subject, date, text, report_l
         report_log.state = constants.GAReportState.FAILED
         report_log.save()
 
-@app.task
-def process_ga_report(subject, date, sender, recipient, from_address, attachment_count,
-                      attachment_files, attachment_name):
+
+@app.task(acks_late=True,
+          max_retries=settings.CELERY_TASK_MAX_RETRIES,
+          default_retry_delay=settings.CELERY_TASK_RETRY_DEPLAY)
+def process_ga_report(ga_report_task):
+    logger.critical("lololol")
     try:
         report_log = models.GAReportLog()
-        report_log.email_subject = subject
-        report_log.from_address = from_address
+        report_log.email_subject = ga_report_task.subject
+        report_log.from_address = ga_report_task.from_address
         report_log.state = constants.GAReportState.RECEIVED
 
-        if int(attachment_count) != 1:
+        if int(ga_report_task.attachment_count) != 1:
             logger.warning('ERROR: single attachment expected')
             report_log.add_error('ERROR: single attachment expected')
             report_log.state = constants.GAReportState.FAILED
             report_log.save()
 
-        attachment = attachment_files
+        attachment = ga_report_task.attachment
         if attachment.content_type != 'text/csv':
             logger.warning('ERROR: content type is not CSV')
             report_log.add_error('ERROR: content type is not CSV')
             report_log.state = constants.GAReportState.FAILED
             report_log.save()
 
-        filename = attachment_name
+        filename = ga_report_task.attachment_name
         report_log.csv_filename = filename
 
-        content = attachment.read()
+        content = ga_report_task.attachment.read()
         csvreport = CsvReport(content, report_log)
 
         ad_group_errors = ad_group_specified_errors(csvreport)
@@ -118,17 +123,17 @@ def process_ga_report(subject, date, sender, recipient, from_address, attachment
             report_log.state = constants.GAReportState.EMPTY_REPORT
             report_log.save()
 
-        report_log.sender = sender
-        report_log.email_subject = subject
+        report_log.sender = ga_report_task.sender
+        report_log.email_subject = ga_report_task.subject
         report_log.for_date = csvreport_date
         report_log.save()
 
         report_aggregate(
             csvreport=csvreport,
-            sender=sender,
-            recipient=recipient,
-            subject=subject,
-            date=date,
+            sender=ga_report_task.sender,
+            recipient=ga_report_task.recipient,
+            subject=ga_report_task.subject,
+            date=ga_report_task.date,
             text=None,
             report_log=report_log
         )
