@@ -5,19 +5,13 @@ import json
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 
+from utils.test_helper import QuerySetMatcher
 from zemauth.models import User
 from dash import models
 
 
 class BaseDailyStatsTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
-
-    class QuerySetMatcher():
-        def __init__(self, obj):
-            self.obj = obj
-
-        def __eq__(self, other):
-            return list(self.obj) == list(other)
 
     def setUp(self):
         password = 'secret'
@@ -105,8 +99,8 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
             follow=True
         )
 
-        sources_matcher = self.QuerySetMatcher(models.Source.objects.all())
-        accounts_matcher = self.QuerySetMatcher(models.Account.objects.all().filter_by_user(self.user))
+        sources_matcher = QuerySetMatcher(models.Source.objects.all())
+        accounts_matcher = QuerySetMatcher(models.Account.objects.all().filter_by_user(self.user))
 
         self.mock_query.assert_any_call(
             self.date,
@@ -142,7 +136,7 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
             follow=True
         )
 
-        matcher = self.QuerySetMatcher(models.Source.objects.all())
+        matcher = QuerySetMatcher(models.Source.objects.all())
         self.mock_query.assert_any_call(
             self.date,
             self.date,
@@ -175,7 +169,7 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
             follow=True
         )
 
-        matcher = self.QuerySetMatcher(models.Source.objects.all())
+        matcher = QuerySetMatcher(models.Source.objects.all())
         self.mock_query.assert_any_call(
             self.date,
             self.date,
@@ -210,7 +204,7 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
             follow=True
         )
 
-        matcher = self.QuerySetMatcher(models.Source.objects.all())
+        matcher = QuerySetMatcher(models.Source.objects.all())
         self.mock_query.assert_any_call(
             self.date,
             self.date,
@@ -243,7 +237,7 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
             follow=True
         )
 
-        matcher = self.QuerySetMatcher(models.Source.objects.all())
+        matcher = QuerySetMatcher(models.Source.objects.all())
         self.mock_query.assert_any_call(
             self.date,
             self.date,
@@ -278,7 +272,7 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
             follow=True
         )
 
-        matcher = self.QuerySetMatcher(models.Source.objects.all())
+        matcher = QuerySetMatcher(models.Source.objects.all())
         self.mock_query.assert_any_call(
             self.date,
             self.date,

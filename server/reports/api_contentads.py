@@ -16,6 +16,7 @@ def query(start_date, end_date, breakdown=None, **constraints):
         return [_transform_row(s) for s in stats]
 
     stats = stats.aggregate(**aggregate_fields.AGGREGATE_FIELDS)
+
     return _transform_row(stats)
 
 

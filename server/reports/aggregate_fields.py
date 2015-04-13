@@ -7,7 +7,7 @@ from utils import db_aggregates
 CLICKS_SUM = 'clicks_sum'
 IMPRESSIONS_SUM = 'impressions_sum'
 COST_CC_SUM = 'cost_cc_sum'
-CTR = 'ctr',
+CTR = 'ctr'
 CPC_CC = 'cpc_cc'
 
 VISITS_SUM = 'visits_sum'

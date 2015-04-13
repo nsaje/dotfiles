@@ -942,9 +942,6 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         last_change_dt = helpers.parse_datetime(request.GET.get('last_change'))
 
-        size = request.GET.get('size')
-        size = max(min(int(size or 5), 50), 1)
-
         last_change_dt, changed_content_ads = helpers.get_content_ad_last_change_dt(
             ad_group, filtered_sources, last_change_dt)
 
@@ -991,12 +988,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         size = request.GET.get('size')
         size = max(min(int(size or 5), 50), 1)
 
-        content_ad_sources = models.ContentAdSource.objects.filter(
-            content_ad__ad_group=ad_group,
-            source=filtered_sources
-        ).select_related('content_ad__batch')
-
-        content_ads = set(s.content_ad for s in content_ad_sources)
+        content_ads = self._get_content_ads(filtered_sources, ad_group)
 
         stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
             start_date,
@@ -1008,7 +1000,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
 
         rows = self._get_rows(content_ads, stats, ad_group)
 
-        sort_results(rows, [order])
+        rows = sort_results(rows, [order])
         page_rows, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
             rows, page, size)
 
@@ -1036,6 +1028,19 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             'notifications': helpers.get_content_ad_notifications(ad_group),
             'last_change': helpers.get_content_ad_last_change_dt(ad_group, filtered_sources)[0]
         })
+
+    def _get_content_ads(self, sources, ad_group):
+        if list(sources) == list(models.Source.objects.all()):
+            # no source filtering applied, so all content ads
+            # without content ad sources must be included as well
+            return models.ContentAd.objects.filter(ad_group=ad_group).select_related('batch')
+
+        content_ad_sources = models.ContentAdSource.objects.filter(
+            content_ad__ad_group=ad_group,
+            source=sources
+        ).select_related('content_ad__batch')
+
+        return set(s.content_ad for s in content_ad_sources)
 
     def _get_total_row(self, stats):
         return {
