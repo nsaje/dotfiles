@@ -5,6 +5,7 @@ from threading import Thread
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from django.db import transaction
+from django.conf import settings
 
 from auth import MailGunRequestAuth, GASourceAuth
 from parse import CsvReport
@@ -13,7 +14,7 @@ from utils.statsd_helper import statsd_incr
 from convapi import exc
 from convapi import models
 from convapi import constants
-
+from convapi import tasks
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,6 @@ def media_source_specified_errors(csvreport):
 @csrf_exempt
 @transaction.atomic
 def mailgun_gareps(request):
-
     if request.method != 'POST':
         logger.warning('ERROR: only POST is supported')
         return HttpResponse(status=406)
@@ -59,6 +59,21 @@ def mailgun_gareps(request):
         return HttpResponse(status=406)
 
     statsd_incr('convapi.accepted_emails')
+    try:
+        ga_report_task = GAReportTask(request.POST.get('subject'),
+                                             request.POST.get('Date'),
+                                             request.POST.get('sender'),
+                                             request.POST.get('recipient'),
+                                             request.POST.get('from'),
+                                             None,
+                                             request.FILES.get('attachment-1'),
+                                             request.FILES.get('attachment-1').name,
+                                             request.POST.get('attachment-count', 0))
+
+        tasks.process_ga_report.apply_async((ga_report_task, ),
+                                             queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE)
+    except Exception as e:
+        logger.exception(e.message)
 
     try:
         report_log = models.GAReportLog()
@@ -151,6 +166,19 @@ def mailgun_gareps(request):
 
     return HttpResponse(status=200)
 
+
+class GAReportTask():
+    def __init__(self, subject, date, sender, recipient, from_address, text,
+                 attachment, attachment_name, attachments_count):
+        self.subject = subject
+        self.date = date
+        self.sender = sender
+        self.recipient = recipient
+        self.from_address = from_address
+        self.text = text
+        self.attachment = attachment
+        self.attachment_name = attachment_name
+        self.attachment_count = attachments_count
 
 class TriggerReportAggregateThread(Thread):
 

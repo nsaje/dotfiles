@@ -20,6 +20,7 @@ statsd==3.0
 raven==5.0.0
 boto==2.32.1
 pylibmc==1.4.1
+celery==3.1.12
 
 # Tests
 mock==1.0.1
