@@ -1,7 +1,5 @@
 import logging
 import time
-import zlib
-import pickle
 from threading import Thread
 
 from django.views.decorators.csrf import csrf_exempt
@@ -71,9 +69,8 @@ def mailgun_gareps(request):
                                              request.FILES.get('attachment-1'),
                                              request.FILES.get('attachment-1').name,
                                              request.POST.get('attachment-count', 0))
-
-        compressed_ga_report_task = zlib.compress(pickle.dumps(ga_report_task))
-        tasks.process_ga_report.apply_async((compressed_ga_report_task, ),
+)
+        tasks.process_ga_report.apply_async((ga_report_task, ),
                                              queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE)
     except Exception as e:
         report_log = models.GAReportLog()

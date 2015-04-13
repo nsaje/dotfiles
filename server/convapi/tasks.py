@@ -1,7 +1,5 @@
 from __future__ import absolute_import
 import logging
-import zlib
-import pickle
 
 from django.conf import settings
 
@@ -70,7 +68,6 @@ def report_aggregate(csvreport, sender, recipient, subject, date, text, report_l
           default_retry_delay=settings.CELERY_TASK_RETRY_DEPLAY)
 def process_ga_report(ga_report_task):
     try:
-        ga_report_task = zlib.decompress(pickle.loads(ga_report_task))
         report_log = models.GAReportLog()
         report_log.email_subject = ga_report_task.subject
         report_log.from_address = ga_report_task.from_address
