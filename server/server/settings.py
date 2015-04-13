@@ -101,6 +101,7 @@ COVERAGE_ENABLED = 'COVERAGE_ENABLED' in os.environ
 
 DEFAULT_FROM_EMAIL = ''
 
+from celeryconfig import *
 from localsettings import *
 
 LOGGING = {
@@ -152,9 +153,6 @@ LOGGING = {
         }
     }
 }
-
-
-from celeryconfig import *
 CELERYD_LOG_FORMAT = LOGGING['formatters']['standard']['format']
 
 if TESTING:
