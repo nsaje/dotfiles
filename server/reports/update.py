@@ -23,11 +23,12 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
         datetime=datetime, ad_group=ad_group, source=source
     ).select_related('article')
 
-    if len(rows) == 0 and stats.count() > 0:
-        logger.error(
-            'Update of source traffic for adgroup %d, source %d, datetime %s '
-            'skipped due to empty input although some rows already exist.',
-            ad_group.id, source.id, datetime)
+    if len(rows) == 0:
+        if stats.count() > 0:
+            logger.error(
+                'Update of source traffic for adgroup %d, source %d, datetime %s '
+                'skipped due to empty input although some rows already exist.',
+                ad_group.id, source.id, datetime)
         return
 
     # bulk update to reset traffic metrics
