@@ -97,3 +97,21 @@ HASH_CACHE_TTL = 24 * 60 * 60
 
 Z3_API_IMAGE_URL = ''
 Z3_API_THUMBNAIL_URL = ''
+
+# QUEUES
+BROKER_TRANSPORT = 'sqs'
+BROKER_USER = AWS_ACCESS_KEY_ID
+BROKER_PASSWORD = AWS_SECRET_ACCESS_KEY
+
+BROKER_URL = BROKER_TRANSPORT + '://' + BROKER_USER + ':' + BROKER_PASSWORD + '@'
+
+CELERY_TASK_SERIALIZER = 'pickle'
+CELERY_ACCEPT_CONTENT = ['pickle']
+
+CELERY_QUEUE_PREFIX = 'test'
+
+BROKER_TRANSPORT_OPTIONS = {
+    'visibility_timeout': 10 * 60,
+    'region': 'us-east-1',
+    'polling_interval': 10,
+}
