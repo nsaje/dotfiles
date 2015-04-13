@@ -19,15 +19,16 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     *Note*: rows contains all traffic data for the given datetime, ad_group and source
     '''
 
-    if len(rows) == 0:
-        logger.warning(
-            'Update of source traffic for adgroup %d, source %d, datetime %s skipped, due to empty rows.',
-            ad_group.id, source.id, datetime)
-        return
-
     stats = reports.models.ArticleStats.objects.filter(
         datetime=datetime, ad_group=ad_group, source=source
     ).select_related('article')
+
+    if len(rows) == 0 and stats.count() > 0:
+        logger.error(
+            'Update of source traffic for adgroup %d, source %d, datetime %s '
+            'skipped due to empty input although some rows already exist.',
+            ad_group.id, source.id, datetime)
+        return
 
     # bulk update to reset traffic metrics
     stats.update(
