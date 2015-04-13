@@ -35,6 +35,7 @@ def init_insert_content_ad_action(content_ad_source, request):
             'image_id': content_ad_source.content_ad.image_id,
             'image_width': content_ad_source.content_ad.image_width,
             'image_height': content_ad_source.content_ad.image_height,
+            'image_hash': content_ad_source.content_ad.image_hash,
             'display_url': settings.display_url,
             'brand_name': settings.brand_name,
             'description': settings.description,

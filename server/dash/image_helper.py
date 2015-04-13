@@ -34,12 +34,13 @@ def process_image(url, crop_areas):
     image_id = result.get('key')
     width = result.get('width')
     height = result.get('height')
+    image_hash = result.get('imagehash')
 
     if status is None or status != 'success' or\
        image_id is None or width is None or height is None:
         raise ImageProcessingException()
 
-    return image_id, width, height
+    return image_id, width, height, image_hash
 
 
 def _get_crops_dict(crop_areas):

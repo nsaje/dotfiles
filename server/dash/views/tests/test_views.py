@@ -201,6 +201,7 @@ class ProcessUploadThreadTest(TestCase):
         image_id = 'test_image_id'
         image_width = 100
         image_height = 200
+        image_hash = "123"
 
         url = 'http://example.com'
         title = 'test title'
@@ -218,7 +219,7 @@ class ProcessUploadThreadTest(TestCase):
 
         batch = models.UploadBatch.objects.create(name=batch_name)
 
-        mock_process_image.return_value = image_id, image_width, image_height
+        mock_process_image.return_value = image_id, image_width, image_height, image_hash
 
         thread = views.ProcessUploadThread(content_ads, batch, ad_group_id, None)
         prev_actionlog_count = actionlog.models.ActionLog.objects.all().count()
@@ -234,6 +235,7 @@ class ProcessUploadThreadTest(TestCase):
         self.assertEqual(content_ad.image_id, image_id)
         self.assertEqual(content_ad.image_width, image_width)
         self.assertEqual(content_ad.image_height, image_height)
+        self.assertEqual(content_ad.image_hash, image_hash)
         self.assertEqual(content_ad.batch.name, batch_name)
 
         self.assertEqual(prev_actionlog_count, actionlog.models.ActionLog.objects.all().count())
@@ -245,6 +247,7 @@ class ProcessUploadThreadTest(TestCase):
         image_id = 'test_image_id'
         image_width = 100
         image_height = 200
+        image_hash = "123"
 
         url = 'http://example.com'
         title = 'test title'
@@ -270,7 +273,7 @@ class ProcessUploadThreadTest(TestCase):
 
         # raise ImageProcessingException for the second ad
         mock_process_image.side_effect = [
-            (image_id, image_width, image_height),
+            (image_id, image_width, image_height, image_hash),
             image_helper.ImageProcessingException
         ]
 

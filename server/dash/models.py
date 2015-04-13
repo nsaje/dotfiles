@@ -1129,6 +1129,7 @@ class ContentAd(models.Model):
     image_id = models.CharField(max_length=256, editable=False, null=True)
     image_width = models.PositiveIntegerField(null=True)
     image_height = models.PositiveIntegerField(null=True)
+    image_hash = models.CharField(max_length=128, null=True)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
