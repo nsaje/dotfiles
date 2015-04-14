@@ -6,6 +6,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
     $scope.sizeRange = [5, 10, 20, 50];
     $scope.size = $scope.sizeRange[0];
     $scope.lastChangeTimeout = null;
+    $scope.rows = null;
+    $scope.totals = null;
 
     $scope.pagination = {
         currentPage: 1
@@ -111,8 +113,67 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             order: true,
             orderField: 'batch_name',
             initialOrder: 'asc'
+        }, {
+            name: 'Spend',
+            field: 'cost',
+            checked: true,
+            type: 'currency',
+            shown: true,
+            help: "The amount spent per creative.",
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
+        }, {
+            name: 'Avg. CPC',
+            field: 'cpc',
+            checked: true,
+            type: 'currency',
+            shown: true,
+            fractionSize: 3,
+            help: "The average CPC for each content ad.",
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
+        }, {
+            name: 'Clicks',
+            field: 'clicks',
+            checked: true,
+            type: 'number',
+            shown: true,
+            help: 'The number of times a content ad has been clicked.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
+        }, {
+            name: 'Impressions',
+            field: 'impressions',
+            checked: true,
+            type: 'number',
+            shown: true,
+            help: 'The number of times a content ad has been displayed.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
+        }, {
+            name: 'CTR',
+            field: 'ctr',
+            checked: true,
+            type: 'percent',
+            shown: true,
+            help: 'The number of clicks divided by the number of impressions.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
         }
     ];
+
+    $scope.columnCategories = [{
+        'name': 'Content Ad Management',
+        'fields': ['submission_status', 'urlLink', 'upload_time', 'batch_name']
+    }, {
+        'name': 'Traffic Acquisition',
+        'fields': ['cost', 'cpc', 'clicks', 'impressions', 'ctr']
+    }];
 
     $scope.addContentAds = function() {
         var modalInstance = $modal.open({
@@ -167,6 +228,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
         api.adGroupAdsPlusTable.get($state.params.id, $scope.pagination.currentPage, $scope.size, $scope.order).then(
             function (data) {
                 $scope.rows = data.rows;
+                $scope.totals = data.totals;
                 $scope.order = data.order;
                 $scope.pagination = data.pagination;
                 $scope.notifications = data.notifications;
