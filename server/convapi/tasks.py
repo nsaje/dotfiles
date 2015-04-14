@@ -63,8 +63,7 @@ def report_aggregate(csvreport, sender, recipient, subject, date, text, report_l
         report_log.save()
 
 
-@app.task(acks_late=True,
-          max_retries=settings.CELERY_TASK_MAX_RETRIES,
+@app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
           default_retry_delay=settings.CELERY_TASK_RETRY_DEPLAY)
 def process_ga_report(ga_report_task):
     try:
