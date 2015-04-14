@@ -344,7 +344,7 @@ def _create_manual_action(ad_group_source, conf, request, order=None, message=''
             order=order,
             message=message
         )
-    action.save(request)
+        action.save(request)
 
 
 def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=None):
