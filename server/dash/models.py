@@ -1132,6 +1132,8 @@ class ContentAd(models.Model):
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
+    objects = QuerySetManager()
+
     def get_image_url(self, width, height):
         if self.image_id is None:
             return None
@@ -1150,6 +1152,16 @@ class ContentAd(models.Model):
 
     class Meta:
         get_latest_by = 'created_dt'
+
+    class QuerySet(models.QuerySet):
+        def filter_by_sources(self, sources):
+            if set(sources) == set(Source.objects.all()):
+                return self
+
+            content_ad_ids = ContentAdSource.objects.filter(source=sources).select_related(
+                'content_ad').distinct('content_ad_id').values_list('content_ad_id', flat=True)
+
+            return self.filter(id__in=content_ad_ids)
 
 
 class ContentAdSource(models.Model):

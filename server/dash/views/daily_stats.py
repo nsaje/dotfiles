@@ -294,7 +294,7 @@ class AdGroupAdsPlusDailyStats(BaseDailyStatsView):
             metrics=metrics
         ))
 
-    def _get_stats(self, request, ad_group_id, sources, group_key=None):
+    def _get_stats(self, request, ad_group_id, sources):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
