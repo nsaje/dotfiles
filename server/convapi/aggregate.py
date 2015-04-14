@@ -181,11 +181,22 @@ bounced_visits=%s, pageviews=%s, duration=%s',
         conv_rows = []
         ad_group_id_set = set()
         date_set = set()
+
+        article_ids = source_ids = set()
+        for (dt, article_id, ad_group_id, source_id), statvals in data.iteritems():
+            source_ids.add(source_id)
+            article_ids.add(article_id)
+
+        articles = dash.models.Article.objects.filter(id__in=article_ids).all()
+        sources = dash.models.Source.objects.filter(id__in=source_ids).all()
+        logger.info("Aggregating ReportMail for %d articles on %d sources", len(articles), len(sources))
+
         for (dt, article_id, ad_group_id, source_id), statvals in data.iteritems():
             ad_group_id_set.add(ad_group_id)
             date_set.add(dt)
-            article = dash.models.Article.objects.get(id=article_id)
-            source = dash.models.Source.objects.get(id=source_id)
+
+            article = articles.get(id=article_id)
+            source = sources.get(id=source_id)
 
             stat_rows.append({
                 'article': article,
