@@ -1,5 +1,5 @@
-/* globals oneApp */
-oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$location', 'api', 'zemUserSettings', 'zemCustomTableColsService', '$timeout', function ($scope, $state, $modal, $location, api, zemUserSettings, zemCustomTableColsService, $timeout) {
+/* globals oneApp, options */
+oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$location', 'api', 'zemUserSettings', 'zemCustomTableColsService', '$timeout', 'zemFilterService', function ($scope, $state, $modal, $location, api, zemUserSettings, zemCustomTableColsService, $timeout, zemFilterService) {
     $scope.order = '-upload_time';
     $scope.loadRequestInProgress = false;
     $scope.selectedColumnsCount = 0;
@@ -8,6 +8,12 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
     $scope.lastChangeTimeout = null;
     $scope.rows = null;
     $scope.totals = null;
+
+    $scope.chartHidden = false;
+    $scope.chartMetric1 = constants.chartMetric.CLICKS;
+    $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
+    $scope.chartData = undefined;
+    $scope.chartMetricOptions = options.adGroupChartMetrics;
 
     $scope.pagination = {
         currentPage: 1
@@ -215,12 +221,72 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
         }
     });
 
+    // From parent scope (mainCtrl).
+    $scope.$watch('dateRange', function (newValue, oldValue) {
+        if (newValue.startDate.isSame(oldValue.startDate) && newValue.endDate.isSame(oldValue.endDate)) {
+            return;
+        }
+
+        getDailyStats();
+        getTableData();
+    });
+
+    var hasMetricData = function (metric) {
+        var hasData = false;
+        $scope.chartData.forEach(function (group) {
+            if (group.seriesData[metric] !== undefined) {
+                hasData = true;
+            }
+        });
+
+        return hasData;
+    };
+
+    $scope.$watch('chartMetric1', function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            if (!hasMetricData($scope.chartMetric1)) {
+                getDailyStats();
+            } else {
+                // create a copy to trigger watch
+                $scope.chartData = angular.copy($scope.chartData);
+            }
+        }
+    });
+
+    $scope.$watch('chartMetric2', function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            if (!hasMetricData($scope.chartMetric2)) {
+                getDailyStats();
+            } else {
+                // create a copy to trigger watch
+                $scope.chartData = angular.copy($scope.chartData);
+            }
+        }
+    });
+
     $scope.orderTableData = function(order) {
         $scope.order = order;
 
         $location.search('order', $scope.order);
         getTableData();
     };
+
+    $scope.toggleChart = function () {
+        $scope.chartHidden = !$scope.chartHidden;
+
+        $timeout(function() {
+            $scope.$broadcast('highchartsng.reflow');
+        }, 0);
+    };
+
+    $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
+        if (angular.equals(newValue, oldValue)) {
+            return;
+        }
+
+        getTableData();
+        getDailyStats();
+    }, true);
 
     var getTableData = function () {
         $scope.loadRequestInProgress = true;
@@ -271,6 +337,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
         }
 
         getTableData();
+        getDailyStats();
         $scope.getAdGroupState();
         initColumns();
     };
@@ -315,6 +382,34 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
                 object[key] = updates[key];
             }
         }
+    };
+
+    var getDailyStatsMetrics = function () {
+        var values = $scope.chartMetricOptions.map(function (option) {
+            return option.value;
+        });
+
+        if (values.indexOf($scope.chartMetric1) === -1) {
+            $scope.chartMetric1 = constants.chartMetric.CLICKS;
+        }
+
+        if ($scope.chartMetric2 !== 'none' && values.indexOf($scope.chartMetric2) === -1) {
+            $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
+        }
+
+        return [$scope.chartMetric1, $scope.chartMetric2];
+    };
+
+    var getDailyStats = function () {
+        api.dailyStats.listContentAdStats($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, getDailyStatsMetrics()).then(
+            function (data) {
+                $scope.chartData = data.chartData;
+            },
+            function (data) {
+                // error
+                return;
+            }
+        );
     };
 
     init();

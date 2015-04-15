@@ -1,4 +1,7 @@
 <div class="page page-ad-group-ads-plus">
+    <div class="section" ng-class="{'chart-hidden': chartHidden}">
+        <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)"></zem-chart>
+    </div>
     <div class="section table-ad-group-ads-plus">
         <div class="button-bar">
             <div class="button-bar-item">
@@ -11,6 +14,7 @@
             </div>
 
             <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories"></zem-custom-table-cols>
+            <a id="chart-btn" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/one/img/chart.svg"></a>
         </div>
 
         <zem-table class="ads-plus-table" zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderTableData(order)" zem-table-notifications="notifications"></zem-table>

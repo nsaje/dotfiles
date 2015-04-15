@@ -984,7 +984,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
         page = request.GET.get('page')
-        order = request.GET.get('order') or '-upload_time'
+        order = request.GET.get('order') or 'cost'
         size = request.GET.get('size')
         size = max(min(int(size or 5), 50), 1)
 

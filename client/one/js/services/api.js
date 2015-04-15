@@ -569,9 +569,18 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             };
         }
 
+        this.listContentAdStats = function (id, startDate, endDate, metrics) {
+            var url = '/api/ad_groups/' + id + '/contentads_plus/daily_stats/';
+            return getData(url, startDate, endDate, metrics)
+        }
+
         this.list = function (level, id, startDate, endDate, selectedIds, totals, metrics, groupSources) {
-            var deferred = $q.defer();
             var url = '/api/' + level + (id ? ('/' + id) : '') + '/daily_stats/';
+            return getData(url, startDate, endDate, metrics, selectedIds, totals, groupSources)
+        }
+
+        function getData(url, startDate, endDate, metrics, selectedIds, totals, groupSources) {
+            var deferred = $q.defer();
             var config = {
                 params: {}
             };
