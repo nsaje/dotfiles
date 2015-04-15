@@ -1014,6 +1014,10 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             source=filtered_sources,
         ), request.user)
 
+        ad_group_sync = actionlog.sync.AdGroupSync(ad_group, sources=filtered_sources)
+        last_success_actions = ad_group_sync.get_latest_success_by_child(recompute=False)
+        last_sync = helpers.get_last_sync(last_success_actions.values())
+
         return self.create_api_response({
             'rows': rows,
             'totals': self._get_total_row(total_stats),
@@ -1027,7 +1031,10 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 'size': size
             },
             'notifications': helpers.get_content_ad_notifications(ad_group),
-            'last_change': helpers.get_content_ad_last_change_dt(ad_group, filtered_sources)[0]
+            'last_change': helpers.get_content_ad_last_change_dt(ad_group, filtered_sources)[0],
+            'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
+            'is_sync_recent': helpers.is_sync_recent(last_success_actions.values()),
+            'is_sync_in_progress': actionlog.api.is_sync_in_progress([ad_group], sources=filtered_sources),
         })
 
     def _get_total_row(self, stats):

@@ -15,6 +15,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
     $scope.chartData = undefined;
     $scope.chartMetricOptions = options.adGroupChartMetrics;
 
+    $scope.lastSyncDate = null;
+    $scope.isSyncRecent = true;
+    $scope.isSyncInProgress = false;
+
     $scope.pagination = {
         currentPage: 1
     };
@@ -231,6 +235,12 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
         getTableData();
     });
 
+    $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
+        if(newValue === true && oldValue === false){
+            pollSyncStatus();
+        }
+    });
+
     var hasMetricData = function (metric) {
         var hasData = false;
         $scope.chartData.forEach(function (group) {
@@ -288,6 +298,11 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
         getDailyStats();
     }, true);
 
+    $scope.triggerSync = function() {
+        $scope.isSyncInProgress = true;
+        api.adGroupSync.get($state.params.id);
+    };
+
     var getTableData = function () {
         $scope.loadRequestInProgress = true;
 
@@ -300,6 +315,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
                 $scope.notifications = data.notifications;
                 $scope.lastChange = data.lastChange;
 
+                $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
+                $scope.isSyncRecent = data.is_sync_recent;
+                $scope.isSyncInProgress = data.is_sync_in_progress;
+
                 pollTableUpdates();
             },
             function (data) {
@@ -309,6 +328,31 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
         ).finally(function () {
             $scope.loadRequestInProgress = false;
         });
+    };
+
+    var pollSyncStatus = function() {
+        if($scope.isSyncInProgress){
+            $timeout(function() {
+                api.checkSyncProgress.get($state.params.id).then(
+                    function(data) {
+                        $scope.isSyncInProgress = data.is_sync_in_progress;
+
+                        if($scope.isSyncInProgress === false){
+                            // we found out that the sync is no longer in progress
+                            // time to reload the data
+                            getTableData();
+                            getDailyStats();
+                        }
+                    },
+                    function(data) {
+                        // error
+                        $scope.isSyncInProgress = false;
+                    }
+                ).finally(function() {
+                    pollSyncStatus();
+                });
+            }, 10000);
+        }
     };
 
     var initColumns = function () {
@@ -340,6 +384,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
         getDailyStats();
         $scope.getAdGroupState();
         initColumns();
+
+        pollSyncStatus();
     };
 
     var pollTableUpdates = function () {
