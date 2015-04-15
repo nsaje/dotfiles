@@ -161,6 +161,9 @@ def update_content_ad_source_state(content_ad_source, data):
 def order_ad_group_settings_update(ad_group, current_settings, new_settings, request):
     changes = current_settings.get_setting_changes(new_settings)
 
+    campaign_settings = ad_group.campaign.get_current_settings()
+    changes['iab_category'] = campaign_settings.iab_category
+
     if not changes:
         return
 

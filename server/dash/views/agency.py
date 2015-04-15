@@ -230,6 +230,11 @@ class CampaignSettings(api_common.BaseApiView):
         with transaction.atomic():
             campaign.save(request)
             settings.save(request)
+            # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
+            campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
+            for ad_group in campaign_ad_groups:
+                adgroup_settings = ad_group.get_current_settings()
+                api.order_ad_group_settings_update(ad_group, adgroup_settings, adgroup_settings, request)
 
         response = {
             'settings': self.get_dict(settings, campaign),
