@@ -28,10 +28,15 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     if len(rows) == 0:
         if stats.count() > 0:
             statsd_helper.statsd_incr('reports.update.update_traffic_metrics_skipped')
+            if source.source_type is not None:
+                statsd_helper.statsd_incr(
+                    'reports.update.update_traffic_metrics_skipped.%s' % (source.source_type.type)
+                )
             logger.error(
                 'Update of source traffic for adgroup %d, source %d, datetime %s '
                 'skipped due to empty input although some rows already exist.',
-                ad_group.id, source.id, datetime)
+                ad_group.id, source.id, datetime
+            )
         return
 
     # bulk update to reset traffic metrics
