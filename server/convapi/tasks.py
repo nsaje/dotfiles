@@ -35,6 +35,7 @@ def media_source_specified_errors(csvreport):
         errors.extend(media_source_not_specified)
     return errors
 
+@statsd_timer('convapi', 'report_aggregate')
 def report_aggregate(csvreport, sender, recipient, subject, date, text, report_log):
     try:
         for ad_group_report in csvreport.split_by_ad_group():
