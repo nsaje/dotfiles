@@ -533,6 +533,9 @@ class SourceType(models.Model):
     def can_modify_ad_group_name(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_AD_GROUP_NAME).exists()
 
+    def can_modify_ad_group_iab_category(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_IAB_CATEGORY).exists()
+
     def __str__(self):
         return self.type
 
@@ -601,6 +604,9 @@ class Source(models.Model):
 
     def can_modify_ad_group_name(self):
         return self.source_type.can_modify_ad_group_name() and not self.maintenance and not self.deprecated
+
+    def can_modify_ad_group_iab_category(self):
+        return self.source_type.can_modify_ad_group_iab_category() and not self.maintenance and not self.deprecated
 
     def __unicode__(self):
         return self.name
