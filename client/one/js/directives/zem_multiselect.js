@@ -7,14 +7,7 @@ oneApp.directive('zemMultiselect', [function() {
         element.multiselect({
             includeSelectAllOption: true,
             enableCaseInsensitiveFiltering: true,
-            maxHeight: 190,
-            onChange: function (optionElement, checked) {
-                optionElement.removeAttr('selected');
-                if (checked) {
-                    optionElement.attr('selected', 'selected');
-                }
-                element.change();
-            }
+            maxHeight: 190
             
         });
 
