@@ -41,7 +41,6 @@ def media_source_specified_errors(csvreport):
 
 
 @csrf_exempt
-@transaction.atomic
 def mailgun_gareps(request):
     if request.method != 'POST':
         logger.warning('ERROR: only POST is supported')

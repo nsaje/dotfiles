@@ -13,6 +13,7 @@ import dash.models
 import reports.models
 import utils.s3helpers
 import reports.update
+from utils import statsd_helper
 
 
 logger = logging.getLogger(__name__)
@@ -155,6 +156,7 @@ landing_page_url=%s',
         hours_str, minutes_str, seconds_str = durstr.replace('<', '').split(':')
         return int(seconds_str) + 60*int(minutes_str) + 60*60*int(hours_str)
 
+    @statsd_helper.statsd_timer('convapi', 'aggregate')
     def aggregate(self):
         data = self.get_stats_by_key()
 
@@ -240,6 +242,7 @@ bounced_visits=%s, pageviews=%s, duration=%s',
         self.report_log.add_visits_imported(sum(d['visits'] for d in data.values()))
         logger.info("\tGA-aggregate - add_visits_imported - after")
 
+    @statsd_helper.statsd_timer('convapi', 'save_raw')
     def save_raw(self):
         goal_fields = self.get_goal_fields()
         dt = self.report.get_date()

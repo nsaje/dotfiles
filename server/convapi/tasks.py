@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import logging
 
 from django.conf import settings
+from django.db import transaction
 
 from server.celery import app
 from convapi import exc
@@ -9,7 +10,7 @@ from convapi import models
 from convapi import constants
 from convapi.parse import CsvReport
 from convapi.aggregate import ReportEmail, store_to_s3
-from utils.statsd_helper import statsd_incr
+from utils.statsd_helper import statsd_incr, statsd_timer
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,7 @@ def media_source_specified_errors(csvreport):
         errors.extend(media_source_not_specified)
     return errors
 
+@statsd_timer('convapi', 'report_aggregate')
 def report_aggregate(csvreport, sender, recipient, subject, date, text, report_log):
     try:
         for ad_group_report in csvreport.split_by_ad_group():
@@ -62,9 +64,9 @@ def report_aggregate(csvreport, sender, recipient, subject, date, text, report_l
         report_log.state = constants.GAReportState.FAILED
         report_log.save()
 
-
 @app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
           default_retry_delay=settings.CELERY_TASK_RETRY_DEPLAY)
+@transaction.atomic
 def process_ga_report(ga_report_task):
     try:
         report_log = models.GAReportLog()
