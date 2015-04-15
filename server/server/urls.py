@@ -118,10 +118,12 @@ urlpatterns += patterns(
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/table/updates/',
         login_required(dash.views.table.AdGroupAdsPlusTableUpdates.as_view()),
+        name='ad_group_ads_plus_table_updates'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/table/',
         login_required(dash.views.table.AdGroupAdsPlusTable.as_view()),
+        name='ad_group_ads_plus_table'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload/status/(?P<batch_id>\d+)/',
@@ -161,6 +163,11 @@ urlpatterns += patterns(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/daily_stats/',
         login_required(dash.views.daily_stats.AdGroupDailyStats.as_view()),
         name='ad_group_daily_stats'
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/daily_stats/',
+        login_required(dash.views.daily_stats.AdGroupAdsPlusDailyStats.as_view()),
+        name='ad_group_ads_plus_daily_stats'
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/daily_stats/',
