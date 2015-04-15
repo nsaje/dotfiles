@@ -23,6 +23,11 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
         currentPage: 1
     };
 
+    $scope.exportOptions = [
+        {name: 'CSV by day', value: 'csv'},
+        {name: 'Excel by day', value: 'excel'}
+    ];
+
     $scope.columns = [
         {
             name: '',
@@ -233,6 +238,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
 
         getDailyStats();
         getTableData();
+        setDisabledExportOptions();
     });
 
     $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
@@ -386,6 +392,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
         initColumns();
 
         pollSyncStatus();
+        setDisabledExportOptions();
     };
 
     var pollTableUpdates = function () {
@@ -454,6 +461,25 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             function (data) {
                 // error
                 return;
+            }
+        );
+    };
+
+    var setDisabledExportOptions = function() {
+        api.adGroupAdsPlusExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
+            function (data) {
+                var option = null;
+                $scope.exportOptions.forEach(function (opt) {
+                    if (opt.value === 'excel') {
+                        option = opt;
+                    }
+                });
+
+                option.disabled = false;
+                if (!data.allowed) {
+                    option.disabled = true;
+                    option.maxDays = data.maxDays;
+                }
             }
         );
     };

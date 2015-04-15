@@ -12,6 +12,14 @@
                     + Content Ads
                 </button>
             </div>
+            <div class="button-bar-item export-container">
+                <zem-export
+                    start-date="dateRange.startDate"
+                    end-date="dateRange.endDate"
+                    base-url="'api/ad_groups/' + $state.params.id + '/contentadsplus/'"
+                    options="exportOptions">
+                </zem-export>
+            </div>
 
             <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories"></zem-custom-table-cols>
             <a id="chart-btn" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/one/img/chart.svg"></a>
