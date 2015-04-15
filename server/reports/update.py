@@ -112,7 +112,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     adgroup_stats.has_conversion_metrics = max_has_conversion_metrics
     adgroup_stats.save()
 
-
+@statsd_helper.statsd_timer('reports', 'stats_update_adgroup_postclick')
 @transaction.atomic
 def stats_update_adgroup_postclick(datetime, ad_group, rows):
     '''
@@ -207,7 +207,7 @@ def stats_update_adgroup_all(datetime, ad_group, rows):
     # refresh the corresponding adgroup-level pre-aggregations
     reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group)
 
-
+@statsd_helper.statsd_timer('reports', 'goals_update_adgroup')
 @transaction.atomic
 def goals_update_adgroup(datetime, ad_group, rows):
     '''
