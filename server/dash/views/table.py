@@ -1,5 +1,3 @@
-import reports.api
-import actionlog.sync
 import pytz
 from slugify import slugify
 
@@ -16,6 +14,11 @@ from utils import api_common
 from utils import statsd_helper
 from utils import exc
 from utils.sort_helper import sort_results
+
+import reports.api
+import reports.api_helpers
+import reports.api_contentads
+import actionlog.sync
 
 
 def sort_rows_by_order_and_archived(rows, order):
@@ -82,7 +85,7 @@ class AllAccountsSourcesTable(object):
             order_by('ad_group_source_id', '-created_dt')
 
     def get_stats(self, start_date, end_date):
-        sources_stats = reports.api.filter_by_permissions(reports.api.query(
+        sources_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
             start_date,
             end_date,
             ['source'],
@@ -90,7 +93,7 @@ class AllAccountsSourcesTable(object):
             source=self.filtered_sources
         ), self.user)
 
-        totals_stats = reports.api.filter_by_permissions(reports.api.query(
+        totals_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
             start_date,
             end_date,
             account=self.accounts,
@@ -144,7 +147,7 @@ class AccountSourcesTable(object):
             order_by('ad_group_source_id', '-created_dt')
 
     def get_stats(self, start_date, end_date):
-        sources_stats = reports.api.filter_by_permissions(reports.api.query(
+        sources_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
             start_date,
             end_date,
             ['source'],
@@ -152,7 +155,7 @@ class AccountSourcesTable(object):
             source=self.filtered_sources
         ), self.user)
 
-        totals_stats = reports.api.filter_by_permissions(reports.api.query(
+        totals_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
             start_date,
             end_date,
             account=self.account,
@@ -207,7 +210,7 @@ class CampaignSourcesTable(object):
             order_by('ad_group_source_id', '-created_dt')
 
     def get_stats(self, start_date, end_date):
-        sources_stats = reports.api.filter_by_permissions(reports.api.query(
+        sources_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
             start_date,
             end_date,
             ['source'],
@@ -215,7 +218,7 @@ class CampaignSourcesTable(object):
             source=self.filtered_sources,
         ), self.user)
 
-        totals_stats = reports.api.filter_by_permissions(reports.api.query(
+        totals_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
             start_date,
             end_date,
             campaign=self.campaign,
@@ -276,7 +279,7 @@ class AdGroupSourcesTable(object):
             order_by('ad_group_source_id', '-created_dt')
 
     def get_stats(self, start_date, end_date):
-        sources_stats = reports.api.filter_by_permissions(reports.api.query(
+        sources_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
             start_date,
             end_date,
             ['source'],
@@ -284,7 +287,7 @@ class AdGroupSourcesTable(object):
             source=self.filtered_sources,
         ), self.user)
 
-        totals_stats = reports.api.filter_by_permissions(reports.api.query(
+        totals_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
             start_date,
             end_date,
             ad_group=self.ad_group,
@@ -713,7 +716,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
         if page:
             page = int(page)
 
-        accounts_data = reports.api.filter_by_permissions(reports.api.query(
+        accounts_data = reports.api_helpers.filter_by_permissions(reports.api.query(
             start_date,
             end_date,
             ['account'],
@@ -721,7 +724,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
             source=filtered_sources,
         ), request.user)
 
-        totals_data = reports.api.filter_by_permissions(reports.api.query(
+        totals_data = reports.api_helpers.filter_by_permissions(reports.api.query(
             start_date,
             end_date,
             account=accounts,
@@ -870,7 +873,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
 
         size = max(min(int(size or 5), 50), 1)
 
-        result = reports.api.filter_by_permissions(reports.api.query(
+        result = reports.api_helpers.filter_by_permissions(reports.api.query(
             start_date=start_date,
             end_date=end_date,
             breakdown=['article'],
@@ -888,7 +891,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
             for i, row in enumerate(rows):
                 row['url'] = 'http://www.example.com/{}/{}'.format(slugify(ad_group.name), i)
 
-        totals_data = reports.api.filter_by_permissions(
+        totals_data = reports.api_helpers.filter_by_permissions(
             reports.api.query(
                 start_date,
                 end_date,
@@ -936,28 +939,20 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
             raise exc.ForbiddenError(message='Not allowed')
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         last_change_dt = helpers.parse_datetime(request.GET.get('last_change'))
 
-        page = request.GET.get('page')
-        order = request.GET.get('order') or '-upload_time'
-        size = request.GET.get('size')
-        size = max(min(int(size or 5), 50), 1)
-
-        content_ads = models.ContentAd.objects.filter(
-            ad_group=ad_group).order_by(helpers.transform_content_ad_order(order))
-
-        page_content_ads, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
-            content_ads, page, size)
-
         last_change_dt, changed_content_ads = helpers.get_content_ad_last_change_dt(
-            page_content_ads, last_change_dt)
+            ad_group, filtered_sources, last_change_dt)
 
         rows = {}
         for content_ad in changed_content_ads:
-            submission_status = helpers.get_content_ad_submission_status(content_ad.contentadsource_set.all())
+            content_ad_sources = content_ad.contentadsource_set.filter(source=filtered_sources)
+
+            submission_status = helpers.get_content_ad_submission_status(content_ad_sources)
 
             if any(content_ad_source.state == constants.ContentAdSourceState.ACTIVE
-                   for content_ad_source in content_ad.contentadsource_set.all()):
+                   for content_ad_source in content_ad_sources):
                 status_setting = constants.ContentAdSourceState.ACTIVE
             else:
                 status_setting = constants.ContentAdSourceState.INACTIVE
@@ -967,7 +962,7 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
                 'submission_status': submission_status
             }
 
-        notifications = helpers.get_content_ad_notifications(page_content_ads)
+        notifications = helpers.get_content_ad_notifications(ad_group)
 
         return self.create_api_response({
             'rows': rows,
@@ -984,22 +979,44 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             raise exc.ForbiddenError(message='Not allowed')
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
         page = request.GET.get('page')
         order = request.GET.get('order') or '-upload_time'
         size = request.GET.get('size')
         size = max(min(int(size or 5), 50), 1)
 
         content_ads = models.ContentAd.objects.filter(
-            ad_group=ad_group).order_by(helpers.transform_content_ad_order(order))
+            ad_group=ad_group).filter_by_sources(filtered_sources).select_related('batch')
 
-        page_content_ads, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
-            content_ads, page, size)
+        stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
+            start_date,
+            end_date,
+            breakdown=['content_ad'],
+            ad_group=ad_group,
+            source=filtered_sources,
+        ), request.user)
 
-        rows = self._get_rows(page_content_ads, ad_group)
+        rows = self._get_rows(content_ads, stats, ad_group)
+
+        rows = sort_results(rows, [order])
+        page_rows, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
+            rows, page, size)
+
+        rows = self._add_status_to_rows(page_rows, filtered_sources)
+
+        total_stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
+            start_date,
+            end_date,
+            ad_group=ad_group,
+            source=filtered_sources,
+        ), request.user)
 
         return self.create_api_response({
             'rows': rows,
+            'totals': self._get_total_row(total_stats),
             'order': order,
             'pagination': {
                 'currentPage': current_page,
@@ -1009,23 +1026,29 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 'endIndex': end_index,
                 'size': size
             },
-            'notifications': helpers.get_content_ad_notifications(page_content_ads),
-            'last_change': helpers.get_content_ad_last_change_dt(page_content_ads)[0]
+            'notifications': helpers.get_content_ad_notifications(ad_group),
+            'last_change': helpers.get_content_ad_last_change_dt(ad_group, filtered_sources)[0]
         })
 
-    def _get_rows(self, content_ads, ad_group):
-        rows = []
-        for content_ad in content_ads:
-            submission_status = helpers.get_content_ad_submission_status(content_ad.contentadsource_set.all())
+    def _get_total_row(self, stats):
+        return {
+            'impressions': stats['impressions'],
+            'clicks': stats['clicks'],
+            'cost': stats['cost'],
+            'cpc': stats['cpc'],
+            'ctr': stats['ctr']
+        }
 
-            if any(content_ad_source.state == constants.ContentAdSourceState.ACTIVE
-                   for content_ad_source in content_ad.contentadsource_set.all()):
-                status_setting = constants.ContentAdSourceState.ACTIVE
-            else:
-                status_setting = constants.ContentAdSourceState.INACTIVE
+    def _get_rows(self, content_ads, stats, ad_group):
+        stats = {s['content_ad']: s for s in stats}
+        demo_ad_groups = models.AdGroup.demo_objects.all()
+        rows = []
+
+        for content_ad in content_ads:
+            stat = stats.get(content_ad.id, {})
 
             url = 'http://www.example.com/{}/{}'.format(ad_group.name, content_ad.id)\
-                if ad_group in models.AdGroup.demo_objects.all() else content_ad.url
+                if ad_group in demo_ad_groups else content_ad.url
 
             rows.append({
                 'id': str(content_ad.id),
@@ -1037,9 +1060,34 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                     'square': content_ad.get_image_url(120, 120),
                     'landscape': content_ad.get_image_url(193, 120)
                 },
+                'impressions': stat.get('impressions'),
+                'clicks': stat.get('clicks'),
+                'cost': stat.get('cost'),
+                'cpc': stat.get('cpc'),
+                'ctr': stat.get('ctr')
+            })
+
+        return rows
+
+    def _add_status_to_rows(self, rows, filtered_sources):
+        for row in rows:
+            content_ad_sources = models.ContentAdSource.objects.filter(
+                source=filtered_sources,
+                content_ad_id=row['id']
+            )
+
+            submission_status = helpers.get_content_ad_submission_status(content_ad_sources)
+
+            if any(content_ad_source.state == constants.ContentAdSourceState.ACTIVE
+                   for content_ad_source in content_ad_sources):
+                status_setting = constants.ContentAdSourceState.ACTIVE
+            else:
+                status_setting = constants.ContentAdSourceState.INACTIVE
+
+            row.update({
                 'submission_status': submission_status,
                 'status_setting': status_setting,
-                'editable_fields': ['status_setting']
+                'editable_fields': ['status_setting'],
             })
 
         return rows
@@ -1059,7 +1107,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         show_archived = request.GET.get('show_archived') == 'true' and\
             request.user.has_perm('zemauth.view_archived_entities')
 
-        stats = reports.api.filter_by_permissions(reports.api.query(
+        stats = reports.api_helpers.filter_by_permissions(reports.api.query(
             start_date=start_date,
             end_date=end_date,
             breakdown=['ad_group'],
@@ -1074,7 +1122,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             filter(ad_group__campaign=campaign).\
             order_by('ad_group_id', '-created_dt')
 
-        totals_stats = reports.api.filter_by_permissions(
+        totals_stats = reports.api_helpers.filter_by_permissions(
             reports.api.query(
                 start_date,
                 end_date,
@@ -1211,7 +1259,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
             filter(campaign__in=campaigns).\
             order_by('campaign_id', '-created_dt')
 
-        stats = reports.api.filter_by_permissions(reports.api.query(
+        stats = reports.api_helpers.filter_by_permissions(reports.api.query(
             start_date=start_date,
             end_date=end_date,
             breakdown=['campaign'],
@@ -1220,7 +1268,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
             source=filtered_sources,
         ), request.user)
 
-        totals_stats = reports.api.filter_by_permissions(
+        totals_stats = reports.api_helpers.filter_by_permissions(
             reports.api.query(
                 start_date,
                 end_date,

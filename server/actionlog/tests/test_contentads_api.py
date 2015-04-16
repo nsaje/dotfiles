@@ -83,6 +83,7 @@ class ContentAdsApiTestCase(TestCase):
                     'image_id': content_ad_source.content_ad.image_id,
                     'image_width': content_ad_source.content_ad.image_width,
                     'image_height': content_ad_source.content_ad.image_height,
+                    'image_hash': content_ad_source.content_ad.image_hash,
                     'display_url': ad_group_settings.display_url,
                     'brand_name': ad_group_settings.brand_name,
                     'description': ad_group_settings.description,

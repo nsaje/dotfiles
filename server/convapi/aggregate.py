@@ -13,6 +13,7 @@ import dash.models
 import reports.models
 import utils.s3helpers
 import reports.update
+from utils import statsd_helper
 
 
 logger = logging.getLogger(__name__)
@@ -155,6 +156,7 @@ landing_page_url=%s',
         hours_str, minutes_str, seconds_str = durstr.replace('<', '').split(':')
         return int(seconds_str) + 60*int(minutes_str) + 60*60*int(hours_str)
 
+    @statsd_helper.statsd_timer('convapi', 'aggregate')
     def aggregate(self):
         data = self.get_stats_by_key()
 
@@ -181,11 +183,22 @@ bounced_visits=%s, pageviews=%s, duration=%s',
         conv_rows = []
         ad_group_id_set = set()
         date_set = set()
+
+        article_ids = source_ids = set()
+        for (dt, article_id, ad_group_id, source_id), statvals in data.iteritems():
+            source_ids.add(source_id)
+            article_ids.add(article_id)
+
+        articles = dash.models.Article.objects.filter(id__in=article_ids).all()
+        sources = dash.models.Source.objects.filter(id__in=source_ids).all()
+        logger.info("Aggregating ReportMail for %d articles on %d sources", len(articles), len(sources))
+
         for (dt, article_id, ad_group_id, source_id), statvals in data.iteritems():
             ad_group_id_set.add(ad_group_id)
             date_set.add(dt)
-            article = dash.models.Article.objects.get(id=article_id)
-            source = dash.models.Source.objects.get(id=source_id)
+
+            article = articles.get(id=article_id)
+            source = sources.get(id=source_id)
 
             stat_rows.append({
                 'article': article,
@@ -229,6 +242,7 @@ bounced_visits=%s, pageviews=%s, duration=%s',
         self.report_log.add_visits_imported(sum(d['visits'] for d in data.values()))
         logger.info("\tGA-aggregate - add_visits_imported - after")
 
+    @statsd_helper.statsd_timer('convapi', 'save_raw')
     def save_raw(self):
         goal_fields = self.get_goal_fields()
         dt = self.report.get_date()

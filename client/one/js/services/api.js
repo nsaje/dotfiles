@@ -371,6 +371,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     if (data && data.data) {
                         data.data.rows = data.data.rows.map(convertFromApi);
                         data.data.notifications = convertNotifications(data.data.notifications);
+                        data.data.lastChange = data.data.last_change;
                         deferred.resolve(data.data);
                     }
                 }).
@@ -392,6 +393,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             if (lastChange) {
                 config.params.last_change = lastChange;
             }
+
+            addFilteredSources(config.params);
 
             $http.get(url, config).
                 success(function(data) {

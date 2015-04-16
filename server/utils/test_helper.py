@@ -3,10 +3,19 @@ import httplib
 import operator
 import mock
 
+
 class MockDateTime(datetime.datetime):
 
     def __new__(cls, *args, **kwargs):
         return datetime.datetime.__new__(cls, *args, **kwargs)
+
+
+class QuerySetMatcher():
+    def __init__(self, obj):
+        self.obj = obj
+
+    def __eq__(self, other):
+        return list(self.obj) == list(other)
 
 
 def is_equal(val1, val2):
@@ -25,9 +34,11 @@ def dicts_match_for_keys(dct1, dct2, keys):
 def sequence_of_dicts_match_for_keys(dicts1, dicts2, keys):
     if len(dicts1) != len(dicts2):
         return False
-    return reduce(operator.iand,
+    return reduce(
+        operator.iand,
         (dicts_match_for_keys(dct1, dct2, keys) for dct1, dct2 in zip(dicts1, dicts2)),
         True)
+
 
 def prepare_mock_urlopen(mock_urlopen, exception=None):
     if exception:

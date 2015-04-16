@@ -70,11 +70,11 @@ class CsvReport(IReport):
 
     def _get_ad_group_set(self):
         if self.ad_group_set is None:
-            self.ad_group_set = []
+            self.ad_group_set = set([])
             for entry in self.get_entries():
                 landing_page_url = LandingPageUrl(entry['Landing Page'])
                 if landing_page_url.ad_group_id is not None:
-                    self.ad_group_set.append(int(landing_page_url.ad_group_id))
+                    self.ad_group_set.add(int(landing_page_url.ad_group_id))
         return self.ad_group_set
 
     def is_media_source_specified(self):

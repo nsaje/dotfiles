@@ -18,13 +18,14 @@ class ImageTest(TestCase):
         image_id = 'test_image_id'
         width = 100
         height = 200
+        ihash = "4321"
 
         response = Mock()
-        response.read.return_value = '{"key": "%s", "status": "success", "width": %d, "height": %d}' % (image_id, width, height)
+        response.read.return_value = '{"key": "%s", "status": "success", "width": %d, "height": %d, "imagehash": "%s"}' % (image_id, width, height, ihash)
         response.code = 200
         mock_urlopen.return_value = response
 
-        self.assertEqual(image_helper.process_image(url, crop_areas), (image_id, width, height))
+        self.assertEqual(image_helper.process_image(url, crop_areas), (image_id, width, height, ihash))
 
         mock_urlopen.assert_called_with(
             settings.Z3_API_IMAGE_URL,

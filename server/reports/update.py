@@ -7,6 +7,8 @@ import reports.refresh
 import reports.models
 import dash.models
 
+from utils import statsd_helper
+
 logger = logging.getLogger(__name__)
 
 
@@ -19,15 +21,23 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     *Note*: rows contains all traffic data for the given datetime, ad_group and source
     '''
 
-    if len(rows) == 0:
-        logger.warning(
-            'Update of source traffic for adgroup %d, source %d, datetime %s skipped, due to empty rows.',
-            ad_group.id, source.id, datetime)
-        return
-
     stats = reports.models.ArticleStats.objects.filter(
         datetime=datetime, ad_group=ad_group, source=source
     ).select_related('article')
+
+    if len(rows) == 0:
+        if stats.count() > 0:
+            statsd_helper.statsd_incr('reports.update.update_traffic_metrics_skipped')
+            if source.source_type is not None:
+                statsd_helper.statsd_incr(
+                    'reports.update.update_traffic_metrics_skipped.%s' % (source.source_type.type)
+                )
+            logger.error(
+                'Update of source traffic for adgroup %d, source %d, datetime %s '
+                'skipped due to empty input although some rows already exist.',
+                ad_group.id, source.id, datetime
+            )
+        return
 
     # bulk update to reset traffic metrics
     stats.update(
@@ -102,7 +112,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     adgroup_stats.has_conversion_metrics = max_has_conversion_metrics
     adgroup_stats.save()
 
-
+@statsd_helper.statsd_timer('reports', 'stats_update_adgroup_postclick')
 @transaction.atomic
 def stats_update_adgroup_postclick(datetime, ad_group, rows):
     '''
@@ -197,7 +207,7 @@ def stats_update_adgroup_all(datetime, ad_group, rows):
     # refresh the corresponding adgroup-level pre-aggregations
     reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group)
 
-
+@statsd_helper.statsd_timer('reports', 'goals_update_adgroup')
 @transaction.atomic
 def goals_update_adgroup(datetime, ad_group, rows):
     '''

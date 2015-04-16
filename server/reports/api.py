@@ -1,54 +1,23 @@
 from __future__ import division
 
 import datetime
-import decimal
 import logging
 import collections
 
 import pytz
 
 from django.conf import settings
-from django.db.models import Sum, Min, Max
+from django.db.models import Min, Max
 
 from . import exc
 from . import models
+from . import aggregate_fields
+from . import api_helpers
 
 from dash import models as dashmodels
-from utils import db_aggregates
 from utils.sort_helper import sort_results
 
 logger = logging.getLogger(__name__)
-
-
-DIMENSIONS = set(['article', 'ad_group', 'date', 'source', 'account', 'campaign'])
-TRAFFIC_FIELDS = ['clicks', 'impressions', 'cost', 'cpc', 'ctr', 'title', 'url']
-POSTCLICK_ACQUISITION_FIELDS = ['visits', 'click_discrepancy', 'pageviews']
-POSTCLICK_ENGAGEMENT_FIELDS = [
-    'percent_new_users', 'pv_per_visit', 'avg_tos', 'bounce_rate', 'goals'
-]
-
-AGGREGATE_FIELDS = dict(
-    clicks_sum=Sum('clicks'),
-    impressions_sum=Sum('impressions'),
-    cost_cc_sum=Sum('cost_cc'),
-    ctr=db_aggregates.SumDivision('clicks', 'impressions'),
-    cpc_cc=db_aggregates.SumDivision('cost_cc', 'clicks')
-)
-
-POSTCLICK_AGGREGATE_FIELDS = dict(
-    visits_sum=Sum('visits'),
-    new_visits_sum=Sum('new_visits'),
-    percent_new_users=db_aggregates.SumDivision('new_visits', 'visits'),
-    bounce_rate=db_aggregates.SumDivision('bounced_visits', 'visits'),
-    pageviews_sum=Sum('pageviews'),
-    pv_per_visit=db_aggregates.SumDivision('pageviews', 'visits'),
-    avg_tos=db_aggregates.SumDivision('duration', 'visits'),
-)
-
-GOAL_AGGREGATE_FIELDS = dict(
-    conversions_sum=Sum('conversions'),
-    conversions_value_cc_sum=Sum('conversions_value_cc'),
-)
 
 
 def _preprocess_constraints(constraints):
@@ -73,7 +42,7 @@ def _preprocess_breakdown(breakdown):
         'campaign': 'ad_group__campaign'
     }
     breakdown = [] if breakdown is None else breakdown[:]
-    if len(set(breakdown) - DIMENSIONS) != 0:
+    if len(set(breakdown) - api_helpers.DIMENSIONS) != 0:
         raise exc.ReportsQueryError('Invalid breakdown')
     fields = [breakdown_field_translate.get(field, field) for field in breakdown]
     return fields
@@ -108,7 +77,7 @@ def query_stats(start_date, end_date, breakdown=None, **constraints):
     if constraints:
         result = result.filter(**constraints)
 
-    agg_fields = {k:v for k, v in list(AGGREGATE_FIELDS.items()) + list(POSTCLICK_AGGREGATE_FIELDS.items())}
+    agg_fields = {k:v for k, v in list(aggregate_fields.AGGREGATE_FIELDS.items()) + list(aggregate_fields.POSTCLICK_AGGREGATE_FIELDS.items())}
 
     if breakdown:
         result = result.values(*breakdown)
@@ -140,7 +109,7 @@ def query_goal(start_date, end_date, breakdown=None, **constraints):
 
     if breakdown:
         result = result.values(*breakdown)
-        result = result.annotate(**GOAL_AGGREGATE_FIELDS)
+        result = result.annotate(**aggregate_fields.GOAL_AGGREGATE_FIELDS)
 
     return result
 
@@ -233,70 +202,25 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
     return results
 
 
-def filter_by_permissions(result, user):
-    '''
-    filters reports such that the user will only get fields that he is allowed to see
-    '''
-    def filter_row(row):
-        filtered_row = {}
-        for field in DIMENSIONS:
-            if field in row:
-                filtered_row[field] = row[field]
-        for field in TRAFFIC_FIELDS:
-            if field in row:
-                filtered_row[field] = row[field]
-        if (user.has_perm('zemauth.content_ads_postclick_acquisition') or
-                user.has_perm('zemauth.aggregate_postclick_acquisition')):
-            for field in POSTCLICK_ACQUISITION_FIELDS:
-                if field in row:
-                    filtered_row[field] = row[field]
-        if (user.has_perm('zemauth.content_ads_postclick_engagement') or
-                user.has_perm('zemauth.aggregate_postclick_engagement')):
-            for field in POSTCLICK_ENGAGEMENT_FIELDS:
-                if field in row:
-                    filtered_row[field] = row[field]
-        return filtered_row
-    if isinstance(result, dict):
-        return filter_row(result)
-    else:
-        return [filter_row(row) for row in result]
-
-
 def _collect_results(result):
-    col_name_translate = {
-        'clicks_sum': 'clicks',
-        'impressions_sum': 'impressions',
-        'cost_cc_sum': 'cost',
-        'cpc_cc': 'cpc',
-        'datetime': 'date',
-        'ad_group__campaign': 'campaign',
-        'ad_group__campaign__account': 'account',
-
-        'visits_sum': 'visits',
-        'new_visits_sum': 'new_visits',
-        'pageviews_sum': 'pageviews',
-        'conversions_value_cc_sum': 'conversion_value',
-        'conversions_sum': 'conversions'
-    }
-
-    col_val_transform = {
-        'cost_cc_sum': lambda x: None if x is None else float(decimal.Decimal(round(x)) / decimal.Decimal(10000)),
-        'cpc_cc': lambda x: None if x is None else float(decimal.Decimal(round(x)) / decimal.Decimal(10000)),
-        'ctr': lambda x: None if x is None else x * 100,
-        'datetime': lambda dt: dt.date(),
-        'conversions_value_cc_sum': lambda x: None if x is None else float(decimal.Decimal(round(x)) / decimal.Decimal(10000)),
-        'bounce_rate': lambda x: None if x is None else x * 100,
-        'percent_new_users': lambda x: None if x is None else x * 100,
-    }
-
     def collect_row(row):
         new_row = {}
-        for col_name, col_val in dict(row).items():
-            if col_name.endswith('_null') or col_name.endswith('_metrics_min') or col_name.endswith('_metrics_max'):
+        for name, val in dict(row).items():
+            if name.endswith('_null') or name.endswith('_metrics_min') or name.endswith('_metrics_max'):
                 continue
-            new_col_val = col_val_transform.get(col_name, lambda x: x)(col_val)
-            new_col_name = col_name_translate.get(col_name, col_name)
-            new_row[new_col_name] = new_col_val
+
+            if name == 'datetime':
+                name = 'date'
+                val = val.date()
+            elif name == 'ad_group__campaign':
+                name = 'campaign'
+            elif name == 'ad_group__campaign__account':
+                name = 'account'
+            else:
+                val = aggregate_fields.transform_val(name, val)
+                name = aggregate_fields.transform_name(name)
+
+            new_row[name] = val
 
         return new_row
 
@@ -354,12 +278,12 @@ def has_complete_postclick_metrics_ad_groups(start_date, end_date, ad_groups, so
 
 
 def row_has_traffic_data(row):
-    return any(row.get(field) is not None for field in TRAFFIC_FIELDS)
+    return any(row.get(field) is not None for field in api_helpers.TRAFFIC_FIELDS)
 
 
 def row_has_postclick_data(row):
     return any(row.get(field) is not None for field in
-               POSTCLICK_ACQUISITION_FIELDS + POSTCLICK_ENGAGEMENT_FIELDS)
+               api_helpers.POSTCLICK_ACQUISITION_FIELDS + api_helpers.POSTCLICK_ENGAGEMENT_FIELDS)
 
 
 def _get_ad_group_ids_with_postclick_data(key, objects, exclude_archived=True):
