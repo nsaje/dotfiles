@@ -559,13 +559,12 @@ class OutbrainAccountAdmin(admin.ModelAdmin):
 
 
 def approve_content_ad_sources(modeladmin, request, queryset):
-    logger.info('BULK APPROVE CONTENT ADS: Bulk approve content ads started. Contentads: {}'.format([el.id for el in queryset]))
-    for content_ad_source in queryset:
-        logger.info(
-            'BULK APPROVE CONTENT ADS: Initializing update content ad update action through bulk approve. Content ad id: {}'.format(
-                content_ad_source.content_ad.id
-            )
+    logger.info(
+        'BULK APPROVE CONTENT ADS: Bulk approve content ads started. Contentads: {}'.format(
+            [el.id for el in queryset]
         )
+    )
+    for content_ad_source in queryset:
         content_ad_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
         content_ad_source.save()
         actionlog.api_contentads.init_update_content_ad_action(content_ad_source, request)
@@ -573,19 +572,29 @@ approve_content_ad_sources.short_description = 'Mark selected content ad sources
 
 
 def reject_content_ad_sources(modeladmin, request, queryset):
-    logger.info('BULK REJECT CONTENT ADS: Bulk reject content ads started. Contentads: {}'.format([el.id for el in queryset]))
-    for content_ad_source in queryset:
-        logger.info(
-            'BULK REJECT CONTENT ADS: Setting content ad to inactive through bulk reject. Content ad id: {}'.format(
-                content_ad_source.content_ad.id
-            )
+    logger.info(
+        'BULK REJECT CONTENT ADS: Bulk reject content ads started. Contentads: {}'.format(
+            [el.id for el in queryset]
         )
+    )
+    for content_ad_source in queryset:
         content_ad_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
         content_ad_source.state = constants.ContentAdSourceState.INACTIVE
         content_ad_source.source_state = constants.ContentAdSourceState.INACTIVE
         content_ad_source.save()
         actionlog.api_contentads.init_update_content_ad_action(content_ad_source, request)
 reject_content_ad_sources.short_description = 'Mark selected content ad sources as REJECTED'
+
+
+def repeat_insert_content_ad_sources(modeladmin, request, queryset):
+    logger.info(
+        'BULK INSERT CONTENT ADS: Bulk insert content ads started. Contentads: {}'.format(
+            [el.id for el in queryset]
+        )
+    )
+    for content_ad_source in queryset:
+        actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, request)
+repeat_insert_content_ad_sources.short_description = 'Repeat INSERT of selected content ad sources'
 
 
 class ContentAdSourceAdmin(admin.ModelAdmin):
@@ -602,7 +611,7 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
 
     list_filter = ('source', 'submission_status')
 
-    actions = [approve_content_ad_sources, reject_content_ad_sources]
+    actions = [approve_content_ad_sources, reject_content_ad_sources, repeat_insert_content_ad_sources]
 
     display_submission_status_colors = {
         constants.ContentAdSubmissionStatus.APPROVED: '#5cb85c',
