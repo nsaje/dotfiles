@@ -30,9 +30,9 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
 
     $scope.columns = [
         {
-            name: '',
+            name: 'Thumbnail',
+            nameCssClass: 'table-name-hidden',
             field: 'image_urls',
-            unselectable: true,
             checked: true,
             type: 'image',
             shown: true,
@@ -82,7 +82,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
         }, {
             name: 'Title',
             field: 'titleLink',
-            unselectable: true,
             checked: true,
             type: 'linkText',
             shown: true,
@@ -183,8 +182,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
     ];
 
     $scope.columnCategories = [{
-        'name': 'Content Ad Management',
-        'fields': ['submission_status', 'urlLink', 'upload_time', 'batch_name']
+        'name': 'Content Sync',
+        'fields': ['image_urls' ,'titleLink', 'submission_status', 'urlLink', 'upload_time', 'batch_name']
     }, {
         'name': 'Traffic Acquisition',
         'fields': ['cost', 'cpc', 'clicks', 'impressions', 'ctr']
