@@ -146,10 +146,9 @@ def _process_zwei_response(action, data, request):
                 )
 
                 statsd_helper.statsd_incr('reports.update.update_traffic_metrics_skipped')
-                if source.source_type is not None:
-                    statsd_helper.statsd_incr(
-                        'reports.update.update_traffic_metrics_skipped.%s' % (source.source_type.type)
-                    )
+                statsd_helper.statsd_incr(
+                    'reports.update.update_traffic_metrics_skipped.%s' % (source.source_type.type)
+                )
 
                 logger.warning(msg, ad_group.id, source.id, date)
 
