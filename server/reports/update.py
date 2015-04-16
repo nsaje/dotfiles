@@ -12,20 +12,6 @@ from utils import statsd_helper
 logger = logging.getLogger(__name__)
 
 
-def is_traffic_update_valid(datetime, ad_group, source, rows):
-    if len(rows) > 0:
-        return True
-
-    stats = reports.models.ArticleStats.objects.filter(
-        datetime=datetime, ad_group=ad_group, source=source, has_traffic_metrics=1
-    ).select_related('article')
-
-    if stats.count() > 0:
-        return False
-
-    return True
-
-
 @transaction.atomic
 def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     '''
@@ -35,12 +21,23 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     *Note*: rows contains all traffic data for the given datetime, ad_group and source
     '''
 
-    if len(rows) == 0:
-        return
-
     stats = reports.models.ArticleStats.objects.filter(
         datetime=datetime, ad_group=ad_group, source=source
     ).select_related('article')
+
+    if len(rows) == 0:
+        if stats.count() > 0:
+            statsd_helper.statsd_incr('reports.update.update_traffic_metrics_skipped')
+            if source.source_type is not None:
+                statsd_helper.statsd_incr(
+                    'reports.update.update_traffic_metrics_skipped.%s' % (source.source_type.type)
+                )
+            logger.error(
+                'Update of source traffic for adgroup %d, source %d, datetime %s '
+                'skipped due to empty input although some rows already exist.',
+                ad_group.id, source.id, datetime
+            )
+        return
 
     # bulk update to reset traffic metrics
     stats.update(
@@ -114,7 +111,6 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     adgroup_stats.has_postclick_metrics = max_has_postclick_metrics
     adgroup_stats.has_conversion_metrics = max_has_conversion_metrics
     adgroup_stats.save()
-
 
 @statsd_helper.statsd_timer('reports', 'stats_update_adgroup_postclick')
 @transaction.atomic
@@ -273,9 +269,6 @@ def goals_update_adgroup(datetime, ad_group, rows):
 
 @transaction.atomic
 def update_content_ads_source_traffic_stats(date, ad_group, source, rows):
-    if len(rows) == 0:
-        return
-
     content_ad_sources = {}
     for content_ad_source in dash.models.ContentAdSource.objects.filter(
             content_ad__ad_group=ad_group, source=source):
