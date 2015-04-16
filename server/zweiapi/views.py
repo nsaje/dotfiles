@@ -129,30 +129,29 @@ def _process_zwei_response(action, data, request):
         ad_group = action.ad_group_source.ad_group
         source = action.ad_group_source.source
 
-        rows = _prepare_report_rows(ad_group, data['data'])
-        valid = reports.update.is_traffic_update_valid(date, ad_group, source, rows)
+        if _has_changed(data, ad_group, source, date):
+            rows = _prepare_report_rows(ad_group, data['data'])
+            valid = reports.update.is_traffic_update_valid(date, ad_group, source, rows)
 
-        if valid and _has_changed(data, ad_group, source, date):
-            reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, rows)
+            if valid:
+                reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, rows)
+                if source.source_type.can_manage_content_ads():
+                    reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, data['data'])
+            else:
+                msg = 'Update of source traffic for adgroup %d, source %d, datetime %s skipped due to report not valid.'
 
-            if source.source_type.can_manage_content_ads():
-                reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, data['data'])
-
-        elif not valid:
-            msg = 'Update of source traffic for adgroup %d, source %d, datetime %s skipped due to report not valid.'
-
-            action.state = actionlog.constants.ActionState.FAILED
-            action.message = msg.format(
-                ad_group.id, source.id, date
-            )
-
-            statsd_helper.statsd_incr('reports.update.update_traffic_metrics_skipped')
-            if source.source_type is not None:
-                statsd_helper.statsd_incr(
-                    'reports.update.update_traffic_metrics_skipped.%s' % (source.source_type.type)
+                action.state = actionlog.constants.ActionState.FAILED
+                action.message = msg.format(
+                    ad_group.id, source.id, date
                 )
 
-            logger.warning(msg, ad_group.id, source.id, date)
+                statsd_helper.statsd_incr('reports.update.update_traffic_metrics_skipped')
+                if source.source_type is not None:
+                    statsd_helper.statsd_incr(
+                        'reports.update.update_traffic_metrics_skipped.%s' % (source.source_type.type)
+                    )
+
+                logger.warning(msg, ad_group.id, source.id, date)
 
     elif action.action == actionlog.constants.Action.FETCH_CAMPAIGN_STATUS:
         dash.api.update_ad_group_source_state(action.ad_group_source, data['data'])
