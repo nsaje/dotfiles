@@ -12,20 +12,6 @@ from utils import statsd_helper
 logger = logging.getLogger(__name__)
 
 
-def is_traffic_update_valid(datetime, ad_group, source, rows):
-    if len(rows) > 0:
-        return True
-
-    stats = reports.models.ArticleStats.objects.filter(
-        datetime=datetime, ad_group=ad_group, source=source, has_traffic_metrics=1
-    ).select_related('article')
-
-    if stats.count() > 0:
-        return False
-
-    return True
-
-
 @transaction.atomic
 def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     '''
