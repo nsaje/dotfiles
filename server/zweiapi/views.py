@@ -139,20 +139,18 @@ def _process_zwei_response(action, data, request):
                 reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, data['data'])
 
         elif not valid:
-            msg = 'Update of source traffic for adgroup %d, source %d, datetime %s skipped due to report not valid.'
-
             action.state = actionlog.constants.ActionState.FAILED
-            action.message = msg.format(
-                ad_group.id, source.id, date
-            )
-
             statsd_helper.statsd_incr('reports.update.update_traffic_metrics_skipped')
             if source.source_type is not None:
                 statsd_helper.statsd_incr(
                     'reports.update.update_traffic_metrics_skipped.%s' % (source.source_type.type)
                 )
 
-            logger.warning(msg, ad_group.id, source.id, date)
+            logger.error(
+                'Update of source traffic for adgroup %d, source %d, datetime %s '
+                'skipped due to empty input although some rows already exist.',
+                ad_group.id, source.id, date
+            )
 
     elif action.action == actionlog.constants.Action.FETCH_CAMPAIGN_STATUS:
         dash.api.update_ad_group_source_state(action.ad_group_source, data['data'])
