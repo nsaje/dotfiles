@@ -292,7 +292,7 @@ class CampaignAdGroupsExportAllowed(api_common.BaseApiView):
         })
 
 
-class AdGroupAdsPlusExport(api_common.BaseApiView):
+class AdGroupAdsExport(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_export_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -372,8 +372,8 @@ class AdGroupAdsPlusExport(api_common.BaseApiView):
             result['source'] = sources[result['source']].name
 
 
-class AdGroupAdsExport(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_export_get')
+class AdGroupAdsPlusExport(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_plus_export_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 

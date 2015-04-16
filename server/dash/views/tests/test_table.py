@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import datetime
 import json
 from mock import patch
@@ -145,7 +147,7 @@ class AdGroupAdsPlusTableTest(TestCase):
                 'status': 2,
                 'text': 'Approved / Paused'
             }],
-            'title': 'Test Article',
+            'title': u'Test Article Čžš',
             'upload_time': '2015-02-22T19:00:00',
             'url': 'http://testurl.com'
         }])
@@ -295,7 +297,7 @@ class AdGroupAdsPlusTableTest(TestCase):
 
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 2)
-        self.assertEqual(result['data']['rows'][0]['title'], 'Test Article')
+        self.assertEqual(result['data']['rows'][0]['title'], u'Test Article Čžš')
         self.assertEqual(result['data']['rows'][1]['title'], 'Article with no content_ad_sources')
 
 
