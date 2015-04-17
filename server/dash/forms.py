@@ -376,8 +376,26 @@ class AdGroupAdsPlusUploadForm(forms.Form):
 
         return row
 
+    def _validate_header(self, header):
+        if header is None:
+            raise forms.ValidationError('Please add a header as the first line.')
+
+        if header['url'].strip().lower() != 'url':
+            raise forms.ValidationError('First column in header should be URL.')
+
+        if header['title'].strip().lower() != 'title':
+            raise forms.ValidationError('Second column in header should be Title.')
+
+        image_url_col = header['image_url']
+        if image_url_col is not None and image_url_col.strip().lower() != 'image url':
+            raise forms.ValidationError('Third column in header should be Image URL.')
+
+        image_url_col = header['crop_areas']
+        if image_url_col is not None and image_url_col.strip().lower() != 'crop areas':
+            raise forms.ValidationError('Fourth column in header should be Crop areas.')
+
     def clean_content_ads(self):
-        content_ads = self.cleaned_data['content_ads']
+        content_ads_file = self.cleaned_data['content_ads']
 
         ads = []
         try:
@@ -388,10 +406,12 @@ class AdGroupAdsPlusUploadForm(forms.Form):
             # slow, we can instead save the file to a temporary
             # location on upload and then open it with 'rU'
             # (universal-newline mode).
-            lines = content_ads.read().splitlines()
+            lines = content_ads_file.read().splitlines()
 
             reader = unicodecsv.DictReader(lines, ['url', 'title', 'image_url', 'crop_areas'])
-            next(reader, None)  # ignore header
+
+            header = next(reader, None)
+            self._validate_header(header)
 
             for row in reader:
                 ads.append(self._validate_and_transform_row(row))
