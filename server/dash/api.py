@@ -137,15 +137,17 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
         if content_ad_source is None:
             continue
 
-        source_state = data['state']
-        submission_status = None
-        if 'submission_status' in data:
-            submission_status = data['submission_status']
+        changed = False
 
-        if source_state != content_ad_source.source_state or\
-           (submission_status is not None and submission_status != content_ad_source.submission_status):
-            content_ad_source.source_state = source_state
+        if data['state'] != content_ad_source.source_state:
+            content_ad_source.source_state = data['source_state']
+            changed = True
+
+        if 'submission_status' in data and data['submission_status'] != content_ad_source.submission_status:
             content_ad_source.submission_status = data['submission_status']
+            changed = True
+
+        if changed:
             content_ad_source.save()
 
 
