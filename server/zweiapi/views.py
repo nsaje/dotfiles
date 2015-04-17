@@ -146,9 +146,7 @@ def _process_zwei_response(action, data, request):
                   '%s skipped due to report not being valid (empty response).'
 
             action.state = actionlog.constants.ActionState.FAILED
-            action.message = msg.format(
-                ad_group.id, source.id, date
-            )
+            action.message = msg % (ad_group.id, source.id, date)
 
             statsd_helper.statsd_incr('reports.update.update_traffic_metrics_skipped')
             statsd_helper.statsd_incr(
