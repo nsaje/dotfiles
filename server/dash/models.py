@@ -1135,7 +1135,7 @@ class ContentAd(models.Model):
 
     objects = QuerySetManager()
 
-    def get_image_url(self, width, height):
+    def get_image_url(self, width=None, height=None):
         if self.image_id is None:
             return None
 

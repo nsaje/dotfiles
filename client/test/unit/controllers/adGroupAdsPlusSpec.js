@@ -14,6 +14,7 @@ describe('AdGroupAdsPlusCtrl', function() {
         $scope.isPermissionInternal = function() {return true;};
         $scope.hasPermission = function() {return true;};
         $scope.getAdGroupState = function() {};
+        $scope.dateRange = {};
 
         $controller('AdGroupAdsPlusCtrl', {$scope: $scope});
     }));
