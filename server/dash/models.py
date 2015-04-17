@@ -534,7 +534,7 @@ class SourceType(models.Model):
         return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_AD_GROUP_NAME).exists()
 
     def can_modify_ad_group_iab_category(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_IAB_CATEGORY).exists()
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY).exists()
 
     def __str__(self):
         return self.type
