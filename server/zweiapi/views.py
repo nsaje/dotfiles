@@ -139,7 +139,8 @@ def _process_zwei_response(action, data, request):
                 reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, data['data'])
 
         if not valid_response:
-            msg = 'Update of source traffic for adgroup %d, source %d, datetime %s skipped due to report not valid.'
+            msg = 'Update of source traffic for adgroup %d, source %d, datetime '\
+                  '%s skipped due to report not being valid (empty response).'
 
             action.state = actionlog.constants.ActionState.FAILED
             action.message = msg.format(
