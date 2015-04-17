@@ -554,7 +554,7 @@ def _combine_tracking_codes(ad_group_source, ad_group_settings):
 
 def _init_create_campaign(ad_group_source, name, request):
     if ad_group_source.source_campaign_key:
-        msg = 'Unable to create external campaign for AdGroupSource with existing connection'\
+        msg = u'Unable to create external campaign for AdGroupSource with existing connection'\
               'ad_group_source.id={ad_group_source_id}, name={name}'.format(
                   ad_group_source_id=ad_group_source.id,
                   name=name,
@@ -563,7 +563,7 @@ def _init_create_campaign(ad_group_source, name, request):
 
         raise exceptions.InsertCreateCampaignActionException(msg)
 
-    msg = "_init_create_campaign started: ad_group_source.id: {}, name: {}".format(
+    msg = u"_init_create_campaign started: ad_group_source.id: {}, name: {}".format(
         ad_group_source.id,
         name,
     )
