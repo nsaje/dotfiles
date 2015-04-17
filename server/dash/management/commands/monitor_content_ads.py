@@ -23,4 +23,4 @@ class Command(BaseCommand):
             hours_since = int((datetime.utcnow() - cas.modified_dt).total_seconds() / 3600)
             statsd_helper.statsd_gauge('dash.oldest_pending_content_ad_source', hours_since)
         except dash.models.ContentAdSource.DoesNotExist:
-            pass
+            statsd_helper.statsd_gauge('dash.oldest_pending_content_ad_source', 0)
