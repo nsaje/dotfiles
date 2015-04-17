@@ -354,7 +354,7 @@ class FetchReportsTestCase(TestCase):
             actionlog.models.ActionLog.objects.get(id=action_log.id).state, actionlog.constants.ActionState.FAILED
         )
 
-    @override_settings(USE_HASH_CACHE=False)
+    @override_settings(USE_HASH_CACHE=True)
     def test_fetch_reports_invalid_empty_rows_with_cache(self):
         zweiapi.views.cache.clear()
         zweiapi.views.cache.set('fetch_reports_response_hash_1_1_2014-07-01', '7a97d7b612f435a2dba269614e90e3ac')
