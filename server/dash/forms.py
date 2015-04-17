@@ -381,7 +381,16 @@ class AdGroupAdsPlusUploadForm(forms.Form):
 
         ads = []
         try:
-            reader = unicodecsv.DictReader(content_ads, ['url', 'title', 'image_url', 'crop_areas'])
+            # If the file contains ctrl-M chars instead of
+            # new line breaks, DictReader will fail to parse it.
+            # Therefore we split the file by lines first and
+            # pass that to DictReader. If this proves to be too
+            # slow, we can instead save the file to a temporary
+            # location on upload and then open it with 'rU'
+            # (universal-newline mode).
+            lines = content_ads.read().splitlines()
+
+            reader = unicodecsv.DictReader(lines, ['url', 'title', 'image_url', 'crop_areas'])
             next(reader, None)  # ignore header
 
             for row in reader:
