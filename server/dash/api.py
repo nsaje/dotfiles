@@ -165,6 +165,9 @@ def update_content_ad_source_state(content_ad_source, data):
 def order_ad_group_settings_update(ad_group, current_settings, new_settings, request):
     changes = current_settings.get_setting_changes(new_settings)
 
+    campaign_settings = ad_group.campaign.get_current_settings()
+    changes['iab_category'] = campaign_settings.iab_category
+
     if not changes:
         return
 
@@ -190,6 +193,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                 field_name == 'end_date' and source.can_modify_end_date() or\
                 field_name in ('target_devices', 'target_regions') and source.can_modify_targeting() or\
                 field_name == 'tracking_code' and source.can_modify_tracking_codes() or\
+                field_name == 'iab_category' and source.can_modify_ad_group_iab_category() or\
                 field_name == 'ad_group_name' and source.can_modify_ad_group_name():
 
                 if field_name == 'ad_group_name':
