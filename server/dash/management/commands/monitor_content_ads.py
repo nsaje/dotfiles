@@ -1,3 +1,4 @@
+import datetime
 import logging
 
 from django.core.management.base import BaseCommand
@@ -15,7 +16,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         logger.info('Pushing content ad metrics.')
 
-        content_ad_sources_pending_num = dash.models.CotentAdSource.objects.filter(
-            submission_state=dash.constants.ContentAdSubmissionStatus.PENDING
-        ).count()
-        statsd_helper.statsd_gauge('dash.content_ad_sources_pending', content_ad_sources_pending_num)
+        try:
+            cas = dash.models.CotentAdSource.objects.filter(
+                submission_state=dash.constants.ContentAdSubmissionStatus.PENDING
+            ).earliest('modified_dt')
+            hours_since = int((datetime.utcnow() - cas.modified_dt).total_seconds() / 3600)
+            statsd_helper.statsd_gauge('dash.oldest_pending_content_ad_source', hours_since)
+        except dash.models.ContentAdSource.DoesNotExist:
+            pass
