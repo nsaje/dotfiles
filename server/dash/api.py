@@ -140,7 +140,7 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
         changed = False
 
         if data['state'] != content_ad_source.source_state:
-            content_ad_source.source_state = data['source_state']
+            content_ad_source.source_state = data['state']
             changed = True
 
         if 'submission_status' in data and data['submission_status'] != content_ad_source.submission_status:
