@@ -236,7 +236,9 @@ def count_failed_stats_actions():
     return models.ActionLog.objects.filter(
         Q(action_type=constants.ActionType.MANUAL) |
         Q(action=constants.Action.CREATE_CAMPAIGN) |
-        Q(action=constants.Action.SET_CAMPAIGN_STATE),
+        Q(action=constants.Action.SET_CAMPAIGN_STATE) |
+        Q(action=constants.Action.INSERT_CONTENT_AD) |
+        Q(action=constants.Action.UPDATE_CONTENT_AD),
         state=constants.ActionState.FAILED
     ).count()
 
