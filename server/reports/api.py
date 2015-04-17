@@ -248,7 +248,12 @@ def get_yesterday_cost(**constraints):
 
 
 def has_traffic_data(ad_group, source, datetime):
-    return models.ArticleStats.objects.filter(ad_group=ad_group, source=source, datetime=datetime).exists()
+    return models.ArticleStats.objects.filter(
+        ad_group=ad_group,
+        source=source,
+        datetime=datetime,
+        has_traffic_metrics=1,
+    ).exists()
 
 
 def has_complete_postclick_metrics_accounts(start_date, end_date, accounts, sources):
