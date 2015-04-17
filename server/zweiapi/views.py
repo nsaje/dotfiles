@@ -130,7 +130,10 @@ def _process_zwei_response(action, data, request):
         source = action.ad_group_source.source
 
         has_traffic_data = reports.api.has_traffic_data(ad_group, source, date)
-        valid_response = not (has_traffic_data and len(data['data']) == 0)
+
+        valid_response = True
+        if has_traffic_data and len(data['data']) == 0:
+            valid_response = False
 
         if valid_response and _has_changed(data, ad_group, source, date):
             rows = _prepare_report_rows(ad_group, data['data'])
