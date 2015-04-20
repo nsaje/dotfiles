@@ -26,7 +26,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
 
     stats = reports.models.ArticleStats.objects.filter(
         datetime=datetime, ad_group=ad_group, source=source
-    )
+    ).select_related('article')
 
     stats.update(
         impressions=0,
@@ -36,16 +36,34 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
         has_traffic_metrics=0,
     )
 
+    stats_dict = {stat.article.id: stat for stat in stats}
+
+    aggregated_stats = {m: 0 for m in reports.models.TRAFFIC_METRICS}
+    has_postclick_metrics = 0
+    has_conversion_metrics = 0
+
     for row in rows:
-        try:
+        for key, val in row.iteritems():
+            if key not in reports.models.TRAFFIC_METRICS:
+                continue
+            aggregated_stats[key] += val
+
+        if row['article'].id in stats_dict:
             article_stats = stats.get(article_id=row['article'].id)
-        except reports.models.ArticleStats.DoesNotExist:
+        else:
             article_stats = reports.models.ArticleStats(
                 datetime=datetime,
-                article_id=row['article'].id,
+                article=row['article'],
                 ad_group=ad_group,
                 source=source
             )
+            stats_dict[article_stats.article.id] = article_stats
+
+        if article_stats.has_postclick_metrics == 1:
+            has_postclick_metrics = article_stats.has_postclick_metrics
+
+        if article_stats.has_conversion_metrics == 1:
+            has_conversion_metrics = article_stats.has_conversion_metrics
 
         for metric, value in row.items():
             if metric in reports.models.TRAFFIC_METRICS:
@@ -54,7 +72,18 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
         article_stats.has_traffic_metrics = 1
         article_stats.save()
 
-    reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group, source=source)
+    try:
+        adgroup_stats = reports.models.AdGroupStats.objects.get(datetime=datetime, ad_group=ad_group, source=source)
+    except reports.models.AdGroupStats.DoesNotExist:
+        adgroup_stats = reports.models.AdGroupStats(datetime=datetime, ad_group=ad_group, source=source)
+
+    for metric, value in aggregated_stats.items():
+        setattr(adgroup_stats, metric, value)
+
+    adgroup_stats.has_traffic_metrics = 1
+    adgroup_stats.has_postclick_metrics = has_postclick_metrics
+    adgroup_stats.has_conversion_metrics = has_conversion_metrics
+    adgroup_stats.save()
 
 
 @statsd_helper.statsd_timer('reports', 'stats_update_adgroup_postclick')
