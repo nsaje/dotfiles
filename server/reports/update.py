@@ -72,6 +72,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
         article_stats.has_traffic_metrics = 1
         article_stats.save()
 
+    # refresh ad group stats manually since all data needed is already present
     try:
         adgroup_stats = reports.models.AdGroupStats.objects.get(datetime=datetime, ad_group=ad_group, source=source)
     except reports.models.AdGroupStats.DoesNotExist:
