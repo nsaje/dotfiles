@@ -43,8 +43,7 @@ def refresh_adgroup_stats(**constraints):
             row['ad_group'] = ad_group_lookup[ad_group_id]
             row['source'] = source_lookup[source_id]
 
-            adgroup_stats = reports.models.AdGroupStats(**row)
-            adgroup_stats.save()
+            reports.models.AdGroupStats.objects.create(**row)
 
 
 def refresh_adgroup_conversion_stats(**constraints):
