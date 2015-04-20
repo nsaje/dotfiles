@@ -39,35 +39,40 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     stats_dict = {stat.article.id: stat for stat in stats}
 
     aggregated_stats = {m: 0 for m in reports.models.TRAFFIC_METRICS}
-    max_has_postclick_metrics = 0
-    max_has_conversion_metrics = 0
+    has_traffic_metrics = 0
+    has_postclick_metrics = 0
+    has_conversion_metrics = 0
 
     for row in rows:
+        has_traffic_metrics = 1
         for key, val in row.iteritems():
             if key not in reports.models.TRAFFIC_METRICS:
                 continue
             aggregated_stats[key] += val
 
-        if row['article'].id in stats_dict:
-            article_stats = stats_dict[row['article'].id]
-        else:
-            article_stats = reports.models.ArticleStats(
+        article_stats = stats_dict.get(row['article'].id)
+
+        if article_stats is None:
+            fields = dict(
                 datetime=datetime,
                 article=row['article'],
                 ad_group=ad_group,
                 source=source
             )
+            fields.update(row)
+
+            article_stats = reports.models.ArticleStats(**fields)
+
+            # update stats dict with newly created ArticleStats object
             stats_dict[article_stats.article.id] = article_stats
-
-        if article_stats.has_postclick_metrics == 1:
-            max_has_postclick_metrics = article_stats.has_postclick_metrics
-
-        if article_stats.has_conversion_metrics == 1:
-            max_has_conversion_metrics = article_stats.has_conversion_metrics
-
-        for metric, value in row.items():
-            if metric in reports.models.TRAFFIC_METRICS:
-                setattr(article_stats, metric, getattr(article_stats, metric) + value)
+        else:
+            if article_stats.has_postclick_metrics == 1:
+                has_postclick_metrics = 1
+            if article_stats.has_conversion_metrics == 1:
+                has_conversion_metrics = 1
+            for metric, value in row.items():
+                if metric in reports.models.TRAFFIC_METRICS:
+                    setattr(article_stats, metric, getattr(article_stats, metric) + value)
 
         article_stats.has_traffic_metrics = 1
         article_stats.save()
@@ -81,9 +86,9 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     for metric, value in aggregated_stats.items():
         setattr(adgroup_stats, metric, value)
 
-    adgroup_stats.has_traffic_metrics = 1
-    adgroup_stats.has_postclick_metrics = max_has_postclick_metrics
-    adgroup_stats.has_conversion_metrics = max_has_conversion_metrics
+    adgroup_stats.has_traffic_metrics = has_traffic_metrics
+    adgroup_stats.has_postclick_metrics = has_postclick_metrics
+    adgroup_stats.has_conversion_metrics = has_conversion_metrics
     adgroup_stats.save()
 
 
