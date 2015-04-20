@@ -39,12 +39,10 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     stats_dict = {stat.article.id: stat for stat in stats}
 
     aggregated_stats = {m: 0 for m in reports.models.TRAFFIC_METRICS}
-    has_traffic_metrics = 0
-    has_postclick_metrics = 0
-    has_conversion_metrics = 0
+    aggregate_has_traffic_metrics = 0
 
     for row in rows:
-        has_traffic_metrics = 1
+        aggregate_has_traffic_metrics = 1
         for key, val in row.iteritems():
             if key not in reports.models.TRAFFIC_METRICS:
                 continue
@@ -66,10 +64,6 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
             # update stats dict with newly created ArticleStats object
             stats_dict[article_stats.article.id] = article_stats
         else:
-            if article_stats.has_postclick_metrics == 1:
-                has_postclick_metrics = 1
-            if article_stats.has_conversion_metrics == 1:
-                has_conversion_metrics = 1
             for metric, value in row.items():
                 if metric in reports.models.TRAFFIC_METRICS:
                     setattr(article_stats, metric, getattr(article_stats, metric) + value)
@@ -86,9 +80,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     for metric, value in aggregated_stats.items():
         setattr(adgroup_stats, metric, value)
 
-    adgroup_stats.has_traffic_metrics = has_traffic_metrics
-    adgroup_stats.has_postclick_metrics = has_postclick_metrics
-    adgroup_stats.has_conversion_metrics = has_conversion_metrics
+    adgroup_stats.has_traffic_metrics = aggregate_has_traffic_metrics
     adgroup_stats.save()
 
 
