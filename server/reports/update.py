@@ -21,8 +21,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
 
     *Note*: rows contains all traffic data for the given datetime, ad_group and source
     '''
-
-    if len(rows) == 0 and not reports.api.can_delete_traffic_data(ad_group, source, datetime):
+    if len(rows) == 0 and not reports.api.can_delete_traffic_metrics(ad_group, source, datetime):
         return
 
     stats = reports.models.ArticleStats.objects.filter(
@@ -217,12 +216,12 @@ def goals_update_adgroup(datetime, ad_group, rows):
 
 @transaction.atomic
 def update_content_ads_source_traffic_stats(date, ad_group, source, rows):
-    if len(rows) == 0 and not reports.api.can_delete_traffic_data(ad_group, source, date):
+    if len(rows) == 0 and not reports.api.can_delete_traffic_metrics(ad_group, source, date):
         return
 
     reports.models.ContentAdStats.objects.filter(
         date=date,
-        content_ad_source__ad_group=ad_group,
+        content_ad_source__content_ad__ad_group=ad_group,
         source=source,
     ).delete()
 
@@ -245,10 +244,8 @@ def update_content_ads_source_traffic_stats(date, ad_group, source, rows):
             content_ad_source=content_ad_source,
             content_ad=content_ad_source.content_ad,
             source=content_ad_source.source,
-            defaults={
-                'impressions': row['impressions'],
-                'clicks': row['clicks'],
-                'cost_cc': row['cost_cc'],
-                'data_cost_cc': row['data_cost_cc']
-            }
+            impressions=row['impressions'],
+            clicks=row['clicks'],
+            cost_cc=row['cost_cc'],
+            data_cost_cc=row['data_cost_cc'],
         )
