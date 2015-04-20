@@ -9,7 +9,7 @@ def refresh_adgroup_stats(**constraints):
     # make sure we only filter by the allowed dimensions
     assert len(set(constraints.keys()) - {'datetime', 'ad_group', 'source'}) == 0
 
-    rs = reports.models.ArticleStats.objects.filter(**constraints).values(
+    rows = reports.models.ArticleStats.objects.filter(**constraints).values(
         'datetime', 'ad_group', 'source'
     ).annotate(
         impressions=Sum('impressions'),
@@ -29,7 +29,7 @@ def refresh_adgroup_stats(**constraints):
     with transaction.atomic():
         reports.models.AdGroupStats.objects.filter(**constraints).delete()
 
-        for row in rs:
+        for row in rows:
             row['ad_group'] = dash.models.AdGroup.objects.get(pk=row['ad_group'])
             row['source'] = dash.models.Source.objects.get(pk=row['source'])
 
