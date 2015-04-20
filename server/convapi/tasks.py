@@ -9,7 +9,7 @@ from convapi import exc
 from convapi import models
 from convapi import constants
 from convapi.parse import CsvReport
-from convapi.aggregate import ReportEmail, store_to_s3
+from convapi.aggregate import ReportEmail, store_to_s3, get_from_s3
 from utils.statsd_helper import statsd_incr, statsd_timer
 
 logger = logging.getLogger(__name__)
@@ -80,8 +80,14 @@ def process_ga_report(ga_report_task):
             report_log.state = constants.GAReportState.FAILED
             report_log.save()
 
-        attachment = ga_report_task.attachment
-        if attachment.content_type != 'text/csv':
+        content = get_from_s3(ga_report_task.date, ga_report_task.attachment_s3_key)
+        if content is None:
+            logger.warning('ERROR: Get attachment from s3 failed')
+            report_log.add_error('ERROR: Get attachment from s3 failed')
+            report_log.state = constants.GAReportState.FAILED
+            report_log.save()
+
+        if ga_report_task.attachment_content_type != 'text/csv':
             logger.warning('ERROR: content type is not CSV')
             report_log.add_error('ERROR: content type is not CSV')
             report_log.state = constants.GAReportState.FAILED
@@ -90,7 +96,6 @@ def process_ga_report(ga_report_task):
         filename = ga_report_task.attachment_name
         report_log.csv_filename = filename
 
-        content = ga_report_task.attachment.read()
         csvreport = CsvReport(content, report_log)
 
         ad_group_errors = ad_group_specified_errors(csvreport)
@@ -113,9 +118,6 @@ def process_ga_report(ga_report_task):
             report_log.state = constants.GAReportState.FAILED
             report_log.save()
 
-        csvreport_date = csvreport.get_date()
-        store_to_s3(csvreport_date, filename, content)
-
         if len(csvreport.get_entries()) == 0:
             logger.warning('Report is empty (has no entries)')
             statsd_incr('convapi.aggregated_emails')
@@ -125,7 +127,7 @@ def process_ga_report(ga_report_task):
 
         report_log.sender = ga_report_task.sender
         report_log.email_subject = ga_report_task.subject
-        report_log.for_date = csvreport_date
+        report_log.for_date = csvreport.get_date()
         report_log.save()
 
         report_aggregate(
@@ -148,3 +150,18 @@ def process_ga_report(ga_report_task):
         report_log.add_error(e.message)
         report_log.state = constants.GAReportState.FAILED
         report_log.save()
+
+
+class GAReportTask():
+    def __init__(self, subject, date, sender, recipient, from_address, text,
+                 attachment_s3_key, attachment_name, attachments_count, attachment_content_type):
+        self.subject = subject
+        self.date = date
+        self.sender = sender
+        self.recipient = recipient
+        self.from_address = from_address
+        self.text = text
+        self.attachment_content_type = attachment_content_type
+        self.attachment_s3_key = attachment_s3_key
+        self.attachment_name = attachment_name
+        self.attachment_count = attachments_count

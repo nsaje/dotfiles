@@ -59,15 +59,21 @@ def mailgun_gareps(request):
 
     statsd_incr('convapi.accepted_emails')
     try:
-        ga_report_task = GAReportTask(request.POST.get('subject'),
+        csvreport_date = request.POST.get('Date')
+        attachment_name = request.FILES.get('attachment-1').name
+        content = request.FILES.get('attachment-1')
+        key = store_to_s3(csvreport_date, filename, content)
+
+        ga_report_task = tasks.GAReportTask(request.POST.get('subject'),
                                              request.POST.get('Date'),
                                              request.POST.get('sender'),
                                              request.POST.get('recipient'),
                                              request.POST.get('from'),
                                              None,
-                                             request.FILES.get('attachment-1'),
-                                             request.FILES.get('attachment-1').name,
-                                             request.POST.get('attachment-count', 0))
+                                             key,
+                                             attachment_name,
+                                             request.POST.get('attachment-count', 0),
+                                             content.content_type)
 
         tasks.process_ga_report.apply_async((ga_report_task, ),
                                              queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE)
@@ -81,17 +87,3 @@ def mailgun_gareps(request):
         logger.exception(e.message)
 
     return HttpResponse(status=200)
-
-
-class GAReportTask():
-    def __init__(self, subject, date, sender, recipient, from_address, text,
-                 attachment, attachment_name, attachments_count):
-        self.subject = subject
-        self.date = date
-        self.sender = sender
-        self.recipient = recipient
-        self.from_address = from_address
-        self.text = text
-        self.attachment = attachment
-        self.attachment_name = attachment_name
-        self.attachment_count = attachments_count
