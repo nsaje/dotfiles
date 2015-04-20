@@ -49,7 +49,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
             aggregated_stats[key] += val
 
         if row['article'].id in stats_dict:
-            article_stats = stats_dict.get(row['article'].id)
+            article_stats = stats_dict[row['article'].id]
         else:
             article_stats = reports.models.ArticleStats(
                 datetime=datetime,
