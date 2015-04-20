@@ -37,17 +37,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     )
 
     stats_dict = {stat.article.id: stat for stat in stats}
-
-    aggregated_stats = {m: 0 for m in reports.models.TRAFFIC_METRICS}
-    aggregate_has_traffic_metrics = 0
-
     for row in rows:
-        aggregate_has_traffic_metrics = 1
-        for key, val in row.iteritems():
-            if key not in reports.models.TRAFFIC_METRICS:
-                continue
-            aggregated_stats[key] += val
-
         article_stats = stats_dict.get(row['article'].id)
 
         if article_stats is None:
@@ -71,17 +61,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
         article_stats.has_traffic_metrics = 1
         article_stats.save()
 
-    # refresh ad group stats manually since all data needed is already present
-    try:
-        adgroup_stats = reports.models.AdGroupStats.objects.get(datetime=datetime, ad_group=ad_group, source=source)
-    except reports.models.AdGroupStats.DoesNotExist:
-        adgroup_stats = reports.models.AdGroupStats(datetime=datetime, ad_group=ad_group, source=source)
-
-    for metric, value in aggregated_stats.items():
-        setattr(adgroup_stats, metric, value)
-
-    adgroup_stats.has_traffic_metrics = aggregate_has_traffic_metrics
-    adgroup_stats.save()
+    reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group, source=source)
 
 
 @statsd_helper.statsd_timer('reports', 'stats_update_adgroup_postclick')
