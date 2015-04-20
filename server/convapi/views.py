@@ -61,8 +61,8 @@ def mailgun_gareps(request):
     try:
         csvreport_date = request.POST.get('Date')
         attachment_name = request.FILES.get('attachment-1').name
-        content = request.FILES.get('attachment-1')
-        key = store_to_s3(csvreport_date, filename, content)
+        content = request.FILES.get('attachment-1').read()
+        key = store_to_s3(csvreport_date, attachment_name, content)
 
         ga_report_task = tasks.GAReportTask(request.POST.get('subject'),
                                              request.POST.get('Date'),
