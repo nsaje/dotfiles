@@ -129,11 +129,16 @@ def _process_zwei_response(action, data, request):
         ad_group = action.ad_group_source.ad_group
         source = action.ad_group_source.source
 
-        has_traffic_data = reports.api.has_traffic_data(ad_group, source, date)
+        traffic_metrics_exist = reports.api.traffic_metrics_exist(ad_group, source, date)
+        rows_raw = data['data']
 
         valid_response = True
-        if has_traffic_data and len(data['data']) == 0:
-            valid_response = False
+        empty_response = False
+
+        if traffic_metrics_exist and len(rows_raw) == 0:
+            empty_response = True
+            if not reports.api.can_delete_traffic_data(ad_group, source, date):
+                valid_response = False
 
         if valid_response and _has_changed(data, ad_group, source, date):
             rows = _prepare_report_rows(ad_group, data['data'])
@@ -148,12 +153,13 @@ def _process_zwei_response(action, data, request):
             action.state = actionlog.constants.ActionState.FAILED
             action.message = msg % (ad_group.id, source.id, date)
 
+            logger.warning(msg, ad_group.id, source.id, date)
+
+        if empty_response:
             statsd_helper.statsd_incr('reports.update.update_traffic_metrics_skipped')
             statsd_helper.statsd_incr(
                 'reports.update.update_traffic_metrics_skipped.%s' % (source.source_type.type)
             )
-
-            logger.warning(msg, ad_group.id, source.id, date)
 
     elif action.action == actionlog.constants.Action.FETCH_CAMPAIGN_STATUS:
         dash.api.update_ad_group_source_state(action.ad_group_source, data['data'])
