@@ -26,12 +26,22 @@ def refresh_adgroup_stats(**constraints):
         has_conversion_metrics=Max('has_conversion_metrics'),
     )
 
+    ad_group_lookup = {}
+    source_lookup = {}
     with transaction.atomic():
         reports.models.AdGroupStats.objects.filter(**constraints).delete()
 
         for row in rows:
-            row['ad_group'] = dash.models.AdGroup.objects.get(pk=row['ad_group'])
-            row['source'] = dash.models.Source.objects.get(pk=row['source'])
+            ad_group_id = row['ad_group']
+            if ad_group_id not in ad_group_lookup:
+                ad_group_lookup[ad_group_id] = dash.models.AdGroup.objects.get(pk=ad_group_id)
+
+            source_id = row['source']
+            if source_id not in source_lookup:
+                source_lookup[source_id] = dash.models.Source.objects.get(pk=source_id)
+
+            row['ad_group'] = ad_group_lookup[ad_group_id]
+            row['source'] = source_lookup[source_id]
 
             adgroup_stats = reports.models.AdGroupStats(**row)
             adgroup_stats.save()
