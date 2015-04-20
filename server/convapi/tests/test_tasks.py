@@ -12,7 +12,7 @@ class TasksTest(TestCase):
 
     fixtures = ['test_ga_aggregation.yaml']
 
-    def _fake_get_from_s3(self, date, filename):
+    def _fake_get_from_s3(self, key):
         return """
 # ----------------------------------------
 # All Web Site Data

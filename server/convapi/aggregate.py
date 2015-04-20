@@ -318,8 +318,7 @@ bounced_visits=%s, pageviews=%s, duration=%s',
 
         self.report_log.add_visits_reported(n_visits)
 
-
-def get_from_s3(date, filename):
+def _generate_s3_report_key(date, filename):
     filename = filename.lower().replace(' ', '_')
     basefnm, extension = os.path.splitext(filename)
     digest = hashlib.md5(content).hexdigest() + str(len(content))
@@ -327,6 +326,9 @@ def get_from_s3(date, filename):
         date=date.strftime('%Y%m%d'),
         filename=basefnm + '_' + digest + extension
     )
+    return key
+
+def get_from_s3(key):
     try:
         helper = utils.s3helpers.S3Helper()
         return helper.get(key)
@@ -337,17 +339,10 @@ def get_from_s3(date, filename):
 
 
 def store_to_s3(date, filename, content):
-    filename = filename.lower().replace(' ', '_')
-    basefnm, extension = os.path.splitext(filename)
-    digest = hashlib.md5(content).hexdigest() + str(len(content))
-    key = S3_REPORT_KEY_FORMAT.format(
-        date=date.strftime('%Y%m%d'),
-        filename=basefnm + '_' + digest + extension
-    )
+    key = _generate_s3_report_key(date, filename)
     try:
         helper = utils.s3helpers.S3Helper()
         return helper.put(key, content)
     except Exception:
         logger.exception('Error while saving conversion report to s3')
-
     return None

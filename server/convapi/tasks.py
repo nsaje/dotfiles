@@ -80,7 +80,7 @@ def process_ga_report(ga_report_task):
             report_log.state = constants.GAReportState.FAILED
             report_log.save()
 
-        content = get_from_s3(ga_report_task.date, ga_report_task.attachment_s3_key)
+        content = get_from_s3(ga_report_task.attachment_s3_key)
         if content is None:
             logger.warning('ERROR: Get attachment from s3 failed')
             report_log.add_error('ERROR: Get attachment from s3 failed')
