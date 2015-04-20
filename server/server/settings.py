@@ -100,6 +100,7 @@ TEST_OUTPUT_DIR = os.path.join(BASE_DIR, '.junit_xml')
 COVERAGE_ENABLED = 'COVERAGE_ENABLED' in os.environ
 
 DEFAULT_FROM_EMAIL = ''
+MAILGUN_API_KEY = ''
 
 from celeryconfig import *
 from localsettings import *
