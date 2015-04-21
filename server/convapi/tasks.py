@@ -153,7 +153,7 @@ def process_ga_report(ga_report_task):
         report_log.save()
 
 
-class GAReportTask():
+class GAReportTask(object):
     def __init__(self, subject, date, sender, recipient, from_address, text,
                  attachment_s3_key, attachment_name, attachments_count, attachment_content_type):
         self.subject = subject
