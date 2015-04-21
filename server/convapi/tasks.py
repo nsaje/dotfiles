@@ -70,6 +70,7 @@ def report_aggregate(csvreport, sender, recipient, subject, date, text, report_l
 @transaction.atomic
 def process_ga_report(ga_report_task):
     try:
+        logger.warning("starting process_ga_report")
         report_log = models.GAReportLog()
         report_log.email_subject = ga_report_task.subject
         report_log.from_address = ga_report_task.from_address
@@ -81,6 +82,7 @@ def process_ga_report(ga_report_task):
             report_log.state = constants.GAReportState.FAILED
             report_log.save()
 
+        logger.warning('get attachment from s3 %s' % (ga_report_task.attachment_s3_key,))
         content = get_from_s3(ga_report_task.attachment_s3_key)
         if content is None:
             logger.warning('ERROR: Get attachment from s3 failed')

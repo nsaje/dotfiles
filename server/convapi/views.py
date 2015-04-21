@@ -84,6 +84,7 @@ def mailgun_gareps(request):
                                              request.POST.get('attachment-count', 0),
                                              content_type)
 
+        logger.info("process_ga_report.apply_async")
         tasks.process_ga_report.apply_async((ga_report_task, ),
                                              queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE)
     except Exception as e:
