@@ -156,6 +156,7 @@ def _process_zwei_response(action, data, request):
             logger.warning(msg, ad_group.id, source.id, date)
 
         if empty_response:
+            logger.warning('Empty report received for adgroup %d, source %d, datetime %s', ad_group.id, source.id, date)
             statsd_helper.statsd_incr('reports.update.update_traffic_metrics_skipped')
             statsd_helper.statsd_incr(
                 'reports.update.update_traffic_metrics_skipped.%s' % (source.source_type.type)
