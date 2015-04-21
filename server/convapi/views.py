@@ -1,5 +1,7 @@
 import logging
 import time
+import email.utils
+
 from threading import Thread
 
 from django.views.decorators.csrf import csrf_exempt
@@ -62,7 +64,7 @@ def mailgun_gareps(request):
     try:
         ga_report_task = None
 
-        csvreport_date = request.POST.get('Date')
+        csvreport_date = email.utils.parsedate(request.POST.get('Date'))
         attachment_name = request.FILES.get('attachment-1').name
         content = request.FILES.get('attachment-1').read()
         key = store_to_s3(csvreport_date, attachment_name, content)
