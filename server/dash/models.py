@@ -503,6 +503,18 @@ class SourceType(models.Model):
         verbose_name='CPC Decimal Places'
     )
 
+    can_delete_traffic_metrics = models.BooleanField(
+        default=False,
+        verbose_name='Delete traffic metrics on empty report',
+    )
+
+    delete_traffic_metrics_threshold = models.IntegerField(
+        default=0,
+        blank=False,
+        null=False,
+        verbose_name='Max clicks allowed to delete per daily report',
+    )
+
     def can_update_state(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_STATE).exists()
 

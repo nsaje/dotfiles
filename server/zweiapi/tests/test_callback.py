@@ -354,6 +354,29 @@ class FetchReportsTestCase(TestCase):
             actionlog.models.ActionLog.objects.get(id=action_log.id).state, actionlog.constants.ActionState.FAILED
         )
 
+    @override_settings(USE_HASH_CACHE=False)
+    def test_fetch_reports_delete_empty_rows(self):
+        zwei_response_data = {
+            'status': 'success',
+            'data': []
+        }
+
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
+        reports.models.ArticleStats.objects.create(
+            ad_group=ad_group_source.ad_group,
+            source=ad_group_source.source,
+            article_id=1,
+            datetime=datetime.datetime(2014, 7, 1),
+            clicks=8,
+            has_traffic_metrics=1,
+        )
+
+        response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            actionlog.models.ActionLog.objects.get(id=action_log.id).state, actionlog.constants.ActionState.SUCCESS
+        )
+
     @override_settings(USE_HASH_CACHE=True)
     def test_fetch_reports_invalid_empty_rows_with_cache(self):
         zweiapi.views.cache.clear()

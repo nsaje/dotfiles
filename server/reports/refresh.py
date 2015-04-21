@@ -1,4 +1,3 @@
-
 from django.db.models import Sum, Max
 from django.db import transaction
 
@@ -9,8 +8,8 @@ import dash.models
 def refresh_adgroup_stats(**constraints):
     # make sure we only filter by the allowed dimensions
     assert len(set(constraints.keys()) - {'datetime', 'ad_group', 'source'}) == 0
-    
-    rs = reports.models.ArticleStats.objects.filter(**constraints).values(
+
+    rows = reports.models.ArticleStats.objects.filter(**constraints).values(
         'datetime', 'ad_group', 'source'
     ).annotate(
         impressions=Sum('impressions'),
@@ -26,32 +25,25 @@ def refresh_adgroup_stats(**constraints):
         has_postclick_metrics=Max('has_postclick_metrics'),
         has_conversion_metrics=Max('has_conversion_metrics'),
     )
+
     ad_group_lookup = {}
     source_lookup = {}
     with transaction.atomic():
-        for row in rs:
-            if row['ad_group'] not in ad_group_lookup:
-                ad_group_lookup[row['ad_group']] = \
-                    dash.models.AdGroup.objects.get(pk=row['ad_group'])
-            if row['source'] not in source_lookup:
-                source_lookup[row['source']] = \
-                    dash.models.Source.objects.get(pk=row['source'])
-            dimensions = {
-                'datetime': row['datetime'],
-                'ad_group': ad_group_lookup[row['ad_group']],
-                'source': source_lookup[row['source']]
-            }
-            row['ad_group'] = ad_group_lookup[row['ad_group']]
-            row['source'] = source_lookup[row['source']]
-            try:
-                adgroup_stats = reports.models.AdGroupStats.objects.get(**dimensions)
-                for metric, value in row.items():
-                    if metric not in ('datetime', 'ad_group', 'source'):
-                        adgroup_stats.__setattr__(metric, value)
-            except reports.models.AdGroupStats.DoesNotExist:
-                adgroup_stats = reports.models.AdGroupStats(**row)
+        reports.models.AdGroupStats.objects.filter(**constraints).delete()
 
-            adgroup_stats.save()
+        for row in rows:
+            ad_group_id = row['ad_group']
+            if ad_group_id not in ad_group_lookup:
+                ad_group_lookup[ad_group_id] = dash.models.AdGroup.objects.get(pk=ad_group_id)
+
+            source_id = row['source']
+            if source_id not in source_lookup:
+                source_lookup[source_id] = dash.models.Source.objects.get(pk=source_id)
+
+            row['ad_group'] = ad_group_lookup[ad_group_id]
+            row['source'] = source_lookup[source_id]
+
+            reports.models.AdGroupStats.objects.create(**row)
 
 
 def refresh_adgroup_conversion_stats(**constraints):

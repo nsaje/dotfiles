@@ -26,14 +26,12 @@ class StatsUpdateTestCase(test.TestCase):
             .filter(datetime=dt, ad_group=ad_group, source=source) \
             .aggregate(impressions=Sum('impressions'),
                        clicks=Sum('clicks'),
-                       cost_cc=Sum('cost_cc')
-            )
+                       cost_cc=Sum('cost_cc'))
         adgroup_stats_totals = reports.models.AdGroupStats.objects \
             .filter(datetime=dt, ad_group=ad_group, source=source) \
             .aggregate(impressions=Sum('impressions'),
                        clicks=Sum('clicks'),
-                       cost_cc=Sum('cost_cc')
-            )
+                       cost_cc=Sum('cost_cc'))
         self.assertEqual(article_stats_totals, adgroup_stats_totals)
 
         reports.update.stats_update_adgroup_source_traffic(
@@ -43,7 +41,7 @@ class StatsUpdateTestCase(test.TestCase):
             rows=[{
                 'article': dash.models.Article.objects.get(pk=1),
                 'impressions': 1000,
-                'clicks': 10,
+                'clicks': 11,
                 'cost_cc': 9999
             }]
         )
@@ -52,15 +50,13 @@ class StatsUpdateTestCase(test.TestCase):
             .filter(datetime=dt, ad_group=ad_group, source=source) \
             .aggregate(impressions=Sum('impressions'),
                        clicks=Sum('clicks'),
-                       cost_cc=Sum('cost_cc')
-            )
+                       cost_cc=Sum('cost_cc'))
         adgroup_stats_totals = reports.models.AdGroupStats.objects \
             .filter(datetime=dt, ad_group=ad_group, source=source) \
             .aggregate(impressions=Sum('impressions'),
                        clicks=Sum('clicks'),
-                       cost_cc=Sum('cost_cc')
-            )
-        expected = {'impressions': 1000, 'clicks': 10, 'cost_cc': 9999}
+                       cost_cc=Sum('cost_cc'))
+        expected = {'impressions': 1000, 'clicks': 11, 'cost_cc': 9999}
         self.assertEqual(article_stats_totals, expected)
         self.assertEqual(adgroup_stats_totals, expected)
 
@@ -75,17 +71,15 @@ class StatsUpdateTestCase(test.TestCase):
             .filter(datetime=dt, ad_group=ad_group, source=source) \
             .aggregate(impressions=Sum('impressions'),
                        clicks=Sum('clicks'),
-                       cost_cc=Sum('cost_cc')
-            )
+                       cost_cc=Sum('cost_cc'))
         adgroup_stats_totals = reports.models.AdGroupStats.objects \
             .filter(datetime=dt, ad_group=ad_group, source=source) \
             .aggregate(impressions=Sum('impressions'),
                        clicks=Sum('clicks'),
-                       cost_cc=Sum('cost_cc')
-            )
+                       cost_cc=Sum('cost_cc'))
 
         # Nothing changes
-        expected = {'impressions': 1000, 'clicks': 10, 'cost_cc': 9999}
+        expected = {'impressions': 1000, 'clicks': 11, 'cost_cc': 9999}
         self.assertEqual(article_stats_totals, expected)
         self.assertEqual(adgroup_stats_totals, expected)
 
@@ -101,16 +95,14 @@ class StatsUpdateTestCase(test.TestCase):
                        new_visits=Sum('new_visits'),
                        bounced_visits=Sum('bounced_visits'),
                        pageviews=Sum('pageviews'),
-                       duration=Sum('duration')
-            )
+                       duration=Sum('duration'))
         adgroup_stats_totals = reports.models.AdGroupStats.objects \
             .filter(datetime=dt, ad_group=ad_group) \
             .aggregate(visits=Sum('visits'),
                        new_visits=Sum('new_visits'),
                        bounced_visits=Sum('bounced_visits'),
                        pageviews=Sum('pageviews'),
-                       duration=Sum('duration')
-            )
+                       duration=Sum('duration'))
         self.assertEqual(article_stats_totals, adgroup_stats_totals)
 
         reports.update.stats_update_adgroup_postclick(
@@ -133,16 +125,14 @@ class StatsUpdateTestCase(test.TestCase):
                        new_visits=Sum('new_visits'),
                        bounced_visits=Sum('bounced_visits'),
                        pageviews=Sum('pageviews'),
-                       duration=Sum('duration')
-            )
+                       duration=Sum('duration'))
         adgroup_stats_totals = reports.models.AdGroupStats.objects \
             .filter(datetime=dt, ad_group=ad_group) \
             .aggregate(visits=Sum('visits'),
                        new_visits=Sum('new_visits'),
                        bounced_visits=Sum('bounced_visits'),
                        pageviews=Sum('pageviews'),
-                       duration=Sum('duration')
-            )
+                       duration=Sum('duration'))
         expected = {
             'visits': 1000,
             'new_visits': 900,
@@ -166,18 +156,16 @@ class StatsUpdateTestCase(test.TestCase):
                        new_visits=Sum('new_visits'),
                        bounced_visits=Sum('bounced_visits'),
                        pageviews=Sum('pageviews'),
-                       duration=Sum('duration')
-            )
+                       duration=Sum('duration'))
         adgroup_stats_totals = reports.models.AdGroupStats.objects \
             .filter(datetime=dt, ad_group=ad_group) \
             .aggregate(visits=Sum('visits'),
                        new_visits=Sum('new_visits'),
                        bounced_visits=Sum('bounced_visits'),
                        pageviews=Sum('pageviews'),
-                       duration=Sum('duration')
-            )
+                       duration=Sum('duration'))
 
-        #Nothing changes
+        # Nothing changes
         expected = {
             'visits': 1000,
             'new_visits': 900,
@@ -203,8 +191,7 @@ class StatsUpdateTestCase(test.TestCase):
                        new_visits=Sum('new_visits'),
                        bounced_visits=Sum('bounced_visits'),
                        pageviews=Sum('pageviews'),
-                       duration=Sum('duration')
-            )
+                       duration=Sum('duration'))
         adgroup_stats_totals = reports.models.AdGroupStats.objects \
             .filter(datetime=dt, ad_group=ad_group) \
             .aggregate(impressions=Sum('impressions'),
@@ -214,8 +201,7 @@ class StatsUpdateTestCase(test.TestCase):
                        new_visits=Sum('new_visits'),
                        bounced_visits=Sum('bounced_visits'),
                        pageviews=Sum('pageviews'),
-                       duration=Sum('duration')
-            )
+                       duration=Sum('duration'))
 
         self.assertEqual(article_stats_totals, adgroup_stats_totals)
 
@@ -246,8 +232,7 @@ class StatsUpdateTestCase(test.TestCase):
                        new_visits=Sum('new_visits'),
                        bounced_visits=Sum('bounced_visits'),
                        pageviews=Sum('pageviews'),
-                       duration=Sum('duration')
-            )
+                       duration=Sum('duration'))
         adgroup_stats_totals = reports.models.AdGroupStats.objects \
             .filter(datetime=dt, ad_group=ad_group) \
             .aggregate(impressions=Sum('impressions'),
@@ -257,8 +242,7 @@ class StatsUpdateTestCase(test.TestCase):
                        new_visits=Sum('new_visits'),
                        bounced_visits=Sum('bounced_visits'),
                        pageviews=Sum('pageviews'),
-                       duration=Sum('duration')
-            )
+                       duration=Sum('duration'))
         expected = {
             'impressions': 20000,
             'clicks': 1500,
@@ -289,8 +273,7 @@ class StatsUpdateTestCase(test.TestCase):
                        new_visits=Sum('new_visits'),
                        bounced_visits=Sum('bounced_visits'),
                        pageviews=Sum('pageviews'),
-                       duration=Sum('duration')
-            )
+                       duration=Sum('duration'))
         adgroup_stats_totals = reports.models.AdGroupStats.objects \
             .filter(datetime=dt, ad_group=ad_group) \
             .aggregate(impressions=Sum('impressions'),
@@ -300,8 +283,7 @@ class StatsUpdateTestCase(test.TestCase):
                        new_visits=Sum('new_visits'),
                        bounced_visits=Sum('bounced_visits'),
                        pageviews=Sum('pageviews'),
-                       duration=Sum('duration')
-            )
+                       duration=Sum('duration'))
 
         # Nothing changes
         expected = {
@@ -316,6 +298,112 @@ class StatsUpdateTestCase(test.TestCase):
         }
         self.assertEqual(article_stats_totals, expected)
         self.assertEqual(adgroup_stats_totals, expected)
+
+
+class DeleteOnEmptyReportTestCase(test.TestCase):
+    fixtures = ['test_reports_base.yaml', 'test_article_stats_empty_report.yaml']
+
+    def test_empty_with_flag(self):
+        dt1 = datetime.datetime(2015, 4, 19)
+        dt2 = datetime.datetime(2015, 4, 20)
+        ad_group = dash.models.AdGroup.objects.get(id=1)
+        source = dash.models.Source.objects.get(id=1)
+
+        reports.refresh.refresh_adgroup_stats(ad_group=ad_group, source=source)
+
+        article_stats1 = reports.models.ArticleStats.objects.filter(ad_group=ad_group, source=source, datetime=dt1)
+        self.assertEqual(sum(stat.clicks for stat in article_stats1), 8)
+        self.assertEqual(sum(stat.impressions for stat in article_stats1), 6636)
+        self.assertEqual(sum(stat.cost_cc for stat in article_stats1), 16000)
+
+        ad_group_stats1 = reports.models.AdGroupStats.objects.filter(ad_group=ad_group, source=source, datetime=dt1)
+        self.assertEqual(sum(stat.clicks for stat in ad_group_stats1), 8)
+        self.assertEqual(sum(stat.impressions for stat in ad_group_stats1), 6636)
+        self.assertEqual(sum(stat.cost_cc for stat in ad_group_stats1), 16000)
+
+        article_stats2 = reports.models.ArticleStats.objects.filter(ad_group=ad_group, source=source, datetime=dt2)
+        self.assertEqual(sum(stat.clicks for stat in article_stats2), 12)
+        self.assertEqual(sum(stat.impressions for stat in article_stats2), 5471)
+        self.assertEqual(sum(stat.cost_cc for stat in article_stats2), 36000)
+
+        ad_group_stats2 = reports.models.AdGroupStats.objects.filter(ad_group=ad_group, source=source, datetime=dt2)
+        self.assertEqual(sum(stat.clicks for stat in ad_group_stats2), 12)
+        self.assertEqual(sum(stat.impressions for stat in ad_group_stats2), 5471)
+        self.assertEqual(sum(stat.cost_cc for stat in ad_group_stats2), 36000)
+
+        reports.update.stats_update_adgroup_source_traffic(dt1, ad_group, source, [])
+        reports.update.stats_update_adgroup_source_traffic(dt2, ad_group, source, [])
+
+        article_stats1 = reports.models.ArticleStats.objects.filter(ad_group=ad_group, source=source, datetime=dt1)
+        self.assertEqual(sum(stat.clicks for stat in article_stats1), 0)
+        self.assertEqual(sum(stat.impressions for stat in article_stats1), 0)
+        self.assertEqual(sum(stat.cost_cc for stat in article_stats1), 0)
+
+        ad_group_stats1 = reports.models.AdGroupStats.objects.filter(ad_group=ad_group, source=source, datetime=dt1)
+        self.assertEqual(sum(stat.clicks for stat in ad_group_stats1), 0)
+        self.assertEqual(sum(stat.impressions for stat in ad_group_stats1), 0)
+        self.assertEqual(sum(stat.cost_cc for stat in ad_group_stats1), 0)
+
+        article_stats2 = reports.models.ArticleStats.objects.filter(ad_group=ad_group, source=source, datetime=dt2)
+        self.assertEqual(sum(stat.clicks for stat in article_stats2), 12)
+        self.assertEqual(sum(stat.impressions for stat in article_stats2), 5471)
+        self.assertEqual(sum(stat.cost_cc for stat in article_stats2), 36000)
+
+        ad_group_stats2 = reports.models.AdGroupStats.objects.filter(ad_group=ad_group, source=source, datetime=dt2)
+        self.assertEqual(sum(stat.clicks for stat in ad_group_stats2), 12)
+        self.assertEqual(sum(stat.impressions for stat in ad_group_stats2), 5471)
+        self.assertEqual(sum(stat.cost_cc for stat in ad_group_stats2), 36000)
+
+    def test_empty_without_flag(self):
+        dt1 = datetime.datetime(2015, 4, 19)
+        dt2 = datetime.datetime(2015, 4, 20)
+        ad_group = dash.models.AdGroup.objects.get(id=1)
+        source = dash.models.Source.objects.get(id=2)
+
+        reports.refresh.refresh_adgroup_stats(ad_group=ad_group, source=source)
+
+        article_stats1 = reports.models.ArticleStats.objects.filter(ad_group=ad_group, source=source, datetime=dt1)
+        self.assertEqual(sum(stat.clicks for stat in article_stats1), 5)
+        self.assertEqual(sum(stat.impressions for stat in article_stats1), 1530)
+        self.assertEqual(sum(stat.cost_cc for stat in article_stats1), 9500)
+
+        ad_group_stats1 = reports.models.AdGroupStats.objects.filter(ad_group=ad_group, source=source, datetime=dt1)
+        self.assertEqual(sum(stat.clicks for stat in ad_group_stats1), 5)
+        self.assertEqual(sum(stat.impressions for stat in ad_group_stats1), 1530)
+        self.assertEqual(sum(stat.cost_cc for stat in ad_group_stats1), 9500)
+
+        article_stats2 = reports.models.ArticleStats.objects.filter(ad_group=ad_group, source=source, datetime=dt2)
+        self.assertEqual(sum(stat.clicks for stat in article_stats2), 11)
+        self.assertEqual(sum(stat.impressions for stat in article_stats2), 11361)
+        self.assertEqual(sum(stat.cost_cc for stat in article_stats2), 25000)
+
+        ad_group_stats2 = reports.models.AdGroupStats.objects.filter(ad_group=ad_group, source=source, datetime=dt2)
+        self.assertEqual(sum(stat.clicks for stat in ad_group_stats2), 11)
+        self.assertEqual(sum(stat.impressions for stat in ad_group_stats2), 11361)
+        self.assertEqual(sum(stat.cost_cc for stat in ad_group_stats2), 25000)
+
+        reports.update.stats_update_adgroup_source_traffic(dt1, ad_group, source, [])
+        reports.update.stats_update_adgroup_source_traffic(dt2, ad_group, source, [])
+
+        article_stats1 = reports.models.ArticleStats.objects.filter(ad_group=ad_group, source=source, datetime=dt1)
+        self.assertEqual(sum(stat.clicks for stat in article_stats1), 5)
+        self.assertEqual(sum(stat.impressions for stat in article_stats1), 1530)
+        self.assertEqual(sum(stat.cost_cc for stat in article_stats1), 9500)
+
+        ad_group_stats1 = reports.models.AdGroupStats.objects.filter(ad_group=ad_group, source=source, datetime=dt1)
+        self.assertEqual(sum(stat.clicks for stat in ad_group_stats1), 5)
+        self.assertEqual(sum(stat.impressions for stat in ad_group_stats1), 1530)
+        self.assertEqual(sum(stat.cost_cc for stat in ad_group_stats1), 9500)
+
+        article_stats2 = reports.models.ArticleStats.objects.filter(ad_group=ad_group, source=source, datetime=dt2)
+        self.assertEqual(sum(stat.clicks for stat in article_stats2), 11)
+        self.assertEqual(sum(stat.impressions for stat in article_stats2), 11361)
+        self.assertEqual(sum(stat.cost_cc for stat in article_stats2), 25000)
+
+        ad_group_stats2 = reports.models.AdGroupStats.objects.filter(ad_group=ad_group, source=source, datetime=dt2)
+        self.assertEqual(sum(stat.clicks for stat in ad_group_stats2), 11)
+        self.assertEqual(sum(stat.impressions for stat in ad_group_stats2), 11361)
+        self.assertEqual(sum(stat.cost_cc for stat in ad_group_stats2), 25000)
 
 
 class ContentAdStatsUpdateTest(test.TestCase):
