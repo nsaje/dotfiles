@@ -9,7 +9,8 @@ from convapi import exc
 from convapi import models
 from convapi import constants
 from convapi.parse import CsvReport
-from convapi.aggregate import ReportEmail, store_to_s3, get_from_s3
+from convapi.aggregate import ReportEmail
+from convapi.helpers import store_to_s3, get_from_s3
 from utils.statsd_helper import statsd_incr, statsd_timer
 
 logger = logging.getLogger(__name__)

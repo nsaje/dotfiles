@@ -9,7 +9,8 @@ from django.conf import settings
 
 from auth import MailGunRequestAuth, GASourceAuth
 from parse import CsvReport
-from aggregate import ReportEmail, store_to_s3
+from aggregate import ReportEmail
+from helpers import store_to_s3
 from utils.statsd_helper import statsd_incr
 from convapi import exc
 from convapi import models
