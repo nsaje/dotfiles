@@ -70,6 +70,8 @@ def mailgun_gareps(request):
         attachment_name = request.FILES.get('attachment-1').name
         content = request.FILES.get('attachment-1').read()
         key = store_to_s3(csvreport_date, attachment_name, content)
+        # temporary HACK
+        content_type = 'text/csv'
 
         ga_report_task = tasks.GAReportTask(request.POST.get('subject'),
                                              request.POST.get('Date'),
@@ -80,7 +82,7 @@ def mailgun_gareps(request):
                                              key,
                                              attachment_name,
                                              request.POST.get('attachment-count', 0),
-                                             content.content_type)
+                                             content_type)
 
         tasks.process_ga_report.apply_async((ga_report_task, ),
                                              queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE)
