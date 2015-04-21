@@ -73,7 +73,7 @@ def mailgun_gareps(request):
         # temporary HACK
         content_type = 'text/csv'
 
-        ga_report_task = tasks.GAReportTask(request.POST.get('subject'),
+        ga_report_task = GAReportTask(request.POST.get('subject'),
                                              request.POST.get('Date'),
                                              request.POST.get('sender'),
                                              request.POST.get('recipient'),
@@ -97,3 +97,18 @@ def mailgun_gareps(request):
         logger.exception(e.message)
 
     return HttpResponse(status=200)
+
+
+class GAReportTask:
+    def __init__(self, subject, date, sender, recipient, from_address, text,
+                 attachment_s3_key, attachment_name, attachments_count, attachment_content_type):
+        self.subject = subject
+        self.date = date
+        self.sender = sender
+        self.recipient = recipient
+        self.from_address = from_address
+        self.text = text
+        self.attachment_content_type = attachment_content_type
+        self.attachment_s3_key = attachment_s3_key
+        self.attachment_name = attachment_name
+        self.attachment_count = attachments_count

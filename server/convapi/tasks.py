@@ -153,18 +153,3 @@ def process_ga_report(ga_report_task):
         report_log.add_error(e.message)
         report_log.state = constants.GAReportState.FAILED
         report_log.save()
-
-
-class GAReportTask:
-    def __init__(self, subject, date, sender, recipient, from_address, text,
-                 attachment_s3_key, attachment_name, attachments_count, attachment_content_type):
-        self.subject = subject
-        self.date = date
-        self.sender = sender
-        self.recipient = recipient
-        self.from_address = from_address
-        self.text = text
-        self.attachment_content_type = attachment_content_type
-        self.attachment_s3_key = attachment_s3_key
-        self.attachment_name = attachment_name
-        self.attachment_count = attachments_count

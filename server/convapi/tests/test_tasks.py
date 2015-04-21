@@ -9,6 +9,7 @@ import datetime
 from convapi import tasks
 from convapi import models
 from convapi import helpers
+from convapi import views
 
 
 class TasksTest(TestCase):
@@ -36,7 +37,7 @@ Day Index,Sessions
         s = dash.models.Source.objects.create(source_type=None, name='Test source', tracking_slug='lasko', maintenance=False)
 
         tasks.get_from_s3 = self._fake_get_from_s3
-        ga_report_task = tasks.GAReportTask('GA mail',
+        ga_report_task = views.GAReportTask('GA mail',
             '2015-01-01',
             'testuser@zemanta.com',
             'mailbot@zemanta.com',
