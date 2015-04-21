@@ -51,7 +51,6 @@
 
 -   fields:
         type: 'outbrain'
-        can_delete_traffic_metrics: true
         delete_traffic_metrics_threshold: 10
     model: dash.sourcetype
     pk: 3
