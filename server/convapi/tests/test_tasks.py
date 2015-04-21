@@ -4,9 +4,12 @@
 from django.test import TestCase
 
 import dash
+import datetime
 
 from convapi import tasks
 from convapi import models
+from convapi import helpers
+
 
 class TasksTest(TestCase):
 
@@ -48,3 +51,7 @@ Day Index,Sessions
 
         report_logs = models.GAReportLog.objects.all()[0]
         self.assertIsNone(report_logs.errors)
+
+
+    def test_helpers(self):
+        self.assertIsNotNone(helpers._generate_s3_report_key(datetime.date.today(), "test", ""))

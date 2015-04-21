@@ -18,8 +18,6 @@ from utils import statsd_helper
 
 logger = logging.getLogger(__name__)
 
-S3_REPORT_KEY_FORMAT = 'conversionreports/{date}/{filename}'
-
 class ReportEmail(object):
 
     def __init__(self, sender, recipient, subject, date, text, report, report_log):
