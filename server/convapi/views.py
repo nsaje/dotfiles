@@ -109,6 +109,7 @@ class GAReportTask:
         self.from_address = from_address
         self.text = text
         self.attachment_content_type = attachment_content_type
+        self.attachment = attachment_s3_key
         self.attachment_s3_key = attachment_s3_key
         self.attachment_name = attachment_name
         self.attachment_count = attachments_count
