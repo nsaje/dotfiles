@@ -1,3 +1,4 @@
+import datetime
 import logging
 import time
 import email.utils
@@ -65,7 +66,7 @@ def mailgun_gareps(request):
         ga_report_task = None
         
         csvreport_date_raw = email.utils.parsedate(request.POST.get('Date'))
-        csvreport_date = time.mktime(csvreport_date_raw)
+        csvreport_date = datetime.datetime.fromtimestamp(time.mktime(csvreport_date_raw))
         attachment_name = request.FILES.get('attachment-1').name
         content = request.FILES.get('attachment-1').read()
         key = store_to_s3(csvreport_date, attachment_name, content)

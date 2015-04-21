@@ -1,8 +1,11 @@
+import logging
 import os
 import hashlib
 import utils.s3helpers
 
 S3_REPORT_KEY_FORMAT = 'conversionreports/{date}/{filename}'
+
+logger = logging.getLogger(__name__)
 
 
 def get_from_s3(key):
@@ -14,6 +17,7 @@ def get_from_s3(key):
 
     return None
 
+
 def store_to_s3(date, filename, content):
     key = _generate_s3_report_key(date, filename, content)
     try:
@@ -22,6 +26,7 @@ def store_to_s3(date, filename, content):
     except Exception:
         logger.exception('Error while saving conversion report to s3')
     return None
+
 
 def _generate_s3_report_key(date, filename, content):
     filename = filename.lower().replace(' ', '_')
