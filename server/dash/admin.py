@@ -307,7 +307,8 @@ class SourceTypeAdmin(admin.ModelAdmin):
         'min_daily_budget',
         'max_cpc',
         'max_daily_budget',
-        'cpc_decimal_places'
+        'cpc_decimal_places',
+        'delete_traffic_metrics_threshold',
     )
 
     def get_readonly_fields(self, request, obj=None):

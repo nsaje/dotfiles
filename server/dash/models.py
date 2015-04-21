@@ -503,6 +503,14 @@ class SourceType(models.Model):
         verbose_name='CPC Decimal Places'
     )
 
+    delete_traffic_metrics_threshold = models.IntegerField(
+        default=0,
+        blank=False,
+        null=False,
+        verbose_name='Max clicks allowed to delete per daily report',
+        help_text='When we receive an empty report, we don\'t override existing data but we mark report aggregation as failed. But for smaller changes (as defined by this parameter), we do override existing data since they are not material. Zero value means no reports will get deleted.',
+    )
+
     def can_update_state(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_STATE).exists()
 

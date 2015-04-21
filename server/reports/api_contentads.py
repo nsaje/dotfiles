@@ -8,7 +8,8 @@ from reports import api_helpers
 
 def query(start_date, end_date, breakdown=None, **constraints):
     constraints = _preprocess_constraints(constraints)
-    stats = models.ContentAdStats.objects.filter(**constraints)
+    stats = models.ContentAdStats.objects.filter(
+        date__gte=start_date, date__lte=end_date, **constraints)
 
     if breakdown:
         _validate_breakdown(breakdown)

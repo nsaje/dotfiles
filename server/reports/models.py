@@ -57,6 +57,8 @@ class ArticleStats(StatsMetrics):
         self.impressions = 0
         self.clicks = 0
         self.cost_cc = 0
+        self.data_cost_cc = 0
+        self.has_traffic_metrics = 0
         self.save()
 
     def reset_postclick_metrics(self):
@@ -65,6 +67,7 @@ class ArticleStats(StatsMetrics):
         self.bounced_visits = 0
         self.pageviews = 0
         self.duration = 0
+        self.has_postclick_metrics = 0
         self.save()
 
 

@@ -64,14 +64,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             },
             disabled: false
         }, {
-            name: '',
-            unselectable: true,
-            checked: true,
-            type: 'notification',
-            shown: true,
-            totalRow: false,
-            extraTdCss: 'notification-no-text'
-        }, {
             name: 'Status',
             field: 'submission_status',
             checked: true,
@@ -79,6 +71,14 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             shown: true,
             help: 'Current submission status.',
             totalRow: false,
+        }, {
+            name: '',
+            unselectable: true,
+            checked: true,
+            type: 'notification',
+            shown: true,
+            totalRow: false,
+            extraTdCss: 'notification-no-text'
         }, {
             name: 'Title',
             field: 'titleLink',
@@ -119,6 +119,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             name: 'Batch Name',
             field: 'batch_name',
             checked: true,
+            extraTdCss: 'no-wrap',
             type: 'text',
             shown: true,
             help: 'The name of the upload batch.',
@@ -133,7 +134,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             checked: true,
             type: 'currency',
             shown: true,
-            help: "The amount spent per creative.",
+            help: "The amount spent per content ad.",
             totalRow: true,
             order: true,
             initialOrder: 'desc'
@@ -311,7 +312,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
     var getTableData = function () {
         $scope.loadRequestInProgress = true;
 
-        api.adGroupAdsPlusTable.get($state.params.id, $scope.pagination.currentPage, $scope.size, $scope.order).then(
+        api.adGroupAdsPlusTable.get($state.params.id, $scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;

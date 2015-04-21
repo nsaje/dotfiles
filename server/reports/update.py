@@ -3,6 +3,7 @@ import logging
 
 from django.db import transaction
 
+import reports.api
 import reports.refresh
 import reports.models
 import dash.models
@@ -16,41 +17,39 @@ logger = logging.getLogger(__name__)
 def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     '''
     rows is a list of dictionaries of the form:
-    [{article:<dash.Article obj>, impressions:<int>, clicks:<int>, cost_cc:<int>}, ...]
+    [{article:<dash.Article obj>, impressions:<int>, clicks:<int>, cost_cc:<int>, [data_cost_cc:<int>]}, ...]
 
     *Note*: rows contains all traffic data for the given datetime, ad_group and source
     '''
-
-    if len(rows) == 0:
+    if len(rows) == 0 and not reports.api.can_delete_traffic_metrics(ad_group, source, datetime):
         return
 
     stats = reports.models.ArticleStats.objects.filter(
         datetime=datetime, ad_group=ad_group, source=source
     ).select_related('article')
 
-    # bulk update to reset traffic metrics
+    if len(rows) == 0:
+        logger.warning(
+            'Deleting stats for ad group: %s, source: %s, datetime: %s; clicks: %s, '
+            'impressions: %s, cost_cc: %s, data_cost_cc: %s',
+            ad_group,
+            source,
+            datetime,
+            sum(stat.clicks for stat in stats),
+            sum(stat.impressions for stat in stats),
+            sum(stat.cost_cc for stat in stats)
+        )
+
     stats.update(
         impressions=0,
         clicks=0,
         cost_cc=0,
-        data_cost_cc=0
+        data_cost_cc=0,
+        has_traffic_metrics=0,
     )
 
     stats_dict = {stat.article.id: stat for stat in stats}
-
-    aggregated_stats = {}
-    max_has_postclick_metrics = 0
-    max_has_conversion_metrics = 0
-
     for row in rows:
-        # update the stats aggregate
-        for key, val in row.iteritems():
-            if key not in reports.models.TRAFFIC_METRICS:
-                continue
-            if key not in aggregated_stats:
-                aggregated_stats[key] = 0
-            aggregated_stats[key] += val
-
         article_stats = stats_dict.get(row['article'].id)
 
         if article_stats is None:
@@ -67,10 +66,6 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
             # update stats dict with newly created ArticleStats object
             stats_dict[article_stats.article.id] = article_stats
         else:
-            if article_stats.has_postclick_metrics == 1:
-                max_has_postclick_metrics = 1
-            if article_stats.has_conversion_metrics == 1:
-                max_has_conversion_metrics = 1
             for metric, value in row.items():
                 if metric in reports.models.TRAFFIC_METRICS:
                     setattr(article_stats, metric, getattr(article_stats, metric) + value)
@@ -78,28 +73,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
         article_stats.has_traffic_metrics = 1
         article_stats.save()
 
-    # update the corresponding adgroup-level pre-aggregations
-    fields = dict(
-        datetime=datetime,
-        ad_group=ad_group,
-        source=source
-    )
-
-    try:
-        adgroup_stats = reports.models.AdGroupStats.objects.get(**fields)
-        # we don't call this refresh function on purpose,
-        # because we don't actually need to query the db to compute the aggregates,
-        # and it is cheaper to just compute the aggregate_stats as we update the article stats
-        for metric, value in aggregated_stats.items():
-            setattr(adgroup_stats, metric, value)
-    except reports.models.AdGroupStats.DoesNotExist:
-        fields.update(aggregated_stats)
-        adgroup_stats = reports.models.AdGroupStats(**fields)
-
-    adgroup_stats.has_traffic_metrics = 1
-    adgroup_stats.has_postclick_metrics = max_has_postclick_metrics
-    adgroup_stats.has_conversion_metrics = max_has_conversion_metrics
-    adgroup_stats.save()
+    reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group, source=source)
 
 
 @statsd_helper.statsd_timer('reports', 'stats_update_adgroup_postclick')
@@ -149,6 +123,7 @@ def stats_update_adgroup_postclick(datetime, ad_group, rows):
     # refresh the corresponding adgroup-level pre-aggregations
     reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group)
 
+
 def stats_update_adgroup_all(datetime, ad_group, rows):
     '''
     rows is a list of dictionaries of the form
@@ -196,6 +171,7 @@ def stats_update_adgroup_all(datetime, ad_group, rows):
 
     # refresh the corresponding adgroup-level pre-aggregations
     reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group)
+
 
 @statsd_helper.statsd_timer('reports', 'goals_update_adgroup')
 @transaction.atomic
@@ -259,8 +235,14 @@ def goals_update_adgroup(datetime, ad_group, rows):
 
 @transaction.atomic
 def update_content_ads_source_traffic_stats(date, ad_group, source, rows):
-    if len(rows) == 0:
+    if len(rows) == 0 and not reports.api.can_delete_traffic_metrics(ad_group, source, date):
         return
+
+    reports.models.ContentAdStats.objects.filter(
+        date=date,
+        content_ad_source__content_ad__ad_group=ad_group,
+        source=source,
+    ).delete()
 
     content_ad_sources = {}
     for content_ad_source in dash.models.ContentAdSource.objects.filter(
@@ -276,15 +258,13 @@ def update_content_ads_source_traffic_stats(date, ad_group, source, rows):
                 row['id'], ad_group.id, source.id, date)
             continue
 
-        reports.models.ContentAdStats.objects.update_or_create(
+        reports.models.ContentAdStats.objects.create(
             date=date,
             content_ad_source=content_ad_source,
             content_ad=content_ad_source.content_ad,
             source=content_ad_source.source,
-            defaults={
-                'impressions': row['impressions'],
-                'clicks': row['clicks'],
-                'cost_cc': row['cost_cc'],
-                'data_cost_cc': row['data_cost_cc']
-            }
+            impressions=row['impressions'],
+            clicks=row['clicks'],
+            cost_cc=row['cost_cc'],
+            data_cost_cc=row['data_cost_cc'],
         )

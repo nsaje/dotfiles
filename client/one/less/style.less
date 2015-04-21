@@ -1898,7 +1898,7 @@ a.help-popover:visited {
             white-space: nowrap;
         }
 
-        .notification {
+        &.notification > span {
             white-space: nowrap;
             display: inline-block;
             min-width: 70px;
@@ -1919,9 +1919,11 @@ a.help-popover:visited {
 
         &.notification-no-text {
             padding-left: 0;
+            padding-right: 0;
+            min-width: 20px; 
 
-            .notification {
-                min-width: 20px; 
+            .loader {
+                height: 19px;
             }
         }
     }
