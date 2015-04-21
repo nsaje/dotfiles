@@ -28,6 +28,18 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
         datetime=datetime, ad_group=ad_group, source=source
     ).select_related('article')
 
+    if len(rows) == 0:
+        logger.info(
+            'Deleting stats for ad group: %s, source: %s, datetime: %s; clicks: %s, '
+            'impressions: %s, cost_cc: %s, data_cost_cc: %s',
+            ad_group,
+            source,
+            datetime,
+            sum(stat.clicks for stat in stats),
+            sum(stats.impressions for stat in stats),
+            sum(stats.cost_cc for stat in stats)
+        )
+
     stats.update(
         impressions=0,
         clicks=0,
