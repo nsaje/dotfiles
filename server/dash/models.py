@@ -513,6 +513,7 @@ class SourceType(models.Model):
         blank=False,
         null=False,
         verbose_name='Max clicks allowed to delete per daily report',
+        help_text='When we receive an empty report, we don\'t override existing data but we mark report aggregation as failed. But for smaller changes (as defined by this parameter), we do override existing data since they are not material.',
     )
 
     def can_update_state(self):

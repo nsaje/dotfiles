@@ -308,7 +308,6 @@ class SourceTypeAdmin(admin.ModelAdmin):
         'max_cpc',
         'max_daily_budget',
         'cpc_decimal_places',
-        'can_delete_traffic_metrics',
         'delete_traffic_metrics_threshold',
     )
 
