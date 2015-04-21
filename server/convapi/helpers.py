@@ -13,7 +13,7 @@ def get_from_s3(key):
         helper = utils.s3helpers.S3Helper()
         return helper.get(key)
     except Exception:
-        logger.exception('Error while saving conversion report to s3')
+        logger.exception('Error while getting conversion report to s3')
 
     return None
 
