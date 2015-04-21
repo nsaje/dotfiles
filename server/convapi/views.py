@@ -63,8 +63,9 @@ def mailgun_gareps(request):
     statsd_incr('convapi.accepted_emails')
     try:
         ga_report_task = None
-
-        csvreport_date = email.utils.parsedate(request.POST.get('Date'))
+        
+        csvreport_date_raw = email.utils.parsedate(request.POST.get('Date'))
+        csvreport_date = time.mktime(csvreport_date_raw)
         attachment_name = request.FILES.get('attachment-1').name
         content = request.FILES.get('attachment-1').read()
         key = store_to_s3(csvreport_date, attachment_name, content)
