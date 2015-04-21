@@ -137,7 +137,7 @@ def _process_zwei_response(action, data, request):
 
         if traffic_metrics_exist and len(rows_raw) == 0:
             empty_response = True
-            if not reports.api.can_delete_traffic_data(ad_group, source, date):
+            if not reports.api.can_delete_traffic_metrics(ad_group, source, date):
                 valid_response = False
 
         if valid_response and _has_changed(data, ad_group, source, date):
