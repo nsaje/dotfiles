@@ -29,7 +29,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     ).select_related('article')
 
     if len(rows) == 0:
-        logger.info(
+        logger.warning(
             'Deleting stats for ad group: %s, source: %s, datetime: %s; clicks: %s, '
             'impressions: %s, cost_cc: %s, data_cost_cc: %s',
             ad_group,
