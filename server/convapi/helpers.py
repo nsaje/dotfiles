@@ -22,7 +22,8 @@ def store_to_s3(date, filename, content):
     key = _generate_s3_report_key(date, filename, content)
     try:
         helper = utils.s3helpers.S3Helper()
-        return helper.put(key, content)
+        helper.put(key, content)
+        return key
     except Exception:
         logger.exception('Error while saving conversion report to s3')
     return None
