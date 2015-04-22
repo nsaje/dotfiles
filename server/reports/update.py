@@ -28,7 +28,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
         datetime=datetime, ad_group=ad_group, source=source
     ).select_related('article')
 
-    if len(rows) == 0 and reports.api.traffic_metrics_exist(ad_group, source, datetime):
+    if len(rows) == 0 and stats.count() > 0:
         logger.warning(
             'Deleting stats for ad group: %s, source: %s, datetime: %s; clicks: %s, '
             'impressions: %s, cost_cc: %s, data_cost_cc: %s',
