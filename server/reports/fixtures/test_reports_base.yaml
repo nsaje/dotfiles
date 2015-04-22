@@ -66,15 +66,13 @@
 # Source types
 - fields:
     type: 'sourcetype1'
-    can_delete_traffic_metrics: true
     delete_traffic_metrics_threshold: 10
   model: dash.sourcetype
   pk: 1
 
 - fields:
     type: 'sourcetype2'
-    can_delete_traffic_metrics: false
-    delete_traffic_metrics_threshold: 10
+    delete_traffic_metrics_threshold: 0
   model: dash.sourcetype
   pk: 2
 

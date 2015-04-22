@@ -259,7 +259,7 @@ def traffic_metrics_exist(ad_group, source, datetime):
 
 
 def can_delete_traffic_metrics(ad_group, source, dt):
-    if not source.source_type.can_delete_traffic_metrics:
+    if source.source_type.delete_traffic_metrics_threshold == 0:
         return False
 
     stats = models.ArticleStats.objects.filter(
