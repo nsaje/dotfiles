@@ -22,24 +22,30 @@ def cc_to_decimal(val_cc):
     return decimal.Decimal(val_cc) / 10000
 
 
-@transaction.atomic
 def add_content_ad_sources(ad_group_source, request=None):
     if not ad_group_source.source.can_manage_content_ads():
         return
 
-    content_ads = models.ContentAd.objects.filter(ad_group=ad_group_source.ad_group)
+    content_ad_sources = []
+    with transaction.atomic():
+        content_ads = models.ContentAd.objects.filter(ad_group=ad_group_source.ad_group)
 
-    for content_ad in content_ads:
-        try:
-            content_ad_source = models.ContentAdSource.objects.get(content_ad=content_ad, source=ad_group_source.source)
-        except models.ContentAdSource.DoesNotExist:
-            content_ad_source = models.ContentAdSource.objects.create(
-                source=ad_group_source.source,
-                content_ad=content_ad,
-                submission_status=constants.ContentAdSubmissionStatus.PENDING,
-                state=constants.ContentAdSourceState.ACTIVE
-            )
+        for content_ad in content_ads:
+            try:
+                content_ad_source = models.ContentAdSource.objects.get(
+                    content_ad=content_ad,
+                    source=ad_group_source.source
+                )
+            except models.ContentAdSource.DoesNotExist:
+                content_ad_source = models.ContentAdSource.objects.create(
+                    source=ad_group_source.source,
+                    content_ad=content_ad,
+                    submission_status=constants.ContentAdSubmissionStatus.PENDING,
+                    state=constants.ContentAdSourceState.ACTIVE
+                )
+            content_ad_sources.append(content_ad_source)
 
+    for content_ad_source in content_ad_sources:
         actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, request)
 
 
