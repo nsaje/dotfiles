@@ -12,6 +12,8 @@ class Action(ConstantBase):
     INSERT_CONTENT_AD = 'insert_content_ad'
     UPDATE_CONTENT_AD = 'update_content_ad'
 
+    SUBMIT_AD_GROUP = 'submit_ad_group'
+
     _VALUES = {
         FETCH_REPORTS: 'Get reports',
         FETCH_CAMPAIGN_STATUS: 'Get campaign status',
@@ -21,7 +23,9 @@ class Action(ConstantBase):
 
         GET_CONTENT_AD_STATUS: 'Get content ad status',
         INSERT_CONTENT_AD: 'Insert content ad',
-        UPDATE_CONTENT_AD: 'Update content ad'
+        UPDATE_CONTENT_AD: 'Update content ad',
+
+        SUBMIT_AD_GROUP: 'Submit ad group to approval'
     }
 
 

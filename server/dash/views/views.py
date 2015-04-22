@@ -686,8 +686,6 @@ class ProcessUploadThread(Thread):
         super(ProcessUploadThread, self).__init__(*args, **kwargs)
 
     def run(self):
-        content_ad_sources = []
-
         try:
             # ensure content ads are only commited to DB
             # if all of them are successfully processed
@@ -713,14 +711,12 @@ class ProcessUploadThread(Thread):
                         if not ad_group_source.source.can_manage_content_ads():
                             continue
 
-                        content_ad_source = models.ContentAdSource.objects.create(
+                        models.ContentAdSource.objects.create(
                             source=ad_group_source.source,
                             content_ad=content_ad,
                             submission_status=constants.ContentAdSubmissionStatus.PENDING,
                             state=constants.ContentAdSourceState.ACTIVE
                         )
-
-                        content_ad_sources.append(content_ad_source)
 
                 self.batch.status = constants.UploadBatchStatus.DONE
                 self.batch.save()
@@ -734,8 +730,7 @@ class ProcessUploadThread(Thread):
 
             return
 
-        for content_ad_source in content_ad_sources:
-            actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, self.request)
+        api.submit_content_ads_batch(self.ad_group_id, self.batch, self.request)
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')

@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 def init_insert_content_ad_action(content_ad_source, request):
     ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.ad_group,
                                                             source=content_ad_source.source)
-    settings = ad_group_source.ad_group.get_current_settings()
+    ad_group_source_settings = ad_group_source.ad_group.get_current_settings()
 
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key,
@@ -36,10 +36,10 @@ def init_insert_content_ad_action(content_ad_source, request):
             'image_width': content_ad_source.content_ad.image_width,
             'image_height': content_ad_source.content_ad.image_height,
             'image_hash': content_ad_source.content_ad.image_hash,
-            'display_url': settings.display_url,
-            'brand_name': settings.brand_name,
-            'description': settings.description,
-            'call_to_action': settings.call_to_action,
+            'display_url': ad_group_source_settings.display_url,
+            'brand_name': ad_group_source_settings.brand_name,
+            'description': ad_group_source_settings.description,
+            'call_to_action': ad_group_source_settings.call_to_action,
             'tracking_slug': ad_group_source.source.tracking_slug
         }
     }
@@ -106,6 +106,43 @@ def init_get_content_ad_status_action(ad_group_source, order, request):
 
     msg = "get_content_ad_status action created: ad_group_source.id: {}".format(
         ad_group_source.id,
+    )
+    logger.info(msg)
+
+    actionlog.zwei_actions.send(action)
+
+
+def init_submit_ad_group_action(ad_group_source, content_ad_source, request):
+    ad_group_source_settings = ad_group_source.ad_group.get_current_settings()
+    args = {
+        'source_campaign_key': ad_group_source.source_campaign_key,
+        'content_ad_id': content_ad_source.get_source_id(),
+        'content_ad': {
+            'state': content_ad_source.state,
+            'title': content_ad_source.content_ad.title,
+            'url': content_ad_source.content_ad.url,
+            'submission_status': content_ad_source.submission_status,
+            'image_id': content_ad_source.content_ad.image_id,
+            'image_width': content_ad_source.content_ad.image_width,
+            'image_height': content_ad_source.content_ad.image_height,
+            'image_hash': content_ad_source.content_ad.image_hash,
+            'display_url': ad_group_source_settings.display_url,
+            'brand_name': ad_group_source_settings.brand_name,
+            'description': ad_group_source_settings.description,
+            'call_to_action': ad_group_source_settings.call_to_action,
+        }
+    }
+
+    action = _create_action(
+        ad_group_source,
+        actionlog.constants.Action.SUBMIT_AD_GROUP,
+        args=args,
+        request=request,
+        content_ad_source=content_ad_source
+    )
+
+    msg = "submit_ad_group action created: content_ad_source.id: {}".format(
+        content_ad_source.id,
     )
     logger.info(msg)
 

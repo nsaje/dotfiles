@@ -587,6 +587,11 @@ class Source(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
 
+    content_ad_submission_type = models.IntegerField(
+        default=constants.SourceSubmissionType.DEFAULT,
+        choices=constants.SourceSubmissionType.get_choices()
+    )
+
     def can_update_state(self):
         return self.source_type.can_update_state() and not self.maintenance and not self.deprecated
 
@@ -826,6 +831,16 @@ class AdGroupSource(models.Model):
 
     last_successful_sync_dt = models.DateTimeField(blank=True, null=True)
 
+    source_content_ad_id = models.CharField(max_length=100, null=True)
+    submission_status = models.IntegerField(
+        default=constants.AdGroupSubmissionStatus.NOT_SUBMITTED,
+        choices=constants.AdGroupSubmissionStatus.get_choices()
+    )
+    submission_errors = models.TextField(
+        blank=True,
+        null=True
+    )
+
     def get_tracking_ids(self):
         if self.source.source_type and\
            self.source.source_type.type in [
@@ -838,8 +853,8 @@ class AdGroupSource(models.Model):
 
         return '_z1_adgid=%s&_z1_msid=%s' % (self.ad_group.id, msid)
 
-    def get_external_name(self): 
-        #, account_name, campaign_name, ad_group_name, ad_group_id, source_name):
+    def get_external_name(self):
+        # account_name, campaign_name, ad_group_name, ad_group_id, source_name):
         account_name = self.ad_group.campaign.account.name
         campaign_name = self.ad_group.campaign.name
         ad_group_name = self.ad_group.name
@@ -863,7 +878,6 @@ class AdGroupSource(models.Model):
             name = name.rsplit(None, 1)[0]
 
         return name
-
 
     def save(self, request, *args, **kwargs):
         super(AdGroupSource, self).save(*args, **kwargs)

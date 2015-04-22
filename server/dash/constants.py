@@ -23,6 +23,22 @@ class AdGroupSourceSettingsState(ConstantBase):
     }
 
 
+class AdGroupSubmissionStatus(ConstantBase):
+    NOT_SUBMITTED = -1
+    PENDING = 1
+    APPROVED = 2
+    REJECTED = 3
+    LIMIT_REACHED = 4
+
+    _VALUES = {
+        NOT_SUBMITTED: 'Not submitted',
+        PENDING: 'Pending',
+        APPROVED: 'Approved',
+        REJECTED: 'Rejected',
+        LIMIT_REACHED: 'Limit reached',
+    }
+
+
 class AdTargetDevice(ConstantBase):
     DESKTOP = 'desktop'
     MOBILE = 'mobile'
@@ -168,6 +184,16 @@ class SourceAction(ConstantBase):
         CAN_MODIFY_TRACKING_CODES: 'Can modify tracking codes',
         CAN_MODIFY_AD_GROUP_NAME: 'Can modify adgroup name',
         CAN_MODIFY_AD_GROUP_IAB_CATEGORY: 'Can modify ad group IAB category',
+    }
+
+
+class SourceSubmissionType(ConstantBase):
+    DEFAULT = 1
+    AD_GROUP = 2
+
+    _VALUES = {
+        DEFAULT: 'Default',
+        AD_GROUP: 'One submission per ad group'
     }
 
 

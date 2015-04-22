@@ -2,8 +2,10 @@ import decimal
 import logging
 
 from django.db import transaction, IntegrityError
+from django.db.models import Q
 
 import actionlog.api
+import actionlog.api_contentads
 import actionlog.models
 import actionlog.constants
 
@@ -120,6 +122,77 @@ def insert_content_ad_callback(
         content_ad_source.submission_errors = submission_errors
 
     content_ad_source.save()
+
+
+def submit_ad_group_callback(ad_group_source, source_content_ad_id, submission_status, submission_errors):
+    if ad_group_source.content_ad_submission_type != constants.SourceSubmissionType.AD_GROUP:
+        raise Exception('Invalid source submission type')
+
+    with transaction.atomic():
+        ad_group_source.source_content_ad_id = source_content_ad_id
+        ad_group_source.submission_status = submission_status
+        ad_group_source.submission_errors = submission_errors
+        ad_group_source.save()
+
+        content_ad_sources = models.ContentAdSource.objects.filter(
+            Q(source_content_ad_id__isnull=True) | Q(source_content_ad_id=''),
+            content_ad__ad_group=ad_group_source.ad_group,
+            source=ad_group_source.source,
+            submission_status=constants.ContentAdSubmissionStatus.PENDING
+        )
+
+        content_ad_sources.update(
+            source_content_ad_id=source_content_ad_id,
+            submission_status=submission_status,
+            submission_errors=submission_errors,
+        )
+
+        if submission_status == constants.AdGroupSubmissionStatus.REJECTED:
+            content_ad_sources.update(
+                state=constants.ContentAdSourceState.INACTIVE,
+                source_state=constants.ContentAdSourceState.INACTIVE,
+            )
+
+    for content_ad_source in content_ad_sources:
+        actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, request=None)
+
+
+def submit_content_ads_batch(ad_group_id, batch, request):
+    for ad_group_source in models.AdGroupSource.objects.filter(ad_group_id=ad_group_id):
+        with transaction.atomic():
+            content_ad_sources = models.ContentAdSource.objects.filter(
+                content_ad__ad_group_id=ad_group_id,
+                source=ad_group_source.source,
+                content_ad__batch=batch,
+            )
+
+            if not content_ad_sources.exists():
+                continue
+
+            if ad_group_source.source.content_ad_submission_type == constants.SourceSubmissionType.AD_GROUP:
+                if ad_group_source.submission_status == constants.AdGroupSubmissionStatus.NOT_SUBMITTED:
+                    ad_group_source.submission_status = constants.AdGroupSubmissionStatus.PENDING
+                    actionlog.api_contentads.init_submit_ad_group_action(
+                        ad_group_source,
+                        content_ad_sources[0],
+                        request
+                    )
+                    continue
+
+                content_ad_sources.update(
+                    source_content_ad_id=ad_group_source.source_content_ad_id,
+                    submission_status=ad_group_source.submission_status,
+                    submission_errors=ad_group_source.submission_errors,
+                )
+
+                if ad_group_source.submission_status == constants.AdGroupSubmissionStatus.REJECTED:
+                    content_ad_sources.update(
+                        state=constants.ContentAdSourceState.INACTIVE,
+                        source_state=constants.ContentAdSourceState.INACTIVE,
+                    )
+
+        for content_ad_source in content_ad_sources:
+            actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, request)
 
 
 @transaction.atomic()

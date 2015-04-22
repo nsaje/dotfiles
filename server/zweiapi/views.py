@@ -196,6 +196,13 @@ def _process_zwei_response(action, data, request):
             action.ad_group_source,
             data['data']
         )
+    elif action.action == actionlog.constants.Action.SUBMIT_AD_GROUP:
+        dash.api.submit_ad_group_callback(
+            action.ad_group_source,
+            data['data']['source_content_ad_id'],
+            data['data']['submission_status'],
+            data['data']['submission_errors'],
+        )
 
     logger.info('Process action successful. Action: %s', action)
     action.save()
