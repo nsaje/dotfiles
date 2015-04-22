@@ -39,7 +39,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
             sum(stat.impressions for stat in stats),
             sum(stat.cost_cc for stat in stats),
             sum(stat.data_cost_cc for stat in stats),
-            sum(stat.data.has_traffic_metrics for stat in stats) / len(stats),
+            sum(stat.has_traffic_metrics for stat in stats) / len(stats),
         )
 
     stats.update(
