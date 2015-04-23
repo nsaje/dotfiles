@@ -165,10 +165,10 @@ def submit_content_ads_batch(ad_group_id, batch, request):
         for ad_group_source in models.AdGroupSource.objects.filter(ad_group_id=ad_group_id):
             content_ad_sources = list(
                 models.ContentAdSource.objects.filter(
+                    Q(source_content_ad_id__isnull=True) | Q(source_content_ad_id=''),
                     content_ad__ad_group_id=ad_group_id,
                     source=ad_group_source.source,
                     content_ad__batch=batch,
-                    Q(source_content_ad_id__isnull=True) | Q(source_content_ad_id=''),
                     submission_status=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
                 )
             )
