@@ -30,10 +30,10 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
 
     if len(rows) == 0 and stats.count() > 0:
         logger.warning(
-            'Deleting stats for ad group: %s, source: %s, datetime: %s; clicks: %s, '
+            'Deleting stats for ad group id: %d, source id: %d, datetime: %s; clicks: %s, '
             'impressions: %s, cost_cc: %s, data_cost_cc: %s, avg has_traffic_metrics: %s',
-            ad_group,
-            source,
+            ad_group.id,
+            source.id,
             datetime,
             sum(stat.clicks for stat in stats),
             sum(stat.impressions for stat in stats),
