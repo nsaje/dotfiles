@@ -649,7 +649,7 @@ class SubmitContentAdsBatchTest(TestCase):
             ad_group_source=ad_group_source,
             action=actionlog.constants.Action.SUBMIT_AD_GROUP
         )
-        self.assertFalse(submit_actionlogs.exists())
+        self.assertEquals(submit_actionlogs.count(), 1)
 
     def test_two_ad_group_sources(self):
         batch = models.UploadBatch.objects.create(name='test', status=constants.UploadBatchStatus.DONE)
