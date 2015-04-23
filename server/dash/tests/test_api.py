@@ -331,7 +331,7 @@ class SubmitAdGroupCallbackTest(TestCase):
         )
 
         ad_group_source.source_content_ad_id = None
-        ad_group_source.submission_status = constants.AdGroupSubmissionStatus.PENDING
+        ad_group_source.submission_status = constants.ContentAdSubmissionStatus.PENDING
         ad_group_source.submission_errors = None
         ad_group_source.save(None)
 
@@ -385,13 +385,13 @@ class SubmitAdGroupCallbackTest(TestCase):
         api.submit_ad_group_callback(
             ad_group_source,
             '1234567890',
-            constants.AdGroupSubmissionStatus.APPROVED,
+            constants.ContentAdSubmissionStatus.APPROVED,
             None
         )
 
         ad_group_source = models.AdGroupSource.objects.get(id=ad_group_source.id)
         self.assertEqual(ad_group_source.source_content_ad_id, '1234567890')
-        self.assertEqual(ad_group_source.submission_status, constants.AdGroupSubmissionStatus.APPROVED)
+        self.assertEqual(ad_group_source.submission_status, constants.ContentAdSubmissionStatus.APPROVED)
         self.assertEqual(ad_group_source.submission_errors, None)
 
         content_ad_source1 = models.ContentAdSource.objects.get(id=content_ad_source1.id)
@@ -445,7 +445,7 @@ class SubmitAdGroupCallbackTest(TestCase):
         )
 
         ad_group_source.source_content_ad_id = None
-        ad_group_source.submission_status = constants.AdGroupSubmissionStatus.PENDING
+        ad_group_source.submission_status = constants.ContentAdSubmissionStatus.PENDING
         ad_group_source.submission_errors = None
         ad_group_source.save(None)
 
@@ -467,12 +467,12 @@ class SubmitAdGroupCallbackTest(TestCase):
         api.submit_ad_group_callback(
             ad_group_source,
             None,
-            constants.AdGroupSubmissionStatus.REJECTED,
+            constants.ContentAdSubmissionStatus.REJECTED,
             'test'
         )
 
         self.assertEqual(ad_group_source.source_content_ad_id, None)
-        self.assertEqual(ad_group_source.submission_status, constants.AdGroupSubmissionStatus.REJECTED)
+        self.assertEqual(ad_group_source.submission_status, constants.ContentAdSubmissionStatus.REJECTED)
         self.assertEqual(ad_group_source.submission_errors, 'test')
 
         content_ad_source = models.ContentAdSource.objects.get(id=content_ad_source.id)
@@ -493,6 +493,58 @@ class SubmitAdGroupCallbackTest(TestCase):
             insert_actionlogs[0].payload['args']['content_ad']['state'],
             constants.ContentAdSourceState.ACTIVE
         )
+
+    def test_limit_reached(self):
+        batch = models.UploadBatch.objects.create(name='test', status=constants.UploadBatchStatus.DONE)
+        ad_group_id = 1
+        source_id = 7
+
+        ad_group_source = models.AdGroupSource.objects.get(
+            ad_group_id=ad_group_id,
+            source_id=source_id,
+        )
+
+        ad_group_source.source_content_ad_id = None
+        ad_group_source.submission_status = constants.ContentAdSubmissionStatus.PENDING
+        ad_group_source.submission_errors = None
+        ad_group_source.save(None)
+
+        content_ad = models.ContentAd.objects.create(
+            url='test.com',
+            title='test',
+            ad_group=ad_group_source.ad_group,
+            batch=batch
+        )
+
+        content_ad_source = models.ContentAdSource.objects.create(
+            content_ad=content_ad,
+            source=ad_group_source.source,
+            submission_status=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
+            state=constants.ContentAdSourceState.ACTIVE,
+            source_state=None,
+        )
+
+        api.submit_ad_group_callback(
+            ad_group_source,
+            None,
+            constants.ContentAdSubmissionStatus.LIMIT_REACHED,
+            None
+        )
+
+        self.assertEqual(ad_group_source.source_content_ad_id, None)
+        self.assertEqual(ad_group_source.submission_status, constants.ContentAdSubmissionStatus.LIMIT_REACHED)
+        self.assertEqual(ad_group_source.submission_errors, None)
+
+        content_ad_source = models.ContentAdSource.objects.get(id=content_ad_source.id)
+        self.assertEqual(content_ad_source.source_content_ad_id, None)
+        self.assertEqual(content_ad_source.submission_status, constants.ContentAdSubmissionStatus.NOT_SUBMITTED)
+        self.assertEqual(content_ad_source.submission_errors, None)
+
+        insert_actionlogs = actionlog.models.ActionLog.objects.filter(
+            content_ad_source=content_ad_source,
+            action=actionlog.constants.Action.INSERT_CONTENT_AD,
+        )
+        self.assertEqual(insert_actionlogs.count(), 0)
 
 
 class SubmitContentAdsBatchTest(TestCase):
@@ -524,7 +576,7 @@ class SubmitContentAdsBatchTest(TestCase):
             source_id=source_id,
         )
 
-        ad_group_source.submission_status = constants.AdGroupSubmissionStatus.NOT_SUBMITTED
+        ad_group_source.submission_status = constants.ContentAdSubmissionStatus.NOT_SUBMITTED
         ad_group_source.save(None)
 
         content_ad = models.ContentAd.objects.create(
@@ -564,7 +616,7 @@ class SubmitContentAdsBatchTest(TestCase):
             source_id=source_id1,
         )
 
-        ad_group_source1.submission_status = constants.AdGroupSubmissionStatus.NOT_SUBMITTED
+        ad_group_source1.submission_status = constants.ContentAdSubmissionStatus.NOT_SUBMITTED
         ad_group_source1.save(None)
 
         ad_group_source2 = models.AdGroupSource.objects.get(
@@ -632,7 +684,7 @@ class SubmitContentAdsBatchTest(TestCase):
             source_id=source_id,
         )
 
-        ad_group_source.submission_status = constants.AdGroupSubmissionStatus.NOT_SUBMITTED
+        ad_group_source.submission_status = constants.ContentAdSubmissionStatus.NOT_SUBMITTED
         ad_group_source.save(None)
 
         api.submit_content_ads_batch(ad_group_id, batch, request=None)
@@ -695,7 +747,7 @@ class SubmitContentAdsBatchTest(TestCase):
             source_id=source_id,
         )
 
-        ad_group_source.submission_status = constants.AdGroupSubmissionStatus.PENDING
+        ad_group_source.submission_status = constants.ContentAdSubmissionStatus.PENDING
         ad_group_source.save(None)
 
         content_ad = models.ContentAd.objects.create(
@@ -717,6 +769,45 @@ class SubmitContentAdsBatchTest(TestCase):
             action=actionlog.constants.Action.INSERT_CONTENT_AD,
         )
         self.assertEqual(insert_actionlogs.count(), 1)
+
+        submit_actionlogs = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action=actionlog.constants.Action.SUBMIT_AD_GROUP
+        )
+        self.assertFalse(submit_actionlogs.exists())
+
+    def test_limit_reached_ad_group_source(self):
+        batch = models.UploadBatch.objects.create(name='test', status=constants.UploadBatchStatus.DONE)
+        ad_group_id = 1
+        source_id = 7
+
+        ad_group_source = models.AdGroupSource.objects.get(
+            ad_group_id=ad_group_id,
+            source_id=source_id,
+        )
+
+        ad_group_source.submission_status = constants.ContentAdSubmissionStatus.LIMIT_REACHED
+        ad_group_source.save(None)
+
+        content_ad = models.ContentAd.objects.create(
+            url='test.com',
+            title='test',
+            ad_group=ad_group_source.ad_group,
+            batch=batch
+        )
+
+        content_ad_source = models.ContentAdSource.objects.create(
+            content_ad=content_ad,
+            source=ad_group_source.source,
+        )
+
+        api.submit_content_ads_batch(ad_group_id, batch, request=None)
+
+        insert_actionlogs = actionlog.models.ActionLog.objects.filter(
+            content_ad_source=content_ad_source,
+            action=actionlog.constants.Action.INSERT_CONTENT_AD,
+        )
+        self.assertFalse(insert_actionlogs.exists())
 
         submit_actionlogs = actionlog.models.ActionLog.objects.filter(
             ad_group_source=ad_group_source,

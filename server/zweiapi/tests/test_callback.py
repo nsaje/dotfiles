@@ -175,7 +175,7 @@ class SubmitAdGroupTest(TestCase):
             'status': 'success',
             'data': {
                 'source_content_ad_id': '1234567890',
-                'submission_status': dash.constants.AdGroupSubmissionStatus.PENDING,
+                'submission_status': dash.constants.ContentAdSubmissionStatus.PENDING,
                 'submission_errors': None
             }
         }
@@ -225,7 +225,7 @@ class SubmitAdGroupTest(TestCase):
         ad_group_source = dash.models.AdGroupSource.objects.get(id=6)
         self.assertEqual(
             ad_group_source.submission_status,
-            dash.constants.AdGroupSubmissionStatus.PENDING
+            dash.constants.ContentAdSubmissionStatus.PENDING
         )
         self.assertEqual(
             ad_group_source.source_content_ad_id,
@@ -257,7 +257,7 @@ class SubmitAdGroupTest(TestCase):
             'status': 'success',
             'data': {
                 'source_content_ad_id': '1234567890',
-                'submission_status': dash.constants.AdGroupSubmissionStatus.PENDING,
+                'submission_status': dash.constants.ContentAdSubmissionStatus.PENDING,
                 'submission_errors': None
             }
         }

@@ -829,8 +829,8 @@ class AdGroupSource(models.Model):
 
     source_content_ad_id = models.CharField(max_length=100, null=True)
     submission_status = models.IntegerField(
-        default=constants.AdGroupSubmissionStatus.NOT_SUBMITTED,
-        choices=constants.AdGroupSubmissionStatus.get_choices()
+        default=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
+        choices=constants.ContentAdSubmissionStatus.get_choices()
     )
     submission_errors = models.TextField(
         blank=True,

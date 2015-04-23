@@ -23,22 +23,6 @@ class AdGroupSourceSettingsState(ConstantBase):
     }
 
 
-class AdGroupSubmissionStatus(ConstantBase):
-    NOT_SUBMITTED = -1
-    PENDING = 1
-    APPROVED = 2
-    REJECTED = 3
-    LIMIT_REACHED = 4
-
-    _VALUES = {
-        NOT_SUBMITTED: 'Not submitted',
-        PENDING: 'Pending',
-        APPROVED: 'Approved',
-        REJECTED: 'Rejected',
-        LIMIT_REACHED: 'Limit reached',
-    }
-
-
 class AdTargetDevice(ConstantBase):
     DESKTOP = 'desktop'
     MOBILE = 'mobile'

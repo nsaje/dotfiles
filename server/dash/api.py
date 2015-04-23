@@ -134,6 +134,11 @@ def submit_ad_group_callback(ad_group_source, source_content_ad_id, submission_s
         ad_group_source.submission_errors = submission_errors
         ad_group_source.save(None)
 
+        if submission_status != constants.ContentAdSubmissionStatus.PENDING and\
+           submission_status != constants.ContentAdSubmissionStatus.APPROVED and\
+           submission_status != constants.ContentAdSubmissionStatus.REJECTED:
+            return
+
         content_ad_sources = list(
             models.ContentAdSource.objects.filter(
                 Q(source_content_ad_id__isnull=True) | Q(source_content_ad_id=''),
@@ -154,37 +159,52 @@ def submit_ad_group_callback(ad_group_source, source_content_ad_id, submission_s
 
 
 def submit_content_ads_batch(ad_group_id, batch, request):
-    to_send = []
+    ad_groups_to_submit = []
+    content_ads_to_send = []
     with transaction.atomic():
         for ad_group_source in models.AdGroupSource.objects.filter(ad_group_id=ad_group_id):
-            content_ad_sources = models.ContentAdSource.objects.filter(
-                content_ad__ad_group_id=ad_group_id,
-                source=ad_group_source.source,
-                content_ad__batch=batch,
+            content_ad_sources = list(
+                models.ContentAdSource.objects.filter(
+                    content_ad__ad_group_id=ad_group_id,
+                    source=ad_group_source.source,
+                    content_ad__batch=batch,
+                    Q(source_content_ad_id__isnull=True) | Q(source_content_ad_id=''),
+                    submission_status=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
+                )
             )
 
-            if not content_ad_sources.exists():
+            if not content_ad_sources:
                 continue
 
             if ad_group_source.source.content_ad_submission_type == constants.SourceSubmissionType.AD_GROUP:
-                if ad_group_source.submission_status == constants.AdGroupSubmissionStatus.NOT_SUBMITTED:
-                    ad_group_source.submission_status = constants.AdGroupSubmissionStatus.PENDING
-                    actionlog.api_contentads.init_submit_ad_group_action(
-                        ad_group_source,
-                        content_ad_sources[0],
-                        request
-                    )
+                if ad_group_source.submission_status == constants.ContentAdSubmissionStatus.NOT_SUBMITTED:
+                    ad_groups_to_submit.append((ad_group_source, content_ad_sources[0]))
                     continue
 
-                content_ad_sources.update(
-                    source_content_ad_id=ad_group_source.source_content_ad_id,
-                    submission_status=ad_group_source.submission_status,
-                    submission_errors=ad_group_source.submission_errors,
-                )
+                if ad_group_source.submission_status != constants.ContentAdSubmissionStatus.PENDING and\
+                   ad_group_source.submission_status != constants.ContentAdSubmissionStatus.APPROVED and\
+                   ad_group_source.submission_status != constants.ContentAdSubmissionStatus.REJECTED:
+                    continue
 
-            to_send.extend(list(content_ad_sources))
+                for content_ad_source in content_ad_sources:
+                    content_ad_source.source_content_ad_id = ad_group_source.source_content_ad_id
+                    content_ad_source.submission_status = ad_group_source.submission_status
+                    content_ad_source.submission_errors = ad_group_source.submission_errors
+                    content_ad_source.save()
 
-    for content_ad_source in to_send:
+            content_ads_to_send.extend(content_ad_sources)
+
+    for ad_group_source, content_ad_source in ad_groups_to_submit:
+        ad_group_source.submission_status = constants.ContentAdSubmissionStatus.PENDING
+        ad_group_source.save(request)
+
+        actionlog.api_contentads.init_submit_ad_group_action(
+            ad_group_source,
+            content_ad_source,
+            request
+        )
+
+    for content_ad_source in content_ads_to_send:
         actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, request)
 
 
