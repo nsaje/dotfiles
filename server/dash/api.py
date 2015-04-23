@@ -177,6 +177,13 @@ def submit_content_ads_batch(ad_group_id, batch, request):
                 continue
 
             if ad_group_source.source.content_ad_submission_type == constants.SourceSubmissionType.AD_GROUP:
+                if actionlog.models.ActionLog.objects.filter(
+                        ad_group_source=ad_group_source,
+                        action=actionlog.constants.Action.SUBMIT_AD_GROUP,
+                        state=actionlog.constants.ActionState.WAITING,
+                ).exists():
+                    continue
+
                 if ad_group_source.submission_status == constants.ContentAdSubmissionStatus.NOT_SUBMITTED:
                     ad_groups_to_submit.append((ad_group_source, content_ad_sources[0]))
                     continue
@@ -195,9 +202,6 @@ def submit_content_ads_batch(ad_group_id, batch, request):
             content_ads_to_send.extend(content_ad_sources)
 
     for ad_group_source, content_ad_source in ad_groups_to_submit:
-        ad_group_source.submission_status = constants.ContentAdSubmissionStatus.PENDING
-        ad_group_source.save(request)
-
         actionlog.api_contentads.init_submit_ad_group_action(
             ad_group_source,
             content_ad_source,

@@ -605,6 +605,52 @@ class SubmitContentAdsBatchTest(TestCase):
         )
         self.assertEqual(submit_actionlogs.count(), 1)
 
+    def test_not_submitted_ad_group_source_with_waiting_actionlog(self):
+        batch = models.UploadBatch.objects.create(name='test', status=constants.UploadBatchStatus.DONE)
+        ad_group_id = 1
+        source_id = 7
+
+        ad_group_source = models.AdGroupSource.objects.get(
+            ad_group_id=ad_group_id,
+            source_id=source_id,
+        )
+
+        ad_group_source.submission_status = constants.ContentAdSubmissionStatus.NOT_SUBMITTED
+        ad_group_source.save(None)
+
+        content_ad = models.ContentAd.objects.create(
+            url='test.com',
+            title='test',
+            ad_group=ad_group_source.ad_group,
+            batch=batch
+        )
+
+        content_ad_source = models.ContentAdSource.objects.create(
+            content_ad=content_ad,
+            source=ad_group_source.source,
+        )
+
+        actionlog.models.ActionLog.objects.create(
+            action=actionlog.constants.Action.SUBMIT_AD_GROUP,
+            state=actionlog.constants.ActionState.WAITING,
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            ad_group_source=ad_group_source,
+        )
+
+        api.submit_content_ads_batch(ad_group_id, batch, request=None)
+
+        insert_actionlogs = actionlog.models.ActionLog.objects.filter(
+            content_ad_source=content_ad_source,
+            action=actionlog.constants.Action.INSERT_CONTENT_AD,
+        )
+        self.assertFalse(insert_actionlogs.exists())
+
+        submit_actionlogs = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action=actionlog.constants.Action.SUBMIT_AD_GROUP
+        )
+        self.assertFalse(submit_actionlogs.exists())
+
     def test_two_ad_group_sources(self):
         batch = models.UploadBatch.objects.create(name='test', status=constants.UploadBatchStatus.DONE)
         ad_group_id = 1
