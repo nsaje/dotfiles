@@ -1090,7 +1090,7 @@ class AdGroupSourceSettings(models.Model):
     )
 
     def save(self, request, *args, **kwargs):
-        if self.pk is None:
+        if self.pk is None and request is not None:
             self.created_by = request.user
 
         super(AdGroupSourceSettings, self).save(*args, **kwargs)
@@ -1198,7 +1198,7 @@ class ContentAdSource(models.Model):
     content_ad = models.ForeignKey(ContentAd, on_delete=models.PROTECT)
 
     submission_status = models.IntegerField(
-        default=constants.ContentAdSubmissionStatus.PENDING,
+        default=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
         choices=constants.ContentAdSubmissionStatus.get_choices()
     )
     submission_errors = models.TextField(

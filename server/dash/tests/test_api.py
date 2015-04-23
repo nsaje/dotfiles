@@ -1,12 +1,21 @@
 import decimal
 import datetime
+import mock
 
+from django.conf import settings
 from django.test import TestCase
 from django.http.request import HttpRequest
 
+import actionlog.constants
+import actionlog.models
+
 from dash import models
 from dash import api
+from dash import constants
+
 from zemauth.models import User
+
+from utils import test_helper
 
 
 class UpdateContentAdSourceState(TestCase):
@@ -278,3 +287,417 @@ class AdGroupSettingsOrderTest(TestCase):
             set1.get_setting_changes(set2),
             {'state': 2, 'cpc_cc': decimal.Decimal('0.2')},
         )
+
+
+class SubmitAdGroupCallbackTest(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        patcher_urlopen = mock.patch('utils.request_signer._secure_opener.open')
+        self.addCleanup(patcher_urlopen.stop)
+
+        mock_urlopen = patcher_urlopen.start()
+        test_helper.prepare_mock_urlopen(mock_urlopen)
+
+        self.credentials_encription_key = settings.CREDENTIALS_ENCRYPTION_KEY
+        settings.CREDENTIALS_ENCRYPTION_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+        self.maxDiff = None
+
+    def tearDown(self):
+        settings.CREDENTIALS_ENCRYPTION_KEY = self.credentials_encription_key
+
+    def test_wrong_submission_type(self):
+        ad_group_id = 1
+        source_id = 1
+
+        ad_group_source = models.AdGroupSource.objects.get(
+            ad_group_id=ad_group_id,
+            source_id=source_id,
+        )
+
+        with self.assertRaises(Exception):
+            api.submit_ad_group_callback(ad_group_source, None, None, None)
+
+    def test_approved(self):
+        batch = models.UploadBatch.objects.create(name='test', status=constants.UploadBatchStatus.DONE)
+        ad_group_id = 1
+        source_id = 7
+
+        ad_group_source = models.AdGroupSource.objects.get(
+            ad_group_id=ad_group_id,
+            source_id=source_id,
+        )
+
+        ad_group_source.source_content_ad_id = None
+        ad_group_source.submission_status = constants.AdGroupSubmissionStatus.PENDING
+        ad_group_source.submission_errors = None
+        ad_group_source.save(None)
+
+        content_ad1 = models.ContentAd.objects.create(
+            url='test.com',
+            title='test',
+            ad_group=ad_group_source.ad_group,
+            batch=batch
+        )
+
+        content_ad2 = models.ContentAd.objects.create(
+            url='test.com',
+            title='test',
+            ad_group=ad_group_source.ad_group,
+            batch=batch
+        )
+
+        content_ad3 = models.ContentAd.objects.create(
+            url='test.com',
+            title='test',
+            ad_group=ad_group_source.ad_group,
+            batch=batch
+        )
+
+        content_ad_source1 = models.ContentAdSource.objects.create(
+            content_ad=content_ad1,
+            source=ad_group_source.source,
+            submission_status=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
+            source_content_ad_id=None,
+        )
+
+        content_ad_source2 = models.ContentAdSource.objects.create(
+            content_ad=content_ad2,
+            source=ad_group_source.source,
+            source_content_ad_id=None,
+            submission_status=constants.ContentAdSubmissionStatus.REJECTED,
+            submission_errors='test'
+        )
+
+        content_ad_source3 = models.ContentAdSource.objects.create(
+            content_ad=content_ad3,
+            source=ad_group_source.source,
+            source_content_ad_id='987654321',
+            submission_status=constants.ContentAdSubmissionStatus.PENDING,
+            submission_errors=''
+        )
+
+        api.submit_ad_group_callback(
+            ad_group_source,
+            '1234567890',
+            constants.AdGroupSubmissionStatus.APPROVED,
+            None
+        )
+
+        ad_group_source = models.AdGroupSource.objects.get(id=ad_group_source.id)
+        self.assertEqual(ad_group_source.source_content_ad_id, '1234567890')
+        self.assertEqual(ad_group_source.submission_status, constants.AdGroupSubmissionStatus.APPROVED)
+        self.assertEqual(ad_group_source.submission_errors, None)
+
+        content_ad_source1 = models.ContentAdSource.objects.get(id=content_ad_source1.id)
+        self.assertEqual(content_ad_source1.source_content_ad_id, '1234567890')
+        self.assertEqual(content_ad_source1.submission_status, constants.ContentAdSubmissionStatus.APPROVED)
+        self.assertEqual(content_ad_source1.submission_errors, None)
+
+        content_ad_source2 = models.ContentAdSource.objects.get(id=content_ad_source2.id)
+        self.assertEqual(content_ad_source2.source_content_ad_id, None)
+        self.assertEqual(content_ad_source2.submission_status, constants.ContentAdSubmissionStatus.REJECTED)
+        self.assertEqual(content_ad_source2.submission_errors, 'test')
+
+        content_ad_source3 = models.ContentAdSource.objects.get(id=content_ad_source3.id)
+        self.assertEqual(content_ad_source3.source_content_ad_id, '987654321')
+        self.assertEqual(content_ad_source3.submission_status, constants.ContentAdSubmissionStatus.PENDING)
+        self.assertEqual(content_ad_source3.submission_errors, '')
+
+        insert_actionlogs1 = actionlog.models.ActionLog.objects.filter(
+            content_ad_source=content_ad_source1,
+            action=actionlog.constants.Action.INSERT_CONTENT_AD,
+        )
+        self.assertEqual(insert_actionlogs1.count(), 1)
+
+        insert_actionlogs2 = actionlog.models.ActionLog.objects.filter(
+            content_ad_source=content_ad_source2,
+            action=actionlog.constants.Action.INSERT_CONTENT_AD,
+        )
+        self.assertEqual(insert_actionlogs2.count(), 0)
+
+        insert_actionlogs3 = actionlog.models.ActionLog.objects.filter(
+            content_ad_source=content_ad_source3,
+            action=actionlog.constants.Action.INSERT_CONTENT_AD,
+        )
+        self.assertEqual(insert_actionlogs3.count(), 0)
+
+    def test_rejected(self):
+        batch = models.UploadBatch.objects.create(name='test', status=constants.UploadBatchStatus.DONE)
+        ad_group_id = 1
+        source_id = 7
+
+        ad_group_source = models.AdGroupSource.objects.get(
+            ad_group_id=ad_group_id,
+            source_id=source_id,
+        )
+
+        ad_group_source.source_content_ad_id = None
+        ad_group_source.submission_status = constants.AdGroupSubmissionStatus.PENDING
+        ad_group_source.submission_errors = None
+        ad_group_source.save(None)
+
+        content_ad = models.ContentAd.objects.create(
+            url='test.com',
+            title='test',
+            ad_group=ad_group_source.ad_group,
+            batch=batch
+        )
+
+        content_ad_source = models.ContentAdSource.objects.create(
+            content_ad=content_ad,
+            source=ad_group_source.source,
+            submission_status=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
+            state=constants.ContentAdSourceState.ACTIVE,
+            source_state=None,
+        )
+
+        api.submit_ad_group_callback(
+            ad_group_source,
+            None,
+            constants.AdGroupSubmissionStatus.REJECTED,
+            'test'
+        )
+
+        self.assertEqual(ad_group_source.source_content_ad_id, None)
+        self.assertEqual(ad_group_source.submission_status, constants.AdGroupSubmissionStatus.REJECTED)
+        self.assertEqual(ad_group_source.submission_errors, 'test')
+
+        content_ad_source = models.ContentAdSource.objects.get(id=content_ad_source.id)
+        self.assertEqual(content_ad_source.source_content_ad_id, None)
+        self.assertEqual(content_ad_source.submission_status, constants.ContentAdSubmissionStatus.REJECTED)
+        self.assertEqual(content_ad_source.submission_errors, 'test')
+        self.assertEqual(content_ad_source.state, constants.ContentAdSourceState.ACTIVE)
+        self.assertEqual(content_ad_source.source_state, None)
+
+
+class SubmitContentAdsBatchTest(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        patcher_urlopen = mock.patch('utils.request_signer._secure_opener.open')
+        self.addCleanup(patcher_urlopen.stop)
+
+        mock_urlopen = patcher_urlopen.start()
+        test_helper.prepare_mock_urlopen(mock_urlopen)
+
+        self.credentials_encription_key = settings.CREDENTIALS_ENCRYPTION_KEY
+        settings.CREDENTIALS_ENCRYPTION_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+        self.maxDiff = None
+
+    def tearDown(self):
+        settings.CREDENTIALS_ENCRYPTION_KEY = self.credentials_encription_key
+
+    def test_not_submitted_ad_group_source(self):
+        batch = models.UploadBatch.objects.create(name='test', status=constants.UploadBatchStatus.DONE)
+        ad_group_id = 1
+        source_id = 7
+
+        ad_group_source = models.AdGroupSource.objects.get(
+            ad_group_id=ad_group_id,
+            source_id=source_id,
+        )
+
+        ad_group_source.submission_status = constants.AdGroupSubmissionStatus.NOT_SUBMITTED
+        ad_group_source.save(None)
+
+        content_ad = models.ContentAd.objects.create(
+            url='test.com',
+            title='test',
+            ad_group=ad_group_source.ad_group,
+            batch=batch
+        )
+
+        content_ad_source = models.ContentAdSource.objects.create(
+            content_ad=content_ad,
+            source=ad_group_source.source,
+        )
+
+        api.submit_content_ads_batch(ad_group_id, batch, request=None)
+
+        insert_actionlogs = actionlog.models.ActionLog.objects.filter(
+            content_ad_source=content_ad_source,
+            action=actionlog.constants.Action.INSERT_CONTENT_AD,
+        )
+        self.assertFalse(insert_actionlogs.exists())
+
+        submit_actionlogs = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action=actionlog.constants.Action.SUBMIT_AD_GROUP
+        )
+        self.assertEqual(submit_actionlogs.count(), 1)
+
+    def test_two_ad_group_sources(self):
+        batch = models.UploadBatch.objects.create(name='test', status=constants.UploadBatchStatus.DONE)
+        ad_group_id = 1
+        source_id1 = 7
+        source_id2 = 1
+
+        ad_group_source1 = models.AdGroupSource.objects.get(
+            ad_group_id=ad_group_id,
+            source_id=source_id1,
+        )
+
+        ad_group_source1.submission_status = constants.AdGroupSubmissionStatus.NOT_SUBMITTED
+        ad_group_source1.save(None)
+
+        ad_group_source2 = models.AdGroupSource.objects.get(
+            ad_group_id=ad_group_id,
+            source_id=source_id2,
+        )
+
+        content_ad1 = models.ContentAd.objects.create(
+            url='test.com',
+            title='test',
+            ad_group=ad_group_source1.ad_group,
+            batch=batch
+        )
+
+        content_ad_source1 = models.ContentAdSource.objects.create(
+            content_ad=content_ad1,
+            source=ad_group_source1.source,
+        )
+
+        content_ad2 = models.ContentAd.objects.create(
+            url='test.com',
+            title='test',
+            ad_group=ad_group_source2.ad_group,
+            batch=batch
+        )
+
+        content_ad_source2 = models.ContentAdSource.objects.create(
+            content_ad=content_ad2,
+            source=ad_group_source2.source,
+        )
+
+        api.submit_content_ads_batch(ad_group_id, batch, request=None)
+
+        insert_actionlogs1 = actionlog.models.ActionLog.objects.filter(
+            content_ad_source=content_ad_source1,
+            action=actionlog.constants.Action.INSERT_CONTENT_AD,
+        )
+        self.assertFalse(insert_actionlogs1.exists())
+
+        submit_actionlogs1 = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source1,
+            action=actionlog.constants.Action.SUBMIT_AD_GROUP
+        )
+        self.assertEqual(submit_actionlogs1.count(), 1)
+
+        insert_actionlogs2 = actionlog.models.ActionLog.objects.filter(
+            content_ad_source=content_ad_source2,
+            action=actionlog.constants.Action.INSERT_CONTENT_AD,
+        )
+        self.assertEqual(insert_actionlogs2.count(), 1)
+
+        submit_actionlogs2 = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source2,
+            action=actionlog.constants.Action.SUBMIT_AD_GROUP
+        )
+        self.assertFalse(submit_actionlogs2.exists())
+
+    def test_not_submitted_no_content_ads(self):
+        batch = models.UploadBatch.objects.create(name='test', status=constants.UploadBatchStatus.DONE)
+        ad_group_id = 1
+        source_id = 7
+
+        ad_group_source = models.AdGroupSource.objects.get(
+            ad_group_id=ad_group_id,
+            source_id=source_id,
+        )
+
+        ad_group_source.submission_status = constants.AdGroupSubmissionStatus.NOT_SUBMITTED
+        ad_group_source.save(None)
+
+        api.submit_content_ads_batch(ad_group_id, batch, request=None)
+
+        insert_actionlogs = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action=actionlog.constants.Action.INSERT_CONTENT_AD,
+        )
+        self.assertFalse(insert_actionlogs.exists())
+
+        submit_actionlogs = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action=actionlog.constants.Action.SUBMIT_AD_GROUP
+        )
+        self.assertFalse(submit_actionlogs.exists())
+
+    def test_default_submission_type_source(self):
+        batch = models.UploadBatch.objects.create(name='test', status=constants.UploadBatchStatus.DONE)
+        ad_group_id = 1
+        source_id = 1
+
+        ad_group_source = models.AdGroupSource.objects.get(
+            ad_group_id=ad_group_id,
+            source_id=source_id,
+        )
+
+        content_ad = models.ContentAd.objects.create(
+            url='test.com',
+            title='test',
+            ad_group=ad_group_source.ad_group,
+            batch=batch
+        )
+
+        content_ad_source = models.ContentAdSource.objects.create(
+            content_ad=content_ad,
+            source=ad_group_source.source,
+        )
+
+        api.submit_content_ads_batch(ad_group_id, batch, request=None)
+
+        insert_actionlogs = actionlog.models.ActionLog.objects.filter(
+            content_ad_source=content_ad_source,
+            action=actionlog.constants.Action.INSERT_CONTENT_AD,
+        )
+        self.assertEqual(insert_actionlogs.count(), 1)
+
+        submit_actionlogs = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action=actionlog.constants.Action.SUBMIT_AD_GROUP
+        )
+        self.assertFalse(submit_actionlogs.exists())
+
+    def test_pending_ad_group_source(self):
+        batch = models.UploadBatch.objects.create(name='test', status=constants.UploadBatchStatus.DONE)
+        ad_group_id = 1
+        source_id = 7
+
+        ad_group_source = models.AdGroupSource.objects.get(
+            ad_group_id=ad_group_id,
+            source_id=source_id,
+        )
+
+        ad_group_source.submission_status = constants.AdGroupSubmissionStatus.PENDING
+        ad_group_source.save(None)
+
+        content_ad = models.ContentAd.objects.create(
+            url='test.com',
+            title='test',
+            ad_group=ad_group_source.ad_group,
+            batch=batch
+        )
+
+        content_ad_source = models.ContentAdSource.objects.create(
+            content_ad=content_ad,
+            source=ad_group_source.source,
+        )
+
+        api.submit_content_ads_batch(ad_group_id, batch, request=None)
+
+        insert_actionlogs = actionlog.models.ActionLog.objects.filter(
+            content_ad_source=content_ad_source,
+            action=actionlog.constants.Action.INSERT_CONTENT_AD,
+        )
+        self.assertEqual(insert_actionlogs.count(), 1)
+
+        submit_actionlogs = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action=actionlog.constants.Action.SUBMIT_AD_GROUP
+        )
+        self.assertFalse(submit_actionlogs.exists())

@@ -70,12 +70,14 @@ class AdTargetCountry(ConstantBase):
 
 
 class ContentAdSubmissionStatus(ConstantBase):
+    NOT_SUBMITTED = -1
     PENDING = 1
     APPROVED = 2
     REJECTED = 3
     LIMIT_REACHED = 4
 
     _VALUES = {
+        NOT_SUBMITTED: 'Not submitted',
         PENDING: 'Pending',
         APPROVED: 'Approved',
         REJECTED: 'Rejected',

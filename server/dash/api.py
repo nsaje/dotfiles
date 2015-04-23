@@ -125,22 +125,23 @@ def insert_content_ad_callback(
 
 
 def submit_ad_group_callback(ad_group_source, source_content_ad_id, submission_status, submission_errors):
-    if ad_group_source.content_ad_submission_type != constants.SourceSubmissionType.AD_GROUP:
+    if ad_group_source.source.content_ad_submission_type != constants.SourceSubmissionType.AD_GROUP:
         raise Exception('Invalid source submission type')
 
     with transaction.atomic():
         ad_group_source.source_content_ad_id = source_content_ad_id
         ad_group_source.submission_status = submission_status
         ad_group_source.submission_errors = submission_errors
-        ad_group_source.save()
+        ad_group_source.save(None)
 
         content_ad_sources = models.ContentAdSource.objects.filter(
             Q(source_content_ad_id__isnull=True) | Q(source_content_ad_id=''),
             content_ad__ad_group=ad_group_source.ad_group,
             source=ad_group_source.source,
-            submission_status=constants.ContentAdSubmissionStatus.PENDING
+            submission_status=constants.ContentAdSubmissionStatus.NOT_SUBMITTED
         )
 
+        content_ad_source_ids = [cas.id for cas in content_ad_sources]
         content_ad_sources.update(
             source_content_ad_id=source_content_ad_id,
             submission_status=submission_status,
@@ -150,10 +151,9 @@ def submit_ad_group_callback(ad_group_source, source_content_ad_id, submission_s
         if submission_status == constants.AdGroupSubmissionStatus.REJECTED:
             content_ad_sources.update(
                 state=constants.ContentAdSourceState.INACTIVE,
-                source_state=constants.ContentAdSourceState.INACTIVE,
             )
 
-    for content_ad_source in content_ad_sources:
+    for content_ad_source in models.ContentAdSource.objects.filter(id__in=content_ad_source_ids):
         actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, request=None)
 
 
