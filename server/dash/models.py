@@ -850,7 +850,6 @@ class AdGroupSource(models.Model):
         return '_z1_adgid=%s&_z1_msid=%s' % (self.ad_group.id, msid)
 
     def get_external_name(self):
-        # account_name, campaign_name, ad_group_name, ad_group_id, source_name):
         account_name = self.ad_group.campaign.account.name
         campaign_name = self.ad_group.campaign.name
         ad_group_name = self.ad_group.name

@@ -255,4 +255,38 @@
     model: 'actionlog.actionlog'
     pk: 24
 
+-   fields:
+        action: 'get_campaign_status'
+        state: 2
+        action_type: 1
+        ad_group_source: 18
+        created_dt: '2014-07-01T07:07:07'
+    model: 'actionlog.actionlog'
+    pk: 25
 
+-   fields:
+        order: 1
+        action: 'get_reports'
+        state: 2
+        action_type: 1
+        ad_group_source: 18
+    model: 'actionlog.actionlog'
+    pk: 26
+
+-   fields:
+        order: 1
+        action: 'get_reports'
+        state: 2
+        action_type: 1
+        ad_group_source: 18
+    model: 'actionlog.actionlog'
+    pk: 27
+
+-   fields:
+        order: 1
+        action: 'get_reports'
+        state: 2
+        action_type: 1
+        ad_group_source: 18
+    model: 'actionlog.actionlog'
+    pk: 28

@@ -62,7 +62,7 @@ class ViewHelpersTestCase(TestCase):
 
         sources = models.Source.objects.filter(pk__in=last_successful_source_sync_times.keys())
         last_source_sync_messages = helpers.get_last_sync_messages(sources, last_successful_source_sync_times)
-        self.assertEqual(len(last_source_sync_messages), 5)
+        self.assertEqual(len(last_source_sync_messages), 6)
         self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
         self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
         self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
@@ -102,7 +102,7 @@ class ViewHelpersTestCase(TestCase):
 
         sources = models.Source.objects.filter(pk__in=last_successful_source_sync_times.keys())
         last_source_sync_messages = helpers.get_last_sync_messages(sources, last_successful_source_sync_times)
-        self.assertEqual(len(last_source_sync_messages), 5)
+        self.assertEqual(len(last_source_sync_messages), 6)
         self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
         self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
         self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
@@ -139,7 +139,7 @@ class ViewHelpersTestCase(TestCase):
 
         sources = models.Source.objects.filter(pk__in=last_successful_source_sync_times.keys())
         last_source_sync_messages = helpers.get_last_sync_messages(sources, last_successful_source_sync_times)
-        self.assertEqual(len(last_source_sync_messages), 5)
+        self.assertEqual(len(last_source_sync_messages), 6)
         self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
         self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
         self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))

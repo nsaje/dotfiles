@@ -38,7 +38,8 @@ class ActionLogSyncTestCase(TestCase):
                 2: None,
                 3: None,
                 4: datetime.datetime(2014, 6, 10, 9, 58, 21),
-                5: datetime.datetime(2014, 6, 10, 9, 58, 21)
+                5: datetime.datetime(2014, 6, 10, 9, 58, 21),
+                7: datetime.datetime(2014, 6, 10, 9, 58, 21)
             })
 
     def test_ad_group_source_latest_status_sync(self):
@@ -136,7 +137,7 @@ class ActionLogSyncTestCase(TestCase):
             dash.models.AdGroup.objects.get(pk=1)
         ).get_latest_success_by_child()
 
-        self.assertEqual(len(latest_success_dict), 5)
+        self.assertEqual(len(latest_success_dict), 6)
         self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
         self.assertEqual(latest_success_dict[2].isoformat(), '2014-07-01T08:08:08')
         self.assertEqual(latest_success_dict[3].isoformat(), '2014-07-01T09:09:09')
@@ -157,7 +158,7 @@ class ActionLogSyncTestCase(TestCase):
             dash.models.AdGroup.objects.get(pk=1)
         ).get_latest_success_by_child()
 
-        self.assertEqual(len(latest_success_dict), 5)
+        self.assertEqual(len(latest_success_dict), 6)
         self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
         self.assertEqual(latest_success_dict[2].isoformat(), '2014-07-01T08:08:08')
         self.assertEqual(latest_success_dict[3].isoformat(), '2014-07-01T09:09:09')
@@ -168,20 +169,19 @@ class ActionLogSyncTestCase(TestCase):
             dash.models.AdGroup.objects.get(pk=1)
         ).get_latest_success_by_child(recompute=False)
 
-        self.assertEqual(len(latest_success_dict), 5)
+        self.assertEqual(len(latest_success_dict), 6)
         self.assertEqual(latest_success_dict[1].isoformat(), '2014-06-10T09:58:21')
         self.assertEqual(latest_success_dict[2].isoformat(), '2014-06-10T09:58:21')
         self.assertEqual(latest_success_dict[3].isoformat(), '2014-06-10T09:58:21')
         self.assertEqual(latest_success_dict[4].isoformat(), '2014-06-10T09:58:21')
         self.assertEqual(latest_success_dict[5].isoformat(), '2014-06-10T09:58:21')
-        self.assertEqual(latest_success_dict[1].isoformat(), '2014-06-10T09:58:21')
 
     def test_ad_group_latest_source_success(self):
         latest_success_dict = sync.AdGroupSync(
             dash.models.AdGroup.objects.get(pk=1)
         ).get_latest_source_success()
 
-        self.assertEqual(len(latest_success_dict), 5)
+        self.assertEqual(len(latest_success_dict), 6)
         self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
         self.assertEqual(latest_success_dict[2].isoformat(), '2014-07-01T08:08:08')
         self.assertEqual(latest_success_dict[3].isoformat(), '2014-07-01T09:09:09')
@@ -192,7 +192,7 @@ class ActionLogSyncTestCase(TestCase):
             dash.models.AdGroup.objects.get(pk=1)
         ).get_latest_source_success()
 
-        self.assertEqual(len(latest_success_dict), 5)
+        self.assertEqual(len(latest_success_dict), 6)
         self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
         self.assertEqual(latest_success_dict[2].isoformat(), '2014-07-01T08:08:08')
         self.assertEqual(latest_success_dict[3].isoformat(), '2014-07-01T09:09:09')
@@ -204,7 +204,7 @@ class ActionLogSyncTestCase(TestCase):
             dash.models.AdGroup.objects.get(pk=1)
         ).get_latest_source_success()
 
-        self.assertEqual(len(latest_success_dict), 5)
+        self.assertEqual(len(latest_success_dict), 6)
         self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
         self.assertEqual(latest_success_dict[2].isoformat(), '2014-07-01T08:08:08')
         self.assertEqual(latest_success_dict[3].isoformat(), '2014-07-01T09:09:09')
@@ -215,7 +215,7 @@ class ActionLogSyncTestCase(TestCase):
             dash.models.AdGroup.objects.get(pk=1)
         ).get_latest_source_success(recompute=False)
 
-        self.assertEqual(len(latest_success_dict), 5)
+        self.assertEqual(len(latest_success_dict), 6)
         self.assertEqual(latest_success_dict[1].isoformat(), '2014-06-10T09:58:21')
         self.assertEqual(latest_success_dict[2].isoformat(), '2014-06-10T09:58:21')
         self.assertEqual(latest_success_dict[3].isoformat(), '2014-06-10T09:58:21')
@@ -227,7 +227,7 @@ class ActionLogSyncTestCase(TestCase):
             dash.models.AdGroup.objects.get(pk=1)
         ).get_latest_success_by_child()
 
-        self.assertEqual(len(latest_success_dict), 5)
+        self.assertEqual(len(latest_success_dict), 6)
         self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
         self.assertEqual(latest_success_dict[2].isoformat(), '2014-07-01T08:08:08')
         self.assertEqual(latest_success_dict[3].isoformat(), '2014-07-01T09:09:09')
@@ -243,7 +243,7 @@ class ActionLogSyncTestCase(TestCase):
             dash.models.AdGroup.objects.get(pk=1)
         ).get_latest_success_by_child()
 
-        self.assertEqual(len(latest_success_dict), 6)
+        self.assertEqual(len(latest_success_dict), 7)
         self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
         self.assertEqual(latest_success_dict[2].isoformat(), '2014-07-01T08:08:08')
         self.assertEqual(latest_success_dict[3].isoformat(), '2014-07-01T09:09:09')
