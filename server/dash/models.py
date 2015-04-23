@@ -10,6 +10,8 @@ from django.contrib.auth import models as auth_models
 from django.contrib import auth
 from django.db import models, transaction
 
+import actionlog.api_contentads
+
 from dash import constants
 from utils import encryption_helpers
 from utils import statsd_helper
@@ -827,7 +829,7 @@ class AdGroupSource(models.Model):
 
     last_successful_sync_dt = models.DateTimeField(blank=True, null=True)
 
-    source_content_ad_id = models.CharField(max_length=100, null=True)
+    source_content_ad_id = models.CharField(max_length=100, null=True, blank=True)
     submission_status = models.IntegerField(
         default=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
         choices=constants.ContentAdSubmissionStatus.get_choices()
@@ -875,10 +877,19 @@ class AdGroupSource(models.Model):
         return name
 
     def save(self, request, *args, **kwargs):
+        old_obj = None
+        if self.pk is not None:
+            old_obj = AdGroupSource.objects.get(pk=self.pk)
+
         super(AdGroupSource, self).save(*args, **kwargs)
         if not AdGroupSourceSettings.objects.filter(ad_group_source=self).exists():
             settings = AdGroupSourceSettings(ad_group_source=self)
             settings.save(request)
+
+        if old_obj is not None and self.submission_status != old_obj.submission_status:
+            for content_ad_source in ContentAdSource.objects.filter(source=self.source,
+                                                                    content_ad__ad_group=self.ad_group):
+                actionlog.api_contentads.init_update_content_ad_action(content_ad_source, request)
 
     def __unicode__(self):
         return u'{} - {}'.format(self.ad_group, self.source)
