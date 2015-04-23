@@ -108,38 +108,42 @@ def cancel_expired_actionlogs():
         actionlog.save()
 
 
-@transaction.atomic
 def send_delayed_actionlogs(ad_group_sources=None):
-    delayed_actionlogs = models.ActionLog.objects.filter(
-        action=constants.Action.SET_CAMPAIGN_STATE,
-        action_type=constants.ActionType.AUTOMATIC,
-        state=constants.ActionState.DELAYED,
-    ).order_by('created_dt')
-
-    if ad_group_sources is not None:
-        delayed_actionlogs = delayed_actionlogs.filter(ad_group_source__in=ad_group_sources)
-
-    for actionlog in delayed_actionlogs:
-        waiting_actionlogs = models.ActionLog.objects.filter(
-            state=constants.ActionState.WAITING,
+    actionlogs_to_send = []
+    with transaction.atomic():
+        delayed_actionlogs = models.ActionLog.objects.filter(
             action=constants.Action.SET_CAMPAIGN_STATE,
             action_type=constants.ActionType.AUTOMATIC,
-            ad_group_source=actionlog.ad_group_source,
-        )
+            state=constants.ActionState.DELAYED,
+        ).order_by('created_dt')
 
-        if waiting_actionlogs.exists():
-            continue
+        if ad_group_sources is not None:
+            delayed_actionlogs = delayed_actionlogs.filter(ad_group_source__in=ad_group_sources)
 
-        logger.info(
-            'Sending delayed action log %s. Updating state to: %s.',
-            actionlog,
-            constants.ActionState.WAITING
-        )
-        actionlog.state = constants.ActionState.WAITING
-        actionlog.expiration_dt = models._due_date_default()
-        actionlog.payload['expiration_dt'] = actionlog.expiration_dt
-        actionlog.save()
+        for actionlog in delayed_actionlogs:
+            waiting_actionlogs = models.ActionLog.objects.filter(
+                state=constants.ActionState.WAITING,
+                action=constants.Action.SET_CAMPAIGN_STATE,
+                action_type=constants.ActionType.AUTOMATIC,
+                ad_group_source=actionlog.ad_group_source,
+            )
 
+            if waiting_actionlogs.exists():
+                continue
+
+            logger.info(
+                'Sending delayed action log %s. Updating state to: %s.',
+                actionlog,
+                constants.ActionState.WAITING
+            )
+            actionlog.state = constants.ActionState.WAITING
+            actionlog.expiration_dt = models._due_date_default()
+            actionlog.payload['expiration_dt'] = actionlog.expiration_dt
+            actionlog.save()
+
+            actionlogs_to_send.append(actionlog)
+
+    for actionlog in actionlogs_to_send:
         zwei_actions.send(actionlog)
 
 
