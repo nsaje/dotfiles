@@ -134,32 +134,29 @@ def submit_ad_group_callback(ad_group_source, source_content_ad_id, submission_s
         ad_group_source.submission_errors = submission_errors
         ad_group_source.save(None)
 
-        content_ad_sources = models.ContentAdSource.objects.filter(
-            Q(source_content_ad_id__isnull=True) | Q(source_content_ad_id=''),
-            content_ad__ad_group=ad_group_source.ad_group,
-            source=ad_group_source.source,
-            submission_status=constants.ContentAdSubmissionStatus.NOT_SUBMITTED
-        )
-
-        content_ad_source_ids = [cas.id for cas in content_ad_sources]
-        content_ad_sources.update(
-            source_content_ad_id=source_content_ad_id,
-            submission_status=submission_status,
-            submission_errors=submission_errors,
-        )
-
-        if submission_status == constants.AdGroupSubmissionStatus.REJECTED:
-            content_ad_sources.update(
-                state=constants.ContentAdSourceState.INACTIVE,
+        content_ad_sources = list(
+            models.ContentAdSource.objects.filter(
+                Q(source_content_ad_id__isnull=True) | Q(source_content_ad_id=''),
+                content_ad__ad_group=ad_group_source.ad_group,
+                source=ad_group_source.source,
+                submission_status=constants.ContentAdSubmissionStatus.NOT_SUBMITTED
             )
+        )
 
-    for content_ad_source in models.ContentAdSource.objects.filter(id__in=content_ad_source_ids):
+        for content_ad_source in content_ad_sources:
+            content_ad_source.source_content_ad_id = source_content_ad_id
+            content_ad_source.submission_status = submission_status
+            content_ad_source.submission_errors = submission_errors
+            content_ad_source.save()
+
+    for content_ad_source in content_ad_sources:
         actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, request=None)
 
 
 def submit_content_ads_batch(ad_group_id, batch, request):
-    for ad_group_source in models.AdGroupSource.objects.filter(ad_group_id=ad_group_id):
-        with transaction.atomic():
+    to_send = []
+    with transaction.atomic():
+        for ad_group_source in models.AdGroupSource.objects.filter(ad_group_id=ad_group_id):
             content_ad_sources = models.ContentAdSource.objects.filter(
                 content_ad__ad_group_id=ad_group_id,
                 source=ad_group_source.source,
@@ -185,14 +182,10 @@ def submit_content_ads_batch(ad_group_id, batch, request):
                     submission_errors=ad_group_source.submission_errors,
                 )
 
-                if ad_group_source.submission_status == constants.AdGroupSubmissionStatus.REJECTED:
-                    content_ad_sources.update(
-                        state=constants.ContentAdSourceState.INACTIVE,
-                        source_state=constants.ContentAdSourceState.INACTIVE,
-                    )
+            to_send.extend(list(content_ad_sources))
 
-        for content_ad_source in content_ad_sources:
-            actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, request)
+    for content_ad_source in to_send:
+        actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, request)
 
 
 @transaction.atomic()

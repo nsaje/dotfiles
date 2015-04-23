@@ -166,6 +166,126 @@ class UpdateContentAdTest(TestCase):
         )
 
 
+class SubmitAdGroupTest(TestCase):
+
+    fixtures = ['test_zwei_api.yaml']
+
+    def test_valid(self):
+        zwei_response_data = {
+            'status': 'success',
+            'data': {
+                'source_content_ad_id': '1234567890',
+                'submission_status': dash.constants.AdGroupSubmissionStatus.PENDING,
+                'submission_errors': None
+            }
+        }
+
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=6)
+        content_ad_source1 = dash.models.ContentAdSource.objects.get(id=3)
+        self.assertEqual(
+            content_ad_source1.submission_status,
+            dash.constants.ContentAdSubmissionStatus.NOT_SUBMITTED
+        )
+        self.assertEqual(
+            content_ad_source1.source_content_ad_id,
+            None
+        )
+
+        content_ad_source2 = dash.models.ContentAdSource.objects.get(id=4)
+        self.assertEqual(
+            content_ad_source2.submission_status,
+            dash.constants.ContentAdSubmissionStatus.APPROVED
+        )
+        self.assertEqual(
+            content_ad_source2.source_content_ad_id,
+            None
+        )
+
+        action_log = actionlog.models.ActionLog(
+            action=actionlog.constants.Action.SUBMIT_AD_GROUP,
+            state=actionlog.constants.ActionState.WAITING,
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            ad_group_source=ad_group_source,
+        )
+        action_log.save()
+
+        response = self.client.post(
+            reverse('api.zwei_callback', kwargs={'action_id': action_log.id}),
+            content_type='application/json',
+            data=json.dumps(zwei_response_data)
+        )
+        self.assertEqual(response.status_code, 200)
+
+        action_log = actionlog.models.ActionLog.objects.get(id=action_log.id)
+        self.assertEqual(
+            action_log.state,
+            actionlog.constants.ActionState.SUCCESS
+        )
+
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=6)
+        self.assertEqual(
+            ad_group_source.submission_status,
+            dash.constants.AdGroupSubmissionStatus.PENDING
+        )
+        self.assertEqual(
+            ad_group_source.source_content_ad_id,
+            '1234567890'
+        )
+
+        content_ad_source1 = dash.models.ContentAdSource.objects.get(id=3)
+        self.assertEqual(
+            content_ad_source1.submission_status,
+            dash.constants.ContentAdSubmissionStatus.PENDING
+        )
+        self.assertEqual(
+            content_ad_source1.source_content_ad_id,
+            '1234567890'
+        )
+
+        content_ad_source2 = dash.models.ContentAdSource.objects.get(id=4)
+        self.assertEqual(
+            content_ad_source2.submission_status,
+            dash.constants.ContentAdSubmissionStatus.APPROVED
+        )
+        self.assertEqual(
+            content_ad_source2.source_content_ad_id,
+            None
+        )
+
+    def test_invalid(self):
+        zwei_response_data = {
+            'status': 'success',
+            'data': {
+                'source_content_ad_id': '1234567890',
+                'submission_status': dash.constants.AdGroupSubmissionStatus.PENDING,
+                'submission_errors': None
+            }
+        }
+
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=6)
+
+        action_log = actionlog.models.ActionLog(
+            action=actionlog.constants.Action.SUBMIT_AD_GROUP,
+            state=actionlog.constants.ActionState.WAITING,
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            ad_group_source=ad_group_source,
+        )
+        action_log.save()
+
+        response = self.client.post(
+            reverse('api.zwei_callback', kwargs={'action_id': action_log.id}),
+            content_type='application/json',
+            data=json.dumps(zwei_response_data)
+        )
+        self.assertEqual(response.status_code, 200)
+
+        action_log = actionlog.models.ActionLog.objects.get(id=action_log.id)
+        self.assertEqual(
+            action_log.state,
+            actionlog.constants.ActionState.FAILED
+        )
+
+
 class TestUpdateLastSuccessfulSync(TestCase):
 
     fixtures = ['test_zwei_api.yaml']

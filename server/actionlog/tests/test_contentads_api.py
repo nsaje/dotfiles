@@ -179,3 +179,55 @@ class ContentAdsApiTestCase(TestCase):
             'callback_url': callback
         }
         self.assertEqual(action.payload, payload)
+
+    @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
+    def test_submit_ad_group(self):
+        utcnow = datetime.datetime.utcnow()
+        models.datetime.utcnow = classmethod(lambda cls: utcnow)
+
+        content_ad_source = dash.models.ContentAdSource.objects.get(id=1)
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
+
+        api_contentads.init_submit_ad_group_action(ad_group_source, content_ad_source, None)
+
+        action = models.ActionLog.objects.get(
+            ad_group_source=ad_group_source,
+        )
+
+        self.assertEqual(action.action, constants.Action.SUBMIT_AD_GROUP)
+        self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
+        self.assertEqual(action.state, constants.ActionState.WAITING)
+
+        expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).\
+            strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+        callback = urlparse.urljoin(
+            settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
+        )
+
+        ad_group_settings = dash.models.AdGroupSettings.objects.get(pk=1)
+        payload = {
+            'source': ad_group_source.source.source_type.type,
+            'action': constants.Action.SUBMIT_AD_GROUP,
+            'expiration_dt': expiration_dt,
+            'credentials': ad_group_source.source_credentials.credentials,
+            'args': {
+                'source_campaign_key': ad_group_source.source_campaign_key,
+                'content_ad_id': content_ad_source.get_source_id(),
+                'content_ad': {
+                    'state': dash.constants.ContentAdSourceState.ACTIVE,
+                    'title': content_ad_source.content_ad.title,
+                    'url': content_ad_source.content_ad.url,
+                    'submission_status': dash.constants.ContentAdSubmissionStatus.PENDING,
+                    'image_id': content_ad_source.content_ad.image_id,
+                    'image_width': content_ad_source.content_ad.image_width,
+                    'image_height': content_ad_source.content_ad.image_height,
+                    'image_hash': content_ad_source.content_ad.image_hash,
+                    'display_url': ad_group_settings.display_url,
+                    'brand_name': ad_group_settings.brand_name,
+                    'description': ad_group_settings.description,
+                    'call_to_action': ad_group_settings.call_to_action,
+                },
+            },
+            'callback_url': callback
+        }
+        self.assertEqual(action.payload, payload)

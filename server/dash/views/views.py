@@ -714,7 +714,7 @@ class ProcessUploadThread(Thread):
                         models.ContentAdSource.objects.create(
                             source=ad_group_source.source,
                             content_ad=content_ad,
-                            submission_status=constants.ContentAdSubmissionStatus.PENDING,
+                            submission_status=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
                             state=constants.ContentAdSourceState.ACTIVE
                         )
 
