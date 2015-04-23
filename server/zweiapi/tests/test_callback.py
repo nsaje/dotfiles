@@ -262,7 +262,7 @@ class SubmitAdGroupTest(TestCase):
             }
         }
 
-        ad_group_source = dash.models.AdGroupSource.objects.get(id=6)
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
 
         action_log = actionlog.models.ActionLog(
             action=actionlog.constants.Action.SUBMIT_AD_GROUP,
