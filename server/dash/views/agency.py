@@ -110,20 +110,19 @@ class AdGroupSettings(api_common.BaseApiView):
         settings = models.AdGroupSettings()
         self.set_settings(settings, current_settings, ad_group, form.cleaned_data)
 
-        with transaction.atomic():
-            order = actionlog_models.ActionLogOrder.objects.create(
-                order_type=actionlog_constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
-            )
-            ad_group.save(request)
-            settings.save(request)
+        order = actionlog_models.ActionLogOrder.objects.create(
+            order_type=actionlog_constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
+        )
+        ad_group.save(request)
+        settings.save(request)
 
-            if current_settings.state == constants.AdGroupSettingsState.INACTIVE \
-            and settings.state == constants.AdGroupSettingsState.ACTIVE:
-                actionlog_api.init_enable_ad_group(ad_group, request, order=order)
+        if current_settings.state == constants.AdGroupSettingsState.INACTIVE \
+           and settings.state == constants.AdGroupSettingsState.ACTIVE:
+            actionlog_api.init_enable_ad_group(ad_group, request, order=order)
 
-            if current_settings.state == constants.AdGroupSettingsState.ACTIVE \
-            and settings.state == constants.AdGroupSettingsState.INACTIVE:
-                actionlog_api.init_pause_ad_group(ad_group, request, order=order)
+        if current_settings.state == constants.AdGroupSettingsState.ACTIVE \
+           and settings.state == constants.AdGroupSettingsState.INACTIVE:
+            actionlog_api.init_pause_ad_group(ad_group, request, order=order)
 
         current_settings.ad_group_name = previous_ad_group_name
         settings.ad_group_name = ad_group.name
