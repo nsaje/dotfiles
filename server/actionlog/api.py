@@ -24,27 +24,35 @@ import dash.models
 logger = logging.getLogger(__name__)
 
 
-def init_enable_ad_group(ad_group, request, order=None):
+def init_enable_ad_group(ad_group, request, order=None, send=True):
     source_settings_qs = dash.models.AdGroupSourceSettings.objects \
         .distinct('ad_group_source_id') \
         .filter(ad_group_source__ad_group=ad_group) \
         .order_by('ad_group_source_id', '-created_dt')
 
+    new_actionlogs = []
     for source_settings in source_settings_qs:
         if source_settings.state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
             changes = {
                 'state': dash.constants.AdGroupSourceSettingsState.ACTIVE,
             }
-            set_ad_group_source_settings(changes, source_settings.ad_group_source, request, order=order)
+            new_actionlogs.extend(
+                set_ad_group_source_settings(changes, source_settings.ad_group_source, request, order=order, send=send)
+            )
+
+    return new_actionlogs
 
 
-def init_pause_ad_group(ad_group, request, order=None):
+def init_pause_ad_group(ad_group, request, order=None, send=True):
+    new_actionlogs = []
     for ad_group_source in dash.models.AdGroupSource.objects.filter(ad_group=ad_group):
         changes = {
             'state': dash.constants.AdGroupSourceSettingsState.INACTIVE,
         }
 
-        set_ad_group_source_settings(changes, ad_group_source, request, order=order)
+        new_actionlogs.extend(set_ad_group_source_settings(changes, ad_group_source, request, order=order, send=send))
+
+    return new_actionlogs
 
 
 def init_set_ad_group_property_order(ad_group, request, source=None, prop=None, value=None):
@@ -55,7 +63,7 @@ def init_set_ad_group_property_order(ad_group, request, source=None, prop=None, 
         _set_ad_group_property(ad_group, request, source=source, prop=prop, value=value, order=order)
 
 
-def set_ad_group_source_settings(changes, ad_group_source, request, order=None):
+def set_ad_group_source_settings(changes, ad_group_source, request, order=None, send=True):
     extra = {}
     if changes.get('cpc_cc') is not None:
         changes['cpc_cc'] = int(changes['cpc_cc'] * 10000)
@@ -68,7 +76,6 @@ def set_ad_group_source_settings(changes, ad_group_source, request, order=None):
         logger.info('Tracking code %s' % changes['tracking_code'])
         logger.info('Tracking slug %s' % extra['tracking_slug'])
 
-
     _init_set_ad_group_source_settings(
         ad_group_source=ad_group_source,
         conf=changes,
@@ -76,7 +83,7 @@ def set_ad_group_source_settings(changes, ad_group_source, request, order=None):
         order=order,
         extra=extra,
     )
-    send_delayed_actionlogs([ad_group_source])
+    return send_delayed_actionlogs([ad_group_source], send=send)
 
 
 def _set_ad_group_property(ad_group, request, source=None, prop=None, value=None, order=None):
@@ -117,8 +124,8 @@ def cancel_expired_actionlogs():
         actionlog.save()
 
 
-def send_delayed_actionlogs(ad_group_sources=None):
-    actionlogs_to_send = []
+def send_delayed_actionlogs(ad_group_sources=None, send=True):
+    new_actionlogs = []
     with transaction.atomic():
         delayed_actionlogs = models.ActionLog.objects.filter(
             action=constants.Action.SET_CAMPAIGN_STATE,
@@ -150,10 +157,12 @@ def send_delayed_actionlogs(ad_group_sources=None):
             actionlog.payload['expiration_dt'] = actionlog.expiration_dt
             actionlog.save()
 
-            actionlogs_to_send.append(actionlog)
+            new_actionlogs.append(actionlog)
 
-    for actionlog in actionlogs_to_send:
-        zwei_actions.send(actionlog)
+    if send:
+        zwei_actions.send_multiple(new_actionlogs)
+
+    return new_actionlogs
 
 
 def get_ad_group_sources_waiting(**kwargs):

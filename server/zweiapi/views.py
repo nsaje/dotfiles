@@ -15,6 +15,8 @@ from django.conf import settings
 import actionlog.models
 import actionlog.constants
 import actionlog.sync
+import actionlog.zweiapi
+
 import dash.api
 import reports.update
 
@@ -122,6 +124,7 @@ def _process_zwei_response(action, data, request):
 
         return
 
+    actionlogs_to_send = []
     with transaction.atomic():
         action.state = actionlog.constants.ActionState.SUCCESS
         if action.action == actionlog.constants.Action.FETCH_REPORTS:
@@ -175,12 +178,19 @@ def _process_zwei_response(action, data, request):
             conf = action.payload['args']['conf']
 
             dash.api.update_ad_group_source_state(ad_group_source, conf)
+            actionlogs_to_send.extend(actionlog.api.send_delayed_actionlogs([ad_group_source], send=False))
         elif action.action == actionlog.constants.Action.CREATE_CAMPAIGN:
             dash.api.update_campaign_key(
                 action.ad_group_source,
                 data['data']['source_campaign_key'],
                 request
             )
+
+            content_ad_sources = dash.api.add_content_ad_sources(action.ad_group_source)
+            for content_ad_source in content_ad_sources:
+                actionlogs_to_send.extend(
+                    actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, request, send=False)
+                )
         elif action.action == actionlog.constants.Action.INSERT_CONTENT_AD:
             if 'source_content_ad_id' in data['data']:
                 dash.api.insert_content_ad_callback(
@@ -205,12 +215,7 @@ def _process_zwei_response(action, data, request):
         logger.info('Process action successful. Action: %s', action)
         action.save()
 
-    # whatever involves sending new action logs has to run outside of transaction
-    if action.action == actionlog.constants.Action.CREATE_CAMPAIGN:
-        dash.api.add_content_ad_sources(action.ad_group_source)
-
-    if action.action in actionlog.models.DELAYED_ACTIONS:
-        actionlog.api.send_delayed_actionlogs([ad_group_source])
+    actionlog.zweiapi.send_multiple(actionlogs_to_send)
 
 
 def _has_changed(data, ad_group, source, date):

@@ -12,6 +12,7 @@ from django.contrib.auth import models as authmodels
 from actionlog import api as actionlog_api
 from actionlog import models as actionlog_models
 from actionlog import constants as actionlog_constants
+from actionlog import zweiapi
 from dash.views import helpers
 from dash import forms
 from dash import models
@@ -110,30 +111,32 @@ class AdGroupSettings(api_common.BaseApiView):
         settings = models.AdGroupSettings()
         self.set_settings(settings, current_settings, ad_group, form.cleaned_data)
 
+        actionlogs_to_send = []
         with transaction.atomic():
+            order = actionlog_models.ActionLogOrder.objects.create(
+                order_type=actionlog_constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
+            )
             ad_group.save(request)
             settings.save(request)
 
-        order = actionlog_models.ActionLogOrder.objects.create(
-            order_type=actionlog_constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
-        )
+            if current_settings.state == constants.AdGroupSettingsState.INACTIVE \
+            and settings.state == constants.AdGroupSettingsState.ACTIVE:
+                actionlogs_to_send.extend(actionlog_api.init_enable_ad_group(ad_group, request, order=order, send=False))
 
-        if current_settings.state == constants.AdGroupSettingsState.INACTIVE \
-        and settings.state == constants.AdGroupSettingsState.ACTIVE:
-            actionlog_api.init_enable_ad_group(ad_group, request, order=order)
+            if current_settings.state == constants.AdGroupSettingsState.ACTIVE \
+            and settings.state == constants.AdGroupSettingsState.INACTIVE:
+                actionlogs_to_send.extend(actionlog_api.init_pause_ad_group(ad_group, request, order=order, send=False))
 
-        if current_settings.state == constants.AdGroupSettingsState.ACTIVE \
-        and settings.state == constants.AdGroupSettingsState.INACTIVE:
-            actionlog_api.init_pause_ad_group(ad_group, request, order=order)
-
-        current_settings.ad_group_name = previous_ad_group_name
-        settings.ad_group_name = ad_group.name
-        api.order_ad_group_settings_update(ad_group, current_settings, settings, request)
+            current_settings.ad_group_name = previous_ad_group_name
+            settings.ad_group_name = ad_group.name
+            actionlogs_to_send.extend(api.order_ad_group_settings_update(ad_group, current_settings, settings, request))
 
         user = request.user
         changes = current_settings.get_setting_changes(settings)
         if changes:
             send_ad_group_settings_change_mail_if_necessary(ad_group, user, request)
+
+        zweiapi.send_multiple(actionlogs_to_send)
 
         response = {
             'settings': self.get_dict(settings, ad_group),
@@ -231,12 +234,11 @@ class CampaignSettings(api_common.BaseApiView):
         with transaction.atomic():
             campaign.save(request)
             settings.save(request)
-
-        # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
-        campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
-        for ad_group in campaign_ad_groups:
-            adgroup_settings = ad_group.get_current_settings()
-            api.order_ad_group_settings_update(ad_group, adgroup_settings, adgroup_settings, request)
+            # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
+            campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
+            for ad_group in campaign_ad_groups:
+                adgroup_settings = ad_group.get_current_settings()
+                api.order_ad_group_settings_update(ad_group, adgroup_settings, adgroup_settings, request)
 
         response = {
             'settings': self.get_dict(settings, campaign),
