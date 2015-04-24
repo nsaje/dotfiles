@@ -333,53 +333,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         error_messages={'required': 'Please enter a name for this upload.'}
     )
 
-    def _validate_crops(self, crop_list):
-        for i in range(2):
-            for j in range(2):
-                for k in range(2):
-                    if not isinstance(crop_list[i][j][k], (int, long)):
-                        raise ValueError('Coordinate is not an integer')
-
-    def _parse_crop_areas(self, crop_string):
-        if not crop_string:
-            # crop areas are optional, so return None
-            # if they are not provided
-            return None
-
-        crop_string = crop_string.replace('(', '[').replace(')', ']')
-
-        try:
-            crop_list = json.loads(crop_string)
-            self._validate_crops(crop_list)
-        except (ValueError, IndexError):
-            raise forms.ValidationError('File is not formatted correctly.')
-
-        return crop_list
-
-    def _validate_and_transform_row(self, row):
-        url = row.get('url')
-        title = row.get('title')
-        image_url = row.get('image_url')
-
-        validate_url = validators.URLValidator(
-            schemes=['http', 'https'],
-            message='File is not formatted correctly'
-        )
-
-        validate_url(url)
-        validate_url(image_url)
-
-        if title is None or not len(title):
-            raise forms.ValidationError('File is not formatted correctly.')
-
-        row['crop_areas'] = self._parse_crop_areas(row.get('crop_areas'))
-
-        return row
-
     def _validate_header(self, header):
-        if header is None:
-            raise forms.ValidationError('Please add a header as the first line.')
-
         if header['url'].strip().lower() != 'url':
             raise forms.ValidationError('First column in header should be URL.')
 
@@ -397,7 +351,6 @@ class AdGroupAdsPlusUploadForm(forms.Form):
     def clean_content_ads(self):
         content_ads_file = self.cleaned_data['content_ads']
 
-        ads = []
         try:
             # If the file contains ctrl-M chars instead of
             # new line breaks, DictReader will fail to parse it.
@@ -410,12 +363,14 @@ class AdGroupAdsPlusUploadForm(forms.Form):
 
             reader = unicodecsv.DictReader(lines, ['url', 'title', 'image_url', 'crop_areas'])
 
-            header = next(reader, None)
+            try:
+                header = next(reader)
+            except StopIteration:
+                raise forms.ValidationError('Uploaded file is empty.')
+
             self._validate_header(header)
 
-            for row in reader:
-                ads.append(self._validate_and_transform_row(row))
-        except unicodecsv.Error:
-            raise forms.ValidationError('File is not formatted correctly.')
+            return list(reader)
 
-        return ads
+        except unicodecsv.Error:
+            raise forms.ValidationError('Uploaded file is not a valid CSV file.')

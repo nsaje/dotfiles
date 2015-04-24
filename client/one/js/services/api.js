@@ -1978,7 +1978,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
         this.checkStatus = function(adGroupId, batchId) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/status/' + batchId + '/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/' + batchId + '/status/';
 
             $http.get(url).
                 success(function(data) {
