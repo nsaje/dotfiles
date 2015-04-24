@@ -138,8 +138,9 @@ class ActionLogApiTestCase(TestCase):
                 'conf': {
                     'cpc_cc': 3300,
                     'daily_budget_cc': 1000000,
-                    'state': dashconstants.AdGroupSourceSettingsState.ACTIVE,
-                }
+                    'state': dashconstants.AdGroupSourceSettingsState.ACTIVE
+                },
+                'extra': {},
             },
             'callback_url': callback,
         }
