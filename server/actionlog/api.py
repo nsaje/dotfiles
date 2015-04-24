@@ -73,7 +73,8 @@ def set_ad_group_source_settings(changes, ad_group_source, request, order=None):
         ad_group_source=ad_group_source,
         conf=changes,
         request=request,
-        order=order
+        order=order,
+        extra=extra,
     )
     send_delayed_actionlogs([ad_group_source])
 
