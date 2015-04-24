@@ -12,7 +12,7 @@ from django.contrib.auth import models as authmodels
 from actionlog import api as actionlog_api
 from actionlog import models as actionlog_models
 from actionlog import constants as actionlog_constants
-from actionlog import zweiapi
+from actionlog import zwei_actions
 from dash.views import helpers
 from dash import forms
 from dash import models
@@ -136,7 +136,7 @@ class AdGroupSettings(api_common.BaseApiView):
         if changes:
             send_ad_group_settings_change_mail_if_necessary(ad_group, user, request)
 
-        zweiapi.send_multiple(actionlogs_to_send)
+        zwei_actions.send_multiple(actionlogs_to_send)
 
         response = {
             'settings': self.get_dict(settings, ad_group),

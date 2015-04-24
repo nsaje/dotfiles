@@ -15,7 +15,7 @@ from django.conf import settings
 import actionlog.models
 import actionlog.constants
 import actionlog.sync
-import actionlog.zweiapi
+import actionlog.zwei_actions
 
 import dash.api
 import reports.update
@@ -215,7 +215,7 @@ def _process_zwei_response(action, data, request):
         logger.info('Process action successful. Action: %s', action)
         action.save()
 
-    actionlog.zweiapi.send_multiple(actionlogs_to_send)
+    actionlog.zwei_actions.send_multiple(actionlogs_to_send)
 
 
 def _has_changed(data, ad_group, source, date):
