@@ -65,9 +65,6 @@ def set_ad_group_source_settings(changes, ad_group_source, request, order=None):
         ad_group_settings = _get_ad_group_settings(ad_group_source.ad_group)
         changes['tracking_code'] = _combine_tracking_codes(ad_group_source, ad_group_settings)
         extra['tracking_slug'] = ad_group_source.source.tracking_slug
-        logger.info('Tracking code %s' % changes['tracking_code'])
-        logger.info('Tracking slug %s' % extra['tracking_slug'])
-
 
     _init_set_ad_group_source_settings(
         ad_group_source=ad_group_source,
