@@ -702,7 +702,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                     $scope.lastChangeTimeout = $timeout(function () {
                         $scope.lastChangeTimeout = null;
                         $scope.pollSourcesTableUpdates();
-                    }, 2000);
+                    }, 5000);
                 }
             });
     };
