@@ -56,10 +56,18 @@ def init_set_ad_group_property_order(ad_group, request, source=None, prop=None, 
 
 
 def set_ad_group_source_settings(changes, ad_group_source, request, order=None):
+    extra = {}
     if changes.get('cpc_cc') is not None:
         changes['cpc_cc'] = int(changes['cpc_cc'] * 10000)
     if changes.get('daily_budget_cc') is not None:
         changes['daily_budget_cc'] = int(changes['daily_budget_cc'] * 10000)
+    if changes.get('tracking_code') is not None:
+        ad_group_settings = _get_ad_group_settings(ad_group_source.ad_group)
+        changes['tracking_code'] = _combine_tracking_codes(ad_group_source, ad_group_settings)
+        extra['tracking_slug'] = ad_group_source.source.tracking_slug
+        logger.info('Tracking code %s' % changes['tracking_code'])
+        logger.info('Tracking slug %s' % extra['tracking_slug'])
+
 
     _init_set_ad_group_source_settings(
         ad_group_source=ad_group_source,
@@ -108,38 +116,42 @@ def cancel_expired_actionlogs():
         actionlog.save()
 
 
-@transaction.atomic
 def send_delayed_actionlogs(ad_group_sources=None):
-    delayed_actionlogs = models.ActionLog.objects.filter(
-        action=constants.Action.SET_CAMPAIGN_STATE,
-        action_type=constants.ActionType.AUTOMATIC,
-        state=constants.ActionState.DELAYED,
-    ).order_by('created_dt')
-
-    if ad_group_sources is not None:
-        delayed_actionlogs = delayed_actionlogs.filter(ad_group_source__in=ad_group_sources)
-
-    for actionlog in delayed_actionlogs:
-        waiting_actionlogs = models.ActionLog.objects.filter(
-            state=constants.ActionState.WAITING,
+    actionlogs_to_send = []
+    with transaction.atomic():
+        delayed_actionlogs = models.ActionLog.objects.filter(
             action=constants.Action.SET_CAMPAIGN_STATE,
             action_type=constants.ActionType.AUTOMATIC,
-            ad_group_source=actionlog.ad_group_source,
-        )
+            state=constants.ActionState.DELAYED,
+        ).order_by('created_dt')
 
-        if waiting_actionlogs.exists():
-            continue
+        if ad_group_sources is not None:
+            delayed_actionlogs = delayed_actionlogs.filter(ad_group_source__in=ad_group_sources)
 
-        logger.info(
-            'Sending delayed action log %s. Updating state to: %s.',
-            actionlog,
-            constants.ActionState.WAITING
-        )
-        actionlog.state = constants.ActionState.WAITING
-        actionlog.expiration_dt = models._due_date_default()
-        actionlog.payload['expiration_dt'] = actionlog.expiration_dt
-        actionlog.save()
+        for actionlog in delayed_actionlogs:
+            waiting_actionlogs = models.ActionLog.objects.filter(
+                state=constants.ActionState.WAITING,
+                action=constants.Action.SET_CAMPAIGN_STATE,
+                action_type=constants.ActionType.AUTOMATIC,
+                ad_group_source=actionlog.ad_group_source,
+            )
 
+            if waiting_actionlogs.exists():
+                continue
+
+            logger.info(
+                'Sending delayed action log %s. Updating state to: %s.',
+                actionlog,
+                constants.ActionState.WAITING
+            )
+            actionlog.state = constants.ActionState.WAITING
+            actionlog.expiration_dt = models._due_date_default()
+            actionlog.payload['expiration_dt'] = actionlog.expiration_dt
+            actionlog.save()
+
+            actionlogs_to_send.append(actionlog)
+
+    for actionlog in actionlogs_to_send:
         zwei_actions.send(actionlog)
 
 
@@ -349,7 +361,7 @@ def _create_manual_action(ad_group_source, conf, request, order=None, message=''
         action.save(request)
 
 
-def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=None):
+def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=None, extra={}):
     logger.info('_init_set_ad_group_source_settings started: ad_group_source.id: %s, settings: %s',
                 ad_group_source.id, str(conf))
 
@@ -375,6 +387,11 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=Non
 
     try:
         with transaction.atomic():
+            if ad_group_source.source_campaign_key == {} and\
+                ad_group_source.source.source_type.type and\
+                ad_group_source.source.source_type.type == dash.constants.SourceType.B1:
+                raise Exception("Failed updating settings. Adgroup source campaign keys not set.")
+
             callback = urlparse.urljoin(
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
@@ -388,7 +405,8 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=Non
                     ad_group_source.source_credentials.credentials,
                 'args': {
                     'source_campaign_key': ad_group_source.source_campaign_key,
-                    'conf': conf
+                    'conf': conf,
+                    'extra': extra,
                 },
                 'callback_url': callback,
             }
@@ -554,7 +572,7 @@ def _combine_tracking_codes(ad_group_source, ad_group_settings):
 
 def _init_create_campaign(ad_group_source, name, request):
     if ad_group_source.source_campaign_key:
-        msg = 'Unable to create external campaign for AdGroupSource with existing connection'\
+        msg = u'Unable to create external campaign for AdGroupSource with existing connection'\
               'ad_group_source.id={ad_group_source_id}, name={name}'.format(
                   ad_group_source_id=ad_group_source.id,
                   name=name,
@@ -563,7 +581,7 @@ def _init_create_campaign(ad_group_source, name, request):
 
         raise exceptions.InsertCreateCampaignActionException(msg)
 
-    msg = "_init_create_campaign started: ad_group_source.id: {}, name: {}".format(
+    msg = u"_init_create_campaign started: ad_group_source.id: {}, name: {}".format(
         ad_group_source.id,
         name,
     )

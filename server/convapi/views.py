@@ -1,5 +1,8 @@
+import datetime
 import logging
 import time
+import email.utils
+
 from threading import Thread
 
 from django.views.decorators.csrf import csrf_exempt
@@ -9,7 +12,8 @@ from django.conf import settings
 
 from auth import MailGunRequestAuth, GASourceAuth
 from parse import CsvReport
-from aggregate import ReportEmail, store_to_s3
+from aggregate import ReportEmail
+from helpers import store_to_s3
 from utils.statsd_helper import statsd_incr
 from convapi import exc
 from convapi import models
@@ -59,23 +63,34 @@ def mailgun_gareps(request):
 
     statsd_incr('convapi.accepted_emails')
     try:
+        ga_report_task = None
+        
+        csvreport_date_raw = email.utils.parsedate(request.POST.get('Date'))
+        csvreport_date = datetime.datetime.fromtimestamp(time.mktime(csvreport_date_raw))
+        attachment_name = request.FILES.get('attachment-1').name
+        content = request.FILES.get('attachment-1').read()
+        key = store_to_s3(csvreport_date, attachment_name, content)
+        # temporary HACK
+        content_type = 'text/csv'
+
         ga_report_task = GAReportTask(request.POST.get('subject'),
                                              request.POST.get('Date'),
                                              request.POST.get('sender'),
                                              request.POST.get('recipient'),
                                              request.POST.get('from'),
                                              None,
-                                             request.FILES.get('attachment-1'),
-                                             request.FILES.get('attachment-1').name,
-                                             request.POST.get('attachment-count', 0))
+                                             key,
+                                             attachment_name,
+                                             request.POST.get('attachment-count', 0),
+                                             content_type)
 
         tasks.process_ga_report.apply_async((ga_report_task, ),
                                              queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE)
     except Exception as e:
         report_log = models.GAReportLog()
-        report_log.email_subject = ga_report_task.subject
-        report_log.from_address = ga_report_task.from_address
-        report_log.csv_filename = request.FILES.get('attachment-1').name
+        report_log.email_subject = ga_report_task.subject if ga_report_task is not None else None
+        report_log.from_address = ga_report_task.from_address if ga_report_task is not None else None
+        report_log.csv_filename = request.FILES.get('attachment-1').name if request.FILES.get('attachment-1') is not None else None
         report_log.state = constants.GAReportState.FAILED
         report_log.save()
         logger.exception(e.message)
@@ -83,15 +98,17 @@ def mailgun_gareps(request):
     return HttpResponse(status=200)
 
 
-class GAReportTask():
+class GAReportTask:
     def __init__(self, subject, date, sender, recipient, from_address, text,
-                 attachment, attachment_name, attachments_count):
+                 attachment_s3_key, attachment_name, attachments_count, attachment_content_type):
         self.subject = subject
         self.date = date
         self.sender = sender
         self.recipient = recipient
         self.from_address = from_address
         self.text = text
-        self.attachment = attachment
+        self.attachment_content_type = attachment_content_type
+        self.attachment = attachment_s3_key
+        self.attachment_s3_key = attachment_s3_key
         self.attachment_name = attachment_name
         self.attachment_count = attachments_count

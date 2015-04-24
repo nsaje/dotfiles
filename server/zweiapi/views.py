@@ -12,14 +12,14 @@ from django.http import JsonResponse
 
 from django.conf import settings
 
-from utils import request_signer
-from actionlog import models as actionlogmodels
-from actionlog import constants as actionlogconstants
-from dash import api as dashapi
-
+import actionlog.models
+import actionlog.constants
 import actionlog.sync
+import dash.api
 import reports.update
 
+from utils import request_signer
+from utils import statsd_helper
 
 logger = logging.getLogger(__name__)
 
@@ -43,20 +43,20 @@ def zwei_callback(request, action_id):
 
 
 def _update_last_successful_sync_dt(action, request):
-    if not action.order or action.state == actionlogconstants.ActionState.FAILED:
+    if not action.order or action.state == actionlog.constants.ActionState.FAILED:
         return
 
     status_sync_dt = None
     report_sync_dt = None
 
-    if (action.order.order_type == actionlogconstants.ActionLogOrderType.FETCH_REPORTS and
-        all(a.state == actionlogconstants.ActionState.SUCCESS
-            for a in actionlogmodels.ActionLog.objects.filter(order=action.order))):
+    if (action.order.order_type == actionlog.constants.ActionLogOrderType.FETCH_REPORTS and
+        all(a.state == actionlog.constants.ActionState.SUCCESS
+            for a in actionlog.models.ActionLog.objects.filter(order=action.order))):
         report_sync_dt = action.order.created_dt
         status_sync_dt = actionlog.sync.AdGroupSourceSync(
             action.ad_group_source).get_latest_status_sync()
 
-    elif action.order.order_type == actionlogconstants.ActionLogOrderType.FETCH_STATUS:
+    elif action.order.order_type == actionlog.constants.ActionLogOrderType.FETCH_STATUS:
         report_sync_dt = actionlog.sync.AdGroupSourceSync(
             action.ad_group_source).get_latest_report_sync()
         status_sync_dt = action.order.created_dt
@@ -84,7 +84,7 @@ def _get_error_message(data):
 
 def _prepare_report_rows(ad_group, data_rows):
     raw_articles = [{'url': row['url'], 'title': row['title']} for row in data_rows]
-    articles = dashapi.reconcile_articles(ad_group, raw_articles)
+    articles = dash.api.reconcile_articles(ad_group, raw_articles)
 
     if not len(articles) == len(data_rows):
         raise Exception('Not all articles were reconciled')
@@ -106,74 +106,105 @@ def _prepare_report_rows(ad_group, data_rows):
     return stats_rows
 
 
-@transaction.atomic
 def _process_zwei_response(action, data, request):
     logger.info('Processing Action Response: %s', action)
 
-    if action.state != actionlogconstants.ActionState.WAITING:
+    if action.state != actionlog.constants.ActionState.WAITING:
         logger.warning('Action not waiting for a response. Action: %s, response: %s', action, data)
         return
 
     if data['status'] != 'success':
         logger.warning('Action failed. Action: %s, response: %s', action, data)
 
-        action.state = actionlogconstants.ActionState.FAILED
+        action.state = actionlog.constants.ActionState.FAILED
         action.message = _get_error_message(data)
         action.save()
 
         return
 
-    if action.action == actionlogconstants.Action.FETCH_REPORTS:
-        date = action.payload['args']['date']
-        ad_group = action.ad_group_source.ad_group
-        source = action.ad_group_source.source
+    with transaction.atomic():
+        action.state = actionlog.constants.ActionState.SUCCESS
+        if action.action == actionlog.constants.Action.FETCH_REPORTS:
+            date = action.payload['args']['date']
+            ad_group = action.ad_group_source.ad_group
+            source = action.ad_group_source.source
 
-        if _has_changed(data, ad_group, source, date):
-            rows = _prepare_report_rows(ad_group, data['data'])
-            reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, rows)
+            traffic_metrics_exist = reports.api.traffic_metrics_exist(ad_group, source, date)
+            rows_raw = data['data']
 
-            if source.source_type.can_manage_content_ads():
-                reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, data['data'])
+            valid_response = True
+            empty_response = False
 
-    elif action.action == actionlogconstants.Action.FETCH_CAMPAIGN_STATUS:
-        dashapi.update_ad_group_source_state(action.ad_group_source, data['data'])
+            if traffic_metrics_exist and len(rows_raw) == 0:
+                empty_response = True
+                if not reports.api.can_delete_traffic_metrics(ad_group, source, date):
+                    valid_response = False
 
-    elif action.action == actionlogconstants.Action.SET_CAMPAIGN_STATE:
-        ad_group_source = action.ad_group_source
-        conf = action.payload['args']['conf']
+            if valid_response and _has_changed(data, ad_group, source, date):
+                rows = _prepare_report_rows(ad_group, data['data'])
+                reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, rows)
+                if source.source_type.can_manage_content_ads():
+                    reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, data['data'])
 
-        dashapi.update_ad_group_source_state(ad_group_source, conf)
-    elif action.action == actionlogconstants.Action.CREATE_CAMPAIGN:
-        dashapi.update_campaign_key(
-            action.ad_group_source,
-            data['data']['source_campaign_key'],
-            request
-        )
-        dashapi.add_content_ad_sources(action.ad_group_source)
-    elif action.action == actionlogconstants.Action.INSERT_CONTENT_AD:
-        if 'source_content_ad_id' in data['data']:
-            dashapi.insert_content_ad_callback(
+            if not valid_response:
+                msg = 'Update of source traffic for adgroup %d, source %d, datetime '\
+                      '%s skipped due to report not being valid (empty response).'
+
+                action.state = actionlog.constants.ActionState.FAILED
+                action.message = msg % (ad_group.id, source.id, date)
+
+                logger.warning(msg, ad_group.id, source.id, date)
+
+            if empty_response:
+                logger.warning(
+                    'Empty report received for adgroup %d, source %d, datetime %s',
+                    ad_group.id,
+                    source.id,
+                    date
+                )
+                statsd_helper.statsd_incr('reports.update.update_traffic_metrics_skipped')
+                statsd_helper.statsd_incr(
+                    'reports.update.update_traffic_metrics_skipped.%s' % (source.source_type.type)
+                )
+
+        elif action.action == actionlog.constants.Action.FETCH_CAMPAIGN_STATUS:
+            dash.api.update_ad_group_source_state(action.ad_group_source, data['data'])
+
+        elif action.action == actionlog.constants.Action.SET_CAMPAIGN_STATE:
+            ad_group_source = action.ad_group_source
+            conf = action.payload['args']['conf']
+
+            dash.api.update_ad_group_source_state(ad_group_source, conf)
+        elif action.action == actionlog.constants.Action.CREATE_CAMPAIGN:
+            dash.api.update_campaign_key(
                 action.ad_group_source,
-                action.content_ad_source,
-                data['data'].get('source_content_ad_id'),
-                data['data'].get('source_state'),
-                data['data'].get('submission_status'),
-                data['data'].get('submission_errors')
+                data['data']['source_campaign_key'],
+                request
             )
-    elif action.action == actionlogconstants.Action.UPDATE_CONTENT_AD:
-        dashapi.update_content_ad_source_state(
-            action.content_ad_source,
-            data['data']
-        )
-    elif action.action == actionlogconstants.Action.GET_CONTENT_AD_STATUS:
-        dashapi.update_multiple_content_ad_source_states(
-            action.ad_group_source,
-            data['data']
-        )
+            dash.api.add_content_ad_sources(action.ad_group_source)
+        elif action.action == actionlog.constants.Action.INSERT_CONTENT_AD:
+            if 'source_content_ad_id' in data['data']:
+                dash.api.insert_content_ad_callback(
+                    action.ad_group_source,
+                    action.content_ad_source,
+                    data['data'].get('source_content_ad_id'),
+                    data['data'].get('source_state'),
+                    data['data'].get('submission_status'),
+                    data['data'].get('submission_errors')
+                )
+        elif action.action == actionlog.constants.Action.UPDATE_CONTENT_AD:
+            dash.api.update_content_ad_source_state(
+                action.content_ad_source,
+                data['data']
+            )
+        elif action.action == actionlog.constants.Action.GET_CONTENT_AD_STATUS:
+            dash.api.update_multiple_content_ad_source_states(
+                action.ad_group_source,
+                data['data']
+            )
 
-    logger.info('Process action successful. Action: %s', action)
-    action.state = actionlogconstants.ActionState.SUCCESS
-    action.save()
+        logger.info('Process action successful. Action: %s', action)
+        action.save()
 
     if action.action in actionlog.models.DELAYED_ACTIONS:
         actionlog.api.send_delayed_actionlogs([ad_group_source])
@@ -214,7 +245,7 @@ def _handle_zwei_callback_error(e, action):
     msg += '\n\nTraceback: %(traceback)s'
     args.update({'traceback': tb})
 
-    action.state = actionlogconstants.ActionState.FAILED
+    action.state = actionlog.constants.ActionState.FAILED
     action.message = msg % args
     action.save()
 
@@ -234,7 +265,7 @@ def _validate_callback(request, action_id):
 
 def _get_action(action_id):
     try:
-        action = actionlogmodels.ActionLog.objects.get(id=action_id)
+        action = actionlog.models.ActionLog.objects.get(id=action_id)
         return action
     except ObjectDoesNotExist:
         raise Exception('Invalid action_id in callback')

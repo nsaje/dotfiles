@@ -15,7 +15,7 @@ class ApiContentAdsTest(TestCase):
             ad_group=1
         )
 
-        self.assertEqual(stats, {
+        self.assertItemsEqual(stats, {
             'clicks': 1000,
             'cost': 120.0,
             'cpc': 0.12,
@@ -31,7 +31,7 @@ class ApiContentAdsTest(TestCase):
             ad_group=1
         )
 
-        self.assertEqual(stats, [{
+        self.assertItemsEqual(stats, [{
             'content_ad': 2,
             'ctr': 0.01,
             'cpc': 0.1167,
@@ -55,7 +55,7 @@ class ApiContentAdsTest(TestCase):
             ad_group=1
         )
 
-        self.assertEqual(stats, [{
+        self.assertItemsEqual(stats, [{
             'ctr': 0.01,
             'cpc': 0.1333,
             'cost': 40.0,
@@ -78,7 +78,7 @@ class ApiContentAdsTest(TestCase):
             date=datetime.date(2015, 2, 1)
         )
 
-        self.assertEqual(stats, {
+        self.assertItemsEqual(stats, {
             'clicks': 300,
             'cost': 40.0,
             'cpc': 0.1333,

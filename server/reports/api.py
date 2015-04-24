@@ -14,7 +14,9 @@ from . import models
 from . import aggregate_fields
 from . import api_helpers
 
-from dash import models as dashmodels
+import dash.models
+import dash.constants
+
 from utils.sort_helper import sort_results
 
 logger = logging.getLogger(__name__)
@@ -51,7 +53,7 @@ def _preprocess_breakdown(breakdown):
 def _include_article_data(rows):
     rows = list(rows)
     article_ids = [row['article'] for row in rows]
-    article_lookup = {a.pk:a for a in dashmodels.Article.objects.filter(pk__in=article_ids)}
+    article_lookup = {a.pk:a for a in dash.models.Article.objects.filter(pk__in=article_ids)}
     for row in rows:
         a = article_lookup[row['article']]
         row['title'] = a.title
@@ -247,6 +249,30 @@ def get_yesterday_cost(**constraints):
     return result
 
 
+def traffic_metrics_exist(ad_group, source, datetime):
+    return models.ArticleStats.objects.filter(
+        ad_group=ad_group,
+        source=source,
+        datetime=datetime,
+        has_traffic_metrics=1,
+    ).exists()
+
+
+def can_delete_traffic_metrics(ad_group, source, dt):
+    if source.source_type.delete_traffic_metrics_threshold == 0:
+        return False
+
+    stats = models.ArticleStats.objects.filter(
+        ad_group=ad_group,
+        source=source,
+        datetime=dt,
+    )
+    if sum(s.clicks for s in stats) > source.source_type.delete_traffic_metrics_threshold:
+        return False
+
+    return True
+
+
 def has_complete_postclick_metrics_accounts(start_date, end_date, accounts, sources):
     return _has_complete_postclick_metrics(
         start_date,
@@ -297,7 +323,7 @@ def _get_ad_group_ids_with_postclick_data(key, objects, exclude_archived=True):
     queryset = _get_initial_qs([])
 
     if exclude_archived:
-        queryset = queryset.filter(ad_group__in=dashmodels.AdGroup.objects.all().exclude_archived())
+        queryset = queryset.filter(ad_group__in=dash.models.AdGroup.objects.all().exclude_archived())
 
     queryset = queryset.filter(**kwargs).\
         values('ad_group').annotate(
@@ -329,14 +355,3 @@ def _has_complete_postclick_metrics(start_date, end_date, key, objects, sources)
         aggregate(has_all_postclick_metrics=Min('has_any_postclick_metrics'))
 
     return aggr['has_all_postclick_metrics'] == 1
-
-
-def _reset_existing_traffic_stats(ad_group, source, date):
-    existing_stats = models.ArticleStats.objects.filter(ad_group=ad_group, source=source, datetime=date)
-    if existing_stats:
-        logger.info(
-            'Resetting {num} old article traffic statistics. Ad_group: {ad_group}, Source: {source}, datetime: {datetime}'
-            .format(num=len(existing_stats), ad_group=ad_group, source=source, datetime=date)
-        )
-        for stats in existing_stats:
-            stats.reset_traffic_metrics()

@@ -22,24 +22,30 @@ def cc_to_decimal(val_cc):
     return decimal.Decimal(val_cc) / 10000
 
 
-@transaction.atomic
 def add_content_ad_sources(ad_group_source, request=None):
     if not ad_group_source.source.can_manage_content_ads():
         return
 
-    content_ads = models.ContentAd.objects.filter(ad_group=ad_group_source.ad_group)
+    content_ad_sources = []
+    with transaction.atomic():
+        content_ads = models.ContentAd.objects.filter(ad_group=ad_group_source.ad_group)
 
-    for content_ad in content_ads:
-        try:
-            content_ad_source = models.ContentAdSource.objects.get(content_ad=content_ad, source=ad_group_source.source)
-        except models.ContentAdSource.DoesNotExist:
-            content_ad_source = models.ContentAdSource.objects.create(
-                source=ad_group_source.source,
-                content_ad=content_ad,
-                submission_status=constants.ContentAdSubmissionStatus.PENDING,
-                state=constants.ContentAdSourceState.ACTIVE
-            )
+        for content_ad in content_ads:
+            try:
+                content_ad_source = models.ContentAdSource.objects.get(
+                    content_ad=content_ad,
+                    source=ad_group_source.source
+                )
+            except models.ContentAdSource.DoesNotExist:
+                content_ad_source = models.ContentAdSource.objects.create(
+                    source=ad_group_source.source,
+                    content_ad=content_ad,
+                    submission_status=constants.ContentAdSubmissionStatus.PENDING,
+                    state=constants.ContentAdSourceState.ACTIVE
+                )
+            content_ad_sources.append(content_ad_source)
 
+    for content_ad_source in content_ad_sources:
         actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, request)
 
 
@@ -137,15 +143,17 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
         if content_ad_source is None:
             continue
 
-        source_state = data['state']
-        submission_status = None
-        if 'submission_status' in data:
-            submission_status = data['submission_status']
+        changed = False
 
-        if source_state != content_ad_source.source_state or\
-           (submission_status is not None and submission_status != content_ad_source.submission_status):
-            content_ad_source.source_state = source_state
+        if data['state'] != content_ad_source.source_state:
+            content_ad_source.source_state = data['state']
+            changed = True
+
+        if 'submission_status' in data and data['submission_status'] != content_ad_source.submission_status:
             content_ad_source.submission_status = data['submission_status']
+            changed = True
+
+        if changed:
             content_ad_source.save()
 
 
@@ -186,6 +194,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
 
         ad_group_sources = ad_group.adgroupsource_set.all()
         for ad_group_source in ad_group_sources:
+
             # if source supports setting action do an automatic update,
             # otherwise do manual actiontype
             source = ad_group_source.source

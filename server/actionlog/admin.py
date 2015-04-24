@@ -165,7 +165,7 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
     payload_.allow_tags = True
 
     def _wrap_preformatted_text(self, text):
-        return '<div style="overflow: hidden;"><pre style="color: #000;">{}</pre></div>'.format(escape(text))
+        return '<div style="overflow: hidden;"><pre style="margin: 0; padding: 0; color: #000;">{}</pre></div>'.format(escape(text))
 
     def changelist_view(self, request, extra_context=None):
         q = request.GET.copy()

@@ -6,12 +6,15 @@ from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
 
 import dash.constants
-from dash.models import AdGroupSource, Article, AdGroupSourceState, ContentAdSource
-from actionlog.models import ActionLog
-from actionlog import constants
-from reports.models import ArticleStats
-from zweiapi import views
-from zemauth.models import User
+import dash.models
+
+import actionlog.models
+import actionlog.constants
+
+import reports.models
+
+import zweiapi.views
+import zemauth.models
 
 
 class CampaignStatusTest(TestCase):
@@ -28,15 +31,15 @@ class CampaignStatusTest(TestCase):
             }
         }
 
-        ad_group_source = AdGroupSource.objects.get(id=1)
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
 
-        current_state = AdGroupSourceState.objects \
+        current_state = dash.models.AdGroupSourceState.objects \
             .filter(ad_group_source=ad_group_source).latest('created_dt')
 
-        action_log = ActionLog(
-            action=constants.Action.FETCH_CAMPAIGN_STATUS,
-            state=constants.ActionState.WAITING,
-            action_type=constants.ActionType.AUTOMATIC,
+        action_log = actionlog.models.ActionLog(
+            action=actionlog.constants.Action.FETCH_CAMPAIGN_STATUS,
+            state=actionlog.constants.ActionState.WAITING,
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
             ad_group_source=ad_group_source,
         )
         action_log.save()
@@ -48,7 +51,7 @@ class CampaignStatusTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-        latest_state = AdGroupSourceState.objects \
+        latest_state = dash.models.AdGroupSourceState.objects \
             .filter(ad_group_source=ad_group_source).latest('created_dt')
 
         self.assertNotEqual(latest_state, current_state)
@@ -68,8 +71,8 @@ class GetContentAdStatusTest(TestCase):
             }]
         }
 
-        ad_group_source = AdGroupSource.objects.get(id=1)
-        content_ad_source = ContentAdSource.objects.get(id=1)
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
+        content_ad_source = dash.models.ContentAdSource.objects.get(id=1)
 
         self.assertEqual(
             content_ad_source.source_state,
@@ -81,10 +84,10 @@ class GetContentAdStatusTest(TestCase):
             dash.constants.ContentAdSubmissionStatus.PENDING
         )
 
-        action_log = ActionLog(
-            action=constants.Action.GET_CONTENT_AD_STATUS,
-            state=constants.ActionState.WAITING,
-            action_type=constants.ActionType.AUTOMATIC,
+        action_log = actionlog.models.ActionLog(
+            action=actionlog.constants.Action.GET_CONTENT_AD_STATUS,
+            state=actionlog.constants.ActionState.WAITING,
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
             ad_group_source=ad_group_source,
             content_ad_source=content_ad_source
         )
@@ -97,7 +100,7 @@ class GetContentAdStatusTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-        content_ad_source = ContentAdSource.objects.get(id=1)
+        content_ad_source = dash.models.ContentAdSource.objects.get(id=1)
         self.assertEqual(
             content_ad_source.source_state,
             dash.constants.ContentAdSourceState.INACTIVE
@@ -122,8 +125,8 @@ class UpdateContentAdTest(TestCase):
             }
         }
 
-        ad_group_source = AdGroupSource.objects.get(id=1)
-        content_ad_source = ContentAdSource.objects.get(id=1)
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
+        content_ad_source = dash.models.ContentAdSource.objects.get(id=1)
 
         self.assertEqual(
             content_ad_source.source_state,
@@ -135,10 +138,10 @@ class UpdateContentAdTest(TestCase):
             dash.constants.ContentAdSubmissionStatus.PENDING
         )
 
-        action_log = ActionLog(
-            action=constants.Action.UPDATE_CONTENT_AD,
-            state=constants.ActionState.WAITING,
-            action_type=constants.ActionType.AUTOMATIC,
+        action_log = actionlog.models.ActionLog(
+            action=actionlog.constants.Action.UPDATE_CONTENT_AD,
+            state=actionlog.constants.ActionState.WAITING,
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
             ad_group_source=ad_group_source,
             content_ad_source=content_ad_source
         )
@@ -151,7 +154,7 @@ class UpdateContentAdTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-        content_ad_source = ContentAdSource.objects.get(id=1)
+        content_ad_source = dash.models.ContentAdSource.objects.get(id=1)
         self.assertEqual(
             content_ad_source.source_state,
             dash.constants.ContentAdSourceState.INACTIVE
@@ -169,38 +172,38 @@ class TestUpdateLastSuccessfulSync(TestCase):
 
     def setUp(self):
         self.request = HttpRequest()
-        self.request.user = User(id=1)
+        self.request.user = zemauth.models.User(id=1)
 
     def test_update_last_successful_sync_fetch_reports_successful_order(self):
-        action = ActionLog.objects.get(pk=1)
+        action = actionlog.models.ActionLog.objects.get(pk=1)
 
-        views._update_last_successful_sync_dt(action, self.request)
+        zweiapi.views._update_last_successful_sync_dt(action, self.request)
 
-        ad_group_source = AdGroupSource.objects.get(pk=1)
+        ad_group_source = dash.models.AdGroupSource.objects.get(pk=1)
         self.assertEqual(ad_group_source.last_successful_sync_dt.isoformat(), '2014-07-03T10:00:00')
 
     def test_update_last_successful_sync_fetch_status_successful_order(self):
-        action = ActionLog.objects.get(pk=5)
+        action = actionlog.models.ActionLog.objects.get(pk=5)
 
-        views._update_last_successful_sync_dt(action, self.request)
+        zweiapi.views._update_last_successful_sync_dt(action, self.request)
 
-        ad_group_source = AdGroupSource.objects.get(pk=1)
+        ad_group_source = dash.models.AdGroupSource.objects.get(pk=1)
         self.assertEqual(ad_group_source.last_successful_sync_dt.isoformat(), '2014-07-03T10:00:00')
 
     def test_update_last_successful_sync_fetch_reports_waiting_action_in_order(self):
-        action = ActionLog.objects.get(pk=4)
+        action = actionlog.models.ActionLog.objects.get(pk=4)
 
-        views._update_last_successful_sync_dt(action, self.request)
+        zweiapi.views._update_last_successful_sync_dt(action, self.request)
 
-        ad_group_source = AdGroupSource.objects.get(pk=1)
+        ad_group_source = dash.models.AdGroupSource.objects.get(pk=1)
         self.assertEqual(ad_group_source.last_successful_sync_dt.isoformat(), '2014-07-03T06:00:00')
 
     def test_update_last_successful_sync_fetch_status_waiting_action_in_order(self):
-        action = ActionLog.objects.get(pk=6)
+        action = actionlog.models.ActionLog.objects.get(pk=6)
 
-        views._update_last_successful_sync_dt(action, self.request)
+        zweiapi.views._update_last_successful_sync_dt(action, self.request)
 
-        ad_group_source = AdGroupSource.objects.get(pk=1)
+        ad_group_source = dash.models.AdGroupSource.objects.get(pk=1)
         self.assertEqual(ad_group_source.last_successful_sync_dt.isoformat(), '2014-07-03T10:00:00')
 
 
@@ -221,18 +224,21 @@ class FetchReportsTestCase(TestCase):
             'data': [article_row]
         }
 
-        ad_group_source = AdGroupSource.objects.get(id=1)
-        response = self._executeAction(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
+        response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
 
         self.assertEqual(response.status_code, 200)
-        self._assertArticleStats(ad_group_source, article_row)
+        self.assertEqual(
+            actionlog.models.ActionLog.objects.get(id=action_log.id).state, actionlog.constants.ActionState.SUCCESS
+        )
+        self._assert_article_stats(ad_group_source, article_row)
 
     @override_settings(USE_HASH_CACHE=True)
     def test_fetch_reports_hash_cache(self):
-        views.cache.clear()
+        zweiapi.views.cache.clear()
 
         self.assertEqual(
-            views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'), None)
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'), None)
 
         article_row = {
             'title': 'Article 1',
@@ -246,21 +252,24 @@ class FetchReportsTestCase(TestCase):
             'data': [article_row]
         }
 
-        ad_group_source = AdGroupSource.objects.get(id=1)
-        response = self._executeAction(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
+        response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
 
         self.assertEqual(response.status_code, 200)
-        self._assertArticleStats(ad_group_source, article_row)
+        self.assertEqual(
+            actionlog.models.ActionLog.objects.get(id=action_log.id).state, actionlog.constants.ActionState.SUCCESS
+        )
+        self._assert_article_stats(ad_group_source, article_row)
 
         self.assertEqual(
-            views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
             '7a97d7b612f435a2dba269614e90e3ac'
         )
 
     @override_settings(USE_HASH_CACHE=True)
     def test_fetch_reports_hash_cache_changed_data(self):
-        views.cache.clear()
-        views.cache.set('fetch_reports_response_hash_1_1_2014-07-01', '7a97d7b612f435a2dba269614e90e3ac')
+        zweiapi.views.cache.clear()
+        zweiapi.views.cache.set('fetch_reports_response_hash_1_1_2014-07-01', '7a97d7b612f435a2dba269614e90e3ac')
 
         article_row = {
             'title': 'Article 1',
@@ -274,23 +283,26 @@ class FetchReportsTestCase(TestCase):
             'data': [article_row]
         }
 
-        ad_group_source = AdGroupSource.objects.get(id=1)
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
         article_row['title'] = 'Article 2'
 
-        response = self._executeAction(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
+        response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
 
         self.assertEqual(response.status_code, 200)
-        self._assertArticleStats(ad_group_source, article_row)
+        self.assertEqual(
+            actionlog.models.ActionLog.objects.get(id=action_log.id).state, actionlog.constants.ActionState.SUCCESS
+        )
+        self._assert_article_stats(ad_group_source, article_row)
 
         self.assertEqual(
-            views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
             'c1cbb0b3e637466d86d39026d93f0772'
         )
 
     @override_settings(USE_HASH_CACHE=True)
     def test_fetch_reports_hash_cache_no_change(self):
-        views.cache.clear()
-        views.cache.set('fetch_reports_response_hash_1_1_2014-07-01', '7a97d7b612f435a2dba269614e90e3ac')
+        zweiapi.views.cache.clear()
+        zweiapi.views.cache.set('fetch_reports_response_hash_1_1_2014-07-01', '7a97d7b612f435a2dba269614e90e3ac')
 
         article_row = {
             'title': 'Article 1',
@@ -304,21 +316,100 @@ class FetchReportsTestCase(TestCase):
             'data': [article_row]
         }
 
-        ad_group_source = AdGroupSource.objects.get(id=1)
-        response = self._executeAction(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
+        response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
 
         self.assertEqual(response.status_code, 200)
-
-        self.assertFalse(Article.objects.filter(title=article_row['title'], url=article_row['url']).exists())
+        self.assertEqual(
+            actionlog.models.ActionLog.objects.get(id=action_log.id).state, actionlog.constants.ActionState.SUCCESS
+        )
+        self.assertFalse(
+            dash.models.Article.objects.filter(title=article_row['title'], url=article_row['url']).exists()
+        )
 
         self.assertEqual(
-            views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
             '7a97d7b612f435a2dba269614e90e3ac'
         )
 
-    def _assertArticleStats(self, ad_group_source, article_dict):
-        article = Article.objects.get(title=article_dict['title'], url=article_dict['url'])
-        article_stats = ArticleStats.objects.get(
+    @override_settings(USE_HASH_CACHE=False)
+    def test_fetch_reports_invalid_empty_rows(self):
+        zwei_response_data = {
+            'status': 'success',
+            'data': []
+        }
+
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
+        reports.models.ArticleStats.objects.create(
+            ad_group=ad_group_source.ad_group,
+            source=ad_group_source.source,
+            article_id=1,
+            datetime=datetime.datetime(2014, 7, 1),
+            has_traffic_metrics=1,
+        )
+
+        response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            actionlog.models.ActionLog.objects.get(id=action_log.id).state, actionlog.constants.ActionState.FAILED
+        )
+
+    @override_settings(USE_HASH_CACHE=False)
+    def test_fetch_reports_delete_empty_rows(self):
+        zwei_response_data = {
+            'status': 'success',
+            'data': []
+        }
+
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
+        reports.models.ArticleStats.objects.create(
+            ad_group=ad_group_source.ad_group,
+            source=ad_group_source.source,
+            article_id=1,
+            datetime=datetime.datetime(2014, 7, 1),
+            clicks=8,
+            has_traffic_metrics=1,
+        )
+
+        response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            actionlog.models.ActionLog.objects.get(id=action_log.id).state, actionlog.constants.ActionState.SUCCESS
+        )
+
+    @override_settings(USE_HASH_CACHE=True)
+    def test_fetch_reports_invalid_empty_rows_with_cache(self):
+        zweiapi.views.cache.clear()
+        zweiapi.views.cache.set('fetch_reports_response_hash_1_1_2014-07-01', '7a97d7b612f435a2dba269614e90e3ac')
+
+        zwei_response_data = {
+            'status': 'success',
+            'data': []
+        }
+
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
+        reports.models.ArticleStats.objects.create(
+            ad_group=ad_group_source.ad_group,
+            source=ad_group_source.source,
+            article_id=1,
+            datetime=datetime.datetime(2014, 7, 1),
+            has_traffic_metrics=1,
+        )
+
+        response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            actionlog.models.ActionLog.objects.get(id=action_log.id).state, actionlog.constants.ActionState.FAILED
+        )
+
+        self.assertEqual(
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            '7a97d7b612f435a2dba269614e90e3ac'
+        )
+
+    def _assert_article_stats(self, ad_group_source, article_dict):
+        article = dash.models.Article.objects.get(title=article_dict['title'], url=article_dict['url'])
+        article_stats = reports.models.ArticleStats.objects.get(
             article=article,
             ad_group=ad_group_source.ad_group,
             source=ad_group_source.source
@@ -328,14 +419,14 @@ class FetchReportsTestCase(TestCase):
         self.assertEqual(article_stats.clicks, article_dict['clicks'])
         self.assertEqual(article_stats.cost_cc, article_dict['cost_cc'])
 
-    def _executeAction(self, ad_group_source, date, zwei_response_data):
-        action_log = ActionLog(
-            action=constants.Action.FETCH_REPORTS,
-            state=constants.ActionState.WAITING,
-            action_type=constants.ActionType.AUTOMATIC,
+    def _execute_action(self, ad_group_source, date, zwei_response_data):
+        action_log = actionlog.models.ActionLog(
+            action=actionlog.constants.Action.FETCH_REPORTS,
+            state=actionlog.constants.ActionState.WAITING,
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
             ad_group_source=ad_group_source,
             payload={
-                'action': constants.Action.FETCH_REPORTS,
+                'action': actionlog.constants.Action.FETCH_REPORTS,
                 'source': ad_group_source.source.source_type.type,
                 'args': {
                     'partner_campaign_id': '"[fake]"',
@@ -350,4 +441,4 @@ class FetchReportsTestCase(TestCase):
             reverse('api.zwei_callback', kwargs={'action_id': action_log.id}),
             content_type='application/json',
             data=json.dumps(zwei_response_data)
-        )
+        ), action_log

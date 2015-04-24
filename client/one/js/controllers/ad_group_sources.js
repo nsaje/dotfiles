@@ -169,6 +169,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             unselectable: true,
             checked: true,
             type: 'notification',
+            extraTdCss: 'notification',
             shown: true,
             totalRow: false,
             help: 'Status of a particular media source (enabled or paused).',
@@ -701,7 +702,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                     $scope.lastChangeTimeout = $timeout(function () {
                         $scope.lastChangeTimeout = null;
                         $scope.pollSourcesTableUpdates();
-                    }, 2000);
+                    }, 5000);
                 }
             });
     };

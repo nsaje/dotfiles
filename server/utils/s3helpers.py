@@ -16,9 +16,18 @@ class S3Helper(object):
             ).get_bucket(settings.S3_BUCKET)
             self.initialized = True
 
-    def put(self, key, contents):
-        if self.initialized:
-            k = Key(self.bucket)
-            k.key = key
+    def get(self, key):
+        if not self.initialized:
+            return None
+        
+        k = Key(self.bucket)
+        k.key = key
+        return k.get_contents_as_string()
 
-            k.set_contents_from_string(contents)
+
+    def put(self, key, contents):
+        if not self.initialized:
+            return None
+
+        k = self.bucket.new_key(key)
+        k.set_contents_from_string(contents)
