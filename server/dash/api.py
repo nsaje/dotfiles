@@ -205,6 +205,8 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                 field_name == 'iab_category' and source.can_modify_ad_group_iab_category() or\
                 field_name == 'ad_group_name' and source.can_modify_ad_group_name():
 
+                if 'tracking' in field_name:
+                   logger.info('Tracking field change %s %s' % (field_name, field_value,))
                 if field_name == 'ad_group_name':
                     # adgroup name should have been changed by this point
                     field_name = 'name'
