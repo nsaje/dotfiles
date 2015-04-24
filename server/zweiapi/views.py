@@ -181,7 +181,6 @@ def _process_zwei_response(action, data, request):
                 data['data']['source_campaign_key'],
                 request
             )
-            dash.api.add_content_ad_sources(action.ad_group_source)
         elif action.action == actionlog.constants.Action.INSERT_CONTENT_AD:
             if 'source_content_ad_id' in data['data']:
                 dash.api.insert_content_ad_callback(
@@ -205,6 +204,10 @@ def _process_zwei_response(action, data, request):
 
         logger.info('Process action successful. Action: %s', action)
         action.save()
+
+    # whatever involves sending new action logs has to run outside of transaction
+    if action.action == actionlog.constants.Action.CREATE_CAMPAIGN:
+        dash.api.add_content_ad_sources(action.ad_group_source)
 
     if action.action in actionlog.models.DELAYED_ACTIONS:
         actionlog.api.send_delayed_actionlogs([ad_group_source])

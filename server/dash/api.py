@@ -43,7 +43,7 @@ def add_content_ad_sources(ad_group_source, request=None):
                     submission_status=constants.ContentAdSubmissionStatus.PENDING,
                     state=constants.ContentAdSourceState.ACTIVE
                 )
-            content_ad_sources.append(content_ad_source)
+                content_ad_sources.append(content_ad_source)
 
     for content_ad_source in content_ad_sources:
         actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, request)
