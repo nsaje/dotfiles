@@ -201,7 +201,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
             if field_name == 'start_date' and source.can_modify_start_date() or\
                 field_name == 'end_date' and source.can_modify_end_date() or\
                 field_name in ('target_devices', 'target_regions') and source.can_modify_targeting() or\
-                field_name == 'tracking_code' and source.can_modify_tracking_codes() or\
+                (field_name == 'tracking_code' or field_name == 'tracking_slug') and source.can_modify_tracking_codes() or\
                 field_name == 'iab_category' and source.can_modify_ad_group_iab_category() or\
                 field_name == 'ad_group_name' and source.can_modify_ad_group_name():
 
