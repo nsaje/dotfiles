@@ -194,6 +194,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
 
         ad_group_sources = ad_group.adgroupsource_set.all()
         for ad_group_source in ad_group_sources:
+
             # if source supports setting action do an automatic update,
             # otherwise do manual actiontype
             source = ad_group_source.source

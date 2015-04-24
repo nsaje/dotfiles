@@ -10,7 +10,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
 
-from actionlog import api, constants, models, sync
+from actionlog import api, constants, models, sync, exceptions
 from dash import models as dashmodels
 from dash import constants as dashconstants
 from utils import test_helper
@@ -716,6 +716,25 @@ class ActionLogApiCancelExpiredTestCase(TestCase):
             {action.id for action in failed_actionlogs},
             {action.id for action in waiting_actionlogs_after}
         )
+
+    def test_init_ad_group_source_settings_w_source_key(self):
+        ad_group_source = dashmodels.AdGroupSource.objects.get(id=1)
+
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        self.assertNotEqual(ad_group_source.source_campaign_key, {})
+        self.assertIsNone(api._init_set_ad_group_source_settings(ad_group_source, {}, request, order=None))
+
+    def test_init_ad_group_source_settings_no_source_key(self):
+        ad_group_source = dashmodels.AdGroupSource.objects.get(id=1)
+        ad_group_source.source_campaign_key = {}
+
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        with self.assertRaises(exceptions.InsertActionException):
+            api._init_set_ad_group_source_settings(ad_group_source, {}, request, order=None)
 
 
 class SendDelayedActionsTestCase(TestCase):
