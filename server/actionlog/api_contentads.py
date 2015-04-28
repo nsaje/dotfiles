@@ -19,7 +19,7 @@ import dash.models
 logger = logging.getLogger(__name__)
 
 
-def init_insert_content_ad_action(content_ad_source, request, send=True):
+def init_insert_content_ad_action(content_ad_source, request=None, send=True):
     ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.ad_group,
                                                             source=content_ad_source.source)
     settings = ad_group_source.ad_group.get_current_settings()

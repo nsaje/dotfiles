@@ -22,7 +22,7 @@ def cc_to_decimal(val_cc):
     return decimal.Decimal(val_cc) / 10000
 
 
-def add_content_ad_sources(ad_group_source, request=None):
+def add_content_ad_sources(ad_group_source):
     if not ad_group_source.source.can_manage_content_ads():
         return
 

@@ -193,7 +193,7 @@ def _process_zwei_response(action, data, request):
             for content_ad_source in content_ad_sources:
                 actionlogs_to_send.append(
                     actionlog.api_contentads.init_insert_content_ad_action(
-                        content_ad_source, request, send=False)
+                        content_ad_source, send=False)
                 )
         elif action.action == actionlog.constants.Action.INSERT_CONTENT_AD:
             if 'source_content_ad_id' in data['data']:
