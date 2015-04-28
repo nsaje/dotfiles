@@ -127,6 +127,8 @@ def _process_zwei_response(action, data, request):
     actionlogs_to_send = []
     with transaction.atomic():
         action.state = actionlog.constants.ActionState.SUCCESS
+        action.save()
+
         if action.action == actionlog.constants.Action.FETCH_REPORTS:
             date = action.payload['args']['date']
             ad_group = action.ad_group_source.ad_group
@@ -155,6 +157,7 @@ def _process_zwei_response(action, data, request):
 
                 action.state = actionlog.constants.ActionState.FAILED
                 action.message = msg % (ad_group.id, source.id, date)
+                action.save()
 
                 logger.warning(msg, ad_group.id, source.id, date)
 
@@ -214,7 +217,6 @@ def _process_zwei_response(action, data, request):
             )
 
         logger.info('Process action successful. Action: %s', action)
-        action.save()
 
     actionlog.zwei_actions.send_multiple(actionlogs_to_send)
 
