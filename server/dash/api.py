@@ -24,7 +24,7 @@ def cc_to_decimal(val_cc):
 
 def add_content_ad_sources(ad_group_source):
     if not ad_group_source.source.can_manage_content_ads():
-        return
+        return []
 
     content_ad_sources_added = []
     with transaction.atomic():
