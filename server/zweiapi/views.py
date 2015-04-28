@@ -188,8 +188,9 @@ def _process_zwei_response(action, data, request):
 
             content_ad_sources = dash.api.add_content_ad_sources(action.ad_group_source)
             for content_ad_source in content_ad_sources:
-                actionlogs_to_send.extend(
-                    actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, request, send=False)
+                actionlogs_to_send.append(
+                    actionlog.api_contentads.init_insert_content_ad_action(
+                        content_ad_source, request, send=False)
                 )
         elif action.action == actionlog.constants.Action.INSERT_CONTENT_AD:
             if 'source_content_ad_id' in data['data']:

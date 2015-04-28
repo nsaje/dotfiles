@@ -1,6 +1,5 @@
 import json
 import logging
-import datetime
 
 from collections import OrderedDict
 from decimal import Decimal
@@ -231,14 +230,19 @@ class CampaignSettings(api_common.BaseApiView):
         settings = models.CampaignSettings()
         self.set_settings(settings, campaign, form.cleaned_data)
 
+        actions = []
         with transaction.atomic():
             campaign.save(request)
             settings.save(request)
             # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
             campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
+
             for ad_group in campaign_ad_groups:
                 adgroup_settings = ad_group.get_current_settings()
-                api.order_ad_group_settings_update(ad_group, adgroup_settings, adgroup_settings, request)
+                actions = api.order_ad_group_settings_update(
+                    ad_group, adgroup_settings, adgroup_settings, request)
+
+        zwei_actions.send_multiple(actions)
 
         response = {
             'settings': self.get_dict(settings, campaign),
@@ -630,12 +634,15 @@ class AdGroupAgency(api_common.BaseApiView):
         settings = models.AdGroupSettings()
         self.set_settings(settings, current_settings, ad_group, form.cleaned_data)
 
+        actions = []
         with transaction.atomic():
             settings.save(request)
 
-        current_settings.ad_group_name = previous_ad_group_name
-        settings.ad_group_name = ad_group.name
-        api.order_ad_group_settings_update(ad_group, current_settings, settings, request)
+            current_settings.ad_group_name = previous_ad_group_name
+            settings.ad_group_name = ad_group.name
+            actions = api.order_ad_group_settings_update(ad_group, current_settings, settings, request)
+
+        zwei_actions.send_multiple(actions)
 
         user = request.user
         changes = current_settings.get_setting_changes(settings)
