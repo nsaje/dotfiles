@@ -647,10 +647,10 @@ class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
             raise exc.MissingDataException()
 
         content = s3helpers.S3Helper().get(batch.error_report_key)
-        basefnm, extension = os.path.splitext(
+        basefnm, _ = os.path.splitext(
             os.path.basename(batch.error_report_key))
 
-        name = basefnm.rsplit('_', 1)[0] + extension
+        name = basefnm.rsplit('_', 1)[0] + '_errors'
 
         return self.create_csv_response(name, content=content)
 
