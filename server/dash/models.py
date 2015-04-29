@@ -1,15 +1,15 @@
 import jsonfield
 import binascii
 import datetime
+
 from decimal import Decimal
-
-import utils.string
-
+import pytz
 from django.conf import settings
 from django.contrib.auth import models as auth_models
 from django.contrib import auth
 from django.db import models, transaction
 
+import utils.string
 from dash import constants
 from utils import encryption_helpers
 from utils import statsd_helper
@@ -934,6 +934,32 @@ class AdGroupSettings(SettingsBase):
         permissions = (
             ("settings_view", "Can view settings in dashboard."),
         )
+
+    def get_utc_start_datetime(self):
+        if self.start_date is None:
+            return None
+        
+        dt = datetime.datetime(
+            self.start_date.year, 
+            self.start_date.month, 
+            self.start_date.day,
+            tzinfo=pytz.timezone(settings.DEFAULT_TIME_ZONE)
+        )
+        return dt.astimezone(pytz.timezone('UTC')).replace(tzinfo=None)
+
+    def get_utc_end_datetime(self):
+        if self.end_date is None:
+            return None
+
+        dt = datetime.datetime(
+            self.end_date.year, 
+            self.end_date.month, 
+            self.end_date.day, 
+            tzinfo=pytz.timezone(settings.DEFAULT_TIME_ZONE)
+        )
+        dt += datetime.timedelta(days=1)
+        return dt.astimezone(pytz.timezone('UTC')).replace(tzinfo=None)
+
 
     @classmethod
     def get_default_value(cls, prop_name):

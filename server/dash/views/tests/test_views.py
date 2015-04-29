@@ -98,6 +98,52 @@ class UserTest(TestCase):
         })
 
 
+class AdGroupSourceSettingsTest(TestCase):
+    fixtures = ['test_models.yaml','test_views.yaml',]
+
+    class MockSettingsWriter(object):
+        def __init__(self, init):
+            pass
+        def set(self, resource, request):
+            pass
+
+    def setUp(self):
+        self.client = Client()
+        self.client.login(username=User.objects.get(pk=1).email, password='secret')
+
+    def test_end_date_past(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        settings = ad_group.get_current_settings()
+        settings.end_date = datetime.date.today() - datetime.timedelta(days=1)
+        settings.save(None)
+
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id':'1','source_id':'1'}),
+            data=json.dumps({'cpc_cc':'0.15'})
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
+
+    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)        
+    def test_end_date_future(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        settings = ad_group.get_current_settings()
+        settings.end_date = datetime.date.today() + datetime.timedelta(days=3)
+        settings.save(None)
+
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id':'1','source_id':'1'}),
+            data=json.dumps({'cpc_cc':'0.15'})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content),{'success': True})
+        
+
+
+
+
+
+
 class AdGroupAdsPlusUploadTest(TestCase):
     fixtures = ['test_views.yaml']
 
