@@ -82,6 +82,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
 
     def test_form(self):
         csv_file = self._get_csv_file(
+            ['Url', 'Title', 'Image Url', 'Crop Areas'],
             [[self.url, self.title, self.image_url, self.crop_areas]])
 
         form = self._init_form(csv_file, self.batch_name)
@@ -90,7 +91,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         self.assertEqual(form.cleaned_data, {
             'batch_name': self.batch_name,
             'content_ads': [{
-                u'crop_areas': [[[44, 22], [144, 122]], [[33, 22], [177, 122]]],
+                u'crop_areas': self.crop_areas,
                 u'image_url': self.image_url,
                 u'title': self.title,
                 u'url': self.url
@@ -105,49 +106,35 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
 
         self.assertFalse(form.is_valid())
 
-    def test_no_url(self):
-        csv_file = self._get_csv_file([[None, self.title, self.image_url, self.crop_areas]])
-        form = self._init_form(csv_file, self.batch_name)
-
-        self.assertFalse(form.is_valid())
-
-    def test_invalid_url(self):
-        csv_file = self._get_csv_file([['someteststring', self.title, self.image_url, self.crop_areas]])
-        form = self._init_form(csv_file, self.batch_name)
-
-        self.assertFalse(form.is_valid())
-
-    def test_invalid_image_url(self):
-        csv_file = self._get_csv_file([[self.url, self.title, 'someteststring', self.crop_areas]])
-        form = self._init_form(csv_file, self.batch_name)
-
-        self.assertFalse(form.is_valid())
-
-    def test_no_title(self):
-        csv_file = self._get_csv_file([[self.url, None, self.image_url, self.crop_areas]])
-        form = self._init_form(csv_file, self.batch_name)
-
-        self.assertFalse(form.is_valid())
-
-    def test_crop_areas_wrong_format(self):
-        crop_areas = '(((44), (144, 122)), ((33, 22), (177, 122)))'
-
-        csv_file = self._get_csv_file([[self.url, self.title, self.image_url, crop_areas]])
-        form = self._init_form(csv_file, self.batch_name)
-
-        self.assertFalse(form.is_valid())
-
-    def test_crop_areas_missing(self):
-        csv_file = self._get_csv_file([[self.url, self.title, self.image_url, None]])
-        form = self._init_form(csv_file, self.batch_name)
-
-        self.assertTrue(form.is_valid())
-
     def test_batch_name_missing(self):
-        csv_file = self._get_csv_file([])
+        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
         form = self._init_form(csv_file, None)
 
         self.assertFalse(form.is_valid())
+
+    def test_header_no_url(self):
+        csv_file = self._get_csv_file(['aaa', 'Title', 'Image Url', 'Crop Areas'], [])
+        form = self._init_form(csv_file, None)
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors['content_ads'], ['First column in header should be URL.'])
+
+    def test_header_no_title(self):
+        csv_file = self._get_csv_file(['URL', 'aaa', 'Image Url', 'Crop Areas'], [])
+        form = self._init_form(csv_file, None)
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors['content_ads'], ['Second column in header should be Title.'])
+
+    def test_header_no_image_url(self):
+        csv_file = self._get_csv_file(['URL', 'Title', 'aaa', 'Crop Areas'], [])
+        form = self._init_form(csv_file, None)
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors['content_ads'], ['Third column in header should be Image URL.'])
+
+    def test_header_no_crop_areas(self):
+        csv_file = self._get_csv_file(['URL', 'Title', 'Image URL', 'aaa'], [])
+        form = self._init_form(csv_file, None)
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors['content_ads'], ['Fourth column in header should be Crop areas.'])
 
     def _init_form(self, csv_file, batch_name):
         return forms.AdGroupAdsPlusUploadForm(
@@ -155,11 +142,11 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
             {'content_ads': SimpleUploadedFile('test_file.csv', csv_file.getvalue())}
         )
 
-    def _get_csv_file(self, rows):
+    def _get_csv_file(self, header, rows):
         csv_file = StringIO.StringIO()
 
         writer = unicodecsv.writer(csv_file)
-        writer.writerow(['Url', 'Title', 'Image Url', 'Crop Areas'])
+        writer.writerow(header)
 
         for row in rows:
             writer.writerow(row)

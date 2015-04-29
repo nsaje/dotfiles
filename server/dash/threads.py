@@ -124,6 +124,7 @@ class ProcessUploadThread(Thread):
 
     def _clean_row(self, row):
         errors = []
+        process_image = True
 
         url = row.get('url')
         title = row.get('title')
@@ -146,6 +147,7 @@ class ProcessUploadThread(Thread):
         try:
             validate_url(image_url)
         except ValidationError:
+            process_image = False
             errors.append('Invalid image URL')
 
         if title is None or not len(title):
@@ -155,11 +157,13 @@ class ProcessUploadThread(Thread):
             crop_areas = self._parse_crop_areas(crop_areas)
         except ValidationError:
             crop_areas = None
+            process_image = False
             errors.append('Invalid crop areas')
 
         try:
-            image_id, width, height, image_hash = image_helper.process_image(
-                image_url, crop_areas)
+            if process_image:
+                image_id, width, height, image_hash = image_helper.process_image(
+                    image_url, crop_areas)
         except image_helper.ImageProcessingException:
             errors.append('Image could not be processed.')
 
@@ -169,7 +173,7 @@ class ProcessUploadThread(Thread):
         data = {
             'title': title,
             'url': url,
-            'image_id': image_url,
+            'image_id': image_id,
             'image_width': width,
             'image_height': height,
             'image_hash': image_hash
