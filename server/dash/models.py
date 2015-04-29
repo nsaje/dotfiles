@@ -1127,6 +1127,8 @@ class UploadBatch(models.Model):
         default=constants.UploadBatchStatus.IN_PROGRESS,
         choices=constants.UploadBatchStatus.get_choices()
     )
+    error_report_key = models.CharField(max_length=1024, null=True, blank=True)
+    num_errors = models.PositiveIntegerField(null=True)
 
     class Meta:
         get_latest_by = 'created_dt'

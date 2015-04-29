@@ -52,7 +52,3 @@ Day Index,Sessions
 
         report_logs = models.GAReportLog.objects.all()[0]
         self.assertIsNone(report_logs.errors)
-
-
-    def test_helpers(self):
-        self.assertIsNotNone(helpers._generate_s3_report_key(datetime.date.today(), "test", ""))
