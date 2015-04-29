@@ -35,7 +35,7 @@ class ProcessUploadThread(Thread):
         super(ProcessUploadThread, self).__init__(*args, **kwargs)
 
     def run(self):
-        content_ad_sources = []
+        actions = []
 
         ad_group_sources = [s for s in models.AdGroupSource.objects.filter(ad_group_id=self.ad_group_id)
                             if s.source.can_manage_content_ads()]
@@ -54,7 +54,7 @@ class ProcessUploadThread(Thread):
                         num_errors += len(errors)
                         continue
 
-                    content_ad_sources.extend(self._create_content_ad_sources(data, ad_group_sources))
+                    actions.extend(self._create_objects(data, ad_group_sources))
 
                 if num_errors > 0:
                     # raise exception to rollback transaction
@@ -74,10 +74,9 @@ class ProcessUploadThread(Thread):
             self.batch.save()
             return
 
-        for content_ad_source in content_ad_sources:
-            actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, self.request)
+        actionlog.zwei_actions.send_multiple(actions)
 
-    def _create_content_ad_sources(self, data, ad_group_sources):
+    def _create_objects(self, data, ad_group_sources):
         content_ad = models.ContentAd.objects.create(
             image_id=data['image_id'],
             image_width=data['image_width'],
@@ -89,16 +88,20 @@ class ProcessUploadThread(Thread):
             ad_group_id=self.ad_group_id,
         )
 
-        content_ad_sources = []
+        actions = []
         for ad_group_source in ad_group_sources:
-            content_ad_sources.append(models.ContentAdSource.objects.create(
+            content_ad_source = models.ContentAdSource.objects.create(
                 source=ad_group_source.source,
                 content_ad=content_ad,
                 submission_status=constants.ContentAdSubmissionStatus.PENDING,
                 state=constants.ContentAdSourceState.ACTIVE
-            ))
+            )
+            actions.append(
+                actionlog.api_contentads.init_insert_content_ad_action(
+                    content_ad_source, self.request, send=False)
+            )
 
-        return content_ad_sources
+        return actions
 
     def _save_error_report(self):
         string = StringIO.StringIO()
