@@ -361,7 +361,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
             # (universal-newline mode).
             lines = content_ads_file.read().splitlines()
 
-            reader = unicodecsv.DictReader(lines, ['url', 'title', 'image_url', 'crop_areas'], restkey='other')
+            reader = unicodecsv.DictReader(lines, ['url', 'title', 'image_url', 'crop_areas'])
 
             try:
                 header = next(reader)
@@ -373,8 +373,10 @@ class AdGroupAdsPlusUploadForm(forms.Form):
             data = []
             for row in reader:
                 # unicodecsv stores values of all unneeded columns
-                # under the specified restkey. This can be removed.
-                del row['other']
+                # under key None. This can be removed.
+                if None in row:
+                    del row[None]
+
                 data.append(row)
 
             return data
