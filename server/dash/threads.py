@@ -136,18 +136,12 @@ class ProcessUploadThread(Thread):
         crop_areas = row.get('crop_areas')
 
         validate_url = validators.URLValidator(schemes=['http', 'https'])
-        validate_length = validators.MaxLengthValidator(255)
 
         try:
             url = utils.url.fix_url(url)
             validate_url(url)
         except ValidationError:
             errors.append('Invalid URL')
-
-        try:
-            validate_length(url)
-        except ValidationError:
-            errors.append('URL too long (max 255 characters)')
 
         try:
             image_url = utils.url.fix_url(image_url)
