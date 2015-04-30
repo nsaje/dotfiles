@@ -434,7 +434,8 @@ class AdGroupSources(api_common.BaseApiView):
         ad_group_source = models.AdGroupSource(
             source=source,
             ad_group=ad_group,
-            source_credentials=default_settings.credentials
+            source_credentials=default_settings.credentials,
+            can_manage_content_ads=source.can_manage_content_ads()
         )
 
         ad_group_source.save(request)

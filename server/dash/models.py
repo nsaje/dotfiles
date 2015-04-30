@@ -821,6 +821,7 @@ class AdGroupSource(models.Model):
     source_campaign_key = jsonfield.JSONField(blank=True, default={})
 
     last_successful_sync_dt = models.DateTimeField(blank=True, null=True)
+    can_manage_content_ads = models.BooleanField(null=False, blank=False, default=False)
 
     def get_tracking_ids(self):
         if self.source.source_type and\
@@ -834,7 +835,7 @@ class AdGroupSource(models.Model):
 
         return '_z1_adgid=%s&_z1_msid=%s' % (self.ad_group.id, msid)
 
-    def get_external_name(self): 
+    def get_external_name(self):
         #, account_name, campaign_name, ad_group_name, ad_group_id, source_name):
         account_name = self.ad_group.campaign.account.name
         campaign_name = self.ad_group.campaign.name
