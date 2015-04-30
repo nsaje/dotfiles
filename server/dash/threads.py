@@ -15,6 +15,7 @@ from dash import constants
 import actionlog.api_contentads
 
 from utils import s3helpers
+import utils.url
 
 logger = logging.getLogger(__name__)
 
@@ -138,6 +139,7 @@ class ProcessUploadThread(Thread):
         validate_length = validators.MaxLengthValidator(255)
 
         try:
+            url = utils.url.fix_url(url)
             validate_url(url)
         except ValidationError:
             errors.append('Invalid URL')
@@ -148,6 +150,7 @@ class ProcessUploadThread(Thread):
             errors.append('URL too long (max 255 characters)')
 
         try:
+            image_url = utils.url.fix_url(image_url)
             validate_url(image_url)
         except ValidationError:
             process_image = False

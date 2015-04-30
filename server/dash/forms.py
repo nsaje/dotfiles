@@ -341,11 +341,11 @@ class AdGroupAdsPlusUploadForm(forms.Form):
             raise forms.ValidationError('Second column in header should be Title.')
 
         image_url_col = header['image_url']
-        if image_url_col is not None and image_url_col.strip().lower() != 'image url':
+        if image_url_col is not None and image_url_col.strip().lower() not in ['image_url', 'image url']:
             raise forms.ValidationError('Third column in header should be Image URL.')
 
-        image_url_col = header['crop_areas']
-        if image_url_col is not None and image_url_col.strip().lower() != 'crop areas':
+        crop_areas_col = header['crop_areas']
+        if crop_areas_col is not None and crop_areas_col.strip().lower() not in ['crop_areas', 'crop areas']:
             raise forms.ValidationError('Fourth column in header should be Crop areas.')
 
     def clean_content_ads(self):
@@ -361,7 +361,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
             # (universal-newline mode).
             lines = content_ads_file.read().splitlines()
 
-            reader = unicodecsv.DictReader(lines, ['url', 'title', 'image_url', 'crop_areas'])
+            reader = unicodecsv.DictReader(lines, ['url', 'title', 'image_url', 'crop_areas'], restkey='other')
 
             try:
                 header = next(reader)
@@ -370,7 +370,14 @@ class AdGroupAdsPlusUploadForm(forms.Form):
 
             self._validate_header(header)
 
-            return list(reader)
+            data = []
+            for row in reader:
+                # unicodecsv stores values of all unneeded columns
+                # under the specified restkey. This can be removed.
+                del row['other']
+                data.append(row)
+
+            return data
 
         except unicodecsv.Error:
             raise forms.ValidationError('Uploaded file is not a valid CSV file.')
