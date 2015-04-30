@@ -422,32 +422,32 @@ class SourcesTable(api_common.BaseApiView):
 
         ad_group_level = False
         if level_ == 'all_accounts':
-            self.level_sources_table = AllAccountsSourcesTable(user, id_, filtered_sources)
+            level_sources_table = AllAccountsSourcesTable(user, id_, filtered_sources)
         elif level_ == 'accounts':
-            self.level_sources_table = AccountSourcesTable(user, id_, filtered_sources)
+            level_sources_table = AccountSourcesTable(user, id_, filtered_sources)
         elif level_ == 'campaigns':
-            self.level_sources_table = CampaignSourcesTable(user, id_, filtered_sources)
+            level_sources_table = CampaignSourcesTable(user, id_, filtered_sources)
         elif level_ == 'ad_groups':
             ad_group_level = True
-            self.level_sources_table = AdGroupSourcesTable(user, id_, filtered_sources)
+            level_sources_table = AdGroupSourcesTable(user, id_, filtered_sources)
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        sources = self.level_sources_table.get_sources()
-        sources_states = self.level_sources_table.get_sources_states()
-        last_success_actions = self.level_sources_table.get_last_success_actions()
-        sources_data, totals_data = self.level_sources_table.get_stats(start_date, end_date)
-        is_sync_in_progress = self.level_sources_table.is_sync_in_progress()
+        sources = level_sources_table.get_sources()
+        sources_states = level_sources_table.get_sources_states()
+        last_success_actions = level_sources_table.get_last_success_actions()
+        sources_data, totals_data = level_sources_table.get_stats(start_date, end_date)
+        is_sync_in_progress = level_sources_table.is_sync_in_progress()
 
         ad_group_sources_settings = None
         if ad_group_level:
-            ad_group_sources_settings = self.level_sources_table.get_sources_settings()
+            ad_group_sources_settings = level_sources_table.get_sources_settings()
 
         yesterday_cost = {}
         yesterday_total_cost = None
         if user.has_perm('reports.yesterday_spend_view'):
-            yesterday_cost, yesterday_total_cost = self.level_sources_table.\
+            yesterday_cost, yesterday_total_cost = level_sources_table.\
                 get_yesterday_cost()
 
         operational_sources = [source.id for source in sources.filter(maintenance=False, deprecated=False)]
@@ -458,10 +458,10 @@ class SourcesTable(api_common.BaseApiView):
         incomplete_postclick_metrics = False
         if has_aggregate_postclick_permission(user):
             incomplete_postclick_metrics = \
-                not self.level_sources_table.has_complete_postclick_metrics(
+                not level_sources_table.has_complete_postclick_metrics(
                     start_date, end_date)
 
-        ad_group_sources = self.level_sources_table.active_ad_group_sources
+        ad_group_sources = level_sources_table.active_ad_group_sources
 
         response = {
             'rows': self.get_rows(
@@ -494,11 +494,11 @@ class SourcesTable(api_common.BaseApiView):
 
         if user.has_perm('zemauth.data_status_column'):
             if ad_group_level:
-                response['data_status'] = self.level_sources_table.get_data_status(
+                response['data_status'] = level_sources_table.get_data_status(
                     include_state_messages=user.has_perm('zemauth.set_ad_group_source_settings') and ad_group_level,
                 )
             else:
-                response['data_status'] = self.level_sources_table.get_data_status()
+                response['data_status'] = level_sources_table.get_data_status()
 
         if ad_group_level:
             if user.has_perm('zemauth.set_ad_group_source_settings'):
@@ -585,10 +585,11 @@ class SourcesTable(api_common.BaseApiView):
             last_sync = last_actions.get(source.id)
 
             supply_dash_url = None
+            can_edit_bid_cpc_and_daily_budget = True
             if ad_group_level and source.has_3rd_party_dashboard():
                 supply_dash_url = urlresolvers.reverse('dash.views.views.supply_dash_redirect')
                 supply_dash_url += '?ad_group_id={}&source_id={}'.format(id_, source.id)
-
+                
 
             if ad_group_level:
                 daily_budget = states[0].daily_budget_cc if len(states) else None
