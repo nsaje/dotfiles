@@ -1,6 +1,7 @@
+import datetime
+
 import pytz
 from slugify import slugify
-
 from django.core import urlresolvers
 
 from dash.views import helpers
@@ -466,6 +467,7 @@ class SourcesTable(api_common.BaseApiView):
         response = {
             'rows': self.get_rows(
                 id_,
+                level_sources_table,
                 user,
                 sources,
                 ad_group_sources,
@@ -548,9 +550,23 @@ class SourcesTable(api_common.BaseApiView):
 
         return constants.AdGroupSourceSettingsState.INACTIVE
 
+    def _can_edit_budget_and_cpc(self, source, level_sources_table):
+        if source.has_3rd_party_dashboard():
+            return True
+
+        ad_group_settings = level_sources_table.ad_group.get_current_settings()
+        end_utc_datetime = ad_group_settings.get_utc_end_datetime()
+
+        if end_utc_datetime is None: # user will stop adgroup manually 
+            return True
+
+        # if end date is in the past then we can't edit cpc and budget
+        return end_utc_datetime > datetime.datetime.utcnow()
+            
     def get_rows(
             self,
             id_,
+            level_sources_table,
             user,
             sources,
             ad_group_sources,
@@ -585,12 +601,11 @@ class SourcesTable(api_common.BaseApiView):
             last_sync = last_actions.get(source.id)
 
             supply_dash_url = None
-            can_edit_bid_cpc_and_daily_budget = True
             if ad_group_level and source.has_3rd_party_dashboard():
                 supply_dash_url = urlresolvers.reverse('dash.views.views.supply_dash_redirect')
                 supply_dash_url += '?ad_group_id={}&source_id={}'.format(id_, source.id)
                 
-
+           
             if ad_group_level:
                 daily_budget = states[0].daily_budget_cc if len(states) else None
             else:
@@ -665,6 +680,9 @@ class SourcesTable(api_common.BaseApiView):
                 if user.has_perm('zemauth.see_current_ad_group_source_state'):
                     row['current_bid_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None
                     row['current_daily_budget'] = states[0].daily_budget_cc if len(states) else None
+
+                row['can_edit_budget_and_cpc'] = \
+                    self._can_edit_budget_and_cpc(source, level_sources_table)
 
             elif len(bid_cpc_values) > 0:
                 row['min_bid_cpc'] = float(min(bid_cpc_values))
