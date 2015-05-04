@@ -562,11 +562,15 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
             raise exc.ForbiddenError(message='Not allowed')
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        settings_error_message = self._get_settings_error_message(ad_group)
+
+        current_settings = ad_group.get_current_settings()
 
         return self.create_api_response({
-            'errors': {
-                'ad_group_settings': settings_error_message
+            'defaults': {
+                'display_url': current_settings.display_url,
+                'brand_name': current_settings.brand_name,
+                'description': current_settings.description,
+                'call_to_action': current_settings.call_to_action
             }
         })
 
@@ -576,23 +580,35 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
             raise exc.ForbiddenError(message='Not allowed')
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        errors = {}
-
-        settings_error_message = self._get_settings_error_message(ad_group)
-        if settings_error_message is not None:
-            errors['ad_group_settings'] = settings_error_message
 
         form = forms.AdGroupAdsPlusUploadForm(request.POST, request.FILES)
         if not form.is_valid():
-            errors.update(form.errors)
-
-        if errors:
-            raise exc.ValidationError(errors=errors)
+            raise exc.ValidationError(errors=form.errors)
 
         batch_name = form.cleaned_data['batch_name']
+        display_url = form.cleaned_data['display_url']
+        brand_name = form.cleaned_data['brand_name']
+        description = form.cleaned_data['description']
+        call_to_action = form.cleaned_data['call_to_action']
         content_ads = form.cleaned_data['content_ads']
 
-        batch = models.UploadBatch.objects.create(name=batch_name)
+        batch = models.UploadBatch.objects.create(
+            name=batch_name,
+            display_url=display_url,
+            brand_name=brand_name,
+            description=description,
+            call_to_action=call_to_action
+        )
+
+        current_settings = ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+
+        new_settings.display_url = display_url
+        new_settings.brand_name = brand_name
+        new_settings.description = description
+        new_settings.call_to_action = call_to_action
+
+        new_settings.save(request)
 
         threads.ProcessUploadThread(
             content_ads,
@@ -603,34 +619,6 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
         ).start()
 
         return self.create_api_response({'batch_id': batch.pk})
-
-    def _get_settings_error_message(self, ad_group):
-        settings = ad_group.get_current_settings()
-
-        missing_fields = []
-
-        if not settings.display_url:
-            missing_fields.append('display_url')
-
-        if not settings.description:
-            missing_fields.append('description')
-
-        if not settings.brand_name:
-            missing_fields.append('brand_name')
-
-        if not settings.call_to_action:
-            missing_fields.append('call_to_action')
-
-        if len(missing_fields) == 0:
-            return None
-
-        missing_field_names = [models.AdGroupSettings.get_human_prop_name(f) for f in missing_fields]
-        message = 'This ad group needs a '
-
-        if len(missing_field_names) > 1:
-            message += '{} and '.format(', '.join(missing_field_names[:-1]))
-
-        return message + '{} before you can add new content ads.'.format(missing_field_names[-1])
 
 
 class AdGroupAdsPlusUploadReport(api_common.BaseApiView):

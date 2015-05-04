@@ -122,10 +122,18 @@ class AdGroupAdsPlusTableTest(TestCase):
             'submission_status': [],
             'cost': None,
             'batch_name': 'batch 1',
+            'display_url': 'example.com',
+            'brand_name': 'Example',
+            'description': 'Example description',
+            'call_to_action': 'Call to action',
             'impressions': None,
             'id': '2'
         }, {
             'batch_name': 'batch 1',
+            'display_url': 'example.com',
+            'brand_name': 'Example',
+            'description': 'Example description',
+            'call_to_action': 'Call to action',
             'clicks': 1000,
             'cost': 100,
             'cpc': '0.0100',

@@ -1062,6 +1062,10 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 'title': content_ad.title,
                 'url': url,
                 'batch_name': content_ad.batch.name,
+                'display_url': content_ad.batch.display_url,
+                'brand_name': content_ad.batch.brand_name,
+                'description': content_ad.batch.description,
+                'call_to_action': content_ad.batch.call_to_action,
                 'upload_time': content_ad.batch.created_dt,
                 'image_urls': {
                     'square': content_ad.get_image_url(120, 120),

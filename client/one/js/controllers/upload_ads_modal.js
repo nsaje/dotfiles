@@ -1,6 +1,7 @@
 /* globals oneApp */
-oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$state', '$timeout', '$filter', 'errors', function($scope, $modalInstance, api, $state, $timeout, $filter, errors) {
-    $scope.errors = errors;
+oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$state', '$timeout', '$filter', function($scope, $modalInstance, api, $state, $timeout, $filter) {
+    $scope.errors = null;
+    $scope.formData = {};
 
     var getCurrentTimeString = function() {
         var datetime = new Date();  // get current local time
@@ -35,16 +36,25 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
         }
     };
 
-    $scope.formData = {
-        batchName: getCurrentTimeString()
+    var replaceStart = /^https?:\/\//;
+    var replaceEnd = /\/$/;
+    function cleanDisplayUrl(data) {
+        if(data.displayUrl === undefined) {
+            return;
+        }
+
+        data.displayUrl = data.displayUrl.replace(replaceStart,'');
+        data.displayUrl = data.displayUrl.replace(replaceEnd, '');
     };
 
     $scope.upload = function() {
         $scope.isInProgress = true;
         $scope.errors = null;
 
+        cleanDisplayUrl($scope.formData);
+
         api.adGroupAdsPlusUpload.upload(
-            $state.params.id, $scope.formData.file, $scope.formData.batchName
+            $state.params.id, $scope.formData
         ).then(function(batchId) {
             $scope.pollBatchStatus(batchId);
         }, function(data) {
@@ -52,11 +62,14 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
             $scope.errors = data.errors;
         });
     };
-    
-    $scope.goToAdGroupSettings = function() {
-        $modalInstance.close();
-        $timeout(function() {
-            $state.go('main.adGroups.settings', {id: $state.params.id});
-        }, 300);
+
+    $scope.init = function() {
+        api.adGroupAdsPlusUpload.getDefaults($state.params.id).then(
+            function(data) {
+                angular.extend($scope.formData, data.defaults);
+                $scope.formData.batchName = getCurrentTimeString();
+            });
     };
+
+    $scope.init();
 }]);

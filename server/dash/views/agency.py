@@ -163,10 +163,6 @@ class AdGroupSettings(api_common.BaseApiView):
                 'target_devices': settings.target_devices,
                 'target_regions': settings.target_regions,
                 'tracking_code': settings.tracking_code,
-                'display_url': settings.display_url,
-                'brand_name': settings.brand_name,
-                'description': settings.description,
-                'call_to_action': settings.call_to_action
             }
 
         return result
@@ -184,10 +180,6 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
         settings.tracking_code = current_settings.tracking_code
-        settings.display_url = resource['display_url']
-        settings.brand_name = resource['brand_name']
-        settings.description = resource['description']
-        settings.call_to_action = resource['call_to_action']
         settings.ad_group_name = resource['name']
 
 
