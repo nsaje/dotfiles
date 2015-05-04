@@ -203,7 +203,13 @@ class NavigationDataView(api_common.BaseApiView):
             campaigns = data[account.id]['campaigns']
             self.add_campaign_dict(campaigns, campaign)
 
-            campaigns[campaign.id]['adGroups'].append({'id': ad_group.id, 'name': ad_group.name})
+            campaigns[campaign.id]['adGroups'].append(
+                {
+                    'id': ad_group.id,
+                    'name': ad_group.name,
+                    'contentAdsTabWithCMS': ad_group.content_ads_tab_with_cms,
+                }
+            )
 
     def fetch_campaigns(self, data, user, sources):
         campaigns = models.Campaign.objects.all().\
