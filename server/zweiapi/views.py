@@ -148,8 +148,10 @@ def _process_zwei_response(action, data, request):
             if valid_response and _has_changed(data, ad_group, source, date):
                 rows = _prepare_report_rows(ad_group, data['data'])
                 reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, rows)
-                if source.source_type.can_manage_content_ads():
-                    reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, data['data'])
+
+                if source.can_manage_content_ads() and action.ad_group_source.can_manage_content_ads:
+                    reports.update.update_content_ads_source_traffic_stats(
+                        date, ad_group, source, data['data'])
 
             if not valid_response:
                 msg = 'Update of source traffic for adgroup %d, source %d, datetime '\

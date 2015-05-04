@@ -39,7 +39,7 @@ class ProcessUploadThread(Thread):
         actions = []
 
         ad_group_sources = [s for s in models.AdGroupSource.objects.filter(ad_group_id=self.ad_group_id)
-                            if s.source.can_manage_content_ads()]
+                            if s.can_manage_content_ads and s.source.can_manage_content_ads()]
 
         try:
             # ensure content ads are only commited to DB

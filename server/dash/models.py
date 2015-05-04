@@ -827,6 +827,7 @@ class AdGroupSource(models.Model):
     source_campaign_key = jsonfield.JSONField(blank=True, default={})
 
     last_successful_sync_dt = models.DateTimeField(blank=True, null=True)
+    can_manage_content_ads = models.BooleanField(null=False, blank=False, default=False)
 
     def get_tracking_ids(self):
         if self.source.source_type and\
