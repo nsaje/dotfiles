@@ -698,6 +698,7 @@ class AdGroup(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
     is_demo = models.BooleanField(null=False, blank=False, default=False)
+    new_content_ads_tab = models.BooleanField(null=False, blank=False, default=False)
 
     objects = QuerySetManager()
     demo_objects = DemoManager()

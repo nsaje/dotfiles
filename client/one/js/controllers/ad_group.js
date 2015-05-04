@@ -2,7 +2,7 @@
 oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', function ($scope, $state, $location, api) {
     $scope.level = constants.level.AD_GROUPS;
     $scope.getTabs = function() {
-        return [{
+        var tabs = [{
             heading: 'Content Ads',
             route: 'main.adGroups.ads',
             active: true,
@@ -23,14 +23,28 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
             active: false,
             hidden: !$scope.hasPermission('zemauth.ad_group_agency_tab_view'),
             internal: $scope.isPermissionInternal('zemauth.ad_group_agency_tab_view')
-        }, {
-            heading: 'Content Ads+',
-            route: 'main.adGroups.adsPlus',
-            active: false,
-            hidden: !$scope.hasPermission('zemauth.new_content_ads_tab') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived),
-            internal: $scope.isPermissionInternal('zemauth.new_content_ads_tab')
         }];
+
+        if ($scope.adGroup.newContentAdsTab) {
+            tabs.splice(0, 1, {
+                heading: 'Content Ads+',
+                route: 'main.adGroups.adsPlus',
+                active: true,
+                hidden: ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived)
+            });
+        } else if ($scope.hasPermission('zemauth.new_content_ads_tab')) {
+            tabs.push({
+                heading: 'Content Ads+',
+                route: 'main.adGroups.adsPlus',
+                active: false,
+                hidden: ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived),
+                internal: $scope.isPermissionInternal('zemauth.new_content_ads_tab')
+            });
+        }
+
+        return tabs;
     };
+
     $scope.setActiveTab = function () {
         $scope.tabs.forEach(function(tab) {
             tab.active = $state.is(tab.route);
