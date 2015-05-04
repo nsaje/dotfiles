@@ -535,6 +535,11 @@ class DemoAdGroupRealAdGroupAdmin(admin.ModelAdmin):
         'real_ad_group_',
         'multiplication_factor'
     )
+    fields = (
+        'demo_ad_group_',
+        'real_ad_group_',
+        'multiplication_factor'
+    )
     form = DemoAdGroupRealAdGroupAdminForm
 
     def demo_ad_group_(self, obj):
