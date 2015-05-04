@@ -148,9 +148,7 @@ class AdGroupAdsPlusUploadTest(TestCase):
         return client
 
     @patch('dash.views.views.threads.ProcessUploadThread')
-    @patch('dash.views.views.forms.AdGroupAdsPlusUploadForm')
-    def test_post(self, MockAdGroupAdsPlusUploadForm, MockProcessUploadThread):
-        MockAdGroupAdsPlusUploadForm.return_value.is_valid.return_value = True
+    def test_post(self, MockProcessUploadThread):
         MockProcessUploadThread.return_value.start.return_value = None
 
         request = HttpRequest()
@@ -159,18 +157,21 @@ class AdGroupAdsPlusUploadTest(TestCase):
         ad_group_settings = models.AdGroupSettings(
             ad_group_id=1,
             created_by_id=1,
-            brand_name='name',
-            display_url='example.com',
-            description='test description',
-            call_to_action='click here'
         )
         ad_group_settings.save(request)
 
-        mock_file = SimpleUploadedFile('testfile.csv', '')
+        mock_file = SimpleUploadedFile('testfile.csv', 'Url,title\nhttp://example.com,testtitle')
 
         response = self._get_client().post(
             reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),
-            {'content_ads': mock_file},
+            {
+                'content_ads': mock_file,
+                'batch_name': 'testname',
+                'display_url': 'test.com',
+                'brand_name': 'testbrand',
+                'description': 'testdesc',
+                'call_to_action': 'testcall',
+            },
             follow=True
         )
 
@@ -186,37 +187,6 @@ class AdGroupAdsPlusUploadTest(TestCase):
             reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}), follow=True)
 
         self.assertEqual(response.status_code, 400)
-
-    @patch('dash.views.views.forms.AdGroupAdsPlusUploadForm')
-    def test_validation_error_missing_settings(self, MockAdGroupAdsPlusUploadForm):
-        MockAdGroupAdsPlusUploadForm.return_value.is_valid.return_value = True
-        MockAdGroupAdsPlusUploadForm.return_value.errors = None
-
-        request = HttpRequest()
-        request.user = User(id=1)
-
-        ad_group_settings = models.AdGroupSettings(
-            ad_group_id=1,
-            created_by_id=1,
-            brand_name='name',
-            description='test description',
-        )
-        ad_group_settings.save(request)
-
-        response = self._get_client().post(
-            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}), follow=True)
-
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(json.loads(response.content), {
-            u'data': {
-                u'message': None,
-                u'errors': {
-                    u'ad_group_settings': u'This ad group needs a Display URL and Call to action before you can add new content ads.'
-                },
-                u'error_code': u'ValidationError'
-            },
-            u'success': False
-        })
 
     def test_permission(self):
         response = self._get_client(superuser=False).post(

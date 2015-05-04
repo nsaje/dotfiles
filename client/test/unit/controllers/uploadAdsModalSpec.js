@@ -20,7 +20,11 @@ describe('UploadAdsModalCtrl', function() {
             adGroupAdsPlusUpload: {
                 upload: function() {},
                 checkStatus: function() {},
-                validateSettings: function() {}
+                getDefaults: function() {
+                    return {
+                        then: function() {}
+                    };
+                }
             }
         };
 
@@ -55,7 +59,7 @@ describe('UploadAdsModalCtrl', function() {
             $scope.upload();
 
             expect(api.adGroupAdsPlusUpload.upload).toHaveBeenCalledWith(
-                $state.params.id, $scope.formData.file, $scope.formData.batchName
+                $state.params.id, {file: $scope.formData.file, batchName: $scope.formData.batchName}
             );
             deferred.resolve(batchId);
             $scope.$root.$digest();
@@ -181,25 +185,6 @@ describe('UploadAdsModalCtrl', function() {
             expect($scope.isInProgress).toBe(false);
             expect($modalInstance.close).not.toHaveBeenCalled();
             expect($scope.errors).toEqual(data.errors);
-        });
-    });
-
-    describe('goToAdGroupSettings', function() {
-        it('closes dialog', function() {
-            spyOn($modalInstance, 'close');
-
-            $scope.goToAdGroupSettings();
-
-            expect($modalInstance.close).toHaveBeenCalled();
-        });
-
-        it('changes state to ad group settings', function() {
-            $state.expectTransitionTo('main.adGroups.settings', {id: 123});
-
-            $scope.goToAdGroupSettings();
-            $timeout.flush();
-
-            $state.ensureAllTransitionsHappened();
         });
     });
 });

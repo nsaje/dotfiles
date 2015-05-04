@@ -179,12 +179,64 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             totalRow: true,
             order: true,
             initialOrder: 'desc'
+        }, {
+            name: 'Display URL',
+            field: 'display_url',
+            checked: true,
+            extraTdCss: 'no-wrap',
+            type: 'text',
+            shown: true,
+            help: 'Advertiser\'s display URL.',
+            totalRow: false,
+            titleField: 'display_url',
+            order: true,
+            orderField: 'display_url',
+            initialOrder: 'asc'
+        }, {
+            name: 'Brand Name',
+            field: 'brand_name',
+            checked: true,
+            extraTdCss: 'no-wrap',
+            type: 'text',
+            shown: true,
+            help: 'Advertiser\'s brand name',
+            totalRow: false,
+            titleField: 'brand_name',
+            order: true,
+            orderField: 'brand_name',
+            initialOrder: 'asc'
+        }, {
+            name: 'Description',
+            field: 'description',
+            checked: true,
+            extraTdCss: 'no-wrap',
+            type: 'text',
+            shown: true,
+            help: 'Description of the ad group.',
+            totalRow: false,
+            titleField: 'description',
+            order: true,
+            orderField: 'description',
+            initialOrder: 'asc'
+        }, {
+            name: 'Call to action',
+            field: 'call_to_action',
+            checked: true,
+            extraTdCss: 'no-wrap',
+            type: 'text',
+            shown: true,
+            help: 'Call to action text.',
+            totalRow: false,
+            titleField: 'call_to_action',
+            order: true,
+            orderField: 'call_to_action',
+            initialOrder: 'asc'
         }
     ];
 
     $scope.columnCategories = [{
         'name': 'Content Sync',
-        'fields': ['image_urls' ,'titleLink', 'submission_status', 'urlLink', 'upload_time', 'batch_name']
+        'fields': ['image_urls' ,'titleLink', 'submission_status', 'urlLink', 'upload_time', 'batch_name', 'display_url', 'brand_name', 'description', 'call_to_action']
     }, {
         'name': 'Traffic Acquisition',
         'fields': ['cost', 'cpc', 'clicks', 'impressions', 'ctr']
@@ -195,12 +247,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             templateUrl: '/partials/upload_ads_modal.html',
             controller: 'UploadAdsModalCtrl',
             windowClass: 'upload-ads-modal',
-            scope: $scope,
-            resolve: {
-                errors: ['api', function(api) {
-                    return api.adGroupAdsPlusUpload.validateSettings($state.params.id);
-                }]
-            }
+            scope: $scope
         });
 
         modalInstance.result.then(function () {
