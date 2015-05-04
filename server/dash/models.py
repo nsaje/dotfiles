@@ -834,8 +834,7 @@ class AdGroupSource(models.Model):
 
         return '_z1_adgid=%s&_z1_msid=%s' % (self.ad_group.id, msid)
 
-    def get_external_name(self): 
-        #, account_name, campaign_name, ad_group_name, ad_group_id, source_name):
+    def get_external_name(self):
         account_name = self.ad_group.campaign.account.name
         campaign_name = self.ad_group.campaign.name
         ad_group_name = self.ad_group.name
@@ -1153,6 +1152,8 @@ class UploadBatch(models.Model):
         default=constants.UploadBatchStatus.IN_PROGRESS,
         choices=constants.UploadBatchStatus.get_choices()
     )
+    error_report_key = models.CharField(max_length=1024, null=True, blank=True)
+    num_errors = models.PositiveIntegerField(null=True)
 
     class Meta:
         get_latest_by = 'created_dt'
@@ -1172,6 +1173,12 @@ class ContentAd(models.Model):
     image_hash = models.CharField(max_length=128, null=True)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
+    state = models.IntegerField(
+        null=True,
+        default=constants.ContentAdSourceState.ACTIVE,
+        choices=constants.ContentAdSourceState.get_choices()
+    )
 
     objects = QuerySetManager()
 

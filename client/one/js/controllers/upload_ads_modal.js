@@ -41,6 +41,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
 
     $scope.upload = function() {
         $scope.isInProgress = true;
+        $scope.errors = null;
 
         api.adGroupAdsPlusUpload.upload(
             $state.params.id, $scope.formData.file, $scope.formData.batchName

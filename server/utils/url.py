@@ -20,3 +20,16 @@ def clean_url(raw_url):
     split_url[3] = urllib.urlencode(sorted(cleaned_query_parameters, key=lambda x: x[0]))
 
     return urlparse.urlunsplit(split_url), dict(query_parameters)
+
+
+def fix_url(url):
+    '''Fixes url in a similar way browser location bars do'''
+
+    if url is None:
+        return ''
+
+    scheme, netloc, path, qs, anchor = urlparse.urlsplit(url)
+    path = urllib.quote(path, '/%')
+    qs = urllib.quote_plus(qs, ':&=')
+
+    return urlparse.urlunsplit((scheme, netloc, path, qs, anchor))

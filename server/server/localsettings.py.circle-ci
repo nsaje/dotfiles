@@ -77,6 +77,9 @@ AWS_SECRET_ACCESS_KEY = ''
 S3_BUCKET = ''
 USE_S3 = False
 
+# fallback dir when S3 is not used
+FILE_STORAGE_DIR = ''
+
 # adgroup-level reports aggregations
 QUERY_AGGREGATE_REPORTS=False
 
@@ -95,3 +98,26 @@ HASH_CACHE_TTL = 24 * 60 * 60
 
 Z3_API_IMAGE_URL = ''
 Z3_API_THUMBNAIL_URL = ''
+
+# QUEUES
+BROKER_TRANSPORT = 'sqs'
+BROKER_USER = AWS_ACCESS_KEY_ID
+BROKER_PASSWORD = AWS_SECRET_ACCESS_KEY
+
+BROKER_URL = BROKER_TRANSPORT + '://' + BROKER_USER + ':' + BROKER_PASSWORD + '@'
+
+CELERY_TASK_SERIALIZER = 'pickle'
+CELERY_ACCEPT_CONTENT = ['pickle']
+
+CELERY_QUEUE_PREFIX = 'test'
+
+CELERY_DEFAULT_CONVAPI_QUEUE = CELERY_QUEUE_PREFIX + '-convapi'
+
+CELERY_DEFAULT_DASH_QUEUE = CELERY_QUEUE_PREFIX + '-dash'
+CELERY_DASH_CONTENT_ADS_QUEUE = CELERY_DEFAULT_DASH_QUEUE + '-contentads'
+
+BROKER_TRANSPORT_OPTIONS = {
+    'visibility_timeout': 10 * 60,
+    'region': 'us-east-1',
+    'polling_interval': 10,
+}

@@ -7,15 +7,12 @@ import datetime
 from django.test import TestCase, Client
 from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from zemauth.models import User
 
-from dash.views import views
 from dash import models
-from dash import image_helper
 from dash import constants
-
-import actionlog.models
 
 
 class UserTest(TestCase):
@@ -97,7 +94,6 @@ class UserTest(TestCase):
             'success': True
         })
 
-
 class AdGroupSourceSettingsTest(TestCase):
     fixtures = ['test_models.yaml','test_views.yaml',]
 
@@ -138,11 +134,42 @@ class AdGroupSourceSettingsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content),{'success': True})
         
+class AdGroupContentAdStateTest(TestCase):
+    fixtures = ['test_api', 'test_views']
 
+    def test_post(self):
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
 
+        ad_group_id = 1
+        content_ad_id = 1
 
+        data = {
+            'state': constants.ContentAdSourceState.INACTIVE
+        }
 
+        response = self.client.post(
+            reverse(
+                'ad_group_content_ad_state',
+                kwargs={'ad_group_id': ad_group_id, 'content_ad_id': content_ad_id}),
+            data=json.dumps(data),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
 
+        content_ad = models.ContentAd.objects.get(pk=content_ad_id)
+        self.assertEqual(content_ad.state, constants.ContentAdSourceState.INACTIVE)
+
+        content_ad_sources = models.ContentAdSource.objects.filter(content_ad=content_ad)
+        self.assertEqual(len(content_ad_sources), 2)
+
+        for content_ad_source in content_ad_sources:
+            self.assertEqual(content_ad_source.state, constants.ContentAdSourceState.INACTIVE)
+
+        self.assertJSONEqual(response.content, {
+            'success': True
+        })
 
 class AdGroupAdsPlusUploadTest(TestCase):
     fixtures = ['test_views.yaml']
@@ -158,7 +185,7 @@ class AdGroupAdsPlusUploadTest(TestCase):
 
         return client
 
-    @patch('dash.views.views.ProcessUploadThread')
+    @patch('dash.views.views.threads.ProcessUploadThread')
     @patch('dash.views.views.forms.AdGroupAdsPlusUploadForm')
     def test_post(self, MockAdGroupAdsPlusUploadForm, MockProcessUploadThread):
         MockAdGroupAdsPlusUploadForm.return_value.is_valid.return_value = True
@@ -177,8 +204,13 @@ class AdGroupAdsPlusUploadTest(TestCase):
         )
         ad_group_settings.save(request)
 
+        mock_file = SimpleUploadedFile('testfile.csv', '')
+
         response = self._get_client().post(
-            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}), follow=True)
+            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),
+            {'content_ads': mock_file},
+            follow=True
+        )
 
         self.assertEqual(response.status_code, 200)
         self.assertTrue(MockProcessUploadThread.return_value.start.called)
@@ -239,126 +271,6 @@ class AdGroupAdsPlusUploadTest(TestCase):
         )
 
         self.assertEqual(response.status_code, 404)
-
-
-class ProcessUploadThreadTest(TestCase):
-    @patch('dash.views.views.image_helper.process_image')
-    def test_run(self, mock_process_image):
-        image_id = 'test_image_id'
-        image_width = 100
-        image_height = 200
-        image_hash = "123"
-
-        url = 'http://example.com'
-        title = 'test title'
-        image_url = 'http://example.com/image'
-        crop_areas = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
-
-        content_ads = [{
-            'url': url,
-            'title': title,
-            'image_url': image_url,
-            'crop_areas': crop_areas
-        }]
-        batch_name = 'Test batch name'
-        ad_group_id = 1
-
-        batch = models.UploadBatch.objects.create(name=batch_name)
-
-        mock_process_image.return_value = image_id, image_width, image_height, image_hash
-
-        thread = views.ProcessUploadThread(content_ads, batch, ad_group_id, None)
-        prev_actionlog_count = actionlog.models.ActionLog.objects.all().count()
-        thread.run()
-
-        mock_process_image.assert_called_with(image_url, crop_areas)
-
-        content_ad = models.ContentAd.objects.latest()
-        self.assertEqual(content_ad.title, title)
-        self.assertEqual(content_ad.url, url)
-        self.assertEqual(content_ad.ad_group_id, ad_group_id)
-
-        self.assertEqual(content_ad.image_id, image_id)
-        self.assertEqual(content_ad.image_width, image_width)
-        self.assertEqual(content_ad.image_height, image_height)
-        self.assertEqual(content_ad.image_hash, image_hash)
-        self.assertEqual(content_ad.batch.name, batch_name)
-
-        self.assertEqual(prev_actionlog_count, actionlog.models.ActionLog.objects.all().count())
-        self.assertEqual(batch.status, constants.UploadBatchStatus.DONE)
-
-    @patch('dash.views.views.image_helper.process_image')
-    @patch('dash.views.views.actionlog.api_contentads.init_insert_content_ad_action')
-    def test_image_processing_exception(self, mock_insert_action, mock_process_image):
-        image_id = 'test_image_id'
-        image_width = 100
-        image_height = 200
-        image_hash = "123"
-
-        url = 'http://example.com'
-        title = 'test title'
-        image_url = 'http://example.com/image'
-        crop_areas = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
-
-        # two content ads
-        content_ads = [{
-            'url': url,
-            'title': title,
-            'image_url': image_url,
-            'crop_areas': crop_areas
-        }, {
-            'url': url,
-            'title': title,
-            'image_url': image_url,
-            'crop_areas': crop_areas
-        }]
-        batch_name = 'Test batch name'
-        ad_group_id = 1
-
-        batch = models.UploadBatch.objects.create(name=batch_name)
-
-        # raise ImageProcessingException for the second ad
-        mock_process_image.side_effect = [
-            (image_id, image_width, image_height, image_hash),
-            image_helper.ImageProcessingException
-        ]
-
-        thread = views.ProcessUploadThread(content_ads, batch, ad_group_id, None)
-        thread.run()
-
-        self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
-        self.assertFalse(mock_insert_action.called)
-
-    @patch('dash.views.views.image_helper.process_image')
-    @patch('dash.views.views.actionlog.api_contentads.init_insert_content_ad_action')
-    def test_exception(self, mock_insert_action, mock_process_image):
-        url = 'http://example.com'
-        title = 'test title'
-        image_url = 'http://example.com/image'
-        crop_areas = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
-
-        # two content ads
-        content_ads = [{
-            'url': url,
-            'title': title,
-            'image_url': image_url,
-            'crop_areas': crop_areas
-        }]
-        batch_name = 'Test batch name'
-        ad_group_id = 1
-
-        batch = models.UploadBatch.objects.create(name=batch_name)
-
-        # raise ImageProcessingException for the second ad
-        mock_process_image.side_effect = Exception
-
-        thread = views.ProcessUploadThread(content_ads, batch, ad_group_id, None)
-
-        with self.assertRaises(Exception):
-            thread.run()
-
-        self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
-        self.assertFalse(mock_insert_action.called)
 
 
 class AdGroupSourcesTest(TestCase):

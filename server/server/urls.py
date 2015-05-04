@@ -135,9 +135,14 @@ urlpatterns += patterns(
         name='ad_group_ads_plus_table'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload/status/(?P<batch_id>\d+)/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload/(?P<batch_id>\d+)/status/',
         login_required(dash.views.views.AdGroupAdsPlusUploadStatus.as_view()),
         name='ad_group_ads_plus_upload_status'
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload/(?P<batch_id>\d+)/report/',
+        login_required(dash.views.views.AdGroupAdsPlusUploadReport.as_view()),
+        name='ad_group_ads_plus_upload_report'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload/',

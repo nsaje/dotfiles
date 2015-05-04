@@ -41,7 +41,7 @@ def add_content_ad_sources(ad_group_source):
                     source=ad_group_source.source,
                     content_ad=content_ad,
                     submission_status=constants.ContentAdSubmissionStatus.PENDING,
-                    state=constants.ContentAdSourceState.ACTIVE
+                    state=content_ad.state
                 )
                 content_ad_sources_added.append(content_ad_source)
 
