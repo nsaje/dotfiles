@@ -277,10 +277,11 @@ class AccountsDailyStats(BaseDailyStatsView):
 class AdGroupAdsPlusDailyStats(BaseDailyStatsView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_daily_stats_get')
     def get(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.new_content_ads_tab'):
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+
+        if not ad_group.content_ads_tab_with_cms and not request.user.has_perm('zemauth.new_content_ads_tab'):
             raise exc.ForbiddenError(message='Not allowed')
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         metrics = request.GET.getlist('metrics')
