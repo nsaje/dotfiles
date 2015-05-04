@@ -126,6 +126,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('data_status_column', 'Can see data status column in table.'),
             ('new_content_ads_tab', 'Can view new content ads tab.'),
             ('filter_sources', 'Can filter sources'),
+            ('upload_content_ads', 'Can upload new content ads.'),
+            ('set_content_ad_status', 'Can set status of content ads.'),
         )
 
     def get_full_name(self):
