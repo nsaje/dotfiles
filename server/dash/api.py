@@ -24,25 +24,30 @@ def cc_to_decimal(val_cc):
     return decimal.Decimal(val_cc) / 10000
 
 
-@transaction.atomic
-def add_content_ad_sources(ad_group_source, request=None):
+def add_content_ad_sources(ad_group_source):
     if not ad_group_source.source.can_manage_content_ads():
-        return
+        return []
 
-    content_ads = models.ContentAd.objects.filter(ad_group=ad_group_source.ad_group)
+    content_ad_sources_added = []
+    with transaction.atomic():
+        content_ads = models.ContentAd.objects.filter(ad_group=ad_group_source.ad_group)
 
-    for content_ad in content_ads:
-        try:
-            content_ad_source = models.ContentAdSource.objects.get(content_ad=content_ad, source=ad_group_source.source)
-        except models.ContentAdSource.DoesNotExist:
-            content_ad_source = models.ContentAdSource.objects.create(
-                source=ad_group_source.source,
-                content_ad=content_ad,
-                submission_status=constants.ContentAdSubmissionStatus.PENDING,
-                state=constants.ContentAdSourceState.ACTIVE
-            )
+        for content_ad in content_ads:
+            try:
+                content_ad_source = models.ContentAdSource.objects.get(
+                    content_ad=content_ad,
+                    source=ad_group_source.source
+                )
+            except models.ContentAdSource.DoesNotExist:
+                content_ad_source = models.ContentAdSource.objects.create(
+                    source=ad_group_source.source,
+                    content_ad=content_ad,
+                    submission_status=constants.ContentAdSubmissionStatus.PENDING,
+                    state=constants.ContentAdSourceState.ACTIVE
+                )
+                content_ad_sources_added.append(content_ad_source)
 
-        actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, request)
+    return content_ad_sources_added
 
 
 @transaction.atomic
@@ -254,7 +259,7 @@ def update_content_ad_source_state(content_ad_source, data):
     content_ad_source.save()
 
 
-def order_ad_group_settings_update(ad_group, current_settings, new_settings, request):
+def order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=True):
     changes = current_settings.get_setting_changes(new_settings)
 
     campaign_settings = ad_group.campaign.get_current_settings()
@@ -267,6 +272,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
         order_type=actionlog.constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
     )
 
+    actionlogs_to_send = []
     for field_name, field_value in changes.iteritems():
         # State of an ad group is set automatically.
         # For changes of cpc_cc and daily_budget_cc, mail is sufficient
@@ -278,6 +284,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
 
         ad_group_sources = ad_group.adgroupsource_set.all()
         for ad_group_source in ad_group_sources:
+
             # if source supports setting action do an automatic update,
             # otherwise do manual actiontype
             source = ad_group_source.source
@@ -293,9 +300,20 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     field_name = 'name'
                     field_value = ad_group_source.get_external_name()
 
-                actionlog.api.set_ad_group_source_settings({field_name: field_value}, ad_group_source, request, order)
+                actionlogs_to_send.extend(
+                    actionlog.api.set_ad_group_source_settings(
+                        {field_name: field_value},
+                        ad_group_source,
+                        request,
+                        order,
+                        send=send
+                    )
+                )
             else:
                 actionlog.api.init_set_ad_group_property_order(ad_group_source.ad_group, request, source=ad_group_source, prop=field_name, value=field_value)
+
+    return actionlogs_to_send
+
 
 def reconcile_articles(ad_group, raw_articles):
     if not ad_group:

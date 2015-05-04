@@ -19,7 +19,7 @@ import dash.models
 logger = logging.getLogger(__name__)
 
 
-def init_insert_content_ad_action(content_ad_source, request):
+def init_insert_content_ad_action(content_ad_source, request=None, send=True):
     ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.ad_group,
                                                             source=content_ad_source.source)
     ad_group_source_settings = ad_group_source.ad_group.get_current_settings()
@@ -60,10 +60,13 @@ def init_insert_content_ad_action(content_ad_source, request):
     )
     logger.info(msg)
 
-    actionlog.zwei_actions.send(action)
+    if send:
+        actionlog.zwei_actions.send(action)
+
+    return action
 
 
-def init_update_content_ad_action(content_ad_source, request):
+def init_update_content_ad_action(content_ad_source, request, send=True):
     ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.ad_group,
                                                             source=content_ad_source.source)
     args = {
@@ -88,10 +91,13 @@ def init_update_content_ad_action(content_ad_source, request):
     )
     logger.info(msg)
 
-    actionlog.zwei_actions.send(action)
+    if send:
+        actionlog.zwei_actions.send(action)
+
+    return action
 
 
-def init_get_content_ad_status_action(ad_group_source, order, request):
+def init_get_content_ad_status_action(ad_group_source, order, request, send=True):
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key
     }
@@ -109,7 +115,10 @@ def init_get_content_ad_status_action(ad_group_source, order, request):
     )
     logger.info(msg)
 
-    actionlog.zwei_actions.send(action)
+    if send:
+        actionlog.zwei_actions.send(action)
+
+    return action
 
 
 def init_submit_ad_group_action(ad_group_source, content_ad_source, request):

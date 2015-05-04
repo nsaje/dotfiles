@@ -333,53 +333,24 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         error_messages={'required': 'Please enter a name for this upload.'}
     )
 
-    def _validate_crops(self, crop_list):
-        for i in range(2):
-            for j in range(2):
-                for k in range(2):
-                    if not isinstance(crop_list[i][j][k], (int, long)):
-                        raise ValueError('Coordinate is not an integer')
+    def _validate_header(self, header):
+        if header['url'].strip().lower() != 'url':
+            raise forms.ValidationError('First column in header should be URL.')
 
-    def _parse_crop_areas(self, crop_string):
-        if not crop_string:
-            # crop areas are optional, so return None
-            # if they are not provided
-            return None
+        if header['title'].strip().lower() != 'title':
+            raise forms.ValidationError('Second column in header should be Title.')
 
-        crop_string = crop_string.replace('(', '[').replace(')', ']')
+        image_url_col = header['image_url']
+        if image_url_col is not None and image_url_col.strip().lower() not in ['image_url', 'image url']:
+            raise forms.ValidationError('Third column in header should be Image URL.')
 
-        try:
-            crop_list = json.loads(crop_string)
-            self._validate_crops(crop_list)
-        except (ValueError, IndexError):
-            raise forms.ValidationError('File is not formatted correctly.')
-
-        return crop_list
-
-    def _validate_and_transform_row(self, row):
-        url = row.get('url')
-        title = row.get('title')
-        image_url = row.get('image_url')
-
-        validate_url = validators.URLValidator(
-            schemes=['http', 'https'],
-            message='File is not formatted correctly'
-        )
-
-        validate_url(url)
-        validate_url(image_url)
-
-        if title is None or not len(title):
-            raise forms.ValidationError('File is not formatted correctly.')
-
-        row['crop_areas'] = self._parse_crop_areas(row.get('crop_areas'))
-
-        return row
+        crop_areas_col = header['crop_areas']
+        if crop_areas_col is not None and crop_areas_col.strip().lower() not in ['crop_areas', 'crop areas']:
+            raise forms.ValidationError('Fourth column in header should be Crop areas.')
 
     def clean_content_ads(self):
-        content_ads = self.cleaned_data['content_ads']
+        content_ads_file = self.cleaned_data['content_ads']
 
-        ads = []
         try:
             # If the file contains ctrl-M chars instead of
             # new line breaks, DictReader will fail to parse it.
@@ -388,14 +359,27 @@ class AdGroupAdsPlusUploadForm(forms.Form):
             # slow, we can instead save the file to a temporary
             # location on upload and then open it with 'rU'
             # (universal-newline mode).
-            lines = content_ads.read().splitlines()
+            lines = content_ads_file.read().splitlines()
 
             reader = unicodecsv.DictReader(lines, ['url', 'title', 'image_url', 'crop_areas'])
-            next(reader, None)  # ignore header
 
+            try:
+                header = next(reader)
+            except StopIteration:
+                raise forms.ValidationError('Uploaded file is empty.')
+
+            self._validate_header(header)
+
+            data = []
             for row in reader:
-                ads.append(self._validate_and_transform_row(row))
-        except unicodecsv.Error:
-            raise forms.ValidationError('File is not formatted correctly.')
+                # unicodecsv stores values of all unneeded columns
+                # under key None. This can be removed.
+                if None in row:
+                    del row[None]
 
-        return ads
+                data.append(row)
+
+            return data
+
+        except unicodecsv.Error:
+            raise forms.ValidationError('Uploaded file is not a valid CSV file.')

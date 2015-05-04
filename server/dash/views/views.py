@@ -8,7 +8,7 @@ import httplib
 import urllib
 import urllib2
 import pytz
-from threading import Thread
+import os
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -17,13 +17,13 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth import login, authenticate
 from django.views.decorators.http import require_GET
-from django.db import transaction
 
 from dash.views import helpers
 
 from utils import statsd_helper
 from utils import api_common
 from utils import exc
+from utils import s3helpers
 
 import actionlog.api
 import actionlog.api_contentads
@@ -34,7 +34,7 @@ from dash import models
 from dash import constants
 from dash import api
 from dash import forms
-from dash import image_helper
+from dash import threads
 
 logger = logging.getLogger(__name__)
 
@@ -593,7 +593,14 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
         content_ads = form.cleaned_data['content_ads']
 
         batch = models.UploadBatch.objects.create(name=batch_name)
-        ProcessUploadThread(content_ads, batch, ad_group_id, request).start()
+
+        threads.ProcessUploadThread(
+            content_ads,
+            request.FILES['content_ads'].name,
+            batch,
+            ad_group_id,
+            request
+        ).start()
 
         return self.create_api_response({'batch_id': batch.pk})
 
@@ -626,6 +633,28 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
         return message + '{} before you can add new content ads.'.format(missing_field_names[-1])
 
 
+class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_report_get')
+    def get(self, request, ad_group_id, batch_id):
+        if not request.user.has_perm('zemauth.new_content_ads_tab'):
+            raise exc.ForbiddenError(message='Not allowed')
+
+        helpers.get_ad_group(request.user, ad_group_id)
+
+        try:
+            batch = models.UploadBatch.objects.get(pk=batch_id)
+        except models.UploadBatch.DoesNotExist():
+            raise exc.MissingDataException()
+
+        content = s3helpers.S3Helper().get(batch.error_report_key)
+        basefnm, _ = os.path.splitext(
+            os.path.basename(batch.error_report_key))
+
+        name = basefnm.rsplit('_', 1)[0] + '_errors'
+
+        return self.create_csv_response(name, content=content)
+
+
 class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_status_get')
     def get(self, request, ad_group_id, batch_id):
@@ -642,7 +671,18 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
         response_data = {'status': batch.status}
 
         if batch.status == constants.UploadBatchStatus.FAILED:
-            response_data['errors'] = {'content_ads': ['An error occured while processing file.']}
+            if batch.error_report_key:
+                text = '{} error{}. <a href="{}">Download Report.</a>'.format(
+                    batch.num_errors,
+                    's' if batch.num_errors > 1 else '',
+                    reverse(
+                        'ad_group_ads_plus_upload_report',
+                        kwargs={'ad_group_id': ad_group_id, 'batch_id': batch.id})
+                )
+            else:
+                text = 'An error occured while processing file.'
+
+            response_data['errors'] = {'content_ads': [text]}
 
         return self.create_api_response(response_data)
 
@@ -675,62 +715,6 @@ class AdGroupContentAdState(api_common.BaseApiView):
                 actionlog.api_contentads.init_update_content_ad_action(content_ad_source, request)
 
         return self.create_api_response()
-
-
-class ProcessUploadThread(Thread):
-    def __init__(self, content_ads, batch, ad_group_id, request, *args, **kwargs):
-        self.content_ads = content_ads
-        self.batch = batch
-        self.ad_group_id = ad_group_id
-        self.request = request
-        super(ProcessUploadThread, self).__init__(*args, **kwargs)
-
-    def run(self):
-        try:
-            # ensure content ads are only commited to DB
-            # if all of them are successfully processed
-            with transaction.atomic():
-                for i, ad in enumerate(self.content_ads):
-                    logging.debug('ProcessUploadThread: processing ad {} of {}: {}'.format(i + 1, len(self.content_ads), ad))
-
-                    image_id, width, height, image_hash = image_helper.process_image(
-                        ad.get('image_url'), ad.get('crop_areas'))
-
-                    content_ad = models.ContentAd.objects.create(
-                        image_id=image_id,
-                        image_width=width,
-                        image_height=height,
-                        image_hash=image_hash,
-                        batch=self.batch,
-                        url=ad.get('url'),
-                        title=ad.get('title'),
-                        ad_group_id=self.ad_group_id,
-                    )
-
-                    for ad_group_source in models.AdGroupSource.objects.filter(ad_group_id=self.ad_group_id):
-                        if not ad_group_source.source.can_manage_content_ads():
-                            continue
-
-                        models.ContentAdSource.objects.create(
-                            source=ad_group_source.source,
-                            content_ad=content_ad,
-                            submission_status=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
-                            state=constants.ContentAdSourceState.ACTIVE
-                        )
-
-                self.batch.status = constants.UploadBatchStatus.DONE
-                self.batch.save()
-        except Exception as e:
-            self.batch.status = constants.UploadBatchStatus.FAILED
-            self.batch.save()
-
-            if not isinstance(e, image_helper.ImageProcessingException):
-                logger.exception('Exception in ProcessUploadThread')
-                raise
-
-            return
-
-        api.submit_content_ads_batch(self.ad_group_id, self.batch, self.request)
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')
