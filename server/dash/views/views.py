@@ -206,7 +206,7 @@ class NavigationDataView(api_common.BaseApiView):
                 {
                     'id': ad_group.id,
                     'name': ad_group.name,
-                    'newContentAdsTab': ad_group.new_content_ads_tab,
+                    'contentAdsTabWithCMS': ad_group.content_ads_tab_with_cms,
                 }
             )
 

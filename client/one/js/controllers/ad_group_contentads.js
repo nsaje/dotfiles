@@ -322,7 +322,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
     });
 
     $scope.init = function() {
-        if ($scope.adGroup.newContentAdsTab) {
+        if ($scope.adGroup.contentAdsTabWithCMS) {
             $state.go('main.adGroups.adsPlus', {id: $scope.adGroup.id});
             return;
         }

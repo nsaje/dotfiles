@@ -13,8 +13,8 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='adgroup',
-            name='new_content_ads_tab',
-            field=models.BooleanField(default=False),
+            name='content_ads_tab_with_cms',
+            field=models.BooleanField(default=False, verbose_name=b'Content ads tab with CMS'),
             preserve_default=True,
         ),
     ]

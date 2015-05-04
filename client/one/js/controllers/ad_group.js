@@ -25,9 +25,9 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
             internal: $scope.isPermissionInternal('zemauth.ad_group_agency_tab_view')
         }];
 
-        if ($scope.adGroup.newContentAdsTab) {
+        if ($scope.adGroup.contentAdsTabWithCMS) {
             tabs.splice(0, 1, {
-                heading: 'Content Ads+',
+                heading: 'Content Ads',
                 route: 'main.adGroups.adsPlus',
                 active: true,
                 hidden: ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived)

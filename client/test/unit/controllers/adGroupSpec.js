@@ -42,9 +42,15 @@ describe('AdGroupCtrl', function () {
         });
     });
 
+    it('shows Content Ads+ tab when ad group has cms turned on', function() {
+        $scope.adGroup.contentAdsTabWithCMS = true;
+        var tabs = $scope.getTabs();
+        expect(tabs[0].route, 'main.adGroups.adsPlus');
+    });
+
     it('hides Content Ads+ tab when no permission', function() {
         var tabs = $scope.getTabs();
-        expect(tabs[4].hidden).toEqual(true);
+        expect(tabs.length).toEqual(4);
     });
 
     it('sets hidden and internal for Content Ads+ tab', function() {

@@ -16,6 +16,8 @@ describe('AdGroupAdsPlusCtrl', function() {
         $scope.getAdGroupState = function() {};
         $scope.dateRange = {};
 
+        $scope.adGroup = {contentAdsTabWithCMS: false};
+
         $controller('AdGroupAdsPlusCtrl', {$scope: $scope});
     }));
 
