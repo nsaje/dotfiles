@@ -506,7 +506,7 @@ class AdGroupSourceStateAdmin(admin.ModelAdmin):
 class AdGroupModelChoiceField(forms.ModelChoiceField):
 
     def label_from_instance(self, obj):
-        return "{} | {} | {}".format(obj.campaign.account.name, obj.campaign.name, obj.name)
+        return u'{} | {} | {}'.format(obj.campaign.account.name, obj.campaign.name, obj.name)
 
 
 class DemoAdGroupRealAdGroupAdminForm(forms.ModelForm):
@@ -541,13 +541,13 @@ class DemoAdGroupRealAdGroupAdmin(admin.ModelAdmin):
         ad_group_name = obj.demo_ad_group.name
         campaign_name = obj.demo_ad_group.campaign.name
         account_name = obj.demo_ad_group.campaign.account.name
-        return '|'.join([account_name, campaign_name, ad_group_name])
+        return u'|'.join([account_name, campaign_name, ad_group_name])
 
     def real_ad_group_(self, obj):
         ad_group_name = obj.real_ad_group.name
         campaign_name = obj.real_ad_group.campaign.name
         account_name = obj.real_ad_group.campaign.account.name
-        return '|'.join([account_name, campaign_name, ad_group_name])
+        return u'|'.join([account_name, campaign_name, ad_group_name])
 
 
 class OutbrainAccountAdmin(admin.ModelAdmin):
