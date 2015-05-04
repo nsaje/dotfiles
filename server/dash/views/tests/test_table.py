@@ -107,7 +107,8 @@ class AdGroupAdsPlusTableTest(TestCase):
         })
 
         self.assertIn('rows', result['data'])
-        self.assertEqual(result['data']['rows'], [{
+
+        self.assertItemsEqual(result['data']['rows'], [{
             'status_setting': 2,
             'upload_time': '2015-02-22T19:00:00',
             'ctr': None,

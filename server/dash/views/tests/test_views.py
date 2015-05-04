@@ -94,6 +94,10 @@ class UserTest(TestCase):
         })
 
 
+class AdGroupContentAdStateTest(TestCase):
+    pass
+
+
 class AdGroupAdsPlusUploadTest(TestCase):
     fixtures = ['test_views.yaml']
 

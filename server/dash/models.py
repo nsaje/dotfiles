@@ -834,8 +834,7 @@ class AdGroupSource(models.Model):
 
         return '_z1_adgid=%s&_z1_msid=%s' % (self.ad_group.id, msid)
 
-    def get_external_name(self): 
-        #, account_name, campaign_name, ad_group_name, ad_group_id, source_name):
+    def get_external_name(self):
         account_name = self.ad_group.campaign.account.name
         campaign_name = self.ad_group.campaign.name
         ad_group_name = self.ad_group.name
@@ -1148,6 +1147,12 @@ class ContentAd(models.Model):
     image_hash = models.CharField(max_length=128, null=True)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
+    state = models.IntegerField(
+        null=True,
+        default=constants.ContentAdSourceState.ACTIVE,
+        choices=constants.ContentAdSourceState.get_choices()
+    )
 
     objects = QuerySetManager()
 

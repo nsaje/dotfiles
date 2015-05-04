@@ -10,6 +10,7 @@ import urllib2
 import pytz
 import os
 
+from django.db import transaction
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -706,13 +707,21 @@ class AdGroupContentAdState(api_common.BaseApiView):
         except models.ContentAd.DoesNotExist():
             raise exc.MissingDataException()
 
-        for content_ad_source in content_ad.contentadsource_set.all():
-            prev_state = content_ad_source.state
-            content_ad_source.state = state
-            content_ad_source.save()
+        actions = []
+        with transaction.atomic():
+            content_ad.state = state
+            content_ad.save()
 
-            if prev_state != state:
-                actionlog.api_contentads.init_update_content_ad_action(content_ad_source, request)
+            for content_ad_source in content_ad.contentadsource_set.all():
+                prev_state = content_ad_source.state
+                content_ad_source.state = state
+                content_ad_source.save()
+
+                if prev_state != state:
+                    actions.append(actionlog.api_contentads.init_update_content_ad_action(
+                        content_ad_source, request, send=False))
+
+        actionlog.zwei_actions.send_multiple(actions)
 
         return self.create_api_response()
 
