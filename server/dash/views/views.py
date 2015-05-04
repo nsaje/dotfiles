@@ -565,7 +565,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 class AdGroupAdsPlusUpload(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_get')
     def get(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.new_content_ads_tab'):
+        if not request.user.has_perm('zemauth.upload_content_ads'):
             raise exc.ForbiddenError(message='Not allowed')
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -579,7 +579,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_post')
     def post(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.new_content_ads_tab'):
+        if not request.user.has_perm('zemauth.upload_content_ads'):
             raise exc.ForbiddenError(message='Not allowed')
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -643,7 +643,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
 class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_report_get')
     def get(self, request, ad_group_id, batch_id):
-        if not request.user.has_perm('zemauth.new_content_ads_tab'):
+        if not request.user.has_perm('zemauth.upload_content_ads'):
             raise exc.ForbiddenError(message='Not allowed')
 
         helpers.get_ad_group(request.user, ad_group_id)
@@ -665,7 +665,7 @@ class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
 class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_status_get')
     def get(self, request, ad_group_id, batch_id):
-        if not request.user.has_perm('zemauth.new_content_ads_tab'):
+        if not request.user.has_perm('zemauth.upload_content_ads'):
             raise exc.ForbiddenError(message='Not allowed')
 
         helpers.get_ad_group(request.user, ad_group_id)
@@ -697,7 +697,7 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
 class AdGroupContentAdState(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
     def post(self, request, ad_group_id, content_ad_id):
-        if not request.user.has_perm('zemauth.new_content_ads_tab'):
+        if not request.user.has_perm('zemauth.set_content_ad_status'):
             raise exc.ForbiddenError(message='Not allowed')
 
         helpers.get_ad_group(request.user, ad_group_id)
