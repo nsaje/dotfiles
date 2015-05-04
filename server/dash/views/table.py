@@ -551,9 +551,6 @@ class SourcesTable(api_common.BaseApiView):
         return constants.AdGroupSourceSettingsState.INACTIVE
 
     def _can_edit_budget_and_cpc(self, source, level_sources_table):
-        if source.has_3rd_party_dashboard():
-            return True
-
         ad_group_settings = level_sources_table.ad_group.get_current_settings()
         end_utc_datetime = ad_group_settings.get_utc_end_datetime()
 
