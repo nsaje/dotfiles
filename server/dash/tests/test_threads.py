@@ -56,6 +56,7 @@ class ProcessUploadThreadTest(TestCase):
         self.assertEqual(content_ad.image_height, image_height)
         self.assertEqual(content_ad.image_hash, image_hash)
         self.assertEqual(content_ad.batch.name, batch_name)
+        self.assertEqual(content_ad.state, constants.ContentAdSourceState.ACTIVE)
 
         self.assertEqual(prev_actionlog_count, actionlog.models.ActionLog.objects.all().count())
         self.assertEqual(batch.status, constants.UploadBatchStatus.DONE)

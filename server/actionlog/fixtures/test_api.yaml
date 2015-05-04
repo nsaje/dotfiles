@@ -128,6 +128,7 @@
 
 -   fields:
         type: 'yahoo'
+        available_actions: [4]
     model: dash.sourcetype
     pk: 5
 
@@ -580,6 +581,7 @@
         title: 'Test Article Čžš'
         ad_group: 1
         created_dt: '2015-02-23T00:00:00'
+        state: 1
     model: dash.contentad
     pk: 1
 
@@ -590,6 +592,7 @@
         title: 'Article with no content_ad_sources'
         ad_group: 1
         created_dt: '2015-02-23T00:00:00'
+        state: 2
     model: dash.contentad
     pk: 2
 

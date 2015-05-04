@@ -951,14 +951,8 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
 
             submission_status = helpers.get_content_ad_submission_status(content_ad_sources)
 
-            if any(content_ad_source.state == constants.ContentAdSourceState.ACTIVE
-                   for content_ad_source in content_ad_sources):
-                status_setting = constants.ContentAdSourceState.ACTIVE
-            else:
-                status_setting = constants.ContentAdSourceState.INACTIVE
-
             rows[str(content_ad.id)] = {
-                'status_setting': status_setting,
+                'status_setting': content_ad.state,
                 'submission_status': submission_status
             }
 
@@ -1078,22 +1072,18 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
 
     def _add_status_to_rows(self, rows, filtered_sources):
         for row in rows:
+            content_ad = models.ContentAd.objects.get(pk=row['id'])
+
             content_ad_sources = models.ContentAdSource.objects.filter(
                 source=filtered_sources,
-                content_ad_id=row['id']
+                content_ad_id=content_ad.id
             )
 
             submission_status = helpers.get_content_ad_submission_status(content_ad_sources)
 
-            if any(content_ad_source.state == constants.ContentAdSourceState.ACTIVE
-                   for content_ad_source in content_ad_sources):
-                status_setting = constants.ContentAdSourceState.ACTIVE
-            else:
-                status_setting = constants.ContentAdSourceState.INACTIVE
-
             row.update({
                 'submission_status': submission_status,
-                'status_setting': status_setting,
+                'status_setting': content_ad.state,
                 'editable_fields': ['status_setting'],
             })
 

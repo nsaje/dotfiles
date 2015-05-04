@@ -12,6 +12,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from zemauth.models import User
 
 from dash import models
+from dash import constants
 
 
 class UserTest(TestCase):
@@ -90,6 +91,44 @@ class UserTest(TestCase):
                     'timezone_offset': -14400.0
                 }
             },
+            'success': True
+        })
+
+
+class AdGroupContentAdStateTest(TestCase):
+    fixtures = ['test_api', 'test_views']
+
+    def test_post(self):
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+        ad_group_id = 1
+        content_ad_id = 1
+
+        data = {
+            'state': constants.ContentAdSourceState.INACTIVE
+        }
+
+        response = self.client.post(
+            reverse(
+                'ad_group_content_ad_state',
+                kwargs={'ad_group_id': ad_group_id, 'content_ad_id': content_ad_id}),
+            data=json.dumps(data),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+
+        content_ad = models.ContentAd.objects.get(pk=content_ad_id)
+        self.assertEqual(content_ad.state, constants.ContentAdSourceState.INACTIVE)
+
+        content_ad_sources = models.ContentAdSource.objects.filter(content_ad=content_ad)
+        self.assertEqual(len(content_ad_sources), 2)
+
+        for content_ad_source in content_ad_sources:
+            self.assertEqual(content_ad_source.state, constants.ContentAdSourceState.INACTIVE)
+
+        self.assertJSONEqual(response.content, {
             'success': True
         })
 
