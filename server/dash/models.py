@@ -701,7 +701,7 @@ class AdGroup(models.Model):
     content_ads_tab_with_cms = models.BooleanField(
         null=False,
         blank=False,
-        default=False,
+        default=True,
         verbose_name='Content ads tab with CMS'
     )
 
