@@ -22,6 +22,7 @@ class AddContentAdSources(TestCase):
             source_id=5,
             ad_group_id=1,
         )
+        ad_group_source.can_manage_content_ads = True
         ad_group_source.save(self.request)
 
         content_ad_sources = api.add_content_ad_sources(ad_group_source)
