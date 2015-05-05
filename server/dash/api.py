@@ -11,7 +11,7 @@ from dash import exc
 from dash import models
 from dash import constants
 from dash import consistency
-from utils.url import clean_url
+from utils.url_helper import clean_url
 
 logger = logging.getLogger(__name__)
 
