@@ -94,6 +94,7 @@ class UserTest(TestCase):
             'success': True
         })
 
+
 class AdGroupSourceSettingsTest(TestCase):
     fixtures = ['test_models.yaml','test_views.yaml',]
 
@@ -133,7 +134,8 @@ class AdGroupSourceSettingsTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content),{'success': True})
-        
+
+
 class AdGroupContentAdStateTest(TestCase):
     fixtures = ['test_api', 'test_views']
 
@@ -170,6 +172,7 @@ class AdGroupContentAdStateTest(TestCase):
         self.assertJSONEqual(response.content, {
             'success': True
         })
+
 
 class AdGroupAdsPlusUploadTest(TestCase):
     fixtures = ['test_views.yaml']
