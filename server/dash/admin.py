@@ -403,7 +403,8 @@ class AdGroupAdmin(admin.ModelAdmin):
         'campaign_',
         'account_',
         'is_demo',
-        'content_ads_tab_with_cms',
+        'is_archived_',
+        'content_ads_tab_with_cms_',
         'created_dt',
         'modified_dt',
         'settings_',
@@ -415,6 +416,23 @@ class AdGroupAdmin(admin.ModelAdmin):
 
     def view_on_site(self, obj):
         return '/ad_groups/{}/ads'.format(obj.id)
+
+    def content_ads_tab_with_cms_(self, obj):
+        return obj.content_ads_tab_with_cms
+    content_ads_tab_with_cms_.allow_tags = True
+    content_ads_tab_with_cms_.short_description = 'Has CMS'
+    content_ads_tab_with_cms_.boolean = True
+
+    def is_archived_(self, obj):
+        try:
+            last_settings = obj.settings.latest('created_dt')
+            return bool(last_settings.archived)
+        except:
+            pass
+        return False
+    is_archived_.allow_tags = True
+    is_archived_.short_description = 'Is archived'
+    is_archived_.boolean = True
 
     def settings_(self, obj):
         return '<a href="{admin_url}">List ({num_settings})</a>'.format(
@@ -455,6 +473,8 @@ class AdGroupAdmin(admin.ModelAdmin):
                 obj.delete()
         else:
             formset.save()
+
+
 
 
 class AdGroupSettingsAdmin(admin.ModelAdmin):
