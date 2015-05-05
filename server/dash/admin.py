@@ -397,32 +397,16 @@ class AdGroupSourcesInline(admin.TabularInline):
 
 
 class IsArchivedFilter(admin.SimpleListFilter):
-    # Human-readable title which will be displayed in the
-    # right admin sidebar just above the filter options.
     title = 'Is archived'
-
-    # Parameter for the filter that will be used in the URL query.
     parameter_name = 'is_archived'
 
     def lookups(self, request, model_admin):
-        """
-        Returns a list of tuples. The first element in each
-        tuple is the coded value for the option that will
-        appear in the URL query. The second element is the
-        human-readable name for the option that will appear
-        in the right sidebar.
-        """
         return (
             (1, 'Archived'),
             (0, 'Not archived'),
         )
 
     def queryset(self, request, queryset):
-        """
-        Returns the filtered queryset based on the value
-        provided in the query string and retrievable via
-        `self.value()`.
-        """
         value_bool = self.value() == '1'
         if self.value() is None:
             value_bool = False
