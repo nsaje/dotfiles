@@ -478,7 +478,7 @@ class SubmitAdGroupCallbackTest(TestCase):
         content_ad_source = models.ContentAdSource.objects.get(id=content_ad_source.id)
         self.assertEqual(content_ad_source.source_content_ad_id, None)
         self.assertEqual(content_ad_source.submission_status, constants.ContentAdSubmissionStatus.REJECTED)
-        self.assertEqual(content_ad_source.submission_errors, 'test')
+        self.assertEqual(content_ad_source.submission_errors, None)
         self.assertEqual(content_ad_source.state, constants.ContentAdSourceState.ACTIVE)
         self.assertEqual(content_ad_source.source_state, None)
 

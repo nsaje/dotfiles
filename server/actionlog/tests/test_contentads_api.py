@@ -212,16 +212,14 @@ class ContentAdsApiTestCase(TestCase):
             'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
-                'content_ad_id': content_ad_source.get_source_id(),
                 'content_ad': {
+                    'id': content_ad_source.get_source_id(),
                     'state': dash.constants.ContentAdSourceState.ACTIVE,
                     'title': content_ad_source.content_ad.title,
                     'url': content_ad_source.content_ad.url,
-                    'submission_status': dash.constants.ContentAdSubmissionStatus.PENDING,
                     'image_id': content_ad_source.content_ad.image_id,
                     'image_width': content_ad_source.content_ad.image_width,
                     'image_height': content_ad_source.content_ad.image_height,
-                    'image_hash': content_ad_source.content_ad.image_hash,
                     'display_url': ad_group_settings.display_url,
                     'brand_name': ad_group_settings.brand_name,
                     'description': ad_group_settings.description,
