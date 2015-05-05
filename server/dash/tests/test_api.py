@@ -30,19 +30,20 @@ class AddContentAdSources(TestCase):
         expected = [
             models.ContentAdSource.objects.create(
                 source_id=5,
-                content_ad_id=2,
-                submission_status=constants.ContentAdSubmissionStatus.PENDING,
-                state=constants.ContentAdSourceState.INACTIVE
-            ),
-            models.ContentAdSource.objects.create(
-                source_id=5,
                 content_ad_id=1,
                 submission_status=constants.ContentAdSubmissionStatus.PENDING,
                 state=constants.ContentAdSourceState.ACTIVE
+            ),
+            models.ContentAdSource.objects.create(
+                source_id=5,
+                content_ad_id=2,
+                submission_status=constants.ContentAdSubmissionStatus.PENDING,
+                state=constants.ContentAdSourceState.INACTIVE
             )
         ]
 
         self.assertEqual(len(content_ad_sources), 2)
+        content_ad_sources.sort(key=lambda x: x.content_ad_id)
 
         for content_ad_source, expected_object in zip(content_ad_sources, expected):
             self.assertEqual(content_ad_source.source_id, expected_object.source_id)
