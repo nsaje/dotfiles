@@ -396,6 +396,50 @@ class AdGroupSourcesInline(admin.TabularInline):
     settings_.allow_tags = True
 
 
+class IsArchivedFilter(admin.SimpleListFilter):
+    # Human-readable title which will be displayed in the
+    # right admin sidebar just above the filter options.
+    title = 'Is archived'
+
+    # Parameter for the filter that will be used in the URL query.
+    parameter_name = 'is_archived'
+
+    def lookups(self, request, model_admin):
+        """
+        Returns a list of tuples. The first element in each
+        tuple is the coded value for the option that will
+        appear in the URL query. The second element is the
+        human-readable name for the option that will appear
+        in the right sidebar.
+        """
+        return (
+            (1, 'Archived'),
+            (0, 'Not archived'),
+        )
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value
+        provided in the query string and retrievable via
+        `self.value()`.
+        """
+        value_bool = self.value() == '1'
+        if self.value() is None:
+            value_bool = False
+        for obj in queryset:
+            archived = False
+            try:
+                last_settings = obj.settings.latest('created_dt')
+                archived = bool(last_settings.archived)
+            except:
+                pass
+            if archived and not value_bool:
+                queryset = queryset.exclude(id=obj.id)
+            if not archived and value_bool:
+                queryset = queryset.exclude(id=obj.id)
+        return queryset
+
+
 class AdGroupAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
@@ -409,6 +453,8 @@ class AdGroupAdmin(admin.ModelAdmin):
         'modified_dt',
         'settings_',
     )
+    list_filter = [IsArchivedFilter]
+
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'settings_')
     inlines = (
         AdGroupSourcesInline,
@@ -473,8 +519,6 @@ class AdGroupAdmin(admin.ModelAdmin):
                 obj.delete()
         else:
             formset.save()
-
-
 
 
 class AdGroupSettingsAdmin(admin.ModelAdmin):
