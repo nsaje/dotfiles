@@ -1100,7 +1100,7 @@ class AdGroupSourceSettings(models.Model):
     )
 
     def save(self, request, *args, **kwargs):
-        if self.pk is None:
+        if self.pk is None and request is not None:
             self.created_by = request.user
 
         super(AdGroupSourceSettings, self).save(*args, **kwargs)
