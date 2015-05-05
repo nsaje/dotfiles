@@ -157,7 +157,6 @@ def submit_ad_group_callback(ad_group_source, source_content_ad_id, submission_s
         for content_ad_source in content_ad_sources:
             content_ad_source.source_content_ad_id = source_content_ad_id
             content_ad_source.submission_status = submission_status
-            content_ad_source.submission_errors = submission_errors
             content_ad_source.save()
 
         for content_ad_source in content_ad_sources:
@@ -216,7 +215,6 @@ def submit_content_ads_batch(ad_group_id, batch, request):
                 for content_ad_source in content_ad_sources:
                     content_ad_source.source_content_ad_id = ad_group_source.source_content_ad_id
                     content_ad_source.submission_status = ad_group_source.submission_status
-                    content_ad_source.submission_errors = ad_group_source.submission_errors
                     content_ad_source.save()
 
             for content_ad_source in content_ad_sources:
