@@ -452,6 +452,7 @@ class AdGroupAdmin(admin.ModelAdmin):
     content_ads_tab_with_cms_.allow_tags = True
     content_ads_tab_with_cms_.short_description = 'Has CMS'
     content_ads_tab_with_cms_.boolean = True
+    content_ads_tab_with_cms_.admin_order_field = 'content_ads_tab_with_cms'
 
     def is_archived_(self, obj):
         try:
