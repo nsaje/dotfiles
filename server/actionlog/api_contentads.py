@@ -121,7 +121,7 @@ def init_get_content_ad_status_action(ad_group_source, order, request, send=True
     return action
 
 
-def init_submit_ad_group_action(ad_group_source, content_ad_source, request):
+def init_submit_ad_group_action(ad_group_source, content_ad_source, request, send=False):
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key,
@@ -155,7 +155,10 @@ def init_submit_ad_group_action(ad_group_source, content_ad_source, request):
     )
     logger.info(msg)
 
-    actionlog.zwei_actions.send(action)
+    if send:
+        actionlog.zwei_actions.send(action)
+
+    return action
 
 
 def _create_action(ad_group_source, action, args={}, content_ad_source=None, request=None, order=None):

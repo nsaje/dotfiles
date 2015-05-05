@@ -13,7 +13,7 @@ from dash import image_helper
 from dash import models
 from dash import constants
 
-import actionlog.api_contentads
+import actionlog.zwei_actions
 
 from utils import s3helpers
 import utils.url
@@ -60,6 +60,8 @@ class ProcessUploadThread(Thread):
                     # raise exception to rollback transaction
                     raise UploadFailedException()
 
+                actions = api.submit_content_ads_batch(self.ad_group_id, self.batch, self.request)
+
                 self.batch.status = constants.UploadBatchStatus.DONE
                 self.batch.save()
         except UploadFailedException:
@@ -74,7 +76,7 @@ class ProcessUploadThread(Thread):
             self.batch.save()
             return
 
-        api.submit_content_ads_batch(self.ad_group_id, self.batch, self.request)
+        actionlog.zwei_actions.send_multiple(actions)
 
     def _create_objects(self, data, ad_group_sources):
         content_ad = models.ContentAd.objects.create(

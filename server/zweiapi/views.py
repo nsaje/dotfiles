@@ -124,7 +124,7 @@ def _process_zwei_response(action, data, request):
 
         return
 
-    actionlogs_to_send = []
+    actions = []
     with transaction.atomic():
         action.state = actionlog.constants.ActionState.SUCCESS
         action.save()
@@ -181,7 +181,8 @@ def _process_zwei_response(action, data, request):
             conf = action.payload['args']['conf']
 
             dash.api.update_ad_group_source_state(ad_group_source, conf)
-            actionlogs_to_send.extend(actionlog.api.send_delayed_actionlogs([ad_group_source], send=False))
+            actions.extend(actionlog.api.send_delayed_actionlogs([ad_group_source], send=False))
+
         elif action.action == actionlog.constants.Action.CREATE_CAMPAIGN:
             dash.api.update_campaign_key(
                 action.ad_group_source,
@@ -191,10 +192,13 @@ def _process_zwei_response(action, data, request):
 
             content_ad_sources = dash.api.add_content_ad_sources(action.ad_group_source)
             for content_ad_source in content_ad_sources:
-                actionlogs_to_send.append(
+                actions.append(
                     actionlog.api_contentads.init_insert_content_ad_action(
-                        content_ad_source, send=False)
+                        content_ad_source,
+                        send=False
+                    )
                 )
+
         elif action.action == actionlog.constants.Action.INSERT_CONTENT_AD:
             if 'source_content_ad_id' in data['data']:
                 dash.api.insert_content_ad_callback(
@@ -205,27 +209,32 @@ def _process_zwei_response(action, data, request):
                     data['data'].get('submission_status'),
                     data['data'].get('submission_errors')
                 )
+
         elif action.action == actionlog.constants.Action.UPDATE_CONTENT_AD:
             dash.api.update_content_ad_source_state(
                 action.content_ad_source,
                 data['data']
             )
+
         elif action.action == actionlog.constants.Action.GET_CONTENT_AD_STATUS:
             dash.api.update_multiple_content_ad_source_states(
                 action.ad_group_source,
                 data['data']
             )
+
         elif action.action == actionlog.constants.Action.SUBMIT_AD_GROUP:
-            dash.api.submit_ad_group_callback(
-                action.ad_group_source,
-                data['data']['source_content_ad_id'],
-                data['data']['submission_status'],
-                data['data']['submission_errors'],
+            actions.extend(
+                dash.api.submit_ad_group_callback(
+                    action.ad_group_source,
+                    data['data']['source_content_ad_id'],
+                    data['data']['submission_status'],
+                    data['data']['submission_errors'],
+                )
             )
 
         logger.info('Process action successful. Action: %s', action)
 
-    actionlog.zwei_actions.send_multiple(actionlogs_to_send)
+    actionlog.zwei_actions.send_multiple(actions)
 
 
 def _has_changed(data, ad_group, source, date):

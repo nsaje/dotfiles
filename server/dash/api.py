@@ -133,6 +133,7 @@ def submit_ad_group_callback(ad_group_source, source_content_ad_id, submission_s
     if ad_group_source.source.content_ad_submission_type != constants.SourceSubmissionType.AD_GROUP:
         raise Exception('Invalid source submission type')
 
+    actions = []
     with transaction.atomic():
         ad_group_source.source_content_ad_id = source_content_ad_id
         ad_group_source.submission_status = submission_status
@@ -159,13 +160,20 @@ def submit_ad_group_callback(ad_group_source, source_content_ad_id, submission_s
             content_ad_source.submission_errors = submission_errors
             content_ad_source.save()
 
-    for content_ad_source in content_ad_sources:
-        actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, request=None)
+        for content_ad_source in content_ad_sources:
+            actions.append(
+                actionlog.api_contentads.init_insert_content_ad_action(
+                    content_ad_source,
+                    request=None,
+                    send=False
+                )
+            )
+
+    return actions
 
 
 def submit_content_ads_batch(ad_group_id, batch, request):
-    ad_groups_to_submit = []
-    content_ads_to_send = []
+    actions = []
     with transaction.atomic():
         for ad_group_source in models.AdGroupSource.objects.filter(ad_group_id=ad_group_id):
             content_ad_sources = list(
@@ -190,7 +198,14 @@ def submit_content_ads_batch(ad_group_id, batch, request):
                     continue
 
                 if ad_group_source.submission_status == constants.ContentAdSubmissionStatus.NOT_SUBMITTED:
-                    ad_groups_to_submit.append((ad_group_source, content_ad_sources[0]))
+                    actions.append(
+                        actionlog.api_contentads.init_submit_ad_group_action(
+                            ad_group_source,
+                            content_ad_sources[0],
+                            request,
+                            send=False
+                        )
+                    )
                     continue
 
                 if ad_group_source.submission_status != constants.ContentAdSubmissionStatus.PENDING and\
@@ -204,17 +219,16 @@ def submit_content_ads_batch(ad_group_id, batch, request):
                     content_ad_source.submission_errors = ad_group_source.submission_errors
                     content_ad_source.save()
 
-            content_ads_to_send.extend(content_ad_sources)
+            for content_ad_source in content_ad_sources:
+                actions.append(
+                    actionlog.api_contentads.init_insert_content_ad_action(
+                        content_ad_source,
+                        request,
+                        send=False
+                    )
+                )
 
-    for ad_group_source, content_ad_source in ad_groups_to_submit:
-        actionlog.api_contentads.init_submit_ad_group_action(
-            ad_group_source,
-            content_ad_source,
-            request
-        )
-
-    for content_ad_source in content_ads_to_send:
-        actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, request)
+    return actions
 
 
 @transaction.atomic()
