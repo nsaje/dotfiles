@@ -403,6 +403,7 @@ class AdGroupAdmin(admin.ModelAdmin):
         'campaign_',
         'account_',
         'is_demo',
+        'content_ads_tab_with_cms',
         'created_dt',
         'modified_dt',
         'settings_',
