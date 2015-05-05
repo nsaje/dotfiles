@@ -396,6 +396,34 @@ class AdGroupSourcesInline(admin.TabularInline):
     settings_.allow_tags = True
 
 
+class IsArchivedFilter(admin.SimpleListFilter):
+    title = 'Is archived'
+    parameter_name = 'is_archived'
+
+    def lookups(self, request, model_admin):
+        return (
+            (1, 'Archived'),
+            (0, 'Not archived'),
+        )
+
+    def queryset(self, request, queryset):
+        value_bool = self.value() == '1'
+        if self.value() is None:
+            value_bool = False
+        for obj in queryset:
+            archived = False
+            try:
+                last_settings = obj.settings.latest('created_dt')
+                archived = bool(last_settings.archived)
+            except:
+                pass
+            if archived and not value_bool:
+                queryset = queryset.exclude(id=obj.id)
+            if not archived and value_bool:
+                queryset = queryset.exclude(id=obj.id)
+        return queryset
+
+
 class AdGroupAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
@@ -403,10 +431,14 @@ class AdGroupAdmin(admin.ModelAdmin):
         'campaign_',
         'account_',
         'is_demo',
+        'is_archived_',
+        'content_ads_tab_with_cms_',
         'created_dt',
         'modified_dt',
         'settings_',
     )
+    list_filter = [IsArchivedFilter]
+
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'settings_')
     inlines = (
         AdGroupSourcesInline,
@@ -414,6 +446,23 @@ class AdGroupAdmin(admin.ModelAdmin):
 
     def view_on_site(self, obj):
         return '/ad_groups/{}/ads'.format(obj.id)
+
+    def content_ads_tab_with_cms_(self, obj):
+        return obj.content_ads_tab_with_cms
+    content_ads_tab_with_cms_.allow_tags = True
+    content_ads_tab_with_cms_.short_description = 'Has CMS'
+    content_ads_tab_with_cms_.boolean = True
+
+    def is_archived_(self, obj):
+        try:
+            last_settings = obj.settings.latest('created_dt')
+            return bool(last_settings.archived)
+        except:
+            pass
+        return False
+    is_archived_.allow_tags = True
+    is_archived_.short_description = 'Is archived'
+    is_archived_.boolean = True
 
     def settings_(self, obj):
         return '<a href="{admin_url}">List ({num_settings})</a>'.format(
