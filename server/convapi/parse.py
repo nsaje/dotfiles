@@ -6,7 +6,7 @@ import csv
 import StringIO
 import logging
 
-import utils.url
+from utils import url_helper
 
 from convapi import constants
 
@@ -242,7 +242,7 @@ class LandingPageUrl(object):
             )
 
     def _parse(self):
-        self.clean_url, query_params = utils.url.clean_url(self.raw_url)
+        self.clean_url, query_params = url_helper.clean_url(self.raw_url)
 
         # parse ad group id
         try:

@@ -24,6 +24,8 @@ def clean_url(raw_url):
 
 def fix_url(url):
     '''Fixes url in a similar way browser location bars do'''
+    if isinstance(url, unicode):
+        url = url.encode('utf-8')
 
     if url is None:
         return ''
