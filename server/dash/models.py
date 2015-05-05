@@ -867,7 +867,7 @@ class AdGroupSource(models.Model):
         return name
 
 
-    def save(self, request, *args, **kwargs):
+    def save(self, request=None, *args, **kwargs):
         super(AdGroupSource, self).save(*args, **kwargs)
         if not AdGroupSourceSettings.objects.filter(ad_group_source=self).exists():
             settings = AdGroupSourceSettings(ad_group_source=self)
@@ -1025,7 +1025,7 @@ class AdGroupSettings(SettingsBase):
         return self.tracking_code.lstrip('?')
 
     def save(self, request, *args, **kwargs):
-        if self.pk is None:
+        if self.pk is None and request is not None:
             self.created_by = request.user
 
         super(AdGroupSettings, self).save(*args, **kwargs)

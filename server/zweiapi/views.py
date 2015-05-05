@@ -67,7 +67,7 @@ def _update_last_successful_sync_dt(action, request):
         return
 
     action.ad_group_source.last_successful_sync_dt = min(status_sync_dt, report_sync_dt)
-    action.ad_group_source.save(request)
+    action.ad_group_source.save()
 
 
 def _get_error_message(data):
