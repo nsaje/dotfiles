@@ -57,8 +57,12 @@ oneApp.directive('zemTable', ['config', function(config) {
                 callback(row, checked);
             };
 
-            $scope.isFieldEditable = function (editableFields, field) {
+            $scope.isFieldEditable = function (row, field) {
+                var editableFields = row.editable_fields;
                 if (!editableFields) {
+                    return false;
+                }
+                if (!row.can_edit_budget_and_cpc) {
                     return false;
                 }
 
@@ -66,9 +70,13 @@ oneApp.directive('zemTable', ['config', function(config) {
             };
 
             $scope.getSettingsFieldMessage = function (row) {
-                return row.maintenance ? 
-                    'This value cannot be edited because the media source is currently in maintenance.' : 
-                    'This media source doesn\'t support setting this value through the dashboard.';
+                if (row.maintenance) {
+                    return 'This value cannot be edited because the media source is currently in maintenance.';
+                } else if (!row.can_edit_budget_and_cpc) {
+                    return 'The ad group has end date set in the past. No modifications to media source parameters are possible.';
+                } else {
+                    return 'This media source doesn\'t support setting this value through the dashboard.'; 
+                }                    
             };
         }]
     };

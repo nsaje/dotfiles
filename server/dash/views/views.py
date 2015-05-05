@@ -559,7 +559,14 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'daily_budget_cc' in resource:
             resource['daily_budget_cc'] = decimal.Decimal(resource['daily_budget_cc'])
 
+        if 'cpc_cc' in resource or 'daily_budget_cc' in resource:
+            end_datetime = ad_group.get_current_settings().get_utc_end_datetime()
+            if end_datetime is not None and end_datetime <= datetime.datetime.utcnow():
+                raise exc.ValidationError()
+
+        
         settings_writer.set(resource, request)
+
         return self.create_api_response()
 
 

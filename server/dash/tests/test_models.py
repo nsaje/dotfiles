@@ -1,9 +1,11 @@
 import datetime
 from decimal import Decimal
 
+import pytz
 from django.db.models.signals import pre_save
 from django.test import TestCase
 from django.http.request import HttpRequest
+from django.conf import settings
 
 from dash import models, constants
 from zemauth import models as zemauthmodels
@@ -63,6 +65,27 @@ class AdGroupSettingsTest(TestCase):
         ad_group_settings.tracking_code = '?param1=value1&param2=value2#hash?a=b&c=d'
         ad_group_settings.save(request)
         self.assertEqual(ad_group_settings.get_tracking_ids(), u'param1=value1&param2=value2#hash?a=b&c=d')
+
+    def test_adgroup_settings_end_datetime(self):
+        ad_group_settings = models.AdGroupSettings()
+        self.assertEqual(ad_group_settings.get_utc_end_datetime(), None)
+
+        ad_group_settings = models.AdGroupSettings(end_date=datetime.date(2015,4,29))
+        self.assertEqual(ad_group_settings.get_utc_end_datetime().tzinfo, None)
+
+        dt = datetime.datetime(2015,4,29,1,tzinfo=pytz.timezone(settings.DEFAULT_TIME_ZONE)).astimezone(pytz.timezone('UTC')).replace(tzinfo=None)
+        self.assertTrue(ad_group_settings.get_utc_end_datetime() > dt)
+
+    def test_adgroup_settings_start_datetime(self):
+        ad_group_settings = models.AdGroupSettings()
+        self.assertEqual(ad_group_settings.get_utc_start_datetime(), None)
+        
+        ad_group_settings = models.AdGroupSettings(start_date=datetime.date(2015,4,29))
+        self.assertEqual(ad_group_settings.get_utc_start_datetime().tzinfo, None)
+
+        dt = datetime.datetime(2015,4,29,1,tzinfo=pytz.timezone(settings.DEFAULT_TIME_ZONE)).astimezone(pytz.timezone('UTC')).replace(tzinfo=None)
+        self.assertTrue(ad_group_settings.get_utc_start_datetime() < dt)
+
 
 
 class AdGroupSourceTest(TestCase):
