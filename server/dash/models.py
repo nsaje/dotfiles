@@ -934,30 +934,28 @@ class AdGroupSettings(SettingsBase):
             ("settings_view", "Can view settings in dashboard."),
         )
 
+    def _convert_date_utc_datetime(self, date):
+        dt = datetime.datetime(
+            date.year, 
+            date.month, 
+            date.day,
+            tzinfo=pytz.timezone(settings.DEFAULT_TIME_ZONE)
+        )
+        return dt.astimezone(pytz.timezone('UTC')).replace(tzinfo=None)
+
     def get_utc_start_datetime(self):
         if self.start_date is None:
             return None
         
-        dt = datetime.datetime(
-            self.start_date.year, 
-            self.start_date.month, 
-            self.start_date.day,
-            tzinfo=pytz.timezone(settings.DEFAULT_TIME_ZONE)
-        )
-        return dt.astimezone(pytz.timezone('UTC')).replace(tzinfo=None)
+        return self._convert_date_utc_datetime(self.start_date)
 
     def get_utc_end_datetime(self):
         if self.end_date is None:
             return None
 
-        dt = datetime.datetime(
-            self.end_date.year, 
-            self.end_date.month, 
-            self.end_date.day, 
-            tzinfo=pytz.timezone(settings.DEFAULT_TIME_ZONE)
-        )
+        dt = self._convert_date_utc_datetime(self.end_date)
         dt += datetime.timedelta(days=1)
-        return dt.astimezone(pytz.timezone('UTC')).replace(tzinfo=None)
+        return dt
 
 
     @classmethod
