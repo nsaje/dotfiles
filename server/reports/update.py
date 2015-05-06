@@ -268,5 +268,5 @@ def update_content_ads_source_traffic_stats(date, ad_group, source, rows):
             impressions=row['impressions'],
             clicks=row['clicks'],
             cost_cc=row['cost_cc'],
-            data_cost_cc=row['data_cost_cc'],
+            data_cost_cc=row.get('data_cost_cc'),
         )
