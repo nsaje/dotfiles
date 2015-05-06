@@ -333,10 +333,13 @@ def _handle_error(action, e, request=None):
 def _get_ad_group_sources(ad_group, source):
     inactive_ad_group_sources = get_ad_group_sources_waiting(ad_group=ad_group)
 
+    logger.info('_get_ad_group_sources count %d' % len(inactive_ad_group_sources))
+
     active_ad_group_sources = dash.models.AdGroupSource.objects \
         .filter(ad_group=ad_group) \
         .exclude(pk__in=[ags.id for ags in inactive_ad_group_sources])
 
+    logger.info('_get_ad_group_sources count filtered %d' % len(active_ad_group_sources))
     if not source:
         return active_ad_group_sources.all()
 
