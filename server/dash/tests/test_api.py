@@ -39,13 +39,13 @@ class AddContentAdSources(TestCase):
             models.ContentAdSource.objects.create(
                 source_id=5,
                 content_ad_id=1,
-                submission_status=constants.ContentAdSubmissionStatus.PENDING,
+                submission_status=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
                 state=constants.ContentAdSourceState.ACTIVE
             ),
             models.ContentAdSource.objects.create(
                 source_id=5,
                 content_ad_id=2,
-                submission_status=constants.ContentAdSubmissionStatus.PENDING,
+                submission_status=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
                 state=constants.ContentAdSourceState.INACTIVE
             )
         ]
@@ -644,7 +644,7 @@ class SubmitContentAdsBatchTest(TestCase):
             source=ad_group_source.source,
         )
 
-        api.submit_content_ads_batch(ad_group_id, batch, request=None)
+        api.submit_content_ads([content_ad_source], request=None)
 
         insert_actionlogs = actionlog.models.ActionLog.objects.filter(
             content_ad_source=content_ad_source,
@@ -690,7 +690,7 @@ class SubmitContentAdsBatchTest(TestCase):
             ad_group_source=ad_group_source,
         )
 
-        api.submit_content_ads_batch(ad_group_id, batch, request=None)
+        api.submit_content_ads([content_ad_source], request=None)
 
         insert_actionlogs = actionlog.models.ActionLog.objects.filter(
             content_ad_source=content_ad_source,
@@ -747,7 +747,7 @@ class SubmitContentAdsBatchTest(TestCase):
             source=ad_group_source2.source,
         )
 
-        api.submit_content_ads_batch(ad_group_id, batch, request=None)
+        api.submit_content_ads([content_ad_source1, content_ad_source2], request=None)
 
         insert_actionlogs1 = actionlog.models.ActionLog.objects.filter(
             content_ad_source=content_ad_source1,
@@ -774,7 +774,6 @@ class SubmitContentAdsBatchTest(TestCase):
         self.assertFalse(submit_actionlogs2.exists())
 
     def test_not_submitted_no_content_ads(self):
-        batch = models.UploadBatch.objects.create(name='test', status=constants.UploadBatchStatus.DONE)
         ad_group_id = 1
         source_id = 7
 
@@ -786,7 +785,7 @@ class SubmitContentAdsBatchTest(TestCase):
         ad_group_source.submission_status = constants.ContentAdSubmissionStatus.NOT_SUBMITTED
         ad_group_source.save(None)
 
-        api.submit_content_ads_batch(ad_group_id, batch, request=None)
+        api.submit_content_ads([], request=None)
 
         insert_actionlogs = actionlog.models.ActionLog.objects.filter(
             ad_group_source=ad_group_source,
@@ -822,7 +821,7 @@ class SubmitContentAdsBatchTest(TestCase):
             source=ad_group_source.source,
         )
 
-        api.submit_content_ads_batch(ad_group_id, batch, request=None)
+        api.submit_content_ads([content_ad_source], request=None)
 
         insert_actionlogs = actionlog.models.ActionLog.objects.filter(
             content_ad_source=content_ad_source,
@@ -861,7 +860,7 @@ class SubmitContentAdsBatchTest(TestCase):
             source=ad_group_source.source,
         )
 
-        api.submit_content_ads_batch(ad_group_id, batch, request=None)
+        api.submit_content_ads([content_ad_source], request=None)
 
         insert_actionlogs = actionlog.models.ActionLog.objects.filter(
             content_ad_source=content_ad_source,
@@ -900,7 +899,7 @@ class SubmitContentAdsBatchTest(TestCase):
             source=ad_group_source.source,
         )
 
-        api.submit_content_ads_batch(ad_group_id, batch, request=None)
+        api.submit_content_ads([content_ad_source], request=None)
 
         insert_actionlogs = actionlog.models.ActionLog.objects.filter(
             content_ad_source=content_ad_source,
