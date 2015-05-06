@@ -194,6 +194,9 @@ def get_ad_group_sources_waiting(**kwargs):
         **constraints
     )
 
+    if len(actions) > 0:
+        for action in actions:
+           logger.info('get_ad_group_sources_waiting action %d' % action.id)
     return [action.ad_group_source for action in actions]
 
 
