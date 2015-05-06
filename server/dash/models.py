@@ -1,16 +1,16 @@
 import jsonfield
 import binascii
 import datetime
+
 from decimal import Decimal
-
-import utils.string
-
+import pytz
 from django.conf import settings
 from django.contrib.auth import models as auth_models
 from django.contrib import auth
 from django.db import models, transaction
 
 import actionlog.api_contentads
+import utils.string
 
 from dash import constants
 from utils import encryption_helpers
@@ -705,6 +705,12 @@ class AdGroup(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
     is_demo = models.BooleanField(null=False, blank=False, default=False)
+    content_ads_tab_with_cms = models.BooleanField(
+        null=False,
+        blank=False,
+        default=True,
+        verbose_name='Content ads tab with CMS'
+    )
 
     objects = QuerySetManager()
     demo_objects = DemoManager()
@@ -828,6 +834,7 @@ class AdGroupSource(models.Model):
     source_campaign_key = jsonfield.JSONField(blank=True, default={})
 
     last_successful_sync_dt = models.DateTimeField(blank=True, null=True)
+    can_manage_content_ads = models.BooleanField(null=False, blank=False, default=False)
 
     source_content_ad_id = models.CharField(max_length=100, null=True, blank=True)
     submission_status = models.IntegerField(
@@ -876,11 +883,10 @@ class AdGroupSource(models.Model):
 
         return name
 
-    def save(self, request, *args, **kwargs):
+    def save(self, request=None, *args, **kwargs):
         old_obj = None
         if self.pk is not None:
             old_obj = AdGroupSource.objects.get(pk=self.pk)
-
         super(AdGroupSource, self).save(*args, **kwargs)
         if not AdGroupSourceSettings.objects.filter(ad_group_source=self).exists():
             settings = AdGroupSourceSettings(ad_group_source=self)
@@ -958,6 +964,30 @@ class AdGroupSettings(SettingsBase):
         permissions = (
             ("settings_view", "Can view settings in dashboard."),
         )
+
+    def _convert_date_utc_datetime(self, date):
+        dt = datetime.datetime(
+            date.year, 
+            date.month, 
+            date.day,
+            tzinfo=pytz.timezone(settings.DEFAULT_TIME_ZONE)
+        )
+        return dt.astimezone(pytz.timezone('UTC')).replace(tzinfo=None)
+
+    def get_utc_start_datetime(self):
+        if self.start_date is None:
+            return None
+        
+        return self._convert_date_utc_datetime(self.start_date)
+
+    def get_utc_end_datetime(self):
+        if self.end_date is None:
+            return None
+
+        dt = self._convert_date_utc_datetime(self.end_date)
+        dt += datetime.timedelta(days=1)
+        return dt
+
 
     @classmethod
     def get_default_value(cls, prop_name):
@@ -1153,6 +1183,10 @@ class UploadBatch(models.Model):
     )
     error_report_key = models.CharField(max_length=1024, null=True, blank=True)
     num_errors = models.PositiveIntegerField(null=True)
+    display_url = models.CharField(max_length=25, blank=True, default='')
+    brand_name = models.CharField(max_length=25, blank=True, default='')
+    description = models.CharField(max_length=100, blank=True, default='')
+    call_to_action = models.CharField(max_length=25, blank=True, default='')
 
     class Meta:
         get_latest_by = 'created_dt'
@@ -1172,6 +1206,12 @@ class ContentAd(models.Model):
     image_hash = models.CharField(max_length=128, null=True)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
+    state = models.IntegerField(
+        null=True,
+        default=constants.ContentAdSourceState.ACTIVE,
+        choices=constants.ContentAdSourceState.get_choices()
+    )
 
     objects = QuerySetManager()
 

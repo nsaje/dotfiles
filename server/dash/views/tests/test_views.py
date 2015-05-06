@@ -12,6 +12,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from zemauth.models import User
 
 from dash import models
+from dash import constants
 
 
 class UserTest(TestCase):
@@ -94,6 +95,85 @@ class UserTest(TestCase):
         })
 
 
+class AdGroupSourceSettingsTest(TestCase):
+    fixtures = ['test_models.yaml','test_views.yaml',]
+
+    class MockSettingsWriter(object):
+        def __init__(self, init):
+            pass
+        def set(self, resource, request):
+            pass
+
+    def setUp(self):
+        self.client = Client()
+        self.client.login(username=User.objects.get(pk=1).email, password='secret')
+
+    def test_end_date_past(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        settings = ad_group.get_current_settings()
+        settings.end_date = datetime.date.today() - datetime.timedelta(days=1)
+        settings.save(None)
+
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id':'1','source_id':'1'}),
+            data=json.dumps({'cpc_cc':'0.15'})
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
+
+    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)        
+    def test_end_date_future(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        settings = ad_group.get_current_settings()
+        settings.end_date = datetime.date.today() + datetime.timedelta(days=3)
+        settings.save(None)
+
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id':'1','source_id':'1'}),
+            data=json.dumps({'cpc_cc':'0.15'})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content),{'success': True})
+
+
+class AdGroupContentAdStateTest(TestCase):
+    fixtures = ['test_api', 'test_views']
+
+    def test_post(self):
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+        ad_group_id = 1
+        content_ad_id = 1
+
+        data = {
+            'state': constants.ContentAdSourceState.INACTIVE
+        }
+
+        response = self.client.post(
+            reverse(
+                'ad_group_content_ad_state',
+                kwargs={'ad_group_id': ad_group_id, 'content_ad_id': content_ad_id}),
+            data=json.dumps(data),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+
+        content_ad = models.ContentAd.objects.get(pk=content_ad_id)
+        self.assertEqual(content_ad.state, constants.ContentAdSourceState.INACTIVE)
+
+        content_ad_sources = models.ContentAdSource.objects.filter(content_ad=content_ad)
+        self.assertEqual(len(content_ad_sources), 2)
+
+        for content_ad_source in content_ad_sources:
+            self.assertEqual(content_ad_source.state, constants.ContentAdSourceState.INACTIVE)
+
+        self.assertJSONEqual(response.content, {
+            'success': True
+        })
+
+
 class AdGroupAdsPlusUploadTest(TestCase):
     fixtures = ['test_views.yaml']
 
@@ -109,9 +189,7 @@ class AdGroupAdsPlusUploadTest(TestCase):
         return client
 
     @patch('dash.views.views.threads.ProcessUploadThread')
-    @patch('dash.views.views.forms.AdGroupAdsPlusUploadForm')
-    def test_post(self, MockAdGroupAdsPlusUploadForm, MockProcessUploadThread):
-        MockAdGroupAdsPlusUploadForm.return_value.is_valid.return_value = True
+    def test_post(self, MockProcessUploadThread):
         MockProcessUploadThread.return_value.start.return_value = None
 
         request = HttpRequest()
@@ -120,18 +198,21 @@ class AdGroupAdsPlusUploadTest(TestCase):
         ad_group_settings = models.AdGroupSettings(
             ad_group_id=1,
             created_by_id=1,
-            brand_name='name',
-            display_url='example.com',
-            description='test description',
-            call_to_action='click here'
         )
         ad_group_settings.save(request)
 
-        mock_file = SimpleUploadedFile('testfile.csv', '')
+        mock_file = SimpleUploadedFile('testfile.csv', 'Url,title\nhttp://example.com,testtitle')
 
         response = self._get_client().post(
             reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),
-            {'content_ads': mock_file},
+            {
+                'content_ads': mock_file,
+                'batch_name': 'testname',
+                'display_url': 'test.com',
+                'brand_name': 'testbrand',
+                'description': 'testdesc',
+                'call_to_action': 'testcall',
+            },
             follow=True
         )
 
@@ -147,37 +228,6 @@ class AdGroupAdsPlusUploadTest(TestCase):
             reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}), follow=True)
 
         self.assertEqual(response.status_code, 400)
-
-    @patch('dash.views.views.forms.AdGroupAdsPlusUploadForm')
-    def test_validation_error_missing_settings(self, MockAdGroupAdsPlusUploadForm):
-        MockAdGroupAdsPlusUploadForm.return_value.is_valid.return_value = True
-        MockAdGroupAdsPlusUploadForm.return_value.errors = None
-
-        request = HttpRequest()
-        request.user = User(id=1)
-
-        ad_group_settings = models.AdGroupSettings(
-            ad_group_id=1,
-            created_by_id=1,
-            brand_name='name',
-            description='test description',
-        )
-        ad_group_settings.save(request)
-
-        response = self._get_client().post(
-            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}), follow=True)
-
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(json.loads(response.content), {
-            u'data': {
-                u'message': None,
-                u'errors': {
-                    u'ad_group_settings': u'This ad group needs a Display URL and Call to action before you can add new content ads.'
-                },
-                u'error_code': u'ValidationError'
-            },
-            u'success': False
-        })
 
     def test_permission(self):
         response = self._get_client(superuser=False).post(

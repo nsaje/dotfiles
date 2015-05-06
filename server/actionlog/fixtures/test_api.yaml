@@ -128,6 +128,7 @@
 
 -   fields:
         type: 'yahoo'
+        available_actions: [4]
     model: dash.sourcetype
     pk: 5
 
@@ -542,6 +543,18 @@
 # test adgroupsettings
 
 -   fields:
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        ad_group: 1
+        state: 2
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
+    model: dash.adgroupsettings
+    pk: 1
+
+-   fields:
         created_dt: '2014-06-04T00:00:00'
         created_by: 1
         archived: True
@@ -587,6 +600,10 @@
 -   fields:
         name: 'batch 1'
         created_dt: '2015-02-23T00:00:00'
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
     model: dash.uploadbatch
     pk: 1
 
@@ -601,6 +618,7 @@
         title: 'Test Article Čžš'
         ad_group: 1
         created_dt: '2015-02-23T00:00:00'
+        state: 1
     model: dash.contentad
     pk: 1
 
@@ -611,6 +629,7 @@
         title: 'Article with no content_ad_sources'
         ad_group: 1
         created_dt: '2015-02-23T00:00:00'
+        state: 2
     model: dash.contentad
     pk: 2
 

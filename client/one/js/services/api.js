@@ -693,10 +693,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 targetRegionsMode: settings.target_regions && settings.target_regions.length ? 'custom' : 'worldwide',
                 targetRegions: settings.target_regions,
                 trackingCode: settings.tracking_code,
-                displayUrl: settings.display_url,
-                brandName: settings.brand_name,
-                description: settings.description,
-                callToAction: settings.call_to_action
             };
         }
 
@@ -719,10 +715,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 target_devices: targetDevices,
                 target_regions: settings.targetRegionsMode === 'worldwide' ? [] : settings.targetRegions,
                 tracking_code: settings.trackingCode,
-                display_url: settings.displayUrl,
-                brand_name: settings.brandName,
-                description: settings.description,
-                call_to_action: settings.callToAction
             };
 
             return result;
@@ -1933,31 +1925,46 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
     }
 
     function AdGroupAdsPlusUpload() {
-        this.validateSettings = function(adGroupId) {
+        this.getDefaults = function(adGroupId) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/';
 
-            $http.get(url).success(function(data) {
-                var result = {};
+            $http.get(url).
+                success(function(data) {
+                    var result = {};
 
-                if (data && data.data && data.data.errors) {
-                    result = convertValidationErrorsFromApi(data.data.errors);
-                }
-                deferred.resolve(result);
-            }).error(function(data) {
-                deferred.reject(data);
-            });
+                    if (data && data.data) {
+                        result.status = data.data.status;
+
+                        if (data.data.defaults) {
+                            result.defaults = {
+                                displayUrl: data.data.defaults.display_url,
+                                brandName: data.data.defaults.brand_name,
+                                description: data.data.defaults.description,
+                                callToAction: data.data.defaults.call_to_action
+                            };
+                        }
+                    }
+                    deferred.resolve(result);
+                }).error(function(data) {
+                    deferred.reject(data);
+                });
  
             return deferred.promise;
+            
         };
 
-        this.upload = function(adGroupId, file, batchName) {
+        this.upload = function(adGroupId, data) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/';
 
             var formData = new FormData();
-            formData.append('content_ads', file);
-            formData.append('batch_name', batchName ? batchName : '');
+            formData.append('content_ads', data.file);
+            formData.append('batch_name', data.batchName ? data.batchName : '');
+            formData.append('display_url', data.displayUrl ? data.displayUrl : '');
+            formData.append('brand_name', data.brandName ? data.brandName : '');
+            formData.append('description', data.description ? data.description : '');
+            formData.append('call_to_action', data.callToAction ? data.callToAction : '');
 
             $http.post(url, formData, {
                 transformRequest: angular.identity,
@@ -2003,7 +2010,10 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             return {
                 file: errors.content_ads,
                 batchName: errors.batch_name,
-                adGroupSettings: errors.ad_group_settings
+                displayUrl: errors.display_url,
+                brandName: errors.brand_name,
+                description: errors.description,
+                callToAction: errors.call_to_action
             };
         }
     }

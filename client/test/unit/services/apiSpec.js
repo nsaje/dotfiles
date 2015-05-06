@@ -20,27 +20,31 @@ describe('api', function() {
         var adGroupId = 123;
         var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/';
 
-        describe('validateSettings', function() {
-            it('validates settings and returns converted validation errors', function() {
+        describe('getDefaults', function() {
+            it('get settings defaults', function() {
                 var result;
                 var data = {
                     data: {
-                        errors: {
-                            ad_group_settings: 'missing settings test message'
+                        defaults: {
+                            display_url: 'test.com',
+                            brand_name: 'brand',
+                            description: 'description',
+                            call_to_action: 'call'
                         }
                     }
                 };
 
                 $httpBackend.expectGET(url).respond(200, data);
-                api.adGroupAdsPlusUpload.validateSettings(adGroupId).then(function(errors) {
-                    result = errors;
+                api.adGroupAdsPlusUpload.getDefaults(adGroupId).then(function(data) {
+                    result = data;
                 });
                 $httpBackend.flush();
 
-                expect(result).toEqual({
-                    file: undefined,
-                    batchName: undefined,
-                    adGroupSettings: 'missing settings test message'
+                expect(result.defaults).toEqual({
+                    displayUrl: 'test.com',
+                    brandName: 'brand',
+                    description: 'description',
+                    callToAction: 'call'
                 });
             });
         });
@@ -67,9 +71,12 @@ describe('api', function() {
                 var data = {
                     data: {
                         errors: {
-                            content_ads: 'Error message.',
                             batch_name: 'Batch name error message.',
-                            ad_group_settings: 'missing settings test message'
+                            content_ads: 'Error message.',
+                            display_url: 'test.com',
+                            brand_name: 'brand',
+                            description: 'description',
+                            call_to_action: 'call'
                         }
                     }
                 };
@@ -84,7 +91,10 @@ describe('api', function() {
                     errors: {
                         file: 'Error message.',
                         batchName: 'Batch name error message.',
-                        adGroupSettings: 'missing settings test message'
+                        displayUrl: 'test.com',
+                        brandName: 'brand',
+                        description: 'description',
+                        callToAction: 'call'
                     }
                 });
             });

@@ -349,13 +349,21 @@ def get_content_ad_submission_status(content_ad_sources):
            cas_submission_status != constants.ContentAdSubmissionStatus.REJECTED:
             cas_submission_status = constants.ContentAdSubmissionStatus.PENDING
 
-        submission_status.append({
+        status = {
             'name': content_ad_source.source.name,
             'status': cas_submission_status,
-            'text': '{} / {}'.format(
-                constants.ContentAdSubmissionStatus.get_text(cas_submission_status),
-                constants.ContentAdSourceState.get_text(cas_source_state))
-        })
+        }
+
+        text = constants.ContentAdSubmissionStatus.get_text(cas_submission_status)
+        if (cas_submission_status == constants.ContentAdSubmissionStatus.REJECTED and
+                content_ad_source.submission_errors is not None and
+                content_ad_source.source.id != 22):  # temp hack to avoid showing Adiant errors
+            text = '{} ({})'.format(text, content_ad_source.submission_errors)
+        else:
+            text = '{} / {}'.format(text, constants.ContentAdSourceState.get_text(cas_source_state))
+
+        status['text'] = text
+        submission_status.append(status)
 
     return submission_status
 

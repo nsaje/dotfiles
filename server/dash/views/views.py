@@ -10,6 +10,7 @@ import urllib2
 import pytz
 import os
 
+from django.db import transaction
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -202,7 +203,13 @@ class NavigationDataView(api_common.BaseApiView):
             campaigns = data[account.id]['campaigns']
             self.add_campaign_dict(campaigns, campaign)
 
-            campaigns[campaign.id]['adGroups'].append({'id': ad_group.id, 'name': ad_group.name})
+            campaigns[campaign.id]['adGroups'].append(
+                {
+                    'id': ad_group.id,
+                    'name': ad_group.name,
+                    'contentAdsTabWithCMS': ad_group.content_ads_tab_with_cms,
+                }
+            )
 
     def fetch_campaigns(self, data, user, sources):
         campaigns = models.Campaign.objects.all().\
@@ -434,7 +441,8 @@ class AdGroupSources(api_common.BaseApiView):
         ad_group_source = models.AdGroupSource(
             source=source,
             ad_group=ad_group,
-            source_credentials=default_settings.credentials
+            source_credentials=default_settings.credentials,
+            can_manage_content_ads=source.can_manage_content_ads()
         )
 
         ad_group_source.save(request)
@@ -551,48 +559,71 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'daily_budget_cc' in resource:
             resource['daily_budget_cc'] = decimal.Decimal(resource['daily_budget_cc'])
 
+        if 'cpc_cc' in resource or 'daily_budget_cc' in resource:
+            end_datetime = ad_group.get_current_settings().get_utc_end_datetime()
+            if end_datetime is not None and end_datetime <= datetime.datetime.utcnow():
+                raise exc.ValidationError()
+
+        
         settings_writer.set(resource, request)
+
         return self.create_api_response()
 
 
 class AdGroupAdsPlusUpload(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_get')
     def get(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.new_content_ads_tab'):
+        if not request.user.has_perm('zemauth.upload_content_ads'):
             raise exc.ForbiddenError(message='Not allowed')
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        settings_error_message = self._get_settings_error_message(ad_group)
+
+        current_settings = ad_group.get_current_settings()
 
         return self.create_api_response({
-            'errors': {
-                'ad_group_settings': settings_error_message
+            'defaults': {
+                'display_url': current_settings.display_url,
+                'brand_name': current_settings.brand_name,
+                'description': current_settings.description,
+                'call_to_action': current_settings.call_to_action
             }
         })
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_post')
     def post(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.new_content_ads_tab'):
+        if not request.user.has_perm('zemauth.upload_content_ads'):
             raise exc.ForbiddenError(message='Not allowed')
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        errors = {}
-
-        settings_error_message = self._get_settings_error_message(ad_group)
-        if settings_error_message is not None:
-            errors['ad_group_settings'] = settings_error_message
 
         form = forms.AdGroupAdsPlusUploadForm(request.POST, request.FILES)
         if not form.is_valid():
-            errors.update(form.errors)
-
-        if errors:
-            raise exc.ValidationError(errors=errors)
+            raise exc.ValidationError(errors=form.errors)
 
         batch_name = form.cleaned_data['batch_name']
+        display_url = form.cleaned_data['display_url']
+        brand_name = form.cleaned_data['brand_name']
+        description = form.cleaned_data['description']
+        call_to_action = form.cleaned_data['call_to_action']
         content_ads = form.cleaned_data['content_ads']
 
-        batch = models.UploadBatch.objects.create(name=batch_name)
+        batch = models.UploadBatch.objects.create(
+            name=batch_name,
+            display_url=display_url,
+            brand_name=brand_name,
+            description=description,
+            call_to_action=call_to_action
+        )
+
+        current_settings = ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+
+        new_settings.display_url = display_url
+        new_settings.brand_name = brand_name
+        new_settings.description = description
+        new_settings.call_to_action = call_to_action
+
+        new_settings.save(request)
 
         threads.ProcessUploadThread(
             content_ads,
@@ -604,39 +635,11 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
 
         return self.create_api_response({'batch_id': batch.pk})
 
-    def _get_settings_error_message(self, ad_group):
-        settings = ad_group.get_current_settings()
-
-        missing_fields = []
-
-        if not settings.display_url:
-            missing_fields.append('display_url')
-
-        if not settings.description:
-            missing_fields.append('description')
-
-        if not settings.brand_name:
-            missing_fields.append('brand_name')
-
-        if not settings.call_to_action:
-            missing_fields.append('call_to_action')
-
-        if len(missing_fields) == 0:
-            return None
-
-        missing_field_names = [models.AdGroupSettings.get_human_prop_name(f) for f in missing_fields]
-        message = 'This ad group needs a '
-
-        if len(missing_field_names) > 1:
-            message += '{} and '.format(', '.join(missing_field_names[:-1]))
-
-        return message + '{} before you can add new content ads.'.format(missing_field_names[-1])
-
 
 class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_report_get')
     def get(self, request, ad_group_id, batch_id):
-        if not request.user.has_perm('zemauth.new_content_ads_tab'):
+        if not request.user.has_perm('zemauth.upload_content_ads'):
             raise exc.ForbiddenError(message='Not allowed')
 
         helpers.get_ad_group(request.user, ad_group_id)
@@ -658,7 +661,7 @@ class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
 class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_status_get')
     def get(self, request, ad_group_id, batch_id):
-        if not request.user.has_perm('zemauth.new_content_ads_tab'):
+        if not request.user.has_perm('zemauth.upload_content_ads'):
             raise exc.ForbiddenError(message='Not allowed')
 
         helpers.get_ad_group(request.user, ad_group_id)
@@ -690,7 +693,7 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
 class AdGroupContentAdState(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
     def post(self, request, ad_group_id, content_ad_id):
-        if not request.user.has_perm('zemauth.new_content_ads_tab'):
+        if not request.user.has_perm('zemauth.set_content_ad_status'):
             raise exc.ForbiddenError(message='Not allowed')
 
         helpers.get_ad_group(request.user, ad_group_id)
@@ -706,13 +709,21 @@ class AdGroupContentAdState(api_common.BaseApiView):
         except models.ContentAd.DoesNotExist():
             raise exc.MissingDataException()
 
-        for content_ad_source in content_ad.contentadsource_set.all():
-            prev_state = content_ad_source.state
-            content_ad_source.state = state
-            content_ad_source.save()
+        actions = []
+        with transaction.atomic():
+            content_ad.state = state
+            content_ad.save()
 
-            if prev_state != state:
-                actionlog.api_contentads.init_update_content_ad_action(content_ad_source, request)
+            for content_ad_source in content_ad.contentadsource_set.all():
+                prev_state = content_ad_source.state
+                content_ad_source.state = state
+                content_ad_source.save()
+
+                if prev_state != state:
+                    actions.append(actionlog.api_contentads.init_update_content_ad_action(
+                        content_ad_source, request, send=False))
+
+        actionlog.zwei_actions.send_multiple(actions)
 
         return self.create_api_response()
 

@@ -322,6 +322,11 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
     });
 
     $scope.init = function() {
+        if ($scope.adGroup.contentAdsTabWithCMS) {
+            $state.go('main.adGroups.adsPlus', {id: $scope.adGroup.id});
+            return;
+        }
+
         var data = $scope.adGroupData[$state.params.id];
         var page = $location.search().page || (data && data.page);
 

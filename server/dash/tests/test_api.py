@@ -18,6 +18,59 @@ from zemauth.models import User
 from utils import test_helper
 
 
+class AddContentAdSources(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.request = HttpRequest()
+        self.request.user = User()
+
+    def test_ad_content_ad_sources_supported(self):
+        ad_group_source = models.AdGroupSource(
+            source_id=5,
+            ad_group_id=1,
+        )
+        ad_group_source.can_manage_content_ads = True
+        ad_group_source.save(self.request)
+
+        content_ad_sources = api.add_content_ad_sources(ad_group_source)
+
+        expected = [
+            models.ContentAdSource.objects.create(
+                source_id=5,
+                content_ad_id=1,
+                submission_status=constants.ContentAdSubmissionStatus.PENDING,
+                state=constants.ContentAdSourceState.ACTIVE
+            ),
+            models.ContentAdSource.objects.create(
+                source_id=5,
+                content_ad_id=2,
+                submission_status=constants.ContentAdSubmissionStatus.PENDING,
+                state=constants.ContentAdSourceState.INACTIVE
+            )
+        ]
+
+        self.assertEqual(len(content_ad_sources), 2)
+        content_ad_sources.sort(key=lambda x: x.content_ad_id)
+
+        for content_ad_source, expected_object in zip(content_ad_sources, expected):
+            self.assertEqual(content_ad_source.source_id, expected_object.source_id)
+            self.assertEqual(content_ad_source.content_ad_id, expected_object.content_ad_id)
+            self.assertEqual(content_ad_source.submission_status, expected_object.submission_status)
+            self.assertEqual(content_ad_source.state, expected_object.state)
+
+    def test_ad_content_ad_sources_not_supported(self):
+        ad_group_source = models.AdGroupSource(
+            source_id=4,
+            ad_group_id=1,
+        )
+        ad_group_source.save(self.request)
+
+        content_ad_sources = api.add_content_ad_sources(ad_group_source)
+
+        self.assertEqual(content_ad_sources, [])
+
+
 class UpdateContentAdSourceState(TestCase):
     fixtures = ['test_api.yaml']
 

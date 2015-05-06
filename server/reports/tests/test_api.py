@@ -14,7 +14,7 @@ from reports import models
 from reports import refresh
 from reports import exc as repsexc
 from utils.test_helper import dicts_match_for_keys, sequence_of_dicts_match_for_keys
-from utils.url import clean_url
+from utils.url_helper import clean_url
 
 from zweiapi.views import _prepare_report_rows
 

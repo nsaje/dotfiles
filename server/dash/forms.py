@@ -73,36 +73,9 @@ class AdGroupSettingsForm(forms.Form):
         choices=constants.AdTargetCountry.get_choices()
     )
     tracking_code = forms.CharField(required=False)
-    display_url = forms.URLField(
-        required=False # max length is validated in clean_display_url
-    )
-    brand_name = forms.CharField(
-        max_length=25,
-        required=False
-    )
-    description = forms.CharField(
-        max_length=100,
-        required=False
-    )
-    call_to_action = forms.CharField(
-        max_length=25,
-        required=False
-    )
 
     def __init__(self, *args, **kwargs):
         super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
-
-    def clean_display_url(self):
-        display_url = self.cleaned_data['display_url']
-        display_url = display_url.strip()
-        display_url = re.sub(r'^https?://', '', display_url)
-        display_url = re.sub(r'/$', '', display_url)
-        
-        validate_length = validators.MaxLengthValidator(25)
-        validate_length(display_url)
-
-        return display_url
-
 
     def clean_end_date(self):
         end_date = self.cleaned_data.get('end_date')
@@ -332,6 +305,32 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         max_length=255,
         error_messages={'required': 'Please enter a name for this upload.'}
     )
+    display_url = forms.URLField(
+        required=True  # max length is validated in clean_display_url
+    )
+    brand_name = forms.CharField(
+        max_length=25,
+        required=True
+    )
+    description = forms.CharField(
+        max_length=100,
+        required=True
+    )
+    call_to_action = forms.CharField(
+        max_length=25,
+        required=True
+    )
+
+    def clean_display_url(self):
+        display_url = self.cleaned_data['display_url']
+        display_url = display_url.strip()
+        display_url = re.sub(r'^https?://', '', display_url)
+        display_url = re.sub(r'/$', '', display_url)
+
+        validate_length = validators.MaxLengthValidator(25)
+        validate_length(display_url)
+
+        return display_url
 
     def _validate_header(self, header):
         if header['url'].strip().lower() != 'url':

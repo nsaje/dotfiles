@@ -13,7 +13,7 @@ from dash import exc
 from dash import models
 from dash import constants
 from dash import consistency
-from utils.url import clean_url
+from utils.url_helper import clean_url
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ def cc_to_decimal(val_cc):
 
 
 def add_content_ad_sources(ad_group_source):
-    if not ad_group_source.source.can_manage_content_ads():
+    if not ad_group_source.source.can_manage_content_ads() or not ad_group_source.can_manage_content_ads:
         return []
 
     content_ad_sources_added = []
@@ -43,7 +43,7 @@ def add_content_ad_sources(ad_group_source):
                     source=ad_group_source.source,
                     content_ad=content_ad,
                     submission_status=constants.ContentAdSubmissionStatus.PENDING,
-                    state=constants.ContentAdSourceState.ACTIVE
+                    state=content_ad.state
                 )
                 content_ad_sources_added.append(content_ad_source)
 

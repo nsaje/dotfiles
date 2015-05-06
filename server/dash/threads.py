@@ -16,7 +16,7 @@ from dash import constants
 import actionlog.zwei_actions
 
 from utils import s3helpers
-import utils.url
+from utils import url_helper
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class ProcessUploadThread(Thread):
 
     def run(self):
         ad_group_sources = [s for s in models.AdGroupSource.objects.filter(ad_group_id=self.ad_group_id)
-                            if s.source.can_manage_content_ads()]
+                            if s.can_manage_content_ads and s.source.can_manage_content_ads()]
 
         try:
             # ensure content ads are only commited to DB
@@ -132,13 +132,13 @@ class ProcessUploadThread(Thread):
         validate_url = validators.URLValidator(schemes=['http', 'https'])
 
         try:
-            url = utils.url.fix_url(url)
+            url = url_helper.fix_url(url)
             validate_url(url)
         except ValidationError:
             errors.append('Invalid URL')
 
         try:
-            image_url = utils.url.fix_url(image_url)
+            image_url = url_helper.fix_url(image_url)
             validate_url(image_url)
         except ValidationError:
             process_image = False

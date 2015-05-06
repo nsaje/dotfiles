@@ -12,12 +12,8 @@ from dash import forms
 class AdGroupSettingsFormTest(TestCase):
     def setUp(self):
         self.data = {
-            'display_url': 'example.com',
-            'brand_name': 'example',
-            'call_to_action': 'click here',
             'cpc_cc': '0.40',
             'daily_budget_cc': '10.00',
-            'description': 'example description',
             'end_date': '2014-12-31',
             'id': '248',
             'name': 'Test ad group',
@@ -33,12 +29,8 @@ class AdGroupSettingsFormTest(TestCase):
 
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data, {
-            'brand_name': 'example',
-            'call_to_action': 'click here',
             'cpc_cc': Decimal('0.40'),
             'daily_budget_cc': Decimal('10.00'),
-            'description': 'example description',
-            'display_url': 'example.com',
             'end_date': datetime.date(2014, 12, 31),
             'id': 248,
             'name': 'Test ad group',
@@ -49,28 +41,6 @@ class AdGroupSettingsFormTest(TestCase):
             'tracking_code': 'code=test'
         })
 
-    def test_invalid_display_url(self):
-        self.data['display_url'] = 'teststring'
-        form = forms.AdGroupSettingsForm(self.data)
-        self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'display_url': ['Enter a valid URL.']})
-
-    def test_cleaned_display_url(self):
-        self.data['display_url'] = 'https://teststring.com/this/'
-        form = forms.AdGroupSettingsForm(self.data)
-        self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data['display_url'], 'teststring.com/this')
-
-    def test_display_url_over_max_length(self):
-        domain = 'aaaaaaaaaaaaaaaaaaaaaa.com'
-        self.assertEqual(len(domain), 26, 'domain is not over max length = 25')
-        url = 'https://' + domain
-        self.data['display_url'] = url 
-
-        form = forms.AdGroupSettingsForm(self.data)
-        self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'display_url': ['Ensure this value has at most 25 characters (it has 26).']})
-
 
 class AdGroupAdsPlusUploadFormTest(TestCase):
     def setUp(self):
@@ -79,22 +49,62 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         self.title = 'Test Title'
         self.image_url = 'http://example.com/image'
         self.crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
+        self.display_url = 'example.com'
+        self.description = 'testdescription'
+        self.brand_name = 'testbrandname'
+        self.call_to_action = 'testcalltoaction'
+
+    def test_invalid_display_url(self):
+        csv_file = self._get_csv_file(
+            ['Url', 'Title', 'Image Url', 'Crop Areas'],
+            [[self.url, self.title, self.image_url, self.crop_areas]])
+
+        form = self._init_form(csv_file, {'display_url': 'teststring'})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {'display_url': ['Enter a valid URL.']})
+
+    def test_cleaned_display_url(self):
+        csv_file = self._get_csv_file(
+            ['Url', 'Title', 'Image Url', 'Crop Areas'],
+            [[self.url, self.title, self.image_url, self.crop_areas]])
+
+        form = self._init_form(csv_file, {'display_url': 'https://teststring.com/this/'})
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data['display_url'], 'teststring.com/this')
+
+    def test_display_url_over_max_length(self):
+        csv_file = self._get_csv_file(
+            ['Url', 'Title', 'Image Url', 'Crop Areas'],
+            [[self.url, self.title, self.image_url, self.crop_areas]])
+
+        domain = 'aaaaaaaaaaaaaaaaaaaaaa.com'
+        self.assertEqual(len(domain), 26, 'domain is not over max length = 25')
+        url = 'https://' + domain
+
+        form = self._init_form(csv_file, {'display_url': url})
+
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {'display_url': ['Ensure this value has at most 25 characters (it has 26).']})
 
     def test_form(self):
         csv_file = self._get_csv_file(
             ['Url', 'Title', 'Image Url', 'Crop Areas'],
             [[self.url, self.title, self.image_url, self.crop_areas]])
 
-        form = self._init_form(csv_file, self.batch_name)
+        form = self._init_form(csv_file, None)
 
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data, {
             'batch_name': self.batch_name,
+            'display_url': self.display_url,
+            'brand_name': self.brand_name,
+            'description': self.description,
+            'call_to_action': self.call_to_action,
             'content_ads': [{
                 u'crop_areas': self.crop_areas,
                 u'image_url': self.image_url,
                 u'title': self.title,
-                u'url': self.url
+                u'url': self.url,
             }]
         })
 
@@ -102,13 +112,13 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         csv_file = StringIO.StringIO()
         csv_file.write('TEST\x00TEST')
 
-        form = self._init_form(csv_file, self.batch_name)
+        form = self._init_form(csv_file, {'batch_name': self.batch_name})
 
         self.assertFalse(form.is_valid())
 
     def test_batch_name_missing(self):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
-        form = self._init_form(csv_file, None)
+        form = self._init_form(csv_file, {'batch_name': None})
 
         self.assertFalse(form.is_valid())
 
@@ -136,9 +146,20 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors['content_ads'], ['Fourth column in header should be Crop areas.'])
 
-    def _init_form(self, csv_file, batch_name):
+    def _init_form(self, csv_file, data_updates):
+        data = {
+            'batch_name': self.batch_name,
+            'display_url': self.display_url,
+            'brand_name': self.brand_name,
+            'description': self.description,
+            'call_to_action': self.call_to_action
+        }
+
+        if data_updates is not None:
+            data.update(data_updates)
+
         return forms.AdGroupAdsPlusUploadForm(
-            {'batch_name': batch_name},
+            data,
             {'content_ads': SimpleUploadedFile('test_file.csv', csv_file.getvalue())}
         )
 
