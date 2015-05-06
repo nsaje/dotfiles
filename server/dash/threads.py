@@ -16,7 +16,6 @@ from dash import constants
 import actionlog.zwei_actions
 
 from utils import s3helpers
-from utils import url_helper
 
 logger = logging.getLogger(__name__)
 
@@ -132,13 +131,11 @@ class ProcessUploadThread(Thread):
         validate_url = validators.URLValidator(schemes=['http', 'https'])
 
         try:
-            url = url_helper.fix_url(url)
             validate_url(url)
         except ValidationError:
             errors.append('Invalid URL')
 
         try:
-            image_url = url_helper.fix_url(image_url)
             validate_url(image_url)
         except ValidationError:
             process_image = False
