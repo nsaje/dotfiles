@@ -89,6 +89,8 @@ def set_ad_group_source_settings(changes, ad_group_source, request, order=None, 
 
 def _set_ad_group_property(ad_group, request, source=None, prop=None, value=None, order=None):
     ad_group_sources = _get_ad_group_sources(ad_group, source)
+    if source is not None and len(ad_group_sources) == 0:
+        logger.info('_set_ad_group_property source not None but 0 sources')
     for ad_group_source in ad_group_sources:
         try:
             _init_set_campaign_property(ad_group_source, prop, value, order, request)
