@@ -260,6 +260,10 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
             content_ad_source.submission_status = data['submission_status']
             changed = True
 
+        if 'submission_errors' in data and data['submission_errors'] != content_ad_source.submission_errors:
+            content_ad_source.submission_errors = data['submission_errors']
+            changed = True
+
         if changed:
             content_ad_source.save()
 
