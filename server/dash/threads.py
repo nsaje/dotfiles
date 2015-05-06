@@ -45,6 +45,7 @@ class ProcessUploadThread(Thread):
             with transaction.atomic():
                 num_errors = 0
 
+                content_ad_sources = []
                 for row in self.content_ads_data:
                     data, errors = self._clean_row(row)
 
@@ -53,13 +54,13 @@ class ProcessUploadThread(Thread):
                         num_errors += len(errors)
                         continue
 
-                    self._create_objects(data, ad_group_sources)
+                    content_ad_sources.extend(self._create_objects(data, ad_group_sources))
 
                 if num_errors > 0:
                     # raise exception to rollback transaction
                     raise UploadFailedException()
 
-                actions = api.submit_content_ads_batch(self.ad_group_id, self.batch, self.request)
+                actions = api.submit_content_ads(content_ad_sources, self.request)
 
                 self.batch.status = constants.UploadBatchStatus.DONE
                 self.batch.save()
@@ -89,13 +90,18 @@ class ProcessUploadThread(Thread):
             ad_group_id=self.ad_group_id,
         )
 
+        content_ad_sources = []
         for ad_group_source in ad_group_sources:
-            models.ContentAdSource.objects.create(
-                source=ad_group_source.source,
-                content_ad=content_ad,
-                submission_status=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
-                state=constants.ContentAdSourceState.ACTIVE
+            content_ad_sources.append(
+                models.ContentAdSource.objects.create(
+                    source=ad_group_source.source,
+                    content_ad=content_ad,
+                    submission_status=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
+                    state=constants.ContentAdSourceState.ACTIVE
+                )
             )
+
+        return content_ad_sources
 
     def _save_error_report(self):
         string = StringIO.StringIO()
