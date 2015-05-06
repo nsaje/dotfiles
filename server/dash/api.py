@@ -177,9 +177,6 @@ def submit_content_ads(content_ad_sources, request):
 
     by_ags = defaultdict(list)
     for content_ad_source in content_ad_sources:
-        if content_ad_source.source_content_ad_id is not None and content_ad_source.source_content_ad_id != '':
-            continue
-
         if content_ad_source.submission_status != constants.ContentAdSubmissionStatus.NOT_SUBMITTED:
             continue
 
