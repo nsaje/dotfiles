@@ -78,6 +78,9 @@ def init_update_content_ad_action(content_ad_source, request, send=True):
         }
     }
 
+    if content_ad_source.source_content_ad_id:
+        args['content_ad']['source_content_ad_id'] = content_ad_source.source_content_ad_id
+
     action = _create_action(
         ad_group_source,
         actionlog.constants.Action.UPDATE_CONTENT_AD,
