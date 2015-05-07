@@ -7,12 +7,16 @@ from django import forms
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
 from django.conf import settings
+from django.db import transaction
 
 from zemauth.models import User as ZemUser
 
-import constants
-import models
+from dash import api
+from dash import constants
+from dash import models
+
 import actionlog.api_contentads
+import actionlog.zwei_actions
 
 logger = logging.getLogger(__name__)
 
@@ -497,8 +501,17 @@ class AdGroupAdmin(admin.ModelAdmin):
     def save_formset(self, request, form, formset, change):
         if formset.model == models.AdGroupSource:
             instances = formset.save(commit=False)
-            for instance in instances:
-                instance.save(request)
+
+            actions = []
+            with transaction.atomic():
+                for instance in instances:
+                    instance.save(request)
+                    for changed_instance, changed_fields in formset.changed_objects:
+                        if changed_instance.id == instance.id and ('submission_status' in changed_fields or
+                                                                   'source_content_ad_id' in changed_fields):
+                            actions.extend(api.update_content_ads_submission_status(instance))
+
+            actionlog.zwei_actions.send_multiple(actions)
 
             for obj in formset.deleted_objects:
                 obj.delete()

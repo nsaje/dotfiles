@@ -236,6 +236,34 @@ def submit_content_ads(content_ad_sources, request):
 
 
 @transaction.atomic()
+def update_content_ads_submission_status(ad_group_source, request=None):
+    if ad_group_source.source.content_ad_submission_type != constants.SourceSubmissionType.AD_GROUP:
+        return []
+
+    content_ad_sources = models.ContentAdSource.objects.filter(
+        content_ad__ad_group_id=ad_group_source.ad_group_id,
+        source_id=ad_group_source.source_id,
+    )
+
+    content_ad_sources.update(
+        source_content_ad_id=ad_group_source.source_content_ad_id,
+        submission_status=ad_group_source.submission_status,
+    )
+
+    actions = []
+    for cas in content_ad_sources:
+        actions.append(
+            actionlog.api_contentads.init_update_content_ad_action(
+                cas,
+                request=request,
+                send=False,
+            )
+        )
+
+    return actions
+
+
+@transaction.atomic()
 def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
     content_ad_sources = {}
 
