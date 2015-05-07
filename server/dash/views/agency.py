@@ -232,7 +232,12 @@ class CampaignSettings(api_common.BaseApiView):
             for ad_group in campaign_ad_groups:
                 adgroup_settings = ad_group.get_current_settings()
                 actions = api.order_ad_group_settings_update(
-                    ad_group, adgroup_settings, adgroup_settings, request)
+                    ad_group,
+                    adgroup_settings,
+                    adgroup_settings,
+                    request,
+                    send=False,
+                )
 
         zwei_actions.send_multiple(actions)
 
