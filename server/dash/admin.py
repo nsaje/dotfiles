@@ -506,10 +506,9 @@ class AdGroupAdmin(admin.ModelAdmin):
             with transaction.atomic():
                 for instance in instances:
                     instance.save(request)
-                    for changed_object in formset.changed_objects:
-                        if changed_object[0].id == instance.id and\
-                           'submission_status' in changed_object[1] or\
-                           'source_content_ad_id' in changed_object[1]:
+                    for changed_instance, changed_fields in formset.changed_objects:
+                        if changed_instance.id == instance.id and ('submission_status' in changed_fields or
+                                                                   'source_content_ad_id' in changed_fields):
                             actions.extend(api.update_content_ads_submission_status(instance))
 
             actionlog.zwei_actions.send_multiple(actions)
