@@ -637,17 +637,6 @@ def reject_content_ad_sources(modeladmin, request, queryset):
 reject_content_ad_sources.short_description = 'Mark selected content ad sources as REJECTED'
 
 
-def repeat_insert_content_ad_sources(modeladmin, request, queryset):
-    logger.info(
-        'BULK INSERT CONTENT ADS: Bulk insert content ads started. Contentads: {}'.format(
-            [el.id for el in queryset]
-        )
-    )
-    for content_ad_source in queryset:
-        actionlog.api_contentads.init_insert_content_ad_action(content_ad_source, request)
-repeat_insert_content_ad_sources.short_description = 'Repeat INSERT of selected content ad sources'
-
-
 class ContentAdSourceAdmin(admin.ModelAdmin):
     list_display = (
         'content_ad_id_',
@@ -662,14 +651,14 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
 
     list_filter = ('source', 'submission_status')
 
-    actions = [approve_content_ad_sources, reject_content_ad_sources, repeat_insert_content_ad_sources]
+    actions = [approve_content_ad_sources, reject_content_ad_sources]
 
     display_submission_status_colors = {
         constants.ContentAdSubmissionStatus.APPROVED: '#5cb85c',
         constants.ContentAdSubmissionStatus.REJECTED: '#d9534f',
         constants.ContentAdSubmissionStatus.PENDING: '#428bca',
         constants.ContentAdSubmissionStatus.LIMIT_REACHED: '#e6c440',
-        constants.ContentAdSubmissionStatus.NOT_SUBMITTED: '#e1e1e1',
+        constants.ContentAdSubmissionStatus.NOT_SUBMITTED: '#bcbcbc',
     }
 
     def submission_status_(self, obj):

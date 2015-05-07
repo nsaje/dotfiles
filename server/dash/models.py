@@ -884,18 +884,10 @@ class AdGroupSource(models.Model):
         return name
 
     def save(self, request=None, *args, **kwargs):
-        old_obj = None
-        if self.pk is not None:
-            old_obj = AdGroupSource.objects.get(pk=self.pk)
         super(AdGroupSource, self).save(*args, **kwargs)
         if not AdGroupSourceSettings.objects.filter(ad_group_source=self).exists():
             settings = AdGroupSourceSettings(ad_group_source=self)
             settings.save(request)
-
-        if old_obj is not None and self.submission_status != old_obj.submission_status:
-            for content_ad_source in ContentAdSource.objects.filter(source=self.source,
-                                                                    content_ad__ad_group=self.ad_group):
-                actionlog.api_contentads.init_update_content_ad_action(content_ad_source, request)
 
     def __unicode__(self):
         return u'{} - {}'.format(self.ad_group, self.source)

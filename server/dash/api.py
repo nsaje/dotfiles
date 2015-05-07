@@ -1,3 +1,4 @@
+from collections import defaultdict
 import decimal
 import logging
 
@@ -22,32 +23,6 @@ def cc_to_decimal(val_cc):
     if val_cc is None:
         return None
     return decimal.Decimal(val_cc) / 10000
-
-
-def add_content_ad_sources(ad_group_source):
-    if not ad_group_source.source.can_manage_content_ads() or not ad_group_source.can_manage_content_ads:
-        return []
-
-    content_ad_sources_added = []
-    with transaction.atomic():
-        content_ads = models.ContentAd.objects.filter(ad_group=ad_group_source.ad_group)
-
-        for content_ad in content_ads:
-            try:
-                content_ad_source = models.ContentAdSource.objects.get(
-                    content_ad=content_ad,
-                    source=ad_group_source.source
-                )
-            except models.ContentAdSource.DoesNotExist:
-                content_ad_source = models.ContentAdSource.objects.create(
-                    source=ad_group_source.source,
-                    content_ad=content_ad,
-                    submission_status=constants.ContentAdSubmissionStatus.PENDING,
-                    state=content_ad.state
-                )
-                content_ad_sources_added.append(content_ad_source)
-
-    return content_ad_sources_added
 
 
 @transaction.atomic
@@ -129,6 +104,32 @@ def insert_content_ad_callback(
     content_ad_source.save()
 
 
+def add_content_ad_sources(ad_group_source):
+    if not ad_group_source.source.can_manage_content_ads() or not ad_group_source.can_manage_content_ads:
+        return []
+
+    content_ad_sources_added = []
+    with transaction.atomic():
+        content_ads = models.ContentAd.objects.filter(ad_group=ad_group_source.ad_group)
+
+        for content_ad in content_ads:
+            try:
+                content_ad_source = models.ContentAdSource.objects.get(
+                    content_ad=content_ad,
+                    source=ad_group_source.source
+                )
+            except models.ContentAdSource.DoesNotExist:
+                content_ad_source = models.ContentAdSource.objects.create(
+                    source=ad_group_source.source,
+                    content_ad=content_ad,
+                    submission_status=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
+                    state=content_ad.state
+                )
+                content_ad_sources_added.append(content_ad_source)
+
+    return content_ad_sources_added
+
+
 def submit_ad_group_callback(ad_group_source, source_content_ad_id, submission_status, submission_errors):
     if ad_group_source.source.content_ad_submission_type != constants.SourceSubmissionType.AD_GROUP:
         raise Exception('Invalid source submission type')
@@ -171,22 +172,27 @@ def submit_ad_group_callback(ad_group_source, source_content_ad_id, submission_s
     return actions
 
 
-def submit_content_ads_batch(ad_group_id, batch, request):
+def submit_content_ads(content_ad_sources, request):
     actions = []
-    with transaction.atomic():
-        for ad_group_source in models.AdGroupSource.objects.filter(ad_group_id=ad_group_id):
-            content_ad_sources = list(
-                models.ContentAdSource.objects.filter(
-                    Q(source_content_ad_id__isnull=True) | Q(source_content_ad_id=''),
-                    content_ad__ad_group_id=ad_group_id,
-                    source=ad_group_source.source,
-                    content_ad__batch=batch,
-                    submission_status=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
-                )
-            )
 
-            if not content_ad_sources:
+    by_ags = defaultdict(list)
+    for content_ad_source in content_ad_sources:
+        if content_ad_source.submission_status != constants.ContentAdSubmissionStatus.NOT_SUBMITTED:
+            continue
+
+        k = (content_ad_source.content_ad.ad_group_id, content_ad_source.source_id)
+        by_ags[k].append(content_ad_source)
+
+    with transaction.atomic():
+        for key, ags_content_ad_sources in by_ags.iteritems():
+            if not ags_content_ad_sources:
                 continue
+
+            ad_group_id, source_id = key
+            ad_group_source = models.AdGroupSource.objects.select_related('source').get(
+                ad_group_id=ad_group_id,
+                source_id=source_id
+            )
 
             if ad_group_source.source.content_ad_submission_type == constants.SourceSubmissionType.AD_GROUP:
                 if actionlog.models.ActionLog.objects.filter(
@@ -200,7 +206,7 @@ def submit_content_ads_batch(ad_group_id, batch, request):
                     actions.append(
                         actionlog.api_contentads.init_submit_ad_group_action(
                             ad_group_source,
-                            content_ad_sources[0],
+                            ags_content_ad_sources[0],
                             request,
                             send=False
                         )
@@ -212,12 +218,12 @@ def submit_content_ads_batch(ad_group_id, batch, request):
                    ad_group_source.submission_status != constants.ContentAdSubmissionStatus.REJECTED:
                     continue
 
-                for content_ad_source in content_ad_sources:
+                for content_ad_source in ags_content_ad_sources:
                     content_ad_source.source_content_ad_id = ad_group_source.source_content_ad_id
                     content_ad_source.submission_status = ad_group_source.submission_status
                     content_ad_source.save()
 
-            for content_ad_source in content_ad_sources:
+            for content_ad_source in ags_content_ad_sources:
                 actions.append(
                     actionlog.api_contentads.init_insert_content_ad_action(
                         content_ad_source,
@@ -252,6 +258,10 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
 
         if 'submission_status' in data and data['submission_status'] != content_ad_source.submission_status:
             content_ad_source.submission_status = data['submission_status']
+            changed = True
+
+        if 'submission_errors' in data and data['submission_errors'] != content_ad_source.submission_errors:
+            content_ad_source.submission_errors = data['submission_errors']
             changed = True
 
         if changed:
