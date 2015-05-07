@@ -133,7 +133,8 @@ class ContentAdsApiTestCase(TestCase):
                 'content_ad_id': content_ad_source.get_source_id(),
                 'content_ad': {
                     'state': dash.constants.ContentAdSourceState.INACTIVE,
-                    'submission_status': dash.constants.ContentAdSubmissionStatus.APPROVED
+                    'submission_status': dash.constants.ContentAdSubmissionStatus.APPROVED,
+                    'source_content_ad_id': '123456789',
                 },
             },
             'callback_url': callback
