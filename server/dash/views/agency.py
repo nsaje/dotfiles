@@ -632,7 +632,7 @@ class AdGroupAgency(api_common.BaseApiView):
 
             current_settings.ad_group_name = previous_ad_group_name
             settings.ad_group_name = ad_group.name
-            actions = api.order_ad_group_settings_update(ad_group, current_settings, settings, request)
+            actions = api.order_ad_group_settings_update(ad_group, current_settings, settings, request, send=False)
 
         zwei_actions.send_multiple(actions)
 

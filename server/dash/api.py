@@ -288,7 +288,6 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
     changes['iab_category'] = campaign_settings.iab_category
 
     if not changes:
-        logger.info('order_ad_group_settings_update: no changes')
         return
 
     order = actionlog.models.ActionLogOrder.objects.create(
@@ -305,7 +304,6 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                           'brand_name', 'description', 'call_to_action']:
             continue
 
-        logger.info('order_ad_group_settings_update: %s' % field_name)
         ad_group_sources = ad_group.adgroupsource_set.all()
         for ad_group_source in ad_group_sources:
 
@@ -324,7 +322,6 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     field_name = 'name'
                     field_value = ad_group_source.get_external_name()
 
-                logger.info('order_ad_group_settings_update automatic action: %s' % field_name)
                 actionlogs_to_send.extend(
                     actionlog.api.set_ad_group_source_settings(
                         {field_name: field_value},
@@ -335,7 +332,6 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     )
                 )
             else:
-                logger.info('order_ad_group_settings_update manual action: %s' % field_name)
                 actionlog.api.init_set_ad_group_property_order(ad_group_source.ad_group, request, source=ad_group_source, prop=field_name, value=field_value)
 
     return actionlogs_to_send
