@@ -74,9 +74,6 @@ def set_ad_group_source_settings(changes, ad_group_source, request, order=None, 
         changes['tracking_code'] = _combine_tracking_codes(ad_group_source, ad_group_settings)
         extra['tracking_slug'] = ad_group_source.source.tracking_slug
 
-        logger.info('Tracking code %s' % changes['tracking_code'])
-        logger.info('Tracking slug %s' % extra['tracking_slug'])
-
     _init_set_ad_group_source_settings(
         ad_group_source=ad_group_source,
         conf=changes,
@@ -89,8 +86,6 @@ def set_ad_group_source_settings(changes, ad_group_source, request, order=None, 
 
 def _set_ad_group_property(ad_group, request, source=None, prop=None, value=None, order=None):
     ad_group_sources = _get_ad_group_sources(ad_group, source)
-    if source is not None and len(ad_group_sources) == 0:
-        logger.info('_set_ad_group_property source not None but 0 sources %s' % prop)
     for ad_group_source in ad_group_sources:
         try:
             _init_set_campaign_property(ad_group_source, prop, value, order, request)
@@ -194,9 +189,6 @@ def get_ad_group_sources_waiting(**kwargs):
         **constraints
     )
 
-    if len(actions) > 0:
-        for action in actions:
-           logger.info('get_ad_group_sources_waiting action %d' % action.id)
     return [action.ad_group_source for action in actions]
 
 
@@ -333,22 +325,14 @@ def _handle_error(action, e, request=None):
 def _get_ad_group_sources(ad_group, source):
     inactive_ad_group_sources = get_ad_group_sources_waiting(ad_group=ad_group)
 
-    logger.info('_get_ad_group_sources count %d' % len(inactive_ad_group_sources))
-
     active_ad_group_sources = dash.models.AdGroupSource.objects \
         .filter(ad_group=ad_group) \
         .exclude(pk__in=[ags.id for ags in inactive_ad_group_sources])
 
-    logger.info('_get_ad_group_sources count filtered %d' % len(active_ad_group_sources))
     if not source:
         return active_ad_group_sources.all()
 
-    for s in active_ad_group_sources:
-        logger.info('_get_ad_group_sources active source id %d' % s.id)
-
     ret = active_ad_group_sources.filter(id=source.id)
-    logger.info('_get_ad_group_sources source id %d' % source.id)
-    logger.info('_get_ad_group_sources ret count %d' % len(ret))
     return ret
 
 
