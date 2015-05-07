@@ -343,6 +343,9 @@ def _get_ad_group_sources(ad_group, source):
     if not source:
         return active_ad_group_sources.all()
 
+    for s in active_ad_group_sources:
+        logger.info('_get_ad_group_sources active source id %d' % s.id)
+
     ret = active_ad_group_sources.filter(source=source)
     logger.info('_get_ad_group_sources source id %d' % source.id)
     logger.info('_get_ad_group_sources ret count %d' % len(ret))
