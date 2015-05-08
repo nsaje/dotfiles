@@ -7,7 +7,6 @@ from django import forms
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
 from django.conf import settings
-from django.db import transaction
 
 from zemauth.models import User as ZemUser
 
