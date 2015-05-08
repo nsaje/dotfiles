@@ -204,7 +204,7 @@ class ProcessUploadThread(Thread):
 
 class SendActionLogsThread(Thread):
     '''
-    This is a hack to escape transaction that wraps every django admin method.
+    This is a hack used to escape transaction that wraps every django admin method.
     It's not intended to be used elsewhere.
     '''
     def __init__(self, action_logs, *args, **kwargs):
