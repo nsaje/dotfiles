@@ -499,10 +499,10 @@ class AdGroupAdmin(admin.ModelAdmin):
         obj.save(request)
 
     def save_formset(self, request, form, formset, change):
+        actions = []
         if formset.model == models.AdGroupSource:
             instances = formset.save(commit=False)
 
-            actions = []
             for instance in instances:
                 instance.save(request)
                 for changed_instance, changed_fields in formset.changed_objects:
@@ -510,12 +510,12 @@ class AdGroupAdmin(admin.ModelAdmin):
                                                                'source_content_ad_id' in changed_fields):
                         actions.extend(api.update_content_ads_submission_status(instance))
 
-            threads.SendActionLogsThread(actions).start()
-
             for obj in formset.deleted_objects:
                 obj.delete()
         else:
             formset.save()
+
+        threads.SendActionLogsThread(actions).start()
 
 
 class AdGroupSourceAdmin(admin.ModelAdmin):
