@@ -537,12 +537,13 @@ class AdGroupSourceAdmin(admin.ModelAdmin):
     }
 
     def ad_group_(self, obj):
-        return '<a href="{ad_group_url}">{name}</a>'.format(
+        return u'<a href="{ad_group_url}">{name}</a>'.format(
             ad_group_url=reverse('admin:dash_adgroup_change', args=(obj.ad_group.id,)),
-            name='{} / {} / {} ({})'.format(
+            name=u'{} / {} / {} - {} ({})'.format(
                 obj.ad_group.campaign.account.name,
                 obj.ad_group.campaign.name,
                 obj.ad_group.name,
+                obj.source.name,
                 obj.ad_group.id
             )
         )
