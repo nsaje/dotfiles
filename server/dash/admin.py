@@ -522,7 +522,7 @@ class AdGroupSourceAdmin(admin.ModelAdmin):
     list_display = (
         'ad_group_',
         'source_content_ad_id',
-        'submission_status',
+        'submission_status_',
         'submission_errors',
     )
 
