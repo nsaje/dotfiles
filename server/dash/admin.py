@@ -14,6 +14,7 @@ from zemauth.models import User as ZemUser
 from dash import api
 from dash import constants
 from dash import models
+from dash import threads
 
 import actionlog.api_contentads
 import actionlog.zwei_actions
@@ -503,20 +504,59 @@ class AdGroupAdmin(admin.ModelAdmin):
             instances = formset.save(commit=False)
 
             actions = []
-            with transaction.atomic():
-                for instance in instances:
-                    instance.save(request)
-                    for changed_instance, changed_fields in formset.changed_objects:
-                        if changed_instance.id == instance.id and ('submission_status' in changed_fields or
-                                                                   'source_content_ad_id' in changed_fields):
-                            actions.extend(api.update_content_ads_submission_status(instance))
+            for instance in instances:
+                instance.save(request)
+                for changed_instance, changed_fields in formset.changed_objects:
+                    if changed_instance.id == instance.id and ('submission_status' in changed_fields or
+                                                               'source_content_ad_id' in changed_fields):
+                        actions.extend(api.update_content_ads_submission_status(instance))
 
-            actionlog.zwei_actions.send_multiple(actions)
+            threads.SendActionLogsThread(actions).start()
 
             for obj in formset.deleted_objects:
                 obj.delete()
         else:
             formset.save()
+
+
+class AdGroupSourceAdmin(admin.ModelAdmin):
+    list_display = (
+        'ad_group_',
+        'source_content_ad_id',
+        'submission_status',
+        'submission_errors',
+    )
+
+    list_filter = ('source', 'submission_status')
+
+    display_submission_status_colors = {
+        constants.ContentAdSubmissionStatus.APPROVED: '#5cb85c',
+        constants.ContentAdSubmissionStatus.REJECTED: '#d9534f',
+        constants.ContentAdSubmissionStatus.PENDING: '#428bca',
+        constants.ContentAdSubmissionStatus.LIMIT_REACHED: '#e6c440',
+        constants.ContentAdSubmissionStatus.NOT_SUBMITTED: '#bcbcbc',
+    }
+
+    def ad_group_(self, obj):
+        return '<a href="{ad_group_url}">{name}</a>'.format(
+            ad_group_url=reverse('admin:dash_adgroup_change', args=(obj.ad_group.id,)),
+            name='{} / {} / {} ({})'.format(
+                obj.ad_group.campaign.account.name,
+                obj.ad_group.campaign.name,
+                obj.ad_group.name,
+                obj.ad_group.id
+            )
+        )
+    ad_group_.allow_tags = True
+    ad_group_.admin_order_field = 'ad_group'
+
+    def submission_status_(self, obj):
+        return '<span style="color:{color}">{submission_status}</span>'.format(
+            color=self.display_submission_status_colors[obj.submission_status],
+            submission_status=obj.get_submission_status_display(),
+        )
+    submission_status_.allow_tags = True
+    submission_status_.admin_order_field = 'submission_status'
 
 
 class AdGroupSettingsAdmin(admin.ModelAdmin):
@@ -708,6 +748,7 @@ admin.site.register(models.Campaign, CampaignAdmin)
 admin.site.register(models.CampaignSettings, CampaignSettingsAdmin)
 admin.site.register(models.Source, SourceAdmin)
 admin.site.register(models.AdGroup, AdGroupAdmin)
+admin.site.register(models.AdGroupSource, AdGroupSourceAdmin)
 admin.site.register(models.AdGroupSettings, AdGroupSettingsAdmin)
 admin.site.register(models.AdGroupSourceSettings, AdGroupSourceSettingsAdmin)
 admin.site.register(models.AdGroupSourceState, AdGroupSourceStateAdmin)

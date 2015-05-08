@@ -200,3 +200,16 @@ class ProcessUploadThread(Thread):
             raise ValidationError('Invalid crop areas')
 
         return crop_list
+
+
+class SendActionLogsThread(Thread):
+    '''
+    This is a hack to escape transaction that wraps every django admin mehtod.
+    It should not be used elsewhere.
+    '''
+    def __init__(self, action_logs, *args, **kwargs):
+        self.action_logs = action_logs
+        super(SendActionLogsThread, self).__init__(*args, **kwargs)
+
+    def run(self):
+        actionlog.zwei_actions.send_multiple(self.action_logs)
