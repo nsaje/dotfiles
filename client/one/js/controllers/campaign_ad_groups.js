@@ -243,7 +243,8 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                         if (campaign.id.toString() === campaignId.toString()) {
                             campaign.adGroups.push({
                                 id: data.id,
-                                name: data.name
+                                name: data.name,
+                                contentAdsTabWithCMS: data.contentAdsTabWithCMS
                             });
 
                             $state.go('main.adGroups.settings', {id: data.id});
