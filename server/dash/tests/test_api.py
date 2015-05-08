@@ -640,21 +640,32 @@ class UpdateContentAdSubmissionStatus(TestCase):
             batch=batch
         )
 
-        content_ad_source = models.ContentAdSource.objects.create(
+        content_ad_source1 = models.ContentAdSource.objects.create(
             content_ad=content_ad,
             source=ad_group_source.source,
             submission_status=constants.ContentAdSubmissionStatus.PENDING,
             source_content_ad_id='1234567890',
         )
 
+        content_ad_source2 = models.ContentAdSource.objects.create(
+            content_ad=content_ad,
+            source=ad_group_source.source,
+            submission_status=constants.ContentAdSubmissionStatus.REJECTED,
+            source_content_ad_id=None,
+        )
+
         api.update_content_ads_submission_status(ad_group_source, request=None)
 
-        content_ad_source = models.ContentAdSource.objects.get(id=content_ad_source.id)
-        self.assertEqual(content_ad_source.submission_status, constants.ContentAdSubmissionStatus.APPROVED)
-        self.assertEqual(content_ad_source.source_content_ad_id, '987654321')
+        content_ad_source1 = models.ContentAdSource.objects.get(id=content_ad_source1.id)
+        self.assertEqual(content_ad_source1.submission_status, constants.ContentAdSubmissionStatus.APPROVED)
+        self.assertEqual(content_ad_source1.source_content_ad_id, '987654321')
+
+        content_ad_source2 = models.ContentAdSource.objects.get(id=content_ad_source2.id)
+        self.assertEqual(content_ad_source2.submission_status, constants.ContentAdSubmissionStatus.REJECTED)
+        self.assertEqual(content_ad_source2.source_content_ad_id, None)
 
         update_actionlogs = actionlog.models.ActionLog.objects.filter(
-            content_ad_source=content_ad_source,
+            content_ad_source=content_ad_source1,
             action=actionlog.constants.Action.UPDATE_CONTENT_AD,
         )
         self.assertEqual(update_actionlogs.count(), 1)
