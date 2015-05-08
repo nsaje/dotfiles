@@ -322,7 +322,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
         changes['iab_category'] = campaign_settings.iab_category
 
     if not changes:
-        return
+        return []
 
     order = actionlog.models.ActionLogOrder.objects.create(
         order_type=actionlog.constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
