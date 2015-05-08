@@ -1,6 +1,5 @@
 import binascii
 import copy
-import httplib
 import json
 import logging
 import traceback
@@ -16,16 +15,14 @@ from utils import request_signer
 logger = logging.getLogger(__name__)
 
 
-def _set_as_failed(action, msg):
+def _handle_error(action, e):
+    msg = traceback.format_exc(e)
+
+    logger.error(msg)
+
     action.state = constants.ActionState.FAILED
     action.message = msg
     action.save()
-
-
-def _handle_error(action, e):
-    msg = traceback.format_exc(e)
-    logger.error(msg)
-    _set_as_failed(action, msg)
 
 
 def _decrypt_payload_credentials(payload):
@@ -53,10 +50,7 @@ def send(action):
         data = json.dumps(payload, cls=json_helper.JSONEncoder)
         request = urllib2.Request(settings.ZWEI_API_URL, data)
 
-        response = request_signer.urllib2_secure_open(request, settings.ZWEI_API_SIGN_KEY)
-        if response.getcode() != httplib.OK:
-            _set_as_failed(action, response.read())
-
+        request_signer.urllib2_secure_open(request, settings.ZWEI_API_SIGN_KEY)
     except Exception as e:
         _handle_error(action, e)
 
