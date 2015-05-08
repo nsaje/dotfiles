@@ -237,6 +237,7 @@ class CampaignSettings(api_common.BaseApiView):
                     adgroup_settings,
                     request,
                     send=False,
+                    iab_update=True
                 )
 
         zwei_actions.send_multiple(actions)

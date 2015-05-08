@@ -309,11 +309,14 @@ def update_content_ad_source_state(content_ad_source, data):
     content_ad_source.save()
 
 
-def order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=True):
+def order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=True, iab_update=False):
     changes = current_settings.get_setting_changes(new_settings)
 
     campaign_settings = ad_group.campaign.get_current_settings()
-    changes['iab_category'] = campaign_settings.iab_category
+    # TODO: temporary hack to prevent changing IAB category every time settings
+    # update is called - this should be moved to adgroup settings
+    if iab_update:
+        changes['iab_category'] = campaign_settings.iab_category
 
     if not changes:
         return
