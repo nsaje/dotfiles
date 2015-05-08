@@ -243,7 +243,10 @@ def update_content_ads_submission_status(ad_group_source, request=None):
     content_ad_sources = models.ContentAdSource.objects.filter(
         content_ad__ad_group_id=ad_group_source.ad_group_id,
         source_id=ad_group_source.source_id,
+        submission_status__in=[constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
+                               constants.ContentAdSubmissionStatus.PENDING]
     )
+    content_ad_sources_list = list(content_ad_sources)
 
     content_ad_sources.update(
         source_content_ad_id=ad_group_source.source_content_ad_id,
@@ -251,7 +254,7 @@ def update_content_ads_submission_status(ad_group_source, request=None):
     )
 
     actions = []
-    for cas in content_ad_sources:
+    for cas in content_ad_sources_list:
         actions.append(
             actionlog.api_contentads.init_update_content_ad_action(
                 cas,
