@@ -157,17 +157,20 @@ class NavigationDataView(api_common.BaseApiView):
     def add_settings_data(self, data, include_archived_flag):
         account_settingss = models.AccountSettings.objects.\
             order_by('account_id', '-created_dt').\
-            distinct('account')
+            distinct('account').\
+            select_related('account')
         account_settingss = {acc_settings.account.id: acc_settings for acc_settings in account_settingss}
 
         campaign_settingss = models.CampaignSettings.objects.\
             order_by('campaign_id', '-created_dt').\
-            distinct('campaign')
+            distinct('campaign').\
+            select_related('campaign')
         campaign_settingss = {camp_settings.campaign.id: camp_settings for camp_settings in campaign_settingss}
 
         ad_group_settingss = models.AdGroupSettings.objects.\
             order_by('ad_group_id', '-created_dt').\
-            distinct('ad_group')
+            distinct('ad_group').\
+            select_related('ad_group')
         ad_group_settingss = {ag_settings.ad_group.id: ag_settings for ag_settings in ad_group_settingss}
 
         for account in data.values():
