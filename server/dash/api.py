@@ -44,8 +44,8 @@ def update_ad_group_source_state(ad_group_source, conf):
                 continue
             if any([
                     key == 'state' and ad_group_source_state.state != val,
-                    key == 'cpc_cc' and  ad_group_source_state.cpc_cc != val,
-                    key == 'daily_budget_cc' and  ad_group_source_state.daily_budget_cc != val,
+                    key == 'cpc_cc' and ad_group_source_state.cpc_cc != val,
+                    key == 'daily_budget_cc' and ad_group_source_state.daily_budget_cc != val,
                 ]):
                     need_update = True
                     break
@@ -360,6 +360,10 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     )
                 )
             else:
+                if source.deprecated:
+                    logger.info('Skipping create manual action for property set %s for deprecated source %d' % (field_name, source.id))
+                    continue
+
                 actionlog.api.init_set_ad_group_property_order(ad_group_source.ad_group, request, source=ad_group_source, prop=field_name, value=field_value)
 
     return actionlogs_to_send
@@ -422,11 +426,12 @@ def get_state_by_account():
         if aid not in account_state:
             account_state[aid] = set()
         account_state[aid].add(row['state'])
+
     def _acc_state(ag_states):
         if constants.AdGroupSettingsState.ACTIVE in ag_states:
             return constants.AdGroupSettingsState.ACTIVE
         return constants.AdGroupSettingsState.INACTIVE
-    account_state = {aid:_acc_state(ag_states) for aid, ag_states in account_state.iteritems()}
+    account_state = {aid: _acc_state(ag_states) for aid, ag_states in account_state.iteritems()}
     return account_state
 
 
