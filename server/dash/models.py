@@ -1234,10 +1234,19 @@ class ContentAd(models.Model):
         ])
 
     def url_with_tracking_codes(self, tracking_codes):
-        parsed = urlparse.urlparse(self.url)
-        parsed.query = '&'.join(parsed.query, tracking_codes)
+        if not tracking_codes:
+            return self.url
 
-        return parsed.geturl()
+        parsed = list(urlparse.urlparse(self.url))
+
+        parts = []
+        if parsed[4]:
+            parts.append(parsed[4])
+        parts.append(tracking_codes)
+
+        parsed[4] = '&'.join(parts)
+
+        return urlparse.urlunparse(parsed)
 
     def __unicode__(self):
         return '{cn}(id={id}, ad_group={ad_group}, image_id={image_id}, state={state})'.format(
