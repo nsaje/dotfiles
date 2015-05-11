@@ -1,6 +1,7 @@
 import jsonfield
 import binascii
 import datetime
+import urlparse
 
 from decimal import Decimal
 import pytz
@@ -1233,10 +1234,10 @@ class ContentAd(models.Model):
         ])
 
     def url_with_tracking_codes(self, tracking_codes):
-        if '?' in self.url:
-            return '&'.join([self.url, tracking_codes])
+        parsed = urlparse.urlparse(self.url)
+        parsed.query = '&'.join(parsed.query, tracking_codes)
 
-        return '?'.join([self.url, tracking_codes])
+        return parsed.geturl()
 
     def __unicode__(self):
         return '{cn}(id={id}, ad_group={ad_group}, image_id={image_id}, state={state})'.format(
