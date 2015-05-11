@@ -138,7 +138,7 @@ class UpdateAdGroupSourceSettings(TestCase):
         ret = api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
         self.assertEqual([], ret)
         self.assertEqual('tracking_code', self.props[0])
-        self.assertTrue('test={amazing}' + '&blob={slug}&x={slug}'.format(slug=s1.tracking_slug) in self.values)
+        self.assertTrue('test={amazing}' + '&blob={slug}&x={slug}&_z1_adgid=1&_z1_msid={slug}'.format(slug=s1.tracking_slug) in self.values)
         self.init_set_ad_group_property_order_value = None
 
     def test_tracking_codes_automatic(self):
