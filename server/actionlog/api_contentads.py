@@ -41,8 +41,6 @@ def init_insert_content_ad_action(content_ad_source, request=None, send=True):
     else:
         url = content_ad_source.content_ad.url
 
-    print "API URL", url
-
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key,
         'content_ad_id': content_ad_source.get_source_id(),
