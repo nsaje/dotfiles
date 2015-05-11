@@ -128,7 +128,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
             current_settings.ad_group_name = previous_ad_group_name
             settings.ad_group_name = ad_group.name
-            actionlogs_to_send.extend(api.order_ad_group_settings_update(ad_group, current_settings, settings, request))
+            actionlogs_to_send.extend(api.order_ad_group_settings_update(ad_group, current_settings, settings, request, send=False))
 
         user = request.user
         changes = current_settings.get_setting_changes(settings)
