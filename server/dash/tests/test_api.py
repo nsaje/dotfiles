@@ -8,6 +8,7 @@ from django.http.request import HttpRequest
 
 import actionlog.constants
 import actionlog.models
+import actionlog.api
 
 from dash import models
 from dash import api
@@ -98,6 +99,45 @@ class UpdateContentAdSourceState(TestCase):
         content_ad_source = models.ContentAdSource.objects.get(pk=1)
         self.assertEqual(content_ad_source.source_state, data['source_state'])
         self.assertEqual(content_ad_source.submission_status, data['submission_status'])
+
+
+class UpdateAdGroupSourceSettings(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.init_set_ad_group_property_order_prop = None
+        self.init_set_ad_group_property_order_value = None
+
+    def _stub_init_set_ad_group_property_order(self, ad_group, request, source=None, prop="", value=""):
+        self.init_set_ad_group_property_order_prop = prop
+        self.init_set_ad_group_property_order_value = value
+
+    def test_basic_manual_actions(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.maintenance = True
+        ad_group_source.save()
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.ad_group_name = "Test"
+
+        ret = api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
+        self.assertEqual([], ret)
+
+    def test_tracking_code_manual_action(self):
+        actionlog.api.init_set_ad_group_property_order = self._stub_init_set_ad_group_property_order
+
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.tracking_code = "test={amazing}&blob={sourceDomain}&x={sourceDomainUnderscore}"
+
+        ret = api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
+        self.assertEqual([], ret)
+        self.assertEqual('tracking_code', self.init_set_ad_group_property_order_prop)
+        self.assertEqual('test={amazing}&blob=b1_adiant&x=b1_adiant', self.init_set_ad_group_property_order_value)
+        self.init_set_ad_group_property_order_value = None
 
 
 class UpdateAdGroupSourceState(TestCase):
