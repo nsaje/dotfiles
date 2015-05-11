@@ -35,7 +35,7 @@ def init_insert_content_ad_action(content_ad_source, request=None, send=True):
         url = content_ad_source.content_ad.url_with_tracking_codes(
             utils.url_helper.combine_tracking_codes(
                 ad_group_tracking_codes,
-                ad_group_source.get_tracking_ids,
+                ad_group_source.get_tracking_ids(),
             )
         )
     else:

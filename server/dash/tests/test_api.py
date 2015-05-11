@@ -139,6 +139,46 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.assertEqual('test={amazing}&blob=b1_adiant&x=b1_adiant', self.init_set_ad_group_property_order_value)
         self.init_set_ad_group_property_order_value = None
 
+    def test_tracking_codes_automatic(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.source_type.available_actions.add(
+            models.SourceAction.objects.get(
+                action=constants.SourceAction.CAN_MODIFY_TRACKING_CODES,
+            )
+        )
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.tracking_code = "a=b"
+
+        ret = api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
+        self.assertEqual(2, len(ret))
+        self.assertEqual(ret[0].action, actionlog.constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(ret[1].action, actionlog.constants.Action.SET_CAMPAIGN_STATE)
+
+    def test_tracking_codes_automatic_per_content_ad(self):
+        ad_group_source1 = models.AdGroupSource.objects.get(id=1)
+        ad_group_source1.can_manage_content_ads = True
+        ad_group_source1.save()
+
+        ad_group_source2 = models.AdGroupSource.objects.get(id=1)
+        ad_group_source2.can_manage_content_ads = True
+        ad_group_source2.save()
+
+        ad_group_source1.source.source_type.available_actions.add(
+            models.SourceAction.objects.get(
+                action=constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS,
+            )
+        )
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.tracking_code = "a=b"
+
+        ret = api.order_ad_group_settings_update(ad_group_source1.ad_group, adgs1, adgs2, None)
+        self.assertEqual(1, len(ret))
+        self.assertEqual(ret[0].action, actionlog.constants.Action.UPDATE_CONTENT_AD)
+
 
 class UpdateAdGroupSourceState(TestCase):
     fixtures = ['test_api.yaml']
