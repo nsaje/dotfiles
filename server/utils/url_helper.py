@@ -20,3 +20,7 @@ def clean_url(raw_url):
     split_url[3] = urllib.urlencode(sorted(cleaned_query_parameters, key=lambda x: x[0]))
 
     return urlparse.urlunsplit(split_url), dict(query_parameters)
+
+
+def combine_tracking_codes(*args):
+    return '&'.join([arg for arg in args if arg])

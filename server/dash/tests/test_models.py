@@ -57,35 +57,38 @@ class AdGroupSettingsTest(TestCase):
 
     def test_get_tracking_ids(self):
         ad_group_settings = models.AdGroupSettings.objects.get(id=1)
-        self.assertEqual(ad_group_settings.get_tracking_ids(), u'')
+        self.assertEqual(ad_group_settings.get_tracking_codes(), u'')
 
         request = HttpRequest()
         request.user = User()
 
         ad_group_settings.tracking_code = '?param1=value1&param2=value2#hash?a=b&c=d'
         ad_group_settings.save(request)
-        self.assertEqual(ad_group_settings.get_tracking_ids(), u'param1=value1&param2=value2#hash?a=b&c=d')
+        self.assertEqual(ad_group_settings.get_tracking_codes(), u'param1=value1&param2=value2#hash?a=b&c=d')
 
     def test_adgroup_settings_end_datetime(self):
         ad_group_settings = models.AdGroupSettings()
         self.assertEqual(ad_group_settings.get_utc_end_datetime(), None)
 
-        ad_group_settings = models.AdGroupSettings(end_date=datetime.date(2015,4,29))
+        ad_group_settings = models.AdGroupSettings(end_date=datetime.date(2015, 4, 29))
         self.assertEqual(ad_group_settings.get_utc_end_datetime().tzinfo, None)
 
-        dt = datetime.datetime(2015,4,29,1,tzinfo=pytz.timezone(settings.DEFAULT_TIME_ZONE)).astimezone(pytz.timezone('UTC')).replace(tzinfo=None)
+        dt = datetime.datetime(2015, 4, 29, 1, tzinfo=pytz.timezone(settings.DEFAULT_TIME_ZONE)).\
+            astimezone(pytz.timezone('UTC')).\
+            replace(tzinfo=None)
         self.assertTrue(ad_group_settings.get_utc_end_datetime() > dt)
 
     def test_adgroup_settings_start_datetime(self):
         ad_group_settings = models.AdGroupSettings()
         self.assertEqual(ad_group_settings.get_utc_start_datetime(), None)
-        
-        ad_group_settings = models.AdGroupSettings(start_date=datetime.date(2015,4,29))
+
+        ad_group_settings = models.AdGroupSettings(start_date=datetime.date(2015, 4, 29))
         self.assertEqual(ad_group_settings.get_utc_start_datetime().tzinfo, None)
 
-        dt = datetime.datetime(2015,4,29,1,tzinfo=pytz.timezone(settings.DEFAULT_TIME_ZONE)).astimezone(pytz.timezone('UTC')).replace(tzinfo=None)
+        dt = datetime.datetime(2015, 4, 29, 1, tzinfo=pytz.timezone(settings.DEFAULT_TIME_ZONE)).\
+            astimezone(pytz.timezone('UTC')).\
+            replace(tzinfo=None)
         self.assertTrue(ad_group_settings.get_utc_start_datetime() < dt)
-
 
 
 class AdGroupSourceTest(TestCase):
@@ -117,7 +120,7 @@ class AdGroupSourceTest(TestCase):
         ad_group_source = models.AdGroupSource(ad_group=ad_group, source=source)
         ad_group_source.save(request)
 
-        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=%s&_z1_msid=%s' % (ad_group.id, ''))
+        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=%s' % (ad_group.id))
 
         source_type.type = constants.SourceType.ZEMANTA
         source_type.save()
@@ -129,7 +132,14 @@ class AdGroupSourceTest(TestCase):
 
         source_type.type = 'not' + constants.SourceType.ZEMANTA + 'and not ' + constants.SourceType.B1
         source_type.save()
-        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=%s&_z1_msid=%s' % (ad_group.id, ''))
+
+        source.tracking_slug = 'not_b1_zemanta'
+        source.save()
+
+        self.assertEqual(
+            ad_group_source.get_tracking_ids(),
+            '_z1_adgid=%s&_z1_msid=%s' % (ad_group.id, source.tracking_slug)
+        )
 
 
 def created_by_patch(sender, instance, **kwargs):

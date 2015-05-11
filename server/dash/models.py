@@ -9,7 +9,6 @@ from django.contrib.auth import models as auth_models
 from django.contrib import auth
 from django.db import models, transaction
 
-import actionlog.api_contentads
 import utils.string
 
 from dash import constants
@@ -546,6 +545,11 @@ class SourceType(models.Model):
     def can_modify_ad_group_iab_category(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY).exists()
 
+    def update_tracking_codes_on_content_ads(self):
+        return self.available_actions.filter(
+            action=constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS
+        ).exists()
+
     def __str__(self):
         return self.type
 
@@ -622,6 +626,9 @@ class Source(models.Model):
 
     def can_modify_ad_group_iab_category(self):
         return self.source_type.can_modify_ad_group_iab_category() and not self.maintenance and not self.deprecated
+
+    def update_tracking_codes_on_content_ads(self):
+        return self.source_type.update_tracking_codes_on_content_ads()
 
     def __unicode__(self):
         return self.name
@@ -847,16 +854,19 @@ class AdGroupSource(models.Model):
     )
 
     def get_tracking_ids(self):
+        msid = None
         if self.source.source_type and\
            self.source.source_type.type in [
                 constants.SourceType.ZEMANTA, constants.SourceType.B1, constants.SourceType.OUTBRAIN]:
             msid = '{sourceDomain}'
         elif self.source.tracking_slug is not None and self.source.tracking_slug != '':
             msid = self.source.tracking_slug
-        else:
-            msid = ''
 
-        return '_z1_adgid=%s&_z1_msid=%s' % (self.ad_group.id, msid)
+        tracking_codes = '_z1_adgid=%s' % (self.ad_group.id)
+        if msid is not None:
+            tracking_codes += '&_z1_msid=%s' % (msid)
+
+        return tracking_codes
 
     def get_external_name(self):
         account_name = self.ad_group.campaign.account.name
@@ -959,8 +969,8 @@ class AdGroupSettings(SettingsBase):
 
     def _convert_date_utc_datetime(self, date):
         dt = datetime.datetime(
-            date.year, 
-            date.month, 
+            date.year,
+            date.month,
             date.day,
             tzinfo=pytz.timezone(settings.DEFAULT_TIME_ZONE)
         )
@@ -969,7 +979,7 @@ class AdGroupSettings(SettingsBase):
     def get_utc_start_datetime(self):
         if self.start_date is None:
             return None
-        
+
         return self._convert_date_utc_datetime(self.start_date)
 
     def get_utc_end_datetime(self):
@@ -979,7 +989,6 @@ class AdGroupSettings(SettingsBase):
         dt = self._convert_date_utc_datetime(self.end_date)
         dt += datetime.timedelta(days=1)
         return dt
-
 
     @classmethod
     def get_default_value(cls, prop_name):
@@ -1036,7 +1045,7 @@ class AdGroupSettings(SettingsBase):
 
         return value
 
-    def get_tracking_ids(self):
+    def get_tracking_codes(self):
         # Strip the first '?' as we don't want to send it as a part of query string
         return self.tracking_code.lstrip('?')
 
@@ -1222,6 +1231,12 @@ class ContentAd(models.Model):
             self.image_id,
             '{}x{}.jpg'.format(width, height)
         ])
+
+    def url_with_tracking_codes(self, tracking_codes):
+        if '?' in self.url:
+            return '&'.join([self.url, tracking_codes])
+
+        return '?'.join([self.url, tracking_codes])
 
     def __unicode__(self):
         return '{cn}(id={id}, ad_group={ad_group}, image_id={image_id}, state={state})'.format(

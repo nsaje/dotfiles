@@ -20,6 +20,7 @@ from . import zwei_actions
 
 import dash.constants
 import dash.models
+import utils.url_helper
 
 logger = logging.getLogger(__name__)
 
@@ -67,11 +68,11 @@ def set_ad_group_source_settings(changes, ad_group_source, request, order=None, 
     extra = {}
     if changes.get('cpc_cc') is not None:
         changes['cpc_cc'] = int(changes['cpc_cc'] * 10000)
+
     if changes.get('daily_budget_cc') is not None:
         changes['daily_budget_cc'] = int(changes['daily_budget_cc'] * 10000)
+
     if changes.get('tracking_code') is not None:
-        ad_group_settings = _get_ad_group_settings(ad_group_source.ad_group)
-        changes['tracking_code'] = _combine_tracking_codes(ad_group_source, ad_group_settings)
         extra['tracking_slug'] = ad_group_source.source.tracking_slug
 
     _init_set_ad_group_source_settings(
@@ -568,20 +569,6 @@ def _init_set_campaign_property(ad_group_source, prop, value, order, request):
         raise exceptions.InsertActionException, ei, tb
 
 
-def _combine_tracking_codes(ad_group_source, ad_group_settings):
-    ad_group_settings_tracking_ids = None
-
-    if ad_group_settings:
-        ad_group_settings_tracking_ids = ad_group_settings.get_tracking_ids()
-    ad_group_source_tracking_ids = ad_group_source.get_tracking_ids()
-
-    if ad_group_settings_tracking_ids:
-        # Ad group settings tracking code is always first
-        return ad_group_settings_tracking_ids + '&' + ad_group_source_tracking_ids
-
-    return ad_group_source_tracking_ids
-
-
 def _init_create_campaign(ad_group_source, name, request):
     if ad_group_source.source_campaign_key:
         msg = u'Unable to create external campaign for AdGroupSource with existing connection'\
@@ -649,6 +636,7 @@ def _init_create_campaign(ad_group_source, name, request):
                 if 'create_campaign' in params:
                     payload['args']['extra'].update(params['create_campaign'])
 
+            ad_group_tracking_codes = None
             if ad_group_settings:
                 payload['args']['extra'].update({
                     'target_devices': ad_group_settings.target_devices,
@@ -658,9 +646,13 @@ def _init_create_campaign(ad_group_source, name, request):
                     'start_date': ad_group_settings.start_date,
                     'end_date': ad_group_settings.end_date,
                 })
+                ad_group_tracking_codes = ad_group_settings.get_tracking_codes()
 
             payload['args']['extra'].update({
-                'tracking_code': _combine_tracking_codes(ad_group_source, ad_group_settings),
+                'tracking_code': utils.url_helper.combine_tracking_codes(
+                    ad_group_tracking_codes,
+                    ad_group_source.get_tracking_ids()
+                ),
                 'tracking_slug': ad_group_source.source.tracking_slug
             })
 
