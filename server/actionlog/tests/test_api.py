@@ -13,7 +13,7 @@ from django.http.request import HttpRequest
 from actionlog import api, constants, models, sync, exceptions
 from dash import models as dashmodels
 from dash import constants as dashconstants
-from utils import test_helper
+from utils import test_helper, url_helper
 from zemauth.models import User
 
 
@@ -610,7 +610,10 @@ class ActionLogApiTestCase(TestCase):
             'args': {
                 'name': name,
                 'extra': {
-                    'tracking_code': api._combine_tracking_codes(ad_group_source, ad_group_settings),
+                    'tracking_code': url_helper.combine_tracking_codes(
+                        ad_group_settings.get_tracking_codes(),
+                        ad_group_source.get_tracking_ids(),
+                    ),
                     'tracking_slug': 'yahoo',
                     'target_regions': [],
                     'target_devices': [],
@@ -647,7 +650,10 @@ class ActionLogApiTestCase(TestCase):
                 'name': name,
                 'extra': {
                     'iab_category': 'IAB24',
-                    'tracking_code':  api._combine_tracking_codes(ad_group_source_extra, ad_group_settings),
+                    'tracking_code':  url_helper.combine_tracking_codes(
+                        ad_group_settings.get_tracking_codes(),
+                        ad_group_source_extra.get_tracking_ids(),
+                    ),
                     'tracking_slug': 'industrybrains',
                     'target_devices': ['desktop', 'mobile'],
                     'target_regions': ['UK', 'US', 'CA'],
@@ -662,26 +668,6 @@ class ActionLogApiTestCase(TestCase):
             'callback_url': callback
         }
         self.assertEqual(action.payload, payload)
-
-    def test_combine_tracking_codes(self):
-        request = HttpRequest()
-        request.user = User(id=1)
-
-        ad_group_source = dashmodels.AdGroupSource.objects.get(id=5)
-        ad_group_settings = api._get_ad_group_settings(ad_group_source.ad_group)
-
-        self.assertEqual(api._combine_tracking_codes(ad_group_source, ad_group_settings), '_z1_adgid=%s&_z1_msid=%s' %
-                         (ad_group_source.ad_group.id, ad_group_source.source.source_type.type))
-
-        ad_group_settings.tracking_code = '?param&a=1&b=2'
-        ad_group_settings.save(request)
-
-        # first ad group settings tracking codes and then ad group source tracking codes
-        self.assertEqual(
-            api._combine_tracking_codes(ad_group_source, ad_group_settings),
-            'param&a=1&b=2&_z1_adgid=%s&_z1_msid=%s' % (ad_group_source.ad_group.id,
-                                                        ad_group_source.source.source_type.type)
-        )
 
 
 class ActionLogApiCancelExpiredTestCase(TestCase):

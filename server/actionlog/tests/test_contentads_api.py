@@ -10,7 +10,7 @@ from django.http.request import HttpRequest
 from actionlog import api_contentads
 from actionlog import constants
 from actionlog import models
-from utils import test_helper
+from utils import test_helper, url_helper
 
 import dash.models
 import dash.constants
@@ -48,7 +48,7 @@ class ContentAdsApiTestCase(TestCase):
         )
 
         request = HttpRequest()
-        request.user = User()
+        request.user = User.objects.get(id=1)
 
         api_contentads.init_insert_content_ad_action(content_ad_source, request)
 
@@ -84,10 +84,72 @@ class ContentAdsApiTestCase(TestCase):
                     'image_width': content_ad_source.content_ad.image_width,
                     'image_height': content_ad_source.content_ad.image_height,
                     'image_hash': content_ad_source.content_ad.image_hash,
-                    'display_url': ad_group_settings.display_url,
-                    'brand_name': ad_group_settings.brand_name,
-                    'description': ad_group_settings.description,
-                    'call_to_action': ad_group_settings.call_to_action,
+                    'display_url': content_ad_source.content_ad.batch.display_url,
+                    'brand_name': content_ad_source.content_ad.batch.brand_name,
+                    'description': content_ad_source.content_ad.batch.description,
+                    'call_to_action': content_ad_source.content_ad.batch.call_to_action,
+                    'tracking_slug': ad_group_source.source.tracking_slug
+                },
+            },
+            'callback_url': callback
+        }
+        self.assertEqual(action.payload, payload)
+
+        ad_group_source.source.source_type.available_actions.add(
+            dash.models.SourceAction.objects.get(
+                action=dash.constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS,
+            )
+        )
+
+        ad_group_source.can_manage_content_ads = True
+        ad_group_source.save(request)
+
+        new_ad_group_settings = ad_group_settings.copy_settings()
+        new_ad_group_settings.tracking_code = 'a=b'
+        new_ad_group_settings.save(request)
+
+        api_contentads.init_insert_content_ad_action(content_ad_source, request)
+
+        action = models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+        ).latest('created_dt')
+
+        self.assertEqual(action.action, constants.Action.INSERT_CONTENT_AD)
+        self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
+        self.assertEqual(action.state, constants.ActionState.WAITING)
+
+        expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).\
+            strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+        callback = urlparse.urljoin(
+            settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
+        )
+
+        payload = {
+            'source': ad_group_source.source.source_type.type,
+            'action': constants.Action.INSERT_CONTENT_AD,
+            'expiration_dt': expiration_dt,
+            'credentials': ad_group_source.source_credentials.credentials,
+            'args': {
+                'source_campaign_key': ad_group_source.source_campaign_key,
+                'content_ad_id': content_ad_source.get_source_id(),
+                'content_ad': {
+                    'state': dash.constants.ContentAdSourceState.ACTIVE,
+                    'title': content_ad_source.content_ad.title,
+                    'url': content_ad_source.content_ad.url_with_tracking_codes(
+                        url_helper.combine_tracking_codes(
+                            new_ad_group_settings.get_tracking_codes(),
+                            ad_group_source.get_tracking_ids(),
+                        )
+                    ),
+                    'submission_status': dash.constants.ContentAdSubmissionStatus.PENDING,
+                    'image_id': content_ad_source.content_ad.image_id,
+                    'image_width': content_ad_source.content_ad.image_width,
+                    'image_height': content_ad_source.content_ad.image_height,
+                    'image_hash': content_ad_source.content_ad.image_hash,
+                    'display_url': content_ad_source.content_ad.batch.display_url,
+                    'brand_name': content_ad_source.content_ad.batch.brand_name,
+                    'description': content_ad_source.content_ad.batch.description,
+                    'call_to_action': content_ad_source.content_ad.batch.call_to_action,
                     'tracking_slug': ad_group_source.source.tracking_slug
                 },
             },
