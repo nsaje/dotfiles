@@ -361,14 +361,15 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                 field_name == 'iab_category' and source.can_modify_ad_group_iab_category() or\
                 field_name == 'ad_group_name' and source.can_modify_ad_group_name():
 
+                new_field_value = field_value
                 if field_name == 'ad_group_name':
                     # adgroup name should have been changed by this point
                     field_name = 'name'
-                    field_value = ad_group_source.get_external_name()
+                    new_field_value = ad_group_source.get_external_name()
 
                 actionlogs_to_send.extend(
                     actionlog.api.set_ad_group_source_settings(
-                        {field_name: field_value},
+                        {field_name: new_field_value},
                         ad_group_source,
                         request,
                         order,
@@ -380,11 +381,12 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     logger.info('Skipping create manual action for property set %s for deprecated source %d' % (field_name, source.id))
                     continue
 
+                new_field_value = field_value
                 if field_name == 'tracking_code':
                     tracking_slug = ad_group_source.source.tracking_slug
-                    field_value = _substitute_tracking_macros(field_value, tracking_slug)
+                    new_field_value = _substitute_tracking_macros(field_value, tracking_slug)
 
-                actionlog.api.init_set_ad_group_property_order(ad_group_source.ad_group, request, source=ad_group_source, prop=field_name, value=field_value)
+                actionlog.api.init_set_ad_group_property_order(ad_group_source.ad_group, request, source=ad_group_source, prop=field_name, value=new_field_value)
 
     return actionlogs_to_send
 

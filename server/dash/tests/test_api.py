@@ -105,12 +105,12 @@ class UpdateAdGroupSourceSettings(TestCase):
     fixtures = ['test_api.yaml']
 
     def setUp(self):
-        self.init_set_ad_group_property_order_prop = None
-        self.init_set_ad_group_property_order_value = None
+        self.props = []
+        self.values = []
 
     def _stub_init_set_ad_group_property_order(self, ad_group, request, source=None, prop="", value=""):
-        self.init_set_ad_group_property_order_prop = prop
-        self.init_set_ad_group_property_order_value = value
+        self.props.append(prop)
+        self.values.append(value)
 
     def test_basic_manual_actions(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
@@ -129,14 +129,16 @@ class UpdateAdGroupSourceSettings(TestCase):
 
         ad_group_source = models.AdGroupSource.objects.get(id=1)
 
+        s1 = models.Source.objects.get(pk=1)
+
         adgs1 = models.AdGroupSettings()
         adgs2 = models.AdGroupSettings()
         adgs2.tracking_code = "test={amazing}&blob={sourceDomain}&x={sourceDomainUnderscore}"
 
         ret = api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
         self.assertEqual([], ret)
-        self.assertEqual('tracking_code', self.init_set_ad_group_property_order_prop)
-        self.assertEqual('test={amazing}&blob=b1_adiant&x=b1_adiant', self.init_set_ad_group_property_order_value)
+        self.assertEqual('tracking_code', self.props[0])
+        self.assertTrue('test={amazing}' + '&blob={slug}&x={slug}'.format(slug=s1.tracking_slug) in self.values)
         self.init_set_ad_group_property_order_value = None
 
 
