@@ -84,10 +84,10 @@ class ContentAdsApiTestCase(TestCase):
                     'image_width': content_ad_source.content_ad.image_width,
                     'image_height': content_ad_source.content_ad.image_height,
                     'image_hash': content_ad_source.content_ad.image_hash,
-                    'display_url': ad_group_settings.display_url,
-                    'brand_name': ad_group_settings.brand_name,
-                    'description': ad_group_settings.description,
-                    'call_to_action': ad_group_settings.call_to_action,
+                    'display_url': content_ad_source.content_ad.batch.display_url,
+                    'brand_name': content_ad_source.content_ad.batch.brand_name,
+                    'description': content_ad_source.content_ad.batch.description,
+                    'call_to_action': content_ad_source.content_ad.batch.call_to_action,
                     'tracking_slug': ad_group_source.source.tracking_slug
                 },
             },
@@ -104,11 +104,9 @@ class ContentAdsApiTestCase(TestCase):
         ad_group_source.can_manage_content_ads = True
         ad_group_source.save(request)
 
-        ad_group_settings = dash.models.AdGroupSettings(
-            ad_group=ad_group_source.ad_group,
-            tracking_code='a=b'
-        )
-        ad_group_settings.save(request)
+        new_ad_group_settings = ad_group_settings.copy_settings()
+        new_ad_group_settings.tracking_code = 'a=b'
+        new_ad_group_settings.save(request)
 
         api_contentads.init_insert_content_ad_action(content_ad_source, request)
 
@@ -139,7 +137,7 @@ class ContentAdsApiTestCase(TestCase):
                     'title': content_ad_source.content_ad.title,
                     'url': content_ad_source.content_ad.url_with_tracking_codes(
                         url_helper.combine_tracking_codes(
-                            ad_group_settings.get_tracking_codes(),
+                            new_ad_group_settings.get_tracking_codes(),
                             ad_group_source.get_tracking_ids(),
                         )
                     ),
@@ -148,10 +146,10 @@ class ContentAdsApiTestCase(TestCase):
                     'image_width': content_ad_source.content_ad.image_width,
                     'image_height': content_ad_source.content_ad.image_height,
                     'image_hash': content_ad_source.content_ad.image_hash,
-                    'display_url': ad_group_settings.display_url,
-                    'brand_name': ad_group_settings.brand_name,
-                    'description': ad_group_settings.description,
-                    'call_to_action': ad_group_settings.call_to_action,
+                    'display_url': content_ad_source.content_ad.batch.display_url,
+                    'brand_name': content_ad_source.content_ad.batch.brand_name,
+                    'description': content_ad_source.content_ad.description,
+                    'call_to_action': content_ad_source.content_ad.call_to_action,
                     'tracking_slug': ad_group_source.source.tracking_slug
                 },
             },
