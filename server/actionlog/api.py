@@ -648,6 +648,7 @@ def _init_create_campaign(ad_group_source, name, request):
                 })
                 ad_group_tracking_codes = ad_group_settings.get_tracking_codes()
 
+            # tracking code should always be ad group settings first, ad group source ids second
             payload['args']['extra'].update({
                 'tracking_code': utils.url_helper.combine_tracking_codes(
                     ad_group_tracking_codes,
