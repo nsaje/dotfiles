@@ -148,8 +148,8 @@ class ContentAdsApiTestCase(TestCase):
                     'image_hash': content_ad_source.content_ad.image_hash,
                     'display_url': content_ad_source.content_ad.batch.display_url,
                     'brand_name': content_ad_source.content_ad.batch.brand_name,
-                    'description': content_ad_source.content_ad.description,
-                    'call_to_action': content_ad_source.content_ad.call_to_action,
+                    'description': content_ad_source.content_ad.batch.description,
+                    'call_to_action': content_ad_source.content_ad.batch.call_to_action,
                     'tracking_slug': ad_group_source.source.tracking_slug
                 },
             },
