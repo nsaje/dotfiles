@@ -351,8 +351,9 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
 
         ad_group_sources = ad_group.adgroupsource_set.all()
         for ad_group_source in ad_group_sources:
+            new_field_value = field_value
             if field_name == 'tracking_code':
-                field_value = utils.url_helper.combine_tracking_codes(
+                new_field_value = utils.url_helper.combine_tracking_codes(
                     new_settings.get_tracking_codes(),
                     ad_group_source.get_tracking_ids(),
                 )
@@ -369,11 +370,11 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
 
                 if field_name == 'ad_group_name':
                     field_name = 'name'
-                    field_value = ad_group_source.get_external_name()
+                    new_field_value = ad_group_source.get_external_name()
 
                 actions.extend(
                     actionlog.api.set_ad_group_source_settings(
-                        {field_name: field_value},
+                        {field_name: new_field_value},
                         ad_group_source,
                         request,
                         order,
@@ -390,7 +391,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                         source_id=ad_group_source.source_id
                 ).select_related('content_ad'):
                     changes = {
-                        'url': cas.content_ad.url_with_tracking_codes(field_value),
+                        'url': cas.content_ad.url_with_tracking_codes(new_field_value),
                     }
 
                     actions.append(
@@ -413,14 +414,14 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
 
                 if field_name == 'tracking_code':
                     tracking_slug = ad_group_source.source.tracking_slug
-                    field_value = _substitute_tracking_macros(field_value, tracking_slug)
+                    new_field_value = _substitute_tracking_macros(new_field_value, tracking_slug)
 
                 actionlog.api.init_set_ad_group_property_order(
                     ad_group_source.ad_group,
                     request,
                     source=ad_group_source,
                     prop=field_name,
-                    value=field_value
+                    value=new_field_value
                 )
 
     return actions
