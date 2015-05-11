@@ -107,8 +107,8 @@ class AdGroupSettings(api_common.BaseApiView):
 
         self.set_ad_group(ad_group, form.cleaned_data)
 
-        settings = models.AdGroupSettings()
-        self.set_settings(settings, current_settings, ad_group, form.cleaned_data)
+        settings = current_settings.copy_settings()
+        self.set_settings(settings, form.cleaned_data)
 
         actionlogs_to_send = []
         with transaction.atomic():
@@ -119,16 +119,19 @@ class AdGroupSettings(api_common.BaseApiView):
             settings.save(request)
 
             if current_settings.state == constants.AdGroupSettingsState.INACTIVE \
-            and settings.state == constants.AdGroupSettingsState.ACTIVE:
-                actionlogs_to_send.extend(actionlog_api.init_enable_ad_group(ad_group, request, order=order, send=False))
+                    and settings.state == constants.AdGroupSettingsState.ACTIVE:
+                actionlogs_to_send.extend(actionlog_api.init_enable_ad_group(
+                    ad_group, request, order=order, send=False))
 
             if current_settings.state == constants.AdGroupSettingsState.ACTIVE \
-            and settings.state == constants.AdGroupSettingsState.INACTIVE:
-                actionlogs_to_send.extend(actionlog_api.init_pause_ad_group(ad_group, request, order=order, send=False))
+                    and settings.state == constants.AdGroupSettingsState.INACTIVE:
+                actionlogs_to_send.extend(actionlog_api.init_pause_ad_group(
+                    ad_group, request, order=order, send=False))
 
             current_settings.ad_group_name = previous_ad_group_name
             settings.ad_group_name = ad_group.name
-            actionlogs_to_send.extend(api.order_ad_group_settings_update(ad_group, current_settings, settings, request))
+            actionlogs_to_send.extend(api.order_ad_group_settings_update(
+                ad_group, current_settings, settings, request))
 
         user = request.user
         changes = current_settings.get_setting_changes(settings)
@@ -170,8 +173,7 @@ class AdGroupSettings(api_common.BaseApiView):
     def set_ad_group(self, ad_group, resource):
         ad_group.name = resource['name']
 
-    def set_settings(self, settings, current_settings, ad_group, resource):
-        settings.ad_group = ad_group
+    def set_settings(self, settings, resource):
         settings.state = resource['state']
         settings.start_date = resource['start_date']
         settings.end_date = resource['end_date']
@@ -179,7 +181,6 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.daily_budget_cc = resource['daily_budget_cc']
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
-        settings.tracking_code = current_settings.tracking_code
         settings.ad_group_name = resource['name']
 
 
@@ -629,8 +630,8 @@ class AdGroupAgency(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        settings = models.AdGroupSettings()
-        self.set_settings(settings, current_settings, ad_group, form.cleaned_data)
+        settings = current_settings.copy_settings()
+        settings.tracking_code = form.cleaned_data['tracking_code']
 
         actions = []
         with transaction.atomic():
@@ -638,7 +639,8 @@ class AdGroupAgency(api_common.BaseApiView):
 
             current_settings.ad_group_name = previous_ad_group_name
             settings.ad_group_name = ad_group.name
-            actions = api.order_ad_group_settings_update(ad_group, current_settings, settings, request, send=False)
+            actions = api.order_ad_group_settings_update(
+                ad_group, current_settings, settings, request, send=False)
 
         zwei_actions.send_multiple(actions)
 
@@ -667,17 +669,6 @@ class AdGroupAgency(api_common.BaseApiView):
             }
 
         return result
-
-    def set_settings(self, settings, current_settings, ad_group, resource):
-        settings.ad_group = ad_group
-        settings.state = current_settings.state
-        settings.start_date = current_settings.start_date
-        settings.end_date = current_settings.end_date
-        settings.cpc_cc = current_settings.cpc_cc
-        settings.daily_budget_cc = current_settings.daily_budget_cc
-        settings.target_devices = current_settings.target_devices
-        settings.target_regions = current_settings.target_regions
-        settings.tracking_code = resource['tracking_code']
 
     def get_history(self, ad_group, user):
         settings = models.AdGroupSettings.objects.\
