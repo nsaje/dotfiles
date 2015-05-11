@@ -108,7 +108,12 @@ class ContentAdsApiTestCase(TestCase):
 
         request = HttpRequest()
         request.user = User()
-        api_contentads.init_update_content_ad_action(content_ad_source, request)
+
+        changes = {
+            'state': dash.constants.ContentAdSourceState.INACTIVE,
+        }
+
+        api_contentads.init_update_content_ad_action(content_ad_source, changes, request)
 
         action = models.ActionLog.objects.get(
             ad_group_source=ad_group_source,
@@ -133,9 +138,11 @@ class ContentAdsApiTestCase(TestCase):
                 'content_ad_id': content_ad_source.get_source_id(),
                 'content_ad': {
                     'state': dash.constants.ContentAdSourceState.INACTIVE,
+                },
+                'extra': {
                     'submission_status': dash.constants.ContentAdSubmissionStatus.APPROVED,
                     'source_content_ad_id': '123456789',
-                },
+                }
             },
             'callback_url': callback
         }
