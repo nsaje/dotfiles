@@ -265,9 +265,14 @@ def update_content_ads_submission_status(ad_group_source, request=None):
 
     actions = []
     for cas in content_ad_sources_list:
+        changes = {
+            'state': cas.state,
+        }
+
         actions.append(
             actionlog.api_contentads.init_update_content_ad_action(
                 cas,
+                changes,
                 request=request,
                 send=False,
             )
@@ -332,7 +337,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
         changes['iab_category'] = campaign_settings.iab_category
 
     if not changes:
-        return
+        return []
 
     order = actionlog.models.ActionLogOrder.objects.create(
         order_type=actionlog.constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE

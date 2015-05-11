@@ -1223,6 +1223,18 @@ class ContentAd(models.Model):
             '{}x{}.jpg'.format(width, height)
         ])
 
+    def __unicode__(self):
+        return '{cn}(id={id}, ad_group={ad_group}, image_id={image_id}, state={state})'.format(
+            cn=self.__class__.__name__,
+            id=self.id,
+            ad_group=self.ad_group,
+            image_id=self.image_id,
+            state=self.state,
+        )
+
+    def __str__(self):
+        return unicode(self).encode('ascii', 'ignore')
+
     class Meta:
         get_latest_by = 'created_dt'
 
@@ -1271,6 +1283,21 @@ class ContentAdSource(models.Model):
             return self.content_ad.id
         else:
             return self.source_content_ad_id
+
+    def __unicode__(self):
+        return '{}(id={}, content_ad={}, source={}, state={}, source_state={}, submission_status={}, source_content_ad_id={})'.format(
+            self.__class__.__name__,
+            self.id,
+            self.content_ad,
+            self.source,
+            self.state,
+            self.source_state,
+            self.submission_status,
+            self.source_content_ad_id,
+        )
+
+    def __str__(self):
+        return unicode(self).encode('ascii', 'ignore')
 
 
 class Article(models.Model):

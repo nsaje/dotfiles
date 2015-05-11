@@ -662,34 +662,6 @@ class OutbrainAccountAdmin(admin.ModelAdmin):
     )
 
 
-def approve_content_ad_sources(modeladmin, request, queryset):
-    logger.info(
-        'BULK APPROVE CONTENT ADS: Bulk approve content ads started. Contentads: {}'.format(
-            [el.id for el in queryset]
-        )
-    )
-    for content_ad_source in queryset:
-        content_ad_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
-        content_ad_source.save()
-        actionlog.api_contentads.init_update_content_ad_action(content_ad_source, request)
-approve_content_ad_sources.short_description = 'Mark selected content ad sources as APPROVED'
-
-
-def reject_content_ad_sources(modeladmin, request, queryset):
-    logger.info(
-        'BULK REJECT CONTENT ADS: Bulk reject content ads started. Contentads: {}'.format(
-            [el.id for el in queryset]
-        )
-    )
-    for content_ad_source in queryset:
-        content_ad_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
-        content_ad_source.state = constants.ContentAdSourceState.INACTIVE
-        content_ad_source.source_state = constants.ContentAdSourceState.INACTIVE
-        content_ad_source.save()
-        actionlog.api_contentads.init_update_content_ad_action(content_ad_source, request)
-reject_content_ad_sources.short_description = 'Mark selected content ad sources as REJECTED'
-
-
 class ContentAdSourceAdmin(admin.ModelAdmin):
     list_display = (
         'content_ad_id_',
@@ -703,8 +675,6 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
     )
 
     list_filter = ('source', 'submission_status')
-
-    actions = [approve_content_ad_sources, reject_content_ad_sources]
 
     display_submission_status_colors = {
         constants.ContentAdSubmissionStatus.APPROVED: '#5cb85c',
@@ -736,7 +706,15 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
 
         if current_content_ad_source.submission_status != content_ad_source.submission_status and\
            content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
-            actionlog.api_contentads.init_update_content_ad_action(content_ad_source, request)
+            changes = {
+                'state': content_ad_source.state,
+            }
+
+            actionlog.api_contentads.init_update_content_ad_action(
+                content_ad_source,
+                changes,
+                request
+            )
 
     def __init__(self, *args, **kwargs):
         super(ContentAdSourceAdmin, self).__init__(*args, **kwargs)
