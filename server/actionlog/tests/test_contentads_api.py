@@ -101,6 +101,9 @@ class ContentAdsApiTestCase(TestCase):
             )
         )
 
+        ad_group_source.can_manage_content_ads = True
+        ad_group_source.save(request)
+
         ad_group_settings = dash.models.AdGroupSettings(
             ad_group=ad_group_source.ad_group,
             tracking_code='a=b'
@@ -123,7 +126,6 @@ class ContentAdsApiTestCase(TestCase):
             settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
         )
 
-        ad_group_settings = dash.models.AdGroupSettings.objects.get(pk=1)
         payload = {
             'source': ad_group_source.source.source_type.type,
             'action': constants.Action.INSERT_CONTENT_AD,

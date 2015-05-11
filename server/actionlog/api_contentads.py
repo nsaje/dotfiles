@@ -26,7 +26,7 @@ def init_insert_content_ad_action(content_ad_source, request=None, send=True):
                                                             source=content_ad_source.source)
     batch = content_ad_source.content_ad.batch
 
-    if ad_group_source.source.update_tracking_codes_on_content_ads():
+    if ad_group_source.source.update_tracking_codes_on_content_ads() and ad_group_source.can_manage_content_ads:
         try:
             ad_group_tracking_codes = dash.models.AdGroupSettings.objects.latest('created_dt').get_tracking_codes()
         except dash.models.AdGroupSettings.DoesNotExist:
@@ -40,6 +40,8 @@ def init_insert_content_ad_action(content_ad_source, request=None, send=True):
         )
     else:
         url = content_ad_source.content_ad.url
+
+    print "API URL", url
 
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key,
