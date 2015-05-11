@@ -19,6 +19,16 @@ from utils.url_helper import clean_url
 logger = logging.getLogger(__name__)
 
 
+# State of an ad group is set automatically.
+# For changes of cpc_cc and daily_budget_cc, mail is sufficient
+# There should be no manual actions for
+# display_url, brand_name, description and call_to_action
+BLOCKED_AD_GROUP_SETTINGS = [
+    'state', 'cpc_cc', 'daily_budget_cc', 'display_url',
+    'brand_name', 'description', 'call_to_action',
+]
+
+
 def cc_to_decimal(val_cc):
     if val_cc is None:
         return None
@@ -330,12 +340,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
 
     actionlogs_to_send = []
     for field_name, field_value in changes.iteritems():
-        # State of an ad group is set automatically.
-        # For changes of cpc_cc and daily_budget_cc, mail is sufficient
-        # There should be no manual actions for
-        # display_url, brand_name, description and call_to_action
-        if field_name in ['state', 'cpc_cc', 'daily_budget_cc', 'display_url',
-                          'brand_name', 'description', 'call_to_action']:
+        if field_name in BLOCKED_AD_GROUP_SETTINGS:
             continue
 
         ad_group_sources = ad_group.adgroupsource_set.all()
@@ -370,9 +375,27 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     logger.info('Skipping create manual action for property set %s for deprecated source %d' % (field_name, source.id))
                     continue
 
+                if field_name == 'tracking_code':
+                    tracking_slug = ad_group_source.source.tracking_slug
+                    field_value = _substitute_tracking_macros(field_value, tracking_slug)
+
                 actionlog.api.init_set_ad_group_property_order(ad_group_source.ad_group, request, source=ad_group_source, prop=field_name, value=field_value)
 
     return actionlogs_to_send
+
+def _substitute_tracking_macros(tracking_code, tracking_slug):
+    '''
+    This code is duplicated in Z2 -- which will eventually become a problem.
+    '''
+    substitutions = {
+        '{sourceDomain}': tracking_slug,
+        '{sourceDomainUnderscore}': tracking_slug.replace('.', '_'),
+    }
+
+    suffix_tracking_code = tracking_code
+    for substitution, value in substitutions.iteritems():
+        suffix_tracking_code = suffix_tracking_code.replace(substitution, value)
+    return suffix_tracking_code
 
 
 def reconcile_articles(ad_group, raw_articles):
