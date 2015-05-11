@@ -66,20 +66,20 @@ def init_insert_content_ad_action(content_ad_source, request=None, send=True):
     return action
 
 
-def init_update_content_ad_action(content_ad_source, request, send=True):
+def init_update_content_ad_action(content_ad_source, changes, request, send=True):
+    assert type(changes) is dict, 'changes is not of type dict. changes: {}'.format(changes)
+
     ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.ad_group,
                                                             source=content_ad_source.source)
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key,
         'content_ad_id': content_ad_source.get_source_id(),
-        'content_ad': {
-            'state': content_ad_source.state,
-            'submission_status': content_ad_source.submission_status
-        }
+        'content_ad': changes,
+        'extra': {
+            'submission_status': content_ad_source.submission_status,
+            'source_content_ad_id': content_ad_source.source_content_ad_id,
+        },
     }
-
-    if content_ad_source.source_content_ad_id:
-        args['content_ad']['source_content_ad_id'] = content_ad_source.source_content_ad_id
 
     action = _create_action(
         ad_group_source,
