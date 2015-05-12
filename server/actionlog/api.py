@@ -530,8 +530,8 @@ def _init_set_campaign_property(ad_group_source, prop, value, order, request):
     msg = "_init_set_campaign_property started: ad_group_source.id: {}, prop: {}, value: {}, order.id: {}".format(
         ad_group_source.id,
         prop,
-        value,
-        order.id if order else order
+        value.encode('utf-8'),
+        order.id if order else ''
     )
     logger.info(msg)
     try:
