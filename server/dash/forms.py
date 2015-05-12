@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
 import unicodecsv
-import json
-
 import dateutil.parser
 import rfc3987
 from decimal import Decimal
@@ -24,7 +22,6 @@ class BaseApiForm(forms.Form):
 class AdvancedDateTimeField(forms.fields.DateTimeField):
     def strptime(self, value, format):
         return dateutil.parser.parse(value)
-
 
 
 class AdGroupSettingsForm(forms.Form):
@@ -369,6 +366,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
 
             self._validate_header(header)
 
+            count_rows = 0
             data = []
             for row in reader:
                 # unicodecsv stores values of all unneeded columns
@@ -376,7 +374,11 @@ class AdGroupAdsPlusUploadForm(forms.Form):
                 if None in row:
                     del row[None]
 
+                count_rows += 1
                 data.append(row)
+
+            if count_rows == 0:
+                raise forms.ValidationError('Uploaded file is empty.')
 
             return data
 
