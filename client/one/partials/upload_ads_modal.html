@@ -1,80 +1,85 @@
 <div class="modal-body">
     <form class="upload-form form-horizontal">
         <div class="form-group" ng-class="{'has-error': !!errors.file}">
-            <div class="col-xs-4">
+            <div class="col-xs-3">
                 <input type="text" id="file-input" readonly class="form-control" placeholder="No file chosen" ng-model="formData.file.name">
             </div>
             <div class="col-xs-4">
                 <button type="button" class="btn btn-default" zem-file-input="formData.file">Choose file</button>
             </div>
-            <div class="col-xs-4">
-                <label ng-repeat="error in errors.file" class="control-label small" for="file-input" ng-bind-html="error"></label>
+            <div class="col-xs-5">
+                <label ng-repeat="error in errors.file" class="control-label small error" for="file-input" ng-bind-html="error"></label>
+                <label ng-class="{'error-shown': errors.file}" class="control-label small sample-link">
+                    <a href="{{ config.static_url }}/one/assets/content_ad_upload_sample.csv">Download sample CSV</a>
+                </label>
             </div>
         </div>
         <div class="form-group" ng-class="{'has-error': !!errors.batchName}">
-            <label for="batch-name-input" class="col-xs-4 control-label">
-                Upload batch name
+            <label for="batch-name-input" class="col-xs-3 control-label">
+                Batch name
                 <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The name of the upload batch." placement="top"></zem-help-popover>
             </label>
-            <div class="col-xs-4">
-                <input type="text" id="batch-name-input" class="form-control" ng-model="formData.batchName">
+            <div class="col-xs-5">
+                <input type="text" id="batch-name-input" class="form-control" ng-model="formData.batchName" ng-focus="clearErrors('batchName')">
             </div>
             <div class="col-xs-4">
-                <label ng-repeat="error in errors.batchName" class="control-label small" for="batch-name-input">{{ error }}</label>
+                <label ng-repeat="error in errors.batchName" class="control-label small error" for="batch-name-input">{{ error }}</label>
             </div>
         </div>
 
+        <hr>
+
         <div class="form-group" ng-class="{'has-error': !!errors.displayUrl}">
-            <label for="display-url-input" class="col-xs-4 control-label">
+            <label for="display-url-input" class="col-xs-3 control-label">
                 Display URL
                 <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Advertiser's display URL." placement="top"></zem-help-popover>
             </label>
-            <div class="col-xs-4">
+            <div class="col-xs-5">
                 <input id="display-url-input" type="text" class="form-control" ng-model="formData.displayUrl" ng-focus="clearErrors('displayUrl')">
             </div>
 
             <label ng-if="!errors.displayUrl" class="control-label small">{{formData.displayUrl.length}}/25</label>
-            <label ng-repeat="error in errors.displayUrl" class="control-label small" for="display-url-input">{{ error }}</label>
+            <label ng-repeat="error in errors.displayUrl" class="control-label small error" for="display-url-input">{{ error }}</label>
         </div>
 
         <div class="form-group" ng-class="{'has-error': !!errors.brandName}">
-            <label for="brand-name-input" class="col-xs-4 control-label">
+            <label for="brand-name-input" class="col-xs-3 control-label">
                 Brand name
                 <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Advertiser's brand name." placement="top"></zem-help-popover>
             </label>
-            <div class="col-xs-4">
+            <div class="col-xs-5">
                 <input id="brand-name-input" type="text" class="form-control" ng-model="formData.brandName" ng-focus="clearErrors('brandName')">
             </div>
 
             <label ng-if="!errors.brandName" class="control-label small">{{formData.brandName.length}}/25</label>
-            <label ng-repeat="error in errors.brandName" class="control-label small" for="brand-name-input">{{ error }}</label>
+            <label ng-repeat="error in errors.brandName" class="control-label small error" for="brand-name-input">{{ error }}</label>
         </div>
 
         <div class="form-group" ng-class="{'has-error': !!errors.callToAction}">
-            <label for="call-to-action-input" class="col-xs-4 control-label">
+            <label for="call-to-action-input" class="col-xs-3 control-label">
                 Call to action
                 <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Call to action text." placement="top"></zem-help-popover>
             </label>
-            <div class="col-xs-4">
+            <div class="col-xs-5">
                 <input id="call-to-action-input" type="text" class="form-control" ng-model="formData.callToAction" ng-focus="clearErrors('callToAction')">
             </div>
 
             <label ng-if="!errors.callToAction" class="control-label small">{{formData.callToAction.length}}/25</label>
-            <label ng-repeat="error in errors.callToAction" class="control-label small" for="call-to-action-input">{{ error }}</label>
+            <label ng-repeat="error in errors.callToAction" class="control-label small error" for="call-to-action-input">{{ error }}</label>
         </div>
 
         <div class="form-group" ng-class="{'has-error': !!errors.description}">
-            <label for="description-input" class="col-xs-4 control-label">
+            <label for="description-input" class="col-xs-3 control-label">
                 Description
                 <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Description of uploaded content ads." placement="top"></zem-help-popover>
             </label>
-            <div class="col-xs-4">
+            <div class="col-xs-5">
                 <textarea id="description-input" type="text" class="form-control" ng-model="formData.description" ng-focus="clearErrors('description')">
                 </textarea>
             </div>
 
             <label ng-if="!errors.description" class="control-label small">{{formData.description.length}}/100</label>
-            <label ng-repeat="error in errors.description" class="control-label small" for="description-input">{{ error }}</label>
+            <label ng-repeat="error in errors.description" class="control-label small error" for="description-input">{{ error }}</label>
         </div>
 
         <div class="form-group">
@@ -85,7 +90,6 @@
                 <button type="button" class="btn btn-default" ng-click="$dismiss()">Cancel</button>
             </div>
             <div class="loader col-xs-1" ng-show="isInProgress"></div>
-            <a href="{{ config.static_url }}/one/assets/content_ad_upload_sample.csv" id="download-sample-link" class="col-xs-4 control-label">Download sample CSV</a>
         </div>
     </form>
 </div>

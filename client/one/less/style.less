@@ -2240,6 +2240,7 @@ zem-editable-currency-field {
 
     .modal-dialog {
         margin-top: 22vh;
+        width: 610px;
 
         .modal-content {
             border-top: 3px solid @default-color;
@@ -2265,10 +2266,6 @@ zem-editable-currency-field {
                     background-color: #fff;
                 }
 
-                #download-sample-link {
-                    float: right;
-                }
-
                 .loader {
                     margin: 7px 0;
                 }
@@ -2281,10 +2278,30 @@ zem-editable-currency-field {
                     font-size: 12px;
                     font-weight: 400;
                     padding-top: 9px;
+
+                    &[for=file-input].error {
+                        padding-top: 3px;
+                        line-height: 14px;
+                        display: block;
+                    }
+
+                    &.sample-link.error-shown {
+                        padding-top: 2px;
+                        line-height: 14px;
+                        display: block;
+
+                        a {
+                            color: @default-color;
+                        }
+                    }
                 }
 
                 #file-input:focus {
                     border: 1px solid #d2d2d2;
+                }
+
+                #description-input {
+                    height: 100px;
                 }
             }
 
