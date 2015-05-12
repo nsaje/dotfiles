@@ -371,7 +371,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
 
                 if field_name == 'ad_group_name':
                     field_name = 'name'
-                    new_field_value = ad_group_source.get_external_name()
+                    new_field_value = ad_group_source.get_external_name(new_adgroup_name=field_value)
 
                 actions.extend(
                     actionlog.api.set_ad_group_source_settings(

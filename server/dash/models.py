@@ -869,10 +869,13 @@ class AdGroupSource(models.Model):
 
         return tracking_codes
 
-    def get_external_name(self):
+    def get_external_name(self, new_adgroup_name=None):
         account_name = self.ad_group.campaign.account.name
         campaign_name = self.ad_group.campaign.name
-        ad_group_name = self.ad_group.name
+        if new_adgroup_name is None:
+            ad_group_name = self.ad_group.name
+        else:
+            ad_group_name = new_adgroup_name
         ad_group_id = self.ad_group.id
         source_name = self.source.name
         return u'ONE: {} / {} / {} / {} / {}'.format(
