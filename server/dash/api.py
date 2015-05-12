@@ -14,9 +14,20 @@ from dash import exc
 from dash import models
 from dash import constants
 from dash import consistency
-from utils.url_helper import clean_url
+
+import utils.url_helper
 
 logger = logging.getLogger(__name__)
+
+
+# State of an ad group is set automatically.
+# For changes of cpc_cc and daily_budget_cc, mail is sufficient
+# There should be no manual actions for
+# display_url, brand_name, description and call_to_action
+BLOCKED_AD_GROUP_SETTINGS = [
+    'state', 'cpc_cc', 'daily_budget_cc', 'display_url',
+    'brand_name', 'description', 'call_to_action',
+]
 
 
 def cc_to_decimal(val_cc):
@@ -255,9 +266,14 @@ def update_content_ads_submission_status(ad_group_source, request=None):
 
     actions = []
     for cas in content_ad_sources_list:
+        changes = {
+            'state': cas.state,
+        }
+
         actions.append(
             actionlog.api_contentads.init_update_content_ad_action(
                 cas,
+                changes,
                 request=request,
                 send=False,
             )
@@ -328,51 +344,103 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
         order_type=actionlog.constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
     )
 
-    actionlogs_to_send = []
+    actions = []
     for field_name, field_value in changes.iteritems():
-        # State of an ad group is set automatically.
-        # For changes of cpc_cc and daily_budget_cc, mail is sufficient
-        # There should be no manual actions for
-        # display_url, brand_name, description and call_to_action
-        if field_name in ['state', 'cpc_cc', 'daily_budget_cc', 'display_url',
-                          'brand_name', 'description', 'call_to_action']:
+        if field_name in BLOCKED_AD_GROUP_SETTINGS:
             continue
 
         ad_group_sources = ad_group.adgroupsource_set.all()
         for ad_group_source in ad_group_sources:
+            new_field_value = field_value
+            if field_name == 'tracking_code':
+                new_field_value = utils.url_helper.combine_tracking_codes(
+                    new_settings.get_tracking_codes(),
+                    ad_group_source.get_tracking_ids(),
+                )
 
             # if source supports setting action do an automatic update,
             # otherwise do manual actiontype
             source = ad_group_source.source
             if field_name == 'start_date' and source.can_modify_start_date() or\
-                field_name == 'end_date' and source.can_modify_end_date() or\
-                field_name in ('target_devices', 'target_regions') and source.can_modify_targeting() or\
-                field_name == 'tracking_code' and source.can_modify_tracking_codes() or\
-                field_name == 'iab_category' and source.can_modify_ad_group_iab_category() or\
-                field_name == 'ad_group_name' and source.can_modify_ad_group_name():
+               field_name == 'end_date' and source.can_modify_end_date() or\
+               field_name in ('target_devices', 'target_regions') and source.can_modify_targeting() or\
+               (field_name == 'tracking_code' and source.can_modify_tracking_codes() and not
+                source.update_tracking_codes_on_content_ads()) or\
+               field_name == 'iab_category' and source.can_modify_ad_group_iab_category() or\
+               field_name == 'ad_group_name' and source.can_modify_ad_group_name():
 
                 if field_name == 'ad_group_name':
-                    # adgroup name should have been changed by this point
                     field_name = 'name'
-                    field_value = ad_group_source.get_external_name()
+                    new_field_value = ad_group_source.get_external_name()
 
-                actionlogs_to_send.extend(
+                actions.extend(
                     actionlog.api.set_ad_group_source_settings(
-                        {field_name: field_value},
+                        {field_name: new_field_value},
                         ad_group_source,
                         request,
                         order,
                         send=send
                     )
                 )
-            else:
-                if source.deprecated:
-                    logger.info('Skipping create manual action for property set %s for deprecated source %d' % (field_name, source.id))
+
+            elif field_name == 'tracking_code' and source.update_tracking_codes_on_content_ads():
+                if not ad_group_source.can_manage_content_ads:
                     continue
 
-                actionlog.api.init_set_ad_group_property_order(ad_group_source.ad_group, request, source=ad_group_source, prop=field_name, value=field_value)
+                for cas in models.ContentAdSource.objects.filter(
+                        content_ad__ad_group_id=ad_group_source.ad_group_id,
+                        source_id=ad_group_source.source_id
+                ).select_related('content_ad'):
+                    changes = {
+                        'url': cas.content_ad.url_with_tracking_codes(new_field_value),
+                    }
 
-    return actionlogs_to_send
+                    actions.append(
+                        actionlog.api_contentads.init_update_content_ad_action(
+                            cas,
+                            changes,
+                            request,
+                            send=send
+                        )
+                    )
+
+            else:
+                if source.deprecated:
+                    logger.info(
+                        'Skipping create manual action for property set %s for deprecated source %d',
+                        field_name,
+                        source.id
+                    )
+                    continue
+
+                if field_name == 'tracking_code':
+                    tracking_slug = ad_group_source.source.tracking_slug
+                    new_field_value = _substitute_tracking_macros(new_field_value, tracking_slug)
+
+                actionlog.api.init_set_ad_group_property_order(
+                    ad_group_source.ad_group,
+                    request,
+                    source=ad_group_source,
+                    prop=field_name,
+                    value=new_field_value
+                )
+
+    return actions
+
+
+def _substitute_tracking_macros(tracking_code, tracking_slug):
+    '''
+    This code is duplicated in Z2 -- which will eventually become a problem.
+    '''
+    substitutions = {
+        '{sourceDomain}': tracking_slug,
+        '{sourceDomainUnderscore}': tracking_slug.replace('.', '_'),
+    }
+
+    suffix_tracking_code = tracking_code
+    for substitution, value in substitutions.iteritems():
+        suffix_tracking_code = suffix_tracking_code.replace(substitution, value)
+    return suffix_tracking_code
 
 
 def reconcile_articles(ad_group, raw_articles):
@@ -390,7 +458,7 @@ def reconcile_articles(ad_group, raw_articles):
                 'Missing article url. title={title}'.format(title=title)
             )
 
-        raw_article['url'] = clean_url(url)[0]
+        raw_article['url'] = utils.url_helper.clean_url(url)[0]
 
     articles = list(models.Article.objects.filter(ad_group=ad_group))
 

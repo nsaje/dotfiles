@@ -8,6 +8,7 @@ from django.http.request import HttpRequest
 
 import actionlog.constants
 import actionlog.models
+import actionlog.api
 
 from dash import models
 from dash import api
@@ -98,6 +99,87 @@ class UpdateContentAdSourceState(TestCase):
         content_ad_source = models.ContentAdSource.objects.get(pk=1)
         self.assertEqual(content_ad_source.source_state, data['source_state'])
         self.assertEqual(content_ad_source.submission_status, data['submission_status'])
+
+
+class UpdateAdGroupSourceSettings(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.props = []
+        self.values = []
+
+    def _stub_init_set_ad_group_property_order(self, ad_group, request, source=None, prop="", value=""):
+        self.props.append(prop)
+        self.values.append(value)
+
+    def test_basic_manual_actions(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.maintenance = True
+        ad_group_source.save()
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.ad_group_name = "Test"
+
+        ret = api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
+        self.assertEqual([], ret)
+
+    def test_tracking_code_manual_action(self):
+        actionlog.api.init_set_ad_group_property_order = self._stub_init_set_ad_group_property_order
+
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+
+        s1 = models.Source.objects.get(pk=1)
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.tracking_code = "test={amazing}&blob={sourceDomain}&x={sourceDomainUnderscore}"
+
+        ret = api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
+        self.assertEqual([], ret)
+        self.assertEqual('tracking_code', self.props[0])
+        self.assertTrue('test={amazing}' + '&blob={slug}&x={slug}&_z1_adgid=1&_z1_msid={slug}'.format(slug=s1.tracking_slug) in self.values)
+        self.init_set_ad_group_property_order_value = None
+
+    def test_tracking_codes_automatic(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.source_type.available_actions.add(
+            models.SourceAction.objects.get(
+                action=constants.SourceAction.CAN_MODIFY_TRACKING_CODES,
+            )
+        )
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.tracking_code = "a=b"
+
+        ret = api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
+        self.assertEqual(2, len(ret))
+        self.assertEqual(ret[0].action, actionlog.constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(ret[1].action, actionlog.constants.Action.SET_CAMPAIGN_STATE)
+
+    def test_tracking_codes_automatic_per_content_ad(self):
+        ad_group_source1 = models.AdGroupSource.objects.get(id=1)
+        ad_group_source1.can_manage_content_ads = True
+        ad_group_source1.save()
+
+        ad_group_source2 = models.AdGroupSource.objects.get(id=1)
+        ad_group_source2.can_manage_content_ads = True
+        ad_group_source2.save()
+
+        ad_group_source1.source.source_type.available_actions.add(
+            models.SourceAction.objects.get(
+                action=constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS,
+            )
+        )
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.tracking_code = "a=b"
+
+        ret = api.order_ad_group_settings_update(ad_group_source1.ad_group, adgs1, adgs2, None)
+        self.assertEqual(1, len(ret))
+        self.assertEqual(ret[0].action, actionlog.constants.Action.UPDATE_CONTENT_AD)
 
 
 class UpdateAdGroupSourceState(TestCase):

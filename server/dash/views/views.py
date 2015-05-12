@@ -724,8 +724,18 @@ class AdGroupContentAdState(api_common.BaseApiView):
                 content_ad_source.save()
 
                 if prev_state != state:
-                    actions.append(actionlog.api_contentads.init_update_content_ad_action(
-                        content_ad_source, request, send=False))
+                    changes = {
+                        'state': content_ad_source.state,
+                    }
+
+                    actions.append(
+                        actionlog.api_contentads.init_update_content_ad_action(
+                            content_ad_source,
+                            changes,
+                            request,
+                            send=False,
+                        )
+                    )
 
         actionlog.zwei_actions.send_multiple(actions)
 

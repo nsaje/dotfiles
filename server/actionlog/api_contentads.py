@@ -16,6 +16,8 @@ import actionlog.zwei_actions
 import dash.constants
 import dash.models
 
+import utils.url_helper
+
 logger = logging.getLogger(__name__)
 
 
@@ -24,13 +26,28 @@ def init_insert_content_ad_action(content_ad_source, request=None, send=True):
                                                             source=content_ad_source.source)
     batch = content_ad_source.content_ad.batch
 
+    if ad_group_source.source.update_tracking_codes_on_content_ads() and ad_group_source.can_manage_content_ads:
+        try:
+            ad_group_tracking_codes = dash.models.AdGroupSettings.objects.latest('created_dt').get_tracking_codes()
+        except dash.models.AdGroupSettings.DoesNotExist:
+            ad_group_tracking_codes = None
+
+        url = content_ad_source.content_ad.url_with_tracking_codes(
+            utils.url_helper.combine_tracking_codes(
+                ad_group_tracking_codes,
+                ad_group_source.get_tracking_ids(),
+            )
+        )
+    else:
+        url = content_ad_source.content_ad.url
+
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key,
         'content_ad_id': content_ad_source.get_source_id(),
         'content_ad': {
             'state': content_ad_source.state,
             'title': content_ad_source.content_ad.title,
-            'url': content_ad_source.content_ad.url,
+            'url': url,
             'submission_status': content_ad_source.submission_status,
             'image_id': content_ad_source.content_ad.image_id,
             'image_width': content_ad_source.content_ad.image_width,
@@ -66,20 +83,20 @@ def init_insert_content_ad_action(content_ad_source, request=None, send=True):
     return action
 
 
-def init_update_content_ad_action(content_ad_source, request, send=True):
+def init_update_content_ad_action(content_ad_source, changes, request, send=True):
+    assert type(changes) is dict, 'changes is not of type dict. changes: {}'.format(changes)
+
     ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.ad_group,
                                                             source=content_ad_source.source)
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key,
         'content_ad_id': content_ad_source.get_source_id(),
-        'content_ad': {
-            'state': content_ad_source.state,
-            'submission_status': content_ad_source.submission_status
-        }
+        'content_ad': changes,
+        'extra': {
+            'submission_status': content_ad_source.submission_status,
+            'source_content_ad_id': content_ad_source.source_content_ad_id,
+        },
     }
-
-    if content_ad_source.source_content_ad_id:
-        args['content_ad']['source_content_ad_id'] = content_ad_source.source_content_ad_id
 
     action = _create_action(
         ad_group_source,
