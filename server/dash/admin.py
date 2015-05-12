@@ -518,6 +518,36 @@ class AdGroupAdmin(admin.ModelAdmin):
         threads.SendActionLogsThread(actions).start()
 
 
+def approve_ad_group_sources(modeladmin, request, queryset):
+    logger.info(
+        'BULK APPROVE AD GROUP SOURCES: Bulk approve ad group sources started. Ad group sources: {}'.format(
+            [el.id for el in queryset]
+        )
+    )
+    actions = []
+    for ad_group_source in queryset:
+        ad_group_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
+        ad_group_source.save()
+        actions.extend(api.update_content_ads_submission_status(ad_group_source))
+    threads.SendActionLogsThread(actions).start()
+approve_ad_group_sources.short_description = 'Mark selected ad group sources and their content ads as APPROVED'
+
+
+def reject_ad_group_sources(modeladmin, request, queryset):
+    logger.info(
+        'BULK REJECT AD GROUP SOURCES: Bulk reject ad group sources started. Ad group sources: {}'.format(
+            [el.id for el in queryset]
+        )
+    )
+    actions = []
+    for ad_group_source in queryset:
+        ad_group_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
+        ad_group_source.save()
+        actions.extend(api.update_content_ads_submission_status(ad_group_source))
+    threads.SendActionLogsThread(actions).start()
+reject_ad_group_sources.short_description = 'Mark selected ad group sources and their content ads as REJECTED'
+
+
 class AdGroupSourceAdmin(admin.ModelAdmin):
     list_display = (
         'ad_group_',
@@ -525,6 +555,8 @@ class AdGroupSourceAdmin(admin.ModelAdmin):
         'submission_status_',
         'submission_errors',
     )
+
+    actions = [approve_ad_group_sources, reject_ad_group_sources]
 
     list_filter = ('source', 'submission_status')
 
