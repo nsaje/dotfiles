@@ -12,8 +12,15 @@ def last_n_days(n):
     return [today - datetime.timedelta(days=x) for x in xrange(n)]
 
 
-def get_ad_group_sources(ad_group_ids=None, source_ids=None):
+def get_ad_group_sources(ad_group_ids=None, source_ids=None, include_archived=False):
     ad_group_sources = dash.models.AdGroupSource.objects.all()
+
+    if not include_archived:
+        archived_ad_group_ids = []
+        for ad_group in dash.models.AdGroup.objects.all():
+            if ad_group.is_archived():
+                archived_ad_group_ids.append(ad_group.id)
+        ad_group_sources = ad_group_sources.exclude(ad_group_id__in=archived_ad_group_ids)
 
     if ad_group_ids is not None:
         ad_group_sources = ad_group_sources.filter(ad_group__in=ad_group_ids)
