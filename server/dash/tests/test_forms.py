@@ -84,7 +84,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         form = self._init_form(csv_file, {'display_url': url})
 
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'display_url': ['Ensure this value has at most 25 characters (it has 26).']})
+        self.assertEqual(form.errors, {'display_url': ['Display URL is too long (26/25).']})
 
     def test_form(self):
         csv_file = self._get_csv_file(

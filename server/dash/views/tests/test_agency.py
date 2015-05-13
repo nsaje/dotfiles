@@ -10,6 +10,75 @@ from zemauth.models import User
 from dash import models
 
 
+@patch('dash.views.agency.api.order_ad_group_settings_update')
+@patch('dash.views.agency.actionlog_api')
+class AdGroupSettingsTest(TestCase):
+    fixtures = ['test_api.yaml', 'test_views.yaml']
+
+    def test_put(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        self.maxDiff = None
+        user = User.objects.get(pk=1)
+        password = 'secret'
+
+        self.client.login(username=user.email, password=password)
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        data = {
+            'settings': {
+                'state': 1,
+                'start_date': '2015-05-01',
+                'end_date': '2015-06-30',
+                'cpc_cc': '0.3000',
+                'daily_budget_cc': '200.0000',
+                'target_devices': ['desktop'],
+                'target_regions': ['US'],
+                'name': 'Test ad group name',
+                'id': 1
+            }
+        }
+
+        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+
+        old_settings = ad_group.get_current_settings()
+
+        response = self.client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(data),
+            follow=True
+        )
+
+        self.assertEqual(json.loads(response.content), {
+            'data': {
+                'action_is_waiting': True,
+                'settings': {
+                    'cpc_cc': '0.30',
+                    'daily_budget_cc': '200.00',
+                    'end_date': '2015-06-30',
+                    'id': '1',
+                    'name': 'Test ad group name',
+                    'start_date': '2015-05-01',
+                    'state': 1,
+                    'target_devices': ['desktop'],
+                    'target_regions': ['US'],
+                    'tracking_code': ''
+                }
+            },
+            'success': True
+        })
+
+        new_settings = ad_group.get_current_settings()
+
+        self.assertEqual(new_settings.display_url, 'example.com')
+        self.assertEqual(new_settings.brand_name, 'Example')
+        self.assertEqual(new_settings.description, 'Example description')
+        self.assertEqual(new_settings.call_to_action, 'Call to action')
+
+        mock_actionlog_api.init_enable_ad_group.assert_called_with(ad_group, ANY, order=ANY, send=False)
+        mock_order_ad_group_settings_update.assert_called_with(
+            ad_group, old_settings, new_settings, ANY, send=False)
+
+
 class AdGroupAgencyTest(TestCase):
     fixtures = ['test_views.yaml']
 
@@ -120,7 +189,7 @@ class AdGroupAgencyTest(TestCase):
         })
 
     @patch('dash.views.agency.actionlog_api.is_waiting_for_set_actions')
-    def test_post(self, mock_is_waiting):
+    def test_put(self, mock_is_waiting):
         mock_is_waiting.return_value = True
 
         ad_group_id = 1
