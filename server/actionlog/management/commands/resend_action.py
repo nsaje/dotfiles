@@ -25,14 +25,13 @@ class Command(BaseCommand):
             for action in actions:
                 modified_date = datetime.datetime.utcnow()
                 expiration_date = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
-                action.payload['expiration_date'] = action.expiration_dt.isoformat()
+                action.payload['expiration_dt'] = expiration_date.isoformat()
 
                 action.modified_dt = modified_date
                 action.state = actionlog.constants.ActionState.WAITING
                 action.expiration_dt = expiration_date
                 action.save()
 
-                print action.state, action.expiration_dt
                 actionlog.zwei_actions.send_multiple([action])
                 count_sent += 1
             if count_sent == 0:
