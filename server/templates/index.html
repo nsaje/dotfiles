@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 
+{% load backend_data %}
+
 {% block head_extra %}
 <base href="/">
+{% js_data %}
 <link type="text/css" rel="stylesheet" href="{{ staticUrl }}/one/zemanta-one.lib.min.css" />
 <link type="text/css" rel="stylesheet" href="{{ staticUrl }}/one/zemanta-one.min.css" />
 <script type="text/javascript" src="{{ staticUrl }}/one/zemanta-one.lib.min.js"></script>

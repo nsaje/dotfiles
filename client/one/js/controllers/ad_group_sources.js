@@ -1,6 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($scope, $state, $location, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
+oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($scope, $state, $location, $timeout, $window, api, zemCustomTableColsService, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.isIncompletePostclickMetrics = false;
@@ -434,6 +434,9 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             $scope.loadRequestInProgress = false;
         });
     };
+    if ($window.isDemo) {
+        $window.demoActions.refreshAdGroupSourcesTable = getTableData;
+    }
 
     var getDailyStatsMetrics = function () {
         var values = $scope.chartMetricOptions.map(function (option) {

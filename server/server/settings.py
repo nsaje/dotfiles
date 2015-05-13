@@ -73,7 +73,10 @@ USE_I18N = True
 
 USE_L10N = True
 
-
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.request',
+)
 TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates'),)
 
 # Static files (CSS, JavaScript, Images)
@@ -101,6 +104,8 @@ COVERAGE_ENABLED = 'COVERAGE_ENABLED' in os.environ
 
 DEFAULT_FROM_EMAIL = ''
 MAILGUN_API_KEY = ''
+
+DEMO_USERS = tuple()
 
 from celeryconfig import *
 from localsettings import *
@@ -190,3 +195,7 @@ DEFAULT_TIME_ZONE = 'America/New_York'
 
 # Placeholder value for source_campaign_key while campaign is being created
 SOURCE_CAMPAIGN_KEY_PENDING_VALUE = 'PENDING'
+
+if os.environ.get('E2E'):
+    print 'Using E2E database !!!'
+    DATABASES['default'] = DATABASES['e2e']

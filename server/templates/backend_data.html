@@ -1,0 +1,5 @@
+<script type="text/javascript">
+    {% for variable, value in window_data.items %}
+    window.{{ variable }} = {{ value }};
+    {% endfor %}
+</script>
