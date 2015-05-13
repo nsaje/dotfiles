@@ -11,16 +11,21 @@ def trigger_alert_pre_save_signal_handler(sender, instance, **kwargs):
     if (instance.state == constants.ActionState.FAILED and
            instance.action_type == constants.ActionType.AUTOMATIC and
            instance.action == constants.Action.SET_CAMPAIGN_STATE):
-        _trigger_stop_campaign_alert(instance.id)
+
+        event_type = pagerduty_helper.PagerDutyEventType.ADOPS 
+        if not instance.ad_group_source.source.has_3rd_party_dashboard():
+            event_type = pagerduty_helper.PagerDutyEventType.ENGINEERS
+
+        _trigger_stop_campaign_alert(instance.id, event_type)
 
 
-def _trigger_stop_campaign_alert(action_log_id):
+def _trigger_stop_campaign_alert(action_log_id, event_type):
     # Base URL is hardcoded for a lack of better alternatives
     admin_url = 'https://one.zemanta.com{0}'.format(
         urlresolvers.reverse('admin:actionlog_actionlog_change', args=(action_log_id,)))
 
     pagerduty_helper.trigger(
-        event_type=pagerduty_helper.PagerDutyEventType.ADOPS,
+        event_type=event_type,
         incident_key='adgroup_stop_failed',
         description='Adgroup stop action failed',
         details={

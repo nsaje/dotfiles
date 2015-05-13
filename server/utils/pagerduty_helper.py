@@ -9,10 +9,12 @@ from utils.constant_base import ConstantBase
 class PagerDutyEventType(ConstantBase):
     SYSOPS = 'sysops'
     ADOPS = 'adops'
+    ENGINEERS = 'engineers'
 
     _VALUES = {
         SYSOPS: 'SysOps',
         ADOPS: 'AdOps',
+        ENGINEERS: 'Engineers',
     }
 
 
@@ -24,6 +26,8 @@ def trigger(event_type, incident_key, description, details=None):
         service_key = settings.PAGER_DUTY_SYSOPS_SERVICE_KEY
     elif event_type == PagerDutyEventType.ADOPS:
         service_key = settings.PAGER_DUTY_ADOPS_SERVICE_KEY
+    elif event_type == PagerDutyEventType.ENGINEERS:
+        service_key = settings.PAGER_DUTY_ENGINEERS_SERVICE_KEY
     else:
         raise AttributeError('Invalid event type')
 
