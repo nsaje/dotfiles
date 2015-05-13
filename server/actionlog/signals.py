@@ -15,8 +15,8 @@ def trigger_alert_pre_save_signal_handler(sender, instance, **kwargs):
         event_type = pagerduty_helper.PagerDutyEventType.ADOPS 
         if not instance.ad_group_source.source.has_3rd_party_dashboard():
             event_type = pagerduty_helper.PagerDutyEventType.ENGINEERS
-        
-        _trigger_stop_campaign_alert(instance.id)
+
+        _trigger_stop_campaign_alert(instance.id, event_type)
 
 
 def _trigger_stop_campaign_alert(action_log_id, event_type):
