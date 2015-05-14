@@ -76,6 +76,7 @@ class ContentAdsApiTestCase(TestCase):
                 'source_campaign_key': ad_group_source.source_campaign_key,
                 'content_ad_id': content_ad_source.get_source_id(),
                 'content_ad': {
+                    'id': content_ad_source.get_source_id(),
                     'state': dash.constants.ContentAdSourceState.ACTIVE,
                     'title': content_ad_source.content_ad.title,
                     'url': content_ad_source.content_ad.url,
@@ -133,6 +134,7 @@ class ContentAdsApiTestCase(TestCase):
                 'source_campaign_key': ad_group_source.source_campaign_key,
                 'content_ad_id': content_ad_source.get_source_id(),
                 'content_ad': {
+                    'id': content_ad_source.get_source_id(),
                     'state': dash.constants.ContentAdSourceState.ACTIVE,
                     'title': content_ad_source.content_ad.title,
                     'url': content_ad_source.content_ad.url_with_tracking_codes(
@@ -156,6 +158,58 @@ class ContentAdsApiTestCase(TestCase):
             'callback_url': callback
         }
         self.assertEqual(action.payload, payload)
+
+    @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
+    def test_insert_content_ad_batch(self):
+        utcnow = datetime.datetime.utcnow()
+        models.datetime.utcnow = classmethod(lambda cls: utcnow)
+
+        content_ad_source = dash.models.ContentAdSource.objects.get(pk=1)
+
+        ad_group_source = dash.models.AdGroupSource.objects.get(
+            ad_group=content_ad_source.content_ad.ad_group,
+            source=content_ad_source.source
+        )
+
+        batch = dash.models.UploadBatch.objects.get(pk=1)
+
+        request = HttpRequest()
+        request.user = User.objects.get(id=1)
+
+        action = api_contentads.init_insert_content_ad_batch(
+            batch, content_ad_source.source, request, send=False)
+
+        expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES))
+        callback = urlparse.urljoin(
+            settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
+        )
+
+        self.assertEqual(action.payload, {
+            'source': ad_group_source.source.source_type.type,
+            'action': constants.Action.INSERT_CONTENT_AD_BATCH,
+            'expiration_dt': expiration_dt,
+            'credentials': ad_group_source.source_credentials.credentials,
+            'args': {
+                'campaign_name': ad_group_source.get_external_name(),
+                'content_ads': [{
+                    'id': content_ad_source.get_source_id(),
+                    'state': dash.constants.ContentAdSourceState.ACTIVE,
+                    'title': content_ad_source.content_ad.title,
+                    'url': content_ad_source.content_ad.url,
+                    'submission_status': dash.constants.ContentAdSubmissionStatus.PENDING,
+                    'image_id': content_ad_source.content_ad.image_id,
+                    'image_width': content_ad_source.content_ad.image_width,
+                    'image_height': content_ad_source.content_ad.image_height,
+                    'image_hash': content_ad_source.content_ad.image_hash,
+                    'display_url': content_ad_source.content_ad.batch.display_url,
+                    'brand_name': content_ad_source.content_ad.batch.brand_name,
+                    'description': content_ad_source.content_ad.batch.description,
+                    'call_to_action': content_ad_source.content_ad.batch.call_to_action,
+                    'tracking_slug': ad_group_source.source.tracking_slug
+                }]
+            },
+            'callback_url': callback
+        })
 
     @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
     def test_update_content_ad(self):
@@ -287,13 +341,16 @@ class ContentAdsApiTestCase(TestCase):
                     'state': dash.constants.ContentAdSourceState.ACTIVE,
                     'title': content_ad_source.content_ad.title,
                     'url': content_ad_source.content_ad.url,
+                    'submission_status': content_ad_source.submission_status,
                     'image_id': content_ad_source.content_ad.image_id,
+                    'image_hash': content_ad_source.content_ad.image_hash,
                     'image_width': content_ad_source.content_ad.image_width,
                     'image_height': content_ad_source.content_ad.image_height,
                     'display_url': ad_group_settings.display_url,
                     'brand_name': ad_group_settings.brand_name,
                     'description': ad_group_settings.description,
                     'call_to_action': ad_group_settings.call_to_action,
+                    'tracking_slug': ad_group_source.source.tracking_slug
                 },
             },
             'callback_url': callback

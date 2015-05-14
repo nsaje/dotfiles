@@ -212,6 +212,18 @@
     model: dash.source
     pk: 7
 
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: GumGum
+        tracking_slug: 'test_tracking_slug'
+        source_type: 1
+        maintenance: false
+        bidder_slug: 'test_bidder_slug'
+        content_ad_submission_type: 3
+    model: dash.source
+    pk: 8
+
 # test adgroupsettings
 
 -   fields:

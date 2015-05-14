@@ -205,6 +205,21 @@ def submit_content_ads(content_ad_sources, request):
                 source_id=source_id
             )
 
+            if ad_group_source.source.content_ad_submission_type == constants.SourceSubmissionType.BATCH:
+                batch_ids = []
+
+                for content_ad_source in ags_content_ad_sources:
+                    batch = content_ad_source.content_ad.batch
+
+                    if batch.id in batch_ids:
+                        continue
+
+                    batch_ids.append(batch.id)
+                    actions.append(actionlog.api_contentads.init_insert_content_ad_batch(
+                        batch, content_ad_source.source, request))
+
+                continue
+
             if ad_group_source.source.content_ad_submission_type == constants.SourceSubmissionType.AD_GROUP:
                 if actionlog.models.ActionLog.objects.filter(
                         ad_group_source=ad_group_source,

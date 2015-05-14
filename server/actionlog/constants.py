@@ -10,6 +10,7 @@ class Action(ConstantBase):
 
     GET_CONTENT_AD_STATUS = 'get_content_ad_status'
     INSERT_CONTENT_AD = 'insert_content_ad'
+    INSERT_CONTENT_AD_BATCH = 'insert_content_ad_batch'
     UPDATE_CONTENT_AD = 'update_content_ad'
 
     SUBMIT_AD_GROUP = 'submit_ad_group'
