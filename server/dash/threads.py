@@ -19,6 +19,7 @@ from utils import s3helpers
 
 logger = logging.getLogger(__name__)
 
+MAX_CSV_TITLE_LENGTH = 256
 S3_CONTENT_ADS_ERROR_REPORT_KEY_FORMAT = 'contentads/errors/{filename}'
 
 
@@ -164,8 +165,8 @@ class ProcessUploadThread(Thread):
 
         if title is None or not len(title):
             errors.append('Missing title')
-        elif len(title) > 256:
-            errors.append('Title too long (max 256 characters)')
+        elif len(title) > MAX_CSV_TITLE_LENGTH:
+            errors.append('Title too long (max %d characters)' % MAX_CSV_TITLE_LENGTH)
 
         try:
             crop_areas = self._parse_crop_areas(crop_areas)

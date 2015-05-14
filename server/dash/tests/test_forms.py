@@ -54,16 +54,6 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         self.brand_name = 'testbrandname'
         self.call_to_action = 'testcalltoaction'
 
-    def test_title_too_long(self):
-        too_long_title = ''.join(['a' for i in range(257)])
-
-        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'],
-            [[self.url, too_long_title, self.image_url, self.crop_areas]])
-
-        form = self._init_form(csv_file, {})
-        self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'content_ads': ['Title too long. Must be less than 256 characters.']})
-
     def test_no_csv_content(self):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
         #    [[self.url, self.title, self.image_url, self.crop_areas]])

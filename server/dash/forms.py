@@ -13,8 +13,6 @@ from django.core import validators
 from dash import constants
 from zemauth.models import User as ZemUser
 
-MAX_CSV_TITLE_LENGTH = 256
-
 
 class BaseApiForm(forms.Form):
     def get_errors():
@@ -395,9 +393,6 @@ class AdGroupAdsPlusUploadForm(forms.Form):
                 # under key None. This can be removed.
                 if None in row:
                     del row[None]
-
-                if row['title'] is None or len(row['title']) > MAX_CSV_TITLE_LENGTH:
-                    raise forms.ValidationError('Title too long. Must be less than %d characters.' % MAX_CSV_TITLE_LENGTH)
 
                 count_rows += 1
 
