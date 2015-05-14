@@ -109,8 +109,6 @@ class ProcessUploadThread(Thread):
 
         has_crop_areas_data = False
         for idx, row in enumerate(self.content_ads_data):
-            if idx == 0:
-                continue
             if row.get('crop_areas') is not None and row['crop_areas'] != '':
                 has_crop_areas_data = True
                 break
