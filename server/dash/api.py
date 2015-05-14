@@ -1,4 +1,5 @@
 from collections import defaultdict
+import datetime
 import decimal
 import logging
 
@@ -89,8 +90,9 @@ def _get_latest_ad_group_source_state(ad_group_source):
         return None
 
 
-def update_campaign_key(ad_group_source, source_campaign_key, request):
+def create_campaign_callback(ad_group_source, source_campaign_key, request):
     ad_group_source.source_campaign_key = source_campaign_key
+    ad_group_source.last_successful_sync_dt = datetime.datetime.utcnow()
     ad_group_source.save(request)
 
 

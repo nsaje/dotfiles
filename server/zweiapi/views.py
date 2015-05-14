@@ -186,7 +186,7 @@ def _process_zwei_response(action, data, request):
             actions.extend(actionlog.api.send_delayed_actionlogs([ad_group_source], send=False))
 
         elif action.action == actionlog.constants.Action.CREATE_CAMPAIGN:
-            dash.api.update_campaign_key(
+            dash.api.create_campaign_callback(
                 action.ad_group_source,
                 data['data']['source_campaign_key'],
                 request
