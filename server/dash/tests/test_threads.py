@@ -13,6 +13,46 @@ import actionlog.models
 
 
 class ProcessUploadThreadTest(TestCase):
+
+    def _fake_upload_error_report_to_s3(self, content):
+        self.error_report = content
+        return None
+
+    @patch('dash.threads.image_helper.process_image')
+    def test_no_crop_areas_report(self, mock_process_image):
+        image_id = 'test_image_id'
+        image_width = 100
+        image_height = 200
+        image_hash = "123"
+
+        url = 'http://example.com'
+        title = 'test title'
+        image_url = 'http://example.com/image'
+        crop_areas = ''
+
+        content_ads = [{
+            'url': url,
+            'title': title,
+            'image_url': image_url,
+            'crop_areas': crop_areas
+        }]
+        filename = 'testname.csv'
+        ad_group_id = 1
+
+        mock_process_image.return_value = image_id, image_width, image_height, image_hash
+
+        batch_name = 'Test batch name I'
+        batch = models.UploadBatch.objects.create(name=batch_name)
+
+        thread = threads.ProcessUploadThread(content_ads, filename, batch, ad_group_id, None)
+        thread._upload_error_report_to_s3 = self._fake_upload_error_report_to_s3
+        thread._save_error_report()
+        self.assertEqual(
+            '''url,title,image_url,errors
+http://example.com,test title,http://example.com/image,\n'''.replace("\n",'\r\n') ,
+            self.error_report)
+
+
     @patch('dash.threads.image_helper.process_image')
     def test_run(self, mock_process_image):
         image_id = 'test_image_id'

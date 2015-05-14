@@ -106,17 +106,32 @@ class ProcessUploadThread(Thread):
     def _save_error_report(self):
         string = StringIO.StringIO()
 
-        writer = unicodecsv.DictWriter(string, ['url', 'title', 'image_url', 'crop_areas', 'errors'])
+        has_crop_areas_data = False
+        for idx, row in enumerate(self.content_ads_data):
+            if idx == 0:
+                continue
+            if row.get('crop_areas') is not None and row['crop_areas'] != '':
+                has_crop_areas_data = True
+                break
+
+        if has_crop_areas_data:
+            writer = unicodecsv.DictWriter(string, ['url', 'title', 'image_url', 'crop_areas', 'errors'])
+        else:
+            writer = unicodecsv.DictWriter(string, ['url', 'title', 'image_url', 'errors'])
+
         writer.writeheader()
         for row in self.content_ads_data:
+            if not has_crop_areas_data:
+                del row['crop_areas']
             writer.writerow(row)
 
         content = string.getvalue()
+        return self._upload_error_report_to_s3(content)
 
+    def _upload_error_report_to_s3(self, content):
         key = S3_CONTENT_ADS_ERROR_REPORT_KEY_FORMAT.format(
             filename=s3helpers.generate_safe_filename(self.filename, content)
         )
-
         try:
             s3helpers.S3Helper().put(key, content)
             return key
