@@ -47,6 +47,13 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
         data.displayUrl = data.displayUrl.replace(replaceEnd, '');
     };
 
+    $scope.clearErrors = function(name) {
+        if (!$scope.errors) {
+            return;
+        }
+        delete $scope.errors[name];
+    };
+
     $scope.upload = function() {
         $scope.isInProgress = true;
         $scope.errors = null;

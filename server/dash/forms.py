@@ -302,22 +302,34 @@ class AdGroupAdsPlusUploadForm(forms.Form):
     batch_name = forms.CharField(
         required=True,
         max_length=255,
-        error_messages={'required': 'Please enter a name for this upload.'}
+        error_messages={
+            'required': 'Please enter a name for this upload.',
+            'max_length': 'Batch name is too long (%(show_value)d/%(limit_value)d).'
+        }
     )
     display_url = forms.URLField(
         required=True  # max length is validated in clean_display_url
     )
     brand_name = forms.CharField(
         max_length=25,
-        required=True
+        required=True,
+        error_messages={
+            'max_length': 'Brand name is too long (%(show_value)d/%(limit_value)d).'
+        }
     )
     description = forms.CharField(
         max_length=100,
-        required=True
+        required=True,
+        error_messages={
+            'max_length': 'Description is too long (%(show_value)d/%(limit_value)d).'
+        }
     )
     call_to_action = forms.CharField(
         max_length=25,
-        required=True
+        required=True,
+        error_messages={
+            'max_length': 'Call to action is too long (%(show_value)d/%(limit_value)d).'
+        }
     )
 
     def clean_display_url(self):
@@ -327,7 +339,15 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         display_url = re.sub(r'/$', '', display_url)
 
         validate_length = validators.MaxLengthValidator(25)
-        validate_length(display_url)
+
+        try:
+            # this try except is used to set custom message
+            # in case validation fails (django 1.7 does not
+            # support setting message on MaxLengthValidator
+            # - this is fixed in django 1.8)
+            validate_length(display_url)
+        except forms.ValidationError:
+            raise forms.ValidationError('Display URL is too long ({}/25).'.format(len(display_url)))
 
         return display_url
 

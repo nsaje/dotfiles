@@ -163,7 +163,9 @@ class ProcessUploadThread(Thread):
             errors.append('Invalid image URL')
 
         if title is None or not len(title):
-            errors.append('Invalid title')
+            errors.append('Missing title')
+        elif len(title) > 256:
+            errors.append('Title too long (max 256 characters)')
 
         try:
             crop_areas = self._parse_crop_areas(crop_areas)

@@ -147,7 +147,7 @@ http://example.com,test title,http://example.com/image,\n'''.replace("\n",'\r\n'
             'crop_areas': '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
         }, {
             'url': 'http://example.com',
-            'title': 'test title',
+            'title': 'very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very long test title',
             'image_url': 'http://example.com/image',
             'crop_areas': '(23, 21(()))'
         }]
@@ -173,7 +173,7 @@ http://example.com,test title,http://example.com/image,\n'''.replace("\n",'\r\n'
 
         mock_instance.put.assert_called_with(
             'contentads/errors/safefilename.csv',
-            'url,title,image_url,crop_areas,errors\r\ninvalidurl,,,"(((44, 22), (144, 122)), ((33, 22), (177, 122)))","Invalid URL, Invalid image URL, Invalid title"\r\nhttp://example.com,test title,http://example.com/image,"(23, 21(()))",Invalid crop areas\r\n'
+            'url,title,image_url,crop_areas,errors\r\ninvalidurl,,,"(((44, 22), (144, 122)), ((33, 22), (177, 122)))","Invalid URL, Invalid image URL, Missing title"\r\nhttp://example.com,very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very long test title,http://example.com/image,"(23, 21(()))","Title too long (max 256 characters), Invalid crop areas"\r\n'
         )
         self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
         self.assertFalse(mock_insert_action.called)
