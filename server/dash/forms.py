@@ -364,44 +364,60 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         if crop_areas_col is not None and crop_areas_col.strip().lower() not in ['crop_areas', 'crop areas']:
             raise forms.ValidationError('Fourth column in header should be Crop areas.')
 
+    def _get_content_ad_data(self, reader):
+        try:
+            header = next(reader)
+        except StopIteration:
+            raise forms.ValidationError('Uploaded file is empty.')
+
+        self._validate_header(header)
+
+        count_rows = 0
+        data = []
+        for row in reader:
+            # unicodecsv stores values of all unneeded columns
+            # under key None. This can be removed.
+            if None in row:
+                del row[None]
+
+            count_rows += 1
+
+            data.append(row)
+
+        if count_rows == 0:
+            raise forms.ValidationError('Uploaded file is empty.')
+
+        return data
+
     def clean_content_ads(self):
         content_ads_file = self.cleaned_data['content_ads']
 
-        try:
-            # If the file contains ctrl-M chars instead of
-            # new line breaks, DictReader will fail to parse it.
-            # Therefore we split the file by lines first and
-            # pass that to DictReader. If this proves to be too
-            # slow, we can instead save the file to a temporary
-            # location on upload and then open it with 'rU'
-            # (universal-newline mode).
-            lines = content_ads_file.read().splitlines()
+        # If the file contains ctrl-M chars instead of
+        # new line breaks, DictReader will fail to parse it.
+        # Therefore we split the file by lines first and
+        # pass that to DictReader. If this proves to be too
+        # slow, we can instead save the file to a temporary
+        # location on upload and then open it with 'rU'
+        # (universal-newline mode).
+        lines = content_ads_file.read().splitlines()
 
-            reader = unicodecsv.DictReader(lines, ['url', 'title', 'image_url', 'crop_areas'])
+        encodings = ['utf-8', 'windows-1252']
+        fields = ['url', 'title', 'image_url', 'crop_areas']
 
+        data = None
+
+        # try all supported encodings one by one
+        for encoding in encodings:
             try:
-                header = next(reader)
-            except StopIteration:
-                raise forms.ValidationError('Uploaded file is empty.')
+                reader = unicodecsv.DictReader(lines, fields, encoding=encoding)
+                data = self._get_content_ad_data(reader)
+                break
+            except unicodecsv.Error:
+                raise forms.ValidationError('Uploaded file is not a valid CSV file.')
+            except UnicodeDecodeError:
+                pass
 
-            self._validate_header(header)
+        if data is None:
+            raise forms.ValidationError('Unknown file encoding.')
 
-            count_rows = 0
-            data = []
-            for row in reader:
-                # unicodecsv stores values of all unneeded columns
-                # under key None. This can be removed.
-                if None in row:
-                    del row[None]
-
-                count_rows += 1
-
-                data.append(row)
-
-            if count_rows == 0:
-                raise forms.ValidationError('Uploaded file is empty.')
-
-            return data
-
-        except unicodecsv.Error:
-            raise forms.ValidationError('Uploaded file is not a valid CSV file.')
+        return data
