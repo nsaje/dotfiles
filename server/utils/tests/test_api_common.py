@@ -64,7 +64,6 @@ class BaseApiViewTestCase(test.TestCase):
     @mock.patch('utils.api_common.logger')
     def test_handle_custom_exception(self, logger_mock):
         request = http.HttpRequest()
-        request._body = ''
 
         error = exc.MissingDataError()
         response = api_common.BaseApiView().get_exception_response(request, error)
@@ -84,7 +83,6 @@ class BaseApiViewTestCase(test.TestCase):
     @mock.patch('utils.api_common.logger')
     def test_handle_unknown_exception(self, logger_mock):
         request = http.HttpRequest()
-        request._body = ''
         error = Exception()
         response = api_common.BaseApiView().get_exception_response(request, error)
 
@@ -96,7 +94,6 @@ class BaseApiViewTestCase(test.TestCase):
     @mock.patch('utils.api_common.logger')
     def test_empty_log(self, logger_mock):
         request = http.HttpRequest()
-        request._body = ''
 
         api_common.BaseApiView().log_error(request)
         logger_mock.error.assert_called_with(
@@ -105,7 +102,6 @@ class BaseApiViewTestCase(test.TestCase):
             extra={
                 'data': {
                     'path': request.path,
-                    'body': '',
                     'GET': request.GET,
                     'POST': dict(request.POST),
                 }
@@ -117,7 +113,6 @@ class BaseApiViewTestCase(test.TestCase):
         request = http.HttpRequest()
         request.GET = {'test_get': 'test_get_value'}
         request.POST = {'test_post': 'test_post_value'}
-        request._body = 'test'
 
         api_common.BaseApiView().log_error(request)
         logger_mock.error.assert_called_with(
@@ -126,7 +121,6 @@ class BaseApiViewTestCase(test.TestCase):
             extra={
                 'data': {
                     'path': request.path,
-                    'body': 'test',
                     'GET': request.GET,
                     'POST': dict(request.POST),
                 }

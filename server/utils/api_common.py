@@ -2,7 +2,6 @@ import json
 import logging
 
 from django.http import HttpResponse
-from django.http.request import RawPostDataException
 from django.views.generic import View
 from django.conf import settings
 
@@ -14,15 +13,9 @@ logger = logging.getLogger(__name__)
 
 class BaseApiView(View):
     def log_error(self, request):
-        try:
-            body = str(request.body)
-        except RawPostDataException:
-            body = 'N/A'
-
         logger.error('API exception', exc_info=True, extra={
             'data': {
                 'path': request.path,
-                'body': body,
                 'GET': request.GET,
                 'POST': dict(request.POST),
             }
