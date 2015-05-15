@@ -149,7 +149,7 @@ def _process_zwei_response(action, data, request):
                 rows = _prepare_report_rows(ad_group, data['data'])
                 reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, rows)
 
-                if source.can_manage_content_ads() and action.ad_group_source.can_manage_content_ads:
+                if action.ad_group_source.can_manage_content_ads:
                     reports.update.update_content_ads_source_traffic_stats(
                         date, ad_group, source, data['data'])
 
