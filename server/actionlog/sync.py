@@ -284,7 +284,7 @@ class AdGroupSourceSync(BaseSync):
         zwei_actions.send(action)
 
     def trigger_content_ad_status(self, request=None):
-        if not self.obj.source.source_type.can_manage_content_ads():
+        if not self.obj.can_manage_content_ads:
             return
 
         order = actionlog.models.ActionLogOrder.objects.create(
