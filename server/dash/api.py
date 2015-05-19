@@ -216,7 +216,7 @@ def submit_content_ads(content_ad_sources, request):
 
                     batch_ids.append(batch.id)
                     actions.append(actionlog.api_contentads.init_insert_content_ad_batch(
-                        batch, content_ad_source.source, request))
+                        batch, content_ad_source.source, request, send=False))
 
                 continue
 
