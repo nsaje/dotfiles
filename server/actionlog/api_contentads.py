@@ -65,8 +65,10 @@ def init_insert_content_ad_batch(batch, source, request, send=True):
         ad_group_source,
         actionlog.constants.Action.INSERT_CONTENT_AD_BATCH,
         args={
+            'source_campaign_key': ad_group_source.source_campaign_key,
             'campaign_name': ad_group_source.get_external_name(),
             'ad_group_id': ad_group_source.ad_group.id,
+            'batch_name': batch.name,
             'content_ads': [_get_content_ad_dict(ad_group_source, cas, batch) for cas in content_ad_sources]
         },
         request=request,

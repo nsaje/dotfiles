@@ -190,6 +190,8 @@ class ContentAdsApiTestCase(TestCase):
             'expiration_dt': expiration_dt,
             'credentials': ad_group_source.source_credentials.credentials,
             'args': {
+                'source_campaign_key': ad_group_source.source_campaign_key,
+                'batch_name': batch.name,
                 'campaign_name': ad_group_source.get_external_name(),
                 'ad_group_id': ad_group_source.ad_group.id,
                 'content_ads': [{

@@ -632,6 +632,9 @@ def _init_create_campaign(ad_group_source, name, request):
                 payload['args']['extra']['ad_group_id'] = ad_group_source.ad_group.id
                 payload['args']['extra']['exchange'] = ad_group_source.source.bidder_slug
 
+            if ad_group_source.source.source_type.type == dash.constants.SourceType.GRAVITY:
+                payload['args']['extra']['ad_group_id'] = ad_group_source.ad_group.id
+
             if hasattr(ad_group_source.source, 'defaultsourcesettings'):
                 params = ad_group_source.source.defaultsourcesettings.params
                 if 'create_campaign' in params:
