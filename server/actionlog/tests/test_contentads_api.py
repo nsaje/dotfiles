@@ -191,6 +191,7 @@ class ContentAdsApiTestCase(TestCase):
             'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'campaign_name': ad_group_source.get_external_name(),
+                'ad_group_id': ad_group_source.ad_group.id,
                 'content_ads': [{
                     'id': content_ad_source.get_source_id(),
                     'state': dash.constants.ContentAdSourceState.ACTIVE,
