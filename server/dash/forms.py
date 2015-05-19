@@ -405,7 +405,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         file_content = content_ads_file.read()
         valid, mime = self.is_valid_input_file(file_content)
         if not valid:
-            raise forms.ValidationError('Unknown file encoding %s.' % mime)
+            raise forms.ValidationError('Input file was not recognized.')
 
         # If the file contains ctrl-M chars instead of
         # new line breaks, DictReader will fail to parse it.
