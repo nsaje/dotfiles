@@ -1307,7 +1307,8 @@ class ContentAdSource(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
 
     def get_source_id(self):
-        if self.source.source_type and self.source.source_type.type == constants.SourceType.B1:
+        if self.source.source_type and self.source.source_type.type in [
+                constants.SourceType.B1, constants.SourceType.GRAVITY]:
             return self.content_ad.id
         else:
             return self.source_content_ad_id
