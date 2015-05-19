@@ -28,6 +28,9 @@ mock==1.0.1
 selenium==2.42.1
 git+git://github.com/tomazk/unittest-xml-reporting.git#xmlrunner # untill they merge this https://github.com/xmlrunner/unittest-xml-reporting/pull/63
 
+# for filetype detection(input validation)
+python-magic==0.4.6
+
 # for visualizing project models
 django-extensions==1.3.7
 
