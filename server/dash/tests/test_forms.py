@@ -68,7 +68,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         with open('./dash/tests/test.xlsx') as f:
             valid, mime = form.is_valid_input_file(f.read())
             self.assertFalse(valid)
-            self.assertEqual('application/octet-stream', mime)
+            self.assertTrue(mime.startswith('application'))
         with open('./dash/tests/test.csv') as f:
             valid, mime = form.is_valid_input_file(f.read())
             self.assertTrue(valid)
