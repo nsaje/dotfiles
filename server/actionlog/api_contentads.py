@@ -28,7 +28,10 @@ def init_insert_content_ad_action(content_ad_source, request=None, send=True):
 
     if ad_group_source.source.update_tracking_codes_on_content_ads() and ad_group_source.can_manage_content_ads:
         try:
-            ad_group_tracking_codes = dash.models.AdGroupSettings.objects.latest('created_dt').get_tracking_codes()
+            ad_group_tracking_codes = dash.models.AdGroupSettings.objects.\
+                filter(ad_group_id=ad_group_source.ad_group_id).\
+                latest('created_dt').\
+                get_tracking_codes()
         except dash.models.AdGroupSettings.DoesNotExist:
             ad_group_tracking_codes = None
 
