@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import magic
 import re
 import unicodecsv
 import dateutil.parser
@@ -389,8 +390,22 @@ class AdGroupAdsPlusUploadForm(forms.Form):
 
         return data
 
+    def is_valid_input_file(self, content):
+        # detect file content type
+        m = magic.Magic(mime=True)
+        mime = m.from_buffer(content[:1024])
+        if 'text' in mime:  # accept variants of text/plain, text/html, etc.
+            return True
+        else:
+            return False
+
     def clean_content_ads(self):
         content_ads_file = self.cleaned_data['content_ads']
+
+        file_content = content_ads_file.read()
+        valid = self.is_valid_input_file(file_content)
+        if not valid:
+            raise forms.ValidationError('Input file was not recognized.')
 
         # If the file contains ctrl-M chars instead of
         # new line breaks, DictReader will fail to parse it.
@@ -399,7 +414,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         # slow, we can instead save the file to a temporary
         # location on upload and then open it with 'rU'
         # (universal-newline mode).
-        lines = content_ads_file.read().splitlines()
+        lines = file_content.splitlines()
 
         encodings = ['utf-8', 'windows-1252']
         fields = ['url', 'title', 'image_url', 'crop_areas']

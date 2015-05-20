@@ -54,6 +54,22 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         self.brand_name = 'testbrandname'
         self.call_to_action = 'testcalltoaction'
 
+    def test_filetypes(self):
+        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
+        form = self._init_form(csv_file, {})
+        with open('./dash/tests/test.gif') as f:
+            valid= form.is_valid_input_file(f.read())
+            self.assertFalse(valid)
+        with open('./dash/tests/test.jpg') as f:
+            valid = form.is_valid_input_file(f.read())
+            self.assertFalse(valid)
+        with open('./dash/tests/test.xlsx') as f:
+            valid = form.is_valid_input_file(f.read())
+            self.assertFalse(valid)
+        with open('./dash/tests/test.csv') as f:
+            valid = form.is_valid_input_file(f.read())
+            self.assertTrue(valid)
+
     def test_no_csv_content(self):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
         #    [[self.url, self.title, self.image_url, self.crop_areas]])
