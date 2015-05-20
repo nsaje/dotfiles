@@ -1970,7 +1970,9 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             $http.post(url, formData, {
                 transformRequest: angular.identity,
                 headers: {'Content-Type': undefined}
-            }).success(function(data) {
+            }).success(function(data, status) {
+                console.log(status);
+                console.log(data);
                 deferred.resolve(data.data.batch_id);
             }).error(function(data, status) {
                 var result = {};
