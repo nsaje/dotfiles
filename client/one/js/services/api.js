@@ -1972,12 +1972,23 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 headers: {'Content-Type': undefined}
             }).success(function(data) {
                 deferred.resolve(data.data.batch_id);
-            }).error(function(data) {
-                console.log(data);
+            }).error(function(data, status) {
                 var result = {};
-                if (data && data.data && data.data.errors) {
-                    result.errors = convertValidationErrorsFromApi(data.data.errors);
-                }
+                if (status == '403') {
+					data = {
+					"data": {
+						"status": 2,
+						"errors": {
+							"content_ads": ["File too large."]
+							}
+						},
+						"success": false
+					}
+					result.errors = convertValidationErrorsFromApi(data.data.errors);
+				} else if (data && data.data && data.data.errors) {
+					result.errors = convertValidationErrorsFromApi(data.data.errors);
+				}
+
                 deferred.reject(result);
             });
  
