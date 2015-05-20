@@ -1974,7 +1974,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 deferred.resolve(data.data.batch_id);
             }).error(function(data, status) {
                 var result = {};
-                if (status == '403') {
+                if (status == '413') {
 					data = {
 					"data": {
 						"status": 2,
