@@ -24,6 +24,7 @@ class Action(ConstantBase):
 
         GET_CONTENT_AD_STATUS: 'Get content ad status',
         INSERT_CONTENT_AD: 'Insert content ad',
+        INSERT_CONTENT_AD_BATCH: 'Insert content ad batch',
         UPDATE_CONTENT_AD: 'Update content ad',
 
         SUBMIT_AD_GROUP: 'Submit ad group to approval'
