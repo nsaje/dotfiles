@@ -26,54 +26,56 @@ def init_insert_content_ad_action(content_ad_source, request=None, send=True):
                                                             source=content_ad_source.source)
     batch = content_ad_source.content_ad.batch
 
-    if ad_group_source.source.update_tracking_codes_on_content_ads() and ad_group_source.can_manage_content_ads:
-        try:
-            ad_group_tracking_codes = dash.models.AdGroupSettings.objects.latest('created_dt').get_tracking_codes()
-        except dash.models.AdGroupSettings.DoesNotExist:
-            ad_group_tracking_codes = None
-
-        url = content_ad_source.content_ad.url_with_tracking_codes(
-            utils.url_helper.combine_tracking_codes(
-                ad_group_tracking_codes,
-                ad_group_source.get_tracking_ids(),
-            )
-        )
-    else:
-        url = content_ad_source.content_ad.url
-
-    args = {
-        'source_campaign_key': ad_group_source.source_campaign_key,
-        'content_ad_id': content_ad_source.get_source_id(),
-        'content_ad': {
-            'state': content_ad_source.state,
-            'title': content_ad_source.content_ad.title,
-            'url': url,
-            'submission_status': content_ad_source.submission_status,
-            'image_id': content_ad_source.content_ad.image_id,
-            'image_width': content_ad_source.content_ad.image_width,
-            'image_height': content_ad_source.content_ad.image_height,
-            'image_hash': content_ad_source.content_ad.image_hash,
-            'display_url': batch.display_url,
-            'brand_name': batch.brand_name,
-            'description': batch.description,
-            'call_to_action': batch.call_to_action,
-            'tracking_slug': ad_group_source.source.tracking_slug
-        }
-    }
-
-    if content_ad_source.source_content_ad_id:
-        args['content_ad']['source_content_ad_id'] = content_ad_source.source_content_ad_id
-
     action = _create_action(
         ad_group_source,
         actionlog.constants.Action.INSERT_CONTENT_AD,
-        args=args,
+        args={
+            'source_campaign_key': ad_group_source.source_campaign_key,
+            'content_ad_id': content_ad_source.get_source_id(),
+            'content_ad': _get_content_ad_dict(ad_group_source, content_ad_source, batch)
+        },
         request=request,
         content_ad_source=content_ad_source
     )
 
     msg = "insert_content_ad action created: content_ad_source.id: {}".format(
         content_ad_source.id,
+    )
+    logger.info(msg)
+
+    if send:
+        actionlog.zwei_actions.send(action)
+
+    return action
+
+
+def init_insert_content_ad_batch(batch, source, request, send=True):
+    content_ad_sources = dash.models.ContentAdSource.objects.filter(content_ad__batch=batch, source=source)
+
+    if not content_ad_sources.exists():
+        logger.info('init_insert_content_ad_batch: no content ad sources for batch id: {}'.format(batch.id))
+        return None
+
+    ad_group_source = dash.models.AdGroupSource.objects.get(
+        ad_group=content_ad_sources[0].content_ad.ad_group,
+        source=source
+    )
+
+    action = _create_action(
+        ad_group_source,
+        actionlog.constants.Action.INSERT_CONTENT_AD_BATCH,
+        args={
+            'source_campaign_key': ad_group_source.source_campaign_key,
+            'campaign_name': ad_group_source.get_external_name(),
+            'ad_group_id': ad_group_source.ad_group.id,
+            'batch_name': batch.name,
+            'content_ads': [_get_content_ad_dict(ad_group_source, cas, batch) for cas in content_ad_sources]
+        },
+        request=request,
+    )
+
+    msg = "insert_content_ad_batch action created: ad_group_source.id: {}".format(
+        ad_group_source.id,
     )
     logger.info(msg)
 
@@ -145,19 +147,7 @@ def init_submit_ad_group_action(ad_group_source, content_ad_source, request, sen
     batch = content_ad_source.content_ad.batch
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key,
-        'content_ad': {
-            'id': content_ad_source.get_source_id(),
-            'state': content_ad_source.state,
-            'title': content_ad_source.content_ad.title,
-            'url': content_ad_source.content_ad.url,
-            'image_id': content_ad_source.content_ad.image_id,
-            'image_width': content_ad_source.content_ad.image_width,
-            'image_height': content_ad_source.content_ad.image_height,
-            'display_url': batch.display_url,
-            'brand_name': batch.brand_name,
-            'description': batch.description,
-            'call_to_action': batch.call_to_action,
-        }
+        'content_ad': _get_content_ad_dict(ad_group_source, content_ad_source, batch)
     }
 
     action = _create_action(
@@ -177,6 +167,47 @@ def init_submit_ad_group_action(ad_group_source, content_ad_source, request, sen
         actionlog.zwei_actions.send(action)
 
     return action
+
+
+def _get_content_ad_dict(ad_group_source, content_ad_source, batch):
+    if ad_group_source.source.update_tracking_codes_on_content_ads() and\
+            ad_group_source.can_manage_content_ads:
+        try:
+            ad_group_tracking_codes = dash.models.AdGroupSettings.objects.\
+                latest('created_dt').get_tracking_codes()
+        except dash.models.AdGroupSettings.DoesNotExist:
+            ad_group_tracking_codes = None
+
+        url = content_ad_source.content_ad.url_with_tracking_codes(
+            utils.url_helper.combine_tracking_codes(
+                ad_group_tracking_codes,
+                ad_group_source.get_tracking_ids(),
+            )
+        )
+    else:
+        url = content_ad_source.content_ad.url
+
+    result = {
+        'id': content_ad_source.get_source_id(),
+        'state': content_ad_source.state,
+        'title': content_ad_source.content_ad.title,
+        'url': url,
+        'submission_status': content_ad_source.submission_status,
+        'image_id': content_ad_source.content_ad.image_id,
+        'image_width': content_ad_source.content_ad.image_width,
+        'image_height': content_ad_source.content_ad.image_height,
+        'image_hash': content_ad_source.content_ad.image_hash,
+        'display_url': batch.display_url,
+        'brand_name': batch.brand_name,
+        'description': batch.description,
+        'call_to_action': batch.call_to_action,
+        'tracking_slug': ad_group_source.source.tracking_slug
+    }
+
+    if content_ad_source.source_content_ad_id:
+        result['source_content_ad_id'] = content_ad_source.source_content_ad_id
+
+    return result
 
 
 def _create_action(ad_group_source, action, args={}, content_ad_source=None, request=None, order=None):
