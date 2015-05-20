@@ -1973,8 +1973,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             }).success(function(data) {
                 deferred.resolve(data.data.batch_id);
             }).error(function(data) {
+                console.log(data);
                 var result = {};
-
                 if (data && data.data && data.data.errors) {
                     result.errors = convertValidationErrorsFromApi(data.data.errors);
                 }
