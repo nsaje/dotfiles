@@ -833,6 +833,62 @@ class SubmitContentAdsBatchTest(TestCase):
     def tearDown(self):
         settings.CREDENTIALS_ENCRYPTION_KEY = self.credentials_encription_key
 
+    def test_submission_type_batch(self):
+        batch1 = models.UploadBatch.objects.create(name='test1', status=constants.UploadBatchStatus.DONE)
+        batch2 = models.UploadBatch.objects.create(name='test2', status=constants.UploadBatchStatus.DONE)
+
+        ad_group_id = 1
+        source_id = 8
+
+        ad_group_source = models.AdGroupSource.objects.create(
+            ad_group_id=ad_group_id,
+            source_id=source_id,
+            source_campaign_key='fake_key',
+            source_credentials_id=1
+        )
+        ad_group_source.save(None)
+
+        content_ad1 = models.ContentAd.objects.create(
+            url='test1.com',
+            title='test1',
+            ad_group=ad_group_source.ad_group,
+            batch=batch1
+        )
+        content_ad_source1 = models.ContentAdSource.objects.create(
+            content_ad=content_ad1,
+            source=ad_group_source.source,
+        )
+
+        content_ad2 = models.ContentAd.objects.create(
+            url='test2.com',
+            title='test2',
+            ad_group=ad_group_source.ad_group,
+            batch=batch2
+        )
+        content_ad_source2 = models.ContentAdSource.objects.create(
+            content_ad=content_ad2,
+            source=ad_group_source.source,
+        )
+
+        content_ad3 = models.ContentAd.objects.create(
+            url='test3.com',
+            title='test3',
+            ad_group=ad_group_source.ad_group,
+            batch=batch2
+        )
+        content_ad_source3 = models.ContentAdSource.objects.create(
+            content_ad=content_ad3,
+            source=ad_group_source.source,
+        )
+
+        api.submit_content_ads([content_ad_source1, content_ad_source2, content_ad_source3], request=None)
+
+        actionlogs = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action=actionlog.constants.Action.INSERT_CONTENT_AD_BATCH
+        )
+        self.assertEqual(actionlogs.count(), 2)
+
     def test_not_submitted_ad_group_source(self):
         batch = models.UploadBatch.objects.create(name='test', status=constants.UploadBatchStatus.DONE)
         ad_group_id = 1

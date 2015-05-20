@@ -178,10 +178,12 @@ class SourceAction(ConstantBase):
 class SourceSubmissionType(ConstantBase):
     DEFAULT = 1
     AD_GROUP = 2
+    BATCH = 3
 
     _VALUES = {
         DEFAULT: 'Default',
-        AD_GROUP: 'One submission per ad group'
+        AD_GROUP: 'One submission per ad group',
+        BATCH: 'Submit whole batch at once'
     }
 
 

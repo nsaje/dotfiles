@@ -187,3 +187,6 @@ SOURCE_OAUTH_URIS = {
 
 # Time zone used to convert datetimes in API responses
 DEFAULT_TIME_ZONE = 'America/New_York'
+
+# Placeholder value for source_campaign_key while campaign is being created
+SOURCE_CAMPAIGN_KEY_PENDING_VALUE = 'PENDING'

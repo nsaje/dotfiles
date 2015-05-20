@@ -670,6 +670,18 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action.payload, payload)
 
 
+class GetAdGroupSourcesWaitingTest(TestCase):
+    fixtures = ['test_api.yaml', 'test_actionlog_waiting.yaml']
+
+    def test_get_ad_group_sources_waiting(self):
+        ad_group_sources = api.get_ad_group_sources_waiting()
+
+        ad_group_source_ids = set(ags.id for ags in ad_group_sources)
+        expected_ids = set([19, 20, 21])
+
+        self.assertEqual(ad_group_source_ids, expected_ids)
+
+
 class ActionLogApiCancelExpiredTestCase(TestCase):
 
     fixtures = ['test_api.yaml', 'test_actionlog.yaml']

@@ -185,9 +185,12 @@ def get_ad_group_sources_waiting(**kwargs):
 
     actions = models.ActionLog.objects.filter(
         action=constants.Action.CREATE_CAMPAIGN,
-        state__in=[constants.ActionState.WAITING, constants.ActionState.FAILED],
         action_type=constants.ActionType.AUTOMATIC,
         **constraints
+    ).filter(
+        Q(state__in=[constants.ActionState.WAITING, constants.ActionState.FAILED]) |
+        Q(state=constants.ActionState.SUCCESS,
+          ad_group_source__source_campaign_key=settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE)
     )
 
     return [action.ad_group_source for action in actions]
@@ -259,6 +262,7 @@ def count_failed_stats_actions():
         Q(action=constants.Action.CREATE_CAMPAIGN) |
         Q(action=constants.Action.SET_CAMPAIGN_STATE) |
         Q(action=constants.Action.INSERT_CONTENT_AD) |
+        Q(action=constants.Action.INSERT_CONTENT_AD_BATCH) |
         Q(action=constants.Action.UPDATE_CONTENT_AD),
         state=constants.ActionState.FAILED
     ).count()
@@ -630,6 +634,9 @@ def _init_create_campaign(ad_group_source, name, request):
             if ad_group_source.source.source_type.type == dash.constants.SourceType.B1:
                 payload['args']['extra']['ad_group_id'] = ad_group_source.ad_group.id
                 payload['args']['extra']['exchange'] = ad_group_source.source.bidder_slug
+
+            if ad_group_source.source.source_type.type == dash.constants.SourceType.GRAVITY:
+                payload['args']['extra']['ad_group_id'] = ad_group_source.ad_group.id
 
             if hasattr(ad_group_source.source, 'defaultsourcesettings'):
                 params = ad_group_source.source.defaultsourcesettings.params

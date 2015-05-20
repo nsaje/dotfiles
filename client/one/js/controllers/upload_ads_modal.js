@@ -55,6 +55,10 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
     };
 
     $scope.upload = function() {
+        if ($scope.isInProgress) {
+            return;
+        }
+
         $scope.isInProgress = true;
         $scope.errors = null;
 

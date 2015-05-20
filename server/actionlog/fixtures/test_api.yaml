@@ -212,6 +212,18 @@
     model: dash.source
     pk: 7
 
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: GumGum
+        tracking_slug: 'test_tracking_slug'
+        source_type: 1
+        maintenance: false
+        bidder_slug: 'test_bidder_slug'
+        content_ad_submission_type: 3
+    model: dash.source
+    pk: 8
+
 # test adgroupsettings
 
 -   fields:
@@ -448,6 +460,49 @@
         last_successful_sync_dt: '2014-06-10T09:58:21'
     model: dash.adgroupsource
     pk: 18
+
+-   fields:
+        source: 3
+        ad_group: 4
+        source_campaign_key: '["fake"]'
+        source_credentials: 3
+    model: dash.adgroupsource
+    pk: 19
+
+-   fields:
+        source: 3
+        ad_group: 6
+        source_campaign_key: '"PENDING"'
+        source_credentials: 3
+        last_successful_sync_dt: '2014-06-10T09:58:21'
+    model: dash.adgroupsource
+    pk: 20
+
+-   fields:
+        source: 3
+        ad_group: 7
+        source_campaign_key: '["fake"]'
+        source_credentials: 3
+        last_successful_sync_dt: '2014-06-10T09:58:21'
+    model: dash.adgroupsource
+    pk: 21
+
+-   fields:
+        source: 4
+        ad_group: 5
+        source_campaign_key: '["fake"]'
+        source_credentials: 3
+    model: dash.adgroupsource
+    pk: 22
+
+-   fields:
+        source: 7
+        ad_group: 5
+        source_campaign_key: '["fake"]'
+        source_credentials: 1
+        last_successful_sync_dt: '2014-06-10T09:58:21'
+    model: dash.adgroupsource
+    pk: 23
 
 # test ad group source credentials
 
