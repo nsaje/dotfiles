@@ -58,21 +58,17 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
         form = self._init_form(csv_file, {})
         with open('./dash/tests/test.gif') as f:
-            valid, mime = form.is_valid_input_file(f.read())
+            valid= form.is_valid_input_file(f.read())
             self.assertFalse(valid)
-            self.assertEqual('image/gif', mime)
         with open('./dash/tests/test.jpg') as f:
-            valid, mime = form.is_valid_input_file(f.read())
+            valid = form.is_valid_input_file(f.read())
             self.assertFalse(valid)
-            self.assertEqual('image/jpeg', mime)
         with open('./dash/tests/test.xlsx') as f:
-            valid, mime = form.is_valid_input_file(f.read())
+            valid = form.is_valid_input_file(f.read())
             self.assertFalse(valid)
-            self.assertTrue(mime.startswith('application'))
         with open('./dash/tests/test.csv') as f:
-            valid, mime = form.is_valid_input_file(f.read())
+            valid = form.is_valid_input_file(f.read())
             self.assertTrue(valid)
-            self.assertEqual('text/plain', mime)
 
     def test_no_csv_content(self):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])

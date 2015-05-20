@@ -395,15 +395,15 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         m = magic.Magic(mime=True)
         mime = m.from_buffer(content[:1024])
         if 'text' in mime:  # accept variants of text/plain, text/html, etc.
-            return True, mime
+            return True
         else:
-            return False, mime
+            return False
 
     def clean_content_ads(self):
         content_ads_file = self.cleaned_data['content_ads']
 
         file_content = content_ads_file.read()
-        valid, mime = self.is_valid_input_file(file_content)
+        valid = self.is_valid_input_file(file_content)
         if not valid:
             raise forms.ValidationError('Input file was not recognized.')
 
