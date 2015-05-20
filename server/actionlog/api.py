@@ -185,9 +185,12 @@ def get_ad_group_sources_waiting(**kwargs):
 
     actions = models.ActionLog.objects.filter(
         action=constants.Action.CREATE_CAMPAIGN,
-        state__in=[constants.ActionState.WAITING, constants.ActionState.FAILED],
         action_type=constants.ActionType.AUTOMATIC,
         **constraints
+    ).filter(
+        Q(state__in=[constants.ActionState.WAITING, constants.ActionState.FAILED]) |
+        Q(state=constants.ActionState.SUCCESS,
+          ad_group_source__source_campaign_key=settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE)
     )
 
     return [action.ad_group_source for action in actions]
