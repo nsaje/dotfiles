@@ -1,4 +1,5 @@
 from collections import defaultdict
+import datetime
 import decimal
 import logging
 
@@ -89,8 +90,9 @@ def _get_latest_ad_group_source_state(ad_group_source):
         return None
 
 
-def update_campaign_key(ad_group_source, source_campaign_key, request):
+def create_campaign_callback(ad_group_source, source_campaign_key, request):
     ad_group_source.source_campaign_key = source_campaign_key
+    ad_group_source.last_successful_sync_dt = datetime.datetime.utcnow()
     ad_group_source.save(request)
 
 
@@ -388,12 +390,13 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                field_name == 'iab_category' and source.can_modify_ad_group_iab_category() or\
                field_name == 'ad_group_name' and source.can_modify_ad_group_name():
 
+                new_field_name = field_name
                 if field_name == 'ad_group_name':
-                    field_name = 'name'
+                    new_field_name = 'name'
 
                 actions.extend(
                     actionlog.api.set_ad_group_source_settings(
-                        {field_name: new_field_value},
+                        {new_field_name: new_field_value},
                         ad_group_source,
                         request,
                         order,

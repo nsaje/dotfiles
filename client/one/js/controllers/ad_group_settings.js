@@ -5,12 +5,18 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
     $scope.errors = {};
     $scope.constants = constants;
     $scope.options = options;
-    $scope.isStartDatePickerOpen = false;
-    $scope.isEndDatePickerOpen = false;
     $scope.alerts = [];
     $scope.saveRequestInProgress = false;
     $scope.saved = null;
     $scope.discarded = null;
+
+    // isOpen has to be an object property instead
+    // of being directly on $scope because
+    // datepicker-popup directive creates a new child
+    // scope which breaks two-way binding in that case
+    // https://github.com/angular/angular.js/wiki/Understanding-Scopes
+    $scope.startDatePicker = {isOpen: false};
+    $scope.endDatePicker = {isOpen: false};
 
     $scope.closeAlert = function(index) {
         $scope.alerts.splice(index, 1);
@@ -18,9 +24,9 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
 
     $scope.openDatePicker = function (type) {
         if (type === 'startDate') {
-            $scope.isStartDatePickerOpen = true;
+            $scope.startDatePicker.isOpen = true;
         } else if (type === 'endDate') {
-            $scope.isEndDatePickerOpen = true;
+            $scope.endDatePicker.isOpen = true;
         }
     };
 

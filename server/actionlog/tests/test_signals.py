@@ -11,7 +11,7 @@ from actionlog import signals
     PAGER_DUTY_ENABLED=True,
     PAGER_DUTY_URL='http://pagerduty.example.com',
     PAGER_DUTY_ADOPS_SERVICE_KEY='123abc',
-    PAGER_DUTY_ENGINEERS_SERVICEKEY='123bca'
+    PAGER_DUTY_ENGINEERS_SERVICE_KEY='123bca'
 )
 @patch('actionlog.signals.pagerduty_helper.trigger')
 class ActionLogSignalsTestCase(TestCase):

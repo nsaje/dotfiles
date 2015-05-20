@@ -54,6 +54,30 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         self.brand_name = 'testbrandname'
         self.call_to_action = 'testcalltoaction'
 
+    def test_filetypes(self):
+        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
+        form = self._init_form(csv_file, {})
+        with open('./dash/tests/test.gif') as f:
+            valid= form.is_valid_input_file(f.read())
+            self.assertFalse(valid)
+        with open('./dash/tests/test.jpg') as f:
+            valid = form.is_valid_input_file(f.read())
+            self.assertFalse(valid)
+        with open('./dash/tests/test.xlsx') as f:
+            valid = form.is_valid_input_file(f.read())
+            self.assertFalse(valid)
+        with open('./dash/tests/test.csv') as f:
+            valid = form.is_valid_input_file(f.read())
+            self.assertTrue(valid)
+
+    def test_no_csv_content(self):
+        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
+        #    [[self.url, self.title, self.image_url, self.crop_areas]])
+
+        form = self._init_form(csv_file, {'display_url': 'test.com'})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {'content_ads': [u'Uploaded file is empty.']})
+
     def test_invalid_display_url(self):
         csv_file = self._get_csv_file(
             ['Url', 'Title', 'Image Url', 'Crop Areas'],
@@ -146,6 +170,17 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors['content_ads'], ['Fourth column in header should be Crop areas.'])
 
+    def test_windows_1252_encoding(self):
+        csv_file = self._get_csv_file(
+            ['URL', 'Title', 'Image URL', 'Crop areas'],
+            [[self.url, u'\u00ae', self.image_url, self.crop_areas]],
+            encoding='windows-1252'
+        )
+        form = self._init_form(csv_file, None)
+
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data['content_ads'][0]['title'], u'\xae')
+
     def _init_form(self, csv_file, data_updates):
         data = {
             'batch_name': self.batch_name,
@@ -163,10 +198,10 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
             {'content_ads': SimpleUploadedFile('test_file.csv', csv_file.getvalue())}
         )
 
-    def _get_csv_file(self, header, rows):
+    def _get_csv_file(self, header, rows, encoding='utf-8'):
         csv_file = StringIO.StringIO()
 
-        writer = unicodecsv.writer(csv_file)
+        writer = unicodecsv.writer(csv_file, encoding=encoding)
         writer.writerow(header)
 
         for row in rows:

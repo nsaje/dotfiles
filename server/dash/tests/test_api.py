@@ -112,6 +112,27 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.props.append(prop)
         self.values.append(value)
 
+    def test_ad_group_name_change(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.source_type.available_actions.add(
+            models.SourceAction.objects.get(
+                action=constants.SourceAction.CAN_MODIFY_AD_GROUP_NAME,
+            )
+        )
+        ad_group_source.save()
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.ad_group_name = "Test"
+
+        ret = api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
+        self.assertEqual(2, len(ret))
+        self.assertEqual(ret[0].action, actionlog.constants.Action.SET_CAMPAIGN_STATE)
+        self.assertTrue('name' in ret[0].payload['args']['conf'])
+
+        self.assertEqual(ret[1].action, actionlog.constants.Action.SET_CAMPAIGN_STATE)
+        self.assertTrue('name' in ret[1].payload['args']['conf'])
+
     def test_basic_manual_actions(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.maintenance = True

@@ -121,7 +121,7 @@ class AdGroupSourceSettingsTest(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
-    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)        
+    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
     def test_end_date_future(self):
         ad_group = models.AdGroup.objects.get(pk=1)
         settings = ad_group.get_current_settings()
