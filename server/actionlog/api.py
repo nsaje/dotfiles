@@ -574,7 +574,8 @@ def _init_set_campaign_property(ad_group_source, prop, value, order, request):
 
 
 def _init_create_campaign(ad_group_source, name, request):
-    if ad_group_source.source_campaign_key:
+    if ad_group_source.source_campaign_key and \
+            ad_group_source.source_campaign_key != settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
         msg = u'Unable to create external campaign for AdGroupSource with existing connection'\
               'ad_group_source.id={ad_group_source_id}, name={name}'.format(
                   ad_group_source_id=ad_group_source.id,
