@@ -64,6 +64,19 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             },
             disabled: false
         }, {
+            name: 'Selected',
+            field: 'selected',
+            checked: true,
+            type: 'linkText',
+            shown: true,
+            totalRow: false,
+            help: 'Selection for bulk content ad actions.',
+            extraTdCss: 'trimmed title',
+            titleField: 'selected',
+            order: true,
+            orderField: 'selected',
+            initialOrder: 'asc'
+        }, {
             name: 'Status',
             field: 'submission_status',
             checked: false,
@@ -93,7 +106,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             orderField: 'title',
             initialOrder: 'asc'
         }, {
-            name: 'URL',
+            name: 'URL aaa',
             field: 'urlLink',
             checked: true,
             type: 'linkText',
@@ -236,7 +249,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
 
     $scope.columnCategories = [{
         'name': 'Content Sync',
-        'fields': ['image_urls' ,'titleLink', 'submission_status', 'urlLink', 'upload_time', 'batch_name', 'display_url', 'brand_name', 'description', 'call_to_action']
+        'fields': ['image_urls', 'titleLink', 'submission_status', 'selected', 'urlLink', 'upload_time', 'batch_name', 'display_url', 'brand_name', 'description', 'call_to_action']
     }, {
         'name': 'Traffic Acquisition',
         'fields': ['cost', 'cpc', 'clicks', 'impressions', 'ctr']
@@ -258,8 +271,19 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
     };
 
     $scope.bulkEdit = function() {
-		alert("Test");
-	}
+
+		// if all rows are selected
+		//
+		// else if 
+
+        // $scope.rows = data.rows;
+        $scope.rows.forEach(function (row) {
+			console.log(row);
+			// if (row.selected) {
+			//
+			// }
+		});
+	};
 
     $scope.loadPage = function(page) {
         if (page && page > 0 && page <= $scope.pagination.numPages) {

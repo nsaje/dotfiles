@@ -45,7 +45,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
             initialOrder: 'asc'
         },
         {
-            name: 'URL',
+            name: 'URL asdfasdf',
             field: 'urlLink',
             checked: true,
             type: 'linkText',
