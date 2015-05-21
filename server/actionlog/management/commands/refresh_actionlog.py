@@ -21,7 +21,7 @@ class Command(BaseCommand):
         except Exception, e:
             logger.exception("Failed to execute periodical sent to zwei of delayed actionlogs.")
 
-        refresh_orders.refresh_fetch_all_orders()
+        # refresh_orders.refresh_fetch_all_orders()
 
         # monitor the state of manual actions
         n_cmd_waiting = api.count_waiting_stats_actions()
