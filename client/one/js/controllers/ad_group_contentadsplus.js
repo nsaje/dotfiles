@@ -257,6 +257,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
         return modalInstance;
     };
 
+    $scope.bulkEdit = function() {
+		alert("Test");
+	}
+
     $scope.loadPage = function(page) {
         if (page && page > 0 && page <= $scope.pagination.numPages) {
             $scope.pagination.currentPage = page;
