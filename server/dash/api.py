@@ -404,7 +404,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     )
                 )
 
-            elif field_name == 'tracking_code' and source.update_tracking_codes_on_content_ads():
+            elif field_name == 'tracking_code' and source.update_tracking_codes_on_content_ads() and source.can_modify_tracking_codes():
                 if not ad_group_source.can_manage_content_ads:
                     continue
 

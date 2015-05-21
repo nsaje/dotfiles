@@ -193,6 +193,11 @@ class UpdateAdGroupSourceSettings(TestCase):
                 action=constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS,
             )
         )
+        ad_group_source1.source.source_type.available_actions.add(
+            models.SourceAction.objects.get(
+                action=constants.SourceAction.CAN_MODIFY_TRACKING_CODES,
+            )
+        )
 
         adgs1 = models.AdGroupSettings()
         adgs2 = models.AdGroupSettings()
