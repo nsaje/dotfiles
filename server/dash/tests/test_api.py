@@ -143,9 +143,7 @@ class UpdateAdGroupSourceSettings(TestCase):
 
     @mock.patch('dash.api.actionlog.api')
     def test_tracking_code_manual_action(self, mock_api):
-        ad_group_source = models.AdGroupSource.objects.get(id=1)
-
-        s1 = models.Source.objects.get(pk=1)
+        ad_group_source = models.AdGroupSource.objects.get(id=16)
 
         adgs1 = models.AdGroupSettings()
         adgs2 = models.AdGroupSettings()
@@ -155,7 +153,7 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.assertEqual([], ret)
 
         expected_value = 'test={amazing}' +\
-            '&blob={slug}&x={slug}&_z1_adgid=1&_z1_msid={slug}'.format(slug=s1.tracking_slug)
+            '&blob={slug}&x={slug}&_z1_adgid=7&_z1_msid={slug}'.format(slug=ad_group_source.source.tracking_slug)
 
         mock_api.init_set_ad_group_manual_property.assert_called_with(
             ad_group_source, None, 'tracking_code', expected_value)
