@@ -351,16 +351,6 @@ def _handle_error(action, e, request=None):
     action.save(request)
 
 
-def _get_ad_group_sources(ad_group, source):
-    active_ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group=ad_group)
-
-    if not source:
-        return active_ad_group_sources.all()
-
-    ret = active_ad_group_sources.filter(id=source.id)
-    return ret
-
-
 def _get_ad_group_settings(ad_group):
     s = dash.models.AdGroupSettings.objects.filter(ad_group=ad_group)
     if s:
