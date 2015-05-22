@@ -543,9 +543,8 @@ class ActionLogApiTestCase(TestCase):
             }
             self.assertEqual(action.payload, payload)
 
-    def test_set_ad_group_property(self):
-        ad_group = dashmodels.AdGroup.objects.get(id=1)
-        ad_group_sources = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group)
+    def test_init_set_ad_group_manual_property(self):
+        ad_group_source = dashmodels.AdGroupSource.objects.get(pk=1)
 
         prop = 'fake_property'
         value = 'fake_value'
@@ -553,21 +552,75 @@ class ActionLogApiTestCase(TestCase):
         request = HttpRequest()
         request.user = User()
 
-        api._set_ad_group_property(ad_group, request, prop=prop, value=value)
+        api.init_set_ad_group_manual_property(ad_group_source, request, prop, value)
 
-        for ad_group_source in ad_group_sources.all():
-            action = models.ActionLog.objects.get(
-                ad_group_source=ad_group_source,
-            )
+        action = models.ActionLog.objects.get(ad_group_source=ad_group_source)
 
-            self.assertEqual(action.action, constants.Action.SET_PROPERTY)
-            self.assertEqual(action.action_type, constants.ActionType.MANUAL)
+        self.assertEqual(action.action, constants.Action.SET_PROPERTY)
+        self.assertEqual(action.action_type, constants.ActionType.MANUAL)
 
-            payload = {
-                'property': prop,
-                'value': value
-            }
-            self.assertEqual(action.payload, payload)
+        payload = {
+            'property': prop,
+            'value': value
+        }
+        self.assertEqual(action.payload, payload)
+
+    def test_actionlog_added(self):
+        request = HttpRequest()
+        request.user = User()
+        ad_group_source = dashmodels.AdGroupSource.objects.get(pk=1)
+        now = datetime.datetime.now()
+        api.init_set_ad_group_manual_property(ad_group_source, request, 'test_property', 'test_value')
+        # check if a new action log object was added
+        alogs = models.ActionLog.objects.filter(
+            action=constants.Action.SET_PROPERTY,
+            state=constants.ActionState.WAITING,
+            action_type=constants.ActionType.MANUAL,
+            ad_group_source=ad_group_source,
+            created_dt__gt=now
+        )
+        self.assertEqual(len(alogs) == 1, True)
+        self.assertEqual(alogs[0].payload['property'], 'test_property')
+        self.assertEqual(alogs[0].payload['value'], 'test_value')
+        for alog in alogs:
+            alog.delete()
+
+    def test_abort_waiting_actionlog(self):
+        request = HttpRequest()
+        request.user = User()
+        ad_group_source = dashmodels.AdGroupSource.objects.get(pk=1)
+        now = datetime.datetime.now()
+        api.init_set_ad_group_manual_property(ad_group_source, request, 'test_property', 'test_value_1')
+        # insert a new action
+        # if the ad_group_source and property are the same
+        # the old one should be set to aborted and the new one should be set to waiting
+        api.init_set_ad_group_manual_property(ad_group_source, request, 'test_property', 'test_value_2')
+        # old action is aborted
+        alogs = models.ActionLog.objects.filter(
+            action=constants.Action.SET_PROPERTY,
+            state=constants.ActionState.ABORTED,
+            action_type=constants.ActionType.MANUAL,
+            ad_group_source=ad_group_source,
+            created_dt__gt=now
+        )
+        self.assertEqual(len(alogs) == 1, True)
+        self.assertEqual(alogs[0].payload['property'], 'test_property')
+        self.assertEqual(alogs[0].payload['value'], 'test_value_1')
+        for alog in alogs:
+            alog.delete()
+        # new action is waiting
+        alogs = models.ActionLog.objects.filter(
+            action=constants.Action.SET_PROPERTY,
+            state=constants.ActionState.WAITING,
+            action_type=constants.ActionType.MANUAL,
+            ad_group_source=ad_group_source,
+            created_dt__gt=now
+        )
+        self.assertEqual(len(alogs) == 1, True)
+        self.assertEqual(alogs[0].payload['property'], 'test_property')
+        self.assertEqual(alogs[0].payload['value'], 'test_value_2')
+        for alog in alogs:
+            alog.delete()
 
     @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
     def test_create_campaign(self):
@@ -1050,68 +1103,6 @@ class SendDelayedActionsTestCase(TestCase):
         for action in waiting_actions:
             self.assertEquals(action.expiration_dt, datetime.datetime(2015, 2, 25, 19, 15))
             self.assertEquals(action.payload['expiration_dt'], '2015-02-25T19:15:00')
-
-
-class SetCampaignPropertyTestCase(TestCase):
-
-    fixtures = ['test_api.yaml']
-
-    def test_actionlog_added(self):
-        request = HttpRequest()
-        request.user = User()
-        ad_group_source = dashmodels.AdGroupSource.objects.get(pk=1)
-        now = datetime.datetime.now()
-        api._init_set_campaign_property(ad_group_source, 'test_property', 'test_value', None, request)
-        # check if a new action log object was added
-        alogs = models.ActionLog.objects.filter(
-            action=constants.Action.SET_PROPERTY,
-            state=constants.ActionState.WAITING,
-            action_type=constants.ActionType.MANUAL,
-            ad_group_source=ad_group_source,
-            created_dt__gt=now
-        )
-        self.assertEqual(len(alogs) == 1, True)
-        self.assertEqual(alogs[0].payload['property'], 'test_property')
-        self.assertEqual(alogs[0].payload['value'], 'test_value')
-        for alog in alogs:
-            alog.delete()
-
-    def test_abort_waiting_actionlog(self):
-        request = HttpRequest()
-        request.user = User()
-        ad_group_source = dashmodels.AdGroupSource.objects.get(pk=1)
-        now = datetime.datetime.now()
-        api._init_set_campaign_property(ad_group_source, 'test_property', 'test_value_1', None, request)
-        # insert a new action
-        # if the ad_group_source and property are the same
-        # the old one should be set to aborted and the new one should be set to waiting
-        api._init_set_campaign_property(ad_group_source, 'test_property', 'test_value_2', None, request)
-        # old action is aborted
-        alogs = models.ActionLog.objects.filter(
-            action=constants.Action.SET_PROPERTY,
-            state=constants.ActionState.ABORTED,
-            action_type=constants.ActionType.MANUAL,
-            ad_group_source=ad_group_source,
-            created_dt__gt=now
-        )
-        self.assertEqual(len(alogs) == 1, True)
-        self.assertEqual(alogs[0].payload['property'], 'test_property')
-        self.assertEqual(alogs[0].payload['value'], 'test_value_1')
-        for alog in alogs:
-            alog.delete()
-        # new action is waiting
-        alogs = models.ActionLog.objects.filter(
-            action=constants.Action.SET_PROPERTY,
-            state=constants.ActionState.WAITING,
-            action_type=constants.ActionType.MANUAL,
-            ad_group_source=ad_group_source,
-            created_dt__gt=now
-        )
-        self.assertEqual(len(alogs) == 1, True)
-        self.assertEqual(alogs[0].payload['property'], 'test_property')
-        self.assertEqual(alogs[0].payload['value'], 'test_value_2')
-        for alog in alogs:
-            alog.delete()
 
 
 class SyncInProgressTestCase(TestCase):

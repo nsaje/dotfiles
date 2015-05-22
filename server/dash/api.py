@@ -438,12 +438,11 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     tracking_slug = ad_group_source.source.tracking_slug
                     new_field_value = _substitute_tracking_macros(new_field_value, tracking_slug)
 
-                actionlog.api.init_set_ad_group_property_order(
-                    ad_group_source.ad_group,
+                actionlog.api.init_set_ad_group_manual_property(
+                    ad_group_source,
                     request,
-                    source=ad_group_source,
-                    prop=field_name,
-                    value=new_field_value
+                    field_name,
+                    new_field_value
                 )
 
     return actions

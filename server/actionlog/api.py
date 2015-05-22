@@ -56,12 +56,45 @@ def init_pause_ad_group(ad_group, request, order=None, send=True):
     return new_actionlogs
 
 
-def init_set_ad_group_property_order(ad_group, request, source=None, prop=None, value=None):
-    with transaction.atomic():
-        order = models.ActionLogOrder.objects.create(
-            order_type=constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
+def init_set_ad_group_manual_property(ad_group_source, request, prop, value):
+    msg = u"init_set_ad_group_manual_property started: ad_group_source.id: {}, prop: {}, value: {}".format(
+        ad_group_source.id,
+        prop,
+        value
+    )
+    logger.info(msg)
+    try:
+        existing_actions = models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action=constants.Action.SET_PROPERTY,
+            state=constants.ActionState.WAITING,
+            action_type=constants.ActionType.MANUAL
         )
-        _set_ad_group_property(ad_group, request, source=source, prop=prop, value=value, order=order)
+        existing_actions = [a for a in existing_actions if a.payload['property'] == prop]
+        action = models.ActionLog(
+            action=constants.Action.SET_PROPERTY,
+            action_type=constants.ActionType.MANUAL,
+            expiration_dt=None,
+            state=constants.ActionState.WAITING,
+            ad_group_source=ad_group_source,
+            payload={
+                'property': prop,
+                'value': value,
+            },
+        )
+        action.save(request)
+
+        if existing_actions:
+            for a in existing_actions:
+                a.state = constants.ActionState.ABORTED
+                a.save(request)
+
+    except Exception as e:
+        logger.exception('An exception occurred while initializing set_property action.')
+        _handle_error(action, e, request)
+
+        et, ei, tb = sys.exc_info()
+        raise exceptions.InsertActionException, ei, tb
 
 
 def set_ad_group_source_settings(changes, ad_group_source, request, order=None, send=True):
@@ -83,15 +116,6 @@ def set_ad_group_source_settings(changes, ad_group_source, request, order=None, 
         extra=extra,
     )
     return send_delayed_actionlogs([ad_group_source], send=send)
-
-
-def _set_ad_group_property(ad_group, request, source=None, prop=None, value=None, order=None):
-    ad_group_sources = _get_ad_group_sources(ad_group, source)
-    for ad_group_source in ad_group_sources:
-        try:
-            _init_set_campaign_property(ad_group_source, prop, value, order, request)
-        except exceptions.InsertActionException:
-            continue
 
 
 def create_campaign(ad_group_source, name, request):
@@ -327,20 +351,6 @@ def _handle_error(action, e, request=None):
     action.save(request)
 
 
-def _get_ad_group_sources(ad_group, source):
-    inactive_ad_group_sources = get_ad_group_sources_waiting(ad_group=ad_group)
-
-    active_ad_group_sources = dash.models.AdGroupSource.objects \
-        .filter(ad_group=ad_group) \
-        .exclude(pk__in=[ags.id for ags in inactive_ad_group_sources])
-
-    if not source:
-        return active_ad_group_sources.all()
-
-    ret = active_ad_group_sources.filter(id=source.id)
-    return ret
-
-
 def _get_ad_group_settings(ad_group):
     s = dash.models.AdGroupSettings.objects.filter(ad_group=ad_group)
     if s:
@@ -524,49 +534,6 @@ def _init_fetch_reports(ad_group_source, date, order, request=None):
 
     except Exception as e:
         logger.exception('An exception occurred while initializing get_reports action')
-        _handle_error(action, e, request)
-
-        et, ei, tb = sys.exc_info()
-        raise exceptions.InsertActionException, ei, tb
-
-
-def _init_set_campaign_property(ad_group_source, prop, value, order, request):
-    msg = u"_init_set_campaign_property started: ad_group_source.id: {}, prop: {}, value: {}, order.id: {}".format(
-        ad_group_source.id,
-        prop,
-        value,
-        order.id if order else ''
-    )
-    logger.info(msg)
-    try:
-        existing_actions = models.ActionLog.objects.filter(
-            ad_group_source=ad_group_source,
-            action=constants.Action.SET_PROPERTY,
-            state=constants.ActionState.WAITING,
-            action_type=constants.ActionType.MANUAL
-        )
-        existing_actions = [a for a in existing_actions if a.payload['property'] == prop]
-        action = models.ActionLog(
-            action=constants.Action.SET_PROPERTY,
-            action_type=constants.ActionType.MANUAL,
-            expiration_dt=None,
-            state=constants.ActionState.WAITING,
-            ad_group_source=ad_group_source,
-            payload={
-                'property': prop,
-                'value': value,
-            },
-            order=order
-        )
-        action.save(request)
-
-        if existing_actions:
-            for a in existing_actions:
-                a.state = constants.ActionState.ABORTED
-                a.save(request)
-
-    except Exception as e:
-        logger.exception('An exception occurred while initializing set_property action.')
         _handle_error(action, e, request)
 
         et, ei, tb = sys.exc_info()
