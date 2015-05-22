@@ -93,9 +93,6 @@ def init_set_ad_group_manual_property(ad_group_source, request, prop, value):
         logger.exception('An exception occurred while initializing set_property action.')
         _handle_error(action, e, request)
 
-        et, ei, tb = sys.exc_info()
-        raise exceptions.InsertActionException, ei, tb
-
 
 def set_ad_group_source_settings(changes, ad_group_source, request, order=None, send=True):
     extra = {}
