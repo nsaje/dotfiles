@@ -108,7 +108,7 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.props = []
         self.values = []
 
-    def _stub_init_set_ad_group_property_order(self, ad_group, request, source=None, prop="", value=""):
+    def _stub_init_set_ad_group_manual_property(self, ad_group_source, request, prop="", value=""):
         self.props.append(prop)
         self.values.append(value)
 
@@ -146,7 +146,7 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.assertEqual([], ret)
 
     def test_tracking_code_manual_action(self):
-        actionlog.api.init_set_ad_group_property_order = self._stub_init_set_ad_group_property_order
+        actionlog.api.init_set_ad_group_manual_property = self._stub_init_set_ad_group_manual_property
 
         ad_group_source = models.AdGroupSource.objects.get(id=1)
 
@@ -160,7 +160,7 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.assertEqual([], ret)
         self.assertEqual('tracking_code', self.props[0])
         self.assertTrue('test={amazing}' + '&blob={slug}&x={slug}&_z1_adgid=1&_z1_msid={slug}'.format(slug=s1.tracking_slug) in self.values)
-        self.init_set_ad_group_property_order_value = None
+        self.init_set_ad_group_manual_property_order_value = None
 
     def test_tracking_codes_automatic(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
