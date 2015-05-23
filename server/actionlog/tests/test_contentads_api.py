@@ -226,7 +226,7 @@ class ContentAdsApiTestCase(TestCase):
         )
 
         request = HttpRequest()
-        request.user = User()
+        request.user = User.objects.create_user('test@example.com')
 
         changes = {
             'state': dash.constants.ContentAdSourceState.INACTIVE,
@@ -277,7 +277,7 @@ class ContentAdsApiTestCase(TestCase):
         order = models.ActionLogOrder.objects.create(
             order_type=constants.ActionLogOrderType.GET_CONTENT_AD_STATUS)
         request = HttpRequest()
-        request.user = User()
+        request.user = User.objects.create_user('test@example.com')
 
         api_contentads.init_get_content_ad_status_action(ad_group_source, order, request)
 
