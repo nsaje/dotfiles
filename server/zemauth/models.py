@@ -183,7 +183,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
 
 
 class InternalGroup(models.Model):
-    group = models.ForeignKey(auth_models.Group, unique=True, on_delete=models.PROTECT)
+    group = models.OneToOneField(auth_models.Group, on_delete=models.PROTECT)
 
     def __unicode__(self):
         return self.group.name
