@@ -50,7 +50,7 @@
             </div>
         </div>
         
-        <div class="pagination" ng-show="rows">
+        <div class="pagination" ng-show="rows.length">
             <span>Go to page</span>
             <form ng-submit="loadPage()">
                 <input class="page-num form-control" type="number" min="1" max="{{ pagination.numPages }}" ng-model="pagination.currentPage">

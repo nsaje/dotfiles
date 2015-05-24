@@ -1,5 +1,5 @@
 <div id="filter" class="pull-right" ng-show="hasPermission('zemauth.view_archived_entities') || hasPermission('zemauth.filter_sources')">
-    <div id="filter-dropdown" class="dropdown" on-toggle="onToggle(open)" is-open="isFilterOpen">
+    <div id="filter-dropdown" class="dropdown" dropdown on-toggle="onToggle(open)" is-open="isFilterOpen">
 
         <zem-internal-feature popover-placement="left" ng-if="isPermissionInternal('zemauth.view_archived_entities') && isPermissionInternal('zemauth.filter_sources')"></zem-internal-feature>
         <div class="btn btn-default" ng-class="{'filter-enabled': isFilterOn() && hasPermission('zemauth.filter_sources')}">
@@ -7,19 +7,19 @@
                 <div class="btn-remove" ng-click="removeFiltering()">
                     <img ng-src="{{ config.static_url }}/one/img/x.svg">
                 </div>
-                <div class="dropdown-toggle">
+                <div class="dropdown-toggle" dropdown-toggle>
                     <span>Filter ON</span>
                     <img class="filter-icon" ng-src="{{ config.static_url }}/one/img/filter_icon_white.svg"></img>
                 </div>
             </div>
             <div ng-if="!isFilterOn() || !hasPermission('zemauth.filter_sources')">
-                <div class="dropdown-toggle">
+                <div class="dropdown-toggle" dropdown-toggle>
                     <img class="filter-icon" ng-src="{{ config.static_url }}/one/img/filter_icon_black.svg"></img>
                 </div>
             </div>
         </div>
 
-        <ul class="filter-menu dropdown-menu">
+        <ul class="filter-menu dropdown-menu" dropdown-menu>
 
             <li ng-show="hasPermission('zemauth.filter_sources')">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.filter_sources')" popover-placement="left"></zem-internal-feature>
