@@ -2,6 +2,10 @@
 
 var oneApp = angular.module('one', ['templates-one', 'ngBootstrap', 'ngSanitize', 'ui.router', 'ui.bootstrap', 'ui.bootstrap.datetimepicker', 'ui.select2', 'highcharts-ng', 'config']);
 
+oneApp.config(['$compileProvider', 'config', function ($compileProvider, config) {
+    $compileProvider.debugInfoEnabled(config.debug);
+}]);
+
 oneApp.config(['$sceDelegateProvider', 'config', function ($sceDelegateProvider, config) {
     $sceDelegateProvider.resourceUrlWhitelist(['self', config.static_url + '/**']);
 }]);

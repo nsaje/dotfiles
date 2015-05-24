@@ -219,14 +219,16 @@ module.exports = function (grunt) {
             prod: {
                 constants: {
                     config: {
-                        static_url: '/client'
+                        static_url: '/client',
+                        debug: false
                     }
                 }
             },
             dev: {
                 constants: {
                     config: {
-                        static_url: 'http://localhost:9999'
+                        static_url: 'http://localhost:9999',
+                        debug: true
                     }
                 } 
             }
