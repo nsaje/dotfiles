@@ -272,6 +272,13 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 url: row.url !== '' ? row.url : null
             };
 
+			row.adSelected = true;
+
+            row.urlLink1 = {
+                text: row.url !== '' ? row.url : 'N/A',
+                url: row.url !== '' ? row.url : null
+            };
+
             row.urlLink = {
                 text: row.url !== '' ? row.url : 'N/A',
                 url: row.url !== '' ? row.url : null
@@ -331,6 +338,13 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         function convertFromApi(row) {
             row.titleLink = {
                 text: row.title,
+                url: row.url !== '' ? row.url : null
+            };
+
+			row.adSelected = true;
+
+            row.urlLink1 = {
+                text: row.url !== '' ? row.url : 'N/A',
                 url: row.url !== '' ? row.url : null
             };
 

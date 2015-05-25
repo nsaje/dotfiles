@@ -7,6 +7,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
     $scope.size = $scope.sizeRange[0];
     $scope.lastChangeTimeout = null;
     $scope.rows = null;
+    $scope.selectedAdTotals = false;
     $scope.totals = null;
 
     $scope.chartHidden = false;
@@ -28,8 +29,31 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
         {name: 'Excel by day', value: 'excel'}
     ];
 
+    $scope.selectedAdsChanged = function (row, checked) {
+        if (row.id) {
+        	// TODO: probably nothing TODO here
+        } else {
+        	// TODO: paging
+            $scope.selectedAdTotals = !$scope.selectedAdTotals;
+			$scope.rows.forEach(function (x) {
+				x.ad_selected = $scope.selectedAdTotals;
+			});
+        }
+    };
+
     $scope.columns = [
-        {
+		{
+			name: '',
+			field: 'ad_selected',
+			type: 'checkbox',
+			shown: true,
+			checked: true,
+			totalRow: true,
+			unselectable: true,
+			order: false,
+			selectCallback: $scope.selectedAdsChanged,
+			disabled: false
+		}, {
             name: 'Thumbnail',
             nameCssClass: 'table-name-hidden',
             field: 'image_urls',
@@ -64,19 +88,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             },
             disabled: false
         }, {
-            name: 'Selected',
-            field: 'selected',
-            checked: true,
-            type: 'linkText',
-            shown: true,
-            totalRow: false,
-            help: 'Selection for bulk content ad actions.',
-            extraTdCss: 'trimmed title',
-            titleField: 'selected',
-            order: true,
-            orderField: 'selected',
-            initialOrder: 'asc'
-        }, {
             name: 'Status',
             field: 'submission_status',
             checked: false,
@@ -106,7 +117,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             orderField: 'title',
             initialOrder: 'asc'
         }, {
-            name: 'URL aaa',
+            name: 'URL',
             field: 'urlLink',
             checked: true,
             type: 'linkText',
@@ -246,10 +257,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             initialOrder: 'asc'
         }
     ];
-
+	// 'urlLink1', 'urlLink', 
     $scope.columnCategories = [{
         'name': 'Content Sync',
-        'fields': ['image_urls', 'titleLink', 'submission_status', 'selected', 'urlLink', 'upload_time', 'batch_name', 'display_url', 'brand_name', 'description', 'call_to_action']
+        'fields': ['ad_selected', 'image_urls', 'titleLink', 'submission_status', 'checked', 'upload_time', 'batch_name', 'display_url', 'brand_name', 'description', 'call_to_action']
     }, {
         'name': 'Traffic Acquisition',
         'fields': ['cost', 'cpc', 'clicks', 'impressions', 'ctr']
