@@ -447,8 +447,10 @@ class AdGroupSources(api_common.BaseApiView):
             ad_group=ad_group,
             source_credentials=default_settings.credentials,
             can_manage_content_ads=source.can_manage_content_ads(),
-            source_campaign_key=settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
         )
+
+        if source.source_type.type == constants.SourceType.GRAVITY:
+            ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
 
         ad_group_source.save(request)
 

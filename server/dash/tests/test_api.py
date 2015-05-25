@@ -108,10 +108,6 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.props = []
         self.values = []
 
-    def _stub_init_set_ad_group_property_order(self, ad_group, request, source=None, prop="", value=""):
-        self.props.append(prop)
-        self.values.append(value)
-
     def test_ad_group_name_change(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.add(
@@ -145,12 +141,9 @@ class UpdateAdGroupSourceSettings(TestCase):
         ret = api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
         self.assertEqual([], ret)
 
-    def test_tracking_code_manual_action(self):
-        actionlog.api.init_set_ad_group_property_order = self._stub_init_set_ad_group_property_order
-
-        ad_group_source = models.AdGroupSource.objects.get(id=1)
-
-        s1 = models.Source.objects.get(pk=1)
+    @mock.patch('dash.api.actionlog.api')
+    def test_tracking_code_manual_action(self, mock_api):
+        ad_group_source = models.AdGroupSource.objects.get(id=16)
 
         adgs1 = models.AdGroupSettings()
         adgs2 = models.AdGroupSettings()
@@ -158,9 +151,12 @@ class UpdateAdGroupSourceSettings(TestCase):
 
         ret = api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
         self.assertEqual([], ret)
-        self.assertEqual('tracking_code', self.props[0])
-        self.assertTrue('test={amazing}' + '&blob={slug}&x={slug}&_z1_adgid=1&_z1_msid={slug}'.format(slug=s1.tracking_slug) in self.values)
-        self.init_set_ad_group_property_order_value = None
+
+        expected_value = 'test={amazing}' +\
+            '&blob={slug}&x={slug}&_z1_adgid=7&_z1_msid={slug}'.format(slug=ad_group_source.source.tracking_slug)
+
+        mock_api.init_set_ad_group_manual_property.assert_called_with(
+            ad_group_source, None, 'tracking_code', expected_value)
 
     def test_tracking_codes_automatic(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
@@ -191,6 +187,11 @@ class UpdateAdGroupSourceSettings(TestCase):
         ad_group_source1.source.source_type.available_actions.add(
             models.SourceAction.objects.get(
                 action=constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS,
+            )
+        )
+        ad_group_source1.source.source_type.available_actions.add(
+            models.SourceAction.objects.get(
+                action=constants.SourceAction.CAN_MODIFY_TRACKING_CODES,
             )
         )
 
