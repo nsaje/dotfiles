@@ -148,13 +148,14 @@ class AdGroupContentAdStateTest(TestCase):
         content_ad_id = 1
 
         data = {
-            'state': constants.ContentAdSourceState.INACTIVE
+            'state': constants.ContentAdSourceState.INACTIVE,
+            'content_ad_ids': [content_ad_id],
         }
 
         response = self.client.post(
             reverse(
                 'ad_group_content_ad_state',
-                kwargs={'ad_group_id': ad_group_id, 'content_ad_id': content_ad_id}),
+                kwargs={'ad_group_id': ad_group_id}),
             data=json.dumps(data),
             content_type='application/json',
             HTTP_X_REQUESTED_WITH='XMLHttpRequest',

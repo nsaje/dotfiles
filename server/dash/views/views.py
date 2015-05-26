@@ -725,7 +725,7 @@ class AdGroupAdsPlusUploadBatches(api_common.BaseApiView):
 
 class AdGroupContentAdState(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
-    def post(self, request, ad_group_id, content_ad_id):
+    def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.set_content_ad_status'):
             raise exc.ForbiddenError(message='Not allowed')
 
@@ -737,34 +737,41 @@ class AdGroupContentAdState(api_common.BaseApiView):
         if state is None or state not in constants.ContentAdSourceState.get_all():
             raise exc.ValidationError()
 
-        try:
-            content_ad = models.ContentAd.objects.get(pk=content_ad_id)
-        except models.ContentAd.DoesNotExist():
-            raise exc.MissingDataException()
+        content_ad_ids = data.get('content_ad_ids')
+        if not isinstance(content_ad_ids, list):
+            raise exc.ValidationError()
+
+        content_ads = []
+        for content_ad_id in content_ad_ids:
+            try:
+                content_ad = models.ContentAd.objects.get(pk=content_ad_id)
+                content_ads.append(content_ad)
+            except models.contentad.doesnotexist():
+                raise exc.MissingDataException()
 
         actions = []
         with transaction.atomic():
-            content_ad.state = state
-            content_ad.save()
+            for content_ad in content_ads:
+                content_ad.state = state
+                content_ad.save()
+                for content_ad_source in content_ad.contentadsource_set.all():
+                    prev_state = content_ad_source.state
+                    content_ad_source.state = state
+                    content_ad_source.save()
 
-            for content_ad_source in content_ad.contentadsource_set.all():
-                prev_state = content_ad_source.state
-                content_ad_source.state = state
-                content_ad_source.save()
+                    if prev_state != state:
+                        changes = {
+                            'state': content_ad_source.state,
+                        }
 
-                if prev_state != state:
-                    changes = {
-                        'state': content_ad_source.state,
-                    }
-
-                    actions.append(
-                        actionlog.api_contentads.init_update_content_ad_action(
-                            content_ad_source,
-                            changes,
-                            request,
-                            send=False,
+                        actions.append(
+                            actionlog.api_contentads.init_update_content_ad_action(
+                                content_ad_source,
+                                changes,
+                                request,
+                                send=False,
+                            )
                         )
-                    )
 
         actionlog.zwei_actions.send_multiple(actions)
 

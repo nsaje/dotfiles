@@ -163,7 +163,7 @@ urlpatterns += patterns(
         name='ad_group_ads_plus_upload_batches',
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/(?P<content_ad_id>\d+)/state/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/state/',
         login_required(dash.views.views.AdGroupContentAdState.as_view()),
         name='ad_group_content_ad_state'
     ),
