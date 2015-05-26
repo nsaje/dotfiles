@@ -357,7 +357,7 @@ def install_dependencies(app, params):
 def unittests(app, params):
     dest_folder = os.path.join(params['app_folder'], app)
     with cd(dest_folder), virtualenv():
-        run('python manage.py test')
+        run('python manage.py test --keepdb')
 
 
 def manage_static(app, params):
