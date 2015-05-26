@@ -4,7 +4,7 @@ import json
 from mock import patch
 import datetime
 
-from django.test import TestCase, Client
+from django.test import TestCase, Client, RequestFactory
 from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -13,7 +13,7 @@ from zemauth.models import User
 
 from dash import models
 from dash import constants
-
+from dash.views import views
 
 class UserTest(TestCase):
     fixtures = ['test_views.yaml']
@@ -96,11 +96,12 @@ class UserTest(TestCase):
 
 
 class AdGroupSourceSettingsTest(TestCase):
-    fixtures = ['test_models.yaml','test_views.yaml',]
+    fixtures = ['test_models.yaml', 'test_views.yaml', ]
 
     class MockSettingsWriter(object):
         def __init__(self, init):
             pass
+
         def set(self, resource, request):
             pass
 
@@ -115,8 +116,8 @@ class AdGroupSourceSettingsTest(TestCase):
         settings.save(None)
 
         response = self.client.put(
-            reverse('ad_group_source_settings', kwargs={'ad_group_id':'1','source_id':'1'}),
-            data=json.dumps({'cpc_cc':'0.15'})
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'cpc_cc': '0.15'})
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
@@ -129,11 +130,11 @@ class AdGroupSourceSettingsTest(TestCase):
         settings.save(None)
 
         response = self.client.put(
-            reverse('ad_group_source_settings', kwargs={'ad_group_id':'1','source_id':'1'}),
-            data=json.dumps({'cpc_cc':'0.15'})
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'cpc_cc': '0.15'})
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(json.loads(response.content),{'success': True})
+        self.assertEqual(json.loads(response.content), {'success': True})
 
 
 class AdGroupContentAdStateTest(TestCase):
@@ -247,7 +248,10 @@ class AdGroupAdsPlusUploadTest(TestCase):
 
 
 class AdGroupAdsPlusUploadBatchesTest(TestCase):
-    fixtures = ['test_views.yaml']
+    fixtures = ['test_views', 'test_api']
+
+    def setUp(self):
+        self.factory = RequestFactory()
 
     def _get_client(self, superuser=True):
         password = 'secret'
@@ -259,8 +263,39 @@ class AdGroupAdsPlusUploadBatchesTest(TestCase):
 
     def test_permission(self):
         response = self._get_client(superuser=False).get(
-            reverse('ad_group_ads_plus_upload_batches', kwargs={'ad_group_id': 1}), follow=True)
+            reverse('ad_group_ads_plus_upload_batches',
+            kwargs={'ad_group_id': 1}),
+            follow=True,
+        )
         self.assertEqual(response.status_code, 403)
+
+        response = self._get_client(superuser=True).get(
+            reverse('ad_group_ads_plus_upload_batches',
+            kwargs={'ad_group_id': 1}),
+            follow=True,
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_batches(self):
+        request = self.factory.get(
+            reverse('ad_group_ads_plus_upload_batches', kwargs={'ad_group_id': 1})
+        )
+        request.user = User.objects.get(pk=1)
+        handler = views.AdGroupAdsPlusUploadBatches()
+        response = handler.get(request, 1)
+        json_blob = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([], json_blob["data"]["batches"])
+
+        # make sure batch has state done now
+        uploadBatch = models.UploadBatch.objects.get(pk=1)
+        uploadBatch.status = constants.UploadBatchStatus.DONE
+        uploadBatch.save()
+
+        response = handler.get(request, 1)
+        json_blob = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([{"id": 1, "name": "batch 1"}], json_blob["data"]["batches"])
 
 
 class AdGroupSourcesTest(TestCase):
