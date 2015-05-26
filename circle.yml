@@ -27,7 +27,7 @@ checkout:
 
 test:
     override:
-        - coverage run manage.py test:
+        - coverage run manage.py test --keepdb:
             pwd: server
         - grunt test:
             pwd: client
