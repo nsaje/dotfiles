@@ -246,6 +246,23 @@ class AdGroupAdsPlusUploadTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
+class AdGroupAdsPlusUploadBatchesTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    def _get_client(self, superuser=True):
+        password = 'secret'
+        user_id = 1 if superuser else 2
+        username = User.objects.get(pk=user_id).email
+        client = Client()
+        client.login(username=username, password=password)
+        return client
+
+    def test_permission(self):
+        response = self._get_client(superuser=False).get(
+            reverse('ad_group_ads_plus_upload_batches', kwargs={'ad_group_id': 1}), follow=True)
+        self.assertEqual(response.status_code, 403)
+
+
 class AdGroupSourcesTest(TestCase):
     def test_get_name(self):
         ad_group_source = models.AdGroupSource(

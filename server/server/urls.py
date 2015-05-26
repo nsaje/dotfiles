@@ -150,6 +150,10 @@ urlpatterns += patterns(
         login_required(dash.views.views.AdGroupAdsPlusUpload.as_view()), name='ad_group_ads_plus_upload'
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload-batches/',
+        login_required(dash.views.views.AdGroupAdsPlusUploadBatches.as_view()), name='ad_group_ads_plus_upload_batches'
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/(?P<content_ad_id>\d+)/state/',
         login_required(dash.views.views.AdGroupContentAdState.as_view()),
         name='ad_group_content_ad_state'
