@@ -105,7 +105,7 @@ class ActionLogApiTestCase(TestCase):
         )
 
         request = HttpRequest()
-        request.user = User(id=1)
+        request.user = User.objects.create_user('test@example.com')
 
         source_settings.save(request)
 
@@ -168,7 +168,7 @@ class ActionLogApiTestCase(TestCase):
         )
 
         request = HttpRequest()
-        request.user = User(id=1)
+        request.user = User.objects.create_user('test@example.com')
 
         source_settings.save(request)
 
@@ -206,7 +206,7 @@ class ActionLogApiTestCase(TestCase):
         )
 
         request = HttpRequest()
-        request.user = User(id=1)
+        request.user = User.objects.create_user('test@example.com')
 
         source_settings.save(request)
 
@@ -253,7 +253,7 @@ class ActionLogApiTestCase(TestCase):
         )
 
         request = HttpRequest()
-        request.user = User(id=1)
+        request.user = User.objects.create_user('test@example.com')
 
         source_settings.save(request)
 
@@ -298,7 +298,7 @@ class ActionLogApiTestCase(TestCase):
         )
 
         request = HttpRequest()
-        request.user = User(id=1)
+        request.user = User.objects.create_user('test@example.com')
 
         source_settings.save(request)
 
@@ -355,7 +355,7 @@ class ActionLogApiTestCase(TestCase):
         )
 
         request = HttpRequest()
-        request.user = User(id=1)
+        request.user = User.objects.create_user('test@example.com')
 
         source_settings.save(request)
 
@@ -400,7 +400,7 @@ class ActionLogApiTestCase(TestCase):
                                                                   source__maintenance=True)[0]
 
         request = HttpRequest()
-        request.user = User()
+        request.user = User.objects.create_user('test@example.com')
 
         # Only one change per ad_group_source
         changes = {'cpc_cc': 0.3}
@@ -550,7 +550,7 @@ class ActionLogApiTestCase(TestCase):
         value = 'fake_value'
 
         request = HttpRequest()
-        request.user = User()
+        request.user = User.objects.create_user('test@example.com')
 
         api.init_set_ad_group_manual_property(ad_group_source, request, prop, value)
 
@@ -567,7 +567,7 @@ class ActionLogApiTestCase(TestCase):
 
     def test_actionlog_added(self):
         request = HttpRequest()
-        request.user = User()
+        request.user = User.objects.create_user('test@example.com')
         ad_group_source = dashmodels.AdGroupSource.objects.get(pk=1)
         now = datetime.datetime.now()
         api.init_set_ad_group_manual_property(ad_group_source, request, 'test_property', 'test_value')
@@ -587,7 +587,7 @@ class ActionLogApiTestCase(TestCase):
 
     def test_abort_waiting_actionlog(self):
         request = HttpRequest()
-        request.user = User()
+        request.user = User.objects.create_user('test@example.com')
         ad_group_source = dashmodels.AdGroupSource.objects.get(pk=1)
         now = datetime.datetime.now()
         api.init_set_ad_group_manual_property(ad_group_source, request, 'test_property', 'test_value_1')
@@ -633,7 +633,7 @@ class ActionLogApiTestCase(TestCase):
         name = 'Test'
 
         request = HttpRequest()
-        request.user = User()
+        request.user = User.objects.create_user('test@example.com')
 
         api.create_campaign(ad_group_source_failing, name, request)
         self.assertFalse(models.ActionLog.objects.filter(
@@ -773,7 +773,7 @@ class ActionLogApiCancelExpiredTestCase(TestCase):
         ad_group_source = dashmodels.AdGroupSource.objects.get(id=1)
 
         request = HttpRequest()
-        request.user = User(id=1)
+        request.user = User.objects.create_user('test@example.com')
 
         self.assertNotEqual(ad_group_source.source_campaign_key, {})
         self.assertIsNone(api._init_set_ad_group_source_settings(ad_group_source, {}, request, order=None))
@@ -783,7 +783,7 @@ class ActionLogApiCancelExpiredTestCase(TestCase):
         ad_group_source.source_campaign_key = {}
 
         request = HttpRequest()
-        request.user = User(id=1)
+        request.user = User.objects.create_user('test@example.com')
 
         with self.assertRaises(exceptions.InsertActionException):
             api._init_set_ad_group_source_settings(ad_group_source, {}, request, order=None)

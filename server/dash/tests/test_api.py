@@ -24,7 +24,7 @@ class AddContentAdSources(TestCase):
 
     def setUp(self):
         self.request = HttpRequest()
-        self.request.user = User()
+        self.request.user = User.objects.create_user('test@example.com')
 
     def test_ad_content_ad_sources_supported(self):
         ad_group_source = models.AdGroupSource(
@@ -340,7 +340,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
 
     def test_can_trigger_action_if_ad_group_enabled(self):
         request = HttpRequest()
-        request.user = User(id=1)
+        request.user = User.objects.create_user('test@example.com')
 
         self.ad_group_settings.state = 1
         self.ad_group_settings.save(request)
@@ -354,7 +354,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         models.AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).delete()
 
         request = HttpRequest()
-        request.user = User(id=1)
+        request.user = User.objects.create_user('test@example.com')
 
         self.writer.set({'state': 1}, request)
 
@@ -376,7 +376,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
             .latest('created_dt')
 
         request = HttpRequest()
-        request.user = User(id=1)
+        request.user = User.objects.create_user('test@example.com')
 
         self.writer.set({'cpc_cc': decimal.Decimal(0.1)}, request)
 

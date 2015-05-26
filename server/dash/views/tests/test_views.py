@@ -265,19 +265,31 @@ class AdGroupAdsPlusUploadBatchesTest(TestCase):
 
 class AdGroupSourcesTest(TestCase):
     def test_get_name(self):
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        account = models.Account(
+            name=u'Account š name that is toooooooo long',
+        )
+        account.save(request)
+
+        campaign = models.Campaign(
+            name=u'Campaign š name that is toooooooo long',
+            account=account,
+        )
+        campaign.save(request)
+
+        source = models.Source(
+            name="Outbrain",
+        )
+        source.save()
+
         ad_group_source = models.AdGroupSource(
-            source=models.Source(
-                name="Outbrain",
-            ),
+            source=source,
             ad_group=models.AdGroup(
                 id=123,
                 name=u'Ad group š name that is toooooooo long',
-                campaign=models.Campaign(
-                    name=u'Campaign š name that is toooooooo long',
-                    account=models.Account(
-                        name=u'Account š name that is toooooooo long',
-                    ),
-                ),
+                campaign=campaign,
             ),
         )
 
@@ -286,19 +298,31 @@ class AdGroupSourcesTest(TestCase):
             name, u'ONE: Account š name that is / Campaign š name that / Ad group š name that / 123 / Outbrain')
 
     def test_get_name_long_first_word(self):
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        account = models.Account(
+            name=u'Accountšnamethatistoooooooolong',
+        )
+        account.save(request)
+
+        campaign = models.Campaign(
+            name=u'Campaignšnamethatistoooooooolong',
+            account=account,
+        )
+        campaign.save(request)
+
+        source = models.Source(
+            name="Outbrain",
+        )
+        source.save()
+
         ad_group_source = models.AdGroupSource(
-            source=models.Source(
-                name="Outbrain",
-            ),
+            source=source,
             ad_group=models.AdGroup(
                 id=123,
                 name=u'Adgroupšnamethatistoooooooolong',
-                campaign=models.Campaign(
-                    name=u'Campaignšnamethatistoooooooolong',
-                    account=models.Account(
-                        name=u'Accountšnamethatistoooooooolong',
-                    ),
-                ),
+                campaign=campaign,
             ),
         )
 
@@ -307,19 +331,31 @@ class AdGroupSourcesTest(TestCase):
             name, u'ONE: Accountšnamethatistooo / Campaignšnamethatistoo / Adgroupšnamethatistooo / 123 / Outbrain')
 
     def test_get_name_empty_strings(self):
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        account = models.Account(
+            name=u'',
+        )
+        account.save(request)
+
+        campaign = models.Campaign(
+            name=u'',
+            account=account,
+        )
+        campaign.save(request)
+
+        source = models.Source(
+            name="Outbrain",
+        )
+        source.save()
+
         ad_group_source = models.AdGroupSource(
-            source=models.Source(
-                name="Outbrain",
-            ),
+            source=source,
             ad_group=models.AdGroup(
                 id=123,
                 name=u'',
-                campaign=models.Campaign(
-                    name=u'',
-                    account=models.Account(
-                        name=u'',
-                    ),
-                ),
+                campaign=campaign,
             ),
         )
 

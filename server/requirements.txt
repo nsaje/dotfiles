@@ -1,4 +1,4 @@
-Django==1.7
+Django==1.8.2
 jsonfield==1.0.0
 # Depends on: postgresql-server-dev-9.3
 psycopg2==2.5.3

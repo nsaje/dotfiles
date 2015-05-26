@@ -18,7 +18,6 @@
 
 # content type
 - fields:
-    name: 'test'
     app_label: 'test'
     model: 'test'
   model: contenttypes.ContentType

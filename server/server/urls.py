@@ -28,6 +28,14 @@ admin.site.login = login_required(admin.site.login)
 auth_views.logout_then_login = utils.statsd_helper.statsd_timer('auth', 'signout_response_time')(
     auth_views.logout_then_login)
 
+
+# RedirectView.permanent will be False
+# by default from Django 1.9 onwards,
+# so set it to True to silence warnings
+class AdminRedirectView(RedirectView):
+    permanent = True
+
+
 urlpatterns = patterns(
     '',
     url(r'^signin$',
@@ -43,7 +51,7 @@ urlpatterns = patterns(
         'zemauth.views.set_password',
         {'template_name': 'zemauth/set_password.html'},
         name='set_password'),
-    url(r'^admin$', RedirectView.as_view(url='/admin/')),
+    url(r'^admin$', AdminRedirectView.as_view(url='/admin/')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^oauth2callback', 'zemauth.views.google_callback'),
     url(r'^supply_dash/', 'dash.views.views.supply_dash_redirect'),
