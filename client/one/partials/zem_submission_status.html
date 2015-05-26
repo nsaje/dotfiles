@@ -1,6 +1,6 @@
 <div class="submission-status" popover-append-to-body="true" popover-trigger="mouseenter" zem-html-popover="'submissionStatusPopover.html'" popover-updater="statusItems" popover-placement="top">
-    <span ng-if="approved" class="cell approved">{{approved.length}}</span>
-    <span ng-if="nonApproved" class="cell">{{nonApproved.length}}</span>
+    <span ng-if="approved.length" class="cell approved">{{approved.length}}</span>
+    <span ng-if="nonApproved.length" class="cell">{{nonApproved.length}}</span>
 </div>
 
 <script id="submissionStatusPopover.html" type="text/ng-template">
