@@ -41,9 +41,25 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
         }
     };
 
+    $scope.selectionOptions = [
+		{
+			name: 'All',
+			type: 'link'
+		}, {
+			name: 'This page',
+			type: 'link'
+		}, {
+			type: 'separator'
+		}, {
+			name: 'Upload batch',
+			type: 'link-list',
+			rows: null
+		}
+    ];
+
     $scope.columns = [
 		{
-			name: '',
+			name: 'zem-simple-menu',
 			field: 'ad_selected',
 			type: 'checkbox',
 			shown: true,
@@ -52,7 +68,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
 			unselectable: true,
 			order: false,
 			selectCallback: $scope.selectedAdsChanged,
-			disabled: false
+			disabled: false,
+			selectionOptions: $scope.selectionOptions
 		}, {
             name: 'Thumbnail',
             nameCssClass: 'table-name-hidden',
@@ -256,7 +273,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             orderField: 'call_to_action',
             initialOrder: 'asc'
         }
-    ];
+    ];    
 	// 'urlLink1', 'urlLink', 
     $scope.columnCategories = [{
         'name': 'Content Sync',
@@ -446,6 +463,12 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             }, 10000);
         }
     };
+
+    var initSelectionOptions = function () {
+        var options;
+        cols = zemCustomTableColsService.load('adGroupAdsPlus', $scope.columns);
+        $scope.selectedColumnsCount = cols.length;
+	};
 
     var initColumns = function () {
         var cols;
