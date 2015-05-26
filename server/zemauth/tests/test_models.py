@@ -91,18 +91,17 @@ class UserTestCase(test.TestCase):
     def test_unique_email(self):
         email = 'test@test.com'
         with transaction.atomic():
-            user1 = models.User(email=email)
-            user1.save()
+            models.User.objects.create_user(email)
 
         with transaction.atomic():
             self.assertEqual(len(models.User.objects.filter(email=email).all()), 1)
 
-            user2 = models.User(email=email)
-            self.assertRaises(IntegrityError, user2.save)
+            with self.assertRaises(IntegrityError):
+                models.User.objects.create_user(email)
 
         with transaction.atomic():
-            user2 = models.User(email='TEST@test.com')
-            self.assertRaises(IntegrityError, user2.save)
+            with self.assertRaises(IntegrityError):
+                models.User.objects.create_user('TEST@test.com')
 
     def test_superuser_permissions(self):
         user = models.User.objects.get(pk=1)

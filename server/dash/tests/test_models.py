@@ -60,7 +60,7 @@ class AdGroupSettingsTest(TestCase):
         self.assertEqual(ad_group_settings.get_tracking_codes(), u'')
 
         request = HttpRequest()
-        request.user = User()
+        request.user = User.objects.create_user('test@example.com')
 
         ad_group_settings.tracking_code = '?param1=value1&param2=value2#hash?a=b&c=d'
         ad_group_settings.save(request)
@@ -95,7 +95,7 @@ class AdGroupSourceTest(TestCase):
 
     def test_adgroup_source_save(self):
         request = HttpRequest()
-        request.user = User(id=1)
+        request.user = User.objects.create_user('test@example.com')
 
         ad_group = models.AdGroup(campaign_id=1, modified_by_id=1)
         ad_group.save(request)
@@ -109,7 +109,7 @@ class AdGroupSourceTest(TestCase):
 
     def test_get_tracking_ids(self):
         request = HttpRequest()
-        request.user = User(id=1)
+        request.user = User.objects.create_user('test@example.com')
 
         ad_group = models.AdGroup(campaign_id=1, modified_by_id=1)
         ad_group.save(request)
@@ -179,7 +179,7 @@ class ArchiveRestoreTestCase(TestCase):
         pre_save.connect(created_by_patch, sender=models.AccountSettings)
 
         self.request = HttpRequest()
-        self.request.user = User()
+        self.request.user = User.objects.create_user('test@example.com')
 
     def tearDown(self):
         pre_save.disconnect(created_by_patch, sender=models.AdGroupSettings)

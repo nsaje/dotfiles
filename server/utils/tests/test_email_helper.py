@@ -21,7 +21,7 @@ class EmailHelperTestCase(TestCase):
         reset_url = email_helper._generate_password_reset_url(self.user, self.request)
         self.assertRegexpMatches(
             reset_url,
-            r'https://testserver/set_password/[a-zA-Z0-9]{2}-[a-zA-Z0-9]{3}-[0-9a-zA-Z]{20}/')
+            r'https://testserver/set_password/[a-zA-Z0-9]+-[a-zA-Z0-9]+-[0-9a-zA-Z]{20}/')
 
     def test_send_email_to_user(self):
         subject = 'This is subject'
@@ -61,9 +61,16 @@ class EmailHelperTestCase(TestCase):
 
     def test_send_ad_group_settings_change_email(self):
         account_manager = User.objects.create_user('manager@user.com')
+
         account = dash_models.Account()
+        account.save(self.request)
+
         campaign = dash_models.Campaign(account=account)
-        ad_group = dash_models.AdGroup(campaign=campaign)
+        campaign.save(self.request)
+
+        ad_group = dash_models.AdGroup(id=8, campaign=campaign)
+        ad_group.save(self.request)
+
         campaign_url = 'https://test.com/campaign/1/'
 
         email_helper.send_ad_group_settings_change_email(
@@ -75,7 +82,7 @@ class EmailHelperTestCase(TestCase):
         )
 
         subject = 'Settings change - ad group , campaign , account '
-        body = 'Hi account manager of \n\nWe\'d like to notify you that test@user.com has made a change in the settings of the ad group , campaign , account . Please check https://testserver/ad_groups/None/agency for details.\n\nYours truly,\nZemanta\n    '
+        body = 'Hi account manager of \n\nWe\'d like to notify you that test@user.com has made a change in the settings of the ad group , campaign , account . Please check https://testserver/ad_groups/8/agency for details.\n\nYours truly,\nZemanta\n    '
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, subject)
@@ -92,9 +99,16 @@ class EmailHelperTestCase(TestCase):
     @patch('utils.email_helper.pagerduty_helper.trigger')
     def test_send_ad_group_settings_change_email_failed(self, mock_trigger_event):
         account_manager = User.objects.create_user('manager@user.com')
+
         account = dash_models.Account()
+        account.save(self.request)
+
         campaign = dash_models.Campaign(account=account)
+        campaign.save(self.request)
+
         ad_group = dash_models.AdGroup(campaign=campaign)
+        ad_group.save(self.request)
+
         campaign_url = 'https://test.com/campaign/1/'
 
         self.user.email = None

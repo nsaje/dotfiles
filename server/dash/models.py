@@ -1385,6 +1385,6 @@ class CampaignBudgetSettings(models.Model):
 
 
 class DemoAdGroupRealAdGroup(models.Model):
-    demo_ad_group = models.ForeignKey(AdGroup, unique=True, on_delete=models.PROTECT, related_name='+')
-    real_ad_group = models.ForeignKey(AdGroup, unique=True, on_delete=models.PROTECT, related_name='+')
+    demo_ad_group = models.OneToOneField(AdGroup, on_delete=models.PROTECT, related_name='+')
+    real_ad_group = models.OneToOneField(AdGroup, on_delete=models.PROTECT, related_name='+')
     multiplication_factor = models.IntegerField(null=False, blank=False, default=1)
