@@ -24,6 +24,8 @@
     "angular-mocks": "1.4"
   },
   "resolutions": {
-    "bootstrap": "3.3"
+    "bootstrap": "3.3",
+    "moment": "2.7",
+    "angular": "1.4"
   }
 }
