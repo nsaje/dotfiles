@@ -414,7 +414,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     };
 
     $scope.init = function() {
-        var page = $location.search().page;
+        var page = parseInt($location.search().page || '1');
 
         userSettings.register('chartMetric1');
         userSettings.register('chartMetric2');

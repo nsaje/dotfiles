@@ -111,6 +111,7 @@ module.exports = function (grunt) {
                             'lib/components/select2/select2.png',
                             'lib/components/select2/select2x2.png',
                             'lib/components/bootstrap/dist/fonts/glyphicons-halflings-regular.woff',
+                            'lib/components/bootstrap/dist/fonts/glyphicons-halflings-regular.woff2',
                             'lib/components/bootstrap/dist/fonts/glyphicons-halflings-regular.ttf'
                         ],
                         dest: 'dist/one/'
@@ -218,14 +219,16 @@ module.exports = function (grunt) {
             prod: {
                 constants: {
                     config: {
-                        static_url: '/client'
+                        static_url: '/client',
+                        debug: false
                     }
                 }
             },
             dev: {
                 constants: {
                     config: {
-                        static_url: 'http://localhost:9999'
+                        static_url: 'http://localhost:9999',
+                        debug: true
                     }
                 } 
             }

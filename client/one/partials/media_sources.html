@@ -21,7 +21,7 @@
             <div class="clearfix"></div>
         </div>
 
-        <alert type="info" class="alert-sync" ng-show="sourcesWaiting">
+        <alert type="info" class="alert-sync" ng-show="sourcesWaiting.length">
             We are adding the following media source(s): {{sourcesWaiting.join(', ')}}. This may take some time.
         </alert>
         <alert type="info" class="alert-sync" ng-show="!isSyncRecent">
