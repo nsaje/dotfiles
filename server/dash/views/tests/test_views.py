@@ -201,7 +201,6 @@ class AdGroupContentAdStateTest(TestCase):
         self.assertGreater(len(content_ads), 0)
         self.assertTrue(all([ad.state == constants.ContentAdSourceState.INACTIVE for ad in content_ads]))
 
-
     def test_state_set_batch(self):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')

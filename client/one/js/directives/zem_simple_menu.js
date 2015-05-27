@@ -13,12 +13,18 @@ oneApp.directive('zemSimpleMenu', function () {
             pausedValue: '=',
             disabledMessage: '=',
             selectAll: '=',
-            selectionOptions: '='
+            selectionOptions: '=selectionOptions'
         },
         templateUrl: '/partials/zem_simple_menu.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
-            $scope.active = false;
+        	// $scope.selectionOptions
+        	// alert($scope.selectionOptions);
 
+			$scope.$watch('selectionOptions', function (newValue, oldValue) {
+				console.log(newValue);
+			}, true);
+
+            $scope.active = false;
             var setActive = function () {
                 $scope.active = $scope.value === $scope.enabledValue;
             };
