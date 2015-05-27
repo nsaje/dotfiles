@@ -979,7 +979,6 @@ a.help-popover:visited {
 }
 
 .select2-drop,
-.custom-cols,
 .table-container {
      zem-internal-feature .internal {
         margin-right: 0.5em;
@@ -992,12 +991,12 @@ a.help-popover:visited {
             border-top: 7px solid #16a085;
             border-right: 7px solid transparent;
             float: left;
-            margin-right: -7px;
         }
     }
 }
 
 .page-account-agency,
+.form-group,
 .profile-container .dropdown-menu {
     .internal {
         position: absolute;
@@ -1024,13 +1023,12 @@ a.help-popover:visited {
     left: 0px;
 }
 
-.form-group .internal {
-    position: absolute;
+.custom-cols .internal {
     border-top: 7px solid #16a085;
     border-right: 7px solid transparent;
-    z-index: 1;
-    top: 5px;
-    left: 5px;
+    line-height: 5px;
+    margin-right: 3px;
+    vertical-align: bottom;
 }
 
 .header {
@@ -1575,12 +1573,6 @@ a.help-popover:visited {
             padding-left: 0;
             vertical-align: middle;
 
-            input[type="radio"],
-            input[type="checkbox"] {
-                float: none;
-                margin-left: 0;
-                margin-right: 4px;
-            }
         }
 
         .btn-group {
