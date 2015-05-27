@@ -739,7 +739,7 @@ class AdGroupContentAdState(api_common.BaseApiView):
         select_all = data.get('select_all', False)
         select_batch = data.get('select_batch')
 
-        content_ad_ids = data.get('content_ad_ids')
+        content_ad_ids = data.get('content_ad_ids', [])
         if not isinstance(content_ad_ids, list):
             raise exc.ValidationError()
 

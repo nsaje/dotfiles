@@ -140,6 +140,9 @@ class AdGroupSourceSettingsTest(TestCase):
 class AdGroupContentAdStateTest(TestCase):
     fixtures = ['test_api', 'test_views']
 
+    def setUp(self):
+        self.factory = RequestFactory()
+
     def test_post(self):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')
@@ -174,6 +177,54 @@ class AdGroupContentAdStateTest(TestCase):
         self.assertJSONEqual(response.content, {
             'success': True
         })
+
+    def test_state_set_all(self):
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+        payload = {
+            'select_all': True,
+            'state': constants.ContentAdSourceState.INACTIVE,
+        }
+
+        self.client.post(
+            reverse(
+                'ad_group_content_ad_state',
+                kwargs={'ad_group_id': 1}),
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+
+        content_ads = models.ContentAd.objects.filter(ad_group__id=1)
+        self.assertGreater(len(content_ads), 0)
+        self.assertTrue(all([ad.state == constants.ContentAdSourceState.INACTIVE for ad in content_ads]))
+
+
+    def test_state_set_batch(self):
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+        payload = {
+            'select_all': False,
+            'select_batch': 1,
+            'state': constants.ContentAdSourceState.INACTIVE,
+        }
+
+        self.client.post(
+            reverse(
+                'ad_group_content_ad_state',
+                kwargs={'ad_group_id': 1}),
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+
+        content_ads_from_batch = models.ContentAd.objects.filter(batch__id=1)
+        self.assertGreater(len(content_ads_from_batch), 0)
+        self.assertTrue(all([ad.state == constants.ContentAdSourceState.INACTIVE for ad in content_ads_from_batch]))
 
 
 class AdGroupAdsPlusUploadTest(TestCase):
