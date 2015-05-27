@@ -22,13 +22,9 @@
                 </zem-export>
             </div>
             <div class="button-bar-item">
-				<select 
-					ui-select2="select2Metric1Config" 
-					ng-model="metric1" 
-					class="metric1"
-					ng-change="bulkEdit()">
-					<option value="Pause">Pause</option>
-		            <option value="Resume">Resume</option>
+				<select ng-model="selectedBulkAction" ng-change="bulkEdit()">
+					<option value="pause">Pause</option>
+		            <option value="resume">Resume</option>
 		        </select>
             </div>
 

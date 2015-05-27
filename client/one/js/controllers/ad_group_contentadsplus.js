@@ -20,6 +20,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
 
+	$scope.selectedBulkAction = null;
+
     $scope.pagination = {
         currentPage: 1
     };
@@ -42,13 +44,14 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
     };
 
     $scope.selectAllCallback = function (ev) {
+    	$scope.selectThisPageCallback(ev);
+	};
+
+    $scope.selectThisPageCallback = function (ev) {
         $scope.selectedAdTotals = true;
 		$scope.rows.forEach(function (x) {
 			x.ad_selected = $scope.selectedAdTotals;
 		});
-	};
-
-    $scope.selectThisPageCallback = function (ev) {
 	};
 
     $scope.selectBatchCallback = function (ev, id) {
@@ -109,7 +112,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
             unselectable: true,
             help: 'A setting for enabling and pausing content ads.',
             onChange: function (sourceId, state) {
-                api.adGroupContentAdState.save($state.params.id, sourceId, state).then(
+                api.adGroupContentAdState.save($state.params.id, [sourceId], state).then(
                     function () {
                         pollTableUpdates();
                     }
@@ -314,18 +317,35 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
     };
 
     $scope.bulkEdit = function() {
-
-		// if all rows are selected
-		//
-		// else if 
-
-        // $scope.rows = data.rows;
+    	// TODO: replace ad lookups with selection buffer lookups
+		var content_ad_ids = [];
         $scope.rows.forEach(function (row) {
-			console.log(row);
-			// if (row.selected) {
-			//
-			// }
+        	if (row.ad_selected) {
+        		content_ad_ids.push(row.id);
+			}
 		});
+		if (content_ad_ids.length == 0) {
+			return;
+		}
+
+		if ($scope.selectedBulkAction == 'pause') {
+            api.adGroupContentAdState.save($state.params.id, content_ad_ids, constants.contentAdSourceState.INACTIVE).then(
+                function () {
+                    pollTableUpdates();
+                }
+            );
+		} else if ($scope.selectedBulkAction == 'resume') {
+            api.adGroupContentAdState.save($state.params.id, content_ad_ids, constants.contentAdSourceState.ACTIVE).then(
+                function () {
+                    pollTableUpdates();
+                }
+            );
+
+		} else if ($scope.selectedBulkAction == 'download') {
+
+		} else {
+			// TODO: Signal error
+		}
 	};
 
     $scope.loadPage = function(page) {

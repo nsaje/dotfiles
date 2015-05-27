@@ -2045,11 +2045,11 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
     }
 
     function AdGroupContentAdState() {
-        this.save = function(adGroupId, contentAdId, state) {
+        this.save = function(adGroupId, contentAdIds, state) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/' + contentAdId + '/state/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/state/';
 
-            $http.post(url, {state: state}).
+            $http.post(url, {state: state, content_ad_ids: contentAdIds}).
                 success(function(data) {
                     deferred.resolve(data);
                 }).error(function(data) {
