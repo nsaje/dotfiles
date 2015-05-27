@@ -10,8 +10,17 @@
 		<thead />
 		<tbody>
 			<tr ng-repeat="option in selectionOptions">
-				<td>
+				<td ng-if="option.type == 'link'" ng-click="option.callback($event)">
 					{{ option.name }}
+				</td>
+
+				<td ng-if="option.type == 'link-list'">
+					<div>
+						Upload batch:
+					</div>
+					<div ng-repeat="link in option.rows" ng-click="link.callback($event, link.id)">
+						{{ link.name }}
+					</div>
 				</td>
 			</tr>
 		</tbody>

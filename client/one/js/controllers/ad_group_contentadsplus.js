@@ -41,19 +41,34 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
         }
     };
 
+    $scope.selectAllCallback = function (ev) {
+        $scope.selectedAdTotals = true;
+		$scope.rows.forEach(function (x) {
+			x.ad_selected = $scope.selectedAdTotals;
+		});
+	};
+
+    $scope.selectThisPageCallback = function (ev) {
+	};
+
+    $scope.selectBatchCallback = function (ev, id) {
+	};
+
     $scope.selectionOptions = [
 		{
 			name: 'All',
-			type: 'link'
+			type: 'link',
+			callback: $scope.selectAllCallback
 		}, {
 			name: 'This page',
-			type: 'link'
+			type: 'link',
+			callback: $scope.selectThisPageCallback
 		}, {
 			type: 'separator'
 		}, {
 			name: 'Upload batch',
 			type: 'link-list',
-			rows: null
+			rows: []
 		}
     ];
 
