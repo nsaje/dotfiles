@@ -571,7 +571,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             if end_datetime is not None and end_datetime <= datetime.datetime.utcnow():
                 raise exc.ValidationError()
 
-
         settings_writer.set(resource, request)
 
         return self.create_api_response()
@@ -737,17 +736,25 @@ class AdGroupContentAdState(api_common.BaseApiView):
         if state is None or state not in constants.ContentAdSourceState.get_all():
             raise exc.ValidationError()
 
+        select_all = data.get('select_all', False)
+        select_batch = data.get('select_batch')
+
         content_ad_ids = data.get('content_ad_ids')
         if not isinstance(content_ad_ids, list):
             raise exc.ValidationError()
 
         content_ads = []
-        for content_ad_id in content_ad_ids:
-            try:
-                content_ad = models.ContentAd.objects.get(pk=content_ad_id)
-                content_ads.append(content_ad)
-            except models.contentad.doesnotexist():
-                raise exc.MissingDataException()
+        if select_all:
+            content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        elif select_batch is not None:
+            content_ads = models.ContentAd.objects.filter(batch__id=select_batch)
+        else:
+            for content_ad_id in content_ad_ids:
+                try:
+                    content_ad = models.ContentAd.objects.get(pk=content_ad_id)
+                    content_ads.append(content_ad)
+                except models.contentad.doesnotexist():
+                    raise exc.MissingDataException()
 
         actions = []
         with transaction.atomic():
