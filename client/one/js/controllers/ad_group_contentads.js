@@ -328,7 +328,11 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         }
 
         var data = $scope.adGroupData[$state.params.id];
-        var page = $location.search().page || (data && data.page);
+
+        var page = parseInt($location.search().page)
+        if (isNaN(page)) {
+            page = data && data.page;
+        }
 
         userSettings.register('chartMetric1');
         userSettings.register('chartMetric2');

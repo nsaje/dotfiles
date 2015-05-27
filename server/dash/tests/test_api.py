@@ -156,7 +156,7 @@ class UpdateAdGroupSourceSettings(TestCase):
             '&blob={slug}&x={slug}&_z1_adgid=7&_z1_msid={slug}'.format(slug=ad_group_source.source.tracking_slug)
 
         mock_api.init_set_ad_group_manual_property.assert_called_with(
-            ad_group_source, None, 'tracking_code', expected_value)
+            mock.ANY, None, 'tracking_code', expected_value)
 
     def test_tracking_codes_automatic(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)

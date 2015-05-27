@@ -489,14 +489,13 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
         }
 
         var userSettings = zemUserSettings.getInstance($scope, 'adGroupContentAdsPlus');
-        var page = $location.search().page;
+        var page = parseInt($location.search().page || '1');
 
         userSettings.register('order');
         userSettings.register('size');
 
         if (page !== undefined && $scope.pagination.currentPage !== page) {
             $scope.pagination.currentPage = page;
-            $scope.setAdGroupData('page', page);
             $location.search('page', page);
         }
 
