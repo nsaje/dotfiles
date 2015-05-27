@@ -96,6 +96,14 @@ def init_insert_content_ad_batch(batch, source, request, send=True):
 def init_update_content_ad_action(content_ad_source, changes, request, send=True):
     assert type(changes) is dict, 'changes is not of type dict. changes: {}'.format(changes)
 
+    if content_ad_source.source.source_type.type == dash.constants.SourceType.GRAVITY and\
+       not content_ad_source.source_content_ad_id:
+        # With Gravity source_content_ad_id is usually not used, but we use it
+        # to determine if content ad has already been created in their dashboard
+        logger.info('init_update_content_ad_action: action not created for content_ad_source {} because content ad does not exist in {} dashboard'.format(
+            content_ad_source.id, dash.constants.SourceType.get_text(dash.constants.SourceType.GRAVITY)))
+        return
+
     ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.ad_group,
                                                             source=content_ad_source.source)
     args = {

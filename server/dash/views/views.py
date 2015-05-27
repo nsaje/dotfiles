@@ -731,14 +731,14 @@ class AdGroupContentAdState(api_common.BaseApiView):
                         'state': content_ad_source.state,
                     }
 
-                    actions.append(
-                        actionlog.api_contentads.init_update_content_ad_action(
-                            content_ad_source,
-                            changes,
-                            request,
-                            send=False,
-                        )
+                    action = actionlog.api_contentads.init_update_content_ad_action(
+                        content_ad_source,
+                        changes,
+                        request,
+                        send=False,
                     )
+                    if action is not None:
+                        actions.append(action)
 
         actionlog.zwei_actions.send_multiple(actions)
 
