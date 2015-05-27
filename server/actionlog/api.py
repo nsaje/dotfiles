@@ -63,6 +63,13 @@ def init_set_ad_group_manual_property(ad_group_source, request, prop, value):
         value
     )
     logger.info(msg)
+
+    if ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
+        logger.info('init_set_ad_group_manual_property: {} ad_group_source on ad_group {} pending - action not created'.format(
+            dash.constants.SourceType.get_text(dash.constants.SourceType.GRAVITY),
+            ad_group_source.ad_group.id))
+        return
+
     try:
         existing_actions = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source,
@@ -207,11 +214,8 @@ def get_ad_group_sources_waiting(**kwargs):
     actions = models.ActionLog.objects.filter(
         action=constants.Action.CREATE_CAMPAIGN,
         action_type=constants.ActionType.AUTOMATIC,
+        state__in=[constants.ActionState.WAITING, constants.ActionState.FAILED],
         **constraints
-    ).filter(
-        Q(state__in=[constants.ActionState.WAITING, constants.ActionState.FAILED]) |
-        Q(state=constants.ActionState.SUCCESS,
-          ad_group_source__source_campaign_key=settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE)
     )
 
     return [action.ad_group_source for action in actions]
@@ -394,6 +398,12 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=Non
             order=order,
             message="Due to media source being in maintenance mode a manual action is required."
         )
+        return
+
+    if ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
+        logger.info('_init_set_ad_group_source_settings: {} ad_group_source on ad_group {} pending - action not created'.format(
+            dash.constants.SourceType.get_text(dash.constants.SourceType.GRAVITY),
+            ad_group_source.ad_group.id))
         return
 
     action = models.ActionLog(

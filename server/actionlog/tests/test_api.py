@@ -565,6 +565,21 @@ class ActionLogApiTestCase(TestCase):
         }
         self.assertEqual(action.payload, payload)
 
+    def test_init_set_ad_group_manual_action_pending(self):
+        ad_group_source = dashmodels.AdGroupSource.objects.get(pk=1)
+        ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
+
+        prop = 'fake_property'
+        value = 'fake_value'
+
+        request = HttpRequest()
+        request.user = User.objects.create_user('test@example.com')
+
+        api.init_set_ad_group_manual_property(ad_group_source, request, prop, value)
+
+        with self.assertRaises(models.ActionLog.DoesNotExist):
+            models.ActionLog.objects.get(ad_group_source=ad_group_source)
+
     def test_actionlog_added(self):
         request = HttpRequest()
         request.user = User.objects.create_user('test@example.com')
@@ -730,7 +745,7 @@ class GetAdGroupSourcesWaitingTest(TestCase):
         ad_group_sources = api.get_ad_group_sources_waiting()
 
         ad_group_source_ids = set(ags.id for ags in ad_group_sources)
-        expected_ids = set([19, 20, 21])
+        expected_ids = set([19, 21])
 
         self.assertEqual(ad_group_source_ids, expected_ids)
 
@@ -787,6 +802,17 @@ class ActionLogApiCancelExpiredTestCase(TestCase):
 
         with self.assertRaises(exceptions.InsertActionException):
             api._init_set_ad_group_source_settings(ad_group_source, {}, request, order=None)
+
+    def test_init_ad_group_source_settings_pending_source_key(self):
+        ad_group_source = dashmodels.AdGroupSource.objects.get(id=1)
+        ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
+
+        request = HttpRequest()
+        request.user = User.objects.create_user('test@example.com')
+
+        api._init_set_ad_group_source_settings(ad_group_source, {}, request, order=None)
+
+        self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ad_group_source).count(), 22)
 
 
 class SendDelayedActionsTestCase(TestCase):
