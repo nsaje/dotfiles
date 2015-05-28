@@ -10,7 +10,7 @@ from django.contrib.auth import models as auth_models
 from django.contrib import auth
 from django.db import models, transaction
 
-import utils.string
+import utils.string_helper
 
 from dash import constants
 from utils import encryption_helpers
@@ -1034,9 +1034,9 @@ class AdGroupSettings(SettingsBase):
         elif prop_name == 'end_date' and value is None:
             value = 'I\'ll stop it myself'
         elif prop_name == 'cpc_cc' and value is not None:
-            value = '$' + utils.string.format_decimal(value, 2, 3)
+            value = '$' + utils.string_helper.format_decimal(value, 2, 3)
         elif prop_name == 'daily_budget_cc' and value is not None:
-            value = '$' + utils.string.format_decimal(value, 2, 2)
+            value = '$' + utils.string_helper.format_decimal(value, 2, 2)
         elif prop_name == 'target_devices':
             value = ', '.join(constants.AdTargetDevice.get_text(x) for x in value)
         elif prop_name == 'target_regions':
