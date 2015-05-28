@@ -400,6 +400,21 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=Non
         )
         return
 
+    if 'daily_budget_cc' in conf and\
+       not ad_group_source.source.can_update_daily_budget_automatic() and\
+       ad_group_source.source.can_update_daily_budget_manual():
+        _create_manual_action(
+            ad_group_source,
+            {'daily_budget_cc': conf['daily_budget_cc']},
+            request,
+            order=order,
+        )
+
+        del conf['daily_budget_cc']
+
+        if not len(conf):
+            return
+
     if ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
         logger.info('_init_set_ad_group_source_settings: {} ad_group_source on ad_group {} pending - action not created'.format(
             dash.constants.SourceType.get_text(dash.constants.SourceType.GRAVITY),

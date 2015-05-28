@@ -519,8 +519,11 @@ class SourceType(models.Model):
     def can_update_cpc(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_CPC).exists()
 
-    def can_update_daily_budget(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_DAILY_BUDGET).exists()
+    def can_update_daily_budget_manual(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_MANUAL).exists()
+
+    def can_update_daily_budget_automatic(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC).exists()
 
     def can_manage_content_ads(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_MANAGE_CONTENT_ADS).exists()
@@ -601,8 +604,11 @@ class Source(models.Model):
     def can_update_cpc(self):
         return self.source_type.can_update_cpc() and not self.maintenance and not self.deprecated
 
-    def can_update_daily_budget(self):
-        return self.source_type.can_update_daily_budget() and not self.maintenance and not self.deprecated
+    def can_update_daily_budget_manual(self):
+        return self.source_type.can_update_daily_budget_manual() and not self.maintenance and not self.deprecated
+
+    def can_update_daily_budget_automatic(self):
+        return self.source_type.can_update_daily_budget_automatic() and not self.maintenance and not self.deprecated
 
     def can_manage_content_ads(self):
         return self.source_type.can_manage_content_ads() and not self.maintenance and not self.deprecated

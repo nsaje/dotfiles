@@ -405,7 +405,7 @@ def _get_cpc_update_notification(ags, settings, state):
 
 
 def _get_budget_update_notification(ags, settings, state):
-    if ags.source.can_update_daily_budget() and\
+    if ags.source.can_update_daily_budget_automatic() and\
        settings is not None and settings.daily_budget_cc is not None and\
        (state is None or state.daily_budget_cc != settings.daily_budget_cc):
         msg = 'Daily budget is being changed from <strong>{old_daily_budget}</strong> ' +\
@@ -507,7 +507,9 @@ def _get_state_messages(ad_group_source):
             latest_state is None or latest_settings.cpc_cc != latest_state.cpc_cc):
         messages.append(message_template.format(name='Bid CPC'))
 
-    if ad_group_source.source.can_update_daily_budget() and latest_settings.daily_budget_cc is not None and (
+    if (ad_group_source.source.can_update_daily_budget_automatic() or
+            ad_group_source.source.can_update_daily_budget_manual()) and\
+        latest_settings.daily_budget_cc is not None and (
             latest_state is None or latest_settings.daily_budget_cc != latest_state.daily_budget_cc):
         messages.append(message_template.format(name='Daily Budget'))
 
