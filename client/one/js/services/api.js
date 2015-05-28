@@ -2060,22 +2060,16 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         };
     }
 
-    function AdGroupContentAdCsv() {
-        this.download = function(adGroupId, contentAdIds, selectAll, selectBatch) {
-
-			/*
+    function AdGroupAdsPlusUploadBatches() {
+        this.list = function(adGroupId) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/state/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload_batches/';
 
             var config = {
-                params: {
-                	contentAdIds: contentAdIds, 
-                	selectAll: selectAll, 
-                	selectBatch: selectBatch
-                }
+                params: {}
             };
 
-            $http.get(url, params).
+            $http.get(url, config).
                 success(function(data) {
                     deferred.resolve(data);
                 }).error(function(data) {
@@ -2083,11 +2077,9 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 });
  
             return deferred.promise;
-            */
         };
     }
- 
- 
+	
     function AvailableSources() {
         this.list = function () {
             var deferred = $q.defer();
@@ -2183,6 +2175,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         adGroupAdsPlusUpload: new AdGroupAdsPlusUpload(),
         availableSources: new AvailableSources(),
         adGroupContentAdState: new AdGroupContentAdState(),
-        adGroupContentAdCsv: new AdGroupContentAdCsv()
+        adGroupAdsPlusUploadBatches: new AdGroupAdsPlusUploadBatches()
     };
 }]);

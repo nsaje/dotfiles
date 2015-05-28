@@ -158,7 +158,7 @@ urlpatterns += patterns(
         login_required(dash.views.views.AdGroupAdsPlusUpload.as_view()), name='ad_group_ads_plus_upload'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload-batches/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload_batches/',
         login_required(dash.views.views.AdGroupAdsPlusUploadBatches.as_view()),
         name='ad_group_ads_plus_upload_batches',
     ),

@@ -22,6 +22,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
 	$scope.selectedBulkAction = null;
 
+	// selectiont triple - all, a batch, or specific content ad's can be selected
+	//$scope.selectedAll = false;
+	// $scope.selectedContentAds = [];
+
     $scope.pagination = {
         currentPage: 1
     };
@@ -531,6 +535,14 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         }, true);
     };
 
+	var initUploadBatches = function () {
+		// refresh upload batches for current adgroup
+		api.adGroupAdsPlusUploadBatches.list($state.params.id).then(function(data) {
+			// TODO: improve this
+	 		$scope.selectionOptions[3].rows = data['data']['batches'];
+		});
+	};
+
     var init = function() {
         if (!$scope.adGroup.contentAdsTabWithCMS && !$scope.hasPermission('zemauth.new_content_ads_tab')) {
             $state.go('main.adGroups.ads', {id: $scope.adGroup.id});
@@ -552,6 +564,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         getDailyStats();
         $scope.getAdGroupState();
         initColumns();
+        initUploadBatches();
 
         pollSyncStatus();
         setDisabledExportOptions();
