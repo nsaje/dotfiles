@@ -317,6 +317,9 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
     $scope.bulkEdit = function() {
+		if ($scope.selectedBulkAction == null) {
+			return;
+		}
     	// TODO: replace ad lookups with selection buffer lookups
 		var content_ad_ids = [];
         $scope.rows.forEach(function (row) {
@@ -351,10 +354,12 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 			if (select_batch) {
 				url += '&select_batch=' + select_batch;
 			}
-            $window.open(url, '_blank');
+            $window.open(url, '_blank');            
 		} else {
 			// TODO: Signal error
 		}
+
+		$scope.selectedBulkAction = null;
 	};
 
     $scope.loadPage = function(page) {

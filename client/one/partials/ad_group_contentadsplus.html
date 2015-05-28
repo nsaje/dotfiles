@@ -21,14 +21,12 @@
                     options="exportOptions">
                 </zem-export>
             </div>
-            <div class="button-bar-item">
-				<select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'show-rows'}" class="show-rows" data-placeholder="Download" ng-model="selectedBulkAction" ng-change="bulkEdit()">
-    				<option value=""></option>
-					<option value="pause">Pause</option>
-		            <option value="resume">Resume</option>
-		            <option value="download">Download</option>
-		        </select>
-            </div>
+			<select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'show-rows'}" class="show-rows" data-placeholder="Download" ng-model="selectedBulkAction" ng-change="bulkEdit()">
+				<option value=""></option>
+				<option value="pause">Pause</option>
+				<option value="resume">Resume</option>
+				<option value="download">Download</option>
+			</select>
 
             <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories"></zem-custom-table-cols>
             <a id="chart-btn" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/one/img/chart.svg"></a>
