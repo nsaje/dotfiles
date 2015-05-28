@@ -32,6 +32,7 @@ def init_insert_content_ad_action(content_ad_source, request=None, send=True):
         args={
             'source_campaign_key': ad_group_source.source_campaign_key,
             'content_ad_id': content_ad_source.get_source_id(),
+            'ad_group_id': content_ad_source.content_ad.ad_group_id,
             'content_ad': _get_content_ad_dict(ad_group_source, content_ad_source, batch)
         },
         request=request,

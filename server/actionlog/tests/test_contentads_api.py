@@ -75,6 +75,7 @@ class ContentAdsApiTestCase(TestCase):
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
                 'content_ad_id': content_ad_source.get_source_id(),
+                'ad_group_id': content_ad_source.content_ad.ad_group_id,
                 'content_ad': {
                     'id': content_ad_source.get_source_id(),
                     'state': dash.constants.ContentAdSourceState.ACTIVE,
@@ -133,6 +134,7 @@ class ContentAdsApiTestCase(TestCase):
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
                 'content_ad_id': content_ad_source.get_source_id(),
+                'ad_group_id': content_ad_source.content_ad.ad_group_id,
                 'content_ad': {
                     'id': content_ad_source.get_source_id(),
                     'state': dash.constants.ContentAdSourceState.ACTIVE,
