@@ -22,10 +22,11 @@
                 </zem-export>
             </div>
             <div class="button-bar-item">
-				<select ng-model="selectedBulkAction" ng-change="bulkEdit()">
+				<select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'show-rows'}" class="show-rows" data-placeholder="Download" ng-model="selectedBulkAction" ng-change="bulkEdit()">
+    				<option value=""></option>
 					<option value="pause">Pause</option>
 		            <option value="resume">Resume</option>
-		            <option value="download">Download Reports</option>
+		            <option value="download">Download</option>
 		        </select>
             </div>
 
