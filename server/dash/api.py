@@ -287,14 +287,14 @@ def update_content_ads_submission_status(ad_group_source, request=None):
             'state': cas.state,
         }
 
-        action = actionlog.api_contentads.init_update_content_ad_action(
-            cas,
-            changes,
-            request=request,
-            send=False,
+        actions.append(
+            actionlog.api_contentads.init_update_content_ad_action(
+                cas,
+                changes,
+                request=request,
+                send=False,
+            )
         )
-        if action is not None:
-            actions.append(action)
 
     return actions
 
@@ -316,11 +316,6 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
 
         changed = False
 
-        if content_ad_source.source.source_type.type == constants.SourceType.GRAVITY:
-            # With Gravity source_content_ad_id is usually not used, but we use it
-            # to determine if content ad has already been created in their dashboard
-            content_ad_source.source_content_ad_id = data['id']
-
         if data['state'] != content_ad_source.source_state:
             content_ad_source.source_state = data['state']
             changed = True
@@ -338,8 +333,8 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
 
 
 def update_content_ad_source_state(content_ad_source, data):
-    state = data['source_state']
-    submission_status = data['submission_status']
+    state = data.get('source_state')
+    submission_status = data.get('submission_status')
 
     if state:
         content_ad_source.source_state = state
@@ -421,14 +416,14 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                         'url': cas.content_ad.url_with_tracking_codes(new_field_value),
                     }
 
-                    action = actionlog.api_contentads.init_update_content_ad_action(
-                        cas,
-                        changes,
-                        request,
-                        send=send
+                    actions.append(
+                        actionlog.api_contentads.init_update_content_ad_action(
+                            cas,
+                            changes,
+                            request,
+                            send=send
+                        )
                     )
-                    if action is not None:
-                        actions.append(action)
 
             else:
                 if source.deprecated:
