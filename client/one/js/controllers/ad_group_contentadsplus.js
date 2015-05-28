@@ -1,5 +1,5 @@
 /* globals oneApp, options */
-oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$location', 'api', 'zemUserSettings', 'zemCustomTableColsService', '$timeout', 'zemFilterService', function ($scope, $state, $modal, $location, api, zemUserSettings, zemCustomTableColsService, $timeout, zemFilterService) {
+oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal', '$location', 'api', 'zemUserSettings', 'zemCustomTableColsService', '$timeout', 'zemFilterService', function ($scope, $window, $state, $modal, $location, api, zemUserSettings, zemCustomTableColsService, $timeout, zemFilterService) {
     $scope.order = '-upload_time';
     $scope.loadRequestInProgress = false;
     $scope.selectedColumnsCount = 0;
@@ -340,9 +340,18 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$state', '$modal', '$locatio
                     pollTableUpdates();
                 }
             );
-
 		} else if ($scope.selectedBulkAction == 'download') {
+			var select_all = null,
+				select_batch = null;
 
+            var url = '/api/ad_groups/' + $state.params.id + '/contentads/csv/?content_ad_ids=' + content_ad_ids.join(',')
+            if (select_all) {
+				url += '&select_all=' + select_all ? 'true' : 'false';
+			}
+			if (select_batch) {
+				url += '&select_batch=' + select_batch;
+			}
+            $window.open(url, '_blank');
 		} else {
 			// TODO: Signal error
 		}

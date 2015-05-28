@@ -9,6 +9,8 @@ import urllib
 import urllib2
 import pytz
 import os
+import StringIO
+import unicodecsv
 
 from django.db import transaction
 from django.conf import settings
@@ -783,6 +785,71 @@ class AdGroupContentAdState(api_common.BaseApiView):
         actionlog.zwei_actions.send_multiple(actions)
 
         return self.create_api_response()
+
+
+class AdGroupContentAdCsv(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
+    def get(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.get_content_ad_csv'):
+            raise exc.ForbiddenError(message='Not allowed')
+
+        helpers.get_ad_group(request.user, ad_group_id)
+
+        data = request.GET
+
+        select_all = data.get('select_all', False)
+        select_batch = data.get('select_batch')
+        content_ad_ids_raw = data.get('content_ad_ids', '')
+        content_ad_ids = map(int, content_ad_ids_raw.split(','))
+        if not isinstance(content_ad_ids, list):
+            raise exc.ValidationError()
+
+        content_ads = []
+        if select_all:
+            content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        elif select_batch is not None:
+            content_ads = models.ContentAd.objects.filter(batch__id=select_batch)
+        else:
+            for content_ad_id in content_ad_ids:
+                try:
+                    content_ad = models.ContentAd.objects.get(pk=content_ad_id)
+                    content_ads.append(content_ad)
+                except models.ContentAd.DoesNotExist():
+                    raise exc.MissingDataException()
+
+        # TODO: get original image url's and crops
+        content_ad_dicts = []
+        for content_ad in content_ads:
+            content_ad_dicts.append({
+                'url': content_ad.url,
+                'title': content_ad.title,
+                'image_url': 'TODO',
+            })
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="content_ads.csv"'
+        csv_str = self._create_content_ad_csv(content_ad_dicts)
+        response.write(csv_str)
+        return response
+
+    def _create_content_ad_csv(self, content_ads):
+        string = StringIO.StringIO()
+
+        has_crop_areas_data = False
+        for idx, row in enumerate(content_ads):
+            if row.get('crop_areas') is not None and row.get('crop_areas', '') != '':
+                has_crop_areas_data = True
+                break
+
+        if has_crop_areas_data:
+            writer = unicodecsv.DictWriter(string, ['url', 'title', 'image_url', 'crop_areas'])
+        else:
+            writer = unicodecsv.DictWriter(string, ['url', 'title', 'image_url'])
+
+        writer.writeheader()
+        for row in content_ads:
+            writer.writerow(row)
+
+        return string.getvalue()
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')

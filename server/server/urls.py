@@ -168,6 +168,11 @@ urlpatterns += patterns(
         name='ad_group_content_ad_state'
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/csv/',
+        login_required(dash.views.views.AdGroupContentAdCsv.as_view()),
+        name='ad_group_content_ad_csv'
+    ),
+    url(
         r'^api/accounts/table/',
         login_required(dash.views.table.AccountsAccountsTable.as_view()),
     ),

@@ -2059,6 +2059,34 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             return deferred.promise;
         };
     }
+
+    function AdGroupContentAdCsv() {
+        this.download = function(adGroupId, contentAdIds, selectAll, selectBatch) {
+
+			/*
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/state/';
+
+            var config = {
+                params: {
+                	contentAdIds: contentAdIds, 
+                	selectAll: selectAll, 
+                	selectBatch: selectBatch
+                }
+            };
+
+            $http.get(url, params).
+                success(function(data) {
+                    deferred.resolve(data);
+                }).error(function(data) {
+                    deferred.reject(data);
+                });
+ 
+            return deferred.promise;
+            */
+        };
+    }
+ 
  
     function AvailableSources() {
         this.list = function () {
@@ -2154,6 +2182,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         campaignAdGroupsExportAllowed: new CampaignAdGroupsExportAllowed(),
         adGroupAdsPlusUpload: new AdGroupAdsPlusUpload(),
         availableSources: new AvailableSources(),
-        adGroupContentAdState: new AdGroupContentAdState()
+        adGroupContentAdState: new AdGroupContentAdState(),
+        adGroupContentAdCsv: new AdGroupContentAdCsv()
     };
 }]);
