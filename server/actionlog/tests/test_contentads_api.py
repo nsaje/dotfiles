@@ -232,7 +232,7 @@ class ContentAdsApiTestCase(TestCase):
             'batch_name': batch.name,
             'campaign_name': ad_group_source.get_external_name(),
             'ad_group_id': ad_group_source.ad_group.id,
-            'user': request.user.email
+            'user_email': request.user.email
         })
 
     @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)

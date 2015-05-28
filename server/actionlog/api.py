@@ -614,7 +614,7 @@ def _init_create_campaign(ad_group_source, name, request):
                 payload['args']['extra']['ad_group_id'] = ad_group_source.ad_group.id
 
                 if request and request.user:
-                    payload['args']['extra']['user'] = request.user.email
+                    payload['args']['extra']['user_email'] = request.user.email
 
             if hasattr(ad_group_source.source, 'defaultsourcesettings'):
                 params = ad_group_source.source.defaultsourcesettings.params

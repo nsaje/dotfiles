@@ -73,7 +73,7 @@ def init_insert_content_ad_batch(batch, source, request, send=True):
         args['extra']['batch_name'] = batch.name
 
         if request and request.user:
-            args['extra']['user'] = request.user.email
+            args['extra']['user_email'] = request.user.email
 
     action = _create_action(
         ad_group_source,
