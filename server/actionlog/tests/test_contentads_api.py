@@ -90,7 +90,8 @@ class ContentAdsApiTestCase(TestCase):
                     'brand_name': content_ad_source.content_ad.batch.brand_name,
                     'description': content_ad_source.content_ad.batch.description,
                     'call_to_action': content_ad_source.content_ad.batch.call_to_action,
-                    'tracking_slug': ad_group_source.source.tracking_slug
+                    'tracking_slug': ad_group_source.source.tracking_slug,
+                    'redirect_id': content_ad_source.content_ad.redirect_id,
                 },
             },
             'callback_url': callback
@@ -154,7 +155,8 @@ class ContentAdsApiTestCase(TestCase):
                     'brand_name': content_ad_source.content_ad.batch.brand_name,
                     'description': content_ad_source.content_ad.batch.description,
                     'call_to_action': content_ad_source.content_ad.batch.call_to_action,
-                    'tracking_slug': ad_group_source.source.tracking_slug
+                    'tracking_slug': ad_group_source.source.tracking_slug,
+                    'redirect_id': content_ad_source.content_ad.redirect_id,
                 },
             },
             'callback_url': callback
@@ -210,7 +212,8 @@ class ContentAdsApiTestCase(TestCase):
                     'brand_name': content_ad_source.content_ad.batch.brand_name,
                     'description': content_ad_source.content_ad.batch.description,
                     'call_to_action': content_ad_source.content_ad.batch.call_to_action,
-                    'tracking_slug': ad_group_source.source.tracking_slug
+                    'tracking_slug': ad_group_source.source.tracking_slug,
+                    'redirect_id': content_ad_source.content_ad.redirect_id,
                 }]
             },
             'callback_url': callback
@@ -355,7 +358,8 @@ class ContentAdsApiTestCase(TestCase):
                     'brand_name': ad_group_settings.brand_name,
                     'description': ad_group_settings.description,
                     'call_to_action': ad_group_settings.call_to_action,
-                    'tracking_slug': ad_group_source.source.tracking_slug
+                    'tracking_slug': ad_group_source.source.tracking_slug,
+                    'redirect_id': content_ad_source.content_ad.redirect_id,
                 },
             },
             'callback_url': callback
