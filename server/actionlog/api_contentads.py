@@ -31,8 +31,6 @@ def init_insert_content_ad_action(content_ad_source, request=None, send=True):
         actionlog.constants.Action.INSERT_CONTENT_AD,
         args={
             'source_campaign_key': ad_group_source.source_campaign_key,
-            'content_ad_id': content_ad_source.get_source_id(),
-            'ad_group_id': content_ad_source.content_ad.ad_group_id,
             'content_ad': _get_content_ad_dict(ad_group_source, content_ad_source, batch)
         },
         request=request,
@@ -99,14 +97,12 @@ def init_update_content_ad_action(content_ad_source, changes, request, send=True
 
     ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.ad_group,
                                                             source=content_ad_source.source)
+    batch = content_ad_source.content_ad.batch
+
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key,
-        'content_ad_id': content_ad_source.get_source_id(),
-        'content_ad': changes,
-        'extra': {
-            'submission_status': content_ad_source.submission_status,
-            'source_content_ad_id': content_ad_source.source_content_ad_id,
-        },
+        'content_ad': _get_content_ad_dict(ad_group_source, content_ad_source, batch),
+        'changes': changes,
     }
 
     action = _create_action(
@@ -199,7 +195,9 @@ def _get_content_ad_dict(ad_group_source, content_ad_source, batch):
         url = content_ad_source.content_ad.url
 
     result = {
-        'id': content_ad_source.get_source_id(),
+        'ad_group_id': content_ad_source.content_ad.ad_group_id,
+        'content_ad_id': content_ad_source.content_ad_id,
+        'source_content_ad_id': content_ad_source.source_content_ad_id,
         'state': content_ad_source.state,
         'title': content_ad_source.content_ad.title,
         'url': url,
@@ -215,9 +213,6 @@ def _get_content_ad_dict(ad_group_source, content_ad_source, batch):
         'call_to_action': batch.call_to_action,
         'tracking_slug': ad_group_source.source.tracking_slug,
     }
-
-    if content_ad_source.source_content_ad_id:
-        result['source_content_ad_id'] = content_ad_source.source_content_ad_id
 
     return result
 
