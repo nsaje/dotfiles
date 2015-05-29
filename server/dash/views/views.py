@@ -13,6 +13,7 @@ import StringIO
 import unicodecsv
 
 from django.db import transaction
+from django.db.models import Q
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -741,22 +742,28 @@ class AdGroupContentAdState(api_common.BaseApiView):
         select_all = data.get('select_all', False)
         select_batch = data.get('select_batch')
 
-        content_ad_ids = data.get('content_ad_ids', [])
-        if not isinstance(content_ad_ids, list):
+        content_ad_ids_enabled_raw = data.get('content_ad_ids_enabled', [])
+        content_ad_ids_enabled = map(int, content_ad_ids_enabled_raw)
+
+        if not isinstance(content_ad_ids_enabled, list):
+            raise exc.ValidationError()
+
+        content_ad_ids_disabled_raw = data.get('content_ad_ids_disabled', [])
+        content_ad_ids_disabled = map(int, content_ad_ids_disabled_raw)
+        if not isinstance(content_ad_ids_disabled, list):
             raise exc.ValidationError()
 
         content_ads = []
         if select_all:
-            content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+            content_ads = models.ContentAd.objects.filter(
+                Q(ad_group__id=ad_group_id) | Q(id__in=content_ad_ids_enabled)).exclude(
+                    id__in=content_ad_ids_disabled)
         elif select_batch is not None:
-            content_ads = models.ContentAd.objects.filter(batch__id=select_batch)
+            content_ads = models.ContentAd.objects.filter(
+                Q(batch__name=select_batch) | Q(id__in=content_ad_ids_enabled)).exclude(
+                    id__in=content_ad_ids_disabled)
         else:
-            for content_ad_id in content_ad_ids:
-                try:
-                    content_ad = models.ContentAd.objects.get(pk=content_ad_id)
-                    content_ads.append(content_ad)
-                except models.contentad.doesnotexist():
-                    raise exc.MissingDataException()
+            content_ads = models.ContentAd.objects.filter(id__in=content_ad_ids_enabled)
 
         actions = []
         with transaction.atomic():
@@ -799,23 +806,28 @@ class AdGroupContentAdCsv(api_common.BaseApiView):
 
         select_all = data.get('select_all', False)
         select_batch = data.get('select_batch')
-        content_ad_ids_raw = data.get('content_ad_ids', '')
-        content_ad_ids = map(int, content_ad_ids_raw.split(','))
-        if not isinstance(content_ad_ids, list):
+        content_ad_ids_enabled_raw = data.get('content_ad_ids_enabled', '')
+        content_ad_ids_enabled = map(int, [x for x in content_ad_ids_enabled_raw.split(',') if x != ''])
+        if not isinstance(content_ad_ids_enabled, list):
+            raise exc.validationerror()
+
+        content_ad_ids_disabled_raw = data.get('content_ad_ids_disabled', '')
+        content_ad_ids_disabled = map(int, [x for x in content_ad_ids_disabled_raw.split(',') if x != ''])
+        if not isinstance(content_ad_ids_disabled, list):
             raise exc.ValidationError()
+
 
         content_ads = []
         if select_all:
-            content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+            content_ads = models.ContentAd.objects.filter(
+                Q(ad_group__id=ad_group_id) | Q(id__in=content_ad_ids_enabled)).exclude(
+                    id__in=content_ad_ids_disabled)
         elif select_batch is not None:
-            content_ads = models.ContentAd.objects.filter(batch__id=select_batch)
+            content_ads = models.ContentAd.objects.filter(
+                Q(batch__name=select_batch) | Q(id__in=content_ad_ids_enabled)).exclude(
+                    id__in=content_ad_ids_disabled)
         else:
-            for content_ad_id in content_ad_ids:
-                try:
-                    content_ad = models.ContentAd.objects.get(pk=content_ad_id)
-                    content_ads.append(content_ad)
-                except models.ContentAd.DoesNotExist():
-                    raise exc.MissingDataException()
+            content_ads = models.ContentAd.objects.filter(id__in=content_ad_ids_enabled)
 
         # TODO: get original image url's and crops
         content_ad_dicts = []

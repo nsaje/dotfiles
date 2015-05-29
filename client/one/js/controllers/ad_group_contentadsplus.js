@@ -38,20 +38,17 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     $scope.selectedAdsChanged = function (row, checked) {
         if (row.id) {
         	$scope.selectedContentAdsStatus[row.id] = checked;
-			console.log(checked);
         }  
     };
 
 	$scope.logSelection = function () {
 		// selection triple - all, a batch, or specific content ad's can be selected
-		console.log('selection');
 		console.log($scope.selectedAll);
 		console.log($scope.selectedBatches);
 		console.log($scope.selectedContentAdsStatus)
 	};
 
     $scope.selectAllCallback = function (ev) {
-    	console.log('selectAllCallback');
 		// selection triple - all, a batch, or specific content ad's can be selected
 		$scope.selectedAll = true;
 		$scope.selectedBatches = [];
@@ -62,7 +59,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 	};
 
     $scope.selectThisPageCallback = function (ev) {
-    	console.log('selectThisPageCallback');
 		// selection triple - all, a batch, or specific content ad's can be selected
 		$scope.selectedAll = false;
 		$scope.selectedBatches = [];
@@ -77,7 +73,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 	};
 
     $scope.selectBatchCallback = function (ev, name) {
-    	console.log('selectBatchCallback');
 		// selection triple - all, a batch, or specific content ad's can be selected
 		$scope.selectedAll = false;
 		$scope.selectedBatches = [name];
@@ -88,11 +83,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 	};
 
 	$scope.updateContentAdSelection = function () {
-		console.log('updateContentAdSelection');
-		console.log($scope.selectedAll);
 
 		$scope.rows.forEach(function (row) {
-			console.log(row);
 			if ($scope.selectedContentAdsStatus[row.id] !== undefined) {
 				row.ad_selected = $scope.selectedContentAdsStatus[row.id];
 			} else if ($scope.selectedAll) {
@@ -374,44 +366,63 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 			return;
 		}
     	// TODO: replace ad lookups with selection buffer lookups
-		var content_ad_ids = [];
-        $scope.rows.forEach(function (row) {
-        	if (row.ad_selected) {
-        		content_ad_ids.push(row.id);
+		var content_ad_ids_true = [],
+			content_ad_ids_false = [];
+
+		// $scope.selectedAll = false;
+		// $scope.selectedBatches = [];
+		// $scope.selectedContentAdsStatus = {};
+
+		for (var selectedContentAd in $scope.selectedContentAdsStatus) {
+			if $scope.selectedContentAdsStatus[selectedContentAd]) {
+				content_ad_ids_true.push(selectedContentAd);
+			} else {
+				content_ad_ids_false.push(selectedContentAd);
 			}
-		});
+		}
+
 		if (content_ad_ids.length == 0) {
 			return;
 		}
 
 		if ($scope.selectedBulkAction == 'pause') {
-            api.adGroupContentAdState.save($state.params.id, content_ad_ids, constants.contentAdSourceState.INACTIVE).then(
+            api.adGroupContentAdState.save(
+            		$state.params.id, 
+            		content_ad_ids_true, 
+            		content_ad_ids_false,
+            		$scope.selectedAll,
+            		$scope.selectedBatches,
+            		constants.contentAdSourceState.INACTIVE).then(
                 function () {
                     pollTableUpdates();
                 }
             );
 		} else if ($scope.selectedBulkAction == 'resume') {
-            api.adGroupContentAdState.save($state.params.id, content_ad_ids, constants.contentAdSourceState.ACTIVE).then(
+            api.adGroupContentAdState.save(
+            		$state.params.id, 
+            		content_ad_ids_true, 
+            		content_ad_ids_false,
+            		$scope.selectedAll,
+            		$scope.selectedBatches,
+            		constants.contentAdSourceState.ACTIVE).then(
                 function () {
                     pollTableUpdates();
                 }
             );
 		} else if ($scope.selectedBulkAction == 'download') {
-			var select_all = null,
-				select_batch = null;
-
-            var url = '/api/ad_groups/' + $state.params.id + '/contentads/csv/?content_ad_ids=' + content_ad_ids.join(',')
-            if (select_all) {
-				url += '&select_all=' + select_all ? 'true' : 'false';
+            var url = '/api/ad_groups/' + $state.params.id + 
+            	'/contentads/csv/?content_ad_ids_enabled=' + content_ad_ids_true.join(',') +
+            	'/contentads/csv/?content_ad_ids_disabled=' + content_ad_ids_false.join(',');
+			url += '&select_all=' + $scope.selectedAll;
+			if ($scope.selectedBatches.length > 0) {
+				url += '&select_batch=' + $scope.selectedBatches[0];
 			}
-			if (select_batch) {
-				url += '&select_batch=' + select_batch;
-			}
+			
             $window.open(url, '_blank');            
 		} else {
 			// TODO: Signal error
 		}
-
+		
 		$scope.selectedBulkAction = null;
 	};
 
@@ -593,7 +604,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
  	        dataEntry.forEach(function (entry) {
  	        	entry['callback'] = $scope.selectBatchCallback;
 				entry['type'] = 'link-list-item';
- 	        	console.log(entry);
  	        	entries.push(entry);
 			});
 
@@ -601,17 +611,13 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 				entries[0]['type'] = 'link-list-item-first';
 			}
 
-			console.log($scope.selectionOptions);
 			var i = 0;
 			$scope.columns.forEach(function(col) {
-				console.log(col.name);
 				if (col.name == 'zem-simple-menu') {
 					$scope.columns[i].selectionOptions = $scope.selectionOptionsStatic.concat(entries);
-					console.log('mega');
 				}
 				i += 1;
 			});
-			console.log($scope.selectionOptions);
 		});
 	};
 

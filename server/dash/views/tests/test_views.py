@@ -152,7 +152,7 @@ class AdGroupContentAdStateTest(TestCase):
 
         data = {
             'state': constants.ContentAdSourceState.INACTIVE,
-            'content_ad_ids': [content_ad_id],
+            'content_ad_ids_enabled': [content_ad_id],
         }
 
         response = self.client.post(
@@ -207,7 +207,7 @@ class AdGroupContentAdStateTest(TestCase):
 
         payload = {
             'select_all': False,
-            'select_batch': 1,
+            'select_batch': 'batch 1',
             'state': constants.ContentAdSourceState.INACTIVE,
         }
 
