@@ -390,6 +390,12 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=Non
     logger.info('_init_set_ad_group_source_settings started: ad_group_source.id: %s, settings: %s',
                 ad_group_source.id, str(conf))
 
+    if ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
+        logger.info('_init_set_ad_group_source_settings: {} ad_group_source on ad_group {} pending - action not created'.format(
+            dash.constants.SourceType.get_text(dash.constants.SourceType.GRAVITY),
+            ad_group_source.ad_group.id))
+        return
+
     if ad_group_source.source.maintenance:
         _create_manual_action(
             ad_group_source,
@@ -398,12 +404,6 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=Non
             order=order,
             message="Due to media source being in maintenance mode a manual action is required."
         )
-        return
-
-    if ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
-        logger.info('_init_set_ad_group_source_settings: {} ad_group_source on ad_group {} pending - action not created'.format(
-            dash.constants.SourceType.get_text(dash.constants.SourceType.GRAVITY),
-            ad_group_source.ad_group.id))
         return
 
     if 'daily_budget_cc' in conf and\

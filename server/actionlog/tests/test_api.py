@@ -814,9 +814,15 @@ class ActionLogApiCancelExpiredTestCase(TestCase):
 
         self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ad_group_source).count(), 22)
 
+        manual_action = models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action_type=constants.ActionType.MANUAL
+        )
+
+        self.assertFalse(manual_action.exists())
+
     def test_init_ad_group_source_settings_manual_daily_budget(self):
         ad_group_source = dashmodels.AdGroupSource.objects.get(id=1)
-        ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
 
         ad_group_source.source.source_type.available_actions = [
             dashconstants.SourceAction.CAN_UPDATE_DAILY_BUDGET_MANUAL
