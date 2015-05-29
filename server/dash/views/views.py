@@ -759,7 +759,6 @@ class AdGroupContentAdState(api_common.BaseApiView):
                 Q(ad_group__id=ad_group_id) | Q(id__in=content_ad_ids_enabled)).exclude(
                     id__in=content_ad_ids_disabled)
         elif select_batch is not None:
-            print select_batch
             content_ads = models.ContentAd.objects.filter(
                 Q(batch__name__in=select_batch) | Q(id__in=content_ad_ids_enabled)).exclude(
                     id__in=content_ad_ids_disabled)

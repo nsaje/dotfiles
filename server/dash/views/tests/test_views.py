@@ -207,7 +207,7 @@ class AdGroupContentAdStateTest(TestCase):
 
         payload = {
             'select_all': False,
-            'select_batch': 'batch 1',
+            'select_batch': ['batch 1'],
             'state': constants.ContentAdSourceState.INACTIVE,
         }
 
