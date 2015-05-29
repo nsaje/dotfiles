@@ -374,9 +374,10 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
 
                 current_daily_budget = state.daily_budget_cc if state is not None else None
                 daily_budget = current_daily_budget
-                if ad_group_source.source.can_update_daily_budget() and\
-                   setting is not None and\
-                   setting.daily_budget_cc is not None:
+                if (ad_group_source.source.can_update_daily_budget_automatic() or
+                        ad_group_source.source.can_update_daily_budget_manual()) and\
+                        setting is not None and\
+                        setting.daily_budget_cc is not None:
                     daily_budget = setting.daily_budget_cc
 
                 current_bid_cpc = state.cpc_cc if state is not None else None
@@ -648,7 +649,7 @@ class SourcesTable(api_common.BaseApiView):
                     if source.can_update_cpc():
                         row['editable_fields'].append('bid_cpc')
 
-                    if source.can_update_daily_budget():
+                    if source.can_update_daily_budget_automatic() or source.can_update_daily_budget_manual():
                         row['editable_fields'].append('daily_budget')
 
                 if user.has_perm('zemauth.set_ad_group_source_settings')\

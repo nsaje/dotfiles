@@ -178,7 +178,7 @@ class ContentAdsApiTestCase(TestCase):
         batch = dash.models.UploadBatch.objects.get(pk=1)
 
         request = HttpRequest()
-        request.user = User.objects.get(id=1)
+        request.user = User.objects.create(email='user@example.com')
 
         action = api_contentads.init_insert_content_ad_batch(
             batch, content_ad_source.source, request, send=False)
@@ -195,9 +195,6 @@ class ContentAdsApiTestCase(TestCase):
             'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
-                'batch_name': batch.name,
-                'campaign_name': ad_group_source.get_external_name(),
-                'ad_group_id': ad_group_source.ad_group.id,
                 'content_ads': [{
                     'id': content_ad_source.get_source_id(),
                     'state': dash.constants.ContentAdSourceState.ACTIVE,
@@ -214,9 +211,33 @@ class ContentAdsApiTestCase(TestCase):
                     'call_to_action': content_ad_source.content_ad.batch.call_to_action,
                     'tracking_slug': ad_group_source.source.tracking_slug,
                     'redirect_id': content_ad_source.content_ad.redirect_id,
-                }]
+                }],
+                'extra': {}
             },
             'callback_url': callback
+        })
+
+    def test_insert_content_ad_batch_gravity(self):
+        content_ad_source = dash.models.ContentAdSource.objects.get(pk=2)
+
+        ad_group_source = dash.models.AdGroupSource.objects.get(
+            ad_group=content_ad_source.content_ad.ad_group,
+            source=content_ad_source.source
+        )
+
+        batch = dash.models.UploadBatch.objects.get(pk=1)
+
+        request = HttpRequest()
+        request.user = User.objects.create(email='user@example.com')
+
+        action = api_contentads.init_insert_content_ad_batch(
+            batch, content_ad_source.source, request, send=False)
+
+        self.assertEqual(action.payload['args']['extra'], {
+            'batch_name': batch.name,
+            'campaign_name': ad_group_source.get_external_name(),
+            'ad_group_id': ad_group_source.ad_group.id,
+            'user_email': request.user.email
         })
 
     @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)

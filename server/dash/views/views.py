@@ -739,7 +739,7 @@ class AdGroupContentAdState(api_common.BaseApiView):
                             content_ad_source,
                             changes,
                             request,
-                            send=False,
+                            send=False
                         )
                     )
 

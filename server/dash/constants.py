@@ -148,7 +148,7 @@ class PromotionGoal(ConstantBase):
 class SourceAction(ConstantBase):
     CAN_UPDATE_STATE = 1
     CAN_UPDATE_CPC = 2
-    CAN_UPDATE_DAILY_BUDGET = 3
+    CAN_UPDATE_DAILY_BUDGET_AUTOMATIC = 3
     CAN_MANAGE_CONTENT_ADS = 4
     HAS_3RD_PARTY_DASHBOARD = 5
     CAN_MODIFY_START_DATE = 6
@@ -158,11 +158,12 @@ class SourceAction(ConstantBase):
     CAN_MODIFY_AD_GROUP_NAME = 10
     CAN_MODIFY_AD_GROUP_IAB_CATEGORY = 11
     UPDATE_TRACKING_CODES_ON_CONTENT_ADS = 12
+    CAN_UPDATE_DAILY_BUDGET_MANUAL = 13
 
     _VALUES = {
         CAN_UPDATE_STATE: 'Can update state',
         CAN_UPDATE_CPC: 'Can update CPC',
-        CAN_UPDATE_DAILY_BUDGET: 'Can update daily budget',
+        CAN_UPDATE_DAILY_BUDGET_AUTOMATIC: 'Can update daily budget automatically',
         CAN_MANAGE_CONTENT_ADS: 'Can manage content ads',
         HAS_3RD_PARTY_DASHBOARD: 'Has 3rd party dashboard',
         CAN_MODIFY_START_DATE: 'Can modify start date',
@@ -172,6 +173,7 @@ class SourceAction(ConstantBase):
         CAN_MODIFY_AD_GROUP_NAME: 'Can modify adgroup name',
         CAN_MODIFY_AD_GROUP_IAB_CATEGORY: 'Can modify ad group IAB category',
         UPDATE_TRACKING_CODES_ON_CONTENT_ADS: 'Update tracking codes on content ads',
+        CAN_UPDATE_DAILY_BUDGET_MANUAL: 'Can update daily budget manually',
     }
 
 
