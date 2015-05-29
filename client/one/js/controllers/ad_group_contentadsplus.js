@@ -538,7 +538,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 	var initUploadBatches = function () {
 		// refresh upload batches for current adgroup
 		api.adGroupAdsPlusUploadBatches.list($state.params.id).then(function(data) {
-			// TODO: improve this
+			// TODO: improve this so it doesn't fiddle with indices
 	 		$scope.selectionOptions[3].rows = data['data']['batches'];
 		});
 	};
