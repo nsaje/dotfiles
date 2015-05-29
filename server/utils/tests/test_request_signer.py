@@ -1,4 +1,5 @@
 import json
+import mock
 import urllib2
 import unittest
 
@@ -16,9 +17,11 @@ class EncryptionHelperTestCase(unittest.TestCase):
 
         self.url = 'https://example.com/test?hehe=lol'
         self.data = json.dumps({'aaaaa': 1111111})
-        self.signature = 'PYCrnSc86P-jrdmPoxzIOPfagJjLcG0l54i0ep9YZeM'
+        self.signature = '2OfzT_1GrqvcLTECicW3rCec4NXd6UGTXqlo1GV6PY4='
 
-    def test_sign(self):
+    @mock.patch('time.time')
+    def test_sign(self, mock_time):
+        mock_time.return_value = 123456789
         request = urllib2.Request(self.url, self.data)
         request_signer.sign_urllib2_request(request, self.secret_key)
         self.assertEqual(request.headers[request_signer.SIGNATURE_HEADER], self.signature)
@@ -50,16 +53,21 @@ class EncryptionHelperTestCase(unittest.TestCase):
         with self.assertRaises(request_signer.SignatureError):
             request_signer.sign_urllib2_request(request, 'short')
 
-    def test_verify(self):
-        header_key = request_signer._get_wsgi_header_field_name(
+    @mock.patch('time.time')
+    def test_verify(self, mock_time):
+        mock_time.return_value = 123456789
+        header_sig = request_signer._get_wsgi_header_field_name(
             request_signer.SIGNATURE_HEADER,
+        )
+        header_ts = request_signer._get_wsgi_header_field_name(
+            request_signer.TS_HEADER,
         )
 
         request = self.factory.post(
             self.url,
             data=self.data,
             content_type='application/json',
-            **{header_key: self.signature}
+            **{header_sig: self.signature, header_ts: str(mock_time())}
         )
 
         request_signer.verify_wsgi_request(request, self.secret_key)

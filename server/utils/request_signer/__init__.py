@@ -15,8 +15,8 @@ import hashlib
 import time
 
 
-TS_HEADER = 'ZApi-Auth-TS'
-SIGNATURE_HEADER = 'ZApi-Auth-Signature'
+TS_HEADER = 'Zapi-auth-ts'
+SIGNATURE_HEADER = 'Zapi-auth-signature'
 
 SIGNATURE_KEY_MIN_LEN = 16
 CA_CERT_FILE = os.path.join(os.path.dirname(__file__), 'zemanta_ca_cert.pem')
