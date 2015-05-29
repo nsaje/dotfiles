@@ -12,9 +12,12 @@ import urlparse
 import base64
 import hmac
 import hashlib
+import time
 
 
-SIGNATURE_HEADER = 'Zem-sign'
+TS_HEADER = 'ZApi-Auth-TS'
+SIGNATURE_HEADER = 'ZApi-Auth-Signature'
+
 SIGNATURE_KEY_MIN_LEN = 16
 CA_CERT_FILE = os.path.join(os.path.dirname(__file__), 'zemanta_ca_cert.pem')
 
@@ -50,10 +53,10 @@ def _validate_key(secret_key):
         )
 
 
-def _get_signature(path, query, data, secret_key):
-    request_content = '{}\n{}\n{}'.format(path, query, data)
+def _get_signature(ts, path, query, data, secret_key):
+    request_content = '{}\n{}\n{}\n{}'.format(ts, path, query, data)
     signature = hmac.new(secret_key, request_content, hashlib.sha256)
-    return base64.urlsafe_b64encode(signature.digest())[:43]
+    return base64.urlsafe_b64encode(signature.digest())
 
 
 def sign_urllib2_request(urllib_request, secret_key):
@@ -66,13 +69,16 @@ def sign_urllib2_request(urllib_request, secret_key):
 
     parsed_selector = urlparse.urlparse(urllib_request.get_selector())
 
+    ts = str(int(time.time()))
     signature = _get_signature(
+        ts,
         parsed_selector.path,
         parsed_selector.query,
         urllib_request.get_data(),
         secret_key,
     )
 
+    urllib_request.add_header(TS_HEADER, ts)
     urllib_request.add_header(SIGNATURE_HEADER, signature)
 
 
@@ -88,10 +94,15 @@ def verify_wsgi_request(wsgi_request, secret_key):
     header_signature = wsgi_request.META.get(
         _get_wsgi_header_field_name(SIGNATURE_HEADER)
     )
+    header_ts = wsgi_request.META.get(
+        _get_wsgi_header_field_name(TS_HEADER)
+    )
+
     if not header_signature:
         raise SignatureError('Missing signature')
 
     calc_signature = _get_signature(
+        header_ts,
         wsgi_request.META.get('PATH_INFO'),
         wsgi_request.META.get('QUERY_STRING'),
         wsgi_request.body,
