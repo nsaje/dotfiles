@@ -32,6 +32,7 @@ def init_insert_content_ad_action(content_ad_source, request=None, send=True):
         args={
             'source_campaign_key': ad_group_source.source_campaign_key,
             'content_ad_id': content_ad_source.get_source_id(),
+            'ad_group_id': content_ad_source.content_ad.ad_group_id,
             'content_ad': _get_content_ad_dict(ad_group_source, content_ad_source, batch)
         },
         request=request,
@@ -199,11 +200,12 @@ def _get_content_ad_dict(ad_group_source, content_ad_source, batch):
         'image_width': content_ad_source.content_ad.image_width,
         'image_height': content_ad_source.content_ad.image_height,
         'image_hash': content_ad_source.content_ad.image_hash,
+        'redirect_id': content_ad_source.content_ad.redirect_id,
         'display_url': batch.display_url,
         'brand_name': batch.brand_name,
         'description': batch.description,
         'call_to_action': batch.call_to_action,
-        'tracking_slug': ad_group_source.source.tracking_slug
+        'tracking_slug': ad_group_source.source.tracking_slug,
     }
 
     if content_ad_source.source_content_ad_id:
