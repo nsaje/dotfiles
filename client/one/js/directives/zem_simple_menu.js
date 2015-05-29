@@ -10,9 +10,6 @@ oneApp.directive('zemSimpleMenu', function () {
         },
         templateUrl: '/partials/zem_simple_menu.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
-        	$scope.$watch('selectionOptions', function (val){
-        		console.log('simpl');	
-			});
         }]
     }
 });

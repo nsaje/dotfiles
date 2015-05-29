@@ -45,7 +45,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 		// selection triple - all, a batch, or specific content ad's can be selected
 		console.log($scope.selectedAll);
 		console.log($scope.selectedBatches);
-		console.log($scope.selectedContentAdsStatus)
+		console.log($scope.selectedContentAdsStatus);
 	};
 
     $scope.selectAllCallback = function (ev) {
@@ -374,15 +374,11 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 		// $scope.selectedContentAdsStatus = {};
 
 		for (var selectedContentAd in $scope.selectedContentAdsStatus) {
-			if $scope.selectedContentAdsStatus[selectedContentAd]) {
+			if ($scope.selectedContentAdsStatus[selectedContentAd]) {
 				content_ad_ids_true.push(selectedContentAd);
 			} else {
 				content_ad_ids_false.push(selectedContentAd);
 			}
-		}
-
-		if (content_ad_ids.length == 0) {
-			return;
 		}
 
 		if ($scope.selectedBulkAction == 'pause') {
@@ -412,7 +408,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 		} else if ($scope.selectedBulkAction == 'download') {
             var url = '/api/ad_groups/' + $state.params.id + 
             	'/contentads/csv/?content_ad_ids_enabled=' + content_ad_ids_true.join(',') +
-            	'/contentads/csv/?content_ad_ids_disabled=' + content_ad_ids_false.join(',');
+            	'&content_ad_ids_disabled=' + content_ad_ids_false.join(',');
 			url += '&select_all=' + $scope.selectedAll;
 			if ($scope.selectedBatches.length > 0) {
 				url += '&select_batch=' + $scope.selectedBatches[0];
