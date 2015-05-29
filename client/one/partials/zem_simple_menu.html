@@ -1,27 +1,55 @@
-<div class="dropdown select2-container" dropdown is-open="isOpen">
+<select id="simple-menu" ui-select2="select2Config" class="show-rows" ng-model="selection">
+	<option value="">
+	<!--<input class="ng-pristine ng-untouched ng-valid" type="checkbox" data-ng-change="" data-ng-model="selectAllCheckbox" /> -->
+	</option>
+	<!--
+	<option value="pause">Pause</option>
+	<option value="resume">Resume</option>
+	<option value="download">Download</option>
+	-->
+	<option value="option.name" ng-repeat="option in selectionOptions track by $index">
+	    {{ option.name }}
+		<!--
+		<div ng-if="option.type == 'link'" ng-click="div.callback($event)">
+			{{ option.name }}
+		</div>
+
+		<div ng-if="option.type == 'link-list-item-first'" ng-click="div.callback($event, option.name)">
+			Upload batch: {{ option.name }}
+		</div>
+
+		<div ng-if="option.type == 'link-list-item'" ng-click="div.callback($event, option.name)">
+			{{ option.name }}
+		</div>
+		-->
+	</option>
+</select>
+
+<!--
+
+<div class="dropdown" dropdown is-open="isOpen">
 
     <button class="btn btn-default" dropdown-toggle>
+		<input class="ng-pristine ng-untouched ng-valid" type="checkbox" data-ng-change="" data-ng-model="selectAllCheckbox" />
         <div ng-if="active" class="active-circle-icon"></div>
         <div ng-if="!active" class="pause-icon"></div>
-        <div class="drop-arrow"></div>
+		<div class="select2-arrow" role="presentation"><b role="presentation">&nbsp;</b></div>
     </button>
 
-	<table class="table table-hover dropdown-menu"  dropdown-menu role="menu">
-		<thead />
-		<tbody>
-			<tr ng-repeat="option in selectionOptions track by $index">
-				<td ng-if="option.type == 'link'" ng-click="option.callback($event)">
-					{{ option.name }}
-				</td>
+	<div class="dropdown-menu" dropdown-menu role="menu">
+		<select class="select2-container" ng-repeat="option in selectionOptions track by $index">
+			<option ng-if="option.type == 'link'" ng-click="option.callback($event)">
+				{{ option.name }}
+			</option>
 
-				<td ng-if="option.type == 'link-list-item-first'" ng-click="option.callback($event, option.name)">
-					Upload batch: {{ option.name }}
-				</td>
+			<option ng-if="option.type == 'link-list-item-first'" ng-click="option.callback($event, option.name)">
+				Upload batch: {{ option.name }}
+			</option>
 
-				<td ng-if="option.type == 'link-list-item'" ng-click="option.callback($event, option.name)">
-					{{ option.name }}
-				</td>
-			</tr>
-		</tbody>
-	</table>
+			<option ng-if="option.type == 'link-list-item'" ng-click="option.callback($event, option.name)">
+				{{ option.name }}
+			</option>
+		</ul>
+	</div>
 </div>
+-->

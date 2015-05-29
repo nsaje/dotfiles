@@ -817,7 +817,7 @@ class AdGroupContentAdCsv(api_common.BaseApiView):
         if not isinstance(content_ad_ids_disabled, list):
             raise exc.ValidationError()
 
-
+        print content_ad_ids_enabled, content_ad_ids_disabled
         content_ads = []
         if select_all:
             content_ads = models.ContentAd.objects.filter(
