@@ -6,11 +6,13 @@ oneApp.directive('zemSimpleMenu', function () {
         restrict: 'E',
         scope: {
             selectAll: '=',
-            selectionOptions: '=selectionOptions'
+            selectionOptions: '='
         },
         templateUrl: '/partials/zem_simple_menu.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
-
+        	$scope.$watch('selectionOptions', function (val){
+        		console.log('simpl');	
+			});
         }]
     }
 });

@@ -1,4 +1,4 @@
-<div class="dropdown" dropdown is-open="isOpen">
+<div class="dropdown select2-container" dropdown is-open="isOpen">
 
     <button class="btn btn-default" dropdown-toggle>
         <div ng-if="active" class="active-circle-icon"></div>
@@ -9,18 +9,17 @@
 	<table class="table table-hover dropdown-menu"  dropdown-menu role="menu">
 		<thead />
 		<tbody>
-			<tr ng-repeat="option in selectionOptions">
+			<tr ng-repeat="option in selectionOptions track by $index">
 				<td ng-if="option.type == 'link'" ng-click="option.callback($event)">
 					{{ option.name }}
 				</td>
 
-				<td ng-if="option.type == 'link-list'">
-					<div>
-						Upload batch:
-					</div>
-					<div ng-repeat="link in option.rows" ng-click="link.callback($event, link.id)">
-						{{ link.name }}
-					</div>
+				<td ng-if="option.type == 'link-list-item-first'" ng-click="option.callback($event, option.name)">
+					Upload batch: {{ option.name }}
+				</td>
+
+				<td ng-if="option.type == 'link-list-item'" ng-click="option.callback($event, option.name)">
+					{{ option.name }}
 				</td>
 			</tr>
 		</tbody>

@@ -823,7 +823,7 @@ class AdGroupContentAdCsv(api_common.BaseApiView):
             content_ad_dicts.append({
                 'url': content_ad.url,
                 'title': content_ad.title,
-                'image_url': 'TODO',
+                'image_url': content_ad.get_image_url(),
             })
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="content_ads.csv"'

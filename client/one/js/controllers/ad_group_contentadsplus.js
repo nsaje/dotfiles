@@ -7,7 +7,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     $scope.size = $scope.sizeRange[0];
     $scope.lastChangeTimeout = null;
     $scope.rows = null;
-    $scope.selectedAdTotals = false;
     $scope.totals = null;
 
     $scope.chartHidden = false;
@@ -23,8 +22,9 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 	$scope.selectedBulkAction = null;
 
 	// selectiont triple - all, a batch, or specific content ad's can be selected
-	//$scope.selectedAll = false;
-	// $scope.selectedContentAds = [];
+	$scope.selectedAll = false;
+	$scope.selectedBatches = [];
+	$scope.selectedContentAdsStatus = {};
 
     $scope.pagination = {
         currentPage: 1
@@ -37,31 +37,77 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
     $scope.selectedAdsChanged = function (row, checked) {
         if (row.id) {
-        	// TODO: probably nothing TODO here
-        } else {
-        	// TODO: paging
-            $scope.selectedAdTotals = !$scope.selectedAdTotals;
-			$scope.rows.forEach(function (x) {
-				x.ad_selected = $scope.selectedAdTotals;
-			});
-        }
+        	$scope.selectedContentAdsStatus[row.id] = checked;
+			console.log(checked);
+        }  
     };
 
+	$scope.logSelection = function () {
+		// selection triple - all, a batch, or specific content ad's can be selected
+		console.log('selection');
+		console.log($scope.selectedAll);
+		console.log($scope.selectedBatches);
+		console.log($scope.selectedContentAdsStatus)
+	};
+
     $scope.selectAllCallback = function (ev) {
-    	$scope.selectThisPageCallback(ev);
+    	console.log('selectAllCallback');
+		// selection triple - all, a batch, or specific content ad's can be selected
+		$scope.selectedAll = true;
+		$scope.selectedBatches = [];
+		$scope.selectedContentAdsStatus = {};
+
+		$scope.updateContentAdSelection();
+		$scope.logSelection();
 	};
 
     $scope.selectThisPageCallback = function (ev) {
-        $scope.selectedAdTotals = true;
-		$scope.rows.forEach(function (x) {
-			x.ad_selected = $scope.selectedAdTotals;
+    	console.log('selectThisPageCallback');
+		// selection triple - all, a batch, or specific content ad's can be selected
+		$scope.selectedAll = false;
+		$scope.selectedBatches = [];
+		$scope.selectedContentAdsStatus = {};
+
+		$scope.rows.forEach(function (row) {
+			$scope.selectedContentAdsStatus[row.id] = true;
 		});
+
+		$scope.updateContentAdSelection();
+		$scope.logSelection();
 	};
 
-    $scope.selectBatchCallback = function (ev, id) {
+    $scope.selectBatchCallback = function (ev, name) {
+    	console.log('selectBatchCallback');
+		// selection triple - all, a batch, or specific content ad's can be selected
+		$scope.selectedAll = false;
+		$scope.selectedBatches = [name];
+		$scope.selectedContentAdsStatus = {};
+
+		$scope.updateContentAdSelection();
+		$scope.logSelection();
 	};
 
-    $scope.selectionOptions = [
+	$scope.updateContentAdSelection = function () {
+		console.log('updateContentAdSelection');
+		console.log($scope.selectedAll);
+
+		$scope.rows.forEach(function (row) {
+			console.log(row);
+			if ($scope.selectedContentAdsStatus[row.id] !== undefined) {
+				row.ad_selected = $scope.selectedContentAdsStatus[row.id];
+			} else if ($scope.selectedAll) {
+				row.ad_selected = true;
+			} else if (($scope.selectedBatches.length > 0) && 
+					   (row.batch_name == $scope.selectedBatches[0])) { 
+				row.ad_selected = true;
+			} else {
+				row.ad_selected = false;
+			}
+		});
+
+	};
+
+	$scope.selectionOptionsStatic = [
 		{
 			name: 'All',
 			type: 'link',
@@ -72,12 +118,15 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 			callback: $scope.selectThisPageCallback
 		}, {
 			type: 'separator'
-		}, {
-			name: 'Upload batch',
-			type: 'link-list',
-			rows: []
 		}
-    ];
+	];
+
+    $scope.selectionOptions = $scope.selectionOptionsStatic.concat([{
+			title: 'Upload batch',
+			name: '',
+			type: 'link-list-item-first',
+		}
+    ]);
 
     $scope.columns = [
 		{
@@ -538,10 +587,34 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 	var initUploadBatches = function () {
 		// refresh upload batches for current adgroup
 		api.adGroupAdsPlusUploadBatches.list($state.params.id).then(function(data) {
-			// TODO: improve this so it doesn't fiddle with indices
-	 		$scope.selectionOptions[3].rows = data['data']['batches'];
+			var dataEntry = data['data']['batches'],
+				entries = [];
+
+ 	        dataEntry.forEach(function (entry) {
+ 	        	entry['callback'] = $scope.selectBatchCallback;
+				entry['type'] = 'link-list-item';
+ 	        	console.log(entry);
+ 	        	entries.push(entry);
+			});
+
+			if (entries.length > 0) {
+				entries[0]['type'] = 'link-list-item-first';
+			}
+
+			console.log($scope.selectionOptions);
+			var i = 0;
+			$scope.columns.forEach(function(col) {
+				console.log(col.name);
+				if (col.name == 'zem-simple-menu') {
+					$scope.columns[i].selectionOptions = $scope.selectionOptionsStatic.concat(entries);
+					console.log('mega');
+				}
+				i += 1;
+			});
+			console.log($scope.selectionOptions);
 		});
 	};
+
 
     var init = function() {
         if (!$scope.adGroup.contentAdsTabWithCMS && !$scope.hasPermission('zemauth.new_content_ads_tab')) {
