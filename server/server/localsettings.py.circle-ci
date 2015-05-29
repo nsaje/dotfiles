@@ -123,4 +123,4 @@ BROKER_TRANSPORT_OPTIONS = {
 }
 
 R1_API_SIGN_KEY = ''
-R1_REDIRECTS_API_URL = 'http://r1.zemanta.com/api/redirects'
+R1_REDIRECTS_API_URL = 'http://r1.zemanta.com/api/redirects/'
