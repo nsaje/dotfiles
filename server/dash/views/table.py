@@ -1172,7 +1172,12 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             row.update({
                 'submission_status': submission_status,
                 'status_setting': content_ad.state,
-                'editable_fields': ['status_setting'],
+                'editable_fields': {
+                    'status_setting': {
+                        'enabled': True,
+                        'message': None,
+                    }
+                },
             })
 
         return rows
