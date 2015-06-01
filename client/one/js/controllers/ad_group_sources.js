@@ -142,9 +142,12 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 );
             },
             getDisabledMessage: function (row) {
-                return row.maintenance ? 
-                    'This source is currently in maintenance mode.' : 
-                    'This source must be managed manually.';
+                var editableFields = row.editable_fields;
+                if (!editableFields) {
+                    return '';
+                }
+
+                return editableFields['status_setting'].message;
             },
             disabled: false
         },

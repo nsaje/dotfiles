@@ -62,21 +62,21 @@ oneApp.directive('zemTable', ['config', function(config) {
                 if (!editableFields) {
                     return false;
                 }
-                if (!row.can_edit_budget_and_cpc) {
-                    return false;
+
+                if (field in editableFields) {
+                    return editableFields[field].enabled;
                 }
 
-                return editableFields.indexOf(field) !== -1;
+                return false;
             };
 
-            $scope.getSettingsFieldMessage = function (row) {
-                if (row.maintenance) {
-                    return 'This value cannot be edited because the media source is currently in maintenance.';
-                } else if (!row.can_edit_budget_and_cpc) {
-                    return 'The ad group has end date set in the past. No modifications to media source parameters are possible.';
-                } else {
-                    return 'This media source doesn\'t support setting this value through the dashboard.'; 
-                }                    
+            $scope.getSettingsFieldMessage = function (row, field) {
+                var editableFields = row.editable_fields;
+                if (!editableFields) {
+                    return '';
+                }
+
+                return editableFields[field].message;
             };
         }]
     };

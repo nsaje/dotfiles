@@ -551,16 +551,87 @@ class SourcesTable(api_common.BaseApiView):
 
         return constants.AdGroupSourceSettingsState.INACTIVE
 
-    def _can_edit_budget_and_cpc(self, source, level_sources_table):
-        ad_group_settings = level_sources_table.ad_group.get_current_settings()
+    def _is_end_date_past(self, ad_group_settings):
         end_utc_datetime = ad_group_settings.get_utc_end_datetime()
 
-        if end_utc_datetime is None: # user will stop adgroup manually 
-            return True
+        if end_utc_datetime is None:  # user will stop adgroup manually
+            return False
 
         # if end date is in the past then we can't edit cpc and budget
-        return end_utc_datetime > datetime.datetime.utcnow()
-            
+        return end_utc_datetime < datetime.datetime.utcnow()
+
+    def _get_editable_fields(self, ad_group_source, ad_group_settings, user):
+        editable_fields = {}
+
+        if not user.has_perm('zemauth.set_ad_group_source_settings'):
+            return editable_fields
+
+        editable_fields['status_setting'] = self._get_editable_fields_status_setting(ad_group_source)
+        editable_fields['bid_cpc'] = self._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+        editable_fields['daily_budget'] = self._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+
+        return editable_fields
+
+    def _get_editable_fields_bid_cpc(self, ad_group_source, ad_group_settings):
+        enabled = True
+        message = None
+
+        if not ad_group_source.source.can_update_cpc() or self._is_end_date_past(ad_group_settings):
+            enabled = False
+            message = self._get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_settings)
+
+        return {
+            'enabled': enabled,
+            'message': message
+        }
+
+    def _get_editable_fields_daily_budget(self, ad_group_source, ad_group_settings):
+        enabled = True
+        message = None
+
+        if not ad_group_source.source.can_update_daily_budget_automatic() and\
+           not ad_group_source.source.can_update_daily_budget_manual() or\
+           self._is_end_date_past(ad_group_settings):
+            enabled = False
+            message = self._get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_settings)
+
+        return {
+            'enabled': enabled,
+            'message': message
+        }
+
+    def _get_editable_fields_status_setting(self, ad_group_source):
+        enabled = True
+        message = None
+
+        if not ad_group_source.source.can_update_state() or (
+           ad_group_source.ad_group.content_ads_tab_with_cms and not ad_group_source.can_manage_content_ads):
+            enabled = False
+            message = self._get_status_setting_disabled_message(ad_group_source)
+
+        return {
+            'enabled': enabled,
+            'message': message
+        }
+
+    def _get_status_setting_disabled_message(self, ad_group_source):
+        if ad_group_source.source.maintenance:
+            return 'This source is currently in maintenance mode.'
+
+        if ad_group_source.ad_group.content_ads_tab_with_cms and not ad_group_source.can_manage_content_ads:
+            return 'Please contact support to enable this source.'
+
+        return 'This source must be managed manually.'
+
+    def _get_bid_cpc_daily_budget_disabled_message(self, ad_group_source, ad_group_settings):
+        if ad_group_source.source.maintenance:
+            return 'This value cannot be edited because the media source is currently in maintenance.'
+
+        if self._is_end_date_past(ad_group_settings):
+            return 'The ad group has end date set in the past. No modifications to media source parameters are possible.'
+
+        return 'This media source doesn\'t support setting this value through the dashboard.'
+
     def get_rows(
             self,
             id_,
@@ -594,7 +665,7 @@ class SourcesTable(api_common.BaseApiView):
                     break
 
             if source.deprecated and not reports.api.row_has_traffic_data(source_data) and not reports.api.row_has_postclick_data(source_data):
-                continue    # deprecated sources without data don't have to be shown
+                continue  # deprecated sources without data don't have to be shown
 
             last_sync = last_actions.get(source.id)
 
@@ -602,8 +673,7 @@ class SourcesTable(api_common.BaseApiView):
             if ad_group_level and source.has_3rd_party_dashboard():
                 supply_dash_url = urlresolvers.reverse('dash.views.views.supply_dash_redirect')
                 supply_dash_url += '?ad_group_id={}&source_id={}'.format(id_, source.id)
-                
-           
+
             if ad_group_level:
                 daily_budget = states[0].daily_budget_cc if len(states) else None
             else:
@@ -641,16 +711,15 @@ class SourcesTable(api_common.BaseApiView):
             bid_cpc_values = [s.cpc_cc for s in states if s.cpc_cc is not None]
 
             if ad_group_level:
-                row['editable_fields'] = []
-                if user.has_perm('zemauth.set_ad_group_source_settings'):
-                    if source.can_update_state():
-                        row['editable_fields'].append('status_setting')
+                ad_group_source = None
+                for item in ad_group_sources:
+                    if item.source.id == source.id:
+                        ad_group_source = item
+                        break
 
-                    if source.can_update_cpc():
-                        row['editable_fields'].append('bid_cpc')
+                ad_group_settings = level_sources_table.ad_group.get_current_settings()
 
-                    if source.can_update_daily_budget_automatic() or source.can_update_daily_budget_manual():
-                        row['editable_fields'].append('daily_budget')
+                row['editable_fields'] = self._get_editable_fields(ad_group_source, ad_group_settings, user)
 
                 if user.has_perm('zemauth.set_ad_group_source_settings')\
                    and source_settings is not None \
@@ -678,9 +747,6 @@ class SourcesTable(api_common.BaseApiView):
                 if user.has_perm('zemauth.see_current_ad_group_source_state'):
                     row['current_bid_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None
                     row['current_daily_budget'] = states[0].daily_budget_cc if len(states) else None
-
-                row['can_edit_budget_and_cpc'] = \
-                    self._can_edit_budget_and_cpc(source, level_sources_table)
 
             elif len(bid_cpc_values) > 0:
                 row['min_bid_cpc'] = float(min(bid_cpc_values))
