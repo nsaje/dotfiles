@@ -964,7 +964,7 @@ class AdGroupSettings(SettingsBase):
     archived = models.BooleanField(default=False)
     display_url = models.CharField(max_length=25, blank=True, default='')
     brand_name = models.CharField(max_length=25, blank=True, default='')
-    description = models.CharField(max_length=100, blank=True, default='')
+    description = models.CharField(max_length=140, blank=True, default='')
     call_to_action = models.CharField(max_length=25, blank=True, default='')
     ad_group_name = models.CharField(max_length=127, blank=True, default='')
 
@@ -1196,7 +1196,7 @@ class UploadBatch(models.Model):
     num_errors = models.PositiveIntegerField(null=True)
     display_url = models.CharField(max_length=25, blank=True, default='')
     brand_name = models.CharField(max_length=25, blank=True, default='')
-    description = models.CharField(max_length=100, blank=True, default='')
+    description = models.CharField(max_length=140, blank=True, default='')
     call_to_action = models.CharField(max_length=25, blank=True, default='')
 
     class Meta:

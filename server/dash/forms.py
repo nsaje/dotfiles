@@ -317,7 +317,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         }
     )
     description = forms.CharField(
-        max_length=100,
+        max_length=140,
         required=True,
         error_messages={
             'max_length': 'Description is too long (%(show_value)d/%(limit_value)d).'
