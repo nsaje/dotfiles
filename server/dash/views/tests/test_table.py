@@ -122,7 +122,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             'image_urls': {
                 'square': '/123456789/120x120.jpg',
                 'landscape': '/123456789/193x120.jpg'},
-            'editable_fields': ['status_setting'],
+            'editable_fields': {'status_setting': {'enabled': True, 'message': None}},
             'submission_status': [],
             'cost': None,
             'batch_name': 'batch 1',
@@ -142,7 +142,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             'cost': 100,
             'cpc': '0.0100',
             'ctr': '12.5000',
-            'editable_fields': ['status_setting'],
+            'editable_fields': {'status_setting': {'enabled': True, 'message': None}},
             'id': '1',
             'image_urls': {
                 'landscape': '/123456789/193x120.jpg',
