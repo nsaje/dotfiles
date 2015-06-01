@@ -572,7 +572,7 @@ class SubmitAdGroupCallbackTest(TestCase):
         )
         self.assertEqual(insert_actionlogs1.count(), 1)
 
-        self.assertEqual(insert_actionlogs1[0].payload['args']['content_ad_id'], content_ad_source1.get_source_id())
+        self.assertEqual(insert_actionlogs1[0].payload['args']['content_ad']['content_ad_id'], content_ad_source1.get_source_id())
         self.assertEqual(insert_actionlogs1[0].payload['args']['content_ad']['source_content_ad_id'], '1234567890')
         self.assertEqual(
             insert_actionlogs1[0].payload['args']['content_ad']['state'],
@@ -645,7 +645,7 @@ class SubmitAdGroupCallbackTest(TestCase):
         )
         self.assertEqual(insert_actionlogs.count(), 1)
 
-        self.assertEqual(insert_actionlogs[0].payload['args']['content_ad_id'], content_ad_source.get_source_id())
+        self.assertEqual(insert_actionlogs[0].payload['args']['content_ad']['content_ad_id'], content_ad_source.get_source_id())
         self.assertEqual(
             insert_actionlogs[0].payload['args']['content_ad']['state'],
             constants.ContentAdSourceState.ACTIVE

@@ -74,10 +74,10 @@ class ContentAdsApiTestCase(TestCase):
             'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
-                'content_ad_id': content_ad_source.get_source_id(),
-                'ad_group_id': content_ad_source.content_ad.ad_group_id,
                 'content_ad': {
-                    'id': content_ad_source.get_source_id(),
+                    'ad_group_id': content_ad_source.content_ad.ad_group_id,
+                    'content_ad_id': content_ad_source.content_ad.id,
+                    'source_content_ad_id': content_ad_source.source_content_ad_id,
                     'state': dash.constants.ContentAdSourceState.ACTIVE,
                     'title': content_ad_source.content_ad.title,
                     'url': content_ad_source.content_ad.url,
@@ -134,10 +134,10 @@ class ContentAdsApiTestCase(TestCase):
             'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
-                'content_ad_id': content_ad_source.get_source_id(),
-                'ad_group_id': content_ad_source.content_ad.ad_group_id,
                 'content_ad': {
-                    'id': content_ad_source.get_source_id(),
+                    'ad_group_id': content_ad_source.content_ad.ad_group_id,
+                    'content_ad_id': content_ad_source.content_ad.id,
+                    'source_content_ad_id': content_ad_source.source_content_ad_id,
                     'state': dash.constants.ContentAdSourceState.ACTIVE,
                     'title': content_ad_source.content_ad.title,
                     'url': content_ad_source.content_ad.url_with_tracking_codes(
@@ -196,7 +196,9 @@ class ContentAdsApiTestCase(TestCase):
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
                 'content_ads': [{
-                    'id': content_ad_source.get_source_id(),
+                    'ad_group_id': content_ad_source.content_ad.ad_group_id,
+                    'content_ad_id': content_ad_source.content_ad.id,
+                    'source_content_ad_id': content_ad_source.source_content_ad_id,
                     'state': dash.constants.ContentAdSourceState.ACTIVE,
                     'title': content_ad_source.content_ad.title,
                     'url': content_ad_source.content_ad.url,
@@ -280,14 +282,28 @@ class ContentAdsApiTestCase(TestCase):
             'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
-                'content_ad_id': content_ad_source.get_source_id(),
-                'content_ad': {
+                'changes': {
                     'state': dash.constants.ContentAdSourceState.INACTIVE,
                 },
-                'extra': {
-                    'submission_status': dash.constants.ContentAdSubmissionStatus.APPROVED,
-                    'source_content_ad_id': '123456789',
-                }
+                'content_ad': {
+                    'ad_group_id': content_ad_source.content_ad.ad_group_id,
+                    'content_ad_id': content_ad_source.content_ad.id,
+                    'source_content_ad_id': content_ad_source.source_content_ad_id,
+                    'state': dash.constants.ContentAdSourceState.INACTIVE,
+                    'title': content_ad_source.content_ad.title,
+                    'url': content_ad_source.content_ad.url,
+                    'submission_status': content_ad_source.submission_status,
+                    'image_id': content_ad_source.content_ad.image_id,
+                    'image_width': content_ad_source.content_ad.image_width,
+                    'image_height': content_ad_source.content_ad.image_height,
+                    'image_hash': content_ad_source.content_ad.image_hash,
+                    'display_url': content_ad_source.content_ad.batch.display_url,
+                    'brand_name': content_ad_source.content_ad.batch.brand_name,
+                    'description': content_ad_source.content_ad.batch.description,
+                    'call_to_action': content_ad_source.content_ad.batch.call_to_action,
+                    'tracking_slug': ad_group_source.source.tracking_slug,
+                    'redirect_id': content_ad_source.content_ad.redirect_id,
+                },
             },
             'callback_url': callback
         }
@@ -366,7 +382,9 @@ class ContentAdsApiTestCase(TestCase):
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
                 'content_ad': {
-                    'id': content_ad_source.get_source_id(),
+                    'ad_group_id': content_ad_source.content_ad.ad_group_id,
+                    'content_ad_id': content_ad_source.content_ad.id,
+                    'source_content_ad_id': content_ad_source.source_content_ad_id,
                     'state': dash.constants.ContentAdSourceState.ACTIVE,
                     'title': content_ad_source.content_ad.title,
                     'url': content_ad_source.content_ad.url,
