@@ -245,6 +245,29 @@ class AdGroupAdsPlusUploadTest(TestCase):
 
         self.assertEqual(response.status_code, 404)
 
+    def test_description_too_long(self):
+        response = self._get_client().post(
+            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),
+            {
+                'description': 'a'*141
+            },
+            follow=True
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Description is too long', response.content)
+
+    def test_description_right_length(self):
+        response = self._get_client().post(
+            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),
+            {
+                'description': 'a'*140
+            },
+            follow=True
+        )
+
+        self.assertNotIn('Description is too long', response.content)
+
 
 class AdGroupSourcesTest(TestCase):
     def test_get_name(self):
