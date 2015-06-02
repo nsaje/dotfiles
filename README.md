@@ -70,11 +70,12 @@ We use Grunt for building the app and Bower for management of third-party compon
 
 All the commands bellow assume that you are located in client subdirectory.
 
-Make sure that you have node.js, npm, grunt and grunt-cli installed.
+Make sure that you have node.js, npm, bower, grunt and grunt-cli installed.
 
 Install local development node modules:
 ```bash
 npm install
+bower install --dev
 ```
 
 Now you have grunt and all the development dependencies installed so you can run grunt in order to build it:
