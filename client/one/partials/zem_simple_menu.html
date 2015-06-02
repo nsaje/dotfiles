@@ -1,8 +1,7 @@
-<select id="simple-menu" 
-	ui-select2="select2Config" 
+<select ui-select2="select2Config" 
 	ng-change="changeCallback()" 
 	class="show-rows" 
 	ng-model="selection" 
 	ng-options="option.name for option in customSelectionOptions">
-	<option value="" id="empty" />
+	<option value="" />
 </select>

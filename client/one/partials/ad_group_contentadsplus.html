@@ -22,8 +22,8 @@
                 </zem-export>
             </div>
 
-            <div ng-if="hasPermission('zemauth.content_ads_bulk_actions')" class="button-bar-item">
-			<select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'show-rows'}" class="show-rows" data-placeholder="Bulk Edit" ng-model="selectedBulkAction" ng-change="bulkEdit()">
+			<div ng-show="hasPermission('zemauth.content_ads_bulk_actions')" class="button-bar-item"> 
+			<select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'show-rows'}" class="show-rows" data-placeholder="Bulk Edit" ng-model="selectedBulkAction">
 				<option value=""></option>
 				<option value="pause">Pause</option>
 				<option value="resume">Resume</option>

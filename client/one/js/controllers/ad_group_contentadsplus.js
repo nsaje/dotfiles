@@ -363,7 +363,9 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         return modalInstance;
     };
 
-    $scope.bulkEdit = function() {
+    $scope.$watch('selectedBulkAction', function(newValue, oldValue) {
+        if (newValue === oldValue) { return; }
+
 		if ($scope.selectedBulkAction == null) {
 			return;
 		}
@@ -422,7 +424,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 		}
 		
 		$scope.selectedBulkAction = null;
-	};
+	});
 
     $scope.loadPage = function(page) {
         if (page && page > 0 && page <= $scope.pagination.numPages) {
