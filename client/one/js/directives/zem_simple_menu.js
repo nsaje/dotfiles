@@ -7,7 +7,7 @@ oneApp.directive('zemSimpleMenu', function () {
             selectAll: '=',
             customSelectionOptions: '=zemCustomSelectionOptions',
 			select2Config: '=',
-			selection: '='
+			selectedOption: '='
         },
         templateUrl: '/partials/zem_simple_menu.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
@@ -17,7 +17,7 @@ oneApp.directive('zemSimpleMenu', function () {
 				return state.text;
 			};
 
-			$scope.$watch('selection', function (newOption, oldOption) {
+			$scope.$watch('selectedOption', function (newOption, oldOption) {
 			    if (oldOption == newOption) return;
 			    newOption.callback(newOption.name)
 			}, true);
