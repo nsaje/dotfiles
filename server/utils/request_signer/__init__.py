@@ -29,8 +29,8 @@ class SignatureError(Exception):
 
 
 def _validate_request(urllib_request):
-    if urllib_request.get_method() != 'POST':
-        raise SignatureError('Only POST requests are allowed')
+    if urllib_request.get_method() not in ('POST', 'PUT'):
+        raise SignatureError('Only POST and PUT requests are allowed')
 
     # Force https for requests outside of localhost
     if urllib_request.get_type() != 'https' and \

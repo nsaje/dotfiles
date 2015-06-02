@@ -90,7 +90,7 @@ class ProcessUploadThread(Thread):
             content_ad.redirect_id = redirector_helper.insert_redirect(
                 content_ad.url,
                 content_ad.pk,
-                self.ad_group_id,
+                content_ad.ad_group_id,
             )
             content_ad.save()
         except Exception:

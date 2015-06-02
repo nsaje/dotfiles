@@ -25,8 +25,8 @@ def insert_redirect(url, content_ad_id, ad_group_id):
 def _insert_redirect_try(url, content_ad_id, ad_group_id):
     data = json.dumps({
         'url': url,
-        'creativeid': content_ad_id,
-        'adgroupid': ad_group_id,
+        'creativeid': int(content_ad_id),
+        'adgroupid': int(ad_group_id),
     })
     request = urllib2.Request(settings.R1_REDIRECTS_API_URL, data)
     response = request_signer.urllib2_secure_open(request, settings.R1_API_SIGN_KEY)
@@ -64,6 +64,7 @@ def _insert_adgroup_try(ad_group_id, tracking_codes, disable_auto_tracking):
     url = settings.R1_REDIRECTS_ADGROUP_API_URL.format(adgroup=ad_group_id)
 
     request = urllib2.Request(url, data)
+    request.get_method = lambda: 'PUT'
     response = request_signer.urllib2_secure_open(request, settings.R1_API_SIGN_KEY)
 
     status_code = response.getcode()
