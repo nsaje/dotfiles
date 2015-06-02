@@ -129,6 +129,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('upload_content_ads', 'Can upload new content ads.'),
             ('set_content_ad_status', 'Can set status of content ads.'),
             ('get_content_ad_csv', 'Can download bulk content ad csv.'),
+            ('content_ads_bulk_actions', 'Can view and use bulk content ads actions.'),
         )
 
     def get_full_name(self):
