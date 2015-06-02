@@ -333,8 +333,8 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
 
 
 def update_content_ad_source_state(content_ad_source, data):
-    state = data['source_state']
-    submission_status = data['submission_status']
+    state = data.get('source_state')
+    submission_status = data.get('submission_status')
 
     if state:
         content_ad_source.source_state = state

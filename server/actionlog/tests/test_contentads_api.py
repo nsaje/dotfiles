@@ -74,9 +74,10 @@ class ContentAdsApiTestCase(TestCase):
             'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
-                'content_ad_id': content_ad_source.get_source_id(),
                 'content_ad': {
-                    'id': content_ad_source.get_source_id(),
+                    'ad_group_id': content_ad_source.content_ad.ad_group_id,
+                    'content_ad_id': content_ad_source.content_ad.id,
+                    'source_content_ad_id': content_ad_source.source_content_ad_id,
                     'state': dash.constants.ContentAdSourceState.ACTIVE,
                     'title': content_ad_source.content_ad.title,
                     'url': content_ad_source.content_ad.url,
@@ -89,7 +90,8 @@ class ContentAdsApiTestCase(TestCase):
                     'brand_name': content_ad_source.content_ad.batch.brand_name,
                     'description': content_ad_source.content_ad.batch.description,
                     'call_to_action': content_ad_source.content_ad.batch.call_to_action,
-                    'tracking_slug': ad_group_source.source.tracking_slug
+                    'tracking_slug': ad_group_source.source.tracking_slug,
+                    'redirect_id': content_ad_source.content_ad.redirect_id,
                 },
             },
             'callback_url': callback
@@ -132,9 +134,10 @@ class ContentAdsApiTestCase(TestCase):
             'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
-                'content_ad_id': content_ad_source.get_source_id(),
                 'content_ad': {
-                    'id': content_ad_source.get_source_id(),
+                    'ad_group_id': content_ad_source.content_ad.ad_group_id,
+                    'content_ad_id': content_ad_source.content_ad.id,
+                    'source_content_ad_id': content_ad_source.source_content_ad_id,
                     'state': dash.constants.ContentAdSourceState.ACTIVE,
                     'title': content_ad_source.content_ad.title,
                     'url': content_ad_source.content_ad.url_with_tracking_codes(
@@ -152,7 +155,8 @@ class ContentAdsApiTestCase(TestCase):
                     'brand_name': content_ad_source.content_ad.batch.brand_name,
                     'description': content_ad_source.content_ad.batch.description,
                     'call_to_action': content_ad_source.content_ad.batch.call_to_action,
-                    'tracking_slug': ad_group_source.source.tracking_slug
+                    'tracking_slug': ad_group_source.source.tracking_slug,
+                    'redirect_id': content_ad_source.content_ad.redirect_id,
                 },
             },
             'callback_url': callback
@@ -174,7 +178,7 @@ class ContentAdsApiTestCase(TestCase):
         batch = dash.models.UploadBatch.objects.get(pk=1)
 
         request = HttpRequest()
-        request.user = User.objects.get(id=1)
+        request.user = User.objects.create(email='user@example.com')
 
         action = api_contentads.init_insert_content_ad_batch(
             batch, content_ad_source.source, request, send=False)
@@ -191,11 +195,10 @@ class ContentAdsApiTestCase(TestCase):
             'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
-                'batch_name': batch.name,
-                'campaign_name': ad_group_source.get_external_name(),
-                'ad_group_id': ad_group_source.ad_group.id,
                 'content_ads': [{
-                    'id': content_ad_source.get_source_id(),
+                    'ad_group_id': content_ad_source.content_ad.ad_group_id,
+                    'content_ad_id': content_ad_source.content_ad.id,
+                    'source_content_ad_id': content_ad_source.source_content_ad_id,
                     'state': dash.constants.ContentAdSourceState.ACTIVE,
                     'title': content_ad_source.content_ad.title,
                     'url': content_ad_source.content_ad.url,
@@ -208,10 +211,35 @@ class ContentAdsApiTestCase(TestCase):
                     'brand_name': content_ad_source.content_ad.batch.brand_name,
                     'description': content_ad_source.content_ad.batch.description,
                     'call_to_action': content_ad_source.content_ad.batch.call_to_action,
-                    'tracking_slug': ad_group_source.source.tracking_slug
-                }]
+                    'tracking_slug': ad_group_source.source.tracking_slug,
+                    'redirect_id': content_ad_source.content_ad.redirect_id,
+                }],
+                'extra': {}
             },
             'callback_url': callback
+        })
+
+    def test_insert_content_ad_batch_gravity(self):
+        content_ad_source = dash.models.ContentAdSource.objects.get(pk=2)
+
+        ad_group_source = dash.models.AdGroupSource.objects.get(
+            ad_group=content_ad_source.content_ad.ad_group,
+            source=content_ad_source.source
+        )
+
+        batch = dash.models.UploadBatch.objects.get(pk=1)
+
+        request = HttpRequest()
+        request.user = User.objects.create(email='user@example.com')
+
+        action = api_contentads.init_insert_content_ad_batch(
+            batch, content_ad_source.source, request, send=False)
+
+        self.assertEqual(action.payload['args']['extra'], {
+            'batch_name': batch.name,
+            'campaign_name': ad_group_source.get_external_name(),
+            'ad_group_id': ad_group_source.ad_group.id,
+            'user_email': request.user.email
         })
 
     @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
@@ -254,14 +282,28 @@ class ContentAdsApiTestCase(TestCase):
             'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
-                'content_ad_id': content_ad_source.get_source_id(),
-                'content_ad': {
+                'changes': {
                     'state': dash.constants.ContentAdSourceState.INACTIVE,
                 },
-                'extra': {
-                    'submission_status': dash.constants.ContentAdSubmissionStatus.APPROVED,
-                    'source_content_ad_id': '123456789',
-                }
+                'content_ad': {
+                    'ad_group_id': content_ad_source.content_ad.ad_group_id,
+                    'content_ad_id': content_ad_source.content_ad.id,
+                    'source_content_ad_id': content_ad_source.source_content_ad_id,
+                    'state': dash.constants.ContentAdSourceState.INACTIVE,
+                    'title': content_ad_source.content_ad.title,
+                    'url': content_ad_source.content_ad.url,
+                    'submission_status': content_ad_source.submission_status,
+                    'image_id': content_ad_source.content_ad.image_id,
+                    'image_width': content_ad_source.content_ad.image_width,
+                    'image_height': content_ad_source.content_ad.image_height,
+                    'image_hash': content_ad_source.content_ad.image_hash,
+                    'display_url': content_ad_source.content_ad.batch.display_url,
+                    'brand_name': content_ad_source.content_ad.batch.brand_name,
+                    'description': content_ad_source.content_ad.batch.description,
+                    'call_to_action': content_ad_source.content_ad.batch.call_to_action,
+                    'tracking_slug': ad_group_source.source.tracking_slug,
+                    'redirect_id': content_ad_source.content_ad.redirect_id,
+                },
             },
             'callback_url': callback
         }
@@ -340,7 +382,9 @@ class ContentAdsApiTestCase(TestCase):
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
                 'content_ad': {
-                    'id': content_ad_source.get_source_id(),
+                    'ad_group_id': content_ad_source.content_ad.ad_group_id,
+                    'content_ad_id': content_ad_source.content_ad.id,
+                    'source_content_ad_id': content_ad_source.source_content_ad_id,
                     'state': dash.constants.ContentAdSourceState.ACTIVE,
                     'title': content_ad_source.content_ad.title,
                     'url': content_ad_source.content_ad.url,
@@ -353,7 +397,8 @@ class ContentAdsApiTestCase(TestCase):
                     'brand_name': ad_group_settings.brand_name,
                     'description': ad_group_settings.description,
                     'call_to_action': ad_group_settings.call_to_action,
-                    'tracking_slug': ad_group_source.source.tracking_slug
+                    'tracking_slug': ad_group_source.source.tracking_slug,
+                    'redirect_id': content_ad_source.content_ad.redirect_id,
                 },
             },
             'callback_url': callback

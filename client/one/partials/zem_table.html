@@ -44,7 +44,7 @@
                                 </span>
                                 <span ng-switch-when="currency">
                                     <span class="non-editable-currency-field" ng-if="!isFieldEditable(row, col.field)" ng-class="{'currency-3': col.fractionSize === 3}">
-                                        <span ng-if="col.settingsField" popover-append-to-body="true" popover-trigger="mouseenter" popover-html-unsafe="{{ getSettingsFieldMessage(row) }}" popover-placement="right">
+                                        <span ng-if="col.settingsField" popover-append-to-body="true" popover-trigger="mouseenter" popover-html-unsafe="{{ getSettingsFieldMessage(row, col.field) }}" popover-placement="right">
                                             {{ (row[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
                                         </span>
                                         <span ng-if="!col.settingsField">
@@ -140,7 +140,7 @@
                                     <zem-state-selector 
                                         id="row.id"
                                         on-change="col.onChange",
-                                        is-editable="row.editable_fields && row.editable_fields.indexOf(col.field) !== -1"
+                                        is-editable="isFieldEditable(row, col.field)"
                                         value="row[col.field]"
                                         enabled-value="col.enabledValue"
                                         paused-value="col.pausedValue"

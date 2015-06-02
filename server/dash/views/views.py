@@ -445,6 +445,9 @@ class AdGroupSources(api_common.BaseApiView):
         if not default_settings.credentials:
             raise exc.MissingDataError('No default credentials set in {}.'.format(default_settings))
 
+        if models.AdGroupSource.objects.filter(source=source, ad_group=ad_group).exists():
+            raise exc.ForbiddenError('{} media source for ad group {} already exists.'.format(source.name, ad_group_id))
+
         ad_group_source = models.AdGroupSource(
             source=source,
             ad_group=ad_group,

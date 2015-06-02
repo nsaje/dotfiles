@@ -10,7 +10,7 @@ from django.contrib.auth import models as auth_models
 from django.contrib import auth
 from django.db import models, transaction
 
-import utils.string
+import utils.string_helper
 
 from dash import constants
 from utils import encryption_helpers
@@ -519,8 +519,11 @@ class SourceType(models.Model):
     def can_update_cpc(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_CPC).exists()
 
-    def can_update_daily_budget(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_DAILY_BUDGET).exists()
+    def can_update_daily_budget_manual(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_MANUAL).exists()
+
+    def can_update_daily_budget_automatic(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC).exists()
 
     def can_manage_content_ads(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_MANAGE_CONTENT_ADS).exists()
@@ -601,8 +604,11 @@ class Source(models.Model):
     def can_update_cpc(self):
         return self.source_type.can_update_cpc() and not self.maintenance and not self.deprecated
 
-    def can_update_daily_budget(self):
-        return self.source_type.can_update_daily_budget() and not self.maintenance and not self.deprecated
+    def can_update_daily_budget_manual(self):
+        return self.source_type.can_update_daily_budget_manual() and not self.maintenance and not self.deprecated
+
+    def can_update_daily_budget_automatic(self):
+        return self.source_type.can_update_daily_budget_automatic() and not self.maintenance and not self.deprecated
 
     def can_manage_content_ads(self):
         return self.source_type.can_manage_content_ads() and not self.maintenance and not self.deprecated
@@ -958,7 +964,7 @@ class AdGroupSettings(SettingsBase):
     archived = models.BooleanField(default=False)
     display_url = models.CharField(max_length=25, blank=True, default='')
     brand_name = models.CharField(max_length=25, blank=True, default='')
-    description = models.CharField(max_length=100, blank=True, default='')
+    description = models.CharField(max_length=140, blank=True, default='')
     call_to_action = models.CharField(max_length=25, blank=True, default='')
     ad_group_name = models.CharField(max_length=127, blank=True, default='')
 
@@ -1034,9 +1040,9 @@ class AdGroupSettings(SettingsBase):
         elif prop_name == 'end_date' and value is None:
             value = 'I\'ll stop it myself'
         elif prop_name == 'cpc_cc' and value is not None:
-            value = '$' + utils.string.format_decimal(value, 2, 3)
+            value = '$' + utils.string_helper.format_decimal(value, 2, 3)
         elif prop_name == 'daily_budget_cc' and value is not None:
-            value = '$' + utils.string.format_decimal(value, 2, 2)
+            value = '$' + utils.string_helper.format_decimal(value, 2, 2)
         elif prop_name == 'target_devices':
             value = ', '.join(constants.AdTargetDevice.get_text(x) for x in value)
         elif prop_name == 'target_regions':
@@ -1190,7 +1196,7 @@ class UploadBatch(models.Model):
     num_errors = models.PositiveIntegerField(null=True)
     display_url = models.CharField(max_length=25, blank=True, default='')
     brand_name = models.CharField(max_length=25, blank=True, default='')
-    description = models.CharField(max_length=100, blank=True, default='')
+    description = models.CharField(max_length=140, blank=True, default='')
     call_to_action = models.CharField(max_length=25, blank=True, default='')
 
     class Meta:
@@ -1209,6 +1215,8 @@ class ContentAd(models.Model):
     image_width = models.PositiveIntegerField(null=True)
     image_height = models.PositiveIntegerField(null=True)
     image_hash = models.CharField(max_length=128, null=True)
+
+    redirect_id = models.CharField(max_length=128, null=True)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
