@@ -1,4 +1,3 @@
-/*globals constants*/
 "use strict";
 
 oneApp.directive('zemSimpleMenu', function () {
