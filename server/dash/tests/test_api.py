@@ -203,6 +203,68 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.assertEqual(1, len(ret))
         self.assertEqual(ret[0].action, actionlog.constants.Action.UPDATE_CONTENT_AD)
 
+    def test_iab_category_manual(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.source_type.available_actions.add(
+            models.SourceAction.objects.get(
+                action=constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL
+            )
+        )
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.iab_category = 'IAB1'
+
+        manual_actions = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action_type=actionlog.constants.ActionType.MANUAL
+        )
+
+        self.assertFalse(manual_actions.exists())
+
+        ret = api.order_ad_group_settings_update(
+            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
+
+        self.assertEqual([], ret)
+        self.assertTrue(manual_actions.exists())
+
+    def test_iab_category_automatic(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.source_type.available_actions.add(
+            models.SourceAction.objects.get(
+                action=constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY_AUTOMATIC
+            )
+        )
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.iab_category = 'IAB1'
+
+        ret = api.order_ad_group_settings_update(
+            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
+
+        self.assertEqual(2, len(ret))
+        self.assertEqual(ret[0].action, actionlog.constants.Action.SET_CAMPAIGN_STATE)
+        self.assertEqual(ret[1].action, actionlog.constants.Action.SET_CAMPAIGN_STATE)
+
+    def test_iab_category_none(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.iab_category = 'IAB1'
+
+        manual_actions = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action_type=actionlog.constants.ActionType.MANUAL
+        )
+
+        self.assertFalse(manual_actions.exists())
+
+        ret = api.order_ad_group_settings_update(
+            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
+
+        self.assertEqual([], ret)
+        self.assertFalse(manual_actions.exists())
 
 class UpdateAdGroupSourceState(TestCase):
     fixtures = ['test_api.yaml']

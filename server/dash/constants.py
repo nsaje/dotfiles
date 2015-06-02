@@ -156,9 +156,10 @@ class SourceAction(ConstantBase):
     CAN_MODIFY_TARGETING = 8
     CAN_MODIFY_TRACKING_CODES = 9
     CAN_MODIFY_AD_GROUP_NAME = 10
-    CAN_MODIFY_AD_GROUP_IAB_CATEGORY = 11
+    CAN_MODIFY_AD_GROUP_IAB_CATEGORY_AUTOMATIC = 11
     UPDATE_TRACKING_CODES_ON_CONTENT_ADS = 12
     CAN_UPDATE_DAILY_BUDGET_MANUAL = 13
+    CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL = 14
 
     _VALUES = {
         CAN_UPDATE_STATE: 'Can update state',
@@ -171,9 +172,10 @@ class SourceAction(ConstantBase):
         CAN_MODIFY_TARGETING: 'Can modify device and geo targeting',
         CAN_MODIFY_TRACKING_CODES: 'Can modify tracking codes',
         CAN_MODIFY_AD_GROUP_NAME: 'Can modify adgroup name',
-        CAN_MODIFY_AD_GROUP_IAB_CATEGORY: 'Can modify ad group IAB category',
+        CAN_MODIFY_AD_GROUP_IAB_CATEGORY_AUTOMATIC: 'Can modify ad group IAB category automatically',
         UPDATE_TRACKING_CODES_ON_CONTENT_ADS: 'Update tracking codes on content ads',
         CAN_UPDATE_DAILY_BUDGET_MANUAL: 'Can update daily budget manually',
+        CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL: 'Can modify ad group IAB category manually',
     }
 
 
