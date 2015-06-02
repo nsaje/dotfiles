@@ -7,22 +7,63 @@ oneApp.directive('zemSimpleMenu', function () {
         scope: {
             selectAll: '=',
             selectionOptions: '=',
-			select2Config: '='
+			select2Config: '=',
+			selection: '='
         },
         templateUrl: '/partials/zem_simple_menu.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
-			$scope.customFormat = function (state, container) {
-				console.log(state);
-				var fontColor = 'Purple';
-				return  "<span style='color:" + fontColor + "'>" + state.text + "</span>";
+			$scope.checkboxHover = false;
+
+			$('#simple-menu').on('select2-open', function(e){
+				console.log(e);
+			}); 
+
+			$('#simple-menu').on('select2-opening', function(e){
+				console.log(e);
+			}); 
+
+			$('#simple-menu .select2-container').on('mouseover mouseleave', function (evt) {
+				console.log('test');
+		    });
+
+			$scope.customFormat = function (state) {
+				return state.text;
+			};
+
+			$scope.$watch('selection', function (newOption, oldOption) {
+			    if (oldOption == newOption) return;
+			    newOption.callback(newOption.name)
+			}, true);
+
+			$scope.changeCallback = function () {
+				console.log($scope.selection);
+			};
+
+			$scope.checkboxSelectionCallback = function(ev) {
+				console.log(ev);
+				alert("checkbox");
+			};
+
+			$scope.checkboxHoverIn = function() {
+				$scope.checkboxHover = true;
+				console.log($scope.checkboxHover);
+			};
+
+			$scope.checkboxHoverOut = function() {
+				$scope.checkboxHover = false;
+				console.log($scope.checkboxHover);
 			};
 
 			$scope.select2Config = {
 				minimumResultsForSearch: -1, 
 				dropdownCssClass: 'show-rows',
+				placeholder: "<input type=\"checkbox\" data-ng-change=\"\" data-ng-model=\"selectAllCheckbox\" ng-mouseover=\"checkboxHoverIn()\" ng-mouseleave=\"checkboxHoverOut()\"></input>",
 				formatResult: $scope.customFormat,
-				formatSelection: $scope.customFormat
+				formatSelection: $scope.customFormat,
+				escapeMarkup: function(m) { return m; },
+                dropdownCssClass: 'select2-simple-menu-dropdown'
 			};
+
         }]
     }
 });
