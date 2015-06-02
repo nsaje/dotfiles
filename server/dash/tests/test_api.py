@@ -3,7 +3,7 @@ import datetime
 import mock
 
 from django.conf import settings
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.http.request import HttpRequest
 
 import actionlog.constants
@@ -101,6 +101,10 @@ class UpdateContentAdSourceState(TestCase):
         self.assertEqual(content_ad_source.submission_status, data['submission_status'])
 
 
+@override_settings(
+    R1_REDIRECTS_ADGROUP_API_URL='https://r1.example.com/api/redirects/',
+    R1_API_SIGN_KEY='AAAAAAAAAAAAAAAAAAAAAAAA'
+)
 class UpdateAdGroupSourceSettings(TestCase):
     fixtures = ['test_api.yaml']
 
@@ -108,7 +112,8 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.props = []
         self.values = []
 
-    def test_ad_group_name_change(self):
+    @mock.patch('dash.api.redirector_helper.insert_adgroup')
+    def test_ad_group_name_change(self, insert_adgroup_mock):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.add(
             models.SourceAction.objects.get(
@@ -128,8 +133,10 @@ class UpdateAdGroupSourceSettings(TestCase):
 
         self.assertEqual(ret[1].action, actionlog.constants.Action.SET_CAMPAIGN_STATE)
         self.assertTrue('name' in ret[1].payload['args']['conf'])
+        self.assertFalse(insert_adgroup_mock.called)
 
-    def test_basic_manual_actions(self):
+    @mock.patch('dash.api.redirector_helper.insert_adgroup')
+    def test_basic_manual_actions(self, insert_adgroup_mock):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.maintenance = True
         ad_group_source.save()
@@ -140,9 +147,11 @@ class UpdateAdGroupSourceSettings(TestCase):
 
         ret = api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
         self.assertEqual([], ret)
+        self.assertFalse(insert_adgroup_mock.called)
 
+    @mock.patch('dash.api.redirector_helper.insert_adgroup')
     @mock.patch('dash.api.actionlog.api')
-    def test_tracking_code_manual_action(self, mock_api):
+    def test_tracking_code_manual_action(self, mock_api, insert_adgroup_mock):
         ad_group_source = models.AdGroupSource.objects.get(id=16)
 
         adgs1 = models.AdGroupSettings()
@@ -158,7 +167,12 @@ class UpdateAdGroupSourceSettings(TestCase):
         mock_api.init_set_ad_group_manual_property.assert_called_with(
             mock.ANY, None, 'tracking_code', expected_value)
 
-    def test_tracking_codes_automatic(self):
+        self.assertTrue(insert_adgroup_mock.called)
+        self.assertEqual(insert_adgroup_mock.call_args[0][0], ad_group_source.ad_group_id)
+        self.assertEqual(insert_adgroup_mock.call_args[0][1], adgs2.tracking_code)
+
+    @mock.patch('dash.api.redirector_helper.insert_adgroup')
+    def test_tracking_codes_automatic(self, insert_adgroup_mock):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.add(
             models.SourceAction.objects.get(
@@ -175,14 +189,15 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.assertEqual(ret[0].action, actionlog.constants.Action.SET_CAMPAIGN_STATE)
         self.assertEqual(ret[1].action, actionlog.constants.Action.SET_CAMPAIGN_STATE)
 
-    def test_tracking_codes_automatic_per_content_ad(self):
+        self.assertTrue(insert_adgroup_mock.called)
+        self.assertEqual(insert_adgroup_mock.call_args[0][0], ad_group_source.ad_group_id)
+        self.assertEqual(insert_adgroup_mock.call_args[0][1], adgs2.tracking_code)
+
+    @mock.patch('dash.api.redirector_helper.insert_adgroup')
+    def test_tracking_codes_automatic_per_content_ad(self, insert_adgroup_mock):
         ad_group_source1 = models.AdGroupSource.objects.get(id=1)
         ad_group_source1.can_manage_content_ads = True
         ad_group_source1.save()
-
-        ad_group_source2 = models.AdGroupSource.objects.get(id=1)
-        ad_group_source2.can_manage_content_ads = True
-        ad_group_source2.save()
 
         ad_group_source1.source.source_type.available_actions.add(
             models.SourceAction.objects.get(
@@ -202,6 +217,10 @@ class UpdateAdGroupSourceSettings(TestCase):
         ret = api.order_ad_group_settings_update(ad_group_source1.ad_group, adgs1, adgs2, None)
         self.assertEqual(1, len(ret))
         self.assertEqual(ret[0].action, actionlog.constants.Action.UPDATE_CONTENT_AD)
+
+        self.assertTrue(insert_adgroup_mock.called)
+        self.assertEqual(insert_adgroup_mock.call_args[0][0], ad_group_source1.ad_group_id)
+        self.assertEqual(insert_adgroup_mock.call_args[0][1], adgs2.tracking_code)
 
 
 class UpdateAdGroupSourceState(TestCase):
