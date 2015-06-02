@@ -14,20 +14,6 @@ oneApp.directive('zemSimpleMenu', function () {
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
 			$scope.checkboxHover = false;
 
-			/*
-			$('#simple-menu').on('select2-open', function(e){
-				console.log(e);
-			}); 
-
-			$('#simple-menu').on('select2-opening', function(e){
-				console.log(e);
-			}); 
-
-			$('#simple-menu .select2-container').on('mouseover mouseleave', function (evt) {
-				console.log('test');
-		    });
-		    */
-
 			$scope.customFormat = function (state) {
 				return state.text;
 			};
