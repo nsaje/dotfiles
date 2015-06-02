@@ -10,7 +10,7 @@
                         	<span ng-if="col.hasPermission && col.name == 'zem-simple-menu'">
 								<!-- Causes a disaster on UI -->
 								<!-- <zem-internal-feature ng-if="col.hasPermission"></zem-internal-feature> -->
-								<zem-simple-menu zem-custom-selection-options="col.selectionOptions" />
+								<zem-simple-menu custom-selection-options="col.selectionOptions" />
 							</span>
                         	<span ng-if="col.name != 'zem-simple-menu'">
 								<zem-internal-feature ng-if="col.internal"></zem-internal-feature>

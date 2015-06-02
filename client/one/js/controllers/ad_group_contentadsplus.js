@@ -109,9 +109,9 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 			name: 'This page',
 			type: 'link',
 			callback: $scope.selectThisPageCallback
-		}, {
+		}/*, {
 			type: 'separator'
-		}
+		}*/
 	];
 
     $scope.selectionOptions = $scope.selectionOptionsStatic.concat([{

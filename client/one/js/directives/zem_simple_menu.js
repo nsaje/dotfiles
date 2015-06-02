@@ -4,8 +4,7 @@ oneApp.directive('zemSimpleMenu', function () {
     return {
         restrict: 'E',
         scope: {
-            selectAll: '=',
-            customSelectionOptions: '=zemCustomSelectionOptions',
+            customSelectionOptions: '=',
 			select2Config: '=',
 			selectedOption: '='
         },
