@@ -42,10 +42,12 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
 	$scope.logSelection = function () {
+		/*
 		// selection triple - all, a batch, or specific content ad's can be selected
 		console.log($scope.selectedAll);
 		console.log($scope.selectedBatches);
 		console.log($scope.selectedContentAdsStatus);
+		*/
 	};
 
     $scope.selectAllCallback = function (ev) {
@@ -72,18 +74,17 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 		$scope.logSelection();
 	};
 
-    $scope.selectBatchCallback = function (ev, name) {
+    $scope.selectBatchCallback = function (name) {
 		// selection triple - all, a batch, or specific content ad's can be selected
 		$scope.selectedAll = false;
 		$scope.selectedBatches = [name];
 		$scope.selectedContentAdsStatus = {};
-
+		
 		$scope.updateContentAdSelection();
 		$scope.logSelection();
 	};
 
 	$scope.updateContentAdSelection = function () {
-
 		$scope.rows.forEach(function (row) {
 			if ($scope.selectedContentAdsStatus[row.id] !== undefined) {
 				row.ad_selected = $scope.selectedContentAdsStatus[row.id];

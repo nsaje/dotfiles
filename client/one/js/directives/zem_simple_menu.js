@@ -6,7 +6,7 @@ oneApp.directive('zemSimpleMenu', function () {
         restrict: 'E',
         scope: {
             selectAll: '=',
-            customSelectionOptions: '=',
+            customSelectionOptions: '=zemCustomSelectionOptions',
 			select2Config: '=',
 			selection: '='
         },
@@ -23,22 +23,12 @@ oneApp.directive('zemSimpleMenu', function () {
 			    newOption.callback(newOption.name)
 			}, true);
 
-			$scope.changeCallback = function () {
-				console.log($scope.selection);
-			};
-
-			$scope.checkboxSelectionCallback = function(ev) {
-				console.log(ev);
-			};
-
 			$scope.checkboxHoverIn = function() {
 				$scope.checkboxHover = true;
-				console.log($scope.checkboxHover);
 			};
 
 			$scope.checkboxHoverOut = function() {
 				$scope.checkboxHover = false;
-				console.log($scope.checkboxHover);
 			};
 
 			$scope.select2Config = {
