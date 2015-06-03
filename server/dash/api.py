@@ -391,7 +391,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                field_name in ('target_devices', 'target_regions') and source.can_modify_targeting() or\
                (field_name == 'tracking_code' and source.can_modify_tracking_codes() and not
                 source.update_tracking_codes_on_content_ads()) or\
-               field_name == 'iab_category' and source.can_modify_ad_group_iab_category() or\
+               field_name == 'iab_category' and source.can_modify_ad_group_iab_category_automatic() or\
                field_name == 'ad_group_name' and source.can_modify_ad_group_name():
 
                 new_field_name = field_name
@@ -436,6 +436,9 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                         field_name,
                         source.id
                     )
+                    continue
+
+                if field_name == 'iab_category' and not source.can_modify_ad_group_iab_category_manual():
                     continue
 
                 if field_name == 'tracking_code':
