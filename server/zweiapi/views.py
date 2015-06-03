@@ -18,6 +18,7 @@ import actionlog.sync
 import actionlog.zwei_actions
 
 import dash.api
+import dash.models
 import reports.update
 
 from utils import request_signer
@@ -48,26 +49,26 @@ def _update_last_successful_sync_dt(action, request):
     if not action.order or action.state == actionlog.constants.ActionState.FAILED:
         return
 
-    status_sync_dt = None
-    report_sync_dt = None
-
+    ad_group_source = action.ad_group_source
     if (action.order.order_type == actionlog.constants.ActionLogOrderType.FETCH_REPORTS and
         all(a.state == actionlog.constants.ActionState.SUCCESS
             for a in actionlog.models.ActionLog.objects.filter(order=action.order))):
-        report_sync_dt = action.order.created_dt
-        status_sync_dt = actionlog.sync.AdGroupSourceSync(
-            action.ad_group_source).get_latest_status_sync()
+        if ad_group_source.last_successful_reports_sync_dt != action.order.created_dt:
+            ad_group_source.last_successful_reports_sync_dt = action.order.created_dt
+            ad_group_source.save(update_fields=['last_successful_reports_sync_dt'])
 
     elif action.order.order_type == actionlog.constants.ActionLogOrderType.FETCH_STATUS:
-        report_sync_dt = actionlog.sync.AdGroupSourceSync(
-            action.ad_group_source).get_latest_report_sync()
-        status_sync_dt = action.order.created_dt
+        ad_group_source.last_successful_status_sync_dt = action.order.created_dt
+        ad_group_source.save(update_fields=['last_successful_status_sync_dt'])
 
-    if status_sync_dt is None or report_sync_dt is None:
+    ad_group_source = dash.models.AdGroupSource.objects.get(id=ad_group_source.id)
+    if ad_group_source.last_successful_status_sync_dt is None or\
+       ad_group_source.last_successful_repors_sync_dt is None:
         return
 
-    action.ad_group_source.last_successful_sync_dt = min(status_sync_dt, report_sync_dt)
-    action.ad_group_source.save()
+    ad_group_source.last_successful_sync_dt = min(ad_group_source.last_successful_status_sync_dt,
+                                                  ad_group_source.last_successful_repors_sync_dt)
+    ad_group_source.save()
 
 
 def _get_error_message(data):

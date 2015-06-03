@@ -854,6 +854,8 @@ class AdGroupSource(models.Model):
     source_campaign_key = jsonfield.JSONField(blank=True, default={})
 
     last_successful_sync_dt = models.DateTimeField(blank=True, null=True)
+    last_successful_reports_sync_dt = models.DateTimeField(blank=True, null=True)
+    last_successful_status_sync_dt = models.DateTimeField(blank=True, null=True)
     can_manage_content_ads = models.BooleanField(null=False, blank=False, default=False)
 
     source_content_ad_id = models.CharField(max_length=100, null=True, blank=True)
