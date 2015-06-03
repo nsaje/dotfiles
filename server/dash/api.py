@@ -10,6 +10,7 @@ import actionlog.api
 import actionlog.api_contentads
 import actionlog.models
 import actionlog.constants
+from utils import redirector_helper
 
 from dash import exc
 from dash import models
@@ -365,6 +366,9 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
     for field_name, field_value in changes.iteritems():
         if field_name in BLOCKED_AD_GROUP_SETTINGS:
             continue
+
+        if field_name == 'tracking_code':
+            redirector_helper.insert_adgroup(ad_group.id, new_settings.get_tracking_codes())
 
         ad_group_sources = ad_group.adgroupsource_set.all()
         for ad_group_source in ad_group_sources:
