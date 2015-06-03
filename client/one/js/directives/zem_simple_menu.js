@@ -6,7 +6,8 @@ oneApp.directive('zemSimpleMenu', function () {
         scope: {
             customSelectionOptions: '=',
 			select2Config: '=',
-			selectedOption: '='
+			selectedOption: '=',
+			dropdown: '='
         },
         templateUrl: '/partials/zem_simple_menu.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
@@ -14,6 +15,21 @@ oneApp.directive('zemSimpleMenu', function () {
 
 			$scope.customFormat = function (state) {
 				return state.text;
+			};
+
+			$scope.clickCheckbox = function (ev) {
+			}
+
+			$scope.toggleDropdown = function (ev) {
+				if (ev.target === null) { return; }
+				if (ev.target.id === 'zem-all-checkbox') {
+					console.log('checkbox');
+					ev.stopPropagation();
+					return;
+				} else {
+					console.log($element);
+					console.log($("#zem-simple-dropdown-trigger"));
+				}
 			};
 
 			$scope.$watch('selectedOption', function (newOption, oldOption) {
@@ -39,5 +55,5 @@ oneApp.directive('zemSimpleMenu', function () {
 			};
 
         }]
-    }
+    };
 });

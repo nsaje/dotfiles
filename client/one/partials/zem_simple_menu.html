@@ -1,7 +1,32 @@
-<select ui-select2="select2Config" 
+<!--<select 
 	ng-change="changeCallback()" 
-	class="show-rows" 
+	class="form-control" 
 	ng-model="selectedOption" 
 	ng-options="option.name for option in customSelectionOptions">
-	<option value="" />
-</select>
+	<option value="">asdfasdf</option>
+	</select> -->
+
+<div class="dropdown">
+	<!-- class="input-group-btn select select2-container"> -->
+	<a id="zem-simple-dropdown-trigger" class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#" ng-click="toggleDropdown($event)"><!-- data-toggle="dropdown" dropdown-toggle> -->
+		<input 
+			id="zem-all-checkbox"
+			type="checkbox"
+			data-ng-change="" 
+			data-ng-model="selectAllCheckbox" 
+ 			ng-click="clickCheckbox($event)"
+			ng-mouseover="checkboxHoverIn()" 
+			ng-mouseleave="checkboxHoverOut()">
+		</input>
+		<span class="caret"></span>
+	</a>
+    <ul class="dropdown-menu" role="menu">
+	<li role="presentation" ng-repeat="option in customSelectionOptions">
+		<a role="menuitem" tabindex="-1" href="#">{{ option.name }}</a>
+	</li>
+    </ul>
+</div>
+
+<!--
+	ui-select2="select2Config" 
+-->
