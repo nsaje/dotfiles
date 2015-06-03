@@ -36,5 +36,5 @@ oneApp.directive('zemStateSelector', function () {
 
             setActive();
         }]
-    }
+    };
 });

@@ -18,7 +18,7 @@ oneApp.directive('zemSimpleMenu', function () {
 
 			$scope.$watch('selectedOption', function (newOption, oldOption) {
 			    if (oldOption == newOption) return;
-			    newOption.callback(newOption.name)
+			    newOption.callback(newOption.name);
 			}, true);
 
 			$scope.checkboxHoverIn = function() {
