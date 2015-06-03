@@ -129,7 +129,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 			shown: $scope.hasPermission('zemauth.content_ads_bulk_actions'),
 			hasPermission: $scope.hasPermission('zemauth.content_ads_bulk_actions'),
 			checked: true,
-			totalRow: true,
+			totalRow: false,
 			unselectable: true,
 			order: false,
 			selectCallback: $scope.selectedAdsChanged,
