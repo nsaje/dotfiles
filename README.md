@@ -78,6 +78,11 @@ npm install
 bower install --dev
 ```
 
+In case you are getting *protractor* related errors when deploying client you will need to install it as root.
+```bash
+npm install -g protractor
+```
+
 Now you have grunt and all the development dependencies installed so you can run grunt in order to build it:
 ```bash
 grunt
