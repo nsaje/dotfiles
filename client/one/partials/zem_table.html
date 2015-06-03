@@ -7,7 +7,7 @@
                 <thead>
                     <tr>
                         <th ng-if="col.shown" ng-class="{'text-right': isNumberColumnType(col.type), 'arrow': col.order, ordered: order === '-' + (col.orderField || col.field), 'ordered-reverse': order === (col.orderField || col.field)}" class="{{ col.extraThCss }}" ng-repeat="col in columns | filter: {checked: true}">
-                        	<span ng-if="col.hasPermission && col.name == 'zem-simple-menu'">
+                        	<span ng-show="col.hasPermission && col.name == 'zem-simple-menu'">
 								<!-- Causes a disaster on UI -->
 								<!-- <zem-internal-feature ng-if="col.hasPermission"></zem-internal-feature> -->
 								<zem-simple-menu custom-selection-options="col.selectionOptions" />

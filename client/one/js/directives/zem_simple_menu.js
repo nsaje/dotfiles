@@ -5,54 +5,29 @@ oneApp.directive('zemSimpleMenu', function () {
         restrict: 'E',
         scope: {
             customSelectionOptions: '=',
-			select2Config: '=',
 			selectedOption: '=',
-			dropdown: '='
+			selectedAllCheckbox: '='
         },
         templateUrl: '/partials/zem_simple_menu.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
-			$scope.checkboxHover = false;
-
-			$scope.customFormat = function (state) {
-				return state.text;
-			};
-
-			$scope.clickCheckbox = function (ev) {
-			}
-
 			$scope.toggleDropdown = function (ev) {
 				if (ev.target === null) { return; }
 				if (ev.target.id === 'zem-all-checkbox') {
-					console.log('checkbox');
+					// prevent events from leaving the checkbox and suppressing checkbox switch
+					// very important switch - breaks the entire control if commented
 					ev.stopPropagation();
 					return;
-				} else {
-					console.log($element);
-					console.log($("#zem-simple-dropdown-trigger"));
 				}
 			};
 
-			$scope.$watch('selectedOption', function (newOption, oldOption) {
-			    if (oldOption == newOption) return;
-			    newOption.callback(newOption.name);
+			$scope.handleSelection = function(option) {
+			    option.callback(option.name);
+			};
+
+			$scope.$watch('customSelectionOptions', function (newOption, oldOption) {
+				console.log('Sprememba');
+				console.log(newOption);
 			}, true);
-
-			$scope.checkboxHoverIn = function() {
-				$scope.checkboxHover = true;
-			};
-
-			$scope.checkboxHoverOut = function() {
-				$scope.checkboxHover = false;
-			};
-
-			$scope.select2Config = {
-				minimumResultsForSearch: -1, 
-				placeholder: "<input type=\"checkbox\" data-ng-change=\"\" data-ng-model=\"selectAllCheckbox\" ng-mouseover=\"checkboxHoverIn()\" ng-mouseleave=\"checkboxHoverOut()\"></input>",
-				formatResult: $scope.customFormat,
-				formatSelection: $scope.customFormat,
-				escapeMarkup: function(m) { return m; },
-                dropdownCssClass: 'select2-simple-menu-dropdown'
-			};
 
         }]
     };

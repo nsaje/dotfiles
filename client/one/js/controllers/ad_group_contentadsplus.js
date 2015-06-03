@@ -109,15 +109,15 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 			name: 'This page',
 			type: 'link',
 			callback: $scope.selectThisPageCallback
-		}/*, {
+		}, {
 			type: 'separator'
-		}*/
+		}
 	];
 
     $scope.selectionOptions = $scope.selectionOptionsStatic.concat([{
 			title: 'Upload batch',
 			name: '',
-			type: 'link-list-item-first',
+			type: 'link-list-item',
 		}
     ]);
 
@@ -602,19 +602,17 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 				entries = [];
 
  	        dataEntry.forEach(function (entry) {
+ 	        	entry['prefix'] = 'Upload batch:';
  	        	entry['callback'] = $scope.selectBatchCallback;
 				entry['type'] = 'link-list-item';
  	        	entries.push(entry);
 			});
 
-			if (entries.length > 0) {
-				entries[0]['type'] = 'link-list-item-first';
-			}
-
 			var i = 0;
 			$scope.columns.forEach(function(col) {
 				if (col.name == 'zem-simple-menu') {
 					$scope.columns[i].selectionOptions = $scope.selectionOptionsStatic.concat(entries);
+					console.log( $scope.selectionOptionsStatic.concat(entries));
 				}
 				i += 1;
 			});
