@@ -42,12 +42,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
 	$scope.logSelection = function () {
-		/*
 		// selection triple - all, a batch, or specific content ad's can be selected
 		console.log($scope.selectedAll);
 		console.log($scope.selectedBatches);
 		console.log($scope.selectedContentAdsStatus);
-		*/
 	};
 
     $scope.selectAllCallback = function (ev) {
@@ -97,15 +95,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 				row.ad_selected = false;
 			}
 		});
-
 	};
 
 	$scope.selectionOptionsStatic = [
 		{
-			name: 'All',
-			type: 'link',
-			callback: $scope.selectAllCallback
-		}, {
 			name: 'This page',
 			type: 'link',
 			callback: $scope.selectThisPageCallback
@@ -542,6 +535,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 $scope.isSyncInProgress = data.is_sync_in_progress;
 
                 pollTableUpdates();
+        		$scope.updateContentAdSelection();
             },
             function (data) {
                 // error
@@ -612,7 +606,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 			$scope.columns.forEach(function(col) {
 				if (col.name == 'zem-simple-menu') {
 					$scope.columns[i].selectionOptions = $scope.selectionOptionsStatic.concat(entries);
-					console.log( $scope.selectionOptionsStatic.concat(entries));
 				}
 				i += 1;
 			});
