@@ -244,8 +244,9 @@ class UpdateAdGroupSourceSettings(TestCase):
             ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
 
         self.assertEqual(2, len(ret))
-        self.assertEqual(ret[0].action, actionlog.constants.Action.SET_CAMPAIGN_STATE)
-        self.assertEqual(ret[1].action, actionlog.constants.Action.SET_CAMPAIGN_STATE)
+        for r in ret:
+            self.assertEqual(r.action, actionlog.constants.Action.SET_CAMPAIGN_STATE)
+            self.assertEqual(r.action_type, actionlog.constants.ActionType.AUTOMATIC)
 
     def test_iab_category_none(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
