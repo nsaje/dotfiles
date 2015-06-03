@@ -295,17 +295,21 @@ class TestUpdateLastSuccessfulSync(TestCase):
         self.request.user = zemauth.models.User(id=1)
 
     def test_update_last_successful_sync_fetch_reports_successful_order(self):
-        action = actionlog.models.ActionLog.objects.get(pk=1)
+        action1 = actionlog.models.ActionLog.objects.get(pk=1)
+        action2 = actionlog.models.ActionLog.objects.get(pk=5)
 
-        zweiapi.views._update_last_successful_sync_dt(action, self.request)
+        zweiapi.views._update_last_successful_sync_dt(action1, self.request)
+        zweiapi.views._update_last_successful_sync_dt(action2, self.request)
 
         ad_group_source = dash.models.AdGroupSource.objects.get(pk=1)
         self.assertEqual(ad_group_source.last_successful_sync_dt.isoformat(), '2014-07-03T10:00:00')
 
     def test_update_last_successful_sync_fetch_status_successful_order(self):
-        action = actionlog.models.ActionLog.objects.get(pk=5)
+        action1 = actionlog.models.ActionLog.objects.get(pk=1)
+        action2 = actionlog.models.ActionLog.objects.get(pk=5)
 
-        zweiapi.views._update_last_successful_sync_dt(action, self.request)
+        zweiapi.views._update_last_successful_sync_dt(action2, self.request)
+        zweiapi.views._update_last_successful_sync_dt(action1, self.request)
 
         ad_group_source = dash.models.AdGroupSource.objects.get(pk=1)
         self.assertEqual(ad_group_source.last_successful_sync_dt.isoformat(), '2014-07-03T10:00:00')
@@ -317,14 +321,6 @@ class TestUpdateLastSuccessfulSync(TestCase):
 
         ad_group_source = dash.models.AdGroupSource.objects.get(pk=1)
         self.assertEqual(ad_group_source.last_successful_sync_dt.isoformat(), '2014-07-03T06:00:00')
-
-    def test_update_last_successful_sync_fetch_status_waiting_action_in_order(self):
-        action = actionlog.models.ActionLog.objects.get(pk=6)
-
-        zweiapi.views._update_last_successful_sync_dt(action, self.request)
-
-        ad_group_source = dash.models.AdGroupSource.objects.get(pk=1)
-        self.assertEqual(ad_group_source.last_successful_sync_dt.isoformat(), '2014-07-03T10:00:00')
 
 
 class FetchReportsTestCase(TestCase):

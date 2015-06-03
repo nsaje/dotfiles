@@ -63,11 +63,11 @@ def _update_last_successful_sync_dt(action, request):
 
     ad_group_source = dash.models.AdGroupSource.objects.get(id=ad_group_source.id)
     if ad_group_source.last_successful_status_sync_dt is None or\
-       ad_group_source.last_successful_repors_sync_dt is None:
+       ad_group_source.last_successful_reports_sync_dt is None:
         return
 
     ad_group_source.last_successful_sync_dt = min(ad_group_source.last_successful_status_sync_dt,
-                                                  ad_group_source.last_successful_repors_sync_dt)
+                                                  ad_group_source.last_successful_reports_sync_dt)
     ad_group_source.save()
 
 
