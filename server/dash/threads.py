@@ -47,7 +47,7 @@ class ProcessUploadThread(Thread):
             with transaction.atomic():
                 num_errors = 0
 
-                content_ad_sources = []
+                all_content_ad_sources = []
                 for row in self.content_ads_data:
                     data, errors = self._clean_row(row)
 
@@ -56,7 +56,7 @@ class ProcessUploadThread(Thread):
                         errors = self._create_redirect_id(content_ad)
 
                         if not errors:
-                            content_ad_sources.extend(content_ad_sources)
+                            all_content_ad_sources.extend(content_ad_sources)
 
                     if errors:
                         row['errors'] = ', '.join(errors)
@@ -67,7 +67,7 @@ class ProcessUploadThread(Thread):
                     # raise exception to rollback transaction
                     raise UploadFailedException()
 
-                actions = api.submit_content_ads(content_ad_sources, self.request)
+                actions = api.submit_content_ads(all_content_ad_sources, self.request)
 
                 self.batch.status = constants.UploadBatchStatus.DONE
                 self.batch.save()
