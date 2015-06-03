@@ -159,7 +159,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             unselectable: true,
             help: 'A setting for enabling and pausing content ads.',
             onChange: function (sourceId, state) {
-                api.adGroupContentAdState.save($state.params.id, [sourceId], state).then(
+                api.adGroupContentAdState.save($state.params.id, [sourceId], [], false, null, state).then(
                     function () {
                         pollTableUpdates();
                     }
