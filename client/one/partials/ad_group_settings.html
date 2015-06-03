@@ -6,7 +6,12 @@
 
     <form id="form-ad-group-settings" class="form-horizontal">
         <div class="form-group">
-            <div class="col-xs-4">
+            <label for="campaign-state-switch" class="col-xs-2 control-label">
+                Ad Group Status
+                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="This is the current state of the Ad Group. If you enable the Ad Group you must then go enable preferred Media Sources too.
+                                                                                      If you pause it, all Media Sources get paused." placement="bottom"></zem-help-popover>
+            </label>
+            <div id="campaign-state-switch" class="col-xs-4">
                 <div class="btn-group campaign-state-switch">
                     <label class="btn btn-success" ng-model="settings.state" ng-repeat="state in options.adGroupSettingsStates" btn-radio="state.value">{{ state.name }}</label>
                 </div>
