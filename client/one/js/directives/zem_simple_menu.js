@@ -1,5 +1,4 @@
-// strict disabled since tests didn't pass on CircleCI (for no reason)
-// "use strict";
+"use strict";
 
 oneApp.directive('zemSimpleMenu', function () {
     return {
