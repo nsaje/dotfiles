@@ -8,14 +8,15 @@ from django.db import transaction
 from django.forms import ValidationError
 from django.core import validators
 
+import actionlog.zwei_actions
+from utils import s3helpers
+from utils import redirector_helper
+
 from dash import api
 from dash import image_helper
 from dash import models
 from dash import constants
 
-import actionlog.zwei_actions
-
-from utils import s3helpers
 
 logger = logging.getLogger(__name__)
 
@@ -50,12 +51,17 @@ class ProcessUploadThread(Thread):
                 for row in self.content_ads_data:
                     data, errors = self._clean_row(row)
 
+                    if not errors:
+                        content_ad, content_ad_sources = self._create_objects(data, ad_group_sources)
+                        errors = self._create_redirect_id(content_ad)
+
+                        if not errors:
+                            content_ad_sources.extend(content_ad_sources)
+
                     if errors:
                         row['errors'] = ', '.join(errors)
                         num_errors += len(errors)
                         continue
-
-                    content_ad_sources.extend(self._create_objects(data, ad_group_sources))
 
                 if num_errors > 0:
                     # raise exception to rollback transaction
@@ -78,6 +84,18 @@ class ProcessUploadThread(Thread):
             return
 
         actionlog.zwei_actions.send_multiple(actions)
+
+    def _create_redirect_id(self, content_ad):
+        try:
+            content_ad.redirect_id = redirector_helper.insert_redirect(
+                content_ad.url,
+                content_ad.pk,
+                content_ad.ad_group_id,
+            )
+            content_ad.save()
+        except Exception:
+            logger.exception('Exception in create_redirect_id')
+            return ['Internal server error while processing request']
 
     def _create_objects(self, data, ad_group_sources):
         content_ad = models.ContentAd.objects.create(
@@ -102,7 +120,7 @@ class ProcessUploadThread(Thread):
                 )
             )
 
-        return content_ad_sources
+        return content_ad, content_ad_sources
 
     def _save_error_report(self):
         string = StringIO.StringIO()
@@ -175,8 +193,7 @@ class ProcessUploadThread(Thread):
 
         try:
             if process_image:
-                image_id, width, height, image_hash = image_helper.process_image(
-                    image_url, crop_areas)
+                image_id, width, height, image_hash = image_helper.process_image(image_url, crop_areas)
         except image_helper.ImageProcessingException:
             errors.append('Image could not be processed.')
 

@@ -188,8 +188,9 @@ class AdGroupAgencyTest(TestCase):
             'success': True
         })
 
+    @patch('dash.api.redirector_helper.insert_adgroup')
     @patch('dash.views.agency.actionlog_api.is_waiting_for_set_actions')
-    def test_put(self, mock_is_waiting):
+    def test_put(self, mock_is_waiting, mock_insert_redirector_adgroup):
         mock_is_waiting.return_value = True
 
         ad_group_id = 1
@@ -217,6 +218,10 @@ class AdGroupAgencyTest(TestCase):
             )
 
         mock_is_waiting.assert_called_once(ad_group)
+
+        self.assertTrue(mock_insert_redirector_adgroup.called)
+        self.assertEqual(mock_insert_redirector_adgroup.call_args[0][0], ad_group_id)
+        self.assertEqual(mock_insert_redirector_adgroup.call_args[0][1], tracking_code)
 
         self.assertEqual(json.loads(response.content), {
             'data': {
