@@ -32,7 +32,6 @@ oneApp.directive('zemSimpleMenu', function () {
 
 			$scope.select2Config = {
 				minimumResultsForSearch: -1, 
-				dropdownCssClass: 'show-rows',
 				placeholder: "<input type=\"checkbox\" data-ng-change=\"\" data-ng-model=\"selectAllCheckbox\" ng-mouseover=\"checkboxHoverIn()\" ng-mouseleave=\"checkboxHoverOut()\"></input>",
 				formatResult: $scope.customFormat,
 				formatSelection: $scope.customFormat,
