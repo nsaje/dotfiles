@@ -17,7 +17,7 @@ class AdGroupSettingsTest(TestCase):
 
     def setUp(self):
         self.maxDiff = None
-        self.data = {
+        self.settings_dict = {
             'settings': {
                 'state': 1,
                 'start_date': '2015-05-01',
@@ -43,7 +43,7 @@ class AdGroupSettingsTest(TestCase):
 
         response = self.client.put(
             reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
-            json.dumps(self.data),
+            json.dumps(self.settings_dict),
             follow=True
         )
 
@@ -82,26 +82,26 @@ class AdGroupSettingsTest(TestCase):
         mock_actionlog_api.is_waiting_for_set_actions.return_value = True
         old_settings = ad_group.get_current_settings()
 
-        self.data['settings']['cpc_cc'] = None
-        self.data['settings']['daily_budget_cc'] = None
+        self.settings_dict['settings']['cpc_cc'] = None
+        self.settings_dict['settings']['daily_budget_cc'] = None
 
         response = self.client.put(
             reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
-            json.dumps(self.data),
+            json.dumps(self.settings_dict),
             follow=True
         )
 
-        settings_dict = json.loads(response.content)['data']['settings']
+        response_settings_dict = json.loads(response.content)['data']['settings']
 
-        self.assertEqual(settings_dict['cpc_cc'], '')
-        self.assertEqual(settings_dict['daily_budget_cc'], '')
+        self.assertEqual(response_settings_dict['cpc_cc'], '')
+        self.assertEqual(response_settings_dict['daily_budget_cc'], '')
 
         new_settings = ad_group.get_current_settings()
 
         request = HttpRequest()
         request.user = User(id=1)
 
-        # can it be actually saved to the db
+        # can it actually be saved to the db
         new_settings.save(request)
 
         self.assertEqual(new_settings.cpc_cc, None)

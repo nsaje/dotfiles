@@ -48,7 +48,6 @@ class AdGroupSettingsForm(forms.Form):
         decimal_places=4,
         required=False,
         error_messages={
-            # 'required': 'Minimum CPC is $0.03.',
             'min_value': 'Minimum CPC is $0.03.',
             'max_value': 'Maximum CPC is $2.00.'
         }
@@ -58,7 +57,6 @@ class AdGroupSettingsForm(forms.Form):
         decimal_places=4,
         required=False,
         error_messages={
-            # 'required': 'Please provide budget of at least $10.00.',
             'min_value': 'Please provide budget of at least $10.00.'
         }
     )
