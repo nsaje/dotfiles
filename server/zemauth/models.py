@@ -130,6 +130,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('set_content_ad_status', 'Can set status of content ads.'),
             ('get_content_ad_csv', 'Can download bulk content ad csv.'),
             ('content_ads_bulk_actions', 'Can view and use bulk content ads actions.'),
+            ('set_non_propagated_ad_group_settings', 'Can set non propagated fields on ad group settings')
         )
 
     def get_full_name(self):
