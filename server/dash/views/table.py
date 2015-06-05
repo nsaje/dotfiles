@@ -45,7 +45,6 @@ def get_current_daily_budget_total(states):
 def get_daily_budget_total(ad_group_sources, states, settings):
     data = []
 
-    ad_group_sources = list(ad_group_sources)
     for ad_group_source in ad_group_sources:
         # get settings
         ad_group_source_settings = [s for s in settings if s.ad_group_source.id == ad_group_source.id]
