@@ -60,9 +60,10 @@
             <label ng-repeat="error in errors.endDate" class="control-label error" for="end-date-input">{{ error }}</label>
         </div>
 
-        <div class="form-group" ng-class="{'has-error': !!errors.dailyBudget}">
+        <div class="form-group" ng-if="hasPermission('zemauth.set_non_propagated_ad_group_settings')" ng-class="{'has-error': !!errors.dailyBudget}">
             <label for="budget-input" class="col-xs-2 control-label">
                 Daily budget
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.set_non_propagated_ad_group_settings')" popover-placement="top" ></zem-internal-feature>
                 <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The maximum budget that should be spent on average, per day." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-2">
@@ -76,9 +77,10 @@
             <label ng-repeat="error in errors.dailyBudget" class="control-label error budget-error" for="buget-input">{{ error }}</label>
         </div>
 
-        <div class="form-group" ng-class="{'has-error': !!errors.cpc}">
+        <div class="form-group" ng-if="hasPermission('zemauth.set_non_propagated_ad_group_settings')" ng-class="{'has-error': !!errors.cpc}">
             <label for="cpc-input" class="col-xs-2 control-label">
                 Max CPC
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.set_non_propagated_ad_group_settings')" popover-placement="top" ></zem-internal-feature>
                 <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Maximum average price (in USD) per click." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-2">
