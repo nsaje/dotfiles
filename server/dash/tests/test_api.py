@@ -113,11 +113,12 @@ class AutomaticallyApproveContentAdSourceSubmissionStatus(TestCase):
 
         account = self.content_ad_source.content_ad.ad_group.campaign.account
         account.outbrain_marketer_id = api.AUTOMATIC_APPROVAL_OUTBRAIN_ACCOUNT
+
         request = HttpRequest()
         request.user = User.objects.create_user('test@example.com')
+
         account.save(request)
 
-        self.content_ad_source.source.source_type.type = constants.SourceType.OUTBRAIN
         self.content_ad_source.source.source_type = models.SourceType.objects.get(type=constants.SourceType.OUTBRAIN)
         self.content_ad_source.source.save()
 
