@@ -31,6 +31,8 @@ BLOCKED_AD_GROUP_SETTINGS = [
     'brand_name', 'description', 'call_to_action',
 ]
 
+AUTOMATIC_APPROVAL_OUTBRAIN_ACCOUNT = '0082c33a43e59aa0da8849b5af3448bc7b'
+
 
 def cc_to_decimal(val_cc):
     if val_cc is None:
@@ -112,7 +114,7 @@ def insert_content_ad_callback(
     content_ad_source.source_state = source_state
 
     if submission_status is not None:
-        content_ad_source.submission_status = submission_status
+        _update_content_ad_source_submission_status(content_ad_source, submission_status)
         content_ad_source.submission_errors = submission_errors
 
     content_ad_source.save()
@@ -322,7 +324,7 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
             changed = True
 
         if 'submission_status' in data and data['submission_status'] != content_ad_source.submission_status:
-            content_ad_source.submission_status = data['submission_status']
+            _update_content_ad_source_submission_status(content_ad_source, data['submission_status'])
             changed = True
 
         if 'submission_errors' in data and data['submission_errors'] != content_ad_source.submission_errors:
@@ -341,7 +343,7 @@ def update_content_ad_source_state(content_ad_source, data):
         content_ad_source.source_state = state
 
     if submission_status:
-        content_ad_source.submission_status = submission_status
+        _update_content_ad_source_submission_status(content_ad_source, submission_status)
 
     content_ad_source.save()
 
@@ -535,6 +537,14 @@ def get_state_by_account():
     account_state = {aid: _acc_state(ag_states) for aid, ag_states in account_state.iteritems()}
     return account_state
 
+
+def _update_content_ad_source_submission_status(content_ad_source, submission_status):
+    if content_ad_source.source.source_type.type == constants.SourceType.OUTBRAIN and\
+       submission_status == constants.ContentAdSubmissionStatus.PENDING and\
+       content_ad_source.content_ad.ad_group.campaign.account.outbrain_marketer_id == AUTOMATIC_APPROVAL_OUTBRAIN_ACCOUNT:
+        content_ad_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
+    else:
+        content_ad_source.submission_status = submission_status
 
 class AdGroupSourceSettingsWriter(object):
 
