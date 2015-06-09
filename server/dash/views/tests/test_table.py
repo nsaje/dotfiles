@@ -6,7 +6,7 @@ from mock import patch
 
 from django.test import TestCase
 from django.core.urlresolvers import reverse
-from django.http.request import HttpRequest
+from django.conf import settings
 
 from utils.test_helper import QuerySetMatcher
 from zemauth.models import User
@@ -381,6 +381,74 @@ class AdGroupAdsPlusTableUpdatesTest(TestCase):
                 'status_setting': 1
             }
         })
+
+
+class AdGroupSourceTableSupplyDashTest(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def test_get_supply_dash_url(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
+
+        view = views.table.SourcesTable()
+        result = view._get_supply_dash_url(ad_group_source)
+
+        self.assertEqual(result, '/supply_dash/?ad_group_id=1&source_id=1')
+
+    def test_get_supply_dash_url_no_dash(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source.source.source_type.available_actions = []
+
+        view = views.table.SourcesTable()
+        result = view._get_supply_dash_url(ad_group_source)
+
+        self.assertIsNone(result)
+
+    def test_get_supply_dash_url_pending(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
+        ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
+
+        view = views.table.SourcesTable()
+        result = view._get_supply_dash_url(ad_group_source)
+
+        self.assertIsNone(result)
+
+    def test_get_supply_dash_disabled_message(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
+
+        view = views.table.SourcesTable()
+        result = view._get_supply_dash_disabled_message(ad_group_source)
+
+        self.assertIsNone(result)
+
+    def test_get_supply_dash_disabled_message_no_dash(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source.source.source_type.available_actions = []
+
+        view = views.table.SourcesTable()
+        result = view._get_supply_dash_disabled_message(ad_group_source)
+
+        self.assertEqual(result,
+                         "This media source doesn't have a dashboard of its own. "
+                         "All campaign management is done through Zemanta One dashboard.")
+
+    def test_get_supply_dash_disabled_message_pending(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
+        ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
+
+        view = views.table.SourcesTable()
+        result = view._get_supply_dash_disabled_message(ad_group_source)
+
+        self.assertEqual(result,
+                         "Dashboard of this media source is not yet available because the "
+                         "media source is still being set up for this ad group.")
 
 
 class AdGroupSourceTableEditableFieldsTest(TestCase):
