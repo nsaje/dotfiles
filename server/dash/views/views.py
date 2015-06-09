@@ -751,25 +751,12 @@ class AdGroupContentAdState(api_common.BaseApiView):
         content_ad_ids_enabled = self._get_content_ad_ids(data, 'content_ad_ids_enabled')
         content_ad_ids_disabled = self._get_content_ad_ids(data, 'content_ad_ids_disabled')
 
-        content_ads = self._get_content_ads(
+        content_ads = helpers.get_selected_content_ads(
             ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
 
         self._update_content_ads(content_ads, state, request)
 
         return self.create_api_response()
-
-    def _get_content_ads(
-            self, ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled):
-        if select_all:
-            return models.ContentAd.objects.filter(
-                Q(ad_group__id=ad_group_id) | Q(id__in=content_ad_ids_enabled)).exclude(
-                    id__in=content_ad_ids_disabled)
-        elif select_batch_id is not None:
-            return models.ContentAd.objects.filter(
-                Q(batch__id=select_batch_id) | Q(id__in=content_ad_ids_enabled)).exclude(
-                    id__in=content_ad_ids_disabled)
-        else:
-            return models.ContentAd.objects.filter(id__in=content_ad_ids_enabled)
 
     def _update_content_ads(self, content_ads, state, request):
         actions = []
@@ -807,7 +794,7 @@ class AdGroupContentAdState(api_common.BaseApiView):
             raise exc.ValidationError()
 
 
-class AdGroupContentAdCsv(api_common.BaseApiView):
+class AdGroupContentAdCSV(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.get_content_ad_csv'):
@@ -815,34 +802,15 @@ class AdGroupContentAdCsv(api_common.BaseApiView):
 
         helpers.get_ad_group(request.user, ad_group_id)
 
-        data = request.GET
+        select_all = request.GET.get('select_all', False)
+        select_batch_id = request.GET.get('select_batch')
 
-        select_all = data.get('select_all', False)
-        select_batch = data.get('select_batch')
-        content_ad_ids_enabled_raw = data.get('content_ad_ids_enabled', '')
-        content_ad_ids_enabled = map(int, [x for x in content_ad_ids_enabled_raw.split(',') if x != ''])
-        if not isinstance(content_ad_ids_enabled, list):
-            raise exc.validationerror()
+        content_ad_ids_enabled = self._get_content_ad_ids(request.GET, 'content_ad_ids_enabled')
+        content_ad_ids_disabled = self._get_content_ad_ids(request.GET, 'content_ad_ids_disabled')
 
-        content_ad_ids_disabled_raw = data.get('content_ad_ids_disabled', '')
-        content_ad_ids_disabled = map(int, [x for x in content_ad_ids_disabled_raw.split(',') if x != ''])
-        if not isinstance(content_ad_ids_disabled, list):
-            raise exc.ValidationError()
+        content_ads = helpers.get_selected_content_ads(
+            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
 
-        print content_ad_ids_enabled, content_ad_ids_disabled
-        content_ads = []
-        if select_all:
-            content_ads = models.ContentAd.objects.filter(
-                Q(ad_group__id=ad_group_id) | Q(id__in=content_ad_ids_enabled)).exclude(
-                    id__in=content_ad_ids_disabled)
-        elif select_batch is not None:
-            content_ads = models.ContentAd.objects.filter(
-                Q(batch__name__in=select_batch) | Q(id__in=content_ad_ids_enabled)).exclude(
-                    id__in=content_ad_ids_disabled)
-        else:
-            content_ads = models.ContentAd.objects.filter(id__in=content_ad_ids_enabled)
-
-        # TODO: get original image url's and crops
         content_ad_dicts = []
         for content_ad in content_ads:
             content_ad_dicts.append({
@@ -850,27 +818,29 @@ class AdGroupContentAdCsv(api_common.BaseApiView):
                 'title': content_ad.title,
                 'image_url': content_ad.get_image_url(),
             })
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="content_ads.csv"'
-        csv_str = self._create_content_ad_csv(content_ad_dicts)
-        response.write(csv_str)
-        return response
+
+        filename = 'content_ads'
+        content = self._create_content_ad_csv(content_ad_dicts)
+
+        return self.create_csv_response(filename, content=content)
+
+    def _get_content_ad_ids(self, data, param_name):
+        content_ad_ids = data.get(param_name)
+
+        if not content_ad_ids:
+            return []
+
+        try:
+            return map(int, content_ad_ids.split(','))
+        except ValueError:
+            raise exc.ValidationError()
 
     def _create_content_ad_csv(self, content_ads):
         string = StringIO.StringIO()
 
-        has_crop_areas_data = False
-        for idx, row in enumerate(content_ads):
-            if row.get('crop_areas') is not None and row.get('crop_areas', '') != '':
-                has_crop_areas_data = True
-                break
-
-        if has_crop_areas_data:
-            writer = unicodecsv.DictWriter(string, ['url', 'title', 'image_url', 'crop_areas'])
-        else:
-            writer = unicodecsv.DictWriter(string, ['url', 'title', 'image_url'])
-
+        writer = unicodecsv.DictWriter(string, ['url', 'title', 'image_url'])
         writer.writeheader()
+
         for row in content_ads:
             writer.writerow(row)
 

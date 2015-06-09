@@ -351,10 +351,15 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
     var downloadContentAds = function(contentAdIdsEnabled, contentAdIdsDisabled) {
-        var url = '/api/ad_groups/' + $state.params.id + 
-            '/contentads/csv/?content_ad_ids_enabled=' + contentAdIdsEnabled.join(',') +
-            '&content_ad_ids_disabled=' + contentAdIdsDisabled.join(',');
-        url += '&select_all=' + $scope.selectedAll;
+        var url = '/api/ad_groups/' + $state.params.id + '/contentads/csv/?'
+
+        url += 'content_ad_ids_enabled=' + contentAdIdsEnabled.join(',')
+        url += '&content_ad_ids_disabled=' + contentAdIdsDisabled.join(',');
+
+        if ($scope.selectedAll) {
+            url += '&select_all=' + $scope.selectedAll;
+        }
+
         if ($scope.selectedBatchId) {
             url += '&select_batch=' + $scope.selectedBatchId;
         }
@@ -366,7 +371,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         var contentAdIdsEnabled = [],
             contentAdIdsDisabled = [];
 
-        Object.keys($scope.selectedContentAdStatus).forEach(function(contentAdId) {
+        Object.keys($scope.selectedContentAdsStatus).forEach(function(contentAdId) {
             if ($scope.selectedContentAdsStatus[contentAdId]) {
                 contentAdIdsEnabled.push(contentAdId);
             } else {

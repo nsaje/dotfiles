@@ -140,11 +140,111 @@ class AdGroupSourceSettingsTest(TestCase):
         self.assertEqual(json.loads(response.content), {'success': True})
 
 
-class AdGroupContentAdStateTest(TestCase):
+class AdGroupContentAdCSVTest(TestCase):
     fixtures = ['test_api', 'test_views']
 
     def setUp(self):
-        self.factory = RequestFactory()
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+    def test_get_all(self):
+        data = {
+            'select_all': True
+        }
+
+        response = self._get_csv_from_server(data)
+
+        expected_content = '''url,title,image_url\r
+http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.jpg\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg\r
+'''
+
+        self.assertEqual(response.content, expected_content)
+
+    def test_get_all_ad_disabled(self):
+        data = {
+            'select_all': True,
+            'content_ad_ids_disabled': '1'
+        }
+
+        response = self._get_csv_from_server(data)
+
+        expected_content = '''url,title,image_url\r
+http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.jpg\r
+'''
+
+        self.assertEqual(response.content, expected_content)
+
+    def test_get_batch(self):
+        data = {
+            'select_batch': 1,
+        }
+
+        response = self._get_csv_from_server(data)
+
+        expected_content = '''url,title,image_url\r
+http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.jpg\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg\r
+'''
+
+        self.assertEqual(response.content, expected_content)
+
+    def test_get_batch_ad_enabled(self):
+        data = {
+            'select_batch': 2,
+            'content_ad_ids_enabled': '1'
+        }
+
+        response = self._get_csv_from_server(data)
+
+        expected_content = '''url,title,image_url\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.jpg\r
+'''
+
+        self.assertEqual(response.content, expected_content)
+
+    def test_get_ad_enabled(self):
+        data = {'content_ad_ids_enabled': '1,2'}
+
+        response = self._get_csv_from_server(data)
+
+        expected_content = '''url,title,image_url\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.jpg\r
+'''
+
+        self.assertEqual(response.content, expected_content)
+
+    def _get_csv_from_server(self, data):
+        return self.client.get(
+            reverse(
+                'ad_group_content_ad_csv',
+                kwargs={'ad_group_id': 1}),
+            data=data,
+            follow=True
+        )
+
+    def test_get_content_ad_ids(self):
+        data = {'ids': '1,2'}
+        param_name = 'ids'
+
+        result = views.AdGroupContentAdCSV()._get_content_ad_ids(data, param_name)
+
+        self.assertEqual(result, [1, 2])
+
+    def test_get_content_ad_ids_validation_error(self):
+        data = {'ids': '1,a'}
+        param_name = 'ids'
+
+        with self.assertRaises(exc.ValidationError):
+            views.AdGroupContentAdCSV()._get_content_ad_ids(data, param_name)
+
+
+class AdGroupContentAdStateTest(TestCase):
+    fixtures = ['test_api', 'test_views']
 
     def test_post(self):
         username = User.objects.get(pk=1).email
@@ -236,78 +336,6 @@ class AdGroupContentAdStateTest(TestCase):
         self.assertTrue(all([ad.state == constants.ContentAdSourceState.INACTIVE
                              for ad in content_ads]))
 
-    def test_get_content_ads_all(self):
-        ad_group_id = 1
-        select_all = True
-        select_batch_id = None
-        content_ad_ids_enabled = []
-        content_ad_ids_disabled = []
-
-        content_ads = views.AdGroupContentAdState()._get_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
-
-        self._assert_content_ads(content_ads, [1, 2, 3])
-
-    def test_get_content_ads_all_disabled(self):
-        ad_group_id = 1
-        select_all = True
-        select_batch_id = None
-        content_ad_ids_enabled = []
-        content_ad_ids_disabled = [1]
-
-        content_ads = views.AdGroupContentAdState()._get_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
-
-        self._assert_content_ads(content_ads, [2, 3])
-
-    def test_get_content_ads_batch(self):
-        ad_group_id = 1
-        select_all = False
-        select_batch_id = 1
-        content_ad_ids_enabled = []
-        content_ad_ids_disabled = []
-
-        content_ads = views.AdGroupContentAdState()._get_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
-
-        self._assert_content_ads(content_ads, [1, 2])
-
-    def test_get_content_ads_batch_enabled(self):
-        ad_group_id = 1
-        select_all = False
-        select_batch_id = 1
-        content_ad_ids_enabled = [3]
-        content_ad_ids_disabled = []
-
-        content_ads = views.AdGroupContentAdState()._get_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
-
-        self._assert_content_ads(content_ads, [1, 2, 3])
-
-    def test_get_content_ads_batch_disabled(self):
-        ad_group_id = 1
-        select_all = False
-        select_batch_id = 1
-        content_ad_ids_enabled = []
-        content_ad_ids_disabled = [1]
-
-        content_ads = views.AdGroupContentAdState()._get_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
-
-        self._assert_content_ads(content_ads, [2])
-
-    def test_get_content_ads_only_enabled(self):
-        ad_group_id = 1
-        select_all = False
-        select_batch_id = None
-        content_ad_ids_enabled = [1, 3]
-        content_ad_ids_disabled = []
-
-        content_ads = views.AdGroupContentAdState()._get_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
-
-        self._assert_content_ads(content_ads, [1, 3])
-
     @patch('dash.views.views.actionlog.zwei_actions.send_multiple')
     def test_update_content_ads(self, mock_send_multiple):
         content_ad = models.ContentAd.objects.get(pk=1)
@@ -340,10 +368,6 @@ class AdGroupContentAdStateTest(TestCase):
 
         with self.assertRaises(exc.ValidationError):
             views.AdGroupContentAdState()._get_content_ad_ids(data, param_name)
-
-    def _assert_content_ads(self, content_ads, expected_ids):
-        self.assertQuerysetEqual(
-            content_ads, expected_ids, transform=lambda ad: ad.id, ordered=False)
 
 
 class AdGroupAdsPlusUploadTest(TestCase):
