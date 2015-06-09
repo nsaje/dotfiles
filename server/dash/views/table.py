@@ -1140,6 +1140,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 'title': content_ad.title,
                 'url': url,
                 'batch_name': content_ad.batch.name,
+                'batch_id': content_ad.batch.id,
                 'display_url': content_ad.batch.display_url,
                 'brand_name': content_ad.batch.brand_name,
                 'description': content_ad.batch.description,

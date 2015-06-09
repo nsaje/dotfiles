@@ -48,10 +48,16 @@ class AddContentAdSources(TestCase):
                 content_ad_id=2,
                 submission_status=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
                 state=constants.ContentAdSourceState.INACTIVE
+            ),
+            models.ContentAdSource.objects.create(
+                source_id=5,
+                content_ad_id=3,
+                submission_status=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
+                state=constants.ContentAdSourceState.INACTIVE
             )
         ]
 
-        self.assertEqual(len(content_ad_sources), 2)
+        self.assertEqual(len(content_ad_sources), 3)
         content_ad_sources.sort(key=lambda x: x.content_ad_id)
 
         for content_ad_source, expected_object in zip(content_ad_sources, expected):

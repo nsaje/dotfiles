@@ -19,12 +19,12 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
 
-	$scope.selectedBulkAction = null;
+    $scope.selectedBulkAction = null;
 
-	// selectiont triple - all, a batch, or specific content ad's can be selected
-	$scope.selectedAll = false;
-	$scope.selectedBatches = [];
-	$scope.selectedContentAdsStatus = {};
+    // selection triplet - all, a batch, or specific content ads can be selected
+    $scope.selectedAll = false;
+    $scope.selectedBatchId = null;
+    $scope.selectedContentAdsStatus = {};
 
     $scope.pagination = {
         currentPage: 1
@@ -37,98 +37,79 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
     $scope.selectedAdsChanged = function (row, checked) {
         if (row.id) {
-        	$scope.selectedContentAdsStatus[row.id] = checked;
+            $scope.selectedContentAdsStatus[row.id] = checked;
         }  
     };
 
-	$scope.logSelection = function () {
-		// selection triple - all, a batch, or specific content ad's can be selected
-		console.log($scope.selectedAll);
-		console.log($scope.selectedBatches);
-		console.log($scope.selectedContentAdsStatus);
-	};
+    $scope.selectAllCallback = function (selected) {
+        $scope.selectedAll = selected;
+        $scope.selectedBatchId = null;
+        $scope.selectedContentAdsStatus = {};
 
-    $scope.selectAllCallback = function (ev) {
-		// selection triple - all, a batch, or specific content ad's can be selected
-		$scope.selectedAll = true;
-		$scope.selectedBatches = [];
-		$scope.selectedContentAdsStatus = {};
+        if (selected) {
+            $scope.updateContentAdSelection();
+        } else {
+            $scope.clearContentAdSelection();
+        }
+    };
 
-		$scope.updateContentAdSelection();
-		$scope.logSelection();
-	};
+    $scope.selectThisPageCallback = function () {
+        $scope.selectedAll = false;
+        $scope.selectedBatchId = null;
+        $scope.selectedContentAdsStatus = {};
 
-    $scope.selectThisPageCallback = function (ev) {
-		// selection triple - all, a batch, or specific content ad's can be selected
-		$scope.selectedAll = false;
-		$scope.selectedBatches = [];
-		$scope.selectedContentAdsStatus = {};
+        $scope.rows.forEach(function (row) {
+            $scope.selectedContentAdsStatus[row.id] = true;
+        });
 
-		$scope.rows.forEach(function (row) {
-			$scope.selectedContentAdsStatus[row.id] = true;
-		});
+        $scope.updateContentAdSelection();
+    };
 
-		$scope.updateContentAdSelection();
-		$scope.logSelection();
-	};
+    $scope.selectBatchCallback = function (id) {
+        $scope.selectedAll = false;
+        $scope.selectedBatchId = id;
+        $scope.selectedContentAdsStatus = {};
+        
+        $scope.updateContentAdSelection();
+    };
 
-    $scope.selectBatchCallback = function (name) {
-		// selection triple - all, a batch, or specific content ad's can be selected
-		$scope.selectedAll = false;
-		$scope.selectedBatches = [name];
-		$scope.selectedContentAdsStatus = {};
-		
-		$scope.updateContentAdSelection();
-		$scope.logSelection();
-	};
+    $scope.clearContentAdSelection = function() {
+        $scope.rows.forEach(function(row) {
+            row.ad_selected = false;
+        });
+    };
 
-	$scope.updateContentAdSelection = function () {
-		$scope.rows.forEach(function (row) {
-			if ($scope.selectedContentAdsStatus[row.id] !== undefined) {
-				row.ad_selected = $scope.selectedContentAdsStatus[row.id];
-			} else if ($scope.selectedAll) {
-				row.ad_selected = true;
-			} else if (($scope.selectedBatches.length > 0) && 
-					   (row.batch_name == $scope.selectedBatches[0])) { 
-				row.ad_selected = true;
-			} else {
-				row.ad_selected = false;
-			}
-		});
-	};
-
-	$scope.selectionOptionsStatic = [
-		{
-			name: 'This page',
-			type: 'link',
-			callback: $scope.selectThisPageCallback
-		}, {
-			type: 'separator'
-		}
-	];
-
-    $scope.selectionOptions = $scope.selectionOptionsStatic.concat([{
-			title: 'Upload batch',
-			name: '',
-			type: 'link-list-item',
-		}
-    ]);
+    $scope.updateContentAdSelection = function () {
+        $scope.rows.forEach(function (row) {
+            if ($scope.selectedContentAdsStatus[row.id] !== undefined) {
+                row.ad_selected = $scope.selectedContentAdsStatus[row.id];
+            } else if ($scope.selectedAll) {
+                row.ad_selected = $scope.selectedAll;
+            } else if ($scope.selectedBatchId && row.batch_id == $scope.selectedBatchId) { 
+                row.ad_selected = true;
+            } else {
+                row.ad_selected = false;
+            }
+        });
+    };
 
     $scope.columns = [
-		{
-			name: 'zem-simple-menu',
-			field: 'ad_selected',
-			type: 'checkbox',
-			shown: $scope.hasPermission('zemauth.content_ads_bulk_actions'),
-			hasPermission: $scope.hasPermission('zemauth.content_ads_bulk_actions'),
-			checked: true,
-			totalRow: false,
-			unselectable: true,
-			order: false,
-			selectCallback: $scope.selectedAdsChanged,
-			disabled: false,
-			selectionOptions: $scope.selectionOptions
-		}, {
+        {
+            name: '',
+            field: 'ad_selected',
+            type: 'checkbox',
+            showSelectionMenu: true,
+            shown: $scope.hasPermission('zemauth.content_ads_bulk_actions'),
+            hasPermission: $scope.hasPermission('zemauth.content_ads_bulk_actions'),
+            checked: true,
+            totalRow: false,
+            unselectable: true,
+            order: false,
+            selectCallback: $scope.selectedAdsChanged,
+            disabled: false,
+            selectionOptions: $scope.selectionOptions,
+            selectAllCallback: $scope.selectAllCallback
+        }, {
             name: 'Thumbnail',
             nameCssClass: 'table-name-hidden',
             field: 'image_urls',
@@ -332,7 +313,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             initialOrder: 'asc'
         }
     ];    
-	// 'urlLink1', 'urlLink', 
+
     $scope.columnCategories = [{
         'name': 'Content Sync',
         'fields': ['ad_selected', 'image_urls', 'titleLink', 'submission_status', 'checked', 'upload_time', 'batch_name', 'display_url', 'brand_name', 'description', 'call_to_action']
@@ -356,68 +337,65 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         return modalInstance;
     };
 
-    $scope.$watch('selectedBulkAction', function(newValue, oldValue) {
-        if (newValue === oldValue) { return; }
+    var bulkUpdateContentAds = function(contentAdIdsEnabled, contentAdIdsDisabled, state) {
+        api.adGroupContentAdState.save(
+            $state.params.id, 
+            contentAdIdsEnabled, 
+            contentAdIdsDisabled,
+            $scope.selectedAll,
+            $scope.selectedBatchId,
+            state
+        ).then(function () {
+            pollTableUpdates();
+        });
+    };
 
-		if ($scope.selectedBulkAction == null) {
-			return;
-		}
-    	// TODO: replace ad lookups with selection buffer lookups
-		var content_ad_ids_true = [],
-			content_ad_ids_false = [];
+    var downloadContentAds = function(contentAdIdsEnabled, contentAdIdsDisabled) {
+        var url = '/api/ad_groups/' + $state.params.id + 
+            '/contentads/csv/?content_ad_ids_enabled=' + contentAdIdsEnabled.join(',') +
+            '&content_ad_ids_disabled=' + contentAdIdsDisabled.join(',');
+        url += '&select_all=' + $scope.selectedAll;
+        if ($scope.selectedBatchId) {
+            url += '&select_batch=' + $scope.selectedBatchId;
+        }
 
-		// $scope.selectedAll = false;
-		// $scope.selectedBatches = [];
-		// $scope.selectedContentAdsStatus = {};
+        $window.open(url, '_blank');
+    };
 
-		for (var selectedContentAd in $scope.selectedContentAdsStatus) {
-			if ($scope.selectedContentAdsStatus[selectedContentAd]) {
-				content_ad_ids_true.push(selectedContentAd);
-			} else {
-				content_ad_ids_false.push(selectedContentAd);
-			}
-		}
+    $scope.executeBulkAction = function() {
+        var contentAdIdsEnabled = [],
+            contentAdIdsDisabled = [];
 
-		if ($scope.selectedBulkAction == 'pause') {
-            api.adGroupContentAdState.save(
-            		$state.params.id, 
-            		content_ad_ids_true, 
-            		content_ad_ids_false,
-            		$scope.selectedAll,
-            		$scope.selectedBatches,
-            		constants.contentAdSourceState.INACTIVE).then(
-                function () {
-                    pollTableUpdates();
-                }
-            );
-		} else if ($scope.selectedBulkAction == 'resume') {
-            api.adGroupContentAdState.save(
-            		$state.params.id, 
-            		content_ad_ids_true, 
-            		content_ad_ids_false,
-            		$scope.selectedAll,
-            		$scope.selectedBatches,
-            		constants.contentAdSourceState.ACTIVE).then(
-                function () {
-                    pollTableUpdates();
-                }
-            );
-		} else if ($scope.selectedBulkAction == 'download') {
-            var url = '/api/ad_groups/' + $state.params.id + 
-            	'/contentads/csv/?content_ad_ids_enabled=' + content_ad_ids_true.join(',') +
-            	'&content_ad_ids_disabled=' + content_ad_ids_false.join(',');
-			url += '&select_all=' + $scope.selectedAll;
-			if ($scope.selectedBatches.length > 0) {
-				url += '&select_batch=' + $scope.selectedBatches[0];
-			}
-			
-            $window.open(url, '_blank');            
-		} else {
-			// TODO: Signal error
-		}
-		
-		$scope.selectedBulkAction = null;
-	});
+        Object.keys($scope.selectedContentAdStatus).forEach(function(contentAdId) {
+            if ($scope.selectedContentAdsStatus[contentAdId]) {
+                contentAdIdsEnabled.push(contentAdId);
+            } else {
+                contentAdIdsDisabled.push(contentAdId);
+            }
+        });
+
+        switch ($scope.selectedBulkAction) {
+            case 'pause':
+                bulkUpdateContentAds(
+                    contentAdIdsEnabled,
+                    contentAdIdsDisabled,
+                    constants.contentAdSourceState.INACTIVE
+                );
+                break;
+            case 'resume':
+                bulkUpdateContentAds(
+                    contentAdIdsEnabled,
+                    contentAdIdsDisabled,
+                    constants.contentAdSourceState.ACTIVE
+                );
+                break;
+            case 'download':
+                downloadContentAds(contentAdIdsEnabled, contentAdIdsDisabled);
+                break;
+        }
+
+        $scope.selectedBulkAction = null;
+    };
 
     $scope.loadPage = function(page) {
         if (page && page > 0 && page <= $scope.pagination.numPages) {
@@ -535,7 +513,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 $scope.isSyncInProgress = data.is_sync_in_progress;
 
                 pollTableUpdates();
-        		$scope.updateContentAdSelection();
+                $scope.updateContentAdSelection();
             },
             function (data) {
                 // error
@@ -571,12 +549,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         }
     };
 
-    var initSelectionOptions = function () {
-        var options;
-        cols = zemCustomTableColsService.load('adGroupAdsPlus', $scope.columns);
-        $scope.selectedColumnsCount = cols.length;
-	};
-
     var initColumns = function () {
         var cols;
 
@@ -589,28 +561,31 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         }, true);
     };
 
-	var initUploadBatches = function () {
-		// refresh upload batches for current adgroup
-		api.adGroupAdsPlusUploadBatches.list($state.params.id).then(function(data) {
-			var dataEntry = data['data']['batches'],
-				entries = [];
+    $scope.selectionOptions = [{
+        type: 'link',
+        name: 'This page',
+        callback: $scope.selectThisPageCallback
+    }];
 
- 	        dataEntry.forEach(function (entry) {
- 	        	entry['prefix'] = 'Upload batch:';
- 	        	entry['callback'] = $scope.selectBatchCallback;
-				entry['type'] = 'link-list-item';
- 	        	entries.push(entry);
-			});
+    var initUploadBatches = function () {
+        api.adGroupAdsPlusUploadBatches.list($state.params.id).then(function(data) {
+            $scope.selectionOptions = $scope.selectionOptions.concat([{
+                    type: 'separator'
+                }, {
+                    type: 'link-list',
+                    name: 'Upload batch',
+                    callback: $scope.selectBatchCallback,
+                    items: data.data.batches
+                }
+            ]);
 
-			var i = 0;
-			$scope.columns.forEach(function(col) {
-				if (col.name == 'zem-simple-menu') {
-					$scope.columns[i].selectionOptions = $scope.selectionOptionsStatic.concat(entries);
-				}
-				i += 1;
-			});
-		});
-	};
+            $scope.columns.forEach(function(col) {
+                if (col.type == 'checkbox') {
+                    col.selectionOptions = $scope.selectionOptions;
+                }
+            });
+        });
+    };
 
 
     var init = function() {

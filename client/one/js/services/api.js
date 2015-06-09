@@ -272,11 +272,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 url: row.url !== '' ? row.url : null
             };
 
-            row.urlLink1 = {
-                text: row.url !== '' ? row.url : 'N/A',
-                url: row.url !== '' ? row.url : null
-            };
-
             row.urlLink = {
                 text: row.url !== '' ? row.url : 'N/A',
                 url: row.url !== '' ? row.url : null
@@ -336,11 +331,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         function convertFromApi(row) {
             row.titleLink = {
                 text: row.title,
-                url: row.url !== '' ? row.url : null
-            };
-
-            row.urlLink1 = {
-                text: row.url !== '' ? row.url : 'N/A',
                 url: row.url !== '' ? row.url : null
             };
 
@@ -1985,19 +1975,19 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             }).error(function(data, status) {
                 var result = {};
                 if (status == '413') {
-					data = {
-					"data": {
-						"status": 2,
-						"errors": {
-							"content_ads": ["File too large."]
-							}
-						},
-						"success": false
-					}
-					result.errors = convertValidationErrorsFromApi(data.data.errors);
-				} else if (data && data.data && data.data.errors) {
-					result.errors = convertValidationErrorsFromApi(data.data.errors);
-				}
+                    data = {
+                    "data": {
+                        "status": 2,
+                        "errors": {
+                            "content_ads": ["File too large."]
+                            }
+                        },
+                        "success": false
+                    }
+                    result.errors = convertValidationErrorsFromApi(data.data.errors);
+                } else if (data && data.data && data.data.errors) {
+                    result.errors = convertValidationErrorsFromApi(data.data.errors);
+                }
 
                 deferred.reject(result);
             });
@@ -2045,15 +2035,14 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/contentads/state/';
 
-            $http.post(url, 
-           		{
-           			state: state,
-           			content_ad_ids_enabled: contentAdIdsEnabled,
-           			content_ad_ids_disabled: contentAdIdsDisabled,
-           			select_all: selectedAll,
-           			select_batch: selectedBatch
-           		}).
-            	success(function(data) {
+            $http.post(url, {
+                    state: state,
+                    content_ad_ids_enabled: contentAdIdsEnabled,
+                    content_ad_ids_disabled: contentAdIdsDisabled,
+                    select_all: selectedAll,
+                    select_batch: selectedBatch
+                }).
+                success(function(data) {
                    deferred.resolve(data);
                 }).error(function(data) {
                     deferred.reject(data);
@@ -2082,7 +2071,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             return deferred.promise;
         };
     }
-	
+    
     function AvailableSources() {
         this.list = function () {
             var deferred = $q.defer();

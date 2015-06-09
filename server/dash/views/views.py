@@ -708,10 +708,13 @@ class AdGroupAdsPlusUploadBatches(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.ad_group_ads_plus_upload_batches_get'):
             raise exc.ForbiddenError(message='Not allowed')
 
-        helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
         try:
             # get all batches from all content ads of adgroup
-            batch_ids = models.ContentAd.objects.values_list('batch_id', flat=True).distinct()
+            batch_ids = models.ContentAd.objects.filter(
+                ad_group=ad_group
+            ).values_list('batch_id', flat=True).distinct()
+
             batches = models.UploadBatch.objects.filter(
                 id__in=tuple(batch_ids),
                 status=constants.UploadBatchStatus.DONE,
@@ -743,31 +746,32 @@ class AdGroupContentAdState(api_common.BaseApiView):
             raise exc.ValidationError()
 
         select_all = data.get('select_all', False)
-        select_batch = data.get('select_batch')
+        select_batch_id = data.get('select_batch')
 
-        content_ad_ids_enabled_raw = data.get('content_ad_ids_enabled', [])
-        content_ad_ids_enabled = map(int, content_ad_ids_enabled_raw)
+        content_ad_ids_enabled = self._get_content_ad_ids(data, 'content_ad_ids_enabled')
+        content_ad_ids_disabled = self._get_content_ad_ids(data, 'content_ad_ids_disabled')
 
-        if not isinstance(content_ad_ids_enabled, list):
-            raise exc.ValidationError()
+        content_ads = self._get_content_ads(
+            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
 
-        content_ad_ids_disabled_raw = data.get('content_ad_ids_disabled', [])
-        content_ad_ids_disabled = map(int, content_ad_ids_disabled_raw)
-        if not isinstance(content_ad_ids_disabled, list):
-            raise exc.ValidationError()
+        self._update_content_ads(content_ads, state, request)
 
-        content_ads = []
+        return self.create_api_response()
+
+    def _get_content_ads(
+            self, ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled):
         if select_all:
-            content_ads = models.ContentAd.objects.filter(
+            return models.ContentAd.objects.filter(
                 Q(ad_group__id=ad_group_id) | Q(id__in=content_ad_ids_enabled)).exclude(
                     id__in=content_ad_ids_disabled)
-        elif select_batch is not None:
-            content_ads = models.ContentAd.objects.filter(
-                Q(batch__name__in=select_batch) | Q(id__in=content_ad_ids_enabled)).exclude(
+        elif select_batch_id is not None:
+            return models.ContentAd.objects.filter(
+                Q(batch__id=select_batch_id) | Q(id__in=content_ad_ids_enabled)).exclude(
                     id__in=content_ad_ids_disabled)
         else:
-            content_ads = models.ContentAd.objects.filter(id__in=content_ad_ids_enabled)
+            return models.ContentAd.objects.filter(id__in=content_ad_ids_enabled)
 
+    def _update_content_ads(self, content_ads, state, request):
         actions = []
         with transaction.atomic():
             for content_ad in content_ads:
@@ -778,23 +782,29 @@ class AdGroupContentAdState(api_common.BaseApiView):
                     content_ad_source.state = state
                     content_ad_source.save()
 
-                    if prev_state != state:
-                        changes = {
-                            'state': content_ad_source.state,
-                        }
+                    if prev_state == state:
+                        continue
 
-                        actions.append(
-                            actionlog.api_contentads.init_update_content_ad_action(
-                                content_ad_source,
-                                changes,
-                                request,
-                                send=False,
-                            )
+                    changes = {'state': content_ad_source.state}
+
+                    actions.append(
+                        actionlog.api_contentads.init_update_content_ad_action(
+                            content_ad_source,
+                            changes,
+                            request,
+                            send=False,
                         )
+                    )
 
         actionlog.zwei_actions.send_multiple(actions)
 
-        return self.create_api_response()
+    def _get_content_ad_ids(self, data, param_name):
+        content_ad_ids = data.get(param_name, [])
+
+        try:
+            return map(int, content_ad_ids)
+        except ValueError:
+            raise exc.ValidationError()
 
 
 class AdGroupContentAdCsv(api_common.BaseApiView):
