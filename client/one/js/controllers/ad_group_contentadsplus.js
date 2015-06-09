@@ -19,327 +19,327 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
 
-	$scope.selectedBulkAction = null;
+    $scope.selectedBulkAction = null;
 
-	// selectiont triple - all, a batch, or specific content ad's can be selected
-	$scope.selectedAll = false;
-	$scope.selectedBatches = [];
-	$scope.selectedContentAdsStatus = {};
+    // selectiont triple - all, a batch, or specific content ad's can be selected
+    $scope.selectedAll = false;
+    $scope.selectedBatches = [];
+    $scope.selectedContentAdsStatus = {};
 
     $scope.pagination = {
         currentPage: 1
     };
 
-    $scope.exportOptions = [
-        {name: 'CSV by day', value: 'csv'},
-        {name: 'Excel by day', value: 'excel'}
-    ];
+    $scope.exportOptions = [{
+        name: 'CSV by day',
+        value: 'csv'
+    }, {
+        name: 'Excel by day',
+        value: 'excel'
+    }];
 
     $scope.selectedAdsChanged = function (row, checked) {
         if (row.id) {
-        	$scope.selectedContentAdsStatus[row.id] = checked;
-        }  
+            $scope.selectedContentAdsStatus[row.id] = checked;
+        }
     };
 
-	$scope.logSelection = function () {
-		/*
+    $scope.logSelection = function () {
+        /*
 		// selection triple - all, a batch, or specific content ad's can be selected
 		console.log($scope.selectedAll);
 		console.log($scope.selectedBatches);
 		console.log($scope.selectedContentAdsStatus);
 		*/
-	};
+    };
 
     $scope.selectAllCallback = function (ev) {
-		// selection triple - all, a batch, or specific content ad's can be selected
-		$scope.selectedAll = true;
-		$scope.selectedBatches = [];
-		$scope.selectedContentAdsStatus = {};
+        // selection triple - all, a batch, or specific content ad's can be selected
+        $scope.selectedAll = true;
+        $scope.selectedBatches = [];
+        $scope.selectedContentAdsStatus = {};
 
-		$scope.updateContentAdSelection();
-		$scope.logSelection();
-	};
+        $scope.updateContentAdSelection();
+        $scope.logSelection();
+    };
 
     $scope.selectThisPageCallback = function (ev) {
-		// selection triple - all, a batch, or specific content ad's can be selected
-		$scope.selectedAll = false;
-		$scope.selectedBatches = [];
-		$scope.selectedContentAdsStatus = {};
+        // selection triple - all, a batch, or specific content ad's can be selected
+        $scope.selectedAll = false;
+        $scope.selectedBatches = [];
+        $scope.selectedContentAdsStatus = {};
 
-		$scope.rows.forEach(function (row) {
-			$scope.selectedContentAdsStatus[row.id] = true;
-		});
+        $scope.rows.forEach(function (row) {
+            $scope.selectedContentAdsStatus[row.id] = true;
+        });
 
-		$scope.updateContentAdSelection();
-		$scope.logSelection();
-	};
+        $scope.updateContentAdSelection();
+        $scope.logSelection();
+    };
 
     $scope.selectBatchCallback = function (name) {
-		// selection triple - all, a batch, or specific content ad's can be selected
-		$scope.selectedAll = false;
-		$scope.selectedBatches = [name];
-		$scope.selectedContentAdsStatus = {};
-		
-		$scope.updateContentAdSelection();
-		$scope.logSelection();
-	};
+        // selection triple - all, a batch, or specific content ad's can be selected
+        $scope.selectedAll = false;
+        $scope.selectedBatches = [name];
+        $scope.selectedContentAdsStatus = {};
 
-	$scope.updateContentAdSelection = function () {
-		$scope.rows.forEach(function (row) {
-			if ($scope.selectedContentAdsStatus[row.id] !== undefined) {
-				row.ad_selected = $scope.selectedContentAdsStatus[row.id];
-			} else if ($scope.selectedAll) {
-				row.ad_selected = true;
-			} else if (($scope.selectedBatches.length > 0) && 
-					   (row.batch_name == $scope.selectedBatches[0])) { 
-				row.ad_selected = true;
-			} else {
-				row.ad_selected = false;
-			}
-		});
+        $scope.updateContentAdSelection();
+        $scope.logSelection();
+    };
 
-	};
+    $scope.updateContentAdSelection = function () {
+        $scope.rows.forEach(function (row) {
+            if ($scope.selectedContentAdsStatus[row.id] !== undefined) {
+                row.ad_selected = $scope.selectedContentAdsStatus[row.id];
+            } else if ($scope.selectedAll) {
+                row.ad_selected = true;
+            } else if (($scope.selectedBatches.length > 0) &&
+                (row.batch_name == $scope.selectedBatches[0])) {
+                row.ad_selected = true;
+            } else {
+                row.ad_selected = false;
+            }
+        });
 
-	$scope.selectionOptionsStatic = [
-		{
-			name: 'All',
-			type: 'link',
-			callback: $scope.selectAllCallback
-		}, {
-			name: 'This page',
-			type: 'link',
-			callback: $scope.selectThisPageCallback
-		}/*, {
-			type: 'separator'
-		}*/
-	];
+    };
+
+    $scope.selectionOptionsStatic = [{
+            name: 'All',
+            type: 'link',
+            callback: $scope.selectAllCallback
+        }, {
+            name: 'This page',
+            type: 'link',
+            callback: $scope.selectThisPageCallback
+        }
+        /*, {
+        			type: 'separator'
+        		}*/
+    ];
 
     $scope.selectionOptions = $scope.selectionOptionsStatic.concat([{
-			title: 'Upload batch',
-			name: '',
-			type: 'link-list-item-first',
-		}
-    ]);
+        title: 'Upload batch',
+        name: '',
+        type: 'link-list-item-first',
+    }]);
 
-    $scope.columns = [
-		{
-			name: 'zem-simple-menu',
-			field: 'ad_selected',
-			type: 'checkbox',
-			shown: $scope.hasPermission('zemauth.content_ads_bulk_actions'),
-			hasPermission: $scope.hasPermission('zemauth.content_ads_bulk_actions'),
-			checked: true,
-			totalRow: true,
-			unselectable: true,
-			order: false,
-			selectCallback: $scope.selectedAdsChanged,
-			disabled: false,
-			selectionOptions: $scope.selectionOptions
-		}, {
-            name: 'Thumbnail',
-            nameCssClass: 'table-name-hidden',
-            field: 'image_urls',
-            checked: true,
-            type: 'image',
-            shown: true,
-            totalRow: false,
-            titleField: 'title',
-            order: false,
-        }, {
-            name: '',
-            nameCssClass: 'active-circle-icon-gray',
-            field: 'status_setting',
-            type: 'state',
-            enabledValue: constants.contentAdSourceState.ACTIVE,
-            pausedValue: constants.contentAdSourceState.INACTIVE,
-            internal: $scope.isPermissionInternal('zemauth.set_content_ad_status'),
-            shown: $scope.hasPermission('zemauth.set_content_ad_status'),
-            checked: true,
-            totalRow: false,
-            unselectable: true,
-            help: 'A setting for enabling and pausing content ads.',
-            onChange: function (sourceId, state) {
-                api.adGroupContentAdState.save($state.params.id, [sourceId], [], false, null, state).then(
-                    function () {
-                        pollTableUpdates();
-                    }
-                );
-            },
-            getDisabledMessage: function (row) {
-                return 'This ad must be managed manually.';
-            },
-            disabled: false
-        }, {
-            name: 'Status',
-            field: 'submission_status',
-            checked: false,
-            type: 'submissionStatus',
-            shown: true,
-            help: 'Current submission status.',
-            totalRow: false,
-        }, {
-            name: '',
-            unselectable: true,
-            checked: true,
-            type: 'notification',
-            shown: true,
-            totalRow: false,
-            extraTdCss: 'notification-no-text'
-        }, {
-            name: 'Title',
-            field: 'titleLink',
-            checked: true,
-            type: 'linkText',
-            shown: true,
-            totalRow: false,
-            help: 'The creative title/headline of a content ad.',
-            extraTdCss: 'trimmed title',
-            titleField: 'title',
-            order: true,
-            orderField: 'title',
-            initialOrder: 'asc'
-        }, {
-            name: 'URL',
-            field: 'urlLink',
-            checked: true,
-            type: 'linkText',
-            shown: true,
-            help: 'The web address of the content ad.',
-            extraTdCss: 'trimmed url',
-            totalRow: false,
-            titleField: 'url',
-            order: true,
-            orderField: 'url',
-            initialOrder: 'asc'
-        }, {
-            name: 'Uploaded',
-            field: 'upload_time',
-            checked: true,
-            type: 'datetime',
-            shown: true,
-            help: 'The time when the content ad was uploaded.',
-            totalRow: false,
-            order: true,
-            initialOrder: 'desc'
-        }, {
-            name: 'Batch Name',
-            field: 'batch_name',
-            checked: true,
-            extraTdCss: 'no-wrap',
-            type: 'text',
-            shown: true,
-            help: 'The name of the upload batch.',
-            totalRow: false,
-            titleField: 'batch_name',
-            order: true,
-            orderField: 'batch_name',
-            initialOrder: 'asc'
-        }, {
-            name: 'Spend',
-            field: 'cost',
-            checked: true,
-            type: 'currency',
-            shown: true,
-            help: "The amount spent per content ad.",
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc'
-        }, {
-            name: 'Avg. CPC',
-            field: 'cpc',
-            checked: true,
-            type: 'currency',
-            shown: true,
-            fractionSize: 3,
-            help: "The average CPC for each content ad.",
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc'
-        }, {
-            name: 'Clicks',
-            field: 'clicks',
-            checked: true,
-            type: 'number',
-            shown: true,
-            help: 'The number of times a content ad has been clicked.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc'
-        }, {
-            name: 'Impressions',
-            field: 'impressions',
-            checked: true,
-            type: 'number',
-            shown: true,
-            help: 'The number of times a content ad has been displayed.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc'
-        }, {
-            name: 'CTR',
-            field: 'ctr',
-            checked: true,
-            type: 'percent',
-            shown: true,
-            help: 'The number of clicks divided by the number of impressions.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc'
-        }, {
-            name: 'Display URL',
-            field: 'display_url',
-            checked: true,
-            extraTdCss: 'no-wrap',
-            type: 'text',
-            shown: true,
-            help: 'Advertiser\'s display URL.',
-            totalRow: false,
-            titleField: 'display_url',
-            order: true,
-            orderField: 'display_url',
-            initialOrder: 'asc'
-        }, {
-            name: 'Brand Name',
-            field: 'brand_name',
-            checked: true,
-            extraTdCss: 'no-wrap',
-            type: 'text',
-            shown: true,
-            help: 'Advertiser\'s brand name',
-            totalRow: false,
-            titleField: 'brand_name',
-            order: true,
-            orderField: 'brand_name',
-            initialOrder: 'asc'
-        }, {
-            name: 'Description',
-            field: 'description',
-            checked: true,
-            extraTdCss: 'no-wrap',
-            type: 'text',
-            shown: true,
-            help: 'Description of the ad group.',
-            totalRow: false,
-            titleField: 'description',
-            order: true,
-            orderField: 'description',
-            initialOrder: 'asc'
-        }, {
-            name: 'Call to action',
-            field: 'call_to_action',
-            checked: true,
-            extraTdCss: 'no-wrap',
-            type: 'text',
-            shown: true,
-            help: 'Call to action text.',
-            totalRow: false,
-            titleField: 'call_to_action',
-            order: true,
-            orderField: 'call_to_action',
-            initialOrder: 'asc'
-        }
-    ];    
-	// 'urlLink1', 'urlLink', 
+    $scope.columns = [{
+        name: 'zem-simple-menu',
+        field: 'ad_selected',
+        type: 'checkbox',
+        shown: $scope.hasPermission('zemauth.content_ads_bulk_actions'),
+        hasPermission: $scope.hasPermission('zemauth.content_ads_bulk_actions'),
+        checked: true,
+        totalRow: true,
+        unselectable: true,
+        order: false,
+        selectCallback: $scope.selectedAdsChanged,
+        disabled: false,
+        selectionOptions: $scope.selectionOptions
+    }, {
+        name: 'Thumbnail',
+        nameCssClass: 'table-name-hidden',
+        field: 'image_urls',
+        checked: true,
+        type: 'image',
+        shown: true,
+        totalRow: false,
+        titleField: 'title',
+        order: false,
+    }, {
+        name: '',
+        nameCssClass: 'active-circle-icon-gray',
+        field: 'status_setting',
+        type: 'state',
+        enabledValue: constants.contentAdSourceState.ACTIVE,
+        pausedValue: constants.contentAdSourceState.INACTIVE,
+        internal: $scope.isPermissionInternal('zemauth.set_content_ad_status'),
+        shown: $scope.hasPermission('zemauth.set_content_ad_status'),
+        checked: true,
+        totalRow: false,
+        unselectable: true,
+        help: 'A setting for enabling and pausing content ads.',
+        onChange: function (sourceId, state) {
+            api.adGroupContentAdState.save($state.params.id, [sourceId], [], false, null, state).then(
+                function () {
+                    pollTableUpdates();
+                }
+            );
+        },
+        getDisabledMessage: function (row) {
+            return 'This ad must be managed manually.';
+        },
+        disabled: false
+    }, {
+        name: 'Status',
+        field: 'submission_status',
+        checked: false,
+        type: 'submissionStatus',
+        shown: true,
+        help: 'Current submission status.',
+        totalRow: false,
+    }, {
+        name: '',
+        unselectable: true,
+        checked: true,
+        type: 'notification',
+        shown: true,
+        totalRow: false,
+        extraTdCss: 'notification-no-text'
+    }, {
+        name: 'Title',
+        field: 'titleLink',
+        checked: true,
+        type: 'linkText',
+        shown: true,
+        totalRow: false,
+        help: 'The creative title/headline of a content ad.',
+        extraTdCss: 'trimmed title',
+        titleField: 'title',
+        order: true,
+        orderField: 'title',
+        initialOrder: 'asc'
+    }, {
+        name: 'URL',
+        field: 'urlLink',
+        checked: true,
+        type: 'linkText',
+        shown: true,
+        help: 'The web address of the content ad.',
+        extraTdCss: 'trimmed url',
+        totalRow: false,
+        titleField: 'url',
+        order: true,
+        orderField: 'url',
+        initialOrder: 'asc'
+    }, {
+        name: 'Uploaded',
+        field: 'upload_time',
+        checked: true,
+        type: 'datetime',
+        shown: true,
+        help: 'The time when the content ad was uploaded.',
+        totalRow: false,
+        order: true,
+        initialOrder: 'desc'
+    }, {
+        name: 'Batch Name',
+        field: 'batch_name',
+        checked: true,
+        extraTdCss: 'no-wrap',
+        type: 'text',
+        shown: true,
+        help: 'The name of the upload batch.',
+        totalRow: false,
+        titleField: 'batch_name',
+        order: true,
+        orderField: 'batch_name',
+        initialOrder: 'asc'
+    }, {
+        name: 'Spend',
+        field: 'cost',
+        checked: true,
+        type: 'currency',
+        shown: true,
+        help: "The amount spent per content ad.",
+        totalRow: true,
+        order: true,
+        initialOrder: 'desc'
+    }, {
+        name: 'Avg. CPC',
+        field: 'cpc',
+        checked: true,
+        type: 'currency',
+        shown: true,
+        fractionSize: 3,
+        help: "The average CPC for each content ad.",
+        totalRow: true,
+        order: true,
+        initialOrder: 'desc'
+    }, {
+        name: 'Clicks',
+        field: 'clicks',
+        checked: true,
+        type: 'number',
+        shown: true,
+        help: 'The number of times a content ad has been clicked.',
+        totalRow: true,
+        order: true,
+        initialOrder: 'desc'
+    }, {
+        name: 'Impressions',
+        field: 'impressions',
+        checked: true,
+        type: 'number',
+        shown: true,
+        help: 'The number of times a content ad has been displayed.',
+        totalRow: true,
+        order: true,
+        initialOrder: 'desc'
+    }, {
+        name: 'CTR',
+        field: 'ctr',
+        checked: true,
+        type: 'percent',
+        shown: true,
+        help: 'The number of clicks divided by the number of impressions.',
+        totalRow: true,
+        order: true,
+        initialOrder: 'desc'
+    }, {
+        name: 'Display URL',
+        field: 'display_url',
+        checked: true,
+        extraTdCss: 'no-wrap',
+        type: 'text',
+        shown: true,
+        help: 'Advertiser\'s display URL.',
+        totalRow: false,
+        titleField: 'display_url',
+        order: true,
+        orderField: 'display_url',
+        initialOrder: 'asc'
+    }, {
+        name: 'Brand Name',
+        field: 'brand_name',
+        checked: true,
+        extraTdCss: 'no-wrap',
+        type: 'text',
+        shown: true,
+        help: 'Advertiser\'s brand name',
+        totalRow: false,
+        titleField: 'brand_name',
+        order: true,
+        orderField: 'brand_name',
+        initialOrder: 'asc'
+    }, {
+        name: 'Description',
+        field: 'description',
+        checked: true,
+        extraTdCss: 'no-wrap',
+        type: 'text',
+        shown: true,
+        help: 'Description of the ad group.',
+        totalRow: false,
+        titleField: 'description',
+        order: true,
+        orderField: 'description',
+        initialOrder: 'asc'
+    }, {
+        name: 'Call to action',
+        field: 'call_to_action',
+        checked: true,
+        extraTdCss: 'no-wrap',
+        type: 'text',
+        shown: true,
+        help: 'Call to action text.',
+        totalRow: false,
+        titleField: 'call_to_action',
+        order: true,
+        orderField: 'call_to_action',
+        initialOrder: 'asc'
+    }];
+    // 'urlLink1', 'urlLink', 
     $scope.columnCategories = [{
         'name': 'Content Sync',
         'fields': ['ad_selected', 'image_urls', 'titleLink', 'submission_status', 'checked', 'upload_time', 'batch_name', 'display_url', 'brand_name', 'description', 'call_to_action']
@@ -348,7 +348,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         'fields': ['cost', 'cpc', 'clicks', 'impressions', 'ctr']
     }];
 
-    $scope.addContentAds = function() {
+    $scope.addContentAds = function () {
         var modalInstance = $modal.open({
             templateUrl: '/partials/upload_ads_modal.html',
             controller: 'UploadAdsModalCtrl',
@@ -363,70 +363,72 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         return modalInstance;
     };
 
-    $scope.$watch('selectedBulkAction', function(newValue, oldValue) {
-        if (newValue === oldValue) { return; }
+    $scope.$watch('selectedBulkAction', function (newValue, oldValue) {
+        if (newValue === oldValue) {
+            return;
+        }
 
-		if ($scope.selectedBulkAction == null) {
-			return;
-		}
-    	// TODO: replace ad lookups with selection buffer lookups
-		var content_ad_ids_true = [],
-			content_ad_ids_false = [];
+        if ($scope.selectedBulkAction == null) {
+            return;
+        }
+        // TODO: replace ad lookups with selection buffer lookups
+        var content_ad_ids_true = [],
+            content_ad_ids_false = [];
 
-		// $scope.selectedAll = false;
-		// $scope.selectedBatches = [];
-		// $scope.selectedContentAdsStatus = {};
+        // $scope.selectedAll = false;
+        // $scope.selectedBatches = [];
+        // $scope.selectedContentAdsStatus = {};
 
-		for (var selectedContentAd in $scope.selectedContentAdsStatus) {
-			if ($scope.selectedContentAdsStatus[selectedContentAd]) {
-				content_ad_ids_true.push(selectedContentAd);
-			} else {
-				content_ad_ids_false.push(selectedContentAd);
-			}
-		}
+        for (var selectedContentAd in $scope.selectedContentAdsStatus) {
+            if ($scope.selectedContentAdsStatus[selectedContentAd]) {
+                content_ad_ids_true.push(selectedContentAd);
+            } else {
+                content_ad_ids_false.push(selectedContentAd);
+            }
+        }
 
-		if ($scope.selectedBulkAction == 'pause') {
+        if ($scope.selectedBulkAction == 'pause') {
             api.adGroupContentAdState.save(
-            		$state.params.id, 
-            		content_ad_ids_true, 
-            		content_ad_ids_false,
-            		$scope.selectedAll,
-            		$scope.selectedBatches,
-            		constants.contentAdSourceState.INACTIVE).then(
+                $state.params.id,
+                content_ad_ids_true,
+                content_ad_ids_false,
+                $scope.selectedAll,
+                $scope.selectedBatches,
+                constants.contentAdSourceState.INACTIVE).then(
                 function () {
                     pollTableUpdates();
                 }
             );
-		} else if ($scope.selectedBulkAction == 'resume') {
+        } else if ($scope.selectedBulkAction == 'resume') {
             api.adGroupContentAdState.save(
-            		$state.params.id, 
-            		content_ad_ids_true, 
-            		content_ad_ids_false,
-            		$scope.selectedAll,
-            		$scope.selectedBatches,
-            		constants.contentAdSourceState.ACTIVE).then(
+                $state.params.id,
+                content_ad_ids_true,
+                content_ad_ids_false,
+                $scope.selectedAll,
+                $scope.selectedBatches,
+                constants.contentAdSourceState.ACTIVE).then(
                 function () {
                     pollTableUpdates();
                 }
             );
-		} else if ($scope.selectedBulkAction == 'download') {
-            var url = '/api/ad_groups/' + $state.params.id + 
-            	'/contentads/csv/?content_ad_ids_enabled=' + content_ad_ids_true.join(',') +
-            	'&content_ad_ids_disabled=' + content_ad_ids_false.join(',');
-			url += '&select_all=' + $scope.selectedAll;
-			if ($scope.selectedBatches.length > 0) {
-				url += '&select_batch=' + $scope.selectedBatches[0];
-			}
-			
-            $window.open(url, '_blank');            
-		} else {
-			// TODO: Signal error
-		}
-		
-		$scope.selectedBulkAction = null;
-	});
+        } else if ($scope.selectedBulkAction == 'download') {
+            var url = '/api/ad_groups/' + $state.params.id +
+                '/contentads/csv/?content_ad_ids_enabled=' + content_ad_ids_true.join(',') +
+                '&content_ad_ids_disabled=' + content_ad_ids_false.join(',');
+            url += '&select_all=' + $scope.selectedAll;
+            if ($scope.selectedBatches.length > 0) {
+                url += '&select_batch=' + $scope.selectedBatches[0];
+            }
 
-    $scope.loadPage = function(page) {
+            $window.open(url, '_blank');
+        } else {
+            // TODO: Signal error
+        }
+
+        $scope.selectedBulkAction = null;
+    });
+
+    $scope.loadPage = function (page) {
         if (page && page > 0 && page <= $scope.pagination.numPages) {
             $scope.pagination.currentPage = page;
         }
@@ -440,7 +442,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         }
     };
 
-    $scope.$watch('size', function(newValue, oldValue) {
+    $scope.$watch('size', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             $scope.loadPage();
         }
@@ -457,8 +459,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         setDisabledExportOptions();
     });
 
-    $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
-        if(newValue === true && oldValue === false){
+    $scope.$watch('isSyncInProgress', function (newValue, oldValue) {
+        if (newValue === true && oldValue === false) {
             pollSyncStatus();
         }
     });
@@ -496,7 +498,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         }
     });
 
-    $scope.orderTableData = function(order) {
+    $scope.orderTableData = function (order) {
         $scope.order = order;
 
         $location.search('order', $scope.order);
@@ -506,7 +508,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     $scope.toggleChart = function () {
         $scope.chartHidden = !$scope.chartHidden;
 
-        $timeout(function() {
+        $timeout(function () {
             $scope.$broadcast('highchartsng.reflow');
         }, 0);
     };
@@ -520,7 +522,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         getDailyStats();
     }, true);
 
-    $scope.triggerSync = function() {
+    $scope.triggerSync = function () {
         $scope.isSyncInProgress = true;
         api.adGroupSync.get($state.params.id);
     };
@@ -552,25 +554,25 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         });
     };
 
-    var pollSyncStatus = function() {
-        if($scope.isSyncInProgress){
-            $timeout(function() {
+    var pollSyncStatus = function () {
+        if ($scope.isSyncInProgress) {
+            $timeout(function () {
                 api.checkSyncProgress.get($state.params.id).then(
-                    function(data) {
+                    function (data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 
-                        if($scope.isSyncInProgress === false){
+                        if ($scope.isSyncInProgress === false) {
                             // we found out that the sync is no longer in progress
                             // time to reload the data
                             getTableData();
                             getDailyStats();
                         }
                     },
-                    function(data) {
+                    function (data) {
                         // error
                         $scope.isSyncInProgress = false;
                     }
-                ).finally(function() {
+                ).finally(function () {
                     pollSyncStatus();
                 });
             }, 10000);
@@ -581,7 +583,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         var options;
         cols = zemCustomTableColsService.load('adGroupAdsPlus', $scope.columns);
         $scope.selectedColumnsCount = cols.length;
-	};
+    };
 
     var initColumns = function () {
         var cols;
@@ -595,36 +597,38 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         }, true);
     };
 
-	var initUploadBatches = function () {
-		// refresh upload batches for current adgroup
-		api.adGroupAdsPlusUploadBatches.list($state.params.id).then(function(data) {
-			var dataEntry = data['data']['batches'],
-				entries = [];
+    var initUploadBatches = function () {
+        // refresh upload batches for current adgroup
+        api.adGroupAdsPlusUploadBatches.list($state.params.id).then(function (data) {
+            var dataEntry = data['data']['batches'],
+                entries = [];
 
- 	        dataEntry.forEach(function (entry) {
- 	        	entry['callback'] = $scope.selectBatchCallback;
-				entry['type'] = 'link-list-item';
- 	        	entries.push(entry);
-			});
+            dataEntry.forEach(function (entry) {
+                entry['callback'] = $scope.selectBatchCallback;
+                entry['type'] = 'link-list-item';
+                entries.push(entry);
+            });
 
-			if (entries.length > 0) {
-				entries[0]['type'] = 'link-list-item-first';
-			}
+            if (entries.length > 0) {
+                entries[0]['type'] = 'link-list-item-first';
+            }
 
-			var i = 0;
-			$scope.columns.forEach(function(col) {
-				if (col.name == 'zem-simple-menu') {
-					$scope.columns[i].selectionOptions = $scope.selectionOptionsStatic.concat(entries);
-				}
-				i += 1;
-			});
-		});
-	};
+            var i = 0;
+            $scope.columns.forEach(function (col) {
+                if (col.name == 'zem-simple-menu') {
+                    $scope.columns[i].selectionOptions = $scope.selectionOptionsStatic.concat(entries);
+                }
+                i += 1;
+            });
+        });
+    };
 
 
-    var init = function() {
+    var init = function () {
         if (!$scope.adGroup.contentAdsTabWithCMS && !$scope.hasPermission('zemauth.new_content_ads_tab')) {
-            $state.go('main.adGroups.ads', {id: $scope.adGroup.id});
+            $state.go('main.adGroups.ads', {
+                id: $scope.adGroup.id
+            });
             return;
         }
 
@@ -719,7 +723,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         );
     };
 
-    var setDisabledExportOptions = function() {
+    var setDisabledExportOptions = function () {
         api.adGroupAdsPlusExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
             function (data) {
                 var option = null;
