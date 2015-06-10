@@ -6,7 +6,12 @@
 
     <form id="form-ad-group-settings" class="form-horizontal">
         <div class="form-group">
-            <div class="col-xs-4">
+            <label for="campaign-state-switch" class="col-xs-2 control-label">
+                Ad Group Status
+                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="This is the current state of the Ad Group. If you enable the Ad Group you must then go enable preferred Media Sources too.
+                                                                                      If you pause it, all Media Sources get paused." placement="bottom"></zem-help-popover>
+            </label>
+            <div id="campaign-state-switch" class="col-xs-4">
                 <div class="btn-group campaign-state-switch">
                     <label class="btn btn-success" ng-model="settings.state" ng-repeat="state in options.adGroupSettingsStates" btn-radio="state.value">{{ state.name }}</label>
                 </div>
@@ -53,37 +58,6 @@
             </div>
 
             <label ng-repeat="error in errors.endDate" class="control-label error" for="end-date-input">{{ error }}</label>
-        </div>
-
-        <div class="form-group" ng-class="{'has-error': !!errors.dailyBudget}">
-            <label for="budget-input" class="col-xs-2 control-label">
-                Daily budget
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The maximum budget that should be spent on average, per day." placement="top"></zem-help-popover>
-            </label>
-            <div class="col-xs-2">
-                <div class="input-group">
-                    <span class="input-group-addon">$</span>
-                    <input id="budget-input" type="text" class="form-control" ng-model="settings.dailyBudget" zem-currency-input>
-                </div>
-            </div>
-            <p class="help-block">per day</p>
-
-            <label ng-repeat="error in errors.dailyBudget" class="control-label error budget-error" for="buget-input">{{ error }}</label>
-        </div>
-
-        <div class="form-group" ng-class="{'has-error': !!errors.cpc}">
-            <label for="cpc-input" class="col-xs-2 control-label">
-                Max CPC
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Maximum average price (in USD) per click." placement="top"></zem-help-popover>
-            </label>
-            <div class="col-xs-2">
-                <div class="input-group">
-                    <span class="input-group-addon">$</span>
-                    <input id="cpc-input" type="text" class="form-control" ng-model="settings.cpc" zem-currency-input>
-                </div>
-            </div>
-
-            <label ng-repeat="error in errors.cpc" class="control-label error" for="cpc-input">{{ error }}</label>
         </div>
 
         <div class="form-vertical">

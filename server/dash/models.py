@@ -546,8 +546,11 @@ class SourceType(models.Model):
     def can_modify_ad_group_name(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_AD_GROUP_NAME).exists()
 
-    def can_modify_ad_group_iab_category(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY).exists()
+    def can_modify_ad_group_iab_category_automatic(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY_AUTOMATIC).exists()
+
+    def can_modify_ad_group_iab_category_manual(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL).exists()
 
     def update_tracking_codes_on_content_ads(self):
         return self.available_actions.filter(
@@ -631,8 +634,11 @@ class Source(models.Model):
     def can_modify_ad_group_name(self):
         return self.source_type.can_modify_ad_group_name() and not self.maintenance and not self.deprecated
 
-    def can_modify_ad_group_iab_category(self):
-        return self.source_type.can_modify_ad_group_iab_category() and not self.maintenance and not self.deprecated
+    def can_modify_ad_group_iab_category_automatic(self):
+        return self.source_type.can_modify_ad_group_iab_category_automatic() and not self.maintenance and not self.deprecated
+
+    def can_modify_ad_group_iab_category_manual(self):
+        return self.source_type.can_modify_ad_group_iab_category_manual() and not self.maintenance and not self.deprecated
 
     def update_tracking_codes_on_content_ads(self):
         return self.source_type.update_tracking_codes_on_content_ads()
@@ -848,6 +854,8 @@ class AdGroupSource(models.Model):
     source_campaign_key = jsonfield.JSONField(blank=True, default={})
 
     last_successful_sync_dt = models.DateTimeField(blank=True, null=True)
+    last_successful_reports_sync_dt = models.DateTimeField(blank=True, null=True)
+    last_successful_status_sync_dt = models.DateTimeField(blank=True, null=True)
     can_manage_content_ads = models.BooleanField(null=False, blank=False, default=False)
 
     source_content_ad_id = models.CharField(max_length=100, null=True, blank=True)

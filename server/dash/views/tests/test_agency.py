@@ -15,16 +15,9 @@ from dash import models
 class AdGroupSettingsTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
 
-    def test_put(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+    def setUp(self):
         self.maxDiff = None
-        user = User.objects.get(pk=1)
-        password = 'secret'
-
-        self.client.login(username=user.email, password=password)
-
-        ad_group = models.AdGroup.objects.get(pk=1)
-
-        data = {
+        self.settings_dict = {
             'settings': {
                 'state': 1,
                 'start_date': '2015-05-01',
@@ -38,13 +31,19 @@ class AdGroupSettingsTest(TestCase):
             }
         }
 
+        user = User.objects.get(pk=1)
+        self.client.login(username=user.email, password='secret')
+
+    def test_put(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
         mock_actionlog_api.is_waiting_for_set_actions.return_value = True
 
         old_settings = ad_group.get_current_settings()
 
         response = self.client.put(
             reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
-            json.dumps(data),
+            json.dumps(self.settings_dict),
             follow=True
         )
 
@@ -75,6 +74,39 @@ class AdGroupSettingsTest(TestCase):
         self.assertEqual(new_settings.call_to_action, 'Call to action')
 
         mock_actionlog_api.init_enable_ad_group.assert_called_with(ad_group, ANY, order=ANY, send=False)
+        mock_order_ad_group_settings_update.assert_called_with(
+            ad_group, old_settings, new_settings, ANY, send=False)
+
+    def test_put_without_non_propagated_settings(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+        old_settings = ad_group.get_current_settings()
+
+        self.settings_dict['settings']['cpc_cc'] = None
+        self.settings_dict['settings']['daily_budget_cc'] = None
+
+        response = self.client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True
+        )
+
+        response_settings_dict = json.loads(response.content)['data']['settings']
+
+        self.assertEqual(response_settings_dict['cpc_cc'], '')
+        self.assertEqual(response_settings_dict['daily_budget_cc'], '')
+
+        new_settings = ad_group.get_current_settings()
+
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        # can it actually be saved to the db
+        new_settings.save(request)
+
+        self.assertEqual(new_settings.cpc_cc, None)
+        self.assertEqual(new_settings.daily_budget_cc, None)
+
         mock_order_ad_group_settings_update.assert_called_with(
             ad_group, old_settings, new_settings, ANY, send=False)
 

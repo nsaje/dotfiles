@@ -41,6 +41,27 @@ class AdGroupSettingsFormTest(TestCase):
             'tracking_code': 'code=test'
         })
 
+    def test_no_non_propagated_fields(self):
+        self.data['cpc_cc'] = None
+        self.data['daily_budget_cc'] = None
+
+        form = forms.AdGroupSettingsForm(self.data)
+
+        self.assertTrue(form.is_valid())
+
+        self.assertEqual(form.cleaned_data.get('daily_budget_cc'), None)
+        self.assertEqual(form.cleaned_data.get('cpc_cc'), None)
+
+    def test_errors_on_non_propagated_fields(self):
+        self.data['cpc_cc'] = 0.01
+        self.data['daily_budget_cc'] = 1
+        form = forms.AdGroupSettingsForm(self.data)
+
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            'cpc_cc': ['Minimum CPC is $0.03.'],
+            'daily_budget_cc': ['Please provide budget of at least $10.00.']})
+
 
 class AdGroupAdsPlusUploadFormTest(TestCase):
     def setUp(self):

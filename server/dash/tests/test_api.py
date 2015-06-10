@@ -86,7 +86,7 @@ class UpdateContentAdSourceState(TestCase):
         content_ad_data = [{
             'id': 1,
             'state': 2,
-            'submission_status': 2
+            'submission_status': constants.ContentAdSubmissionStatus.APPROVED
         }]
 
         api.update_multiple_content_ad_source_states(ad_group_source, content_ad_data)
@@ -105,6 +105,55 @@ class UpdateContentAdSourceState(TestCase):
         content_ad_source = models.ContentAdSource.objects.get(pk=1)
         self.assertEqual(content_ad_source.source_state, data['source_state'])
         self.assertEqual(content_ad_source.submission_status, data['submission_status'])
+
+
+class AutomaticallyApproveContentAdSourceSubmissionStatus(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.content_ad_source = models.ContentAdSource.objects.get(id=1)
+        self.content_ad_source.submission_status = constants.ContentAdSubmissionStatus.LIMIT_REACHED
+        self.content_ad_source.source_content_ad_id = 'test'
+        self.content_ad_source.save()
+
+        account = self.content_ad_source.content_ad.ad_group.campaign.account
+        account.outbrain_marketer_id = api.AUTOMATIC_APPROVAL_OUTBRAIN_ACCOUNT
+
+        request = HttpRequest()
+        request.user = User.objects.create_user('test@example.com')
+
+        account.save(request)
+
+        self.content_ad_source.source.source_type = models.SourceType.objects.get(type=constants.SourceType.OUTBRAIN)
+        self.content_ad_source.source.save()
+
+    def test_update_content_ad_source_state_auto_approved(self):
+        content_ad_data = {'submission_status': constants.ContentAdSubmissionStatus.PENDING}
+
+        api.update_content_ad_source_state(self.content_ad_source, content_ad_data)
+
+        self.content_ad_source.refresh_from_db()
+        self.assertEqual(self.content_ad_source.submission_status, constants.ContentAdSubmissionStatus.APPROVED)
+
+    def test_update_multiple_content_ad_source_states_auto_approved(self):
+        content_ad_data = [{'id': 'test', 'state': 2, 'submission_status': constants.ContentAdSubmissionStatus.PENDING}]
+
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        api.update_multiple_content_ad_source_states(ad_group_source, content_ad_data)
+
+        self.content_ad_source.refresh_from_db()
+        self.assertEqual(self.content_ad_source.submission_status, constants.ContentAdSubmissionStatus.APPROVED)
+
+    def test_insert_content_ad_callback(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        api.insert_content_ad_callback(ad_group_source, self.content_ad_source, None, None,
+                                       constants.ContentAdSubmissionStatus.PENDING, None)
+
+        self.content_ad_source.refresh_from_db()
+        self.assertEqual(self.content_ad_source.submission_status, constants.ContentAdSubmissionStatus.APPROVED)
 
 
 @override_settings(
@@ -227,6 +276,70 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.assertTrue(insert_adgroup_mock.called)
         self.assertEqual(insert_adgroup_mock.call_args[0][0], ad_group_source1.ad_group_id)
         self.assertEqual(insert_adgroup_mock.call_args[0][1], adgs2.tracking_code)
+
+    def test_iab_category_manual(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.source_type.available_actions.add(
+            models.SourceAction.objects.get(
+                action=constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL
+            )
+        )
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.iab_category = 'IAB1'
+
+        manual_actions = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action_type=actionlog.constants.ActionType.MANUAL
+        )
+
+        self.assertFalse(manual_actions.exists())
+
+        ret = api.order_ad_group_settings_update(
+            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
+
+        self.assertEqual([], ret)
+        self.assertTrue(manual_actions.exists())
+
+    def test_iab_category_automatic(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.source_type.available_actions.add(
+            models.SourceAction.objects.get(
+                action=constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY_AUTOMATIC
+            )
+        )
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.iab_category = 'IAB1'
+
+        ret = api.order_ad_group_settings_update(
+            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
+
+        self.assertEqual(2, len(ret))
+        for r in ret:
+            self.assertEqual(r.action, actionlog.constants.Action.SET_CAMPAIGN_STATE)
+            self.assertEqual(r.action_type, actionlog.constants.ActionType.AUTOMATIC)
+
+    def test_iab_category_none(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.iab_category = 'IAB1'
+
+        manual_actions = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action_type=actionlog.constants.ActionType.MANUAL
+        )
+
+        self.assertFalse(manual_actions.exists())
+
+        ret = api.order_ad_group_settings_update(
+            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
+
+        self.assertEqual([], ret)
+        self.assertFalse(manual_actions.exists())
 
 
 class UpdateAdGroupSourceState(TestCase):
