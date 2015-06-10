@@ -488,15 +488,17 @@ def get_ad_group_sources_state_messages(ad_group_sources):
 def get_selected_content_ads(
         ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled):
     if select_all:
-        return models.ContentAd.objects.filter(
+        content_ads = models.ContentAd.objects.filter(
             Q(ad_group__id=ad_group_id) | Q(id__in=content_ad_ids_enabled)).exclude(
                 id__in=content_ad_ids_disabled)
     elif select_batch_id is not None:
-        return models.ContentAd.objects.filter(
+        content_ads = models.ContentAd.objects.filter(
             Q(batch__id=select_batch_id) | Q(id__in=content_ad_ids_enabled)).exclude(
                 id__in=content_ad_ids_disabled)
     else:
-        return models.ContentAd.objects.filter(id__in=content_ad_ids_enabled)
+        content_ads = models.ContentAd.objects.filter(id__in=content_ad_ids_enabled)
+
+    return content_ads.order_by('created_dt')
 
 
 def _get_state_messages(ad_group_source):

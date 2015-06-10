@@ -155,9 +155,9 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.jpg\r
 http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.jpg\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -171,8 +171,8 @@ http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x
         response = self._get_csv_from_server(data)
 
         expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.jpg\r
 http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.jpg\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -185,8 +185,8 @@ http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.
         response = self._get_csv_from_server(data)
 
         expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.jpg\r
 http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.jpg\r
 '''
 
         self.assertEqual(response.content, expected_content)

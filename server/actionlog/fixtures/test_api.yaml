@@ -683,7 +683,7 @@
         url: 'http://testurl.com'
         title: 'Test Article unicode Čžš'
         ad_group: 1
-        created_dt: '2015-02-23T00:00:00'
+        created_dt: '2015-02-21T00:00:00'
         state: 1
     model: dash.contentad
     pk: 1
@@ -696,7 +696,7 @@
         url: 'http://testurl.com'
         title: 'Test Article with no content_ad_sources 1'
         ad_group: 1
-        created_dt: '2015-02-23T00:00:00'
+        created_dt: '2015-02-21T00:00:01'
         state: 2
     model: dash.contentad
     pk: 2
