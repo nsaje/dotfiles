@@ -3,6 +3,7 @@ import datetime
 import pytz
 from slugify import slugify
 from django.core import urlresolvers
+from django.conf import settings
 
 from dash.views import helpers
 from dash import models
@@ -632,6 +633,27 @@ class SourcesTable(api_common.BaseApiView):
 
         return 'This media source doesn\'t support setting this value through the dashboard.'
 
+    def _get_supply_dash_disabled_message(self, ad_group_source):
+        if not ad_group_source.source.has_3rd_party_dashboard():
+            return "This media source doesn't have a dashboard of its own. " \
+                   "All campaign management is done through Zemanta One dashboard."
+        elif ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
+            return "Dashboard of this media source is not yet available because the " \
+                   "media source is still being set up for this ad group."
+
+        return None
+
+    def _get_supply_dash_url(self, ad_group_source):
+        if not ad_group_source.source.has_3rd_party_dashboard() or\
+               ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
+            return None
+
+        return '{}?ad_group_id={}&source_id={}'.format(
+            urlresolvers.reverse('dash.views.views.supply_dash_redirect'),
+            ad_group_source.ad_group.id,
+            ad_group_source.source.id
+        )
+
     def get_rows(
             self,
             id_,
@@ -669,11 +691,6 @@ class SourcesTable(api_common.BaseApiView):
 
             last_sync = last_actions.get(source.id)
 
-            supply_dash_url = None
-            if ad_group_level and source.has_3rd_party_dashboard():
-                supply_dash_url = urlresolvers.reverse('dash.views.views.supply_dash_redirect')
-                supply_dash_url += '?ad_group_id={}&source_id={}'.format(id_, source.id)
-
             if ad_group_level:
                 daily_budget = states[0].daily_budget_cc if len(states) else None
             else:
@@ -700,7 +717,6 @@ class SourcesTable(api_common.BaseApiView):
 
                 'last_sync': last_sync,
                 'yesterday_cost': yesterday_cost.get(source.id),
-                'supply_dash_url': supply_dash_url,
 
                 'goals': source_data.get('goals', {}),
 
@@ -716,6 +732,9 @@ class SourcesTable(api_common.BaseApiView):
                     if item.source.id == source.id:
                         ad_group_source = item
                         break
+
+                row['supply_dash_url'] = self._get_supply_dash_url(ad_group_source)
+                row['supply_dash_disabled_message'] = self._get_supply_dash_disabled_message(ad_group_source)
 
                 ad_group_settings = level_sources_table.ad_group.get_current_settings()
 

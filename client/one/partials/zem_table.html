@@ -96,8 +96,8 @@
                                 </span>
                                 <span ng-switch-when="link">
                                     <a ng-if="row[col.field] !== null" ng-href="{{ row[col.field] }}" target="_blank"><img ng-src="{{ config.static_url }}/one/img/link.svg" class="link-img"></a>
-                                    <img ng-if="row[col.field] === null" ng-src="{{ config.static_url }}/one/img/link.svg" class="link-img link-img-disabled" popover="This media source doesn't have a dashboard of its own. All campaign management is done through Zemanta One dashboard." popover-placement="right" popover-trigger="mouseenter" popover-append-to-body="true">
-                                    
+                                    <img ng-if="row[col.field] === null" ng-src="{{ config.static_url }}/one/img/link.svg" class="link-img link-img-disabled" popover="{{row.supply_dash_disabled_message}}" popover-placement="right" popover-trigger="mouseenter" popover-append-to-body="true">
+
 
                                 </span>
                                 <span ng-switch-when="linkText">
