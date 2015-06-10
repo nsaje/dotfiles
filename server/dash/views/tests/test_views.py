@@ -369,6 +369,44 @@ class AdGroupContentAdStateTest(TestCase):
         with self.assertRaises(exc.ValidationError):
             views.AdGroupContentAdState()._get_content_ad_ids(data, param_name)
 
+    def test_add_to_history(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        content_ads = models.ContentAd.objects.filter(ad_group=ad_group).order_by('id')
+        self.assertEqual(len(content_ads), 3)
+
+        state = constants.ContentAdSourceState.ACTIVE
+
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        views.AdGroupContentAdState()._add_to_history(ad_group, content_ads, state, request)
+
+        settings = ad_group.get_current_settings()
+
+        self.assertEqual(settings.changes_text, 'Content ad(s) 1, 2, 3 set to Enabled.')
+
+    def test_add_to_history_shorten(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        content_ads = models.ContentAd.objects.filter(ad_group=ad_group).order_by('id')
+        self.assertEqual(len(content_ads), 3)
+        content_ads = list(content_ads) * 4  # need more than 10 ads
+
+        state = constants.ContentAdSourceState.ACTIVE
+
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        views.AdGroupContentAdState()._add_to_history(ad_group, content_ads, state, request)
+
+        settings = ad_group.get_current_settings()
+
+        self.assertEqual(
+            settings.changes_text,
+            'Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more set to Enabled.'
+        )
+
 
 class AdGroupAdsPlusUploadTest(TestCase):
     fixtures = ['test_views.yaml']

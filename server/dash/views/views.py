@@ -468,18 +468,10 @@ class AdGroupSources(api_common.BaseApiView):
 
     def _add_to_history(self, ad_group_source, request):
         changes_text = '{} campaign created.'.format(ad_group_source.source.name)
-        try:
-            latest_ad_group_settings = models.AdGroupSettings.objects \
-                .filter(ad_group=ad_group_source.ad_group) \
-                .latest('created_dt')
-        except models.AdGroupSettings.DoesNotExist:
-            # there are no settings, we create the first one
-            latest_ad_group_settings = models.AdGroupSettings(ad_group=ad_group_source.ad_group)
 
-        new_ad_group_settings = latest_ad_group_settings
-        new_ad_group_settings.pk = None
-        new_ad_group_settings.changes_text = changes_text
-        new_ad_group_settings.save(request)
+        settings = ad_group_source.ad_group.get_current_settings().copy_settings()
+        settings.changes_text = changes_text
+        settings.save(request)
 
 
 class Account(api_common.BaseApiView):
@@ -737,7 +729,7 @@ class AdGroupContentAdState(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.set_content_ad_status'):
             raise exc.ForbiddenError(message='Not allowed')
 
-        helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         data = json.loads(request.body)
 
@@ -755,6 +747,7 @@ class AdGroupContentAdState(api_common.BaseApiView):
             ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
 
         self._update_content_ads(content_ads, state, request)
+        self._add_to_history(ad_group, content_ads, state, request)
 
         return self.create_api_response()
 
@@ -792,6 +785,22 @@ class AdGroupContentAdState(api_common.BaseApiView):
             return map(int, content_ad_ids)
         except ValueError:
             raise exc.ValidationError()
+
+    def _add_to_history(self, ad_group, content_ads, state, request):
+        num_id_limit = 10
+
+        shorten = len(content_ads) > num_id_limit
+        ids = [str(ad.id) for ad in content_ads[:num_id_limit]]
+
+        changes_text = 'Content ad(s) {}{} set to {}.'.format(
+            ', '.join(ids),
+            ' and {} more'.format(len(content_ads) - num_id_limit) if shorten else '',
+            constants.ContentAdSourceState.get_text(state)
+        )
+
+        settings = ad_group.get_current_settings().copy_settings()
+        settings.changes_text = changes_text
+        settings.save(request)
 
 
 class AdGroupContentAdCSV(api_common.BaseApiView):

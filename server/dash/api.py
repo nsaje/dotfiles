@@ -631,15 +631,6 @@ class AdGroupSourceSettingsWriter(object):
 
         changes_text = ', '.join(changes_text_parts)
 
-        try:
-            latest_ad_group_settings = models.AdGroupSettings.objects \
-                .filter(ad_group=self.ad_group_source.ad_group) \
-                .latest('created_dt')
-        except models.AdGroupSettings.DoesNotExist:
-            # there are no settings, we create the first one
-            latest_ad_group_settings = models.AdGroupSettings(ad_group=self.ad_group_source.ad_group)
-
-        new_ad_group_settings = latest_ad_group_settings
-        new_ad_group_settings.pk = None
-        new_ad_group_settings.changes_text = changes_text
-        new_ad_group_settings.save(request)
+        settings = self.ad_group_source.ad_group.get_current_settings().copy_settings()
+        settings.changes_text = changes_text
+        settings.save(request)
