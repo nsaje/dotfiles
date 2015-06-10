@@ -25,7 +25,6 @@ oneApp.directive('zemStateSelector', function () {
                 }
 
                 $scope.value = state;
-                setActive();
 
                 $scope.onChange($scope.id, state);
             };
