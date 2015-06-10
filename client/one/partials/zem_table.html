@@ -131,7 +131,7 @@
                                         popover-placement="left">
                                     </span>
                                 </span>
-                                <span ng-switch-when="checkbox">
+                                <span ng-switch-when="checkbox" class="checkbox">
                                     <input type="checkbox" data-ng-model="row[col.field]" ng-disabled="!row[col.field] && col.disabled" data-ng-change="col.selectCallback(row, row[col.field])"/>
                                 </span>
                                 <span ng-switch-when="state">
@@ -200,7 +200,7 @@
                                     <span ng-switch-when="datetime">
                                         {{ (totalRow[col.field] | date:'M/d/yyyy h:mm a') || 'N/A' }}
                                     </span>
-                                    <span ng-switch-when='checkbox'>
+                                    <span ng-switch-when='checkbox' class="checkbox">
                                         <input type="checkbox" data-ng-model="totalRow.checked" data-ng-change="callSelectCallback(col.selectCallback, totalRow, totalRow[col.field], false)"/>
                                     </span>
                                 </span>
