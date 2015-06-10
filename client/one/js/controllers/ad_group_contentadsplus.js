@@ -93,11 +93,9 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         });
     };
 
-    var updateContentAdStates = function (state) {
+    var updateContentAdStates = function (state, updateAll) {
         $scope.rows.forEach(function (row) {
-            if ($scope.selectedContentAdsStatus[row.id] ||
-                $scope.selectedAll ||
-                ($scope.selectedBatchId && row.batch_id == $scope.selectedBatchId)) {
+            if (updateAll || row.ad_selected) {
                 row.status_setting = state;
             }
         });
@@ -348,14 +346,17 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
     var bulkUpdateContentAds = function(contentAdIdsEnabled, contentAdIdsDisabled, state) {
-        updateContentAdStates(state);
+        // update all content ads if none selected
+        var updateAll = !contentAdIdsEnabled.length && !$scope.selectedAll && !$scope.selectedBatchId;
+
+        updateContentAdStates(state, updateAll);
 
         api.adGroupContentAdState.save(
             $state.params.id, 
             state,
             contentAdIdsEnabled, 
             contentAdIdsDisabled,
-            $scope.selectedAll,
+            updateAll || $scope.selectedAll,
             $scope.selectedBatchId
         ).then(function () {
             pollTableUpdates();
@@ -363,13 +364,15 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
     var downloadContentAds = function(contentAdIdsEnabled, contentAdIdsDisabled) {
+        // update all content ads if none selected
+        var updateAll = !contentAdIdsEnabled.length && !$scope.selectedAll && !$scope.selectedBatchId;
         var url = '/api/ad_groups/' + $state.params.id + '/contentads/csv/?'
 
         url += 'content_ad_ids_enabled=' + contentAdIdsEnabled.join(',')
         url += '&content_ad_ids_disabled=' + contentAdIdsDisabled.join(',');
 
         if ($scope.selectedAll) {
-            url += '&select_all=' + $scope.selectedAll;
+            url += '&select_all=' + (updateAll || $scope.selectedAll);
         }
 
         if ($scope.selectedBatchId) {
