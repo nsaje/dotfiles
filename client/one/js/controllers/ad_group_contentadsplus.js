@@ -84,11 +84,21 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             if ($scope.selectedContentAdsStatus[row.id] !== undefined) {
                 row.ad_selected = $scope.selectedContentAdsStatus[row.id];
             } else if ($scope.selectedAll) {
-                row.ad_selected = $scope.selectedAll;
+                row.ad_selected = true;
             } else if ($scope.selectedBatchId && row.batch_id == $scope.selectedBatchId) { 
                 row.ad_selected = true;
             } else {
                 row.ad_selected = false;
+            }
+        });
+    };
+
+    var updateContentAdStates = function (state) {
+        $scope.rows.forEach(function (row) {
+            if ($scope.selectedContentAdsStatus[row.id] ||
+                $scope.selectedAll ||
+                ($scope.selectedBatchId && row.batch_id == $scope.selectedBatchId)) {
+                row.status_setting = state;
             }
         });
     };
@@ -132,8 +142,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             totalRow: false,
             unselectable: true,
             help: 'A setting for enabling and pausing content ads.',
-            onChange: function (sourceId, state) {
-                api.adGroupContentAdState.save($state.params.id, [sourceId], state).then(
+            onChange: function (contentAdId, state) {
+                api.adGroupContentAdState.save($state.params.id, state, [contentAdId]).then(
                     function () {
                         pollTableUpdates();
                     }
@@ -338,13 +348,15 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
     var bulkUpdateContentAds = function(contentAdIdsEnabled, contentAdIdsDisabled, state) {
+        updateContentAdStates(state);
+
         api.adGroupContentAdState.save(
             $state.params.id, 
+            state,
             contentAdIdsEnabled, 
             contentAdIdsDisabled,
             $scope.selectedAll,
-            $scope.selectedBatchId,
-            state
+            $scope.selectedBatchId
         ).then(function () {
             pollTableUpdates();
         });

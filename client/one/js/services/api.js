@@ -2031,7 +2031,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
     }
 
     function AdGroupContentAdState() {
-        this.save = function(adGroupId, contentAdIdsEnabled, contentAdIdsDisabled, selectedAll, selectedBatch, state) {
+        this.save = function(adGroupId, state, contentAdIdsEnabled, contentAdIdsDisabled, selectedAll, selectedBatch) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/contentads/state/';
 
