@@ -728,6 +728,78 @@ class AdGroupAdsPlusUploadBatches(api_common.BaseApiView):
         return self.create_api_response({"batches": response_data})
 
 
+def get_selected_content_ads_for_batch_actions(ad_group_id, request_data):
+
+    select_all = request_data.get('select_all', False)
+    select_batch = request_data.get('select_batch')
+
+    content_ad_ids_enabled_raw = request_data.get('content_ad_ids_enabled', [])
+
+    # check AdCsv -> some aditional split
+    content_ad_ids_enabled = map(int, content_ad_ids_enabled_raw)
+
+    if not isinstance(content_ad_ids_enabled, list):
+        raise exc.ValidationError()
+
+    content_ad_ids_disabled_raw = request_data.get('content_ad_ids_disabled', [])
+    content_ad_ids_disabled = map(int, content_ad_ids_disabled_raw)
+    if not isinstance(content_ad_ids_disabled, list):
+        raise exc.ValidationError()
+
+    content_ads = []
+    if select_all:
+        content_ads = models.ContentAd.objects.filter(
+            Q(ad_group__id=ad_group_id) | Q(id__in=content_ad_ids_enabled)).exclude(
+                id__in=content_ad_ids_disabled)
+    elif select_batch is not None:
+        content_ads = models.ContentAd.objects.filter(
+            Q(batch__name__in=select_batch) | Q(id__in=content_ad_ids_enabled)).exclude(
+                id__in=content_ad_ids_disabled)
+    else:
+        content_ads = models.ContentAd.objects.filter(id__in=content_ad_ids_enabled)
+
+    return content_ads
+
+
+class AdGroupContentAdArchive(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_archive_post')
+    def post(self, request, ad_group_id):
+        return self._set_archived_flag(request, ad_group_id, True)
+
+    def _set_archived_flag(self, request, ad_group_id, archive):
+        if not request.user.has_perm('zemauth.archive_restore_entity'):
+            raise exc.ForbiddenError(message="Not allowed")
+
+        # check if ad_group exists
+        helpers.get_ad_group(request.user, ad_group_id)
+
+        data = json.loads(request.body)
+
+        content_ads = get_selected_content_ads_for_batch_actions(ad_group_id, data)
+
+        with transaction.atomic():
+            for content_ad in content_ads:
+                content_ad.archived = archive
+                content_ad.save()
+
+        return self.create_api_response({
+            'rows': {content_ad.id: content_ad.archived for content_ad in content_ads}})
+
+    def check_errors(self, content_ads, request_data):
+        # TODO: do
+        pass
+
+
+class AdGroupContentAdRestore(AdGroupContentAdArchive):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_restore_post')
+    def post(self, request, ad_group_id):
+        return self._set_archived_flag(request, ad_group_id, False)
+
+    def check_errors(self, content_ads, request_data):
+        # TODO: do
+        pass
+
+
 class AdGroupContentAdState(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
     def post(self, request, ad_group_id):
@@ -742,31 +814,7 @@ class AdGroupContentAdState(api_common.BaseApiView):
         if state is None or state not in constants.ContentAdSourceState.get_all():
             raise exc.ValidationError()
 
-        select_all = data.get('select_all', False)
-        select_batch = data.get('select_batch')
-
-        content_ad_ids_enabled_raw = data.get('content_ad_ids_enabled', [])
-        content_ad_ids_enabled = map(int, content_ad_ids_enabled_raw)
-
-        if not isinstance(content_ad_ids_enabled, list):
-            raise exc.ValidationError()
-
-        content_ad_ids_disabled_raw = data.get('content_ad_ids_disabled', [])
-        content_ad_ids_disabled = map(int, content_ad_ids_disabled_raw)
-        if not isinstance(content_ad_ids_disabled, list):
-            raise exc.ValidationError()
-
-        content_ads = []
-        if select_all:
-            content_ads = models.ContentAd.objects.filter(
-                Q(ad_group__id=ad_group_id) | Q(id__in=content_ad_ids_enabled)).exclude(
-                    id__in=content_ad_ids_disabled)
-        elif select_batch is not None:
-            content_ads = models.ContentAd.objects.filter(
-                Q(batch__name__in=select_batch) | Q(id__in=content_ad_ids_enabled)).exclude(
-                    id__in=content_ad_ids_disabled)
-        else:
-            content_ads = models.ContentAd.objects.filter(id__in=content_ad_ids_enabled)
+        content_ads = get_selected_content_ads_for_batch_actions(ad_group_id, data)
 
         actions = []
         with transaction.atomic():
@@ -807,30 +855,7 @@ class AdGroupContentAdCsv(api_common.BaseApiView):
 
         data = request.GET
 
-        select_all = data.get('select_all', False)
-        select_batch = data.get('select_batch')
-        content_ad_ids_enabled_raw = data.get('content_ad_ids_enabled', '')
-        content_ad_ids_enabled = map(int, [x for x in content_ad_ids_enabled_raw.split(',') if x != ''])
-        if not isinstance(content_ad_ids_enabled, list):
-            raise exc.validationerror()
-
-        content_ad_ids_disabled_raw = data.get('content_ad_ids_disabled', '')
-        content_ad_ids_disabled = map(int, [x for x in content_ad_ids_disabled_raw.split(',') if x != ''])
-        if not isinstance(content_ad_ids_disabled, list):
-            raise exc.ValidationError()
-
-        print content_ad_ids_enabled, content_ad_ids_disabled
-        content_ads = []
-        if select_all:
-            content_ads = models.ContentAd.objects.filter(
-                Q(ad_group__id=ad_group_id) | Q(id__in=content_ad_ids_enabled)).exclude(
-                    id__in=content_ad_ids_disabled)
-        elif select_batch is not None:
-            content_ads = models.ContentAd.objects.filter(
-                Q(batch__name__in=select_batch) | Q(id__in=content_ad_ids_enabled)).exclude(
-                    id__in=content_ad_ids_disabled)
-        else:
-            content_ads = models.ContentAd.objects.filter(id__in=content_ad_ids_enabled)
+        content_ads = get_selected_content_ads_for_batch_actions(ad_group_id, data)
 
         # TODO: get original image url's and crops
         content_ad_dicts = []

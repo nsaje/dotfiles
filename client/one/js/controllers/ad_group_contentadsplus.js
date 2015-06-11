@@ -169,12 +169,14 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         getDisabledMessage: function (row) {
             return 'This ad must be managed manually.';
         },
-        disabled: false
+        disabled: false,
+        archivedField: 'archived'  // TODO: is this needed?
     }, {
         name: 'Status',
         field: 'submission_status',
         checked: false,
         type: 'submissionStatus',
+        archivedField: 'archived',  // TODO: is this needed?
         shown: true,
         help: 'Current submission status.',
         totalRow: false,
@@ -421,6 +423,43 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             }
 
             $window.open(url, '_blank');
+        } else if ($scope.selectedBulkAction == 'archive') {
+            api.adGroupContentAdArchive.archive(
+                $state.params.id,
+                content_ad_ids_true,
+                content_ad_ids_false,
+                $scope.selectedAll,
+                $scope.selectedBatches).then(
+                    function (data) {
+                        if (zemFilterService.getShowArchived()) {
+                            updateTableData(data.data.rows, {});
+                        }
+                        else {
+                            // TODO: check this
+                            getTableData();
+                            getDailyStats();
+                        }
+                    }
+            );
+        } else if ($scope.selectedBulkAction == 'restore') {
+            api.adGroupContentAdArchive.restore(
+                $state.params.id,
+                content_ad_ids_true,
+                content_ad_ids_false,
+                $scope.selectedAll,
+                $scope.selectedBatches).then(
+                    function (data) {
+                        if (zemFilterService.getShowArchived()) {
+                            updateTableData(data.data.rows, {});
+                        }
+                        else {
+                            // TODO: check this
+                            getTableData();
+                            getDailyStats();
+                        }
+                    }
+
+                );
         } else {
             // TODO: Signal error
         }
@@ -520,6 +559,16 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
         getTableData();
         getDailyStats();
+    }, true);
+
+    $scope.$watch(zemFilterService.getShowArchived, function(newValue, oldValue) {
+        if (angular.equals(newValue, oldValue)) {
+            return;
+        }
+
+        getTableData();
+        getDailyStats();
+
     }, true);
 
     $scope.triggerSync = function () {

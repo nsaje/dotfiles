@@ -272,7 +272,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 url: row.url !== '' ? row.url : null
             };
 
-			row.adSelected = true;
+            row.adSelected = true;
 
             row.urlLink1 = {
                 text: row.url !== '' ? row.url : 'N/A',
@@ -341,7 +341,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 url: row.url !== '' ? row.url : null
             };
 
-			row.adSelected = true;
+			      row.adSelected = true;
 
             row.urlLink1 = {
                 text: row.url !== '' ? row.url : 'N/A',
@@ -386,12 +386,15 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             }
 
             addFilteredSources(config.params);
+            addShowArchived(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {
                     var resource;
                     if (data && data.data) {
+
                         data.data.rows = data.data.rows.map(convertFromApi);
+
                         data.data.notifications = convertNotifications(data.data.notifications);
                         data.data.lastChange = data.data.last_change;
                         deferred.resolve(data.data);
@@ -400,7 +403,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 error(function(data, status, headers, config) {
                     deferred.reject(data);
                 });
-
             return deferred.promise;
         };
 
@@ -2049,21 +2051,64 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/contentads/state/';
 
-            $http.post(url, 
-           		{
-           			state: state,
-           			content_ad_ids_enabled: contentAdIdsEnabled,
-           			content_ad_ids_disabled: contentAdIdsDisabled,
-           			select_all: selectedAll,
-           			select_batch: selectedBatch
-           		}).
-            	success(function(data) {
-                   deferred.resolve(data);
-                }).error(function(data) {
+            $http.post(url, {
+                state: state,
+                content_ad_ids_enabled: contentAdIdsEnabled,
+                content_ad_ids_disabled: contentAdIdsDisabled,
+                select_all: selectedAll,
+                select_batch: selectedBatch
+            }).
+                success( function(data) {
+                    deferred.resolve(data);
+                }).error( function(data) {
                     deferred.reject(data);
                 });
- 
+
             return deferred.promise;
+        };
+    }
+
+    function AdGroupContentAdArchive() {
+        this.archive = function(adGroupId, contentAdIdsEnabled, contentAdIdsDisabled, selectedAll, selectedBatch) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/archive/';
+
+            $http.post(url, {
+                content_ad_ids_enabled: contentAdIdsEnabled,
+                content_ad_ids_disabled: contentAdIdsDisabled,
+                select_all: selectedAll,
+                select_batch: selectedBatch
+                }).
+                success( function(data) {
+                    deferred.resolve(data);
+                }).
+                error(function(data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+
+        };
+
+        this.restore = function(adGroupId, contentAdIdsEnabled, contentAdIdsDisabled, selectedAll, selectedBatch) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/restore/';
+
+            $http.post(url, {
+                content_ad_ids_enabled: contentAdIdsEnabled,
+                content_ad_ids_disabled: contentAdIdsDisabled,
+                select_all: selectedAll,
+                select_batch: selectedBatch
+            }).
+                success( function(data) {
+                    deferred.resolve(data);
+                }).
+                error(function(data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+
         };
     }
 
@@ -2182,6 +2227,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         adGroupAdsPlusUpload: new AdGroupAdsPlusUpload(),
         availableSources: new AvailableSources(),
         adGroupContentAdState: new AdGroupContentAdState(),
-        adGroupAdsPlusUploadBatches: new AdGroupAdsPlusUploadBatches()
+        adGroupAdsPlusUploadBatches: new AdGroupAdsPlusUploadBatches(),
+        adGroupContentAdArchive: new AdGroupContentAdArchive()
     };
 }]);

@@ -1029,6 +1029,9 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
         last_change_dt, changed_content_ads = helpers.get_content_ad_last_change_dt(
             ad_group, filtered_sources, last_change_dt)
 
+        if request.GET.get('show_archived') != 'true' or not request.user.has_perm('zemauth.view_archived_entities'):
+            changed_content_ads = changed_content_ads.exclude_archived()
+
         rows = {}
         for content_ad in changed_content_ads:
             content_ad_sources = content_ad.contentadsource_set.filter(source=filtered_sources)
@@ -1068,6 +1071,9 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
 
         content_ads = models.ContentAd.objects.filter(
             ad_group=ad_group).filter_by_sources(filtered_sources).select_related('batch')
+
+        if request.GET.get('show_archived') != 'true' or not request.user.has_perm('zemauth.view_archived_entities'):
+            content_ads = content_ads.exclude_archived()
 
         stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
             start_date,
@@ -1139,6 +1145,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 'id': str(content_ad.id),
                 'title': content_ad.title,
                 'url': url,
+                'archived': content_ad.archived,
                 'batch_name': content_ad.batch.name,
                 'display_url': content_ad.batch.display_url,
                 'brand_name': content_ad.batch.brand_name,
