@@ -23,7 +23,8 @@ dependencies:
 
 checkout:
     post:
-        - cp ./server/server/localsettings.py.circle-ci ./server/server/localsettings.py 
+        - cp ./server/server/localsettings.py.circle-ci ./server/server/localsettings.py
+        - cp ./client/test/protractor.localconf.json.circle-ci ./client/test/protractor.localconf.json
 
 test:
     override:
@@ -31,6 +32,7 @@ test:
             pwd: server
         - grunt test:
             pwd: client
+        - ./run_e2e.sh
     post:
         - coverage report > coverage_report.txt:
             pwd: server
