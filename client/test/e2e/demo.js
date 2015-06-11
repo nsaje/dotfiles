@@ -86,12 +86,12 @@ describe('Campaign management', function () {
             element(by.cssContainingText('.campaign-group.list-group-item a',
                                          'New demo campaign')).getText()
         ).toEqual('New demo campaign 123');
-        return browser.driver.sleep(1000);
+        return browser.driver.sleep(0);
     }
 
     function addAdGroup() {
         element(by.cssContainingText('.btn-add', '+ Ad group')).click();
-        return browser.driver.sleep(2000).then(function () {
+        return browser.driver.sleep(0).then(function () {
             expect(browser.getLocationAbsUrl()).toMatch(/ad_groups\/[0-9]+\/settings/);
             expect(
                 element(by.cssContainingText('.ad-group-item.list-group-item span',
@@ -105,7 +105,7 @@ describe('Campaign management', function () {
         element(by.cssContainingText('.btn-success', 'Enabled')).click();
 
         element(by.css('#nav div .account-name')).click();
-        return browser.driver.sleep(1000);
+        return browser.driver.sleep(0);
     }
 
     function checkIfPresentInLists() {
@@ -124,7 +124,7 @@ describe('Campaign management', function () {
                 element.all(by.cssContainingText('td span', 'Active')).get(0).getText()
             ).toEqual('Active');
         });
-        return browser.driver.sleep(1000);
+        return browser.driver.sleep(0);
     }
 
     function selectFirstCampaignBudget() {
@@ -137,7 +137,7 @@ describe('Campaign management', function () {
                 tabs.campaign.budget.click();
             }, 3500);
         });
-        return browser.driver.sleep(1500);
+        return browser.driver.sleep(0);
     }
 
     function editCampaignBudget() {
@@ -147,19 +147,19 @@ describe('Campaign management', function () {
         function addBudget() {
             element(by.id('manage-budget')).clear().sendKeys('200');
             element(by.cssContainingText('.btn-default', 'Allocate')).click();
-            return browser.driver.sleep(1000);
+            return browser.driver.sleep(0);
         }
         function revokeBudget() {
             element(by.id('manage-budget')).clear().sendKeys('100');
             element(by.cssContainingText('.btn-red', 'Revoke')).click();
-            return browser.driver.sleep(1000);
+            return browser.driver.sleep(0);
         }
         function testBudget() {
             element(by.id('total-budget')).getText().then(function (val) {
                 expect($toFloat(val)).toBe(total + 100);
                 deferred.fulfill();
             });
-            return browser.driver.sleep(1000);
+            return browser.driver.sleep(0);
         }
         
         element(by.id('total-budget')).getText().then(function (val) {
@@ -195,10 +195,10 @@ describe('Campaign management', function () {
 describe('Media sources and ads', function () {
     function selectAdGroupWithContentAds() {
         element(by.cssContainingText('#nav .ad-group-name', config.testAdGroup)).click();
-        browser.driver.sleep(1000).then(function () {
+        browser.driver.sleep(0).then(function () {
             tabs.adGroup.ads.click();
         });
-        return browser.driver.sleep(2000);
+        return browser.driver.sleep(0);
     }
     function addThreeSources() {
         var deferred = protractor.promise.defer(),
@@ -210,12 +210,12 @@ describe('Media sources and ads', function () {
             },
             clickSource = function () {
                 element(by.css('div.add-source')).click();
-                browser.driver.sleep(500).then(function () {
+                browser.driver.sleep(0).then(function () {
                     var elt = element.all(by.css('.select2-results .select2-result-label')).first();
                     elt.getText().then(function (val) {
                         sourcesAdded.push(val);
                         elt.click();
-                        browser.driver.sleep(500).then(function () {
+                        browser.driver.sleep(0).then(function () {
                             source++;
                             expect(
                                 element(by.cssContainingText('.table-container td', val)
@@ -230,7 +230,7 @@ describe('Media sources and ads', function () {
                 });
             };
         tabs.adGroup.sources.click();
-        browser.driver.sleep(1000).then(function () {
+        browser.driver.sleep(0).then(function () {
             clickSource();
         });
         return deferred.promise;
@@ -238,10 +238,10 @@ describe('Media sources and ads', function () {
     function createAdGroup() {
         element(by.cssContainingText('#nav .campaign-name', config.testCampaign)).click();
         tabs.campaign.adGroups.click();
-        browser.driver.sleep(500).then(function () {
+        browser.driver.sleep(0).then(function () {
             element(by.cssContainingText('.btn-add', '+ Ad group')).click();
         });
-        return browser.driver.sleep(1000);
+        return browser.driver.sleep(0);
     }
     function uploadAds() {
         var deferred = protractor.promise.defer(),
@@ -249,18 +249,18 @@ describe('Media sources and ads', function () {
                 expect(
                     element.all(by.css('.table-container tbody tr')).count()
                 ).toBeGreaterThan(4);
-                browser.driver.sleep(1500).then(deferred.fulfill);
+                browser.driver.sleep(0).then(deferred.fulfill);
             };
         tabs.adGroup.ads.click();
         element(by.cssContainingText('.btn-add', '+ Content Ads')).click();
-        browser.driver.sleep(500).then(function () {
+        browser.driver.sleep(0).then(function () {
             element(by.id('display-url-input')).sendKeys('Example.com');
             element(by.id('brand-name-input')).sendKeys('Example Brand');
             element(by.id('call-to-action-input')).sendKeys('Examplify!');
             element(by.id('description-input')).sendKeys('DEMO');
-            browser.driver.sleep(500).then(function () {
+            browser.driver.sleep(0).then(function () {
                 element(by.cssContainingText('.btn-add', 'Upload')).click();
-                browser.driver.sleep(2000).then(checkAds);
+                browser.driver.sleep(0).then(checkAds);
             });
         });
         return deferred.promise;
@@ -271,21 +271,21 @@ describe('Media sources and ads', function () {
                 expect(
                     element.all(by.css('.table-container tbody tr')).count()
                 ).toBeGreaterThan(4);
-                browser.driver.sleep(1500).then(deferred.fulfill);
+                browser.driver.sleep(0).then(deferred.fulfill);
             };
         tabs.adGroup.ads.click();
         expect(
             element.all(by.css('.table-container tbody tr')).count()
         ).toBeLessThan(4);
         element(by.cssContainingText('.btn-add', '+ Content Ads')).click();
-        browser.driver.sleep(500).then(function () {
+        browser.driver.sleep(0).then(function () {
             element(by.id('display-url-input')).sendKeys('Example.com');
             element(by.id('brand-name-input')).sendKeys('Example Brand');
             element(by.id('call-to-action-input')).sendKeys('Examplify!');
             element(by.id('description-input')).sendKeys('DEMO');
-            browser.driver.sleep(500).then(function () {
+            browser.driver.sleep(0).then(function () {
                 element(by.cssContainingText('.btn-add', 'Upload')).click();
-                browser.driver.sleep(2000).then(checkAds);
+                browser.driver.sleep(0).then(checkAds);
             });
         });
         return deferred.promise;
