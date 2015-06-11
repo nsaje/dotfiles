@@ -6,7 +6,7 @@ from mock import patch
 
 from django.test import TestCase
 from django.core.urlresolvers import reverse
-from django.http.request import HttpRequest
+from django.conf import settings
 
 from utils.test_helper import QuerySetMatcher
 from zemauth.models import User
@@ -101,10 +101,10 @@ class AdGroupAdsPlusTableTest(TestCase):
 
         self.assertIn('pagination', result['data'])
         self.assertEqual(result['data']['pagination'], {
-            'count': 2,
+            'count': 3,
             'currentPage': 1,
             'endIndex': 2,
-            'numPages': 1,
+            'numPages': 2,
             'size': 2,
             'startIndex': 1
         })
@@ -112,28 +112,8 @@ class AdGroupAdsPlusTableTest(TestCase):
         self.assertIn('rows', result['data'])
 
         self.assertItemsEqual(result['data']['rows'], [{
-            'status_setting': 2,
-            'upload_time': '2015-02-22T19:00:00',
-            'ctr': None,
-            'title': 'Article with no content_ad_sources',
-            'url': 'http://testurl.com',
-            'clicks': None,
-            'cpc': None,
-            'image_urls': {
-                'square': '/123456789/120x120.jpg',
-                'landscape': '/123456789/193x120.jpg'},
-            'editable_fields': {'status_setting': {'enabled': True, 'message': None}},
-            'submission_status': [],
-            'cost': None,
             'batch_name': 'batch 1',
-            'display_url': 'example.com',
-            'brand_name': 'Example',
-            'description': 'Example description',
-            'call_to_action': 'Call to action',
-            'impressions': None,
-            'id': '2'
-        }, {
-            'batch_name': 'batch 1',
+            'batch_id': 1,
             'display_url': 'example.com',
             'brand_name': 'Example',
             'description': 'Example description',
@@ -159,9 +139,31 @@ class AdGroupAdsPlusTableTest(TestCase):
                 'status': 2,
                 'text': 'Approved / Paused'
             }],
-            'title': u'Test Article Čžš',
+            'title': u'Test Article unicode Čžš',
             'upload_time': '2015-02-22T19:00:00',
             'url': 'http://testurl.com'
+        }, {
+            'status_setting': 2,
+            'upload_time': '2015-02-22T19:00:00',
+            'ctr': None,
+            'title': 'Test Article with no content_ad_sources 1',
+            'url': 'http://testurl.com',
+            'clicks': None,
+            'cpc': None,
+            'image_urls': {
+                'square': '/123456789/120x120.jpg',
+                'landscape': '/123456789/193x120.jpg'},
+            'editable_fields': {'status_setting': {'enabled': True, 'message': None}},
+            'submission_status': [],
+            'cost': None,
+            'batch_name': 'batch 1',
+            'batch_id': 1,
+            'display_url': 'example.com',
+            'brand_name': 'Example',
+            'description': 'Example description',
+            'call_to_action': 'Call to action',
+            'impressions': None,
+            'id': '2'
         }])
 
         self.assertIn('totals', result['data'])
@@ -309,8 +311,8 @@ class AdGroupAdsPlusTableTest(TestCase):
 
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 2)
-        self.assertEqual(result['data']['rows'][0]['title'], u'Test Article Čžš')
-        self.assertEqual(result['data']['rows'][1]['title'], 'Article with no content_ad_sources')
+        self.assertEqual(result['data']['rows'][0]['title'], u'Test Article with no content_ad_sources 2')
+        self.assertEqual(result['data']['rows'][1]['title'], 'Test Article with no content_ad_sources 1')
 
 
 class AdGroupAdsPlusTableUpdatesTest(TestCase):
@@ -381,6 +383,74 @@ class AdGroupAdsPlusTableUpdatesTest(TestCase):
                 'status_setting': 1
             }
         })
+
+
+class AdGroupSourceTableSupplyDashTest(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def test_get_supply_dash_url(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
+
+        view = views.table.SourcesTable()
+        result = view._get_supply_dash_url(ad_group_source)
+
+        self.assertEqual(result, '/supply_dash/?ad_group_id=1&source_id=1')
+
+    def test_get_supply_dash_url_no_dash(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source.source.source_type.available_actions = []
+
+        view = views.table.SourcesTable()
+        result = view._get_supply_dash_url(ad_group_source)
+
+        self.assertIsNone(result)
+
+    def test_get_supply_dash_url_pending(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
+        ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
+
+        view = views.table.SourcesTable()
+        result = view._get_supply_dash_url(ad_group_source)
+
+        self.assertIsNone(result)
+
+    def test_get_supply_dash_disabled_message(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
+
+        view = views.table.SourcesTable()
+        result = view._get_supply_dash_disabled_message(ad_group_source)
+
+        self.assertIsNone(result)
+
+    def test_get_supply_dash_disabled_message_no_dash(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source.source.source_type.available_actions = []
+
+        view = views.table.SourcesTable()
+        result = view._get_supply_dash_disabled_message(ad_group_source)
+
+        self.assertEqual(result,
+                         "This media source doesn't have a dashboard of its own. "
+                         "All campaign management is done through Zemanta One dashboard.")
+
+    def test_get_supply_dash_disabled_message_pending(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
+        ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
+
+        view = views.table.SourcesTable()
+        result = view._get_supply_dash_disabled_message(ad_group_source)
+
+        self.assertEqual(result,
+                         "Dashboard of this media source is not yet available because the "
+                         "media source is still being set up for this ad group.")
 
 
 class AdGroupSourceTableEditableFieldsTest(TestCase):

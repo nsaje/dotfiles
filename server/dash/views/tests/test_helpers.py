@@ -268,3 +268,83 @@ class ViewHelpersTestCase(TestCase):
             data_status[ad_group_source.source_id]['message'],
             'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
         )
+
+
+class GetSelectedContentAdsTest(TestCase):
+    fixtures = ['test_api']
+
+    def test_get_content_ads_all(self):
+        ad_group_id = 1
+        select_all = True
+        select_batch_id = None
+        content_ad_ids_enabled = []
+        content_ad_ids_disabled = []
+
+        content_ads = helpers.get_selected_content_ads(
+            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
+
+        self._assert_content_ads(content_ads, [1, 2, 3])
+
+    def test_get_content_ads_all_disabled(self):
+        ad_group_id = 1
+        select_all = True
+        select_batch_id = None
+        content_ad_ids_enabled = []
+        content_ad_ids_disabled = [1]
+
+        content_ads = helpers.get_selected_content_ads(
+            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
+
+        self._assert_content_ads(content_ads, [2, 3])
+
+    def test_get_content_ads_batch(self):
+        ad_group_id = 1
+        select_all = False
+        select_batch_id = 1
+        content_ad_ids_enabled = []
+        content_ad_ids_disabled = []
+
+        content_ads = helpers.get_selected_content_ads(
+            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
+
+        self._assert_content_ads(content_ads, [1, 2])
+
+    def test_get_content_ads_batch_enabled(self):
+        ad_group_id = 1
+        select_all = False
+        select_batch_id = 1
+        content_ad_ids_enabled = [3]
+        content_ad_ids_disabled = []
+
+        content_ads = helpers.get_selected_content_ads(
+            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
+
+        self._assert_content_ads(content_ads, [1, 2, 3])
+
+    def test_get_content_ads_batch_disabled(self):
+        ad_group_id = 1
+        select_all = False
+        select_batch_id = 1
+        content_ad_ids_enabled = []
+        content_ad_ids_disabled = [1]
+
+        content_ads = helpers.get_selected_content_ads(
+            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
+
+        self._assert_content_ads(content_ads, [2])
+
+    def test_get_content_ads_only_enabled(self):
+        ad_group_id = 1
+        select_all = False
+        select_batch_id = None
+        content_ad_ids_enabled = [1, 3]
+        content_ad_ids_disabled = []
+
+        content_ads = helpers.get_selected_content_ads(
+            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
+
+        self._assert_content_ads(content_ads, [1, 3])
+
+    def _assert_content_ads(self, content_ads, expected_ids):
+        self.assertQuerysetEqual(
+            content_ads, expected_ids, transform=lambda ad: ad.id, ordered=False)

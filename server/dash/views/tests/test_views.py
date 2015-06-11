@@ -15,6 +15,9 @@ from dash import models
 from dash import constants
 from dash.views import views
 
+from utils import exc
+
+
 class UserTest(TestCase):
     fixtures = ['test_views.yaml']
 
@@ -137,11 +140,111 @@ class AdGroupSourceSettingsTest(TestCase):
         self.assertEqual(json.loads(response.content), {'success': True})
 
 
-class AdGroupContentAdStateTest(TestCase):
+class AdGroupContentAdCSVTest(TestCase):
     fixtures = ['test_api', 'test_views']
 
     def setUp(self):
-        self.factory = RequestFactory()
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+    def test_get_all(self):
+        data = {
+            'select_all': True
+        }
+
+        response = self._get_csv_from_server(data)
+
+        expected_content = '''url,title,image_url\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.jpg\r
+'''
+
+        self.assertEqual(response.content, expected_content)
+
+    def test_get_all_ad_disabled(self):
+        data = {
+            'select_all': True,
+            'content_ad_ids_disabled': '1'
+        }
+
+        response = self._get_csv_from_server(data)
+
+        expected_content = '''url,title,image_url\r
+http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.jpg\r
+'''
+
+        self.assertEqual(response.content, expected_content)
+
+    def test_get_batch(self):
+        data = {
+            'select_batch': 1,
+        }
+
+        response = self._get_csv_from_server(data)
+
+        expected_content = '''url,title,image_url\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.jpg\r
+'''
+
+        self.assertEqual(response.content, expected_content)
+
+    def test_get_batch_ad_enabled(self):
+        data = {
+            'select_batch': 2,
+            'content_ad_ids_enabled': '1'
+        }
+
+        response = self._get_csv_from_server(data)
+
+        expected_content = '''url,title,image_url\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.jpg\r
+'''
+
+        self.assertEqual(response.content, expected_content)
+
+    def test_get_ad_enabled(self):
+        data = {'content_ad_ids_enabled': '1,2'}
+
+        response = self._get_csv_from_server(data)
+
+        expected_content = '''url,title,image_url\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.jpg\r
+'''
+
+        self.assertEqual(response.content, expected_content)
+
+    def _get_csv_from_server(self, data):
+        return self.client.get(
+            reverse(
+                'ad_group_content_ad_csv',
+                kwargs={'ad_group_id': 1}),
+            data=data,
+            follow=True
+        )
+
+    def test_get_content_ad_ids(self):
+        data = {'ids': '1,2'}
+        param_name = 'ids'
+
+        result = views.AdGroupContentAdCSV()._get_content_ad_ids(data, param_name)
+
+        self.assertEqual(result, [1, 2])
+
+    def test_get_content_ad_ids_validation_error(self):
+        data = {'ids': '1,a'}
+        param_name = 'ids'
+
+        with self.assertRaises(exc.ValidationError):
+            views.AdGroupContentAdCSV()._get_content_ad_ids(data, param_name)
+
+
+class AdGroupContentAdStateTest(TestCase):
+    fixtures = ['test_api', 'test_views']
 
     def test_post(self):
         username = User.objects.get(pk=1).email
@@ -182,6 +285,10 @@ class AdGroupContentAdStateTest(TestCase):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')
 
+        content_ads = models.ContentAd.objects.filter(ad_group__id=1)
+        self.assertGreater(len(content_ads), 0)
+        self.assertFalse(all([ad.state == constants.ContentAdSourceState.INACTIVE for ad in content_ads]))
+
         payload = {
             'select_all': True,
             'state': constants.ContentAdSourceState.INACTIVE,
@@ -198,16 +305,20 @@ class AdGroupContentAdStateTest(TestCase):
         )
 
         content_ads = models.ContentAd.objects.filter(ad_group__id=1)
-        self.assertGreater(len(content_ads), 0)
         self.assertTrue(all([ad.state == constants.ContentAdSourceState.INACTIVE for ad in content_ads]))
 
     def test_state_set_batch(self):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')
 
+        content_ads = models.ContentAd.objects.filter(batch__id=1)
+        self.assertGreater(len(content_ads), 0)
+        self.assertFalse(all([ad.state == constants.ContentAdSourceState.INACTIVE
+                              for ad in content_ads]))
+
         payload = {
             'select_all': False,
-            'select_batch': ['batch 1'],
+            'select_batch': 1,
             'state': constants.ContentAdSourceState.INACTIVE,
         }
 
@@ -221,9 +332,80 @@ class AdGroupContentAdStateTest(TestCase):
             follow=True
         )
 
-        content_ads_from_batch = models.ContentAd.objects.filter(batch__id=1)
-        self.assertGreater(len(content_ads_from_batch), 0)
-        self.assertTrue(all([ad.state == constants.ContentAdSourceState.INACTIVE for ad in content_ads_from_batch]))
+        content_ads = models.ContentAd.objects.filter(batch__id=1)
+        self.assertTrue(all([ad.state == constants.ContentAdSourceState.INACTIVE
+                             for ad in content_ads]))
+
+    @patch('dash.views.views.actionlog.zwei_actions.send_multiple')
+    def test_update_content_ads(self, mock_send_multiple):
+        content_ad = models.ContentAd.objects.get(pk=1)
+        state = constants.ContentAdSourceState.INACTIVE
+        request = None
+
+        views.AdGroupContentAdState()._update_content_ads(
+            [content_ad], state, request)
+
+        content_ad.refresh_from_db()
+
+        self.assertEqual(content_ad.state, constants.ContentAdSourceState.INACTIVE)
+
+        for content_ad_source in content_ad.contentadsource_set.all():
+            self.assertEqual(content_ad_source.state, constants.ContentAdSourceState.INACTIVE)
+
+        self.assertTrue(mock_send_multiple.called)
+
+    def test_get_content_ad_ids(self):
+        data = {'ids': ['1', '2']}
+        param_name = 'ids'
+
+        result = views.AdGroupContentAdState()._get_content_ad_ids(data, param_name)
+
+        self.assertEqual(result, [1, 2])
+
+    def test_get_content_ad_ids_validation_error(self):
+        data = {'ids': ['1', 'a']}
+        param_name = 'ids'
+
+        with self.assertRaises(exc.ValidationError):
+            views.AdGroupContentAdState()._get_content_ad_ids(data, param_name)
+
+    def test_add_to_history(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        content_ads = models.ContentAd.objects.filter(ad_group=ad_group).order_by('id')
+        self.assertEqual(len(content_ads), 3)
+
+        state = constants.ContentAdSourceState.ACTIVE
+
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        views.AdGroupContentAdState()._add_to_history(ad_group, content_ads, state, request)
+
+        settings = ad_group.get_current_settings()
+
+        self.assertEqual(settings.changes_text, 'Content ad(s) 1, 2, 3 set to Enabled.')
+
+    def test_add_to_history_shorten(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        content_ads = models.ContentAd.objects.filter(ad_group=ad_group).order_by('id')
+        self.assertEqual(len(content_ads), 3)
+        content_ads = list(content_ads) * 4  # need more than 10 ads
+
+        state = constants.ContentAdSourceState.ACTIVE
+
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        views.AdGroupContentAdState()._add_to_history(ad_group, content_ads, state, request)
+
+        settings = ad_group.get_current_settings()
+
+        self.assertEqual(
+            settings.changes_text,
+            'Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more set to Enabled.'
+        )
 
 
 class AdGroupAdsPlusUploadTest(TestCase):

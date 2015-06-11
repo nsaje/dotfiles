@@ -18,10 +18,6 @@ oneApp.directive('zemStateSelector', function () {
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
             $scope.active = false;
 
-            var setActive = function () {
-                $scope.active = $scope.value === $scope.enabledValue;
-            };
-
             $scope.setState = function (state) {
                 $scope.isOpen = false;
 
@@ -30,13 +26,13 @@ oneApp.directive('zemStateSelector', function () {
                 }
 
                 $scope.value = state;
-                setActive();
 
                 $scope.onChange($scope.id, state);
             };
 
-            setActive();
-
+            $scope.$watch('value', function(value) {
+                $scope.active = $scope.value === $scope.enabledValue;
+            });
         }]
     };
 });
