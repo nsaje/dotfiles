@@ -366,7 +366,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         });
     };
 
-    // TODO: combine these two into one
     var bulkArchiveContentAds = function (contentAdIdsEnabled, contentAdIdsDisabled) {
         // TODO: error checking
         api.adGroupContentAdArchive.archive(
@@ -374,18 +373,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             contentAdIdsEnabled,
             contentAdIdsDisabled,
             $scope.selectedAll,
-            $scope.selectedBatches).then(
-                function (data) {
-                    if (zemFilterService.getShowArchived()) {
-                        updateTableData(data.data.rows, {});
-                    }
-                    else {
-                        // TODO: check this
-                        getTableData();
-                        getDailyStats();
-                    }
-                }
-            );
+            $scope.selectedBatchId).then(updateTableAfterArchiveing);
     };
 
     var bulkRestoreContentAds = function (contentAdIdsEnabled, contentAdIdsDisabled) {
@@ -395,19 +383,18 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             contentAdIdsEnabled,
             contentAdIdsDisabled,
             $scope.selectedAll,
-            $scope.selectedBatches).then(
-                function (data) {
-                    if (zemFilterService.getShowArchived()) {
-                        updateTableData(data.data.rows, {});
-                    }
-                    else {
-                        // TODO: check this
-                        getTableData();
-                        getDailyStats();
-                    }
-                }
-            );
-        var bla = 3;
+            $scope.selectedBatches).then(updateTableAfterArchiveing)
+    };
+
+    var updateTableAfterArchiveing = function(data) {
+
+        // update rows immediatelly, refresh table after
+        updateTableData(data.data.rows, {});
+
+        if (!zemFilterService.getShowArchived()) {
+            getTableData();
+            getDailyStats();
+        }
     };
 
     var downloadContentAds = function (contentAdIdsEnabled, contentAdIdsDisabled) {
