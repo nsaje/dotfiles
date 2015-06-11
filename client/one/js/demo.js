@@ -61,6 +61,10 @@ oneApp.config(['$provide', function ($provide) {
                 return data;
             },
             tableMerge = function (original, additional) {
+                if (! original.rows.length) {
+                    original.rows = additional.rows;
+                    return original;
+                }
                 if (original.pagination.currentPage == 1) {
                     angular.forEach(additional.rows, function (r) {
                         original.rows.unshift(r);
@@ -375,7 +379,6 @@ oneApp.config(['$provide', function ($provide) {
                 allSources = zemDemoCacheService.get('/api/sources/'), // this is always called before
                 newSource = null;
             angular.forEach(allSources.data.sources || [], function (s) {
-				console.log([s, sourceId])
                 if (s.id == sourceId) { newSource = s; }
             });
             if (newSource) {
