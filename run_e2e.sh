@@ -25,6 +25,6 @@ STATUS=$?
 cd $CURR_DIR
 
 echo "Killing server"
-fuser -k $SERVER_PORT/tcp
-fuser -k $STATIC_PORT/tcp
+fuser -k $SERVER_PORT/tcp 1> /dev/null || lsof -P | grep ":$SERVER_PORT" | awk '{print $2}' | xargs kill;
+fuser -k $STATIC_PORT/tcp 1> /dev/null || lsof -P | grep ":$STATIC_PORT" | awk '{print $2}' | xargs kill;
 exit $STATUS
