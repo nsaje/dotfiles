@@ -752,7 +752,7 @@ class AdGroupContentAdArchive(api_common.BaseApiView):
                 content_ad.save()
 
         return self.create_api_response({
-            'rows': {content_ad.id: content_ad.archived for content_ad in content_ads}})
+            'rows': {content_ad.id: {'archived': content_ad.archived} for content_ad in content_ads}})
 
     def check_errors(self, content_ads, request_data):
         # TODO: do
