@@ -371,8 +371,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         // TODO: error checking
         api.adGroupContentAdArchive.archive(
             $state.params.id,
-            content_ad_ids_true,
-            content_ad_ids_false,
+            contentAdIdsEnabled,
+            contentAdIdsDisabled,
             $scope.selectedAll,
             $scope.selectedBatches).then(
                 function (data) {
@@ -390,10 +390,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
     var bulkRestoreContentAds = function (contentAdIdsEnabled, contentAdIdsDisabled) {
         // TODO: error checking
-        api.adGroupContentAdArchive.archive(
+        api.adGroupContentAdArchive.restore(
             $state.params.id,
-            content_ad_ids_true,
-            content_ad_ids_false,
+            contentAdIdsEnabled,
+            contentAdIdsDisabled,
             $scope.selectedAll,
             $scope.selectedBatches).then(
                 function (data) {
@@ -407,6 +407,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                     }
                 }
             );
+        var bla = 3;
     };
 
     var downloadContentAds = function (contentAdIdsEnabled, contentAdIdsDisabled) {

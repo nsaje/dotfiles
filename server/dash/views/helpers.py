@@ -318,7 +318,7 @@ def get_content_ad_notifications(ad_group):
     return notifications
 
 
-def get_content_ad_last_change_dt(ad_group, sources, last_change_dt=None):
+def get_content_ad_last_change_dt(ad_group, sources, last_change_dt=None, include_archived=False):
     content_ad_sources = models.ContentAdSource.objects.filter(
         content_ad__ad_group=ad_group,
         source=sources
@@ -327,7 +327,8 @@ def get_content_ad_last_change_dt(ad_group, sources, last_change_dt=None):
     if last_change_dt is not None:
         content_ad_sources = content_ad_sources.filter(modified_dt__gt=last_change_dt)
 
-    changed_content_ads = set(s.content_ad for s in content_ad_sources)
+    changed_content_ads = set(s.content_ad for s in content_ad_sources
+                              if include_archived or not s.content_ad.archived)
 
     last_change_dt = None
     if len(content_ad_sources):

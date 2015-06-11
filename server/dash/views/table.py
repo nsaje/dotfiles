@@ -1045,11 +1045,11 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         last_change_dt = helpers.parse_datetime(request.GET.get('last_change'))
 
-        last_change_dt, changed_content_ads = helpers.get_content_ad_last_change_dt(
-            ad_group, filtered_sources, last_change_dt)
+        include_archived = request.GET.get('show_archived') == 'true' and\
+            request.user.has_perm('zemauth.view_archived_entities')
 
-        if request.GET.get('show_archived') != 'true' or not request.user.has_perm('zemauth.view_archived_entities'):
-            changed_content_ads = changed_content_ads.exclude_archived()
+        last_change_dt, changed_content_ads = helpers.get_content_ad_last_change_dt(
+            ad_group, filtered_sources, last_change_dt, include_archived)
 
         rows = {}
         for content_ad in changed_content_ads:
