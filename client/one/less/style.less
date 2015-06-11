@@ -2319,7 +2319,16 @@ zem-editable-currency-field {
         padding: 1px;
         border: 1px solid #0ab00a;
 
+        &.archived {
+            background-color: #d9d9d9;
+            border-color: #d9d9d9;
+            color: #fff;
+        }
+
         &.approved {
+            &.archived {
+                .table .submission-status .cell .archived
+            }
             background-color: #0ab00a;
             color: #fff;
         }

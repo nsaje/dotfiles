@@ -11,7 +11,8 @@ oneApp.directive('zemStateSelector', function () {
             value: '=',
             enabledValue: '=',
             pausedValue: '=',
-            disabledMessage: '='
+            disabledMessage: '=',
+            archived: '='
         },
         templateUrl: '/partials/zem_state_selector.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
@@ -35,6 +36,7 @@ oneApp.directive('zemStateSelector', function () {
             };
 
             setActive();
+
         }]
     };
 });
