@@ -85,27 +85,42 @@ def _get_error_message(data):
     return '\n'.join(message)
 
 
-def _prepare_report_rows(ad_group, data_rows):
+def _prepare_report_rows(ad_group, source, data_rows, include_content_ad_sources):
     raw_articles = [{'url': row['url'], 'title': row['title']} for row in data_rows]
     articles = dash.api.reconcile_articles(ad_group, raw_articles)
 
     if not len(articles) == len(data_rows):
         raise Exception('Not all articles were reconciled')
 
+    content_ad_sources = {}
+    if include_content_ad_sources:
+        for content_ad_source in dash.models.ContentAdSource.objects.filter(
+                content_ad__ad_group=ad_group,
+                source=source):
+            content_ad_sources[content_ad_source.get_source_id()] = content_ad_source
+
     stats_rows = []
     for article, data_row in zip(articles, data_rows):
-        r = {
-            'article': article,
-            'impressions': data_row['impressions'],
-            'clicks': data_row['clicks'],
-            'data_cost_cc': data_row.get('data_cost_cc') or 0
-        }
-        if data_row.get('cost_cc') is None:
-            r['cost_cc'] = data_row['cpc_cc'] * data_row['clicks']
-        else:
-            r['cost_cc'] = data_row['cost_cc']
 
-        stats_rows.append(r)
+        content_ad_source = content_ad_sources.get(data_row['id']) if 'id' in data_row else None
+
+        if content_ad_source is None or not content_ad_source.content_ad.archived:
+            r = {
+                'content_ad_source': content_ad_source,
+                'article': article,
+                'impressions': data_row['impressions'],
+                'clicks': data_row['clicks'],
+                'data_cost_cc': data_row.get('data_cost_cc') or 0
+            }
+
+            # TODO: why is this different for ArticleStats and for ContentAdStats?
+            if data_row.get('cost_cc') is None:
+                r['cost_cc'] = data_row['cpc_cc'] * data_row['clicks']
+            else:
+                r['cost_cc'] = data_row['cost_cc']
+
+            stats_rows.append(r)
+
     return stats_rows
 
 
@@ -147,12 +162,13 @@ def _process_zwei_response(action, data, request):
                     valid_response = False
 
             if valid_response and _has_changed(data, ad_group, source, date):
-                rows = _prepare_report_rows(ad_group, data['data'])
+                can_manage_content_ads = action.ad_group_source.can_manage_content_ads
+
+                rows = _prepare_report_rows(ad_group, source, data['data'], can_manage_content_ads)
                 reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, rows)
 
-                if action.ad_group_source.can_manage_content_ads:
-                    reports.update.update_content_ads_source_traffic_stats(
-                        date, ad_group, source, data['data'])
+                if can_manage_content_ads:
+                    reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, rows)
 
             if not valid_response:
                 msg = 'Update of source traffic for adgroup %d, source %d, datetime '\
