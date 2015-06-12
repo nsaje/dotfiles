@@ -1,5 +1,5 @@
-/* globals oneApp, options */
-oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal', '$location', 'api', 'zemUserSettings', 'zemCustomTableColsService', '$timeout', 'zemFilterService', function ($scope, $window, $state, $modal, $location, api, zemUserSettings, zemCustomTableColsService, $timeout, zemFilterService) {
+/* globals oneApp, options, angular */
+oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$state', '$modal', '$location', 'api', 'zemUserSettings', 'zemCustomTableColsService', '$timeout', 'zemFilterService', function ($scope, $window, $compile, $state, $modal, $location, api, zemUserSettings, zemCustomTableColsService, $timeout, zemFilterService) {
     $scope.order = '-upload_time';
     $scope.loadRequestInProgress = false;
     $scope.selectedColumnsCount = 0;
@@ -38,9 +38,77 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         value: 'excel'
     }];
 
+    $scope.bulkActions = [];
+
+    var setBulkActions = function() {
+        $scope.bulkActions.push({
+            name: 'Pause',
+            value: 'pause'
+        }, {
+            name: 'Resume',
+            value: 'resume'
+        }, {
+            name: 'Download',
+            value: 'download'
+        });
+
+        var archivePermission = 'zemauth.archive_restore_entity';
+        if ($scope.hasPermission(archivePermission)) {
+            $scope.bulkActions.push({
+                name: 'Archive',
+                value: 'archive',
+                internal: $scope.isPermissionInternal(archivePermission)
+            }, {
+                name: 'Restore',
+                value: 'restore',
+                internal: $scope.isPermissionInternal(archivePermission)
+            });
+
+        }
+    };
+
+    var formatBulkActionsResult = function(object) {
+        console.log('format');
+        var bulkAction;
+        $scope.bulkActions.forEach(function(bk) {
+            if (bk.value == object.id) {
+                bulkAction = bk;
+            }
+        });
+        var notification = bulkAction.notification;
+        console.log('bk', bulkAction, notification);
+
+        var element;
+        if (notification) {
+            element = angular.element(document.createElement('span'));
+            element.attr('popover', notification);
+            element.attr('popover-trigger', 'mouseenter');
+            element.attr('popover-placement', 'right');
+            element.attr('popover-append-to-body', 'true');
+            element.text(object.text);
+            element = $compile(element)($scope);
+        } else {
+            element = angular.element(document.createElement('span')).text(object.text);
+        }
+
+        if (angular.element(object.element).hasClass('internal')) {
+            var internal = $compile(angular.element(document.createElement('zem-internal-feature')))($scope);
+            element = internal.add(element);
+        }
+
+        return element;
+    };
+
+    $scope.bulkActionsConfig = {
+        minimumResultsForSearch: -1,
+        dropdownCssClass: 'show-rows',
+        formatResult: formatBulkActionsResult
+    };
+
     $scope.selectedAdsChanged = function (row, checked) {
         if (row.id) {
             $scope.selectedContentAdsStatus[row.id] = checked;
+            console.log('selected content ad status', $scope.selectedContentAdsStatus);
         }
     };
 
@@ -83,6 +151,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
     $scope.updateContentAdSelection = function () {
+        console.log('update ad selection');
         $scope.rows.forEach(function (row) {
             if ($scope.selectedContentAdsStatus[row.id] !== undefined) {
                 row.ad_selected = $scope.selectedContentAdsStatus[row.id];
@@ -348,9 +417,13 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         return modalInstance;
     };
 
+    var shouldUpdateAll = function (contentAdIdsEnabled, contentAdIdsDisabled) {
+        return !contentAdIdsEnabled.length && !$scope.selectedAll && !$scope.selectedBatchId;
+    };
+
     var bulkUpdateContentAds = function (contentAdIdsEnabled, contentAdIdsDisabled, state) {
-        // update all content ads if none selected
-        var updateAll = !contentAdIdsEnabled.length && !$scope.selectedAll && !$scope.selectedBatchId;
+
+        var updateAll = shouldUpdateAll(contentAdIdsEnabled, contentAdIdsDisabled);
 
         updateContentAdStates(state, updateAll);
 
@@ -367,7 +440,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
     var bulkArchiveContentAds = function (contentAdIdsEnabled, contentAdIdsDisabled) {
-        // TODO: error checking
         api.adGroupContentAdArchive.archive(
             $state.params.id,
             contentAdIdsEnabled,
@@ -377,17 +449,15 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
     var bulkRestoreContentAds = function (contentAdIdsEnabled, contentAdIdsDisabled) {
-        // TODO: error checking
         api.adGroupContentAdArchive.restore(
             $state.params.id,
             contentAdIdsEnabled,
             contentAdIdsDisabled,
             $scope.selectedAll,
-            $scope.selectedBatches).then(updateTableAfterArchiveing)
+            $scope.selectedBatchId).then(updateTableAfterArchiveing)
     };
 
     var updateTableAfterArchiveing = function(data) {
-
         // update rows immediatelly, refresh table after
         updateTableData(data.data.rows, {});
 
@@ -416,7 +486,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         $window.open(url, '_blank');
     };
 
-    $scope.executeBulkAction = function () {
+    var getEnabledAndDisabledContentAds = function() {
         var contentAdIdsEnabled = [],
             contentAdIdsDisabled = [];
 
@@ -427,6 +497,15 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 contentAdIdsDisabled.push(contentAdId);
             }
         });
+        return {enabled: contentAdIdsEnabled, disabled: contentAdIdsDisabled};
+    };
+
+    $scope.executeBulkAction = function () {
+        var contentAdSelection = getEnabledAndDisabledContentAds();
+
+        var contentAdIdsEnabled = contentAdSelection.enabled,
+            contentAdIdsDisabled = contentAdSelection.disabled;
+
         switch ($scope.selectedBulkAction) {
             case 'pause':
                 bulkUpdateContentAds(
@@ -492,6 +571,37 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             pollSyncStatus();
         }
     });
+    $scope.$watch('selectedAll', setBulkActionsNotifications);
+    $scope.$watch('selectedBatchId', setBulkActionsNotifications);
+    /*$scope.$watch('selectedBatchId', function(newValue, oldValue) {
+        setBulkActionsNotifications();
+    });*/
+
+    $scope.$watchCollection('selectedContentAdsStatus', function(newValue, oldValue) {
+        console.log('fire watch', arguments);
+        setBulkActionsNotifications();
+    });
+
+    var setBulkActionsNotifications = function() {
+        var contentAdSelection = getEnabledAndDisabledContentAds();
+
+        console.log('set bulk action notifications0');
+        api.adGroupContentAdBulkActions.notifications(
+            $state.params.id,
+            contentAdSelection.enabled,
+            contentAdSelection.disabled,
+            $scope.selectedAll,
+            $scope.selectedBatchId
+        ).then(function(data) {
+            console.log('got back errors', data);
+            if (data.data) {
+                $scope.bulkActions.forEach(function(bulkAction) {
+                    bulkAction.notification = data.data[bulkAction.value];
+                });
+                console.log('actions', $scope.bulkActions);
+            }
+        });
+    }
 
     var hasMetricData = function (metric) {
         var hasData = false;
@@ -682,6 +792,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
         pollSyncStatus();
         setDisabledExportOptions();
+
+        setBulkActions();
     };
 
     var pollTableUpdates = function () {

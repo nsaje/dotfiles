@@ -768,6 +768,42 @@ class AdGroupContentAdRestore(AdGroupContentAdArchive):
         # TODO: do
         pass
 
+class AdGroupContentAdBulkActionsNotifications(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_bulk_notifications')
+    def post(self, request, ad_group_id):
+        # TODO: check permissions
+
+        # check if ad_group exists
+        helpers.get_ad_group(request.user, ad_group_id)
+
+        data = json.loads(request.body)
+
+        select_all = data.get('select_all', False)
+        select_batch_id = data.get('select_batch')
+
+        content_ad_ids_enabled = _get_content_ad_ids(data, 'content_ad_ids_enabled')
+        content_ad_ids_disabled = _get_content_ad_ids(data, 'content_ad_ids_disabled')
+
+        content_ads = helpers.get_selected_content_ads(
+            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
+
+        if not content_ads:
+            return self.create_api_response({})
+        archived = set([content_ad.archived for content_ad in content_ads])
+        response = {}
+
+        if False not in archived:
+            response['archive'] = 'These Content Ads have already been archived.'
+
+        if True not in archived:
+            response['restore'] = 'These Content Ads are already active.'
+
+        if not all([content_ad.state == constants.ContentAdSourceState.INACTIVE for content_ad in content_ads]):
+            response['archive'] = 'All selected Content Ads must be paused before they can be archived.'
+
+        print 'got response', response
+        return self.create_api_response(response)
+
 
 class AdGroupContentAdState(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')

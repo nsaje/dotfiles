@@ -183,6 +183,11 @@ urlpatterns += patterns(
         name='ad_group_content_ad_restore'
     ),
     url(
+        r'api/ad_groups/(?P<ad_group_id>\d+)/contentads/bulk/notifications/',
+        login_required(dash.views.views.AdGroupContentAdBulkActionsNotifications.as_view()),
+        name='ad_group_content_ad_bulk_notifications'
+    ),
+    url(
         r'^api/accounts/table/',
         login_required(dash.views.table.AccountsAccountsTable.as_view()),
     ),

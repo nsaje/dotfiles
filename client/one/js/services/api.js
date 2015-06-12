@@ -842,6 +842,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
             return deferred.promise;
         };
+        
     }
 
     function CampaignArchive() {
@@ -2098,6 +2099,28 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         };
     }
 
+    function AdGroupAdsPlusBulkActions() {
+        this.notifications = function(adGroupId, contentAdIdsEnabled, contentAdIdsDisabled, selectedAll, selectedBatch) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/bulk/notifications/';
+
+            $http.post(url, {
+                content_ad_ids_enabled: contentAdIdsEnabled,
+                content_ad_ids_disabled: contentAdIdsDisabled,
+                select_all: selectedAll,
+                select_batch: selectedBatch
+            }).
+                success( function(data) {
+                    deferred.resolve(data);
+                }).
+                error(function(data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    };
+
     function AdGroupAdsPlusUploadBatches() {
         this.list = function(adGroupId) {
             var deferred = $q.defer();
@@ -2214,6 +2237,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         availableSources: new AvailableSources(),
         adGroupContentAdState: new AdGroupContentAdState(),
         adGroupAdsPlusUploadBatches: new AdGroupAdsPlusUploadBatches(),
-        adGroupContentAdArchive: new AdGroupContentAdArchive()
+        adGroupContentAdArchive: new AdGroupContentAdArchive(),
+        adGroupContentAdBulkActions: new AdGroupAdsPlusBulkActions()
     };
 }]);
