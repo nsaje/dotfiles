@@ -5,6 +5,8 @@ import slugify
 
 from collections import OrderedDict
 
+from django.shortcuts import redirect
+
 from dash.views import helpers
 from dash import models
 from dash import export
@@ -16,6 +18,54 @@ from utils import exc
 
 import reports.api_contentads
 import reports.api_helpers
+
+class ExportApiView(api_common.BaseApiView):
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            return super(api_common.BaseApiView, self).dispatch(request, *args, **kwargs)
+        except Exception as e:
+            if 'demo' in request.GET:
+                return redirect('/demo_export/')
+            return self.get_exception_response(request, e)
+
+class DemoExport(api_common.BaseApiView):
+    def get(self, request):
+        data = []
+        filename='export'
+        if request.GET.get('type') == 'excel':
+            detailed_data = []
+            columns = [
+                {'key': 'date', 'name': 'Date', 'format': 'date'},
+                {'key': 'cost', 'name': 'Cost', 'format': 'currency'},
+                {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
+                {'key': 'clicks', 'name': 'Clicks'},
+                {'key': 'impressions', 'name': 'Impressions', 'width': 15},
+                {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
+            ]
+
+            detailed_columns = list(columns)  # make a copy
+            detailed_columns.insert(1, {'key': 'campaign', 'name': 'Campaign', 'width': 30})
+
+            content = export.get_excel_content([
+                ('Per Account Report', columns, data),
+                ('Detailed Report', detailed_columns, detailed_data)
+            ])
+            
+            return self.create_excel_response(filename, content=content)
+        else:
+            filename='export'
+            fieldnames = OrderedDict([
+                ('date', 'Date'),
+                ('cost', 'Cost'),
+                ('cpc', 'Avg. CPC'),
+                ('clicks', 'Clicks'),
+                ('impressions', 'Impressions'),
+                ('ctr', 'CTR')
+            ])
+
+            content = export.get_csv_content(fieldnames, data)
+            return self.create_csv_response(filename, content=content)
+
 
 
 class AccountCampaignsExport(api_common.BaseApiView):
@@ -95,7 +145,7 @@ class AccountCampaignsExport(api_common.BaseApiView):
             result['campaign'] = campaign_names[result['campaign']]
 
 
-class CampaignAdGroupsExport(api_common.BaseApiView):
+class CampaignAdGroupsExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export', 'campaigns_ad_groups_export_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
@@ -295,7 +345,7 @@ class CampaignAdGroupsExportAllowed(api_common.BaseApiView):
         })
 
 
-class AdGroupAdsExport(api_common.BaseApiView):
+class AdGroupAdsExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_export_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -375,7 +425,7 @@ class AdGroupAdsExport(api_common.BaseApiView):
             result['source'] = sources[result['source']].name
 
 
-class AdGroupAdsPlusExport(api_common.BaseApiView):
+class AdGroupAdsPlusExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_plus_export_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -479,7 +529,7 @@ class AdGroupAdsPlusExport(api_common.BaseApiView):
             result['source'] = sources[result['source']].name
 
 
-class AdGroupSourcesExport(api_common.BaseApiView):
+class AdGroupSourcesExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export', 'ad_group_sources_export_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -558,7 +608,7 @@ class AdGroupSourcesExport(api_common.BaseApiView):
             result['source'] = sources[result['source']].name
 
 
-class AllAccountsExport(api_common.BaseApiView):
+class AllAccountsExport(ExportApiView):
     def get(self, request):
         accounts = models.Account.objects.all().filter_by_user(request.user)
 

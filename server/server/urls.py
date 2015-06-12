@@ -303,6 +303,7 @@ urlpatterns += patterns(
         login_required(dash.views.views.User.as_view()),
         name='user'
     ),
+    url(r'demo_export', login_required(dash.views.export.DemoExport.as_view())),
 )
 
 # Action Log

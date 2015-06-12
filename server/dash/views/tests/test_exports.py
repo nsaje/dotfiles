@@ -9,7 +9,7 @@ from django import http
 import xlrd
 
 from dash.views import export
-
+from utils import exc
 
 class AssertRowMixin(object):
     def _assert_row(self, worksheet, row_num, row_cell_list):
@@ -195,6 +195,42 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
             'attachment; filename="%s"' % filename
         )
         self.assertEqual(response.content, expected_content)
+
+    def test_get_demo(self):
+        request = http.HttpRequest()
+        request.GET['type'] = 'csv'
+        request.GET['start_date'] = '2014-06-30'
+        request.GET['end_date'] = '2014-07-01'
+        request.method = 'get'
+        request.user = Mock()
+        request.user.id = 1
+
+        with self.assertRaises(exc.MissingDataError):
+            response = export.AdGroupAdsExport().get(request, 100000)
+
+        request.GET['demo'] = '1'
+        response = export.AdGroupAdsExport().dispatch(request, 100000)
+        self.assertEqual(response.url, '/demo_export/')
+
+        response = export.DemoExport().get(request)
+        expected_content = '''Date,Cost,Avg. CPC,Clicks,Impressions,CTR\r\n'''
+        filename = 'export.csv'
+        self.assertEqual(
+            response['Content-Disposition'],
+            'attachment; filename="%s"' % filename
+        )
+        self.assertEqual(response.content, expected_content)
+
+        request.GET['type'] = 'excel'
+        del request.GET['demo']
+        with self.assertRaises(exc.MissingDataError):
+            response = export.AdGroupAdsExport().get(request, 100000)
+        request.GET['demo'] = '1'
+        response = export.AdGroupAdsExport().dispatch(request, 100000)
+        self.assertEqual(response.url, '/demo_export/')
+        response = export.DemoExport().get(request)
+        self.assertEqual(response['Content-Type'],
+                         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
     def test_get_excel(self):
         request = http.HttpRequest()

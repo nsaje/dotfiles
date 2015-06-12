@@ -110,8 +110,39 @@ oneApp.constant('demoDefaults', {
             }
         };
     },
-    sourcesRow: function () {
+    newAdGroupSources: function (all) {
+        var skip = { '3': 1, '2': 1, '4': 1, '32': 1, '34': 1},
+            sources = [];
+        angular.forEach(all, function (source) {
+            if (! skip[source.id] && !source.deprecated) {
+                sources.push(source);
+            }
+        });
+        return sources;
+    },
+    newAdGroupSourcesTable: function () {
         return {
+            incomplete_postclick_metrics: false,
+            is_sync_in_progress: false,
+            is_sync_recent: true,
+            last_change: (new Date()).toISOString(),
+            last_sync: (new Date()).toISOString(),
+            notifications: {},
+            rows: [
+                this.sourcesRow({name: 'Outbrain', id: '3'}),
+                this.sourcesRow({name: 'Gravity', id: '2'}),
+                this.sourcesRow({name: 'Yahoo', id: '4'}),
+                this.sourcesRow({name: 'Yieldmo', id: '32'}),
+                this.sourcesRow({name: 'TripleLif', id: '34'})
+            ],
+            totals: {
+                avg_tos: 1, current_daily_budget: "", pageviews: 0,
+                yesterday_cost: null, visits: 4
+            }
+        };
+    },
+    sourcesRow: function (values) {
+        var obj = {
             archived: false,
             avg_tos: null,
             bid_cpc: '0.0',
@@ -144,6 +175,7 @@ oneApp.constant('demoDefaults', {
             daily_budget: '0',
             _demo_new: true
         };
+        return angular.extend(obj, values);
     },
     contentAds: function () {
         return {
@@ -158,81 +190,129 @@ oneApp.constant('demoDefaults', {
                     "status_setting": 1,
                     "cpc": 0, "clicks": 0, "cost": 0, "impressions": 0, "ctr": 0,
                     "image_urls": {
-                        "square": "http://blog.zemanta.com/wp-content/themes/zblog/images/zlogo.png",
-                        "landscape": "http://blog.zemanta.com/wp-content/themes/zblog/images/zlogo.png"
+                        "square": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/t/552d02c9e4b0c23003302aae/1429013198329/?format=1500w",
+                        "landscape": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/t/552d02c9e4b0c23003302aae/1429013198329/?format=1500w"
                     },
-                    "submission_status": [
+                    "submission_status": [ 
                         {"status": 2, "text": "Approved / Enabled", "name": "AdsNative"},
                         {"status": 2, "text": "Approved / Enabled", "name": "Yieldmo"}
                     ],
                     "display_url": "",
-                    "url": "http://blog.zemanta.com/welcome-nrelate-users/",
-                    "title": "Welcome nRelate users",
-                    "editable_fields": ["status_setting"]
+                    "url": "http://www.zemanta.com/news/weve-partnered-with-adsnative-for-programmatic-native-supply",
+                    "title": "We’ve Partnered with AdsNative for Programmatic Native Supply",
+                    "editable_fields": {"status_setting": { message: null, enabled: true }}
                 },
                 {
                     "status_setting": 1,
                     "cpc": 0, "clicks": 0, "cost": 0, "impressions": 0, "ctr": 0,
                     "image_urls": {
-                        "square": "http://blog.zemanta.com/wp-content/themes/zblog/images/zlogo.png",
-                        "landscape": "http://blog.zemanta.com/wp-content/themes/zblog/images/zlogo.png"
+                        "square": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/t/552d02c9e4b0c23003302aae/1429013198329/?format=1500w",
+                        "landscape": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/t/552d02c9e4b0c23003302aae/1429013198329/?format=1500w"
                     },
                     "submission_status": [
                         {"status": 2, "text": "Approved / Enabled", "name": "AdsNative"},
                         {"status": 2, "text": "Approved / Enabled", "name": "Yieldmo"}
                     ],
                     "display_url": "",
-                    "url": "http://blog.zemanta.com/zemanta-distil-partner/",
-                    "title": "Zemanta & Distil Partner to Protect Content Ad Campaigns from Fraud",
-                    "editable_fields": ["status_setting"]
+                    "url": "http://www.zemanta.com/news/weve-partnered-with-adsnative-for-programmatic-native-supply",
+                    "title": "Zemanta + AdsNative = More Native Supply Accessible Programmatically",
+                    "editable_fields": {"status_setting": { message: null, enabled: true }}
                 },
                 {
                     "status_setting": 1,
                     "cpc": 0, "clicks": 0, "cost": 0, "impressions": 0, "ctr": 0,
                     "image_urls": {
-                        "square": "http://blog.zemanta.com/wp-content/themes/zblog/images/zlogo.png",
-                        "landscape": "http://blog.zemanta.com/wp-content/themes/zblog/images/zlogo.png"
+                        "square": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/54369edee4b001842e669258/552d0296e4b0bfddbb2581b4/1429859532791/",
+                        "landscape": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/54369edee4b001842e669258/552d0296e4b0bfddbb2581b4/1429859532791/"
                     },
                     "submission_status": [
                         {"status": 2, "text": "Approved / Enabled", "name": "AdsNative"},
                         {"status": 2, "text": "Approved / Enabled", "name": "Yieldmo"}
                     ],
                     "display_url": "",
-                    "url": "http://blog.zemanta.com/partner-with-zemanta/",
-                    "title": "Partner with Zemanta",
-                    "editable_fields": ["status_setting"]
+                    "url": "http://www.zemanta.com/news/weve-partnered-with-adsnative-for-programmatic-native-supply",
+                    "title": "We’ve Partnered with AdsNative for Programmatic Native Supply",
+                    "editable_fields": {"status_setting": { message: null, enabled: true }}
                 },
                 {
                     "status_setting": 1,
                     "cpc": 0, "clicks": 0, "cost": 0, "impressions": 0, "ctr": 0,
                     "image_urls": {
-                        "square": "http://blog.zemanta.com/wp-content/themes/zblog/images/zlogo.png",
-                        "landscape": "http://blog.zemanta.com/wp-content/themes/zblog/images/zlogo.png"
+                        "square": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/54369edee4b001842e669258/552d0296e4b0bfddbb2581b4/1429859532791/",
+                        "landscape": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/54369edee4b001842e669258/552d0296e4b0bfddbb2581b4/1429859532791/"
                     },
                     "submission_status": [
                         {"status": 2, "text": "Approved / Enabled", "name": "AdsNative"},
                         {"status": 2, "text": "Approved / Enabled", "name": "Yieldmo"}
                     ],
                     "display_url": "",
-                    "url": "http://blog.zemanta.com/zemanta-programming-challenge-the-solutions-are-in-the-jury-is-out/",
-                    "title": "Zemanta Programming Challenge – The Solutions are In, the Jury is Out",
-                    "editable_fields": ["status_setting"]
+                    "url": "http://www.zemanta.com/news/weve-partnered-with-adsnative-for-programmatic-native-supply",
+                    "title": "Zemanta + AdsNative = More Native Supply Accessible Programmatically",
+                    "editable_fields": {"status_setting": { message: null, enabled: true }}
                 },
                 {
                     "status_setting": 1,
                     "cpc": 0, "clicks": 0, "cost": 0, "impressions": 0, "ctr": 0,
                     "image_urls": {
-                        "square": "http://blog.zemanta.com/wp-content/themes/zblog/images/zlogo.png",
-                        "landscape": "http://blog.zemanta.com/wp-content/themes/zblog/images/zlogo.png"
+                        "square": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/54369edee4b001842e669258/5507fb44e4b0fb424faf40d3/1426624899137/",
+                        "landscape": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/54369edee4b001842e669258/5507fb44e4b0fb424faf40d3/1426624899137/"
                     },
                     "submission_status": [
                         {"status": 2, "text": "Approved / Enabled", "name": "AdsNative"},
                         {"status": 2, "text": "Approved / Enabled", "name": "Yieldmo"}
                     ],
                     "display_url": "",
-                    "url": "http://blog.zemanta.com/zemanta-how-to-blog-good-guidelines-2/",
-                    "title": "Zemanta how-to-blog-better guidelines",
-                    "editable_fields": ["status_setting"]
+                    "url": "http://www.zemanta.com/news/native-advertising-coming-of-age-programmatic-standards-emerge",
+                    "title": "Native Advertising Coming of Age: Programmatic Standards Emerge",
+                    "editable_fields": {"status_setting": { message: null, enabled: true }}
+                },
+                {
+                    "status_setting": 1,
+                    "cpc": 0, "clicks": 0, "cost": 0, "impressions": 0, "ctr": 0,
+                    "image_urls": {
+                        "square": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/54369edee4b001842e669258/5507fb44e4b0fb424faf40d3/1426624899137/",
+                        "landscape": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/54369edee4b001842e669258/5507fb44e4b0fb424faf40d3/1426624899137/"
+                    },
+                    "submission_status": [
+                        {"status": 2, "text": "Approved / Enabled", "name": "AdsNative"},
+                        {"status": 2, "text": "Approved / Enabled", "name": "Yieldmo"}
+                    ],
+                    "display_url": "",
+                    "url": "http://www.zemanta.com/news/native-advertising-coming-of-age-programmatic-standards-emerge",
+                    "title": "OpenRTB 2.3 Will Help Native Advertising To Scale",
+                    "editable_fields": {"status_setting": { message: null, enabled: true }}
+                },
+                {
+                    "status_setting": 1,
+                    "cpc": 0, "clicks": 0, "cost": 0, "impressions": 0, "ctr": 0,
+                    "image_urls": {
+                        "square": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/t/5500629de4b05b6c406ac30a/1426088613779/",
+                        "landscape": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/t/5500629de4b05b6c406ac30a/1426088613779/"
+                    },
+                    "submission_status": [
+                        {"status": 2, "text": "Approved / Enabled", "name": "AdsNative"},
+                        {"status": 2, "text": "Approved / Enabled", "name": "Yieldmo"}
+                    ],
+                    "display_url": "",
+                    "url": "http://www.zemanta.com/news/native-advertising-coming-of-age-programmatic-standards-emerge",
+                    "title": "Native Advertising Coming of Age: Programmatic Standards Emerge",
+                    "editable_fields": {"status_setting": { message: null, enabled: true }}
+                },
+                {
+                    "status_setting": 1,
+                    "cpc": 0, "clicks": 0, "cost": 0, "impressions": 0, "ctr": 0,
+                    "image_urls": {
+                        "square": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/t/5500629de4b05b6c406ac30a/1426088613779/",
+                        "landscape": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/t/5500629de4b05b6c406ac30a/1426088613779/"
+                    },
+                    "submission_status": [
+                        {"status": 2, "text": "Approved / Enabled", "name": "AdsNative"},
+                        {"status": 2, "text": "Approved / Enabled", "name": "Yieldmo"}
+                    ],
+                    "display_url": "",
+                    "url": "http://www.zemanta.com/news/native-advertising-coming-of-age-programmatic-standards-emerge",
+                    "title": "OpenRTB 2.3 Will Help Native Advertising To Scale",
+                    "editable_fields": {"status_setting": { message: null, enabled: true }}
                 }
             ],
             "order": "url",

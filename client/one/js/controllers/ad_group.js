@@ -1,5 +1,5 @@
 /*globals oneApp,$,moment*/
-oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', function ($scope, $state, $location, api) {
+oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'api', function ($scope, $state, $window, $location, api) {
     $scope.level = constants.level.AD_GROUPS;
     $scope.getTabs = function() {
         var tabs = [{
@@ -46,6 +46,10 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$location', 'api', functi
     };
 
     $scope.setActiveTab = function () {
+		if ($scope.tabs === undefined && $window.isDemo) {
+			$window.onbeforeunload = null;
+			$window.location.href = '';
+		}
         $scope.tabs.forEach(function(tab) {
             tab.active = $state.is(tab.route);
         });

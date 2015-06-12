@@ -11,7 +11,8 @@ oneApp.config(['$provide', function ($provide) {
             newCampaigns = {}, // new campaigns map, form: { campaignId1: 1, campaignId2: 1, ...}
             lastSourcesArgs = undefined, // stored last arguments for sources list api
             defaults = demoDefaults,
-
+            styleHtmlElement = document.createElement('style'),
+            additionalCss = '#form-campaign-agency div.form-group:not(:first-child):not(:last-child) { display:none; }',
             // //////////////
             // // WRAPPERS //
             // //////////////
@@ -61,12 +62,18 @@ oneApp.config(['$provide', function ($provide) {
                 return data;
             },
             tableMerge = function (original, additional) {
+                additional.rows.reverse();
                 if (! original.rows.length) {
                     original.rows = additional.rows;
                     return original;
                 }
                 if (original.pagination.currentPage == 1) {
                     angular.forEach(additional.rows, function (r) {
+                        original.rows.unshift(r);
+                        original.rows.pop();
+                    });
+                } else if (original.pagination.currentPage == 2 && original.pagination.size < additional.rows.length) {
+                    angular.forEach(additional.rows.slice(6, additional.rows.length), function (r) {
                         original.rows.unshift(r);
                         original.rows.pop();
                     });
@@ -96,6 +103,15 @@ oneApp.config(['$provide', function ($provide) {
         $window.onbeforeunload = confirmOnPageExit;
 
         zemDemoSourcesService.setApi($delegate.adGroupSourcesTable.get);
+
+        try{
+            styleHtmlElement.innerHTML = additionalCss;
+        }
+        //IE fix
+        catch(error){
+            styleHtmlElement.styleSheet.cssText = additionalCss;
+        }
+        document.getElementsByTagName('head')[0].appendChild(styleHtmlElement);
         
         /* CAMPAIGNS */
         $delegate.accountCampaignsTable.get = (function (backup) {
@@ -213,14 +229,17 @@ oneApp.config(['$provide', function ($provide) {
             
             zemDemoCacheService.set('/api/ad_groups/' + settings.id + '/settings/', campaign);
             zemDemoAdGroupsService.newAdGroup(id, settings.id);
-            demoInUse = true;
+            
             $delegate.availableSources.list().then(function (data) {
                 zemDemoCacheService.set('/api/ad_groups/' + settings.id + '/sources/', {
-                    sources: data.data.sources,
+                    sources: defaults.newAdGroupSources(data.data.sources),
                     sourcesWaiting: []
                 });
                 deferred.resolve(settings);
             });
+
+            demoInUse = true;
+            
             return deferred.promise;
         };
 
@@ -398,7 +417,10 @@ oneApp.config(['$provide', function ($provide) {
                 lastSourcesArgs = [id, startDate, endDate, order];
                 var deferred = $q.defer();
                 if (zemDemoAdGroupsService.isNew(id)) {
-                    deferred.resolve(zemDemoSourcesService.applyToSourcesTable(id, defaults.emptyTable()));
+                    deferred.resolve(
+                        zemDemoSourcesService.applyToSourcesTable(id,
+                                                                  defaults.newAdGroupSourcesTable())
+                    );
                     return deferred.promise;
                 }
                 backup(id, startDate, endDate, order).then(function (table) {
