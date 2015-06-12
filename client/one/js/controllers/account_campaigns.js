@@ -256,7 +256,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
                             adGroups: []
                         });
 
-                        $state.go('main.campaigns.agency', {id: data.id});
+                        $state.go('main.campaigns.ad_groups', {id: data.id});
                     }
                 });
             },
