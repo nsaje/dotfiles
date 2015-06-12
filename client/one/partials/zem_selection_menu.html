@@ -1,9 +1,10 @@
 <div class="zem-selection-menu dropdown">
-    <a href="#" class="btn btn-default dropdown-toggle" data-toggle="dropdown" ng-click="toggleDropdown($event)">
+    <a href="#" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
         <input 
             id="zem-all-checkbox"
             type="checkbox"
-            ng-model="selectedAll">
+            ng-model="selectedAll"
+            ng-click="selectAll($event)">
         </input>
         <div class="drop-arrow"></div>
     </a>

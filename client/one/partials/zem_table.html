@@ -7,7 +7,7 @@
                 <thead>
                     <tr>
                         <th ng-if="col.shown" ng-class="{'text-right': isNumberColumnType(col.type), 'arrow': col.order, ordered: order === '-' + (col.orderField || col.field), 'ordered-reverse': order === (col.orderField || col.field)}" class="{{ col.extraThCss }}" ng-repeat="col in columns | filter: {checked: true}">
-                            <span ng-show="col.hasPermission && col.showSelectionMenu">
+                            <span ng-if="col.hasPermission && col.showSelectionMenu">
                                 <zem-selection-menu custom-selection-options="col.selectionOptions" select-all-callback="col.selectAllCallback" />
                             </span>
                             <span ng-if="!col.showSelectionMenu">

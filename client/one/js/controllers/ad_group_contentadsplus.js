@@ -145,7 +145,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         onChange: function (contentAdId, state) {
             api.adGroupContentAdState.save($state.params.id, state, [contentAdId]).then(
                 function () {
-                    pollTableUpdates();
+                    $scope.pollTableUpdates();
                 }
             );
         },
@@ -360,7 +360,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             updateAll || $scope.selectedAll,
             $scope.selectedBatchId
         ).then(function () {
-            pollTableUpdates();
+            $scope.pollTableUpdates();
         });
     };
 
@@ -533,7 +533,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 $scope.isSyncRecent = data.is_sync_recent;
                 $scope.isSyncInProgress = data.is_sync_in_progress;
 
-                pollTableUpdates();
+                $scope.pollTableUpdates();
                 $scope.updateContentAdSelection();
             },
             function (data) {
@@ -636,7 +636,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         setDisabledExportOptions();
     };
 
-    var pollTableUpdates = function () {
+    $scope.pollTableUpdates = function () {
         if ($scope.lastChangeTimeout) {
             return;
         }
@@ -653,7 +653,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 if (data.inProgress) {
                     $scope.lastChangeTimeout = $timeout(function () {
                         $scope.lastChangeTimeout = null;
-                        pollTableUpdates();
+                        $scope.pollTableUpdates();
                     }, 2000);
                 }
             });
