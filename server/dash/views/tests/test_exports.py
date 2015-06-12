@@ -66,7 +66,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
 
         response = export.AdGroupAdsPlusExport().get(request, self.ad_group_id)
 
-        expected_content = '''Date,Title,URL,Image URL,Cost,CPC,Clicks,Impressions,CTR\r\n2014-07-01,Test Article \xc4\x8c\xc5\xbe\xc5\xa1,http://testurl.com,/123456789/200x300.jpg,1000.12,10.23,103,100000,1.03\r\n'''
+        expected_content = '''Date,Title,URL,Image URL,Cost,CPC,Clicks,Impressions,CTR\r\n2014-07-01,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://testurl.com,/123456789/200x300.jpg,1000.12,10.23,103,100000,1.03\r\n'''
 
         filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.csv'.format(
             slugify.slugify(self.account_name),
@@ -112,7 +112,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
 
         self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Image URL', 'Cost', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR'])
 
-        self._assert_row(worksheet, 1, [41821.0, u'Test Article Čžš', 'http://testurl.com',
+        self._assert_row(worksheet, 1, [41821.0, u'Test Article unicode Čžš', 'http://testurl.com',
                                         '/123456789/200x300.jpg', 1000.12, 10.23, 103, 100000, 0.0103])
 
         worksheet = workbook.sheet_by_name('Per Source Report')
@@ -121,7 +121,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
         self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Image URL', 'Source',
                                         'Cost', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR'])
 
-        self._assert_row(worksheet, 1, [41821.0, u'Test Article Čžš', 'http://testurl.com', '/123456789/200x300.jpg',
+        self._assert_row(worksheet, 1, [41821.0, u'Test Article unicode Čžš', 'http://testurl.com', '/123456789/200x300.jpg',
                                         'AdsNative', 1000.12, 10.23, 103, 100000, 0.0103])
 
 

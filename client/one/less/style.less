@@ -718,10 +718,6 @@ div[datepicker] {
     }
 }
 
-.select2-simple-menu-dropdown {
-	width: auto !important;
-}
-
 /* chart metric select */
 .select2-drop.metric2 {
     border: 1px solid @default-color;
@@ -1803,6 +1799,16 @@ a.help-popover:visited {
                 width: 34px;
             }
         }
+
+        .checkbox {
+            padding-left: 7px;
+            margin: 0;
+
+            input[type=checkbox] {
+                position: static;
+                margin-left: 0;
+            }
+        }
     }
 
     &.table-hover tbody tr:hover td,
@@ -2361,5 +2367,36 @@ zem-editable-currency-field {
     margin: 0 -5px;
     img {
         height: 60px;
+    }
+}
+
+.zem-selection-menu.dropdown {
+    .dropdown-toggle input[type=checkbox] {
+        margin: 0;
+    }
+
+    .dropdown-menu {
+        padding: 4px 6px;
+
+        .divider {
+            margin: 0;
+        }
+
+        .link {
+            font-weight: 300;
+        }
+
+        .link-list {
+            .link-list-name {
+                vertical-align: top;
+                display: inline-block;
+                font-weight: 300;
+            }
+
+            .link-list-items {
+                display: inline-block;
+                font-weight: 400;
+            }
+        }
     }
 }

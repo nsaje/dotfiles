@@ -663,6 +663,16 @@
     model: dash.uploadbatch
     pk: 1
 
+-   fields:
+        name: 'batch 2'
+        created_dt: '2015-02-23T00:00:00'
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
+    model: dash.uploadbatch
+    pk: 2
+
 # test contentad
 
 -   fields:
@@ -671,23 +681,38 @@
         image_height: 300
         batch: 1
         url: 'http://testurl.com'
-        title: 'Test Article Čžš'
+        title: 'Test Article unicode Čžš'
         ad_group: 1
-        created_dt: '2015-02-23T00:00:00'
+        created_dt: '2015-02-21T00:00:00'
         state: 1
     model: dash.contentad
     pk: 1
 
 -   fields:
         image_id: '123456789'
+        image_width: 200
+        image_height: 300
         batch: 1
         url: 'http://testurl.com'
-        title: 'Article with no content_ad_sources'
+        title: 'Test Article with no content_ad_sources 1'
+        ad_group: 1
+        created_dt: '2015-02-21T00:00:01'
+        state: 2
+    model: dash.contentad
+    pk: 2
+
+-   fields:
+        image_id: '123456789'
+        image_width: 200
+        image_height: 300
+        batch: 2
+        url: 'http://testurl.com'
+        title: 'Test Article with no content_ad_sources 2'
         ad_group: 1
         created_dt: '2015-02-23T00:00:00'
         state: 2
     model: dash.contentad
-    pk: 2
+    pk: 3
 
 # test contentadsource
 

@@ -101,10 +101,10 @@ class AdGroupAdsPlusTableTest(TestCase):
 
         self.assertIn('pagination', result['data'])
         self.assertEqual(result['data']['pagination'], {
-            'count': 2,
+            'count': 3,
             'currentPage': 1,
             'endIndex': 2,
-            'numPages': 1,
+            'numPages': 2,
             'size': 2,
             'startIndex': 1
         })
@@ -112,28 +112,8 @@ class AdGroupAdsPlusTableTest(TestCase):
         self.assertIn('rows', result['data'])
 
         self.assertItemsEqual(result['data']['rows'], [{
-            'status_setting': 2,
-            'upload_time': '2015-02-22T19:00:00',
-            'ctr': None,
-            'title': 'Article with no content_ad_sources',
-            'url': 'http://testurl.com',
-            'clicks': None,
-            'cpc': None,
-            'image_urls': {
-                'square': '/123456789/120x120.jpg',
-                'landscape': '/123456789/193x120.jpg'},
-            'editable_fields': {'status_setting': {'enabled': True, 'message': None}},
-            'submission_status': [],
-            'cost': None,
             'batch_name': 'batch 1',
-            'display_url': 'example.com',
-            'brand_name': 'Example',
-            'description': 'Example description',
-            'call_to_action': 'Call to action',
-            'impressions': None,
-            'id': '2'
-        }, {
-            'batch_name': 'batch 1',
+            'batch_id': 1,
             'display_url': 'example.com',
             'brand_name': 'Example',
             'description': 'Example description',
@@ -159,9 +139,31 @@ class AdGroupAdsPlusTableTest(TestCase):
                 'status': 2,
                 'text': 'Approved / Paused'
             }],
-            'title': u'Test Article Čžš',
+            'title': u'Test Article unicode Čžš',
             'upload_time': '2015-02-22T19:00:00',
             'url': 'http://testurl.com'
+        }, {
+            'status_setting': 2,
+            'upload_time': '2015-02-22T19:00:00',
+            'ctr': None,
+            'title': 'Test Article with no content_ad_sources 1',
+            'url': 'http://testurl.com',
+            'clicks': None,
+            'cpc': None,
+            'image_urls': {
+                'square': '/123456789/120x120.jpg',
+                'landscape': '/123456789/193x120.jpg'},
+            'editable_fields': {'status_setting': {'enabled': True, 'message': None}},
+            'submission_status': [],
+            'cost': None,
+            'batch_name': 'batch 1',
+            'batch_id': 1,
+            'display_url': 'example.com',
+            'brand_name': 'Example',
+            'description': 'Example description',
+            'call_to_action': 'Call to action',
+            'impressions': None,
+            'id': '2'
         }])
 
         self.assertIn('totals', result['data'])
@@ -309,8 +311,8 @@ class AdGroupAdsPlusTableTest(TestCase):
 
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 2)
-        self.assertEqual(result['data']['rows'][0]['title'], u'Test Article Čžš')
-        self.assertEqual(result['data']['rows'][1]['title'], 'Article with no content_ad_sources')
+        self.assertEqual(result['data']['rows'][0]['title'], u'Test Article with no content_ad_sources 2')
+        self.assertEqual(result['data']['rows'][1]['title'], 'Test Article with no content_ad_sources 1')
 
 
 class AdGroupAdsPlusTableUpdatesTest(TestCase):

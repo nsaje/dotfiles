@@ -7,19 +7,17 @@
                 <thead>
                     <tr>
                         <th ng-if="col.shown" ng-class="{'text-right': isNumberColumnType(col.type), 'arrow': col.order, ordered: order === '-' + (col.orderField || col.field), 'ordered-reverse': order === (col.orderField || col.field)}" class="{{ col.extraThCss }}" ng-repeat="col in columns | filter: {checked: true}">
-                        	<span ng-if="col.hasPermission && col.name == 'zem-simple-menu'">
-								<!-- Causes a disaster on UI -->
-								<!-- <zem-internal-feature ng-if="col.hasPermission"></zem-internal-feature> -->
-								<zem-simple-menu custom-selection-options="col.selectionOptions" />
-							</span>
-                        	<span ng-if="col.name != 'zem-simple-menu'">
-								<zem-internal-feature ng-if="col.internal"></zem-internal-feature>
-								<span ng-switch="col.order">
-									<a ng-switch-when='true' href class="col-title order" ng-class="col.nameCssClass" ng-click="callOrderCallback((col.orderField || col.field))">{{ col.name }}</a>
-									<span ng-switch-default class="col-title" ng-class="col.nameCssClass">{{ col.name }}</span>
-								</span>
-								<zem-help-popover ng-if="col.help" content="{{ col.help }}" placement="{{ $last ? 'left' : 'top' }}"></zem-help-popover>
-							</span>
+                            <span ng-if="col.hasPermission && col.showSelectionMenu">
+                                <zem-selection-menu custom-selection-options="col.selectionOptions" select-all-callback="col.selectAllCallback" />
+                            </span>
+                            <span ng-if="!col.showSelectionMenu">
+                                <zem-internal-feature ng-if="col.internal"></zem-internal-feature>
+                                <span ng-switch="col.order">
+                                    <a ng-switch-when='true' href class="col-title order" ng-class="col.nameCssClass" ng-click="callOrderCallback((col.orderField || col.field))">{{ col.name }}</a>
+                                    <span ng-switch-default class="col-title" ng-class="col.nameCssClass">{{ col.name }}</span>
+                                </span>
+                                <zem-help-popover ng-if="col.help" content="{{ col.help }}" placement="{{ $last ? 'left' : 'top' }}"></zem-help-popover>
+                            </span>
                         </th>
                     </tr>
                 </thead>
@@ -133,8 +131,8 @@
                                         popover-placement="left">
                                     </span>
                                 </span>
-                                <span ng-switch-when="checkbox">
-                                    <input type="checkbox" data-ng-model="row[col.field]" ng-disabled="!row[col.field] && col.disabled" data-ng-change="callSelectCallback(col.selectCallback, row, row[col.field], true)"/>
+                                <span ng-switch-when="checkbox" class="checkbox">
+                                    <input type="checkbox" data-ng-model="row[col.field]" ng-disabled="!row[col.field] && col.disabled" data-ng-change="col.selectCallback(row, row[col.field])"/>
                                 </span>
                                 <span ng-switch-when="state">
                                     <zem-state-selector 
@@ -202,7 +200,7 @@
                                     <span ng-switch-when="datetime">
                                         {{ (totalRow[col.field] | date:'M/d/yyyy h:mm a') || 'N/A' }}
                                     </span>
-                                    <span ng-switch-when='checkbox'>
+                                    <span ng-switch-when='checkbox' class="checkbox">
                                         <input type="checkbox" data-ng-model="totalRow.checked" data-ng-change="callSelectCallback(col.selectCallback, totalRow, totalRow[col.field], false)"/>
                                     </span>
                                 </span>

@@ -485,6 +485,22 @@ def get_ad_group_sources_state_messages(ad_group_sources):
     return sources_messages
 
 
+def get_selected_content_ads(
+        ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled):
+    if select_all:
+        content_ads = models.ContentAd.objects.filter(
+            Q(ad_group__id=ad_group_id) | Q(id__in=content_ad_ids_enabled)).exclude(
+                id__in=content_ad_ids_disabled)
+    elif select_batch_id is not None:
+        content_ads = models.ContentAd.objects.filter(
+            Q(batch__id=select_batch_id) | Q(id__in=content_ad_ids_enabled)).exclude(
+                id__in=content_ad_ids_disabled)
+    else:
+        content_ads = models.ContentAd.objects.filter(id__in=content_ad_ids_enabled)
+
+    return content_ads.order_by('created_dt')
+
+
 def _get_state_messages(ad_group_source):
     message_template = '<b>{name}</b> for this Media Source differs from '\
                        '{name} in the Media Source\'s 3rd party dashboard.'
