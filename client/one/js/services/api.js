@@ -1054,7 +1054,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
     function CampaignAdGroups() {
         this.create = function (id) {
             var deferred = $q.defer();
-            var url = '/api/campadsigns/' + id + '/ad_groups/';
+            var url = '/api/campaigns/' + id + '/ad_groups/';
 
             $http.put(url).
                 success(function (data, status) {
