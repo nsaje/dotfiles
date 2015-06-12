@@ -68,7 +68,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
     };
 
     var formatBulkActionsResult = function(object) {
-        console.log('format');
+        // TODO: move this to view
         var bulkAction;
         $scope.bulkActions.forEach(function(bk) {
             if (bk.value == object.id) {
@@ -76,7 +76,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
             }
         });
         var notification = bulkAction.notification;
-        console.log('bk', bulkAction, notification);
 
         var element;
         if (notification) {
@@ -108,7 +107,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
     $scope.selectedAdsChanged = function (row, checked) {
         if (row.id) {
             $scope.selectedContentAdsStatus[row.id] = checked;
-            console.log('selected content ad status', $scope.selectedContentAdsStatus);
         }
     };
 
@@ -151,7 +149,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
     };
 
     $scope.updateContentAdSelection = function () {
-        console.log('update ad selection');
         $scope.rows.forEach(function (row) {
             if ($scope.selectedContentAdsStatus[row.id] !== undefined) {
                 row.ad_selected = $scope.selectedContentAdsStatus[row.id];
@@ -571,21 +568,18 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
             pollSyncStatus();
         }
     });
+
     $scope.$watch('selectedAll', setBulkActionsNotifications);
+
     $scope.$watch('selectedBatchId', setBulkActionsNotifications);
-    /*$scope.$watch('selectedBatchId', function(newValue, oldValue) {
-        setBulkActionsNotifications();
-    });*/
 
     $scope.$watchCollection('selectedContentAdsStatus', function(newValue, oldValue) {
-        console.log('fire watch', arguments);
         setBulkActionsNotifications();
     });
 
     var setBulkActionsNotifications = function() {
         var contentAdSelection = getEnabledAndDisabledContentAds();
 
-        console.log('set bulk action notifications0');
         api.adGroupContentAdBulkActions.notifications(
             $state.params.id,
             contentAdSelection.enabled,
@@ -593,12 +587,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
             $scope.selectedAll,
             $scope.selectedBatchId
         ).then(function(data) {
-            console.log('got back errors', data);
             if (data.data) {
                 $scope.bulkActions.forEach(function(bulkAction) {
                     bulkAction.notification = data.data[bulkAction.value];
                 });
-                console.log('actions', $scope.bulkActions);
             }
         });
     }
