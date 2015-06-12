@@ -199,5 +199,7 @@ SOURCE_CAMPAIGN_KEY_PENDING_VALUE = 'PENDING'
 if os.environ.get('E2E'):
     print 'Using E2E database !!!'
     DATABASES['default'] = DATABASES['e2e']
+
 if 'e2e' in DATABASES:
+    DATABASES['e2e'] = {}
     del DATABASES['e2e']

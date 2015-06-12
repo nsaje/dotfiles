@@ -197,7 +197,7 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
         )
         self.assertEqual(response.content, expected_content)
 
-    def test_get_demo(self):
+    def test_get_demo_csv(self):
         demo_users = settings.DEMO_USERS
 
         settings.DEMO_USERS = ('demo@example.com', )
@@ -216,25 +216,29 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
 
         request.user.email = 'demo@example.com'
         response = export.AdGroupAdsExport().dispatch(request, 100000)
-        self.assertEqual(response.url, '/demo_export/')
-
-        response = export.DemoExport().get(request)
         expected_content = '''Date,Cost,Avg. CPC,Clicks,Impressions,CTR\r\n'''
-        filename = 'export.csv'
-        self.assertEqual(
-            response['Content-Disposition'],
-            'attachment; filename="%s"' % filename
-        )
         self.assertEqual(response.content, expected_content)
 
+        settings.DEMO_USERS = demo_users
+
+    def test_get_demo_excel(self):
+        demo_users = settings.DEMO_USERS
+
+        settings.DEMO_USERS = ('demo@example.com', )
+        
+        request = http.HttpRequest()
         request.GET['type'] = 'excel'
+        request.GET['start_date'] = '2014-06-30'
+        request.GET['end_date'] = '2014-07-01'
+        request.method = 'get'
+        request.user = Mock()
         request.user.email = 'something'
+        request.user.id = 1
+
         with self.assertRaises(exc.MissingDataError):
             response = export.AdGroupAdsExport().get(request, 100000)
         request.user.email = 'demo@example.com'
         response = export.AdGroupAdsExport().dispatch(request, 100000)
-        self.assertEqual(response.url, '/demo_export/')
-        response = export.DemoExport().get(request)
         self.assertEqual(response['Content-Type'],
                          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 

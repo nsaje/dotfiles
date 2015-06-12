@@ -47,6 +47,9 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
 
     $scope.setActiveTab = function () {
         if ($scope.tabs === undefined && $window.isDemo) {
+			// when someone refreshes the page on a demo campaign/adgroup
+			// client breaks before demo can figure it out.
+			// this resets the demo to its defaults
             $window.onbeforeunload = null;
             $window.location.href = '';
         }
