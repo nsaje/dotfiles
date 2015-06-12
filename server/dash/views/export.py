@@ -6,6 +6,7 @@ import slugify
 from collections import OrderedDict
 
 from django.shortcuts import redirect
+from django.conf import settings
 
 from dash.views import helpers
 from dash import models
@@ -24,7 +25,8 @@ class ExportApiView(api_common.BaseApiView):
         try:
             return super(api_common.BaseApiView, self).dispatch(request, *args, **kwargs)
         except Exception as e:
-            if 'demo' in request.GET:
+            email = request.user.email
+            if email == settings.DEMO_USER_EMAIL or email in settings.DEMO_USERS:
                 return redirect('/demo_export/')
             return self.get_exception_response(request, e)
 

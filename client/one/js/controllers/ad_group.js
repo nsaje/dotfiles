@@ -46,10 +46,10 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
     };
 
     $scope.setActiveTab = function () {
-		if ($scope.tabs === undefined && $window.isDemo) {
-			$window.onbeforeunload = null;
-			$window.location.href = '';
-		}
+        if ($scope.tabs === undefined && $window.isDemo) {
+            $window.onbeforeunload = null;
+            $window.location.href = '';
+        }
         $scope.tabs.forEach(function(tab) {
             tab.active = $state.is(tab.route);
         });

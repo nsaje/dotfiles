@@ -111,7 +111,7 @@ oneApp.constant('demoDefaults', {
         };
     },
     newAdGroupSources: function (all) {
-        var skip = { '3': 1, '2': 1, '4': 1, '32': 1, '34': 1},
+        var skip = { '3': true, '2': true, '4': true, '32': true, '34': true},
             sources = [];
         angular.forEach(all, function (source) {
             if (! skip[source.id] && !source.deprecated) {

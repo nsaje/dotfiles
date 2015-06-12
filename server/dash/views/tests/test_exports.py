@@ -6,6 +6,7 @@ import slugify
 
 from django import test
 from django import http
+from django.conf import settings
 import xlrd
 
 from dash.views import export
@@ -197,18 +198,23 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
         self.assertEqual(response.content, expected_content)
 
     def test_get_demo(self):
+        demo_users = settings.DEMO_USERS
+
+        settings.DEMO_USERS = ('demo@example.com', )
+        
         request = http.HttpRequest()
         request.GET['type'] = 'csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
         request.method = 'get'
         request.user = Mock()
+        request.user.email = 'something'
         request.user.id = 1
 
         with self.assertRaises(exc.MissingDataError):
             response = export.AdGroupAdsExport().get(request, 100000)
 
-        request.GET['demo'] = '1'
+        request.user.email = 'demo@example.com'
         response = export.AdGroupAdsExport().dispatch(request, 100000)
         self.assertEqual(response.url, '/demo_export/')
 
@@ -222,15 +228,17 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
         self.assertEqual(response.content, expected_content)
 
         request.GET['type'] = 'excel'
-        del request.GET['demo']
+        request.user.email = 'something'
         with self.assertRaises(exc.MissingDataError):
             response = export.AdGroupAdsExport().get(request, 100000)
-        request.GET['demo'] = '1'
+        request.user.email = 'demo@example.com'
         response = export.AdGroupAdsExport().dispatch(request, 100000)
         self.assertEqual(response.url, '/demo_export/')
         response = export.DemoExport().get(request)
         self.assertEqual(response['Content-Type'],
                          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+        settings.DEMO_USERS = demo_users
 
     def test_get_excel(self):
         request = http.HttpRequest()

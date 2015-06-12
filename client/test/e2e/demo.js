@@ -67,12 +67,12 @@ describe('Campaign management', function () {
         element(by.css('#nav div .account-name')).click();
         expect(browser.getLocationAbsUrl()).toMatch(/accounts\/[0-9]+\/campaigns/);
         element(by.cssContainingText('.btn-add', '+ Campaign')).click();
-        return browser.wait(function () {
-            return element(by.id('name-input')).isPresent();
-        }, 2000);
+        return browser.driver.sleep(0);
     }
 
     function renameCampaign() {
+        tabs.campaign.agency.click();
+        element(by.id('name-input')).isPresent();
         expect(browser.getLocationAbsUrl()).toMatch(/campaigns\/[0-9]+\/agency/);
 
         element(by.id('name-input')).sendKeys(' 123');
