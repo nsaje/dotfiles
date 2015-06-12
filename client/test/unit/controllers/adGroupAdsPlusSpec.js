@@ -277,7 +277,7 @@ describe('AdGroupAdsPlusCtrl', function() {
             $scope.executeBulkAction();
 
             expect($window.open).toHaveBeenCalledWith(
-                '/api/ad_groups/1/contentads/csv/?content_ad_ids_enabled=1,2&content_ad_ids_disabled=3',
+                '/api/ad_groups/1/contentads/csv/?content_ad_ids_selected=1,2&content_ad_ids_not_selected=3',
                 '_blank'
             );
         });

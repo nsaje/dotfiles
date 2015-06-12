@@ -346,17 +346,17 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         return modalInstance;
     };
 
-    var bulkUpdateContentAds = function (contentAdIdsEnabled, contentAdIdsDisabled, state) {
+    var bulkUpdateContentAds = function (contentAdIdsSelected, contentAdIdsNotSelected, state) {
         // update all content ads if none selected
-        var updateAll = !contentAdIdsEnabled.length && !$scope.selectedAll && !$scope.selectedBatchId;
+        var updateAll = !contentAdIdsSelected.length && !$scope.selectedAll && !$scope.selectedBatchId;
 
         updateContentAdStates(state, updateAll);
 
         api.adGroupContentAdState.save(
             $state.params.id,
             state,
-            contentAdIdsEnabled,
-            contentAdIdsDisabled,
+            contentAdIdsSelected,
+            contentAdIdsNotSelected,
             updateAll || $scope.selectedAll,
             $scope.selectedBatchId
         ).then(function () {
@@ -364,13 +364,13 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         });
     };
 
-    var downloadContentAds = function (contentAdIdsEnabled, contentAdIdsDisabled) {
+    var downloadContentAds = function (contentAdIdsSelected, contentAdIdsNotSelected) {
         // update all content ads if none selected
-        var updateAll = !contentAdIdsEnabled.length && !$scope.selectedAll && !$scope.selectedBatchId;
+        var updateAll = !contentAdIdsSelected.length && !$scope.selectedAll && !$scope.selectedBatchId;
         var url = '/api/ad_groups/' + $state.params.id + '/contentads/csv/?'
 
-        url += 'content_ad_ids_enabled=' + contentAdIdsEnabled.join(',')
-        url += '&content_ad_ids_disabled=' + contentAdIdsDisabled.join(',');
+        url += 'content_ad_ids_selected=' + contentAdIdsSelected.join(',')
+        url += '&content_ad_ids_not_selected=' + contentAdIdsNotSelected.join(',');
 
         if ($scope.selectedAll) {
             url += '&select_all=' + (updateAll || $scope.selectedAll);
@@ -384,34 +384,34 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
     $scope.executeBulkAction = function () {
-        var contentAdIdsEnabled = [],
-            contentAdIdsDisabled = [];
+        var contentAdIdsSelected = [],
+            contentAdIdsNotSelected = [];
 
         Object.keys($scope.selectedContentAdsStatus).forEach(function (contentAdId) {
             if ($scope.selectedContentAdsStatus[contentAdId]) {
-                contentAdIdsEnabled.push(contentAdId);
+                contentAdIdsSelected.push(contentAdId);
             } else {
-                contentAdIdsDisabled.push(contentAdId);
+                contentAdIdsNotSelected.push(contentAdId);
             }
         });
 
         switch ($scope.selectedBulkAction) {
             case 'pause':
                 bulkUpdateContentAds(
-                    contentAdIdsEnabled,
-                    contentAdIdsDisabled,
+                    contentAdIdsSelected,
+                    contentAdIdsNotSelected,
                     constants.contentAdSourceState.INACTIVE
                 );
                 break;
             case 'resume':
                 bulkUpdateContentAds(
-                    contentAdIdsEnabled,
-                    contentAdIdsDisabled,
+                    contentAdIdsSelected,
+                    contentAdIdsNotSelected,
                     constants.contentAdSourceState.ACTIVE
                 );
                 break;
             case 'download':
-                downloadContentAds(contentAdIdsEnabled, contentAdIdsDisabled);
+                downloadContentAds(contentAdIdsSelected, contentAdIdsNotSelected);
                 break;
         }
 

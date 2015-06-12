@@ -162,10 +162,10 @@ http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.
 
         self.assertEqual(response.content, expected_content)
 
-    def test_get_all_ad_disabled(self):
+    def test_get_all_ad_selected(self):
         data = {
             'select_all': True,
-            'content_ad_ids_disabled': '1'
+            'content_ad_ids_not_selected': '1'
         }
 
         response = self._get_csv_from_server(data)
@@ -191,10 +191,10 @@ http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.
 
         self.assertEqual(response.content, expected_content)
 
-    def test_get_batch_ad_enabled(self):
+    def test_get_batch_ad_selected(self):
         data = {
             'select_batch': 2,
-            'content_ad_ids_enabled': '1'
+            'content_ad_ids_selected': '1'
         }
 
         response = self._get_csv_from_server(data)
@@ -206,8 +206,8 @@ http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.
 
         self.assertEqual(response.content, expected_content)
 
-    def test_get_ad_enabled(self):
-        data = {'content_ad_ids_enabled': '1,2'}
+    def test_get_ad_selected(self):
+        data = {'content_ad_ids_selected': '1,2'}
 
         response = self._get_csv_from_server(data)
 
@@ -255,7 +255,7 @@ class AdGroupContentAdStateTest(TestCase):
 
         data = {
             'state': constants.ContentAdSourceState.INACTIVE,
-            'content_ad_ids_enabled': [content_ad_id],
+            'content_ad_ids_selected': [content_ad_id],
         }
 
         response = self.client.post(
