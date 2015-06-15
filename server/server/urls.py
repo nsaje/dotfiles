@@ -302,7 +302,7 @@ urlpatterns += patterns(
         r'^api/users/(?P<user_id>(\d+|current))/$',
         login_required(dash.views.views.User.as_view()),
         name='user'
-    ),
+    )
 )
 
 # Action Log

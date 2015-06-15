@@ -120,8 +120,8 @@ oneApp.factory("zemDemoSourcesService", ['$q', '$window', 'demoDefaults', 'zemDe
                         mapper[v.id][field] = value;
                     });
                 }
-                adGroupSourcesTableRows[adGroup] = table.rows;
             });
+            adGroupSourcesTableRows[adGroup] = table.rows;
             //while (pops-- > 0) { cachedData.sourcesWaiting.pop(); }
             zemDemoCacheService.set('/api/ad_groups/' + adGroup + '/sources/', cachedData);
             return table;

@@ -5,13 +5,12 @@ oneApp.config(['$provide', function ($provide) {
     ///////////////////////////
     // API SERVICE DECORATOR //
     ///////////////////////////
-    $provide.decorator('api', ['$delegate', '$q', '$window', 'demoDefaults', 'zemCustomTableColsService', 'zemDemoCacheService', 'zemDemoAdGroupsService', 'zemDemoSourcesService', function ($delegate, $q, $window, demoDefaults, zemCustomTableColsService, zemDemoCacheService, zemDemoAdGroupsService, zemDemoSourcesService) {
+    $provide.decorator('api', ['$delegate', '$q', '$window', 'demoDefaults', 'zemLocalStorageService', 'zemDemoCacheService', 'zemDemoAdGroupsService', 'zemDemoSourcesService', function ($delegate, $q, $window, demoDefaults, zemLocalStorageService, zemDemoCacheService, zemDemoAdGroupsService, zemDemoSourcesService) {
         if (!$window.isDemo) { return $delegate; }
         var demoInUse = false,
             newCampaigns = {}, // new campaigns map, form: { campaignId1: 1, campaignId2: 1, ...}
             lastSourcesArgs = undefined, // stored last arguments for sources list api
             defaults = demoDefaults,
-
             // //////////////
             // // WRAPPERS //
             // //////////////
@@ -61,12 +60,18 @@ oneApp.config(['$provide', function ($provide) {
                 return data;
             },
             tableMerge = function (original, additional) {
+                additional.rows.reverse();
                 if (! original.rows.length) {
                     original.rows = additional.rows;
                     return original;
                 }
                 if (original.pagination.currentPage == 1) {
                     angular.forEach(additional.rows, function (r) {
+                        original.rows.unshift(r);
+                        original.rows.pop();
+                    });
+                } else if (original.pagination.currentPage == 2 && original.pagination.size < additional.rows.length) {
+                    angular.forEach(additional.rows.slice(6, additional.rows.length), function (r) {
                         original.rows.unshift(r);
                         original.rows.pop();
                     });
@@ -213,14 +218,17 @@ oneApp.config(['$provide', function ($provide) {
             
             zemDemoCacheService.set('/api/ad_groups/' + settings.id + '/settings/', campaign);
             zemDemoAdGroupsService.newAdGroup(id, settings.id);
-            demoInUse = true;
+            
             $delegate.availableSources.list().then(function (data) {
                 zemDemoCacheService.set('/api/ad_groups/' + settings.id + '/sources/', {
-                    sources: data.data.sources,
+                    sources: defaults.newAdGroupSources(data.data.sources),
                     sourcesWaiting: []
                 });
                 deferred.resolve(settings);
             });
+
+            demoInUse = true;
+            
             return deferred.promise;
         };
 
@@ -397,8 +405,16 @@ oneApp.config(['$provide', function ($provide) {
             return function demo(id, startDate, endDate, order) {
                 lastSourcesArgs = [id, startDate, endDate, order];
                 var deferred = $q.defer();
+                zemLocalStorageService.set('columns',
+                                           defaults.tableColumns.adGroupSources,
+                                          'adGroupSources');
                 if (zemDemoAdGroupsService.isNew(id)) {
-                    deferred.resolve(zemDemoSourcesService.applyToSourcesTable(id, defaults.emptyTable()));
+                    deferred.resolve(
+                        zemDemoSourcesService.applyToSourcesTable(
+                            id,
+                            defaults.newAdGroupSourcesTable()
+                        )
+                    );
                     return deferred.promise;
                 }
                 backup(id, startDate, endDate, order).then(function (table) {
@@ -417,11 +433,10 @@ oneApp.config(['$provide', function ($provide) {
             deferred.resolve({
                 status: true,
                 defaults: {
-                    displayUrl: '',
-                    brandName: '',
-                    description: '',
-                    callToAction: '',
-                    batchName: ''
+                    displayUrl: 'zemanta.com',
+                    brandName: 'Zemanta',
+                    description: 'Zemanta Content DSP brings science to the top of the funnel marketing',
+                    callToAction: 'Read more'
                 }
             });
             return deferred.promise;
@@ -492,18 +507,18 @@ oneApp.config(['$provide', function ($provide) {
                 });
                 return data;
             };
-            return function demo(id, startDate, endDate, order) {
+            return function demo(id, page, size, startDate, endDate, order) {
                 var config = { params: {} },
                     deferred = $q.defer(),
                     cacheId = '/api/ad_groups/' + id + '/contentadsplus/table/',
                     cachedResponse = zemDemoCacheService.get(cacheId);
-                zemCustomTableColsService.save('adGroupAdsPlus',
-                                               defaults.tableColumns.adGroupAdsPlus);
-                
+                zemLocalStorageService.set('columns',
+                                            defaults.tableColumns.adGroupAdsPlus,
+                                           'adGroupAdsPlus');
                 if (cachedResponse && !zemDemoAdGroupsService.isNew(id)) {
                     config.params.order = order;
                     zemDemoSourcesService.refresh(id).then(function () {
-                        backup(id, startDate, endDate, order).then(function (data) {
+                        backup(id, page, size, startDate, endDate, order).then(function (data) {
                             var changes = applyChanges(id, cachedResponse);
                             data.is_sync_recent = true;
                             angular.forEach(data.rows, function (r) {
@@ -530,7 +545,7 @@ oneApp.config(['$provide', function ($provide) {
                     };
                     
                 } else {
-                    backup(id, startDate, endDate, order).then(function (data) {
+                    backup(id, page, size, startDate, endDate, order).then(function (data) {
                         zemDemoSourcesService.refresh(id).then(function () {
                             data.is_sync_recent = true;
                             angular.forEach(data.rows, function (r) {

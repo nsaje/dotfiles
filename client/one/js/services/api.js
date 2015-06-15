@@ -83,7 +83,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             };
 
             addFilteredSources(config.params);
-
             $http.get(url, config).
                 success(function (data, status) {
                     deferred.resolve({
