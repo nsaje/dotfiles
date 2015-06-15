@@ -552,7 +552,7 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date1,
             ad_group=ags1.ad_group,
             source=ags1.source,
-            rows=_prepare_report_rows(ags1.ad_group, rows_ags1_date1)
+            rows=_prepare_report_rows(ags1.ad_group, ags1.source, rows_ags1_date1)
         )
 
         for row in rows_ags1_date1:
@@ -571,7 +571,7 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date1,
             ad_group=ags2.ad_group,
             source=ags2.source,
-            rows=_prepare_report_rows(ags2.ad_group, rows_ags2_date1)
+            rows=_prepare_report_rows(ags2.ad_group, ags1.source, rows_ags2_date1)
         )
         for row in rows_ags2_date1:
             article = dashmodels.Article.objects.get(title=row['title'])
@@ -589,13 +589,13 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date2,
             ad_group=ags1.ad_group,
             source=ags1.source,
-            rows=_prepare_report_rows(ags1.ad_group, rows_ags1_date2)
+            rows=_prepare_report_rows(ags1.ad_group, ags1.source, rows_ags1_date2)
         )
         reports.update.stats_update_adgroup_source_traffic(
             datetime=date2,
             ad_group=ags2.ad_group,
             source=ags2.source,
-            rows=_prepare_report_rows(ags2.ad_group, rows_ags2_date2)
+            rows=_prepare_report_rows(ags2.ad_group, ags1.source, rows_ags2_date2)
         )
 
         articles_ags1 = dashmodels.Article.objects.order_by('title')
@@ -675,7 +675,7 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date,
             ad_group=ags.ad_group,
             source=ags.source,
-            rows=_prepare_report_rows(ags.ad_group, rows)
+            rows=_prepare_report_rows(ags.ad_group, ags.source, rows)
         )
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
         self.assertEqual(len(stats), 2)
@@ -696,7 +696,7 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date,
             ad_group=ags.ad_group,
             source=ags.source,
-            rows=_prepare_report_rows(ags.ad_group, rows_new_title)
+            rows=_prepare_report_rows(ags.ad_group, ags.source, rows_new_title)
         )
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
         self.assertEqual(len(stats), 4)
@@ -732,7 +732,7 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date,
             ad_group=ags.ad_group,
             source=ags.source,
-            rows=_prepare_report_rows(ags.ad_group, rows_new_url)
+            rows=_prepare_report_rows(ags.ad_group, ags.source, rows_new_url)
         )
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
         self.assertEqual(len(stats), 6)
@@ -811,12 +811,11 @@ class UpsertReportsTestCase(test.TestCase):
 
         rows = rows_duplicate + rows_other
 
-        
         reports.update.stats_update_adgroup_source_traffic(
             datetime=date1,
             ad_group=ags1.ad_group,
             source=ags1.source,
-            rows=_prepare_report_rows(ags1.ad_group, rows)
+            rows=_prepare_report_rows(ags1.ad_group, ags1.source, rows)
         )
 
         article = dashmodels.Article.objects.get(title=title, url=url)

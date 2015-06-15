@@ -113,6 +113,7 @@ class AdGroupAdsPlusTableTest(TestCase):
 
         self.assertItemsEqual(result['data']['rows'], [{
             'batch_name': 'batch 1',
+            'archived': False,
             'batch_id': 1,
             'display_url': 'example.com',
             'brand_name': 'Example',
@@ -143,6 +144,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             'upload_time': '2015-02-22T19:00:00',
             'url': 'http://testurl.com'
         }, {
+            'archived': False,
             'status_setting': 2,
             'upload_time': '2015-02-22T19:00:00',
             'ctr': None,

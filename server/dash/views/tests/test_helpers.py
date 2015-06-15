@@ -8,6 +8,8 @@ import actionlog.sync
 from dash.views import helpers
 from dash import models
 
+from utils import exc
+
 
 class ViewHelpersTestCase(TestCase):
     fixtures = ['test_api.yaml']
@@ -268,6 +270,16 @@ class ViewHelpersTestCase(TestCase):
             data_status[ad_group_source.source_id]['message'],
             'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
         )
+
+    def test_parse_get_request_array(self):
+        self.assertEqual(helpers.parse_get_request_content_ad_ids({'ids': '1,2'}, 'ids'), [1, 2])
+        with self.assertRaises(exc.ValidationError):
+            helpers.parse_get_request_content_ad_ids({'ids': '1,a'}, 'ids')
+
+    def test_parse_post_request_array(self):
+        self.assertEqual(helpers.parse_post_request_content_ad_ids({'ids': ['1', '2']}, 'ids'), [1, 2])
+        with self.assertRaises(exc.ValidationError):
+            helpers.parse_post_request_content_ad_ids({'ids': ['1', 'a']}, 'ids')
 
 
 class GetSelectedContentAdsTest(TestCase):

@@ -246,7 +246,7 @@ def update_content_ads_source_traffic_stats(date, ad_group, source, rows):
     ).delete()
 
     for row in rows:
-        content_ad_source = row['content_ad_source']
+        content_ad_source = row.get('content_ad_source')
 
         if content_ad_source is None:
             logger.info(

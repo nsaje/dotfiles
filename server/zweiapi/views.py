@@ -85,7 +85,7 @@ def _get_error_message(data):
     return '\n'.join(message)
 
 
-def _prepare_report_rows(ad_group, source, data_rows, include_content_ad_sources):
+def _prepare_report_rows(ad_group, source, data_rows, include_content_ad_sources=False):
     raw_articles = [{'url': row['url'], 'title': row['title']} for row in data_rows]
     articles = dash.api.reconcile_articles(ad_group, raw_articles)
 
@@ -106,7 +106,6 @@ def _prepare_report_rows(ad_group, source, data_rows, include_content_ad_sources
 
         if content_ad_source is None or not content_ad_source.content_ad.archived:
             r = {
-                'content_ad_source': content_ad_source,
                 'article': article,
                 'impressions': data_row['impressions'],
                 'clicks': data_row['clicks'],
@@ -118,6 +117,9 @@ def _prepare_report_rows(ad_group, source, data_rows, include_content_ad_sources
                 r['cost_cc'] = data_row['cpc_cc'] * data_row['clicks']
             else:
                 r['cost_cc'] = data_row['cost_cc']
+
+            if include_content_ad_sources:
+                r['content_ad_source'] = content_ad_source
 
             stats_rows.append(r)
 
@@ -165,7 +167,13 @@ def _process_zwei_response(action, data, request):
                 can_manage_content_ads = action.ad_group_source.can_manage_content_ads
 
                 rows = _prepare_report_rows(ad_group, source, data['data'], can_manage_content_ads)
-                reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, rows)
+                article_rows = rows
+
+                if can_manage_content_ads:
+                    # remove content_ad_source from rows
+                    article_rows = [{k: v for k, v in row.items() if k != 'content_ad_sources'} for row in rows]
+
+                reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, article_rows)
 
                 if can_manage_content_ads:
                     reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, rows)
