@@ -26,10 +26,10 @@ class ExportApiView(api_common.BaseApiView):
         except Exception as e:
             email = request.user.email
             if email == settings.DEMO_USER_EMAIL or email in settings.DEMO_USERS:
-                return self.demo_export(request)
+                return self._demo_export(request)
             return self.get_exception_response(request, e)
 
-    def demo_export(self, request): 
+    def _demo_export(self, request): 
         data = []
         filename='export'
         if request.GET.get('type') == 'excel':

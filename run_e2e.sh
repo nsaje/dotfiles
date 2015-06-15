@@ -18,7 +18,7 @@ CURR_DIR=$PWD
 cd $SCRIPTPATH/client
 grunt dev&
 
-sleep 30
+sleep 40
 
 grunt e2e
 STATUS=$?
