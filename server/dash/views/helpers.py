@@ -554,3 +554,42 @@ def _get_latest_state(ad_group_source):
         filter(ad_group_source=ad_group_source).\
         order_by('ad_group_source_id', '-created_dt')
     return latest_state_qs[0] if latest_state_qs.exists() else None
+
+
+def get_archive_restore_notifications(content_ads):
+    notifications = {}
+
+    if len(content_ads) > 0:
+        archived = set([content_ad.archived for content_ad in content_ads])
+
+        if False not in archived:
+            notifications['archive'] = 'These Content Ads have already been archived.'
+
+        if True not in archived:
+            # TODO: need better text
+            notifications['restore'] = 'These Content Ads are already active.'
+
+        if not all([content_ad.state == constants.ContentAdSourceState.INACTIVE for content_ad in content_ads]):
+            notifications['archive'] = 'All selected Content Ads must be paused before they can be archived.'
+    return notifications
+
+
+def parse_get_request_content_ad_ids(request_data, param_name):
+    content_ad_ids = request_data.get(param_name)
+
+    if not content_ad_ids:
+        return []
+
+    try:
+        return map(int, content_ad_ids.split(','))
+    except ValueError:
+        raise exc.ValidationError()
+
+
+def parse_post_request_content_ad_ids(request_data, param_name):
+    content_ad_ids = request_data.get(param_name, [])
+
+    try:
+        return map(int, content_ad_ids)
+    except ValueError:
+        raise exc.ValidationError()

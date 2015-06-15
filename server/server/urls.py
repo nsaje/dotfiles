@@ -173,19 +173,19 @@ urlpatterns += patterns(
         name='ad_group_content_ad_csv'
     ),
     url(
-        r'api/ad_groups/(?P<ad_group_id>\d+)/contentads/archive/',
-        login_required(dash.views.views.AdGroupContentAdArchive.as_view()),
+        r'api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/archive/archive/',
+        login_required(dash.views.views.AdGroupContentAdsPlusArchive.as_view()),
         name='ad_group_content_ad_archive'
     ),
     url(
-        r'api/ad_groups/(?P<ad_group_id>\d+)/contentads/restore/',
-        login_required(dash.views.views.AdGroupContentAdRestore.as_view()),
+        r'api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/archive/restore/',
+        login_required(dash.views.views.AdGroupContentAdsPlusRestore.as_view()),
         name='ad_group_content_ad_restore'
     ),
     url(
-        r'api/ad_groups/(?P<ad_group_id>\d+)/contentads/bulk/notifications/',
-        login_required(dash.views.views.AdGroupContentAdBulkActionsNotifications.as_view()),
-        name='ad_group_content_ad_bulk_notifications'
+        r'api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/archive/allow/',
+        login_required(dash.views.views.AdGroupContentAdsPlusArchiveAllow.as_view()),
+        name='ad_group_content_ad_check_archive_allow'
     ),
     url(
         r'^api/accounts/table/',

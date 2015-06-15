@@ -68,7 +68,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
     };
 
     var formatBulkActionsResult = function(object) {
-        // TODO: move this to view
         var bulkAction;
         $scope.bulkActions.forEach(function(bk) {
             if (bk.value == object.id) {
@@ -219,13 +218,13 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
             return 'This ad must be managed manually.';
         },
         disabled: false,
-        archivedField: 'archived'  // TODO: is this needed?
+        archivedField: 'archived'
     }, {
         name: 'Status',
         field: 'submission_status',
         checked: false,
         type: 'submissionStatus',
-        archivedField: 'archived',  // TODO: is this needed?
+        archivedField: 'archived',
         shown: true,
         help: 'Current submission status.',
         totalRow: false,
@@ -414,13 +413,9 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
         return modalInstance;
     };
 
-    var shouldUpdateAll = function (contentAdIdsEnabled, contentAdIdsDisabled) {
-        return !contentAdIdsEnabled.length && !$scope.selectedAll && !$scope.selectedBatchId;
-    };
-
     var bulkUpdateContentAds = function (contentAdIdsEnabled, contentAdIdsDisabled, state) {
-
-        var updateAll = shouldUpdateAll(contentAdIdsEnabled, contentAdIdsDisabled);
+        // update all content ads if none selected
+        var updateAll = !contentAdIdsEnabled.length && !$scope.selectedAll && !$scope.selectedBatchId;
 
         updateContentAdStates(state, updateAll);
 
@@ -442,7 +437,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
             contentAdIdsEnabled,
             contentAdIdsDisabled,
             $scope.selectedAll,
-            $scope.selectedBatchId).then(updateTableAfterArchiveing);
+            $scope.selectedBatchId).then(updateTableAfterArchiving);
     };
 
     var bulkRestoreContentAds = function (contentAdIdsEnabled, contentAdIdsDisabled) {
@@ -451,11 +446,12 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
             contentAdIdsEnabled,
             contentAdIdsDisabled,
             $scope.selectedAll,
-            $scope.selectedBatchId).then(updateTableAfterArchiveing)
+            $scope.selectedBatchId).then(updateTableAfterArchiving)
     };
 
-    var updateTableAfterArchiveing = function(data) {
-        // update rows immediatelly, refresh table after
+    var updateTableAfterArchiving = function(data) {
+        // update rows immediately, refresh whole table after
+        // TODO: check for errors
         updateTableData(data.data.rows, {});
 
         if (!zemFilterService.getShowArchived()) {
@@ -569,18 +565,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
         }
     });
 
-    $scope.$watch('selectedAll', setBulkActionsNotifications);
-
-    $scope.$watch('selectedBatchId', setBulkActionsNotifications);
-
-    $scope.$watchCollection('selectedContentAdsStatus', function(newValue, oldValue) {
-        setBulkActionsNotifications();
-    });
-
-    var setBulkActionsNotifications = function() {
+    $scope.setBulkActionsNotifications = function() {
         var contentAdSelection = getEnabledAndDisabledContentAds();
 
-        api.adGroupContentAdBulkActions.notifications(
+        api.adGroupContentAdArchive.notifications(
             $state.params.id,
             contentAdSelection.enabled,
             contentAdSelection.disabled,
