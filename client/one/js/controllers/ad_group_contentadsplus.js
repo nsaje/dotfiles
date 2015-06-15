@@ -588,22 +588,16 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         }, true);
     };
 
-    $scope.selectionOptions = [{
-        type: 'link',
-        name: 'This page',
-        callback: $scope.selectThisPageCallback
-    }];
+    $scope.selectionOptions = [];
 
     var initUploadBatches = function () {
         api.adGroupAdsPlusUploadBatches.list($state.params.id).then(function (data) {
-            $scope.selectionOptions = $scope.selectionOptions.concat([{
-                type: 'separator'
-            }, {
+            $scope.selectionOptions = [{
                 type: 'link-list',
                 name: 'Upload batch',
                 callback: $scope.selectBatchCallback,
                 items: data.data.batches
-            }]);
+            }];
 
             $scope.columns.forEach(function (col) {
                 if (col.type == 'checkbox') {
