@@ -16,7 +16,7 @@ oneApp.directive('zemExport', function() {
 
             function getOptionByValue(value) {
                 var option = null;
-                $scope.options.forEach(function (opt) {
+                $scope.options.forEach(function(opt) {
                     if (opt.value === value) {
                         option = opt;
                     }
@@ -27,7 +27,7 @@ oneApp.directive('zemExport', function() {
 
             $scope.config = {
                 minimumResultsForSearch: -1,
-                formatResult: function (object) {
+                formatResult: function(object) {
                     if (!object.disabled) {
                         return angular.element(document.createElement('span')).text(object.text);
                     }
@@ -55,11 +55,11 @@ oneApp.directive('zemExport', function() {
 
                     return $compile(popoverEl)($scope);
                 },
-                sortResults: function (results) {
+                sortResults: function(results) {
                     var option = null;
 
                     // used to set disabled property on results
-                    results = results.map(function (result) {
+                    results = results.map(function(result) {
                         option = getOptionByValue(result.id);
 
                         if (option.disabled) {
@@ -69,7 +69,8 @@ oneApp.directive('zemExport', function() {
                     });
 
                     return results;
-                }
+                },
+                width: 'resolve'
             };
 
             $scope.downloadReport = function() {

@@ -19,8 +19,8 @@ oneApp.controller('AccountCampaignsCtrl', ['$location', '$scope', '$state', '$ti
     var userSettings = zemUserSettings.getInstance($scope, 'accountCampaigns');
 
     $scope.exportOptions = [
-        {name: 'CSV by day', value: 'csv'},
-        {name: 'Excel by day', value: 'excel'}
+        {name: 'by day (CSV)', value: 'csv'},
+        {name: 'by day (Excel)', value: 'excel'}
     ];
 
     $scope.updateSelectedCampaigns = function (campaignId) {

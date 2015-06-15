@@ -123,7 +123,7 @@ urlpatterns += patterns(
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/export/',
-        login_required(dash.views.export.AdGroupAdsExport.as_view())
+        login_required(dash.views.export.AdGroupAdsPlusExport.as_view())
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/export/',

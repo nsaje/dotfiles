@@ -392,63 +392,159 @@ class AdGroupAdsPlusExport(api_common.BaseApiView):
             end_date
         )
 
+        report_type = request.GET.get('type')
+        if report_type == 'day-excel':
+            return self.create_by_day_excel(
+                filename, start_date, end_date,
+                request.user, ad_group, filtered_sources
+            )
+        elif report_type == 'day-csv':
+            return self.create_by_day_csv(
+                filename, start_date, end_date,
+                request.user, ad_group, filtered_sources
+            )
+        elif report_type == 'content-ad-excel':
+            return self.create_by_content_ad_excel(
+                filename, start_date, end_date,
+                request.user, ad_group, filtered_sources
+            )
+        elif report_type == 'content-ad-csv':
+            return self.create_by_content_ad_csv(
+                filename, start_date, end_date,
+                request.user, ad_group, filtered_sources
+            )
+
+        raise Exception("Invalid report type")
+
+
+    def create_by_day_csv(self, filename, start_date, end_date, user, ad_group, sources):
         ads_results = self._generate_rows(
             ['date', 'content_ad'],
             start_date,
             end_date,
-            request.user,
+            user,
             ad_group,
-            filtered_sources,
+            sources,
         )
 
-        if request.GET.get('type') == 'excel':
-            sources_results = self._generate_rows(
-                ['date', 'source', 'content_ad'],
-                start_date,
-                end_date,
-                request.user,
-                ad_group,
-                filtered_sources,
-            )
+        fieldnames = OrderedDict([
+            ('date', 'Date'),
+            ('image_url', 'Image URL'),
+            ('title', 'Title'),
+            ('url', 'URL'),
+            ('uploaded', 'Uploaded'),
+            ('cost', 'Spend'),
+            ('cpc', 'Avg. CPC'),
+            ('clicks', 'Clicks'),
+            ('impressions', 'Impressions'),
+            ('ctr', 'CTR')
+        ])
+        content = export.get_csv_content(fieldnames, ads_results)
+        return self.create_csv_response(filename, content=content)
 
-            self.add_source_data(sources_results)
+    def create_by_day_excel(self, filename, start_date, end_date, user, ad_group, sources):
+        ads_results = self._generate_rows(
+            ['date', 'content_ad'],
+            start_date,
+            end_date,
+            user,
+            ad_group,
+            sources,
+        )
+        sources_results = self._generate_rows(
+            ['date', 'source', 'content_ad'],
+            start_date,
+            end_date,
+            user,
+            ad_group,
+            sources,
+        )
 
-            ads_columns = [
-                {'key': 'date', 'name': 'Date', 'format': 'date'},
-                {'key': 'title', 'name': 'Title', 'width': 30},
-                {'key': 'url', 'name': 'URL', 'width': 40},
-                {'key': 'image_url', 'name': 'Image URL', 'width': 40},
-                {'key': 'cost', 'name': 'Cost', 'format': 'currency'},
-                {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
-                {'key': 'clicks', 'name': 'Clicks'},
-                {'key': 'impressions', 'name': 'Impressions', 'width': 15},
-                {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
-            ]
+        self.add_source_data(sources_results)
 
-            sources_columns = list(ads_columns)  # make a shallow copy
-            sources_columns.insert(4, {'key': 'source', 'name': 'Source', 'width': 20})
+        ads_columns = [
+            {'key': 'date', 'name': 'Date', 'format': 'date'},
+            {'key': 'image_url', 'name': 'Image URL', 'width': 40},
+            {'key': 'title', 'name': 'Title', 'width': 30},
+            {'key': 'url', 'name': 'URL', 'width': 40},
+            {'key': 'uploaded', 'name': 'Uploaded', 'width': 40},
+            {'key': 'cost', 'name': 'Spend', 'width': 40},
+            {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
+            {'key': 'clicks', 'name': 'Clicks'},
+            {'key': 'impressions', 'name': 'Impressions', 'width': 15},
+            {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
+        ]
+        sources_columns = list(ads_columns)  # make a shallow copy
+        sources_columns.insert(5, {'key': 'source', 'name': 'Source', 'width': 20})
 
-            content = export.get_excel_content([
-                ('Detailed Report', ads_columns, ads_results),
-                ('Per Source Report', sources_columns, sources_results)
-            ])
+        content = export.get_excel_content([
+            ('Detailed Report', ads_columns, ads_results),
+            ('Per Source Report', sources_columns, sources_results)
+        ])
+        return self.create_excel_response(filename, content=content)
 
-            return self.create_excel_response(filename, content=content)
-        else:
-            fieldnames = OrderedDict([
-                ('date', 'Date'),
-                ('title', 'Title'),
-                ('url', 'URL'),
-                ('image_url', 'Image URL'),
-                ('cost', 'Cost'),
-                ('cpc', 'CPC'),
-                ('clicks', 'Clicks'),
-                ('impressions', 'Impressions'),
-                ('ctr', 'CTR')
-            ])
+    def create_by_content_ad_excel(self, filename, start_date, end_date, user, ad_group, sources):
+        ads_results = self._generate_rows(
+            ['content_ad'],
+            start_date,
+            end_date,
+            user,
+            ad_group,
+            sources,
+        )
+        sources_results = self._generate_rows(
+            ['content_ad', 'source'],
+            start_date,
+            end_date,
+            user,
+            ad_group,
+            sources,
+        )
 
-            content = export.get_csv_content(fieldnames, ads_results)
-            return self.create_csv_response(filename, content=content)
+        self.add_source_data(sources_results)
+
+        ads_columns = [
+            {'key': 'image_url', 'name': 'Image URL', 'width': 40},
+            {'key': 'title', 'name': 'Title', 'width': 30},
+            {'key': 'url', 'name': 'URL', 'width': 40},
+            {'key': 'uploaded', 'name': 'Uploaded', 'width': 40},
+            {'key': 'cost', 'name': 'Spend', 'width': 40},
+            {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
+            {'key': 'clicks', 'name': 'Clicks'},
+            {'key': 'impressions', 'name': 'Impressions', 'width': 15},
+            {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
+        ]
+        sources_columns = list(ads_columns)  # make a shallow copy
+        sources_columns.insert(4, {'key': 'source', 'name': 'Source', 'width': 20})
+
+        content = export.get_excel_content([
+            ('Detailed Report', ads_columns, ads_results),
+            ('Per Source Report', sources_columns, sources_results)
+        ])
+        return self.create_excel_response(filename, content=content)
+
+    def create_by_content_ad_csv(self, filename, start_date, end_date, user, ad_group, sources):
+        ads_results = self._generate_rows(
+            ['content_ad'],
+            start_date,
+            end_date,
+            user,
+            ad_group,
+            sources,
+        )
+        fieldnames = OrderedDict([
+            ('image_url', 'Image URL'),
+            ('title', 'Title'),
+            ('url', 'URL'),
+            ('uploaded', 'Uploaded'),
+            ('cost', 'Spend'),
+            ('cpc', 'Avg. CPC'),
+            ('clicks', 'Clicks'),
+            ('impressions', 'Impressions'),
+            ('ctr', 'CTR')
+        ])
+        content = export.get_csv_content(fieldnames, ads_results)
+        return self.create_csv_response(filename, content=content)
 
     def _generate_rows(self, dimensions, start_date, end_date, user, ad_group, sources):
         content_ads = models.ContentAd.objects.filter(
@@ -469,6 +565,8 @@ class AdGroupAdsPlusExport(api_common.BaseApiView):
             stat['title'] = content_ad.title
             stat['url'] = content_ad.url
             stat['image_url'] = content_ad.get_image_url()
+            stat['uploaded'] = content_ad.created_dt
+            print stat
 
         return sort_results(stats, ['date'])
 
