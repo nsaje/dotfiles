@@ -22,8 +22,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     var userSettings = zemUserSettings.getInstance($scope, 'allAccountsAccounts');
 
     $scope.exportOptions = [
-        {name: 'by day (CSV)', value: 'csv'},
-        {name: 'by day (Excel)', value: 'excel'}
+        {name: 'By Day (CSV)', value: 'csv'},
+        {name: 'By Day (Excel)', value: 'excel'}
     ];
 
     $scope.columns = [

@@ -31,16 +31,16 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
     $scope.exportOptions = [{
-        name: 'by content ad (CSV)',
+        name: 'By Content Ad (CSV)',
         value: 'content-ad-csv'
     }, {
-        name: 'by content ad (Excel)',
+        name: 'By Content Ad (Excel)',
         value: 'content-ad-excel'
     }, {
-        name: 'by day (CSV)',
+        name: 'By Day (CSV)',
         value: 'day-csv'
     }, {
-        name: 'by day (Excel)',
+        name: 'By Day (Excel)',
         value: 'day-excel'
     }];
 
