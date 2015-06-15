@@ -2370,9 +2370,30 @@ zem-editable-currency-field {
     }
 }
 
-.zem-selection-menu.dropdown {
+.table div.zem-selection-menu.dropdown {
     .dropdown-toggle input[type=checkbox] {
         margin: 0;
+    }
+
+    &:not(.open) {
+        .drop-arrow {
+            .arrow-down();
+            top: 1px;
+            margin-left: 0;
+            visibility: visible;
+        }
+        .btn {
+            border-color: #bbb;
+            background-color: white;
+            .box-shadow(0 1px 2px rgba(50,50,50,.1));
+
+            &:hover {
+                border-color: @default-color;
+            }
+        }
+    }
+    &.open .btn:hover {
+        border-color: @default-color;
     }
 
     .dropdown-menu {
