@@ -567,6 +567,28 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         };
     }
 
+    function UserActivation() {
+        this.post = function(accountId, userId) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + accountId + '/users/' + userId + '/activate';
+            var config = {
+                params: {}
+            };
+
+            var data = {};
+            $http.post(url, config).
+                success(function(data, status){
+                    if (data && data.success) {
+                        deferred.resolve(data.data);
+                    }
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+            return deferred.promise;
+        };
+    }
+
     function DailyStats() {
         function convertFromApi(group) {
             return {
@@ -2155,6 +2177,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         checkAccountsSyncProgress: new CheckAccountsSyncProgress(),
         checkCampaignSyncProgress: new CheckCampaignSyncProgress(),
         checkSyncProgress: new CheckSyncProgress(),
+        userActivation: new UserActivation(),
         dailyStats: new DailyStats(),
         allAccountsBudget: new AllAccountsBudget(),
         accountUsers: new AccountUsers(),

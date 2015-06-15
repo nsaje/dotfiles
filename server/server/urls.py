@@ -270,7 +270,7 @@ urlpatterns += patterns(
         login_required(dash.views.views.AccountRestore.as_view()),
     ),
     url(
-        r'^api/accounts/activate/',
+        r'^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/activate',
         login_required(dash.views.views.UserActivation.as_view()),
     ),
     url(
