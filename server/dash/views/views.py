@@ -728,7 +728,7 @@ class AdGroupContentAdsPlusArchive(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_archive_post')
     def post(self, request, ad_group_id):
-        return self._set_archived_flag(request, ad_group_id)
+        return self._set_archived_flag(request, ad_group_id, True)
 
     def _set_archived_flag(self, request, ad_group_id, archive):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
@@ -813,8 +813,8 @@ class AdGroupContentAdState(api_common.BaseApiView):
         select_all = data.get('select_all', False)
         select_batch_id = data.get('select_batch')
 
-        content_ad_ids_enabled = _get_content_ad_ids(data, 'content_ad_ids_enabled')
-        content_ad_ids_disabled = _get_content_ad_ids(data, 'content_ad_ids_disabled')
+        content_ad_ids_enabled = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_enabled')
+        content_ad_ids_disabled = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_disabled')
 
         content_ads = helpers.get_selected_content_ads(
             ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
