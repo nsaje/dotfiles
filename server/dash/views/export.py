@@ -467,7 +467,7 @@ class AdGroupAdsPlusExport(api_common.BaseApiView):
             {'key': 'image_url', 'name': 'Image URL', 'width': 40},
             {'key': 'title', 'name': 'Title', 'width': 30},
             {'key': 'url', 'name': 'URL', 'width': 40},
-            {'key': 'uploaded', 'name': 'Uploaded', 'width': 40},
+            {'key': 'uploaded', 'name': 'Uploaded', 'width': 40, 'format': 'date'},
             {'key': 'cost', 'name': 'Spend', 'width': 40},
             {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
             {'key': 'clicks', 'name': 'Clicks'},
@@ -507,7 +507,7 @@ class AdGroupAdsPlusExport(api_common.BaseApiView):
             {'key': 'image_url', 'name': 'Image URL', 'width': 40},
             {'key': 'title', 'name': 'Title', 'width': 30},
             {'key': 'url', 'name': 'URL', 'width': 40},
-            {'key': 'uploaded', 'name': 'Uploaded', 'width': 40},
+            {'key': 'uploaded', 'name': 'Uploaded', 'width': 40, 'format': 'date'},
             {'key': 'cost', 'name': 'Spend', 'width': 40},
             {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
             {'key': 'clicks', 'name': 'Clicks'},
@@ -565,7 +565,7 @@ class AdGroupAdsPlusExport(api_common.BaseApiView):
             stat['title'] = content_ad.title
             stat['url'] = content_ad.url
             stat['image_url'] = content_ad.get_image_url()
-            stat['uploaded'] = content_ad.created_dt
+            stat['uploaded'] = content_ad.created_dt.date()
             print stat
 
         return sort_results(stats, ['date'])

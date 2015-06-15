@@ -66,7 +66,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
 
         response = export.AdGroupAdsPlusExport().get(request, self.ad_group_id)
 
-        expected_content = '''Date,Image URL,Title,URL,Uploaded,Spend,Avg. CPC,Clicks,Impressions,CTR\r\n2014-07-01,/123456789/200x300.jpg,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://testurl.com,2015-02-21 00:00:00,1000.12,10.23,103,100000,1.03\r\n'''
+        expected_content = '''Date,Image URL,Title,URL,Uploaded,Spend,Avg. CPC,Clicks,Impressions,CTR\r\n2014-07-01,/123456789/200x300.jpg,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://testurl.com,2015-02-21,1000.12,10.23,103,100000,1.03\r\n'''
 
         filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.csv'.format(
             slugify.slugify(self.account_name),
@@ -146,7 +146,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
 
         response = export.AdGroupAdsPlusExport().get(request, self.ad_group_id)
 
-        expected_content = '''Image URL,Title,URL,Uploaded,Spend,Avg. CPC,Clicks,Impressions,CTR\r\n/123456789/200x300.jpg,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://testurl.com,2015-02-21 00:00:00,1000.12,10.23,103,100000,1.03\r\n'''
+        expected_content = '''Image URL,Title,URL,Uploaded,Spend,Avg. CPC,Clicks,Impressions,CTR\r\n/123456789/200x300.jpg,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://testurl.com,2015-02-21,1000.12,10.23,103,100000,1.03\r\n'''
 
         filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.csv'.format(
             slugify.slugify(self.account_name),
