@@ -67,40 +67,63 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
         }
     };
 
-    var formatBulkActionsResult = function(object) {
+    $scope.pendingBulkActionNotifications = false;
+
+    $scope.rebuildBulkActionsMenu = function() {
+        $scope.bulkActions.forEach(function(bk) {
+            if (bk.menuObject !== undefined && bk.menuElement !== undefined) {
+                var replacement = formatBulkActionsResult(bk.menuObject);
+                bk.menuElement.replaceWith(replacement);
+                bk.menuElement = bk.menuObject = undefined;
+            }
+        });
+    };
+
+    var get_bulk_action = function(action_id) {
         var bulkAction;
         $scope.bulkActions.forEach(function(bk) {
-            if (bk.value == object.id) {
+            if (bk.value == action_id) {
                 bulkAction = bk;
             }
         });
-        var notification = bulkAction.notification;
 
-        var element;
+        return bulkAction;
+    };
+
+    var formatBulkActionsResult = function(object) {
+        var bulkAction = get_bulk_action(object.id);
+
+        var notification = bulkAction.notification;
+        var element = angular.element(document.createElement('span'));;
         if (notification) {
-            element = angular.element(document.createElement('span'));
             element.attr('popover', notification);
             element.attr('popover-trigger', 'mouseenter');
             element.attr('popover-placement', 'right');
             element.attr('popover-append-to-body', 'true');
-            element.text(object.text);
-            element = $compile(element)($scope);
-        } else {
-            element = angular.element(document.createElement('span')).text(object.text);
         }
+
+        element.text(object.text);
 
         if (angular.element(object.element).hasClass('internal')) {
             var internal = $compile(angular.element(document.createElement('zem-internal-feature')))($scope);
-            element = internal.add(element);
+            element.append(internal);
         }
 
-        return element;
+        return $compile(element)($scope);
     };
 
     $scope.bulkActionsConfig = {
         minimumResultsForSearch: -1,
         dropdownCssClass: 'show-rows',
-        formatResult: formatBulkActionsResult
+        formatResult: function(object) {
+            var element = formatBulkActionsResult(object),
+                bulkAction = get_bulk_action(object.id);
+
+            bulkAction.menuElement = element;
+            bulkAction.menuObject = object;
+
+            return element;
+        }
     };
 
     $scope.selectedAdsChanged = function (row, checked) {
@@ -446,7 +469,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
             contentAdIdsEnabled,
             contentAdIdsDisabled,
             $scope.selectedAll,
-            $scope.selectedBatchId).then(updateTableAfterArchiving)
+            $scope.selectedBatchId).then(updateTableAfterArchiving);
     };
 
     var updateTableAfterArchiving = function(data) {
@@ -568,6 +591,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
     $scope.setBulkActionsNotifications = function() {
         var contentAdSelection = getEnabledAndDisabledContentAds();
 
+        $scope.pendingBulkActionNotifications = true;
         api.adGroupContentAdArchive.notifications(
             $state.params.id,
             contentAdSelection.enabled,
@@ -580,6 +604,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
                     bulkAction.notification = data.data[bulkAction.value];
                 });
             }
+            $scope.pendingBulkActionNotifications = false;
+            $scope.rebuildBulkActionsMenu();
         });
     }
 
