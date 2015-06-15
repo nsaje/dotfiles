@@ -24,11 +24,14 @@
                         <div class="loader" ng-show="user.requestInProgress"></div>
                     </div>
                     <div ng-if="!user.removed">
-                        <div class="col-xs-6 user-name-col">
-    <p class="control-label"><b>{{user.name}} </b>({{user.email}})</p>
+                        <div class="col-xs-4 user-name-col">
+    						<p class="control-label"><b>{{user.name}} </b>({{user.email}})</p>
                             <span ng-show="user.saved && user.emailSent" class="success">An introductory email was sent to this user.</span>
                             <span ng-show="user.saved && !user.emailSent" class="success">This user can now access this account.</span>
                         </div>
+						<div class="col-xs-2">
+							<span>{{ user.last_login }}</span>
+						</div>
                         <div class="col-xs-2">
                             <div class="loader" ng-show="user.requestInProgress"></div>
                             <button ng-show="!user.requestInProgress" type="button" class="btn btn-default" ng-click="removeUser(user.id)">Remove</button>
