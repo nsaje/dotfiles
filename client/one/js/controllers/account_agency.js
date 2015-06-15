@@ -15,6 +15,23 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
     $scope.addUserData = {};
     $scope.addUserErrors = null;
 
+    $scope.userActionChange = function (action, userId) {
+        if (action == '') {
+            return;
+        }
+
+        var usr = getUser(userId);
+
+
+        if (action == 'remove') [
+            $scope.removeUser(userId);
+        } else if (action == 'resend') {
+
+        }
+
+        usr.action = null;
+    }
+
     $scope.getSettings = function (discarded) {
         $scope.saved = null;
         $scope.discarded = null;
@@ -61,7 +78,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
             $scope.requestInProgress = false;
         });
     };
-
+    
     $scope.refreshPage = function () {
         api.navData.list().then(function (accounts) {
             $scope.refreshNavData(accounts);
@@ -101,6 +118,9 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
         api.accountUsers.list($state.params.id).then(
             function (data) {
                 $scope.users = data.users;
+                $scope.users.forEach(function (user, index) {
+                    user.action = null;
+                });
             }
         );
     };
@@ -122,6 +142,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                 user.saved = true;
                 user.removed = false;
                 user.emailSent = data.created;
+                user.action = null;
                 $scope.addUserErrors = null;
                 $scope.addUserData = {};
                 $scope.getSettings(); // updates history

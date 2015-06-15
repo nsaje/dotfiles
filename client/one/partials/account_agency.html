@@ -33,8 +33,19 @@
 							<span>{{ user.last_login }}</span>
 						</div>
                         <div class="col-xs-2">
+							<!-- ng-model="userAction"-->
+									
                             <div class="loader" ng-show="user.requestInProgress"></div>
-                            <button ng-show="!user.requestInProgress" type="button" class="btn btn-default" ng-click="removeUser(user.id)">Remove</button>
+							<select ui-select2="{minimumResultsForSearch: -1, dropdownAutoWidth : true}"
+			   						class="show-rows" 
+									ng-show="!user.requestInProgress"
+		 							ng-model="user.action"
+									ng-change="userActionChange(user.action, user.id)"
+									data-placeholder="Edit">
+								<option value=""></option>
+								<option value="resend">Resend Activation Mail</option>
+								<option value="remove">Remove</option>
+							</select>
                         </div>
                     </div>
                 </div>
