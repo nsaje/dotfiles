@@ -404,7 +404,9 @@ class AdGroupSources(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         if ad_group.is_demo:
-            ad_group = models.DemoAdGroupRealAdGroup.objects.get(demo_ad_group=ad_group).real_ad_group
+            real_ad_groups = models.DemoAdGroupRealAdGroup.objects.filter(demo_ad_group=ad_group)
+            if real_ad_groups:
+                ad_group = real_ad_groups[0].real_ad_group
 
         ad_group_sources = ad_group.sources.all().order_by('name')
 
