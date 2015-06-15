@@ -40,40 +40,49 @@ describe('AdGroupAdsPlusCtrl', function() {
         });
     });
 
+    describe('selectedAdsChanged', function() {
+        it('sets correct partialSelection to true if necessary', function() {
+            $scope.selectedAdsChanged({id: 1}, true);
+
+            expect($scope.selectionMenuConfig.partialSelection).toBe(true);
+        });
+
+        it('sets correct partialSelection to false if necessary', function() {
+            $scope.selectedContentAdsStatus = {1: true, 2: true};
+
+            $scope.selectedAdsChanged({id: 1}, false);
+            expect($scope.selectionMenuConfig.partialSelection).toBe(true);
+
+            $scope.selectedAdsChanged({id: 2}, false);
+            expect($scope.selectionMenuConfig.partialSelection).toBe(false);
+        });
+    });
+
     describe('selectAllCallback', function() {
         it('sets selection and calls updateContentAdSelection if checked', function() {
+            $scope.selectionMenuConfig.partialSelection = true;
+
             spyOn($scope, 'updateContentAdSelection');
-            $scope.selectAllCallback(true);
+            $scope.selectionMenuConfig.selectAllCallback(true);
 
             expect($scope.selectedAll).toBe(true);
             expect($scope.selectedBatchId).toBe(null);
             expect($scope.selectedContentAdsStatus).toEqual({});
             expect($scope.updateContentAdSelection).toHaveBeenCalled();
+            expect($scope.selectionMenuConfig.partialSelection).toBe(false);
         });
 
         it('sets selection and calls clearContentAdSelection if not checked', function() {
+            $scope.selectionMenuConfig.partialSelection = true;
+
             spyOn($scope, 'clearContentAdSelection');
-            $scope.selectAllCallback(false);
+            $scope.selectionMenuConfig.selectAllCallback(false);
 
             expect($scope.selectedAll).toBe(false);
             expect($scope.selectedBatchId).toBe(null);
             expect($scope.selectedContentAdsStatus).toEqual({});
             expect($scope.clearContentAdSelection).toHaveBeenCalled();
-        });
-    });
-
-    describe('selectThisPageCallback', function() {
-        it('sets selection and calls updateContentAdSelection', function() {
-            $scope.rows = [{id: 1}];
-
-            spyOn($scope, 'updateContentAdSelection');
-            $scope.selectThisPageCallback();
-
-            expect($scope.selectedAll).toBe(false);
-            expect($scope.selectedBatchId).toBe(null);
-            expect($scope.selectedContentAdsStatus).toEqual({1: true});
-
-            expect($scope.updateContentAdSelection).toHaveBeenCalledWith();
+            expect($scope.selectionMenuConfig.partialSelection).toBe(false);
         });
     });
 
@@ -89,6 +98,7 @@ describe('AdGroupAdsPlusCtrl', function() {
             expect($scope.selectedContentAdsStatus).toEqual({});
 
             expect($scope.updateContentAdSelection).toHaveBeenCalledWith();
+            expect($scope.selectionMenuConfig.partialSelection).toBe(true);
         });
     });
 
