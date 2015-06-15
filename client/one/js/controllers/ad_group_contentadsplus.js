@@ -717,7 +717,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             function(data) {
                 var option = null;
                 $scope.exportOptions.forEach(function(opt) {
-                    if (opt.value === 'content-ad-excel') {
+                    if (opt.value === 'day-excel') {
                         option = opt;
                     }
                 });
