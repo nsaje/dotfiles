@@ -569,13 +569,13 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
     function UserActivation() {
         this.post = function(accountId, userId) {
-            var deferred = $q.defer();
-            var url = '/api/accounts/' + accountId + '/users/' + userId + '/activate';
-            var config = {
-                params: {}
-            };
+            var deferred = $q.defer(),
+                url = '/api/accounts/' + accountId + '/users/' + userId + '/activate',
+                config = {
+                    params: {}
+                },
+                data = {};
 
-            var data = {};
             $http.post(url, config).
                 success(function(data, status){
                     if (data && data.success) {

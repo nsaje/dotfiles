@@ -871,8 +871,10 @@ class UserActivation(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'account_user_activation_mail_put')
     def post(self, request, account_id, user_id):
+        '''
         if not request.user.has_perm('zemauth.account_agency_access_permissions'):
             raise exc.MissingDataError()
+        '''
 
         try:
             user = ZemUser.objects.get(pk=user_id)
