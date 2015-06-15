@@ -270,6 +270,10 @@ urlpatterns += patterns(
         login_required(dash.views.views.AccountRestore.as_view()),
     ),
     url(
+        r'^api/accounts/activate/',
+        login_required(dash.views.views.UserActivation.as_view()),
+    ),
+    url(
         r'^api/campaigns/(?P<campaign_id>\d+)/archive/',
         login_required(dash.views.views.CampaignArchive.as_view()),
     ),

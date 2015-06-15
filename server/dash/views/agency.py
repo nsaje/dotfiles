@@ -865,3 +865,34 @@ class AccountUsers(api_common.BaseApiView):
 
         for group in groups:
             group.user_set.add(user)
+
+
+class UserActivation(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'account_user_activation_mail_put')
+    def put(self, request):
+        if not request.user.has_perm('zemauth.account_agency_access_permissions'):
+            raise exc.MissingDataError()
+
+        resource = json.loads(request.body)
+
+        user_id = resource.get('user_id')
+        if user_id is None:
+            raise exc.MissingDataError()
+
+        try:
+            user = ZemUser.objects.get(pk=user_id)
+            email_helper.send_email_to_new_user(user, request)
+            return self.create_api_response(
+                {'user': self._get_user_dict(user)},
+                status_code=200
+            )
+        except ZemUser.DoesNotExist:
+            raise exc.ValidationError(
+                pretty_message=u'User does not exist.'
+            )
+
+        return self.create_api_response(
+            {'user': self._get_user_dict(user)},
+            status_code=500
+        )
