@@ -868,8 +868,7 @@ class AccountUsers(api_common.BaseApiView):
 
 
 class UserActivation(api_common.BaseApiView):
-
-    @statsd_helper.statsd_timer('dash.api', 'account_user_activation_mail_put')
+    @statsd_helper.statsd_timer('dash.api', 'account_user_activation_mail_post')
     def post(self, request, account_id, user_id):
         '''
         if not request.user.has_perm('zemauth.account_agency_access_permissions'):
@@ -880,15 +879,15 @@ class UserActivation(api_common.BaseApiView):
             user = ZemUser.objects.get(pk=user_id)
             email_helper.send_email_to_new_user(user, request)
             return self.create_api_response(
-                {'user': self._get_user_dict(user)},
+                {'success': True},
                 status_code=200
             )
         except ZemUser.DoesNotExist:
             raise exc.ValidationError(
-                pretty_message=u'User does not exist.'
+                pretty_message=u'Cannot activate nonexisting user.'
             )
 
         return self.create_api_response(
-            {'user': self._get_user_dict(user)},
+            {'success': False},
             status_code=500
         )

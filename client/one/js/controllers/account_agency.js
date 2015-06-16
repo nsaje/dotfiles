@@ -21,7 +21,6 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
         }
 
         var usr = getUser(userId);
-        console.log(action);
         if (action == 'remove') {
             $scope.removeUser(userId);
         } else if (action == 'resend') {
@@ -119,6 +118,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                 $scope.users = data.users;
                 $scope.users.forEach(function (user, index) {
                     user.action = null;
+                    user.emailResent = false;
                 });
             }
         );
@@ -178,9 +178,8 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
 
         api.userActivation.post($state.params.id, userId).then(
             function (userId) {
-                if (user) {
-                    user.saved = false;
-                }
+                user.saved = true;
+                user.emailResent = true;
                 $scope.getSettings(); // updates history
             }
         ).finally(function () {

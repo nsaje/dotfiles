@@ -254,16 +254,16 @@ urlpatterns += patterns(
         login_required(dash.views.agency.AccountAgency.as_view()),
     ),
     url(
+        r'^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/activate',
+        login_required(dash.views.agency.UserActivation.as_view()),
+    ),
+    url(
         r'^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/',
         login_required(dash.views.agency.AccountUsers.as_view()),
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/users/',
         login_required(dash.views.agency.AccountUsers.as_view()),
-    ),
-    url(
-        r'^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/activate/',
-        login_required(dash.views.agency.UserActivation.as_view()),
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/archive/',
