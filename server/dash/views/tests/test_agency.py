@@ -1,13 +1,12 @@
 import json
 import datetime
-from mock import patch, ANY, Mock
+from mock import patch, ANY
 
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
 from django.core import mail
 
-from utils import email_helper
 from zemauth.models import User
 from dash import models
 
