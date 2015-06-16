@@ -1933,17 +1933,17 @@ a.help-popover:visited {
             top: 1px;
             margin-left: 0;
         }
+    }
 
-        &:not(:hover) {
-            .drop-arrow {
-                visibility: hidden;
-            }
+    &.zem-state-selector:not(:hover) {
+        .drop-arrow {
+            visibility: hidden;
+        }
 
-            .btn {
-                border-color: transparent;
-                background-color: transparent;
-                .box-shadow(none);
-            }
+        .btn {
+            border-color: transparent;
+            background-color: transparent;
+            .box-shadow(none);
         }
     }
 
@@ -2370,9 +2370,18 @@ zem-editable-currency-field {
     }
 }
 
-.zem-selection-menu.dropdown {
+.table div.zem-selection-menu.dropdown {
     .dropdown-toggle input[type=checkbox] {
         margin: 0;
+    }
+
+    .btn,
+    &.open:hover .btn {
+        border-color: @default-color;
+    }
+
+    &:not(.open):not(:hover) .btn {
+        border-color: #bbb;
     }
 
     .dropdown-menu {

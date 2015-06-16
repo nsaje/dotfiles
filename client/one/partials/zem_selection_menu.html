@@ -9,7 +9,7 @@
         <div class="drop-arrow"></div>
     </a>
     <ul class="dropdown-menu" role="menu">
-        <li role="presentation" ng-repeat="option in customSelectionOptions" ng-class="{ 'divider': {{option.type=='separator'}} }">
+        <li role="presentation" ng-repeat="option in config.selectionOptions" ng-class="{ 'divider': {{option.type=='separator'}} }">
         <div ng-if="option.type == 'link'" class="link">
             <a role="menuitem" tabindex="-1" href="#" ng-click="handleOptionClick(option)">{{ option.name }}</a>
         </div>
