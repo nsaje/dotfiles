@@ -379,7 +379,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
             source = ad_group_source.source
             if source.deprecated:
                 logger.info(
-                    'Skipping create manual action for property set %s for deprecated source %d',
+                    'Skipping create action for property set %s for deprecated source %d',
                     field_name,
                     source.id
                 )
