@@ -577,9 +577,11 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 data = {};
 
             $http.post(url, config).
-                success(function(data, status){
+                success(function(data, status) {
                     if (data && data.success) {
                         deferred.resolve(data.data);
+                    } else {
+                        deferred.reject(data);
                     }
                 }).
                 error(function(data, status, headers, config) {
