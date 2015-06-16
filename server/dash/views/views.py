@@ -723,14 +723,9 @@ class AdGroupAdsPlusUploadBatches(api_common.BaseApiView):
         return self.create_api_response({"batches": response_data})
 
 
-class AdGroupContentAdsPlusArchive(api_common.BaseApiView):
-    ACTION_KEY = 'archive'
-
+class AdGroupContentAdArchive(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_archive_post')
     def post(self, request, ad_group_id):
-        return self._set_archived_flag(request, ad_group_id, True)
-
-    def _set_archived_flag(self, request, ad_group_id, archive):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
             raise exc.ForbiddenError(message="Not allowed")
 
@@ -747,34 +742,57 @@ class AdGroupContentAdsPlusArchive(api_common.BaseApiView):
         content_ads = helpers.get_selected_content_ads(
             ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
 
-        errors = helpers.get_archive_restore_notifications(content_ads).get(self.ACTION_KEY)
-        if errors.get(self.ACTION_KEY):
-            raise exc.ValidationError(errors=[errors[self.ACTION_KEY]])
+        errors = helpers.get_content_ad_archive_restore_notifications(content_ads).get('archive')
+        if errors:
+            raise exc.ValidationError(errors=errors)
 
         with transaction.atomic():
             for content_ad in content_ads:
-                content_ad.archived = archive
+                content_ad.archived = True
                 content_ad.save()
 
         return self.create_api_response({
             'rows': {content_ad.id: {'archived': content_ad.archived} for content_ad in content_ads}})
 
 
-class AdGroupContentAdsPlusRestore(AdGroupContentAdsPlusArchive):
-    ACTION_KEY = 'restore'
-
+class AdGroupContentAdRestore(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_restore_post')
-    def post(self, request, ad_group_id):
-        return self._set_archived_flag(request, ad_group_id, False)
-
-
-class AdGroupContentAdsPlusArchiveAllow(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_check_archive_allow')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
             raise exc.ForbiddenError(message="Not allowed")
 
-        # check if ad_group exists
+        helpers.get_ad_group(request.user, ad_group_id)
+
+        data = json.loads(request.body)
+
+        select_all = data.get('select_all', False)
+        select_batch_id = data.get('select_batch')
+
+        content_ad_ids_enabled = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_enabled')
+        content_ad_ids_disabled = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_disabled')
+
+        content_ads = helpers.get_selected_content_ads(
+            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
+
+        errors = helpers.get_content_ad_archive_restore_notifications(content_ads).get('restore')
+        if errors:
+            raise exc.ValidationError(errors=errors)
+
+        with transaction.atomic():
+            for content_ad in content_ads:
+                content_ad.archived = False
+                content_ad.save()
+
+        return self.create_api_response({
+            'rows': {content_ad.id: {'archived': content_ad.archived} for content_ad in content_ads}})
+
+
+class AdGroupContentAdArchiveAllow(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_archive_allow')
+    def post(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.archive_restore_entity'):
+            raise exc.ForbiddenError(message="Not allowed")
+
         helpers.get_ad_group(request.user, ad_group_id)
 
         data = json.loads(request.body)
@@ -791,7 +809,7 @@ class AdGroupContentAdsPlusArchiveAllow(api_common.BaseApiView):
         if not content_ads:
             return self.create_api_response({})
 
-        errors = helpers.get_archive_restore_notifications(content_ads)
+        errors = helpers.get_content_ad_archive_restore_notifications(content_ads)
 
         return self.create_api_response(errors)
 
@@ -809,7 +827,6 @@ class AdGroupContentAdState(api_common.BaseApiView):
         state = data.get('state')
         if state is None or state not in constants.ContentAdSourceState.get_all():
             raise exc.ValidationError()
-
         select_all = data.get('select_all', False)
         select_batch_id = data.get('select_batch')
 

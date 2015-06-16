@@ -15,8 +15,6 @@ from dash import models
 from dash import constants
 from dash.views import views
 
-from utils import exc
-
 
 class UserTest(TestCase):
     fixtures = ['test_views.yaml']
@@ -199,12 +197,21 @@ http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.jpg\r
-'''
+        expected_lines = ['url,title,image_url',
+                          'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg',
+                          'http://testurl.com,Test Article with no content_ad_sources 4,/123456789/200x300.jpg',
+                          'http://testurl.com,Test Article with no content_ad_sources 3,/123456789/200x300.jpg',
+                          'http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.jpg']
 
-        self.assertEqual(response.content, expected_content)
+        lines = response.content.split('\r\n')
+        self.assertEqual(lines[5], '')
+
+        # disregard the empty line
+        lines = lines[:-1]
+
+        self.assertEqual(len(lines), len(expected_lines))
+        for line in lines:
+            self.assertTrue(line in expected_lines)
 
     def test_get_ad_enabled(self):
         data = {'content_ad_ids_enabled': '1,2'}
@@ -373,6 +380,328 @@ class AdGroupContentAdStateTest(TestCase):
             settings.changes_text,
             'Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more set to Enabled.'
         )
+
+
+class AdGroupContentAdArchive(TestCase):
+    fixtures = ['test_api', 'test_views']
+
+    def _post_content_ad_archive(self, ad_group_id, data):
+        return self.client.post(
+            reverse(
+                'ad_group_content_ad_archive',
+                kwargs={'ad_group_id': ad_group_id}),
+            data=json.dumps(data),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+
+    def _login(self):
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+    def test_post(self):
+        self._login()
+
+        ad_group_id = 1
+        content_ad_id = 2
+
+        data = {
+            'content_ad_ids_enabled': [content_ad_id],
+        }
+
+        response = self._post_content_ad_archive(ad_group_id, data)
+
+        content_ad = models.ContentAd.objects.get(pk=content_ad_id)
+        self.assertEqual(content_ad.archived, True)
+
+        response_dict = json.loads(response.content)
+
+        self.assertTrue(response_dict['success'])
+        self.assertEqual(response_dict['data']['rows'], {'2': {'archived': True}})
+
+    def test_archive_set_all(self):
+        self._login()
+
+        ad_group_id = 2
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+
+        self.assertGreater(len(content_ads), 0)
+
+        payload = {
+            'select_all': True,
+        }
+
+        response = self._post_content_ad_archive(ad_group_id, payload)
+
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        self.assertTrue(all([ad.archived is True for ad in content_ads]))
+
+        response_dict = json.loads(response.content)
+        self.assertEqual(response_dict['data']['rows'], {str(ad.id): {'archived': True} for ad in content_ads})
+
+    def test_archive_set_batch(self):
+        self._login()
+
+        ad_group_id = 2
+        batch_id = 2
+        content_ads = models.ContentAd.objects.filter(batch__id=batch_id)
+
+        self.assertGreater(len(content_ads), 0)
+
+        payload = {
+            'select_all': False,
+            'select_batch': batch_id,
+        }
+
+        response = self._post_content_ad_archive(ad_group_id, payload)
+
+        content_ads = models.ContentAd.objects.filter(batch__id=batch_id)
+        self.assertTrue(all([ad.archived is True for ad in content_ads]))
+
+        response_dict = json.loads(response.content)
+        self.assertEqual(response_dict['data']['rows'], {str(ad.id): {'archived': True} for ad in content_ads})
+
+    def test_archive_must_be_paused_validation_error(self):
+        self._login()
+
+        ad_group_id = 1
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        self.assertGreater(len(content_ads), 0)
+        self.assertFalse(all([ad.state == constants.ContentAdSourceState.INACTIVE for ad in content_ads]))
+
+        payload = {
+            'select_all': True
+        }
+
+        response = self._post_content_ad_archive(ad_group_id, payload)
+
+        content_ads_after = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        self.assertEqual(len(content_ads), len(content_ads_after))
+        self.assertEqual({ad.id: ad.archived for ad in content_ads},
+                         {ad.id: ad.archived for ad in content_ads_after})
+
+        response_dict = json.loads(response.content)
+        self.assertFalse(response_dict['success'])
+        self.assertEqual(response_dict['data']['errors'],
+                         'All selected Content Ads must be paused before they can be archived.')
+
+    def test_archive_already_archived_validation_error(self):
+        self._login()
+
+        ad_group_id = 2
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        for ad in content_ads:
+            ad.archived = True
+            ad.save()
+
+        self.assertGreater(len(content_ads), 0)
+        self.assertTrue(all([ad.state == constants.ContentAdSourceState.INACTIVE
+                             for ad in content_ads]))
+
+        payload = {
+            'select_all': True
+        }
+
+        response = self._post_content_ad_archive(ad_group_id, payload)
+
+        content_ads_after = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        self.assertEqual(len(content_ads), len(content_ads_after))
+        self.assertEqual({ad.id: ad.archived for ad in content_ads},
+                         {ad.id: ad.archived for ad in content_ads_after})
+
+        response_dict = json.loads(response.content)
+        self.assertFalse(response_dict['success'])
+        self.assertEqual(response_dict['data']['errors'], 'These Content Ads have already been archived.')
+
+    def test_content_ad_ids_validation_error(self):
+        self._login()
+        response = self._post_content_ad_archive(1, {'content_ad_ids_enabled': ['1', 'a']})
+        self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
+
+
+class AdGroupContentAdRestore(TestCase):
+    fixtures = ['test_api', 'test_views']
+
+    def _post_content_ad_restore(self, ad_group_id, data):
+        return self.client.post(
+            reverse(
+                'ad_group_content_ad_restore',
+                kwargs={'ad_group_id': ad_group_id}),
+            data=json.dumps(data),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+
+    def _login(self):
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+    def test_post(self):
+        self._login()
+
+        ad_group_id = 1
+        content_ad_id = 2
+
+        content_ad = models.ContentAd.objects.get(pk=content_ad_id)
+        content_ad.archived = True
+        content_ad.save()
+
+        data = {
+            'content_ad_ids_enabled': [content_ad_id],
+        }
+
+        response = self._post_content_ad_restore(ad_group_id, data)
+
+        content_ad = models.ContentAd.objects.get(pk=content_ad_id)
+        self.assertEqual(content_ad.archived, False)
+
+        response_dict = json.loads(response.content)
+
+        self.assertTrue(response_dict['success'])
+        self.assertEqual(response_dict['data']['rows'], {'2': {'archived': False}})
+
+    def test_restore_set_all(self):
+        self._login()
+
+        ad_group_id = 2
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        for ad in content_ads:
+            ad.archived = True
+            ad.save()
+
+        self.assertGreater(len(content_ads), 0)
+
+        payload = {
+            'select_all': True,
+        }
+
+        response = self._post_content_ad_restore(ad_group_id, payload)
+
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        self.assertTrue(all([ad.archived is False for ad in content_ads]))
+
+        response_dict = json.loads(response.content)
+        self.assertEqual(response_dict['data']['rows'], {str(ad.id): {'archived': False} for ad in content_ads})
+
+    def test_archive_set_batch(self):
+        self._login()
+
+        ad_group_id = 2
+        batch_id = 2
+        content_ads = models.ContentAd.objects.filter(batch__id=batch_id)
+        for ad in content_ads:
+            ad.archived = True
+            ad.save()
+
+        self.assertGreater(len(content_ads), 0)
+
+        payload = {
+            'select_all': False,
+            'select_batch': batch_id,
+        }
+
+        response = self._post_content_ad_restore(ad_group_id, payload)
+
+        content_ads = models.ContentAd.objects.filter(batch__id=batch_id)
+        self.assertTrue(all([ad.archived is False for ad in content_ads]))
+
+        response_dict = json.loads(response.content)
+        self.assertEqual(response_dict['data']['rows'], {str(ad.id): {'archived': False} for ad in content_ads})
+
+    def test_restore_already_restored_validation_error(self):
+        self._login()
+
+        ad_group_id = 2
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+
+        self.assertGreater(len(content_ads), 0)
+
+        payload = {
+            'select_all': True
+        }
+
+        response = self._post_content_ad_restore(ad_group_id, payload)
+
+        content_ads_after = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        self.assertEqual(len(content_ads), len(content_ads_after))
+        self.assertEqual({ad.id: ad.archived for ad in content_ads},
+                         {ad.id: ad.archived for ad in content_ads_after})
+
+        response_dict = json.loads(response.content)
+        self.assertFalse(response_dict['success'])
+        self.assertEqual(response_dict['data']['errors'], 'These Content Ads are already active.')
+
+    def test_content_ad_ids_validation_error(self):
+        self._login()
+        response = self._post_content_ad_restore(1, {'content_ad_ids_enabled': ['1', 'a']})
+        self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
+
+
+class AdGroupContentAdArchiveAllow(TestCase):
+    fixtures = ['test_api', 'test_views']
+
+    def _post_content_ad_archive_allow(self, ad_group_id, data):
+        return self.client.post(
+            reverse(
+                'ad_group_content_ad_archive_allow',
+                kwargs={'ad_group_id': ad_group_id}),
+            data=json.dumps(data),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+
+    def _login(self):
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+    def test_notifications(self):
+        self._login()
+
+        ad_group_id = 2
+
+        active = constants.ContentAdSourceState.ACTIVE
+        inactive = constants.ContentAdSourceState.INACTIVE
+
+        n1 = {'archive': 'These Content Ads have already been archived.'}
+        n2 = {'restore': 'These Content Ads are already active.'}
+        n3 = {'archive': 'All selected Content Ads must be paused before they can be archived.'}
+        n23 = {'restore': 'These Content Ads are already active.',
+               'archive': 'All selected Content Ads must be paused before they can be archived.'}
+
+        cases = [
+            # archived, archived, state, expected notifications
+            (False, False, inactive, n2),
+            (False, False, active, n23),
+            (False, True, inactive, {}),
+            (False, True, active, n3),
+            (True, True, inactive, n1),
+            (True, True, active, n1)
+        ]
+
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        for case in cases:
+            ad1 = content_ads[0]
+            ad2 = content_ads[1]
+            ad1.archived = case[0]
+            ad2.archived = case[1]
+            ad1.state = ad2.state = case[2]
+            ad1.save()
+            ad2.save()
+
+            response = self._post_content_ad_archive_allow(ad_group_id, {'select_all': True})
+
+            response_dict = json.loads(response.content)
+            if case[3]:
+                self.assertEqual(response_dict['data'], case[3])
+            self.assertTrue(response_dict['success'])
+
+    def test_content_ad_ids_validation_error(self):
+        self._login()
+        response = self._post_content_ad_archive_allow(1, {'content_ad_ids_enabled': ['1', 'a']})
+        self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
 
 class AdGroupAdsPlusUploadTest(TestCase):

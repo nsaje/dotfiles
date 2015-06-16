@@ -556,10 +556,13 @@ def _get_latest_state(ad_group_source):
     return latest_state_qs[0] if latest_state_qs.exists() else None
 
 
-def get_archive_restore_notifications(content_ads):
+def get_content_ad_archive_restore_notifications(content_ads):
     notifications = {}
 
     if len(content_ads) > 0:
+        if not all([content_ad.state == constants.ContentAdSourceState.INACTIVE for content_ad in content_ads]):
+            notifications['archive'] = 'All selected Content Ads must be paused before they can be archived.'
+
         archived = set([content_ad.archived for content_ad in content_ads])
 
         if False not in archived:
@@ -569,8 +572,6 @@ def get_archive_restore_notifications(content_ads):
             # TODO: need better text
             notifications['restore'] = 'These Content Ads are already active.'
 
-        if not all([content_ad.state == constants.ContentAdSourceState.INACTIVE for content_ad in content_ads]):
-            notifications['archive'] = 'All selected Content Ads must be paused before they can be archived.'
     return notifications
 
 
