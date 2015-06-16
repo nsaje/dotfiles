@@ -48,11 +48,20 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     $scope.selectedAdsChanged = function(row, checked) {
         $scope.selectedContentAdsStatus[row.id] = checked;
 
-        if (!$scope.selectedAll && !$scope.selectedBatchId) {
-            var numSelected = Object.keys($scope.selectedContentAdsStatus).filter(function(key) {
-                return !!$scope.selectedContentAdsStatus[key];
-            }).length;
+        var numSelected = 0,
+            numNotSelected = 0;
 
+        Object.keys($scope.selectedContentAdsStatus).forEach(function (contentAdId) {
+            if ($scope.selectedContentAdsStatus[contentAdId]) {
+                numSelected += 1;
+            } else {
+                numNotSelected += 1;
+            }
+        });
+
+        if ($scope.selectedAll) {
+            $scope.selectionMenuConfig.partialSelection = numNotSelected > 0;
+        } else if (!$scope.selectedBatchId) {
             $scope.selectionMenuConfig.partialSelection = numSelected > 0;
         }
     };
