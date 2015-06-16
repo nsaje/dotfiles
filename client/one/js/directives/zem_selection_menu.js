@@ -15,16 +15,16 @@ oneApp.directive('zemSelectionMenu', function () {
                     return;
                 }
 
-                if (newVal) {
-                    // This will cause all checkboxes to be cleared
-                    // when indeterminater selectedAll checkbox is clicked
-                    $scope.selectedAll = true;
-                }
-
                 selectAllCheckbox.indeterminate = newVal;
             });
 
             $scope.selectAll = function(ev) {
+                if ($scope.config.partialSelection) {
+                    // if checkbox is in ideterminate state,
+                    // clear selection upon click
+                    $scope.selectedAll = false;
+                }
+
                 $scope.config.selectAllCallback($scope.selectedAll);
                 ev.stopPropagation();
             };

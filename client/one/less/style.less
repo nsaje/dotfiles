@@ -2371,16 +2371,21 @@ zem-editable-currency-field {
 }
 
 .table div.zem-selection-menu.dropdown {
-    .dropdown-toggle input[type=checkbox] {
-        margin: 0;
+    .dropdown-toggle {
+        line-height: 18px;
+
+        input[type=checkbox] {
+            margin: 3px 0 0;
+            vertical-align: text-top;
+        }
     }
 
-    .btn,
-    &.open:hover .btn {
+    .dropdown-toggle,
+    &.open:hover .dropdown-toggle {
         border-color: @default-color;
     }
 
-    &:not(.open):not(:hover) .btn {
+    &:not(.open):not(:hover) .dropdown-toggle {
         border-color: #bbb;
     }
 
