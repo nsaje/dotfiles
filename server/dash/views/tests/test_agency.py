@@ -1,12 +1,13 @@
 import json
 import datetime
-from mock import patch, ANY
+from mock import patch, ANY, Mock
 
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
 from django.core import mail
 
+from utils import email_helper
 from zemauth.models import User
 from dash import models
 
@@ -320,3 +321,20 @@ class UserActivationTest(TestCase):
         sent_mail = mail.outbox[0]
         self.assertEqual('Welcome to Zemanta!', sent_mail.subject, 'Title must match activation mail')
         self.assertTrue(self.user.email in sent_mail.recipients())
+
+    @patch('utils.email_helper.send_email_to_new_user') # , mock=Mock(side_effect=User.DoesNotExist))
+    def test_send_mail_failure(self, mock):
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        mock.side_effect = User.DoesNotExist
+
+        data = {}
+        response = self.client.post(
+            reverse('account_reactivation', kwargs={'account_id': 1, 'user_id': 1}),
+            data,
+            follow=True
+        )
+
+        decoded_response = json.loads(response.content)
+        self.assertFalse(decoded_response.get('success'), 'Failed sending message')
