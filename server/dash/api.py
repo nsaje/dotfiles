@@ -374,6 +374,17 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
 
         ad_group_sources = ad_group.adgroupsource_set.all()
         for ad_group_source in ad_group_sources:
+            # if source supports setting action do an automatic update,
+            # otherwise do manual actiontype
+            source = ad_group_source.source
+            if source.deprecated:
+                logger.info(
+                    'Skipping create manual action for property set %s for deprecated source %d',
+                    field_name,
+                    source.id
+                )
+                continue
+
             new_field_value = field_value
             if field_name == 'tracking_code':
                 new_field_value = utils.url_helper.combine_tracking_codes(
@@ -385,9 +396,6 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                 new_field_value = ad_group_source.get_external_name(new_adgroup_name=field_value)
 
 
-            # if source supports setting action do an automatic update,
-            # otherwise do manual actiontype
-            source = ad_group_source.source
             if field_name == 'start_date' and source.can_modify_start_date() or\
                field_name == 'end_date' and source.can_modify_end_date() or\
                field_name in ('target_devices', 'target_regions') and source.can_modify_targeting() or\
@@ -432,14 +440,6 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     )
 
             else:
-                if source.deprecated:
-                    logger.info(
-                        'Skipping create manual action for property set %s for deprecated source %d',
-                        field_name,
-                        source.id
-                    )
-                    continue
-
                 if field_name == 'iab_category' and not source.can_modify_ad_group_iab_category_manual():
                     continue
 
