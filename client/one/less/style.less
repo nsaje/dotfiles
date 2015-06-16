@@ -1933,17 +1933,17 @@ a.help-popover:visited {
             top: 1px;
             margin-left: 0;
         }
+    }
 
-        &:not(:hover) {
-            .drop-arrow {
-                visibility: hidden;
-            }
+    &.zem-state-selector:not(:hover) {
+        .drop-arrow {
+            visibility: hidden;
+        }
 
-            .btn {
-                border-color: transparent;
-                background-color: transparent;
-                .box-shadow(none);
-            }
+        .btn {
+            border-color: transparent;
+            background-color: transparent;
+            .box-shadow(none);
         }
     }
 
@@ -2375,25 +2375,13 @@ zem-editable-currency-field {
         margin: 0;
     }
 
-    &:not(.open) {
-        .drop-arrow {
-            .arrow-down();
-            top: 1px;
-            margin-left: 0;
-            visibility: visible;
-        }
-        .btn {
-            border-color: #bbb;
-            background-color: white;
-            .box-shadow(0 1px 2px rgba(50,50,50,.1));
-
-            &:hover {
-                border-color: @default-color;
-            }
-        }
-    }
-    &.open .btn:hover {
+    .btn,
+    &.open:hover .btn {
         border-color: @default-color;
+    }
+
+    &:not(.open):not(:hover) .btn {
+        border-color: #bbb;
     }
 
     .dropdown-menu {
