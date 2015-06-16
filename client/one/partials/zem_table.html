@@ -132,7 +132,7 @@
                                     </span>
                                 </span>
                                 <span ng-switch-when="checkbox" class="checkbox">
-                                    <input type="checkbox" ui-indeterminate="true" data-ng-model="row[col.field]" ng-disabled="!row[col.field] && col.disabled" data-ng-change="col.selectCallback(row, row[col.field])"/>
+                                    <input type="checkbox" data-ng-model="row[col.field]" ng-disabled="!row[col.field] && col.disabled" data-ng-change="col.selectCallback(row, row[col.field])"/>
                                 </span>
                                 <span ng-switch-when="state">
                                     <zem-state-selector 
