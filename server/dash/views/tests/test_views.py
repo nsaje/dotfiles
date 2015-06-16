@@ -210,8 +210,7 @@ http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.
         lines = lines[:-1]
 
         self.assertEqual(len(lines), len(expected_lines))
-        for line in lines:
-            self.assertTrue(line in expected_lines)
+        self.assertItemsEqual(lines, expected_lines)
 
     def test_get_ad_enabled(self):
         data = {'content_ad_ids_enabled': '1,2'}
