@@ -70,7 +70,7 @@ oneApp.directive('zemExport', function() {
 
                     return results;
                 },
-                width: '11em'
+                width: '12em'
             };
 
             $scope.downloadReport = function() {
