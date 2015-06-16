@@ -106,7 +106,7 @@ Zemanta Client Services
         link_url=_generate_password_reset_url(user, request)
     )
 
-    _send_email_to_user(user, request, 'Welcome to Zemanta!', body)
+    return _send_email_to_user(user, request, 'Welcome to Zemanta!', body)
 
 
 def _generate_password_reset_url(user, request):
@@ -122,7 +122,7 @@ def _generate_password_reset_url(user, request):
 
 def _send_email_to_user(user, request, subject, body):
     try:
-        send_mail(
+        ret = send_mail(
             subject,
             body,
             'Zemanta <{}>'.format(settings.FROM_EMAIL),
@@ -130,6 +130,10 @@ def _send_email_to_user(user, request, subject, body):
             fail_silently=False,
             html_message=body
         )
+        if ret > 0:
+            return True
+        else:
+            return False
     except Exception as e:
         if user is None:
             message = 'Email for user was not sent because exception was raised: {}'.format(
@@ -159,3 +163,4 @@ def _send_email_to_user(user, request, subject, body):
             description=message,
             details=desc,
         )
+    return False

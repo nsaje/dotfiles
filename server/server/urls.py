@@ -256,6 +256,7 @@ urlpatterns += patterns(
     url(
         r'^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/activate',
         login_required(dash.views.agency.UserActivation.as_view()),
+        name='account_reactivation',
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/',
