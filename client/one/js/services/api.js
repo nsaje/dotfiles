@@ -2058,7 +2058,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
     function AdGroupContentAdArchive() {
         this.archive = function(adGroupId, contentAdIdsEnabled, contentAdIdsDisabled, selectedAll, selectedBatch) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/archive/archive/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/archive/archive/';
 
             $http.post(url, {
                 content_ad_ids_enabled: contentAdIdsEnabled,
@@ -2070,6 +2070,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     deferred.resolve(data);
                 }).
                 error(function(data) {
+                    console.log('error archive', data);
                     deferred.reject(data);
                 });
 
@@ -2079,7 +2080,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
         this.restore = function(adGroupId, contentAdIdsEnabled, contentAdIdsDisabled, selectedAll, selectedBatch) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/archive/restore/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/archive/restore/';
 
             $http.post(url, {
                 content_ad_ids_enabled: contentAdIdsEnabled,
@@ -2091,6 +2092,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     deferred.resolve(data);
                 }).
                 error(function(data) {
+                    console.log('error restore', data);
                     deferred.reject(data);
                 });
 
@@ -2100,7 +2102,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
         this.notifications = function(adGroupId, contentAdIdsEnabled, contentAdIdsDisabled, selectedAll, selectedBatch) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/archive/allow/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/archive/allow/';
             $http.post(url, {
                 content_ad_ids_enabled: contentAdIdsEnabled,
                 content_ad_ids_disabled: contentAdIdsDisabled,
