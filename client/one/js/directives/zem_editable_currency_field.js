@@ -25,7 +25,7 @@ oneApp.directive('zemEditableCurrencyField', function() {
                 $scope.editFormActive = true;
 
                 $timeout(function () {
-                    $element.find('.currency-input')[0].focus();
+                    $element.find('.currency-input').focus();
                     $document.bind('click', closeFormClickHandler);
                     $document.bind('keyup', keyupHandler);
                 });
