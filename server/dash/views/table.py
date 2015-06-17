@@ -1045,11 +1045,8 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         last_change_dt = helpers.parse_datetime(request.GET.get('last_change'))
 
-        include_archived = request.GET.get('show_archived') == 'true' and\
-            request.user.has_perm('zemauth.view_archived_entities')
-
         last_change_dt, changed_content_ads = helpers.get_content_ad_last_change_dt(
-            ad_group, filtered_sources, last_change_dt, include_archived)
+            ad_group, filtered_sources, last_change_dt)
 
         rows = {}
         for content_ad in changed_content_ads:
@@ -1091,9 +1088,6 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         content_ads = models.ContentAd.objects.filter(
             ad_group=ad_group).filter_by_sources(filtered_sources).select_related('batch')
 
-        if request.GET.get('show_archived') != 'true' or not request.user.has_perm('zemauth.view_archived_entities'):
-            content_ads = content_ads.exclude_archived()
-
         stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
             start_date,
             end_date,
@@ -1102,7 +1096,13 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             source=filtered_sources,
         ), request.user)
 
-        rows = self._get_rows(content_ads, stats, ad_group)
+        has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
+        show_archived = request.GET.get('show_archived') == 'true' and\
+            request.user.has_perm('zemauth.view_archived_entities')
+
+        rows = self._get_rows(content_ads, stats, ad_group,
+                              has_view_archived_permission,
+                              show_archived)
 
         rows = sort_results(rows, [order])
         page_rows, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
@@ -1149,7 +1149,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             'ctr': stats['ctr']
         }
 
-    def _get_rows(self, content_ads, stats, ad_group):
+    def _get_rows(self, content_ads, stats, ad_group, has_view_archived_permission, show_archived):
         stats = {s['content_ad']: s for s in stats}
         demo_ad_groups = models.AdGroup.demo_objects.all()
         rows = []
@@ -1157,14 +1157,19 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         for content_ad in content_ads:
             stat = stats.get(content_ad.id, {})
 
+            archived = content_ad.archived
+            if has_view_archived_permission and not show_archived and archived and\
+               not (reports.api.row_has_traffic_data(stat) or
+                    reports.api.row_has_postclick_data(stat)):
+                continue
+
             url = 'http://www.example.com/{}/{}'.format(ad_group.name, content_ad.id)\
                 if ad_group in demo_ad_groups else content_ad.url
 
-            rows.append({
+            row = {
                 'id': str(content_ad.id),
                 'title': content_ad.title,
                 'url': url,
-                'archived': content_ad.archived,
                 'batch_name': content_ad.batch.name,
                 'batch_id': content_ad.batch.id,
                 'display_url': content_ad.batch.display_url,
@@ -1181,7 +1186,12 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 'cost': stat.get('cost'),
                 'cpc': stat.get('cpc'),
                 'ctr': stat.get('ctr')
-            })
+            }
+
+            if has_view_archived_permission:
+                row['archived'] = archived
+
+            rows.append(row)
 
         return rows
 
