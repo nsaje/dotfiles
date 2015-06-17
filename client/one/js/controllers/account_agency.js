@@ -180,15 +180,14 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
             function (userId) {
                 user.saved = true;
                 user.emailResent = true;
-                $scope.getSettings(); // updates history
             },
             function (data) {
                 user.saved = false;
                 user.emailResent = false;
-                $scope.getSettings(); // updates history
             }
         ).finally(function () {
             user.requestInProgress = false;
+            $scope.getSettings(); // updates history
         });
     };
 
