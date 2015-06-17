@@ -57,7 +57,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
             $scope.bulkActions.push({
                 name: 'Archive',
                 value: 'archive',
-                internal: $scope.isPermissionInternal(archivePermission)
+                internal: $scope.isPermissionInternal(archivePermission),
+                notification: 'All selected Content Ads must be paused before they can be archived.'
             }, {
                 name: 'Restore',
                 value: 'restore',
@@ -67,31 +68,13 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
         }
     };
 
-    $scope.pendingBulkActionNotifications = false;
-
-    $scope.rebuildBulkActionsMenu = function() {
-        $scope.bulkActions.forEach(function(bk) {
-            if (bk.menuObject !== undefined && bk.menuElement !== undefined) {
-                var replacement = formatBulkActionsResult(bk.menuObject);
-                bk.menuElement.replaceWith(replacement);
-                bk.menuElement = bk.menuObject = undefined;
-            }
-        });
-    };
-
-    var get_bulk_action = function(action_id) {
+    var formatBulkActionsResult = function(object) {
         var bulkAction;
         $scope.bulkActions.forEach(function(bk) {
-            if (bk.value == action_id) {
+            if (bk.value == object.id) {
                 bulkAction = bk;
             }
         });
-
-        return bulkAction;
-    };
-
-    var formatBulkActionsResult = function(object) {
-        var bulkAction = get_bulk_action(object.id);
 
         var notification = bulkAction.notification;
         var element = angular.element(document.createElement('span'));;
@@ -100,11 +83,18 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
             element.attr('popover-trigger', 'mouseenter');
             element.attr('popover-placement', 'right');
             element.attr('popover-append-to-body', 'true');
+
+            // hide immediately without animation - solves a glitch when
+            // the element is selected
+            element.attr('popover-animation', 'false');
+            element.on('$destroy', function() {
+                element.trigger('mouseleave');
+            });
         }
 
         element.text(object.text);
 
-        if (angular.element(object.element).hasClass('internal')) {
+        if (bulkAction.internal !== undefined) {
             var internal = $compile(angular.element(document.createElement('zem-internal-feature')))($scope);
             element.append(internal);
         }
@@ -115,15 +105,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
     $scope.bulkActionsConfig = {
         minimumResultsForSearch: -1,
         dropdownCssClass: 'show-rows',
-        formatResult: function(object) {
-            var element = formatBulkActionsResult(object),
-                bulkAction = get_bulk_action(object.id);
-
-            bulkAction.menuElement = element;
-            bulkAction.menuObject = object;
-
-            return element;
-        }
+        formatResult: formatBulkActionsResult
     };
 
     $scope.selectedAdsChanged = function (row, checked) {
@@ -436,9 +418,13 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
         return modalInstance;
     };
 
+    var shouldUpdateAll = function(contentAdIdsEnabled) {
+        return !contentAdIdsEnabled.length && !$scope.selectedAll && !$scope.selectedBatchId;
+    };
+
     var bulkUpdateContentAds = function (contentAdIdsEnabled, contentAdIdsDisabled, state) {
         // update all content ads if none selected
-        var updateAll = !contentAdIdsEnabled.length && !$scope.selectedAll && !$scope.selectedBatchId;
+        var updateAll = shouldUpdateAll(contentAdIdsEnabled);
 
         updateContentAdStates(state, updateAll);
 
@@ -455,29 +441,38 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
     };
 
     var bulkArchiveContentAds = function (contentAdIdsEnabled, contentAdIdsDisabled) {
+        // archive all of none selected
+        var updateAll = shouldUpdateAll(contentAdIdsEnabled);
+
         api.adGroupContentAdArchive.archive(
             $state.params.id,
             contentAdIdsEnabled,
             contentAdIdsDisabled,
-            $scope.selectedAll,
+            updateAll || $scope.selectedAll,
             $scope.selectedBatchId).then(updateTableAfterArchiving);
     };
 
     var bulkRestoreContentAds = function (contentAdIdsEnabled, contentAdIdsDisabled) {
+        // restore all of none selected
+        var updateAll = shouldUpdateAll(contentAdIdsEnabled);
+
         api.adGroupContentAdArchive.restore(
             $state.params.id,
             contentAdIdsEnabled,
             contentAdIdsDisabled,
-            $scope.selectedAll,
+            updateAll || $scope.selectedAll,
             $scope.selectedBatchId).then(updateTableAfterArchiving);
     };
 
     var updateTableAfterArchiving = function(data) {
         // update rows immediately, refresh whole table after
-        // TODO: check for errors
         updateTableData(data.data.rows, {});
 
         if (!zemFilterService.getShowArchived()) {
+            $scope.selectedAll = false;
+            $scope.selectedBatchId = null;
+            $scope.selectedContentAdsStatus = {};
+
             getTableData();
             getDailyStats();
         }
@@ -485,7 +480,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
 
     var downloadContentAds = function (contentAdIdsEnabled, contentAdIdsDisabled) {
         // update all content ads if none selected
-        var updateAll = !contentAdIdsEnabled.length && !$scope.selectedAll && !$scope.selectedBatchId;
+        var updateAll = shouldUpdateAll(contentAdIdsEnabled);
         var url = '/api/ad_groups/' + $state.params.id + '/contentads/csv/?'
 
         url += 'content_ad_ids_enabled=' + contentAdIdsEnabled.join(',')
@@ -587,27 +582,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
             pollSyncStatus();
         }
     });
-
-    $scope.setBulkActionsNotifications = function() {
-        var contentAdSelection = getEnabledAndDisabledContentAds();
-
-        $scope.pendingBulkActionNotifications = true;
-        api.adGroupContentAdArchive.notifications(
-            $state.params.id,
-            contentAdSelection.enabled,
-            contentAdSelection.disabled,
-            $scope.selectedAll,
-            $scope.selectedBatchId
-        ).then(function(data) {
-            if (data.data) {
-                $scope.bulkActions.forEach(function(bulkAction) {
-                    bulkAction.notification = data.data[bulkAction.value];
-                });
-            }
-            $scope.pendingBulkActionNotifications = false;
-            $scope.rebuildBulkActionsMenu();
-        });
-    }
 
     var hasMetricData = function (metric) {
         var hasData = false;

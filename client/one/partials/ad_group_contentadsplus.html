@@ -27,13 +27,10 @@
                         class="show-rows"
                         data-placeholder="Bulk Edit"
                         ng-model="selectedBulkAction"
-                        ng-change="executeBulkAction()"
-                        zem-select2-open="setBulkActionsNotifications()">
+                        ng-change="executeBulkAction()">
                     <option value=""></option>
                     <option ng-repeat="bulkAction in bulkActions"
-                            value="{{ bulkAction.value }}"
-                            ng-disabled="bulkAction.notification"
-                            ng-class="{internal: bulkAction.internal}">{{ bulkAction.name }}</option>
+                            value="{{ bulkAction.value }}">{{ bulkAction.name }}</option>
             </select>
             </div>
 
