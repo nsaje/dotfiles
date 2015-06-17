@@ -875,21 +875,17 @@ class UserActivation(api_common.BaseApiView):
 
         try:
             user = ZemUser.objects.get(pk=user_id)
-            if email_helper.send_email_to_new_user(user, request):
+            email_helper.send_email_to_new_user(user, request)
 
-                account = helpers.get_account(request.user, account_id)
-                # add history entry
-                new_settings = account.get_current_settings().copy_settings()
-                new_settings.changes_text = u'Resent activation mail {} ({})'.format(user.get_full_name(), user.email)
-                new_settings.save(request)
-
-                return self.create_api_response({}, status_code=200)
-            else:
-                return self.create_api_response({}, status_code=500)
+            account = helpers.get_account(request.user, account_id)
+            # add history entry
+            new_settings = account.get_current_settings().copy_settings()
+            new_settings.changes_text = u'Resent activation mail {} ({})'.format(user.get_full_name(), user.email)
+            new_settings.save(request)
 
         except ZemUser.DoesNotExist:
             raise exc.ValidationError(
                 pretty_message=u'Cannot activate nonexisting user.'
             )
 
-        return self.create_api_response({}, status_code=500)
+        return self.create_api_response({}, status_code=200)
