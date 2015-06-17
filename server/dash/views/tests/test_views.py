@@ -318,6 +318,32 @@ class AdGroupContentAdStateTest(TestCase):
         self.assertTrue(all([ad.state == constants.ContentAdSourceState.INACTIVE
                              for ad in content_ads]))
 
+    def test_dont_set_state_on_archived_ads(self):
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+        archived_ad = models.ContentAd.objects.get(pk=3)
+        archived_ad.archived = True
+        archived_ad.save()
+        self.assertEqual(archived_ad.state, constants.ContentAdSourceState.INACTIVE)
+
+        restored_ad = models.ContentAd.objects.get(pk=4)
+        self.assertFalse(restored_ad.archived)
+        self.assertEqual(archived_ad.state, constants.ContentAdSourceState.INACTIVE)
+
+        payload = {
+            'content_ad_ids_enabled': [archived_ad.id, restored_ad.id],
+            'state': constants.ContentAdSourceState.ACTIVE,
+        }
+
+        self._post_content_ad_state(2, payload)
+
+        archived_ad.refresh_from_db()
+        self.assertEqual(archived_ad.state, constants.ContentAdSourceState.INACTIVE)
+
+        restored_ad.refresh_from_db()
+        self.assertEqual(restored_ad.state, constants.ContentAdSourceState.ACTIVE)
+
     @patch('dash.views.views.actionlog.zwei_actions.send_multiple')
     def test_update_content_ads(self, mock_send_multiple):
         content_ad = models.ContentAd.objects.get(pk=1)
@@ -417,7 +443,11 @@ class AdGroupContentAdArchive(TestCase):
         response_dict = json.loads(response.content)
 
         self.assertTrue(response_dict['success'])
-        self.assertEqual(response_dict['data']['rows'], {'2': {'archived': True}})
+        self.assertEqual(response_dict['data']['rows'], {
+            '2': {
+                'archived': True,
+                'status_setting': 2
+            }})
 
     def test_archive_set_all(self):
         self._login()
@@ -437,7 +467,11 @@ class AdGroupContentAdArchive(TestCase):
         self.assertTrue(all([ad.archived is True for ad in content_ads]))
 
         response_dict = json.loads(response.content)
-        self.assertEqual(response_dict['data']['rows'], {str(ad.id): {'archived': True} for ad in content_ads})
+        self.assertEqual(response_dict['data']['rows'],
+                         {str(ad.id): {
+                             'archived': True,
+                             'status_setting': ad.state
+                         } for ad in content_ads})
 
     def test_archive_set_batch(self):
         self._login()
@@ -459,7 +493,11 @@ class AdGroupContentAdArchive(TestCase):
         self.assertTrue(all([ad.archived is True for ad in content_ads]))
 
         response_dict = json.loads(response.content)
-        self.assertEqual(response_dict['data']['rows'], {str(ad.id): {'archived': True} for ad in content_ads})
+        self.assertEqual(response_dict['data']['rows'],
+                         {str(ad.id): {
+                             'archived': True,
+                             'status_setting': ad.state
+                         } for ad in content_ads})
 
     def test_archive_must_be_paused_validation_error(self):
         self._login()
@@ -559,7 +597,7 @@ class AdGroupContentAdRestore(TestCase):
         response_dict = json.loads(response.content)
 
         self.assertTrue(response_dict['success'])
-        self.assertEqual(response_dict['data']['rows'], {'2': {'archived': False}})
+        self.assertEqual(response_dict['data']['rows'], {'2': {'archived': False, 'status_setting': content_ad.state}})
 
     def test_restore_set_all(self):
         self._login()
@@ -582,7 +620,11 @@ class AdGroupContentAdRestore(TestCase):
         self.assertTrue(all([ad.archived is False for ad in content_ads]))
 
         response_dict = json.loads(response.content)
-        self.assertEqual(response_dict['data']['rows'], {str(ad.id): {'archived': False} for ad in content_ads})
+        self.assertEqual(response_dict['data']['rows'],
+                         {str(ad.id): {
+                             'archived': False,
+                             'status_setting': ad.state
+                         } for ad in content_ads})
 
     def test_archive_set_batch(self):
         self._login()
@@ -607,7 +649,11 @@ class AdGroupContentAdRestore(TestCase):
         self.assertTrue(all([ad.archived is False for ad in content_ads]))
 
         response_dict = json.loads(response.content)
-        self.assertEqual(response_dict['data']['rows'], {str(ad.id): {'archived': False} for ad in content_ads})
+        self.assertEqual(response_dict['data']['rows'],
+                         {str(ad.id): {
+                             'archived': False,
+                             'status_setting': ad.state
+                         } for ad in content_ads})
 
     def test_restore_already_restored_validation_error(self):
         self._login()

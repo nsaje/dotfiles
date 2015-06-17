@@ -412,7 +412,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
         });
 
         modalInstance.result.then(function () {
-            getTableData();
+            $scope.getTableData();
         });
 
         return modalInstance;
@@ -440,7 +440,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
         });
     };
 
-    var bulkArchiveContentAds = function (contentAdIdsEnabled, contentAdIdsDisabled) {
+    $scope.bulkArchiveContentAds = function (contentAdIdsEnabled, contentAdIdsDisabled) {
         // archive all of none selected
         var updateAll = shouldUpdateAll(contentAdIdsEnabled);
 
@@ -449,10 +449,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
             contentAdIdsEnabled,
             contentAdIdsDisabled,
             updateAll || $scope.selectedAll,
-            $scope.selectedBatchId).then(updateTableAfterArchiving);
+            $scope.selectedBatchId).then($scope.updateTableAfterArchiving);
     };
 
-    var bulkRestoreContentAds = function (contentAdIdsEnabled, contentAdIdsDisabled) {
+    $scope.bulkRestoreContentAds = function (contentAdIdsEnabled, contentAdIdsDisabled) {
         // restore all of none selected
         var updateAll = shouldUpdateAll(contentAdIdsEnabled);
 
@@ -461,20 +461,18 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
             contentAdIdsEnabled,
             contentAdIdsDisabled,
             updateAll || $scope.selectedAll,
-            $scope.selectedBatchId).then(updateTableAfterArchiving);
+            $scope.selectedBatchId).then($scope.updateTableAfterArchiving);
     };
 
-    var updateTableAfterArchiving = function(data) {
+    $scope.updateTableAfterArchiving = function(data) {
         // update rows immediately, refresh whole table after
-        updateTableData(data.data.rows, {});
-
+        $scope.updateTableData(data.data.rows, {});
         if (!zemFilterService.getShowArchived()) {
             $scope.selectedAll = false;
             $scope.selectedBatchId = null;
             $scope.selectedContentAdsStatus = {};
-
-            getTableData();
-            getDailyStats();
+            $scope.getTableData();
+            $scope.getDailyStats();
         }
     };
 
@@ -536,10 +534,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
                 downloadContentAds(contentAdIdsEnabled, contentAdIdsDisabled);
                 break;
             case 'archive':
-                bulkArchiveContentAds(contentAdIdsEnabled, contentAdIdsDisabled);
+                $scope.bulkArchiveContentAds(contentAdIdsEnabled, contentAdIdsDisabled);
                 break;
             case 'restore':
-                bulkRestoreContentAds(contentAdIdsEnabled, contentAdIdsDisabled);
+                $scope.bulkRestoreContentAds(contentAdIdsEnabled, contentAdIdsDisabled);
                 break;
         }
 
@@ -554,8 +552,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
         if ($scope.pagination.currentPage && $scope.pagination.size) {
             $location.search('page', $scope.pagination.currentPage);
             $scope.setAdGroupData('page', $scope.pagination.currentPage);
-
-            getTableData();
+            $scope.getTableData();
             $scope.getAdGroupState();
         }
     };
@@ -572,8 +569,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
             return;
         }
 
-        getDailyStats();
-        getTableData();
+        $scope.getDailyStats();
+        $scope.getTableData();
         setDisabledExportOptions();
     });
 
@@ -597,7 +594,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             if (!hasMetricData($scope.chartMetric1)) {
-                getDailyStats();
+                $scope.getDailyStats();
             } else {
                 // create a copy to trigger watch
                 $scope.chartData = angular.copy($scope.chartData);
@@ -608,7 +605,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
     $scope.$watch('chartMetric2', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             if (!hasMetricData($scope.chartMetric2)) {
-                getDailyStats();
+                $scope.getDailyStats();
             } else {
                 // create a copy to trigger watch
                 $scope.chartData = angular.copy($scope.chartData);
@@ -620,7 +617,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
         $scope.order = order;
 
         $location.search('order', $scope.order);
-        getTableData();
+        $scope.getTableData();
     };
 
     $scope.toggleChart = function () {
@@ -635,18 +632,16 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
         if (angular.equals(newValue, oldValue)) {
             return;
         }
-
-        getTableData();
-        getDailyStats();
+        $scope.getTableData();
+        $scope.getDailyStats();
     }, true);
 
     $scope.$watch(zemFilterService.getShowArchived, function(newValue, oldValue) {
         if (angular.equals(newValue, oldValue)) {
             return;
         }
-
-        getTableData();
-        getDailyStats();
+        $scope.getTableData();
+        $scope.getDailyStats();
 
     }, true);
 
@@ -655,7 +650,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
         api.adGroupSync.get($state.params.id);
     };
 
-    var getTableData = function () {
+    $scope.getTableData = function () {
         $scope.loadRequestInProgress = true;
 
         api.adGroupAdsPlusTable.get($state.params.id, $scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
@@ -693,8 +688,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
                         if ($scope.isSyncInProgress === false) {
                             // we found out that the sync is no longer in progress
                             // time to reload the data
-                            getTableData();
-                            getDailyStats();
+                            $scope.getTableData();
+                            $scope.getDailyStats();
                         }
                     },
                     function (data) {
@@ -763,9 +758,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
             $scope.pagination.currentPage = page;
             $location.search('page', page);
         }
-
-        getTableData();
-        getDailyStats();
+        $scope.getTableData();
+        $scope.getDailyStats();
         $scope.getAdGroupState();
         initColumns();
         initUploadBatches();
@@ -787,7 +781,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
                     $scope.lastChange = data.lastChange;
                     $scope.notifications = data.notifications;
 
-                    updateTableData(data.rows, data.totals);
+                    $scope.updateTableData(data.rows, data.totals);
                 }
 
                 if (data.inProgress) {
@@ -799,7 +793,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
             });
     };
 
-    var updateTableData = function (rowsUpdates, totalsUpdates) {
+    $scope.updateTableData = function (rowsUpdates, totalsUpdates) {
         $scope.rows.forEach(function (row) {
             var rowUpdates = rowsUpdates[row.id];
             if (rowUpdates) {
@@ -834,7 +828,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$compile', '$stat
         return [$scope.chartMetric1, $scope.chartMetric2];
     };
 
-    var getDailyStats = function () {
+    $scope.getDailyStats = function () {
         api.dailyStats.listContentAdStats($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, getDailyStatsMetrics()).then(
             function (data) {
                 $scope.chartData = data.chartData;
