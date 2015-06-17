@@ -752,7 +752,10 @@ class AdGroupContentAdArchive(api_common.BaseApiView):
                 content_ad.save()
 
         return self.create_api_response({
-            'rows': {content_ad.id: {'archived': content_ad.archived} for content_ad in content_ads}})
+            'rows': {content_ad.id: {
+                'archived': content_ad.archived,
+                'status_setting': content_ad.state,
+            } for content_ad in content_ads}})
 
 
 class AdGroupContentAdRestore(api_common.BaseApiView):
@@ -784,7 +787,10 @@ class AdGroupContentAdRestore(api_common.BaseApiView):
                 content_ad.save()
 
         return self.create_api_response({
-            'rows': {content_ad.id: {'archived': content_ad.archived} for content_ad in content_ads}})
+            'rows': {content_ad.id: {
+                'archived': content_ad.archived,
+                'status_setting': content_ad.state,
+            } for content_ad in content_ads}})
 
 
 class AdGroupContentAdState(api_common.BaseApiView):
@@ -808,6 +814,8 @@ class AdGroupContentAdState(api_common.BaseApiView):
 
         content_ads = helpers.get_selected_content_ads(
             ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
+
+        content_ads = content_ads.exclude_archived()
 
         self._update_content_ads(content_ads, state, request)
         self._add_to_history(ad_group, content_ads, state, request)
