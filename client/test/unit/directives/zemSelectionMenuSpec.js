@@ -46,7 +46,7 @@ describe('zemSelectionMenu', function() {
         spyOn($scope.config.selectionOptions[0], 'callback');
         isolateScope.selectedAll = true;
 
-        element.find('.link a').trigger('click');
+        element.find('.link div').trigger('click');
 
         expect(isolateScope.selectedAll).toBe(false);
         expect($scope.config.selectionOptions[0].callback).toHaveBeenCalled();
@@ -58,7 +58,7 @@ describe('zemSelectionMenu', function() {
         spyOn($scope.config.selectionOptions[1], 'callback');
         isolateScope.selectedAll = true;
 
-        element.find('.link-list-item a').trigger('click');
+        element.find('.link-list-item div').trigger('click');
 
         expect(isolateScope.selectedAll).toBe(false);
         expect($scope.config.selectionOptions[1].callback).toHaveBeenCalled();
