@@ -2378,6 +2378,7 @@ zem-editable-currency-field {
         input[type=checkbox] {
             margin: 3px 0 0;
             vertical-align: text-top;
+            cursor: pointer;
         }
     }
 
@@ -2399,6 +2400,10 @@ zem-editable-currency-field {
 
         .link {
             font-weight: 300;
+            cursor: pointer;
+            &:hover {
+                text-decoration: underline;   
+            }
         }
 
         .link-list {
@@ -2413,6 +2418,13 @@ zem-editable-currency-field {
                 display: inline-block;
                 font-weight: 400;
                 line-height: 22px;
+
+                .link-list-item {
+                    cursor: pointer;
+                    &:hover {
+                        text-decoration: underline;   
+                    }
+                }
             }
         }
     }
