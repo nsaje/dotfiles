@@ -11,9 +11,9 @@ import pytz
 import os
 import StringIO
 import unicodecsv
+import slugify
 
 from django.db import transaction
-from django.db.models import Q
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -714,7 +714,7 @@ class AdGroupAdsPlusUploadBatches(api_common.BaseApiView):
             batches = models.UploadBatch.objects.filter(
                 id__in=tuple(batch_ids),
                 status=constants.UploadBatchStatus.DONE,
-            )
+            ).order_by('-created_dt')
             response_data = []
             for batch in batches:
                 response_data.append({
@@ -813,7 +813,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.get_content_ad_csv'):
             raise exc.ForbiddenError(message='Not allowed')
 
-        helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         select_all = request.GET.get('select_all', False)
         select_batch_id = request.GET.get('select_batch')
@@ -832,7 +832,11 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
                 'image_url': content_ad.get_image_url(),
             })
 
-        filename = 'content_ads'
+        filename = '{}_{}_{}_content_ads'.format(
+            slugify.slugify(ad_group.campaign.account.name),
+            slugify.slugify(ad_group.name),
+            datetime.datetime.now().strftime('%Y-%m-%d')
+        )
         content = self._create_content_ad_csv(content_ad_dicts)
 
         return self.create_csv_response(filename, content=content)

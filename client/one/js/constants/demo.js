@@ -133,7 +133,7 @@ oneApp.constant('demoDefaults', {
                 this.sourcesRow({name: 'Gravity', id: '2', bid_cpc: '0.22', daily_budget: '3700'}),
                 this.sourcesRow({name: 'Yahoo', id: '4', bid_cpc: '0.13', daily_budget: '1200'}),
                 this.sourcesRow({name: 'Yieldmo', id: '32', bid_cpc: '0.15', daily_budget: '2800'}),
-                this.sourcesRow({name: 'TripleLif', id: '34', bid_cpc: '0.25', daily_budget: '4000'})
+                this.sourcesRow({name: 'TripleLift', id: '34', bid_cpc: '0.25', daily_budget: '4000'})
             ],
             totals: {
                 avg_tos: 1, current_daily_budget: "", pageviews: 0,

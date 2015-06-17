@@ -20,6 +20,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     $scope.isSyncInProgress = false;
 
     $scope.selectedBulkAction = null;
+    $scope.selectionMenuConfig = {};
 
     // selection triplet - all, a batch, or specific content ads can be selected
     $scope.selectedAll = false;
@@ -45,12 +46,28 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     }];
 
     $scope.selectedAdsChanged = function(row, checked) {
-        if (row.id) {
-            $scope.selectedContentAdsStatus[row.id] = checked;
+        $scope.selectedContentAdsStatus[row.id] = checked;
+
+        var numSelected = 0,
+            numNotSelected = 0;
+
+        Object.keys($scope.selectedContentAdsStatus).forEach(function (contentAdId) {
+            if ($scope.selectedContentAdsStatus[contentAdId]) {
+                numSelected += 1;
+            } else {
+                numNotSelected += 1;
+            }
+        });
+
+        if ($scope.selectedAll) {
+            $scope.selectionMenuConfig.partialSelection = numNotSelected > 0;
+        } else if (!$scope.selectedBatchId) {
+            $scope.selectionMenuConfig.partialSelection = numSelected > 0;
         }
     };
 
-    $scope.selectAllCallback = function (selected) {
+    $scope.selectionMenuConfig.selectAllCallback = function (selected) {
+        $scope.selectionMenuConfig.partialSelection = false;
         $scope.selectedAll = selected;
         $scope.selectedBatchId = null;
         $scope.selectedContentAdsStatus = {};
@@ -62,19 +79,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         }
     };
 
-    $scope.selectThisPageCallback = function () {
-        $scope.selectedAll = false;
-        $scope.selectedBatchId = null;
-        $scope.selectedContentAdsStatus = {};
-
-        $scope.rows.forEach(function(row) {
-            $scope.selectedContentAdsStatus[row.id] = true;
-        });
-
-        $scope.updateContentAdSelection();
-    };
-
     $scope.selectBatchCallback = function (id) {
+        $scope.selectionMenuConfig.partialSelection = true;
         $scope.selectedAll = false;
         $scope.selectedBatchId = id;
         $scope.selectedContentAdsStatus = {};
@@ -123,8 +129,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         order: false,
         selectCallback: $scope.selectedAdsChanged,
         disabled: false,
-        selectionOptions: $scope.selectionOptions,
-        selectAllCallback: $scope.selectAllCallback
+        selectionMenuConfig: $scope.selectionMenuConfig
     }, {
         name: 'Thumbnail',
         nameCssClass: 'table-name-hidden',
@@ -588,28 +593,14 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         }, true);
     };
 
-    $scope.selectionOptions = [{
-        type: 'link',
-        name: 'This page',
-        callback: $scope.selectThisPageCallback
-    }];
-
     var initUploadBatches = function () {
         api.adGroupAdsPlusUploadBatches.list($state.params.id).then(function (data) {
-            $scope.selectionOptions = $scope.selectionOptions.concat([{
-                type: 'separator'
-            }, {
+            $scope.selectionMenuConfig.selectionOptions = [{
                 type: 'link-list',
                 name: 'Upload batch',
                 callback: $scope.selectBatchCallback,
                 items: data.data.batches
-            }]);
-
-            $scope.columns.forEach(function (col) {
-                if (col.type == 'checkbox') {
-                    col.selectionOptions = $scope.selectionOptions;
-                }
-            });
+            }];
         });
     };
 

@@ -763,6 +763,7 @@ div[datepicker] {
             background-color: transparent;
             border: 0px;
             line-height: 34px;
+            margin-right: 8px;
 
             b:before {
                 font-size: 14px;
@@ -1933,17 +1934,17 @@ a.help-popover:visited {
             top: 1px;
             margin-left: 0;
         }
+    }
 
-        &:not(:hover) {
-            .drop-arrow {
-                visibility: hidden;
-            }
+    &.zem-state-selector:not(:hover) {
+        .drop-arrow {
+            visibility: hidden;
+        }
 
-            .btn {
-                border-color: transparent;
-                background-color: transparent;
-                .box-shadow(none);
-            }
+        .btn {
+            border-color: transparent;
+            background-color: transparent;
+            .box-shadow(none);
         }
     }
 
@@ -2370,13 +2371,28 @@ zem-editable-currency-field {
     }
 }
 
-.zem-selection-menu.dropdown {
-    .dropdown-toggle input[type=checkbox] {
-        margin: 0;
+.table div.zem-selection-menu.dropdown {
+    .dropdown-toggle {
+        line-height: 18px;
+
+        input[type=checkbox] {
+            margin: 3px 0 0;
+            vertical-align: text-top;
+            cursor: pointer;
+        }
+    }
+
+    .dropdown-toggle,
+    &.open:hover .dropdown-toggle {
+        border-color: @default-color;
+    }
+
+    &:not(.open):not(:hover) .dropdown-toggle {
+        border-color: #bbb;
     }
 
     .dropdown-menu {
-        padding: 4px 6px;
+        padding: 8px 10px;
 
         .divider {
             margin: 0;
@@ -2384,6 +2400,10 @@ zem-editable-currency-field {
 
         .link {
             font-weight: 300;
+            cursor: pointer;
+            &:hover {
+                text-decoration: underline;   
+            }
         }
 
         .link-list {
@@ -2391,11 +2411,20 @@ zem-editable-currency-field {
                 vertical-align: top;
                 display: inline-block;
                 font-weight: 300;
+                line-height: 22px;
             }
 
             .link-list-items {
                 display: inline-block;
                 font-weight: 400;
+                line-height: 22px;
+
+                .link-list-item {
+                    cursor: pointer;
+                    &:hover {
+                        text-decoration: underline;   
+                    }
+                }
             }
         }
     }
