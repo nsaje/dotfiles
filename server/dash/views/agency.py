@@ -883,22 +883,13 @@ class UserActivation(api_common.BaseApiView):
                 new_settings.changes_text = u'Resent activation mail {} ({})'.format(user.get_full_name(), user.email)
                 new_settings.save(request)
 
-                return self.create_api_response(
-                    {'success': True},
-                    status_code=200
-                )
+                return self.create_api_response({}, status_code=200)
             else:
-                return self.create_api_response(
-                    {'success': False},
-                    status_code=500
-                )
+                return self.create_api_response({}, status_code=500)
 
         except ZemUser.DoesNotExist:
             raise exc.ValidationError(
                 pretty_message=u'Cannot activate nonexisting user.'
             )
 
-        return self.create_api_response(
-            {'success': False},
-            status_code=500
-        )
+        return self.create_api_response({}, status_code=500)
