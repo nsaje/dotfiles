@@ -32,16 +32,14 @@
                         </div>
                         <div class="col-xs-2">
                             <div class="loader" ng-show="user.requestInProgress"></div>
-							<select ui-select2="{minimumResultsForSearch: -1, dropdownAutoWidth : true}"
-			   						class="show-rows" 
-									ng-show="!user.requestInProgress"
-		 							ng-model="user.action"
-									ng-change="userActionChange(user.action, user.id)"
-									data-placeholder="Edit">
-								<option value=""></option>
-								<option value="resend">Resend Activation Mail</option>
-								<option value="remove">Remove</option>
-							</select>
+
+							<span class="dropdown" dropdown ng-show="!user.requestInProgress">
+							<a href class="btn btn-default dropdown-toggle" dropdown-toggle>Edit&nbsp;<span class="caret"></a>
+							<ul class="dropdown-menu" role="menu">
+								<li><a tabindex="-1" ng-click="userActionChange('resend', user.id)" href="#">Resend Activation Mail</a></li>
+								<li><a tabindex="-1" ng-click="userActionChange('remove', user.id)" href="#">Remove</a></li>
+							</ul>
+							</span>
                         </div>
                     </div>
                 </div>
