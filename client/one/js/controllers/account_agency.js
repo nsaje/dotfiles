@@ -16,14 +16,14 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
     $scope.addUserErrors = null;
 
     $scope.userActionChange = function (action, userId) {
-        if (action == '') {
+        if (action === '') {
             return;
         }
 
         var usr = getUser(userId);
-        if (action == 'remove') {
+        if (action === 'remove') {
             $scope.removeUser(userId);
-        } else if (action == 'resend') {
+        } else if (action === 'resend') {
             $scope.resendActivationMail(userId);
         }
 
