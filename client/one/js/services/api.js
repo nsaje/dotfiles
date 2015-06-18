@@ -2192,6 +2192,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         availableSources: new AvailableSources(),
         adGroupContentAdState: new AdGroupContentAdState(),
         adGroupAdsPlusUploadBatches: new AdGroupAdsPlusUploadBatches()
+        // Also, don't forget to add me to DEMO!
     };
 }]);
 

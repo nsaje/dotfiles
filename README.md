@@ -141,15 +141,11 @@ cp test/protractor.localconf.json.template test/protractor.localconf.json
 
 and modify as needed.
 
-You will also need to load protractor fixtures into your database. You can do this by changing directory to server/ and running:
+Then from project root run:
 ```bash
-python manage.py loaddata protractor
+./run_e2e.sh
 ```
-
-To test, first ensure that your dev server is running. Then run:
-```bash
-grunt e2e
-```
+It will load the fixtures for you and run server and client applications.
 
 The test suite will be run in your local Chrome browser.
 
@@ -179,6 +175,8 @@ Demo is an important sales tool to convince clients to test or even buy our serv
 that data is refreshed. 
 
 [Is there recent data for demo?](https://metrics.librato.com/metrics/demo.total_recent_impressions?duration=604800)
+[Has data refreshed successfully?](https://metrics.librato.com/metrics/reports.refresh_demo_data_successful?duration=604800)
+[Were there errors during demo data refreshing?](https://metrics.librato.com/metrics/reports.refresh_demo_data_failed?duration=604800)
 
 ##### Tasks
 Zemanta One keeps track of the actions, that need to be performed by Zemanta Zwei. These tasks constist of adjusting CPC bids, to daily budgets, and getting newest reports, etc. The important metric here is the number of failed tasks that occur through time.
@@ -209,7 +207,65 @@ ERROR RATE > 13.6%
 [New Relic](https://rpm.newrelic.com/accounts/719319/applications/4618367)
 
 
+## Implementing fetures in DEMO
 
+Demo consists of a group of decorators (`client/one/js/demo.js`), defaults (`client/one/js/constants/demo.js`) and three services:
+- HTTP get request cache (`client/one/js/services/zem_demo_cache_service.js`) - keys are server URL-s
+- ad groups state object (`client/one/js/services/zem_demo_ad_groups_service.js`)
+- sources state object (`client/one/js/services/zem_demo_sources_service.js`)
 
+For most of the features cache is enough. For example:
+- creating a campaign or updating an existing campaign: cache[`/api/campaigns/ID/settings/`] <- campaign_data
 
+Media sources, ad groups and content ads are a bit more complicated because data needs to be propagated to many different client pages.
+State objects apply changes to different tables. Example: content ads table shows enabled media sources for each ad - sources state object applies enabled and paused media sources to content content ads.
 
+Each of these services has its api methods exposed and should be self-explanatory.
+
+### API service decorators
+First thing you want to do is to *fake/append to/change* a server request using cache and/or state objects.
+
+Example: campaign list from accounts perspective
+```js
+$delegate.accountCampaignsTable.get = (function (backup) {
+    return function demo() {
+		return backup.apply(null, arguments).then(function (data) {
+			data.is_sync_recent = true;
+			angular.forEach(newCampaigns, function (_, campaignId) {
+				var cached = zemDemoCacheService.get('/api/campaigns/' + campaignId + '/settings/');
+				data.rows.push(defaults.campaignsTableRow(cached.settings.name, campaignId));
+			});
+			return data;
+		});
+	};
+}($delegate.accountCampaignsTable.get));
+```
+Notes:
+- only the decorator has to have a backup of the unmocked api method
+- every mocked method is named *demo* because we wish to distinguish between mocked and original methods in tests
+
+And to make this possible, we also need to completely mock the PUT requests:
+```js
+$delegate.accountCampaigns.create = function demo(id) {
+    var deferred = $q.defer(),
+        settings = defaults.newCampaignSettings(zemDemoCacheService.generateId('campaign')),
+        campaign = angular.extend({}, {
+            accountManagers: defaults.accountManagers,
+            salesReps: defaults.accountManagers,
+            history: [{
+                changedBy: 'test.account@zemanta.si',
+                changesText: 'Created settings',
+                showOldSettings: false,
+                datetime: (new Date()).toISOString()
+            }], canArchive: false,  canRestore: false,
+            settings: settings
+        });
+    newCampaigns[settings.id] = 1;
+    demoInUse = true;
+    zemDemoCacheService.set('/api/campaigns/' + settings.id + '/settings/', campaign);
+    deferred.resolve(settings);
+    return deferred.promise;
+};
+```
+
+Because we want demo to work a little bit differently, there is some demo code hidden in controllers and other services. You can find it by greping for `$window.isDemo`.
