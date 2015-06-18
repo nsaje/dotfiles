@@ -1,30 +1,40 @@
 from dateutil import rrule
+import logging
 
 from slugify import slugify
-from django.db import IntegrityError
 
+from utils.statsd_helper import statsd_incr
 import dash.models
 import reports.api
 import reports.update
 import reports.models
-
 from reports.models import TRAFFIC_METRICS, POSTCLICK_METRICS, CONVERSION_METRICS
 
+logger = logging.getLogger(__name__)
 
 def refresh_demo_data(start_date, end_date):
-
-    _refresh_stats_data(start_date, end_date)
-    _refresh_conversion_data(start_date, end_date)
+    try:
+        ad_map, source_map = _copy_content_ads()
+        _refresh_stats_data(start_date, end_date, ad_map, source_map)
+        _refresh_conversion_data(start_date, end_date)
+        statsd_incr('reports.refresh_demo_data_successful')
+    except:
+        logger.exception('Refreshing demo data failed')
+        statsd_incr('reports.refresh_demo_data_failed')
 
 
 def _copy_content_ads():
     ad_map, source_map = {}, {}
+    
     for demo_ad_group in dash.models.AdGroup.demo_objects.all():
+        ads_copied = 0
         demo2real = dash.models.DemoAdGroupRealAdGroup.objects.get(
             demo_ad_group=demo_ad_group
         )
 
         real_ad_group = demo2real.real_ad_group
+        logger.info('Copying ads for demo ad group %d (real: %d)',
+                    demo_ad_group.id, real_ad_group.id)
 
         real_sources_ids = {
             source.id : source for source in
@@ -38,6 +48,9 @@ def _copy_content_ads():
                     real_source_id = int(source.source_content_ad_id)
                     ad_map[real_sources_ids[real_source_id].content_ad_id] = source.content_ad_id
                     source_map[real_source_id] = source.id
+                logger.info('Ads (demo: %d, real:%d ad group) were already copied - rebuilt ad and source map to real ad groups and sources',
+                            demo_ad_group.id,
+                            real_ad_group.id)
                 continue
             except:
                 # We are working with an ad group where demo data
@@ -49,6 +62,9 @@ def _copy_content_ads():
                 dash.models.ContentAd.objects.filter(
                     ad_group=demo_ad_group
                 ).delete()
+                logger.info('Ads and sources (demo: %d, real: %d ad group) don\'t exists, clearing state and copying ads ... ',
+                            demo_ad_group.id,
+                            real_ad_group.id)
     
         for i, ad in enumerate(dash.models.ContentAd.objects.filter(ad_group=real_ad_group)):
             real_ad_id = ad.id
@@ -76,10 +92,17 @@ def _copy_content_ads():
                 source.source_content_ad_id = str(real_source_id)
                 source.save()
                 source_map[real_source_id] = source.id
+
+            ads_copied += 1
+        logger.info('Ads (demo: %d, real: %d ad group) copied: %d',
+                    demo_ad_group.id,
+                    real_ad_group.id,
+                    ads_copied)
     return ad_map, source_map
 
 
 def _copy_content_ad_stats(dt, real_ad_group, multiplication_factor, ad_map, source_map):
+    stats_copied = 0
     for content_ad in dash.models.ContentAd.objects.filter(ad_group=real_ad_group):
         qs = reports.models.ContentAdStats.objects.filter(
             date=dt,
@@ -106,12 +129,13 @@ def _copy_content_ad_stats(dt, real_ad_group, multiplication_factor, ad_map, sou
                 content_ad_source_id=source_map[row.content_ad_source.id],
             ).delete()
             reports.models.ContentAdStats.objects.create(**d_row)
+            stats_copied += 1
+
+    logger.info('Stats copied from ad group %d: %d', real_ad_group.id, stats_copied)
 
             
-def _refresh_stats_data(start_date, end_date):
+def _refresh_stats_data(start_date, end_date, ad_map, source_map):
     daterange = rrule.rrule(rrule.DAILY, dtstart=start_date, until=end_date)
-
-    ad_map, source_map = _copy_content_ads()
     for dt in daterange:
         for demo_ad_group in dash.models.AdGroup.demo_objects.all():
             demo2real = dash.models.DemoAdGroupRealAdGroup.objects.get(
@@ -120,6 +144,9 @@ def _refresh_stats_data(start_date, end_date):
 
             real_ad_group = demo2real.real_ad_group
             multiplication_factor = demo2real.multiplication_factor
+
+            logger.info('Refreshing stats for demo ad group %d (real: %d) with multipl. fact. %f',
+                        demo_ad_group.id, real_ad_group.id, multiplication_factor)
 
             # ARTICLES
             qs = reports.models.ArticleStats.objects.filter(
@@ -159,6 +186,9 @@ def _refresh_conversion_data(start_date, end_date):
 
             real_ad_group = demo2real.real_ad_group
             multiplication_factor = demo2real.multiplication_factor
+
+            logger.info('Refreshing conversion data for demo ad group %d (real: %d) with multipl. fact. %f',
+                        demo_ad_group.id, real_ad_group.id, multiplication_factor)
 
             qs = reports.models.GoalConversionStats.objects.filter(
                 datetime=dt,
