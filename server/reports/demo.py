@@ -1,20 +1,25 @@
 from dateutil import rrule
+import logging
 
 from slugify import slugify
-from django.db import IntegrityError
 
+from utils.statsd_helper import statsd_incr
 import dash.models
 import reports.api
 import reports.update
 import reports.models
-
 from reports.models import TRAFFIC_METRICS, POSTCLICK_METRICS, CONVERSION_METRICS
 
+logger = logging.getLogger(__name__)
 
 def refresh_demo_data(start_date, end_date):
-
-    _refresh_stats_data(start_date, end_date)
-    _refresh_conversion_data(start_date, end_date)
+    try:
+        _refresh_stats_data(start_date, end_date)
+        _refresh_conversion_data(start_date, end_date)
+        statsd_incr('reports.refresh_demo_data_successful')
+    except:
+        logger.exception('Refreshing demo data failed')
+        statsd_incr('reports.refresh_demo_data_failed')
 
 
 def _copy_content_ads():
