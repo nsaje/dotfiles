@@ -46,6 +46,10 @@
             If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
         </alert>
 
+        <alert type="info" class="alert-sync" ng-show="notification" close="closeAlert()">
+            {{ notification }}
+        </alert>
+
         <zem-table class="ads-plus-table" zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderTableData(order)" zem-table-notifications="notifications"></zem-table>
 
         <div class="table-footnotes">

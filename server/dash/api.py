@@ -546,6 +546,52 @@ def _update_content_ad_source_submission_status(content_ad_source, submission_st
     else:
         content_ad_source.submission_status = submission_status
 
+
+def update_content_ads_state(content_ads, state, request):
+    actions = []
+    with transaction.atomic():
+        for content_ad in content_ads:
+            content_ad.state = state
+            content_ad.save()
+            for content_ad_source in content_ad.contentadsource_set.all():
+                prev_state = content_ad_source.state
+                content_ad_source.state = state
+                content_ad_source.save()
+
+                if prev_state == state:
+                    continue
+
+                changes = {'state': content_ad_source.state}
+
+                actions.append(
+                    actionlog.api_contentads.init_update_content_ad_action(
+                        content_ad_source,
+                        changes,
+                        request,
+                        send=False,
+                    )
+                )
+
+    actionlog.zwei_actions.send_multiple(actions)
+
+
+def add_content_ads_state_change_to_history(ad_group, content_ads, state, request):
+    num_id_limit = 10
+
+    shorten = len(content_ads) > num_id_limit
+    ids = [str(ad.id) for ad in content_ads[:num_id_limit]]
+
+    changes_text = 'Content ad(s) {}{} set to {}.'.format(
+        ', '.join(ids),
+        ' and {} more'.format(len(content_ads) - num_id_limit) if shorten else '',
+        constants.ContentAdSourceState.get_text(state)
+    )
+
+    settings = ad_group.get_current_settings().copy_settings()
+    settings.changes_text = changes_text
+    settings.save(request)
+
+
 class AdGroupSourceSettingsWriter(object):
 
     def __init__(self, ad_group_source):

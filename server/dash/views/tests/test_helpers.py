@@ -272,37 +272,6 @@ class ViewHelpersTestCase(TestCase):
             'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
         )
 
-    def test_get_content_ad_archive_restore_notifications(self):
-        content_ads = [models.ContentAd.objects.get(pk=1),
-                       models.ContentAd.objects.get(pk=2)]
-
-        active = constants.ContentAdSourceState.ACTIVE
-        inactive = constants.ContentAdSourceState.INACTIVE
-
-        n1 = {'archive': 'These Content Ads have already been archived.'}
-        n2 = {'restore': 'These Content Ads are already active.'}
-        n3 = {'archive': 'All selected Content Ads must be paused before they can be archived.'}
-        n23 = {'restore': 'These Content Ads are already active.',
-               'archive': 'All selected Content Ads must be paused before they can be archived.'}
-
-        cases = [
-            # archived, archived, state, expected notifications
-            (False, False, inactive, n2),
-            (False, False, active, n23),
-            (False, True, inactive, {}),
-            (False, True, active, n3),
-            (True, True, inactive, n1),
-            (True, True, active, n1)
-        ]
-
-        for case in cases:
-            content_ads[0].archived = case[0]
-            content_ads[1].archived = case[1]
-            content_ads[0].state = content_ads[1].state = case[2]
-
-            notifications = helpers.get_content_ad_archive_restore_notifications(content_ads)
-            self.assertEqual(notifications, case[3])
-
     def test_parse_get_request_array(self):
         self.assertEqual(helpers.parse_get_request_content_ad_ids({'ids': '1,2'}, 'ids'), [1, 2])
         with self.assertRaises(exc.ValidationError):

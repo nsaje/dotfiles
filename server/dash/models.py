@@ -1297,6 +1297,9 @@ class ContentAd(models.Model):
         def exclude_archived(self):
             return self.filter(archived=False)
 
+        def only_archived(self):
+            return self.filter(archived=True)
+
 
 class ContentAdSource(models.Model):
     source = models.ForeignKey(Source, on_delete=models.PROTECT)

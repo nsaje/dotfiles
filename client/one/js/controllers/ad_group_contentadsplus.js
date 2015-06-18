@@ -1,5 +1,5 @@
 /* globals oneApp, options, angular */
-    oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compile', '$modal', '$location', 'api', 'zemUserSettings', 'zemCustomTableColsService', '$timeout', 'zemFilterService', function($scope, $window, $state, $compile, $modal, $location, api, zemUserSettings, zemCustomTableColsService, $timeout, zemFilterService) {
+oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compile', '$modal', '$location', 'api', 'zemUserSettings', 'zemCustomTableColsService', '$timeout', 'zemFilterService', function($scope, $window, $state, $compile, $modal, $location, api, zemUserSettings, zemCustomTableColsService, $timeout, zemFilterService) {
     $scope.order = '-upload_time';
     $scope.loadRequestInProgress = false;
     $scope.selectedColumnsCount = 0;
@@ -26,6 +26,12 @@
     $scope.selectedAll = false;
     $scope.selectedBatchId = null;
     $scope.selectedContentAdsStatus = {};
+
+    $scope.notification = null;
+
+    $scope.closeAlert = function(index) {
+        $scope.notification = null;
+    };
 
     $scope.pagination = {
         currentPage: 1
@@ -65,7 +71,7 @@
                 name: 'Archive',
                 value: 'archive',
                 internal: $scope.isPermissionInternal(archivePermission),
-                notification: 'All selected Content Ads must be paused before they can be archived.'
+                notification: 'All selected Content Ads will be paused and archived.'
             }, {
                 name: 'Restore',
                 value: 'restore',
@@ -433,7 +439,7 @@
         return !contentAdIdsSelected.length && !$scope.selectedAll && !$scope.selectedBatchId;
     };
 
-        var bulkUpdateContentAds = function (contentAdIdsSelected, contentAdIdsNotSelected, state) {
+    var bulkUpdateContentAds = function (contentAdIdsSelected, contentAdIdsNotSelected, state) {
         // update all content ads if none selected
         var updateAll = shouldUpdateAll(contentAdIdsSelected);
 
@@ -478,6 +484,11 @@
     $scope.updateTableAfterArchiving = function(data) {
         // update rows immediately, refresh whole table after
         updateTableData(data.data.rows, {});
+
+        if (data.data.notification) {
+            $scope.notification = data.data.notification;
+        }
+
         if (!zemFilterService.getShowArchived()) {
             $scope.selectedAll = false;
             $scope.selectedBatchId = null;

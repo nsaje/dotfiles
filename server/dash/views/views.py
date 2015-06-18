@@ -746,20 +746,34 @@ class AdGroupContentAdArchive(api_common.BaseApiView):
         content_ads = helpers.get_selected_content_ads(
             ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
 
-        errors = helpers.get_content_ad_archive_restore_notifications(content_ads).get('archive')
-        if errors:
-            raise exc.ValidationError(errors=errors)
+        active_content_ads = [ad for ad in content_ads if ad.state == constants.ContentAdSourceState.ACTIVE]
+        if active_content_ads:
+            api.update_content_ads_state(active_content_ads, constants.ContentAdSourceState.INACTIVE, request)
+
+        response = {
+            'active_count': len(active_content_ads)
+        }
+
+        # reload
+        content_ads = content_ads.all()
 
         with transaction.atomic():
             for content_ad in content_ads:
                 content_ad.archived = True
                 content_ad.save()
 
-        return self.create_api_response({
-            'rows': {content_ad.id: {
+        response['archived_count'] = len(content_ads)
+        response['notification'] = "%d Content Ads were archived, %d of them were active at the time." \
+                                   % (response['archived_count'], response['active_count'])
+        response['rows'] = {
+            content_ad.id: {
                 'archived': content_ad.archived,
                 'status_setting': content_ad.state,
-            } for content_ad in content_ads}})
+            }
+            for content_ad in content_ads
+        }
+
+        return self.create_api_response(response)
 
 
 class AdGroupContentAdRestore(api_common.BaseApiView):
@@ -780,10 +794,6 @@ class AdGroupContentAdRestore(api_common.BaseApiView):
 
         content_ads = helpers.get_selected_content_ads(
             ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
-
-        errors = helpers.get_content_ad_archive_restore_notifications(content_ads).get('restore')
-        if errors:
-            raise exc.ValidationError(errors=errors)
 
         with transaction.atomic():
             for content_ad in content_ads:
@@ -821,53 +831,10 @@ class AdGroupContentAdState(api_common.BaseApiView):
 
         content_ads = content_ads.exclude_archived()
 
-        self._update_content_ads(content_ads, state, request)
-        self._add_to_history(ad_group, content_ads, state, request)
+        api.update_content_ads_state(content_ads, state, request)
+        api.add_content_ads_state_change_to_history(ad_group, content_ads, state, request)
 
         return self.create_api_response()
-
-    def _update_content_ads(self, content_ads, state, request):
-        actions = []
-        with transaction.atomic():
-            for content_ad in content_ads:
-                content_ad.state = state
-                content_ad.save()
-                for content_ad_source in content_ad.contentadsource_set.all():
-                    prev_state = content_ad_source.state
-                    content_ad_source.state = state
-                    content_ad_source.save()
-
-                    if prev_state == state:
-                        continue
-
-                    changes = {'state': content_ad_source.state}
-
-                    actions.append(
-                        actionlog.api_contentads.init_update_content_ad_action(
-                            content_ad_source,
-                            changes,
-                            request,
-                            send=False,
-                        )
-                    )
-
-        actionlog.zwei_actions.send_multiple(actions)
-
-    def _add_to_history(self, ad_group, content_ads, state, request):
-        num_id_limit = 10
-
-        shorten = len(content_ads) > num_id_limit
-        ids = [str(ad.id) for ad in content_ads[:num_id_limit]]
-
-        changes_text = 'Content ad(s) {}{} set to {}.'.format(
-            ', '.join(ids),
-            ' and {} more'.format(len(content_ads) - num_id_limit) if shorten else '',
-            constants.ContentAdSourceState.get_text(state)
-        )
-
-        settings = ad_group.get_current_settings().copy_settings()
-        settings.changes_text = changes_text
-        settings.save(request)
 
 
 class AdGroupContentAdCSV(api_common.BaseApiView):

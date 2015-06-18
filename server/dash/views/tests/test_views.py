@@ -13,6 +13,7 @@ from zemauth.models import User
 
 from dash import models
 from dash import constants
+from dash import api
 from dash.views import views
 
 
@@ -350,8 +351,7 @@ class AdGroupContentAdStateTest(TestCase):
         state = constants.ContentAdSourceState.INACTIVE
         request = None
 
-        views.AdGroupContentAdState()._update_content_ads(
-            [content_ad], state, request)
+        api.update_content_ads_state([content_ad], state, request)
 
         content_ad.refresh_from_db()
 
@@ -379,7 +379,7 @@ class AdGroupContentAdStateTest(TestCase):
         request = HttpRequest()
         request.user = User(id=1)
 
-        views.AdGroupContentAdState()._add_to_history(ad_group, content_ads, state, request)
+        api.add_content_ads_state_change_to_history(ad_group, content_ads, state, request)
 
         settings = ad_group.get_current_settings()
 
@@ -397,7 +397,7 @@ class AdGroupContentAdStateTest(TestCase):
         request = HttpRequest()
         request.user = User(id=1)
 
-        views.AdGroupContentAdState()._add_to_history(ad_group, content_ads, state, request)
+        api.add_content_ads_state_change_to_history(ad_group, content_ads, state, request)
 
         settings = ad_group.get_current_settings()
 
@@ -499,7 +499,7 @@ class AdGroupContentAdArchive(TestCase):
                              'status_setting': ad.state
                          } for ad in content_ads})
 
-    def test_archive_must_be_paused_validation_error(self):
+    def test_archive_pause_active_before_archiving(self):
         self._login()
 
         ad_group_id = 1
@@ -507,49 +507,23 @@ class AdGroupContentAdArchive(TestCase):
         self.assertGreater(len(content_ads), 0)
         self.assertFalse(all([ad.state == constants.ContentAdSourceState.INACTIVE for ad in content_ads]))
 
+        active_count = len([ad for ad in content_ads if ad.state == constants.ContentAdSourceState.ACTIVE])
+        archived_count = len(content_ads)
+
         payload = {
             'select_all': True
         }
 
         response = self._post_content_ad_archive(ad_group_id, payload)
 
-        content_ads_after = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
-        self.assertEqual(len(content_ads), len(content_ads_after))
-        self.assertEqual({ad.id: ad.archived for ad in content_ads},
-                         {ad.id: ad.archived for ad in content_ads_after})
-
-        response_dict = json.loads(response.content)
-        self.assertFalse(response_dict['success'])
-        self.assertEqual(response_dict['data']['errors'],
-                         'All selected Content Ads must be paused before they can be archived.')
-
-    def test_archive_already_archived_validation_error(self):
-        self._login()
-
-        ad_group_id = 2
         content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
-        for ad in content_ads:
-            ad.archived = True
-            ad.save()
-
-        self.assertGreater(len(content_ads), 0)
-        self.assertTrue(all([ad.state == constants.ContentAdSourceState.INACTIVE
+        self.assertTrue(all([ad.state == constants.ContentAdSourceState.INACTIVE and ad.archived
                              for ad in content_ads]))
 
-        payload = {
-            'select_all': True
-        }
-
-        response = self._post_content_ad_archive(ad_group_id, payload)
-
-        content_ads_after = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
-        self.assertEqual(len(content_ads), len(content_ads_after))
-        self.assertEqual({ad.id: ad.archived for ad in content_ads},
-                         {ad.id: ad.archived for ad in content_ads_after})
-
         response_dict = json.loads(response.content)
-        self.assertFalse(response_dict['success'])
-        self.assertEqual(response_dict['data']['errors'], 'These Content Ads have already been archived.')
+        self.assertTrue(response_dict['success'])
+        self.assertEqual(response_dict['data']['active_count'], active_count)
+        self.assertEqual(response_dict['data']['archived_count'], archived_count)
 
     def test_content_ad_ids_validation_error(self):
         self._login()
@@ -655,13 +629,14 @@ class AdGroupContentAdRestore(TestCase):
                              'status_setting': ad.state
                          } for ad in content_ads})
 
-    def test_restore_already_restored_validation_error(self):
+    def test_restore_success_when_all_restored(self):
         self._login()
 
         ad_group_id = 2
         content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
 
         self.assertGreater(len(content_ads), 0)
+        self.assertTrue(all([not ad.archived for ad in content_ads]))
 
         payload = {
             'select_all': True
@@ -669,14 +644,11 @@ class AdGroupContentAdRestore(TestCase):
 
         response = self._post_content_ad_restore(ad_group_id, payload)
 
-        content_ads_after = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
-        self.assertEqual(len(content_ads), len(content_ads_after))
-        self.assertEqual({ad.id: ad.archived for ad in content_ads},
-                         {ad.id: ad.archived for ad in content_ads_after})
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        self.assertFalse(all([ad.archived for ad in content_ads]))
 
         response_dict = json.loads(response.content)
-        self.assertFalse(response_dict['success'])
-        self.assertEqual(response_dict['data']['errors'], 'These Content Ads are already active.')
+        self.assertTrue(response_dict['success'])
 
     def test_content_ad_ids_validation_error(self):
         self._login()
