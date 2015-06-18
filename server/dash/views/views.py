@@ -701,7 +701,7 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
 class AdGroupAdsPlusUploadBatches(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_batches_get')
     def get(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.ad_group_ads_plus_upload_batches_get'):
+        if not request.user.has_perm('zemauth.content_ads_bulk_actions'):
             raise exc.ForbiddenError(message='Not allowed')
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
