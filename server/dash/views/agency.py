@@ -855,7 +855,9 @@ class AccountUsers(api_common.BaseApiView):
         return {
             'id': user.id,
             'name': user.get_full_name(),
-            'email': user.email
+            'email': user.email,
+            'last_login': user.last_login.date(),
+            'is_active': user.is_active,
         }
 
     def _add_user_to_groups(self, user):
@@ -864,3 +866,27 @@ class AccountUsers(api_common.BaseApiView):
 
         for group in groups:
             group.user_set.add(user)
+
+
+class UserActivation(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'account_user_activation_mail_post')
+    def post(self, request, account_id, user_id):
+        if not request.user.has_perm('zemauth.account_agency_access_permissions'):
+            raise exc.MissingDataError()
+
+        try:
+            user = ZemUser.objects.get(pk=user_id)
+            email_helper.send_email_to_new_user(user, request)
+
+            account = helpers.get_account(request.user, account_id)
+            # add history entry
+            new_settings = account.get_current_settings().copy_settings()
+            new_settings.changes_text = u'Resent activation mail {} ({})'.format(user.get_full_name(), user.email)
+            new_settings.save(request)
+
+        except ZemUser.DoesNotExist:
+            raise exc.ValidationError(
+                pretty_message=u'Cannot activate nonexisting user.'
+            )
+
+        return self.create_api_response({}, status_code=200)

@@ -5,6 +5,7 @@ from mock import patch, ANY
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
+from django.core import mail
 
 from zemauth.models import User
 from dash import models
@@ -289,3 +290,50 @@ class AdGroupAgencyTest(TestCase):
             },
             'success': True
         })
+
+
+class UserActivationTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    def setUp(self):
+        self.user = User.objects.get(pk=1)
+        with patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
+            self.client.login(username=self.user.email, password='secret')
+
+    def test_send_mail(self):
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        data = {}
+        response = self.client.post(
+            reverse('account_reactivation', kwargs={'account_id': 1, 'user_id': 1}),
+            data,
+            follow=True
+        )
+
+        decoded_response = json.loads(response.content)
+        self.assertTrue(decoded_response.get('success'))
+
+        self.assertGreater(len(mail.outbox), 0, 'Successfully sent mail.')
+
+        sent_mail = mail.outbox[0]
+        self.assertEqual('Welcome to Zemanta!', sent_mail.subject, 'Title must match activation mail')
+        self.assertTrue(self.user.email in sent_mail.recipients())
+
+    @patch('utils.email_helper.send_email_to_new_user') # , mock=Mock(side_effect=User.DoesNotExist))
+    def test_send_mail_failure(self, mock):
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        mock.side_effect = User.DoesNotExist
+
+        data = {}
+        response = self.client.post(
+            reverse('account_reactivation', kwargs={'account_id': 1, 'user_id': 1}),
+            data,
+            follow=True
+        )
+
+        decoded_response = json.loads(response.content)
+        self.assertFalse(decoded_response.get('success'), 'Failed sending message')
