@@ -616,7 +616,6 @@ class AdGroupAdsPlusExport(ExportApiView):
             stat['url'] = content_ad.url
             stat['image_url'] = content_ad.get_image_url()
             stat['uploaded'] = content_ad.created_dt.date()
-            print stat
 
         return sort_results(stats, ['date'])
 
