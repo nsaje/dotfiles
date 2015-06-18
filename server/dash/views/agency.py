@@ -856,7 +856,8 @@ class AccountUsers(api_common.BaseApiView):
             'id': user.id,
             'name': user.get_full_name(),
             'email': user.email,
-            'last_login': user.last_login.date()
+            'last_login': user.last_login.date(),
+            'is_active': user.is_active,
         }
 
     def _add_user_to_groups(self, user):
