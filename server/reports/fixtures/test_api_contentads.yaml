@@ -256,3 +256,25 @@
         created_dt: '2015-02-23T00:00:00'
     model: reports.contentadstats
     pk: 5
+
+
+# RefreshContentAdDemoTest
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'test demo adgroup 1'
+    model: dash.adgroup
+    pk: 3
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'test demo adgroup 2'
+    model: dash.adgroup
+    pk: 4
+

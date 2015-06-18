@@ -1,6 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($scope, $state, $location, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
+oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($scope, $state, $location, $timeout, $window, api, zemCustomTableColsService, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.isIncompletePostclickMetrics = false;
@@ -21,8 +21,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     var userSettings = zemUserSettings.getInstance($scope, 'adGroupSources');
 
     $scope.exportOptions = [
-        {name: 'CSV by day', value: 'csv'},
-        {name: 'Excel by day', value: 'excel'}
+        {name: 'By Day (CSV)', value: 'csv'},
+        {name: 'By Day (Excel)', value: 'excel'}
     ];
 
     $scope.updateSelectedSources = function (sourceId) {
@@ -434,6 +434,9 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             $scope.loadRequestInProgress = false;
         });
     };
+    if ($window.isDemo) {
+        $window.demoActions.refreshAdGroupSourcesTable = getTableData;
+    }
 
     var getDailyStatsMetrics = function () {
         var values = $scope.chartMetricOptions.map(function (option) {

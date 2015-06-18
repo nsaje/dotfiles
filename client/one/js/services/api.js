@@ -83,7 +83,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             };
 
             addFilteredSources(config.params);
-
             $http.get(url, config).
                 success(function (data, status) {
                     deferred.resolve({
@@ -842,7 +841,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
             return deferred.promise;
         };
-        
     }
 
     function CampaignArchive() {
@@ -2034,14 +2032,14 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
     }
 
     function AdGroupContentAdState() {
-        this.save = function(adGroupId, state, contentAdIdsEnabled, contentAdIdsDisabled, selectedAll, selectedBatch) {
+        this.save = function(adGroupId, state, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/contentads/state/';
 
             $http.post(url, {
                     state: state,
-                    content_ad_ids_enabled: contentAdIdsEnabled,
-                    content_ad_ids_disabled: contentAdIdsDisabled,
+                    content_ad_ids_selected: contentAdIdsSelected,
+                    content_ad_ids_not_selected: contentAdIdsNotSelected,
                     select_all: selectedAll,
                     select_batch: selectedBatch
                 }).
@@ -2056,13 +2054,13 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
     }
 
     function AdGroupContentAdArchive() {
-        this.archive = function(adGroupId, contentAdIdsEnabled, contentAdIdsDisabled, selectedAll, selectedBatch) {
+        this.archive = function(adGroupId, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/contentads/archive/';
 
             $http.post(url, {
-                content_ad_ids_enabled: contentAdIdsEnabled,
-                content_ad_ids_disabled: contentAdIdsDisabled,
+                content_ad_ids_selected: contentAdIdsSelected,
+                content_ad_ids_not_selected: contentAdIdsNotSelected,
                 select_all: selectedAll,
                 select_batch: selectedBatch
                 }).
@@ -2218,3 +2216,4 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         adGroupContentAdArchive: new AdGroupContentAdArchive()
     };
 }]);
+

@@ -22,16 +22,11 @@
                 </zem-export>
             </div>
 
-            <div ng-show="hasPermission('zemauth.content_ads_bulk_actions')" class="button-bar-item"> 
-                <select ui-select2="bulkActionsConfig"
-                        class="show-rows"
-                        data-placeholder="Bulk Edit"
-                        ng-model="selectedBulkAction"
-                        ng-change="executeBulkAction()">
+            <div ng-show="hasPermission('zemauth.content_ads_bulk_actions')" class="button-bar-item">
+                <select ui-select2="bulkActionsConfig" class="show-rows" data-placeholder="Bulk Actions" ng-model="selectedBulkAction" ng-change="executeBulkAction()">
                     <option value=""></option>
-                    <option ng-repeat="bulkAction in bulkActions"
-                            value="{{ bulkAction.value }}">{{ bulkAction.name }}</option>
-            </select>
+                    <option ng-repeat="bulkAction in bulkActions" value="{{ bulkAction.value }}">{{ bulkAction.name }}</option>
+                </select>
             </div>
 
             <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories"></zem-custom-table-cols>

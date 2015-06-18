@@ -160,10 +160,10 @@ http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.
 
         self.assertEqual(response.content, expected_content)
 
-    def test_get_all_ad_disabled(self):
+    def test_get_all_ad_selected(self):
         data = {
             'select_all': True,
-            'content_ad_ids_disabled': '1'
+            'content_ad_ids_not_selected': '1'
         }
 
         response = self._get_csv_from_server(data)
@@ -189,10 +189,10 @@ http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.
 
         self.assertEqual(response.content, expected_content)
 
-    def test_get_batch_ad_enabled(self):
+    def test_get_batch_ad_selected(self):
         data = {
             'select_batch': 2,
-            'content_ad_ids_enabled': '1'
+            'content_ad_ids_selected': '1'
         }
 
         response = self._get_csv_from_server(data)
@@ -212,8 +212,8 @@ http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.
         self.assertEqual(len(lines), len(expected_lines))
         self.assertItemsEqual(lines, expected_lines)
 
-    def test_get_ad_enabled(self):
-        data = {'content_ad_ids_enabled': '1,2'}
+    def test_get_ad_selected(self):
+        data = {'content_ad_ids_selected': '1,2'}
 
         response = self._get_csv_from_server(data)
 
@@ -234,7 +234,7 @@ http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.
         )
 
     def test_get_content_ad_ids_validation_error(self):
-        response = self._get_csv_from_server({'content_ad_ids_enabled': '1,a'})
+        response = self._get_csv_from_server({'content_ad_ids_selected': '1,a'})
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
 
@@ -261,7 +261,7 @@ class AdGroupContentAdStateTest(TestCase):
 
         data = {
             'state': constants.ContentAdSourceState.INACTIVE,
-            'content_ad_ids_enabled': [content_ad_id],
+            'content_ad_ids_selected': [content_ad_id],
         }
 
         response = self._post_content_ad_state(ad_group_id, data)
@@ -332,7 +332,7 @@ class AdGroupContentAdStateTest(TestCase):
         self.assertEqual(archived_ad.state, constants.ContentAdSourceState.INACTIVE)
 
         payload = {
-            'content_ad_ids_enabled': [archived_ad.id, restored_ad.id],
+            'content_ad_ids_selected': [archived_ad.id, restored_ad.id],
             'state': constants.ContentAdSourceState.ACTIVE,
         }
 
@@ -365,7 +365,7 @@ class AdGroupContentAdStateTest(TestCase):
     def test_get_content_ad_ids_validation_error(self):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')
-        response = self._post_content_ad_state(1, {'content_ad_ids_enabled': ['1', 'a']})
+        response = self._post_content_ad_state(1, {'content_ad_ids_selected': ['1', 'a']})
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
     def test_add_to_history(self):
@@ -432,7 +432,7 @@ class AdGroupContentAdArchive(TestCase):
         content_ad_id = 2
 
         data = {
-            'content_ad_ids_enabled': [content_ad_id],
+            'content_ad_ids_selected': [content_ad_id],
         }
 
         response = self._post_content_ad_archive(ad_group_id, data)
@@ -553,7 +553,7 @@ class AdGroupContentAdArchive(TestCase):
 
     def test_content_ad_ids_validation_error(self):
         self._login()
-        response = self._post_content_ad_archive(1, {'content_ad_ids_enabled': ['1', 'a']})
+        response = self._post_content_ad_archive(1, {'content_ad_ids_selected': ['1', 'a']})
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
 
@@ -586,7 +586,7 @@ class AdGroupContentAdRestore(TestCase):
         content_ad.save()
 
         data = {
-            'content_ad_ids_enabled': [content_ad_id],
+            'content_ad_ids_selected': [content_ad_id],
         }
 
         response = self._post_content_ad_restore(ad_group_id, data)
@@ -680,7 +680,7 @@ class AdGroupContentAdRestore(TestCase):
 
     def test_content_ad_ids_validation_error(self):
         self._login()
-        response = self._post_content_ad_restore(1, {'content_ad_ids_enabled': ['1', 'a']})
+        response = self._post_content_ad_restore(1, {'content_ad_ids_selected': ['1', 'a']})
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
 

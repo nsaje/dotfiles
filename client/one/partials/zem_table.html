@@ -7,10 +7,10 @@
                 <thead>
                     <tr>
                         <th ng-if="col.shown" ng-class="{'text-right': isNumberColumnType(col.type), 'arrow': col.order, ordered: order === '-' + (col.orderField || col.field), 'ordered-reverse': order === (col.orderField || col.field)}" class="{{ col.extraThCss }}" ng-repeat="col in columns | filter: {checked: true}">
-                            <span ng-show="col.hasPermission && col.showSelectionMenu">
-                                <zem-selection-menu custom-selection-options="col.selectionOptions" select-all-callback="col.selectAllCallback" />
+                            <span ng-if="col.hasPermission && col.selectionMenuConfig">
+                                <zem-selection-menu config="col.selectionMenuConfig" />
                             </span>
-                            <span ng-if="!col.showSelectionMenu">
+                            <span ng-if="!col.selectionMenuConfig">
                                 <zem-internal-feature ng-if="col.internal"></zem-internal-feature>
                                 <span ng-switch="col.order">
                                     <a ng-switch-when='true' href class="col-title order" ng-class="col.nameCssClass" ng-click="callOrderCallback((col.orderField || col.field))">{{ col.name }}</a>

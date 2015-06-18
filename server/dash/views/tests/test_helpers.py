@@ -321,11 +321,11 @@ class GetSelectedContentAdsTest(TestCase):
         ad_group_id = 1
         select_all = True
         select_batch_id = None
-        content_ad_ids_enabled = []
-        content_ad_ids_disabled = []
+        content_ad_ids_selected = []
+        content_ad_ids_not_selected = []
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
+            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
 
         self._assert_content_ads(content_ads, [1, 2, 3])
 
@@ -333,11 +333,11 @@ class GetSelectedContentAdsTest(TestCase):
         ad_group_id = 1
         select_all = True
         select_batch_id = None
-        content_ad_ids_enabled = []
-        content_ad_ids_disabled = [1]
+        content_ad_ids_selected = []
+        content_ad_ids_not_selected = [1]
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
+            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
 
         self._assert_content_ads(content_ads, [2, 3])
 
@@ -345,11 +345,11 @@ class GetSelectedContentAdsTest(TestCase):
         ad_group_id = 1
         select_all = False
         select_batch_id = 1
-        content_ad_ids_enabled = []
-        content_ad_ids_disabled = []
+        content_ad_ids_selected = []
+        content_ad_ids_not_selected = []
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
+            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
 
         self._assert_content_ads(content_ads, [1, 2])
 
@@ -357,11 +357,11 @@ class GetSelectedContentAdsTest(TestCase):
         ad_group_id = 1
         select_all = False
         select_batch_id = 1
-        content_ad_ids_enabled = [3]
-        content_ad_ids_disabled = []
+        content_ad_ids_selected = [3]
+        content_ad_ids_not_selected = []
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
+            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
 
         self._assert_content_ads(content_ads, [1, 2, 3])
 
@@ -369,11 +369,11 @@ class GetSelectedContentAdsTest(TestCase):
         ad_group_id = 1
         select_all = False
         select_batch_id = 1
-        content_ad_ids_enabled = []
-        content_ad_ids_disabled = [1]
+        content_ad_ids_selected = []
+        content_ad_ids_not_selected = [1]
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
+            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
 
         self._assert_content_ads(content_ads, [2])
 
@@ -381,11 +381,11 @@ class GetSelectedContentAdsTest(TestCase):
         ad_group_id = 1
         select_all = False
         select_batch_id = None
-        content_ad_ids_enabled = [1, 3]
-        content_ad_ids_disabled = []
+        content_ad_ids_selected = [1, 3]
+        content_ad_ids_not_selected = []
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
+            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
 
         self._assert_content_ads(content_ads, [1, 3])
 

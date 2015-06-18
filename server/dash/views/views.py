@@ -11,9 +11,9 @@ import pytz
 import os
 import StringIO
 import unicodecsv
+import slugify
 
 from django.db import transaction
-from django.db.models import Q
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -403,6 +403,10 @@ class AdGroupSources(api_common.BaseApiView):
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        if ad_group.is_demo:
+            real_ad_groups = models.DemoAdGroupRealAdGroup.objects.filter(demo_ad_group=ad_group)
+            if real_ad_groups:
+                ad_group = real_ad_groups[0].real_ad_group
 
         ad_group_sources = ad_group.sources.all().order_by('name')
 
@@ -697,7 +701,7 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
 class AdGroupAdsPlusUploadBatches(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_batches_get')
     def get(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.ad_group_ads_plus_upload_batches_get'):
+        if not request.user.has_perm('zemauth.content_ads_bulk_actions'):
             raise exc.ForbiddenError(message='Not allowed')
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -710,7 +714,7 @@ class AdGroupAdsPlusUploadBatches(api_common.BaseApiView):
             batches = models.UploadBatch.objects.filter(
                 id__in=tuple(batch_ids),
                 status=constants.UploadBatchStatus.DONE,
-            )
+            ).order_by('-created_dt')
             response_data = []
             for batch in batches:
                 response_data.append({
@@ -736,11 +740,11 @@ class AdGroupContentAdArchive(api_common.BaseApiView):
         select_all = data.get('select_all', False)
         select_batch_id = data.get('select_batch')
 
-        content_ad_ids_enabled = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_enabled')
-        content_ad_ids_disabled = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_disabled')
+        content_ad_ids_selected = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_selected')
+        content_ad_ids_not_selected = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_not_selected')
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
+            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
 
         errors = helpers.get_content_ad_archive_restore_notifications(content_ads).get('archive')
         if errors:
@@ -771,11 +775,11 @@ class AdGroupContentAdRestore(api_common.BaseApiView):
         select_all = data.get('select_all', False)
         select_batch_id = data.get('select_batch')
 
-        content_ad_ids_enabled = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_enabled')
-        content_ad_ids_disabled = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_disabled')
+        content_ad_ids_selected = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_selected')
+        content_ad_ids_not_selected = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_not_selected')
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
+            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
 
         errors = helpers.get_content_ad_archive_restore_notifications(content_ads).get('restore')
         if errors:
@@ -809,11 +813,11 @@ class AdGroupContentAdState(api_common.BaseApiView):
         select_all = data.get('select_all', False)
         select_batch_id = data.get('select_batch')
 
-        content_ad_ids_enabled = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_enabled')
-        content_ad_ids_disabled = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_disabled')
+        content_ad_ids_selected = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_selected')
+        content_ad_ids_not_selected = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_not_selected')
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
+            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
 
         content_ads = content_ads.exclude_archived()
 
@@ -872,16 +876,16 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.get_content_ad_csv'):
             raise exc.ForbiddenError(message='Not allowed')
 
-        helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         select_all = request.GET.get('select_all', False)
         select_batch_id = request.GET.get('select_batch')
 
-        content_ad_ids_enabled = helpers.parse_get_request_content_ad_ids(request.GET, 'content_ad_ids_enabled')
-        content_ad_ids_disabled = helpers.parse_get_request_content_ad_ids(request.GET, 'content_ad_ids_disabled')
+        content_ad_ids_selected = helpers.parse_get_request_content_ad_ids(request.GET, 'content_ad_ids_selected')
+        content_ad_ids_not_selected = helpers.parse_get_request_content_ad_ids(request.GET, 'content_ad_ids_not_selected')
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_enabled, content_ad_ids_disabled)
+            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
 
         content_ad_dicts = []
         for content_ad in content_ads:
@@ -891,7 +895,11 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
                 'image_url': content_ad.get_image_url(),
             })
 
-        filename = 'content_ads'
+        filename = '{}_{}_{}_content_ads'.format(
+            slugify.slugify(ad_group.campaign.account.name),
+            slugify.slugify(ad_group.name),
+            datetime.datetime.now().strftime('%Y-%m-%d')
+        )
         content = self._create_content_ad_csv(content_ad_dicts)
 
         return self.create_csv_response(filename, content=content)

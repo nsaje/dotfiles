@@ -33,11 +33,13 @@ module.exports = function (grunt) {
                     'dist/build/config.js',
                     'one/js/constants.js',
                     'one/js/app.js',
+                    'one/js/constants/*.js',
                     'one/js/services/**/*.js',
                     'one/js/directives/**/*.js',
                     'one/js/services/**/*.js',
                     'one/js/controllers/**/*.js',
-                    'one/js/filters/**/*.js'
+                    'one/js/filters/**/*.js',
+                    'one/js/demo.js'
                 ],
                 dest: 'dist/one/zemanta-one.js'
             },
@@ -227,7 +229,7 @@ module.exports = function (grunt) {
             dev: {
                 constants: {
                     config: {
-                        static_url: 'http://localhost:9999',
+                        static_url: 'http://192.168.100.50:9999',
                         debug: true
                     }
                 } 

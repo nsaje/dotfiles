@@ -7,10 +7,17 @@ SECRET_KEY = '=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l'
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'onedb',
+        'NAME': 'circle_test',
+        'USER': 'ubuntu',
+        'PASSWORD': ''
+    },
+	'e2e': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'circle_test',
         'USER': 'ubuntu',
         'PASSWORD': ''
     }
@@ -45,7 +52,7 @@ GOOGLE_OAUTH_CLIENT_ID = ''
 GOOGLE_OAUTH_CLIENT_SECRET = ''
 
 # Client static files
-CLIENT_STATIC_URL = ''
+CLIENT_STATIC_URL = 'http://0.0.0.0:9999'
 
 # Eins host
 EINS_HOST = ''
@@ -84,8 +91,11 @@ FILE_STORAGE_DIR = ''
 QUERY_AGGREGATE_REPORTS=False
 
 # email of the demo user
-DEMO_USER_EMAIL = ''
-DEMO_USER_PASSWORD = ''
+DEMO_USER_EMAIL = 'test.account@zemanta.si'
+DEMO_USER_PASSWORD = 'zemantadsp'
+DEMO_USERS = (
+    'demo2@zemanta.si',
+)
 
 # cache settings
 CACHES = {
