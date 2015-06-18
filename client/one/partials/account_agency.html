@@ -33,13 +33,13 @@
                         <div class="col-xs-2">
                             <div class="loader" ng-show="user.requestInProgress"></div>
 
-							<span class="dropdown" dropdown ng-show="!user.requestInProgress">
+							<div class="dropdown" dropdown ng-show="!user.requestInProgress" aria-haspopup="true">
 							<a href class="btn btn-default dropdown-toggle" dropdown-toggle>Edit&nbsp;<span class="caret"></a>
-							<ul class="dropdown-menu" role="menu">
+							<ul class="dropdown-menu dropdown-menu-blue" role="menu">
 								<li><a tabindex="-1" ng-click="userActionChange('resend', user.id)" href="#">Resend Activation Mail</a></li>
 								<li><a tabindex="-1" ng-click="userActionChange('remove', user.id)" href="#">Remove</a></li>
 							</ul>
-							</span>
+							</div>
                         </div>
                     </div>
                 </div>
