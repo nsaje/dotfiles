@@ -506,7 +506,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compil
         url += '&content_ad_ids_not_selected=' + contentAdIdsNotSelected.join(',');
 
         if ($scope.selectedAll) {
-            url += '&select_all=' + ($scope.selectedAll);
+            url += '&select_all=' + $scope.selectedAll;
         }
 
         if ($scope.selectedBatchId) {
@@ -570,6 +570,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compil
         if ($scope.pagination.currentPage && $scope.pagination.size) {
             $location.search('page', $scope.pagination.currentPage);
             $scope.setAdGroupData('page', $scope.pagination.currentPage);
+
             getTableData();
             $scope.getAdGroupState();
         }
@@ -660,7 +661,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compil
         }
         getTableData();
         getDailyStats();
-
     }, true);
 
     $scope.triggerSync = function() {
@@ -751,6 +751,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compil
             });
             return;
         }
+
         var userSettings = zemUserSettings.getInstance($scope, 'adGroupContentAdsPlus');
         var page = parseInt($location.search().page || '1');
 
@@ -761,11 +762,13 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compil
             $scope.pagination.currentPage = page;
             $location.search('page', page);
         }
+
         getTableData();
         getDailyStats();
         $scope.getAdGroupState();
         initColumns();
         initUploadBatches();
+
         pollSyncStatus();
         setDisabledExportOptions();
 

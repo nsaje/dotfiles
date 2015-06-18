@@ -377,9 +377,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 success(function (data, status) {
                     var resource;
                     if (data && data.data) {
-
                         data.data.rows = data.data.rows.map(convertFromApi);
-
                         data.data.notifications = convertNotifications(data.data.notifications);
                         data.data.lastChange = data.data.last_change;
                         deferred.resolve(data.data);
@@ -388,6 +386,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 error(function(data, status, headers, config) {
                     deferred.reject(data);
                 });
+
             return deferred.promise;
         };
 
