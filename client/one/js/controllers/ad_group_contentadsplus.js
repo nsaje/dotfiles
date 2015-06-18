@@ -28,7 +28,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compil
     $scope.selectedContentAdsStatus = {};
 
     $scope.notification = null;
-
     $scope.closeAlert = function(index) {
         $scope.notification = null;
     };
@@ -182,6 +181,21 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compil
                 row.ad_selected = false;
             }
         });
+    };
+
+    $scope.isAnythingSelected = function() {
+        if ($scope.selectedAll || $scope.selectedBatchId) {
+            return true;
+        }
+
+        for (var contentAdId in $scope.selectedContentAdsStatus) {
+            if ($scope.selectedContentAdsStatus.hasOwnProperty(contentAdId)
+                    && $scope.selectedContentAdsStatus[contentAdId]) {
+                return true;
+            }
+        }
+
+        return false;
     };
 
     var updateContentAdStates = function (state, updateAll) {
@@ -435,22 +449,15 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compil
         return modalInstance;
     };
 
-    var shouldUpdateAll = function(contentAdIdsSelected) {
-        return !contentAdIdsSelected.length && !$scope.selectedAll && !$scope.selectedBatchId;
-    };
-
     var bulkUpdateContentAds = function (contentAdIdsSelected, contentAdIdsNotSelected, state) {
-        // update all content ads if none selected
-        var updateAll = shouldUpdateAll(contentAdIdsSelected);
-
-        updateContentAdStates(state, updateAll);
+        updateContentAdStates(state, $scope.selectedAll);
 
         api.adGroupContentAdState.save(
             $state.params.id,
             state,
             contentAdIdsSelected,
             contentAdIdsNotSelected,
-            updateAll || $scope.selectedAll,
+            $scope.selectedAll,
             $scope.selectedBatchId
         ).then(function () {
             $scope.pollTableUpdates();
@@ -458,26 +465,20 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compil
     };
 
     $scope.bulkArchiveContentAds = function (contentAdIdsSelected, contentAdIdsNotSelected) {
-        // archive all of none selected
-        var updateAll = shouldUpdateAll(contentAdIdsSelected);
-
         api.adGroupContentAdArchive.archive(
             $state.params.id,
             contentAdIdsSelected,
             contentAdIdsNotSelected,
-            updateAll || $scope.selectedAll,
+            $scope.selectedAll,
             $scope.selectedBatchId).then($scope.updateTableAfterArchiving);
     };
 
     $scope.bulkRestoreContentAds = function (contentAdIdsSelected, contentAdIdsNotSelected) {
-        // restore all of none selected
-        var updateAll = shouldUpdateAll(contentAdIdsSelected);
-
         api.adGroupContentAdArchive.restore(
             $state.params.id,
             contentAdIdsSelected,
             contentAdIdsNotSelected,
-            updateAll || $scope.selectedAll,
+            $scope.selectedAll,
             $scope.selectedBatchId).then($scope.updateTableAfterArchiving);
     };
 
@@ -499,15 +500,13 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compil
     };
 
     var downloadContentAds = function (contentAdIdsSelected, contentAdIdsNotSelected) {
-        // update all content ads if none selected
-        var updateAll = shouldUpdateAll(contentAdIdsSelected);
         var url = '/api/ad_groups/' + $state.params.id + '/contentads/csv/?';
 
         url += 'content_ad_ids_selected=' + contentAdIdsSelected.join(',');
         url += '&content_ad_ids_not_selected=' + contentAdIdsNotSelected.join(',');
 
         if ($scope.selectedAll) {
-            url += '&select_all=' + (updateAll || $scope.selectedAll);
+            url += '&select_all=' + ($scope.selectedAll);
         }
 
         if ($scope.selectedBatchId) {
@@ -518,6 +517,11 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compil
     };
 
     $scope.executeBulkAction = function () {
+
+        if (!$scope.isAnythingSelected()) {
+            return;
+        }
+
         var contentAdIdsSelected = [],
             contentAdIdsNotSelected = [];
 

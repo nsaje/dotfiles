@@ -92,16 +92,8 @@ describe('AdGroupAdsPlusCtrl', function() {
     });
 
     describe('archiveContentAds', function(done) {
-        it('calls api to archive all when none selected', function() {
-            $scope.selectedBulkAction = 'archive';
-
-            spyOn(api.adGroupContentAdArchive, 'archive').and.callThrough();
-
-            $scope.executeBulkAction();
-
-            expect(api.adGroupContentAdArchive.archive).toHaveBeenCalledWith(
-                $state.params.id, [], [], true, null
-            );
+        beforeEach(function() {
+            $scope.selectedAll = true;
         });
         it('does nothing on failure', function() {
             $scope.selectedBulkAction = 'archive';
@@ -144,17 +136,10 @@ describe('AdGroupAdsPlusCtrl', function() {
     });
 
     describe('restoreContentAds', function(done) {
-        it('calls api to archive all when none selected', function() {
-            $scope.selectedBulkAction = 'restore';
-
-            spyOn(api.adGroupContentAdArchive, 'restore').and.callThrough();
-
-            $scope.executeBulkAction();
-
-            expect(api.adGroupContentAdArchive.restore).toHaveBeenCalledWith(
-                $state.params.id, [], [], true, null
-            );
+        beforeEach(function() {
+            $scope.selectedAll = true;
         });
+
         it('does nothing on failure', function() {
             $scope.selectedBulkAction = 'restore';
 
@@ -210,6 +195,29 @@ describe('AdGroupAdsPlusCtrl', function() {
 
             $scope.selectedAdsChanged({id: 2}, false);
             expect($scope.selectionMenuConfig.partialSelection).toBe(false);
+        });
+        it('acknowledges selection changed when something is selected', function() {
+            $scope.selectedContentAdsStatus = {1: true, 2: false};
+            $scope.selectedAll = false;
+            $scope.selectedBatchId = false;
+
+            expect($scope.isAnythingSelected()).toBe(true);
+
+            $scope.selectedContentAdsStatus[1] = false;
+
+            expect($scope.isAnythingSelected()).toBe(false);
+
+            $scope.selectedAll = true;
+
+            expect($scope.isAnythingSelected()).toBe(true);
+
+            $scope.selectedBatchId = true;
+
+            expect($scope.isAnythingSelected()).toBe(true);
+
+            $scope.selectedAll = false;
+
+            expect($scope.isAnythingSelected()).toBe(true);
         });
     });
 
@@ -446,5 +454,81 @@ describe('AdGroupAdsPlusCtrl', function() {
                 '_blank'
             );
         });
+
+        it('archives all selected content ads if selectedBulkAction == \'archive\'', function() {
+            $scope.rows = [
+                {id: 1, ad_selected: true, batch_id: 1, archived: false},
+                {id: 2, ad_selected: true, batch_id: 1, archived: false},
+                {id: 3, ad_selected: false, batch_id: 2, archived: false}
+            ];
+
+            $scope.selectedContentAdsStatus[1] = true;
+            $scope.selectedContentAdsStatus[2] = true;
+            $scope.selectedContentAdsStatus[3] = false;
+
+            $scope.selectedBulkAction = 'archive';
+
+            spyOn(api.adGroupContentAdArchive, 'archive').and.callThrough();
+
+            $scope.executeBulkAction();
+
+            expect(api.adGroupContentAdArchive.archive).toHaveBeenCalledWith(
+                $state.params.id,
+                ['1', '2'],
+                ['3'],
+                false,
+                null
+            );
+        });
+
+        it('restores all selected content ads if selectedBulkAction == \'restore\'', function() {
+            $scope.rows = [
+                {id: 1, ad_selected: true, batch_id: 1, archived: false},
+                {id: 2, ad_selected: true, batch_id: 1, archived: false},
+                {id: 3, ad_selected: false, batch_id: 2, archived: false}
+            ];
+
+            $scope.selectedContentAdsStatus[1] = true;
+            $scope.selectedContentAdsStatus[2] = true;
+            $scope.selectedContentAdsStatus[3] = false;
+
+            $scope.selectedBulkAction = 'restore';
+
+            spyOn(api.adGroupContentAdArchive, 'restore').and.callThrough();
+
+            $scope.executeBulkAction();
+
+            expect(api.adGroupContentAdArchive.restore).toHaveBeenCalledWith(
+                $state.params.id,
+                ['1', '2'],
+                ['3'],
+                false,
+                null
+            );
+        });
+
+        it ('does not execute a bulk action when no content ads are selected', function() {
+            $scope.rows = [
+                {id: 1, ad_selected: false, batch_id: 1, archived: false},
+                {id: 2, ad_selected: false, batch_id: 1, archived: false},
+                {id: 3, ad_selected: false, batch_id: 2, archived: false}
+            ];
+
+            $scope.selectedContentAdsStatus[1] = false;
+            $scope.selectedContentAdsStatus[2] = false;
+            $scope.selectedContentAdsStatus[3] = false;
+
+            $scope.selectedAll = false;
+            $scope.selectedBatchId = false;
+
+            $scope.selectedBulkAction = 'restore';
+
+            spyOn(api.adGroupContentAdArchive, 'restore');
+
+            $scope.executeBulkAction();
+
+            expect(api.adGroupContentAdArchive.restore).not.toHaveBeenCalled();
+        });
+
     });
 });
