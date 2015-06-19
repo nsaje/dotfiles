@@ -24,11 +24,11 @@ class AdGroupAdsPlusTableTest(TestCase):
     def setUp(self):
         password = 'secret'
         self.user = User.objects.get(pk=1)
+        self.client.login(username=self.user.email, password=password)
 
         self.maxDiff = None
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
-            self.client.login(username=self.user.email, password=password)
 
     def test_get(self, mock_query):
         date = datetime.date(2015, 2, 22)
@@ -323,11 +323,11 @@ class AdGroupAdsPlusTableUpdatesTest(TestCase):
     def setUp(self):
         password = 'secret'
         self.user = User.objects.get(pk=1)
-
+        self.client.login(username=self.user.email, password=password)
+        
         self.maxDiff = None
         with patch('django.utils.timezone.now') as mock_now:
-            mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
-            self.client.login(username=self.user.email, password=password)
+            mock_now.return_value = datetime.datetime(2015, 7, 5, 13, 22, 20)
 
     def test_get(self):
         ad_group = models.AdGroup.objects.get(pk=1)
