@@ -230,57 +230,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         orderField: 'batch_name',
         initialOrder: 'asc'
     }, {
-        name: 'Spend',
-        field: 'cost',
-        checked: true,
-        type: 'currency',
-        shown: true,
-        help: "The amount spent per content ad.",
-        totalRow: true,
-        order: true,
-        initialOrder: 'desc'
-    }, {
-        name: 'Avg. CPC',
-        field: 'cpc',
-        checked: true,
-        type: 'currency',
-        shown: true,
-        fractionSize: 3,
-        help: "The average CPC for each content ad.",
-        totalRow: true,
-        order: true,
-        initialOrder: 'desc'
-    }, {
-        name: 'Clicks',
-        field: 'clicks',
-        checked: true,
-        type: 'number',
-        shown: true,
-        help: 'The number of times a content ad has been clicked.',
-        totalRow: true,
-        order: true,
-        initialOrder: 'desc'
-    }, {
-        name: 'Impressions',
-        field: 'impressions',
-        checked: true,
-        type: 'number',
-        shown: true,
-        help: 'The number of times a content ad has been displayed.',
-        totalRow: true,
-        order: true,
-        initialOrder: 'desc'
-    }, {
-        name: 'CTR',
-        field: 'ctr',
-        checked: true,
-        type: 'percent',
-        shown: true,
-        help: 'The number of clicks divided by the number of impressions.',
-        totalRow: true,
-        order: true,
-        initialOrder: 'desc'
-    }, {
         name: 'Display URL',
         field: 'display_url',
         checked: false,
@@ -332,6 +281,57 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         order: true,
         orderField: 'call_to_action',
         initialOrder: 'asc'
+    }, {
+        name: 'Spend',
+        field: 'cost',
+        checked: true,
+        type: 'currency',
+        shown: true,
+        help: "The amount spent per content ad.",
+        totalRow: true,
+        order: true,
+        initialOrder: 'desc'
+    }, {
+        name: 'Avg. CPC',
+        field: 'cpc',
+        checked: true,
+        type: 'currency',
+        shown: true,
+        fractionSize: 3,
+        help: "The average CPC for each content ad.",
+        totalRow: true,
+        order: true,
+        initialOrder: 'desc'
+    }, {
+        name: 'Clicks',
+        field: 'clicks',
+        checked: true,
+        type: 'number',
+        shown: true,
+        help: 'The number of times a content ad has been clicked.',
+        totalRow: true,
+        order: true,
+        initialOrder: 'desc'
+    }, {
+        name: 'Impressions',
+        field: 'impressions',
+        checked: true,
+        type: 'number',
+        shown: true,
+        help: 'The number of times a content ad has been displayed.',
+        totalRow: true,
+        order: true,
+        initialOrder: 'desc'
+    }, {
+        name: 'CTR',
+        field: 'ctr',
+        checked: true,
+        type: 'percent',
+        shown: true,
+        help: 'The number of clicks divided by the number of impressions.',
+        totalRow: true,
+        order: true,
+        initialOrder: 'desc'
     }];
 
     $scope.columnCategories = [{
