@@ -731,6 +731,21 @@ div[datepicker] {
     &.select2-drop-above.select2-dropdown-open .select2-choice {
         .border-radius(0 0 2px 2px);
     }
+
+    &.select2-container-disabled {
+        .select2-choice {
+            pointer-events: all;
+            cursor: auto;
+            box-shadow: none;
+            opacity: 0.3;
+            background-color: #fff;
+            border-color: #ccc;
+
+            .select2-chosen {
+                color: #d9d9d9;
+            }
+        }
+    }
 }
 
 .select2-container,
