@@ -1,0 +1,10 @@
+<select
+    ui-select2="dropdownConfig"
+    class="show-rows"
+    data-placeholder="{{ placeholder }}" 
+    ng-model="selectedAction"
+    ng-change="callOnSelect()"
+    ng-disabled="checkDisabled()">
+        <option value=""></option>
+        <option ng-repeat="option in dropdownOptions | filter: {hasPermission: true}" value="{{ option.value }}">{{ option.name }}</option>
+</select>

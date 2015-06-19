@@ -19,7 +19,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compil
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
 
-    $scope.selectedBulkAction = null;
     $scope.selectionMenuConfig = {};
 
     // selection triplet - all, a batch, or specific content ads can be selected
@@ -74,46 +73,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compil
         hasPermission: $scope.hasPermission('zemauth.archive_restore_entity'),
         internal: $scope.isPermissionInternal('zemauth.archive_restore_entity')
     }];
-
-    var formatBulkActionsResult = function(object) {
-        var bulkAction;
-        $scope.bulkActions.forEach(function(bk) {
-            if (bk.value == object.id) {
-                bulkAction = bk;
-            }
-        });
-
-        var notification = bulkAction.notification;
-        var element = angular.element(document.createElement('span'));;
-        if (notification) {
-            element.attr('popover', notification);
-            element.attr('popover-trigger', 'mouseenter');
-            element.attr('popover-placement', 'right');
-            element.attr('popover-append-to-body', 'true');
-
-            // hide immediately without animation - solves a glitch when
-            // the element is selected
-            element.attr('popover-animation', 'false');
-            element.on('$destroy', function() {
-                element.trigger('mouseleave');
-            });
-        }
-
-        element.text(object.text);
-
-        if (bulkAction.internal !== undefined) {
-            var internal = $compile(angular.element(document.createElement('zem-internal-feature')))($scope);
-            element.append(internal);
-        }
-
-        return $compile(element)($scope);
-    };
-
-    $scope.bulkActionsConfig = {
-        minimumResultsForSearch: -1,
-        dropdownCssClass: 'show-rows',
-        formatResult: formatBulkActionsResult
-    };
 
     $scope.selectedAdsChanged = function(row, checked) {
         $scope.selectedContentAdsStatus[row.id] = checked;
@@ -499,7 +458,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compil
         $window.open(url, '_blank');
     };
 
-    $scope.executeBulkAction = function () {
+    $scope.executeBulkAction = function (action) {
 
         if (!$scope.isAnythingSelected()) {
             return;
@@ -516,7 +475,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compil
             }
         });
 
-        switch ($scope.selectedBulkAction) {
+        switch (action) {
             case 'pause':
                 bulkUpdateContentAds(
                     contentAdIdsSelected,
@@ -551,8 +510,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compil
                     $scope.selectedBatchId).then($scope.updateTableAfterArchiving);
                 break;
         }
-
-        $scope.selectedBulkAction = null;
     };
 
     $scope.loadPage = function(page) {
