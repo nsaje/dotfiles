@@ -283,7 +283,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     }, {
         name: 'Display URL',
         field: 'display_url',
-        checked: true,
+        checked: false,
         extraTdCss: 'no-wrap',
         type: 'text',
         shown: true,
@@ -296,7 +296,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     }, {
         name: 'Brand Name',
         field: 'brand_name',
-        checked: true,
+        checked: false,
         extraTdCss: 'no-wrap',
         type: 'text',
         shown: true,
@@ -309,7 +309,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     }, {
         name: 'Description',
         field: 'description',
-        checked: true,
+        checked: false,
         extraTdCss: 'no-wrap',
         type: 'text',
         shown: true,
@@ -322,7 +322,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     }, {
         name: 'Call to action',
         field: 'call_to_action',
-        checked: true,
+        checked: false,
         extraTdCss: 'no-wrap',
         type: 'text',
         shown: true,
