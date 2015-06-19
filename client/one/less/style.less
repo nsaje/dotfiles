@@ -735,7 +735,7 @@ div[datepicker] {
     &.select2-container-disabled {
         .select2-choice {
             pointer-events: all;
-            cursor: auto;
+            cursor: default;
             box-shadow: none;
             opacity: 0.3;
             background-color: #fff;
@@ -743,6 +743,10 @@ div[datepicker] {
 
             .select2-chosen {
                 color: #d9d9d9;
+            }
+
+            .select2-arrow {
+                background-color: #fff;
             }
         }
     }
