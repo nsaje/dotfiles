@@ -25,13 +25,21 @@
                     </div>
                     <div ng-if="!user.removed">
                         <div class="col-xs-6 user-name-col">
-    <p class="control-label"><b>{{user.name}} </b>({{user.email}})</p>
-                            <span ng-show="user.saved && user.emailSent" class="success">An introductory email was sent to this user.</span>
-                            <span ng-show="user.saved && !user.emailSent" class="success">This user can now access this account.</span>
+    						<p class="control-label"><b>{{user.name}} </b>({{user.email}})</p>
+                            <span ng-show="user.saved && !user.emailSent && !user.emailResent" class="success">This user can now access this account. Since this is an existing user, no activation email was sent.</span>
+                            <span ng-show="user.saved && user.emailSent && !user.emailResent" class="success">An introductory email was sent to this user.</span>
+                            <span ng-show="user.saved && user.emailResent" class="success">New activation email sent.</span>
                         </div>
                         <div class="col-xs-2">
                             <div class="loader" ng-show="user.requestInProgress"></div>
-                            <button ng-show="!user.requestInProgress" type="button" class="btn btn-default" ng-click="removeUser(user.id)">Remove</button>
+
+							<div class="dropdown" dropdown ng-show="!user.requestInProgress" aria-haspopup="true">
+							<a href class="btn btn-default dropdown-toggle" dropdown-toggle>Edit&nbsp;<span class="caret"></a>
+							<ul class="dropdown-menu dropdown-menu-blue" role="menu">
+								<li><a ng-show="!user.is_active" tabindex="-1" ng-click="userActionChange('resend', user.id)" href="#">Resend Activation Mail</a></li>
+								<li><a tabindex="-1" ng-click="userActionChange('remove', user.id)" href="#">Remove</a></li>
+							</ul>
+							</div>
                         </div>
                     </div>
                 </div>

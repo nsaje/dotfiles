@@ -390,6 +390,9 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=Non
     logger.info('_init_set_ad_group_source_settings started: ad_group_source.id: %s, settings: %s',
                 ad_group_source.id, str(conf))
 
+    if ad_group_source.source.deprecated:
+        return
+
     if ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
         logger.info('_init_set_ad_group_source_settings: {} ad_group_source on ad_group {} pending - action not created'.format(
             dash.constants.SourceType.get_text(dash.constants.SourceType.GRAVITY),

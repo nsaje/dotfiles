@@ -2,7 +2,8 @@
 "use strict";
 
 oneApp.factory("zemDemoCacheService", function() {
-    var cache = {},
+    var FIRST_ID = 1000000,
+        cache = {},
         ids = {};
     return {
         set: function (key, val) {
@@ -16,7 +17,7 @@ oneApp.factory("zemDemoCacheService", function() {
             cache[key][field] = val;
         },
         generateId: function (type) {
-            if (!ids[type]) { ids[type] = 10000; }
+            if (!ids[type]) { ids[type] = FIRST_ID; }
             return ids[type]++;
         }
     };

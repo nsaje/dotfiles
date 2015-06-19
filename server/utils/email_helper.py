@@ -106,7 +106,7 @@ Zemanta Client Services
         link_url=_generate_password_reset_url(user, request)
     )
 
-    _send_email_to_user(user, request, 'Welcome to Zemanta!', body)
+    return _send_email_to_user(user, request, 'Welcome to Zemanta!', body)
 
 
 def _generate_password_reset_url(user, request):

@@ -844,6 +844,22 @@ class ActionLogApiCancelExpiredTestCase(TestCase):
 
         self.assertTrue(manual_action.exists())
 
+    def test_init_ad_group_source_settings_deprecated(self):
+        ad_group_source = dashmodels.AdGroupSource.objects.get(id=3)
+
+        ad_group_source.source.deprecated = True
+        ad_group_source.source.save()
+
+        request = HttpRequest()
+        request.user = User.objects.create_user('test@example.com')
+
+        action = models.ActionLog.objects.filter(ad_group_source=ad_group_source)
+
+        api._init_set_ad_group_source_settings(
+            ad_group_source, {'daily_budget_cc': 100000}, request, order=None)
+
+        self.assertFalse(action.exists())
+
 
 class SendDelayedActionsTestCase(TestCase):
 

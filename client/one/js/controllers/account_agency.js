@@ -15,6 +15,21 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
     $scope.addUserData = {};
     $scope.addUserErrors = null;
 
+    $scope.userActionChange = function (action, userId) {
+        if (action === '') {
+            return;
+        }
+
+        var usr = getUser(userId);
+        if (action === 'remove') {
+            $scope.removeUser(userId);
+        } else if (action === 'resend') {
+            $scope.resendActivationMail(userId);
+        }
+
+        usr.action = null;
+    }
+
     $scope.getSettings = function (discarded) {
         $scope.saved = null;
         $scope.discarded = null;
@@ -61,7 +76,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
             $scope.requestInProgress = false;
         });
     };
-
+    
     $scope.refreshPage = function () {
         api.navData.list().then(function (accounts) {
             $scope.refreshNavData(accounts);
@@ -101,6 +116,10 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
         api.accountUsers.list($state.params.id).then(
             function (data) {
                 $scope.users = data.users;
+                $scope.users.forEach(function (user, index) {
+                    user.action = null;
+                    user.emailResent = false;
+                });
             }
         );
     };
@@ -122,6 +141,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                 user.saved = true;
                 user.removed = false;
                 user.emailSent = data.created;
+                user.action = null;
                 $scope.addUserErrors = null;
                 $scope.addUserData = {};
                 $scope.getSettings(); // updates history
@@ -149,6 +169,25 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
             }
         ).finally(function () {
             user.requestInProgress = false;
+        });
+    };
+
+    $scope.resendActivationMail = function (userId) {
+        var user = getUser(userId);
+        user.requestInProgress = true;
+
+        api.userActivation.post($state.params.id, userId).then(
+            function (userId) {
+                user.saved = true;
+                user.emailResent = true;
+            },
+            function (data) {
+                user.saved = false;
+                user.emailResent = false;
+            }
+        ).finally(function () {
+            user.requestInProgress = false;
+            $scope.getSettings(); // updates history
         });
     };
 
