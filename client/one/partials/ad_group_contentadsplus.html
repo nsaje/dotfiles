@@ -24,7 +24,7 @@
 
             <div ng-show="hasPermission('zemauth.content_ads_bulk_actions')" class="button-bar-item">
                 <select ui-select2="bulkActionsConfig" class="show-rows" data-placeholder="Bulk Actions" ng-model="selectedBulkAction" ng-change="executeBulkAction()"
-                        ng-disabled="isAnythingSelected">
+                        ng-disabled="!isAnythingSelected()">
                     <option value=""></option>
                     <option ng-repeat="bulkAction in bulkActions" value="{{ bulkAction.value }}">{{ bulkAction.name }}</option>
                 </select>
