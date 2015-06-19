@@ -313,7 +313,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         extraTdCss: 'no-wrap',
         type: 'text',
         shown: true,
-        help: 'Description of the ad group.',
+        help: 'Description of a content ad.',
         totalRow: false,
         titleField: 'description',
         order: true,
