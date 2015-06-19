@@ -204,11 +204,7 @@ http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.
                           'http://testurl.com,Test Article with no content_ad_sources 3,/123456789/200x300.jpg',
                           'http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.jpg']
 
-        lines = response.content.split('\r\n')
-        self.assertEqual(lines[5], '')
-
-        # disregard the empty line
-        lines = lines[:-1]
+        lines = response.content.splitlines()
 
         self.assertEqual(len(lines), len(expected_lines))
         self.assertItemsEqual(lines, expected_lines)
@@ -421,13 +417,11 @@ class AdGroupContentAdArchive(TestCase):
             follow=True
         )
 
-    def _login(self):
+    def setUp(self):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')
 
     def test_post(self):
-        self._login()
-
         ad_group_id = 1
         content_ad_id = 2
 
@@ -450,8 +444,6 @@ class AdGroupContentAdArchive(TestCase):
             }})
 
     def test_archive_set_all(self):
-        self._login()
-
         ad_group_id = 2
         content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
 
@@ -474,8 +466,6 @@ class AdGroupContentAdArchive(TestCase):
                          } for ad in content_ads})
 
     def test_archive_set_batch(self):
-        self._login()
-
         ad_group_id = 2
         batch_id = 2
         content_ads = models.ContentAd.objects.filter(batch__id=batch_id)
@@ -500,8 +490,6 @@ class AdGroupContentAdArchive(TestCase):
                          } for ad in content_ads})
 
     def test_archive_pause_active_before_archiving(self):
-        self._login()
-
         ad_group_id = 1
         content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
         self.assertGreater(len(content_ads), 0)
@@ -526,7 +514,6 @@ class AdGroupContentAdArchive(TestCase):
         self.assertEqual(response_dict['data']['archived_count'], archived_count)
 
     def test_content_ad_ids_validation_error(self):
-        self._login()
         response = self._post_content_ad_archive(1, {'content_ad_ids_selected': ['1', 'a']})
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
@@ -545,13 +532,11 @@ class AdGroupContentAdRestore(TestCase):
             follow=True
         )
 
-    def _login(self):
+    def setUp(self):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')
 
     def test_post(self):
-        self._login()
-
         ad_group_id = 1
         content_ad_id = 2
 
@@ -574,8 +559,6 @@ class AdGroupContentAdRestore(TestCase):
         self.assertEqual(response_dict['data']['rows'], {'2': {'archived': False, 'status_setting': content_ad.state}})
 
     def test_restore_set_all(self):
-        self._login()
-
         ad_group_id = 2
         content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
         for ad in content_ads:
@@ -601,8 +584,6 @@ class AdGroupContentAdRestore(TestCase):
                          } for ad in content_ads})
 
     def test_archive_set_batch(self):
-        self._login()
-
         ad_group_id = 2
         batch_id = 2
         content_ads = models.ContentAd.objects.filter(batch__id=batch_id)
@@ -630,8 +611,6 @@ class AdGroupContentAdRestore(TestCase):
                          } for ad in content_ads})
 
     def test_restore_success_when_all_restored(self):
-        self._login()
-
         ad_group_id = 2
         content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
 
@@ -651,7 +630,6 @@ class AdGroupContentAdRestore(TestCase):
         self.assertTrue(response_dict['success'])
 
     def test_content_ad_ids_validation_error(self):
-        self._login()
         response = self._post_content_ad_restore(1, {'content_ad_ids_selected': ['1', 'a']})
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 

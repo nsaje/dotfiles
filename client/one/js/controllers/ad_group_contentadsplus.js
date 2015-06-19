@@ -27,9 +27,9 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compil
     $scope.selectedBatchId = null;
     $scope.selectedContentAdsStatus = {};
 
-    $scope.notification = null;
-    $scope.closeAlert = function(index) {
-        $scope.notification = null;
+    $scope.archivingResults = null;
+    $scope.closeArchivingResults = function() {
+        $scope.archivingResults = null;
     };
 
     $scope.pagination = {
@@ -50,35 +50,30 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compil
         value: 'day-excel'
     }];
 
-    $scope.bulkActions = [];
-
-    var setBulkActions = function() {
-        $scope.bulkActions.push({
-            name: 'Pause',
-            value: 'pause'
-        }, {
-            name: 'Resume',
-            value: 'resume'
-        }, {
-            name: 'Download',
-            value: 'download'
-        });
-
-        var archivePermission = 'zemauth.archive_restore_entity';
-        if ($scope.hasPermission(archivePermission)) {
-            $scope.bulkActions.push({
-                name: 'Archive',
-                value: 'archive',
-                internal: $scope.isPermissionInternal(archivePermission),
-                notification: 'All selected Content Ads will be paused and archived.'
-            }, {
-                name: 'Restore',
-                value: 'restore',
-                internal: $scope.isPermissionInternal(archivePermission)
-            });
-
-        }
-    };
+    $scope.bulkActions = [{
+        name: 'Pause',
+        value: 'pause',
+        hasPermission: $scope.hasPermission('zemauth.content_ads_bulk_actions')
+    }, {
+        name: 'Resume',
+        value: 'resume',
+        hasPermission: $scope.hasPermission('zemauth.content_ads_bulk_actions')
+    }, {
+        name: 'Download',
+        value: 'download',
+        hasPermission: $scope.hasPermission('zemauth.content_ads_bulk_actions')
+    }, {
+        name: 'Archive',
+        value: 'archive',
+        hasPermission: $scope.hasPermission('zemauth.archive_restore_entity'),
+        internal: $scope.isPermissionInternal('zemauth.archive_restore_entity'),
+        notification: 'All selected Content Ads will be paused and archived.'
+    }, {
+        name: 'Restore',
+        value: 'restore',
+        hasPermission: $scope.hasPermission('zemauth.archive_restore_entity'),
+        internal: $scope.isPermissionInternal('zemauth.archive_restore_entity')
+    }];
 
     var formatBulkActionsResult = function(object) {
         var bulkAction;
@@ -464,30 +459,18 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compil
         });
     };
 
-    $scope.bulkArchiveContentAds = function (contentAdIdsSelected, contentAdIdsNotSelected) {
-        api.adGroupContentAdArchive.archive(
-            $state.params.id,
-            contentAdIdsSelected,
-            contentAdIdsNotSelected,
-            $scope.selectedAll,
-            $scope.selectedBatchId).then($scope.updateTableAfterArchiving);
-    };
-
-    $scope.bulkRestoreContentAds = function (contentAdIdsSelected, contentAdIdsNotSelected) {
-        api.adGroupContentAdArchive.restore(
-            $state.params.id,
-            contentAdIdsSelected,
-            contentAdIdsNotSelected,
-            $scope.selectedAll,
-            $scope.selectedBatchId).then($scope.updateTableAfterArchiving);
-    };
-
     $scope.updateTableAfterArchiving = function(data) {
         // update rows immediately, refresh whole table after
         updateTableData(data.data.rows, {});
 
-        if (data.data.notification) {
-            $scope.notification = data.data.notification;
+        if (!isNaN(data.data.archived_count) && !isNaN(data.data.active_count)) {
+            $scope.archivingResults = {
+                archived_count: data.data.archived_count,
+                active_count: data.data.active_count
+            };
+        }
+        else {
+            $scope.archivingResults = null;
         }
 
         if (!zemFilterService.getShowArchived()) {
@@ -552,10 +535,20 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compil
                 downloadContentAds(contentAdIdsSelected, contentAdIdsNotSelected);
                 break;
             case 'archive':
-                $scope.bulkArchiveContentAds(contentAdIdsSelected, contentAdIdsNotSelected);
+                api.adGroupContentAdArchive.archive(
+                    $state.params.id,
+                    contentAdIdsSelected,
+                    contentAdIdsNotSelected,
+                    $scope.selectedAll,
+                    $scope.selectedBatchId).then($scope.updateTableAfterArchiving);
                 break;
             case 'restore':
-                $scope.bulkRestoreContentAds(contentAdIdsSelected, contentAdIdsNotSelected);
+                api.adGroupContentAdArchive.restore(
+                    $state.params.id,
+                    contentAdIdsSelected,
+                    contentAdIdsNotSelected,
+                    $scope.selectedAll,
+                    $scope.selectedBatchId).then($scope.updateTableAfterArchiving);
                 break;
         }
 
@@ -771,8 +764,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compil
 
         pollSyncStatus();
         setDisabledExportOptions();
-
-        setBulkActions();
     };
 
     $scope.pollTableUpdates = function () {

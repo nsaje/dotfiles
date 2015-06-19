@@ -763,8 +763,6 @@ class AdGroupContentAdArchive(api_common.BaseApiView):
                 content_ad.save()
 
         response['archived_count'] = len(content_ads)
-        response['notification'] = "%d Content Ads were archived, %d of them were active at the time." \
-                                   % (response['archived_count'], response['active_count'])
         response['rows'] = {
             content_ad.id: {
                 'archived': content_ad.archived,

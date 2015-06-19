@@ -173,12 +173,12 @@ urlpatterns += patterns(
         name='ad_group_content_ad_csv'
     ),
     url(
-        r'api/ad_groups/(?P<ad_group_id>\d+)/contentads/archive/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/archive/$',
         login_required(dash.views.views.AdGroupContentAdArchive.as_view()),
         name='ad_group_content_ad_archive'
     ),
     url(
-        r'api/ad_groups/(?P<ad_group_id>\d+)/contentads/restore/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/restore/$',
         login_required(dash.views.views.AdGroupContentAdRestore.as_view()),
         name='ad_group_content_ad_restore'
     ),

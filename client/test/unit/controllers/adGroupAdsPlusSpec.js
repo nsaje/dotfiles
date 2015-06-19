@@ -40,36 +40,34 @@ describe('AdGroupAdsPlusCtrl', function() {
         $scope.adGroup = {contentAdsTabWithCMS: false};
 
         var mockApiFunc = function() {
-            return function() {
-                return {
-                    then: function() {
-                        return {
-                            finally: function() {}
-                        };
-                    }
-                };
+            return {
+                then: function() {
+                    return {
+                        finally: function() {}
+                    };
+                }
             };
         };
         api = {
             adGroupContentAdArchive: {
-                archive: mockApiFunc(),
-                restore: mockApiFunc()
+                archive: mockApiFunc,
+                restore: mockApiFunc
             },
             adGroupAdsPlusTable: {
-                get: mockApiFunc(),
-                getUpdates: mockApiFunc()
+                get: mockApiFunc,
+                getUpdates: mockApiFunc
             },
             dailyStats: {
-                listContentAdStats: mockApiFunc()
+                listContentAdStats: mockApiFunc
             },
             adGroupAdsPlusUploadBatches: {
-                list: mockApiFunc()
+                list: mockApiFunc
             },
             adGroupAdsPlusExportAllowed: {
-                get: mockApiFunc()
+                get: mockApiFunc
             },
             adGroupContentAdState: {
-                save: mockApiFunc()
+                save: mockApiFunc
             }
         };
 

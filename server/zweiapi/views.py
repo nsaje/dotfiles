@@ -102,26 +102,31 @@ def _prepare_report_rows(ad_group, source, data_rows, filter_by_content_ad_sourc
     stats_rows = []
     for article, data_row in zip(articles, data_rows):
 
-        content_ad_source = content_ad_sources.get(data_row['id']) if 'id' in data_row else None
+        content_ad_source = None
+        data_row_id = data_row.get('id')
+        if data_row_id is not None:
+            content_ad_source = content_ad_sources.get(data_row_id)
 
-        if content_ad_source is None or not content_ad_source.content_ad.archived:
-            r = {
-                'article': article,
-                'impressions': data_row['impressions'],
-                'clicks': data_row['clicks'],
-                'data_cost_cc': data_row.get('data_cost_cc') or 0
-            }
+        if content_ad_source and content_ad_source.content_ad.archived:
+            continue
 
-            # TODO: why is this different for ArticleStats and for ContentAdStats?
-            if data_row.get('cost_cc') is None:
-                r['cost_cc'] = data_row['cpc_cc'] * data_row['clicks']
-            else:
-                r['cost_cc'] = data_row['cost_cc']
+        r = {
+            'article': article,
+            'impressions': data_row['impressions'],
+            'clicks': data_row['clicks'],
+            'data_cost_cc': data_row.get('data_cost_cc') or 0
+        }
 
-            if filter_by_content_ad_sources:
-                r['content_ad_source'] = content_ad_source
+        # TODO: why is this different for ArticleStats and for ContentAdStats?
+        if data_row.get('cost_cc') is None:
+            r['cost_cc'] = data_row['cpc_cc'] * data_row['clicks']
+        else:
+            r['cost_cc'] = data_row['cost_cc']
 
-            stats_rows.append(r)
+        if filter_by_content_ad_sources:
+            r['content_ad_source'] = content_ad_source
+
+        stats_rows.append(r)
 
     return stats_rows
 

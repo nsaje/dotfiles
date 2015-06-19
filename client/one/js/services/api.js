@@ -2053,16 +2053,15 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
     }
 
     function AdGroupContentAdArchive() {
-        this.archive = function(adGroupId, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
+        function postToApi(url, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/archive/';
 
             $http.post(url, {
                 content_ad_ids_selected: contentAdIdsSelected,
                 content_ad_ids_not_selected: contentAdIdsNotSelected,
                 select_all: selectedAll,
                 select_batch: selectedBatch
-                }).
+            }).
                 success(function(data) {
                     deferred.resolve(data);
                 }).
@@ -2071,28 +2070,18 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 });
 
             return deferred.promise;
+        };
 
+        this.archive = function(adGroupId, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/archive/';
+
+            return postToApi(url, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch);
         };
 
         this.restore = function(adGroupId, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
-            var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/contentads/restore/';
 
-            $http.post(url, {
-                content_ad_ids_selected: contentAdIdsSelected,
-                content_ad_ids_not_selected: contentAdIdsNotSelected,
-                select_all: selectedAll,
-                select_batch: selectedBatch
-                }).
-                success(function(data) {
-                    deferred.resolve(data);
-                }).
-                error(function(data) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-
+            return postToApi(url, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch);
         };
     };
 
@@ -2115,7 +2104,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             return deferred.promise;
         };
     }
-    
+
     function AvailableSources() {
         this.list = function () {
             var deferred = $q.defer();

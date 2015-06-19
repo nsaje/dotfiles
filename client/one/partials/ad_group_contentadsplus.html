@@ -26,7 +26,7 @@
                 <select ui-select2="bulkActionsConfig" class="show-rows" data-placeholder="Bulk Actions" ng-model="selectedBulkAction" ng-change="executeBulkAction()"
                         ng-disabled="!isAnythingSelected()">
                     <option value=""></option>
-                    <option ng-repeat="bulkAction in bulkActions" value="{{ bulkAction.value }}">{{ bulkAction.name }}</option>
+                    <option ng-repeat="bulkAction in bulkActions | filter: {hasPermission: true}" value="{{ bulkAction.value }}">{{ bulkAction.name }}</option>
                 </select>
             </div>
 
@@ -47,8 +47,8 @@
             If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
         </alert>
 
-        <alert type="info" class="alert-sync" ng-show="notification" close="closeAlert()">
-            {{ notification }}
+        <alert type="info" class="alert-sync" ng-show="archivingResults" close="closeArchivingResults()">
+            {{ archivingResults.archived_count }} Content Ads were archived and {{ archivingResults.active_count === 0 ? "none" : archivingResults.active_count }} of them were active at the time.
         </alert>
 
         <zem-table class="ads-plus-table" zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderTableData(order)" zem-table-notifications="notifications"></zem-table>
