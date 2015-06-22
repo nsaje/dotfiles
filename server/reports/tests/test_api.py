@@ -923,6 +923,7 @@ class PrepareReportRowsTestCase(test.TestCase):
         self.assertItemsEqual(report_rows, [{
             'article': article,
             'content_ad_source': content_ad_source,
+            'id': 's1',
             'clicks': 2,
             'data_cost_cc': 0,
             'impressions': 50,
