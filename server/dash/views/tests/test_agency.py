@@ -118,11 +118,11 @@ class AdGroupAgencyTest(TestCase):
     def setUp(self):
         password = 'secret'
         self.user = User.objects.get(pk=1)
+        self.client.login(username=self.user.email, password=password)
 
         self.maxDiff = None
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
-            self.client.login(username=self.user.email, password=password)
 
     @patch('dash.views.agency.actionlog_api.is_waiting_for_set_actions')
     def test_get(self, mock_is_waiting):
@@ -297,9 +297,10 @@ class UserActivationTest(TestCase):
 
     def setUp(self):
         self.user = User.objects.get(pk=1)
+        self.client.login(username=self.user.email, password='secret')
+
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
-            self.client.login(username=self.user.email, password='secret')
 
     def test_send_mail(self):
         request = HttpRequest()

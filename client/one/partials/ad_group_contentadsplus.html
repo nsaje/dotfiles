@@ -22,13 +22,12 @@
                 </zem-export>
             </div>
 
-            <div ng-show="hasPermission('zemauth.content_ads_bulk_actions')" class="button-bar-item"> 
-            <select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'show-rows'}" class="show-rows" data-placeholder="Bulk Actions" ng-model="selectedBulkAction" ng-change="executeBulkAction()">
-                <option value=""></option>
-                <option value="pause">Pause</option>
-                <option value="resume">Resume</option>
-                <option value="download">Download</option>
-            </select>
+        <div ng-show="hasPermission('zemauth.content_ads_bulk_actions')" class="button-bar-item">
+            <zem-bulk-actions-dropdown
+                   zem-placeholder="Bulk Actions"
+                   zem-on-select="executeBulkAction(action)"
+                   zem-check-disabled="!isAnythingSelected()"
+                   zem-dropdown-options="bulkActions"></zem-bulk-actions-dropdown>
             </div>
 
             <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories"></zem-custom-table-cols>
@@ -46,6 +45,10 @@
         <alert type="info" class="alert-sync" ng-show="!isSyncRecent">
             We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">The last successful sync took place {{ lastSyncDate.fromNow() }}.</span>
             If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
+        </alert>
+
+        <alert type="info" class="alert-sync" ng-show="archivingResults" close="closeArchivingResults()">
+            {{ archivingResults.archived_count }} Content Ads were archived and {{ archivingResults.active_count === 0 ? "none" : archivingResults.active_count }} of them were active at the time.
         </alert>
 
         <zem-table class="ads-plus-table" zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderTableData(order)" zem-table-notifications="notifications"></zem-table>

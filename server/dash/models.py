@@ -1234,6 +1234,8 @@ class ContentAd(models.Model):
         choices=constants.ContentAdSourceState.get_choices()
     )
 
+    archived = models.BooleanField(default=False)
+
     objects = QuerySetManager()
 
     def get_image_url(self, width=None, height=None):
@@ -1291,6 +1293,12 @@ class ContentAd(models.Model):
                 'content_ad').distinct('content_ad_id').values_list('content_ad_id', flat=True)
 
             return self.filter(id__in=content_ad_ids)
+
+        def exclude_archived(self):
+            return self.filter(archived=False)
+
+        def only_archived(self):
+            return self.filter(archived=True)
 
 
 class ContentAdSource(models.Model):

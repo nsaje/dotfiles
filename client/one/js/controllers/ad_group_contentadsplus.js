@@ -1,4 +1,4 @@
-/* globals oneApp, options */
+/* globals oneApp, options, angular */
 oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal', '$location', 'api', 'zemUserSettings', 'zemCustomTableColsService', '$timeout', 'zemFilterService', function($scope, $window, $state, $modal, $location, api, zemUserSettings, zemCustomTableColsService, $timeout, zemFilterService) {
     $scope.order = '-upload_time';
     $scope.loadRequestInProgress = false;
@@ -19,13 +19,17 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
 
-    $scope.selectedBulkAction = null;
     $scope.selectionMenuConfig = {};
 
     // selection triplet - all, a batch, or specific content ads can be selected
     $scope.selectedAll = false;
     $scope.selectedBatchId = null;
     $scope.selectedContentAdsStatus = {};
+
+    $scope.archivingResults = null;
+    $scope.closeArchivingResults = function() {
+        $scope.archivingResults = null;
+    };
 
     $scope.pagination = {
         currentPage: 1
@@ -43,6 +47,31 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     }, {
         name: 'By Day (Excel)',
         value: 'day-excel'
+    }];
+
+    $scope.bulkActions = [{
+        name: 'Pause',
+        value: 'pause',
+        hasPermission: $scope.hasPermission('zemauth.content_ads_bulk_actions')
+    }, {
+        name: 'Resume',
+        value: 'resume',
+        hasPermission: $scope.hasPermission('zemauth.content_ads_bulk_actions')
+    }, {
+        name: 'Download',
+        value: 'download',
+        hasPermission: $scope.hasPermission('zemauth.content_ads_bulk_actions')
+    }, {
+        name: 'Archive',
+        value: 'archive',
+        hasPermission: $scope.hasPermission('zemauth.archive_restore_entity'),
+        internal: $scope.isPermissionInternal('zemauth.archive_restore_entity'),
+        notification: 'All selected Content Ads will be paused and archived.'
+    }, {
+        name: 'Restore',
+        value: 'restore',
+        hasPermission: $scope.hasPermission('zemauth.archive_restore_entity'),
+        internal: $scope.isPermissionInternal('zemauth.archive_restore_entity')
     }];
 
     $scope.selectedAdsChanged = function(row, checked) {
@@ -108,6 +137,21 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         });
     };
 
+    $scope.isAnythingSelected = function() {
+        if ($scope.selectedAll || $scope.selectedBatchId) {
+            return true;
+        }
+
+        for (var contentAdId in $scope.selectedContentAdsStatus) {
+            if ($scope.selectedContentAdsStatus.hasOwnProperty(contentAdId)
+                    && $scope.selectedContentAdsStatus[contentAdId]) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
     var updateContentAdStates = function (state, updateAll) {
         $scope.rows.forEach(function (row) {
             if (updateAll || row.ad_selected) {
@@ -163,12 +207,14 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         getDisabledMessage: function(row) {
             return 'This ad must be managed manually.';
         },
-        disabled: false
+        disabled: false,
+        archivedField: 'archived'
     }, {
         name: 'Status',
         field: 'submission_status',
         checked: false,
         type: 'submissionStatus',
+        archivedField: 'archived',
         shown: true,
         help: 'Current submission status.',
         totalRow: false,
@@ -358,33 +404,51 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
     var bulkUpdateContentAds = function (contentAdIdsSelected, contentAdIdsNotSelected, state) {
-        // update all content ads if none selected
-        var updateAll = !contentAdIdsSelected.length && !$scope.selectedAll && !$scope.selectedBatchId;
-
-        updateContentAdStates(state, updateAll);
+        updateContentAdStates(state, $scope.selectedAll);
 
         api.adGroupContentAdState.save(
             $state.params.id,
             state,
             contentAdIdsSelected,
             contentAdIdsNotSelected,
-            updateAll || $scope.selectedAll,
+            $scope.selectedAll,
             $scope.selectedBatchId
         ).then(function () {
             $scope.pollTableUpdates();
         });
     };
 
-    var downloadContentAds = function (contentAdIdsSelected, contentAdIdsNotSelected) {
-        // update all content ads if none selected
-        var updateAll = !contentAdIdsSelected.length && !$scope.selectedAll && !$scope.selectedBatchId;
-        var url = '/api/ad_groups/' + $state.params.id + '/contentads/csv/?'
+    $scope.updateTableAfterArchiving = function(data) {
+        // update rows immediately, refresh whole table after
+        updateTableData(data.data.rows, {});
 
-        url += 'content_ad_ids_selected=' + contentAdIdsSelected.join(',')
+        if (!isNaN(data.data.archived_count) && !isNaN(data.data.active_count)) {
+            $scope.archivingResults = {
+                archived_count: data.data.archived_count,
+                active_count: data.data.active_count
+            };
+        }
+        else {
+            $scope.archivingResults = null;
+        }
+
+        if (!zemFilterService.getShowArchived()) {
+            $scope.selectedAll = false;
+            $scope.selectedBatchId = null;
+            $scope.selectedContentAdsStatus = {};
+            getTableData();
+            getDailyStats();
+        }
+    };
+
+    var downloadContentAds = function (contentAdIdsSelected, contentAdIdsNotSelected) {
+        var url = '/api/ad_groups/' + $state.params.id + '/contentads/csv/?';
+
+        url += 'content_ad_ids_selected=' + contentAdIdsSelected.join(',');
         url += '&content_ad_ids_not_selected=' + contentAdIdsNotSelected.join(',');
 
         if ($scope.selectedAll) {
-            url += '&select_all=' + (updateAll || $scope.selectedAll);
+            url += '&select_all=' + $scope.selectedAll;
         }
 
         if ($scope.selectedBatchId) {
@@ -394,7 +458,12 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         $window.open(url, '_blank');
     };
 
-    $scope.executeBulkAction = function () {
+    $scope.executeBulkAction = function (action) {
+
+        if (!$scope.isAnythingSelected()) {
+            return;
+        }
+
         var contentAdIdsSelected = [],
             contentAdIdsNotSelected = [];
 
@@ -406,7 +475,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             }
         });
 
-        switch ($scope.selectedBulkAction) {
+        switch (action) {
             case 'pause':
                 bulkUpdateContentAds(
                     contentAdIdsSelected,
@@ -424,9 +493,23 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             case 'download':
                 downloadContentAds(contentAdIdsSelected, contentAdIdsNotSelected);
                 break;
+            case 'archive':
+                api.adGroupContentAdArchive.archive(
+                    $state.params.id,
+                    contentAdIdsSelected,
+                    contentAdIdsNotSelected,
+                    $scope.selectedAll,
+                    $scope.selectedBatchId).then($scope.updateTableAfterArchiving);
+                break;
+            case 'restore':
+                api.adGroupContentAdArchive.restore(
+                    $state.params.id,
+                    contentAdIdsSelected,
+                    contentAdIdsNotSelected,
+                    $scope.selectedAll,
+                    $scope.selectedBatchId).then($scope.updateTableAfterArchiving);
+                break;
         }
-
-        $scope.selectedBulkAction = null;
     };
 
     $scope.loadPage = function(page) {
@@ -518,7 +601,14 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         if (angular.equals(newValue, oldValue)) {
             return;
         }
+        getTableData();
+        getDailyStats();
+    }, true);
 
+    $scope.$watch(zemFilterService.getShowArchived, function(newValue, oldValue) {
+        if (angular.equals(newValue, oldValue)) {
+            return;
+        }
         getTableData();
         getDailyStats();
     }, true);

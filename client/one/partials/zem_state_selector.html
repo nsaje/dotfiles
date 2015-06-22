@@ -1,5 +1,6 @@
 <div class="dropdown zem-state-selector" dropdown is-open="isOpen">
-    <button class="btn btn-default dropdown-toggle" dropdown-toggle>
+    <span ng-if="archived">Archived</span>
+    <button ng-if="!archived" class="btn btn-default dropdown-toggle" dropdown-toggle>
         <div ng-if="active" class="active-circle-icon"></div>
         <div ng-if="!active" class="pause-icon"></div>
         <div class="drop-arrow"></div>
