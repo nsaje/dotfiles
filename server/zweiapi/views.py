@@ -125,6 +125,7 @@ def _prepare_report_rows(ad_group, source, data_rows, filter_by_content_ad_sourc
 
         if filter_by_content_ad_sources:
             r['content_ad_source'] = content_ad_source
+            r['id'] = data_row['id']
 
         stats_rows.append(r)
 
@@ -132,7 +133,8 @@ def _prepare_report_rows(ad_group, source, data_rows, filter_by_content_ad_sourc
 
 
 def _remove_content_ad_sources_from_report_rows(report_rows):
-    return [{k: v for k, v in row.items() if k != 'content_ad_source'} for row in report_rows]
+    ignored_keys = ('content_ad_source', 'id')
+    return [{k: v for k, v in row.items() if k not in ignored_keys} for row in report_rows]
 
 
 def _process_zwei_response(action, data, request):
