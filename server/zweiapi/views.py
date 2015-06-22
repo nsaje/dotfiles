@@ -125,7 +125,7 @@ def _prepare_report_rows(ad_group, source, data_rows, filter_by_content_ad_sourc
 
         if filter_by_content_ad_sources:
             r['content_ad_source'] = content_ad_source
-            r['id'] = data_row['id']
+            r['id'] = data_row_id
 
         stats_rows.append(r)
 
