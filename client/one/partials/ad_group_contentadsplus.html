@@ -26,6 +26,7 @@
             <zem-bulk-actions-dropdown
                    zem-placeholder="Bulk Actions"
                    zem-on-select="executeBulkAction(action)"
+                   title="{{ isAnythingSelected() ? '' : 'At least one Content Ad has to be selected before using Bulk Actions.'}}"
                    zem-check-disabled="!isAnythingSelected()"
                    zem-dropdown-options="bulkActions"></zem-bulk-actions-dropdown>
             </div>
