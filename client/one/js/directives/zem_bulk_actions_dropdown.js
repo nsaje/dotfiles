@@ -6,6 +6,7 @@ oneApp.directive('zemBulkActionsDropdown', function() {
         restrict: 'E',
         scope: {
             placeholder: '@zemPlaceholder',
+            disabledTitle: '@zemDisabledTitle',
             onSelect: '&zemOnSelect',
             checkDisabled: '&zemCheckDisabled',
             dropdownOptions: '=zemDropdownOptions'
