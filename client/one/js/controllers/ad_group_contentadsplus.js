@@ -1,5 +1,5 @@
 /* globals oneApp, options, angular */
-oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$compile', '$modal', '$location', 'api', 'zemUserSettings', 'zemCustomTableColsService', '$timeout', 'zemFilterService', function($scope, $window, $state, $compile, $modal, $location, api, zemUserSettings, zemCustomTableColsService, $timeout, zemFilterService) {
+oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal', '$location', 'api', 'zemUserSettings', 'zemCustomTableColsService', '$timeout', 'zemFilterService', function($scope, $window, $state, $modal, $location, api, zemUserSettings, zemCustomTableColsService, $timeout, zemFilterService) {
     $scope.order = '-upload_time';
     $scope.loadRequestInProgress = false;
     $scope.selectedColumnsCount = 0;
