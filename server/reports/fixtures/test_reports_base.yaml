@@ -146,3 +146,97 @@
     source_campaign_key: '["fake22"]'
   model: dash.adgroupsource
   pk: 4
+
+# test uploadbatch
+
+-   fields:
+        name: 'batch 1'
+        created_dt: '2015-02-23T00:00:00'
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
+    model: dash.uploadbatch
+    pk: 1
+
+# test contentad
+
+-   fields:
+        image_id: '123456789'
+        image_width: 200
+        image_height: 300
+        archived: False
+        batch: 1
+        url: 'http://testurl.com'
+        title: 'Test Article 1'
+        ad_group: 1
+        created_dt: '2015-02-21T00:00:00'
+        state: 1
+    model: dash.contentad
+    pk: 1
+
+-   fields:
+        image_id: '123456789'
+        image_width: 200
+        image_height: 300
+        batch: 1
+        archived: True
+        url: 'http://testurl.com'
+        title: 'Test Article 2'
+        ad_group: 1
+        created_dt: '2015-02-21T00:00:01'
+        state: 2
+    model: dash.contentad
+    pk: 2
+
+-   fields:
+        image_id: '123456789'
+        image_width: 200
+        image_height: 300
+        archived: True
+        batch: 1
+        url: 'http://testurl.com'
+        title: 'Test Article 3'
+        created_dt: '2015-02-23T00:00:00'
+        ad_group_id: 1
+        state: 2
+    model: dash.contentad
+    pk: 3
+
+# test contentadsource
+
+-   fields:
+        source: 1
+        content_ad: 1
+        submission_status: 1
+        state: 1
+        source_state: NULL
+        source_content_ad_id: 's1'
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 1
+
+-   fields:
+        source: 1
+        content_ad: 2
+        submission_status: 2
+        state: 2
+        source_state: 2
+        source_content_ad_id: 's2'
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 2
+
+-   fields:
+        source: 2
+        content_ad: 3
+        submission_status: 2
+        state: 2
+        source_state: 2
+        source_content_ad_id: 's3'
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 3

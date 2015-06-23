@@ -38,7 +38,7 @@
                                     <img ng-if="!row[col.field].square">
                                 </span>
                                 <span ng-switch-when="submissionStatus">
-                                    <zem-submission-status status-items="row[col.field]" />
+                                    <zem-submission-status status-items="row[col.field]" archived="row[col.archivedField]" />
                                 </span>
                                 <span ng-switch-when="currency">
                                     <span class="non-editable-currency-field" ng-if="!isFieldEditable(row, col.field)" ng-class="{'currency-3': col.fractionSize === 3}">
@@ -142,7 +142,8 @@
                                         value="row[col.field]"
                                         enabled-value="col.enabledValue"
                                         paused-value="col.pausedValue"
-                                        disabled-message="col.getDisabledMessage(row)">
+                                        disabled-message="col.getDisabledMessage(row)"
+                                        archived="row[col.archivedField]">
                                     </zem-state-selector>
                                 </span>
                             </span>

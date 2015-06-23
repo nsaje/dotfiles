@@ -16,7 +16,7 @@ from reports import exc as repsexc
 from utils.test_helper import dicts_match_for_keys, sequence_of_dicts_match_for_keys
 from utils.url_helper import clean_url
 
-from zweiapi.views import _prepare_report_rows
+from zweiapi.views import _prepare_report_rows, _remove_content_ad_sources_from_report_rows
 
 import reports.update
 import utils.pagination
@@ -552,7 +552,7 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date1,
             ad_group=ags1.ad_group,
             source=ags1.source,
-            rows=_prepare_report_rows(ags1.ad_group, rows_ags1_date1)
+            rows=_prepare_report_rows(ags1.ad_group, ags1.source, rows_ags1_date1)
         )
 
         for row in rows_ags1_date1:
@@ -571,7 +571,7 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date1,
             ad_group=ags2.ad_group,
             source=ags2.source,
-            rows=_prepare_report_rows(ags2.ad_group, rows_ags2_date1)
+            rows=_prepare_report_rows(ags2.ad_group, ags1.source, rows_ags2_date1)
         )
         for row in rows_ags2_date1:
             article = dashmodels.Article.objects.get(title=row['title'])
@@ -589,13 +589,13 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date2,
             ad_group=ags1.ad_group,
             source=ags1.source,
-            rows=_prepare_report_rows(ags1.ad_group, rows_ags1_date2)
+            rows=_prepare_report_rows(ags1.ad_group, ags1.source, rows_ags1_date2)
         )
         reports.update.stats_update_adgroup_source_traffic(
             datetime=date2,
             ad_group=ags2.ad_group,
             source=ags2.source,
-            rows=_prepare_report_rows(ags2.ad_group, rows_ags2_date2)
+            rows=_prepare_report_rows(ags2.ad_group, ags1.source, rows_ags2_date2)
         )
 
         articles_ags1 = dashmodels.Article.objects.order_by('title')
@@ -675,7 +675,7 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date,
             ad_group=ags.ad_group,
             source=ags.source,
-            rows=_prepare_report_rows(ags.ad_group, rows)
+            rows=_prepare_report_rows(ags.ad_group, ags.source, rows)
         )
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
         self.assertEqual(len(stats), 2)
@@ -696,7 +696,7 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date,
             ad_group=ags.ad_group,
             source=ags.source,
-            rows=_prepare_report_rows(ags.ad_group, rows_new_title)
+            rows=_prepare_report_rows(ags.ad_group, ags.source, rows_new_title)
         )
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
         self.assertEqual(len(stats), 4)
@@ -732,7 +732,7 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date,
             ad_group=ags.ad_group,
             source=ags.source,
-            rows=_prepare_report_rows(ags.ad_group, rows_new_url)
+            rows=_prepare_report_rows(ags.ad_group, ags.source, rows_new_url)
         )
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
         self.assertEqual(len(stats), 6)
@@ -811,12 +811,11 @@ class UpsertReportsTestCase(test.TestCase):
 
         rows = rows_duplicate + rows_other
 
-        
         reports.update.stats_update_adgroup_source_traffic(
             datetime=date1,
             ad_group=ags1.ad_group,
             source=ags1.source,
-            rows=_prepare_report_rows(ags1.ad_group, rows)
+            rows=_prepare_report_rows(ags1.ad_group, ags1.source, rows)
         )
 
         article = dashmodels.Article.objects.get(title=title, url=url)
@@ -885,3 +884,96 @@ class ArticleReconciliationTestCase(test.TestCase):
 
         same_articles = dashapi.reconcile_articles(ad_group, [{'url': raw_url, 'title': title}])
         self.assertEqual(articles[0], same_articles[0])
+
+
+class PrepareReportRowsTestCase(test.TestCase):
+    fixtures = ['test_reports_base.yaml', 'test_article_stats.yaml']
+
+    def test_filter_by_content_ad_sources(self):
+        data_rows = [
+            {
+                'title': 'Test Article 1',
+                'url': 'http://test1.com',
+                'impressions': 50,
+                'clicks': 2,
+                'cost_cc': 2800,
+                'cpc_cc': None,
+                'id': 's1'
+            },
+            {
+                # matching content_ad is archived
+                'title': 'Test Article 2',
+                'url': 'http://test2.com',
+                'impressions': 40,
+                'clicks': 1,
+                'cost_cc': 900,
+                'cpc_cc': None,
+                'id': 's2'
+            },
+        ]
+
+        ad_group = dashmodels.AdGroup.objects.get(pk=1)
+        source = dashmodels.Source.objects.get(pk=1)
+
+        report_rows = _prepare_report_rows(ad_group, source, data_rows, True)
+
+        article = dashmodels.Article.objects.get(pk=1)
+        content_ad_source = dashmodels.ContentAdSource.objects.get(pk=1)
+
+        self.assertItemsEqual(report_rows, [{
+            'article': article,
+            'content_ad_source': content_ad_source,
+            'id': 's1',
+            'clicks': 2,
+            'data_cost_cc': 0,
+            'impressions': 50,
+            'cost_cc': 2800, }])
+
+        article_rows = _remove_content_ad_sources_from_report_rows(report_rows)
+        self.assertEqual(article_rows, [{
+            'article': article,
+            'clicks': 2,
+            'data_cost_cc': 0,
+            'impressions': 50,
+            'cost_cc': 2800, }])
+
+    def test_skip_content_ad_sources(self):
+        data_rows = [
+            {
+                'title': 'Test Article 1',
+                'url': 'http://test1.com',
+                'impressions': 50,
+                'clicks': 2,
+                'cost_cc': 2800,
+                'cpc_cc': None,
+                'id': 's1'
+            },
+            {
+                'title': 'Test Article 2',
+                'url': 'http://test2.com',
+                'impressions': 40,
+                'clicks': 1,
+                'cost_cc': 900,
+                'cpc_cc': None,
+                'id': 's2'
+            },
+        ]
+
+        ad_group = dashmodels.AdGroup.objects.get(pk=1)
+        source = dashmodels.Source.objects.get(pk=1)
+
+        report_rows = _prepare_report_rows(ad_group, source, data_rows)
+
+        self.assertItemsEqual(report_rows, [{
+            'article': dashmodels.Article.objects.get(pk=1),
+            'clicks': 2,
+            'data_cost_cc': 0,
+            'impressions': 50,
+            'cost_cc': 2800,
+        }, {
+            'article': dashmodels.Article.objects.get(pk=2),
+            'clicks': 1,
+            'data_cost_cc': 0,
+            'impressions': 40,
+            'cost_cc': 900,
+        }])

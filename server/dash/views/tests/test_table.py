@@ -24,11 +24,11 @@ class AdGroupAdsPlusTableTest(TestCase):
     def setUp(self):
         password = 'secret'
         self.user = User.objects.get(pk=1)
+        self.client.login(username=self.user.email, password=password)
 
         self.maxDiff = None
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
-            self.client.login(username=self.user.email, password=password)
 
     def test_get(self, mock_query):
         date = datetime.date(2015, 2, 22)
@@ -113,6 +113,7 @@ class AdGroupAdsPlusTableTest(TestCase):
 
         self.assertItemsEqual(result['data']['rows'], [{
             'batch_name': 'batch 1',
+            'archived': False,
             'batch_id': 1,
             'display_url': 'example.com',
             'brand_name': 'Example',
@@ -143,6 +144,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             'upload_time': '2015-02-22T19:00:00',
             'url': 'http://testurl.com'
         }, {
+            'archived': False,
             'status_setting': 2,
             'upload_time': '2015-02-22T19:00:00',
             'ctr': None,
@@ -321,11 +323,11 @@ class AdGroupAdsPlusTableUpdatesTest(TestCase):
     def setUp(self):
         password = 'secret'
         self.user = User.objects.get(pk=1)
-
+        self.client.login(username=self.user.email, password=password)
+        
         self.maxDiff = None
         with patch('django.utils.timezone.now') as mock_now:
-            mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
-            self.client.login(username=self.user.email, password=password)
+            mock_now.return_value = datetime.datetime(2015, 7, 5, 13, 22, 20)
 
     def test_get(self):
         ad_group = models.AdGroup.objects.get(pk=1)

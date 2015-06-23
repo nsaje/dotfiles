@@ -6,7 +6,6 @@ from django.db import transaction
 import reports.api
 import reports.refresh
 import reports.models
-import dash.models
 
 from utils import statsd_helper
 
@@ -246,13 +245,8 @@ def update_content_ads_source_traffic_stats(date, ad_group, source, rows):
         source=source,
     ).delete()
 
-    content_ad_sources = {}
-    for content_ad_source in dash.models.ContentAdSource.objects.filter(
-            content_ad__ad_group=ad_group, source=source):
-        content_ad_sources[content_ad_source.get_source_id()] = content_ad_source
-
     for row in rows:
-        content_ad_source = content_ad_sources.get(row['id'])
+        content_ad_source = row.get('content_ad_source')
 
         if content_ad_source is None:
             logger.info(

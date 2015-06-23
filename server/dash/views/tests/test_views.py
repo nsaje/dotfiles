@@ -13,9 +13,8 @@ from zemauth.models import User
 
 from dash import models
 from dash import constants
+from dash import api
 from dash.views import views
-
-from utils import exc
 
 
 class UserTest(TestCase):
@@ -199,12 +198,16 @@ http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.jpg\r
-'''
+        expected_lines = ['url,title,image_url',
+                          'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg',
+                          'http://testurl.com,Test Article with no content_ad_sources 4,/123456789/200x300.jpg',
+                          'http://testurl.com,Test Article with no content_ad_sources 3,/123456789/200x300.jpg',
+                          'http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.jpg']
 
-        self.assertEqual(response.content, expected_content)
+        lines = response.content.splitlines()
+
+        self.assertEqual(len(lines), len(expected_lines))
+        self.assertItemsEqual(lines, expected_lines)
 
     def test_get_ad_selected(self):
         data = {'content_ad_ids_selected': '1,2'}
@@ -227,24 +230,24 @@ http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.
             follow=True
         )
 
-    def test_get_content_ad_ids(self):
-        data = {'ids': '1,2'}
-        param_name = 'ids'
-
-        result = views.AdGroupContentAdCSV()._get_content_ad_ids(data, param_name)
-
-        self.assertEqual(result, [1, 2])
-
     def test_get_content_ad_ids_validation_error(self):
-        data = {'ids': '1,a'}
-        param_name = 'ids'
-
-        with self.assertRaises(exc.ValidationError):
-            views.AdGroupContentAdCSV()._get_content_ad_ids(data, param_name)
+        response = self._get_csv_from_server({'content_ad_ids_selected': '1,a'})
+        self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
 
 class AdGroupContentAdStateTest(TestCase):
     fixtures = ['test_api', 'test_views']
+
+    def _post_content_ad_state(self, ad_group_id, data):
+        return self.client.post(
+            reverse(
+                'ad_group_content_ad_state',
+                kwargs={'ad_group_id': ad_group_id}),
+            data=json.dumps(data),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
 
     def test_post(self):
         username = User.objects.get(pk=1).email
@@ -258,15 +261,7 @@ class AdGroupContentAdStateTest(TestCase):
             'content_ad_ids_selected': [content_ad_id],
         }
 
-        response = self.client.post(
-            reverse(
-                'ad_group_content_ad_state',
-                kwargs={'ad_group_id': ad_group_id}),
-            data=json.dumps(data),
-            content_type='application/json',
-            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
-            follow=True
-        )
+        response = self._post_content_ad_state(ad_group_id, data)
 
         content_ad = models.ContentAd.objects.get(pk=content_ad_id)
         self.assertEqual(content_ad.state, constants.ContentAdSourceState.INACTIVE)
@@ -294,15 +289,7 @@ class AdGroupContentAdStateTest(TestCase):
             'state': constants.ContentAdSourceState.INACTIVE,
         }
 
-        self.client.post(
-            reverse(
-                'ad_group_content_ad_state',
-                kwargs={'ad_group_id': 1}),
-            data=json.dumps(payload),
-            content_type='application/json',
-            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
-            follow=True
-        )
+        self._post_content_ad_state(1, payload)
 
         content_ads = models.ContentAd.objects.filter(ad_group__id=1)
         self.assertTrue(all([ad.state == constants.ContentAdSourceState.INACTIVE for ad in content_ads]))
@@ -322,19 +309,37 @@ class AdGroupContentAdStateTest(TestCase):
             'state': constants.ContentAdSourceState.INACTIVE,
         }
 
-        self.client.post(
-            reverse(
-                'ad_group_content_ad_state',
-                kwargs={'ad_group_id': 1}),
-            data=json.dumps(payload),
-            content_type='application/json',
-            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
-            follow=True
-        )
+        self._post_content_ad_state(1, payload)
 
         content_ads = models.ContentAd.objects.filter(batch__id=1)
         self.assertTrue(all([ad.state == constants.ContentAdSourceState.INACTIVE
                              for ad in content_ads]))
+
+    def test_dont_set_state_on_archived_ads(self):
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+        archived_ad = models.ContentAd.objects.get(pk=3)
+        archived_ad.archived = True
+        archived_ad.save()
+        self.assertEqual(archived_ad.state, constants.ContentAdSourceState.INACTIVE)
+
+        restored_ad = models.ContentAd.objects.get(pk=4)
+        self.assertFalse(restored_ad.archived)
+        self.assertEqual(archived_ad.state, constants.ContentAdSourceState.INACTIVE)
+
+        payload = {
+            'content_ad_ids_selected': [archived_ad.id, restored_ad.id],
+            'state': constants.ContentAdSourceState.ACTIVE,
+        }
+
+        self._post_content_ad_state(2, payload)
+
+        archived_ad.refresh_from_db()
+        self.assertEqual(archived_ad.state, constants.ContentAdSourceState.INACTIVE)
+
+        restored_ad.refresh_from_db()
+        self.assertEqual(restored_ad.state, constants.ContentAdSourceState.ACTIVE)
 
     @patch('dash.views.views.actionlog.zwei_actions.send_multiple')
     def test_update_content_ads(self, mock_send_multiple):
@@ -342,8 +347,7 @@ class AdGroupContentAdStateTest(TestCase):
         state = constants.ContentAdSourceState.INACTIVE
         request = None
 
-        views.AdGroupContentAdState()._update_content_ads(
-            [content_ad], state, request)
+        api.update_content_ads_state([content_ad], state, request)
 
         content_ad.refresh_from_db()
 
@@ -354,20 +358,11 @@ class AdGroupContentAdStateTest(TestCase):
 
         self.assertTrue(mock_send_multiple.called)
 
-    def test_get_content_ad_ids(self):
-        data = {'ids': ['1', '2']}
-        param_name = 'ids'
-
-        result = views.AdGroupContentAdState()._get_content_ad_ids(data, param_name)
-
-        self.assertEqual(result, [1, 2])
-
     def test_get_content_ad_ids_validation_error(self):
-        data = {'ids': ['1', 'a']}
-        param_name = 'ids'
-
-        with self.assertRaises(exc.ValidationError):
-            views.AdGroupContentAdState()._get_content_ad_ids(data, param_name)
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+        response = self._post_content_ad_state(1, {'content_ad_ids_selected': ['1', 'a']})
+        self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
     def test_add_to_history(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -380,7 +375,7 @@ class AdGroupContentAdStateTest(TestCase):
         request = HttpRequest()
         request.user = User(id=1)
 
-        views.AdGroupContentAdState()._add_to_history(ad_group, content_ads, state, request)
+        api.add_content_ads_state_change_to_history(ad_group, content_ads, state, request)
 
         settings = ad_group.get_current_settings()
 
@@ -398,7 +393,7 @@ class AdGroupContentAdStateTest(TestCase):
         request = HttpRequest()
         request.user = User(id=1)
 
-        views.AdGroupContentAdState()._add_to_history(ad_group, content_ads, state, request)
+        api.add_content_ads_state_change_to_history(ad_group, content_ads, state, request)
 
         settings = ad_group.get_current_settings()
 
@@ -406,6 +401,237 @@ class AdGroupContentAdStateTest(TestCase):
             settings.changes_text,
             'Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more set to Enabled.'
         )
+
+
+class AdGroupContentAdArchive(TestCase):
+    fixtures = ['test_api', 'test_views']
+
+    def _post_content_ad_archive(self, ad_group_id, data):
+        return self.client.post(
+            reverse(
+                'ad_group_content_ad_archive',
+                kwargs={'ad_group_id': ad_group_id}),
+            data=json.dumps(data),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+
+    def setUp(self):
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+    def test_post(self):
+        ad_group_id = 1
+        content_ad_id = 2
+
+        data = {
+            'content_ad_ids_selected': [content_ad_id],
+        }
+
+        response = self._post_content_ad_archive(ad_group_id, data)
+
+        content_ad = models.ContentAd.objects.get(pk=content_ad_id)
+        self.assertEqual(content_ad.archived, True)
+
+        response_dict = json.loads(response.content)
+
+        self.assertTrue(response_dict['success'])
+        self.assertEqual(response_dict['data']['rows'], {
+            '2': {
+                'archived': True,
+                'status_setting': 2
+            }})
+
+    def test_archive_set_all(self):
+        ad_group_id = 2
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+
+        self.assertGreater(len(content_ads), 0)
+
+        payload = {
+            'select_all': True,
+        }
+
+        response = self._post_content_ad_archive(ad_group_id, payload)
+
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        self.assertTrue(all([ad.archived is True for ad in content_ads]))
+
+        response_dict = json.loads(response.content)
+        self.assertEqual(response_dict['data']['rows'],
+                         {str(ad.id): {
+                             'archived': True,
+                             'status_setting': ad.state
+                         } for ad in content_ads})
+
+    def test_archive_set_batch(self):
+        ad_group_id = 2
+        batch_id = 2
+        content_ads = models.ContentAd.objects.filter(batch__id=batch_id)
+
+        self.assertGreater(len(content_ads), 0)
+
+        payload = {
+            'select_all': False,
+            'select_batch': batch_id,
+        }
+
+        response = self._post_content_ad_archive(ad_group_id, payload)
+
+        content_ads = models.ContentAd.objects.filter(batch__id=batch_id)
+        self.assertTrue(all([ad.archived is True for ad in content_ads]))
+
+        response_dict = json.loads(response.content)
+        self.assertEqual(response_dict['data']['rows'],
+                         {str(ad.id): {
+                             'archived': True,
+                             'status_setting': ad.state
+                         } for ad in content_ads})
+
+    def test_archive_pause_active_before_archiving(self):
+        ad_group_id = 1
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        self.assertGreater(len(content_ads), 0)
+        self.assertFalse(all([ad.state == constants.ContentAdSourceState.INACTIVE for ad in content_ads]))
+
+        active_count = len([ad for ad in content_ads if ad.state == constants.ContentAdSourceState.ACTIVE])
+        archived_count = len(content_ads)
+
+        payload = {
+            'select_all': True
+        }
+
+        response = self._post_content_ad_archive(ad_group_id, payload)
+
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        self.assertTrue(all([ad.state == constants.ContentAdSourceState.INACTIVE and ad.archived
+                             for ad in content_ads]))
+
+        response_dict = json.loads(response.content)
+        self.assertTrue(response_dict['success'])
+        self.assertEqual(response_dict['data']['active_count'], active_count)
+        self.assertEqual(response_dict['data']['archived_count'], archived_count)
+
+    def test_content_ad_ids_validation_error(self):
+        response = self._post_content_ad_archive(1, {'content_ad_ids_selected': ['1', 'a']})
+        self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
+
+
+class AdGroupContentAdRestore(TestCase):
+    fixtures = ['test_api', 'test_views']
+
+    def _post_content_ad_restore(self, ad_group_id, data):
+        return self.client.post(
+            reverse(
+                'ad_group_content_ad_restore',
+                kwargs={'ad_group_id': ad_group_id}),
+            data=json.dumps(data),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+
+    def setUp(self):
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+    def test_post(self):
+        ad_group_id = 1
+        content_ad_id = 2
+
+        content_ad = models.ContentAd.objects.get(pk=content_ad_id)
+        content_ad.archived = True
+        content_ad.save()
+
+        data = {
+            'content_ad_ids_selected': [content_ad_id],
+        }
+
+        response = self._post_content_ad_restore(ad_group_id, data)
+
+        content_ad = models.ContentAd.objects.get(pk=content_ad_id)
+        self.assertEqual(content_ad.archived, False)
+
+        response_dict = json.loads(response.content)
+
+        self.assertTrue(response_dict['success'])
+        self.assertEqual(response_dict['data']['rows'], {'2': {'archived': False, 'status_setting': content_ad.state}})
+
+    def test_restore_set_all(self):
+        ad_group_id = 2
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        for ad in content_ads:
+            ad.archived = True
+            ad.save()
+
+        self.assertGreater(len(content_ads), 0)
+
+        payload = {
+            'select_all': True,
+        }
+
+        response = self._post_content_ad_restore(ad_group_id, payload)
+
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        self.assertTrue(all([ad.archived is False for ad in content_ads]))
+
+        response_dict = json.loads(response.content)
+        self.assertEqual(response_dict['data']['rows'],
+                         {str(ad.id): {
+                             'archived': False,
+                             'status_setting': ad.state
+                         } for ad in content_ads})
+
+    def test_archive_set_batch(self):
+        ad_group_id = 2
+        batch_id = 2
+        content_ads = models.ContentAd.objects.filter(batch__id=batch_id)
+        for ad in content_ads:
+            ad.archived = True
+            ad.save()
+
+        self.assertGreater(len(content_ads), 0)
+
+        payload = {
+            'select_all': False,
+            'select_batch': batch_id,
+        }
+
+        response = self._post_content_ad_restore(ad_group_id, payload)
+
+        content_ads = models.ContentAd.objects.filter(batch__id=batch_id)
+        self.assertTrue(all([ad.archived is False for ad in content_ads]))
+
+        response_dict = json.loads(response.content)
+        self.assertEqual(response_dict['data']['rows'],
+                         {str(ad.id): {
+                             'archived': False,
+                             'status_setting': ad.state
+                         } for ad in content_ads})
+
+    def test_restore_success_when_all_restored(self):
+        ad_group_id = 2
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+
+        self.assertGreater(len(content_ads), 0)
+        self.assertTrue(all([not ad.archived for ad in content_ads]))
+
+        payload = {
+            'select_all': True
+        }
+
+        response = self._post_content_ad_restore(ad_group_id, payload)
+
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        self.assertFalse(all([ad.archived for ad in content_ads]))
+
+        response_dict = json.loads(response.content)
+        self.assertTrue(response_dict['success'])
+
+    def test_content_ad_ids_validation_error(self):
+        response = self._post_content_ad_restore(1, {'content_ad_ids_selected': ['1', 'a']})
+        self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
 
 class AdGroupAdsPlusUploadTest(TestCase):

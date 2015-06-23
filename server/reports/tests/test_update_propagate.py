@@ -413,8 +413,10 @@ class ContentAdStatsUpdateTest(test.TestCase):
         date = datetime.date(2015, 4, 1)
         ad_group = dash.models.AdGroup.objects.get(pk=1)
         source = dash.models.Source.objects.get(pk=1)
+        content_ad_source = dash.models.ContentAdSource.objects.get(pk=1)
 
         rows = [{
+            'content_ad_source': content_ad_source,
             'id': 1,
             'impressions': 10000,
             'clicks': 100,

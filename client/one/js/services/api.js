@@ -371,6 +371,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             }
 
             addFilteredSources(config.params);
+            addShowArchived(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -2070,10 +2071,43 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 }).error(function(data) {
                     deferred.reject(data);
                 });
- 
+
             return deferred.promise;
         };
     }
+
+    function AdGroupContentAdArchive() {
+        function postToApi(url, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
+            var deferred = $q.defer();
+
+            $http.post(url, {
+                content_ad_ids_selected: contentAdIdsSelected,
+                content_ad_ids_not_selected: contentAdIdsNotSelected,
+                select_all: selectedAll,
+                select_batch: selectedBatch
+            }).
+                success(function(data) {
+                    deferred.resolve(data);
+                }).
+                error(function(data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.archive = function(adGroupId, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/archive/';
+
+            return postToApi(url, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch);
+        };
+
+        this.restore = function(adGroupId, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/restore/';
+
+            return postToApi(url, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch);
+        };
+    };
 
     function AdGroupAdsPlusUploadBatches() {
         this.list = function(adGroupId) {
@@ -2094,7 +2128,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             return deferred.promise;
         };
     }
-    
+
     function AvailableSources() {
         this.list = function () {
             var deferred = $q.defer();
@@ -2191,7 +2225,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         adGroupAdsPlusUpload: new AdGroupAdsPlusUpload(),
         availableSources: new AvailableSources(),
         adGroupContentAdState: new AdGroupContentAdState(),
-        adGroupAdsPlusUploadBatches: new AdGroupAdsPlusUploadBatches()
+        adGroupAdsPlusUploadBatches: new AdGroupAdsPlusUploadBatches(),
+        adGroupContentAdArchive: new AdGroupContentAdArchive()
         // Also, don't forget to add me to DEMO!
     };
 }]);

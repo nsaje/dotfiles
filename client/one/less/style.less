@@ -753,6 +753,25 @@ div[datepicker] {
     &.select2-drop-above.select2-dropdown-open .select2-choice {
         .border-radius(0 0 2px 2px);
     }
+
+    &.select2-container-disabled {
+        .select2-choice {
+            pointer-events: all;
+            cursor: default;
+            box-shadow: none;
+            opacity: 1;
+            background-color: #fff;
+            border-color: #b7b7b7;
+
+            .select2-chosen {
+                color: #b7b7b7;
+            }
+
+            .select2-arrow {
+                background-color: #fff;
+            }
+        }
+    }
 }
 
 .select2-container,
@@ -2348,7 +2367,16 @@ zem-editable-currency-field {
         padding: 1px;
         border: 1px solid #0ab00a;
 
+        &.archived {
+            background-color: #d9d9d9;
+            border-color: #d9d9d9;
+            color: #fff;
+        }
+
         &.approved {
+            &.archived {
+                .table .submission-status .cell .archived
+            }
             background-color: #0ab00a;
             color: #fff;
         }
