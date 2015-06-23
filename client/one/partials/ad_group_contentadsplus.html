@@ -49,7 +49,10 @@
         </alert>
 
         <alert type="info" class="alert-sync" ng-show="archivingResults" close="closeArchivingResults()">
-            {{ archivingResults.archived_count }} Content Ads were archived and {{ archivingResults.active_count === 0 ? "none" : archivingResults.active_count }} of them were active at the time.
+                {{ archivingResults.archived_count }} {{ archivingResults.archived_count === 1 ? 'Content Ad was' : 'Content Ads were' }} archived and 
+                <ng-pluralize count="archivingResults.archived_count" when="{'1': 'it {{ archivingResults.active_count === 1 ? &quot;was&quot; : &quot;wasn\'t&quot; }} ',
+                                                                            'other': '{{ archivingResults.active_count === 0 ? &quot;none&quot; : archivingResults.active_count }} of them {{ archivingResults.active_count === 1 ? &quot;was&quot; : &quot;were&quot; }}'}"></ng-pluralize>
+                active at the time.
         </alert>
 
         <zem-table class="ads-plus-table" zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderTableData(order)" zem-table-notifications="notifications"></zem-table>
