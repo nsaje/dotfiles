@@ -191,10 +191,18 @@ class ProcessUploadThread(Thread):
             process_image = False
             errors.append('Invalid crop areas')
 
+        error_status = None
         try:
             if process_image:
                 image_id, width, height, image_hash = image_helper.process_image(image_url, crop_areas)
-        except image_helper.ImageProcessingException:
+        except image_helper.ImageProcessingException as e:
+            error_status = e.status() or 'error'
+
+        if error_status == 'image-size-error':
+            errors.append('Image too big.')
+        elif error_status == 'download-error':
+            errors.append(('Image could not be downloaded.'))
+        elif error_status is not None:
             errors.append('Image could not be processed.')
 
         if errors:

@@ -1,3 +1,4 @@
+import httplib
 import json
 import urllib2
 
@@ -5,7 +6,13 @@ from django.conf import settings
 
 
 class ImageProcessingException(Exception):
-    pass
+
+    def __init__(self, status=None):
+        Exception.__init__(self)
+        self._status = status
+
+    def status(self):
+        return self._status
 
 
 def process_image(url, crop_areas):
@@ -25,7 +32,15 @@ def process_image(url, crop_areas):
     except urllib2.HTTPError as e:
         raise ImageProcessingException(e)
 
-    if response.code != 200:
+    if response.code == httplib.INTERNAL_SERVER_ERROR:
+        try:
+            result = json.loads(response.read())
+        except:
+            raise ImageProcessingException()
+        status = result.get('status')
+        raise ImageProcessingException(status)
+
+    if response.code != httplib.OK:
         raise ImageProcessingException()
 
     result = json.loads(response.read())

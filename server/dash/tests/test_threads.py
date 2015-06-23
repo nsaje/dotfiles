@@ -229,3 +229,75 @@ http://example.com,test title,http://example.com/image,\n'''.replace("\n",'\r\n'
         )
         self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
         self.assertFalse(mock_insert_action.called)
+
+    @patch('dash.threads.image_helper.process_image')
+    def test_clean_row_z3_image_too_large(self, mock_process_image):
+        filename = 'filename.csv'
+        batch_name = 'Test batch name'
+        ad_group_id = 1
+
+        content_ads = [{
+            'url': 'http://example.com',
+            'title': 'ordinar ad',
+            'image_url': 'http://example.com/image',
+            'crop_areas': '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
+        }]
+
+        mock_process_image.side_effect = [
+            image_helper.ImageProcessingException('image-size-error')
+        ]
+
+        batch = models.UploadBatch.objects.create(name=batch_name)
+        thread = threads.ProcessUploadThread(content_ads, filename, batch, ad_group_id, None)
+        res, err = thread._clean_row(content_ads[0])
+
+        self.assertIsNone(res)
+        self.assertTrue("too big" in err[0])
+
+    @patch('dash.threads.image_helper.process_image')
+    def test_clean_row_z3_dload_error(self, mock_process_image):
+        filename = 'filename.csv'
+        batch_name = 'Test batch name'
+        ad_group_id = 1
+
+        content_ads = [{
+            'url': 'http://example.com',
+            'title': 'ordinar ad',
+            'image_url': 'http://example.com/image',
+            'crop_areas': '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
+        }]
+
+        mock_process_image.side_effect = [
+            image_helper.ImageProcessingException('download-error')
+        ]
+
+        batch = models.UploadBatch.objects.create(name=batch_name)
+        thread = threads.ProcessUploadThread(content_ads, filename, batch, ad_group_id, None)
+        res, err = thread._clean_row(content_ads[0])
+
+        self.assertIsNone(res)
+        self.assertTrue("could not be downloaded" in err[0])
+
+    @patch('dash.threads.image_helper.process_image')
+    def test_clean_row_z3_generic_error(self, mock_process_image):
+        filename = 'filename.csv'
+        batch_name = 'Test batch name'
+        ad_group_id = 1
+
+        content_ads = [{
+            'url': 'http://example.com',
+            'title': 'ordinar ad',
+            'image_url': 'http://example.com/image',
+            'crop_areas': '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
+        }]
+
+        mock_process_image.side_effect = [
+            image_helper.ImageProcessingException()
+        ]
+
+        batch = models.UploadBatch.objects.create(name=batch_name)
+        thread = threads.ProcessUploadThread(content_ads, filename, batch, ad_group_id, None)
+        res, err = thread._clean_row(content_ads[0])
+
+        self.assertIsNone(res)
+        self.assertTrue("could not be processed" in err[0])
