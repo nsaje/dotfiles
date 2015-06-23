@@ -7,8 +7,8 @@ from django.conf import settings
 
 class ImageProcessingException(Exception):
 
-    def __init__(self, status=None):
-        Exception.__init__(self)
+    def __init__(self, message="", status=None):
+        Exception.__init__(self, message)
         self._status = status
 
     def status(self):
@@ -26,21 +26,25 @@ def process_image(url, crop_areas):
         payload['crops'] = crops_dict
 
     data = json.dumps(payload)
-
+    response_code = httplib.INTERNAL_SERVER_ERROR
     try:
         response = urllib2.urlopen(settings.Z3_API_IMAGE_URL, data)
-    except urllib2.HTTPError as e:
-        raise ImageProcessingException(e)
-
-    if response.code == httplib.INTERNAL_SERVER_ERROR:
+        response_code = response.code
+    except urllib2.HTTPError, error:
         try:
-            result = json.loads(response.read())
+            response_raw = error.read()
+            result = json.loads(response_raw)
         except:
             raise ImageProcessingException()
-        status = result.get('status')
-        raise ImageProcessingException(status)
+        response_code = error.code
 
-    if response.code != httplib.OK:
+        if error.code == httplib.INTERNAL_SERVER_ERROR:
+            status = result.get('status')
+            raise ImageProcessingException(status)
+        else:
+            raise ImageProcessingException(error)
+
+    if response_code != httplib.OK:
         raise ImageProcessingException()
 
     result = json.loads(response.read())

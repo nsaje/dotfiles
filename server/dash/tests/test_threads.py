@@ -244,7 +244,7 @@ http://example.com,test title,http://example.com/image,\n'''.replace("\n",'\r\n'
         }]
 
         mock_process_image.side_effect = [
-            image_helper.ImageProcessingException('image-size-error')
+            image_helper.ImageProcessingException(status='image-size-error')
         ]
 
         batch = models.UploadBatch.objects.create(name=batch_name)
@@ -268,7 +268,7 @@ http://example.com,test title,http://example.com/image,\n'''.replace("\n",'\r\n'
         }]
 
         mock_process_image.side_effect = [
-            image_helper.ImageProcessingException('download-error')
+            image_helper.ImageProcessingException(status='download-error')
         ]
 
         batch = models.UploadBatch.objects.create(name=batch_name)
@@ -292,7 +292,7 @@ http://example.com,test title,http://example.com/image,\n'''.replace("\n",'\r\n'
         }]
 
         mock_process_image.side_effect = [
-            image_helper.ImageProcessingException()
+            image_helper.ImageProcessingException(status='error')
         ]
 
         batch = models.UploadBatch.objects.create(name=batch_name)
