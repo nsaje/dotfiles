@@ -19,6 +19,7 @@ from utils import exc
 import reports.api_contentads
 import reports.api_helpers
 
+
 class ExportApiView(api_common.BaseApiView):
     def dispatch(self, request, *args, **kwargs):
         try:
@@ -29,9 +30,9 @@ class ExportApiView(api_common.BaseApiView):
                 return self._demo_export(request)
             return self.get_exception_response(request, e)
 
-    def _demo_export(self, request): 
+    def _demo_export(self, request):
         data = []
-        filename='export'
+        filename = 'export'
         if request.GET.get('type') == 'excel':
             detailed_data = []
             columns = [
@@ -50,10 +51,10 @@ class ExportApiView(api_common.BaseApiView):
                 ('Per Account Report', columns, data),
                 ('Detailed Report', detailed_columns, detailed_data)
             ])
-            
+
             return self.create_excel_response(filename, content=content)
         else:
-            filename='export'
+            filename = 'export'
             fieldnames = OrderedDict([
                 ('date', 'Date'),
                 ('cost', 'Cost'),
@@ -65,7 +66,6 @@ class ExportApiView(api_common.BaseApiView):
 
             content = export.get_csv_content(fieldnames, data)
             return self.create_csv_response(filename, content=content)
-
 
 
 class AccountCampaignsExport(api_common.BaseApiView):
@@ -205,9 +205,17 @@ class CampaignAdGroupsExport(ExportApiView):
 
             if export_type == 'excel_detailed':
                 filename_format = '{0}_{1}_per_campaign_detailed_report_{2}_{3}'
+                breakdown = ['date', 'ad_group']
+
+                if campaign.account.id == 53:
+                    # temp for FindTheBest account, will be removed
+                    # when we switch to content ad stats for all accounts
+                    breakdown.append('content_ad')
+                else:
+                    breakdown.append('article')
 
                 per_content_ad_data = export.generate_rows(
-                    ['date', 'ad_group', 'article'],
+                    breakdown,
                     start_date,
                     end_date,
                     request.user,
@@ -466,15 +474,14 @@ class AdGroupAdsPlusExport(ExportApiView):
 
         raise Exception("Invalid report type")
 
-
     def create_by_day_csv(self, filename, start_date, end_date, user, ad_group, sources):
-        ads_results = self._generate_rows(
+        ads_results = export.generate_rows(
             ['date', 'content_ad'],
             start_date,
             end_date,
             user,
-            ad_group,
-            sources,
+            ad_group=ad_group,
+            source=sources
         )
 
         fieldnames = OrderedDict([
@@ -493,21 +500,21 @@ class AdGroupAdsPlusExport(ExportApiView):
         return self.create_csv_response(filename, content=content)
 
     def create_by_day_excel(self, filename, start_date, end_date, user, ad_group, sources):
-        ads_results = self._generate_rows(
+        ads_results = export.generate_rows(
             ['date', 'content_ad'],
             start_date,
             end_date,
             user,
-            ad_group,
-            sources,
+            ad_group=ad_group,
+            source=sources
         )
-        sources_results = self._generate_rows(
+        sources_results = export.generate_rows(
             ['date', 'source', 'content_ad'],
             start_date,
             end_date,
             user,
-            ad_group,
-            sources,
+            ad_group=ad_group,
+            source=sources
         )
 
         self.add_source_data(sources_results)
@@ -534,21 +541,21 @@ class AdGroupAdsPlusExport(ExportApiView):
         return self.create_excel_response(filename, content=content)
 
     def create_by_content_ad_excel(self, filename, start_date, end_date, user, ad_group, sources):
-        ads_results = self._generate_rows(
+        ads_results = export.generate_rows(
             ['content_ad'],
             start_date,
             end_date,
             user,
-            ad_group,
-            sources,
+            ad_group=ad_group,
+            source=sources
         )
-        sources_results = self._generate_rows(
+        sources_results = export.generate_rows(
             ['content_ad', 'source'],
             start_date,
             end_date,
             user,
-            ad_group,
-            sources,
+            ad_group=ad_group,
+            source=sources
         )
 
         self.add_source_data(sources_results)
@@ -574,13 +581,13 @@ class AdGroupAdsPlusExport(ExportApiView):
         return self.create_excel_response(filename, content=content)
 
     def create_by_content_ad_csv(self, filename, start_date, end_date, user, ad_group, sources):
-        ads_results = self._generate_rows(
+        ads_results = export.generate_rows(
             ['content_ad'],
             start_date,
             end_date,
             user,
-            ad_group,
-            sources,
+            ad_group=ad_group,
+            source=sources
         )
         fieldnames = OrderedDict([
             ('image_url', 'Image URL'),
@@ -595,29 +602,6 @@ class AdGroupAdsPlusExport(ExportApiView):
         ])
         content = export.get_csv_content(fieldnames, ads_results)
         return self.create_csv_response(filename, content=content)
-
-    def _generate_rows(self, dimensions, start_date, end_date, user, ad_group, sources):
-        content_ads = models.ContentAd.objects.filter(
-            ad_group=ad_group).filter_by_sources(sources).select_related('batch')
-
-        content_ads = {c.id: c for c in content_ads}
-
-        stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
-            start_date,
-            end_date,
-            dimensions,
-            ad_group=ad_group,
-            source=sources
-        ), user)
-
-        for stat in stats:
-            content_ad = content_ads[stat['content_ad']]
-            stat['title'] = content_ad.title
-            stat['url'] = content_ad.url
-            stat['image_url'] = content_ad.get_image_url()
-            stat['uploaded'] = content_ad.created_dt.date()
-
-        return sort_results(stats, ['date'])
 
     def add_source_data(self, results):
         sources = {source.id: source for source in models.Source.objects.all()}

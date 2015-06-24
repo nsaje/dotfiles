@@ -3,12 +3,28 @@ from xlsxwriter import Workbook
 import StringIO
 
 import reports.api
+import reports.api_contentads
 import reports.api_helpers
+
+from utils.sort_helper import sort_results
+
+from dash import models
 
 
 def generate_rows(dimensions, start_date, end_date, user, **kwargs):
     ordering = ['date'] if 'date' in dimensions else []
-    data = reports.api_helpers.filter_by_permissions(reports.api.query(
+
+    if 'content_ad' in dimensions:
+        return _generate_content_ad_rows(
+            dimensions,
+            start_date,
+            end_date,
+            user,
+            ordering,
+            **kwargs
+        )
+
+    return reports.api_helpers.filter_by_permissions(reports.api.query(
         start_date,
         end_date,
         dimensions,
@@ -16,7 +32,45 @@ def generate_rows(dimensions, start_date, end_date, user, **kwargs):
         **kwargs
     ), user)
 
-    return data
+
+def _get_content_ads(constraints):
+    sources = None
+    fields = {}
+
+    for key in constraints:
+        if key == 'source':
+            sources = constraints[key]
+        elif key == 'campaign':
+            fields['ad_group__campaign'] = constraints[key]
+        else:
+            fields[key] = constraints[key]
+
+    content_ads = models.ContentAd.objects.filter(**fields).select_related('batch')
+
+    if sources is not None:
+        content_ads = content_ads.filter_by_sources(sources)
+
+    return {c.id: c for c in content_ads}
+
+
+def _generate_content_ad_rows(dimensions, start_date, end_date, user, ordering, **constraints):
+    content_ads = _get_content_ads(constraints)
+
+    stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
+        start_date,
+        end_date,
+        dimensions,
+        **constraints
+    ), user)
+
+    for stat in stats:
+        content_ad = content_ads[stat['content_ad']]
+        stat['title'] = content_ad.title
+        stat['url'] = content_ad.url
+        stat['image_url'] = content_ad.get_image_url()
+        stat['uploaded'] = content_ad.created_dt.date()
+
+    return sort_results(stats, ordering)
 
 
 def get_csv_content(fieldnames, data, title_text=None, start_date=None, end_date=None):
