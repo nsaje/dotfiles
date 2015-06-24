@@ -76,10 +76,22 @@
             </form>
 
             <span>Show rows</span>
-            <select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'show-rows'}" class="show-rows" ng-model="size" ng-change="changePaginationSize()" data-placeholder="{{ size }}">
+
+			<zem-paging-dropdown 
+				class="show-rows"
+				counts="sizeRange"
+				selection="size">
+			</zem-paging-dropdown> 
+
+			<!-- update="changePaginationSize" -->
+			<!-- 
+            <select ui-select2="{minimumResultsForSearch: -1, dropdownCssClass: 'show-rows'}" 
+				class="show-rows" ng-model="size" ng-change="changePaginationSize()" data-placeholder="{{ size }}">
                 <option value=""></option>
                 <option ng-repeat="number in sizeRange" value="{{ number }}">{{ number }}</option>
+                <option value="-1">Show All</option>
             </select>
+			-->
 
             <div ng-disabled="pagination.currentPage == 1" class="btn btn-default" ng-click="loadPage(1)"><img ng-src="{{ config.static_url }}/one/img/arrow-first.svg"></div>
             <div ng-disabled="pagination.currentPage == 1" class="btn btn-default" ng-click="loadPage(pagination.currentPage - 1)"><img ng-src="{{ config.static_url }}/one/img/arrow-prev.svg"></div>
