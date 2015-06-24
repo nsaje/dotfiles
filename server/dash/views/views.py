@@ -733,7 +733,7 @@ class AdGroupContentAdArchive(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
             raise exc.ForbiddenError(message="Not allowed")
 
-        helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         data = json.loads(request.body)
 
@@ -756,6 +756,8 @@ class AdGroupContentAdArchive(api_common.BaseApiView):
 
         # reload
         content_ads = content_ads.all()
+
+        api.add_content_ads_archived_change_to_history(ad_group, content_ads, True, request)
 
         with transaction.atomic():
             for content_ad in content_ads:
@@ -780,7 +782,7 @@ class AdGroupContentAdRestore(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
             raise exc.ForbiddenError(message="Not allowed")
 
-        helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         data = json.loads(request.body)
 
@@ -792,6 +794,8 @@ class AdGroupContentAdRestore(api_common.BaseApiView):
 
         content_ads = helpers.get_selected_content_ads(
             ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
+
+        api.add_content_ads_archived_change_to_history(ad_group, content_ads, False, request)
 
         with transaction.atomic():
             for content_ad in content_ads:
