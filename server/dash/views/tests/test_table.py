@@ -177,6 +177,14 @@ class AdGroupAdsPlusTableTest(TestCase):
             'impressions': 2000000
         })
 
+        batches = models.UploadBatch.objects.filter(
+            id__in=(1, 2),
+            status=constants.UploadBatchStatus.DONE
+        )
+        self.assertItemsEqual(batches, [])
+        self.assertIn('batches', result['data'])
+        self.assertEqual(result['data']['batches'], [])
+
     def test_get_filtered_sources(self, mock_query):
         date = datetime.date(2015, 2, 22)
 
@@ -315,6 +323,60 @@ class AdGroupAdsPlusTableTest(TestCase):
         self.assertEqual(len(result['data']['rows']), 2)
         self.assertEqual(result['data']['rows'][0]['title'], u'Test Article with no content_ad_sources 2')
         self.assertEqual(result['data']['rows'][1]['title'], 'Test Article with no content_ad_sources 1')
+
+    def test_get_batches(self, mock_query):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        date = datetime.date(2015, 2, 22)
+
+        mock_stats1 = [{
+            'date': date.isoformat(),
+            'cpc': '0.0100',
+            'clicks': 1000,
+            'impressions': 1000000,
+            'cost': 100,
+            'ctr': '12.5000',
+            'content_ad': 1
+        }]
+        mock_stats2 = {
+            'date': date.isoformat(),
+            'cpc': '0.0200',
+            'clicks': 1500,
+            'impressions': 2000000,
+            'cost': 200,
+            'ctr': '15.5000',
+            'content_ad': 1
+        }
+        mock_query.side_effect = [mock_stats1, mock_stats2]
+
+        params = {
+            'page': 1,
+            'order': '-title',
+            'size': 2,
+            'start_date': date.isoformat(),
+            'end_date': date.isoformat(),
+        }
+
+        uploadBatches = models.UploadBatch.objects.filter(id__in=(1, 2))
+        for batch in uploadBatches:
+            batch.status = constants.UploadBatchStatus.DONE
+            batch.save()
+
+        response = self.client.get(
+            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            params,
+            follow=True
+        )
+
+        result = json.loads(response.content)
+
+        self.assertIn('batches', result['data'])
+        self.assertItemsEqual(result['data']['batches'], [{
+            'id': 1,
+            'name': 'batch 1'
+        }, {
+            'id': 2,
+            'name': 'batch 2'
+        }])
 
 
 class AdGroupAdsPlusTableUpdatesTest(TestCase):
