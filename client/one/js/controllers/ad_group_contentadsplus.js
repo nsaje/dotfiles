@@ -704,7 +704,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
         var userSettings = zemUserSettings.getInstance($scope, 'adGroupContentAdsPlus');
         var page = parseInt($location.search().page || '1');
-        var size = parseInt($location.search().size || '10');
+        var size = parseInt($location.search().size || '0'); 
 
         userSettings.register('chartMetric1');
         userSettings.register('chartMetric2');
@@ -716,10 +716,13 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             $location.search('page', page);
         }
 
-        if (size !== undefined && $scope.size !== size) {
+        if (size !== 0 && $scope.size !== size) {
             $scope.size = size;
         }
-
+        // if nothing in local storage or page query var set first as default
+        if ($scope.size === 0) {
+            $scope.size = $scope.sizeRange[0];
+        }
         getTableData();
         getDailyStats();
         $scope.getAdGroupState();

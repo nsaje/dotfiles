@@ -333,12 +333,21 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         if (isNaN(page)) {
             page = data && data.page;
         }
+        var size = parseInt($location.search().size || '0'); 
 
         userSettings.register('chartMetric1');
         userSettings.register('chartMetric2');
         userSettings.register('order');
         userSettings.register('size');
         userSettings.registerGlobal('chartHidden');
+
+        if (size !== 0 && $scope.size !== size) {
+            $scope.size = size;
+        }
+        // if nothing in local storage or page query var set first as default
+        if ($scope.size === 0) {
+            $scope.size = $scope.sizeRange[0];
+        }
 
         setChartOptions();
 
