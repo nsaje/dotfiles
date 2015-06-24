@@ -2030,6 +2030,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     if (data && data.data) {
                         result.status = data.data.status;
                         result.count = data.data.count;
+                        result.all = data.data.all;
 
                         if (data.data.errors) {
                             result.errors = convertValidationErrorsFromApi(data.data.errors);
