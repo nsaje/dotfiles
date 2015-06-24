@@ -620,7 +620,9 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
             display_url=display_url,
             brand_name=brand_name,
             description=description,
-            call_to_action=call_to_action
+            call_to_action=call_to_action,
+            processed_content_ads=0,
+            batch_size=len(content_ads)
         )
 
         current_settings = ad_group.get_current_settings()
@@ -679,7 +681,7 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
         except models.UploadBatch.DoesNotExist():
             raise exc.MissingDataException()
 
-        response_data = {'status': batch.status}
+        response_data = {'status': batch.status, 'count': batch.processed_content_ads, 'all': batch.batch_size}
 
         if batch.status == constants.UploadBatchStatus.FAILED:
             if batch.error_report_key:

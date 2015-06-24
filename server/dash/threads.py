@@ -41,6 +41,7 @@ class ProcessUploadThread(Thread):
         ad_group_sources = [s for s in models.AdGroupSource.objects.filter(ad_group_id=self.ad_group_id)
                             if s.can_manage_content_ads and s.source.can_manage_content_ads()]
 
+        count_processed = 0
         try:
             # ensure content ads are only commited to DB
             # if all of them are successfully processed
@@ -50,6 +51,16 @@ class ProcessUploadThread(Thread):
                 all_content_ad_sources = []
                 for row in self.content_ads_data:
                     data, errors = self._clean_row(row)
+                    count_processed += 1
+
+                    # update upload batch in another thread to avoid
+                    # transaction
+                    t = UpdateUploadBatchThread(
+                        self.batch.id,
+                        count_processed
+                    )
+                    t.start()
+                    t.join()
 
                     if not errors:
                         content_ad, content_ad_sources = self._create_objects(data, ad_group_sources)
@@ -241,6 +252,18 @@ class ProcessUploadThread(Thread):
             raise ValidationError('Invalid crop areas')
 
         return crop_list
+
+
+class UpdateUploadBatchThread(Thread):
+    def __init__(self, batch_id, processed_content_ads, *args, **kwargs):
+        self.batch_id = batch_id
+        self.processed_content_ads = processed_content_ads
+        super(UpdateUploadBatchThread, self).__init__(*args, **kwargs)
+
+    def run(self):
+        batch = models.UploadBatch.objects.get(pk=self.batch_id)
+        batch.processed_content_ads = self.processed_content_ads
+        batch.save()
 
 
 class SendActionLogsThread(Thread):
