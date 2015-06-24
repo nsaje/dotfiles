@@ -169,7 +169,7 @@ urlpatterns += patterns(
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/csv/',
-        login_required(dash.views.views.AdGroupContentAdCSV.as_view()),
+        login_required(dash.views.export.AdGroupContentAdCSV.as_view()),
         name='ad_group_content_ad_csv'
     ),
     url(

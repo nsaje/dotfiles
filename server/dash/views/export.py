@@ -1,12 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import slugify
-
+import StringIO
+import datetime
 from collections import OrderedDict
 
-from django.conf import settings
+import slugify
+import unicodecsv
 
+from django.conf import settings
 from dash.views import helpers
 from dash import models
 from dash import export
@@ -817,3 +819,48 @@ class AllAccountsExport(ExportApiView):
             result['promotion_goal'] = constants.PromotionGoal.get_text(cs.promotion_goal) if cs is not None else 'N/A'
             result['fee_amount'] = result['cost'] * result['service_fee'] if cs is not None else 'N/A'
             result['total_amount'] = result['cost'] + result['fee_amount'] if cs is not None else 'N/A'
+
+class AdGroupContentAdCSV(ExportApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
+    def get(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.get_content_ad_csv'):
+            raise exc.ForbiddenError(message='Not allowed')
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+
+        select_all = request.GET.get('select_all', False)
+        select_batch_id = request.GET.get('select_batch')
+
+        content_ad_ids_selected = helpers.parse_get_request_content_ad_ids(request.GET, 'content_ad_ids_selected')
+        content_ad_ids_not_selected = helpers.parse_get_request_content_ad_ids(request.GET, 'content_ad_ids_not_selected')
+
+        content_ads = helpers.get_selected_content_ads(
+            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
+
+        content_ad_dicts = []
+        for content_ad in content_ads:
+            content_ad_dicts.append({
+                'url': content_ad.url,
+                'title': content_ad.title,
+                'image_url': content_ad.get_image_url(),
+            })
+
+        filename = '{}_{}_{}_content_ads'.format(
+            slugify.slugify(ad_group.campaign.account.name),
+            slugify.slugify(ad_group.name),
+            datetime.datetime.now().strftime('%Y-%m-%d')
+        )
+        content = self._create_content_ad_csv(content_ad_dicts)
+
+        return self.create_csv_response(filename, content=content)
+
+    def _create_content_ad_csv(self, content_ads):
+        string = StringIO.StringIO()
+
+        writer = unicodecsv.DictWriter(string, ['url', 'title', 'image_url'])
+        writer.writeheader()
+
+        for row in content_ads:
+            writer.writerow(row)
+
+        return string.getvalue()
