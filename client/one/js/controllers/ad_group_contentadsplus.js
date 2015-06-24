@@ -636,6 +636,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
                 $scope.pollTableUpdates();
                 $scope.updateContentAdSelection();
+
+                initUploadBatches(data.batches);
             },
             function(data) {
                 // error
@@ -683,15 +685,13 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         }, true);
     };
 
-    var initUploadBatches = function () {
-        api.adGroupAdsPlusUploadBatches.list($state.params.id).then(function (data) {
-            $scope.selectionMenuConfig.selectionOptions = [{
-                type: 'link-list',
-                name: 'Upload batch',
-                callback: $scope.selectBatchCallback,
-                items: data.data.batches
-            }];
-        });
+    var initUploadBatches = function (batches) {
+        $scope.selectionMenuConfig.selectionOptions = [{
+            type: 'link-list',
+            name: 'Upload batch',
+            callback: $scope.selectBatchCallback,
+            items: batches
+        }];
     };
 
     var init = function () {
@@ -717,7 +717,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         getDailyStats();
         $scope.getAdGroupState();
         initColumns();
-        initUploadBatches();
 
         pollSyncStatus();
         setDisabledExportOptions();

@@ -797,57 +797,6 @@ class AdGroupAdsPlusUploadTest(TestCase):
         self.assertNotIn('Description is too long', response.content)
 
 
-class AdGroupAdsPlusUploadBatchesTest(TestCase):
-    fixtures = ['test_views', 'test_api']
-
-    def setUp(self):
-        self.factory = RequestFactory()
-
-    def _get_client(self, superuser=True):
-        password = 'secret'
-        user_id = 1 if superuser else 2
-        username = User.objects.get(pk=user_id).email
-        client = Client()
-        client.login(username=username, password=password)
-        return client
-
-    def test_permission(self):
-        response = self._get_client(superuser=False).get(
-            reverse('ad_group_ads_plus_upload_batches',
-            kwargs={'ad_group_id': 1}),
-            follow=True,
-        )
-        self.assertEqual(response.status_code, 403)
-
-        response = self._get_client(superuser=True).get(
-            reverse('ad_group_ads_plus_upload_batches',
-            kwargs={'ad_group_id': 1}),
-            follow=True,
-        )
-        self.assertEqual(response.status_code, 200)
-
-    def test_get_batches(self):
-        request = self.factory.get(
-            reverse('ad_group_ads_plus_upload_batches', kwargs={'ad_group_id': 1})
-        )
-        request.user = User.objects.get(pk=1)
-        handler = views.AdGroupAdsPlusUploadBatches()
-        response = handler.get(request, 1)
-        json_blob = json.loads(response.content)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual([], json_blob["data"]["batches"])
-
-        # make sure batch has state done now
-        uploadBatch = models.UploadBatch.objects.get(pk=1)
-        uploadBatch.status = constants.UploadBatchStatus.DONE
-        uploadBatch.save()
-
-        response = handler.get(request, 1)
-        json_blob = json.loads(response.content)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual([{"id": 1, "name": "batch 1"}], json_blob["data"]["batches"])
-
-
 class AdGroupSourcesTest(TestCase):
     def test_get_name(self):
         request = HttpRequest()

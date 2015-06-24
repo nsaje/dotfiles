@@ -698,35 +698,6 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
         return self.create_api_response(response_data)
 
 
-class AdGroupAdsPlusUploadBatches(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_batches_get')
-    def get(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.content_ads_bulk_actions'):
-            raise exc.ForbiddenError(message='Not allowed')
-
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        try:
-            # get all batches from all content ads of adgroup
-            batch_ids = models.ContentAd.objects.filter(
-                ad_group=ad_group
-            ).values_list('batch_id', flat=True).distinct()
-
-            batches = models.UploadBatch.objects.filter(
-                id__in=tuple(batch_ids),
-                status=constants.UploadBatchStatus.DONE,
-            ).order_by('-created_dt')
-            response_data = []
-            for batch in batches:
-                response_data.append({
-                    'id': batch.id,
-                    'name': batch.name,
-                })
-        except models.UploadBatch.DoesNotExist():
-            raise exc.MissingDataException()
-
-        return self.create_api_response({"batches": response_data})
-
-
 class AdGroupContentAdArchive(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_archive_post')
     def post(self, request, ad_group_id):
