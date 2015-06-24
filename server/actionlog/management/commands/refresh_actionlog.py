@@ -36,5 +36,6 @@ class Command(BaseCommand):
         hours_oldest_manual_cmd_waiting = api.age_oldest_waiting_action(manual_action=True)
         statsd_helper.statsd_gauge('actionlog.hours_oldest_cmd_waiting', hours_oldest_manual_cmd_waiting)
 
-        hours_oldest_auto_cmd_waiting = api.age_oldest_waiting_action(manual_action=False)
-        statsd_helper.statsd_gauge('actionlog.hours_oldest_auto_cmd_waiting', hours_oldest_auto_cmd_waiting)
+        # Consumes a lot of resources when there are many waiting automatic actions (during sync)
+        # hours_oldest_auto_cmd_waiting = api.age_oldest_waiting_action(manual_action=False)
+        # statsd_helper.statsd_gauge('actionlog.hours_oldest_auto_cmd_waiting', hours_oldest_auto_cmd_waiting)
