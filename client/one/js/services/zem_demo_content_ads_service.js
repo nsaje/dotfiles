@@ -8,15 +8,14 @@ oneApp.factory("zemDemoContentAdsService", ['$q', function ($q) {
         adGroupExcludedContentAds = {},
         pub = {
             set: function (adGroupId, contentAdId, data) {
-                if (contentAdId === undefined) {
-                    contentAdId = data.url;
-                }
                 if (! adGroupAds[adGroupId]) { adGroupAds[adGroupId] = []; }
                 if (! contentAdDeltas[contentAdId]) { contentAdDeltas[contentAdId] = {}; }
                 if (adGroupAds[adGroupId].indexOf(contentAdId) === -1) {
                     adGroupAds[adGroupId].push(contentAdId);
                 }
-                angular.forEach(data, function (v, k) { contentAdDeltas[contentAdId][k] = v; });
+                angular.forEach(data, function (v, k) {
+                    contentAdDeltas[contentAdId][k] = v;
+                });
             },
             setBulk: function (adGroupId, includeIds, excludeIds, all, data) {
                 if (! adGroupExcludedContentAds[adGroupId]) {
@@ -43,9 +42,6 @@ oneApp.factory("zemDemoContentAdsService", ['$q', function ($q) {
             },
             apply: function (adGroupId, contentAdId, data) {
                 var excludes = adGroupExcludedContentAds[adGroupId] || {};
-                if (contentAdId === undefined) {
-                    contentAdId = data.url + '?demo_token=' + adGroupId;
-                }
                 angular.forEach(adGroupBulkDeltas[adGroupId] || {}, function (v, k) {
                     if ((excludes[k] || []).indexOf(contentAdId) === -1) {
                         data[k] = v;

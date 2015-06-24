@@ -209,10 +209,11 @@ ERROR RATE > 13.6%
 
 ## Implementing fetures in DEMO
 
-Demo consists of a group of decorators (`client/one/js/demo.js`), defaults (`client/one/js/constants/demo.js`) and three services:
+Demo consists of a group of decorators (`client/one/js/demo.js`), defaults (`client/one/js/constants/demo.js`) and services:
 - HTTP get request cache (`client/one/js/services/zem_demo_cache_service.js`) - keys are server URL-s
-- ad groups state object (`client/one/js/services/zem_demo_ad_groups_service.js`)
-- sources state object (`client/one/js/services/zem_demo_sources_service.js`)
+- ad groups state object (`client/one/js/services/zem_demo_ad_groups_service.js`) - support for persistant ad group information
+- sources state object (`client/one/js/services/zem_demo_sources_service.js`) - support for persistant content ad source list
+- content ads state object (`client/one/js/services/zem_demo_content_ads_service.js`) - support for persistant contnt ad actions (pause, resume ... )
 
 For most of the features cache is enough. For example:
 - creating a campaign or updating an existing campaign: cache[`/api/campaigns/ID/settings/`] <- campaign_data
