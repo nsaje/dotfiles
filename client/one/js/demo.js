@@ -5,7 +5,7 @@ oneApp.config(['$provide', function ($provide) {
     ///////////////////////////
     // API SERVICE DECORATOR //
     ///////////////////////////
-    $provide.decorator('api', ['$delegate', '$q', '$window', 'demoDefaults', 'zemLocalStorageService', 'zemDemoCacheService', 'zemDemoAdGroupsService', 'zemDemoSourcesService', function ($delegate, $q, $window, demoDefaults, zemLocalStorageService, zemDemoCacheService, zemDemoAdGroupsService, zemDemoSourcesService) {
+    $provide.decorator('api', ['$delegate', '$q', '$window', 'demoDefaults', 'zemLocalStorageService', 'zemDemoCacheService', 'zemDemoAdGroupsService', 'zemDemoSourcesService', 'zemDemoContentAdsService', function ($delegate, $q, $window, demoDefaults, zemLocalStorageService, zemDemoCacheService, zemDemoAdGroupsService, zemDemoSourcesService, zemDemoContentAdsService) {
         if (!$window.isDemo) { return $delegate; }
         var demoInUse = false,
             newCampaigns = {}, // new campaigns map, form: { campaignId1: 1, campaignId2: 1, ...}
@@ -501,6 +501,7 @@ oneApp.config(['$provide', function ($provide) {
                 angular.forEach(data.rows, function (r) {
                     var state = zemDemoCacheService.get('/api/ad_groups/' + id + '/contentads/' + r.id + '/state/');
                     zemDemoSourcesService.getForAd(id, r);
+                    zemDemoContentAdsService.apply(r.id, r);
                     if (state !== undefined) {
                         r.status_setting = state;
                     }
@@ -523,6 +524,7 @@ oneApp.config(['$provide', function ($provide) {
                             data.is_sync_recent = true;
                             angular.forEach(data.rows, function (r) {
                                 zemDemoSourcesService.getForAd(id, r);
+                                zemDemoContentAdsService.apply(r.id, r);
                             });
                             deferred.resolve(tableMerge(data, changes));
                         });
@@ -534,6 +536,7 @@ oneApp.config(['$provide', function ($provide) {
                             data.is_sync_recent = true;
                             angular.forEach(data.rows, function (r) {
                                 zemDemoSourcesService.getForAd(id, r);
+                                zemDemoContentAdsService.apply(r.id, r);
                             });
                             deferred.resolve(data);
                         });
@@ -550,6 +553,7 @@ oneApp.config(['$provide', function ($provide) {
                             data.is_sync_recent = true;
                             angular.forEach(data.rows, function (r) {
                                 zemDemoSourcesService.getForAd(id, r);
+                                zemDemoContentAdsService.apply(r.id, r);
                             });
                             deferred.resolve(data);
                         });
@@ -581,6 +585,7 @@ oneApp.config(['$provide', function ($provide) {
         $delegate.adGroupContentAdState.save = function (adGroupId, contentAdId, state) {
             var deferred = $q.defer(),
                 cacheId = '/api/ad_groups/' + adGroupId + '/contentads/' + contentAdId + '/state/';
+            console.log(arguments)
             zemDemoCacheService.set(cacheId, state);
             deferred.resolve({ success: true });
             return deferred.promise;
