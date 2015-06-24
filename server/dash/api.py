@@ -576,20 +576,36 @@ def update_content_ads_state(content_ads, state, request):
 
 
 def add_content_ads_state_change_to_history(ad_group, content_ads, state, request):
+    description = 'Content ad(s) {{ids}} set to {}.'.format(constants.ContentAdSourceState.get_text(state))
+
+    description = format_bulk_ids_into_description([ad.id for ad in content_ads], description)
+
+    save_change_to_history(ad_group, description, request)
+
+
+def add_content_ads_archived_change_to_history(ad_group, content_ads, archived, request):
+    description = 'Content ad(s) {{ids}} {}.'.format('Archived' if archived else 'Restored')
+
+    description = format_bulk_ids_into_description([ad.id for ad in content_ads], description)
+
+    save_change_to_history(ad_group, description, request)
+
+
+def save_change_to_history(ad_group, description, request):
+    settings = ad_group.get_current_settings().copy_settings()
+    settings.changes_text = description
+    settings.save(request)
+
+
+def format_bulk_ids_into_description(ids, description_template):
     num_id_limit = 10
 
-    shorten = len(content_ads) > num_id_limit
-    ids = [str(ad.id) for ad in content_ads[:num_id_limit]]
+    shorten = len(ids) > num_id_limit
 
-    changes_text = 'Content ad(s) {}{} set to {}.'.format(
-        ', '.join(ids),
-        ' and {} more'.format(len(content_ads) - num_id_limit) if shorten else '',
-        constants.ContentAdSourceState.get_text(state)
-    )
+    ids_text = '{}{}'.format(', '.join(map(str, ids[:num_id_limit])),
+                             ' and {} more'.format(len(ids) - num_id_limit) if shorten else '')
 
-    settings = ad_group.get_current_settings().copy_settings()
-    settings.changes_text = changes_text
-    settings.save(request)
+    return description_template.format(ids=ids_text)
 
 
 class AdGroupSourceSettingsWriter(object):
