@@ -705,6 +705,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         var userSettings = zemUserSettings.getInstance($scope, 'adGroupContentAdsPlus');
         var page = parseInt($location.search().page || '1');
 
+        userSettings.register('chartMetric1');
+        userSettings.register('chartMetric2');
         userSettings.register('order');
         userSettings.register('size');
 
