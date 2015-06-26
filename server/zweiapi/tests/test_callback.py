@@ -1,5 +1,6 @@
 import datetime
 import json
+import mock
 
 from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
@@ -446,6 +447,71 @@ class FetchReportsTestCase(TestCase):
         self.assertEqual(
             zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
             '7a97d7b612f435a2dba269614e90e3ac'
+        )
+
+    @override_settings(USE_HASH_CACHE=True)
+    @mock.patch('reports.update.stats_update_adgroup_source_traffic')
+    def test_cache_not_set_on_adgroup_stats_exception(self, mock_stats_update_adgroup_source_traffic):
+        mock_stats_update_adgroup_source_traffic.side_effect = Exception()
+        zweiapi.views.cache.clear()
+
+        self.assertEqual(
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            None
+        )
+
+        article_row = {
+            'title': 'Article 1',
+            'url': 'http://example.com',
+            'impressions': 50,
+            'clicks': 2,
+            'cost_cc': 2800
+        }
+        zwei_response_data = {
+            'status': 'success',
+            'data': [article_row]
+        }
+
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
+        response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
+
+        self.assertEqual(
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            None
+        )
+
+    @override_settings(USE_HASH_CACHE=True)
+    @mock.patch('reports.update.update_content_ads_source_traffic_stats')
+    def test_cache_not_set_on_content_ads_stats_exception(self, mock_update_content_ads_source_traffic_stats):
+        mock_update_content_ads_source_traffic_stats.side_effect = Exception()
+        zweiapi.views.cache.clear()
+
+        self.assertEqual(
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            None
+        )
+
+        article_row = {
+            'title': 'Article 1',
+            'url': 'http://example.com',
+            'impressions': 50,
+            'clicks': 2,
+            'cost_cc': 2800
+        }
+        zwei_response_data = {
+            'status': 'success',
+            'data': [article_row]
+        }
+
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
+        ad_group_source.can_manage_content_ads = True
+        ad_group_source.save()
+
+        response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
+
+        self.assertEqual(
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            None
         )
 
     @override_settings(USE_HASH_CACHE=False)
