@@ -841,7 +841,14 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.get_content_ad_csv'):
             raise exc.ForbiddenError(message='Not allowed')
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        try:
+            ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        except:
+            email = request.user.email
+            if email == settings.DEMO_USER_EMAIL or email in settings.DEMO_USERS:
+                content_ad_dicts = [{ 'url': '', 'title': '', 'image_url': '' }]
+                content = self._create_content_ad_csv(content_ad_dicts)
+                return self.create_csv_response('contentads', content=content)
 
         select_all = request.GET.get('select_all', False)
         select_batch_id = request.GET.get('select_batch')
