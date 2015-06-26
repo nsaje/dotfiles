@@ -717,6 +717,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 targetRegionsMode: settings.target_regions && settings.target_regions.length ? 'custom' : 'worldwide',
                 targetRegions: settings.target_regions,
                 trackingCode: settings.tracking_code,
+                enableGaTracking: settings.enable_ga_tracking
             };
         }
 
@@ -739,6 +740,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 target_devices: targetDevices,
                 target_regions: settings.targetRegionsMode === 'worldwide' ? [] : settings.targetRegions,
                 tracking_code: settings.trackingCode,
+                enable_ga_tracking: settings.enableGaTracking
             };
 
             return result;
@@ -758,7 +760,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 displayUrl: errors.display_url,
                 brandName: errors.brand_name,
                 description: errors.description,
-                callToAction: errors.call_to_action
+                callToAction: errors.call_to_action,
+                enableGaTracking: errors.enableGaTracking
             };
 
             return result;

@@ -166,6 +166,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 'target_devices': settings.target_devices,
                 'target_regions': settings.target_regions,
                 'tracking_code': settings.tracking_code,
+                'enable_ga_tracking': settings.enable_ga_tracking
             }
 
         return result
@@ -182,6 +183,8 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
         settings.ad_group_name = resource['name']
+        settings.enable_ga_tracking = resource['enable_ga_tracking']
+        settings.tracking_code = resource['tracking_code']
 
 
 class CampaignSettings(api_common.BaseApiView):

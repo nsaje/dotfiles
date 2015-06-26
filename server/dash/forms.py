@@ -72,6 +72,8 @@ class AdGroupSettingsForm(forms.Form):
     )
     tracking_code = forms.CharField(required=False)
 
+    enable_ga_tracking = forms.BooleanField(required=False)
+
     def __init__(self, *args, **kwargs):
         super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
 
