@@ -185,6 +185,7 @@ def _process_zwei_response(action, data, request):
                 if can_manage_content_ads:
                     reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, rows)
 
+                # set cache only after everything has updated successfully
                 _set_reports_cache(data, ad_group, source, date)
 
             if not valid_response:
