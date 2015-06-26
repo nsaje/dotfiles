@@ -185,7 +185,7 @@ def _process_zwei_response(action, data, request):
                 if can_manage_content_ads:
                     reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, rows)
 
-                _set_has_changed(data, ad_group, source, date)
+                _set_reports_cache(data, ad_group, source, date)
 
             if not valid_response:
                 msg = 'Update of source traffic for adgroup %d, source %d, datetime '\
@@ -293,7 +293,7 @@ def _has_changed(data, ad_group, source, date):
     return False
 
 
-def _set_has_changed(data, ad_group, source, date):
+def _set_reports_cache(data, ad_group, source, date):
     if not settings.USE_HASH_CACHE:
         return
 
