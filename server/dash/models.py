@@ -969,6 +969,7 @@ class AdGroupSettings(SettingsBase):
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
     tracking_code = models.TextField(blank=True)
+    enable_ga_tracking = models.BooleanField(default=True)
     archived = models.BooleanField(default=False)
     display_url = models.CharField(max_length=25, blank=True, default='')
     brand_name = models.CharField(max_length=25, blank=True, default='')
