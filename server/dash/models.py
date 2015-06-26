@@ -939,7 +939,8 @@ class AdGroupSettings(SettingsBase):
         'brand_name',
         'description',
         'call_to_action',
-        'ad_group_name'
+        'ad_group_name',
+        'enable_ga_tracking'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -1037,7 +1038,8 @@ class AdGroupSettings(SettingsBase):
             'brand_name': 'Brand name',
             'description': 'Description',
             'call_to_action': 'Call to action',
-            'ad_group_name': 'AdGroup name'
+            'ad_group_name': 'AdGroup name',
+            'enable_ga_tracking': 'Enable GA tracking'
         }
 
         return NAMES[prop_name]
@@ -1059,7 +1061,7 @@ class AdGroupSettings(SettingsBase):
                 value = ', '.join(constants.AdTargetCountry.get_text(x) for x in value)
             else:
                 value = 'worldwide'
-        elif prop_name == 'archived':
+        elif prop_name in ('archived', 'enable_ga_tracking'):
             value = str(value)
 
         return value

@@ -22,6 +22,7 @@ class AdGroupSettingsFormTest(TestCase):
             'target_devices': ['desktop', 'mobile'],
             'target_regions': ['US'],
             'tracking_code': 'code=test',
+            'enable_ga_tracking': True
         }
 
     def test_form(self):
@@ -38,7 +39,8 @@ class AdGroupSettingsFormTest(TestCase):
             'state': 2,
             'target_devices': ['desktop', 'mobile'],
             'target_regions': ['US'],
-            'tracking_code': 'code=test'
+            'tracking_code': 'code=test',
+            'enable_ga_tracking': True
         })
 
     def test_no_non_propagated_fields(self):

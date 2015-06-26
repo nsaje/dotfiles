@@ -49,6 +49,7 @@ class AdGroupSettingsTest(TestCase):
             'description': 'Example description',
             'call_to_action': 'Call to action',
             'ad_group_name': 'AdGroup name',
+            'enable_ga_tracking': True
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),
@@ -89,6 +90,10 @@ class AdGroupSettingsTest(TestCase):
             astimezone(pytz.timezone('UTC')).\
             replace(tzinfo=None)
         self.assertTrue(ad_group_settings.get_utc_start_datetime() < dt)
+
+    def test_adgroup_settings_enable_ga_tracking(self):
+        ad_group_settings = models.AdGroupSettings()
+        self.assertTrue(ad_group_settings.enable_ga_tracking)
 
 
 class AdGroupSourceTest(TestCase):

@@ -61,7 +61,8 @@ class AdGroupSettingsTest(TestCase):
                     'state': 1,
                     'target_devices': ['desktop'],
                     'target_regions': ['US'],
-                    'tracking_code': ''
+                    'tracking_code': '',
+                    'enable_ga_tracking': True
                 }
             },
             'success': True
@@ -191,7 +192,8 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Brand name', 'value': ''},
                         {'name': 'Description', 'value': ''},
                         {'name': 'Call to action', 'value': ''},
-                        {'name': 'AdGroup name', 'value': ''}
+                        {'name': 'AdGroup name', 'value': ''},
+                        {'name': 'Enable GA tracking', 'value': 'True'},
                     ],
                     'show_old_settings': False
                 },
@@ -213,7 +215,8 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Brand name', 'old_value': '', 'value': ''},
                         {'name': 'Description', 'old_value': '', 'value': ''},
                         {'name': 'Call to action', 'old_value': '', 'value': ''},
-                        {'name': 'AdGroup name', 'old_value': '', 'value': ''}
+                        {'name': 'AdGroup name', 'old_value': '', 'value': ''},
+                        {'name': 'Enable GA tracking', 'old_value': 'True', 'value': 'True'},
                     ],
                     'show_old_settings': True
                 }]
@@ -283,7 +286,8 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Brand name', 'value': ''},
                         {'name': 'Description', 'value': ''},
                         {'name': 'Call to action', 'value': ''},
-                        {'name': 'AdGroup name', 'value': ''}
+                        {'name': 'AdGroup name', 'value': ''},
+                        {'name': 'Enable GA tracking', 'value': 'True'}
                     ],
                     'show_old_settings': False
                 }]
