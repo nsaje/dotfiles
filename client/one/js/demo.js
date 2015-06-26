@@ -471,19 +471,13 @@ oneApp.config(['$provide', function ($provide) {
                     ads.last_change = (new Date()).toISOString();
                     return ads;
                 },
-                contentAds = defaults.contentAds([
-                    zemDemoCacheService.generateId('contentad'),
-                    zemDemoCacheService.generateId('contentad'),
-                    zemDemoCacheService.generateId('contentad'),
-                    zemDemoCacheService.generateId('contentad'),
-                    zemDemoCacheService.generateId('contentad'),
-                    zemDemoCacheService.generateId('contentad'),
-                    zemDemoCacheService.generateId('contentad'),
-                    zemDemoCacheService.generateId('contentad')
-                ]);
+                contentAdsIds = [];
+            for (var i = 0; i < 8; i++) {
+                contentAdsIds.push(zemDemoCacheService.generateId('contentad'));
+            }
             deferred.resolve('demo');
             zemDemoCacheService.set('/api/ad_groups/' + adGroupId + '/contentadsplus/table/',
-                                    applyModifications(contentAds));
+                                    applyModifications(defaults.contentAds(contentAdsIds)));
             zemDemoCacheService.set('/api/ad_groups/' + adGroupId + '/contentadsplus/table/updates/',
                       defaults.contentAdsUpdates);
             return deferred.promise;
