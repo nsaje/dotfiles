@@ -6,6 +6,7 @@ from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
 from django.core import mail
+from django.contrib.auth.models import Permission
 
 from zemauth.models import User
 from dash import models
@@ -111,6 +112,52 @@ class AdGroupSettingsTest(TestCase):
 
         mock_order_ad_group_settings_update.assert_called_with(
             ad_group, old_settings, new_settings, ANY, send=False)
+
+    def test_put_tracking_codes_with_permission(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+
+        self.settings_dict['settings']['tracking_code'] = 'asd=123'
+        self.settings_dict['settings']['enable_ga_tracking'] = False
+
+        response = self.client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True
+        )
+
+        response_settings_dict = json.loads(response.content)['data']['settings']
+
+        self.assertEqual(response_settings_dict['tracking_code'], 'asd=123')
+        self.assertEqual(response_settings_dict['enable_ga_tracking'], False)
+
+    def test_put_tracking_codes_without_permission(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+
+        user = User.objects.get(pk=2)
+        permission = Permission.objects.get(codename='settings_view')
+        user.user_permissions.add(permission)
+        user.save()
+
+        self.assertTrue(user.has_perm('dash.settings_view'))
+        self.assertFalse(user.has_perm('can_toggle_ga_performance_tracking'))
+
+        self.client.login(username=user.email, password='secret')
+
+        self.settings_dict['settings']['tracking_code'] = 'asd=123'
+        self.settings_dict['settings']['enable_ga_tracking'] = False
+
+        response = self.client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True
+        )
+
+        response_settings_dict = json.loads(response.content)['data']['settings']
+
+        self.assertEqual(response_settings_dict['tracking_code'], '')
+        self.assertEqual(response_settings_dict['enable_ga_tracking'], True)
 
 
 class AdGroupAgencyTest(TestCase):
