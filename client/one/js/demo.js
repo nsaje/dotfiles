@@ -363,7 +363,9 @@ oneApp.config(['$provide', function ($provide) {
                 },
                 newData = {};
             angular.forEach(data, function (value, field) {
-                newData[mapped[field]] = value;
+                if (mapped[field]) {
+                    newData[mapped[field]] = value;
+                }
                 newData[field] = value;
                 if (field.match(/_cc$/)) {
                     newData[field.replace(/_cc$/, '')] = value;
