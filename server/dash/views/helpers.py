@@ -470,6 +470,23 @@ def get_data_status(objects, last_sync_messages, state_messages=None):
     return data_status
 
 
+def get_content_ad_data_status(content_ads):
+    data_status = {}
+    for content_ad in content_ads:
+        in_sync = True
+        for content_ad_source in content_ad.sources.all():
+            if content_ad_source.state != content_ad_source.source_state:
+                in_sync = False
+                break
+
+        data_status[content_ad.id] = {
+            'message': None,
+            'ok': in_sync,
+        }
+
+    return data_status
+
+
 def get_last_sync_messages(objects, last_sync_times):
     last_sync_messages = {}
     for obj in objects:

@@ -1015,6 +1015,11 @@ class AdGroupAdsTable(api_common.BaseApiView):
             ) if (request.user.has_perm('zemauth.content_ads_postclick_acquisition') or
                   request.user.has_perm('zemauth.content_ads_postclick_engagement')) else False
 
+        if user.has_perm('zemauth.data_status_column'):
+            response['data_status'] = level_sources_table.get_data_status(
+                include_state_messages=user.has_perm('zemauth.set_ad_group_source_settings') and ad_group_level,
+            )
+
         return self.create_api_response({
             'rows': rows,
             'totals': totals_data,
