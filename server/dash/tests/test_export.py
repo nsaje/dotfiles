@@ -1,3 +1,5 @@
+from mock import patch
+
 import datetime
 from collections import OrderedDict
 
@@ -5,6 +7,11 @@ from django import test
 import xlrd
 
 from dash import export
+from dash import models
+
+from utils.test_helper import QuerySetMatcher
+
+from zemauth.models import User
 
 
 class ExportTestCase(test.TestCase):
@@ -64,3 +71,88 @@ class ExportTestCase(test.TestCase):
 
         self._assert_row(worksheet, 0, ['Date', 'Cost', 'Clicks', 'CTR'])
         self._assert_row(worksheet, 1, [41821.0, 1000.12, 103, 0.0103])
+
+    @patch('dash.export.reports.api.query')
+    def test_generate_rows(self, mock_query):
+        mock_stats = [{
+            'date': datetime.date(2015, 2, 1),
+            'cpc': '0.0200',
+            'clicks': 1500,
+            'source': 1
+        }]
+
+        mock_query.return_value = mock_stats
+
+        dimensions = ['date', 'article']
+        start_date = datetime.date(2015, 2, 1)
+        end_date = datetime.date(2015, 2, 2)
+        user = User(id=1)
+
+        source = models.Source(id=1)
+
+        rows = export.generate_rows(dimensions, start_date, end_date, user, source=source)
+
+        mock_query.assert_called_with(
+            start_date,
+            end_date,
+            dimensions,
+            ['date'],
+            source=source
+        )
+
+        self.assertEqual(rows, mock_stats)
+
+    fixtures = ['test_api.yaml']
+
+    @patch('dash.export.reports.api_contentads.query')
+    def test_generate_rows_content_ad(self, mock_query):
+        mock_stats = [{
+            'date': datetime.date(2015, 2, 1),
+            'cpc': '0.0200',
+            'clicks': 1500,
+            'source': 1,
+            'content_ad': 1,
+            'ad_group': 1
+        }]
+
+        mock_query.return_value = mock_stats
+
+        dimensions = ['date', 'ad_group', 'content_ad']
+        start_date = datetime.date(2015, 2, 1)
+        end_date = datetime.date(2015, 2, 2)
+        user = User(id=1)
+
+        sources = models.Source.objects.all()
+        sources_matcher = QuerySetMatcher(sources)
+
+        campaign = models.Campaign.objects.get(pk=1)
+
+        rows = export.generate_rows(
+            dimensions,
+            start_date,
+            end_date,
+            user,
+            source=sources,
+            campaign=campaign
+        )
+
+        mock_query.assert_called_with(
+            start_date,
+            end_date,
+            dimensions,
+            source=sources_matcher,
+            campaign=campaign
+        )
+
+        self.assertEqual(rows, [{
+            'ad_group': 1,
+            'clicks': 1500,
+            'content_ad': 1,
+            'cpc': '0.0200',
+            'date': datetime.date(2015, 2, 1),
+            'image_url': u'/123456789/200x300.jpg',
+            'source': 1,
+            'title': u'Test Article unicode \u010c\u017e\u0161',
+            'uploaded': datetime.date(2015, 2, 21),
+            'url': u'http://testurl.com'
+        }])

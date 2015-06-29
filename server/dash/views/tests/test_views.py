@@ -517,6 +517,40 @@ class AdGroupContentAdArchive(TestCase):
         response = self._post_content_ad_archive(1, {'content_ad_ids_selected': ['1', 'a']})
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
+    def test_add_to_history(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        content_ads = models.ContentAd.objects.filter(ad_group=ad_group).order_by('id')
+        self.assertEqual(len(content_ads), 3)
+
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        api.add_content_ads_archived_change_to_history(ad_group, content_ads, True, request)
+
+        settings = ad_group.get_current_settings()
+
+        self.assertEqual(settings.changes_text, 'Content ad(s) 1, 2, 3 Archived.')
+
+    def test_add_to_history_shorten(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        content_ads = models.ContentAd.objects.filter(ad_group=ad_group).order_by('id')
+        self.assertEqual(len(content_ads), 3)
+        content_ads = list(content_ads) * 4  # need more than 10 ads
+
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        api.add_content_ads_archived_change_to_history(ad_group, content_ads, True, request)
+
+        settings = ad_group.get_current_settings()
+
+        self.assertEqual(
+            settings.changes_text,
+            'Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more Archived.'
+        )
+
 
 class AdGroupContentAdRestore(TestCase):
     fixtures = ['test_api', 'test_views']
@@ -633,6 +667,40 @@ class AdGroupContentAdRestore(TestCase):
         response = self._post_content_ad_restore(1, {'content_ad_ids_selected': ['1', 'a']})
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
+    def test_add_to_history(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        content_ads = models.ContentAd.objects.filter(ad_group=ad_group).order_by('id')
+        self.assertEqual(len(content_ads), 3)
+
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        api.add_content_ads_archived_change_to_history(ad_group, content_ads, False, request)
+
+        settings = ad_group.get_current_settings()
+
+        self.assertEqual(settings.changes_text, 'Content ad(s) 1, 2, 3 Restored.')
+
+    def test_add_to_history_shorten(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        content_ads = models.ContentAd.objects.filter(ad_group=ad_group).order_by('id')
+        self.assertEqual(len(content_ads), 3)
+        content_ads = list(content_ads) * 4  # need more than 10 ads
+
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        api.add_content_ads_archived_change_to_history(ad_group, content_ads, False, request)
+
+        settings = ad_group.get_current_settings()
+
+        self.assertEqual(
+            settings.changes_text,
+            'Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more Restored.'
+        )
+
 
 class AdGroupAdsPlusUploadTest(TestCase):
     fixtures = ['test_views.yaml']
@@ -727,57 +795,6 @@ class AdGroupAdsPlusUploadTest(TestCase):
         )
 
         self.assertNotIn('Description is too long', response.content)
-
-
-class AdGroupAdsPlusUploadBatchesTest(TestCase):
-    fixtures = ['test_views', 'test_api']
-
-    def setUp(self):
-        self.factory = RequestFactory()
-
-    def _get_client(self, superuser=True):
-        password = 'secret'
-        user_id = 1 if superuser else 2
-        username = User.objects.get(pk=user_id).email
-        client = Client()
-        client.login(username=username, password=password)
-        return client
-
-    def test_permission(self):
-        response = self._get_client(superuser=False).get(
-            reverse('ad_group_ads_plus_upload_batches',
-            kwargs={'ad_group_id': 1}),
-            follow=True,
-        )
-        self.assertEqual(response.status_code, 403)
-
-        response = self._get_client(superuser=True).get(
-            reverse('ad_group_ads_plus_upload_batches',
-            kwargs={'ad_group_id': 1}),
-            follow=True,
-        )
-        self.assertEqual(response.status_code, 200)
-
-    def test_get_batches(self):
-        request = self.factory.get(
-            reverse('ad_group_ads_plus_upload_batches', kwargs={'ad_group_id': 1})
-        )
-        request.user = User.objects.get(pk=1)
-        handler = views.AdGroupAdsPlusUploadBatches()
-        response = handler.get(request, 1)
-        json_blob = json.loads(response.content)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual([], json_blob["data"]["batches"])
-
-        # make sure batch has state done now
-        uploadBatch = models.UploadBatch.objects.get(pk=1)
-        uploadBatch.status = constants.UploadBatchStatus.DONE
-        uploadBatch.save()
-
-        response = handler.get(request, 1)
-        json_blob = json.loads(response.content)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual([{"id": 1, "name": "batch 1"}], json_blob["data"]["batches"])
 
 
 class AdGroupSourcesTest(TestCase):
