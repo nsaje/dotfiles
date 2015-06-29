@@ -108,7 +108,8 @@ class AdGroupSettings(api_common.BaseApiView):
         self.set_ad_group(ad_group, form.cleaned_data)
 
         settings = current_settings.copy_settings()
-        self.set_settings(settings, form.cleaned_data, request.user.has_perm('can_toggle_ga_performance_tracking'))
+        self.set_settings(settings, form.cleaned_data,
+                          request.user.has_perm('zemauth.can_toggle_ga_performance_tracking'))
 
         actionlogs_to_send = []
         with transaction.atomic():
