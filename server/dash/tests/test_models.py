@@ -91,10 +91,6 @@ class AdGroupSettingsTest(TestCase):
             replace(tzinfo=None)
         self.assertTrue(ad_group_settings.get_utc_start_datetime() < dt)
 
-    def test_adgroup_settings_enable_ga_tracking(self):
-        ad_group_settings = models.AdGroupSettings()
-        self.assertTrue(ad_group_settings.enable_ga_tracking)
-
 
 class AdGroupSourceTest(TestCase):
 
