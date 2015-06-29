@@ -502,11 +502,11 @@ class AdGroupAdsPlusTableUpdatesTest(TestCase):
             '1': {
                 'submission_status': [{
                     'status': 1,
-                    'text': 'Pending / Paused',
+                    'text': 'Pending / Paused / Media Source Paused',
                     'name': 'AdsNative'
                 }, {
                     'status': 2,
-                    'text': 'Approved / Paused',
+                    'text': 'Approved / Paused / Media Source Paused',
                     'name': 'Gravity'
                 }],
                 'status_setting': 1
