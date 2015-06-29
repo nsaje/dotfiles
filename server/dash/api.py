@@ -396,7 +396,6 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
             if field_name == 'ad_group_name':
                 new_field_value = ad_group_source.get_external_name(new_adgroup_name=field_value)
 
-
             if field_name == 'start_date' and source.can_modify_start_date() or\
                field_name == 'end_date' and source.can_modify_end_date() or\
                field_name in ('target_devices', 'target_regions') and source.can_modify_targeting() or\
@@ -441,6 +440,10 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     )
 
             else:
+                if field_name == 'enable_ga_tracking':
+                    # do not create an action - only used for our redirector
+                    continue
+
                 if field_name == 'iab_category' and not source.can_modify_ad_group_iab_category_manual():
                     continue
 
