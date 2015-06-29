@@ -1187,8 +1187,8 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 'call_to_action': content_ad.batch.call_to_action,
                 'upload_time': content_ad.batch.created_dt,
                 'image_urls': {
-                    'square': content_ad.get_image_url(120, 120),
-                    'landscape': content_ad.get_image_url(193, 120)
+                    'square': content_ad.get_image_url(160, 160),
+                    'landscape': content_ad.get_image_url(256, 160)
                 },
                 'impressions': stat.get('impressions'),
                 'clicks': stat.get('clicks'),
