@@ -208,7 +208,7 @@ oneApp.config(['$provide', function ($provide) {
         $delegate.campaignAdGroups.create = function demo(id) {
             var deferred = $q.defer(),
                 today = new Date(),
-                todayMonth = today.getMonth()+1,
+                todayMonth = today.getMonth() + 1,
                 settings = defaults.newAdGroupSettings(zemDemoCacheService.generateId('adgroup')),
                 campaign = angular.extend({}, {
                     actionIsWaiting: false,
