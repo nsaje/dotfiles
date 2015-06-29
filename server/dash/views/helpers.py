@@ -155,7 +155,7 @@ def get_active_ad_group_sources(modelcls, modelobjects):
         active_ad_group_sources = models.AdGroupSource.objects \
             .filter(
                 # deprecated sources are not shown in the demo at all
-                Q(ad_group__in=real_corresponding_adgroups, source__deprecated=False) | 
+                Q(ad_group__in=real_corresponding_adgroups, source__deprecated=False) |
                 Q(ad_group__in=normal_adgroups)
             ).exclude(pk__in=[ags.id for ags in _inactive_ad_group_sources])
 
@@ -354,12 +354,22 @@ def get_content_ad_submission_status(content_ad_sources):
             'status': cas_submission_status,
         }
 
+        ad_group_source_state_text = ''
+        if cas_source_state == constants.AdGroupSourceSettingsState.ACTIVE:
+            ad_group_source_state_text = 'Running'
+        else:
+            ad_group_source_state_text = 'Paused'
+
         text = constants.ContentAdSubmissionStatus.get_text(cas_submission_status)
         if (cas_submission_status == constants.ContentAdSubmissionStatus.REJECTED and
                 content_ad_source.submission_errors is not None):
             text = '{} ({})'.format(text, content_ad_source.submission_errors)
         else:
-            text = '{} / {}'.format(text, constants.ContentAdSourceState.get_text(cas_source_state))
+            text = '{} / {} / Media Source {}'.format(
+                text,
+                constants.ContentAdSourceState.get_text(cas_source_state),
+                ad_group_source_state_text
+            )
 
         status['text'] = text
         submission_status.append(status)
