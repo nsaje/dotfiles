@@ -1104,6 +1104,14 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                               has_view_archived_permission,
                               show_archived)
 
+        batches = []
+        if request.user.has_perm('zemauth.content_ads_bulk_actions'):
+            batch_ids = set([row['batch_id'] for row in rows])
+            batches = models.UploadBatch.objects.filter(
+                id__in=tuple(batch_ids),
+                status=constants.UploadBatchStatus.DONE,
+            ).order_by('-created_dt')
+
         rows = sort_results(rows, [order])
         page_rows, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
             rows, page, size)
@@ -1123,6 +1131,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
 
         return self.create_api_response({
             'rows': rows,
+            'batches': [{'id': batch.id, 'name': batch.name} for batch in batches],
             'totals': self._get_total_row(total_stats),
             'order': order,
             'pagination': {

@@ -2109,26 +2109,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         };
     };
 
-    function AdGroupAdsPlusUploadBatches() {
-        this.list = function(adGroupId) {
-            var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload_batches/';
-
-            var config = {
-                params: {}
-            };
-
-            $http.get(url, config).
-                success(function(data) {
-                    deferred.resolve(data);
-                }).error(function(data) {
-                    deferred.reject(data);
-                });
- 
-            return deferred.promise;
-        };
-    }
-
     function AvailableSources() {
         this.list = function () {
             var deferred = $q.defer();
@@ -2225,7 +2205,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         adGroupAdsPlusUpload: new AdGroupAdsPlusUpload(),
         availableSources: new AvailableSources(),
         adGroupContentAdState: new AdGroupContentAdState(),
-        adGroupAdsPlusUploadBatches: new AdGroupAdsPlusUploadBatches(),
         adGroupContentAdArchive: new AdGroupContentAdArchive()
         // Also, don't forget to add me to DEMO!
     };
