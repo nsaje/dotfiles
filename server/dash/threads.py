@@ -4,6 +4,7 @@ import json
 import unicodecsv
 import StringIO
 
+from django.conf import settings
 from django.db import transaction
 from django.forms import ValidationError
 from django.core import validators
@@ -59,8 +60,7 @@ class ProcessUploadThread(Thread):
                         self.batch.id,
                         count_processed
                     )
-                    t.start()
-                    t.join()
+                    t.start_and_join()
 
                     if not errors:
                         content_ad, content_ad_sources = self._create_objects(data, ad_group_sources)
@@ -259,6 +259,16 @@ class UpdateUploadBatchThread(Thread):
         self.batch_id = batch_id
         self.processed_content_ads = processed_content_ads
         super(UpdateUploadBatchThread, self).__init__(*args, **kwargs)
+
+    def start_and_join(self):
+        # hack around the fact that all db tests are ran in transaction
+        # not calling parent constructor causes run to be called as a normal
+        # function
+        if settings.TESTING:
+            self.run()
+            return
+        self.start()
+        self.join()
 
     def run(self):
         batch = models.UploadBatch.objects.get(pk=self.batch_id)
