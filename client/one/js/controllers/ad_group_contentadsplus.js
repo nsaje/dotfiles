@@ -378,6 +378,17 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         totalRow: true,
         order: true,
         initialOrder: 'desc'
+    }, {
+        name: '',
+        nameCssClass: 'data-status-icon',
+        type: 'dataStatus',
+        internal: $scope.isPermissionInternal('zemauth.data_status_column'),
+        shown: $scope.hasPermission('zemauth.data_status_column'),
+        checked: true,
+        totalRow: false,
+        unselectable: true,
+        help: 'Status of third party data accuracy.',
+        disabled: false
     }];
 
     $scope.columnCategories = [{
