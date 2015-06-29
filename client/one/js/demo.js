@@ -208,14 +208,17 @@ oneApp.config(['$provide', function ($provide) {
         $delegate.campaignAdGroups.create = function demo(id) {
             var deferred = $q.defer(),
                 today = new Date(),
+                todayMonth = today.getMonth()+1,
                 settings = defaults.newAdGroupSettings(zemDemoCacheService.generateId('adgroup')),
                 campaign = angular.extend({}, {
                     actionIsWaiting: false,
                     settings: settings
                 });
-            settings.startDate = moment(today.getFullYear() + "-" +
-                                        (today.getMonth()+1) + "-" +
-                                        today.getDate()).toDate();
+            settings.startDate = moment(
+                today.getFullYear() + "-" +
+                (todayMonth < 10 ? "0" : "") + todayMonth + "-" +
+                today.getDate()
+            ).toDate();
             
             zemDemoCacheService.set('/api/ad_groups/' + settings.id + '/settings/', campaign);
             zemDemoAdGroupsService.newAdGroup(id, settings.id);
