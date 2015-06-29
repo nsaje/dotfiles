@@ -177,7 +177,7 @@ oneApp.constant('demoDefaults', {
         };
         return angular.extend(obj, values);
     },
-    contentAds: function () {
+    contentAds: function (ids) {
         return {
             "notifications": {},
             "pagination": {
@@ -189,6 +189,7 @@ oneApp.constant('demoDefaults', {
                 {
                     "status_setting": 1,
                     "cpc": 0, "clicks": 0, "cost": 0, "impressions": 0, "ctr": 0,
+                    "id": ids[0],
                     "image_urls": {
                         "square": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/t/552d02c9e4b0c23003302aae/1429013198329/?format=1500w",
                         "landscape": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/t/552d02c9e4b0c23003302aae/1429013198329/?format=1500w"
@@ -205,6 +206,7 @@ oneApp.constant('demoDefaults', {
                 {
                     "status_setting": 1,
                     "cpc": 0, "clicks": 0, "cost": 0, "impressions": 0, "ctr": 0,
+                    "id": ids[1],
                     "image_urls": {
                         "square": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/t/552d02c9e4b0c23003302aae/1429013198329/?format=1500w",
                         "landscape": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/t/552d02c9e4b0c23003302aae/1429013198329/?format=1500w"
@@ -221,6 +223,7 @@ oneApp.constant('demoDefaults', {
                 {
                     "status_setting": 1,
                     "cpc": 0, "clicks": 0, "cost": 0, "impressions": 0, "ctr": 0,
+                    "id": ids[2],
                     "image_urls": {
                         "square": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/54369edee4b001842e669258/552d0296e4b0bfddbb2581b4/1429859532791/",
                         "landscape": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/54369edee4b001842e669258/552d0296e4b0bfddbb2581b4/1429859532791/"
@@ -237,6 +240,7 @@ oneApp.constant('demoDefaults', {
                 {
                     "status_setting": 1,
                     "cpc": 0, "clicks": 0, "cost": 0, "impressions": 0, "ctr": 0,
+                    "id": ids[3],
                     "image_urls": {
                         "square": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/54369edee4b001842e669258/552d0296e4b0bfddbb2581b4/1429859532791/",
                         "landscape": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/54369edee4b001842e669258/552d0296e4b0bfddbb2581b4/1429859532791/"
@@ -253,6 +257,7 @@ oneApp.constant('demoDefaults', {
                 {
                     "status_setting": 1,
                     "cpc": 0, "clicks": 0, "cost": 0, "impressions": 0, "ctr": 0,
+                    "id": ids[4],
                     "image_urls": {
                         "square": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/54369edee4b001842e669258/5507fb44e4b0fb424faf40d3/1426624899137/",
                         "landscape": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/54369edee4b001842e669258/5507fb44e4b0fb424faf40d3/1426624899137/"
@@ -269,6 +274,7 @@ oneApp.constant('demoDefaults', {
                 {
                     "status_setting": 1,
                     "cpc": 0, "clicks": 0, "cost": 0, "impressions": 0, "ctr": 0,
+                    "id": ids[5],
                     "image_urls": {
                         "square": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/54369edee4b001842e669258/5507fb44e4b0fb424faf40d3/1426624899137/",
                         "landscape": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/54369edee4b001842e669258/5507fb44e4b0fb424faf40d3/1426624899137/"
@@ -285,6 +291,7 @@ oneApp.constant('demoDefaults', {
                 {
                     "status_setting": 1,
                     "cpc": 0, "clicks": 0, "cost": 0, "impressions": 0, "ctr": 0,
+                    "id": ids[6],
                     "image_urls": {
                         "square": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/t/5500629de4b05b6c406ac30a/1426088613779/",
                         "landscape": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/t/5500629de4b05b6c406ac30a/1426088613779/"
@@ -301,6 +308,7 @@ oneApp.constant('demoDefaults', {
                 {
                     "status_setting": 1,
                     "cpc": 0, "clicks": 0, "cost": 0, "impressions": 0, "ctr": 0,
+                    "id": ids[7],
                     "image_urls": {
                         "square": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/t/5500629de4b05b6c406ac30a/1426088613779/",
                         "landscape": "http://static1.squarespace.com/static/537a2036e4b05ff1a08a6e1b/t/5500629de4b05b6c406ac30a/1426088613779/"

@@ -23,12 +23,12 @@ oneApp.factory("zemDemoSourcesService", ['$q', '$window', 'demoDefaults', 'zemDe
                 adGroupSourcesTableRows[adGroup] = rows;
                 return deferred.promise;
             }
-            adGroupSourcesTableRows[adGroup] = [];
+            adGroupSourcesTableRows[adGroup] = demoDefaults.newAdGroupSourcesTable().rows;
             apiGetSourcesTable(adGroup).then(function (data) {
                 adGroupSourcesTableRows[adGroup] = data.rows;
                 deferred.resolve(true);
             }, function () {
-                adGroupSourcesTableRows[adGroup] = [];
+                adGroupSourcesTableRows[adGroup] = demoDefaults.newAdGroupSourcesTable().rows;
                 deferred.resolve(true);
             });
             return deferred.promise;
@@ -41,7 +41,7 @@ oneApp.factory("zemDemoSourcesService", ['$q', '$window', 'demoDefaults', 'zemDe
             var deferred = null;
             if (adGroupSourcesTableRows[adGroup] === undefined) {
                 if (zemDemoAdGroupsService.isNew(adGroup)) {
-                    adGroupSourcesTableRows[adGroup] = [];
+                    adGroupSourcesTableRows[adGroup] = demoDefaults.newAdGroupSourcesTable().rows;
                     deferred = $q.defer();
                     deferred.resolve(false);
                     return deferred.promise;
