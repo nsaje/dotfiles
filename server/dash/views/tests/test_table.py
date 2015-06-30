@@ -142,7 +142,8 @@ class AdGroupAdsPlusTableTest(TestCase):
             }],
             'title': u'Test Article unicode Čžš',
             'upload_time': '2015-02-22T19:00:00',
-            'url': 'http://testurl.com'
+            'url': 'http://testurl.com',
+            'url_with_tracking_codes': 'http://testurl.com?param1=foo&param2=bar&_z1_adgid=1&_z1_msid=z1',
         }, {
             'archived': False,
             'status_setting': 2,
@@ -150,6 +151,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             'ctr': None,
             'title': 'Test Article with no content_ad_sources 1',
             'url': 'http://testurl.com',
+            'url_with_tracking_codes': 'http://testurl.com?param1=foo&param2=bar&_z1_adgid=1&_z1_msid=z1',
             'clicks': None,
             'cpc': None,
             'image_urls': {

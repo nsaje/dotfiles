@@ -1158,10 +1158,25 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             'ctr': stats['ctr']
         }
 
+    def _get_url(self, ad_group, content_ad, is_demo, tracking_codes=None):
+        if is_demo:
+            return 'http://www.example.com/{}/{}'.format(ad_group.name, content_ad.id)
+
+        if tracking_codes is None:
+            return content_ad.url
+
+        return content_ad.url_with_tracking_codes(tracking_codes)
+
     def _get_rows(self, content_ads, stats, ad_group, has_view_archived_permission, show_archived):
         stats = {s['content_ad']: s for s in stats}
-        demo_ad_groups = models.AdGroup.demo_objects.all()
         rows = []
+
+        tracking_codes = utils.url_helper.combine_tracking_codes(
+            ad_group.get_current_settings().get_tracking_codes(),
+            '_z1_adgid=%s&_z1_msid=z1' % (ad_group.id)
+        )
+
+        is_demo = ad_group in models.AdGroup.demo_objects.all()
 
         for content_ad in content_ads:
             stat = stats.get(content_ad.id, {})
@@ -1172,13 +1187,14 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                     reports.api.row_has_postclick_data(stat)):
                 continue
 
-            url = 'http://www.example.com/{}/{}'.format(ad_group.name, content_ad.id)\
-                if ad_group in demo_ad_groups else content_ad.url
+            url = self._get_url(ad_group, content_ad, is_demo)
+            url_with_tracking_codes = self._get_url(ad_group, content_ad, is_demo, tracking_codes)
 
             row = {
                 'id': str(content_ad.id),
                 'title': content_ad.title,
                 'url': url,
+                'url_with_tracking_codes': url_with_tracking_codes,
                 'batch_name': content_ad.batch.name,
                 'batch_id': content_ad.batch.id,
                 'display_url': content_ad.batch.display_url,

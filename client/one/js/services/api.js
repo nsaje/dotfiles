@@ -330,7 +330,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         function convertFromApi(row) {
             row.titleLink = {
                 text: row.title,
-                url: row.url !== '' ? row.url : null
+                url: row.url_with_tracking_codes !== '' ? row.url_with_tracking_codes : null
             };
 
             row.urlLink = {

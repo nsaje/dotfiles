@@ -231,12 +231,26 @@
         created_by: 1
         ad_group: 1
         state: 2
+        tracking_code: 'param1=foo&param2=bar'
         display_url: 'example.com'
         brand_name: 'Example'
         description: 'Example description'
         call_to_action: 'Call to action'
     model: dash.adgroupsettings
     pk: 1
+
+-   fields:
+        created_dt: '2014-07-04T09:58:21'
+        created_by: 1
+        ad_group: 1
+        state: 2
+        tracking_code: 'param1=foo&param2=bar'
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
+    model: dash.adgroupsettings
+    pk: 2
 
 # test adgroup
 

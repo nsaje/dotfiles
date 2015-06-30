@@ -233,7 +233,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         type: 'linkText',
         shown: true,
         totalRow: false,
-        help: 'The creative title/headline of a content ad.',
+        help: 'The creative title/headline of a content ad. The link to landing page includes tracking codes.',
         extraTdCss: 'trimmed title',
         titleField: 'title',
         order: true,
@@ -382,7 +382,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
     $scope.columnCategories = [{
         'name': 'Content Sync',
-        'fields': ['ad_selected', 'image_urls', 'titleLink', 'submission_status', 'checked', 'upload_time', 'batch_name', 'display_url', 'brand_name', 'description', 'call_to_action']
+        'fields': ['ad_selected', 'image_urls', 'titleLink', 'urlLink', 'submission_status', 'checked', 'upload_time', 'batch_name', 'display_url', 'brand_name', 'description', 'call_to_action']
     }, {
         'name': 'Traffic Acquisition',
         'fields': ['cost', 'cpc', 'clicks', 'impressions', 'ctr']
