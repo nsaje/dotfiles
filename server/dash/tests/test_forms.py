@@ -22,6 +22,7 @@ class AdGroupSettingsFormTest(TestCase):
             'target_devices': ['desktop', 'mobile'],
             'target_regions': ['US'],
             'tracking_code': 'code=test',
+            'enable_ga_tracking': True
         }
 
     def test_form(self):
@@ -38,7 +39,8 @@ class AdGroupSettingsFormTest(TestCase):
             'state': 2,
             'target_devices': ['desktop', 'mobile'],
             'target_regions': ['US'],
-            'tracking_code': 'code=test'
+            'tracking_code': 'code=test',
+            'enable_ga_tracking': True
         })
 
     def test_no_non_propagated_fields(self):
@@ -61,6 +63,27 @@ class AdGroupSettingsFormTest(TestCase):
         self.assertEqual(form.errors, {
             'cpc_cc': ['Minimum CPC is $0.03.'],
             'daily_budget_cc': ['Please provide budget of at least $10.00.']})
+
+    def test_default_value_enable_ga_tracking(self):
+        form = forms.AdGroupSettingsForm(self.data)
+        self.assertTrue(form.is_valid())
+        self.assertIn('enable_ga_tracking', form.cleaned_data)
+        self.assertTrue(form.cleaned_data['enable_ga_tracking'])
+
+        del self.data['enable_ga_tracking']
+
+        # should be True if not set
+        form = forms.AdGroupSettingsForm(self.data)
+        self.assertTrue(form.is_valid())
+        self.assertIn('enable_ga_tracking', form.cleaned_data)
+        self.assertTrue(form.cleaned_data['enable_ga_tracking'])
+
+        self.data['enable_ga_tracking'] = False
+
+        form = forms.AdGroupSettingsForm(self.data)
+        self.assertTrue(form.is_valid())
+        self.assertIn('enable_ga_tracking', form.cleaned_data)
+        self.assertFalse(form.cleaned_data['enable_ga_tracking'])
 
 
 class AdGroupAdsPlusUploadFormTest(TestCase):

@@ -341,6 +341,26 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.assertEqual([], ret)
         self.assertFalse(manual_actions.exists())
 
+    @mock.patch('dash.api.redirector_helper.insert_adgroup')
+    def test_ga_tracking_propagation(self, insert_adgroup_mock):
+        ad_group_source1 = models.AdGroupSource.objects.get(id=1)
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.enable_ga_tracking = False  # the only change (default is True)
+
+        ret = api.order_ad_group_settings_update(ad_group_source1.ad_group, adgs1, adgs2, None)
+        insert_adgroup_mock.assert_called_with(1, '', disable_auto_tracking=True)
+
+        manual_actions = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source1,
+            action_type=actionlog.constants.ActionType.MANUAL
+        )
+
+        # no manual nor automatic actions created
+        self.assertFalse(manual_actions.exists())
+        self.assertEqual([], ret)
+
 
 class UpdateAdGroupSourceState(TestCase):
     fixtures = ['test_api.yaml']
