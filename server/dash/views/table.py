@@ -1015,11 +1015,6 @@ class AdGroupAdsTable(api_common.BaseApiView):
             ) if (request.user.has_perm('zemauth.content_ads_postclick_acquisition') or
                   request.user.has_perm('zemauth.content_ads_postclick_engagement')) else False
 
-        if user.has_perm('zemauth.data_status_column'):
-            response['data_status'] = level_sources_table.get_data_status(
-                include_state_messages=user.has_perm('zemauth.set_ad_group_source_settings') and ad_group_level,
-            )
-
         return self.create_api_response({
             'rows': rows,
             'totals': totals_data,
@@ -1077,6 +1072,7 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
 class AdGroupAdsPlusTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_table_get')
     def get(self, request, ad_group_id):
+        user = request.user
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         if not ad_group.content_ads_tab_with_cms and not request.user.has_perm('zemauth.new_content_ads_tab'):
             raise exc.ForbiddenError(message='Not allowed')
@@ -1134,7 +1130,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         last_success_actions = ad_group_sync.get_latest_success_by_child(recompute=False)
         last_sync = helpers.get_last_sync(last_success_actions.values())
 
-        return self.create_api_response({
+        response_dict = {
             'rows': rows,
             'batches': [{'id': batch.id, 'name': batch.name} for batch in batches],
             'totals': self._get_total_row(total_stats),
@@ -1152,7 +1148,14 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
             'is_sync_recent': helpers.is_sync_recent(last_success_actions.values()),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress([ad_group], sources=filtered_sources),
-        })
+        }
+
+        if user.has_perm('zemauth.data_status_column'):
+            response_dict['data_status'] = helpers.get_content_ad_data_status(
+                content_ads,
+            )
+
+        return self.create_api_response(response_dict)
 
     def _get_total_row(self, stats):
         return {
