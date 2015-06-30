@@ -644,6 +644,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
                 $scope.isSyncRecent = data.is_sync_recent;
                 $scope.isSyncInProgress = data.is_sync_in_progress;
+                $scope.dataStatus = data.dataStatus;
 
                 $scope.pollTableUpdates();
                 $scope.updateContentAdSelection();
@@ -753,6 +754,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 if (data.lastChange) {
                     $scope.lastChange = data.lastChange;
                     $scope.notifications = data.notifications;
+                    $scope.dataStatus = data.dataStatus;
 
                     updateTableData(data.rows, data.totals);
                 }

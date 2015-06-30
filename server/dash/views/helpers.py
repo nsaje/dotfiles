@@ -474,13 +474,25 @@ def get_content_ad_data_status(content_ads):
     data_status = {}
     for content_ad in content_ads:
         in_sync = True
-        for content_ad_source in content_ad.sources.all():
-            if content_ad_source.state != content_ad_source.source_state:
+        for ad_group_source in content_ad.sources.all():
+            content_ad_source = models.ContentAdSource.objects.filter(
+                content_ad=content_ad,
+                source=ad_group_source
+            ).first()
+
+            if content_ad_source is not None and\
+                content_ad_source.state != content_ad_source.source_state:
                 in_sync = False
                 break
 
-        data_status[content_ad.id] = {
-            'message': None,
+        message = ''
+        if in_sync:
+            message = 'All data is OK.'
+        else:
+            message = 'The status of this Content Ad differs from the one in the 3rd party dashboard.'
+
+        data_status[str(content_ad.id)] = {
+            'message': message,
             'ok': in_sync,
         }
 

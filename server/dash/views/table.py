@@ -1038,6 +1038,7 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_table_updates_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        user = request.user
 
         if not ad_group.content_ads_tab_with_cms and not request.user.has_perm('zemauth.new_content_ads_tab'):
             raise exc.ForbiddenError(message='Not allowed')
@@ -1061,12 +1062,19 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
 
         notifications = helpers.get_content_ad_notifications(ad_group)
 
-        return self.create_api_response({
+        response_dict = {
             'rows': rows,
             'notifications': notifications,
             'last_change': last_change_dt,
             'in_progress': any(n['in_progress'] for n in notifications.values())
-        })
+        }
+
+        if user.has_perm('zemauth.data_status_column'):
+            response_dict['data_status'] = helpers.get_content_ad_data_status(
+                changed_content_ads,
+            )
+
+        return self.create_api_response(response_dict)
 
 
 class AdGroupAdsPlusTable(api_common.BaseApiView):
