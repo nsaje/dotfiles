@@ -7,7 +7,7 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dash', '0054_contentad_archived'),
+        ('dash', '0055_adgroupsettings_enable_ga_tracking'),
     ]
 
     operations = [
