@@ -194,11 +194,23 @@ class ProcessUploadThread(Thread):
             except ValidationError:
                 errors.append(url_err)
 
+        image_url_err = None
         try:
             validate_url(image_url)
         except ValidationError:
             process_image = False
-            errors.append('Invalid image URL')
+            image_url_err = 'Invalid image URL'
+
+        # allow urls without protocol prefix(ie. www.)
+        if image_url_err is not None:
+            prefixed_image_url = 'http://{image_url}'.format(image_url=image_url)
+            try:
+                validate_url(prefixed_image_url)
+                process_image = True
+                image_url = prefixed_image_url
+            except ValidationError:
+                process_image = False
+                errors.append(image_url_err)
 
         if title is None or not len(title):
             errors.append('Missing title')

@@ -247,12 +247,12 @@ http://example.com,test title,http://example.com/image,\n'''.replace("\n",'\r\n'
         content_ads = [{
             'url': 'noprefix.com',
             'title': 'Test title',
-            'image_url': 'http://example.com/image',
+            'image_url': 'example.com/image',
             'crop_areas': '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
         }, {
             'url': 'http://prefix.com',
             'title': 'Test title',
-            'image_url': 'http://example.com/image',
+            'image_url': 'www.example.com/image',
             'crop_areas': '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
         }]
         filename = 'filename.csv'
@@ -278,12 +278,12 @@ http://example.com,test title,http://example.com/image,\n'''.replace("\n",'\r\n'
         thread.run()
 
         self.assertEqual(batch.status, constants.UploadBatchStatus.DONE)
-        self.assertFalse(mock_insert_action.called)
+
+        mock_process_image.assert_called_with('http://www.example.com/image',[[[44, 22], [144, 122]], [[33, 22], [177, 122]]])
 
         content_ads = models.ContentAd.objects.all().order_by('-created_dt')
         self.assertEqual('http://prefix.com', content_ads[0].url)
         self.assertEqual('http://noprefix.com', content_ads[1].url)
-
 
     @patch('dash.threads.image_helper.process_image')
     def test_clean_row_z3_image_too_large(self, mock_process_image):
