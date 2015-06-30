@@ -179,10 +179,20 @@ class ProcessUploadThread(Thread):
 
         validate_url = validators.URLValidator(schemes=['http', 'https'])
 
+        url_err = None
         try:
             validate_url(url)
         except ValidationError:
-            errors.append('Invalid URL')
+            url_err = 'Invalid URL'
+
+        # allow urls without protocol prefix(ie. www.)
+        if url_err is not None:
+            prefixed_url = 'http://{url}'.format(url=url)
+            try:
+                validate_url(prefixed_url)
+                url = prefixed_url
+            except ValidationError:
+                errors.append(url_err)
 
         try:
             validate_url(image_url)
