@@ -364,13 +364,14 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
         order_type=actionlog.constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
     )
 
+    if 'tracking_code' in changes or 'enable_ga_tracking' in changes:
+        redirector_helper.insert_adgroup(ad_group.id, new_settings.get_tracking_codes(),
+                                         disable_auto_tracking=not new_settings.enable_ga_tracking)
+
     actions = []
     for field_name, field_value in changes.iteritems():
         if field_name in BLOCKED_AD_GROUP_SETTINGS:
             continue
-
-        if field_name == 'tracking_code':
-            redirector_helper.insert_adgroup(ad_group.id, new_settings.get_tracking_codes())
 
         ad_group_sources = ad_group.adgroupsource_set.all()
         for ad_group_source in ad_group_sources:
@@ -394,7 +395,6 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
 
             if field_name == 'ad_group_name':
                 new_field_value = ad_group_source.get_external_name(new_adgroup_name=field_value)
-
 
             if field_name == 'start_date' and source.can_modify_start_date() or\
                field_name == 'end_date' and source.can_modify_end_date() or\
@@ -440,6 +440,10 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     )
 
             else:
+                if field_name == 'enable_ga_tracking':
+                    # do not create an action - only used for our redirector
+                    continue
+
                 if field_name == 'iab_category' and not source.can_modify_ad_group_iab_category_manual():
                     continue
 

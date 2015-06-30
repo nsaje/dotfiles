@@ -49,6 +49,7 @@ class AdGroupSettingsTest(TestCase):
             'description': 'Example description',
             'call_to_action': 'Call to action',
             'ad_group_name': 'AdGroup name',
+            'enable_ga_tracking': True
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),
