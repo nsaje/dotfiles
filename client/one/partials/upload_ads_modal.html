@@ -71,7 +71,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.description}">
             <label for="description-input" class="col-xs-3 control-label">
                 Description
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Description of uploaded content ads." placement="top"></zem-help-popover>
+                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Description of a content ad." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-5">
                 <textarea id="description-input" type="text" class="form-control" ng-model="formData.description" ng-focus="clearErrors('description')">
