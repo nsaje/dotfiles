@@ -1210,6 +1210,9 @@ class UploadBatch(models.Model):
     description = models.CharField(max_length=140, blank=True, default='')
     call_to_action = models.CharField(max_length=25, blank=True, default='')
 
+    processed_content_ads = models.PositiveIntegerField(null=True)
+    batch_size = models.PositiveIntegerField(null=True)
+
     class Meta:
         get_latest_by = 'created_dt'
 

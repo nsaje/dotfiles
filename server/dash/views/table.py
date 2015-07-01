@@ -1038,6 +1038,7 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_table_updates_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        user = request.user
 
         if not ad_group.content_ads_tab_with_cms and not request.user.has_perm('zemauth.new_content_ads_tab'):
             raise exc.ForbiddenError(message='Not allowed')
@@ -1061,17 +1062,25 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
 
         notifications = helpers.get_content_ad_notifications(ad_group)
 
-        return self.create_api_response({
+        response_dict = {
             'rows': rows,
             'notifications': notifications,
             'last_change': last_change_dt,
             'in_progress': any(n['in_progress'] for n in notifications.values())
-        })
+        }
+
+        if user.has_perm('zemauth.data_status_column'):
+            response_dict['data_status'] = helpers.get_content_ad_data_status(
+                changed_content_ads,
+            )
+
+        return self.create_api_response(response_dict)
 
 
 class AdGroupAdsPlusTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_table_get')
     def get(self, request, ad_group_id):
+        user = request.user
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         if not ad_group.content_ads_tab_with_cms and not request.user.has_perm('zemauth.new_content_ads_tab'):
             raise exc.ForbiddenError(message='Not allowed')
@@ -1129,7 +1138,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         last_success_actions = ad_group_sync.get_latest_success_by_child(recompute=False)
         last_sync = helpers.get_last_sync(last_success_actions.values())
 
-        return self.create_api_response({
+        response_dict = {
             'rows': rows,
             'batches': [{'id': batch.id, 'name': batch.name} for batch in batches],
             'totals': self._get_total_row(total_stats),
@@ -1147,7 +1156,14 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
             'is_sync_recent': helpers.is_sync_recent(last_success_actions.values()),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress([ad_group], sources=filtered_sources),
-        })
+        }
+
+        if user.has_perm('zemauth.data_status_column'):
+            response_dict['data_status'] = helpers.get_content_ad_data_status(
+                content_ads,
+            )
+
+        return self.create_api_response(response_dict)
 
     def _get_total_row(self, stats):
         return {
@@ -1187,8 +1203,8 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 'call_to_action': content_ad.batch.call_to_action,
                 'upload_time': content_ad.batch.created_dt,
                 'image_urls': {
-                    'square': content_ad.get_image_url(120, 120),
-                    'landscape': content_ad.get_image_url(193, 120)
+                    'square': content_ad.get_image_url(160, 160),
+                    'landscape': content_ad.get_image_url(256, 160)
                 },
                 'impressions': stat.get('impressions'),
                 'clicks': stat.get('clicks'),

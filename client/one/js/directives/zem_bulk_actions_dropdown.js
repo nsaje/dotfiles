@@ -22,7 +22,7 @@ oneApp.directive('zemBulkActionsDropdown', function() {
                 });
 
                 var notification = option.notification;
-                var element = angular.element(document.createElement('span'));;
+                var element = angular.element(document.createElement('span'));
                 if (notification) {
                     element.attr('popover', notification);
                     element.attr('popover-trigger', 'mouseenter');
