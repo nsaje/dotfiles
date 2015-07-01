@@ -814,7 +814,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
             filter(account__in=accounts).\
             order_by('account_id', '-created_dt')
 
-        size = max(min(int(size or 5), 50), 1)
+        size = max(min(int(size or 5), 4294967295), 1)
         if page:
             page = int(page)
 
@@ -973,7 +973,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
         order = request.GET.get('order') or '-clicks'
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
-        size = max(min(int(size or 5), 50), 1)
+        size = max(min(int(size or 5), 4294967295), 1)
 
         result = reports.api_helpers.filter_by_permissions(reports.api.query(
             start_date=start_date,
@@ -1092,7 +1092,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         page = request.GET.get('page')
         order = request.GET.get('order') or 'cost'
         size = request.GET.get('size')
-        size = max(min(int(size or 5), 50), 1)
+        size = max(min(int(size or 5), 4294967295), 1)
 
         content_ads = models.ContentAd.objects.filter(
             ad_group=ad_group).filter_by_sources(filtered_sources).select_related('batch')
