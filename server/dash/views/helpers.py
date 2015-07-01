@@ -155,7 +155,7 @@ def get_active_ad_group_sources(modelcls, modelobjects):
         active_ad_group_sources = models.AdGroupSource.objects \
             .filter(
                 # deprecated sources are not shown in the demo at all
-                Q(ad_group__in=real_corresponding_adgroups, source__deprecated=False) | 
+                Q(ad_group__in=real_corresponding_adgroups, source__deprecated=False) |
                 Q(ad_group__in=normal_adgroups)
             ).exclude(pk__in=[ags.id for ags in _inactive_ad_group_sources])
 
@@ -338,7 +338,6 @@ def get_content_ad_last_change_dt(ad_group, sources, last_change_dt=None):
 
 def get_content_ad_submission_status(content_ad_sources):
     submission_status = []
-
     for content_ad_source in content_ad_sources:
         cas_source_state = content_ad_source.source_state
         if cas_source_state is None:
@@ -354,12 +353,28 @@ def get_content_ad_submission_status(content_ad_sources):
             'status': cas_submission_status,
         }
 
+        cas_source = content_ad_source.source
+        cas_ad_group = content_ad_source.content_ad.ad_group
+        adgs = models.AdGroupSource.objects.filter(ad_group=cas_ad_group, source=cas_source)
+        ad_group_source_state_text = ''
+        if len(adgs) > 0:
+            cas_ad_group_source_state = _get_latest_state(adgs[0])
+            if cas_ad_group_source_state is not None:
+                if cas_ad_group_source_state == constants.AdGroupSourceSettingsState.ACTIVE:
+                    ad_group_source_state_text = ' / Media Source Running'
+                else:
+                    ad_group_source_state_text = ' / Media Source Paused'
+
         text = constants.ContentAdSubmissionStatus.get_text(cas_submission_status)
         if (cas_submission_status == constants.ContentAdSubmissionStatus.REJECTED and
                 content_ad_source.submission_errors is not None):
             text = '{} ({})'.format(text, content_ad_source.submission_errors)
         else:
-            text = '{} / {}'.format(text, constants.ContentAdSourceState.get_text(cas_source_state))
+            text = '{} / {}{}'.format(
+                text,
+                constants.ContentAdSourceState.get_text(cas_source_state),
+                ad_group_source_state_text
+            )
 
         status['text'] = text
         submission_status.append(status)
@@ -451,6 +466,35 @@ def get_data_status(objects, last_sync_messages, state_messages=None):
         data_status[obj.id] = {
             'message': '<br />'.join(messages),
             'ok': last_sync_ok and state_ok,
+        }
+
+    return data_status
+
+
+def get_content_ad_data_status(content_ads):
+    data_status = {}
+    for content_ad in content_ads:
+        in_sync = True
+        for ad_group_source in content_ad.sources.all():
+            content_ad_source = models.ContentAdSource.objects.filter(
+                content_ad=content_ad,
+                source=ad_group_source
+            ).first()
+
+            if content_ad_source is not None and\
+                content_ad_source.state != content_ad_source.source_state:
+                in_sync = False
+                break
+
+        message = ''
+        if in_sync:
+            message = 'All data is OK.'
+        else:
+            message = 'The status of this Content Ad differs from the one in the 3rd party dashboard.'
+
+        data_status[str(content_ad.id)] = {
+            'message': message,
+            'ok': in_sync,
         }
 
     return data_status

@@ -1,6 +1,7 @@
 <div class="submission-status" popover-append-to-body="true" popover-trigger="mouseenter" zem-html-popover="'submissionStatusPopover.html'" popover-updater="statusItems" popover-placement="top">
     <span ng-if="approved.length" class="cell approved" ng-class="{'archived': archived}">{{approved.length}}</span>
     <span ng-if="nonApproved.length" class="cell" ng-class="{'archived': archived}">{{nonApproved.length}}</span>
+    <span ng-if="zeroStatusItems" class="cell" ng-class="{'archived': archived}">0</span>
 </div>
 
 <script id="submissionStatusPopover.html" type="text/ng-template">
@@ -18,6 +19,11 @@
                 <span class="submission-status-popover-cell">{{item.name}}:&nbsp</span>
                 <span class="submission-status-popover-cell">{{item.text}}</span>
             </div>
+
+            <div ng-if="zeroStatusItems" class="submission-status-popover-row">
+                No Media Sources added yet.
+            </div>
+
         </div>
     </div>
 </script>

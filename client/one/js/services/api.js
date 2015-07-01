@@ -380,6 +380,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                         data.data.rows = data.data.rows.map(convertFromApi);
                         data.data.notifications = convertNotifications(data.data.notifications);
                         data.data.lastChange = data.data.last_change;
+                        data.data.dataStatus = data.data.data_status;
                         deferred.resolve(data.data);
                     }
                 }).
@@ -421,7 +422,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 rows: data.rows,
                 lastChange: data.last_change,
                 notifications: notifications,
-                inProgress: data.in_progress
+                inProgress: data.in_progress,
+                dataStatus: data.data_status
             };
         }
 
@@ -2032,6 +2034,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
                     if (data && data.data) {
                         result.status = data.data.status;
+                        result.count = data.data.count;
+                        result.all = data.data.all;
 
                         if (data.data.errors) {
                             result.errors = convertValidationErrorsFromApi(data.data.errors);

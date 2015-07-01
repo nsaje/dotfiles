@@ -276,6 +276,58 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         orderField: 'batch_name',
         initialOrder: 'asc'
     }, {
+        name: 'Display URL',
+        field: 'display_url',
+        checked: false,
+        extraTdCss: 'no-wrap',
+        type: 'text',
+        shown: true,
+        help: 'Advertiser\'s display URL.',
+        totalRow: false,
+        titleField: 'display_url',
+        order: true,
+        orderField: 'display_url',
+        initialOrder: 'asc'
+    }, {
+        name: 'Brand Name',
+        field: 'brand_name',
+        checked: false,
+        extraTdCss: 'no-wrap',
+        type: 'text',
+        shown: true,
+        help: 'Advertiser\'s brand name',
+        totalRow: false,
+        titleField: 'brand_name',
+        order: true,
+        orderField: 'brand_name',
+        initialOrder: 'asc'
+    }, {
+        name: 'Description',
+        field: 'description',
+        checked: false,
+        extraTdCss: 'no-wrap',
+        type: 'text',
+        shown: true,
+        help: 'Description of a content ad.',
+        totalRow: false,
+        titleField: 'description',
+        order: true,
+        orderField: 'description',
+        initialOrder: 'asc'
+    }, {
+        name: 'Call to action',
+        field: 'call_to_action',
+        checked: false,
+        extraTdCss: 'no-wrap',
+        type: 'text',
+        shown: true,
+        help: 'Call to action text.',
+        totalRow: false,
+        titleField: 'call_to_action',
+        order: true,
+        orderField: 'call_to_action',
+        initialOrder: 'asc'
+    }, {
         name: 'Spend',
         field: 'cost',
         checked: true,
@@ -327,57 +379,16 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         order: true,
         initialOrder: 'desc'
     }, {
-        name: 'Display URL',
-        field: 'display_url',
+        name: '',
+        nameCssClass: 'data-status-icon',
+        type: 'dataStatus',
+        internal: $scope.isPermissionInternal('zemauth.data_status_column'),
+        shown: $scope.hasPermission('zemauth.data_status_column'),
         checked: true,
-        extraTdCss: 'no-wrap',
-        type: 'text',
-        shown: true,
-        help: 'Advertiser\'s display URL.',
         totalRow: false,
-        titleField: 'display_url',
-        order: true,
-        orderField: 'display_url',
-        initialOrder: 'asc'
-    }, {
-        name: 'Brand Name',
-        field: 'brand_name',
-        checked: true,
-        extraTdCss: 'no-wrap',
-        type: 'text',
-        shown: true,
-        help: 'Advertiser\'s brand name',
-        totalRow: false,
-        titleField: 'brand_name',
-        order: true,
-        orderField: 'brand_name',
-        initialOrder: 'asc'
-    }, {
-        name: 'Description',
-        field: 'description',
-        checked: true,
-        extraTdCss: 'no-wrap',
-        type: 'text',
-        shown: true,
-        help: 'Description of the ad group.',
-        totalRow: false,
-        titleField: 'description',
-        order: true,
-        orderField: 'description',
-        initialOrder: 'asc'
-    }, {
-        name: 'Call to action',
-        field: 'call_to_action',
-        checked: true,
-        extraTdCss: 'no-wrap',
-        type: 'text',
-        shown: true,
-        help: 'Call to action text.',
-        totalRow: false,
-        titleField: 'call_to_action',
-        order: true,
-        orderField: 'call_to_action',
-        initialOrder: 'asc'
+        unselectable: true,
+        help: 'Status of third party data accuracy.',
+        disabled: false
     }];
 
     $scope.columnCategories = [{
@@ -633,6 +644,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
                 $scope.isSyncRecent = data.is_sync_recent;
                 $scope.isSyncInProgress = data.is_sync_in_progress;
+                $scope.dataStatus = data.dataStatus;
 
                 $scope.pollTableUpdates();
                 $scope.updateContentAdSelection();
@@ -704,7 +716,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
         var userSettings = zemUserSettings.getInstance($scope, 'adGroupContentAdsPlus');
         var page = parseInt($location.search().page || '1');
+        var size = parseInt($location.search().size || '0'); 
 
+        userSettings.register('chartMetric1');
+        userSettings.register('chartMetric2');
         userSettings.register('order');
         userSettings.register('size');
 
@@ -713,6 +728,13 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             $location.search('page', page);
         }
 
+        if (size !== 0 && $scope.size !== size) {
+            $scope.size = size;
+        }
+        // if nothing in local storage or page query var set first as default
+        if ($scope.size === 0) {
+            $scope.size = $scope.sizeRange[0];
+        }
         getTableData();
         getDailyStats();
         $scope.getAdGroupState();
@@ -732,6 +754,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 if (data.lastChange) {
                     $scope.lastChange = data.lastChange;
                     $scope.notifications = data.notifications;
+                    $scope.dataStatus = data.dataStatus;
 
                     updateTableData(data.rows, data.totals);
                 }
