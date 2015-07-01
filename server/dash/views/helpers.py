@@ -356,6 +356,7 @@ def get_content_ad_submission_status(content_ad_sources):
         cas_source = content_ad_source.source
         cas_ad_group = content_ad_source.content_ad.ad_group
         adgs = models.AdGroupSource.objects.filter(ad_group=cas_ad_group, source=cas_source)
+        ad_group_source_state_text = ''
         if len(adgs) > 0:
             cas_ad_group_source_state = _get_latest_state(adgs[0])
             if cas_ad_group_source_state is not None:
