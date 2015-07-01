@@ -364,13 +364,14 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
         order_type=actionlog.constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
     )
 
+    if 'tracking_code' in changes or 'enable_ga_tracking' in changes:
+        redirector_helper.insert_adgroup(ad_group.id, new_settings.get_tracking_codes(),
+                                         disable_auto_tracking=not new_settings.enable_ga_tracking)
+
     actions = []
     for field_name, field_value in changes.iteritems():
         if field_name in BLOCKED_AD_GROUP_SETTINGS:
             continue
-
-        if field_name == 'tracking_code':
-            redirector_helper.insert_adgroup(ad_group.id, new_settings.get_tracking_codes())
 
         ad_group_sources = ad_group.adgroupsource_set.all()
         for ad_group_source in ad_group_sources:
@@ -394,7 +395,6 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
 
             if field_name == 'ad_group_name':
                 new_field_value = ad_group_source.get_external_name(new_adgroup_name=field_value)
-
 
             if field_name == 'start_date' and source.can_modify_start_date() or\
                field_name == 'end_date' and source.can_modify_end_date() or\
@@ -440,6 +440,10 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     )
 
             else:
+                if field_name == 'enable_ga_tracking':
+                    # do not create an action - only used for our redirector
+                    continue
+
                 if field_name == 'iab_category' and not source.can_modify_ad_group_iab_category_manual():
                     continue
 
@@ -545,6 +549,68 @@ def _update_content_ad_source_submission_status(content_ad_source, submission_st
         content_ad_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
     else:
         content_ad_source.submission_status = submission_status
+
+
+def update_content_ads_state(content_ads, state, request):
+    actions = []
+    with transaction.atomic():
+        for content_ad in content_ads:
+            content_ad.state = state
+            content_ad.save()
+            for content_ad_source in content_ad.contentadsource_set.all():
+                prev_state = content_ad_source.state
+                content_ad_source.state = state
+                content_ad_source.save()
+
+                if prev_state == state:
+                    continue
+
+                changes = {'state': content_ad_source.state}
+
+                actions.append(
+                    actionlog.api_contentads.init_update_content_ad_action(
+                        content_ad_source,
+                        changes,
+                        request,
+                        send=False,
+                    )
+                )
+
+    actionlog.zwei_actions.send_multiple(actions)
+
+
+def add_content_ads_state_change_to_history(ad_group, content_ads, state, request):
+    description = 'Content ad(s) {{ids}} set to {}.'.format(constants.ContentAdSourceState.get_text(state))
+
+    description = format_bulk_ids_into_description([ad.id for ad in content_ads], description)
+
+    save_change_to_history(ad_group, description, request)
+
+
+def add_content_ads_archived_change_to_history(ad_group, content_ads, archived, request):
+    description = 'Content ad(s) {{ids}} {}.'.format('Archived' if archived else 'Restored')
+
+    description = format_bulk_ids_into_description([ad.id for ad in content_ads], description)
+
+    save_change_to_history(ad_group, description, request)
+
+
+def save_change_to_history(ad_group, description, request):
+    settings = ad_group.get_current_settings().copy_settings()
+    settings.changes_text = description
+    settings.save(request)
+
+
+def format_bulk_ids_into_description(ids, description_template):
+    num_id_limit = 10
+
+    shorten = len(ids) > num_id_limit
+
+    ids_text = '{}{}'.format(', '.join(map(str, ids[:num_id_limit])),
+                             ' and {} more'.format(len(ids) - num_id_limit) if shorten else '')
+
+    return description_template.format(ids=ids_text)
+
 
 class AdGroupSourceSettingsWriter(object):
 

@@ -371,6 +371,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             }
 
             addFilteredSources(config.params);
+            addShowArchived(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -716,6 +717,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 targetRegionsMode: settings.target_regions && settings.target_regions.length ? 'custom' : 'worldwide',
                 targetRegions: settings.target_regions,
                 trackingCode: settings.tracking_code,
+                enableGaTracking: settings.enable_ga_tracking
             };
         }
 
@@ -738,6 +740,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 target_devices: targetDevices,
                 target_regions: settings.targetRegionsMode === 'worldwide' ? [] : settings.targetRegions,
                 tracking_code: settings.trackingCode,
+                enable_ga_tracking: settings.enableGaTracking
             };
 
             return result;
@@ -757,7 +760,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 displayUrl: errors.display_url,
                 brandName: errors.brand_name,
                 description: errors.description,
-                callToAction: errors.call_to_action
+                callToAction: errors.call_to_action,
+                enableGaTracking: errors.enableGaTracking
             };
 
             return result;
@@ -2070,31 +2074,44 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 }).error(function(data) {
                     deferred.reject(data);
                 });
- 
+
             return deferred.promise;
         };
     }
 
-    function AdGroupAdsPlusUploadBatches() {
-        this.list = function(adGroupId) {
+    function AdGroupContentAdArchive() {
+        function postToApi(url, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload_batches/';
 
-            var config = {
-                params: {}
-            };
-
-            $http.get(url, config).
+            $http.post(url, {
+                content_ad_ids_selected: contentAdIdsSelected,
+                content_ad_ids_not_selected: contentAdIdsNotSelected,
+                select_all: selectedAll,
+                select_batch: selectedBatch
+            }).
                 success(function(data) {
                     deferred.resolve(data);
-                }).error(function(data) {
+                }).
+                error(function(data) {
                     deferred.reject(data);
                 });
- 
+
             return deferred.promise;
         };
-    }
-    
+
+        this.archive = function(adGroupId, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/archive/';
+
+            return postToApi(url, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch);
+        };
+
+        this.restore = function(adGroupId, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/restore/';
+
+            return postToApi(url, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch);
+        };
+    };
+
     function AvailableSources() {
         this.list = function () {
             var deferred = $q.defer();
@@ -2191,7 +2208,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         adGroupAdsPlusUpload: new AdGroupAdsPlusUpload(),
         availableSources: new AvailableSources(),
         adGroupContentAdState: new AdGroupContentAdState(),
-        adGroupAdsPlusUploadBatches: new AdGroupAdsPlusUploadBatches()
+        adGroupContentAdArchive: new AdGroupContentAdArchive()
+        // Also, don't forget to add me to DEMO!
     };
 }]);
 

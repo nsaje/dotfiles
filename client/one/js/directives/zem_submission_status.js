@@ -6,7 +6,8 @@ oneApp.directive('zemSubmissionStatus', function() {
         restrict: 'E',
         templateUrl: '/partials/zem_submission_status.html',
         scope: {
-            statusItems: '='
+            statusItems: '=',
+            archived: '='
         },
         controller: ['$scope', function($scope) {
             $scope.$watch('statusItems', function(newVal) {

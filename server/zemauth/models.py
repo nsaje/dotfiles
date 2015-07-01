@@ -130,6 +130,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('set_content_ad_status', 'Can set status of content ads.'),
             ('get_content_ad_csv', 'Can download bulk content ad csv.'),
             ('content_ads_bulk_actions', 'Can view and use bulk content ads actions.'),
+            ('can_toggle_ga_performance_tracking', 'Can toggle Google Analytics performance tracking.'),
         )
 
     def get_full_name(self):

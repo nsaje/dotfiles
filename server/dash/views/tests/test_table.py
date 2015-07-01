@@ -24,11 +24,11 @@ class AdGroupAdsPlusTableTest(TestCase):
     def setUp(self):
         password = 'secret'
         self.user = User.objects.get(pk=1)
+        self.client.login(username=self.user.email, password=password)
 
         self.maxDiff = None
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
-            self.client.login(username=self.user.email, password=password)
 
     def test_get(self, mock_query):
         date = datetime.date(2015, 2, 22)
@@ -113,6 +113,7 @@ class AdGroupAdsPlusTableTest(TestCase):
 
         self.assertItemsEqual(result['data']['rows'], [{
             'batch_name': 'batch 1',
+            'archived': False,
             'batch_id': 1,
             'display_url': 'example.com',
             'brand_name': 'Example',
@@ -143,6 +144,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             'upload_time': '2015-02-22T19:00:00',
             'url': 'http://testurl.com'
         }, {
+            'archived': False,
             'status_setting': 2,
             'upload_time': '2015-02-22T19:00:00',
             'ctr': None,
@@ -174,6 +176,14 @@ class AdGroupAdsPlusTableTest(TestCase):
             'ctr': '15.5000',
             'impressions': 2000000
         })
+
+        batches = models.UploadBatch.objects.filter(
+            id__in=(1, 2),
+            status=constants.UploadBatchStatus.DONE
+        )
+        self.assertItemsEqual(batches, [])
+        self.assertIn('batches', result['data'])
+        self.assertEqual(result['data']['batches'], [])
 
     def test_get_filtered_sources(self, mock_query):
         date = datetime.date(2015, 2, 22)
@@ -314,6 +324,125 @@ class AdGroupAdsPlusTableTest(TestCase):
         self.assertEqual(result['data']['rows'][0]['title'], u'Test Article with no content_ad_sources 2')
         self.assertEqual(result['data']['rows'][1]['title'], 'Test Article with no content_ad_sources 1')
 
+    def test_get_batches(self, mock_query):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        date = datetime.date(2015, 2, 22)
+
+        mock_stats1 = [{
+            'date': date.isoformat(),
+            'cpc': '0.0100',
+            'clicks': 1000,
+            'impressions': 1000000,
+            'cost': 100,
+            'ctr': '12.5000',
+            'content_ad': 1
+        }]
+        mock_stats2 = {
+            'date': date.isoformat(),
+            'cpc': '0.0200',
+            'clicks': 1500,
+            'impressions': 2000000,
+            'cost': 200,
+            'ctr': '15.5000',
+            'content_ad': 1
+        }
+        mock_query.side_effect = [mock_stats1, mock_stats2]
+
+        params = {
+            'page': 1,
+            'order': '-title',
+            'size': 2,
+            'start_date': date.isoformat(),
+            'end_date': date.isoformat(),
+        }
+
+        uploadBatches = models.UploadBatch.objects.filter(id__in=(1, 2))
+        for batch in uploadBatches:
+            batch.status = constants.UploadBatchStatus.DONE
+            batch.save()
+
+        response = self.client.get(
+            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            params,
+            follow=True
+        )
+
+        result = json.loads(response.content)
+
+        self.assertIn('batches', result['data'])
+        self.assertItemsEqual(result['data']['batches'], [{
+            'id': 1,
+            'name': 'batch 1'
+        }, {
+            'id': 2,
+            'name': 'batch 2'
+        }])
+
+    def test_get_batches_without_permission(self, mock_query):
+
+        # login without superuser permissions
+        self.user = User.objects.get(pk=2)
+        self.client.login(username=self.user.email, password='secret')
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+        date = datetime.date(2015, 2, 22)
+
+        mock_stats1 = [{
+            'date': date.isoformat(),
+            'cpc': '0.0100',
+            'clicks': 1000,
+            'impressions': 1000000,
+            'cost': 100,
+            'ctr': '12.5000',
+            'content_ad': 1
+        }]
+        mock_stats2 = {
+            'date': date.isoformat(),
+            'cpc': '0.0200',
+            'clicks': 1500,
+            'impressions': 2000000,
+            'cost': 200,
+            'ctr': '15.5000',
+            'content_ad': 1
+        }
+        mock_query.side_effect = [mock_stats1, mock_stats2]
+
+        params = {
+            'page': 1,
+            'order': '-title',
+            'size': 2,
+            'start_date': date.isoformat(),
+            'end_date': date.isoformat(),
+        }
+
+        uploadBatches = models.UploadBatch.objects.filter(id__in=(1, 2))
+        for batch in uploadBatches:
+            batch.status = constants.UploadBatchStatus.DONE
+            batch.save()
+
+        response = self.client.get(
+            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            params,
+            follow=True
+        )
+
+        result = json.loads(response.content)
+
+        self.assertIn('batches', result['data'])
+        self.assertItemsEqual(result['data']['batches'], [])
+
+        self.assertIn('pagination', result['data'])
+        self.assertEqual(result['data']['pagination'], {
+            'count': 3,
+            'currentPage': 1,
+            'endIndex': 2,
+            'numPages': 2,
+            'size': 2,
+            'startIndex': 1
+        })
+
+        self.assertIn('rows', result['data'])
+
 
 class AdGroupAdsPlusTableUpdatesTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
@@ -321,11 +450,11 @@ class AdGroupAdsPlusTableUpdatesTest(TestCase):
     def setUp(self):
         password = 'secret'
         self.user = User.objects.get(pk=1)
-
+        self.client.login(username=self.user.email, password=password)
+        
         self.maxDiff = None
         with patch('django.utils.timezone.now') as mock_now:
-            mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
-            self.client.login(username=self.user.email, password=password)
+            mock_now.return_value = datetime.datetime(2015, 7, 5, 13, 22, 20)
 
     def test_get(self):
         ad_group = models.AdGroup.objects.get(pk=1)

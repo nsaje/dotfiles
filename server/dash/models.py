@@ -939,7 +939,8 @@ class AdGroupSettings(SettingsBase):
         'brand_name',
         'description',
         'call_to_action',
-        'ad_group_name'
+        'ad_group_name',
+        'enable_ga_tracking'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -969,6 +970,7 @@ class AdGroupSettings(SettingsBase):
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
     tracking_code = models.TextField(blank=True)
+    enable_ga_tracking = models.BooleanField(default=True)
     archived = models.BooleanField(default=False)
     display_url = models.CharField(max_length=25, blank=True, default='')
     brand_name = models.CharField(max_length=25, blank=True, default='')
@@ -1036,7 +1038,8 @@ class AdGroupSettings(SettingsBase):
             'brand_name': 'Brand name',
             'description': 'Description',
             'call_to_action': 'Call to action',
-            'ad_group_name': 'AdGroup name'
+            'ad_group_name': 'AdGroup name',
+            'enable_ga_tracking': 'Enable GA tracking'
         }
 
         return NAMES[prop_name]
@@ -1058,7 +1061,7 @@ class AdGroupSettings(SettingsBase):
                 value = ', '.join(constants.AdTargetCountry.get_text(x) for x in value)
             else:
                 value = 'worldwide'
-        elif prop_name == 'archived':
+        elif prop_name in ('archived', 'enable_ga_tracking'):
             value = str(value)
 
         return value
@@ -1234,6 +1237,8 @@ class ContentAd(models.Model):
         choices=constants.ContentAdSourceState.get_choices()
     )
 
+    archived = models.BooleanField(default=False)
+
     objects = QuerySetManager()
 
     def get_image_url(self, width=None, height=None):
@@ -1291,6 +1296,12 @@ class ContentAd(models.Model):
                 'content_ad').distinct('content_ad_id').values_list('content_ad_id', flat=True)
 
             return self.filter(id__in=content_ad_ids)
+
+        def exclude_archived(self):
+            return self.filter(archived=False)
+
+        def only_archived(self):
+            return self.filter(archived=True)
 
 
 class ContentAdSource(models.Model):

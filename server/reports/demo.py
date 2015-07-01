@@ -112,10 +112,20 @@ def _copy_content_ad_stats(dt, real_ad_group, multiplication_factor, ad_map, sou
         for row in qs:
             if not _can_demo_stats(row.source):
                 continue
+
+            try:
+                content_ad_source_id = source_map[row.content_ad_source.id]
+                content_ad_id = ad_map[row.content_ad.id]
+            except KeyError:
+                # TODO: This occurs because newly uploaded content ads
+                # on real ad groups are currently not copied to existing
+                # demo ad groups. This should be fixed soon.
+                continue
+
             d_row = {
                 'date': dt,
-                'content_ad_source_id': source_map[row.content_ad_source.id],
-                'content_ad_id': ad_map[row.content_ad.id],
+                'content_ad_source_id': content_ad_source_id,
+                'content_ad_id': content_ad_id,
                 'source': row.source,
             }
             for metric in list(TRAFFIC_METRICS):
@@ -133,7 +143,7 @@ def _copy_content_ad_stats(dt, real_ad_group, multiplication_factor, ad_map, sou
 
     logger.info('Stats copied from ad group %d: %d', real_ad_group.id, stats_copied)
 
-            
+
 def _refresh_stats_data(start_date, end_date, ad_map, source_map):
     daterange = rrule.rrule(rrule.DAILY, dtstart=start_date, until=end_date)
     for dt in daterange:

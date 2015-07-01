@@ -158,11 +158,6 @@ urlpatterns += patterns(
         login_required(dash.views.views.AdGroupAdsPlusUpload.as_view()), name='ad_group_ads_plus_upload'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload_batches/',
-        login_required(dash.views.views.AdGroupAdsPlusUploadBatches.as_view()),
-        name='ad_group_ads_plus_upload_batches',
-    ),
-    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/state/',
         login_required(dash.views.views.AdGroupContentAdState.as_view()),
         name='ad_group_content_ad_state'
@@ -171,6 +166,16 @@ urlpatterns += patterns(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/csv/',
         login_required(dash.views.views.AdGroupContentAdCSV.as_view()),
         name='ad_group_content_ad_csv'
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/archive/$',
+        login_required(dash.views.views.AdGroupContentAdArchive.as_view()),
+        name='ad_group_content_ad_archive'
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/restore/$',
+        login_required(dash.views.views.AdGroupContentAdRestore.as_view()),
+        name='ad_group_content_ad_restore'
     ),
     url(
         r'^api/accounts/table/',
