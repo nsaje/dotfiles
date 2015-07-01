@@ -12,7 +12,7 @@ oneApp.directive('zemPagingDropdown', function () {
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
             $scope.$watch('selection', function(newValue, oldValue) {
                 if (newValue === 4294967295) {
-                    $scope.selectionText = 'Select All';
+                    $scope.selectionText = 'Show All';
                 } else {
                     $scope.selectionText = newValue;
                 }
