@@ -362,7 +362,7 @@ def get_content_ad_submission_status(user, content_ad_sources):
             if len(adgs) > 0:
                 cas_ad_group_source_state = _get_latest_state(adgs[0])
                 if cas_ad_group_source_state is not None:
-                    if cas_ad_group_source_state == constants.AdGroupSourceSettingsState.ACTIVE:
+                    if cas_ad_group_source_state.state == constants.AdGroupSourceSettingsState.ACTIVE:
                         ad_group_source_state_text = ' / Media Source Running'
                     else:
                         ad_group_source_state_text = ' / Media Source Paused'

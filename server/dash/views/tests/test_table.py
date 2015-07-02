@@ -134,7 +134,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             'submission_status': [{
                 'name': 'AdsNative',
                 'status': 1,
-                'text': 'Pending / Paused / Media Source Paused'
+                'text': 'Pending / Paused / Media Source Running'
             }, {
                 'name': 'Gravity',
                 'status': 2,
@@ -502,7 +502,7 @@ class AdGroupAdsPlusTableUpdatesTest(TestCase):
             '1': {
                 'submission_status': [{
                     'status': 1,
-                    'text': 'Pending / Paused / Media Source Paused',
+                    'text': 'Pending / Paused / Media Source Running',
                     'name': 'AdsNative'
                 }, {
                     'status': 2,
