@@ -363,7 +363,7 @@ def get_content_ad_submission_status(user, content_ad_sources):
                 cas_ad_group_source_state = _get_latest_state(adgs[0])
                 if cas_ad_group_source_state is not None:
                     if cas_ad_group_source_state.state == constants.AdGroupSourceSettingsState.ACTIVE:
-                        ad_group_source_state_text = '(running)'
+                        ad_group_source_state_text = ''
                     else:
                         ad_group_source_state_text = '(paused)'
 
