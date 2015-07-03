@@ -814,7 +814,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
             filter(account__in=accounts).\
             order_by('account_id', '-created_dt')
 
-        size = max(min(int(size or 5), 50), 1)
+        size = max(min(int(size or 5), 4294967295), 1)
         if page:
             page = int(page)
 
@@ -973,7 +973,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
         order = request.GET.get('order') or '-clicks'
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
-        size = max(min(int(size or 5), 50), 1)
+        size = max(min(int(size or 5), 4294967295), 1)
 
         result = reports.api_helpers.filter_by_permissions(reports.api.query(
             start_date=start_date,
@@ -1053,7 +1053,7 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
         for content_ad in changed_content_ads:
             content_ad_sources = content_ad.contentadsource_set.filter(source=filtered_sources)
 
-            submission_status = helpers.get_content_ad_submission_status(content_ad_sources)
+            submission_status = helpers.get_content_ad_submission_status(user, content_ad_sources)
 
             rows[str(content_ad.id)] = {
                 'status_setting': content_ad.state,
@@ -1092,7 +1092,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         page = request.GET.get('page')
         order = request.GET.get('order') or 'cost'
         size = request.GET.get('size')
-        size = max(min(int(size or 5), 50), 1)
+        size = max(min(int(size or 5), 4294967295), 1)
 
         content_ads = models.ContentAd.objects.filter(
             ad_group=ad_group).filter_by_sources(filtered_sources).select_related('batch')
@@ -1125,7 +1125,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         page_rows, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
             rows, page, size)
 
-        rows = self._add_status_to_rows(page_rows, filtered_sources)
+        rows = self._add_status_to_rows(user, page_rows, filtered_sources)
 
         total_stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
             start_date,
@@ -1220,7 +1220,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
 
         return rows
 
-    def _add_status_to_rows(self, rows, filtered_sources):
+    def _add_status_to_rows(self, user, rows, filtered_sources):
         for row in rows:
             content_ad = models.ContentAd.objects.get(pk=row['id'])
 
@@ -1229,7 +1229,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 content_ad_id=content_ad.id
             )
 
-            submission_status = helpers.get_content_ad_submission_status(content_ad_sources)
+            submission_status = helpers.get_content_ad_submission_status(user, content_ad_sources)
 
             row.update({
                 'submission_status': submission_status,
