@@ -363,19 +363,21 @@ def get_content_ad_submission_status(user, content_ad_sources):
                 cas_ad_group_source_state = _get_latest_state(adgs[0])
                 if cas_ad_group_source_state is not None:
                     if cas_ad_group_source_state.state == constants.AdGroupSourceSettingsState.ACTIVE:
-                        ad_group_source_state_text = ' / Media Source Running'
+                        ad_group_source_state_text = '(running)'
                     else:
-                        ad_group_source_state_text = ' / Media Source Paused'
+                        ad_group_source_state_text = '(paused)'
+
+        if ad_group_source_state_text != '':
+            status['source_state'] = ad_group_source_state_text
 
         text = constants.ContentAdSubmissionStatus.get_text(cas_submission_status)
         if (cas_submission_status == constants.ContentAdSubmissionStatus.REJECTED and
                 content_ad_source.submission_errors is not None):
             text = '{} ({})'.format(text, content_ad_source.submission_errors)
         else:
-            text = '{} / {}{}'.format(
+            text = '{} / {}'.format(
                 text,
-                constants.ContentAdSourceState.get_text(cas_source_state),
-                ad_group_source_state_text
+                constants.ContentAdSourceState.get_text(cas_source_state)
             )
 
         status['text'] = text
