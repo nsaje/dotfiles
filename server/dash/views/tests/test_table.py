@@ -126,18 +126,20 @@ class AdGroupAdsPlusTableTest(TestCase):
             'editable_fields': {'status_setting': {'enabled': True, 'message': None}},
             'id': '1',
             'image_urls': {
-                'landscape': '/123456789/193x120.jpg',
-                'square': '/123456789/120x120.jpg'
+                'landscape': '/123456789/256x160.jpg',
+                'square': '/123456789/160x160.jpg'
             },
             'impressions': 1000000,
             'status_setting': 1,
             'submission_status': [{
                 'name': 'AdsNative',
                 'status': 1,
+                'source_state': '',
                 'text': 'Pending / Paused'
             }, {
                 'name': 'Gravity',
                 'status': 2,
+                'source_state': '(paused)',
                 'text': 'Approved / Paused'
             }],
             'title': u'Test Article unicode Čžš',
@@ -153,8 +155,8 @@ class AdGroupAdsPlusTableTest(TestCase):
             'clicks': None,
             'cpc': None,
             'image_urls': {
-                'square': '/123456789/120x120.jpg',
-                'landscape': '/123456789/193x120.jpg'},
+                'square': '/123456789/160x160.jpg',
+                'landscape': '/123456789/256x160.jpg'},
             'editable_fields': {'status_setting': {'enabled': True, 'message': None}},
             'submission_status': [],
             'cost': None,
@@ -451,7 +453,7 @@ class AdGroupAdsPlusTableUpdatesTest(TestCase):
         password = 'secret'
         self.user = User.objects.get(pk=1)
         self.client.login(username=self.user.email, password=password)
-        
+
         self.maxDiff = None
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 7, 5, 13, 22, 20)
@@ -502,10 +504,12 @@ class AdGroupAdsPlusTableUpdatesTest(TestCase):
             '1': {
                 'submission_status': [{
                     'status': 1,
+                    'source_state': '',
                     'text': 'Pending / Paused',
                     'name': 'AdsNative'
                 }, {
                     'status': 2,
+                    'source_state': '(paused)',
                     'text': 'Approved / Paused',
                     'name': 'Gravity'
                 }],

@@ -89,7 +89,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
         verbose_name_plural = _('users')
 
         permissions = (
-            ('campaign_settings_view', 'Can view campaign settings in dashboard.'),
+            ('campaign_settings_view', "Can view campaign's agency tab."),
             ('campaign_ad_groups_view', "Can view campaign's ad groups tab in dashboard."),
             ('campaign_settings_account_manager', 'Can be chosen as account manager.'),
             ('campaign_settings_sales_rep', 'Can be chosen as sales representative.'),
@@ -131,6 +131,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('get_content_ad_csv', 'Can download bulk content ad csv.'),
             ('content_ads_bulk_actions', 'Can view and use bulk content ads actions.'),
             ('can_toggle_ga_performance_tracking', 'Can toggle Google Analytics performance tracking.'),
+            ('can_see_media_source_status_on_submission_popover', 'Can see media source status on submission status popover'),
         )
 
     def get_full_name(self):

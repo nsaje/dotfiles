@@ -4,6 +4,7 @@ import json
 import unicodecsv
 import StringIO
 
+from django.conf import settings
 from django.db import transaction
 from django.forms import ValidationError
 from django.core import validators
@@ -41,6 +42,7 @@ class ProcessUploadThread(Thread):
         ad_group_sources = [s for s in models.AdGroupSource.objects.filter(ad_group_id=self.ad_group_id)
                             if s.can_manage_content_ads and s.source.can_manage_content_ads()]
 
+        count_processed = 0
         try:
             # ensure content ads are only commited to DB
             # if all of them are successfully processed
@@ -50,6 +52,15 @@ class ProcessUploadThread(Thread):
                 all_content_ad_sources = []
                 for row in self.content_ads_data:
                     data, errors = self._clean_row(row)
+                    count_processed += 1
+
+                    # update upload batch in another thread to avoid
+                    # transaction
+                    t = UpdateUploadBatchThread(
+                        self.batch.id,
+                        count_processed
+                    )
+                    t.start_and_join()
 
                     if not errors:
                         content_ad, content_ad_sources = self._create_objects(data, ad_group_sources)
@@ -168,16 +179,38 @@ class ProcessUploadThread(Thread):
 
         validate_url = validators.URLValidator(schemes=['http', 'https'])
 
+        url_err = None
         try:
             validate_url(url)
         except ValidationError:
-            errors.append('Invalid URL')
+            url_err = 'Invalid URL'
 
+        # allow urls without protocol prefix(ie. www.)
+        if url_err is not None:
+            prefixed_url = 'http://{url}'.format(url=url)
+            try:
+                validate_url(prefixed_url)
+                url = prefixed_url
+            except ValidationError:
+                errors.append(url_err)
+
+        image_url_err = None
         try:
             validate_url(image_url)
         except ValidationError:
             process_image = False
-            errors.append('Invalid image URL')
+            image_url_err = 'Invalid image URL'
+
+        # allow urls without protocol prefix(ie. www.)
+        if image_url_err is not None:
+            prefixed_image_url = 'http://{image_url}'.format(image_url=image_url)
+            try:
+                validate_url(prefixed_image_url)
+                process_image = True
+                image_url = prefixed_image_url
+            except ValidationError:
+                process_image = False
+                errors.append(image_url_err)
 
         if title is None or not len(title):
             errors.append('Missing title')
@@ -191,10 +224,18 @@ class ProcessUploadThread(Thread):
             process_image = False
             errors.append('Invalid crop areas')
 
+        error_status = None
         try:
             if process_image:
                 image_id, width, height, image_hash = image_helper.process_image(image_url, crop_areas)
-        except image_helper.ImageProcessingException:
+        except image_helper.ImageProcessingException as e:
+            error_status = e.status() or 'error'
+
+        if error_status == 'image-size-error':
+            errors.append('Image too big.')
+        elif error_status == 'download-error':
+            errors.append(('Image could not be downloaded.'))
+        elif error_status is not None:
             errors.append('Image could not be processed.')
 
         if errors:
@@ -233,6 +274,28 @@ class ProcessUploadThread(Thread):
             raise ValidationError('Invalid crop areas')
 
         return crop_list
+
+
+class UpdateUploadBatchThread(Thread):
+    def __init__(self, batch_id, processed_content_ads, *args, **kwargs):
+        self.batch_id = batch_id
+        self.processed_content_ads = processed_content_ads
+        super(UpdateUploadBatchThread, self).__init__(*args, **kwargs)
+
+    def start_and_join(self):
+        # hack around the fact that all db tests are ran in transaction
+        # not calling parent constructor causes run to be called as a normal
+        # function
+        if settings.TESTING:
+            self.run()
+            return
+        self.start()
+        self.join()
+
+    def run(self):
+        batch = models.UploadBatch.objects.get(pk=self.batch_id)
+        batch.processed_content_ads = self.processed_content_ads
+        batch.save()
 
 
 class SendActionLogsThread(Thread):

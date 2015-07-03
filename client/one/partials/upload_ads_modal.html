@@ -71,7 +71,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.description}">
             <label for="description-input" class="col-xs-3 control-label">
                 Description
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Description of uploaded content ads." placement="top"></zem-help-popover>
+                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Description of a content ad." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-5">
                 <textarea id="description-input" type="text" class="form-control" ng-model="formData.description" ng-focus="clearErrors('description')">
@@ -89,7 +89,7 @@
             <div class="col-xs-3">
                 <button type="button" class="btn btn-default" ng-click="$dismiss()">Cancel</button>
             </div>
-            <div class="loader col-xs-1" ng-show="isInProgress"></div>
+            <div class="col-xs-2" style="padding-top:1px" ng-show="isInProgress"><div style="display:inline-block" ng-show="countAll > 0">{{ countUploaded }}/{{ countAll }}&nbsp;</div><div class="loader"></div></div>
         </div>
     </form>
 </div>

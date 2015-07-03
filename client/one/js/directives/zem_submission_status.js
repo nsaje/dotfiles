@@ -18,6 +18,8 @@ oneApp.directive('zemSubmissionStatus', function() {
                 $scope.nonApproved = $scope.statusItems.filter(function(row) {
                     return row.status !== constants.contentAdApprovalStatus.APPROVED;
                 });
+
+                $scope.zeroStatusItems = $scope.statusItems.length == 0;
             });
         }]
     };
