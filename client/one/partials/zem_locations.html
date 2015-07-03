@@ -1,0 +1,17 @@
+<ul>
+<li>
+    <div class="filtered-source" ng-repeat="location in locations | orderBy:'name' | filter:isLocationSelected" ng-click="removeSelectedLocation(location)">
+        {{location.name}}
+        <img class="remove" ng-src="{{ config.static_url }}/one/img/x_gray.svg">
+    </div>
+    <select ui-select2="selectorConfig" ng-model="selectedLocation" ng-change="addLocation()" data-placeholder="Add Location">
+        <option value=""></option>
+        <optgroup label="Countries">
+            <option ng-repeat="location in locations | orderBy:'name' | filter: isCountry" value="{{location.code}}">{{location.name}}</option>
+        </optgroup>
+        <optgroup label="DMAs (United States)">
+            <option ng-repeat="location in locations | orderBy:'name' | filter: isDMA" value="{{location.code}}">{{location.name}}</option>
+        </optgroup>
+    </select>
+</li>
+</ul>

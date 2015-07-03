@@ -102,6 +102,17 @@
                 <label ng-repeat="error in errors.targetRegions" class="control-label error">{{ error }}</label>
             </div>
 
+            <div class="form-group" ng-class="{'has-error': !!errors.targetRegions}">
+                <label class="col-xs-2 control-label">
+                    Locations
+                    <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The countries where your content ads should be shown." placement="top"></zem-help-popover>
+                </label>
+
+                <zem-locations></zem-locations>
+
+                <label ng-repeat="error in errors.targetRegions" class="control-label error">{{ error }}</label>
+            </div>
+
             <div class="form-group" ng-class="{'has-error': !!errors.trackingCode}">
                 <label for="tracking-input" class="col-xs-2 control-label">
                     Tracking codes
