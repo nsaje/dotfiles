@@ -16,7 +16,7 @@
                 <span class="submission-status-popover-cell divider"><hr></span>
             </div>
             <div class="submission-status-popover-row" ng-repeat="item in approved">
-                <span class="submission-status-popover-cell">{{item.name}}:&nbsp;{{item.source_state}}</span>
+                <span class="submission-status-popover-cell">{{item.name}}:&nbsp;<span ng-if="item.source_state != ''">{{item.source_state}}&nbsp;</span></span>
                 <span class="submission-status-popover-cell">{{item.text}}</span>
             </div>
 
