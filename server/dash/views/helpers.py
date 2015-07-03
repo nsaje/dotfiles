@@ -367,8 +367,7 @@ def get_content_ad_submission_status(user, content_ad_sources):
                     else:
                         ad_group_source_state_text = '(paused)'
 
-        if ad_group_source_state_text != '':
-            status['source_state'] = ad_group_source_state_text
+        status['source_state'] = ad_group_source_state_text
 
         text = constants.ContentAdSubmissionStatus.get_text(cas_submission_status)
         if (cas_submission_status == constants.ContentAdSubmissionStatus.REJECTED and
