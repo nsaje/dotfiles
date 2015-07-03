@@ -4,6 +4,7 @@ import pytz
 from slugify import slugify
 from django.core import urlresolvers
 from django.conf import settings
+import newrelic.agent
 
 from dash.views import helpers
 from dash import models
@@ -418,6 +419,7 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
 
 class SourcesTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'zemauth.sources_table_get')
+    @newrelic.agent.function_trace()
     def get(self, request, level_, id_=None):
         user = request.user
 
