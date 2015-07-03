@@ -38,7 +38,7 @@ from dash import models
 from dash import constants
 from dash import api
 from dash import forms
-from dash import threads
+from dash import upload
 
 logger = logging.getLogger(__name__)
 
@@ -635,13 +635,13 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
 
         new_settings.save(request)
 
-        threads.ProcessUploadThread(
+        upload.process_async(
             content_ads,
             request.FILES['content_ads'].name,
             batch,
-            ad_group_id,
+            ad_group,
             request
-        ).start()
+        )
 
         return self.create_api_response({'batch_id': batch.pk})
 

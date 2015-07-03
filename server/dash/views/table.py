@@ -15,6 +15,7 @@ import utils.pagination
 from utils import api_common
 from utils import statsd_helper
 from utils import exc
+from utils import url_helper
 from utils.sort_helper import sort_results
 
 import reports.api
@@ -1189,7 +1190,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
 
         tracking_codes = utils.url_helper.combine_tracking_codes(
             ad_group.get_current_settings().get_tracking_codes(),
-            '_z1_adgid=%s&_z1_msid=z1' % (ad_group.id)
+            url_helper.get_tracking_id_params(ad_group.id, 'z1')
         )
 
         is_demo = ad_group in models.AdGroup.demo_objects.all()

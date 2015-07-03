@@ -132,7 +132,7 @@ class AdGroupSettingsTest(TestCase):
         self.assertEqual(response_settings_dict['enable_ga_tracking'], False)
 
     def test_put_tracking_codes_without_permission(self, mock_actionlog_api, mock_order_ad_group_settings_update):
-        ad_group = models.AdGroup.objects.get(pk=1)
+        ad_group = models.AdGroup.objects.get(pk=2)
         mock_actionlog_api.is_waiting_for_set_actions.return_value = True
 
         user = User.objects.get(pk=2)
