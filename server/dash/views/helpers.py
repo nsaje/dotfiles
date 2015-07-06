@@ -532,8 +532,13 @@ def get_last_sync_messages(objects, last_sync_times):
 def get_ad_group_sources_state_messages(ad_group_sources):
     sources_messages = {}
 
+    waiting_actionlogs = actionlog.models.ActionLog.objects.filter(
+        state=actionlog.constants.ActionState.WAITING,
+        action=actionlog.constants.Action.SET_CAMPAIGN_STATE,
+        ad_group_source_id__in=[ags.id for ags in ad_group_sources]
+    )
     for ad_group_source in ad_group_sources:
-        sources_messages[ad_group_source.source_id] = _get_state_messages(ad_group_source)
+        sources_messages[ad_group_source.source_id] = _get_state_messages(ad_group_source, waiting_actionlogs)
 
     return sources_messages
 
@@ -554,16 +559,14 @@ def get_selected_content_ads(
     return content_ads.order_by('created_dt')
 
 
-def _get_state_messages(ad_group_source):
+def _get_state_messages(ad_group_source, waiting_actionlogs):
     message_template = '<b>{name}</b> for this Media Source differs from '\
                        '{name} in the Media Source\'s 3rd party dashboard.'
 
-    if ad_group_source.actionlog_set.filter(
-        state=actionlog.constants.ActionState.WAITING,
-        action=actionlog.constants.Action.SET_CAMPAIGN_STATE
-    ).exists():
-        # there are updates in progress
-        return [], True
+    for al in waiting_actionlogs:
+        if al.ad_group_source.id == ad_group_source.id:
+            # there are updates in progress
+            return [], True
 
     latest_settings = _get_latest_settings(ad_group_source)
     latest_state = _get_latest_state(ad_group_source)
