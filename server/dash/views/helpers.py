@@ -1,6 +1,7 @@
 import datetime
 import dateutil.parser
 import pytz
+import newrelic.agent
 
 from django.conf import settings
 from django.db.models import Q
@@ -162,6 +163,7 @@ def get_active_ad_group_sources(modelcls, modelobjects):
     return active_ad_group_sources
 
 
+@newrelic.agent.function_trace()
 def get_ad_group_sources_last_change_dt(ad_group_sources, last_change_dt=None):
     def get_last_change(ad_group_source):
         current_state = None
@@ -223,6 +225,7 @@ def _get_keys_in_progress(ad_group_source):
     return keys_in_progress
 
 
+@newrelic.agent.function_trace()
 def get_ad_group_sources_notifications(ad_group_sources):
     notifications = {}
 
@@ -442,6 +445,7 @@ def _get_budget_update_notification(ags, settings, state):
     return None
 
 
+@newrelic.agent.function_trace()
 def get_data_status(objects, last_sync_messages, state_messages=None):
     data_status = {}
     for obj in objects:
@@ -503,6 +507,7 @@ def get_content_ad_data_status(content_ads):
     return data_status
 
 
+@newrelic.agent.function_trace()
 def get_last_sync_messages(objects, last_sync_times):
     last_sync_messages = {}
     for obj in objects:
@@ -523,6 +528,7 @@ def get_last_sync_messages(objects, last_sync_times):
     return last_sync_messages
 
 
+@newrelic.agent.function_trace()
 def get_ad_group_sources_state_messages(ad_group_sources):
     sources_messages = {}
 
