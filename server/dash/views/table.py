@@ -513,6 +513,7 @@ class SourcesTable(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
+    @newrelic.agent.function_trace()
     def get_totals(self,
                    ad_group_level,
                    user,
@@ -656,6 +657,7 @@ class SourcesTable(api_common.BaseApiView):
             ad_group_source.source.id
         )
 
+    @newrelic.agent.function_trace()
     def get_rows(
             self,
             id_,
