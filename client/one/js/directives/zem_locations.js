@@ -1,4 +1,4 @@
-/*globals oneAll, locationsList */
+/*globals oneAll, locationsList, locationsLookup */
 "use strict";
 
 oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
@@ -9,7 +9,11 @@ oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
             // TODO: only for testing
             $scope.locations = locationsList;
 
-            $scope.selectedLocations = ['GB', '693', '592', '593', 'SI'];
+            $scope.previousSelection = undefined;
+            $scope.dmaChange = undefined;
+            $scope.selectedLocationCodes = ['SI', 'GB', 'AL', '693', '592'];
+
+            $scope.selectedLocationCode = undefined;
 
             $scope.selectorConfig = {
                 allowClear: true,
@@ -30,27 +34,85 @@ oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
             };
 
             $scope.isLocationSelected = function(location) {
-                return $scope.selectedLocations.indexOf(location.code) >= 0;
+                return $scope.selectedLocationCodes.indexOf(location.code) >= 0;
             };
 
             $scope.removeSelectedLocation = function(location) {
-                var selectedIdx = $scope.selectedLocations.indexOf(location.code);
+                var selectedIdx = $scope.selectedLocationCodes.indexOf(location.code);
                 if (selectedIdx >= 0) {
-                    $scope.selectedLocations.splice(selectedIdx, 1);
+                    $scope.selectedLocationCodes.splice(selectedIdx, 1);
                 }
             };
 
             $scope.addLocation = function() {
-                if (!$scope.selectedLocation || $scope.selectedLocation === '') {
+                if (!$scope.selectedLocationCode || $scope.selectedLocationCode === undefined) {
                     return;
                 }
 
-                if ($scope.selectedLocations.indexOf($scope.selectedLocation) < 0) {
-                    $scope.selectedLocations.push($scope.selectedLocation);
+                if ($scope.selectedLocationCodes.indexOf($scope.selectedLocationCode) < 0) {
+
+                    if ($scope.selectedLocationCode === 'US') {
+
+                        var location,
+                            hasDMAs = false,
+                            selectedDMAs = [],
+                            nDMAs=3,
+                            dmas=[],
+                            others=[];
+
+                        for (var i=0; i<$scope.selectedLocationCodes.length; i++) {
+
+                            location = locationsLookup.getLocation($scope.selectedLocationCodes[i]);
+
+                            if ($scope.isDMA(location)) {
+                                hasDMAs = true;
+
+                                // remember DMAs, 1 more
+                                if (dmas.length > nDMAs)
+                                    continue;
+
+                                dmas.push(location);
+
+                            }
+                            else {
+                                others.push(location.code);
+                            }
+                        }
+
+                        if (hasDMAs) {
+                            // save previous state
+                            $scope.previousSelection = $scope.selectedLocationCodes.slice();
+
+                            // set state without DMAs
+                            $scope.selectedLocationCodes = others;
+
+                            // text
+                            $scope.dmaChange = '';
+                            for (var i=0; i<dmas.length; i++) {
+                                if ($scope.dmaChange.length > 0) {
+                                    $scope.dmaChange += ', ';
+                                }
+
+                                if (i > nDMAs) {
+                                    $scope.dmaChange += '...';
+                                } else {
+                                    $scope.dmaChange += dmas[i].name;
+                                }
+                            }
+                        }
+                    }
+                    $scope.selectedLocationCodes.push($scope.selectedLocationCode);
                 }
-                $scope.selectedLocation = '';
+                $scope.selectedLocationCode = '';
             };
 
+            $scope.undo = function() {
+                if($scope.previousSelection) {
+                    $scope.selectedLocationCodes = $scope.previousSelection;
+                    $scope.previousSelection = undefined;
+                    $scope.dmaChange = undefined;
+                }
+            };
         }]
     };
 }]);

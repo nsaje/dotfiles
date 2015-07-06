@@ -1,14 +1,17 @@
 <div class="locations-selector">
-    <div class="selected-locations">
-        <div class="location-selected" ng-repeat="location in locations | orderBy:'name' | filter:isLocationSelected" ng-click="removeSelectedLocation(location)">
-            <span ng-if="location.type='D'" class="us">US</span>
+    <div ng-show="selectedLocationCodes" class="selected-locations">
+        <div class="location-selected" ng-repeat="location in locations | filter:isLocationSelected" ng-click="removeSelectedLocation(location)">
+            <span ng-if="location.type === 'D'" class="us">US</span>
             <span class="tag">
                 {{location.name}}
                 <img class="remove" ng-src="{{ config.static_url }}/one/img/x_gray.svg">
             </span>
         </div>
-    </div> 
-    <select ui-select2="selectorConfig" ng-model="selectedLocation" ng-change="addLocation()" data-placeholder="Add Location">
+    </div>
+
+    <div ng-if="dmaChange">Location targeting was changed from <b>{{ dmaChange }}</b> to <b>United States</b>. <a href="" ng-click="undo()">Undo?</a></div>
+
+    <select ui-select2="selectorConfig" ng-model="selectedLocationCode" ng-change="addLocation()" data-placeholder="Add Location">
         <option value=""></option>
         <optgroup label="Countries">
             <option ng-repeat="location in locations | orderBy:'name' | filter: isCountry" value="{{location.code}}">{{location.name}}</option>
