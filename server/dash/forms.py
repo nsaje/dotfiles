@@ -68,7 +68,7 @@ class AdGroupSettingsForm(forms.Form):
     )
     target_regions = forms.MultipleChoiceField(
         required=False,
-        choices=constants.AdTargetCountry.get_choices()
+        choices=constants.AdTargetLocation.get_choices()
     )
     tracking_code = forms.CharField(required=False)
 

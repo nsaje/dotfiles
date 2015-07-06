@@ -1,6 +1,6 @@
 <div class="locations-selector">
-    <div ng-show="selectedLocationCodes" class="selected-locations">
-        <div class="location-selected" ng-repeat="location in locations | filter:isLocationSelected" ng-click="removeSelectedLocation(location)">
+    <div ng-show="selectedLocationCodes !== undefined && selectedLocationCodes.length > 0" class="selected-locations">
+        <div class="location-selected" ng-repeat="location in selectedLocations()" ng-click="removeSelectedLocation(location)">
             <span ng-if="location.type === 'D'" class="us">US</span>
             <span class="tag">
                 {{location.name}}

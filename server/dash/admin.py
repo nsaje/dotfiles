@@ -78,9 +78,10 @@ class PreventEditInlineFormset(forms.BaseInlineFormSet):
 
 class AdGroupSettingsForm(forms.ModelForm):
     class Meta:
+        # TODO: make a better interface for location selection
         widgets = {
             'target_devices': forms.SelectMultiple(choices=constants.AdTargetDevice.get_choices()),
-            'target_regions': forms.SelectMultiple(choices=constants.AdTargetCountry.get_choices())
+            'target_regions': forms.SelectMultiple(choices=constants.AdTargetLocation.get_choices())
         }
 
 

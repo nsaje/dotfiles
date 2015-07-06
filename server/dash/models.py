@@ -1058,7 +1058,7 @@ class AdGroupSettings(SettingsBase):
             value = ', '.join(constants.AdTargetDevice.get_text(x) for x in value)
         elif prop_name == 'target_regions':
             if value:
-                value = ', '.join(constants.AdTargetCountry.get_text(x) for x in value)
+                value = ', '.join(constants.AdTargetLocation.get_text(x) for x in value)
             else:
                 value = 'worldwide'
         elif prop_name in ('archived', 'enable_ga_tracking'):

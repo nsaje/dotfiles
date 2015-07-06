@@ -1,5 +1,5 @@
-from decimal import Decimal
 from utils.constant_base import ConstantBase
+from dash import codelists
 
 
 class AdGroupSettingsState(ConstantBase):
@@ -33,7 +33,22 @@ class AdTargetDevice(ConstantBase):
     }
 
 
-class AdTargetCountry(ConstantBase):
+class AdTargetLocation(ConstantBase):
+    _VALUES = dict(codelists.COUNTRY_BY_CODE.items() + codelists.DMA_BY_CODE.items())
+
+    @classmethod
+    def get_choices(cls):
+        return cls._VALUES.items()
+
+
+class AdTargetCountry(AdTargetLocation):
+    _VALUES = codelists.COUNTRY_BY_CODE
+
+
+class AdTargetDMA(AdTargetLocation):
+    _VALUES = codelists.DMA_BY_CODE
+
+"""class AdTargetCountry(ConstantBase):
     # If adding a new target country, check if it will work with all supply sources
     # in zwei, otherwise also update the mapping for each supply source
     AUSTRALIA = 'AU'
@@ -51,7 +66,7 @@ class AdTargetCountry(ConstantBase):
         UNITED_KINGDOM: 'United Kingdom',
         UNITED_STATES: 'United States'
     }
-
+"""
 
 class ContentAdSubmissionStatus(ConstantBase):
     NOT_SUBMITTED = -1

@@ -4,14 +4,30 @@
 oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
     return {
         restrict: 'E',
+        scope: {
+            selectedLocationCodes: '=zemSelectedLocationCodes'
+        },
         templateUrl: '/partials/zem_locations.html',
         controller: ['$scope', '$element', '$attrs', '$http', 'api', function ($scope, $element, $attrs, $http, api) {
-            // TODO: only for testing
             $scope.locations = locationsList;
 
             $scope.previousSelection = undefined;
             $scope.dmaChange = undefined;
-            $scope.selectedLocationCodes = ['SI', 'GB', 'AL', '693', '592'];
+            $scope.selectedLocations = function() {
+                if (!$scope.selectedLocationCodes)
+                    return [];
+
+                var location, locations = [];
+                for (var i=0; i<$scope.selectedLocationCodes.length; i++) {
+                    location = locationsLookup.getLocation($scope.selectedLocationCodes[i]);
+
+                    if (location) {
+                        locations.push(location);
+                    }
+                }
+
+                return locations;
+            };
 
             $scope.selectedLocationCode = undefined;
 

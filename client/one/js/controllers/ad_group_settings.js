@@ -78,7 +78,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
                 $scope.updateBreadcrumbAndTitle();
                 $scope.saveRequestInProgress = false;
                 $scope.saved = true;
-                $scope.setAdGroupPaused($scope.settings.state == 2)
+                $scope.setAdGroupPaused($scope.settings.state == 2);
             },
             function (data) {
                 $scope.errors = data;
@@ -87,12 +87,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
             }
         );
     };
-
-    $scope.$watch('settings.targetRegions', function (newValue, oldValue) {
-        if (newValue && newValue.length) {
-            $scope.settings.targetRegionsMode = 'custom';
-        }
-    }, true);
 
     $scope.$watch('settings.manualStop', function (newValue, oldValue) {
         if (newValue) {

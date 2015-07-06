@@ -716,7 +716,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
                     return device;
                 }),
-                targetRegionsMode: settings.target_regions && settings.target_regions.length ? 'custom' : 'worldwide',
                 targetRegions: settings.target_regions,
                 trackingCode: settings.tracking_code,
                 enableGaTracking: settings.enable_ga_tracking
@@ -740,7 +739,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 cpc_cc: settings.cpc,
                 daily_budget_cc: settings.dailyBudget,
                 target_devices: targetDevices,
-                target_regions: settings.targetRegionsMode === 'worldwide' ? [] : settings.targetRegions,
+                target_regions: settings.targetRegions,
                 tracking_code: settings.trackingCode,
                 enable_ga_tracking: settings.enableGaTracking
             };

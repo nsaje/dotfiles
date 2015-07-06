@@ -79,37 +79,12 @@
 
             <div class="form-group" ng-class="{'has-error': !!errors.targetRegions}">
                 <label class="col-xs-2 control-label">
-                    Geographical targeting
-                    <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The countries where your content ads should be shown." placement="top"></zem-help-popover>
-                </label>
-                <div class="col">
-                    <div class="radio">
-                        <label>
-                            <input type="radio" name="geo-targeting-radio" value='worldwide' ng-model="settings.targetRegionsMode"> Worldwide
-                        </label>
-                    </div>
-                    <div class="geo-targeting-group">
-                        <div class="radio">
-                            <label>
-                                <input type="radio" name="geo-targeting-radio" value='custom'  ng-model="settings.targetRegionsMode"> Custom
-                            </label>
-                        </div>
-                        <select class="form-control" zem-multiselect multiple ng-model="settings.targetRegions"  ng-options="c.value as c.name for c in options.adTargetCountries">
-                        </select>
-                    </div>
-                </div>
-
-                <label ng-repeat="error in errors.targetRegions" class="control-label error">{{ error }}</label>
-            </div>
-
-            <div class="form-group" ng-class="{'has-error': !!errors.targetRegions}">
-                <label class="col-xs-2 control-label">
                     Locations
                     <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The countries where your content ads should be shown." placement="top"></zem-help-popover>
                 </label>
 
                 <div class="col-xs-4">
-                    <zem-locations></zem-locations>
+                    <zem-locations zem-selected-location-codes="settings.targetRegions"></zem-locations>
                 </div>
 
                 <label ng-repeat="error in errors.targetRegions" class="control-label error">{{ error }}</label>
