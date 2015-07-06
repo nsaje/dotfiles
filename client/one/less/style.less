@@ -2428,6 +2428,85 @@ zem-submission-status {
     }
 }
 
+.locations-selector {
+    .selected-locations {
+        border: 1px solid #d2d2d2;
+        border-radius: 2px;
+        box-shadow: none;
+        width: 100%;
+        padding: 6px 12px 11px 12px;
+
+        .location-selected {
+            cursor: pointer;
+            margin-right: 5px;
+            margin-top: 5px;
+            height: 28px;
+            line-height: 28px;
+            display: inline-block;
+            position: relative;
+            border-radius: 2px;
+            font-size: 13px;
+
+            border: 1px solid @add-filter-color;
+
+            .us {
+                padding: 6px 6px 5px 6px;
+
+                border-right: 1px solid @add-filter-color;
+                margin: 0px;
+            }
+            .tag {
+                padding: 6px 27px 6px 6px;
+
+                margin: 0px;
+                img.remove {
+                    width: 7px;
+                    position: absolute;
+                    right: 8px;
+                    top: 10px;
+                    display: inline-block;
+                    width: 7px;
+                }
+            }
+        }
+    }
+    .select2-container {
+        vertical-align: top;
+        margin-top: 12px;
+        &.add-source-filter-locations .select2-choice {
+            background-color: @add-filter-color;
+            border-color: @add-filter-color;
+            height: 28px;
+            font-size: 13px;
+            line-height: 28px;
+            border-radius: 2px;
+            .select2-chosen {
+                margin-right: 15px;
+            }
+            span {
+                color: #fff;
+            }
+            span.select2-arrow b {
+                background-image: none !important;
+            }
+            @media(-webkit-min-device-pixel-ratio: 2) {
+                span.select2-arrow b {
+                    background-image: none !important;
+                }
+            }
+        }
+    }
+}
+
+.select2-locations {
+    /* the dropdown is wider than the button */
+    &.select2-drop {
+        border: 1px solid @default-color !important;
+    }
+    &.select2-drop-above {
+        border: 1px solid @default-color !important;
+    }
+}
 .table div.zem-selection-menu.dropdown {
     .dropdown-toggle {
         line-height: 18px;

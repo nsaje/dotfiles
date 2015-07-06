@@ -108,7 +108,9 @@
                     <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The countries where your content ads should be shown." placement="top"></zem-help-popover>
                 </label>
 
-                <zem-locations></zem-locations>
+                <div class="col-xs-4">
+                    <zem-locations></zem-locations>
+                </div>
 
                 <label ng-repeat="error in errors.targetRegions" class="control-label error">{{ error }}</label>
             </div>
