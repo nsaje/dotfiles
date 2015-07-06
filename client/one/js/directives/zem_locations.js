@@ -1,4 +1,4 @@
-/*globals oneAll*/
+/*globals oneAll, locationsList */
 "use strict";
 
 oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
@@ -7,31 +7,26 @@ oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
         templateUrl: '/partials/zem_locations.html',
         controller: ['$scope', '$element', '$attrs', '$http', 'api', function ($scope, $element, $attrs, $http, api) {
             // TODO: only for testing
-            $scope.locations = [
-                {code: 'US', name: 'United states', type: 'country'},
-                {code: '693', name: 'Some DMA', type: 'DMA'},
-                {code: 'SL', name: 'Slovenia', type: 'country'},
-                {code: 'GB', name: 'United Kingdom', type: 'country'},
-            ];
+            $scope.locations = locationsList;
 
-            $scope.selectedLocations = ['GB', '693'];
+            $scope.selectedLocations = ['GB', '693', '592', '593', 'SI'];
 
             $scope.selectorConfig = {
-                allowClear: false,
-                minimumInputLength: 1,
+                allowClear: true,
                 placeholder: 'Search',
-                containerCssClass: 'add-source-filter',
-                dropdownCssClass: 'select2-filter',
+                containerCssClass: 'add-source-filter-locations',
+                dropdownCssClass: 'select2-locations',
                 formatInputTooShort: 'type to start searching',
-                formatNoMatches: 'no matches found'
+                formatNoMatches: 'no matches found',
+                dropdownAutoWidth: 'true'
             };
 
             $scope.isCountry = function(location) {
-                return location.type === 'country';
+                return location.type === 'C';
             };
 
             $scope.isDMA = function(location) {
-                return location.type === 'DMA';
+                return location.type === 'D';
             };
 
             $scope.isLocationSelected = function(location) {
