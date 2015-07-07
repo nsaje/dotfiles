@@ -501,7 +501,7 @@ def get_content_ad_data_status(content_ads):
             adgs = cached_ad_group_sources[cache_key]
             if adgs is not None:
                 latest_state = _get_latest_state(adgs)
-                if latest_state.state == constants.AdGroupSourceSettingsState.INACTIVE:
+                if latest_state is not None and latest_state.state == constants.AdGroupSourceSettingsState.INACTIVE:
                     continue
 
             content_ad_source = models.ContentAdSource.objects.filter(
