@@ -10,7 +10,8 @@ oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
         templateUrl: '/partials/zem_locations.html',
         controller: ['$scope', '$element', '$attrs', '$http', 'api', function ($scope, $element, $attrs, $http, api) {
             $scope.locations = locationsList;
-
+            $scope.config = config;
+            
             $scope.previousSelection = undefined;
             $scope.dmaChange = undefined;
             $scope.selectedLocations = function() {
