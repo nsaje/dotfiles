@@ -774,14 +774,7 @@ class AdGroup(models.Model):
         if settings:
             settings = settings[0]
         else:
-            settings = AdGroupSettings(
-                ad_group=self,
-                state=constants.AdGroupSettingsState.INACTIVE,
-                start_date=datetime.datetime.utcnow().date(),
-                cpc_cc=0.4000,
-                daily_budget_cc=10.0000,
-                target_devices=constants.AdTargetDevice.get_all()
-            )
+            settings = AdGroupSettings(ad_group=self, **AdGroupSettings.get_defaults_dict())
 
         return settings
 
@@ -1024,16 +1017,19 @@ class AdGroupSettings(SettingsBase):
         return dt
 
     @classmethod
-    def get_default_value(cls, prop_name):
-        DEFAULTS = {
+    def get_defaults_dict(cls):
+        return {
             'state': constants.AdGroupSettingsState.INACTIVE,
             'start_date': datetime.datetime.utcnow().date(),
             'cpc_cc': 0.4000,
             'daily_budget_cc': 10.0000,
-            'target_devices': constants.AdTargetDevice.get_all()
+            'target_devices': constants.AdTargetDevice.get_all(),
+            'target_regions': ['US']
         }
 
-        return DEFAULTS.get(prop_name)
+    @classmethod
+    def get_default_value(cls, prop_name):
+        return cls.get_defaults_dict.get(prop_name)
 
     @classmethod
     def get_human_prop_name(cls, prop_name):
