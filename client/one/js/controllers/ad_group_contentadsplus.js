@@ -783,7 +783,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         for (var rowid in newDataStatus) {
             var newStatus = newDataStatus[rowid];
             if (newStatus) {
-                dataStatus[rowid] = newStatus;
+                $scope.dataStatus[rowid] = newStatus;
             }
         };
     };
