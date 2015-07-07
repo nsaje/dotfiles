@@ -479,6 +479,9 @@ def get_data_status(objects, last_sync_messages, state_messages=None):
 
 
 def get_content_ad_data_status(content_ads):
+
+    cached_ad_group_sources = {}
+
     data_status = {}
     for content_ad in content_ads:
         in_sync = True
@@ -490,8 +493,12 @@ def get_content_ad_data_status(content_ads):
             # in case media source is disabled we ignore content ad state
             # difference
             cas_ad_group = content_ad.ad_group
+            cache_key = (cas_ad_group.id, ad_group_source.id)
+            if cache_key not in cached_ad_group_sources:
+                cached_ad_group_sources[cache_key] =\
+                    models.AdGroupSource.objects.filter(ad_group=cas_ad_group, source=ad_group_source).first()
 
-            adgs = models.AdGroupSource.objects.filter(ad_group=cas_ad_group, source=ad_group_source).first()
+            adgs = cached_ad_group_sources[cache_key]
             if adgs is not None:
                 latest_state = _get_latest_state(adgs)
                 if latest_state.state == constants.AdGroupSourceSettingsState.INACTIVE:
