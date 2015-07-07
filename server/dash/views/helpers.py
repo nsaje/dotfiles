@@ -483,6 +483,20 @@ def get_content_ad_data_status(content_ads):
     for content_ad in content_ads:
         in_sync = True
         for ad_group_source in content_ad.sources.all():
+            # we ignore deprecated and in maintenance sources
+            if ad_group_source.deprecated or ad_group_source.maintenance:
+                continue
+
+            # in case media source is disabled we ignore content ad state
+            # difference
+            cas_ad_group = content_ad.ad_group
+
+            adgs = models.AdGroupSource.objects.filter(ad_group=cas_ad_group, source=ad_group_source).first()
+            if adgs is not None:
+                latest_state = _get_latest_state(adgs)
+                if latest_state.state == constants.AdGroupSourceSettingsState.INACTIVE:
+                    continue
+
             content_ad_source = models.ContentAdSource.objects.filter(
                 content_ad=content_ad,
                 source=ad_group_source
