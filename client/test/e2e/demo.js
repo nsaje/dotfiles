@@ -33,14 +33,6 @@ function $toFloat(str) {
     return parseFloat(str.substr(1).replace(',', ''));
 }
 
-function iterate(fns, done, i) {
-    if (i === undefined) { i = 0; };
-    if (i >= fns.length) { done(); return; }
-    fns[i]().then(function () {
-        iterate(fns, done, i+1);
-    });
-}
-
 beforeEach(function () {
     if (!demoLoaded) {
         demoLoaded = true;
@@ -67,7 +59,6 @@ describe('Campaign management', function () {
         element(by.css('#nav div .account-name')).click();
         expect(browser.getLocationAbsUrl()).toMatch(/accounts\/[0-9]+\/campaigns/);
         element(by.cssContainingText('.btn-add', '+ Campaign')).click();
-        return browser.driver.sleep(0);
     }
 
     function renameCampaign() {
@@ -86,26 +77,21 @@ describe('Campaign management', function () {
             element(by.cssContainingText('.campaign-group.list-group-item a',
                                          'New demo campaign')).getText()
         ).toEqual('New demo campaign 123');
-        return browser.driver.sleep(0);
     }
 
     function addAdGroup() {
         element(by.cssContainingText('.btn-add', '+ Ad group')).click();
-        return browser.driver.sleep(0).then(function () {
-            expect(browser.getLocationAbsUrl()).toMatch(/ad_groups\/[0-9]+\/settings/);
-            expect(
-                element(by.cssContainingText('.ad-group-item.list-group-item span',
-                                             'New demo ad group')).getText()
-            ).toEqual('New demo ad group');
-        });
-        
+
+        expect(browser.getLocationAbsUrl()).toMatch(/ad_groups\/[0-9]+\/settings/);
+        expect(
+            element(by.cssContainingText('.ad-group-item.list-group-item span',
+                                         'New demo ad group')).getText()
+        ).toEqual('New demo ad group');
     }
 
     function enableAdGroup() {
         element(by.cssContainingText('.btn-success', 'Enabled')).click();
-
         element(by.css('#nav div .account-name')).click();
-        return browser.driver.sleep(0);
     }
 
     function checkIfPresentInLists() {
@@ -124,7 +110,6 @@ describe('Campaign management', function () {
                 element.all(by.cssContainingText('td span', 'Active')).get(0).getText()
             ).toEqual('Active');
         });
-        return browser.driver.sleep(0);
     }
 
     function selectFirstCampaignBudget() {
@@ -137,7 +122,6 @@ describe('Campaign management', function () {
                 tabs.campaign.budget.click();
             }, 3500);
         });
-        return browser.driver.sleep(0);
     }
 
     function editCampaignBudget() {
@@ -147,169 +131,103 @@ describe('Campaign management', function () {
         function addBudget() {
             element(by.id('manage-budget')).clear().sendKeys('200');
             element(by.cssContainingText('.btn-default', 'Allocate')).click();
-            return browser.driver.sleep(0);
         }
         function revokeBudget() {
             element(by.id('manage-budget')).clear().sendKeys('100');
             element(by.cssContainingText('.btn-red', 'Revoke')).click();
-            return browser.driver.sleep(0);
         }
         function testBudget() {
             element(by.id('total-budget')).getText().then(function (val) {
                 expect($toFloat(val)).toBe(total + 100);
                 deferred.fulfill();
             });
-            return browser.driver.sleep(0);
         }
-        
         element(by.id('total-budget')).getText().then(function (val) {
             total = $toFloat(val);
-            addBudget().then(function () {
-                revokeBudget().then(testBudget);
-            });
+            addBudget();
+            revokeBudget();
+            testBudget();
         });
-        return deferred.promise;
     }
     
-    it ('new campaign with a new ad group', function (done) {
+    it ('new campaign with a new ad group', function () {
         expect(demoLoaded).toBe(true);
-        iterate([
-            newCampaign,
-            renameCampaign,
-            tabs.campaign.adGroups.click,
-            addAdGroup,
-            enableAdGroup,
-            checkIfPresentInLists,
-        ], done);
+        newCampaign();
+        renameCampaign();
+        tabs.campaign.adGroups.click();
+        addAdGroup();
+        enableAdGroup();
+        checkIfPresentInLists();
     });
 
-    it('allocating budget', function (done) {
+    it('allocating budget', function () {
         expect(demoLoaded).toBe(true);
-        iterate([
-            selectFirstCampaignBudget,
-            editCampaignBudget
-        ], done);
+        selectFirstCampaignBudget();
+        editCampaignBudget();
     });
 });
 
 describe('Media sources and ads', function () {
     function selectAdGroupWithContentAds() {
         element(by.cssContainingText('#nav .ad-group-name', config.testAdGroup)).click();
-        browser.driver.sleep(0).then(function () {
-            tabs.adGroup.ads.click();
-        });
-        return browser.driver.sleep(0);
+        tabs.adGroup.ads.click();
     }
     function addThreeSources() {
         var deferred = protractor.promise.defer(),
             source = 0,
             sourcesAdded = [],
-            setLastPaused = function (source) {
-                // TODO: don't know how to test this yet
-                deferred.fulfill();
-            },
             clickSource = function () {
                 element(by.css('div.add-source')).click();
-                browser.driver.sleep(0).then(function () {
-                    var elt = element.all(by.css('.select2-results .select2-result-label')).first();
-                    elt.getText().then(function (val) {
-                        sourcesAdded.push(val);
-                        elt.click();
-                        browser.driver.sleep(0).then(function () {
-                            source++;
-                            expect(
-                                element(by.cssContainingText('.table-container td', val)
-                                       ).isPresent()).toBe(true);
-                            if (source < 3) {
-                                clickSource();
-                            } else {
-                                setLastPaused(val);
-                            }
-                        });
-                    });
+                var elt = element.all(by.css('.select2-results .select2-result-label')).first();
+                elt.getText().then(function (val) {
+                    sourcesAdded.push(val);
+                    elt.click();
+                    source++;
+                    expect(
+                        element(by.cssContainingText('.table-container td', val)).isPresent()
+                    ).toBe(true);
+                    if (source < 3) {
+                        clickSource();
+                    } else {
+                        deferred.fulfill();
+                    }
                 });
             };
         tabs.adGroup.sources.click();
-        browser.driver.sleep(0).then(function () {
-            clickSource();
-        });
+        clickSource();
         return deferred.promise;
     }
     function createAdGroup() {
         element(by.cssContainingText('#nav .campaign-name', config.testCampaign)).click();
         tabs.campaign.adGroups.click();
-        browser.driver.sleep(0).then(function () {
-            element(by.cssContainingText('.btn-add', '+ Ad group')).click();
-        });
-        return browser.driver.sleep(0);
+        element(by.cssContainingText('.btn-add', '+ Ad group')).click();
     }
     function uploadAds() {
-        var deferred = protractor.promise.defer(),
-            checkAds = function () {
-                expect(
-                    element.all(by.css('.table-container tbody tr')).count()
-                ).toBeGreaterThan(4);
-                browser.driver.sleep(0).then(deferred.fulfill);
-            };
         tabs.adGroup.ads.click();
         element(by.cssContainingText('.btn-add', '+ Content Ads')).click();
-        browser.driver.sleep(0).then(function () {
-            element(by.id('display-url-input')).sendKeys('Example.com');
-            element(by.id('brand-name-input')).sendKeys('Example Brand');
-            element(by.id('call-to-action-input')).sendKeys('Examplify!');
-            element(by.id('description-input')).sendKeys('DEMO');
-            browser.driver.sleep(0).then(function () {
-                element(by.cssContainingText('.btn-add', 'Upload')).click();
-                browser.driver.sleep(0).then(checkAds);
-            });
-        });
-        return deferred.promise;
-    }
-    function uploadNewAds() {
-        var deferred = protractor.promise.defer(),
-            checkAds = function () {
-                expect(
-                    element.all(by.css('.table-container tbody tr')).count()
-                ).toBeGreaterThan(4);
-                browser.driver.sleep(0).then(deferred.fulfill);
-            };
-        tabs.adGroup.ads.click();
+        element(by.id('display-url-input')).sendKeys('Example.com');
+        element(by.id('brand-name-input')).sendKeys('Example Brand');
+        element(by.id('call-to-action-input')).sendKeys('Examplify!');
+        element(by.id('description-input')).sendKeys('DEMO');
+        element(by.cssContainingText('.btn-add', 'Upload')).click();
         expect(
             element.all(by.css('.table-container tbody tr')).count()
-        ).toBeLessThan(4);
-        element(by.cssContainingText('.btn-add', '+ Content Ads')).click();
-        browser.driver.sleep(0).then(function () {
-            element(by.id('display-url-input')).sendKeys('Example.com');
-            element(by.id('brand-name-input')).sendKeys('Example Brand');
-            element(by.id('call-to-action-input')).sendKeys('Examplify!');
-            element(by.id('description-input')).sendKeys('DEMO');
-            browser.driver.sleep(0).then(function () {
-                element(by.cssContainingText('.btn-add', 'Upload')).click();
-                browser.driver.sleep(0).then(checkAds);
-            });
-        });
-        return deferred.promise;
+        ).toBeGreaterThan(4);
     }
-    it ('adding media sources to ads', function (done) {
+    it ('adding media sources to ads', function () {
         expect(demoLoaded).toBe(true);
-        iterate([
-            selectAdGroupWithContentAds,
-            addThreeSources,
-        ], done);
+        selectAdGroupWithContentAds();
+        addThreeSources();
     });
 
-    it ('uploading ads', function (done) {
+    it ('uploading ads', function () {
         expect(demoLoaded).toBe(true);
-        iterate([
-            createAdGroup,
-            uploadNewAds,
-            addThreeSources,
-        ], done);
+        createAdGroup();
+        uploadAds();
+        addThreeSources();
 
-        iterate([
-            selectAdGroupWithContentAds,
-            uploadAds
-        ], done);
+        selectAdGroupWithContentAds();
+        uploadAds();
     });
 });
 
