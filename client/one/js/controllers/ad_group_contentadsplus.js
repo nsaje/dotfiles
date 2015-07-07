@@ -779,7 +779,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         updateObject($scope.totals, totalsUpdates);
     };
 
-    var updateDataStatus = function(newDataStatus) {
+    $scope.updateDataStatus = function(newDataStatus) {
         $scope.dataStatus.forEach(function(row) {
             var newStatus = newDataStatus[row.id];
             if (newStatus) {
