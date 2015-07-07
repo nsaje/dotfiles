@@ -755,7 +755,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                     $scope.lastChange = data.lastChange;
                     $scope.notifications = data.notifications;
                     
-                    $scope.updateDataStatus(data.dataStatus)
+                    $scope.updateDataStatus(data.dataStatus);
                     updateTableData(data.rows, data.totals);
                 }
 
