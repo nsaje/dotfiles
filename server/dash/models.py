@@ -13,6 +13,7 @@ from django.db import models, transaction
 import utils.string_helper
 
 from dash import constants
+from dash import codelists
 from utils import encryption_helpers
 from utils import statsd_helper
 from utils import exc
@@ -537,8 +538,14 @@ class SourceType(models.Model):
     def can_modify_end_date(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_END_DATE).exists()
 
-    def can_modify_targeting(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_TARGETING).exists()
+    def can_modify_device_targeting(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_DEVICE_TARGETING).exists()
+
+    def can_modify_dma_targeting(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING).exists()
+
+    def can_modify_country_targeting(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING).exists()
 
     def can_modify_tracking_codes(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_TRACKING_CODES).exists()
@@ -625,8 +632,14 @@ class Source(models.Model):
     def can_modify_end_date(self):
         return self.source_type.can_modify_end_date() and not self.maintenance and not self.deprecated
 
-    def can_modify_targeting(self):
-        return self.source_type.can_modify_targeting() and not self.maintenance and not self.deprecated
+    def can_modify_device_targeting(self):
+        return self.source_type.can_modify_device_targeting() and not self.maintenance and not self.deprecated
+
+    def can_modify_dma_targeting(self):
+        return self.source_type.can_modify_dma_targeting() and not self.maintenance and not self.deprecated
+
+    def can_modify_country_targeting(self):
+        return self.source_type.can_modify_country_targeting() and not self.maintenance and not self.deprecated
 
     def can_modify_tracking_codes(self):
         return self.source_type.can_modify_tracking_codes() and not self.maintenance and not self.deprecated
@@ -932,7 +945,7 @@ class AdGroupSettings(SettingsBase):
         'cpc_cc',
         'daily_budget_cc',
         'target_devices',
-        'target_regions',
+        'target_regions'
         'tracking_code',
         'archived',
         'display_url',

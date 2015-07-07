@@ -15,6 +15,7 @@ from utils import redirector_helper
 from dash import exc
 from dash import models
 from dash import constants
+from dash import codelists
 from dash import consistency
 
 import utils.url_helper
@@ -398,7 +399,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
 
             if field_name == 'start_date' and source.can_modify_start_date() or\
                field_name == 'end_date' and source.can_modify_end_date() or\
-               field_name in ('target_devices', 'target_regions') and source.can_modify_targeting() or\
+               field_name == 'target_devices' and source.can_modify_device_targeting() or\
                (field_name == 'tracking_code' and source.can_modify_tracking_codes() and not
                 source.update_tracking_codes_on_content_ads()) or\
                field_name == 'iab_category' and source.can_modify_ad_group_iab_category_automatic() or\
@@ -438,7 +439,41 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                             send=send
                         )
                     )
+            elif field_name == 'target_regions':
+                diff = set(new_settings.target_regions).symmetric_difference(set(current_settings.target_regions))
 
+                if any((source.can_modify_country_targeting(), source.can_modify_dma_targeting())):
+                    actions.extend(
+                        actionlog.api.set_ad_group_source_settings(
+                            {new_field_name: new_field_value},
+                            ad_group_source,
+                            request,
+                            order,
+                            send=send
+                        )
+                    )
+
+                did_countries_change = len([tr for tr in diff if tr in codelists.COUNTRY_BY_CODE]) > 0
+                new_country_targeting = [tr for tr in new_field_value if tr in codelists.COUNTRY_BY_CODE]
+
+                if did_countries_change and not source.can_modify_country_targeting():
+                    actionlog.api.init_set_ad_group_manual_property(
+                        ad_group_source,
+                        request,
+                        'target_regions_countries',
+                        new_country_targeting
+                    )
+
+                did_dmas_change = len([tr for tr in diff if tr in codelists.DMA_BY_CODE]) > 0
+                new_dma_targeting = [tr for tr in new_field_value if tr in codelists.DMA_BY_CODE]
+
+                if did_dmas_change and not source.can_modify_dma_targeting():
+                    actionlog.api.init_set_ad_group_manual_property(
+                        ad_group_source,
+                        request,
+                        'target_regions_dma',
+                        new_dma_targeting
+                    )
             else:
                 if field_name == 'enable_ga_tracking':
                     # do not create an action - only used for our redirector

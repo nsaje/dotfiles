@@ -168,13 +168,15 @@ class SourceAction(ConstantBase):
     HAS_3RD_PARTY_DASHBOARD = 5
     CAN_MODIFY_START_DATE = 6
     CAN_MODIFY_END_DATE = 7
-    CAN_MODIFY_TARGETING = 8
+    CAN_MODIFY_DEVICE_TARGETING = 8
     CAN_MODIFY_TRACKING_CODES = 9
     CAN_MODIFY_AD_GROUP_NAME = 10
     CAN_MODIFY_AD_GROUP_IAB_CATEGORY_AUTOMATIC = 11
     UPDATE_TRACKING_CODES_ON_CONTENT_ADS = 12
     CAN_UPDATE_DAILY_BUDGET_MANUAL = 13
     CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL = 14
+    CAN_MODIFY_DMA_TARGETING = 15
+    CAN_MODIFY_COUNTRY_TARGETING = 16
 
     _VALUES = {
         CAN_UPDATE_STATE: 'Can update state',
@@ -184,7 +186,9 @@ class SourceAction(ConstantBase):
         HAS_3RD_PARTY_DASHBOARD: 'Has 3rd party dashboard',
         CAN_MODIFY_START_DATE: 'Can modify start date',
         CAN_MODIFY_END_DATE: 'Can modify end date',
-        CAN_MODIFY_TARGETING: 'Can modify device and geo targeting',
+        CAN_MODIFY_DEVICE_TARGETING: 'Can modify device targeting',
+        CAN_MODIFY_DMA_TARGETING: 'Can modify DMA targeting',
+        CAN_MODIFY_COUNTRY_TARGETING: 'Can modify targeting by country',
         CAN_MODIFY_TRACKING_CODES: 'Can modify tracking codes',
         CAN_MODIFY_AD_GROUP_NAME: 'Can modify adgroup name',
         CAN_MODIFY_AD_GROUP_IAB_CATEGORY_AUTOMATIC: 'Can modify ad group IAB category automatically',
