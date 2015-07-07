@@ -639,7 +639,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                     source = data.sources[i];
                     sources.push({
                         name: source.name,
-                        id: source.id, // should use 'value'
+                        value: source.id,
                         hasPermission: true,
                         disabled: (source.dma_notification ? true : false),
                         notification: (source.dma_notification ? source.name + ' media source does not support DMA targeting. Remove DMA targeting to continue.' : undefined)
