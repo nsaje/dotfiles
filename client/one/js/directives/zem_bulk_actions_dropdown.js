@@ -9,7 +9,10 @@ oneApp.directive('zemBulkActionsDropdown', function() {
             disabledTitle: '@zemDisabledTitle',
             onSelect: '&zemOnSelect',
             checkDisabled: '&zemCheckDisabled',
-            dropdownOptions: '=zemDropdownOptions'
+            dropdownOptions: '=zemDropdownOptions',
+            dropdownCssClass: '@zemDropdownCssClass',
+            containerCssClass: '@zemContainerCssClass',
+            noMatchesPlaceholder: '@zemNoMatchesPlaceholder'
         },
         templateUrl: '/partials/zem_bulk_actions_dropdown.html',
         controller: ['$scope', '$compile', '$element', '$attrs', function ($scope, $compile, $element, $attrs) {
@@ -22,7 +25,7 @@ oneApp.directive('zemBulkActionsDropdown', function() {
                 });
 
                 var notification = option.notification;
-                var element = angular.element(document.createElement('span'));
+                var element = angular.element(document.createElement('div'));
                 if (notification) {
                     element.attr('popover', notification);
                     element.attr('popover-trigger', 'mouseenter');
@@ -49,15 +52,17 @@ oneApp.directive('zemBulkActionsDropdown', function() {
 
             $scope.dropdownConfig = {
                 minimumResultsForSearch: -1,
-                dropdownCssClass: 'show-rows',
+                dropdownCssClass: $scope.dropdownCssClass,
+                containerCssClass: $scope.containerCssClass,
+                formatNoMatches: $scope.noMatchesPlaceholder,
                 formatResult: formatSelection
             };
 
-            $scope.selectedAction = null;
+            $scope.selectedItem = null;
 
             $scope.callOnSelect = function() {
-                $scope.onSelect({ action: $scope.selectedAction });
-                $scope.selectedAction = null;
+                $scope.onSelect({ selected: $scope.selectedItem });
+                $scope.selectedItem = null;
             };
         }]
     };
