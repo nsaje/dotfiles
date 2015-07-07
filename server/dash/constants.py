@@ -48,25 +48,6 @@ class AdTargetCountry(AdTargetLocation):
 class AdTargetDMA(AdTargetLocation):
     _VALUES = codelists.DMA_BY_CODE
 
-"""class AdTargetCountry(ConstantBase):
-    # If adding a new target country, check if it will work with all supply sources
-    # in zwei, otherwise also update the mapping for each supply source
-    AUSTRALIA = 'AU'
-    CANADA = 'CA'
-    IRELAND = 'IE'
-    NEW_ZAELAND = 'NZ'
-    UNITED_KINGDOM = 'UK'
-    UNITED_STATES = 'US'
-
-    _VALUES = {
-        AUSTRALIA: 'Australia',
-        CANADA: 'Canada',
-        IRELAND: 'Ireland',
-        NEW_ZAELAND: 'New Zealand',
-        UNITED_KINGDOM: 'United Kingdom',
-        UNITED_STATES: 'United States'
-    }
-"""
 
 class ContentAdSubmissionStatus(ConstantBase):
     NOT_SUBMITTED = -1

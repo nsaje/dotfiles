@@ -22,6 +22,12 @@ def forwards_code(apps, schema_editor):
         source_type.available_actions.add(country_targeting_action)
         source_type.save()
 
+    # remove the non-standard mapping
+    AdGroupSettings = apps.get_model('dash', 'AdGroupSettings')
+    for adgroup_settings in AdGroupSettings.objects.filter(target_regions__contains='UK'):
+        adgroup_settings.target_regions = ['GB' if tr == 'UK' else tr for tr in adgroup_settings.target_regions]
+        adgroup_settings.save()
+
 
 class Migration(migrations.Migration):
 
