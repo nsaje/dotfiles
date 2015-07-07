@@ -79,12 +79,14 @@ class AdGroupSettings(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group_sources = ad_group.sources.all().order_by('name')
 
         settings = ad_group.get_current_settings()
 
         response = {
             'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group)
+            'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
+            'sources_without_DMA_support': [s.name for s in helpers.filter_dma_unsupporting_sources(ad_group_sources)]
         }
 
         return self.create_api_response(response)

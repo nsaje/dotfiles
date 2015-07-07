@@ -5,15 +5,18 @@ oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
     return {
         restrict: 'E',
         scope: {
-            selectedLocationCodes: '=zemSelectedLocationCodes'
+            selectedLocationCodes: '=zemSelectedLocationCodes',
+            sourcesWithoutDMASupport: '=zemSourcesWithoutDmaSupport'
         },
         templateUrl: '/partials/zem_locations.html',
         controller: ['$scope', '$element', '$attrs', '$http', 'api', function ($scope, $element, $attrs, $http, api) {
             $scope.locations = locationsList;
             $scope.config = config;
-            
+
             $scope.previousSelection = undefined;
             $scope.dmaChange = undefined;
+            $scope.warnDMANotSupported = false;
+
             $scope.selectedLocations = function() {
                 if (!$scope.selectedLocationCodes)
                     return [];
@@ -66,16 +69,31 @@ oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
                     return;
                 }
 
+                if ($scope.selectedLocationCodes === undefined) {
+                    $scope.selectedLocationCodes = [];
+                }
+
                 if ($scope.selectedLocationCodes.indexOf($scope.selectedLocationCode) < 0) {
 
+                    var selectedLocation = locationsLookup.getLocation($scope.selectedLocationCode);
+
+                    // check if all media sources support DMA targeting
+                    if (selectedLocation.type === 'D' && $scope.sourcesWithoutDMASupport) {
+                        $scope.warnDMANotSupported = true;
+                        $scope.selectedLocationCode = '';
+                        return;
+                    }
+
+                    // when US is selected remove DMAs (because they are a subset of US)
+                    // and add undo functionality that can undo the removal
                     if ($scope.selectedLocationCode === 'US') {
 
                         var location,
                             hasDMAs = false,
                             selectedDMAs = [],
-                            nDMAs=3,
-                            dmas=[],
-                            others=[];
+                            nDMAs = 3,
+                            dmas = [],
+                            others = [];
 
                         for (var i=0; i<$scope.selectedLocationCodes.length; i++) {
 
@@ -84,7 +102,7 @@ oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
                             if ($scope.isDMA(location)) {
                                 hasDMAs = true;
 
-                                // remember DMAs, 1 more
+                                // remember DMAs, 1 more so we can see if we need to append "..." at the end
                                 if (dmas.length > nDMAs)
                                     continue;
 
@@ -103,7 +121,7 @@ oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
                             // set state without DMAs
                             $scope.selectedLocationCodes = others;
 
-                            // text
+                            // set text
                             $scope.dmaChange = '';
                             for (var i=0; i<dmas.length; i++) {
                                 if ($scope.dmaChange.length > 0) {

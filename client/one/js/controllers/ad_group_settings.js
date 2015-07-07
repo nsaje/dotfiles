@@ -35,6 +35,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
             function (data) {
                 $scope.settings = data.settings;
                 $scope.actionIsWaiting = data.actionIsWaiting;
+                $scope.sourcesWithoutDMASupport = data.sourcesWithoutDMASupport;
                 $scope.setAdGroupPaused($scope.settings.state === 2);
             },
             function (data) {

@@ -11,13 +11,15 @@
 
     <div ng-if="dmaChange">Location targeting was changed from <b>{{ dmaChange }}</b> to <b>United States</b>. <a href="" ng-click="undo()">Undo?</a></div>
 
+    <div ng-if="warnDMANotSupported"><b>{{ sourcesWithoutDMASupport.join(", ") }} does not support DMA targeting. TODO: Pause or remove</b></div>
+
     <select ui-select2="selectorConfig" ng-model="selectedLocationCode" ng-change="addLocation()" data-placeholder="Add Location">
         <option value=""></option>
         <optgroup label="Countries">
             <option ng-repeat="location in locations | orderBy:'name' | filter: isCountry" value="{{location.code}}">{{location.name}}</option>
         </optgroup>
         <optgroup label="DMAs (United States)">
-            <option ng-repeat="location in locations | orderBy:'name' | filter: isDMA" value="{{location.code}}">{{location.name}}</option>
+            <option ng-repeat="location in locations | orderBy:'name' | filter: isDMA" value="{{location.code}}">US: {{location.code}} {{location.name}}</option>
         </optgroup>
     </select>
 </div>

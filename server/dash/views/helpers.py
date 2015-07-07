@@ -620,3 +620,8 @@ def parse_post_request_content_ad_ids(request_data, param_name):
         return map(int, content_ad_ids)
     except ValueError:
         raise exc.ValidationError()
+
+
+def filter_dma_unsupporting_sources(media_sources):
+    unsupported_type = models.SourceType.objects.get(type=constants.SourceType.GRAVITY)
+    return [ms for ms in media_sources if ms.source_type == unsupported_type]
