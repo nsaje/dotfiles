@@ -9,7 +9,7 @@ oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
             sourcesWithoutDMASupport: '=zemSourcesWithoutDmaSupport'
         },
         templateUrl: '/partials/zem_locations.html',
-        controller: ['$scope', '$element', '$attrs', '$http', 'api', function ($scope, $element, $attrs, $http, api) {
+        controller: ['$scope', '$compile', '$element', '$attrs', '$http', 'api', function ($scope, $compile, $element, $attrs, $http, api) {
             $scope.locations = locationsList;
             $scope.config = config;
 
@@ -35,14 +35,36 @@ oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
 
             $scope.selectedLocationCode = undefined;
 
+            var formatSelection = function(object) {
+                if (!object.id) {
+                    return object.text;
+                };
+
+                var option = locationsLookup.getLocation(object.id);
+
+                if (!$scope.isDMA(option)) {
+                    return object.text;
+                }
+
+                var element = angular.element(document.createElement('span')),
+                    dmaTag = angular.element(document.createElement('span'));
+
+                element.text(object.text);
+                dmaTag.text('DMA');
+                dmaTag.addClass('location-dma-tag');
+                var internal = $compile(dmaTag)($scope);
+                element.append(internal);
+
+                return $compile(element)($scope);
+            };
+
             $scope.selectorConfig = {
                 allowClear: true,
                 placeholder: 'Search',
-                containerCssClass: 'add-source-filter-locations',
-                dropdownCssClass: 'select2-locations',
                 formatInputTooShort: 'type to start searching',
                 formatNoMatches: 'no matches found',
-                dropdownAutoWidth: 'true'
+                dropdownAutoWidth: 'true',
+                formatResult: formatSelection
             };
 
             $scope.isCountry = function(location) {
