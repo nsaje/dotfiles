@@ -75,6 +75,23 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
     }
 
     function AdGroupSources() {
+        function convertFromApi(data) {
+            var sources = [];
+            for (var source, i=0; i<data.sources.length; i++) {
+                source = data.sources[i];
+                sources.push({
+                    id: source.id,
+                    name: source.name,
+                    dmaTargetingCompatible: source.dma_targeting_compatible
+                });
+            }
+
+            return {
+                sources: sources,
+                sourcesWaiting: data.sources_waiting
+            };
+        };
+
         this.get = function (id) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/sources/';
@@ -85,10 +102,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             addFilteredSources(config.params);
             $http.get(url, config).
                 success(function (data, status) {
-                    deferred.resolve({
-                        sources: data.data.sources,
-                        sourcesWaiting: data.data.sources_waiting
-                    });
+                    deferred.resolve(convertFromApi(data.data));
                 }).
                 error(function (data) {
                     deferred.reject(data);

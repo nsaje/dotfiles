@@ -8,7 +8,7 @@
     </div>
 </div>
 
-<div ng-if="dmaChange">Location targeting was changed from <b>{{ dmaChange }}</b> to <b>United States</b>. <a href="" ng-click="undo()">Undo?</a></div>
+<div ng-if="selectedDMASubsetOfUS">Location targeting was changed from <b>{{ selectedDMASubsetOfUS.join(", ") }}</b> to <b>United States</b>. <a href="" ng-click="undo()">Undo?</a></div>
 
 <div ng-if="warnDMANotSupported"><b>{{ sourcesWithoutDMASupport.join(", ") }} does not support DMA targeting. TODO: Pause or remove</b></div>
 

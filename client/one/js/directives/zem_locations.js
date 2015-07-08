@@ -14,7 +14,7 @@ oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
             $scope.config = config;
 
             $scope.previousSelection = undefined;
-            $scope.dmaChange = undefined;
+            $scope.selectedDMASubsetOfUS = undefined;
             $scope.warnDMANotSupported = false;
 
             $scope.selectedLocations = function() {
@@ -111,51 +111,30 @@ oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
                     if ($scope.selectedLocationCode === 'US') {
 
                         var location,
-                            hasDMAs = false,
-                            selectedDMAs = [],
-                            nDMAs = 3,
-                            dmas = [],
+                            hasMoreDMAs = false,
                             others = [];
 
+                        $scope.selectedDMASubsetOfUS = [];
                         for (var i=0; i<$scope.selectedLocationCodes.length; i++) {
 
                             location = locationsLookup.getLocation($scope.selectedLocationCodes[i]);
 
                             if ($scope.isDMA(location)) {
-                                hasDMAs = true;
-
-                                // remember DMAs, 1 more so we can see if we need to append "..." at the end
-                                if (dmas.length > nDMAs)
-                                    continue;
-
-                                dmas.push(location);
-
+                                if ($scope.selectedDMASubsetOfUS.length <= 4) {
+                                    $scope.selectedDMASubsetOfUS.push(($scope.selectedDMASubsetOfUS.length == 3 ? '...': location.name));
+                                }
                             }
                             else {
                                 others.push(location.code);
                             }
                         }
 
-                        if (hasDMAs) {
+                        if ($scope.selectedDMASubsetOfUS.length > 0) {
                             // save previous state
                             $scope.previousSelection = $scope.selectedLocationCodes.slice();
 
                             // set state without DMAs
                             $scope.selectedLocationCodes = others;
-
-                            // set text
-                            $scope.dmaChange = '';
-                            for (var i=0; i<dmas.length; i++) {
-                                if ($scope.dmaChange.length > 0) {
-                                    $scope.dmaChange += ', ';
-                                }
-
-                                if (i > nDMAs) {
-                                    $scope.dmaChange += '...';
-                                } else {
-                                    $scope.dmaChange += dmas[i].name;
-                                }
-                            }
                         }
                     }
                     $scope.selectedLocationCodes.push($scope.selectedLocationCode);
@@ -167,7 +146,7 @@ oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
                 if($scope.previousSelection) {
                     $scope.selectedLocationCodes = $scope.previousSelection;
                     $scope.previousSelection = undefined;
-                    $scope.dmaChange = undefined;
+                    $scope.selectedDMASubsetOfUS = undefined;
                 }
             };
         }]

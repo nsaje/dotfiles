@@ -634,15 +634,14 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         api.adGroupSources.get($state.params.id).then(
             function (data) {
                 var sources = [];
-                console.log(data);
                 for (var source, i=0; i<data.sources.length; i++) {
                     source = data.sources[i];
                     sources.push({
                         name: source.name,
                         value: source.id,
                         hasPermission: true,
-                        disabled: (source.dma_notification ? true : false),
-                        notification: (source.dma_notification ? source.name + ' media source does not support DMA targeting. Remove DMA targeting to continue.' : undefined)
+                        disabled: (!source.dmaTargetingCompatible),
+                        notification: (!source.dmaTargetingCompatible ? 'Turn off DMA targeting in Settings to add ' + source.name : undefined)
                     });
                 }
 
