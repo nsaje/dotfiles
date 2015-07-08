@@ -92,6 +92,7 @@ class ContentAdsApiTestCase(TestCase):
                     'call_to_action': content_ad_source.content_ad.batch.call_to_action,
                     'tracking_slug': ad_group_source.source.tracking_slug,
                     'redirect_id': content_ad_source.content_ad.redirect_id,
+                    'tracker_urls': content_ad_source.content_ad.tracker_urls
                 },
             },
             'callback_url': callback
@@ -157,6 +158,7 @@ class ContentAdsApiTestCase(TestCase):
                     'call_to_action': content_ad_source.content_ad.batch.call_to_action,
                     'tracking_slug': ad_group_source.source.tracking_slug,
                     'redirect_id': content_ad_source.content_ad.redirect_id,
+                    'tracker_urls': content_ad_source.content_ad.tracker_urls
                 },
             },
             'callback_url': callback
@@ -213,6 +215,7 @@ class ContentAdsApiTestCase(TestCase):
                     'call_to_action': content_ad_source.content_ad.batch.call_to_action,
                     'tracking_slug': ad_group_source.source.tracking_slug,
                     'redirect_id': content_ad_source.content_ad.redirect_id,
+                    'tracker_urls': content_ad_source.content_ad.tracker_urls
                 }],
                 'extra': {}
             },
@@ -303,6 +306,7 @@ class ContentAdsApiTestCase(TestCase):
                     'call_to_action': content_ad_source.content_ad.batch.call_to_action,
                     'tracking_slug': ad_group_source.source.tracking_slug,
                     'redirect_id': content_ad_source.content_ad.redirect_id,
+                    'tracker_urls': content_ad_source.content_ad.tracker_urls
                 },
             },
             'callback_url': callback
@@ -399,6 +403,7 @@ class ContentAdsApiTestCase(TestCase):
                     'call_to_action': ad_group_settings.call_to_action,
                     'tracking_slug': ad_group_source.source.tracking_slug,
                     'redirect_id': content_ad_source.content_ad.redirect_id,
+                    'tracker_urls': content_ad_source.content_ad.tracker_urls
                 },
             },
             'callback_url': callback
