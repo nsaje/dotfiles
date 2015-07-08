@@ -199,8 +199,10 @@ class ProcessUploadThread(Thread):
         tracker_urls = tracker_urls_string.strip().split(' ')
 
         result = []
+        validate_url = validators.URLValidator(schemes=['https'])
         for url in tracker_urls:
-            result.append(self._validate_url(url))
+            validate_url(url)
+            result.append(url)
 
         return result
 

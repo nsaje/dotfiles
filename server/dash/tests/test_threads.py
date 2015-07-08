@@ -68,8 +68,8 @@ http://example.com,test title,http://example.com/image,\n'''.replace("\n",'\r\n'
         image_url = 'http://example.com/image'
         crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
         crop_areas_list = [[[44, 22], [144, 122]], [[33, 22], [177, 122]]]
-        tracker_urls_string = 'http://example.com example2.com'
-        tracker_urls = ['http://example.com', 'http://example2.com']
+        tracker_urls_string = 'https://example.com https://example2.com'
+        tracker_urls = ['https://example.com', 'https://example2.com']
 
         content_ads = [{
             'url': url,
