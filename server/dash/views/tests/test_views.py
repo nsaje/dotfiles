@@ -729,7 +729,7 @@ class AdGroupAdsPlusUploadTest(TestCase):
         )
         ad_group_settings.save(request)
 
-        mock_file = SimpleUploadedFile('testfile.csv', 'Url,title\nhttp://example.com,testtitle')
+        mock_file = SimpleUploadedFile('testfile.csv', 'Url,title,image_url\nhttp://example.com,testtitle,http://example.com/image')
 
         response = self._get_client().post(
             reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),

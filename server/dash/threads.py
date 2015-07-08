@@ -118,6 +118,7 @@ class ProcessUploadThread(Thread):
             title=data['title'],
             batch=self.batch,
             ad_group_id=self.ad_group_id,
+            tracker_urls=data['tracker_urls']
         )
 
         content_ad_sources = []
@@ -136,21 +137,25 @@ class ProcessUploadThread(Thread):
     def _save_error_report(self):
         string = StringIO.StringIO()
 
-        has_crop_areas_data = False
-        for idx, row in enumerate(self.content_ads_data):
-            if row.get('crop_areas') is not None and row['crop_areas'] != '':
-                has_crop_areas_data = True
-                break
+        fields = ['url', 'title', 'image_url']
 
-        if has_crop_areas_data:
-            writer = unicodecsv.DictWriter(string, ['url', 'title', 'image_url', 'crop_areas', 'errors'])
-        else:
-            writer = unicodecsv.DictWriter(string, ['url', 'title', 'image_url', 'errors'])
+        if any(row.get('crop_areas') for row in self.content_ads_data):
+            fields.append('crop_areas')
+
+        if any(row.get('tracker_urls') for row in self.content_ads_data):
+            fields.append('tracker_urls')
+
+        fields.append('errors')
+        writer = unicodecsv.DictWriter(string, fields)
 
         writer.writeheader()
         for row in self.content_ads_data:
-            if not has_crop_areas_data:
+            if 'crop_areas' not in fields and 'crop_areas' in row:
                 del row['crop_areas']
+
+            if 'tracker_urls' not in fields and 'tracker_urls' in row:
+                del row['tracker_urls']
+
             writer.writerow(row)
 
         content = string.getvalue()
@@ -168,89 +173,107 @@ class ProcessUploadThread(Thread):
 
         return None
 
-    def _clean_row(self, row):
-        errors = []
-        process_image = True
-
-        url = row.get('url')
-        title = row.get('title')
-        image_url = row.get('image_url')
-        crop_areas = row.get('crop_areas')
-
+    def _validate_url(self, url):
         validate_url = validators.URLValidator(schemes=['http', 'https'])
 
-        url_err = None
+        url_err = False
         try:
             validate_url(url)
         except ValidationError:
-            url_err = 'Invalid URL'
+            url_err = True
 
         # allow urls without protocol prefix(ie. www.)
-        if url_err is not None:
-            prefixed_url = 'http://{url}'.format(url=url)
+        if url_err:
+            url = 'http://{url}'.format(url=url)
             try:
-                validate_url(prefixed_url)
-                url = prefixed_url
+                validate_url(url)
             except ValidationError:
-                errors.append(url_err)
+                raise ValidationError('Invalid URL')
 
-        image_url_err = None
+        return url
+
+    def _clean_tracker_urls(self, tracker_urls_string):
+        if tracker_urls_string is None:
+            return None
+
+        tracker_urls = tracker_urls_string.strip().split(' ')
+
+        result = []
+        for url in tracker_urls:
+            result.append(self._validate_url(url))
+
+        return result
+
+    def _clean_row(self, row):
         try:
-            validate_url(image_url)
-        except ValidationError:
-            process_image = False
-            image_url_err = 'Invalid image URL'
+            errors = []
+            process_image = True
 
-        # allow urls without protocol prefix(ie. www.)
-        if image_url_err is not None:
-            prefixed_image_url = 'http://{image_url}'.format(image_url=image_url)
+            url = row.get('url')
+            title = row.get('title')
+            image_url = row.get('image_url')
+            crop_areas = row.get('crop_areas')
+            tracker_urls_string = row.get('tracker_urls')
+
             try:
-                validate_url(prefixed_image_url)
-                process_image = True
-                image_url = prefixed_image_url
+                tracker_urls = self._clean_tracker_urls(tracker_urls_string)
             except ValidationError:
+                tracker_urls = None
+                errors.append('Invalid tracker URLs')
+
+            try:
+                url = self._validate_url(url)
+            except ValidationError:
+                errors.append('Invalid URL')
+
+            try:
+                image_url = self._validate_url(image_url)
+            except ValidationError:
+                errors.append('Invalid image URL')
+
+            if title is None or not len(title):
+                errors.append('Missing title')
+            elif len(title) > MAX_CSV_TITLE_LENGTH:
+                errors.append('Title too long (max %d characters)' % MAX_CSV_TITLE_LENGTH)
+
+            try:
+                crop_areas = self._parse_crop_areas(crop_areas)
+            except ValidationError:
+                crop_areas = None
                 process_image = False
-                errors.append(image_url_err)
+                errors.append('Invalid crop areas')
 
-        if title is None or not len(title):
-            errors.append('Missing title')
-        elif len(title) > MAX_CSV_TITLE_LENGTH:
-            errors.append('Title too long (max %d characters)' % MAX_CSV_TITLE_LENGTH)
+            error_status = None
+            try:
+                if process_image:
+                    image_id, width, height, image_hash = image_helper.process_image(image_url, crop_areas)
+            except image_helper.ImageProcessingException as e:
+                error_status = e.status() or 'error'
 
-        try:
-            crop_areas = self._parse_crop_areas(crop_areas)
-        except ValidationError:
-            crop_areas = None
-            process_image = False
-            errors.append('Invalid crop areas')
+            if error_status == 'image-size-error':
+                errors.append('Image too big.')
+            elif error_status == 'download-error':
+                errors.append(('Image could not be downloaded.'))
+            elif error_status is not None:
+                errors.append('Image could not be processed.')
 
-        error_status = None
-        try:
-            if process_image:
-                image_id, width, height, image_hash = image_helper.process_image(image_url, crop_areas)
-        except image_helper.ImageProcessingException as e:
-            error_status = e.status() or 'error'
+            if errors:
+                return None, errors
 
-        if error_status == 'image-size-error':
-            errors.append('Image too big.')
-        elif error_status == 'download-error':
-            errors.append(('Image could not be downloaded.'))
-        elif error_status is not None:
-            errors.append('Image could not be processed.')
+            data = {
+                'title': title,
+                'url': url,
+                'image_id': image_id,
+                'image_width': width,
+                'image_height': height,
+                'image_hash': image_hash,
+                'tracker_urls': tracker_urls
+            }
 
-        if errors:
-            return None, errors
-
-        data = {
-            'title': title,
-            'url': url,
-            'image_id': image_id,
-            'image_width': width,
-            'image_height': height,
-            'image_hash': image_hash
-        }
-
-        return data, None
+            return data, None
+        except Exception:
+            import traceback
+            print traceback.print_exc()
 
     def _validate_crops(self, crop_list):
         for i in range(2):
