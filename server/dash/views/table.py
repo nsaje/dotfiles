@@ -85,8 +85,7 @@ class AllAccountsSourcesTable(object):
         return models.AdGroupSourceState.objects.\
             distinct('ad_group_source_id').\
             filter(ad_group_source__in=self.active_ad_group_sources).\
-            order_by('ad_group_source_id', '-created_dt').\
-            select_related('ad_group_source')
+            order_by('ad_group_source_id', '-created_dt')
 
     def get_stats(self, start_date, end_date):
         sources_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
@@ -148,8 +147,7 @@ class AccountSourcesTable(object):
         return models.AdGroupSourceState.objects.\
             distinct('ad_group_source_id').\
             filter(ad_group_source__in=self.active_ad_group_sources).\
-            order_by('ad_group_source_id', '-created_dt').\
-            select_related('ad_group_source')
+            order_by('ad_group_source_id', '-created_dt')
 
     def get_stats(self, start_date, end_date):
         sources_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
@@ -212,8 +210,7 @@ class CampaignSourcesTable(object):
         return models.AdGroupSourceState.objects.\
             distinct('ad_group_source_id').\
             filter(ad_group_source__in=self.active_ad_group_sources).\
-            order_by('ad_group_source_id', '-created_dt').\
-            select_related('ad_group_source')
+            order_by('ad_group_source_id', '-created_dt')
 
     def get_stats(self, start_date, end_date):
         sources_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
@@ -276,15 +273,13 @@ class AdGroupSourcesTable(object):
         return models.AdGroupSourceState.objects.\
             distinct('ad_group_source_id').\
             filter(ad_group_source__in=self.active_ad_group_sources).\
-            order_by('ad_group_source_id', '-created_dt').\
-            select_related('ad_group_source')
+            order_by('ad_group_source_id', '-created_dt')
 
     def get_sources_settings(self):
         return models.AdGroupSourceSettings.objects.\
             distinct('ad_group_source_id').\
             filter(ad_group_source__in=self.active_ad_group_sources).\
-            order_by('ad_group_source_id', '-created_dt').\
-            select_related('ad_group_source')
+            order_by('ad_group_source_id', '-created_dt')
 
     def get_stats(self, start_date, end_date):
         sources_stats = reports.api_helpers.filter_by_permissions(reports.api.query(

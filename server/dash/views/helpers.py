@@ -158,8 +158,7 @@ def get_active_ad_group_sources(modelcls, modelobjects):
                 # deprecated sources are not shown in the demo at all
                 Q(ad_group__in=real_corresponding_adgroups, source__deprecated=False) |
                 Q(ad_group__in=normal_adgroups)
-            ).exclude(pk__in=[ags.id for ags in _inactive_ad_group_sources]).\
-            select_related('source')
+            ).exclude(pk__in=[ags.id for ags in _inactive_ad_group_sources])
 
     return active_ad_group_sources
 
