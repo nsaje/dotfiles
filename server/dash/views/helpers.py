@@ -228,7 +228,7 @@ def _get_keys_in_progress(ad_group_source, waiting_delayed_actions):
 def get_ad_group_sources_notifications(ad_group_sources):
     notifications = {}
 
-    waiting_delayed_actions = actionlog.models.objects.filter(
+    waiting_delayed_actions = actionlog.models.ActionLog.objects.filter(
         state__in=(actionlog.constants.ActionState.WAITING, actionlog.constants.ActionState.DELAYED),
         action=actionlog.constants.Action.SET_CAMPAIGN_STATE,
         ad_group_source_id__in=[ags.id for ags in ad_group_sources],
