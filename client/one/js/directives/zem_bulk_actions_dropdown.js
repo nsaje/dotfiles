@@ -11,7 +11,7 @@ oneApp.directive('zemBulkActionsDropdown', function() {
             checkDisabled: '&zemCheckDisabled',
             dropdownOptions: '=zemDropdownOptions',
             dropdownCssClass: '@zemDropdownCssClass',
-            containerCssClass: '@zemContainerCssClass',
+            cssClass: '@zemCssClass',
             noMatchesPlaceholder: '@zemNoMatchesPlaceholder'
         },
         templateUrl: '/partials/zem_bulk_actions_dropdown.html',
@@ -53,7 +53,6 @@ oneApp.directive('zemBulkActionsDropdown', function() {
             $scope.dropdownConfig = {
                 minimumResultsForSearch: -1,
                 dropdownCssClass: $scope.dropdownCssClass,
-                containerCssClass: $scope.containerCssClass,
                 formatNoMatches: $scope.noMatchesPlaceholder,
                 formatResult: formatSelection
             };

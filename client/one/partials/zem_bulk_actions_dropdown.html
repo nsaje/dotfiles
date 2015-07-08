@@ -3,6 +3,7 @@
         ui-select2="dropdownConfig"
         data-placeholder="{{ placeholder }}"
         ng-model="selectedItem"
+        class="{{ cssClass }}"
         ng-disabled="true">
             <option value=""></option>
     </select>
@@ -13,6 +14,7 @@
     data-placeholder="{{ placeholder }}"
     ng-model="selectedItem"
     ng-change="callOnSelect()"
+    class="{{ cssClass }}"
     ng-disabled="false">
         <option value=""></option>
         <option ng-repeat="option in dropdownOptions | filter: {hasPermission: true}" ng-disabled="option.disabled" value="{{ option.value }}">{{ option.name }}</option>
