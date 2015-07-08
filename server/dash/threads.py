@@ -182,7 +182,7 @@ class ProcessUploadThread(Thread):
         except ValidationError:
             url_err = True
 
-        # allow urls without protocol prefix(ie. www.)
+        # allow urls without protocol prefix
         if url_err:
             url = 'http://{url}'.format(url=url)
             try:
