@@ -41,14 +41,6 @@ class AdTargetLocation(ConstantBase):
         return cls._VALUES.items()
 
 
-class AdTargetCountry(AdTargetLocation):
-    _VALUES = codelists.COUNTRY_BY_CODE
-
-
-class AdTargetDMA(AdTargetLocation):
-    _VALUES = codelists.DMA_BY_CODE
-
-
 class ContentAdSubmissionStatus(ConstantBase):
     NOT_SUBMITTED = -1
     PENDING = 1
