@@ -1058,11 +1058,23 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
         last_change_dt, changed_content_ads = helpers.get_content_ad_last_change_dt(
             ad_group, filtered_sources, last_change_dt)
 
+        ad_group_sources_states = models.AdGroupSourceState.objects.distinct('ad_group_source_id')\
+            .filter(
+                ad_group_source__ad_group=ad_group,
+                ad_group_source__source=filtered_sources,
+            )\
+            .order_by('ad_group_source_id', '-created_dt')\
+            .select_related('ad_group_source')
+
         rows = {}
         for content_ad in changed_content_ads:
             content_ad_sources = content_ad.contentadsource_set.filter(source=filtered_sources)
 
-            submission_status = helpers.get_content_ad_submission_status(user, content_ad_sources)
+            submission_status = helpers.get_content_ad_submission_status(
+                user,
+                ad_group_sources_states,
+                content_ad_sources
+            )
 
             rows[str(content_ad.id)] = {
                 'status_setting': content_ad.state,
@@ -1134,7 +1146,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         page_rows, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
             rows, page, size)
 
-        rows = self._add_status_to_rows(user, page_rows, filtered_sources)
+        rows = self._add_status_to_rows(user, page_rows, filtered_sources, ad_group)
 
         total_stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
             start_date,
@@ -1229,16 +1241,34 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
 
         return rows
 
-    def _add_status_to_rows(self, user, rows, filtered_sources):
+    def _add_status_to_rows(self, user, rows, filtered_sources, ad_group):
+        all_content_ad_sources = models.ContentAdSource.objects.filter(
+            source=filtered_sources,
+            content_ad_id__in=[row['id'] for row in rows]
+        ).select_related('content_ad__ad_group').select_related('source')
+
+        ad_group_sources_states = models.AdGroupSourceState.objects.distinct('ad_group_source_id')\
+            .filter(
+                ad_group_source__ad_group=ad_group,
+                ad_group_source__source=filtered_sources,
+            )\
+            .order_by('ad_group_source_id', '-created_dt')\
+            .select_related('ad_group_source')
+
         for row in rows:
-            content_ad = models.ContentAd.objects.get(pk=row['id'])
+            content_ad_id = int(row['id'])
 
-            content_ad_sources = models.ContentAdSource.objects.filter(
-                source=filtered_sources,
-                content_ad_id=content_ad.id
+            content_ad_sources = [cas for cas in all_content_ad_sources if cas.content_ad_id == content_ad_id]
+            if content_ad_sources:
+                content_ad = content_ad_sources[0].content_ad
+            else:
+                content_ad = models.ContentAd.objects.get(id=content_ad_id)
+
+            submission_status = helpers.get_content_ad_submission_status(
+                user,
+                ad_group_sources_states,
+                content_ad_sources
             )
-
-            submission_status = helpers.get_content_ad_submission_status(user, content_ad_sources)
 
             row.update({
                 'submission_status': submission_status,
