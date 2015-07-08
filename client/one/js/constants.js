@@ -1,4 +1,4 @@
-var constants = {
+var constants = { 
     adGroupSettingsState: {
         ACTIVE: 1,
         INACTIVE: 2
@@ -7,12 +7,13 @@ var constants = {
         DESKTOP: 'desktop',
         MOBILE: 'mobile'
     },
+    // TODO: remove when new locations selection UI
     adTargetCountry: {
         AUSTRALIA: 'AU',
         CANADA: 'CA',
         IRELAND: 'IE',
         NEW_ZAELAND: 'NZ',
-        UNITED_KINGDOM: 'UK',
+        UNITED_KINGDOM: 'GB',
         UNITED_STATES: 'US'
     },
     chartMetric: {
@@ -98,6 +99,7 @@ var options = {
         {name: 'Desktop', value: constants.adTargetDevice.DESKTOP},
         {name: 'Mobile', value: constants.adTargetDevice.MOBILE}
     ],
+    // TODO: remove when new locations selection UI
     adTargetCountries: [
         {name: 'Australia', value: constants.adTargetCountry.AUSTRALIA},
         {name: 'Canada', value: constants.adTargetCountry.CANADA},

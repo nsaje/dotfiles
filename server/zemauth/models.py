@@ -132,6 +132,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('content_ads_bulk_actions', 'Can view and use bulk content ads actions.'),
             ('can_toggle_ga_performance_tracking', 'Can toggle Google Analytics performance tracking.'),
             ('can_see_media_source_status_on_submission_popover', 'Can see media source status on submission status popover'),
+            ('can_set_dma_targeting', 'Can set DMA targeting'),
         )
 
     def get_full_name(self):

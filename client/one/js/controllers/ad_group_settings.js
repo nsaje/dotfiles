@@ -1,9 +1,8 @@
-/*globals oneApp,constants,options,moment*/
+/*globals oneApp,options*/
 oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
     $scope.settings = {};
     $scope.actionIsWaiting = false;
     $scope.errors = {};
-    $scope.constants = constants;
     $scope.options = options;
     $scope.alerts = [];
     $scope.saveRequestInProgress = false;
@@ -88,6 +87,12 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($
             }
         );
     };
+
+    $scope.$watch('settings.targetRegions', function (newValue, oldValue) {
+        if (newValue && newValue.length) {
+            $scope.settings.targetRegionsMode = 'custom';
+        }
+    }, true);
 
     $scope.$watch('settings.manualStop', function (newValue, oldValue) {
         if (newValue) {
