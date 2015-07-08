@@ -210,14 +210,12 @@ def get_ad_group_sources_last_change_dt(ad_group_sources, last_change_dt=None):
     return max(last_change_dts), changed_ad_group_sources
 
 
-def _get_keys_in_progress(ad_group_source):
-    actions = ad_group_source.actionlog_set.filter(
-        state__in=(actionlog.constants.ActionState.WAITING, actionlog.constants.ActionState.DELAYED),
-        action=actionlog.constants.Action.SET_CAMPAIGN_STATE
-    )
-
+def _get_keys_in_progress(ad_group_source, waiting_delayed_actions):
     keys_in_progress = set()
-    for action in actions:
+    for action in waiting_delayed_actions:
+        if action.ad_group_source_id != ad_group_source.id:
+            continue
+
         keys = action.payload.get('args', {}).get('conf', {}).keys()
 
         for key in keys:
@@ -230,6 +228,12 @@ def _get_keys_in_progress(ad_group_source):
 def get_ad_group_sources_notifications(ad_group_sources):
     notifications = {}
 
+    waiting_delayed_actions = actionlog.models.objects.filter(
+        state__in=(actionlog.constants.ActionState.WAITING, actionlog.constants.ActionState.DELAYED),
+        action=actionlog.constants.Action.SET_CAMPAIGN_STATE,
+        ad_group_source_id__in=[ags.id for ags in ad_group_sources],
+    )
+
     for ags in ad_group_sources:
         notification = {}
 
@@ -241,7 +245,7 @@ def get_ad_group_sources_notifications(ad_group_sources):
         important = False
         state_message = None
 
-        keys_in_progress = _get_keys_in_progress(ags)
+        keys_in_progress = _get_keys_in_progress(ags, waiting_delayed_actions)
 
         ad_group_settings = ags.ad_group.get_current_settings()
         if ad_group_settings.state == constants.AdGroupSettingsState.INACTIVE:
