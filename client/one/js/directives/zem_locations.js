@@ -1,7 +1,7 @@
-/*globals oneAll, locationsList, locationsLookup */
+/*globals oneAll */
 "use strict";
 
-oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
+oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config, $state, regions) {
     return {
         restrict: 'E',
         scope: {
@@ -10,7 +10,7 @@ oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
         },
         templateUrl: '/partials/zem_locations.html',
         controller: ['$scope', '$compile', '$element', '$attrs', '$http', 'api', function ($scope, $compile, $element, $attrs, $http, api) {
-            $scope.locations = locationsList;
+            $scope.regions = regions;
             $scope.config = config;
 
             $scope.previousSelection = undefined;
@@ -23,7 +23,7 @@ oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
 
                 var location, locations = [];
                 for (var i=0; i<$scope.selectedLocationCodes.length; i++) {
-                    location = locationsLookup.getLocation($scope.selectedLocationCodes[i]);
+                    location = regions.getByCode($scope.selectedLocationCodes[i]);
 
                     if (location) {
                         locations.push(location);
@@ -40,7 +40,7 @@ oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
                     return object.text;
                 };
 
-                var option = locationsLookup.getLocation(object.id);
+                var option = regions.getByCode(object.id);
 
                 if (!$scope.isDMA(option)) {
                     return object.text;
@@ -97,13 +97,15 @@ oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
 
                 if ($scope.selectedLocationCodes.indexOf($scope.selectedLocationCode) < 0) {
 
-                    var selectedLocation = locationsLookup.getLocation($scope.selectedLocationCode);
+                    var selectedLocation = regions.getByCode($scope.selectedLocationCode);
 
                     // check if all media sources support DMA targeting
-                    if (selectedLocation.type === 'D' && $scope.sourcesWithoutDMASupport) {
-                        $scope.warnDMANotSupported = true;
-                        $scope.selectedLocationCode = '';
-                        return;
+                    if (selectedLocation.type === 'D' && $scope.sourcesWithoutDMASupport
+                        && $scope.sourcesWithoutDMASupport.length > 0) {
+
+                            $scope.warnDMANotSupported = true;
+                            $scope.selectedLocationCode = '';
+                            return;
                     }
 
                     // when US is selected remove DMAs (because they are a subset of US)
@@ -117,7 +119,7 @@ oneApp.directive('zemLocations', ['config', '$state', function(config, $state) {
                         $scope.selectedDMASubsetOfUS = [];
                         for (var i=0; i<$scope.selectedLocationCodes.length; i++) {
 
-                            location = locationsLookup.getLocation($scope.selectedLocationCodes[i]);
+                            location = regions.getByCode($scope.selectedLocationCodes[i]);
 
                             if ($scope.isDMA(location)) {
                                 if ($scope.selectedDMASubsetOfUS.length <= 4) {

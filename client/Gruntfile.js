@@ -32,7 +32,6 @@ module.exports = function (grunt) {
                     'dist/one/zemanta-one.templates.js',
                     'dist/build/config.js',
                     'one/js/constants.js',
-                    'one/js/codelists.js',
                     'one/js/app.js',
                     'one/js/constants/*.js',
                     'one/js/services/**/*.js',
