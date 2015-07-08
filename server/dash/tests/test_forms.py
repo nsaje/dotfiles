@@ -97,12 +97,13 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         self.description = 'testdescription'
         self.brand_name = 'testbrandname'
         self.call_to_action = 'testcalltoaction'
+        self.tracker_urls = 'http://example1.com example2.com'
 
     def test_filetypes(self):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
         form = self._init_form(csv_file, {})
         with open('./dash/tests/test.gif') as f:
-            valid= form.is_valid_input_file(f.read())
+            valid = form.is_valid_input_file(f.read())
             self.assertFalse(valid)
         with open('./dash/tests/test.jpg') as f:
             valid = form.is_valid_input_file(f.read())
@@ -116,7 +117,6 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
 
     def test_no_csv_content(self):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
-        #    [[self.url, self.title, self.image_url, self.crop_areas]])
 
         form = self._init_form(csv_file, {'display_url': 'test.com'})
         self.assertFalse(form.is_valid())
@@ -156,8 +156,8 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
 
     def test_form(self):
         csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Crop Areas'],
-            [[self.url, self.title, self.image_url, self.crop_areas]])
+            ['Url', 'Title', 'Image Url', 'Crop Areas', 'Tracker URLs'],
+            [[self.url, self.title, self.image_url, self.crop_areas, self.tracker_urls]])
 
         form = self._init_form(csv_file, None)
 
@@ -173,6 +173,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
                 u'image_url': self.image_url,
                 u'title': self.title,
                 u'url': self.url,
+                u'tracker_urls': self.tracker_urls
             }]
         })
 
@@ -212,7 +213,19 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         csv_file = self._get_csv_file(['URL', 'Title', 'Image URL', 'aaa'], [])
         form = self._init_form(csv_file, None)
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors['content_ads'], ['Fourth column in header should be Crop areas.'])
+        self.assertEqual(
+            form.errors['content_ads'],
+            ['Fourth column in header should be Crop areas or Tracker URLs.']
+        )
+
+    def test_header_no_tracker_urls(self):
+        csv_file = self._get_csv_file(['URL', 'Title', 'Image URL', 'Crop Areas', 'aaa'], [])
+        form = self._init_form(csv_file, None)
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            form.errors['content_ads'],
+            ['Fifth column in header should be Crop areas or Tracker URLs.']
+        )
 
     def test_windows_1252_encoding(self):
         csv_file = self._get_csv_file(

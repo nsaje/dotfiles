@@ -379,28 +379,36 @@ class AdGroupAdsPlusUploadForm(forms.Form):
 
         return display_url
 
-    def _validate_header(self, header):
-        if header['url'].strip().lower() != 'url':
-            raise forms.ValidationError('First column in header should be URL.')
+    def _get_header(self, lines):
+        reader = unicodecsv.reader(lines)
 
-        if header['title'].strip().lower() != 'title':
-            raise forms.ValidationError('Second column in header should be Title.')
-
-        image_url_col = header['image_url']
-        if image_url_col is not None and image_url_col.strip().lower() not in ['image_url', 'image url']:
-            raise forms.ValidationError('Third column in header should be Image URL.')
-
-        crop_areas_col = header['crop_areas']
-        if crop_areas_col is not None and crop_areas_col.strip().lower() not in ['crop_areas', 'crop areas']:
-            raise forms.ValidationError('Fourth column in header should be Crop areas.')
-
-    def _get_content_ad_data(self, reader):
         try:
-            header = next(reader)
+            return next(reader)
         except StopIteration:
             raise forms.ValidationError('Uploaded file is empty.')
 
-        self._validate_header(header)
+    def _get_fields(self, header):
+        fields = [col.strip().lower().replace(' ', '_') for col in header]
+
+        if fields[0] != 'url':
+            raise forms.ValidationError('First column in header should be URL.')
+
+        if fields[1] != 'title':
+            raise forms.ValidationError('Second column in header should be Title.')
+
+        if fields[2] != 'image_url':
+            raise forms.ValidationError('Third column in header should be Image URL.')
+
+        if len(fields) > 3 and fields[3] not in ['crop_areas', 'tracker_urls']:
+            raise forms.ValidationError('Fourth column in header should be Crop areas or Tracker URLs.')
+
+        if len(fields) > 4 and fields[4] not in ['crop_areas', 'tracker_urls']:
+            raise forms.ValidationError('Fifth column in header should be Crop areas or Tracker URLs.')
+
+        return fields
+
+    def _get_content_ad_data(self, reader):
+        next(reader)  # ignore header
 
         count_rows = 0
         data = []
@@ -446,13 +454,14 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         lines = file_content.splitlines()
 
         encodings = ['utf-8', 'windows-1252']
-        fields = ['url', 'title', 'image_url', 'crop_areas']
-
         data = None
 
         # try all supported encodings one by one
         for encoding in encodings:
             try:
+                header = self._get_header(lines)
+                fields = self._get_fields(header)
+
                 reader = unicodecsv.DictReader(lines, fields, encoding=encoding)
                 data = self._get_content_ad_data(reader)
                 break

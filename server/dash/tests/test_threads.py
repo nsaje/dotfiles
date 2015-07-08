@@ -53,7 +53,6 @@ class ProcessUploadThreadTest(TestCase):
 http://example.com,test title,http://example.com/image,\n'''.replace("\n",'\r\n') ,
             self.error_report)
 
-
     @patch('dash.threads.redirector_helper.insert_redirect')
     @patch('dash.threads.image_helper.process_image')
     def test_run(self, mock_process_image, mock_redirect_insert):
@@ -69,12 +68,15 @@ http://example.com,test title,http://example.com/image,\n'''.replace("\n",'\r\n'
         image_url = 'http://example.com/image'
         crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
         crop_areas_list = [[[44, 22], [144, 122]], [[33, 22], [177, 122]]]
+        tracker_urls_string = 'http://example.com example2.com'
+        tracker_urls = ['http://example.com', 'http://example2.com']
 
         content_ads = [{
             'url': url,
             'title': title,
             'image_url': image_url,
-            'crop_areas': crop_areas
+            'crop_areas': crop_areas,
+            'tracker_urls': tracker_urls_string
         }]
         filename = 'testname.csv'
         batch_name = 'Test batch name'
@@ -103,6 +105,7 @@ http://example.com,test title,http://example.com/image,\n'''.replace("\n",'\r\n'
         self.assertEqual(content_ad.image_hash, image_hash)
         self.assertEqual(content_ad.batch.name, batch_name)
         self.assertEqual(content_ad.state, constants.ContentAdSourceState.ACTIVE)
+        self.assertEqual(content_ad.tracker_urls, tracker_urls)
 
         self.assertEqual(prev_actionlog_count, actionlog.models.ActionLog.objects.all().count())
         self.assertEqual(batch.status, constants.UploadBatchStatus.DONE)
@@ -194,7 +197,8 @@ http://example.com,test title,http://example.com/image,\n'''.replace("\n",'\r\n'
             'url': 'invalidurl',
             'title': '',
             'image_url': '',
-            'crop_areas': '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
+            'crop_areas': '(((44, 22), (144, 122)), ((33, 22), (177, 122)))',
+            'tracker_urls': 'invalid url'
         }, {
             'url': 'http://example.com',
             'title': 'very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very long test title',
@@ -225,7 +229,7 @@ http://example.com,test title,http://example.com/image,\n'''.replace("\n",'\r\n'
 
         mock_instance.put.assert_called_with(
             'contentads/errors/safefilename.csv',
-            'url,title,image_url,crop_areas,errors\r\ninvalidurl,,,"(((44, 22), (144, 122)), ((33, 22), (177, 122)))","Invalid URL, Invalid image URL, Missing title"\r\nhttp://example.com,very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very long test title,http://example.com/image,"(23, 21(()))","Title too long (max 256 characters), Invalid crop areas"\r\n'
+            'url,title,image_url,crop_areas,tracker_urls,errors\r\ninvalidurl,,,"(((44, 22), (144, 122)), ((33, 22), (177, 122)))",invalid url,"Invalid tracker URLs, Invalid URL, Invalid image URL, Missing title"\r\nhttp://example.com,very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very long test title,http://example.com/image,"(23, 21(()))",,"Title too long (max 256 characters), Invalid crop areas"\r\n'
         )
         self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
         self.assertFalse(mock_insert_action.called)
