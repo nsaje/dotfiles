@@ -205,75 +205,71 @@ class ProcessUploadThread(Thread):
         return result
 
     def _clean_row(self, row):
+        errors = []
+        process_image = True
+
+        url = row.get('url')
+        title = row.get('title')
+        image_url = row.get('image_url')
+        crop_areas = row.get('crop_areas')
+        tracker_urls_string = row.get('tracker_urls')
+
         try:
-            errors = []
-            process_image = True
+            tracker_urls = self._clean_tracker_urls(tracker_urls_string)
+        except ValidationError:
+            tracker_urls = None
+            errors.append('Invalid tracker URLs')
 
-            url = row.get('url')
-            title = row.get('title')
-            image_url = row.get('image_url')
-            crop_areas = row.get('crop_areas')
-            tracker_urls_string = row.get('tracker_urls')
+        try:
+            url = self._validate_url(url)
+        except ValidationError:
+            errors.append('Invalid URL')
 
-            try:
-                tracker_urls = self._clean_tracker_urls(tracker_urls_string)
-            except ValidationError:
-                tracker_urls = None
-                errors.append('Invalid tracker URLs')
+        try:
+            image_url = self._validate_url(image_url)
+        except ValidationError:
+            errors.append('Invalid image URL')
 
-            try:
-                url = self._validate_url(url)
-            except ValidationError:
-                errors.append('Invalid URL')
+        if title is None or not len(title):
+            errors.append('Missing title')
+        elif len(title) > MAX_CSV_TITLE_LENGTH:
+            errors.append('Title too long (max %d characters)' % MAX_CSV_TITLE_LENGTH)
 
-            try:
-                image_url = self._validate_url(image_url)
-            except ValidationError:
-                errors.append('Invalid image URL')
+        try:
+            crop_areas = self._parse_crop_areas(crop_areas)
+        except ValidationError:
+            crop_areas = None
+            process_image = False
+            errors.append('Invalid crop areas')
 
-            if title is None or not len(title):
-                errors.append('Missing title')
-            elif len(title) > MAX_CSV_TITLE_LENGTH:
-                errors.append('Title too long (max %d characters)' % MAX_CSV_TITLE_LENGTH)
+        error_status = None
+        try:
+            if process_image:
+                image_id, width, height, image_hash = image_helper.process_image(image_url, crop_areas)
+        except image_helper.ImageProcessingException as e:
+            error_status = e.status() or 'error'
 
-            try:
-                crop_areas = self._parse_crop_areas(crop_areas)
-            except ValidationError:
-                crop_areas = None
-                process_image = False
-                errors.append('Invalid crop areas')
+        if error_status == 'image-size-error':
+            errors.append('Image too big.')
+        elif error_status == 'download-error':
+            errors.append(('Image could not be downloaded.'))
+        elif error_status is not None:
+            errors.append('Image could not be processed.')
 
-            error_status = None
-            try:
-                if process_image:
-                    image_id, width, height, image_hash = image_helper.process_image(image_url, crop_areas)
-            except image_helper.ImageProcessingException as e:
-                error_status = e.status() or 'error'
+        if errors:
+            return None, errors
 
-            if error_status == 'image-size-error':
-                errors.append('Image too big.')
-            elif error_status == 'download-error':
-                errors.append(('Image could not be downloaded.'))
-            elif error_status is not None:
-                errors.append('Image could not be processed.')
+        data = {
+            'title': title,
+            'url': url,
+            'image_id': image_id,
+            'image_width': width,
+            'image_height': height,
+            'image_hash': image_hash,
+            'tracker_urls': tracker_urls
+        }
 
-            if errors:
-                return None, errors
-
-            data = {
-                'title': title,
-                'url': url,
-                'image_id': image_id,
-                'image_width': width,
-                'image_height': height,
-                'image_hash': image_hash,
-                'tracker_urls': tracker_urls
-            }
-
-            return data, None
-        except Exception:
-            import traceback
-            print traceback.print_exc()
+        return data, None
 
     def _validate_crops(self, crop_list):
         for i in range(2):

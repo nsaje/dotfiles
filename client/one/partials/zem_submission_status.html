@@ -8,7 +8,7 @@
     <div class="submission-status-popover">
         <div class="submission-status-popover-table">
             <div class="submission-status-popover-row" ng-repeat="item in nonApproved">
-                <span class="submission-status-popover-cell">{{item.name}}<span ng-if="item.source_state === ''">:&nbsp;</span><span ng-if="item.source_state != ''">&nbsp;{{item.source_state}}:&nbsp;</span></span>
+                <span class="submission-status-popover-cell left-cell">{{item.name}}<span ng-if="item.source_state === ''">:&nbsp;</span><span ng-if="item.source_state != ''">&nbsp;{{item.source_state}}:&nbsp;</span></span>
                 <span class="submission-status-popover-cell bold">{{item.text}}</span>
             </div>
             <div ng-if="approved.length && nonApproved.length" class="submission-status-popover-row">
@@ -16,7 +16,7 @@
                 <span class="submission-status-popover-cell divider"><hr></span>
             </div>
             <div class="submission-status-popover-row" ng-repeat="item in approved">
-                <span class="submission-status-popover-cell">{{item.name}}<span ng-if="item.source_state === ''">:&nbsp;</span><span ng-if="item.source_state != ''">&nbsp;{{item.source_state}}:&nbsp;</span></span>
+                <span class="submission-status-popover-cell left-cell submission-status-label">{{item.name}}<span ng-if="item.source_state === ''">:&nbsp;</span><span ng-if="item.source_state != ''" class="submission-status-emphasis">&nbsp;{{item.source_state}}</span><span ng-if="item.source_state != ''">:&nbsp;</span></span>
                 <span class="submission-status-popover-cell">{{item.text}}</span>
             </div>
 

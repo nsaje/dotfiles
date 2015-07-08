@@ -158,7 +158,8 @@ def get_active_ad_group_sources(modelcls, modelobjects):
                 # deprecated sources are not shown in the demo at all
                 Q(ad_group__in=real_corresponding_adgroups, source__deprecated=False) |
                 Q(ad_group__in=normal_adgroups)
-            ).exclude(pk__in=[ags.id for ags in _inactive_ad_group_sources])
+            ).exclude(pk__in=[ags.id for ags in _inactive_ad_group_sources]).\
+            select_related('source')
 
     return active_ad_group_sources
 
@@ -501,7 +502,7 @@ def get_content_ad_data_status(content_ads):
             adgs = cached_ad_group_sources[cache_key]
             if adgs is not None:
                 latest_state = _get_latest_state(adgs)
-                if latest_state.state == constants.AdGroupSourceSettingsState.INACTIVE:
+                if latest_state is not None and latest_state.state == constants.AdGroupSourceSettingsState.INACTIVE:
                     continue
 
             content_ad_source = models.ContentAdSource.objects.filter(
