@@ -15,6 +15,7 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
 
             $scope.previousSelection = undefined;
             $scope.selectedDMASubsetOfUS = undefined;
+            $scope.selectedUS = false;
             $scope.warnDMANotSupported = false;
 
             $scope.selectedLocations = function() {
@@ -80,6 +81,8 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
             };
 
             $scope.removeSelectedLocation = function(location) {
+                $scope.resetWarnings();
+
                 var selectedIdx = $scope.selectedLocationCodes.indexOf(location.code);
                 if (selectedIdx >= 0) {
                     $scope.selectedLocationCodes.splice(selectedIdx, 1);
@@ -90,6 +93,8 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                 if (!$scope.selectedLocationCode || $scope.selectedLocationCode === undefined) {
                     return;
                 }
+
+                $scope.resetWarnings();
 
                 if ($scope.selectedLocationCodes === undefined) {
                     $scope.selectedLocationCodes = [];
@@ -109,36 +114,57 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                     }
 
                     // when US is selected remove DMAs (because they are a subset of US)
-                    // and add undo functionality that can undo the removal
+                    // and add undo functionality that can undo the removal. Same for the opposite
+                    // situation
+                    var others = [];
+
+                    $scope.selectedDMASubsetOfUS = [];
                     if ($scope.selectedLocationCode === 'US') {
-
-                        var location,
-                            hasMoreDMAs = false,
-                            others = [];
-
-                        $scope.selectedDMASubsetOfUS = [];
-                        for (var i=0; i<$scope.selectedLocationCodes.length; i++) {
-
+                        for (var location, i=0; i<$scope.selectedLocationCodes.length; i++) {
                             location = regions.getByCode($scope.selectedLocationCodes[i]);
 
                             if ($scope.isDMA(location)) {
+                                $scope.selectedUS = true;
+
                                 if ($scope.selectedDMASubsetOfUS.length <= 4) {
                                     $scope.selectedDMASubsetOfUS.push(($scope.selectedDMASubsetOfUS.length == 3 ? '...': location.name));
                                 }
+                            } else {
+                                others.push(location.code);
                             }
-                            else {
+                        }
+                    } else if ($scope.isDMA(selectedLocation)) {
+                        var dmas = [];
+                        for (var location, i=0; i<$scope.selectedLocationCodes.length; i++) {
+                            location = regions.getByCode($scope.selectedLocationCodes[i]);
+
+                            if ($scope.isDMA(location) && dmas.length <= 3) {
+                                // max 2 DMAs, because one extra (the selected one) will be added
+                                // in case of US selection
+                                dmas.push((dmas.length == 2 ? '...': location.name));
+                            }
+
+                            if (location.code !== 'US'){
                                 others.push(location.code);
                             }
                         }
 
-                        if ($scope.selectedDMASubsetOfUS.length > 0) {
-                            // save previous state
-                            $scope.previousSelection = $scope.selectedLocationCodes.slice();
-
-                            // set state without DMAs
-                            $scope.selectedLocationCodes = others;
+                        if (others.length !== $scope.selectedLocationCodes.length) {
+                            $scope.selectedUS = false;
+                            $scope.selectedDMASubsetOfUS.push(selectedLocation.name);
+                            $scope.selectedDMASubsetOfUS.push.apply(dmas);
                         }
                     }
+
+
+                    if ($scope.selectedDMASubsetOfUS.length > 0) {
+                        // save previous state
+                        $scope.previousSelection = $scope.selectedLocationCodes.slice();
+
+                        // set state without DMAs
+                        $scope.selectedLocationCodes = others;
+                    }
+
                     $scope.selectedLocationCodes.push($scope.selectedLocationCode);
                 }
                 $scope.selectedLocationCode = '';
@@ -147,9 +173,14 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
             $scope.undo = function() {
                 if($scope.previousSelection) {
                     $scope.selectedLocationCodes = $scope.previousSelection;
-                    $scope.previousSelection = undefined;
-                    $scope.selectedDMASubsetOfUS = undefined;
+                    $scope.resetWarnings();
                 }
+            };
+
+            $scope.resetWarnings = function() {
+                $scope.previousSelection = undefined;
+                $scope.selectedDMASubsetOfUS = undefined;
+                $scope.warnDMANotSupported = false;
             };
         }]
     };
