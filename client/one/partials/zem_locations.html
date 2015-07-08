@@ -16,9 +16,9 @@
 <select ui-select2="selectorConfig" ng-model="selectedLocationCode" ng-change="addLocation()" data-placeholder="Add Location">
     <option value=""></option>
     <optgroup label="Countries">
-        <option ng-repeat="location in regions.regions | orderBy:'name' | filter: isCountry" value="{{location.code}}">{{location.name}}</option>
+        <option ng-repeat="location in regions.regions | orderBy:'name' | filter: regions.isCountry" value="{{location.code}}">{{location.name}}</option>
     </optgroup>
     <optgroup label="DMAs (United States)">
-        <option ng-repeat="location in regions.regions | orderBy:'name' | filter: isDMA" value="{{location.code}}">US: {{location.code}} {{location.name}}</option>
+        <option ng-repeat="location in regions.regions | orderBy:'name' | filter: regions.isDMA" value="{{location.code}}">US: {{location.code}} {{location.name}}</option>
     </optgroup>
 </select>

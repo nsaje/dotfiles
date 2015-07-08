@@ -15,5 +15,11 @@ oneApp.constant('regions', {
         }
 
         return this.regions[this._regionIndexByCode[code]];
+    },
+    isDMA: function(location) {
+        return location.type === 'D';
+    },
+    isCountry: function(location) {
+        return location.type === 'C';
     }
 });

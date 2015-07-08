@@ -43,7 +43,7 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
 
                 var option = regions.getByCode(object.id);
 
-                if (!$scope.isDMA(option)) {
+                if (!regions.isDMA(option)) {
                     return object.text;
                 }
 
@@ -66,18 +66,6 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                 formatNoMatches: 'no matches found',
                 dropdownAutoWidth: 'true',
                 formatResult: formatSelection
-            };
-
-            $scope.isCountry = function(location) {
-                return location.type === 'C';
-            };
-
-            $scope.isDMA = function(location) {
-                return location.type === 'D';
-            };
-
-            $scope.isLocationSelected = function(location) {
-                return $scope.selectedLocationCodes.indexOf(location.code) >= 0;
             };
 
             $scope.removeSelectedLocation = function(location) {
@@ -123,7 +111,7 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                         for (var location, i=0; i<$scope.selectedLocationCodes.length; i++) {
                             location = regions.getByCode($scope.selectedLocationCodes[i]);
 
-                            if ($scope.isDMA(location)) {
+                            if (regions.isDMA(location)) {
                                 $scope.selectedUS = true;
 
                                 if ($scope.selectedDMASubsetOfUS.length <= 4) {
@@ -133,12 +121,12 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                                 others.push(location.code);
                             }
                         }
-                    } else if ($scope.isDMA(selectedLocation)) {
+                    } else if (regions.isDMA(selectedLocation)) {
                         var dmas = [];
                         for (var location, i=0; i<$scope.selectedLocationCodes.length; i++) {
                             location = regions.getByCode($scope.selectedLocationCodes[i]);
 
-                            if ($scope.isDMA(location) && dmas.length <= 3) {
+                            if (regions.isDMA(location) && dmas.length <= 3) {
                                 // max 2 DMAs, because one extra (the selected one) will be added
                                 // in case of US selection
                                 dmas.push((dmas.length == 2 ? '...': location.name));
