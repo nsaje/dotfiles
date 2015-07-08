@@ -490,6 +490,10 @@ def get_data_status(objects, last_sync_messages, state_messages=None):
 
 def get_content_ad_data_status(ad_group, content_ads):
     ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+    ad_group_sources_states = models.AdGroupSourceState.objects\
+        .distinct('ad_group_source_id')\
+        .filter(ad_group_source=ad_group_sources)\
+        .order_by('ad_group_source_id', '-created_dt')
     content_ad_sources = models.ContentAdSource.objects.filter(
         content_ad__in=content_ads
     ).select_related('source')
@@ -512,7 +516,12 @@ def get_content_ad_data_status(ad_group, content_ads):
                     break
 
             if ad_group_source is not None:
-                latest_state = _get_latest_state(ad_group_source)
+                latest_state = None
+                for agss in ad_group_sources_states:
+                    if agss.ad_group_source_id == ad_group_source.id:
+                        latest_state = agss
+                        break
+
                 if latest_state is not None and latest_state.state == constants.AdGroupSourceSettingsState.INACTIVE:
                     # in case media source is disabled we ignore content ad state
                     # difference
