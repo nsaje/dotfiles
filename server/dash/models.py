@@ -13,7 +13,6 @@ from django.db import models, transaction
 import utils.string_helper
 
 from dash import constants
-from dash import codelists
 from utils import encryption_helpers
 from utils import statsd_helper
 from utils import exc
@@ -938,7 +937,7 @@ class AdGroupSettings(SettingsBase):
         'cpc_cc',
         'daily_budget_cc',
         'target_devices',
-        'target_regions'
+        'target_regions',
         'tracking_code',
         'archived',
         'display_url',
