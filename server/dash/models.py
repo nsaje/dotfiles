@@ -1028,7 +1028,7 @@ class AdGroupSettings(SettingsBase):
 
     @classmethod
     def get_default_value(cls, prop_name):
-        return cls.get_defaults_dict.get(prop_name)
+        return cls.get_defaults_dict().get(prop_name)
 
     @classmethod
     def get_human_prop_name(cls, prop_name):
@@ -1038,7 +1038,7 @@ class AdGroupSettings(SettingsBase):
             'cpc_cc': 'Max CPC bid',
             'daily_budget_cc': 'Daily budget',
             'target_devices': 'Device targeting',
-            'target_regions': 'Geographic targeting',
+            'target_regions': 'Locations',
             'tracking_code': 'Tracking code',
             'state': 'State',
             'archived': 'Archived',

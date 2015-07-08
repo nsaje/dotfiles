@@ -70,7 +70,7 @@ class ActionLogApiView(api_common.BaseApiView):
             'cpc_cc': 'Max CPC bid',
             'daily_budget_cc': 'Daily budget',
             'target_devices': 'Device targeting',
-            'target_regions': 'Geographic targeting',
+            'target_regions': 'Locations',
             'tracking_code': 'Tracking code',
             'state': 'State'
         }

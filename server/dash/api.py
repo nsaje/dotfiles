@@ -445,7 +445,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                 if any((source.can_modify_country_targeting(), source.can_modify_dma_targeting())):
                     actions.extend(
                         actionlog.api.set_ad_group_source_settings(
-                            {new_field_name: new_field_value},
+                            {field_name: new_field_value},
                             ad_group_source,
                             request,
                             order,

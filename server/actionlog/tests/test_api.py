@@ -462,7 +462,6 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action.state, constants.ActionState.DELAYED)
         self.assertEqual(action.payload.get('args', {}).get('conf'), changes)
 
-
     @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
     def test_fetch_ad_group_status(self):
         utcnow = datetime.datetime.utcnow()
@@ -723,12 +722,12 @@ class ActionLogApiTestCase(TestCase):
                         ad_group_source_extra.get_tracking_ids(),
                     ),
                     'tracking_slug': 'industrybrains',
-                    'target_devices': ['desktop', 'mobile'],
-                    'target_regions': ['UK', 'US', 'CA'],
-                    'start_date': '2015-03-02',
-                    'end_date': '2015-04-02',
-                    'brand_name': 'Brand Name',
-                    'display_url': 'displayurl.com',
+                    'target_devices': [],
+                    'target_regions': ['693'],
+                    'start_date': None,
+                    'end_date': None,
+                    'brand_name': 'Example',
+                    'display_url': 'example.com',
                     'ad_group_id': 2,
                     'exchange': 'adsnative'
                 },

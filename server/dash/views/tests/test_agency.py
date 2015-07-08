@@ -27,7 +27,7 @@ class AdGroupSettingsTest(TestCase):
                 'cpc_cc': '0.3000',
                 'daily_budget_cc': '200.0000',
                 'target_devices': ['desktop'],
-                'target_regions': ['US'],
+                'target_regions': ['693', 'GB'],
                 'name': 'Test ad group name',
                 'id': 1
             }
@@ -61,7 +61,7 @@ class AdGroupSettingsTest(TestCase):
                     'start_date': '2015-05-01',
                     'state': 1,
                     'target_devices': ['desktop'],
-                    'target_regions': ['US'],
+                    'target_regions': ['693', 'GB'],
                     'tracking_code': '',
                     'enable_ga_tracking': True
                 }
@@ -159,6 +159,53 @@ class AdGroupSettingsTest(TestCase):
         self.assertEqual(response_settings_dict['tracking_code'], '')
         self.assertEqual(response_settings_dict['enable_ga_tracking'], True)
 
+    def test_put_invalid_target_region(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+
+        self.settings_dict['settings']['target_regions'] = ["123"]
+
+        response = self.client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True
+        )
+
+        response_dict = json.loads(response.content)
+        self.assertFalse(response_dict['success'])
+        self.assertIn('target_regions', response_dict['data']['errors'])
+
+    def test_put_us_and_dmas(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+
+        self.settings_dict['settings']['target_regions'] = ['US', '693']
+
+        response = self.client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True
+        )
+
+        response_dict = json.loads(response.content)
+        self.assertFalse(response_dict['success'])
+        self.assertIn('target_regions', response_dict['data']['errors'])
+
+    def test_get_sources_without_dma_support(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+
+        response = self.client.get(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            follow=True
+        )
+
+        response_dict = json.loads(response.content)
+
+        self.assertItemsEqual(response_dict['data']['sources_without_dma_support'], ['Gravity'])
 
 class AdGroupAgencyTest(TestCase):
     fixtures = ['test_views.yaml']
@@ -232,7 +279,7 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Max CPC bid', 'value': '$0.40'},
                         {'name': 'Daily budget', 'value': None},
                         {'name': 'Device targeting', 'value': ''},
-                        {'name': 'Geographic targeting', 'value': 'worldwide'},
+                        {'name': 'Locations', 'value': 'worldwide'},
                         {'name': 'Tracking code', 'value': 'test tracking code'},
                         {'name': 'Archived', 'value': 'False'},
                         {'name': 'Display URL', 'value': ''},
@@ -255,7 +302,7 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Max CPC bid', 'old_value': '$0.40', 'value': '$0.30'},
                         {'name': 'Daily budget', 'old_value': None, 'value': '$120.00'},
                         {'name': 'Device targeting', 'old_value': '', 'value': ''},
-                        {'name': 'Geographic targeting', 'old_value': 'worldwide', 'value': 'worldwide'},
+                        {'name': 'Locations', 'old_value': 'worldwide', 'value': 'worldwide'},
                         {'name': 'Tracking code', 'old_value': 'test tracking code', 'value': 'test tracking code'},
                         {'name': 'Archived', 'old_value': 'False', 'value': 'False'},
                         {'name': 'Display URL', 'old_value': '', 'value': ''},
@@ -326,7 +373,7 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Max CPC bid', 'value': '$0.40'},
                         {'name': 'Daily budget', 'value': '$10.00'},
                         {'name': 'Device targeting', 'value': 'Mobile, Desktop'},
-                        {'name': 'Geographic targeting', 'value': 'worldwide'},
+                        {'name': 'Locations', 'value': 'United States'},
                         {'name': 'Tracking code', 'value': tracking_code},
                         {'name': 'Archived', 'value': 'False'},
                         {'name': 'Display URL', 'value': ''},
