@@ -345,7 +345,7 @@ def get_content_ad_last_change_dt(ad_group, sources, last_change_dt=None):
     return last_change_dt, changed_content_ads
 
 
-def get_content_ad_submission_status(user, content_ad_sources):
+def get_content_ad_submission_status(user, ad_group_sources_states, content_ad_sources):
     submission_status = []
     for content_ad_source in content_ad_sources:
         cas_source_state = content_ad_source.source_state
@@ -367,14 +367,18 @@ def get_content_ad_submission_status(user, content_ad_sources):
 
         ad_group_source_state_text = ''
         if user.has_perm('zemauth.can_see_media_source_status_on_submission_popover'):
-            adgs = models.AdGroupSource.objects.filter(ad_group=cas_ad_group, source=cas_source)
-            if len(adgs) > 0:
-                cas_ad_group_source_state = _get_latest_state(adgs[0])
-                if cas_ad_group_source_state is not None:
-                    if cas_ad_group_source_state.state == constants.AdGroupSourceSettingsState.ACTIVE:
-                        ad_group_source_state_text = ''
-                    else:
-                        ad_group_source_state_text = '(paused)'
+            cas_ad_group_source_state = None
+            for agss in ad_group_sources_states:
+                if agss.ad_group_source.ad_group_id == cas_ad_group.id and\
+                   agss.ad_group_source.source_id == cas_source.id:
+                    cas_ad_group_source_state = agss
+                    break
+
+            if cas_ad_group_source_state is not None:
+                if cas_ad_group_source_state.state == constants.AdGroupSourceSettingsState.ACTIVE:
+                    ad_group_source_state_text = ''
+                else:
+                    ad_group_source_state_text = '(paused)'
 
         status['source_state'] = ad_group_source_state_text
 
