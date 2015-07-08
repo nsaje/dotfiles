@@ -623,14 +623,14 @@ def _get_latest_settings(ad_group_source):
     latest_settings_qs = models.AdGroupSourceSettings.objects.\
         filter(ad_group_source=ad_group_source).\
         order_by('ad_group_source_id', '-created_dt')
-    return latest_settings_qs[0] if latest_settings_qs.exists() else None
+    return latest_settings_qs[0] if latest_settings_qs else None
 
 
 def _get_latest_state(ad_group_source):
     latest_state_qs = models.AdGroupSourceState.objects.\
         filter(ad_group_source=ad_group_source).\
         order_by('ad_group_source_id', '-created_dt')
-    return latest_state_qs[0] if latest_state_qs.exists() else None
+    return latest_state_qs[0] if latest_state_qs else None
 
 
 def parse_get_request_content_ad_ids(request_data, param_name):
