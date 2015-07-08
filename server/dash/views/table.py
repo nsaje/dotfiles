@@ -1092,6 +1092,7 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
 
         if user.has_perm('zemauth.data_status_column'):
             response_dict['data_status'] = helpers.get_content_ad_data_status(
+                ad_group,
                 changed_content_ads,
             )
 
@@ -1181,6 +1182,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
 
         if user.has_perm('zemauth.data_status_column'):
             response_dict['data_status'] = helpers.get_content_ad_data_status(
+                ad_group,
                 content_ads,
             )
 

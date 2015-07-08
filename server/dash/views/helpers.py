@@ -488,39 +488,37 @@ def get_data_status(objects, last_sync_messages, state_messages=None):
     return data_status
 
 
-def get_content_ad_data_status(content_ads):
-
-    cached_ad_group_sources = {}
+def get_content_ad_data_status(ad_group, content_ads):
+    ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+    content_ad_sources = models.ContentAdSource.objects.filter(
+        content_ad__in=content_ads
+    ).select_related('source')
 
     data_status = {}
     for content_ad in content_ads:
         in_sync = True
-        for ad_group_source in content_ad.sources.all():
-            # we ignore deprecated and in maintenance sources
-            if ad_group_source.deprecated or ad_group_source.maintenance:
+        for content_ad_source in content_ad_sources:
+            if content_ad_source.content_ad_id != content_ad.id:
                 continue
 
-            # in case media source is disabled we ignore content ad state
-            # difference
-            cas_ad_group = content_ad.ad_group
-            cache_key = (cas_ad_group.id, ad_group_source.id)
-            if cache_key not in cached_ad_group_sources:
-                cached_ad_group_sources[cache_key] =\
-                    models.AdGroupSource.objects.filter(ad_group=cas_ad_group, source=ad_group_source).first()
+            # we ignore deprecated and in maintenance sources
+            if content_ad_source.source.deprecated or content_ad_source.source.maintenance:
+                continue
 
-            adgs = cached_ad_group_sources[cache_key]
-            if adgs is not None:
-                latest_state = _get_latest_state(adgs)
+            ad_group_source = None
+            for ags in ad_group_sources:
+                if content_ad_source.source.id == ags.source_id:
+                    ad_group_source = ags
+                    break
+
+            if ad_group_source is not None:
+                latest_state = _get_latest_state(ad_group_source)
                 if latest_state is not None and latest_state.state == constants.AdGroupSourceSettingsState.INACTIVE:
+                    # in case media source is disabled we ignore content ad state
+                    # difference
                     continue
 
-            content_ad_source = models.ContentAdSource.objects.filter(
-                content_ad=content_ad,
-                source=ad_group_source
-            ).first()
-
-            if content_ad_source is not None and\
-                content_ad_source.state != content_ad_source.source_state:
+            if content_ad_source.state != content_ad_source.source_state:
                 in_sync = False
                 break
 
