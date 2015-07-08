@@ -15,7 +15,7 @@ from utils import redirector_helper
 from dash import exc
 from dash import models
 from dash import constants
-from dash import codelists
+from dash import regions
 from dash import consistency
 
 import utils.url_helper
@@ -453,8 +453,8 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                         )
                     )
 
-                did_countries_change = len([tr for tr in diff if tr in codelists.COUNTRY_BY_CODE]) > 0
-                new_country_targeting = [tr for tr in new_field_value if tr in codelists.COUNTRY_BY_CODE]
+                did_countries_change = len([tr for tr in diff if tr in regions.COUNTRY_BY_CODE]) > 0
+                new_country_targeting = [tr for tr in new_field_value if tr in regions.COUNTRY_BY_CODE]
 
                 if did_countries_change and not source.can_modify_country_targeting():
                     actionlog.api.init_set_ad_group_manual_property(
@@ -464,8 +464,8 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                         new_country_targeting
                     )
 
-                did_dmas_change = len([tr for tr in diff if tr in codelists.DMA_BY_CODE]) > 0
-                new_dma_targeting = [tr for tr in new_field_value if tr in codelists.DMA_BY_CODE]
+                did_dmas_change = len([tr for tr in diff if tr in regions.DMA_BY_CODE]) > 0
+                new_dma_targeting = [tr for tr in new_field_value if tr in regions.DMA_BY_CODE]
 
                 if did_dmas_change and not source.can_modify_dma_targeting():
                     actionlog.api.init_set_ad_group_manual_property(

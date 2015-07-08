@@ -36,7 +36,7 @@ import actionlog.zwei_actions
 
 from dash import models
 from dash import constants
-from dash import codelists
+from dash import regions
 from dash import api
 from dash import forms
 from dash import threads
@@ -487,7 +487,7 @@ class AdGroupSources(api_common.BaseApiView):
 
     def _complies_with_target_regions(self, source, ad_group_settings):
         if helpers.filter_dma_unsupporting_sources([source]) and\
-           any([(tr in codelists.DMA_BY_CODE) for tr in ad_group_settings.target_regions]):
+           any([(tr in regions.DMA_BY_CODE) for tr in ad_group_settings.target_regions]):
             return False
 
         return True

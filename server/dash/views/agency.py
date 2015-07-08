@@ -86,7 +86,7 @@ class AdGroupSettings(api_common.BaseApiView):
         response = {
             'settings': self.get_dict(settings, ad_group),
             'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
-            'sources_without_DMA_support': [s.name for s in helpers.filter_dma_unsupporting_sources(ad_group_sources)]
+            'sources_without_dma_support': [s.name for s in helpers.filter_dma_unsupporting_sources(ad_group_sources)]
         }
 
         return self.create_api_response(response)

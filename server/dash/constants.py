@@ -1,5 +1,5 @@
 from utils.constant_base import ConstantBase
-from dash import codelists
+from dash import regions
 
 
 class AdGroupSettingsState(ConstantBase):
@@ -34,7 +34,7 @@ class AdTargetDevice(ConstantBase):
 
 
 class AdTargetLocation(ConstantBase):
-    _VALUES = dict(codelists.COUNTRY_BY_CODE.items() + codelists.DMA_BY_CODE.items())
+    _VALUES = dict(regions.COUNTRY_BY_CODE.items() + regions.DMA_BY_CODE.items())
 
     @classmethod
     def get_choices(cls):
