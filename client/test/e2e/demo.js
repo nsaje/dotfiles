@@ -209,7 +209,7 @@ describe('Media sources and ads', function () {
                 deferred.fulfill();
             },
             clickSource = function () {
-                element(by.css('div.add-source')).click();
+                element.all(by.css('div.add-source')).get(1).click();
                 browser.driver.sleep(0).then(function () {
                     var elt = element.all(by.css('.select2-results .select2-result-label')).first();
                     elt.getText().then(function (val) {
