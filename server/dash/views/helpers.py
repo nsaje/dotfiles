@@ -527,12 +527,7 @@ def get_content_ad_data_status(ad_group, content_ads):
                     break
 
             if ad_group_source is not None:
-                latest_state = None
-                for agss in ad_group_sources_states:
-                    if agss.ad_group_source_id == ad_group_source.id:
-                        latest_state = agss
-                        break
-
+                latest_state = _get_ad_group_source_state_from_filter_qs(ad_group_source, ad_group_sources_states)
                 if latest_state is not None and latest_state.state == constants.AdGroupSourceSettingsState.INACTIVE:
                     # in case media source is disabled we ignore content ad state
                     # difference
