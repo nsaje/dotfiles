@@ -72,6 +72,7 @@ class AllAccountsSourcesTable(object):
         self.user = user
         self.accounts = models.Account.objects.all().filter_by_user(user)
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.Account, self.accounts)
+        self.ad_group_sources_states = helpers.get_ad_group_sources_states(self.active_ad_group_sources)
         self.filtered_sources = filtered_sources
 
     def has_complete_postclick_metrics(self, start_date, end_date):
@@ -80,13 +81,6 @@ class AllAccountsSourcesTable(object):
 
     def get_sources(self):
         return self.filtered_sources.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
-
-    def get_sources_states(self):
-        return models.AdGroupSourceState.objects.\
-            distinct('ad_group_source_id').\
-            filter(ad_group_source__in=self.active_ad_group_sources).\
-            order_by('ad_group_source_id', '-created_dt').\
-            select_related('ad_group_source')
 
     def get_stats(self, start_date, end_date):
         sources_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
@@ -135,6 +129,7 @@ class AccountSourcesTable(object):
         self.user = user
         self.account = helpers.get_account(user, id_)
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.Account, [self.account])
+        self.ad_group_sources_states = helpers.get_ad_group_sources_states(self.active_ad_group_sources)
         self.filtered_sources = filtered_sources
 
     def has_complete_postclick_metrics(self, start_date, end_date):
@@ -143,13 +138,6 @@ class AccountSourcesTable(object):
 
     def get_sources(self):
         return self.filtered_sources.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
-
-    def get_sources_states(self):
-        return models.AdGroupSourceState.objects.\
-            distinct('ad_group_source_id').\
-            filter(ad_group_source__in=self.active_ad_group_sources).\
-            order_by('ad_group_source_id', '-created_dt').\
-            select_related('ad_group_source')
 
     def get_stats(self, start_date, end_date):
         sources_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
@@ -199,6 +187,7 @@ class CampaignSourcesTable(object):
         self.user = user
         self.campaign = helpers.get_campaign(user, id_)
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.Campaign, [self.campaign])
+        self.ad_group_sources_states = helpers.get_ad_group_sources_states(self.active_ad_group_sources)
         self.filtered_sources = filtered_sources
 
     def has_complete_postclick_metrics(self, start_date, end_date):
@@ -207,13 +196,6 @@ class CampaignSourcesTable(object):
 
     def get_sources(self):
         return self.filtered_sources.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
-
-    def get_sources_states(self):
-        return models.AdGroupSourceState.objects.\
-            distinct('ad_group_source_id').\
-            filter(ad_group_source__in=self.active_ad_group_sources).\
-            order_by('ad_group_source_id', '-created_dt').\
-            select_related('ad_group_source')
 
     def get_stats(self, start_date, end_date):
         sources_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
@@ -263,6 +245,8 @@ class AdGroupSourcesTable(object):
         self.user = user
         self.ad_group = helpers.get_ad_group(user, id_)
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.AdGroup, [self.ad_group])
+        self.ad_group_sources_settings = helpers.get_ad_group_sources_settings(self.active_ad_group_sources)
+        self.ad_group_sources_states = helpers.get_ad_group_sources_states(self.active_ad_group_sources)
         self.filtered_sources = filtered_sources
 
     def has_complete_postclick_metrics(self, start_date, end_date):
@@ -271,20 +255,6 @@ class AdGroupSourcesTable(object):
 
     def get_sources(self):
         return self.filtered_sources.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
-
-    def get_sources_states(self):
-        return models.AdGroupSourceState.objects.\
-            distinct('ad_group_source_id').\
-            filter(ad_group_source__in=self.active_ad_group_sources).\
-            order_by('ad_group_source_id', '-created_dt').\
-            select_related('ad_group_source')
-
-    def get_sources_settings(self):
-        return models.AdGroupSourceSettings.objects.\
-            distinct('ad_group_source_id').\
-            filter(ad_group_source__in=self.active_ad_group_sources).\
-            order_by('ad_group_source_id', '-created_dt').\
-            select_related('ad_group_source')
 
     def get_stats(self, start_date, end_date):
         sources_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
@@ -325,7 +295,11 @@ class AdGroupSourcesTable(object):
     def get_data_status(self, include_state_messages=False):
         state_messages = None
         if include_state_messages:
-            state_messages = helpers.get_ad_group_sources_state_messages(self.active_ad_group_sources)
+            state_messages = helpers.get_ad_group_sources_state_messages(
+                self.active_ad_group_sources,
+                self.ad_group_sources_settings,
+                self.ad_group_sources_states,
+            )
 
         return helpers.get_data_status(
             self.get_sources(),
@@ -350,10 +324,14 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
 
         new_last_change_dt, changed_ad_group_sources = helpers.get_ad_group_sources_last_change_dt(
             ad_group_sources,
-            last_change_dt
+            ad_group_sources_table.ad_group_sources_settings,
+            ad_group_sources_table.ad_group_sources_states,
+            last_change_dt=last_change_dt
         )
 
-        notifications = helpers.get_ad_group_sources_notifications(ad_group_sources)
+        notifications = helpers.get_ad_group_sources_notifications(ad_group_sources,
+                                                                   ad_group_sources_table.ad_group_sources_settings,
+                                                                   ad_group_sources_table.ad_group_sources_states)
 
         response = {
             'last_change': new_last_change_dt,
@@ -361,8 +339,8 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
         }
 
         if new_last_change_dt is not None:
-            states = ad_group_sources_table.get_sources_states()
-            settings = ad_group_sources_table.get_sources_settings()
+            states = ad_group_sources_table.ad_group_sources_states
+            settings = ad_group_sources_table.ad_group_sources_settings
 
             rows = {}
             for ad_group_source in changed_ad_group_sources:
@@ -416,7 +394,9 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
                 response['data_status'] = helpers.get_data_status(
                     sources,
                     helpers.get_last_sync_messages(sources, last_success_actions),
-                    helpers.get_ad_group_sources_state_messages(ad_group_sources)
+                    helpers.get_ad_group_sources_state_messages(ad_group_sources,
+                                                                ad_group_sources_table.ad_group_sources_settings,
+                                                                ad_group_sources_table.ad_group_sources_states)
                 )
 
         return self.create_api_response(response)
@@ -445,14 +425,14 @@ class SourcesTable(api_common.BaseApiView):
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
         sources = level_sources_table.get_sources()
-        sources_states = level_sources_table.get_sources_states()
+        sources_states = level_sources_table.ad_group_sources_states
         last_success_actions = level_sources_table.get_last_success_actions()
         sources_data, totals_data = level_sources_table.get_stats(start_date, end_date)
         is_sync_in_progress = level_sources_table.is_sync_in_progress()
 
         ad_group_sources_settings = None
         if ad_group_level:
-            ad_group_sources_settings = level_sources_table.get_sources_settings()
+            ad_group_sources_settings = level_sources_table.ad_group_sources_settings
 
         yesterday_cost = {}
         yesterday_total_cost = None
@@ -461,8 +441,7 @@ class SourcesTable(api_common.BaseApiView):
                 get_yesterday_cost()
 
         operational_sources = [source.id for source in sources.filter(maintenance=False, deprecated=False)]
-        last_success_actions_operational = [v for k, v in last_success_actions.iteritems()
-                                                if k in operational_sources]
+        last_success_actions_operational = [v for k, v in last_success_actions.iteritems() if k in operational_sources]
         last_sync = helpers.get_last_sync(last_success_actions_operational)
 
         incomplete_postclick_metrics = False
@@ -513,8 +492,12 @@ class SourcesTable(api_common.BaseApiView):
 
         if ad_group_level:
             if user.has_perm('zemauth.set_ad_group_source_settings'):
-                response['last_change'] = helpers.get_ad_group_sources_last_change_dt(ad_group_sources)[0]
-                response['notifications'] = helpers.get_ad_group_sources_notifications(ad_group_sources)
+                response['last_change'] = helpers.get_ad_group_sources_last_change_dt(ad_group_sources,
+                                                                                      ad_group_sources_settings,
+                                                                                      sources_states)[0]
+                response['notifications'] = helpers.get_ad_group_sources_notifications(ad_group_sources,
+                                                                                       ad_group_sources_settings,
+                                                                                       sources_states)
 
         return self.create_api_response(response)
 
