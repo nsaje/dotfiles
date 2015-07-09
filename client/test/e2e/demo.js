@@ -1,6 +1,7 @@
 var nav, chart, tabs,
     config = {
-        testAdGroup: 'Best Value for International Travel',
+        testAdGroup1: 'Best Value for International Travel',
+        testAdGroup2: '4G LTE',
         testCampaign: 'Earned Media Promotion & Retargeting'
     },
     demoLoaded = false,
@@ -31,6 +32,20 @@ var nav, chart, tabs,
 
 function $toFloat(str) {
     return parseFloat(str.substr(1).replace(',', ''));
+}
+
+function selectCell(parent, i, j, after) {
+    after = after ? (' ' + after) : '';
+    return element(
+        by.css(parent + ' table tbody tr:nth-child(' + i + ') td:nth-child(' + j + ')' + after)
+    );
+}
+
+function selectCellAll(parent, i, j, after) {
+    after = after ? (' ' + after) : '';
+    return element.all(
+        by.css(parent + ' table tbody tr:nth-child(' + i + ') td:nth-child(' + j + ')' + after)
+    );
 }
 
 beforeEach(function () {
@@ -169,7 +184,7 @@ describe('Campaign management', function () {
 
 describe('Media sources and ads', function () {
     function selectAdGroupWithContentAds() {
-        element(by.cssContainingText('#nav .ad-group-name', config.testAdGroup)).click();
+        element(by.cssContainingText('#nav .ad-group-name', config.testAdGroup1)).click();
         tabs.adGroup.ads.click();
     }
     function addThreeSources() {
@@ -228,6 +243,215 @@ describe('Media sources and ads', function () {
 
         selectAdGroupWithContentAds();
         uploadAds();
+    });
+
+    
+    it ('new ad group sources management', function () {
+        createAdGroup();
+        tabs.adGroup.sources.click();
+        expect(
+            element.all(by.css('.page-ad-group-sources table tbody tr')).count()
+        ).toBeGreaterThan(5);
+
+        expect(
+            selectCell('.page-ad-group-sources', 2, 3).getText()
+        ).toBe('Outbrain');
+
+        expect(
+            selectCell('.page-ad-group-sources', 2, 4).getText()
+        ).toBe('Active');
+
+        expect(
+            selectCell('.page-ad-group-sources', 2, 5).getText()
+        ).toBe('$0.18');
+
+        expect(
+            selectCell('.page-ad-group-sources', 2, 6).getText()
+        ).toBe('$2,500');
+
+        element(by.css('.table tbody tr:nth-child(2) td .zem-state-selector button')).click();
+        element(by.css('.table tbody tr:nth-child(2) td .zem-state-selector ul li:nth-child(3) a')).click();
+
+        expect(
+            selectCell('.page-ad-group-sources', 2, 4).getText()
+        ).toBe('Paused');
+
+        element(by.css('.table tbody tr:nth-child(3) td:nth-child(5) .edit-field')).click();
+        element(
+            by.css('.table tbody tr:nth-child(3) td:nth-child(5) input')
+        ).clear().sendKeys('0.5').then(function () {
+            element(by.css('.table tbody tr:nth-child(3) td:nth-child(5) .btn-primary')).click();
+            expect(
+                selectCell('.page-ad-group-sources', 3, 5).getText()
+            ).toBe('$0.50');
+        });
+
+        element(by.css('.table tbody tr:nth-child(3) td:nth-child(6) .edit-field')).click();
+        element(
+            by.css('.table tbody tr:nth-child(3) td:nth-child(6) input')
+        ).clear().then(function () {
+            element(
+                by.css('.table tbody tr:nth-child(3) td:nth-child(6) input')
+            ).sendKeys('5555');
+            element(by.css('.table tbody tr:nth-child(3) td:nth-child(6) .btn-primary')).click();
+            expect(
+                selectCell('.page-ad-group-sources', 3, 6).getText()
+            ).toBe('$5,555');
+        });
+
+        element(by.css('.table tbody tr:nth-child(3) td:nth-child(6) .edit-field')).click();
+        element(
+            by.css('.table tbody tr:nth-child(3) td:nth-child(6) input')
+        ).clear().then(function () {
+            element(
+                by.css('.table tbody tr:nth-child(3) td:nth-child(6) input')
+            ).sendKeys('6666');
+            element(by.css('.table tbody tr:nth-child(3) td:nth-child(6) .btn-default')).click();
+            expect(
+                selectCell('.page-ad-group-sources', 3, 6).getText()
+            ).toBe('$5,555');
+        });
+    });
+
+    it ('existing ad group sources management', function () {
+        element(by.cssContainingText('#nav .ad-group-name', config.testAdGroup2)).click();
+        tabs.adGroup.sources.click();
+        expect(
+            element.all(by.css('.page-ad-group-sources table tbody tr')).count()
+        ).toBeGreaterThan(5);
+
+        expect(
+            selectCell('.page-ad-group-sources', 2, 3).getText()
+        ).toBe('Gravity');
+
+        expect(
+            selectCell('.page-ad-group-sources', 3, 3).getText()
+        ).toBe('Outbrain');
+
+        expect(
+            selectCell('.page-ad-group-sources', 4, 3).getText()
+        ).toBe('Yahoo');
+
+        expect(
+            selectCell('.page-ad-group-sources', 7, 4).getText()
+        ).toBe('Paused');
+
+        element(by.css('.table tbody tr:nth-child(7) td .zem-state-selector button')).click();
+        element(by.css('.table tbody tr:nth-child(7) td .zem-state-selector ul li:nth-child(1) a')).click();
+
+        expect(
+            selectCell('.page-ad-group-sources', 7, 4).getText()
+        ).toBe('Active');
+
+    });
+
+    
+});
+
+describe('Bulk actions', function () {
+    function bulkPause() {
+        element(by.css('zem-bulk-actions-dropdown > .show-rows a')).click();
+        element(by.css('#select2-drop ul li:nth-child(1)')).click();
+    }
+    function bulkResume() {
+        element(by.css('zem-bulk-actions-dropdown > .show-rows a')).click();
+        element(by.css('#select2-drop ul li:nth-child(2)')).click();
+    }
+    function checkRowPaused(row) {
+        expect(
+            selectCellAll('.page-ad-group-ads-plus', row, 3, 'div button .active-circle-icon').count()
+        ).toBe(0);
+        expect(
+            selectCellAll('.page-ad-group-ads-plus', row, 3, 'div button .pause-icon').count()
+        ).toBe(1);
+    }
+    function checkRowActive(row) {
+        expect(
+            selectCellAll('.page-ad-group-ads-plus', row, 3, 'div button .active-circle-icon').count()
+        ).toBe(1);
+        expect(
+            selectCellAll('.page-ad-group-ads-plus', row, 3, 'div button .pause-icon').count()
+        ).toBe(0);
+    }
+    
+    it ('Bulk pausing and enabling specific content ads', function () {
+        element(by.cssContainingText('#nav .ad-group-name', config.testAdGroup1)).click();
+        tabs.adGroup.ads.click();
+
+        // Bulk button disabled and second ad unckecked
+        expect(element.all(by.css('zem-bulk-actions-dropdown span.ng-hide')).count()).toBe(0);
+        expect(selectCellAll('.page-ad-group-ads-plus', 2, 1, 'input:checked').count()).toBe(0);
+        
+        // Select first ad
+        selectCell('.page-ad-group-ads-plus', 2, 1, 'input').click();
+
+        // Bulk button enabled and ad selected
+        expect(element.all(by.css('zem-bulk-actions-dropdown span.ng-hide')).count()).toBe(1);
+        expect(selectCellAll('.page-ad-group-ads-plus', 2, 1, 'input:checked').count()).toBe(1);
+        
+        checkRowActive(2);
+        bulkPause();
+        checkRowPaused(2);
+        bulkResume();
+        checkRowActive(2);
+
+        selectCell('.page-ad-group-ads-plus', 2, 1, 'input').click();
+        selectCell('.page-ad-group-ads-plus', 3, 1, 'input').click();
+        selectCell('.page-ad-group-ads-plus', 4, 1, 'input').click();
+
+        bulkPause();
+        checkRowActive(2);
+        checkRowPaused(3);
+        checkRowPaused(4);
+
+        bulkResume();
+        checkRowActive(2);
+        checkRowActive(3);
+        checkRowActive(4);
+
+        selectCell('.page-ad-group-ads-plus', 3, 1, 'input').click();
+        selectCell('.page-ad-group-ads-plus', 4, 1, 'input').click();
+
+        // Bulk button disabled
+        expect(element.all(by.css('zem-bulk-actions-dropdown span.ng-hide')).count()).toBe(0);
+    });
+
+    it('Bulk pausing/enabling all content ads', function () {
+        element(by.cssContainingText('#nav .ad-group-name', config.testAdGroup1)).click();
+        tabs.adGroup.ads.click();
+
+        
+        expect(selectCellAll('.page-ad-group-ads-plus', 2, 1, 'input:checked').count()).toBe(0);
+        expect(selectCellAll('.page-ad-group-ads-plus', 3, 1, 'input:checked').count()).toBe(0);
+        expect(selectCellAll('.page-ad-group-ads-plus', 4, 1, 'input:checked').count()).toBe(0);
+        element(by.id('zem-all-checkbox')).click();
+        expect(selectCellAll('.page-ad-group-ads-plus', 2, 1, 'input:checked').count()).toBe(1);
+        expect(selectCellAll('.page-ad-group-ads-plus', 3, 1, 'input:checked').count()).toBe(1);
+        expect(selectCellAll('.page-ad-group-ads-plus', 4, 1, 'input:checked').count()).toBe(1);
+
+        checkRowActive(2);
+        checkRowActive(3);
+        checkRowActive(4);
+        checkRowActive(5);
+        
+        bulkPause();
+        
+        checkRowPaused(2);
+        checkRowPaused(3);
+        checkRowPaused(4);
+        checkRowPaused(5);
+
+        bulkResume();
+        
+        checkRowActive(2);
+        checkRowActive(3);
+        checkRowActive(4);
+        checkRowActive(5);
+        
+        element(by.id('zem-all-checkbox')).click();
+        expect(selectCellAll('.page-ad-group-ads-plus', 2, 1, 'input:checked').count()).toBe(0);
+        expect(selectCellAll('.page-ad-group-ads-plus', 3, 1, 'input:checked').count()).toBe(0);
+        expect(selectCellAll('.page-ad-group-ads-plus', 4, 1, 'input:checked').count()).toBe(0);
     });
 });
 
