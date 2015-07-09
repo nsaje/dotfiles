@@ -2,6 +2,7 @@ var nav, chart, tabs,
     config = {
         testAdGroup1: 'Best Value for International Travel',
         testAdGroup2: '4G LTE',
+        testAdGroup3: 'Full Feature audience segment',
         testCampaign: 'Earned Media Promotion & Retargeting'
     },
     demoLoaded = false,
@@ -182,9 +183,30 @@ describe('Campaign management', function () {
 });
 
 describe('Media sources and ads', function () {
-    function selectAdGroupWithContentAds() {
-        element(by.cssContainingText('#nav .ad-group-name', config.testAdGroup1)).click();
+    function selectAdGroupWithContentAds(i) {
+        i = i || 0;
+        element(by.cssContainingText('#nav .ad-group-name', {
+            0: config.testAdGroup1,
+            1: config.testAdGroup2,
+            2: config.testAdGroup3
+        }[i])).click();
         tabs.adGroup.ads.click();
+    }
+    function checkSourcesForAds(running, paused) {
+        var sep = running && paused ? ' ' : '';
+        running = running || '';
+        paused = paused || '';
+        
+        tabs.adGroup.ads.click();
+        expect(
+            element(by.css('table tbody tr:nth-child(2) td:nth-child(4)')).getText()
+        ).toBe(running + sep + paused);
+        expect(
+            element(by.css('table tbody tr:nth-child(3) td:nth-child(4)')).getText()
+        ).toBe(running + sep + paused);
+        expect(
+            element(by.css('table tbody tr:nth-child(3) td:nth-child(4)')).getText()
+        ).toBe(running + sep + paused);
     }
     function addThreeSources() {
         var deferred = protractor.promise.defer(),
@@ -228,29 +250,32 @@ describe('Media sources and ads', function () {
             element.all(by.css('.table-container tbody tr')).count()
         ).toBeGreaterThan(4);
     }
-    it ('adding media sources to ads', function () {
+    it('adding media sources to ads', function () {
         expect(demoLoaded).toBe(true);
-        selectAdGroupWithContentAds();
-        addThreeSources();
+        selectAdGroupWithContentAds(0);
 
-        // Check if sources are applied to ads
+        checkSourcesForAds(0, 4);
+        addThreeSources();
+        checkSourcesForAds(3, 4);
     });
 
-    it ('uploading ads', function () {
+    it('uploading ads', function () {
         expect(demoLoaded).toBe(true);
         createAdGroup();
         uploadAds();
+        checkSourcesForAds(5, 0);
         addThreeSources();
-
-        selectAdGroupWithContentAds();
+        checkSourcesForAds(8, 0);
+        
+        selectAdGroupWithContentAds(2);
         uploadAds();
-
-        // Check if sources are applied to ads
+        checkSourcesForAds(0, 4);
     });
 
     
-    it ('new ad group sources management', function () {
+    it('new ad group sources management', function () {
         var page = '.page-ad-group-sources';
+        expect(demoLoaded).toBe(true);
         createAdGroup();
         tabs.adGroup.sources.click();
         expect(
@@ -273,12 +298,19 @@ describe('Media sources and ads', function () {
             selectCell(page, 2, 6).getText()
         ).toBe('$2,500');
 
+        uploadAds();
+        checkSourcesForAds(5, 0);
+        tabs.adGroup.sources.click();
+
         element(by.css('.table tbody tr:nth-child(2) td .zem-state-selector button')).click();
         element(by.css('.table tbody tr:nth-child(2) td .zem-state-selector ul li:nth-child(3) a')).click();
 
         expect(
             selectCell(page, 2, 4).getText()
         ).toBe('Paused');
+
+        checkSourcesForAds(4, 1);
+        tabs.adGroup.sources.click();
 
         selectCell(page, 3, 5, '.edit-field').click();
         selectCell(page, 3, 5, 'input').clear().sendKeys('0.5').then(function () {
@@ -306,6 +338,7 @@ describe('Media sources and ads', function () {
     });
 
     it ('existing ad group sources management', function () {
+        expect(demoLoaded).toBe(true);
         element(by.cssContainingText('#nav .ad-group-name', config.testAdGroup2)).click();
         tabs.adGroup.sources.click();
         expect(
@@ -367,6 +400,7 @@ describe('bulk actions', function () {
     }
     
     it('bulk pausing and enabling specific content ads', function () {
+        expect(demoLoaded).toBe(true);
         element(by.cssContainingText('#nav .ad-group-name', config.testAdGroup1)).click();
         tabs.adGroup.ads.click();
 
@@ -409,6 +443,7 @@ describe('bulk actions', function () {
     });
 
     it('bulk pausing/enabling all content ads', function () {
+        expect(demoLoaded).toBe(true);
         element(by.cssContainingText('#nav .ad-group-name', config.testAdGroup1)).click();
         tabs.adGroup.ads.click();
 
