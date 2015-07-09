@@ -247,68 +247,57 @@ describe('Media sources and ads', function () {
 
     
     it ('new ad group sources management', function () {
+        var page = '.page-ad-group-sources';
         createAdGroup();
         tabs.adGroup.sources.click();
         expect(
-            element.all(by.css('.page-ad-group-sources table tbody tr')).count()
+            element.all(by.css(page + ' table tbody tr')).count()
         ).toBeGreaterThan(5);
 
         expect(
-            selectCell('.page-ad-group-sources', 2, 3).getText()
+            selectCell(page, 2, 3).getText()
         ).toBe('Outbrain');
 
         expect(
-            selectCell('.page-ad-group-sources', 2, 4).getText()
+            selectCell(page, 2, 4).getText()
         ).toBe('Active');
 
         expect(
-            selectCell('.page-ad-group-sources', 2, 5).getText()
+            selectCell(page, 2, 5).getText()
         ).toBe('$0.18');
 
         expect(
-            selectCell('.page-ad-group-sources', 2, 6).getText()
+            selectCell(page, 2, 6).getText()
         ).toBe('$2,500');
 
         element(by.css('.table tbody tr:nth-child(2) td .zem-state-selector button')).click();
         element(by.css('.table tbody tr:nth-child(2) td .zem-state-selector ul li:nth-child(3) a')).click();
 
         expect(
-            selectCell('.page-ad-group-sources', 2, 4).getText()
+            selectCell(page, 2, 4).getText()
         ).toBe('Paused');
 
-        element(by.css('.table tbody tr:nth-child(3) td:nth-child(5) .edit-field')).click();
-        element(
-            by.css('.table tbody tr:nth-child(3) td:nth-child(5) input')
-        ).clear().sendKeys('0.5').then(function () {
-            element(by.css('.table tbody tr:nth-child(3) td:nth-child(5) .btn-primary')).click();
+        selectCell(page, 3, 5, '.edit-field').click();
+        selectCell(page, 3, 5, 'input').clear().sendKeys('0.5').then(function () {
+            selectCell(page, 3, 5, '.btn-primary').click();
             expect(
-                selectCell('.page-ad-group-sources', 3, 5).getText()
+                selectCell(page, 3, 5).getText()
             ).toBe('$0.50');
         });
 
-        element(by.css('.table tbody tr:nth-child(3) td:nth-child(6) .edit-field')).click();
-        element(
-            by.css('.table tbody tr:nth-child(3) td:nth-child(6) input')
-        ).clear().then(function () {
-            element(
-                by.css('.table tbody tr:nth-child(3) td:nth-child(6) input')
-            ).sendKeys('5555');
-            element(by.css('.table tbody tr:nth-child(3) td:nth-child(6) .btn-primary')).click();
+        selectCell(page, 3, 6, '.edit-field').click();
+        selectCell(page, 3, 6, 'input').clear().sendKeys('5555').then(function () {
+            selectCell(page, 3, 6, '.btn-primary').click();
             expect(
-                selectCell('.page-ad-group-sources', 3, 6).getText()
+                selectCell(page, 3, 6).getText()
             ).toBe('$5,555');
         });
 
-        element(by.css('.table tbody tr:nth-child(3) td:nth-child(6) .edit-field')).click();
-        element(
-            by.css('.table tbody tr:nth-child(3) td:nth-child(6) input')
-        ).clear().then(function () {
-            element(
-                by.css('.table tbody tr:nth-child(3) td:nth-child(6) input')
-            ).sendKeys('6666');
-            element(by.css('.table tbody tr:nth-child(3) td:nth-child(6) .btn-default')).click();
+        selectCell(page, 3, 6, '.edit-field').click();
+        selectCell(page, 3, 6, 'input').clear().sendKeys('6666').then(function () {
+            selectCell(page, 3, 6, '.btn-default').click();
             expect(
-                selectCell('.page-ad-group-sources', 3, 6).getText()
+                selectCell(page, 3, 6).getText()
             ).toBe('$5,555');
         });
     });
@@ -348,7 +337,7 @@ describe('Media sources and ads', function () {
     
 });
 
-describe('Bulk actions', function () {
+describe('bulk actions', function () {
     function bulkPause() {
         element(by.css('zem-bulk-actions-dropdown > .show-rows a')).click();
         element(by.css('#select2-drop ul li:nth-child(1)')).click();
@@ -416,7 +405,7 @@ describe('Bulk actions', function () {
         expect(element.all(by.css('zem-bulk-actions-dropdown span.ng-hide')).count()).toBe(0);
     });
 
-    it('Bulk pausing/enabling all content ads', function () {
+    it('bulk pausing/enabling all content ads', function () {
         element(by.cssContainingText('#nav .ad-group-name', config.testAdGroup1)).click();
         tabs.adGroup.ads.click();
 
