@@ -111,6 +111,9 @@ class AdGroupAdsPlusTableTest(TestCase):
 
         self.assertIn('rows', result['data'])
 
+        for row in result['data']['rows']:
+            row['submission_status'] = sorted(row['submission_status'])
+
         self.assertItemsEqual(result['data']['rows'], [{
             'batch_name': 'batch 1',
             'archived': False,

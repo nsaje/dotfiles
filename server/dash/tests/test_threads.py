@@ -50,7 +50,7 @@ class ProcessUploadThreadTest(TestCase):
         thread._save_error_report()
         self.assertEqual(
             '''url,title,image_url,errors
-http://example.com,test title,http://example.com/image,\n'''.replace("\n",'\r\n') ,
+http://example.com,test title,http://example.com/image,\n'''.replace("\n",'\r\n'),
             self.error_report)
 
     @patch('dash.threads.redirector_helper.insert_redirect')
