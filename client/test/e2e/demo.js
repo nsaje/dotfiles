@@ -42,9 +42,8 @@ function selectCell(parent, i, j, after) {
 }
 
 function selectCellAll(parent, i, j, after) {
-    after = after ? (' ' + after) : '';
     return element.all(
-        by.css(parent + ' table tbody tr:nth-child(' + i + ') td:nth-child(' + j + ')' + after)
+        by.css(parent + ' table tbody tr:nth-child(' + i + ') td:nth-child(' + j + ') ' + after)
     );
 }
 
@@ -233,6 +232,8 @@ describe('Media sources and ads', function () {
         expect(demoLoaded).toBe(true);
         selectAdGroupWithContentAds();
         addThreeSources();
+
+        // Check if sources are applied to ads
     });
 
     it ('uploading ads', function () {
@@ -243,6 +244,8 @@ describe('Media sources and ads', function () {
 
         selectAdGroupWithContentAds();
         uploadAds();
+
+        // Check if sources are applied to ads
     });
 
     
@@ -363,7 +366,7 @@ describe('bulk actions', function () {
         ).toBe(0);
     }
     
-    it ('Bulk pausing and enabling specific content ads', function () {
+    it('bulk pausing and enabling specific content ads', function () {
         element(by.cssContainingText('#nav .ad-group-name', config.testAdGroup1)).click();
         tabs.adGroup.ads.click();
 
@@ -443,4 +446,3 @@ describe('bulk actions', function () {
         expect(selectCellAll('.page-ad-group-ads-plus', 4, 1, 'input:checked').count()).toBe(0);
     });
 });
-
