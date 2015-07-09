@@ -164,6 +164,9 @@ class ViewHelpersTestCase(TestCase):
         ad_group_source3 = models.AdGroupSource.objects.get(pk=3)
         ad_group_sources = [ad_group_source1, ad_group_source2, ad_group_source3]
 
+        ad_group_sources_settings = helpers.get_ad_group_sources_settings(ad_group_sources)
+        ad_group_sources_states = helpers.get_ad_group_sources_states(ad_group_sources)
+
         last_successful_ags_sync_times = {}
         for ags in ad_group_sources:
             last_successful_ags_sync_times.update(
@@ -173,7 +176,9 @@ class ViewHelpersTestCase(TestCase):
         data_status = helpers.get_data_status(
             ad_group_sources,
             helpers.get_last_sync_messages(ad_group_sources, last_successful_ags_sync_times),
-            helpers.get_ad_group_sources_state_messages(ad_group_sources)
+            helpers.get_ad_group_sources_state_messages(ad_group_sources,
+                                                        ad_group_sources_settings,
+                                                        ad_group_sources_states)
         )
 
         self.assertEqual(data_status[ad_group_source1.source_id]['ok'], False)
@@ -196,6 +201,9 @@ class ViewHelpersTestCase(TestCase):
     def test_get_ad_group_sources_data_status_cannot_edit_cpc_budget(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=2)
 
+        ad_group_sources_settings = helpers.get_ad_group_sources_settings([ad_group_source])
+        ad_group_sources_states = helpers.get_ad_group_sources_states([ad_group_source])
+
         # clear all available actions - this makes editing disabled
         ad_group_source.source.source_type.available_actions.clear()
 
@@ -206,7 +214,9 @@ class ViewHelpersTestCase(TestCase):
         data_status = helpers.get_data_status(
             [ad_group_source],
             helpers.get_last_sync_messages([ad_group_source], last_successful_sync_time),
-            helpers.get_ad_group_sources_state_messages([ad_group_source])
+            helpers.get_ad_group_sources_state_messages([ad_group_source],
+                                                        ad_group_sources_settings,
+                                                        ad_group_sources_states)
         )
 
         self.assertEqual(
@@ -217,11 +227,16 @@ class ViewHelpersTestCase(TestCase):
     def test_get_ad_group_sources_data_status_not_stale(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=3)
 
+        ad_group_sources_settings = helpers.get_ad_group_sources_settings([ad_group_source])
+        ad_group_sources_states = helpers.get_ad_group_sources_states([ad_group_source])
+
         last_sync = datetime.datetime.now()
         data_status = helpers.get_data_status(
             [ad_group_source],
             helpers.get_last_sync_messages([ad_group_source], {ad_group_source.id: last_sync}),
-            helpers.get_ad_group_sources_state_messages([ad_group_source])
+            helpers.get_ad_group_sources_state_messages([ad_group_source],
+                                                        ad_group_sources_settings,
+                                                        ad_group_sources_states)
         )
 
         self.assertEqual(data_status[ad_group_source.source_id]['ok'], True)
@@ -237,13 +252,18 @@ class ViewHelpersTestCase(TestCase):
     def test_get_ad_group_sources_data_status_no_settings(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=4)
 
+        ad_group_sources_settings = helpers.get_ad_group_sources_settings([ad_group_source])
+        ad_group_sources_states = helpers.get_ad_group_sources_states([ad_group_source])
+
         last_successful_sync_time = actionlog.sync.AdGroupSourceSync(ad_group_source).get_latest_success_by_child(
             recompute=False
         )
         data_status = helpers.get_data_status(
             [ad_group_source],
             helpers.get_last_sync_messages([ad_group_source], last_successful_sync_time),
-            helpers.get_ad_group_sources_state_messages([ad_group_source])
+            helpers.get_ad_group_sources_state_messages([ad_group_source],
+                                                        ad_group_sources_settings,
+                                                        ad_group_sources_states)
         )
 
         self.assertEqual(data_status[ad_group_source.source_id]['ok'], False)
@@ -256,13 +276,18 @@ class ViewHelpersTestCase(TestCase):
     def test_get_ad_group_sources_data_status_property_none(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=4)
 
+        ad_group_sources_settings = helpers.get_ad_group_sources_settings([ad_group_source])
+        ad_group_sources_states = helpers.get_ad_group_sources_states([ad_group_source])
+
         last_successful_sync_time = actionlog.sync.AdGroupSourceSync(ad_group_source).get_latest_success_by_child(
             recompute=False
         )
         data_status = helpers.get_data_status(
             [ad_group_source],
             helpers.get_last_sync_messages([ad_group_source], last_successful_sync_time),
-            helpers.get_ad_group_sources_state_messages([ad_group_source])
+            helpers.get_ad_group_sources_state_messages([ad_group_source],
+                                                        ad_group_sources_settings,
+                                                        ad_group_sources_states)
         )
 
         self.assertEqual(data_status[ad_group_source.source_id]['ok'], False)
