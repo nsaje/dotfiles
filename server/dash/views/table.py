@@ -244,6 +244,7 @@ class AdGroupSourcesTable(object):
     def __init__(self, user, id_, filtered_sources):
         self.user = user
         self.ad_group = helpers.get_ad_group(user, id_)
+        self.ad_group_settings = self.ad_group.get_current_settings()
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.AdGroup, [self.ad_group])
         self.ad_group_sources_settings = helpers.get_ad_group_sources_settings(self.active_ad_group_sources)
         self.ad_group_sources_states = helpers.get_ad_group_sources_states(self.active_ad_group_sources)
@@ -297,6 +298,7 @@ class AdGroupSourcesTable(object):
         if include_state_messages:
             state_messages = helpers.get_ad_group_sources_state_messages(
                 self.active_ad_group_sources,
+                self.ad_group_settings,
                 self.ad_group_sources_settings,
                 self.ad_group_sources_states,
             )
@@ -330,6 +332,7 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
         )
 
         notifications = helpers.get_ad_group_sources_notifications(ad_group_sources,
+                                                                   ad_group_sources_table.ad_group_settings,
                                                                    ad_group_sources_table.ad_group_sources_settings,
                                                                    ad_group_sources_table.ad_group_sources_states)
 
@@ -395,6 +398,7 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
                     sources,
                     helpers.get_last_sync_messages(sources, last_success_actions),
                     helpers.get_ad_group_sources_state_messages(ad_group_sources,
+                                                                ad_group_sources_table.ad_group_settings,
                                                                 ad_group_sources_table.ad_group_sources_settings,
                                                                 ad_group_sources_table.ad_group_sources_states)
                 )
@@ -492,12 +496,17 @@ class SourcesTable(api_common.BaseApiView):
 
         if ad_group_level:
             if user.has_perm('zemauth.set_ad_group_source_settings'):
-                response['last_change'] = helpers.get_ad_group_sources_last_change_dt(ad_group_sources,
-                                                                                      ad_group_sources_settings,
-                                                                                      sources_states)[0]
-                response['notifications'] = helpers.get_ad_group_sources_notifications(ad_group_sources,
-                                                                                       ad_group_sources_settings,
-                                                                                       sources_states)
+                response['last_change'] = helpers.get_ad_group_sources_last_change_dt(
+                    ad_group_sources,
+                    ad_group_sources_settings,
+                    sources_states
+                )[0]
+                response['notifications'] = helpers.get_ad_group_sources_notifications(
+                    ad_group_sources,
+                    level_sources_table.ad_group_settings,
+                    ad_group_sources_settings,
+                    sources_states
+                )
 
         return self.create_api_response(response)
 
@@ -728,7 +737,7 @@ class SourcesTable(api_common.BaseApiView):
                 row['supply_dash_url'] = self._get_supply_dash_url(ad_group_source)
                 row['supply_dash_disabled_message'] = self._get_supply_dash_disabled_message(ad_group_source)
 
-                ad_group_settings = level_sources_table.ad_group.get_current_settings()
+                ad_group_settings = level_sources_table.ad_group_settings
 
                 row['editable_fields'] = self._get_editable_fields(ad_group_source, ad_group_settings, user)
 

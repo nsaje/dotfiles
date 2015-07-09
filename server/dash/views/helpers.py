@@ -222,7 +222,8 @@ def _get_keys_in_progress(ad_group_source, waiting_delayed_actions):
 
 
 @newrelic.agent.function_trace()
-def get_ad_group_sources_notifications(ad_group_sources, ad_group_sources_settings, ad_group_sources_states):
+def get_ad_group_sources_notifications(ad_group_sources, ad_group_settings,
+                                       ad_group_sources_settings, ad_group_sources_states):
     notifications = {}
 
     waiting_delayed_actions = actionlog.models.ActionLog.objects.filter(
@@ -244,7 +245,6 @@ def get_ad_group_sources_notifications(ad_group_sources, ad_group_sources_settin
 
         keys_in_progress = _get_keys_in_progress(ags, waiting_delayed_actions)
 
-        ad_group_settings = ags.ad_group.get_current_settings()
         if ad_group_settings.state == constants.AdGroupSettingsState.INACTIVE:
             if ad_group_source_settings and ad_group_source_settings.state == constants.AdGroupSettingsState.ACTIVE:
                 state_message = 'This media source is enabled but will not run until you enable ad group in Settings tab.'
@@ -598,16 +598,24 @@ def get_ad_group_sources_state_messages(ad_group_sources, ad_group_sources_setti
         ad_group_source_id__in=[ags.id for ags in ad_group_sources]
     )
 
+    ad_group_settings_cache = {}
+
     for ad_group_source in ad_group_sources:
+        if ad_group_source.ad_group_id not in ad_group_settings_cache:
+            ad_group_settings_cache[ad_group_source.ad_group_id] = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings = ad_group_settings_cache[ad_group_source.ad_group_id]
+
         ags_settings = _get_ad_group_source_settings_from_filter_qs(ad_group_source, ad_group_sources_settings)
         ags_state = _get_ad_group_source_state_from_filter_qs(ad_group_source, ad_group_sources_states)
-        sources_messages[ad_group_source.source_id] = _get_state_messages(ad_group_source, ags_settings,
-                                                                          ags_state, waiting_delayed_actionlogs)
+        sources_messages[ad_group_source.source_id] = _get_state_messages(ad_group_source, ad_group_settings,
+                                                                          ags_settings, ags_state,
+                                                                          waiting_delayed_actionlogs)
 
     return sources_messages
 
 
-def _get_state_messages(ad_group_source, ad_group_source_settings, ad_group_source_state, actionlogs):
+def _get_state_messages(ad_group_source, ad_group_settings, ad_group_source_settings,
+                        ad_group_source_state, actionlogs):
     message_template = '<b>{name}</b> for this Media Source differs from '\
                        '{name} in the Media Source\'s 3rd party dashboard.'
 
@@ -630,7 +638,7 @@ def _get_state_messages(ad_group_source, ad_group_source_settings, ad_group_sour
             ad_group_source_state is None or ad_group_source_settings.daily_budget_cc != ad_group_source_state.daily_budget_cc):
         messages.append(message_template.format(name='Daily Budget'))
 
-    if ad_group_source.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE:
+    if ad_group_settings.state == constants.AdGroupSettingsState.INACTIVE:
         expected_state = constants.AdGroupSourceSettingsState.INACTIVE
     else:
         expected_state = ad_group_source_settings.state
