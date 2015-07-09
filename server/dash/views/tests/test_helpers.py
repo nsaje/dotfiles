@@ -164,6 +164,7 @@ class ViewHelpersTestCase(TestCase):
         ad_group_source3 = models.AdGroupSource.objects.get(pk=3)
         ad_group_sources = [ad_group_source1, ad_group_source2, ad_group_source3]
 
+        ad_group_settings = models.AdGroup.objects.get(id=1).get_current_settings()
         ad_group_sources_settings = helpers.get_ad_group_sources_settings(ad_group_sources)
         ad_group_sources_states = helpers.get_ad_group_sources_states(ad_group_sources)
 
@@ -177,6 +178,7 @@ class ViewHelpersTestCase(TestCase):
             ad_group_sources,
             helpers.get_last_sync_messages(ad_group_sources, last_successful_ags_sync_times),
             helpers.get_ad_group_sources_state_messages(ad_group_sources,
+                                                        ad_group_settings,
                                                         ad_group_sources_settings,
                                                         ad_group_sources_states)
         )
@@ -201,6 +203,7 @@ class ViewHelpersTestCase(TestCase):
     def test_get_ad_group_sources_data_status_cannot_edit_cpc_budget(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=2)
 
+        ad_group_settings = models.AdGroup.objects.get(id=1).get_current_settings()
         ad_group_sources_settings = helpers.get_ad_group_sources_settings([ad_group_source])
         ad_group_sources_states = helpers.get_ad_group_sources_states([ad_group_source])
 
@@ -215,6 +218,7 @@ class ViewHelpersTestCase(TestCase):
             [ad_group_source],
             helpers.get_last_sync_messages([ad_group_source], last_successful_sync_time),
             helpers.get_ad_group_sources_state_messages([ad_group_source],
+                                                        ad_group_settings,
                                                         ad_group_sources_settings,
                                                         ad_group_sources_states)
         )
@@ -227,6 +231,7 @@ class ViewHelpersTestCase(TestCase):
     def test_get_ad_group_sources_data_status_not_stale(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=3)
 
+        ad_group_settings = models.AdGroup.objects.get(id=1).get_current_settings()
         ad_group_sources_settings = helpers.get_ad_group_sources_settings([ad_group_source])
         ad_group_sources_states = helpers.get_ad_group_sources_states([ad_group_source])
 
@@ -235,6 +240,7 @@ class ViewHelpersTestCase(TestCase):
             [ad_group_source],
             helpers.get_last_sync_messages([ad_group_source], {ad_group_source.id: last_sync}),
             helpers.get_ad_group_sources_state_messages([ad_group_source],
+                                                        ad_group_settings,
                                                         ad_group_sources_settings,
                                                         ad_group_sources_states)
         )
@@ -252,6 +258,7 @@ class ViewHelpersTestCase(TestCase):
     def test_get_ad_group_sources_data_status_no_settings(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=4)
 
+        ad_group_settings = models.AdGroup.objects.get(id=1).get_current_settings()
         ad_group_sources_settings = helpers.get_ad_group_sources_settings([ad_group_source])
         ad_group_sources_states = helpers.get_ad_group_sources_states([ad_group_source])
 
@@ -262,6 +269,7 @@ class ViewHelpersTestCase(TestCase):
             [ad_group_source],
             helpers.get_last_sync_messages([ad_group_source], last_successful_sync_time),
             helpers.get_ad_group_sources_state_messages([ad_group_source],
+                                                        ad_group_settings,
                                                         ad_group_sources_settings,
                                                         ad_group_sources_states)
         )
@@ -276,6 +284,7 @@ class ViewHelpersTestCase(TestCase):
     def test_get_ad_group_sources_data_status_property_none(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=4)
 
+        ad_group_settings = models.AdGroup.objects.get(id=1).get_current_settings()
         ad_group_sources_settings = helpers.get_ad_group_sources_settings([ad_group_source])
         ad_group_sources_states = helpers.get_ad_group_sources_states([ad_group_source])
 
@@ -286,6 +295,7 @@ class ViewHelpersTestCase(TestCase):
             [ad_group_source],
             helpers.get_last_sync_messages([ad_group_source], last_successful_sync_time),
             helpers.get_ad_group_sources_state_messages([ad_group_source],
+                                                        ad_group_settings,
                                                         ad_group_sources_settings,
                                                         ad_group_sources_states)
         )
