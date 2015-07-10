@@ -205,7 +205,7 @@ describe('Media sources and ads', function () {
             element(by.css('table tbody tr:nth-child(3) td:nth-child(4)')).getText()
         ).toBe(running + sep + paused);
         expect(
-            element(by.css('table tbody tr:nth-child(3) td:nth-child(4)')).getText()
+            element(by.css('table tbody tr:nth-child(4) td:nth-child(4)')).getText()
         ).toBe(running + sep + paused);
     }
     function addThreeSources() {
