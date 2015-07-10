@@ -22,6 +22,7 @@ class BaseSync(object):
             sources = dash.models.Source.objects.all()
         self.sources = sources
 
+    @newrelic.agent.function_trace()
     def get_latest_success_by_child(self, recompute=True, include_level_archived=False, include_deprecated=False):
         return {
             child_sync.obj.id: _min_none(child_sync.get_latest_success_by_child(
