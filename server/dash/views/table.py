@@ -109,10 +109,14 @@ class AllAccountsSourcesTable(object):
         return yesterday_cost, yesterday_total_cost
 
     def get_last_success_actions(self):
-        return actionlog.sync.GlobalSync(sources=self.filtered_sources).get_latest_success_by_source(
-            include_maintenance=True,
-            include_deprecated=True,
-        )
+        if not hasattr(self, '_last_success_actions'):
+            self._last_success_actions = actionlog.sync.GlobalSync(
+                sources=self.filtered_sources
+            ).get_latest_success_by_source(
+                include_maintenance=True,
+                include_deprecated=True,
+            )
+        return self._last_success_actions
 
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(accounts=self.accounts, sources=self.filtered_sources)
@@ -166,11 +170,16 @@ class AccountSourcesTable(object):
         return yesterday_cost, yesterday_total_cost
 
     def get_last_success_actions(self):
-        return actionlog.sync.AccountSync(self.account, sources=self.filtered_sources).get_latest_source_success(
-            recompute=False,
-            include_maintenance=True,
-            include_deprecated=True,
-        )
+        if not hasattr(self, '_last_success_actions'):
+            self._last_success_actions = actionlog.sync.AccountSync(
+                self.account,
+                sources=self.filtered_sources
+            ).get_latest_source_success(
+                recompute=False,
+                include_maintenance=True,
+                include_deprecated=True,
+            )
+        return self._last_success_actions
 
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(accounts=[self.account], sources=self.filtered_sources)
@@ -224,11 +233,16 @@ class CampaignSourcesTable(object):
         return yesterday_cost, yesterday_total_cost
 
     def get_last_success_actions(self):
-        return actionlog.sync.CampaignSync(self.campaign, sources=self.filtered_sources).get_latest_source_success(
-            recompute=False,
-            include_maintenance=True,
-            include_deprecated=True,
-        )
+        if not hasattr(self, '_last_success_actions'):
+            self._last_success_actions = actionlog.sync.CampaignSync(
+                self.campaign,
+                sources=self.filtered_sources
+            ).get_latest_source_success(
+                recompute=False,
+                include_maintenance=True,
+                include_deprecated=True,
+            )
+        return self._last_success_actions
 
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(campaigns=[self.campaign], sources=self.filtered_sources)
@@ -284,11 +298,16 @@ class AdGroupSourcesTable(object):
         return yesterday_cost, yesterday_total_cost
 
     def get_last_success_actions(self):
-        return actionlog.sync.AdGroupSync(self.ad_group, sources=self.filtered_sources).get_latest_source_success(
-            recompute=False,
-            include_maintenance=True,
-            include_deprecated=True,
-        )
+        if not hasattr(self, '_last_success_actions'):
+            self._last_success_actions = actionlog.sync.AdGroupSync(
+                self.ad_group,
+                sources=self.filtered_sources
+            ).get_latest_source_success(
+                recompute=False,
+                include_maintenance=True,
+                include_deprecated=True,
+            )
+        return self._last_success_actions
 
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(ad_groups=[self.ad_group], sources=self.filtered_sources)
