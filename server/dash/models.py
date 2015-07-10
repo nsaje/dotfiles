@@ -59,7 +59,7 @@ class DemoManager(models.Manager):
             assert queryset.model is AdGroup
             with statsd_helper.statsd_block_timer('dash.models', 'adgroup_demo_objects'):
                 queryset = queryset.filter(
-                    id__in=(d2r.demo_ad_group.id for d2r in DemoAdGroupRealAdGroup.objects.all())
+                    id__in=(d2r.demo_ad_group_id for d2r in DemoAdGroupRealAdGroup.objects.all())
                 )
         return queryset
 
