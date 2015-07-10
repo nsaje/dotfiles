@@ -84,11 +84,13 @@ class ISyncComposite(object):
 
 class GlobalSync(BaseSync, ISyncComposite):
 
+    @newrelic.agent.function_trace()
     def __init__(self, sources=None):
         if sources is None:
             sources = dash.models.Source.objects.all()
         self.sources = sources
 
+    @newrelic.agent.function_trace()
     def get_components(self, maintenance=False, archived=False, deprecated=False):
         accounts = dash.models.Account.objects.all()
         if not archived:
@@ -161,6 +163,7 @@ class GlobalSync(BaseSync, ISyncComposite):
 
 class AccountSync(BaseSync, ISyncComposite):
 
+    @newrelic.agent.function_trace()
     def get_components(self, maintenance=False, archived=False, deprecated=False):
         campaigns = dash.models.Campaign.objects.filter(account=self.obj)
         if not archived:
@@ -174,6 +177,7 @@ class AccountSync(BaseSync, ISyncComposite):
 
 class CampaignSync(BaseSync, ISyncComposite):
 
+    @newrelic.agent.function_trace()
     def get_components(self, maintenance=False, archived=False, deprecated=False):
         ad_groups = dash.models.AdGroup.objects.filter(campaign=self.obj)
         if not archived:
@@ -187,12 +191,14 @@ class CampaignSync(BaseSync, ISyncComposite):
 
 class AdGroupSync(BaseSync, ISyncComposite):
 
+    @newrelic.agent.function_trace()
     def __init__(self, obj, sources=None):
         super(AdGroupSync, self).__init__(obj, sources=sources)
         self.real_ad_group = self.obj
         if self.obj in dash.models.AdGroup.demo_objects.all():
             self.real_ad_group = dash.models.DemoAdGroupRealAdGroup.objects.get(demo_ad_group=self.obj).real_ad_group
 
+    @newrelic.agent.function_trace()
     def get_components(self, maintenance=False, archived=False, deprecated=False):
         qs = dash.models.AdGroupSource.objects.filter(ad_group=self.real_ad_group, source__in=self.sources)
         if not maintenance:
