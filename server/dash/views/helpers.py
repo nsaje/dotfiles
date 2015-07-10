@@ -132,6 +132,7 @@ def _get_adgroups_for(modelcls, modelobjects):
     return modelobjects
 
 
+@newrelic.agent.function_trace()
 def get_active_ad_group_sources(modelcls, modelobjects):
     all_demo_qs = modelcls.demo_objects.all()
     demo_objects = filter(lambda x: x in all_demo_qs, modelobjects)

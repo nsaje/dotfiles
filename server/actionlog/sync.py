@@ -1,5 +1,7 @@
 import datetime
 import dash.models
+import newrelic.agent
+
 import actionlog.models
 import actionlog.constants
 
@@ -27,6 +29,7 @@ class BaseSync(object):
             ).values()) for child_sync in self.get_components(archived=include_level_archived, deprecated=include_deprecated)
         }
 
+    @newrelic.agent.function_trace()
     def get_latest_source_success(self, recompute=True, include_maintenance=False, include_deprecated=False):
         child_syncs = self.get_components(maintenance=include_maintenance, deprecated=include_deprecated)
         child_source_sync_times_list = [
@@ -119,6 +122,7 @@ class GlobalSync(BaseSync, ISyncComposite):
         result = self._add_demo_accounts_sync_times(result)
         return result
 
+    @newrelic.agent.function_trace()
     def get_latest_success_by_source(self, include_maintenance=False, include_deprecated=False):
         '''
         this function is a faster way to get last succcessful sync times
@@ -217,6 +221,7 @@ class AdGroupSourceSync(BaseSync):
     def get_latest_success_by_child(self, recompute=True, include_level_archive=False):
         return {self.obj.id: self._get_latest_success(recompute=recompute)}
 
+    @newrelic.agent.function_trace()
     def get_latest_source_success(self, recompute=True, include_maintenance=False, include_deprecated=False):
         return {self.obj.source_id: self._get_latest_success(recompute=recompute)}
 
