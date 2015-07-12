@@ -152,5 +152,6 @@
     - [set_ad_group_source_settings, zemauth, user]
     - [set_content_ad_status, zemauth, user]
     - [upload_content_ads, zemauth, user]
+    - [content_ads_bulk_actions, zemauth, user]
   model: auth.group
   pk: 10

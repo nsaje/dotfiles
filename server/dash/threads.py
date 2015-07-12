@@ -118,6 +118,7 @@ class ProcessUploadThread(Thread):
             title=data['title'],
             batch=self.batch,
             ad_group_id=self.ad_group_id,
+            tracker_urls=data['tracker_urls']
         )
 
         content_ad_sources = []
@@ -136,21 +137,25 @@ class ProcessUploadThread(Thread):
     def _save_error_report(self):
         string = StringIO.StringIO()
 
-        has_crop_areas_data = False
-        for idx, row in enumerate(self.content_ads_data):
-            if row.get('crop_areas') is not None and row['crop_areas'] != '':
-                has_crop_areas_data = True
-                break
+        fields = ['url', 'title', 'image_url']
 
-        if has_crop_areas_data:
-            writer = unicodecsv.DictWriter(string, ['url', 'title', 'image_url', 'crop_areas', 'errors'])
-        else:
-            writer = unicodecsv.DictWriter(string, ['url', 'title', 'image_url', 'errors'])
+        if any(row.get('crop_areas') for row in self.content_ads_data):
+            fields.append('crop_areas')
+
+        if any(row.get('tracker_urls') for row in self.content_ads_data):
+            fields.append('tracker_urls')
+
+        fields.append('errors')
+        writer = unicodecsv.DictWriter(string, fields)
 
         writer.writeheader()
         for row in self.content_ads_data:
-            if not has_crop_areas_data:
+            if 'crop_areas' not in fields and 'crop_areas' in row:
                 del row['crop_areas']
+
+            if 'tracker_urls' not in fields and 'tracker_urls' in row:
+                del row['tracker_urls']
+
             writer.writerow(row)
 
         content = string.getvalue()
@@ -168,6 +173,39 @@ class ProcessUploadThread(Thread):
 
         return None
 
+    def _validate_url(self, url):
+        validate_url = validators.URLValidator(schemes=['http', 'https'])
+
+        url_err = False
+        try:
+            validate_url(url)
+        except ValidationError:
+            url_err = True
+
+        # allow urls without protocol prefix
+        if url_err:
+            url = 'http://{url}'.format(url=url)
+            try:
+                validate_url(url)
+            except ValidationError:
+                raise ValidationError('Invalid URL')
+
+        return url
+
+    def _clean_tracker_urls(self, tracker_urls_string):
+        if tracker_urls_string is None:
+            return None
+
+        tracker_urls = tracker_urls_string.strip().split(' ')
+
+        result = []
+        validate_url = validators.URLValidator(schemes=['https'])
+        for url in tracker_urls:
+            validate_url(url)
+            result.append(url)
+
+        return result
+
     def _clean_row(self, row):
         errors = []
         process_image = True
@@ -176,41 +214,23 @@ class ProcessUploadThread(Thread):
         title = row.get('title')
         image_url = row.get('image_url')
         crop_areas = row.get('crop_areas')
+        tracker_urls_string = row.get('tracker_urls')
 
-        validate_url = validators.URLValidator(schemes=['http', 'https'])
-
-        url_err = None
         try:
-            validate_url(url)
+            tracker_urls = self._clean_tracker_urls(tracker_urls_string)
         except ValidationError:
-            url_err = 'Invalid URL'
+            tracker_urls = None
+            errors.append('Invalid tracker URLs')
 
-        # allow urls without protocol prefix(ie. www.)
-        if url_err is not None:
-            prefixed_url = 'http://{url}'.format(url=url)
-            try:
-                validate_url(prefixed_url)
-                url = prefixed_url
-            except ValidationError:
-                errors.append(url_err)
-
-        image_url_err = None
         try:
-            validate_url(image_url)
+            url = self._validate_url(url)
         except ValidationError:
-            process_image = False
-            image_url_err = 'Invalid image URL'
+            errors.append('Invalid URL')
 
-        # allow urls without protocol prefix(ie. www.)
-        if image_url_err is not None:
-            prefixed_image_url = 'http://{image_url}'.format(image_url=image_url)
-            try:
-                validate_url(prefixed_image_url)
-                process_image = True
-                image_url = prefixed_image_url
-            except ValidationError:
-                process_image = False
-                errors.append(image_url_err)
+        try:
+            image_url = self._validate_url(image_url)
+        except ValidationError:
+            errors.append('Invalid image URL')
 
         if title is None or not len(title):
             errors.append('Missing title')
@@ -247,7 +267,8 @@ class ProcessUploadThread(Thread):
             'image_id': image_id,
             'image_width': width,
             'image_height': height,
-            'image_hash': image_hash
+            'image_hash': image_hash,
+            'tracker_urls': tracker_urls
         }
 
         return data, None

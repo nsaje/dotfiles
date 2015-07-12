@@ -212,6 +212,7 @@ def _get_content_ad_dict(ad_group_source, content_ad_source, batch):
         'description': batch.description,
         'call_to_action': batch.call_to_action,
         'tracking_slug': ad_group_source.source.tracking_slug,
+        'tracker_urls': content_ad_source.content_ad.tracker_urls
     }
 
     return result

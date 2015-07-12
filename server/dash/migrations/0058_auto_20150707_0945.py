@@ -32,7 +32,7 @@ def forwards_code(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dash', '0056_auto_20150630_1154'),
+        ('dash', '0057_contentad_tracker_urls'),
     ]
 
     operations = [

@@ -9,6 +9,7 @@ from django.conf import settings
 from django.contrib.auth import models as auth_models
 from django.contrib import auth
 from django.db import models, transaction
+from django.contrib.postgres.fields import ArrayField
 
 import utils.string_helper
 
@@ -58,7 +59,7 @@ class DemoManager(models.Manager):
             assert queryset.model is AdGroup
             with statsd_helper.statsd_block_timer('dash.models', 'adgroup_demo_objects'):
                 queryset = queryset.filter(
-                    id__in=(d2r.demo_ad_group.id for d2r in DemoAdGroupRealAdGroup.objects.all())
+                    id__in=(d2r.demo_ad_group_id for d2r in DemoAdGroupRealAdGroup.objects.all())
                 )
         return queryset
 
@@ -1249,6 +1250,7 @@ class ContentAd(models.Model):
     )
 
     archived = models.BooleanField(default=False)
+    tracker_urls = ArrayField(models.CharField(max_length=2048), null=True)
 
     objects = QuerySetManager()
 

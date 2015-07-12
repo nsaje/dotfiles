@@ -1,5 +1,7 @@
 import datetime
 import dash.models
+import newrelic.agent
+
 import actionlog.models
 import actionlog.constants
 
@@ -20,6 +22,7 @@ class BaseSync(object):
             sources = dash.models.Source.objects.all()
         self.sources = sources
 
+    @newrelic.agent.function_trace()
     def get_latest_success_by_child(self, recompute=True, include_level_archived=False, include_deprecated=False):
         return {
             child_sync.obj.id: _min_none(child_sync.get_latest_success_by_child(
@@ -27,6 +30,7 @@ class BaseSync(object):
             ).values()) for child_sync in self.get_components(archived=include_level_archived, deprecated=include_deprecated)
         }
 
+    @newrelic.agent.function_trace()
     def get_latest_source_success(self, recompute=True, include_maintenance=False, include_deprecated=False):
         child_syncs = self.get_components(maintenance=include_maintenance, deprecated=include_deprecated)
         child_source_sync_times_list = [
@@ -81,11 +85,13 @@ class ISyncComposite(object):
 
 class GlobalSync(BaseSync, ISyncComposite):
 
+    @newrelic.agent.function_trace()
     def __init__(self, sources=None):
         if sources is None:
             sources = dash.models.Source.objects.all()
         self.sources = sources
 
+    @newrelic.agent.function_trace()
     def get_components(self, maintenance=False, archived=False, deprecated=False):
         accounts = dash.models.Account.objects.all()
         if not archived:
@@ -119,6 +125,7 @@ class GlobalSync(BaseSync, ISyncComposite):
         result = self._add_demo_accounts_sync_times(result)
         return result
 
+    @newrelic.agent.function_trace()
     def get_latest_success_by_source(self, include_maintenance=False, include_deprecated=False):
         '''
         this function is a faster way to get last succcessful sync times
@@ -157,6 +164,7 @@ class GlobalSync(BaseSync, ISyncComposite):
 
 class AccountSync(BaseSync, ISyncComposite):
 
+    @newrelic.agent.function_trace()
     def get_components(self, maintenance=False, archived=False, deprecated=False):
         campaigns = dash.models.Campaign.objects.filter(account=self.obj)
         if not archived:
@@ -170,6 +178,7 @@ class AccountSync(BaseSync, ISyncComposite):
 
 class CampaignSync(BaseSync, ISyncComposite):
 
+    @newrelic.agent.function_trace()
     def get_components(self, maintenance=False, archived=False, deprecated=False):
         ad_groups = dash.models.AdGroup.objects.filter(campaign=self.obj)
         if not archived:
@@ -183,12 +192,14 @@ class CampaignSync(BaseSync, ISyncComposite):
 
 class AdGroupSync(BaseSync, ISyncComposite):
 
+    @newrelic.agent.function_trace()
     def __init__(self, obj, sources=None):
         super(AdGroupSync, self).__init__(obj, sources=sources)
         self.real_ad_group = self.obj
         if self.obj in dash.models.AdGroup.demo_objects.all():
             self.real_ad_group = dash.models.DemoAdGroupRealAdGroup.objects.get(demo_ad_group=self.obj).real_ad_group
 
+    @newrelic.agent.function_trace()
     def get_components(self, maintenance=False, archived=False, deprecated=False):
         qs = dash.models.AdGroupSource.objects.filter(ad_group=self.real_ad_group, source__in=self.sources)
         if not maintenance:
@@ -217,6 +228,7 @@ class AdGroupSourceSync(BaseSync):
     def get_latest_success_by_child(self, recompute=True, include_level_archive=False):
         return {self.obj.id: self._get_latest_success(recompute=recompute)}
 
+    @newrelic.agent.function_trace()
     def get_latest_source_success(self, recompute=True, include_maintenance=False, include_deprecated=False):
         return {self.obj.source_id: self._get_latest_success(recompute=recompute)}
 

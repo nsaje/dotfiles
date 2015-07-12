@@ -1,6 +1,7 @@
 import datetime
 import dateutil.parser
 import pytz
+import newrelic.agent
 
 from django.conf import settings
 from django.db.models import Q
@@ -131,6 +132,7 @@ def _get_adgroups_for(modelcls, modelobjects):
     return modelobjects
 
 
+@newrelic.agent.function_trace()
 def get_active_ad_group_sources(modelcls, modelobjects):
     all_demo_qs = modelcls.demo_objects.all()
     demo_objects = filter(lambda x: x in all_demo_qs, modelobjects)
@@ -157,20 +159,19 @@ def get_active_ad_group_sources(modelcls, modelobjects):
                 # deprecated sources are not shown in the demo at all
                 Q(ad_group__in=real_corresponding_adgroups, source__deprecated=False) |
                 Q(ad_group__in=normal_adgroups)
-            ).exclude(pk__in=[ags.id for ags in _inactive_ad_group_sources])
+            ).exclude(pk__in=[ags.id for ags in _inactive_ad_group_sources]).\
+            select_related('source__source_type').\
+            select_related('ad_group')
 
     return active_ad_group_sources
 
 
-def get_ad_group_sources_last_change_dt(ad_group_sources, last_change_dt=None):
+@newrelic.agent.function_trace()
+def get_ad_group_sources_last_change_dt(ad_group_sources, ad_group_sources_settings,
+                                        ad_group_sources_states, last_change_dt=None):
     def get_last_change(ad_group_source):
-        current_state = None
-        if ad_group_source.states.exists():
-            current_state = ad_group_source.states.latest('created_dt')
-
-        current_settings = None
-        if ad_group_source.settings.exists():
-            current_settings = ad_group_source.settings.latest('created_dt')
+        current_settings = _get_ad_group_source_settings_from_filter_qs(ad_group_source, ad_group_sources_settings)
+        current_state = _get_ad_group_source_state_from_filter_qs(ad_group_source, ad_group_sources_states)
 
         if current_state is None and current_settings is None:
             return None
@@ -207,14 +208,12 @@ def get_ad_group_sources_last_change_dt(ad_group_sources, last_change_dt=None):
     return max(last_change_dts), changed_ad_group_sources
 
 
-def _get_keys_in_progress(ad_group_source):
-    actions = ad_group_source.actionlog_set.filter(
-        state__in=(actionlog.constants.ActionState.WAITING, actionlog.constants.ActionState.DELAYED),
-        action=actionlog.constants.Action.SET_CAMPAIGN_STATE
-    )
-
+def _get_keys_in_progress(ad_group_source, waiting_delayed_actions):
     keys_in_progress = set()
-    for action in actions:
+    for action in waiting_delayed_actions:
+        if action.ad_group_source_id != ad_group_source.id:
+            continue
+
         keys = action.payload.get('args', {}).get('conf', {}).keys()
 
         for key in keys:
@@ -223,44 +222,69 @@ def _get_keys_in_progress(ad_group_source):
     return keys_in_progress
 
 
-def get_ad_group_sources_notifications(ad_group_sources):
+@newrelic.agent.function_trace()
+def get_ad_group_sources_notifications(ad_group_sources, ad_group_settings,
+                                       ad_group_sources_settings, ad_group_sources_states):
     notifications = {}
+
+    waiting_delayed_actions = actionlog.models.ActionLog.objects.filter(
+        state__in=(actionlog.constants.ActionState.WAITING, actionlog.constants.ActionState.DELAYED),
+        action=actionlog.constants.Action.SET_CAMPAIGN_STATE,
+        ad_group_source_id__in=[ags.id for ags in ad_group_sources],
+    )
 
     for ags in ad_group_sources:
         notification = {}
 
-        latest_settings = _get_latest_settings(ags)
-        latest_state = _get_latest_state(ags)
+        ad_group_source_settings = _get_ad_group_source_settings_from_filter_qs(ags, ad_group_sources_settings)
+        ad_group_source_state = _get_ad_group_source_state_from_filter_qs(ags, ad_group_sources_states)
 
         messages = []
         in_progress = False
         important = False
         state_message = None
 
-        keys_in_progress = _get_keys_in_progress(ags)
+        keys_in_progress = _get_keys_in_progress(ags, waiting_delayed_actions)
 
-        ad_group_settings = ags.ad_group.get_current_settings()
         if ad_group_settings.state == constants.AdGroupSettingsState.INACTIVE:
-            if latest_settings and latest_settings.state == constants.AdGroupSettingsState.ACTIVE:
+            if ad_group_source_settings and ad_group_source_settings.state == constants.AdGroupSettingsState.ACTIVE:
                 state_message = 'This media source is enabled but will not run until you enable ad group in Settings tab.'
                 messages.append(state_message)
 
                 if len(keys_in_progress):
                     if 'state' in keys_in_progress:
-                        messages.append(_get_state_update_notification(ags, ad_group_settings, latest_state))
+                        messages.append(_get_state_update_notification(ags, ad_group_settings, ad_group_source_state))
                 important = True
 
         if len(keys_in_progress):
             update_messages = []
 
             if state_message is None and 'state' in keys_in_progress:
-                update_messages.append(_get_state_update_notification(ags, latest_settings, latest_state))
+                update_messages.append(
+                    _get_state_update_notification(
+                        ags,
+                        ad_group_source_settings,
+                        ad_group_source_state
+                    )
+                )
 
             if 'cpc_cc' in keys_in_progress:
-                update_messages.append(_get_cpc_update_notification(ags, latest_settings, latest_state))
+                update_messages.append(
+                    _get_cpc_update_notification(
+                        ags,
+                        ad_group_source_settings,
+                        ad_group_source_state
+                    )
+                )
 
             if 'daily_budget_cc' in keys_in_progress:
-                update_messages.append(_get_budget_update_notification(ags, latest_settings, latest_state))
+                update_messages.append(
+                    _get_budget_update_notification(
+                        ags,
+                        ad_group_source_settings,
+                        ad_group_source_state
+                    )
+                )
 
             in_progress = len(update_messages) > 0
 
@@ -336,7 +360,7 @@ def get_content_ad_last_change_dt(ad_group, sources, last_change_dt=None):
     return last_change_dt, changed_content_ads
 
 
-def get_content_ad_submission_status(user, content_ad_sources):
+def get_content_ad_submission_status(user, ad_group_sources_states, content_ad_sources):
     submission_status = []
     for content_ad_source in content_ad_sources:
         cas_source_state = content_ad_source.source_state
@@ -358,24 +382,29 @@ def get_content_ad_submission_status(user, content_ad_sources):
 
         ad_group_source_state_text = ''
         if user.has_perm('zemauth.can_see_media_source_status_on_submission_popover'):
-            adgs = models.AdGroupSource.objects.filter(ad_group=cas_ad_group, source=cas_source)
-            if len(adgs) > 0:
-                cas_ad_group_source_state = _get_latest_state(adgs[0])
-                if cas_ad_group_source_state is not None:
-                    if cas_ad_group_source_state.state == constants.AdGroupSourceSettingsState.ACTIVE:
-                        ad_group_source_state_text = ' / Media Source Running'
-                    else:
-                        ad_group_source_state_text = ' / Media Source Paused'
+            cas_ad_group_source_state = None
+            for agss in ad_group_sources_states:
+                if agss.ad_group_source.ad_group_id == cas_ad_group.id and\
+                   agss.ad_group_source.source_id == cas_source.id:
+                    cas_ad_group_source_state = agss
+                    break
+
+            if cas_ad_group_source_state is not None:
+                if cas_ad_group_source_state.state == constants.AdGroupSourceSettingsState.ACTIVE:
+                    ad_group_source_state_text = ''
+                else:
+                    ad_group_source_state_text = '(paused)'
+
+        status['source_state'] = ad_group_source_state_text
 
         text = constants.ContentAdSubmissionStatus.get_text(cas_submission_status)
         if (cas_submission_status == constants.ContentAdSubmissionStatus.REJECTED and
                 content_ad_source.submission_errors is not None):
             text = '{} ({})'.format(text, content_ad_source.submission_errors)
         else:
-            text = '{} / {}{}'.format(
+            text = '{} / {}'.format(
                 text,
-                constants.ContentAdSourceState.get_text(cas_source_state),
-                ad_group_source_state_text
+                constants.ContentAdSourceState.get_text(cas_source_state)
             )
 
         status['text'] = text
@@ -441,6 +470,7 @@ def _get_budget_update_notification(ags, settings, state):
     return None
 
 
+@newrelic.agent.function_trace()
 def get_data_status(objects, last_sync_messages, state_messages=None):
     data_status = {}
     for obj in objects:
@@ -473,18 +503,38 @@ def get_data_status(objects, last_sync_messages, state_messages=None):
     return data_status
 
 
-def get_content_ad_data_status(content_ads):
+def get_content_ad_data_status(ad_group, content_ads):
+    ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+    ad_group_sources_states = get_ad_group_sources_states(ad_group_sources)
+    content_ad_sources = models.ContentAdSource.objects.filter(
+        content_ad__in=content_ads
+    ).select_related('source')
+
     data_status = {}
     for content_ad in content_ads:
         in_sync = True
-        for ad_group_source in content_ad.sources.all():
-            content_ad_source = models.ContentAdSource.objects.filter(
-                content_ad=content_ad,
-                source=ad_group_source
-            ).first()
+        for content_ad_source in content_ad_sources:
+            if content_ad_source.content_ad_id != content_ad.id:
+                continue
 
-            if content_ad_source is not None and\
-                content_ad_source.state != content_ad_source.source_state:
+            # we ignore deprecated and in maintenance sources
+            if content_ad_source.source.deprecated or content_ad_source.source.maintenance:
+                continue
+
+            ad_group_source = None
+            for ags in ad_group_sources:
+                if content_ad_source.source.id == ags.source_id:
+                    ad_group_source = ags
+                    break
+
+            if ad_group_source is not None:
+                latest_state = _get_ad_group_source_state_from_filter_qs(ad_group_source, ad_group_sources_states)
+                if latest_state is not None and latest_state.state == constants.AdGroupSourceSettingsState.INACTIVE:
+                    # in case media source is disabled we ignore content ad state
+                    # difference
+                    continue
+
+            if content_ad_source.state != content_ad_source.source_state:
                 in_sync = False
                 break
 
@@ -502,6 +552,7 @@ def get_content_ad_data_status(content_ads):
     return data_status
 
 
+@newrelic.agent.function_trace()
 def get_last_sync_messages(objects, last_sync_times):
     last_sync_messages = {}
     for obj in objects:
@@ -522,15 +573,6 @@ def get_last_sync_messages(objects, last_sync_times):
     return last_sync_messages
 
 
-def get_ad_group_sources_state_messages(ad_group_sources):
-    sources_messages = {}
-
-    for ad_group_source in ad_group_sources:
-        sources_messages[ad_group_source.source_id] = _get_state_messages(ad_group_source)
-
-    return sources_messages
-
-
 def get_selected_content_ads(
         ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected):
     if select_all:
@@ -547,58 +589,93 @@ def get_selected_content_ads(
     return content_ads.order_by('created_dt')
 
 
-def _get_state_messages(ad_group_source):
+@newrelic.agent.function_trace()
+def get_ad_group_sources_state_messages(ad_group_sources, ad_group_settings,
+                                        ad_group_sources_settings, ad_group_sources_states):
+    sources_messages = {}
+
+    waiting_delayed_actionlogs = actionlog.models.ActionLog.objects.filter(
+        state__in=(actionlog.constants.ActionState.WAITING, actionlog.constants.ActionState.DELAYED),
+        action=actionlog.constants.Action.SET_CAMPAIGN_STATE,
+        ad_group_source_id__in=[ags.id for ags in ad_group_sources]
+    )
+
+    for ad_group_source in ad_group_sources:
+        ags_settings = _get_ad_group_source_settings_from_filter_qs(ad_group_source, ad_group_sources_settings)
+        ags_state = _get_ad_group_source_state_from_filter_qs(ad_group_source, ad_group_sources_states)
+        sources_messages[ad_group_source.source_id] = _get_state_messages(ad_group_source, ad_group_settings,
+                                                                          ags_settings, ags_state,
+                                                                          waiting_delayed_actionlogs)
+
+    return sources_messages
+
+
+def _get_state_messages(ad_group_source, ad_group_settings, ad_group_source_settings,
+                        ad_group_source_state, actionlogs):
     message_template = '<b>{name}</b> for this Media Source differs from '\
                        '{name} in the Media Source\'s 3rd party dashboard.'
 
-    if ad_group_source.actionlog_set.filter(
-        state=actionlog.constants.ActionState.WAITING,
-        action=actionlog.constants.Action.SET_CAMPAIGN_STATE
-    ).exists():
-        # there are updates in progress
-        return [], True
+    for al in actionlogs:
+        if al.ad_group_source.id == ad_group_source.id:
+            # there are updates in progress
+            return [], True
 
-    latest_settings = _get_latest_settings(ad_group_source)
-    latest_state = _get_latest_state(ad_group_source)
-
-    if latest_settings is None:
+    if ad_group_source_settings is None:
         return [], True
 
     messages = []
-    if ad_group_source.source.can_update_cpc() and latest_settings.cpc_cc is not None and (
-            latest_state is None or latest_settings.cpc_cc != latest_state.cpc_cc):
+    if ad_group_source.source.can_update_cpc() and ad_group_source_settings.cpc_cc is not None and (
+            ad_group_source_state is None or ad_group_source_settings.cpc_cc != ad_group_source_state.cpc_cc):
         messages.append(message_template.format(name='Bid CPC'))
 
     if (ad_group_source.source.can_update_daily_budget_automatic() or
             ad_group_source.source.can_update_daily_budget_manual()) and\
-        latest_settings.daily_budget_cc is not None and (
-            latest_state is None or latest_settings.daily_budget_cc != latest_state.daily_budget_cc):
+        ad_group_source_settings.daily_budget_cc is not None and (
+            ad_group_source_state is None or ad_group_source_settings.daily_budget_cc != ad_group_source_state.daily_budget_cc):
         messages.append(message_template.format(name='Daily Budget'))
 
-    if ad_group_source.ad_group.get_current_settings().state == constants.AdGroupSettingsState.INACTIVE:
+    if ad_group_settings.state == constants.AdGroupSettingsState.INACTIVE:
         expected_state = constants.AdGroupSourceSettingsState.INACTIVE
     else:
-        expected_state = latest_settings.state
+        expected_state = ad_group_source_settings.state
 
-    if latest_settings.state is not None and (
-            latest_state is None or expected_state != latest_state.state):
+    if ad_group_source_settings.state is not None and (
+            ad_group_source_state is None or expected_state != ad_group_source_state.state):
         messages.append(message_template.format(name='Status'))
 
     return messages, len(messages) == 0
 
 
-def _get_latest_settings(ad_group_source):
-    latest_settings_qs = models.AdGroupSourceSettings.objects.\
-        filter(ad_group_source=ad_group_source).\
-        order_by('ad_group_source_id', '-created_dt')
-    return latest_settings_qs[0] if latest_settings_qs.exists() else None
+def _get_ad_group_source_settings_from_filter_qs(ad_group_source, ad_group_sources_settings):
+        for ags_settings in ad_group_sources_settings:
+            if ags_settings.ad_group_source_id == ad_group_source.id:
+                return ags_settings
+
+        return None
 
 
-def _get_latest_state(ad_group_source):
-    latest_state_qs = models.AdGroupSourceState.objects.\
-        filter(ad_group_source=ad_group_source).\
-        order_by('ad_group_source_id', '-created_dt')
-    return latest_state_qs[0] if latest_state_qs.exists() else None
+def _get_ad_group_source_state_from_filter_qs(ad_group_source, ad_group_sources_states):
+        for ags_state in ad_group_sources_states:
+            if ags_state.ad_group_source_id == ad_group_source.id:
+                return ags_state
+
+        return None
+
+
+def get_ad_group_sources_states(ad_group_sources):
+    return models.AdGroupSourceState.objects.\
+        distinct('ad_group_source_id').\
+        filter(ad_group_source__in=ad_group_sources).\
+        order_by('ad_group_source_id', '-created_dt').\
+        select_related('ad_group_source')
+
+
+def get_ad_group_sources_settings(ad_group_sources):
+    return models.AdGroupSourceSettings.objects.\
+        distinct('ad_group_source_id').\
+        filter(ad_group_source__in=ad_group_sources).\
+        order_by('ad_group_source_id', '-created_dt').\
+        select_related('ad_group_source')
 
 
 def parse_get_request_content_ad_ids(request_data, param_name):

@@ -896,4 +896,4 @@ class UserActivation(api_common.BaseApiView):
                 pretty_message=u'Cannot activate nonexisting user.'
             )
 
-        return self.create_api_response({}, status_code=200)
+        return self.create_api_response({})

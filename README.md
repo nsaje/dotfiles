@@ -270,3 +270,18 @@ $delegate.accountCampaigns.create = function demo(id) {
 ```
 
 Because we want demo to work a little bit differently, there is some demo code hidden in controllers and other services. You can find it by greping for `$window.isDemo`.
+
+### Pingdom transaction monitor
+
+Always check if your changes affect demo transaction monitors. Be careful when changing demo defaults.
+Current monitors:
+- *demo campaign/adgroup management*: creating campaign, adgroup, uploading content ads
+  - causes: errors in demo code
+  - solution: run e2e tests again and find the bug in the code
+- *demo defaults*: checking default ad group name, default media sources
+  - causes: updated demo defaults
+  - solution: check for changes in `client/one/js/constants/demo.js` and update the transaction monitor accordingly
+- *demo navigation*: navigation with left sidebat and tabs between existing and created campaigns/adgroups
+  - causes: production data changes
+  - solution: update the transaction monitor with new demo campaigns and adgroups 
+If any monitor fails in the *first four steps*, there was a problem with login (usually database timeouts etc.). 

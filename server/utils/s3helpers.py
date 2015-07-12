@@ -25,7 +25,7 @@ class S3Helper(object):
             k.key = key
             return k.get_contents_as_string()
 
-        if len(settings.FILE_STORAGE_DIR):
+        if settings.FILE_STORAGE_DIR:
             with open(os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(key)), 'r') as f:
                 return f.read()
 
@@ -34,7 +34,7 @@ class S3Helper(object):
             k = self.bucket.new_key(key)
             k.set_contents_from_string(contents)
 
-        elif len(settings.FILE_STORAGE_DIR):
+        elif settings.FILE_STORAGE_DIR:
             with open(os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(key)), 'w+') as f:
                 f.write(contents)
 

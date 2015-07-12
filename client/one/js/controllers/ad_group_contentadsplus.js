@@ -393,7 +393,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
     $scope.columnCategories = [{
         'name': 'Content Sync',
-        'fields': ['ad_selected', 'image_urls', 'titleLink', 'submission_status', 'checked', 'upload_time', 'batch_name', 'display_url', 'brand_name', 'description', 'call_to_action']
+        'fields': ['ad_selected', 'image_urls', 'titleLink', 'urlLink', 'submission_status', 'checked', 'upload_time', 'batch_name', 'display_url', 'brand_name', 'description', 'call_to_action']
     }, {
         'name': 'Traffic Acquisition',
         'fields': ['cost', 'cpc', 'clicks', 'impressions', 'ctr']
@@ -754,8 +754,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 if (data.lastChange) {
                     $scope.lastChange = data.lastChange;
                     $scope.notifications = data.notifications;
-                    $scope.dataStatus = data.dataStatus;
-
+                    
+                    $scope.updateDataStatus(data.dataStatus);
                     updateTableData(data.rows, data.totals);
                 }
 
@@ -777,6 +777,15 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         });
 
         updateObject($scope.totals, totalsUpdates);
+    };
+
+    $scope.updateDataStatus = function(newDataStatus) {
+        for (var rowid in newDataStatus) {
+            var newStatus = newDataStatus[rowid];
+            if (newStatus) {
+                $scope.dataStatus[rowid] = newStatus;
+            }
+        };
     };
 
     var updateObject = function(object, updates) {

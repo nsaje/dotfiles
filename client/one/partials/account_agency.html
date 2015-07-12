@@ -25,7 +25,7 @@
                     </div>
                     <div ng-if="!user.removed">
                         <div class="col-xs-6 user-name-col">
-    						<p class="control-label"><b>{{user.name}} </b>({{user.email}})</p>
+                            <p class="control-label"><b>{{user.name}} </b>({{user.email}})</p>
                             <span ng-show="user.saved && !user.emailSent && !user.emailResent" class="success">This user can now access this account. Since this is an existing user, no activation email was sent.</span>
                             <span ng-show="user.saved && user.emailSent && !user.emailResent" class="success">An introductory email was sent to this user.</span>
                             <span ng-show="user.saved && user.emailResent" class="success">New activation email sent.</span>
@@ -33,13 +33,13 @@
                         <div class="col-xs-2">
                             <div class="loader" ng-show="user.requestInProgress"></div>
 
-							<div class="dropdown" dropdown ng-show="!user.requestInProgress" aria-haspopup="true">
-							<a href class="btn btn-default dropdown-toggle" dropdown-toggle>Edit&nbsp;<span class="caret"></a>
-							<ul class="dropdown-menu dropdown-menu-blue" role="menu">
-								<li><a ng-show="!user.is_active" tabindex="-1" ng-click="userActionChange('resend', user.id)" href="#">Resend Activation Mail</a></li>
-								<li><a tabindex="-1" ng-click="userActionChange('remove', user.id)" href="#">Remove</a></li>
-							</ul>
-							</div>
+                            <div class="dropdown" dropdown ng-show="!user.requestInProgress" aria-haspopup="true">
+                            <a href class="btn btn-default dropdown-toggle" dropdown-toggle>Edit&nbsp;<span class="caret"></a>
+                            <ul class="dropdown-menu dropdown-menu-activation" role="menu">
+                                <li><a ng-show="!user.is_active" tabindex="-1" ng-click="userActionChange('resend', user.id)" href="#">Resend Activation Mail</a></li>
+                                <li><a tabindex="-1" ng-click="userActionChange('remove', user.id)" href="#">Remove</a></li>
+                            </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -65,9 +65,9 @@
             </div>
         </div>
 
-		<button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
-		<button type="button" class="btn btn-default" ng-click="getSettings(true)">Discard</button>
-		<button type="button" class="btn btn-default pull-right" ng-class="{'disabled': !canArchive}" title="{{ (!canArchive && 'All of the account\'s campaigns have to be paused in order to archive the account.') || '' }}" ng-click="archiveAccount()">Archive account</button>
+        <button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
+        <button type="button" class="btn btn-default" ng-click="getSettings(true)">Discard</button>
+        <button type="button" class="btn btn-default pull-right" ng-class="{'disabled': !canArchive}" title="{{ (!canArchive && 'All of the account\'s campaigns have to be paused in order to archive the account.') || '' }}" ng-click="archiveAccount()">Archive account</button>
         <div class="loader" ng-show="requestInProgress"></div>
         <span ng-show="saved" class="success">Your updates have been saved.</span>
         <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
