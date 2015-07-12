@@ -1,9 +1,9 @@
-/*globals oneApp,options*/
-oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
+/*globals oneApp*/
+oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', function ($scope, $state, api, regions) {
     $scope.settings = {};
     $scope.actionIsWaiting = false;
     $scope.errors = {};
-    $scope.options = options;
+    $scope.regions = regions;
     $scope.alerts = [];
     $scope.saveRequestInProgress = false;
     $scope.saved = null;

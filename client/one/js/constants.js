@@ -7,15 +7,6 @@ var constants = {
         DESKTOP: 'desktop',
         MOBILE: 'mobile'
     },
-    // TODO: remove when new locations selection UI
-    adTargetCountry: {
-        AUSTRALIA: 'AU',
-        CANADA: 'CA',
-        IRELAND: 'IE',
-        NEW_ZAELAND: 'NZ',
-        UNITED_KINGDOM: 'GB',
-        UNITED_STATES: 'US'
-    },
     chartMetric: {
         CLICKS: 'clicks',
         IMPRESSIONS: 'impressions',
@@ -98,15 +89,6 @@ var options = {
     adTargetDevices: [
         {name: 'Desktop', value: constants.adTargetDevice.DESKTOP},
         {name: 'Mobile', value: constants.adTargetDevice.MOBILE}
-    ],
-    // TODO: remove when new locations selection UI
-    adTargetCountries: [
-        {name: 'Australia', value: constants.adTargetCountry.AUSTRALIA},
-        {name: 'Canada', value: constants.adTargetCountry.CANADA},
-        {name: 'Ireland', value: constants.adTargetCountry.IRELAND},
-        {name: 'New Zealand', value: constants.adTargetCountry.NEW_ZAELAND},
-        {name: 'United Kingdom', value: constants.adTargetCountry.UNITED_KINGDOM},
-        {name: 'United States', value: constants.adTargetCountry.UNITED_STATES}
     ],
     adGroupChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},

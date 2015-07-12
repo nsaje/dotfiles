@@ -11,7 +11,7 @@
 <div ng-if="selectedDMASubsetOfUS && selectedDMASubsetOfUS.length > 0 && selectedUS">Location targeting was changed from <b>{{ selectedDMASubsetOfUS.join(", ") }}</b> to <b>United States</b>. <a href="" ng-click="undo()">Undo?</a></div>
 <div ng-if="selectedDMASubsetOfUS && selectedDMASubsetOfUS.length > 0 && !selectedUS">Location targeting was changed from <b>United States</b> to <b>{{ selectedDMASubsetOfUS.join(", ") }}</b>. <a href="" ng-click="undo()">Undo?</a></div>
 
-<div ng-if="warnDMANotSupported"><b>{{ sourcesWithoutDMASupport.join(", ") }} does not support DMA targeting. TODO: Pause or remove</b></div>
+<div ng-if="warnDMANotSupported"><b>{{ sourcesWithoutDMASupport.join(", ") }} does not support DMA targeting.</b></div>
 
 <select ui-select2="selectorConfig" ng-model="selectedLocationCode" ng-change="addLocation()" data-placeholder="Add Location">
     <option value=""></option>

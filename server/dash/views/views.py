@@ -457,7 +457,6 @@ class AdGroupSources(api_common.BaseApiView):
             raise exc.ForbiddenError('{} media source for ad group {} already exists.'.format(source.name, ad_group_id))
 
         if not self._complies_with_target_regions(source, ad_group.get_current_settings()):
-            # TODO: text
             raise exc.ValidationError('{} media source can not be added because it does not support DMA targeting.')
 
         ad_group_source = models.AdGroupSource(
