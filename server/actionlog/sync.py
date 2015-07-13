@@ -209,7 +209,7 @@ class AdGroupSync(BaseSync, ISyncComposite):
         source_ids = [s.id for s in self.sources]
         for ags in self.real_ad_group.adgroupsource_set.all():
             if ags.source.id not in source_ids:
-                # source not included in filter
+                # source filtered
                 continue
 
             if not maintenance and ags.source.maintenance:
