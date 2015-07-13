@@ -240,17 +240,28 @@
     pk: 1
 
 -   fields:
-        created_dt: '2014-07-04T09:58:21'
+        created_dt: '2014-06-04T00:00:00'
         created_by: 1
-        ad_group: 1
-        state: 2
-        tracking_code: 'param1=foo&param2=bar'
-        display_url: 'example.com'
-        brand_name: 'Example'
-        description: 'Example description'
-        call_to_action: 'Call to action'
+        archived: True
+        ad_group: 5
     model: dash.adgroupsettings
     pk: 2
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        archived: False
+        ad_group: 2
+        tracking_code: 'param1=foo&param2=bar'
+        enable_ga_tracking: False
+        target_devices: ['desktop', 'mobile']
+        target_regions: ['UK', 'US', 'CA']
+        brand_name: 'Brand Name'
+        display_url: 'displayurl.com'
+        start_date: '2015-03-02'
+        end_date: '2015-04-02'
+    model: dash.adgroupsettings
+    pk: 3
 
 # test adgroup
 
@@ -609,42 +620,6 @@
         archived: True
     model: dash.campaignsettings
     pk: 2
-
-# test adgroupsettings
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        created_by: 1
-        ad_group: 1
-        state: 2
-        display_url: 'example.com'
-        brand_name: 'Example'
-        description: 'Example description'
-        call_to_action: 'Call to action'
-    model: dash.adgroupsettings
-    pk: 1
-
--   fields:
-        created_dt: '2014-06-04T00:00:00'
-        created_by: 1
-        archived: True
-        ad_group: 5
-    model: dash.adgroupsettings
-    pk: 5
-
--   fields:
-        created_dt: '2014-06-04T00:00:00'
-        created_by: 1
-        archived: False
-        ad_group: 2
-        target_devices: ['desktop', 'mobile']
-        target_regions: ['UK', 'US', 'CA']
-        brand_name: 'Brand Name'
-        display_url: 'displayurl.com'
-        start_date: '2015-03-02'
-        end_date: '2015-04-02'
-    model: dash.adgroupsettings
-    pk: 6
 
 # test defaultsourcesettings
 

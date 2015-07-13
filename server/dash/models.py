@@ -812,6 +812,16 @@ class AdGroup(models.Model):
             new_settings.archived = False
             new_settings.save(request)
 
+    def get_test_tracking_params(self):
+        settings = self.get_current_settings()
+        tracking_codes = settings.get_tracking_codes()
+
+        if not settings.enable_ga_tracking:
+            return tracking_codes
+
+        tracking_ids = url_helper.get_tracking_id_params(self.id, 'z1')
+        return utils.url_helper.combine_tracking_codes(tracking_codes, tracking_ids)
+
     def save(self, request, *args, **kwargs):
         self.modified_by = request.user
         super(AdGroup, self).save(*args, **kwargs)

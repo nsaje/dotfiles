@@ -206,10 +206,7 @@ def _clean_url(url, ad_group):
     except ValidationError:
         raise ValidationError('Invalid URL')
 
-    tracking_codes = url_helper.combine_tracking_codes(
-        ad_group.get_current_settings().get_tracking_codes(),
-        url_helper.get_tracking_id_params(ad_group.id, 'z1')
-    )
+    tracking_codes = ad_group.get_test_tracking_params()
     url_with_tracking_codes = url_helper.add_tracking_codes_to_url(url, tracking_codes)
 
     if _is_content_unreachable(url_with_tracking_codes):

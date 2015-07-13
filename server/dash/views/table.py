@@ -1188,12 +1188,8 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         stats = {s['content_ad']: s for s in stats}
         rows = []
 
-        tracking_codes = utils.url_helper.combine_tracking_codes(
-            ad_group.get_current_settings().get_tracking_codes(),
-            url_helper.get_tracking_id_params(ad_group.id, 'z1')
-        )
-
         is_demo = ad_group in models.AdGroup.demo_objects.all()
+        tracking_codes = ad_group.get_test_tracking_params()
 
         for content_ad in content_ads:
             stat = stats.get(content_ad.id, {})
