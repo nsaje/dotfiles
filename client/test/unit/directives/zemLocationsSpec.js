@@ -43,12 +43,14 @@ describe('zemLocations', function() {
         $scope.selectedCodes = ['US', 'GB', 'SI'];
         $scope.$digest();
         expect($scope.selectedCodes).toEqual(['US', 'GB', 'SI']);
+        expect(isolate.showUndo()).toBeFalsy();
 
         addLocation('693');
 
         expect($scope.selectedCodes).toEqual(['GB', 'SI', '693']);
-        expect(isolate.selectedDMASubsetOfUS.length).toBe(1); // undo message ON
-        expect(isolate.selectedUS).toBeFalsy();
+        expect(isolate.selectedDMAs.length).toBe(1);
+        expect(isolate.previousSelection).toEqual(['US', 'GB', 'SI']);
+        expect(isolate.showUndo()).toBeTruthy();
 
         isolate.undo();
 
@@ -60,12 +62,14 @@ describe('zemLocations', function() {
         $scope.selectedCodes = ['693', 'GB', 'SI'];
         $scope.$digest();
         expect($scope.selectedCodes).toEqual(['693', 'GB', 'SI']);
+        expect(isolate.showUndo()).toBeFalsy();
 
         addLocation('US');
 
         expect($scope.selectedCodes).toEqual(['GB', 'SI', 'US']);
-        expect(isolate.selectedDMASubsetOfUS.length).toBe(1); // undo message ON
-        expect(isolate.selectedUS).toBeTruthy();
+        expect(isolate.selectedDMAs.length).toBe(1);
+        expect(isolate.previousSelection).toEqual(['693', 'GB', 'SI']);
+        expect(isolate.showUndo()).toBeTruthy();
 
         isolate.undo();
 

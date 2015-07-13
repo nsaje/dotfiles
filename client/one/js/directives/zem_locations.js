@@ -14,16 +14,9 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
             $scope.config = config;
 
             $scope.previousSelection = undefined;
-            $scope.selectedDMASubsetOfUS = undefined;
-            $scope.selectedUS = false;
+            $scope.selectedDMAs = undefined;
 
-            $scope.dmaNotSupportedText = undefined;
-
-            $scope.$watch('sourcesWithoutDMASupport', function(newValue, oldValue) {
-                if($scope.sourcesWithoutDMASupport && $scope.sourcesWithoutDMASupport.length) {
-                    $scope.dmaNotSupportedText = $scope.sourcesWithoutDMASupport.join(", ") + " does not support DMA targeting.";
-                }
-            });
+            $scope.selectedLocationCode = undefined;
 
             $scope.selectedLocations = function() {
                 if (!$scope.selectedLocationCodes)
@@ -41,7 +34,13 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                 return locations;
             };
 
-            $scope.selectedLocationCode = undefined;
+            var dmaNotSupportedText = undefined;
+
+            $scope.$watch('sourcesWithoutDMASupport', function(newValue, oldValue) {
+                if($scope.sourcesWithoutDMASupport && $scope.sourcesWithoutDMASupport.length) {
+                    dmaNotSupportedText = $scope.sourcesWithoutDMASupport.join(", ") + " does not support DMA targeting.";
+                }
+            });
 
             var formatSelection = function(object) {
                 if (!object.id) {
@@ -59,8 +58,8 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
 
                 element.text(object.text);
 
-                if ($scope.dmaNotSupportedText) {
-                    element.attr('popover', $scope.dmaNotSupportedText);
+                if (dmaNotSupportedText) {
+                    element.attr('popover', dmaNotSupportedText);
                     element.attr('popover-trigger', 'mouseenter');
                     element.attr('popover-placement', 'right');
                     element.attr('popover-append-to-body', 'true');
@@ -100,8 +99,78 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                 }
             };
 
+            var filterSelectedLocations = function(filterFn) {
+                var filtered = [];
+                for (var location, i=0; i<$scope.selectedLocationCodes.length; i++) {
+                    location = regions.getByCode($scope.selectedLocationCodes[i]);
+                    if (filterFn(location)) {
+                        filtered.push(location);
+                    }
+                }
+                return filtered;
+            };
+
+            var getSomeDMANames = function(additionalDMA) {
+                var dmas = [];
+
+                if (additionalDMA) {
+                    dmas.push(additionalDMA);
+                }
+
+                filterSelectedLocations(function(location) {
+                    if (regions.isDMA(location) && dmas.length <= 4) {
+                        dmas.push((dmas.length == 3) ? '...': location.name);
+                    }
+                    return false;
+                });
+
+                return dmas;
+            };
+
+            var getUndoProperties = function() {
+                // when US is selected remove DMAs (because they are a subset of US)
+                // and add undo functionality that can undo the removal. Same for the opposite
+                // situation
+                var someDMAs, properSelection = [],
+                    selectedLocation = regions.getByCode($scope.selectedLocationCode);
+
+                if ($scope.selectedLocationCode === 'US') {
+                    someDMAs = getSomeDMANames();
+                    properSelection = filterSelectedLocations(function(location) {
+                        return !regions.isDMA(location);
+                    });
+
+                } else if (regions.isDMA(selectedLocation)) {
+                    someDMAs = getSomeDMANames(selectedLocation.name);
+                    properSelection = filterSelectedLocations(function(location) {
+                        return location.code !== 'US';
+                    });
+                }
+
+                if (properSelection.length > 0 && properSelection.length !== $scope.selectedLocationCodes.length) {
+                    return {
+                        properSelection: properSelection.map(function(x) { return x.code; }),
+                        selectedDMAs: someDMAs
+                    };
+                }
+
+                return;
+            };
+
+            var setUndo = function(undoProperties) {
+                // save previous state
+                $scope.previousSelection = $scope.selectedLocationCodes.slice();
+
+                $scope.selectedLocationCodes = undoProperties.properSelection;
+                $scope.selectedDMAs = undoProperties.selectedDMAs;
+            };
+
+            $scope.showUndo = function() {
+                return $scope.previousSelection && $scope.previousSelection.length > 0;
+            };
+
             $scope.addLocation = function() {
-                if (!$scope.selectedLocationCode || $scope.selectedLocationCode === undefined) {
+                if (!$scope.selectedLocationCode) {
                     return;
                 }
 
@@ -112,59 +181,9 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                 }
 
                 if ($scope.selectedLocationCodes.indexOf($scope.selectedLocationCode) < 0) {
-
-
-                    // when US is selected remove DMAs (because they are a subset of US)
-                    // and add undo functionality that can undo the removal. Same for the opposite
-                    // situation
-                    var others = [],
-                        selectedLocation = regions.getByCode($scope.selectedLocationCode);
-
-                    $scope.selectedDMASubsetOfUS = [];
-                    if ($scope.selectedLocationCode === 'US') {
-                        for (var location, i=0; i<$scope.selectedLocationCodes.length; i++) {
-                            location = regions.getByCode($scope.selectedLocationCodes[i]);
-
-                            if (regions.isDMA(location)) {
-                                $scope.selectedUS = true;
-
-                                if ($scope.selectedDMASubsetOfUS.length <= 4) {
-                                    $scope.selectedDMASubsetOfUS.push(($scope.selectedDMASubsetOfUS.length == 3 ? '...': location.name));
-                                }
-                            } else {
-                                others.push(location.code);
-                            }
-                        }
-                    } else if (regions.isDMA(selectedLocation)) {
-                        var dmas = [];
-                        for (var location, i=0; i<$scope.selectedLocationCodes.length; i++) {
-                            location = regions.getByCode($scope.selectedLocationCodes[i]);
-
-                            if (regions.isDMA(location) && dmas.length <= 3) {
-                                // max 2 DMAs, because one extra (the selected one) will be added
-                                // in case of US selection
-                                dmas.push((dmas.length == 2 ? '...': location.name));
-                            }
-
-                            if (location.code !== 'US'){
-                                others.push(location.code);
-                            }
-                        }
-
-                        if (others.length !== $scope.selectedLocationCodes.length) {
-                            $scope.selectedUS = false;
-                            $scope.selectedDMASubsetOfUS.push(selectedLocation.name);
-                            $scope.selectedDMASubsetOfUS.push.apply(dmas);
-                        }
-                    }
-
-
-                    if ($scope.selectedDMASubsetOfUS.length > 0) {
-                        // save previous state
-                        $scope.previousSelection = $scope.selectedLocationCodes.slice();
-
-                        // set state without DMAs
-                        $scope.selectedLocationCodes = others;
+                    var undoProps = getUndoProperties();
+                    if(undoProps) {
+                        setUndo(undoProps);
                     }
 
                     $scope.selectedLocationCodes.push($scope.selectedLocationCode);
@@ -181,7 +200,7 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
 
             $scope.resetWarnings = function() {
                 $scope.previousSelection = undefined;
-                $scope.selectedDMASubsetOfUS = undefined;
+                $scope.selectedDMAs = undefined;
             };
         }]
     };

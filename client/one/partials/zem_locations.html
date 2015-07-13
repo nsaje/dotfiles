@@ -1,6 +1,6 @@
 <div ng-show="selectedLocationCodes !== undefined && selectedLocationCodes.length > 0" class="selected-locations">
     <div class="location-tag" ng-repeat="location in selectedLocations()" ng-click="removeSelectedLocation(location)">
-        <span ng-if="location.type === 'D'" class="location-dma">US</span>
+        <span ng-if="regions.isDMA(location)" class="location-dma">US</span>
         <span class="location-name">
                 {{location.name}}
                 <img class="remove" ng-src="{{ config.static_url }}/one/img/x_gray.svg">
@@ -8,8 +8,8 @@
     </div>
 </div>
 
-<div ng-if="selectedDMASubsetOfUS && selectedDMASubsetOfUS.length && selectedUS"><b>{{ selectedDMASubsetOfUS.join(", ") }}</b> <ng-pluralize count="selectedDMASubsetOfUS.length" when="{'1': 'was', 'other': 'were'}"></ng-pluralize> replaced by <b>United States</b> since <ng-pluralize count="selectedDMASubsetOfUS.length" when="{'1': 'it is', 'other': 'they are'}"></ng-pluralize> a broader demographic targeting. <a href="" ng-click="undo()">Undo?</a></div>
-<div ng-if="selectedDMASubsetOfUS && selectedDMASubsetOfUS.length && !selectedUS"><b>{{ selectedDMASubsetOfUS.join(", ") }}</b> replaced <b>United States</b> because <ng-pluralize count="selectedDMASubsetOfUS.length" when="{'1': 'it is', 'other': 'they are'}"></ng-pluralize> a subset demographic targeting. <a href="" ng-click="undo()">Undo?</a></div>
+<div ng-if="showUndo() && selectedLocationCodes.indexOf('US')>=0"><b>{{ selectedDMAs.join(", ") }}</b> <ng-pluralize count="selectedDMAs.length" when="{'1': 'was', 'other': 'were'}"></ng-pluralize> replaced by <b>United States</b> since <ng-pluralize count="selectedDMAs.length" when="{'1': 'it is', 'other': 'they are'}"></ng-pluralize> a broader demographic targeting. <a href="" ng-click="undo()">Undo?</a></div>
+<div ng-if="showUndo() && selectedLocationCodes.indexOf('US')<0"><b>{{ selectedDMAs.join(", ") }}</b> replaced <b>United States</b> because <ng-pluralize count="selectedDMAs.length" when="{'1': 'it is', 'other': 'they are'}"></ng-pluralize> a subset demographic targeting. <a href="" ng-click="undo()">Undo?</a></div>
 <select ui-select2="selectorConfig" ng-model="selectedLocationCode" ng-change="addLocation()" data-placeholder="Add Location">
     <option value=""></option>
     <optgroup label="Countries">
