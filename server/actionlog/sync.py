@@ -180,7 +180,7 @@ class CampaignSync(BaseSync, ISyncComposite):
 
     @newrelic.agent.function_trace()
     def get_components(self, maintenance=False, archived=False, deprecated=False):
-        ad_groups = dash.models.AdGroup.objects.filter(campaign=self.obj)
+        ad_groups = dash.models.AdGroup.objects.filter(campaign=self.obj).prefetch_related('adgroupsource_set')
         if not archived:
             ad_groups = ad_groups.exclude_archived()
 
@@ -197,7 +197,10 @@ class AdGroupSync(BaseSync, ISyncComposite):
         super(AdGroupSync, self).__init__(obj, sources=sources)
         self.real_ad_group = self.obj
         if self.obj in dash.models.AdGroup.demo_objects.all():
-            self.real_ad_group = dash.models.DemoAdGroupRealAdGroup.objects.get(demo_ad_group=self.obj).real_ad_group
+            self.real_ad_group = dash.models.DemoAdGroupRealAdGroup.objects\
+                                                                   .get(demo_ad_group=self.obj)\
+                                                                   .select_related('real_ad_group')\
+                                                                   .real_ad_group
 
     @newrelic.agent.function_trace()
     def get_components(self, maintenance=False, archived=False, deprecated=False):
