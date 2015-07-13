@@ -39,31 +39,6 @@ describe('zemLocations', function() {
         expect($scope.selectedCodes).toEqual(['US']);
     });
 
-    it('warns when adding DMA and sources that do not support DMA targeting are added', function(){
-        $scope.noDMAsupport = ['Gravity'];
-        $scope.selectedCodes = ['GB'];
-        $scope.$digest();
-
-        expect(isolate.warnDMANotSupported).toBeFalsy();
-
-        addLocation('693');
-
-        expect($scope.selectedCodes).toEqual(['GB']);
-        expect(isolate.warnDMANotSupported).toBeTruthy();
-    });
-
-    it('allows adding DMA when all sources support DMA targeting', function(){
-        $scope.noDMAsupport = [];
-        $scope.$digest();
-
-        expect(isolate.warnDMANotSupported).toBeFalsy();
-
-        addLocation('693');
-
-        expect($scope.selectedCodes).toEqual(['693']);
-        expect(isolate.warnDMANotSupported).toBeFalsy();
-    });
-
     it('can undo when DMA is added and US is already selected', function() {
         $scope.selectedCodes = ['US', 'GB', 'SI'];
         $scope.$digest();

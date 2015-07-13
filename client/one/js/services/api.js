@@ -795,7 +795,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     deferred.resolve({
                         settings: resource,
                         actionIsWaiting: data.data.action_is_waiting,
-                        sourcesWithoutDMASupport: data.data.sources_without_DMA_support
+                        sourcesWithoutDMASupport: data.data.sources_without_dma_support
                     });
                 }).
                 error(function(data, status, headers, config) {

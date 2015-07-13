@@ -14,6 +14,7 @@ from django.contrib.postgres.fields import ArrayField
 import utils.string_helper
 
 from dash import constants
+from dash import regions
 from utils import encryption_helpers
 from utils import statsd_helper
 from utils import exc
@@ -1015,6 +1016,9 @@ class AdGroupSettings(SettingsBase):
         dt = self._convert_date_utc_datetime(self.end_date)
         dt += datetime.timedelta(days=1)
         return dt
+
+    def targets_dma(self):
+        return any([(tr in regions.DMA_BY_CODE) for tr in self.target_regions])
 
     @classmethod
     def get_defaults_dict(cls):

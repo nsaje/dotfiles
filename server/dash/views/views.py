@@ -485,11 +485,7 @@ class AdGroupSources(api_common.BaseApiView):
         settings.save(request)
 
     def _complies_with_target_regions(self, source, ad_group_settings):
-        if helpers.filter_dma_unsupporting_sources([source]) and\
-           any([(tr in regions.DMA_BY_CODE) for tr in ad_group_settings.target_regions]):
-            return False
-
-        return True
+        return not (helpers.filter_dma_unsupporting_sources([source]) and ad_group_settings.targets_dma())
 
 
 class Account(api_common.BaseApiView):

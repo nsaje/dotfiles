@@ -16,7 +16,14 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
             $scope.previousSelection = undefined;
             $scope.selectedDMASubsetOfUS = undefined;
             $scope.selectedUS = false;
-            $scope.warnDMANotSupported = false;
+
+            $scope.dmaNotSupportedText = undefined;
+
+            $scope.$watch('sourcesWithoutDMASupport', function(newValue, oldValue) {
+                if($scope.sourcesWithoutDMASupport && $scope.sourcesWithoutDMASupport.length) {
+                    $scope.dmaNotSupportedText = $scope.sourcesWithoutDMASupport.join(", ") + " does not support DMA targeting.";
+                }
+            });
 
             $scope.selectedLocations = function() {
                 if (!$scope.selectedLocationCodes)
@@ -47,10 +54,25 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                     return object.text;
                 }
 
-                var element = angular.element(document.createElement('span')),
+                var element = angular.element(document.createElement('div')),
                     dmaTag = angular.element(document.createElement('span'));
 
                 element.text(object.text);
+
+                if ($scope.dmaNotSupportedText) {
+                    element.attr('popover', $scope.dmaNotSupportedText);
+                    element.attr('popover-trigger', 'mouseenter');
+                    element.attr('popover-placement', 'right');
+                    element.attr('popover-append-to-body', 'true');
+
+                    // hide immediately without animation - solves a glitch when
+                    // the element is selected
+                    element.attr('popover-animation', 'false');
+                    element.on('$destroy', function() {
+                        element.trigger('mouseleave');
+                    });
+                }
+
                 dmaTag.text('DMA');
                 dmaTag.addClass('location-dma-tag');
                 var internal = $compile(dmaTag)($scope);
@@ -62,7 +84,8 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
             $scope.selectorConfig = {
                 allowClear: true,
                 placeholder: 'Search',
-                formatInputTooShort: 'type to start searching',
+                formatInputTooShort: 'Search for Countries or DMA Codes',
+                minimumInputLength: 1,
                 formatNoMatches: 'no matches found',
                 dropdownAutoWidth: 'true',
                 formatResult: formatSelection
@@ -90,21 +113,12 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
 
                 if ($scope.selectedLocationCodes.indexOf($scope.selectedLocationCode) < 0) {
 
-                    var selectedLocation = regions.getByCode($scope.selectedLocationCode);
-
-                    // check if all media sources support DMA targeting
-                    if (selectedLocation.type === 'D' && $scope.sourcesWithoutDMASupport
-                        && $scope.sourcesWithoutDMASupport.length > 0) {
-
-                            $scope.warnDMANotSupported = true;
-                            $scope.selectedLocationCode = '';
-                            return;
-                    }
 
                     // when US is selected remove DMAs (because they are a subset of US)
                     // and add undo functionality that can undo the removal. Same for the opposite
                     // situation
-                    var others = [];
+                    var others = [],
+                        selectedLocation = regions.getByCode($scope.selectedLocationCode);
 
                     $scope.selectedDMASubsetOfUS = [];
                     if ($scope.selectedLocationCode === 'US') {
@@ -168,7 +182,6 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
             $scope.resetWarnings = function() {
                 $scope.previousSelection = undefined;
                 $scope.selectedDMASubsetOfUS = undefined;
-                $scope.warnDMANotSupported = false;
             };
         }]
     };
