@@ -121,7 +121,7 @@ class AdGroupSettingsForm(forms.Form):
         target_regions = self.cleaned_data.get('target_regions')
 
         if 'US' in target_regions and any([tr in regions.DMA_BY_CODE for tr in target_regions]):
-            raise forms.ValidationError('US and DMA TODO text')
+            raise forms.ValidationError('DMAs are a subset of United States demographic targeting.')
 
         return target_regions
 

@@ -1,4 +1,4 @@
-/*globals oneApp*/
+/*globals oneApp,constants*/
 oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', function ($scope, $state, api, regions) {
     $scope.settings = {};
     $scope.actionIsWaiting = false;
@@ -78,7 +78,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
                 $scope.updateBreadcrumbAndTitle();
                 $scope.saveRequestInProgress = false;
                 $scope.saved = true;
-                $scope.setAdGroupPaused($scope.settings.state == 2);
+                $scope.setAdGroupPaused($scope.settings.state === constants.adGroupSettingsState.INACTIVE);
             },
             function (data) {
                 $scope.errors = data;
