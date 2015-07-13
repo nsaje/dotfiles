@@ -204,7 +204,7 @@ class AdGroupSync(BaseSync, ISyncComposite):
 
     @newrelic.agent.function_trace()
     def get_components(self, maintenance=False, archived=False, deprecated=False):
-        qs = dash.models.AdGroupSource.objects.filter(ad_group=self.real_ad_group, source__in=self.sources)
+        qs = self.real_ad_group.adgroupsource_set.filter(source__in=self.sources)
         if not maintenance:
             qs = qs.filter(source__maintenance=False)
         if not deprecated:
