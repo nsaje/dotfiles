@@ -21,3 +21,6 @@ cron:
 
 - hosts: [knot01.zemanta.com]
   job: '15,45 * * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py monitor_content_ads > /dev/null 2>&1'
+
+- hosts: [knot01.zemanta.com]
+  job: '30 16 * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py send_supply_report_emails > /dev/null 2>&1'
