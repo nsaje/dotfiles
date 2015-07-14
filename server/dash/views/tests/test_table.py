@@ -668,6 +668,26 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             'message': 'Please contact support to enable this source.'
         })
 
+    def test_get_editable_fields_status_setting_no_dma_support(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_source_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.target_regions = ['693']
+
+        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        view = views.table.SourcesTable()
+
+        result = view._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This source can not be enabled because it does not support DMA targeting.'
+        })
+
     def test_get_editable_fields_bid_cpc_enabled(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
 
