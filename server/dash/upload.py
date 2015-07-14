@@ -98,21 +98,25 @@ def _process_callback(batch, ad_group_id, ad_group_sources, filename, request, r
 def _save_error_report(rows, filename):
     string = StringIO.StringIO()
 
-    has_crop_areas_data = False
-    for idx, row in enumerate(rows):
-        if row.get('crop_areas') is not None and row['crop_areas'] != '':
-            has_crop_areas_data = True
-            break
+    fields = ['url', 'title', 'image_url']
 
-    if has_crop_areas_data:
-        writer = unicodecsv.DictWriter(string, ['url', 'title', 'image_url', 'crop_areas', 'errors'])
-    else:
-        writer = unicodecsv.DictWriter(string, ['url', 'title', 'image_url', 'errors'])
+    if any(row.get('crop_areas') for row in rows):
+        fields.append('crop_areas')
+
+    if any(row.get('tracker_urls') for row in rows):
+        fields.append('tracker_urls')
+
+    fields.append('errors')
+    writer = unicodecsv.DictWriter(string, fields)
 
     writer.writeheader()
     for row in rows:
-        if not has_crop_areas_data:
+        if 'crop_areas' not in fields and 'crop_areas' in row:
             del row['crop_areas']
+
+        if 'tracker_urls' not in fields and 'tracker_urls' in row:
+            del row['tracker_urls']
+
         writer.writerow(row)
 
     content = string.getvalue()
@@ -153,6 +157,7 @@ def _create_objects(data, batch, ad_group_id, ad_group_sources):
         title=data['title'],
         batch=batch,
         ad_group_id=ad_group_id,
+        tracker_urls=data['tracker_urls']
     )
 
     content_ad_sources = []
@@ -175,11 +180,13 @@ def _clean_row(batch, ad_group, row):
         url = row.get('url')
         image_url = row.get('image_url')
         crop_areas = row.get('crop_areas')
+        tracker_urls_string = row.get('tracker_urls')
 
         cleaners = {
             'title': partial(_clean_title, title),
             'url': partial(_clean_url, url, ad_group),
-            'image': partial(_clean_image, image_url, crop_areas)
+            'image': partial(_clean_image, image_url, crop_areas),
+            'tracker_urls': partial(_clean_tracker_urls, tracker_urls_string)
         }
 
         errors = []
@@ -213,6 +220,26 @@ def _clean_url(url, ad_group):
         raise ValidationError('Content unreachable')
 
     return url
+
+
+def _clean_tracker_urls(tracker_urls_string):
+    if tracker_urls_string is None:
+        return None
+
+    tracker_urls = tracker_urls_string.strip().split(' ')
+
+    result = []
+    validate_url = validators.URLValidator(schemes=['https'])
+
+    for url in tracker_urls:
+        try:
+            validate_url(url)
+        except ValidationError:
+            raise ValidationError('Invalid tracker URLs')
+
+        result.append(url)
+
+    return result
 
 
 def _is_content_unreachable(url):

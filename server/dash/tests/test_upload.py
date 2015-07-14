@@ -67,17 +67,42 @@ http://example.com,test title,http://example.com/image,\n'''.replace("\n", '\r\n
             self.error_report)
 
 
-@patch('dash.upload.urllib2.urlopen')
-@patch('dash.upload.image_helper.process_image')
 class CleanRowTest(TestCase):
     fixtures = ['test_api.yaml']
 
-    def _run_clean_row(self, url, title, image_url, crop_areas):
+    def setUp(self):
+        # default test data
+        self.url = 'http://example.com'
+        self.title = 'test title'
+        self.image_url = 'http://example.com/image'
+        self.crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
+        self.tracker_urls = 'https://example.com/p.gif'
+
+        self.image_id = 'test_image_id'
+        self.image_width = 100
+        self.image_height = 200
+        self.image_hash = "123"
+
+        self.process_image_patcher = patch('dash.upload.image_helper.process_image')
+        self.mock_process_image = self.process_image_patcher.start()
+        self.mock_process_image.return_value = (
+            self.image_id, self.image_width, self.image_height, self.image_hash)
+
+        self.urlopen_patcher = patch('dash.upload.urllib2.urlopen')
+        self.mock_urlopen = self.urlopen_patcher.start()
+        self.mock_urlopen.return_value = Mock(code=httplib.OK)
+
+    def tearDown(self):
+        self.process_image_patcher.stop()
+        self.urlopen_patcher.stop()
+
+    def _run_clean_row(self):
         row = {
-            'url': url,
-            'title': title,
-            'image_url': image_url,
-            'crop_areas': crop_areas
+            'url': self.url,
+            'title': self.title,
+            'image_url': self.image_url,
+            'crop_areas': self.crop_areas,
+            'tracker_urls': self.tracker_urls
         }
 
         batch_name = 'Test batch name'
@@ -90,196 +115,186 @@ class CleanRowTest(TestCase):
 
         return data, errors
 
-    def test_clean_row(self, mock_process_image, mock_urlopen):
-        image_id = 'test_image_id'
-        image_width = 100
-        image_height = 200
-        image_hash = "123"
-        mock_process_image.return_value = image_id, image_width, image_height, image_hash
-        mock_urlopen.return_value = Mock(code=httplib.OK)
-
-        url = 'http://example.com'
-        title = 'test title'
-        image_url = 'http://example.com/image'
-        crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
-
-        data, errors = self._run_clean_row(url, title, image_url, crop_areas)
+    def test_clean_row(self):
+        data, errors = self._run_clean_row()
 
         self.assertEqual(data, {
             'image': {
-                'id': image_id,
-                'width': image_width,
-                'height': image_height,
-                'hash': image_hash
+                'id': self.image_id,
+                'width': self.image_width,
+                'height': self.image_height,
+                'hash': self.image_hash
             },
-            'title': title,
-            'url': url
+            'title': self.title,
+            'tracker_urls': self.tracker_urls.split(' '),
+            'url': self.url
         })
         self.assertEqual(errors, [])
 
-    def test_invalid_title(self, mock_process_image, mock_urlopen):
-        image_id = 'test_image_id'
-        image_width = 100
-        image_height = 200
-        image_hash = "123"
-        mock_process_image.return_value = image_id, image_width, image_height, image_hash
-        mock_urlopen.return_value = Mock(code=httplib.OK)
-
-        url = 'http://example.com'
-        title = ''
-        image_url = 'http://example.com/image'
-        crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
-
-        data, errors = self._run_clean_row(url, title, image_url, crop_areas)
+    def test_invalid_title(self):
+        self.title = ''
+        data, errors = self._run_clean_row()
 
         self.assertEqual(data, {
             'image': {
-                'id': image_id,
-                'width': image_width,
-                'height': image_height,
-                'hash': image_hash
+                'id': self.image_id,
+                'width': self.image_width,
+                'height': self.image_height,
+                'hash': self.image_hash
             },
-            'url': url
+            'tracker_urls': self.tracker_urls.split(' '),
+            'url': self.url
         })
         self.assertEqual(errors, ['Missing title'])
 
-    def test_url_without_protocol(self, mock_process_image, mock_urlopen):
-        image_id = 'test_image_id'
-        image_width = 100
-        image_height = 200
-        image_hash = "123"
-        mock_process_image.return_value = image_id, image_width, image_height, image_hash
-        mock_urlopen.return_value = Mock(code=httplib.OK)
-
-        url = 'example.com'
-        title = 'test_title'
-        image_url = 'http://example.com/image'
-        crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
-
-        data, errors = self._run_clean_row(url, title, image_url, crop_areas)
+    def test_url_without_protocol(self):
+        self.url = 'example.com'
+        data, errors = self._run_clean_row()
 
         self.assertEqual(data, {
             'image': {
-                'id': image_id,
-                'width': image_width,
-                'height': image_height,
-                'hash': image_hash
+                'id': self.image_id,
+                'width': self.image_width,
+                'height': self.image_height,
+                'hash': self.image_hash
             },
-            'url': 'http://{}'.format(url),
-            'title': title
+            'url': 'http://{}'.format(self.url),
+            'title': self.title,
+            'tracker_urls': self.tracker_urls.split(' ')
         })
         self.assertEqual(errors, [])
 
-    def test_invalid_url(self, mock_process_image, mock_urlopen):
-        image_id = 'test_image_id'
-        image_width = 100
-        image_height = 200
-        image_hash = "123"
-        mock_process_image.return_value = image_id, image_width, image_height, image_hash
-        mock_urlopen.return_value = Mock(code=httplib.OK)
-
-        url = 'example'
-        title = 'test_title'
-        image_url = 'http://example.com/image'
-        crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
-
-        data, errors = self._run_clean_row(url, title, image_url, crop_areas)
+    def test_invalid_url(self):
+        self.url = 'example'
+        data, errors = self._run_clean_row()
 
         self.assertEqual(data, {
             'image': {
-                'id': image_id,
-                'width': image_width,
-                'height': image_height,
-                'hash': image_hash
+                'id': self.image_id,
+                'width': self.image_width,
+                'height': self.image_height,
+                'hash': self.image_hash
             },
-            'title': title,
+            'title': self.title,
+            'tracker_urls': self.tracker_urls.split(' '),
         })
         self.assertEqual(errors, ['Invalid URL'])
 
-    def test_invalid_image_url(self, mock_process_image, mock_urlopen):
-        image_id = 'test_image_id'
-        image_width = 100
-        image_height = 200
-        image_hash = "123"
-        mock_process_image.return_value = image_id, image_width, image_height, image_hash
-        mock_urlopen.return_value = Mock(code=httplib.OK)
-
-        url = 'http://example.com'
-        title = 'test title'
-        image_url = 'example/image'
-        crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
-
-        data, errors = self._run_clean_row(url, title, image_url, crop_areas)
+    def test_invalid_image_url(self):
+        self.image_url = 'example/image'
+        data, errors = self._run_clean_row()
 
         self.assertEqual(data, {
-            'title': title,
-            'url': url
+            'title': self.title,
+            'tracker_urls': self.tracker_urls.split(' '),
+            'url': self.url
         })
         self.assertEqual(errors, ['Invalid Image URL'])
 
-    def test_invalid_crop_areas(self, mock_process_image, mock_urlopen):
-        image_id = 'test_image_id'
-        image_width = 100
-        image_height = 200
-        image_hash = "123"
-        mock_process_image.return_value = image_id, image_width, image_height, image_hash
-        mock_urlopen.return_value = Mock(code=httplib.OK)
-
-        url = 'http://example.com'
-        title = 'test title'
-        image_url = 'http://example.com/image'
-        crop_areas = '((((177, 122)))'
-
-        data, errors = self._run_clean_row(url, title, image_url, crop_areas)
+    def test_invalid_crop_areas(self):
+        self.crop_areas = '((((177, 122)))'
+        data, errors = self._run_clean_row()
 
         self.assertEqual(data, {
-            'title': title,
-            'url': url
+            'title': self.title,
+            'tracker_urls': self.tracker_urls.split(' '),
+            'url': self.url
         })
         self.assertEqual(errors, ['Invalid crop areas'])
 
-    def test_image_not_downloaded(self, mock_process_image, mock_urlopen):
-        mock_process_image.side_effect = image_helper.ImageProcessingException
-        mock_urlopen.return_value = Mock(code=httplib.OK)
+    def test_image_not_downloaded(self):
+        self.mock_process_image.side_effect = image_helper.ImageProcessingException
 
-        url = 'http://example.com'
-        title = 'test title'
-        image_url = 'http://example.com/image'
-        crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
-
-        data, errors = self._run_clean_row(url, title, image_url, crop_areas)
+        data, errors = self._run_clean_row()
 
         self.assertEqual(data, {
-            'title': title,
-            'url': url
+            'title': self.title,
+            'tracker_urls': self.tracker_urls.split(' '),
+            'url': self.url
         })
         self.assertEqual(errors, ['Image could not be processed'])
 
-    def test_content_unreachable(self, mock_process_image, mock_urlopen):
-        image_id = 'test_image_id'
-        image_width = 100
-        image_height = 200
-        image_hash = "123"
-        mock_process_image.return_value = image_id, image_width, image_height, image_hash
-        mock_urlopen.side_effect = urllib2.URLError('Error')
+    def test_content_unreachable(self):
+        self.mock_urlopen.side_effect = urllib2.URLError('Error')
 
-        url = 'http://example.com'
-        title = 'test title'
-        image_url = 'http://example.com/image'
-        crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
-
-        data, errors = self._run_clean_row(url, title, image_url, crop_areas)
+        data, errors = self._run_clean_row()
 
         self.assertEqual(data, {
             'image': {
-                'id': image_id,
-                'width': image_width,
-                'height': image_height,
-                'hash': image_hash
+                'id': self.image_id,
+                'width': self.image_width,
+                'height': self.image_height,
+                'hash': self.image_hash
             },
-            'title': title,
+            'tracker_urls': self.tracker_urls.split(' '),
+            'title': self.title,
         })
         self.assertEqual(errors, ['Content unreachable'])
+
+    def test_invalid_tracker_urls(self):
+        self.tracker_urls = 'invalid_url'
+        data, errors = self._run_clean_row()
+
+        self.assertEqual(data, {
+            'image': {
+                'id': self.image_id,
+                'width': self.image_width,
+                'height': self.image_height,
+                'hash': self.image_hash
+            },
+            'url': self.url,
+            'title': self.title,
+        })
+        self.assertEqual(errors, ['Invalid tracker URLs'])
+
+    def test_invalid_tracker_urls_not_https(self):
+        self.tracker_urls = 'http://example.com/p.gif'
+        data, errors = self._run_clean_row()
+
+        self.assertEqual(data, {
+            'image': {
+                'id': self.image_id,
+                'width': self.image_width,
+                'height': self.image_height,
+                'hash': self.image_hash
+            },
+            'url': self.url,
+            'title': self.title,
+        })
+        self.assertEqual(errors, ['Invalid tracker URLs'])
+
+    def test_multiple_tracker_urls(self):
+        self.tracker_urls = 'https://example.com/p1.gif https://example.com/p2.gif'
+        data, errors = self._run_clean_row()
+
+        self.assertEqual(data, {
+            'image': {
+                'id': self.image_id,
+                'width': self.image_width,
+                'height': self.image_height,
+                'hash': self.image_hash
+            },
+            'url': self.url,
+            'title': self.title,
+            'tracker_urls': self.tracker_urls.split(' ')
+        })
+        self.assertEqual(errors, [])
+
+    def test_invalid_multiple_tracker_urls(self):
+        self.tracker_urls = 'https://example.com/p1.gif invalid_url'
+        data, errors = self._run_clean_row()
+
+        self.assertEqual(data, {
+            'image': {
+                'id': self.image_id,
+                'width': self.image_width,
+                'height': self.image_height,
+                'hash': self.image_hash
+            },
+            'url': self.url,
+            'title': self.title,
+        })
+        self.assertEqual(errors, ['Invalid tracker URLs'])
 
 
 @patch('dash.upload.redirector_helper.insert_redirect')
@@ -310,6 +325,7 @@ class ProcessCallbackTest(TestCase):
         title = 'test title'
         image_url = 'http://example.com/image'
         crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
+        tracker_url_list = ['https://example.com/p.gif']
 
         row = {
             'url': url,
@@ -329,6 +345,7 @@ class ProcessCallbackTest(TestCase):
                 'height': image_height,
                 'hash': image_hash
             },
+            'tracker_urls': tracker_url_list,
             'title': title,
             'url': url
         }
