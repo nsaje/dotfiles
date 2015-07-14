@@ -451,7 +451,6 @@ class AdGroupAdsPlusTableTest(TestCase):
         self.assertIn('rows', result['data'])
 
     def test_get_ga_codes_disabled(self, mock_query):
-        # login without superuser permissions
         self.user = User.objects.get(pk=1)
         self.client.login(username=self.user.email, password='secret')
 
