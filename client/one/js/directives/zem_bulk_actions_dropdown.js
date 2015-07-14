@@ -23,7 +23,6 @@ oneApp.directive('zemBulkActionsDropdown', function() {
                         option = item;
                     }
                 });
-
                 var notification = option.notification;
                 var element = angular.element(document.createElement('div'));
                 if (notification) {
@@ -63,6 +62,10 @@ oneApp.directive('zemBulkActionsDropdown', function() {
                 $scope.onSelect({ selected: $scope.selectedItem });
                 $scope.selectedItem = null;
             };
+
+            $scope.$watch('checkDisabled()', function(newValue, oldValue) {
+                $scope.disabledTitleOrUndefined = $scope.checkDisabled() ? $scope.disabledTitle : undefined;
+            });
         }]
     };
 });
