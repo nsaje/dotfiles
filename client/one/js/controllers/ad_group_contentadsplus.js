@@ -754,8 +754,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 if (data.lastChange) {
                     $scope.lastChange = data.lastChange;
                     $scope.notifications = data.notifications;
-                    $scope.dataStatus = data.dataStatus;
-
+                    
+                    $scope.updateDataStatus(data.dataStatus);
                     updateTableData(data.rows, data.totals);
                 }
 
@@ -777,6 +777,15 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         });
 
         updateObject($scope.totals, totalsUpdates);
+    };
+
+    $scope.updateDataStatus = function(newDataStatus) {
+        for (var rowid in newDataStatus) {
+            var newStatus = newDataStatus[rowid];
+            if (newStatus) {
+                $scope.dataStatus[rowid] = newStatus;
+            }
+        };
     };
 
     var updateObject = function(object, updates) {

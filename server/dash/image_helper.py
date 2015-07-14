@@ -37,7 +37,6 @@ def process_image(url, crop_areas):
         except:
             raise ImageProcessingException()
         response_code = error.code
-
         if error.code == httplib.INTERNAL_SERVER_ERROR:
             status = result.get('status')
             raise ImageProcessingException(status=status)

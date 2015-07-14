@@ -111,6 +111,9 @@ class AdGroupAdsPlusTableTest(TestCase):
 
         self.assertIn('rows', result['data'])
 
+        for row in result['data']['rows']:
+            row['submission_status'] = sorted(row['submission_status'])
+
         self.assertItemsEqual(result['data']['rows'], [{
             'batch_name': 'batch 1',
             'archived': False,
@@ -134,11 +137,13 @@ class AdGroupAdsPlusTableTest(TestCase):
             'submission_status': [{
                 'name': 'AdsNative',
                 'status': 1,
-                'text': 'Pending / Paused / Media Source Paused'
+                'source_state': '',
+                'text': 'Pending / Paused'
             }, {
                 'name': 'Gravity',
                 'status': 2,
-                'text': 'Approved / Paused / Media Source Paused'
+                'source_state': '(paused)',
+                'text': 'Approved / Paused'
             }],
             'title': u'Test Article unicode Čžš',
             'upload_time': '2015-02-22T19:00:00',
@@ -555,11 +560,13 @@ class AdGroupAdsPlusTableUpdatesTest(TestCase):
             '1': {
                 'submission_status': [{
                     'status': 1,
-                    'text': 'Pending / Paused / Media Source Paused',
+                    'source_state': '',
+                    'text': 'Pending / Paused',
                     'name': 'AdsNative'
                 }, {
                     'status': 2,
-                    'text': 'Approved / Paused / Media Source Paused',
+                    'source_state': '(paused)',
+                    'text': 'Approved / Paused',
                     'name': 'Gravity'
                 }],
                 'status_setting': 1
