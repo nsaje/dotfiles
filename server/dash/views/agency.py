@@ -91,65 +91,62 @@ class AdGroupSettings(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_put')
     def put(self, request, ad_group_id):
-        try:
-            if not request.user.has_perm('dash.settings_view'):
-                raise exc.MissingDataError()
+        if not request.user.has_perm('dash.settings_view'):
+            raise exc.MissingDataError()
 
-            ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
-            previous_ad_group_name = ad_group.name
+        ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
+        previous_ad_group_name = ad_group.name
 
-            current_settings = ad_group.get_current_settings()
+        current_settings = ad_group.get_current_settings()
 
-            resource = json.loads(request.body)
+        resource = json.loads(request.body)
 
-            form = forms.AdGroupSettingsForm(resource.get('settings', {}))
-            if not form.is_valid():
-                raise exc.ValidationError(errors=dict(form.errors))
+        form = forms.AdGroupSettingsForm(resource.get('settings', {}))
+        if not form.is_valid():
+            raise exc.ValidationError(errors=dict(form.errors))
 
-            self.set_ad_group(ad_group, form.cleaned_data)
+        self.set_ad_group(ad_group, form.cleaned_data)
 
-            settings = current_settings.copy_settings()
-            self.set_settings(settings, form.cleaned_data,
-                              request.user.has_perm('zemauth.can_toggle_ga_performance_tracking'))
+        settings = current_settings.copy_settings()
+        self.set_settings(settings, form.cleaned_data,
+                          request.user.has_perm('zemauth.can_toggle_ga_performance_tracking'))
 
-            actionlogs_to_send = []
-            with transaction.atomic():
-                order = actionlog_models.ActionLogOrder.objects.create(
-                    order_type=actionlog_constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
-                )
-                ad_group.save(request)
-                settings.save(request)
+        actionlogs_to_send = []
+        with transaction.atomic():
+            order = actionlog_models.ActionLogOrder.objects.create(
+                order_type=actionlog_constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
+            )
+            ad_group.save(request)
+            settings.save(request)
 
-                if current_settings.state == constants.AdGroupSettingsState.INACTIVE \
-                        and settings.state == constants.AdGroupSettingsState.ACTIVE:
-                    actionlogs_to_send.extend(actionlog_api.init_enable_ad_group(
-                        ad_group, request, order=order, send=False))
+            if current_settings.state == constants.AdGroupSettingsState.INACTIVE \
+                    and settings.state == constants.AdGroupSettingsState.ACTIVE:
+                actionlogs_to_send.extend(actionlog_api.init_enable_ad_group(
+                    ad_group, request, order=order, send=False))
 
-                if current_settings.state == constants.AdGroupSettingsState.ACTIVE \
-                        and settings.state == constants.AdGroupSettingsState.INACTIVE:
-                    actionlogs_to_send.extend(actionlog_api.init_pause_ad_group(
-                        ad_group, request, order=order, send=False))
+            if current_settings.state == constants.AdGroupSettingsState.ACTIVE \
+                    and settings.state == constants.AdGroupSettingsState.INACTIVE:
+                actionlogs_to_send.extend(actionlog_api.init_pause_ad_group(
+                    ad_group, request, order=order, send=False))
 
-                current_settings.ad_group_name = previous_ad_group_name
-                settings.ad_group_name = ad_group.name
+            current_settings.ad_group_name = previous_ad_group_name
+            settings.ad_group_name = ad_group.name
 
-                actionlogs_to_send.extend(api.order_ad_group_settings_update(ad_group, current_settings, settings, request, send=False))
+            actionlogs_to_send.extend(api.order_ad_group_settings_update(ad_group, current_settings, settings, request, send=False))
 
-            user = request.user
-            changes = current_settings.get_setting_changes(settings)
-            if changes:
-                send_ad_group_settings_change_mail_if_necessary(ad_group, user, request)
+        user = request.user
+        changes = current_settings.get_setting_changes(settings)
+        if changes:
+            send_ad_group_settings_change_mail_if_necessary(ad_group, user, request)
 
-            zwei_actions.send_multiple(actionlogs_to_send)
+        zwei_actions.send_multiple(actionlogs_to_send)
 
-            response = {
-                'settings': self.get_dict(settings, ad_group),
-                'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group)
-            }
+        response = {
+            'settings': self.get_dict(settings, ad_group),
+            'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group)
+        }
 
-            return self.create_api_response(response)
-        except Exception as e:
-            print e
+        return self.create_api_response(response)
 
     def get_dict(self, settings, ad_group):
         result = {}
