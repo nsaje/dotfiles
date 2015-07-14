@@ -375,11 +375,11 @@ describe('Media sources and ads', function () {
 
 describe('bulk actions', function () {
     function bulkPause() {
-        element(by.css('zem-bulk-actions-dropdown > .show-rows a')).click();
+        element(by.css('zem-bulk-actions-dropdown > span > .show-rows a')).click();
         element(by.css('#select2-drop ul li:nth-child(1)')).click();
     }
     function bulkResume() {
-        element(by.css('zem-bulk-actions-dropdown > .show-rows a')).click();
+        element(by.css('zem-bulk-actions-dropdown > span > .show-rows a')).click();
         element(by.css('#select2-drop ul li:nth-child(2)')).click();
     }
     function checkRowPaused(row) {
@@ -405,14 +405,14 @@ describe('bulk actions', function () {
         tabs.adGroup.ads.click();
 
         // Bulk button disabled and second ad unckecked
-        expect(element.all(by.css('zem-bulk-actions-dropdown span.ng-hide')).count()).toBe(0);
+        expect(element.all(by.css('zem-bulk-actions-dropdown span div.select2-container-disabled')).count()).toBe(1);
         expect(selectCellAll('.page-ad-group-ads-plus', 2, 1, 'input:checked').count()).toBe(0);
         
         // Select first ad
         selectCell('.page-ad-group-ads-plus', 2, 1, 'input').click();
 
         // Bulk button enabled and ad selected
-        expect(element.all(by.css('zem-bulk-actions-dropdown span.ng-hide')).count()).toBe(1);
+        expect(element.all(by.css('zem-bulk-actions-dropdown span div.select2-container-disabled')).count()).toBe(0);
         expect(selectCellAll('.page-ad-group-ads-plus', 2, 1, 'input:checked').count()).toBe(1);
         
         checkRowActive(2);
