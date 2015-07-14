@@ -12,6 +12,8 @@ from django.http import JsonResponse
 
 from django.conf import settings
 
+import newrelic.agent
+
 import actionlog.models
 import actionlog.constants
 import actionlog.sync
@@ -29,6 +31,7 @@ logger = logging.getLogger(__name__)
 
 @csrf_exempt
 def zwei_callback(request, action_id):
+    newrelic.agent.set_background_task(flag=True)
     logger.info('Received zwei callback: %s', action_id)
 
     _validate_callback(request, action_id)
