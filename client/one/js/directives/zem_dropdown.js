@@ -1,7 +1,7 @@
 /* globals oneApp */
 "use strict";
 
-oneApp.directive('zemBulkActionsDropdown', function() {
+oneApp.directive('zemDropdown', function() {
     return {
         restrict: 'E',
         scope: {
@@ -14,7 +14,7 @@ oneApp.directive('zemBulkActionsDropdown', function() {
             cssClass: '@zemCssClass',
             noMatchesPlaceholder: '@zemNoMatchesPlaceholder'
         },
-        templateUrl: '/partials/zem_bulk_actions_dropdown.html',
+        templateUrl: '/partials/zem_dropdown.html',
         controller: ['$scope', '$compile', '$element', '$attrs', function ($scope, $compile, $element, $attrs) {
             var formatSelection = function(object) {
                 var option;
