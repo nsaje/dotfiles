@@ -22,7 +22,7 @@ class Command(BaseCommand):
 
         recipients = reports.models.SupplyReportRecipient.objects.all()
         if len(recipients) == 0:
-            print('No recipients.')
+            logger.info('No recipients.')
             return
 
         source_ids = [recipient.source.pk for recipient in recipients]
