@@ -1,6 +1,7 @@
-import datetime
 import dash.models
 import newrelic.agent
+
+from datetime import datetime, timedelta  # use import from in order to be able to mock it in tests
 
 import actionlog.models
 import actionlog.constants
@@ -23,11 +24,11 @@ class BaseSync(object):
         self.sources = sources
 
     @newrelic.agent.function_trace()
-    def get_latest_success_by_child(self, recompute=True, include_level_archived=False, include_deprecated=False):
+    def get_latest_success_by_child(self, recompute=True, include_level_archived=False):
         return {
             child_sync.obj.id: _min_none(child_sync.get_latest_success_by_child(
                 recompute,
-            ).values()) for child_sync in self.get_components(archived=include_level_archived, deprecated=include_deprecated)
+            ).values()) for child_sync in self.get_components(archived=include_level_archived)
         }
 
     @newrelic.agent.function_trace()
@@ -156,7 +157,7 @@ class GlobalSync(BaseSync, ISyncComposite):
 
     def _add_demo_accounts_sync_times(self, result):
         demo_accounts = dash.models.Account.demo_objects.all()
-        now = datetime.datetime.now()
+        now = datetime.now()
         for account in demo_accounts:
             result[account.id] = now
         return result
@@ -174,6 +175,80 @@ class AccountSync(BaseSync, ISyncComposite):
             campaign_sync = CampaignSync(campaign, sources=self.sources)
             if len(list(campaign_sync.get_components(maintenance=maintenance, deprecated=deprecated))) > 0:
                 yield campaign_sync
+
+    def _get_ad_group_sources(self, include_level_archived, include_maintenance, include_deprecated):
+        campaigns = dash.models.Campaign.objects.filter(account=self.obj)
+        if not include_level_archived:
+            campaigns = campaigns.exclude_archived()
+
+        ad_groups = dash.models.AdGroup.objects\
+                                       .filter(campaign__in=campaigns)\
+                                       .exclude_archived()\
+                                       .prefetch_related('adgroupsource_set__source')
+        demo_ad_group_ids = set([dag.id for dag in dash.models.AdGroup.demo_objects.all()])
+        demo2real = dash.models.DemoAdGroupRealAdGroup.objects\
+                                                      .select_related('real_ad_group')\
+                                                      .prefetch_related('real_ad_group__adgroupsource_set__source')\
+                                                      .all()
+        source_ids = [s.id for s in self.sources]
+
+        result = []
+        for ad_group in ad_groups:
+            if ad_group.id in demo_ad_group_ids:
+                # assumes that exactly one real ad group exists for a given demo ad group
+                found = False
+                for d2r in demo2real:
+                    if d2r.demo_ad_group_id == ad_group.id:
+                        ad_group = d2r.real_ad_group
+                        found = True
+                        break
+
+                assert found, 'Demo ad group not associated to any demo ad group'
+
+            for ags in ad_group.adgroupsource_set.all():
+                if ags.source.id not in source_ids:
+                    # source filtered
+                    continue
+
+                if not include_maintenance and ags.source.maintenance:
+                    continue
+
+                if not include_deprecated and ags.source.deprecated:
+                    continue
+
+                result.append(ags)
+
+        return result
+
+    def get_latest_success_by_child(self, include_level_archived=False):
+        result = {}
+
+        ad_group_sources = self._get_ad_group_sources(include_level_archived, False, False)
+        for ags in ad_group_sources:
+            ags_last_sync = ags.last_successful_sync_dt
+            if ags.ad_group.campaign_id not in result:
+                result[ags.ad_group.campaign_id] = ags_last_sync
+
+            result[ags.ad_group.campaign_id] = _min_none(
+                [result[ags.ad_group.campaign_id], ags_last_sync]
+            )
+
+        return result
+
+    def get_latest_source_success(self, include_maintenance=False, include_deprecated=False):
+        result = {}
+
+        ad_group_sources = self._get_ad_group_sources(False, include_maintenance, include_deprecated)
+        for ags in ad_group_sources:
+            ags_last_sync = ags.last_successful_sync_dt
+            if ags.source_id not in result:
+                result[ags.source_id] = ags_last_sync
+
+            result[ags.source_id] = _min_none(
+                [result[ags.source_id], ags_last_sync]
+            )
+
+        return result
 
 
 class CampaignSync(BaseSync, ISyncComposite):
@@ -347,13 +422,13 @@ class AdGroupSourceSync(BaseSync):
         start_dt = None
         latest_sync_dt = self._get_latest_success(recompute=False)
         if latest_sync_dt:
-            start_dt = latest_sync_dt.date() - datetime.timedelta(days=settings.LAST_N_DAY_REPORTS - 1)
+            start_dt = latest_sync_dt.date() - timedelta(days=settings.LAST_N_DAY_REPORTS - 1)
         else:
             return last_n_days(settings.LAST_N_DAY_REPORTS)
         dates = [start_dt]
-        today = datetime.datetime.utcnow().date()
+        today = datetime.utcnow().date()
         while dates[-1] < today:
-            dates.append(dates[-1] + datetime.timedelta(days=1))
+            dates.append(dates[-1] + timedelta(days=1))
         assert(dates[-1] == today)
         return reversed(dates)
 

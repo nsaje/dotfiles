@@ -186,10 +186,9 @@ class Account(models.Model):
         def exclude_archived(self):
             archived_settings = AccountSettings.objects.\
                 distinct('account_id').\
-                order_by('account_id', '-created_dt').\
-                select_related('account')
+                order_by('account_id', '-created_dt')
 
-            return self.exclude(pk__in=[s.account.id for s in archived_settings if s.archived])
+            return self.exclude(pk__in=[s.account_id for s in archived_settings if s.archived])
 
 
 class Campaign(models.Model, PermissionMixin):
@@ -313,10 +312,9 @@ class Campaign(models.Model, PermissionMixin):
         def exclude_archived(self):
             archived_settings = CampaignSettings.objects.\
                 distinct('campaign_id').\
-                order_by('campaign_id', '-created_dt').\
-                select_related('campaign')
+                order_by('campaign_id', '-created_dt')
 
-            return self.exclude(pk__in=[s.campaign.id for s in archived_settings if s.archived])
+            return self.exclude(pk__in=[s.campaign_id for s in archived_settings if s.archived])
 
 
 class SettingsBase(models.Model):
@@ -838,10 +836,9 @@ class AdGroup(models.Model):
         def exclude_archived(self):
             archived_settings = AdGroupSettings.objects.\
                 distinct('ad_group_id').\
-                order_by('ad_group_id', '-created_dt').\
-                select_related('ad_group')
+                order_by('ad_group_id', '-created_dt')
 
-            return self.exclude(pk__in=[s.ad_group.id for s in archived_settings if s.archived])
+            return self.exclude(pk__in=[s.ad_group_id for s in archived_settings if s.archived])
 
     class Meta:
         ordering = ('name',)

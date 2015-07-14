@@ -331,7 +331,7 @@ class AdGroupTestCase(TestCase):
     def test_queryset_exclude_archived(self):
         qs = models.AdGroup.objects.all().exclude_archived()
 
-        self.assertEqual(len(qs), 6)
+        self.assertEqual(len(qs), 8)
 
 
 class CampaignTestCase(TestCase):
@@ -340,7 +340,7 @@ class CampaignTestCase(TestCase):
     def test_queryset_exclude_archived(self):
         qs = models.Campaign.objects.all().exclude_archived()
 
-        self.assertEqual(len(qs), 4)
+        self.assertEqual(len(qs), 5)
 
 
 class AccountTestCase(TestCase):
@@ -349,4 +349,4 @@ class AccountTestCase(TestCase):
     def test_queryset_exclude_archived(self):
         qs = models.Account.objects.all().exclude_archived()
 
-        self.assertEqual(len(qs), 2)
+        self.assertEqual(len(qs), 3)
