@@ -13,20 +13,6 @@ import utils.email_helper
 logger = logging.getLogger(__name__)
 
 
-email_subject = 'Zemanta Daily Stats'
-email_body = '''
-Hello,
-
-Statistics for %(date)s.
-
-Impressions: %(impressions)d
-Spend: %(cost)s
-
-Best regards,
-Zemanta
-'''
-
-
 class Command(BaseCommand):
     def handle(self, *args, **options):
         today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
