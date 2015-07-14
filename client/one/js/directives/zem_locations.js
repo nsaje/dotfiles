@@ -34,11 +34,12 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                 return locations;
             };
 
-            var dmaNotSupportedText = undefined;
+            $scope.dmaNotSupportedText = undefined;
 
             $scope.$watch('sourcesWithoutDMASupport', function(newValue, oldValue) {
                 if($scope.sourcesWithoutDMASupport && $scope.sourcesWithoutDMASupport.length) {
-                    dmaNotSupportedText = $scope.sourcesWithoutDMASupport.join(", ") + " does not support DMA targeting.";
+                    $scope.dmaNotSupportedText = $scope.sourcesWithoutDMASupport.join(", ") +
+                        ($scope.sourcesWithoutDMASupport.length > 1 ? "do" : "does") + " not support DMA targeting.";
                 }
             });
 
@@ -58,8 +59,8 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
 
                 element.text(object.text);
 
-                if (dmaNotSupportedText) {
-                    element.attr('popover', dmaNotSupportedText);
+                if ($scope.dmaNotSupportedText) {
+                    element.attr('popover', $scope.dmaNotSupportedText);
                     element.attr('popover-trigger', 'mouseenter');
                     element.attr('popover-placement', 'right');
                     element.attr('popover-append-to-body', 'true');
