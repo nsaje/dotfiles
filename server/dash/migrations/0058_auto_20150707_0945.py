@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='sourceaction',
             name='action',
-            field=models.IntegerField(serialize=False, primary_key=True, choices=[(7, b'Can modify end date'), (4, b'Can manage content ads'), (8, b'Can modify device targeting'), (3, b'Can update daily budget automatically'), (6, b'Can modify start date'), (9, b'Can modify tracking codes'), (1, b'Can update state'), (2, b'Can update CPC'), (14, b'Can modify ad group IAB category manually'), (11, b'Can modify ad group IAB category automatically'), (13, b'Can update daily budget manually'), (10, b'Can modify adgroup name'), (5, b'Has 3rd party dashboard'), (15, b'Can modify DMA targeting'), (16, b'Can modify targeting by country'), (12, b'Update tracking codes on content ads')]),
+            field=models.IntegerField(serialize=False, primary_key=True, choices=[(7, b'Can modify end date'), (4, b'Can manage content ads'), (8, b'Can modify device targeting'), (3, b'Can update daily budget automatically'), (17, b'Can modify DMA targeting manually'), (6, b'Can modify start date'), (9, b'Can modify tracking codes'), (1, b'Can update state'), (2, b'Can update CPC'), (14, b'Can modify ad group IAB category manually'), (11, b'Can modify ad group IAB category automatically'), (13, b'Can update daily budget manually'), (10, b'Can modify adgroup name'), (5, b'Has 3rd party dashboard'), (16, b'Can modify targeting by country'), (15, b'Can modify DMA targeting automatically'), (12, b'Update tracking codes on content ads')]),
         ),
         migrations.RunPython(code=forwards_code, reverse_code=None)
     ]

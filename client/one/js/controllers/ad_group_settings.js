@@ -1,6 +1,7 @@
 /*globals oneApp,constants*/
 oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', function ($scope, $state, api, regions) {
     $scope.settings = {};
+    $scope.sourcesWithoutDMASupport = [];
     $scope.actionIsWaiting = false;
     $scope.errors = {};
     $scope.regions = regions;
@@ -29,13 +30,27 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
         }
     };
 
+    var setSourcesWithoutDMASupport = function(adGroupSources) {
+        $scope.sourcesWithoutDMASupport = [];
+        if(!adGroupSources) {
+            return;
+        }
+        
+        for (var source, i=0; i < adGroupSources.length; i++) {
+            source = adGroupSources[i];
+            if (source.sourceState === constants.adGroupSourceSettingsState.ACTIVE && !source.supportsDMATargeting) {
+                $scope.sourcesWithoutDMASupport.push(source.sourceName);
+            }
+        }
+    };
+
     $scope.getSettings = function (id) {
         api.adGroupSettings.get(id).then(
             function (data) {
                 $scope.settings = data.settings;
                 $scope.actionIsWaiting = data.actionIsWaiting;
-                $scope.sourcesWithoutDMASupport = data.sourcesWithoutDMASupport;
-                $scope.setAdGroupPaused($scope.settings.state === 2);
+                setSourcesWithoutDMASupport(data.adGroupSources);
+                $scope.setAdGroupPaused($scope.settings.state === constants.adGroupSettingsState.INACTIVE);
             },
             function (data) {
                 // error
@@ -53,6 +68,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
             function (data) {
                 $scope.settings = data.settings;
                 $scope.actionIsWaiting = data.actionIsWaiting;
+                setSourcesWithoutDMASupport(data.adGroupSources);
                 $scope.saveRequestInProgress = false;
                 $scope.discarded = true;
             },

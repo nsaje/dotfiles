@@ -82,15 +82,22 @@ class AdGroupSettings(api_common.BaseApiView):
 
         active_ad_group_sources = helpers.get_active_ad_group_sources(models.AdGroup, [ad_group])
         ad_group_sources_states = helpers.get_ad_group_sources_states(active_ad_group_sources)
-        sources_without_dma_support = helpers.filter_dma_unsupporting_sources([s.ad_group_source.source for s
-                                                                               in ad_group_sources_states])
+
+        ad_group_sources = []
+        for source_state in ad_group_sources_states:
+            ad_group_sources.append({
+                'id': source_state.ad_group_source.id,
+                'source_state': source_state.state,
+                'source_name': source_state.ad_group_source.source.name,
+                'supports_dma_targeting': source_state.ad_group_source.source.source_type.supports_dma_targeting()
+            })
 
         settings = ad_group.get_current_settings()
 
         response = {
             'settings': self.get_dict(settings, ad_group),
             'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
-            'sources_without_dma_support': [s.name for s in sources_without_dma_support]
+            'ad_group_sources': ad_group_sources
         }
 
         return self.create_api_response(response)

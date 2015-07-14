@@ -442,7 +442,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
             elif field_name == 'target_regions':
                 diff = set(new_settings.target_regions).symmetric_difference(set(current_settings.target_regions))
 
-                if source.can_modify_country_targeting() or source.can_modify_dma_targeting():
+                if source.can_modify_country_targeting() or source.can_modify_dma_targeting_automatic():
                     actions.extend(
                         actionlog.api.set_ad_group_source_settings(
                             {field_name: new_field_value},
@@ -466,7 +466,8 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
 
                 did_dmas_change = len([tr for tr in diff if tr in regions.DMA_BY_CODE]) > 0
 
-                if did_dmas_change and not source.can_modify_dma_targeting():
+                if did_dmas_change and not source.can_modify_dma_targeting_automatic() and\
+                   source.can_modify_dma_targeting_manual():
                     new_dma_targeting = [tr for tr in new_field_value if tr in regions.DMA_BY_CODE]
                     actionlog.api.init_set_ad_group_manual_property(
                         ad_group_source,

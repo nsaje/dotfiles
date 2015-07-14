@@ -148,8 +148,9 @@ class SourceAction(ConstantBase):
     UPDATE_TRACKING_CODES_ON_CONTENT_ADS = 12
     CAN_UPDATE_DAILY_BUDGET_MANUAL = 13
     CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL = 14
-    CAN_MODIFY_DMA_TARGETING = 15
+    CAN_MODIFY_DMA_TARGETING_AUTOMATIC = 15
     CAN_MODIFY_COUNTRY_TARGETING = 16
+    CAN_MODIFY_DMA_TARGETING_MANUAL = 17
 
     _VALUES = {
         CAN_UPDATE_STATE: 'Can update state',
@@ -160,7 +161,8 @@ class SourceAction(ConstantBase):
         CAN_MODIFY_START_DATE: 'Can modify start date',
         CAN_MODIFY_END_DATE: 'Can modify end date',
         CAN_MODIFY_DEVICE_TARGETING: 'Can modify device targeting',
-        CAN_MODIFY_DMA_TARGETING: 'Can modify DMA targeting',
+        CAN_MODIFY_DMA_TARGETING_AUTOMATIC: 'Can modify DMA targeting automatically',
+        CAN_MODIFY_DMA_TARGETING_MANUAL: 'Can modify DMA targeting manually',
         CAN_MODIFY_COUNTRY_TARGETING: 'Can modify targeting by country',
         CAN_MODIFY_TRACKING_CODES: 'Can modify tracking codes',
         CAN_MODIFY_AD_GROUP_NAME: 'Can modify adgroup name',

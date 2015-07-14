@@ -542,8 +542,11 @@ class SourceType(models.Model):
     def can_modify_device_targeting(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_DEVICE_TARGETING).exists()
 
-    def can_modify_dma_targeting(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING).exists()
+    def can_modify_dma_targeting_automatic(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC).exists()
+
+    def can_modify_dma_targeting_manual(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL).exists()
 
     def can_modify_country_targeting(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING).exists()
@@ -564,6 +567,9 @@ class SourceType(models.Model):
         return self.available_actions.filter(
             action=constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS
         ).exists()
+
+    def supports_dma_targeting(self):
+        return self.can_modify_dma_targeting_manual() or self.can_modify_dma_targeting_automatic()
 
     def __str__(self):
         return self.type
@@ -636,8 +642,11 @@ class Source(models.Model):
     def can_modify_device_targeting(self):
         return self.source_type.can_modify_device_targeting() and not self.maintenance and not self.deprecated
 
-    def can_modify_dma_targeting(self):
-        return self.source_type.can_modify_dma_targeting() and not self.maintenance and not self.deprecated
+    def can_modify_dma_targeting_automatic(self):
+        return self.source_type.can_modify_dma_targeting_automatic() and not self.maintenance and not self.deprecated
+
+    def can_modify_dma_targeting_manual(self):
+        return self.source_type.can_modify_dma_targeting_manual() and not self.maintenance and not self.deprecated
 
     def can_modify_country_targeting(self):
         return self.source_type.can_modify_country_targeting() and not self.maintenance and not self.deprecated

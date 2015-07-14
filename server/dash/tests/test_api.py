@@ -281,7 +281,7 @@ class UpdateAdGroupSourceSettings(TestCase):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.add(
             models.SourceAction.objects.get(
-                action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING
+                action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC
             )
         )
         ad_group_source.source.source_type.available_actions.add(
@@ -315,6 +315,11 @@ class UpdateAdGroupSourceSettings(TestCase):
                 action=constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
             )
         )
+        ad_group_source.source.source_type.available_actions.add(
+            models.SourceAction.objects.get(
+                action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+            )
+        )
 
         adgs1 = models.AdGroupSettings()
         adgs2 = models.AdGroupSettings()
@@ -335,11 +340,29 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.assertEqual(len(manual_actions), 1)
         self.assertEqual(manual_actions[0].payload, {'property': 'target_regions_dma', 'value': ['693']})
 
+    def test_target_regions_no_dma_action(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.target_regions = ['694', '693']
+
+        ret = api.order_ad_group_settings_update(
+            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
+
+        self.assertEqual(0, len(ret))
+
+        manual_actions = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action_type=actionlog.constants.ActionType.MANUAL
+        )
+        self.assertEqual(len(manual_actions), 0)
+
     def test_target_regions_manual_country_and_automatic_dma_action(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.add(
             models.SourceAction.objects.get(
-                action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING
+                action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC
             )
         )
 
@@ -364,6 +387,11 @@ class UpdateAdGroupSourceSettings(TestCase):
 
     def test_target_regions_manual_country_and_manual_dma_action(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.source_type.available_actions.add(
+            models.SourceAction.objects.get(
+                action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+            )
+        )
 
         adgs1 = models.AdGroupSettings()
         adgs2 = models.AdGroupSettings()

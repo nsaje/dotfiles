@@ -82,7 +82,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 sources.push({
                     id: source.id,
                     name: source.name,
-                    dmaTargetingCompatible: source.dma_targeting_compatible
+                    canTargetExistingRegions: source.can_target_existing_regions
                 });
             }
 
@@ -733,6 +733,21 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             };
         }
 
+        function convertAdGroupSourcesFromApi(adGroupSources) {
+            var sources = [];
+            for (var source, i=0; i < adGroupSources.length; i++) {
+                source = adGroupSources[i];
+                sources.push({
+                    id: source.id,
+                    sourceState: source.source_state,
+                    sourceName: source.source_name,
+                    supportsDMATargeting: source.supports_dma_targeting
+                });
+            }
+
+            return sources;
+        }
+
         function convertToApi(settings) {
             var targetDevices = [];
             settings.targetDevices.forEach(function (item) {
@@ -795,7 +810,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     deferred.resolve({
                         settings: resource,
                         actionIsWaiting: data.data.action_is_waiting,
-                        sourcesWithoutDMASupport: data.data.sources_without_dma_support
+                        adGroupSources: convertAdGroupSourcesFromApi(data.data.ad_group_sources)
                     });
                 }).
                 error(function(data, status, headers, config) {

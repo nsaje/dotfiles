@@ -640,8 +640,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                         name: source.name,
                         value: source.id,
                         hasPermission: true,
-                        disabled: (!source.dmaTargetingCompatible),
-                        notification: (!source.dmaTargetingCompatible ? 'Turn off DMA targeting in Settings to add ' + source.name : undefined)
+                        disabled: !source.canTargetExistingRegions,
+                        notification: (!source.canTargetExistingRegions ? 'Turn off DMA targeting in Settings to add ' + source.name : undefined)
                     });
                 }
 

@@ -423,8 +423,8 @@ class AdGroupSources(api_common.BaseApiView):
             sources.append({
                 'id': source_settings.source.id,
                 'name': source_settings.source.name,
-                'dma_targeting_compatible': self._complies_with_target_regions(source_settings.source,
-                                                                               ad_group_settings)
+                'can_target_existing_regions': self._can_target_existing_regions(source_settings.source,
+                                                                                 ad_group_settings)
             })
 
         sources_waiting = set([ad_group_source.source.name for ad_group_source
@@ -456,7 +456,7 @@ class AdGroupSources(api_common.BaseApiView):
         if models.AdGroupSource.objects.filter(source=source, ad_group=ad_group).exists():
             raise exc.ForbiddenError('{} media source for ad group {} already exists.'.format(source.name, ad_group_id))
 
-        if not self._complies_with_target_regions(source, ad_group.get_current_settings()):
+        if not self._can_target_existing_regions(source, ad_group.get_current_settings()):
             raise exc.ValidationError('{} media source can not be added because it does not support DMA targeting.'\
                                       .format(source.name))
 
@@ -485,8 +485,8 @@ class AdGroupSources(api_common.BaseApiView):
         settings.changes_text = changes_text
         settings.save(request)
 
-    def _complies_with_target_regions(self, source, ad_group_settings):
-        return not (helpers.filter_dma_unsupporting_sources([source]) and ad_group_settings.targets_dma())
+    def _can_target_existing_regions(self, source, ad_group_settings):
+        return source.source_type.supports_dma_targeting() and ad_group_settings.targets_dma()
 
 
 class Account(api_common.BaseApiView):

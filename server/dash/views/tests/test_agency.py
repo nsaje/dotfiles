@@ -10,6 +10,7 @@ from django.contrib.auth.models import Permission
 
 from zemauth.models import User
 from dash import models
+from dash import constants
 
 
 @patch('dash.views.agency.api.order_ad_group_settings_update')
@@ -193,8 +194,23 @@ class AdGroupSettingsTest(TestCase):
         self.assertFalse(response_dict['success'])
         self.assertIn('target_regions', response_dict['data']['errors'])
 
-    def test_get_sources_without_dma_support(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+    def test_get_ad_group_sources_with_settings(self, mock_actionlog_api, mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=1)
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.source_type.available_actions.add(
+            models.SourceAction.objects.get(
+                action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
+            )
+        )
+        ad_group_source.save()
+
+        ad_group_source = models.AdGroupSource.objects.get(id=2)
+        ad_group_source.source.source_type.available_actions.add(
+            models.SourceAction.objects.get(
+                action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+            )
+        )
+        ad_group_source.save()
 
         mock_actionlog_api.is_waiting_for_set_actions.return_value = True
 
@@ -205,7 +221,23 @@ class AdGroupSettingsTest(TestCase):
 
         response_dict = json.loads(response.content)
 
-        self.assertItemsEqual(response_dict['data']['sources_without_dma_support'], ['Gravity'])
+        self.assertItemsEqual(response_dict['data']['ad_group_sources'], [{
+            'source_state': 1,
+            'source_name': 'AdsNative',
+            'supports_dma_targeting': True,
+            'id': 1
+        }, {
+            'source_state': 2,
+            'source_name': 'Gravity',
+            'supports_dma_targeting': True,
+            'id': 2
+        }, {
+            'source_state': 2,
+            'source_name': 'Outbrain',
+            'supports_dma_targeting': False,
+            'id': 3
+        }])
+
 
 class AdGroupAgencyTest(TestCase):
     fixtures = ['test_views.yaml']
