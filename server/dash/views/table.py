@@ -429,8 +429,9 @@ class SourcesTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'zemauth.sources_table_get')
     @newrelic.agent.function_trace()
     def get(self, request, level_, id_=None):
-        user = request.user
+        newrelic.agent.set_transaction_name('dash.views.table:SourcesTable#%s' % (level_))
 
+        user = request.user
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         ad_group_level = False

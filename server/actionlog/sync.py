@@ -180,7 +180,7 @@ class CampaignSync(BaseSync, ISyncComposite):
 
     @newrelic.agent.function_trace()
     def get_components(self, maintenance=False, archived=False, deprecated=False):
-        ad_groups = dash.models.AdGroup.objects.filter(campaign=self.obj)
+        ad_groups = dash.models.AdGroup.objects.filter(campaign=self.obj).prefetch_related('adgroupsource_set__source')
         if not archived:
             ad_groups = ad_groups.exclude_archived()
 
@@ -197,17 +197,27 @@ class AdGroupSync(BaseSync, ISyncComposite):
         super(AdGroupSync, self).__init__(obj, sources=sources)
         self.real_ad_group = self.obj
         if self.obj in dash.models.AdGroup.demo_objects.all():
-            self.real_ad_group = dash.models.DemoAdGroupRealAdGroup.objects.get(demo_ad_group=self.obj).real_ad_group
+            self.real_ad_group = dash.models.DemoAdGroupRealAdGroup\
+                                            .objects\
+                                            .select_related('real_ad_group')\
+                                            .prefetch_related('real_ad_group__adgroupsource_set__source')\
+                                            .get(demo_ad_group=self.obj)\
+                                            .real_ad_group
 
     @newrelic.agent.function_trace()
     def get_components(self, maintenance=False, archived=False, deprecated=False):
-        qs = dash.models.AdGroupSource.objects.filter(ad_group=self.real_ad_group, source__in=self.sources)
-        if not maintenance:
-            qs = qs.filter(source__maintenance=False)
-        if not deprecated:
-            qs = qs.filter(source__deprecated=False)
+        source_ids = [s.id for s in self.sources]
+        for ags in self.real_ad_group.adgroupsource_set.all():
+            if ags.source.id not in source_ids:
+                # source filtered
+                continue
 
-        for ags in qs:
+            if not maintenance and ags.source.maintenance:
+                continue
+
+            if not deprecated and ags.source.deprecated:
+                continue
+
             yield AdGroupSourceSync(ags, sources=self.sources)
 
 

@@ -159,3 +159,35 @@ def _send_email_to_user(user, request, subject, body):
             description=message,
             details=desc,
         )
+
+
+def send_supply_report_email(email, date, impressions, cost):
+    date_str = '%d/%d/%d' % (date.month, date.day, date.year)
+    subject = u'Zemanta Report for {}'.format(date_str)
+    body = u'''
+Hello,
+
+Here are the impressions and spend for {date}.
+
+Impressions: {impressions}
+Spend: {cost}
+
+Yours truly,
+Zemanta
+    '''
+    body = body.format(
+        date=date_str,
+        impressions=impressions,
+        cost=cost
+    )
+
+    try:
+        send_mail(
+            subject,
+            body,
+            'Zemanta <{}>'.format(settings.SUPPLY_REPORTS_FROM_EMAIL),
+            [email],
+            fail_silently=False
+        )
+    except Exception as e:
+        logger.error('Supply report e-mail to %s was not sent because an exception was raised: %s', email, traceback.format_exc(e))
