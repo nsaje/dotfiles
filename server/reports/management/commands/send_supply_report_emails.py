@@ -33,12 +33,15 @@ class Command(BaseCommand):
         source_stats = {stat['source']: {'impressions': stat['impressions'], 'cost': stat['cost']} for stat in stats}
 
         for recipient in recipients:
-            if recipient.source.pk not in source_stats:
-                continue
+            impressions = 0
+            cost = 0
+            if recipient.source.pk in source_stats:
+                impressions = source_stats[recipient.source.pk]['impressions']
+                cost = source_stats[recipient.source.pk]['cost']
 
             utils.email_helper.send_supply_report_email(
                     recipient.email,
                     yesterday,
-                    source_stats[recipient.source.pk]['impressions'],
-                    source_stats[recipient.source.pk]['cost']
+                    impressions,
+                    cost
             )
