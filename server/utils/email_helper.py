@@ -175,6 +175,7 @@ Spend: {cost}
 Yours truly,
 Zemanta
 
+---
 The reporting data is an estimate. Final amounts are tallied and should be invoiced per your agreement with Zemanta.
 * All times are in Eastern Standard Time (EST).
     '''
