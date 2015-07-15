@@ -503,6 +503,7 @@ def get_data_status(objects, last_sync_messages, state_messages=None):
     return data_status
 
 
+@newrelic.agent.function_trace()
 def get_content_ad_data_status(ad_group, content_ads):
     ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
     ad_group_sources_states = get_ad_group_sources_states(ad_group_sources)

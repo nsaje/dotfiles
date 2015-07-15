@@ -1216,6 +1216,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             'ctr': stats['ctr']
         }
 
+    @newrelic.agent.function_trace()
     def _get_rows(self, content_ads, stats, ad_group, has_view_archived_permission, show_archived):
         stats = {s['content_ad']: s for s in stats}
         demo_ad_groups = models.AdGroup.demo_objects.all()
@@ -1262,6 +1263,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
 
         return rows
 
+    @newrelic.agent.function_trace()
     def _add_status_to_rows(self, user, rows, filtered_sources, ad_group):
         all_content_ad_sources = models.ContentAdSource.objects.filter(
             source=filtered_sources,
