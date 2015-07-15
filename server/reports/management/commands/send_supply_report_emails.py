@@ -6,6 +6,7 @@ import pytz
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
+import dash.models
 import reports.models
 import reports.api
 import utils.email_helper
@@ -26,7 +27,8 @@ class Command(BaseCommand):
             return
 
         source_ids = [recipient.source.pk for recipient in recipients]
-        stats = reports.api.query(yesterday, yesterday, ['source'], source=source_ids)
+        ad_groups = dash.models.AdGroup.objects.filter(is_demo=False)
+        stats = reports.api.query(yesterday, yesterday, ['source'], source=source_ids, ad_group=ad_groups)
 
         source_stats = {stat['source']: {'impressions': stat['impressions'], 'cost': stat['cost']} for stat in stats}
 
