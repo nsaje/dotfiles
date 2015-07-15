@@ -830,12 +830,12 @@ div[datepicker] {
     }
 }
 
-.select2-drop:not(.select2-drop-above) {
+.select2-drop:not(.select2-drop-above):not(.select2-drop-auto-width) {
     .border-radius(0 0 2px 2px);
     border-top: 0;
 }
 
-.select2-drop.select2-drop-above {
+.select2-drop.select2-drop-above:not(.select2-drop-auto-width) {
     .border-radius(2px 2px 0 0);
     border-bottom: 0;
 }
@@ -2439,6 +2439,56 @@ zem-submission-status {
     img {
         height: 80px;
     }
+}
+
+.selected-locations {
+    border: 1px solid #d2d2d2;
+    border-radius: 2px;
+    box-shadow: none;
+    padding: 6px 12px 11px 12px;
+    margin-top: 7px;
+    margin-bottom: 7px;
+
+    .location-tag {
+        cursor: pointer;
+        margin-right: 5px;
+        margin-top: 5px;
+        height: 28px;
+        line-height: 28px;
+        display: inline-block;
+        position: relative;
+        border-radius: 2px;
+        font-size: 13px;
+        border: 1px solid @add-filter-color;
+
+        .location-dma {
+            padding: 6px 6px 5px 6px;
+            border-right: 1px solid @add-filter-color;
+            margin: 0;
+        }
+
+        .location-name {
+            padding: 6px 27px 6px 6px;
+            margin: 0;
+            img.remove {
+                width: 7px;
+                position: absolute;
+                right: 8px;
+                top: 10px;
+                display: inline-block;
+                width: 7px;
+            }
+        }
+    }
+}
+
+.select2-result-label .location-dma-tag {
+    float: right;
+    font-size: 10px;
+    color: #d2d2d2;
+    font-weight: 600;
+    margin-left: 5px;
+    margin-top: 4px;
 }
 
 .table div.zem-selection-menu.dropdown {

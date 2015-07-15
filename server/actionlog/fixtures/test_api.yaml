@@ -238,6 +238,19 @@
     model: dash.adgroupsettings
     pk: 1
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        ad_group: 2
+        state: 2
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
+        target_regions: ['693']
+    model: dash.adgroupsettings
+    pk: 2
+
 # test adgroup
 
 -   fields:
@@ -361,10 +374,10 @@
     pk: 6
 
 -   fields:
-        source: 2
+        source: 4
         ad_group: 2
         source_campaign_key: '["fake"]'
-        source_credentials: 2
+        source_credentials: 4
         last_successful_sync_dt: '2014-06-10T09:58:21'
     model: dash.adgroupsource
     pk: 7
@@ -635,11 +648,19 @@
 # test defaultsourcesettings
 
 -   fields:
-        source: 3
-        credentials: NULL
+        source: 2
+        credentials: 2
         params: '{"create_campaign": {"exclusive_blog_ids": [123456]}}'
     model: dash.defaultsourcesettings
     pk: 1
+
+-   fields:
+        source: 3
+        credentials: 3
+        params: '{"create_campaign": {"exclusive_blog_ids": [123456]}}'
+    model: dash.defaultsourcesettings
+    pk: 2
+
 
 # test article
 

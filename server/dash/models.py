@@ -14,6 +14,7 @@ from django.contrib.postgres.fields import ArrayField
 import utils.string_helper
 
 from dash import constants
+from dash import regions
 from utils import encryption_helpers
 from utils import statsd_helper
 from utils import exc
@@ -538,8 +539,17 @@ class SourceType(models.Model):
     def can_modify_end_date(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_END_DATE).exists()
 
-    def can_modify_targeting(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_TARGETING).exists()
+    def can_modify_device_targeting(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_DEVICE_TARGETING).exists()
+
+    def can_modify_dma_targeting_automatic(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC).exists()
+
+    def can_modify_dma_targeting_manual(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL).exists()
+
+    def can_modify_country_targeting(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING).exists()
 
     def can_modify_tracking_codes(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_TRACKING_CODES).exists()
@@ -557,6 +567,9 @@ class SourceType(models.Model):
         return self.available_actions.filter(
             action=constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS
         ).exists()
+
+    def supports_dma_targeting(self):
+        return self.can_modify_dma_targeting_manual() or self.can_modify_dma_targeting_automatic()
 
     def __str__(self):
         return self.type
@@ -626,8 +639,17 @@ class Source(models.Model):
     def can_modify_end_date(self):
         return self.source_type.can_modify_end_date() and not self.maintenance and not self.deprecated
 
-    def can_modify_targeting(self):
-        return self.source_type.can_modify_targeting() and not self.maintenance and not self.deprecated
+    def can_modify_device_targeting(self):
+        return self.source_type.can_modify_device_targeting() and not self.maintenance and not self.deprecated
+
+    def can_modify_dma_targeting_automatic(self):
+        return self.source_type.can_modify_dma_targeting_automatic() and not self.maintenance and not self.deprecated
+
+    def can_modify_dma_targeting_manual(self):
+        return self.source_type.can_modify_dma_targeting_manual() and not self.maintenance and not self.deprecated
+
+    def can_modify_country_targeting(self):
+        return self.source_type.can_modify_country_targeting() and not self.maintenance and not self.deprecated
 
     def can_modify_tracking_codes(self):
         return self.source_type.can_modify_tracking_codes() and not self.maintenance and not self.deprecated
@@ -762,14 +784,7 @@ class AdGroup(models.Model):
         if settings:
             settings = settings[0]
         else:
-            settings = AdGroupSettings(
-                ad_group=self,
-                state=constants.AdGroupSettingsState.INACTIVE,
-                start_date=datetime.datetime.utcnow().date(),
-                cpc_cc=0.4000,
-                daily_budget_cc=10.0000,
-                target_devices=constants.AdTargetDevice.get_all()
-            )
+            settings = AdGroupSettings(ad_group=self, **AdGroupSettings.get_defaults_dict())
 
         return settings
 
@@ -1011,17 +1026,23 @@ class AdGroupSettings(SettingsBase):
         dt += datetime.timedelta(days=1)
         return dt
 
+    def targets_dma(self):
+        return any([(tr in regions.DMA_BY_CODE) for tr in self.target_regions])
+
     @classmethod
-    def get_default_value(cls, prop_name):
-        DEFAULTS = {
+    def get_defaults_dict(cls):
+        return {
             'state': constants.AdGroupSettingsState.INACTIVE,
             'start_date': datetime.datetime.utcnow().date(),
             'cpc_cc': 0.4000,
             'daily_budget_cc': 10.0000,
-            'target_devices': constants.AdTargetDevice.get_all()
+            'target_devices': constants.AdTargetDevice.get_all(),
+            'target_regions': ['US']
         }
 
-        return DEFAULTS.get(prop_name)
+    @classmethod
+    def get_default_value(cls, prop_name):
+        return cls.get_defaults_dict().get(prop_name)
 
     @classmethod
     def get_human_prop_name(cls, prop_name):
@@ -1031,7 +1052,7 @@ class AdGroupSettings(SettingsBase):
             'cpc_cc': 'Max CPC bid',
             'daily_budget_cc': 'Daily budget',
             'target_devices': 'Device targeting',
-            'target_regions': 'Geographic targeting',
+            'target_regions': 'Locations',
             'tracking_code': 'Tracking code',
             'state': 'State',
             'archived': 'Archived',
@@ -1059,7 +1080,7 @@ class AdGroupSettings(SettingsBase):
             value = ', '.join(constants.AdTargetDevice.get_text(x) for x in value)
         elif prop_name == 'target_regions':
             if value:
-                value = ', '.join(constants.AdTargetCountry.get_text(x) for x in value)
+                value = ', '.join(constants.AdTargetLocation.get_text(x) for x in value)
             else:
                 value = 'worldwide'
         elif prop_name in ('archived', 'enable_ga_tracking'):

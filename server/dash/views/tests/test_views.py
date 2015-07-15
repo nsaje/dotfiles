@@ -798,6 +798,8 @@ class AdGroupAdsPlusUploadTest(TestCase):
 
 
 class AdGroupSourcesTest(TestCase):
+    fixtures = ['test_api', 'test_views']
+
     def test_get_name(self):
         request = HttpRequest()
         request.user = User(id=1)
@@ -897,3 +899,27 @@ class AdGroupSourcesTest(TestCase):
 
         self.assertEqual(
             name, u'ONE:  /  /  / 123 / Outbrain')
+
+    def test_get_dma_targeting_compatible(self):
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+        ad_group_source = models.AdGroupSource.objects.get(id=3)
+        ad_group_source.source.source_type.available_actions.add(
+            models.SourceAction.objects.get(
+                action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
+            )
+        )
+
+        response = self.client.get(
+            reverse(
+                'ad_group_sources',
+                kwargs={'ad_group_id': 2}),
+            follow=True
+        )
+
+        response_dict = json.loads(response.content)
+        self.assertItemsEqual(response_dict['data']['sources'], [
+            {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False},  # should return False when DMAs used
+            {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True},
+        ])

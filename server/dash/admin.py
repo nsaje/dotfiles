@@ -80,7 +80,7 @@ class AdGroupSettingsForm(forms.ModelForm):
     class Meta:
         widgets = {
             'target_devices': forms.SelectMultiple(choices=constants.AdTargetDevice.get_choices()),
-            'target_regions': forms.SelectMultiple(choices=constants.AdTargetCountry.get_choices())
+            'target_regions': forms.SelectMultiple(choices=constants.AdTargetLocation.get_choices())
         }
 
 

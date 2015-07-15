@@ -116,6 +116,7 @@ oneApp.constant('demoDefaults', {
         angular.forEach(all, function (source) {
             if (! skip[source.id] && !source.deprecated) {
                 sources.push(source);
+                source.canTargetExistingRegions = true;
             }
         });
         return sources;

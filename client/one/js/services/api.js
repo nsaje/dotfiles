@@ -75,6 +75,23 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
     }
 
     function AdGroupSources() {
+        function convertFromApi(data) {
+            var sources = [];
+            for (var source, i=0; i<data.sources.length; i++) {
+                source = data.sources[i];
+                sources.push({
+                    id: source.id,
+                    name: source.name,
+                    canTargetExistingRegions: source.can_target_existing_regions
+                });
+            }
+
+            return {
+                sources: sources,
+                sourcesWaiting: data.sources_waiting
+            };
+        };
+
         this.get = function (id) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/sources/';
@@ -85,10 +102,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             addFilteredSources(config.params);
             $http.get(url, config).
                 success(function (data, status) {
-                    deferred.resolve({
-                        sources: data.data.sources,
-                        sourcesWaiting: data.data.sources_waiting
-                    });
+                    deferred.resolve(convertFromApi(data.data));
                 }).
                 error(function (data) {
                     deferred.reject(data);
@@ -719,6 +733,21 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             };
         }
 
+        function convertAdGroupSourcesFromApi(adGroupSources) {
+            var sources = [];
+            for (var source, i=0; i < adGroupSources.length; i++) {
+                source = adGroupSources[i];
+                sources.push({
+                    id: source.id,
+                    sourceState: source.source_state,
+                    sourceName: source.source_name,
+                    supportsDMATargeting: source.supports_dma_targeting
+                });
+            }
+
+            return sources;
+        }
+
         function convertToApi(settings) {
             var targetDevices = [];
             settings.targetDevices.forEach(function (item) {
@@ -780,7 +809,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     }
                     deferred.resolve({
                         settings: resource,
-                        actionIsWaiting: data.data.action_is_waiting
+                        actionIsWaiting: data.data.action_is_waiting,
+                        adGroupSources: convertAdGroupSourcesFromApi(data.data.ad_group_sources)
                     });
                 }).
                 error(function(data, status, headers, config) {

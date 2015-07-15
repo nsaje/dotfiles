@@ -581,13 +581,14 @@ class SourcesTable(api_common.BaseApiView):
         # if end date is in the past then we can't edit cpc and budget
         return end_utc_datetime < datetime.datetime.utcnow()
 
-    def _get_editable_fields(self, ad_group_source, ad_group_settings, user):
+    def _get_editable_fields(self, ad_group_source, ad_group_settings, ad_group_source_settings, user):
         editable_fields = {}
 
         if not user.has_perm('zemauth.set_ad_group_source_settings'):
             return editable_fields
 
-        editable_fields['status_setting'] = self._get_editable_fields_status_setting(ad_group_source)
+        editable_fields['status_setting'] = self._get_editable_fields_status_setting(ad_group_source, ad_group_settings,
+                                                                                     ad_group_source_settings)
         editable_fields['bid_cpc'] = self._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
         editable_fields['daily_budget'] = self._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
 
@@ -621,7 +622,7 @@ class SourcesTable(api_common.BaseApiView):
             'message': message
         }
 
-    def _get_editable_fields_status_setting(self, ad_group_source):
+    def _get_editable_fields_status_setting(self, ad_group_source, ad_group_settings, ad_group_source_settings):
         enabled = True
         message = None
 
@@ -629,6 +630,10 @@ class SourcesTable(api_common.BaseApiView):
            ad_group_source.ad_group.content_ads_tab_with_cms and not ad_group_source.can_manage_content_ads):
             enabled = False
             message = self._get_status_setting_disabled_message(ad_group_source)
+        elif not ad_group_source.source.source_type.supports_dma_targeting() and ad_group_settings.targets_dma()\
+                and ad_group_source_settings.state == constants.AdGroupSourceSettingsState.INACTIVE:
+            enabled = False
+            message = 'This source can not be enabled because it does not support DMA targeting.'
 
         return {
             'enabled': enabled,
@@ -760,7 +765,8 @@ class SourcesTable(api_common.BaseApiView):
 
                 ad_group_settings = level_sources_table.ad_group_settings
 
-                row['editable_fields'] = self._get_editable_fields(ad_group_source, ad_group_settings, user)
+                row['editable_fields'] = self._get_editable_fields(ad_group_source, ad_group_settings,
+                                                                   source_settings, user)
 
                 if user.has_perm('zemauth.set_ad_group_source_settings')\
                    and source_settings is not None \
