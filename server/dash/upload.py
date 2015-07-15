@@ -32,7 +32,7 @@ URL_VALIDATOR_NUM_RETRIES = 3
 S3_CONTENT_ADS_ERROR_REPORT_KEY_FORMAT = 'contentads/errors/{filename}'
 
 
-class UploadFailedException():
+class UploadFailedException(Exception):
     pass
 
 
@@ -134,6 +134,8 @@ def _upload_error_report_to_s3(content, filename):
     except Exception:
         logger.exception('Error while saving upload error report')
 
+    return None
+
 
 def _create_redirect_id(content_ad):
     try:
@@ -143,6 +145,7 @@ def _create_redirect_id(content_ad):
             content_ad.ad_group_id,
         )
         content_ad.save()
+        return []
     except Exception:
         logger.exception('Exception in create_redirect_id')
         return ['Internal server error while processing request']
