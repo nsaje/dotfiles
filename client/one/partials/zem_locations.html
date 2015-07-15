@@ -1,4 +1,5 @@
-<div ng-show="selectedLocationCodes !== undefined && selectedLocationCodes.length > 0" class="selected-locations">
+<div class="selected-locations">
+    <div class="location-tag" ng-if="!selectedLocationCodes || !selectedLocationCodes.length"><span class="location-name">Worldwide</span></div>
     <div class="location-tag" ng-repeat="location in selectedLocations()" ng-click="removeSelectedLocation(location)">
         <span ng-if="regions.isDMA(location)" class="location-dma">US</span>
         <span class="location-name">
