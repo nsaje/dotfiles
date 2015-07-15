@@ -85,7 +85,7 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                 allowClear: true,
                 placeholder: 'Search',
                 formatInputTooShort: 'Search for Countries or DMA Codes',
-                minimumInputLength: 1,
+                minimumInputLength: 2,
                 formatNoMatches: 'no matches found',
                 dropdownAutoWidth: 'true',
                 formatResult: formatSelection
@@ -100,17 +100,6 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                 }
             };
 
-            var filterSelectedLocations = function(filterFn) {
-                var filtered = [];
-                for (var location, i=0; i<$scope.selectedLocationCodes.length; i++) {
-                    location = regions.getByCode($scope.selectedLocationCodes[i]);
-                    if (filterFn(location)) {
-                        filtered.push(location);
-                    }
-                }
-                return filtered;
-            };
-
             var getSomeDMANames = function(additionalDMA) {
                 var dmas = [];
 
@@ -118,12 +107,15 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                     dmas.push(additionalDMA);
                 }
 
-                filterSelectedLocations(function(location) {
-                    if (regions.isDMA(location) && dmas.length <= 4) {
-                        dmas.push((dmas.length == 3) ? '...': location.name);
+                for (var location, i=0; i < $scope.selectedLocationCodes.length; i++) {
+                    location = regions.getByCode($scope.selectedLocationCodes[i]);
+                    if (regions.isDMA(location)) {
+                        dmas.push((dmas.length === 3) ? '...': location.name);
                     }
-                    return false;
-                });
+                    if (dmas.length === 4) {
+                        break;
+                    }
+                }
 
                 return dmas;
             };
@@ -132,30 +124,27 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                 // when US is selected remove DMAs (because they are a subset of US)
                 // and add undo functionality that can undo the removal. Same for the opposite
                 // situation
-                var someDMAs, properSelection = [],
+                var someDMAs, properSelection,
                     selectedLocation = regions.getByCode($scope.selectedLocationCode);
 
                 if ($scope.selectedLocationCode === 'US') {
                     someDMAs = getSomeDMANames();
-                    properSelection = filterSelectedLocations(function(location) {
-                        return !regions.isDMA(location);
+                    properSelection = $scope.selectedLocationCodes.filter(function(locationCode) {
+                        return !regions.isDMA(regions.getByCode(locationCode));
                     });
-
                 } else if (regions.isDMA(selectedLocation)) {
                     someDMAs = getSomeDMANames(selectedLocation.name);
-                    properSelection = filterSelectedLocations(function(location) {
-                        return location.code !== 'US';
+                    properSelection = $scope.selectedLocationCodes.filter(function(locationCode) {
+                        return locationCode !== 'US';
                     });
                 }
 
-                if (properSelection.length > 0 && properSelection.length !== $scope.selectedLocationCodes.length) {
+                if (properSelection && properSelection.length !== $scope.selectedLocationCodes.length) {
                     return {
-                        properSelection: properSelection.map(function(x) { return x.code; }),
+                        properSelection: properSelection,
                         selectedDMAs: someDMAs
                     };
                 }
-
-                return;
             };
 
             var setUndo = function(undoProperties) {
@@ -182,6 +171,7 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                 }
 
                 if ($scope.selectedLocationCodes.indexOf($scope.selectedLocationCode) < 0) {
+
                     var undoProps = getUndoProperties();
                     if(undoProps) {
                         setUndo(undoProps);
