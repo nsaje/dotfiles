@@ -1200,7 +1200,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         }
 
         if user.has_perm('zemauth.data_status_column'):
-            shown_content_ads = models.Contentad.objects.filter(id__in=[row['id'] for row in rows])
+            shown_content_ads = models.ContentAd.objects.filter(id__in=[row['id'] for row in rows])
             response_dict['data_status'] = helpers.get_content_ad_data_status(
                 ad_group,
                 shown_content_ads,
