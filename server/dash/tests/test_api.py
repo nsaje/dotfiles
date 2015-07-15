@@ -338,7 +338,7 @@ class UpdateAdGroupSourceSettings(TestCase):
             action_type=actionlog.constants.ActionType.MANUAL
         )
         self.assertEqual(len(manual_actions), 1)
-        self.assertEqual(manual_actions[0].payload, {'property': 'target_regions_dma', 'value': ['693']})
+        self.assertEqual(manual_actions[0].payload, {'property': 'target_regions_dma', 'value': ['693 Little Rock-Pine Bluff, AR']})
 
     def test_target_regions_no_dma_action(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
@@ -406,9 +406,91 @@ class UpdateAdGroupSourceSettings(TestCase):
             ad_group_source=ad_group_source,
             action_type=actionlog.constants.ActionType.MANUAL
         )
-        self.assertEqual(len(manual_actions), 2)
-        self.assertEqual(manual_actions[1].payload, {'property': 'target_regions_countries', 'value': ['GB']})
-        self.assertEqual(manual_actions[0].payload, {'property': 'target_regions_dma', 'value': ['693']})
+        self.assertItemsEqual([ma.payload for ma in manual_actions], [
+            {'property': 'target_regions_countries', 'value': ['GB']},
+            {'property': 'target_regions_dma', 'value': ['693 Little Rock-Pine Bluff, AR']}
+        ])
+
+    def test_target_regions_manual_dma_targeting_cleared(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.source_type.available_actions.add(
+            models.SourceAction.objects.get(
+                action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+            )
+        )
+
+        adgs1 = models.AdGroupSettings()
+        adgs1.target_regions = ['GB', '693']
+        adgs2 = models.AdGroupSettings()
+        adgs2.target_regions = ['GB']
+
+        ret = api.order_ad_group_settings_update(
+            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
+
+        self.assertEqual(0, len(ret))
+
+        manual_actions = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action_type=actionlog.constants.ActionType.MANUAL
+        )
+        self.assertEqual(len(manual_actions), 1)
+        self.assertEqual(manual_actions[0].payload, {'property': 'target_regions_dma', 'value': 'cleared (no DMA targeting)'})
+
+    def test_target_regions_manual_dma_manual_country_target_worldwide(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.source_type.available_actions.add(
+            models.SourceAction.objects.get(
+                action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+            )
+        )
+
+        adgs1 = models.AdGroupSettings()
+        adgs1.target_regions = ['GB', '693']
+        adgs2 = models.AdGroupSettings()
+        adgs2.target_regions = []
+
+        ret = api.order_ad_group_settings_update(
+            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
+
+        self.assertEqual(0, len(ret))
+
+        manual_actions = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action_type=actionlog.constants.ActionType.MANUAL
+        )
+        self.assertItemsEqual([ma.payload for ma in manual_actions], [
+            {'property': 'target_regions_countries', 'value': 'Worldwide'},
+            {'property': 'target_regions_dma', 'value': 'cleared (no DMA targeting)'}
+        ])
+
+    def test_target_regions_automatic_dma_manual_country_target_worldwide(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.source_type.available_actions.add(
+            models.SourceAction.objects.get(
+                action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC
+            )
+        )
+
+        adgs1 = models.AdGroupSettings()
+        adgs1.target_regions = ['GB', '693']
+        adgs2 = models.AdGroupSettings()
+        adgs2.target_regions = []
+
+        ret = api.order_ad_group_settings_update(
+            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
+
+        self.assertEqual(2, len(ret))
+        for r in ret:
+            self.assertEqual(r.action, actionlog.constants.Action.SET_CAMPAIGN_STATE)
+            self.assertEqual(r.action_type, actionlog.constants.ActionType.AUTOMATIC)
+
+        manual_actions = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action_type=actionlog.constants.ActionType.MANUAL
+        )
+        self.assertItemsEqual([ma.payload for ma in manual_actions], [
+            {'property': 'target_regions_countries', 'value': 'Worldwide'},
+        ])
 
     def test_iab_category_manual(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)

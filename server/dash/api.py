@@ -455,8 +455,13 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
 
                 did_countries_change = len([tr for tr in diff if tr in regions.COUNTRY_BY_CODE]) > 0
 
+                new_country_targeting = [tr for tr in new_field_value if tr in regions.COUNTRY_BY_CODE]
+                new_dma_targeting = [regions.DMA_BY_CODE[tr] for tr in new_field_value if tr in regions.DMA_BY_CODE]
+
                 if did_countries_change and not source.can_modify_country_targeting():
-                    new_country_targeting = [tr for tr in new_field_value if tr in regions.COUNTRY_BY_CODE]
+                    if not new_country_targeting and not new_dma_targeting:
+                        new_country_targeting = 'cleared' if new_dma_targeting else 'Worldwide'
+
                     actionlog.api.init_set_ad_group_manual_property(
                         ad_group_source,
                         request,
@@ -465,10 +470,11 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     )
 
                 did_dmas_change = len([tr for tr in diff if tr in regions.DMA_BY_CODE]) > 0
-
                 if did_dmas_change and not source.can_modify_dma_targeting_automatic() and\
                    source.can_modify_dma_targeting_manual():
-                    new_dma_targeting = [tr for tr in new_field_value if tr in regions.DMA_BY_CODE]
+                    if not new_dma_targeting:
+                        new_dma_targeting = 'cleared (no DMA targeting)'
+
                     actionlog.api.init_set_ad_group_manual_property(
                         ad_group_source,
                         request,
