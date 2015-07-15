@@ -38,8 +38,8 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
 
             $scope.$watch('sourcesWithoutDMASupport', function(newValue, oldValue) {
                 if($scope.sourcesWithoutDMASupport && $scope.sourcesWithoutDMASupport.length) {
-                    $scope.dmaNotSupportedText = $scope.sourcesWithoutDMASupport.join(", ") +
-                        ($scope.sourcesWithoutDMASupport.length > 1 ? "do" : "does") + " not support DMA targeting.";
+                    $scope.dmaNotSupportedText = "Pause " + $scope.sourcesWithoutDMASupport.join(", ") + " media " +
+                        ($scope.sourcesWithoutDMASupport.length > 1 ? "sources" : "source") + " to enable DMA targeting.";
                 }
             });
 
