@@ -1215,9 +1215,6 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         if is_demo:
             return 'http://www.example.com/{}/{}'.format(ad_group.name, content_ad.id)
 
-        if tracking_codes is None:
-            return content_ad.url
-
         return content_ad.url_with_tracking_codes(tracking_codes)
 
     def _get_rows(self, content_ads, stats, ad_group, has_view_archived_permission, show_archived):
