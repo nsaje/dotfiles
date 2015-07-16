@@ -84,10 +84,11 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
             $scope.selectorConfig = {
                 allowClear: true,
                 placeholder: 'Search',
-                formatInputTooShort: 'Search for Countries or DMA Codes',
+                formatInputTooShort: 'Search for Countries or DMA Codes<br />Ex.: "United States", "501 New York, NY"...',
                 minimumInputLength: 2,
                 formatNoMatches: 'no matches found',
                 dropdownAutoWidth: 'true',
+                dropdownCssClass: 'select2-locations',
                 formatResult: formatSelection
             };
 

@@ -1,5 +1,5 @@
-<div class="selected-locations">
-    <div class="location-tag" ng-if="!selectedLocationCodes || !selectedLocationCodes.length"><span class="location-name">Worldwide</span></div>
+<div ng-show="selectedLocationCodes" class="selected-locations">
+    <div class="location-tag" ng-if="!selectedLocationCodes.length"><span class="location-name">Worldwide</span></div>
     <div class="location-tag" ng-repeat="location in selectedLocations()" ng-click="removeSelectedLocation(location)">
         <span ng-if="regions.isDMA(location)" class="location-dma">US</span>
         <span class="location-name">
@@ -9,14 +9,14 @@
     </div>
 </div>
 
-<div ng-if="showUndo() && selectedLocationCodes.indexOf('US')>=0"><b>{{ selectedDMAs.join(", ") }}</b> <ng-pluralize count="selectedDMAs.length" when="{'1': 'was', 'other': 'were'}"></ng-pluralize> replaced by <b>United States</b> since <ng-pluralize count="selectedDMAs.length" when="{'1': 'it is', 'other': 'they are'}"></ng-pluralize> a broader demographic targeting. <a href="" ng-click="undo()">Undo?</a></div>
-<div ng-if="showUndo() && selectedLocationCodes.indexOf('US')<0"><b>{{ selectedDMAs.join(", ") }}</b> replaced <b>United States</b> because <ng-pluralize count="selectedDMAs.length" when="{'1': 'it is', 'other': 'they are'}"></ng-pluralize> a subset demographic targeting. <a href="" ng-click="undo()">Undo?</a></div>
+<div ng-if="showUndo() && selectedLocationCodes.indexOf('US')>=0"><b>{{ selectedDMAs.join(", ") }}</b> <ng-pluralize count="selectedDMAs.length" when="{'1': 'was', 'other': 'were'}"></ng-pluralize> replaced by <b>United States</b> since <ng-pluralize count="selectedDMAs.length" when="{'1': 'it is', 'other': 'they are'}"></ng-pluralize> a broader location targeting. <a href="" ng-click="undo()">Undo?</a></div>
+<div ng-if="showUndo() && selectedLocationCodes.indexOf('US')<0"><b>{{ selectedDMAs.join(", ") }}</b> replaced <b>United States</b> because <ng-pluralize count="selectedDMAs.length" when="{'1': 'it is', 'other': 'they are'}"></ng-pluralize> a subset location targeting. <a href="" ng-click="undo()">Undo?</a></div>
 <select ui-select2="selectorConfig" ng-model="selectedLocationCode" ng-change="addLocation()" data-placeholder="Add Location">
     <option value=""></option>
     <optgroup label="Countries">
         <option ng-repeat="location in regions.regions | orderBy:'name' | filter: regions.isCountry" value="{{location.code}}">{{location.name}}</option>
     </optgroup>
     <optgroup label="DMAs (United States)">
-        <option ng-repeat="location in regions.regions | orderBy:'name' | filter: regions.isDMA" value="{{location.code}}" ng-disabled="dmaNotSupportedText !== undefined">US: {{location.code}} {{location.name}}</option>
+        <option ng-repeat="location in regions.regions | orderBy:'name' | filter: regions.isDMA" value="{{location.code}}" ng-disabled="dmaNotSupportedText !== undefined">US: {{location.name}}</option>
     </optgroup>
 </select>
