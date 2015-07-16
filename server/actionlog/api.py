@@ -352,14 +352,6 @@ def _handle_error(action, e, request=None):
     action.save(request)
 
 
-def _get_ad_group_settings(ad_group):
-    s = dash.models.AdGroupSettings.objects.filter(ad_group=ad_group)
-    if s:
-        return s.latest('created_dt')
-
-    return None
-
-
 def _get_campaign_settings(campaign):
     s = dash.models.CampaignSettings.objects.filter(campaign=campaign)
     if s:
@@ -595,7 +587,7 @@ def _init_create_campaign(ad_group_source, name, request):
     )
     action.save(request)
 
-    ad_group_settings = _get_ad_group_settings(ad_group_source.ad_group)
+    ad_group_settings = ad_group_source.ad_group.get_current_settings()
     campaign_settings = _get_campaign_settings(ad_group_source.ad_group.campaign)
 
     try:

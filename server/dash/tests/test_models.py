@@ -333,6 +333,18 @@ class AdGroupTestCase(TestCase):
 
         self.assertEqual(len(qs), 6)
 
+    def test_get_test_tracking_params(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        params = ad_group.get_test_tracking_params()
+
+        self.assertEqual(params, 'param1=foo&param2=bar&_z1_adgid=1&_z1_msid=z1')
+
+    def test_get_test_tracking_params_ga_disabled(self):
+        ad_group = models.AdGroup.objects.get(pk=2)
+        params = ad_group.get_test_tracking_params()
+
+        self.assertEqual(params, 'param1=foo&param2=bar')
+
 
 class CampaignTestCase(TestCase):
     fixtures = ['test_api.yaml']

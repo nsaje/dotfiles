@@ -656,7 +656,7 @@ class ActionLogApiTestCase(TestCase):
         ).exists())
 
         ad_group_source = dashmodels.AdGroupSource.objects.get(id=5)
-        ad_group_settings = api._get_ad_group_settings(ad_group_source.ad_group)
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
 
         api.create_campaign(ad_group_source, name, request)
         action = models.ActionLog.objects.get(
@@ -682,10 +682,10 @@ class ActionLogApiTestCase(TestCase):
                         ad_group_source.get_tracking_ids(),
                     ),
                     'tracking_slug': 'yahoo',
-                    'target_regions': [],
-                    'target_devices': [],
-                    'start_date': None,
-                    'end_date': None,
+                    'target_regions': ['UK', 'US', 'CA'],
+                    'target_devices': ['desktop', 'mobile'],
+                    'start_date': '2015-03-02',
+                    'end_date': '2015-04-02',
                     'brand_name': 'Example',
                     'display_url': 'example.com',
                 },
@@ -695,7 +695,7 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action.payload, payload)
 
         ad_group_source_extra = dashmodels.AdGroupSource.objects.get(id=8)
-        ad_group_settings = api._get_ad_group_settings(ad_group_source_extra.ad_group)
+        ad_group_settings = ad_group_source_extra.ad_group.get_current_settings()
 
         api.create_campaign(ad_group_source_extra, name, request)
         action = models.ActionLog.objects.get(

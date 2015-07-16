@@ -157,7 +157,7 @@ class AdGroupSettingsTest(TestCase):
 
         response_settings_dict = json.loads(response.content)['data']['settings']
 
-        self.assertEqual(response_settings_dict['tracking_code'], '')
+        self.assertEqual(response_settings_dict['tracking_code'], 'param1=foo&param2=bar')
         self.assertEqual(response_settings_dict['enable_ga_tracking'], True)
 
     def test_put_invalid_target_region(self, mock_actionlog_api, mock_order_ad_group_settings_update):

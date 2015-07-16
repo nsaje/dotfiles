@@ -716,10 +716,8 @@ class AdGroupAdsPlusUploadTest(TestCase):
 
         return client
 
-    @patch('dash.views.views.threads.ProcessUploadThread')
-    def test_post(self, MockProcessUploadThread):
-        MockProcessUploadThread.return_value.start.return_value = None
-
+    @patch('dash.views.views.upload.process_async')
+    def test_post(self, mock_process_async):
         request = HttpRequest()
         request.user = User(id=1)
 
@@ -745,13 +743,9 @@ class AdGroupAdsPlusUploadTest(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(MockProcessUploadThread.return_value.start.called)
+        self.assertTrue(mock_process_async.called)
 
-    @patch('dash.views.views.forms.AdGroupAdsPlusUploadForm')
-    def test_validation_error(self, MockAdGroupAdsPlusUploadForm):
-        MockAdGroupAdsPlusUploadForm.return_value.is_valid.return_value = False
-        MockAdGroupAdsPlusUploadForm.return_value.errors = []
-
+    def test_validation_error(self):
         response = self._get_client().post(
             reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}), follow=True)
 
