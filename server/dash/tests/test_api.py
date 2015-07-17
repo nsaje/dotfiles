@@ -338,7 +338,7 @@ class UpdateAdGroupSourceSettings(TestCase):
             action_type=actionlog.constants.ActionType.MANUAL
         )
         self.assertEqual(len(manual_actions), 1)
-        self.assertEqual(manual_actions[0].payload, {'property': 'target_regions_dma', 'value': ['693 Little Rock-Pine Bluff, AR']})
+        self.assertEqual(manual_actions[0].payload, {'property': 'target_regions_dma', 'value': ['693 Little Rock-Pine Bluff, AR', "countries: ['GB']"]})
 
     def test_target_regions_no_dma_action(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
@@ -408,7 +408,7 @@ class UpdateAdGroupSourceSettings(TestCase):
         )
         self.assertItemsEqual([ma.payload for ma in manual_actions], [
             {'property': 'target_regions_countries', 'value': ['GB']},
-            {'property': 'target_regions_dma', 'value': ['693 Little Rock-Pine Bluff, AR']}
+            {'property': 'target_regions_dma', 'value': ['693 Little Rock-Pine Bluff, AR', "countries: ['GB']"]}
         ])
 
     def test_target_regions_manual_dma_targeting_cleared(self):
@@ -434,7 +434,7 @@ class UpdateAdGroupSourceSettings(TestCase):
             action_type=actionlog.constants.ActionType.MANUAL
         )
         self.assertEqual(len(manual_actions), 1)
-        self.assertEqual(manual_actions[0].payload, {'property': 'target_regions_dma', 'value': 'cleared (no DMA targeting)'})
+        self.assertEqual(manual_actions[0].payload, {'property': 'target_regions_dma', 'value': ['cleared (no DMA targeting)', "countries: ['GB']"]})
 
     def test_target_regions_manual_dma_manual_country_target_worldwide(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
@@ -460,7 +460,7 @@ class UpdateAdGroupSourceSettings(TestCase):
         )
         self.assertItemsEqual([ma.payload for ma in manual_actions], [
             {'property': 'target_regions_countries', 'value': 'Worldwide'},
-            {'property': 'target_regions_dma', 'value': 'cleared (no DMA targeting)'}
+            {'property': 'target_regions_dma', 'value': ['cleared (no DMA targeting)', "countries: Worldwide"]}
         ])
 
     def test_target_regions_automatic_dma_manual_country_target_worldwide(self):
