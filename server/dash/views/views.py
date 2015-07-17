@@ -854,7 +854,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
             content_ad_dicts.append({
                 'url': content_ad.url,
                 'title': content_ad.title,
-                'image_url': content_ad.get_image_url(),
+                'image_url': content_ad.get_original_image_url(),
             })
 
         filename = '{}_{}_{}_content_ads'.format(
