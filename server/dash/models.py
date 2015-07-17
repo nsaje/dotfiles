@@ -1,6 +1,7 @@
 import jsonfield
 import binascii
 import datetime
+import urlparse
 
 from decimal import Decimal
 import pytz
@@ -16,7 +17,6 @@ from dash import constants
 from dash import regions
 from utils import encryption_helpers
 from utils import statsd_helper
-from utils import url_helper
 from utils import exc
 
 
@@ -828,16 +828,6 @@ class AdGroup(models.Model):
             new_settings.archived = False
             new_settings.save(request)
 
-    def get_test_tracking_params(self):
-        settings = self.get_current_settings()
-        tracking_codes = settings.get_tracking_codes()
-
-        if not settings.enable_ga_tracking:
-            return tracking_codes
-
-        tracking_ids = url_helper.get_tracking_id_params(self.id, 'z1')
-        return utils.url_helper.combine_tracking_codes(tracking_codes, tracking_ids)
-
     def save(self, request, *args, **kwargs):
         self.modified_by = request.user
         super(AdGroup, self).save(*args, **kwargs)
@@ -895,15 +885,13 @@ class AdGroupSource(models.Model):
     )
 
     def get_tracking_ids(self):
-        msid = None
+        msid = self.source.tracking_slug or ''
         if self.source.source_type and\
            self.source.source_type.type in [
                 constants.SourceType.ZEMANTA, constants.SourceType.B1, constants.SourceType.OUTBRAIN]:
             msid = '{sourceDomain}'
-        elif self.source.tracking_slug is not None and self.source.tracking_slug != '':
-            msid = self.source.tracking_slug
 
-        return url_helper.get_tracking_id_params(self.ad_group.id, msid)
+        return '_z1_adgid={}&_z1_msid={}'.format(self.ad_group_id, msid)
 
     def get_external_name(self, new_adgroup_name=None):
         account_name = self.ad_group.campaign.account.name
@@ -1290,7 +1278,19 @@ class ContentAd(models.Model):
         ])
 
     def url_with_tracking_codes(self, tracking_codes):
-        return url_helper.add_tracking_codes_to_url(self.url, tracking_codes)
+        if not tracking_codes:
+            return self.url
+
+        parsed = list(urlparse.urlparse(self.url))
+
+        parts = []
+        if parsed[4]:
+            parts.append(parsed[4])
+        parts.append(tracking_codes)
+
+        parsed[4] = '&'.join(parts)
+
+        return urlparse.urlunparse(parsed)
 
     def __unicode__(self):
         return '{cn}(id={id}, ad_group={ad_group}, image_id={image_id}, state={state})'.format(
