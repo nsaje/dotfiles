@@ -45,6 +45,24 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
         }
     };
 
+    $scope.availableRegions = function() {
+        // In case the full country and dma list is not given to the user
+        // at least show the ones that are selected
+        var avRegions = regions.legacy.slice();
+
+        if ($scope.settings.targetRegions) {
+            for (var locationCode, found, i=0; i < $scope.settings.targetRegions.length; i++) {
+                locationCode = $scope.settings.targetRegions[i];
+                found = avRegions.filter(function(lc) { return lc.code === locationCode;});
+                if (found.length === 0) {
+                    avRegions.push(regions.getByCode(locationCode));
+                }
+            }
+        }
+
+        return avRegions;
+    };
+
     $scope.getSettings = function (id) {
         api.adGroupSettings.get(id).then(
             function (data) {
