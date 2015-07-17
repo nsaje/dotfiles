@@ -2,22 +2,18 @@ import json
 import logging
 import unicodecsv
 import StringIO
-import urllib2
-import httplib
 from functools import partial
 from multiprocessing.pool import ThreadPool
 
 from django.db import transaction
 from django.forms import ValidationError
 from django.core import validators
-from django.conf import settings
 from django.db.models import F
 
 import actionlog.zwei_actions
 
 from utils import redirector_helper
 from utils import s3helpers
-from utils import url_helper
 
 from dash import models
 from dash import api
@@ -217,7 +213,7 @@ def _clean_url(url, ad_group):
     except ValidationError:
         raise ValidationError('Invalid URL')
 
-    if not _is_content_reachable(url):
+    if not redirector_helper.validate_url(url):
         raise ValidationError('Content unreachable')
 
     return url
@@ -241,24 +237,6 @@ def _clean_tracker_urls(tracker_urls_string):
         result.append(url)
 
     return result
-
-
-def _is_content_reachable(url):
-    request = urllib2.Request(url)
-    request.add_header('User-Agent', settings.URL_VALIDATOR_USER_AGENT)
-
-    for _ in range(URL_VALIDATOR_NUM_RETRIES):
-        try:
-            response = urllib2.urlopen(request)
-        except (urllib2.HTTPError, urllib2.URLError):
-            continue
-
-        if response.code != httplib.OK:
-            continue
-
-        return True
-
-    return False
 
 
 def _clean_image(image_url, crop_areas):
