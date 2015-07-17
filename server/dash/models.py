@@ -1278,10 +1278,7 @@ class ContentAd(models.Model):
         if self.image_id is None:
             return None
 
-        return '/'.join([
-            settings.Z3_API_IMAGE_URL,
-            '{image_id}.jpg'.format(image_id=self.image_id),
-        ])
+        return '{z3_image_url}{image_id}.jpg'.format(z3_image_url=settings.Z3_API_IMAGE_URL, image_id=self.image_id)
 
     def get_image_url(self, width=None, height=None):
         if self.image_id is None:
