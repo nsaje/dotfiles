@@ -1273,6 +1273,16 @@ class ContentAd(models.Model):
 
     objects = QuerySetManager()
 
+
+    def get_original_image_url(self, width=None, height=None):
+        if self.image_id is None:
+            return None
+
+        return '/'.join([
+            settings.Z3_API_IMAGE_URL,
+            '{image_id}.jpg'.format(image_id=self.image_id),
+        ])
+
     def get_image_url(self, width=None, height=None):
         if self.image_id is None:
             return None
