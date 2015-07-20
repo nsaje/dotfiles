@@ -8,6 +8,7 @@ from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.contrib.postgres.forms import SimpleArrayField
+from django.core.exceptions import ValidationError
 
 from zemauth.models import User as ZemUser
 
@@ -155,6 +156,21 @@ class AvailableActionsField(SimpleArrayField):
 
     def prepare_value(self, value):
         return value
+
+    def validate(self, value):
+        all_actions = set([ac[0] for ac in constants.SourceAction.get_choices()])
+
+        errors = []
+        for i, el in enumerate(value):
+            if el not in all_actions:
+                errors.append(ValidationError(
+                    'Invalid source action',
+                    code='item_invalid',
+                    params={'nth': 1},
+                ))
+
+        if errors:
+            raise ValidationError(errors)
 
 
 class SourceTypeForm(forms.ModelForm):
