@@ -9,7 +9,7 @@ describe('AdGroupAdsPlusCtrl', function() {
 
     beforeEach(module(function ($provide) {
         zemFilterServiceMock = {
-            getShowArchived: function() {},
+            getShowArchived: function() { return true; },
             getFilteredSources: function() {}
         };
 
@@ -435,7 +435,7 @@ describe('AdGroupAdsPlusCtrl', function() {
             $scope.executeBulkAction('download');
 
             expect($window.open).toHaveBeenCalledWith(
-                '/api/ad_groups/1/contentads/csv/?content_ad_ids_selected=1,2&content_ad_ids_not_selected=3',
+                '/api/ad_groups/1/contentads/csv/?content_ad_ids_selected=1,2&content_ad_ids_not_selected=3&archived=true',
                 '_blank'
             );
         });
