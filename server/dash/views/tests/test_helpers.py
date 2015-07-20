@@ -327,9 +327,16 @@ class GetSelectedContentAdsTest(TestCase):
         select_batch_id = None
         content_ad_ids_selected = []
         content_ad_ids_not_selected = []
+        include_archived = True
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived
+        )
 
         self._assert_content_ads(content_ads, [1, 2, 3])
 
@@ -339,9 +346,16 @@ class GetSelectedContentAdsTest(TestCase):
         select_batch_id = None
         content_ad_ids_selected = []
         content_ad_ids_not_selected = [1]
+        include_archived = True
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived
+        )
 
         self._assert_content_ads(content_ads, [2, 3])
 
@@ -351,9 +365,16 @@ class GetSelectedContentAdsTest(TestCase):
         select_batch_id = 1
         content_ad_ids_selected = []
         content_ad_ids_not_selected = []
+        include_archived = True
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived
+        )
 
         self._assert_content_ads(content_ads, [1, 2])
 
@@ -363,9 +384,16 @@ class GetSelectedContentAdsTest(TestCase):
         select_batch_id = 1
         content_ad_ids_selected = [3]
         content_ad_ids_not_selected = []
+        include_archived = True
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived
+        )
 
         self._assert_content_ads(content_ads, [1, 2, 3])
 
@@ -375,9 +403,16 @@ class GetSelectedContentAdsTest(TestCase):
         select_batch_id = 1
         content_ad_ids_selected = []
         content_ad_ids_not_selected = [1]
+        include_archived = True
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived
+        )
 
         self._assert_content_ads(content_ads, [2])
 
@@ -387,11 +422,37 @@ class GetSelectedContentAdsTest(TestCase):
         select_batch_id = None
         content_ad_ids_selected = [1, 3]
         content_ad_ids_not_selected = []
+        include_archived = True
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived
+        )
 
         self._assert_content_ads(content_ads, [1, 3])
+
+    def test_get_content_ads_all_exclude_archived(self):
+        ad_group_id = 1
+        select_all = True
+        select_batch_id = None
+        content_ad_ids_selected = []
+        content_ad_ids_not_selected = []
+        include_archived = False
+
+        content_ads = helpers.get_selected_content_ads(
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived
+        )
+
+        self._assert_content_ads(content_ads, [1, 2])
 
     def _assert_content_ads(self, content_ads, expected_ids):
         self.assertQuerysetEqual(

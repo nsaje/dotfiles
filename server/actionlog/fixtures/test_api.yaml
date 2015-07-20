@@ -709,7 +709,7 @@
         image_width: 200
         image_height: 300
         batch: 2
-        archived: False
+        archived: True
         url: 'http://testurl.com'
         title: 'Test Article with no content_ad_sources 2'
         ad_group: 1

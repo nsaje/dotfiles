@@ -152,9 +152,9 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         return false;
     };
 
-    var updateContentAdStates = function (state, updateAll) {
+    var updateContentAdStates = function (state) {
         $scope.rows.forEach(function (row) {
-            if (updateAll || row.ad_selected) {
+            if (row.ad_selected) {
                 row.status_setting = state;
             }
         });
@@ -415,7 +415,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
     var bulkUpdateContentAds = function (contentAdIdsSelected, contentAdIdsNotSelected, state) {
-        updateContentAdStates(state, $scope.selectedAll);
+        updateContentAdStates(state);
 
         api.adGroupContentAdState.save(
             $state.params.id,
@@ -457,6 +457,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
         url += 'content_ad_ids_selected=' + contentAdIdsSelected.join(',');
         url += '&content_ad_ids_not_selected=' + contentAdIdsNotSelected.join(',');
+        url += '&archived=' + zemFilterService.getShowArchived();
 
         if ($scope.selectedAll) {
             url += '&select_all=' + $scope.selectedAll;
