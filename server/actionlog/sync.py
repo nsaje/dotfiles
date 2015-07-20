@@ -157,9 +157,9 @@ class GlobalSync(BaseSync, ISyncComposite):
 
     def _add_demo_accounts_sync_times(self, result):
         demo_accounts = dash.models.Account.demo_objects.all()
-        now = datetime.now()
+        utcnow = datetime.utcnow()
         for account in demo_accounts:
-            result[account.id] = now
+            result[account.id] = utcnow
         return result
 
 

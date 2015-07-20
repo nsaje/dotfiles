@@ -22,8 +22,8 @@ class ActionLogSyncTestCase(TestCase):
 
     @mock.patch('actionlog.sync.datetime', test_helper.MockDateTime)
     def test_global_latest_success_by_account_ignore_archived(self):
-        now = datetime.datetime.now()
-        sync.datetime.now = classmethod(lambda cls: now)
+        utcnow = datetime.datetime.utcnow()
+        sync.datetime.utcnow = classmethod(lambda cls: utcnow)
 
         latest_success_by_account = sync.GlobalSync().get_latest_success_by_account()
 
@@ -33,7 +33,7 @@ class ActionLogSyncTestCase(TestCase):
                 1: datetime.datetime(2014, 6, 10, 9, 58, 21),
                 2: None,
                 3: datetime.datetime(2014, 6, 10, 9, 58, 21),
-                4: now,
+                4: utcnow,
             })
 
     def test_global_latest_success_by_source_ignore_archived(self):
