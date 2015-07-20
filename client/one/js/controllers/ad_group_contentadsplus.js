@@ -457,6 +457,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
         url += 'content_ad_ids_selected=' + contentAdIdsSelected.join(',');
         url += '&content_ad_ids_not_selected=' + contentAdIdsNotSelected.join(',');
+        url += '&archived=' + zemFilterService.getShowArchived();
 
         if ($scope.selectedAll) {
             url += '&select_all=' + $scope.selectedAll;
