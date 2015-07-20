@@ -244,16 +244,44 @@
 # test adgroupsettings
 
 -   fields:
-        created_dt: '2014-06-04T09:58:21'
+        created_dt: '2014-06-04T00:00:00'
         created_by: 1
+        archived: False
         ad_group: 1
-        state: 2
+        tracking_code: 'param1=foo&param2=bar'
+        target_devices: ['desktop', 'mobile']
+        target_regions: ['UK', 'US', 'CA']
         display_url: 'example.com'
         brand_name: 'Example'
         description: 'Example description'
         call_to_action: 'Call to action'
+        start_date: '2015-03-02'
+        end_date: '2015-04-02'
     model: dash.adgroupsettings
     pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        archived: True
+        ad_group: 5
+    model: dash.adgroupsettings
+    pk: 2
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        archived: False
+        ad_group: 2
+        tracking_code: 'param1=foo&param2=bar'
+        enable_ga_tracking: False
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
+        target_regions: ['693']
+    model: dash.adgroupsettings
+    pk: 3
 
 # test adgroup
 
@@ -397,10 +425,10 @@
     pk: 6
 
 -   fields:
-        source: 2
+        source: 4
         ad_group: 2
         source_campaign_key: '["fake"]'
-        source_credentials: 2
+        source_credentials: 4
         last_successful_sync_dt: '2014-06-10T09:58:21'
     model: dash.adgroupsource
     pk: 7
@@ -641,50 +669,22 @@
     model: dash.campaignsettings
     pk: 2
 
-# test adgroupsettings
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        created_by: 1
-        ad_group: 1
-        state: 2
-        display_url: 'example.com'
-        brand_name: 'Example'
-        description: 'Example description'
-        call_to_action: 'Call to action'
-    model: dash.adgroupsettings
-    pk: 1
-
--   fields:
-        created_dt: '2014-06-04T00:00:00'
-        created_by: 1
-        archived: True
-        ad_group: 5
-    model: dash.adgroupsettings
-    pk: 5
-
--   fields:
-        created_dt: '2014-06-04T00:00:00'
-        created_by: 1
-        archived: False
-        ad_group: 2
-        target_devices: ['desktop', 'mobile']
-        target_regions: ['UK', 'US', 'CA']
-        brand_name: 'Brand Name'
-        display_url: 'displayurl.com'
-        start_date: '2015-03-02'
-        end_date: '2015-04-02'
-    model: dash.adgroupsettings
-    pk: 6
-
 # test defaultsourcesettings
 
 -   fields:
-        source: 3
-        credentials: NULL
+        source: 2
+        credentials: 2
         params: '{"create_campaign": {"exclusive_blog_ids": [123456]}}'
     model: dash.defaultsourcesettings
     pk: 1
+
+-   fields:
+        source: 3
+        credentials: 3
+        params: '{"create_campaign": {"exclusive_blog_ids": [123456]}}'
+    model: dash.defaultsourcesettings
+    pk: 2
+
 
 # test article
 

@@ -10,6 +10,8 @@ from django.http import HttpResponse
 from django.db import transaction
 from django.conf import settings
 
+import newrelic.agent
+
 from auth import MailGunRequestAuth, GASourceAuth
 from parse import CsvReport
 from aggregate import ReportEmail
@@ -46,6 +48,7 @@ def media_source_specified_errors(csvreport):
 
 @csrf_exempt
 def mailgun_gareps(request):
+    newrelic.agent.set_background_task(flag=True)
     if request.method != 'POST':
         logger.warning('ERROR: only POST is supported')
         return HttpResponse(status=406)

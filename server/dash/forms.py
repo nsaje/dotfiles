@@ -12,6 +12,7 @@ from django import forms
 from django.core import validators
 
 from dash import constants
+from dash import regions
 from zemauth.models import User as ZemUser
 
 
@@ -68,7 +69,7 @@ class AdGroupSettingsForm(forms.Form):
     )
     target_regions = forms.MultipleChoiceField(
         required=False,
-        choices=constants.AdTargetCountry.get_choices()
+        choices=constants.AdTargetLocation.get_choices()
     )
     tracking_code = forms.CharField(required=False)
 
@@ -115,6 +116,14 @@ class AdGroupSettingsForm(forms.Form):
                 raise forms.ValidationError(err_msg)
 
         return self.cleaned_data.get('tracking_code')
+
+    def clean_target_regions(self):
+        target_regions = self.cleaned_data.get('target_regions')
+
+        if 'US' in target_regions and any([tr in regions.DMA_BY_CODE for tr in target_regions]):
+            raise forms.ValidationError('DMAs are a subset of United States demographic targeting.')
+
+        return target_regions
 
 
 class AdGroupSourceSettingsCpcForm(forms.Form):

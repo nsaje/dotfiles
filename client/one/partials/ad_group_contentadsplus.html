@@ -23,12 +23,13 @@
             </div>
 
         <div ng-show="hasPermission('zemauth.content_ads_bulk_actions')" class="button-bar-item">
-            <zem-bulk-actions-dropdown
+            <zem-dropdown
                    zem-placeholder="Bulk Actions"
-                   zem-on-select="executeBulkAction(action)"
+                   zem-on-select="executeBulkAction(selected)"
                    zem-disabled-title="At least one Content Ad has to be selected before using Bulk Actions."
                    zem-check-disabled="!isAnythingSelected()"
-                   zem-dropdown-options="bulkActions"></zem-bulk-actions-dropdown>
+                   zem-dropdown-options="bulkActions"
+                   zem-css-class="show-rows"></zem-dropdown>
             </div>
 
             <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories"></zem-custom-table-cols>

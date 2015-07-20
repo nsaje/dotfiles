@@ -1,5 +1,5 @@
-from decimal import Decimal
 from utils.constant_base import ConstantBase
+from dash import regions
 
 
 class AdGroupSettingsState(ConstantBase):
@@ -33,24 +33,12 @@ class AdTargetDevice(ConstantBase):
     }
 
 
-class AdTargetCountry(ConstantBase):
-    # If adding a new target country, check if it will work with all supply sources
-    # in zwei, otherwise also update the mapping for each supply source
-    AUSTRALIA = 'AU'
-    CANADA = 'CA'
-    IRELAND = 'IE'
-    NEW_ZAELAND = 'NZ'
-    UNITED_KINGDOM = 'UK'
-    UNITED_STATES = 'US'
+class AdTargetLocation(ConstantBase):
+    _VALUES = dict(regions.COUNTRY_BY_CODE.items() + regions.DMA_BY_CODE.items())
 
-    _VALUES = {
-        AUSTRALIA: 'Australia',
-        CANADA: 'Canada',
-        IRELAND: 'Ireland',
-        NEW_ZAELAND: 'New Zealand',
-        UNITED_KINGDOM: 'United Kingdom',
-        UNITED_STATES: 'United States'
-    }
+    @classmethod
+    def get_choices(cls):
+        return cls._VALUES.items()
 
 
 class ContentAdSubmissionStatus(ConstantBase):
@@ -153,13 +141,16 @@ class SourceAction(ConstantBase):
     HAS_3RD_PARTY_DASHBOARD = 5
     CAN_MODIFY_START_DATE = 6
     CAN_MODIFY_END_DATE = 7
-    CAN_MODIFY_TARGETING = 8
+    CAN_MODIFY_DEVICE_TARGETING = 8
     CAN_MODIFY_TRACKING_CODES = 9
     CAN_MODIFY_AD_GROUP_NAME = 10
     CAN_MODIFY_AD_GROUP_IAB_CATEGORY_AUTOMATIC = 11
     UPDATE_TRACKING_CODES_ON_CONTENT_ADS = 12
     CAN_UPDATE_DAILY_BUDGET_MANUAL = 13
     CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL = 14
+    CAN_MODIFY_DMA_TARGETING_AUTOMATIC = 15
+    CAN_MODIFY_COUNTRY_TARGETING = 16
+    CAN_MODIFY_DMA_TARGETING_MANUAL = 17
 
     _VALUES = {
         CAN_UPDATE_STATE: 'Can update state',
@@ -169,7 +160,10 @@ class SourceAction(ConstantBase):
         HAS_3RD_PARTY_DASHBOARD: 'Has 3rd party dashboard',
         CAN_MODIFY_START_DATE: 'Can modify start date',
         CAN_MODIFY_END_DATE: 'Can modify end date',
-        CAN_MODIFY_TARGETING: 'Can modify device and geo targeting',
+        CAN_MODIFY_DEVICE_TARGETING: 'Can modify device targeting',
+        CAN_MODIFY_DMA_TARGETING_AUTOMATIC: 'Can modify DMA targeting automatically',
+        CAN_MODIFY_DMA_TARGETING_MANUAL: 'Can modify DMA targeting manually',
+        CAN_MODIFY_COUNTRY_TARGETING: 'Can modify targeting by country',
         CAN_MODIFY_TRACKING_CODES: 'Can modify tracking codes',
         CAN_MODIFY_AD_GROUP_NAME: 'Can modify adgroup name',
         CAN_MODIFY_AD_GROUP_IAB_CATEGORY_AUTOMATIC: 'Can modify ad group IAB category automatically',

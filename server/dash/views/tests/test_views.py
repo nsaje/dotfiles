@@ -154,9 +154,9 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.jpg\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -170,8 +170,8 @@ http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.
         response = self._get_csv_from_server(data)
 
         expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -184,8 +184,8 @@ http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.
         response = self._get_csv_from_server(data)
 
         expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.jpg\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -199,10 +199,10 @@ http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.
         response = self._get_csv_from_server(data)
 
         expected_lines = ['url,title,image_url',
-                          'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg',
-                          'http://testurl.com,Test Article with no content_ad_sources 4,/123456789/200x300.jpg',
-                          'http://testurl.com,Test Article with no content_ad_sources 3,/123456789/200x300.jpg',
-                          'http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.jpg']
+                          'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg',
+                          'http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg',
+                          'http://testurl.com,Test Article with no content_ad_sources 3,123456789.jpg',
+                          'http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg']
 
         lines = response.content.splitlines()
 
@@ -215,8 +215,8 @@ http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.
         response = self._get_csv_from_server(data)
 
         expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.jpg\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -716,10 +716,8 @@ class AdGroupAdsPlusUploadTest(TestCase):
 
         return client
 
-    @patch('dash.views.views.threads.ProcessUploadThread')
-    def test_post(self, MockProcessUploadThread):
-        MockProcessUploadThread.return_value.start.return_value = None
-
+    @patch('dash.views.views.upload.process_async')
+    def test_post(self, mock_process_async):
         request = HttpRequest()
         request.user = User(id=1)
 
@@ -745,13 +743,9 @@ class AdGroupAdsPlusUploadTest(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(MockProcessUploadThread.return_value.start.called)
+        self.assertTrue(mock_process_async.called)
 
-    @patch('dash.views.views.forms.AdGroupAdsPlusUploadForm')
-    def test_validation_error(self, MockAdGroupAdsPlusUploadForm):
-        MockAdGroupAdsPlusUploadForm.return_value.is_valid.return_value = False
-        MockAdGroupAdsPlusUploadForm.return_value.errors = []
-
+    def test_validation_error(self):
         response = self._get_client().post(
             reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}), follow=True)
 
@@ -798,6 +792,8 @@ class AdGroupAdsPlusUploadTest(TestCase):
 
 
 class AdGroupSourcesTest(TestCase):
+    fixtures = ['test_api', 'test_views']
+
     def test_get_name(self):
         request = HttpRequest()
         request.user = User(id=1)
@@ -897,3 +893,27 @@ class AdGroupSourcesTest(TestCase):
 
         self.assertEqual(
             name, u'ONE:  /  /  / 123 / Outbrain')
+
+    def test_get_dma_targeting_compatible(self):
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+        ad_group_source = models.AdGroupSource.objects.get(id=3)
+        ad_group_source.source.source_type.available_actions.add(
+            models.SourceAction.objects.get(
+                action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
+            )
+        )
+
+        response = self.client.get(
+            reverse(
+                'ad_group_sources',
+                kwargs={'ad_group_id': 2}),
+            follow=True
+        )
+
+        response_dict = json.loads(response.content)
+        self.assertItemsEqual(response_dict['data']['sources'], [
+            {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False},  # should return False when DMAs used
+            {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True},
+        ])

@@ -36,9 +36,10 @@ import actionlog.zwei_actions
 
 from dash import models
 from dash import constants
+from dash import regions
 from dash import api
 from dash import forms
-from dash import threads
+from dash import upload
 
 logger = logging.getLogger(__name__)
 
@@ -403,6 +404,8 @@ class AdGroupSources(api_common.BaseApiView):
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group_settings = ad_group.get_current_settings()
+
         if ad_group.is_demo:
             real_ad_groups = models.DemoAdGroupRealAdGroup.objects.filter(demo_ad_group=ad_group)
             if real_ad_groups:
@@ -412,15 +415,16 @@ class AdGroupSources(api_common.BaseApiView):
 
         sources = []
         for source_settings in models.DefaultSourceSettings.objects.\
-            filter(source__in=filtered_sources).\
-            exclude(credentials__isnull=True):
+                filter(source__in=filtered_sources).exclude(credentials__isnull=True):
 
             if source_settings.source in ad_group_sources:
                 continue
 
             sources.append({
                 'id': source_settings.source.id,
-                'name': source_settings.source.name
+                'name': source_settings.source.name,
+                'can_target_existing_regions': self._can_target_existing_regions(source_settings.source,
+                                                                                 ad_group_settings)
             })
 
         sources_waiting = set([ad_group_source.source.name for ad_group_source
@@ -428,7 +432,7 @@ class AdGroupSources(api_common.BaseApiView):
 
         return self.create_api_response({
             'sources': sources,
-            'sources_waiting': list(sources_waiting)
+            'sources_waiting': list(sources_waiting),
         })
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_put')
@@ -451,6 +455,10 @@ class AdGroupSources(api_common.BaseApiView):
 
         if models.AdGroupSource.objects.filter(source=source, ad_group=ad_group).exists():
             raise exc.ForbiddenError('{} media source for ad group {} already exists.'.format(source.name, ad_group_id))
+
+        if not self._can_target_existing_regions(source, ad_group.get_current_settings()):
+            raise exc.ValidationError('{} media source can not be added because it does not support DMA targeting.'\
+                                      .format(source.name))
 
         ad_group_source = models.AdGroupSource(
             source=source,
@@ -476,6 +484,10 @@ class AdGroupSources(api_common.BaseApiView):
         settings = ad_group_source.ad_group.get_current_settings().copy_settings()
         settings.changes_text = changes_text
         settings.save(request)
+
+    def _can_target_existing_regions(self, source, ad_group_settings):
+        return source.source_type.supports_dma_targeting() and ad_group_settings.targets_dma() or\
+            not ad_group_settings.targets_dma()
 
 
 class Account(api_common.BaseApiView):
@@ -635,13 +647,13 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
 
         new_settings.save(request)
 
-        threads.ProcessUploadThread(
+        upload.process_async(
             content_ads,
             request.FILES['content_ads'].name,
             batch,
-            ad_group_id,
+            ad_group,
             request
-        ).start()
+        )
 
         return self.create_api_response({'batch_id': batch.pk})
 
@@ -842,7 +854,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
             content_ad_dicts.append({
                 'url': content_ad.url,
                 'title': content_ad.title,
-                'image_url': content_ad.get_image_url(),
+                'image_url': content_ad.get_original_image_url(),
             })
 
         filename = '{}_{}_{}_content_ads'.format(

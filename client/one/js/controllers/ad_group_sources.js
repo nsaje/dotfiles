@@ -633,7 +633,19 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
         api.adGroupSources.get($state.params.id).then(
             function (data) {
-                $scope.sources = data.sources;
+                var sources = [];
+                for (var source, i=0; i<data.sources.length; i++) {
+                    source = data.sources[i];
+                    sources.push({
+                        name: source.name,
+                        value: source.id,
+                        hasPermission: true,
+                        disabled: !source.canTargetExistingRegions,
+                        notification: (!source.canTargetExistingRegions ? 'Turn off DMA targeting in Settings to add ' + source.name : undefined)
+                    });
+                }
+
+                $scope.sources = sources;
                 $scope.sourcesWaiting = data.sourcesWaiting;
             },
             function (data) {

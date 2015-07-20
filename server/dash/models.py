@@ -1,7 +1,6 @@
 import jsonfield
 import binascii
 import datetime
-import urlparse
 
 from decimal import Decimal
 import pytz
@@ -14,8 +13,10 @@ from django.contrib.postgres.fields import ArrayField
 import utils.string_helper
 
 from dash import constants
+from dash import regions
 from utils import encryption_helpers
 from utils import statsd_helper
+from utils import url_helper
 from utils import exc
 
 
@@ -536,8 +537,17 @@ class SourceType(models.Model):
     def can_modify_end_date(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_END_DATE).exists()
 
-    def can_modify_targeting(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_TARGETING).exists()
+    def can_modify_device_targeting(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_DEVICE_TARGETING).exists()
+
+    def can_modify_dma_targeting_automatic(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC).exists()
+
+    def can_modify_dma_targeting_manual(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL).exists()
+
+    def can_modify_country_targeting(self):
+        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING).exists()
 
     def can_modify_tracking_codes(self):
         return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_TRACKING_CODES).exists()
@@ -555,6 +565,9 @@ class SourceType(models.Model):
         return self.available_actions.filter(
             action=constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS
         ).exists()
+
+    def supports_dma_targeting(self):
+        return self.can_modify_dma_targeting_manual() or self.can_modify_dma_targeting_automatic()
 
     def __str__(self):
         return self.type
@@ -624,8 +637,17 @@ class Source(models.Model):
     def can_modify_end_date(self):
         return self.source_type.can_modify_end_date() and not self.maintenance and not self.deprecated
 
-    def can_modify_targeting(self):
-        return self.source_type.can_modify_targeting() and not self.maintenance and not self.deprecated
+    def can_modify_device_targeting(self):
+        return self.source_type.can_modify_device_targeting() and not self.maintenance and not self.deprecated
+
+    def can_modify_dma_targeting_automatic(self):
+        return self.source_type.can_modify_dma_targeting_automatic() and not self.maintenance and not self.deprecated
+
+    def can_modify_dma_targeting_manual(self):
+        return self.source_type.can_modify_dma_targeting_manual() and not self.maintenance and not self.deprecated
+
+    def can_modify_country_targeting(self):
+        return self.source_type.can_modify_country_targeting() and not self.maintenance and not self.deprecated
 
     def can_modify_tracking_codes(self):
         return self.source_type.can_modify_tracking_codes() and not self.maintenance and not self.deprecated
@@ -760,14 +782,7 @@ class AdGroup(models.Model):
         if settings:
             settings = settings[0]
         else:
-            settings = AdGroupSettings(
-                ad_group=self,
-                state=constants.AdGroupSettingsState.INACTIVE,
-                start_date=datetime.datetime.utcnow().date(),
-                cpc_cc=0.4000,
-                daily_budget_cc=10.0000,
-                target_devices=constants.AdTargetDevice.get_all()
-            )
+            settings = AdGroupSettings(ad_group=self, **AdGroupSettings.get_defaults_dict())
 
         return settings
 
@@ -810,6 +825,16 @@ class AdGroup(models.Model):
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
             new_settings.save(request)
+
+    def get_test_tracking_params(self):
+        settings = self.get_current_settings()
+        tracking_codes = settings.get_tracking_codes()
+
+        if not settings.enable_ga_tracking:
+            return tracking_codes
+
+        tracking_ids = url_helper.get_tracking_id_params(self.id, 'z1')
+        return utils.url_helper.combine_tracking_codes(tracking_codes, tracking_ids)
 
     def save(self, request, *args, **kwargs):
         self.modified_by = request.user
@@ -875,11 +900,7 @@ class AdGroupSource(models.Model):
         elif self.source.tracking_slug is not None and self.source.tracking_slug != '':
             msid = self.source.tracking_slug
 
-        tracking_codes = '_z1_adgid=%s' % (self.ad_group.id)
-        if msid is not None:
-            tracking_codes += '&_z1_msid=%s' % (msid)
-
-        return tracking_codes
+        return url_helper.get_tracking_id_params(self.ad_group.id, msid)
 
     def get_external_name(self, new_adgroup_name=None):
         account_name = self.ad_group.campaign.account.name
@@ -1008,17 +1029,23 @@ class AdGroupSettings(SettingsBase):
         dt += datetime.timedelta(days=1)
         return dt
 
+    def targets_dma(self):
+        return any([(tr in regions.DMA_BY_CODE) for tr in self.target_regions])
+
     @classmethod
-    def get_default_value(cls, prop_name):
-        DEFAULTS = {
+    def get_defaults_dict(cls):
+        return {
             'state': constants.AdGroupSettingsState.INACTIVE,
             'start_date': datetime.datetime.utcnow().date(),
             'cpc_cc': 0.4000,
             'daily_budget_cc': 10.0000,
-            'target_devices': constants.AdTargetDevice.get_all()
+            'target_devices': constants.AdTargetDevice.get_all(),
+            'target_regions': ['US']
         }
 
-        return DEFAULTS.get(prop_name)
+    @classmethod
+    def get_default_value(cls, prop_name):
+        return cls.get_defaults_dict().get(prop_name)
 
     @classmethod
     def get_human_prop_name(cls, prop_name):
@@ -1028,7 +1055,7 @@ class AdGroupSettings(SettingsBase):
             'cpc_cc': 'Max CPC bid',
             'daily_budget_cc': 'Daily budget',
             'target_devices': 'Device targeting',
-            'target_regions': 'Geographic targeting',
+            'target_regions': 'Locations',
             'tracking_code': 'Tracking code',
             'state': 'State',
             'archived': 'Archived',
@@ -1056,7 +1083,7 @@ class AdGroupSettings(SettingsBase):
             value = ', '.join(constants.AdTargetDevice.get_text(x) for x in value)
         elif prop_name == 'target_regions':
             if value:
-                value = ', '.join(constants.AdTargetCountry.get_text(x) for x in value)
+                value = ', '.join(constants.AdTargetLocation.get_text(x) for x in value)
             else:
                 value = 'worldwide'
         elif prop_name in ('archived', 'enable_ga_tracking'):
@@ -1243,6 +1270,13 @@ class ContentAd(models.Model):
 
     objects = QuerySetManager()
 
+
+    def get_original_image_url(self, width=None, height=None):
+        if self.image_id is None:
+            return None
+
+        return '{z3_image_url}{image_id}.jpg'.format(z3_image_url=settings.Z3_API_IMAGE_URL, image_id=self.image_id)
+
     def get_image_url(self, width=None, height=None):
         if self.image_id is None:
             return None
@@ -1260,19 +1294,7 @@ class ContentAd(models.Model):
         ])
 
     def url_with_tracking_codes(self, tracking_codes):
-        if not tracking_codes:
-            return self.url
-
-        parsed = list(urlparse.urlparse(self.url))
-
-        parts = []
-        if parsed[4]:
-            parts.append(parsed[4])
-        parts.append(tracking_codes)
-
-        parsed[4] = '&'.join(parts)
-
-        return urlparse.urlunparse(parsed)
+        return url_helper.add_tracking_codes_to_url(self.url, tracking_codes)
 
     def __unicode__(self):
         return '{cn}(id={id}, ad_group={ad_group}, image_id={image_id}, state={state})'.format(

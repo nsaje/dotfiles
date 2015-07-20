@@ -177,13 +177,7 @@ def init_submit_ad_group_action(ad_group_source, content_ad_source, request, sen
 def _get_content_ad_dict(ad_group_source, content_ad_source, batch):
     if ad_group_source.source.update_tracking_codes_on_content_ads() and\
             ad_group_source.can_manage_content_ads:
-        try:
-            ad_group_tracking_codes = dash.models.AdGroupSettings.\
-                objects.\
-                filter(ad_group_id=ad_group_source.ad_group_id).\
-                latest('created_dt').get_tracking_codes()
-        except dash.models.AdGroupSettings.DoesNotExist:
-            ad_group_tracking_codes = None
+        ad_group_tracking_codes = ad_group_source.ad_group.get_current_settings().get_tracking_codes()
 
         url = content_ad_source.content_ad.url_with_tracking_codes(
             utils.url_helper.combine_tracking_codes(

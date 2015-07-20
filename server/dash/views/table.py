@@ -16,6 +16,7 @@ import utils.pagination
 from utils import api_common
 from utils import statsd_helper
 from utils import exc
+from utils import url_helper
 from utils.sort_helper import sort_results
 
 import reports.api
@@ -428,8 +429,9 @@ class SourcesTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'zemauth.sources_table_get')
     @newrelic.agent.function_trace()
     def get(self, request, level_, id_=None):
-        user = request.user
+        newrelic.agent.set_transaction_name('dash.views.table:SourcesTable#%s' % (level_))
 
+        user = request.user
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         ad_group_level = False
@@ -579,13 +581,14 @@ class SourcesTable(api_common.BaseApiView):
         # if end date is in the past then we can't edit cpc and budget
         return end_utc_datetime < datetime.datetime.utcnow()
 
-    def _get_editable_fields(self, ad_group_source, ad_group_settings, user):
+    def _get_editable_fields(self, ad_group_source, ad_group_settings, ad_group_source_settings, user):
         editable_fields = {}
 
         if not user.has_perm('zemauth.set_ad_group_source_settings'):
             return editable_fields
 
-        editable_fields['status_setting'] = self._get_editable_fields_status_setting(ad_group_source)
+        editable_fields['status_setting'] = self._get_editable_fields_status_setting(ad_group_source, ad_group_settings,
+                                                                                     ad_group_source_settings)
         editable_fields['bid_cpc'] = self._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
         editable_fields['daily_budget'] = self._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
 
@@ -619,7 +622,7 @@ class SourcesTable(api_common.BaseApiView):
             'message': message
         }
 
-    def _get_editable_fields_status_setting(self, ad_group_source):
+    def _get_editable_fields_status_setting(self, ad_group_source, ad_group_settings, ad_group_source_settings):
         enabled = True
         message = None
 
@@ -627,6 +630,10 @@ class SourcesTable(api_common.BaseApiView):
            ad_group_source.ad_group.content_ads_tab_with_cms and not ad_group_source.can_manage_content_ads):
             enabled = False
             message = self._get_status_setting_disabled_message(ad_group_source)
+        elif not ad_group_source.source.source_type.supports_dma_targeting() and ad_group_settings.targets_dma()\
+                and ad_group_source_settings.state == constants.AdGroupSourceSettingsState.INACTIVE:
+            enabled = False
+            message = 'This source can not be enabled because it does not support DMA targeting.'
 
         return {
             'enabled': enabled,
@@ -758,7 +765,8 @@ class SourcesTable(api_common.BaseApiView):
 
                 ad_group_settings = level_sources_table.ad_group_settings
 
-                row['editable_fields'] = self._get_editable_fields(ad_group_source, ad_group_settings, user)
+                row['editable_fields'] = self._get_editable_fields(ad_group_source, ad_group_settings,
+                                                                   source_settings, user)
 
                 if user.has_perm('zemauth.set_ad_group_source_settings')\
                    and source_settings is not None \
@@ -1192,9 +1200,10 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         }
 
         if user.has_perm('zemauth.data_status_column'):
+            shown_content_ads = models.ContentAd.objects.filter(id__in=[row['id'] for row in rows])
             response_dict['data_status'] = helpers.get_content_ad_data_status(
                 ad_group,
-                content_ads,
+                shown_content_ads,
             )
 
         return self.create_api_response(response_dict)
@@ -1208,10 +1217,19 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             'ctr': stats['ctr']
         }
 
+    def _get_url(self, ad_group, content_ad, is_demo, tracking_codes=None):
+        if is_demo:
+            return 'http://www.example.com/{}/{}'.format(ad_group.name, content_ad.id)
+
+        return content_ad.url_with_tracking_codes(tracking_codes)
+
+    @newrelic.agent.function_trace()
     def _get_rows(self, content_ads, stats, ad_group, has_view_archived_permission, show_archived):
         stats = {s['content_ad']: s for s in stats}
-        demo_ad_groups = models.AdGroup.demo_objects.all()
         rows = []
+
+        is_demo = ad_group in models.AdGroup.demo_objects.all()
+        tracking_codes = ad_group.get_test_tracking_params()
 
         for content_ad in content_ads:
             stat = stats.get(content_ad.id, {})
@@ -1222,13 +1240,14 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                     reports.api.row_has_postclick_data(stat)):
                 continue
 
-            url = 'http://www.example.com/{}/{}'.format(ad_group.name, content_ad.id)\
-                if ad_group in demo_ad_groups else content_ad.url
+            url = self._get_url(ad_group, content_ad, is_demo)
+            url_with_tracking_codes = self._get_url(ad_group, content_ad, is_demo, tracking_codes)
 
             row = {
                 'id': str(content_ad.id),
                 'title': content_ad.title,
                 'url': url,
+                'url_with_tracking_codes': url_with_tracking_codes,
                 'batch_name': content_ad.batch.name,
                 'batch_id': content_ad.batch.id,
                 'display_url': content_ad.batch.display_url,
@@ -1254,6 +1273,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
 
         return rows
 
+    @newrelic.agent.function_trace()
     def _add_status_to_rows(self, user, rows, filtered_sources, ad_group):
         all_content_ad_sources = models.ContentAdSource.objects.filter(
             source=filtered_sources,

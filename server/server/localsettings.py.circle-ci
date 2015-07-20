@@ -31,6 +31,7 @@ EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 
 SEND_AD_GROUP_SETTINGS_CHANGE_MAIL = False
+SUPPLY_REPORTS_FROM_EMAIL = 'supplyreports@zemanta.com'
 FROM_EMAIL = 'help-test@zemanta.com'
 
 MAILGUN_API_KEY = ''
