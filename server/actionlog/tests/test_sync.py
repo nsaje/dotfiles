@@ -434,17 +434,17 @@ class AccountLastSuccessfulSourceSyncTestCase(TestCase):
                          'Sources sync should have entries for all account\'s '
                          'sources except those in maintenance or deprecated.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[1],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 1 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[2],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 2 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[3],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 3 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[4],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 4 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[5],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 5 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[7],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 6 should have last successful sync time set.')
 
     def test_get_latest_source_success_none(self):
         s = dash.models.Source.objects.get(id=6)
@@ -454,19 +454,19 @@ class AccountLastSuccessfulSourceSyncTestCase(TestCase):
         last_sync = sync.AccountSync(self.acc).get_latest_source_success()
         self.assertEqual(7, len(last_sync), 'Sources sync should have entries for all account\'s sources.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[1],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 1 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[2],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 2 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[3],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 3 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[4],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 4 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[5],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 5 should have last successful sync time set.')
         self.assertEqual(None, last_sync[6],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 6 shouldn\'t have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[7],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 7 should have last successful sync time set.')
 
     def test_get_latest_source_success_maintenance(self):
         last_sync = sync.AccountSync(self.acc).get_latest_source_success(include_maintenance=True)
@@ -474,19 +474,19 @@ class AccountLastSuccessfulSourceSyncTestCase(TestCase):
                          'Sources sync should have entries for all account\'s '
                          'sources except those that are deprecated.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[1],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 1 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[2],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 2 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[3],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 3 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[4],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 4 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[5],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 5 should have last successful sync time set.')
         self.assertEqual(None, last_sync[6],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 6 shouldn\'t have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[7],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 7 should have last successful sync time set.')
 
     def test_get_latest_source_success_deprecated(self):
         s = dash.models.Source.objects.get(id=6)
@@ -499,19 +499,19 @@ class AccountLastSuccessfulSourceSyncTestCase(TestCase):
                          'Sources sync should have entries for all account\'s '
                          'sources except those that are in maintenance.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[1],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 1 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[2],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 2 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[3],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 3 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[4],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 4 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[5],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 5 should have last successful sync time set.')
         self.assertEqual(None, last_sync[6],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 6 shouldn\'t have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[7],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 7 should have last successful sync time set.')
 
     def test_get_latest_source_success_sources_filtered(self):
         sources = dash.models.Source.objects.filter(id__in=[1, 2, 6])
@@ -521,9 +521,9 @@ class AccountLastSuccessfulSourceSyncTestCase(TestCase):
                          'Sources sync should have entries for all account\'s '
                          'sources except those that are in maintenance.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[1],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 1 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[2],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 2 should have last successful sync time set.')
 
     def test_get_latest_source_success_demo(self):
         acc = dash.models.Account.objects.get(id=4)
@@ -533,17 +533,17 @@ class AccountLastSuccessfulSourceSyncTestCase(TestCase):
                          'Sources sync should have entries for all real ad group\'s '
                          'sources except those that are in maintenance.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[1],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 1 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[2],
-                         'Source 2 should have last successful sync tyme set.')
+                         'Source 2 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[3],
-                         'Source 3 should have last successful sync tyme set.')
+                         'Source 3 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[4],
-                         'Source 4 should have last successful sync tyme set.')
+                         'Source 4 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[5],
-                         'Source 5 should have last successful sync tyme set.')
+                         'Source 5 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[7],
-                         'Source 7 should have last successful sync tyme set.')
+                         'Source 7 should have last successful sync time set.')
 
         ad_group = dash.models.AdGroup.objects.get(id=1)
         for ags in ad_group.adgroupsource_set.all():
@@ -555,17 +555,17 @@ class AccountLastSuccessfulSourceSyncTestCase(TestCase):
                          'Sources sync should have entries for all real ad group\'s '
                          'sources except those that are in maintenance.')
         self.assertEqual(datetime.datetime(2015, 7, 14, 10), last_sync[1],
-                         'Source 1 should have the new last successful sync tyme set.')
+                         'Source 1 should have the new last successful sync time set.')
         self.assertEqual(datetime.datetime(2015, 7, 14, 10), last_sync[2],
-                         'Source 2 should have the newlast successful sync tyme set.')
+                         'Source 2 should have the newlast successful sync time set.')
         self.assertEqual(datetime.datetime(2015, 7, 14, 10), last_sync[3],
-                         'Source 3 should have the newlast successful sync tyme set.')
+                         'Source 3 should have the newlast successful sync time set.')
         self.assertEqual(datetime.datetime(2015, 7, 14, 10), last_sync[4],
-                         'Source 4 should have the new last successful sync tyme set.')
+                         'Source 4 should have the new last successful sync time set.')
         self.assertEqual(datetime.datetime(2015, 7, 14, 10), last_sync[5],
-                         'Source 5 should have the new last successful sync tyme set.')
+                         'Source 5 should have the new last successful sync time set.')
         self.assertEqual(datetime.datetime(2015, 7, 14, 10), last_sync[7],
-                         'Source 7 should have the new last successful sync tyme set.')
+                         'Source 7 should have the new last successful sync time set.')
 
     def test_get_latest_source_success_archived_campaign(self):
         c = dash.models.Campaign.objects.get(id=1)
@@ -592,9 +592,9 @@ class AccountLastSuccessfulSourceSyncTestCase(TestCase):
                          'Sources sync should have entries for all remaining ad group\'s '
                          'sources except those that are in maintenance.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[1],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 1 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[2],
-                         'Source 2 should have last successful sync tyme set.')
+                         'Source 2 should have last successful sync time set.')
 
     def test_get_latest_source_success_archived_ad_group(self):
         ag = dash.models.AdGroup.objects.get(id=1)
@@ -620,9 +620,9 @@ class AccountLastSuccessfulSourceSyncTestCase(TestCase):
                          'Sources sync should have entries for all remaining ad group\'s '
                          'sources except those that are in maintenance.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[1],
-                         'Source 1 should have last successful sync tyme set.')
+                         'Source 1 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[2],
-                         'Source 2 should have last successful sync tyme set.')
+                         'Source 2 should have last successful sync time set.')
 
 
 class ActionLogTriggerSyncTestCase(TestCase):
