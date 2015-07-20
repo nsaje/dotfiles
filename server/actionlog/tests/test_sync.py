@@ -291,12 +291,17 @@ class ActionLogSyncTestCase(TestCase):
         self.assertEqual(latest_success_dict[1].isoformat(), '2014-06-10T09:58:21')
         self.assertEqual(latest_success_dict[9], datetime.datetime(2014, 6, 10, 9, 58, 21))
 
+
+    @mock.patch('actionlog.sync.datetime', test_helper.MockDateTime)
     def test_global_latest_success(self):
+        utcnow = datetime.datetime.utcnow()
+        sync.datetime.utcnow = classmethod(lambda cls: utcnow)
+
         latest_success_dict = sync.GlobalSync().get_latest_success_by_child(recompute=False)
         self.assertEqual(len(latest_success_dict), 3)
         self.assertEqual(latest_success_dict[1], datetime.datetime(2014, 6, 10, 9, 58, 21))
         self.assertEqual(latest_success_dict[2], None)
-        self.assertEqual(latest_success_dict[4], datetime.datetime(2014, 6, 10, 9, 58, 21))
+        self.assertEqual(latest_success_dict[4], utcnow)  # demo account has now as last sync time
 
 
 class AccountLastSuccessfulChildSyncTestCase(TestCase):
@@ -403,22 +408,16 @@ class AccountLastSuccessfulChildSyncTestCase(TestCase):
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[2],
                          'Campaign 1 should have last successful sync time set.')
 
+    @mock.patch('actionlog.sync.datetime', test_helper.MockDateTime)
     def test_get_latest_success_by_child_demo_account(self):
+        utcnow = datetime.datetime.utcnow()
+        sync.datetime.utcnow = classmethod(lambda cls: utcnow)
+
         acc = dash.models.Account.objects.get(id=4)
         last_sync = sync.AccountSync(acc).get_latest_success_by_child()
         self.assertEqual(1, len(last_sync), 'Demo account child sync should have an entry for the only demo campaign.')
-        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[1],
+        self.assertEqual(utcnow, last_sync[6],
                          'Campaign 1 should have last successful sync time set.')
-
-        ad_group = dash.models.AdGroup.objects.get(id=1)
-        for ags in ad_group.adgroupsource_set.all():
-            ags.last_successful_sync_dt = datetime.datetime(2015, 7, 14, 10)
-            ags.save()
-
-        last_sync = sync.AccountSync(acc).get_latest_success_by_child()
-        self.assertEqual(1, len(last_sync), 'Demo account child sync should have an entry for the only demo campaign.')
-        self.assertEqual(datetime.datetime(2015, 7, 14, 10), last_sync[1],
-                         'Campaign 1 should have the new last successful sync time set.')
 
 
 class AccountLastSuccessfulSourceSyncTestCase(TestCase):
@@ -525,47 +524,26 @@ class AccountLastSuccessfulSourceSyncTestCase(TestCase):
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[2],
                          'Source 2 should have last successful sync time set.')
 
+    @mock.patch('actionlog.sync.datetime', test_helper.MockDateTime)
     def test_get_latest_source_success_demo(self):
+        utcnow = datetime.datetime.utcnow()
+        sync.datetime.utcnow = classmethod(lambda cls: utcnow)
+
         acc = dash.models.Account.objects.get(id=4)
 
         last_sync = sync.AccountSync(acc).get_latest_source_success()
-        self.assertEqual(6, len(last_sync),
-                         'Sources sync should have entries for all real ad group\'s '
-                         'sources except those that are in maintenance.')
-        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[1],
-                         'Source 1 should have last successful sync time set.')
-        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[2],
-                         'Source 2 should have last successful sync time set.')
-        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[3],
-                         'Source 3 should have last successful sync time set.')
-        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[4],
-                         'Source 4 should have last successful sync time set.')
-        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[5],
-                         'Source 5 should have last successful sync time set.')
-        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[7],
-                         'Source 7 should have last successful sync time set.')
+        self.assertEqual(8, len(last_sync),
+                         'Sources sync should have entries for all sources, '
+                         'even deprecated/maintenance and those that are not on this account.')
 
-        ad_group = dash.models.AdGroup.objects.get(id=1)
-        for ags in ad_group.adgroupsource_set.all():
-            ags.last_successful_sync_dt = datetime.datetime(2015, 7, 14, 10)
-            ags.save()
-
-        last_sync = sync.AccountSync(acc).get_latest_source_success()
-        self.assertEqual(6, len(last_sync),
-                         'Sources sync should have entries for all real ad group\'s '
-                         'sources except those that are in maintenance.')
-        self.assertEqual(datetime.datetime(2015, 7, 14, 10), last_sync[1],
-                         'Source 1 should have the new last successful sync time set.')
-        self.assertEqual(datetime.datetime(2015, 7, 14, 10), last_sync[2],
-                         'Source 2 should have the newlast successful sync time set.')
-        self.assertEqual(datetime.datetime(2015, 7, 14, 10), last_sync[3],
-                         'Source 3 should have the newlast successful sync time set.')
-        self.assertEqual(datetime.datetime(2015, 7, 14, 10), last_sync[4],
-                         'Source 4 should have the new last successful sync time set.')
-        self.assertEqual(datetime.datetime(2015, 7, 14, 10), last_sync[5],
-                         'Source 5 should have the new last successful sync time set.')
-        self.assertEqual(datetime.datetime(2015, 7, 14, 10), last_sync[7],
-                         'Source 7 should have the new last successful sync time set.')
+        self.assertEqual(utcnow, last_sync[1], 'Source 1 should have last successful sync time set.')
+        self.assertEqual(utcnow, last_sync[2], 'Source 2 should have last successful sync time set.')
+        self.assertEqual(utcnow, last_sync[3], 'Source 3 should have last successful sync time set.')
+        self.assertEqual(utcnow, last_sync[4], 'Source 4 should have last successful sync time set.')
+        self.assertEqual(utcnow, last_sync[5], 'Source 5 should have last successful sync time set.')
+        self.assertEqual(utcnow, last_sync[6], 'Source 6 should have last successful sync time set.')
+        self.assertEqual(utcnow, last_sync[7], 'Source 7 should have last successful sync time set.')
+        self.assertEqual(utcnow, last_sync[8], 'Source 8 should have last successful sync time set.')
 
     def test_get_latest_source_success_archived_campaign(self):
         c = dash.models.Campaign.objects.get(id=1)

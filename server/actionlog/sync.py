@@ -176,77 +176,65 @@ class AccountSync(BaseSync, ISyncComposite):
             if len(list(campaign_sync.get_components(maintenance=maintenance, deprecated=deprecated))) > 0:
                 yield campaign_sync
 
-    def _get_ad_group_sources(self, include_level_archived, include_maintenance, include_deprecated):
+    def _get_ad_group_sources(self, include_level_archived=False, include_maintenance=False, include_deprecated=False):
         campaigns = dash.models.Campaign.objects.filter(account=self.obj)
         if not include_level_archived:
             campaigns = campaigns.exclude_archived()
 
         ad_groups = dash.models.AdGroup.objects\
                                        .filter(campaign__in=campaigns)\
-                                       .exclude_archived()\
-                                       .prefetch_related('adgroupsource_set__source')
-        demo_ad_group_ids = set([dag.id for dag in dash.models.AdGroup.demo_objects.all()])
-        demo2real = dash.models.DemoAdGroupRealAdGroup.objects\
-                                                      .select_related('real_ad_group')\
-                                                      .prefetch_related('real_ad_group__adgroupsource_set__source')\
-                                                      .all()
-        source_ids = [s.id for s in self.sources]
+                                       .exclude_archived()
+        ad_group_sources = dash.models.AdGroupSource.objects\
+                                                    .filter(ad_group=ad_groups)\
+                                                    .filter(source__in=self.sources)\
+                                                    .select_related('ad_group', 'source')
 
-        result = []
-        for ad_group in ad_groups:
-            if ad_group.id in demo_ad_group_ids:
-                # assumes that exactly one real ad group exists for a given demo ad group
-                found = False
-                for d2r in demo2real:
-                    if d2r.demo_ad_group_id == ad_group.id:
-                        ad_group = d2r.real_ad_group
-                        found = True
-                        break
+        if not include_maintenance:
+            ad_group_sources = ad_group_sources.exclude(source__maintenance=True)
 
-                assert found, 'Demo ad group not associated to any demo ad group'
+        if not include_deprecated:
+            ad_group_sources = ad_group_sources.exclude(source__deprecated=True)
 
-            for ags in ad_group.adgroupsource_set.all():
-                if ags.source.id not in source_ids:
-                    # source filtered
-                    continue
-
-                if not include_maintenance and ags.source.maintenance:
-                    continue
-
-                if not include_deprecated and ags.source.deprecated:
-                    continue
-
-                result.append(ags)
-
-        return result
+        return ad_group_sources
 
     def get_latest_success_by_child(self, include_level_archived=False):
         result = {}
 
-        ad_group_sources = self._get_ad_group_sources(include_level_archived, False, False)
-        for ags in ad_group_sources:
-            ags_last_sync = ags.last_successful_sync_dt
-            if ags.ad_group.campaign_id not in result:
-                result[ags.ad_group.campaign_id] = ags_last_sync
+        ad_group_sources = self._get_ad_group_sources(include_level_archived=include_level_archived)
+        vals = ad_group_sources.values_list('ad_group__campaign_id', 'last_successful_sync_dt')
+        for campaign_id, last_successful_sync_dt in vals:
+            if campaign_id not in result:
+                result[campaign_id] = last_successful_sync_dt
 
-            result[ags.ad_group.campaign_id] = _min_none(
-                [result[ags.ad_group.campaign_id], ags_last_sync]
+            result[campaign_id] = _min_none(
+                [result[campaign_id], last_successful_sync_dt]
             )
+
+        if self.obj.id in dash.models.Account.demo_objects.all().values_list('id', flat=True):
+            for campaign in self.obj.campaign_set.all():
+                if campaign.id not in result:
+                    result[campaign.id] = datetime.utcnow()
 
         return result
 
     def get_latest_source_success(self, include_maintenance=False, include_deprecated=False):
         result = {}
 
-        ad_group_sources = self._get_ad_group_sources(False, include_maintenance, include_deprecated)
-        for ags in ad_group_sources:
-            ags_last_sync = ags.last_successful_sync_dt
-            if ags.source_id not in result:
-                result[ags.source_id] = ags_last_sync
+        ad_group_sources = self._get_ad_group_sources(include_maintenance=include_maintenance,
+                                                      include_deprecated=include_deprecated)
+        vals = ad_group_sources.values_list('source_id', 'last_successful_sync_dt')
+        for source_id, last_successful_sync_dt in vals:
+            if source_id not in result:
+                result[source_id] = last_successful_sync_dt
 
-            result[ags.source_id] = _min_none(
-                [result[ags.source_id], ags_last_sync]
+            result[source_id] = _min_none(
+                [result[source_id], last_successful_sync_dt]
             )
+
+        if self.obj.id in dash.models.Account.demo_objects.all().values_list('id', flat=True):
+            for source in self.sources:
+                if source.id not in result:
+                    result[source.id] = datetime.utcnow()
 
         return result
 
