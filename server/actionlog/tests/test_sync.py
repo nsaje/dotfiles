@@ -571,8 +571,8 @@ class AccountLastSuccessfulSourceSyncTestCase(TestCase):
                          'sources except those that are in maintenance.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[1],
                          'Source 1 should have last successful sync time set.')
-        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[2],
-                         'Source 2 should have last successful sync time set.')
+        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[4],
+                         'Source 4 should have last successful sync time set.')
 
     def test_get_latest_source_success_archived_ad_group(self):
         ag = dash.models.AdGroup.objects.get(id=1)
@@ -594,13 +594,15 @@ class AccountLastSuccessfulSourceSyncTestCase(TestCase):
         ag.archive(r)
 
         last_sync = sync.AccountSync(self.acc).get_latest_source_success()
-        self.assertEqual(2, len(last_sync),
+        self.assertEqual(3, len(last_sync),
                          'Sources sync should have entries for all remaining ad group\'s '
                          'sources except those that are in maintenance.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[1],
                          'Source 1 should have last successful sync time set.')
         self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[2],
                          'Source 2 should have last successful sync time set.')
+        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[4],
+                         'Source 4 should have last successful sync time set.')
 
 
 class ActionLogTriggerSyncTestCase(TestCase):
