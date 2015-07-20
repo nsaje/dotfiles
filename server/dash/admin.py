@@ -166,7 +166,7 @@ class AvailableActionsField(SimpleArrayField):
                 errors.append(ValidationError(
                     'Invalid source action',
                     code='item_invalid',
-                    params={'nth': 1},
+                    params={'nth': i},
                 ))
 
         if errors:
