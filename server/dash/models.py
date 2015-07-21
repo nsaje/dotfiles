@@ -453,7 +453,6 @@ class SourceType(models.Model):
     )
 
     available_actions = ArrayField(models.PositiveSmallIntegerField(), null=True, blank=True)
-    available_actions_new = ArrayField(models.PositiveSmallIntegerField(), null=True, blank=True)
 
     min_cpc = models.DecimalField(
         max_digits=10,
@@ -502,72 +501,72 @@ class SourceType(models.Model):
     )
 
     def can_update_state(self):
-        return self.available_actions_new is not None and\
-            constants.SourceAction.CAN_UPDATE_STATE in self.available_actions_new
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_UPDATE_STATE in self.available_actions
 
     def can_update_cpc(self):
-        return self.available_actions_new is not None and\
-            constants.SourceAction.CAN_UPDATE_CPC in self.available_actions_new
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_UPDATE_CPC in self.available_actions
 
     def can_update_daily_budget_manual(self):
-        return self.available_actions_new is not None and\
-            constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_MANUAL in self.available_actions_new
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_MANUAL in self.available_actions
 
     def can_update_daily_budget_automatic(self):
-        return self.available_actions_new is not None and\
-            constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC in self.available_actions_new
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC in self.available_actions
 
     def can_manage_content_ads(self):
-        return self.available_actions_new is not None and\
-            constants.SourceAction.CAN_MANAGE_CONTENT_ADS in self.available_actions_new
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MANAGE_CONTENT_ADS in self.available_actions
 
     def has_3rd_party_dashboard(self):
-        return self.available_actions_new is not None and\
-            constants.SourceAction.HAS_3RD_PARTY_DASHBOARD in self.available_actions_new
+        return self.available_actions is not None and\
+            constants.SourceAction.HAS_3RD_PARTY_DASHBOARD in self.available_actions
 
     def can_modify_start_date(self):
-        return self.available_actions_new is not None and\
-            constants.SourceAction.CAN_MODIFY_START_DATE in self.available_actions_new
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_START_DATE in self.available_actions
 
     def can_modify_end_date(self):
-        return self.available_actions_new is not None and\
-            constants.SourceAction.CAN_MODIFY_END_DATE in self.available_actions_new
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_END_DATE in self.available_actions
 
     def can_modify_device_targeting(self):
-        return self.available_actions_new is not None and\
-            constants.SourceAction.CAN_MODIFY_DEVICE_TARGETING in self.available_actions_new
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_DEVICE_TARGETING in self.available_actions
 
     def can_modify_dma_targeting_automatic(self):
-        return self.available_actions_new is not None and\
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC in self.available_actions_new
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC in self.available_actions
 
     def can_modify_dma_targeting_manual(self):
-        return self.available_actions_new is not None and\
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL in self.available_actions_new
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL in self.available_actions
 
     def can_modify_country_targeting(self):
-        return self.available_actions_new is not None and\
-            constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING in self.available_actions_new
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING in self.available_actions
 
     def can_modify_tracking_codes(self):
-        return self.available_actions_new is not None and\
-            constants.SourceAction.CAN_MODIFY_TRACKING_CODES in self.available_actions_new
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_TRACKING_CODES in self.available_actions
 
     def can_modify_ad_group_name(self):
-        return self.available_actions_new is not None and\
-            constants.SourceAction.CAN_MODIFY_AD_GROUP_NAME in self.available_actions_new
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_AD_GROUP_NAME in self.available_actions
 
     def can_modify_ad_group_iab_category_automatic(self):
-        return self.available_actions_new is not None and\
-            constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY_AUTOMATIC in self.available_actions_new
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY_AUTOMATIC in self.available_actions
 
     def can_modify_ad_group_iab_category_manual(self):
-        return self.available_actions_new is not None and\
-            constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL in self.available_actions_new
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL in self.available_actions
 
     def update_tracking_codes_on_content_ads(self):
-        return self.available_actions_new is not None and\
-            constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS in self.available_actions_new
+        return self.available_actions is not None and\
+            constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS in self.available_actions
 
     def supports_dma_targeting(self):
         return self.can_modify_dma_targeting_manual() or self.can_modify_dma_targeting_automatic()
