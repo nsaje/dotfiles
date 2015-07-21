@@ -107,12 +107,14 @@
 -   fields:
         type: 'b1'
         available_actions: [4]
+        available_actions_new: [4]
     model: dash.sourcetype
     pk: 1
 
 -   fields:
         type: 'gravity'
         available_actions: [1, 2, 3]
+        available_actions_new: [1, 2, 3]
     model: dash.sourcetype
     pk: 2
 
@@ -129,6 +131,7 @@
 -   fields:
         type: 'yahoo'
         available_actions: [4]
+        available_actions_new: [4]
     model: dash.sourcetype
     pk: 5
 

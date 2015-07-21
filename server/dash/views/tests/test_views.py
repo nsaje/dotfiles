@@ -904,6 +904,10 @@ class AdGroupSourcesTest(TestCase):
                 action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
             )
         )
+        ad_group_source.source.source_type.available_actions_new = [
+            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
+        ]
+        ad_group_source.source.source_type.save()
 
         response = self.client.get(
             reverse(
