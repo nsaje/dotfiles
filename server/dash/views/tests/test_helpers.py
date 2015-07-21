@@ -127,7 +127,7 @@ class ViewHelpersTestCase(TestCase):
         last_successful_account_sync_times = {}
         for account in accounts:
             last_successful_account_sync_times.update(
-                actionlog.sync.AccountSync(account).get_latest_success_by_child()
+                actionlog.sync.AccountSync(account).get_latest_success_by_child(recompute=False)
             )
 
         last_sync_messages = helpers.get_last_sync_messages(accounts, last_successful_account_sync_times)
@@ -137,7 +137,7 @@ class ViewHelpersTestCase(TestCase):
         last_successful_source_sync_times = {}
         for account in accounts:
             last_successful_source_sync_times.update(
-                actionlog.sync.AccountSync(account).get_latest_source_success()
+                actionlog.sync.AccountSync(account).get_latest_source_success(recompute=False)
             )
 
         sources = models.Source.objects.filter(pk__in=last_successful_source_sync_times.keys())
@@ -151,7 +151,7 @@ class ViewHelpersTestCase(TestCase):
         last_successful_archived_sync_times = {}
         for account in archived_accounts:
             last_successful_archived_sync_times.update(
-                actionlog.sync.AccountSync(account).get_latest_success_by_child()
+                actionlog.sync.AccountSync(account).get_latest_success_by_child(recompute=False)
             )
 
         last_sync_messages = helpers.get_last_sync_messages(archived_accounts, last_successful_archived_sync_times)

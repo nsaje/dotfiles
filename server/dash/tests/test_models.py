@@ -331,7 +331,7 @@ class AdGroupTestCase(TestCase):
     def test_queryset_exclude_archived(self):
         qs = models.AdGroup.objects.all().exclude_archived()
 
-        self.assertEqual(len(qs), 8)
+        self.assertEqual(len(qs), 6)
 
     def test_get_test_tracking_params(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -352,7 +352,7 @@ class CampaignTestCase(TestCase):
     def test_queryset_exclude_archived(self):
         qs = models.Campaign.objects.all().exclude_archived()
 
-        self.assertEqual(len(qs), 5)
+        self.assertEqual(len(qs), 4)
 
 
 class AccountTestCase(TestCase):
@@ -361,4 +361,4 @@ class AccountTestCase(TestCase):
     def test_queryset_exclude_archived(self):
         qs = models.Account.objects.all().exclude_archived()
 
-        self.assertEqual(len(qs), 3)
+        self.assertEqual(len(qs), 2)
