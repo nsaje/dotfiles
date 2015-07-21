@@ -72,7 +72,7 @@ class CleanRowTest(TestCase):
 
     def setUp(self):
         # default test data
-        self.url = 'http://example.com'
+        self.url = u'http://example.com'
         self.title = 'test title'
         self.image_url = 'http://example.com/image'
         self.crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
@@ -148,7 +148,7 @@ class CleanRowTest(TestCase):
         self.assertEqual(errors, ['Missing title'])
 
     def test_url_without_protocol(self):
-        self.url = 'example.com'
+        self.url = u'example.com'
         data, errors = self._run_clean_row()
 
         self.assertEqual(data, {
@@ -165,7 +165,23 @@ class CleanRowTest(TestCase):
         self.assertEqual(errors, [])
 
     def test_invalid_url(self):
-        self.url = 'example'
+        self.url = u'example'
+        data, errors = self._run_clean_row()
+
+        self.assertEqual(data, {
+            'image': {
+                'id': self.image_id,
+                'width': self.image_width,
+                'height': self.image_height,
+                'hash': self.image_hash
+            },
+            'title': self.title,
+            'tracker_urls': self.tracker_urls.split(' '),
+        })
+        self.assertEqual(errors, ['Invalid URL'])
+
+    def test_unicode_url(self):
+        self.url = u'http://exampleś.com'
         data, errors = self._run_clean_row()
 
         self.assertEqual(data, {

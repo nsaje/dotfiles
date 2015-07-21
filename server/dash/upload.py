@@ -213,8 +213,10 @@ def _clean_row(batch, ad_group, row):
 
 def _clean_url(url, ad_group):
     try:
+        # URL is considered invalid if it contains any unicode chars
+        url = url.encode('ascii')
         url = _validate_url(url)
-    except ValidationError:
+    except (ValidationError, UnicodeEncodeError):
         raise ValidationError('Invalid URL')
 
     tracking_codes = ad_group.get_test_tracking_params()
