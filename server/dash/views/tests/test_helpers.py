@@ -127,7 +127,7 @@ class ViewHelpersTestCase(TestCase):
         last_successful_account_sync_times = {}
         for account in accounts:
             last_successful_account_sync_times.update(
-                actionlog.sync.AccountSync(account).get_latest_success_by_child(recompute=False)
+                actionlog.sync.AccountSync(account).get_latest_success_by_child()
             )
 
         last_sync_messages = helpers.get_last_sync_messages(accounts, last_successful_account_sync_times)
@@ -137,7 +137,7 @@ class ViewHelpersTestCase(TestCase):
         last_successful_source_sync_times = {}
         for account in accounts:
             last_successful_source_sync_times.update(
-                actionlog.sync.AccountSync(account).get_latest_source_success(recompute=False)
+                actionlog.sync.AccountSync(account).get_latest_source_success()
             )
 
         sources = models.Source.objects.filter(pk__in=last_successful_source_sync_times.keys())
@@ -151,7 +151,7 @@ class ViewHelpersTestCase(TestCase):
         last_successful_archived_sync_times = {}
         for account in archived_accounts:
             last_successful_archived_sync_times.update(
-                actionlog.sync.AccountSync(account).get_latest_success_by_child(recompute=False)
+                actionlog.sync.AccountSync(account).get_latest_success_by_child()
             )
 
         last_sync_messages = helpers.get_last_sync_messages(archived_accounts, last_successful_archived_sync_times)
@@ -329,9 +329,16 @@ class GetSelectedContentAdsTest(TestCase):
         select_batch_id = None
         content_ad_ids_selected = []
         content_ad_ids_not_selected = []
+        include_archived = True
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived
+        )
 
         self._assert_content_ads(content_ads, [1, 2, 3])
 
@@ -341,9 +348,16 @@ class GetSelectedContentAdsTest(TestCase):
         select_batch_id = None
         content_ad_ids_selected = []
         content_ad_ids_not_selected = [1]
+        include_archived = True
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived
+        )
 
         self._assert_content_ads(content_ads, [2, 3])
 
@@ -353,9 +367,16 @@ class GetSelectedContentAdsTest(TestCase):
         select_batch_id = 1
         content_ad_ids_selected = []
         content_ad_ids_not_selected = []
+        include_archived = True
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived
+        )
 
         self._assert_content_ads(content_ads, [1, 2])
 
@@ -365,9 +386,16 @@ class GetSelectedContentAdsTest(TestCase):
         select_batch_id = 1
         content_ad_ids_selected = [3]
         content_ad_ids_not_selected = []
+        include_archived = True
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived
+        )
 
         self._assert_content_ads(content_ads, [1, 2, 3])
 
@@ -377,9 +405,16 @@ class GetSelectedContentAdsTest(TestCase):
         select_batch_id = 1
         content_ad_ids_selected = []
         content_ad_ids_not_selected = [1]
+        include_archived = True
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived
+        )
 
         self._assert_content_ads(content_ads, [2])
 
@@ -389,11 +424,37 @@ class GetSelectedContentAdsTest(TestCase):
         select_batch_id = None
         content_ad_ids_selected = [1, 3]
         content_ad_ids_not_selected = []
+        include_archived = True
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived
+        )
 
         self._assert_content_ads(content_ads, [1, 3])
+
+    def test_get_content_ads_all_exclude_archived(self):
+        ad_group_id = 1
+        select_all = True
+        select_batch_id = None
+        content_ad_ids_selected = []
+        content_ad_ids_not_selected = []
+        include_archived = False
+
+        content_ads = helpers.get_selected_content_ads(
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived
+        )
+
+        self._assert_content_ads(content_ads, [1, 2])
 
     def _assert_content_ads(self, content_ads, expected_ids):
         self.assertQuerysetEqual(

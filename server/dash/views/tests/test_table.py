@@ -101,10 +101,10 @@ class AdGroupAdsPlusTableTest(TestCase):
 
         self.assertIn('pagination', result['data'])
         self.assertEqual(result['data']['pagination'], {
-            'count': 3,
+            'count': 2,
             'currentPage': 1,
             'endIndex': 2,
-            'numPages': 2,
+            'numPages': 1,
             'size': 2,
             'startIndex': 1
         })
@@ -328,8 +328,8 @@ class AdGroupAdsPlusTableTest(TestCase):
 
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 2)
-        self.assertEqual(result['data']['rows'][0]['title'], u'Test Article with no content_ad_sources 2')
-        self.assertEqual(result['data']['rows'][1]['title'], 'Test Article with no content_ad_sources 1')
+        self.assertEqual(result['data']['rows'][0]['title'], u'Test Article with no content_ad_sources 1')
+        self.assertEqual(result['data']['rows'][1]['title'], u'Test Article unicode \u010c\u017e\u0161')
 
     def test_get_batches(self, mock_query):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -380,9 +380,6 @@ class AdGroupAdsPlusTableTest(TestCase):
         self.assertItemsEqual(result['data']['batches'], [{
             'id': 1,
             'name': 'batch 1'
-        }, {
-            'id': 2,
-            'name': 'batch 2'
         }])
 
     def test_get_batches_without_permission(self, mock_query):

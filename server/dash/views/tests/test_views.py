@@ -156,6 +156,21 @@ class AdGroupContentAdCSVTest(TestCase):
         expected_content = '''url,title,image_url\r
 http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg\r
 http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
+'''
+
+        self.assertEqual(response.content, expected_content)
+
+    def test_get_all_include_archived(self):
+        data = {
+            'select_all': True,
+            'archived': 'true'
+        }
+
+        response = self._get_csv_from_server(data)
+
+        expected_content = '''url,title,image_url\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
 http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg\r
 '''
 
@@ -171,7 +186,6 @@ http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg\r
 
         expected_content = '''url,title,image_url\r
 http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -201,8 +215,7 @@ http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
         expected_lines = ['url,title,image_url',
                           'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg',
                           'http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg',
-                          'http://testurl.com,Test Article with no content_ad_sources 3,123456789.jpg',
-                          'http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg']
+                          'http://testurl.com,Test Article with no content_ad_sources 3,123456789.jpg']
 
         lines = response.content.splitlines()
 
@@ -468,7 +481,7 @@ class AdGroupContentAdArchive(TestCase):
     def test_archive_set_batch(self):
         ad_group_id = 2
         batch_id = 2
-        content_ads = models.ContentAd.objects.filter(batch__id=batch_id)
+        content_ads = models.ContentAd.objects.filter(batch__id=batch_id, archived=False)
 
         self.assertGreater(len(content_ads), 0)
 
@@ -479,7 +492,9 @@ class AdGroupContentAdArchive(TestCase):
 
         response = self._post_content_ad_archive(ad_group_id, payload)
 
-        content_ads = models.ContentAd.objects.filter(batch__id=batch_id)
+        for content_ad in content_ads:
+            content_ad.refresh_from_db()
+
         self.assertTrue(all([ad.archived is True for ad in content_ads]))
 
         response_dict = json.loads(response.content)
@@ -491,7 +506,7 @@ class AdGroupContentAdArchive(TestCase):
 
     def test_archive_pause_active_before_archiving(self):
         ad_group_id = 1
-        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id, archived=False)
         self.assertGreater(len(content_ads), 0)
         self.assertFalse(all([ad.state == constants.ContentAdSourceState.INACTIVE for ad in content_ads]))
 

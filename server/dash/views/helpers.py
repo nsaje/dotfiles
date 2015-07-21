@@ -575,7 +575,7 @@ def get_last_sync_messages(objects, last_sync_times):
 
 
 def get_selected_content_ads(
-        ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected):
+        ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected, include_archived):
     if select_all:
         content_ads = models.ContentAd.objects.filter(
             Q(ad_group__id=ad_group_id) | Q(id__in=content_ad_ids_selected)).exclude(
@@ -586,6 +586,9 @@ def get_selected_content_ads(
                 id__in=content_ad_ids_not_selected)
     else:
         content_ads = models.ContentAd.objects.filter(id__in=content_ad_ids_selected)
+
+    if not include_archived:
+        content_ads = content_ads.exclude_archived()
 
     return content_ads.order_by('created_dt')
 

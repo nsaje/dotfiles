@@ -729,7 +729,13 @@ class AdGroupContentAdArchive(api_common.BaseApiView):
         content_ad_ids_not_selected = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_not_selected')
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived=False
+        )
 
         active_content_ads = [ad for ad in content_ads if ad.state == constants.ContentAdSourceState.ACTIVE]
         if active_content_ads:
@@ -778,7 +784,13 @@ class AdGroupContentAdRestore(api_common.BaseApiView):
         content_ad_ids_not_selected = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_not_selected')
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived=True
+        )
 
         api.add_content_ads_archived_change_to_history(ad_group, content_ads, False, request)
 
@@ -814,9 +826,13 @@ class AdGroupContentAdState(api_common.BaseApiView):
         content_ad_ids_not_selected = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_not_selected')
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
-
-        content_ads = content_ads.exclude_archived()
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived=False
+        )
 
         api.update_content_ads_state(content_ads, state, request)
         api.add_content_ads_state_change_to_history(ad_group, content_ads, state, request)
@@ -842,12 +858,20 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
 
         select_all = request.GET.get('select_all', False)
         select_batch_id = request.GET.get('select_batch')
+        include_archived = request.GET.get('archived') == 'true' and\
+            request.user.has_perm('zemauth.view_archived_entities')
 
         content_ad_ids_selected = helpers.parse_get_request_content_ad_ids(request.GET, 'content_ad_ids_selected')
         content_ad_ids_not_selected = helpers.parse_get_request_content_ad_ids(request.GET, 'content_ad_ids_not_selected')
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived
+        )
 
         content_ad_dicts = []
         for content_ad in content_ads:

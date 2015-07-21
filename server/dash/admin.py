@@ -342,6 +342,8 @@ class SourceAdmin(admin.ModelAdmin):
 class SourceTypeAdmin(admin.ModelAdmin):
     form = SourceTypeForm
 
+    readonly_fields = ('available_actions', )
+
     fields = (
         'type',
         'available_actions',
