@@ -152,7 +152,7 @@ class SourceCredentialsForm(forms.ModelForm):
 
 class AvailableActionsField(SimpleArrayField):
     def to_python(self, value):
-        return [int(v) for v in value]
+        return sorted([int(v) for v in value])
 
     def prepare_value(self, value):
         return value
