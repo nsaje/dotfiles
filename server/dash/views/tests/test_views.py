@@ -914,11 +914,6 @@ class AdGroupSourcesTest(TestCase):
         self.client.login(username=username, password='secret')
 
         ad_group_source = models.AdGroupSource.objects.get(id=3)
-        ad_group_source.source.source_type.available_actions.add(
-            models.SourceAction.objects.get(
-                action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
-            )
-        )
         ad_group_source.source.source_type.available_actions_new = [
             constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
         ]

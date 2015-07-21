@@ -174,6 +174,14 @@ class AvailableActionsField(SimpleArrayField):
 
 
 class SourceTypeForm(forms.ModelForm):
+    available_actions = AvailableActionsField(
+        forms.fields.IntegerField(),
+        label='Available Actions',
+        required=False,
+        widget=forms.widgets.CheckboxSelectMultiple(
+            choices=sorted(constants.SourceAction.get_choices(), key=lambda x: x[1])
+        )
+    )
     available_actions_new = AvailableActionsField(
         forms.fields.IntegerField(),
         label='Available Actions',
@@ -342,7 +350,7 @@ class SourceAdmin(admin.ModelAdmin):
 class SourceTypeAdmin(admin.ModelAdmin):
     form = SourceTypeForm
 
-    readonly_fields = ('available_actions', )
+    readonly_fields = ('available_actions_new',)
 
     fields = (
         'type',

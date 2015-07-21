@@ -197,11 +197,6 @@ class AdGroupSettingsTest(TestCase):
     def test_get_ad_group_sources_with_settings(self, mock_actionlog_api, mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=1)
         ad_group_source = models.AdGroupSource.objects.get(id=1)
-        ad_group_source.source.source_type.available_actions.add(
-            models.SourceAction.objects.get(
-                action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
-            )
-        )
         ad_group_source.source.source_type.available_actions_new.append(
             constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC
         )
@@ -209,11 +204,6 @@ class AdGroupSettingsTest(TestCase):
         ad_group_source.save()
 
         ad_group_source = models.AdGroupSource.objects.get(id=2)
-        ad_group_source.source.source_type.available_actions.add(
-            models.SourceAction.objects.get(
-                action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
-            )
-        )
         ad_group_source.source.source_type.available_actions_new.append(
             constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
         )
