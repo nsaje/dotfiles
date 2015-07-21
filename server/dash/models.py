@@ -453,7 +453,6 @@ class SourceType(models.Model):
     )
 
     available_actions = ArrayField(models.PositiveSmallIntegerField(), null=True, blank=True)
-    available_actions_new = ArrayField(models.PositiveSmallIntegerField(), null=True, blank=True)
 
     min_cpc = models.DecimalField(
         max_digits=10,
