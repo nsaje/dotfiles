@@ -446,27 +446,13 @@ class CampaignSettings(SettingsBase):
         ordering = ('-created_dt',)
 
 
-class SourceAction(models.Model):
-    action = models.IntegerField(
-        primary_key=True,
-        choices=constants.SourceAction.get_choices()
-    )
-
-    def __str__(self):
-        return constants.SourceAction.get_text(self.action)
-
-
 class SourceType(models.Model):
     type = models.CharField(
         max_length=127,
         unique=True
     )
 
-    available_actions = models.ManyToManyField(
-        SourceAction,
-        blank=True
-    )
-
+    available_actions = ArrayField(models.PositiveSmallIntegerField(), null=True, blank=True)
     available_actions_new = ArrayField(models.PositiveSmallIntegerField(), null=True, blank=True)
 
     min_cpc = models.DecimalField(
