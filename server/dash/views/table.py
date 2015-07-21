@@ -176,7 +176,6 @@ class AccountSourcesTable(object):
                 self.account,
                 sources=self.filtered_sources
             ).get_latest_source_success(
-                recompute=False,
                 include_maintenance=True,
                 include_deprecated=True,
             )
@@ -1514,7 +1513,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
             order_by('ad_group_id', '-created_dt')
 
         account_sync = actionlog.sync.AccountSync(account, sources=filtered_sources)
-        last_success_actions = account_sync.get_latest_success_by_child(recompute=False)
+        last_success_actions = account_sync.get_latest_success_by_child()
 
         last_sync = helpers.get_last_sync(last_success_actions.values())
 
@@ -1552,7 +1551,6 @@ class AccountCampaignsTable(api_common.BaseApiView):
             response['data_status'] = self.get_data_status(
                 campaigns,
                 actionlog.sync.AccountSync(account, sources=filtered_sources).get_latest_success_by_child(
-                    recompute=False,
                     include_level_archived=True
                 )
             )
