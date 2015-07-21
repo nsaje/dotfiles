@@ -239,8 +239,10 @@ def _clean_tracker_urls(tracker_urls_string):
 
     for url in tracker_urls:
         try:
+            # URL is considered invalid if it contains any unicode chars
+            url = url.encode('ascii')
             validate_url(url)
-        except ValidationError:
+        except (ValidationError, UnicodeEncodeError):
             raise ValidationError('Invalid tracker URLs')
 
         result.append(url)

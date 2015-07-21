@@ -263,6 +263,22 @@ class CleanRowTest(TestCase):
         })
         self.assertEqual(errors, ['Invalid tracker URLs'])
 
+    def test_unicode_tracker_urls(self):
+        self.tracker_urls = u'http://exampleś.com'
+        data, errors = self._run_clean_row()
+
+        self.assertEqual(data, {
+            'image': {
+                'id': self.image_id,
+                'width': self.image_width,
+                'height': self.image_height,
+                'hash': self.image_hash
+            },
+            'title': self.title,
+            'url': self.url
+        })
+        self.assertEqual(errors, ['Invalid tracker URLs'])
+
     def test_invalid_tracker_urls_not_https(self):
         self.tracker_urls = 'http://example.com/p.gif'
         data, errors = self._run_clean_row()
