@@ -7,6 +7,8 @@ from django import forms
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
 from django.conf import settings
+from django.contrib.postgres.forms import SimpleArrayField
+from django.core.exceptions import ValidationError
 
 from zemauth.models import User as ZemUser
 
@@ -146,6 +148,40 @@ class SourceCredentialsForm(forms.ModelForm):
         super(SourceCredentialsForm, self).clean(*args, **kwargs)
         if 'credentials' in self.cleaned_data and self.cleaned_data['credentials'] == '':
             del self.cleaned_data['credentials']
+
+
+class AvailableActionsField(SimpleArrayField):
+    def to_python(self, value):
+        return sorted([int(v) for v in value])
+
+    def prepare_value(self, value):
+        return value
+
+    def validate(self, value):
+        all_actions = set([ac[0] for ac in constants.SourceAction.get_choices()])
+
+        errors = []
+        for i, el in enumerate(value):
+            if el not in all_actions:
+                errors.append(ValidationError(
+                    'Invalid source action',
+                    code='item_invalid',
+                    params={'nth': i},
+                ))
+
+        if errors:
+            raise ValidationError(errors)
+
+
+class SourceTypeForm(forms.ModelForm):
+    available_actions_new = AvailableActionsField(
+        forms.fields.IntegerField(),
+        label='Available Actions',
+        required=False,
+        widget=forms.widgets.CheckboxSelectMultiple(
+            choices=sorted(constants.SourceAction.get_choices(), key=lambda x: x[1])
+        )
+    )
 
 
 class DefaultSourceSettingsAdmin(admin.ModelAdmin):
@@ -304,9 +340,12 @@ class SourceAdmin(admin.ModelAdmin):
 
 
 class SourceTypeAdmin(admin.ModelAdmin):
+    form = SourceTypeForm
+
     fields = (
         'type',
         'available_actions',
+        'available_actions_new',
         'min_cpc',
         'min_daily_budget',
         'max_cpc',
@@ -319,6 +358,11 @@ class SourceTypeAdmin(admin.ModelAdmin):
         if obj:
             return self.readonly_fields + ('type',)
         return self.readonly_fields
+
+    class Media:
+        css = {
+            'all': ('css/admin/source_type_custom.css',)
+        }
 
 
 class SourceCredentialsAdmin(admin.ModelAdmin):
