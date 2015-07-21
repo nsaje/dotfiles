@@ -577,6 +577,8 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source.source.source_type.available_actions = [
             constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
+        ad_group_source.source.source_type.available_actions_new = [
+            constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
 
         view = views.table.SourcesTable()
         result = view._get_supply_dash_url(ad_group_source)
@@ -586,6 +588,7 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
     def test_get_supply_dash_url_no_dash(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source.source.source_type.available_actions = []
+        ad_group_source.source.source_type.available_actions_new = []
 
         view = views.table.SourcesTable()
         result = view._get_supply_dash_url(ad_group_source)
@@ -595,6 +598,8 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
     def test_get_supply_dash_url_pending(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
+        ad_group_source.source.source_type.available_actions_new = [
             constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
         ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
 
@@ -606,8 +611,9 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
     def test_get_supply_dash_disabled_message(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source.source.source_type.available_actions = [
-            constants.SourceAction.HAS_3RD_PARTY_DASHBOARD
-        ]
+            constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
+        ad_group_source.source.source_type.available_actions_new = [
+            constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
 
         view = views.table.SourcesTable()
         result = view._get_supply_dash_disabled_message(ad_group_source)
@@ -617,6 +623,7 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
     def test_get_supply_dash_disabled_message_no_dash(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source.source.source_type.available_actions = []
+        ad_group_source.source.source_type.available_actions_new = []
 
         view = views.table.SourcesTable()
         result = view._get_supply_dash_disabled_message(ad_group_source)
@@ -628,8 +635,9 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
     def test_get_supply_dash_disabled_message_pending(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source.source.source_type.available_actions = [
-            constants.SourceAction.HAS_3RD_PARTY_DASHBOARD
-        ]
+            constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
+        ad_group_source.source.source_type.available_actions_new = [
+            constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
         ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
 
         view = views.table.SourcesTable()
@@ -654,6 +662,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
 
         ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
+        ad_group_source.source.source_type.available_actions_new = [constants.SourceAction.CAN_UPDATE_STATE]
 
         ad_group_source.ad_group.content_ads_tab_with_cms = False
 
@@ -671,6 +680,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
 
         ad_group_source.source.source_type.available_actions = []
+        ad_group_source.source.source_type.available_actions_new = []
 
         ad_group_source.ad_group.content_ads_tab_with_cms = False
 
@@ -688,6 +698,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
 
         ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
+        ad_group_source.source.source_type.available_actions_new = [constants.SourceAction.CAN_UPDATE_STATE]
         ad_group_source.source.maintenance = True
 
         ad_group_source.ad_group.content_ads_tab_with_cms = False
@@ -706,6 +717,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
 
         ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
+        ad_group_source.source.source_type.available_actions_new = [constants.SourceAction.CAN_UPDATE_STATE]
 
         ad_group_source.ad_group.content_ads_tab_with_cms = True
 
@@ -728,6 +740,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_settings.target_regions = ['693']
 
         ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
+        ad_group_source.source.source_type.available_actions_new = [constants.SourceAction.CAN_UPDATE_STATE]
         ad_group_source.ad_group.content_ads_tab_with_cms = False
 
         view = views.table.SourcesTable()
@@ -746,6 +759,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_settings.end_date = None
 
         ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_CPC]
+        ad_group_source.source.source_type.available_actions_new = [constants.SourceAction.CAN_UPDATE_CPC]
 
         view = views.table.SourcesTable()
         result = view._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
@@ -762,6 +776,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_settings.end_date = None
 
         ad_group_source.source.source_type.available_actions = []
+        ad_group_source.source.source_type.available_actions_new = []
 
         view = views.table.SourcesTable()
         result = view._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
@@ -778,6 +793,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_settings.end_date = None
 
         ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_CPC]
+        ad_group_source.source.source_type.available_actions_new = [constants.SourceAction.CAN_UPDATE_CPC]
         ad_group_source.source.maintenance = True
 
         view = views.table.SourcesTable()
@@ -796,6 +812,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_settings.end_date = datetime.datetime(2015, 1, 1)
 
         ad_group_source.source.source_type.available_actions = []
+        ad_group_source.source.source_type.available_actions_new = []
 
         view = views.table.SourcesTable()
         result = view._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
@@ -812,8 +829,9 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_settings.end_date = None
 
         ad_group_source.source.source_type.available_actions = [
-            constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC
-        ]
+            constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC]
+        ad_group_source.source.source_type.available_actions_new = [
+            constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC]
 
         view = views.table.SourcesTable()
         result = view._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
@@ -830,6 +848,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_settings.end_date = None
 
         ad_group_source.source.source_type.available_actions = []
+        ad_group_source.source.source_type.available_actions_new = []
 
         view = views.table.SourcesTable()
         result = view._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
@@ -846,8 +865,9 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_settings.end_date = None
 
         ad_group_source.source.source_type.available_actions = [
-            constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC
-        ]
+            constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC]
+        ad_group_source.source.source_type.available_actions_new = [
+            constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC]
         ad_group_source.source.maintenance = True
 
         view = views.table.SourcesTable()
@@ -866,6 +886,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_settings.end_date = datetime.datetime(2015, 1, 1)
 
         ad_group_source.source.source_type.available_actions = []
+        ad_group_source.source.source_type.available_actions_new = []
 
         view = views.table.SourcesTable()
         result = view._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)

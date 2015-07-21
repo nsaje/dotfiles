@@ -1,3 +1,7 @@
 ul#id_available_actions li {
     list-style: none;
 }
+
+ul#id_available_actions_new li {
+    list-style: none;
+}

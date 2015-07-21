@@ -826,6 +826,9 @@ class ActionLogApiCancelExpiredTestCase(TestCase):
         ad_group_source.source.source_type.available_actions = [
             dashconstants.SourceAction.CAN_UPDATE_DAILY_BUDGET_MANUAL
         ]
+        ad_group_source.source.source_type.available_actions_new = [
+            dashconstants.SourceAction.CAN_UPDATE_DAILY_BUDGET_MANUAL
+        ]
         ad_group_source.source.source_type.save()
 
         request = HttpRequest()
