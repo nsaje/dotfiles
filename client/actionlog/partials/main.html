@@ -63,7 +63,9 @@
                             {{log.source[0]}} 
                         </a>
                     </td>
-                    <td>{{log.ad_group[0]}}</td>
+                    <td>
+                        <a ng-href="{{ '/ad_groups/' + log.ad_group[1] + '/sources' }}" target="_blank">{{log.ad_group[0]}}</a>
+                    </td>
                     <td>{{log.created_dt | date:'M/d/yyyy h:mm a'}}</td>
                     <td>{{log.created_by[0]}}</td>
                     <td title="{{log.modified_by[0]}}">{{log.modified_dt | date:'M/d/yyyy h:mm a'}}</td>
