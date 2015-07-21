@@ -175,6 +175,10 @@ class UpdateAdGroupSourceSettings(TestCase):
                 action=constants.SourceAction.CAN_MODIFY_AD_GROUP_NAME,
             )
         )
+        ad_group_source.source.source_type.available_actions_new.append(
+            constants.SourceAction.CAN_MODIFY_AD_GROUP_NAME
+        )
+        ad_group_source.source.source_type.save()
         ad_group_source.save()
 
         adgs1 = models.AdGroupSettings()
@@ -234,6 +238,10 @@ class UpdateAdGroupSourceSettings(TestCase):
                 action=constants.SourceAction.CAN_MODIFY_TRACKING_CODES,
             )
         )
+        ad_group_source.source.source_type.available_actions_new.append(
+            constants.SourceAction.CAN_MODIFY_TRACKING_CODES
+        )
+        ad_group_source.source.source_type.save()
 
         adgs1 = models.AdGroupSettings()
         adgs2 = models.AdGroupSettings()
@@ -259,11 +267,20 @@ class UpdateAdGroupSourceSettings(TestCase):
                 action=constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS,
             )
         )
+        ad_group_source1.source.source_type.available_actions_new.append(
+            constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS
+        )
+
         ad_group_source1.source.source_type.available_actions.add(
             models.SourceAction.objects.get(
                 action=constants.SourceAction.CAN_MODIFY_TRACKING_CODES,
             )
         )
+        ad_group_source1.source.source_type.available_actions_new.append(
+            constants.SourceAction.CAN_MODIFY_TRACKING_CODES
+        )
+
+        ad_group_source1.source.source_type.save()
 
         adgs1 = models.AdGroupSettings()
         adgs2 = models.AdGroupSettings()
@@ -284,11 +301,19 @@ class UpdateAdGroupSourceSettings(TestCase):
                 action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC
             )
         )
+        ad_group_source.source.source_type.available_actions_new.append(
+            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
+        )
+
         ad_group_source.source.source_type.available_actions.add(
             models.SourceAction.objects.get(
                 action=constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
             )
         )
+        ad_group_source.source.source_type.available_actions_new.append(
+            constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
+        )
+        ad_group_source.source.source_type.save()
 
         adgs1 = models.AdGroupSettings()
         adgs2 = models.AdGroupSettings()
@@ -315,11 +340,19 @@ class UpdateAdGroupSourceSettings(TestCase):
                 action=constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
             )
         )
+        ad_group_source.source.source_type.available_actions_new.append(
+            constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
+        )
+
         ad_group_source.source.source_type.available_actions.add(
             models.SourceAction.objects.get(
                 action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
             )
         )
+        ad_group_source.source.source_type.available_actions_new.append(
+                constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+        )
+        ad_group_source.source.source_type.save()
 
         adgs1 = models.AdGroupSettings()
         adgs2 = models.AdGroupSettings()
@@ -365,6 +398,10 @@ class UpdateAdGroupSourceSettings(TestCase):
                 action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC
             )
         )
+        ad_group_source.source.source_type.available_actions_new.append(
+            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC
+        )
+        ad_group_source.source.source_type.save()
 
         adgs1 = models.AdGroupSettings()
         adgs2 = models.AdGroupSettings()
@@ -392,6 +429,10 @@ class UpdateAdGroupSourceSettings(TestCase):
                 action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
             )
         )
+        ad_group_source.source.source_type.available_actions_new.append(
+            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+        )
+        ad_group_source.source.source_type.save()
 
         adgs1 = models.AdGroupSettings()
         adgs2 = models.AdGroupSettings()
@@ -418,6 +459,10 @@ class UpdateAdGroupSourceSettings(TestCase):
                 action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
             )
         )
+        ad_group_source.source.source_type.available_actions_new.append(
+            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+        )
+        ad_group_source.source.source_type.save()
 
         adgs1 = models.AdGroupSettings()
         adgs1.target_regions = ['GB', '693']
@@ -443,6 +488,10 @@ class UpdateAdGroupSourceSettings(TestCase):
                 action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
             )
         )
+        ad_group_source.source.source_type.available_actions_new.append(
+            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+        )
+        ad_group_source.source.source_type.save()
 
         adgs1 = models.AdGroupSettings()
         adgs1.target_regions = ['GB', '693']
@@ -470,6 +519,10 @@ class UpdateAdGroupSourceSettings(TestCase):
                 action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC
             )
         )
+        ad_group_source.source.source_type.available_actions_new.append(
+            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC
+        )
+        ad_group_source.source.source_type.save()
 
         adgs1 = models.AdGroupSettings()
         adgs1.target_regions = ['GB', '693']
@@ -499,6 +552,10 @@ class UpdateAdGroupSourceSettings(TestCase):
                 action=constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL
             )
         )
+        ad_group_source.source.source_type.available_actions_new.append(
+            constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL
+        )
+        ad_group_source.source.source_type.save()
 
         adgs1 = models.AdGroupSettings()
         adgs2 = models.AdGroupSettings()
@@ -524,6 +581,10 @@ class UpdateAdGroupSourceSettings(TestCase):
                 action=constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY_AUTOMATIC
             )
         )
+        ad_group_source.source.source_type.available_actions_new.append(
+            constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY_AUTOMATIC
+        )
+        ad_group_source.source.source_type.save()
 
         adgs1 = models.AdGroupSettings()
         adgs2 = models.AdGroupSettings()
