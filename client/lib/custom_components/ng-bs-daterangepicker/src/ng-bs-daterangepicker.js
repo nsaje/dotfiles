@@ -96,10 +96,10 @@
                 $element.on('show.daterangepicker', function (ev, picker) {
                     angular.element(picker.container)
                         .find('.calendar.left .calendar-date tbody')
-                        .append('<tr><td colspan="7" style="font-weight: bold;">start date</td></tr>');
+                        .append('<tr><td colspan="7" class="calendar-label">start date</td></tr>');
                     angular.element(picker.container)
                         .find('.calendar.right .calendar-date tbody')
-                        .append('<tr><td colspan="7" style="font-weight: bold;">end date</td></tr>');
+                        .append('<tr><td colspan="7" class="calendar-label">end date</td></tr>');
                 });
             }
         };
