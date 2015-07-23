@@ -176,6 +176,7 @@ class AccountSync(BaseSync, ISyncComposite):
             if len(list(campaign_sync.get_components(maintenance=maintenance, deprecated=deprecated))) > 0:
                 yield campaign_sync
 
+    @newrelic.agent.function_trace()
     def _get_ad_group_sources(self, include_level_archived=False, include_maintenance=False, include_deprecated=False):
         campaigns = dash.models.Campaign.objects.filter(account=self.obj)
         if not include_level_archived:
