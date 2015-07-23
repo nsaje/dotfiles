@@ -174,7 +174,7 @@ class AvailableActionsField(SimpleArrayField):
 
 
 class SourceTypeForm(forms.ModelForm):
-    available_actions_new = AvailableActionsField(
+    available_actions = AvailableActionsField(
         forms.fields.IntegerField(),
         label='Available Actions',
         required=False,
@@ -345,7 +345,6 @@ class SourceTypeAdmin(admin.ModelAdmin):
     fields = (
         'type',
         'available_actions',
-        'available_actions_new',
         'min_cpc',
         'min_daily_budget',
         'max_cpc',

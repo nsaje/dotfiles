@@ -99,11 +99,10 @@ class ContentAdsApiTestCase(TestCase):
         }
         self.assertEqual(action.payload, payload)
 
-        ad_group_source.source.source_type.available_actions.add(
-            dash.models.SourceAction.objects.get(
-                action=dash.constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS,
-            )
+        ad_group_source.source.source_type.available_actions.append(
+            dash.constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS
         )
+        ad_group_source.source.source_type.save()
 
         ad_group_source.can_manage_content_ads = True
         ad_group_source.save(request)

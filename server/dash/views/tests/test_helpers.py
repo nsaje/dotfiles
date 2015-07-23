@@ -207,8 +207,9 @@ class ViewHelpersTestCase(TestCase):
         ad_group_sources_settings = helpers.get_ad_group_sources_settings([ad_group_source])
         ad_group_sources_states = helpers.get_ad_group_sources_states([ad_group_source])
 
-        # clear all available actions - this makes editing disabled
-        ad_group_source.source.source_type.available_actions.clear()
+        # remove all available actions - this makes editing disabled
+        ad_group_source.source.source_type.available_actions = []
+        ad_group_source.source.source_type.save()
 
         last_successful_sync_time = actionlog.sync.AdGroupSourceSync(ad_group_source).get_latest_success_by_child(
             recompute=False
