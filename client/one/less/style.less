@@ -1793,9 +1793,23 @@ a.help-popover:visited {
     background-image: url('img/data_status_icon.svg');
 }
 
-.table-container {
-    width: 100%;
-    overflow: auto;
+.adgroup-status-icon-placeholder() {
+    background-size: 10px;
+    background-position: 10px;
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+	margin: 0 5px 0 0;
+}
+
+.adgroup-enabled-icon {
+    .adgroup-status-icon-placeholder();
+    background-image: url('img/adgroup_status_enabled_icon.png');
+}
+
+.adgroup-paused-icon {
+    .adgroup-status-icon-placeholder();
+    background-image: url('img/adgroup_status_paused_icon.png');
 }
 
 .table {

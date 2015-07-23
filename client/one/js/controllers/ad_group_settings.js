@@ -100,20 +100,35 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
     };
 
     $scope.saveSettings = function () {
+        var prevAdGroup = $scope.adGroup.id,
+            stateActive = constants.adGroupSourceSettingsState.ACTIVE;
         $scope.saved = null;
         $scope.discarded = null;
         $scope.saveRequestInProgress = true;
 
         api.adGroupSettings.save($scope.settings).then(
             function (data) {
+                var currAdGroup = $scope.adGroup.id,
+                    adGroupToEdit = null;
                 $scope.errors = {};
-                $scope.settings = data.settings;
-                $scope.actionIsWaiting = data.actionIsWaiting;
-                $scope.updateAccounts(data.settings.name);
-                $scope.updateBreadcrumbAndTitle();
+                if (prevAdGroup != currAdGroup || true) {
+                    adGroupToEdit = $scope.getAdGroup(prevAdGroup);
+                    adGroupToEdit.name = data.settings.name;
+                    adGroupToEdit.state = data.settings.state === stateActive ? 'enabled' : 'paused';
+                } else {
+                    $scope.settings = data.settings;
+                    $scope.actionIsWaiting = data.actionIsWaiting;
+                    
+                    $scope.updateAccounts(data.settings.name, data.settings.state);
+                    $scope.updateBreadcrumbAndTitle();
+                    $scope.setAdGroupPaused(
+                        $scope.settings.state === constants.adGroupSettingsState.INACTIVE
+                    );
+                }
+                
+
                 $scope.saveRequestInProgress = false;
                 $scope.saved = true;
-                $scope.setAdGroupPaused($scope.settings.state === constants.adGroupSettingsState.INACTIVE);
             },
             function (data) {
                 $scope.errors = data;
