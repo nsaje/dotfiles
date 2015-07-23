@@ -7,10 +7,8 @@
  */
 
 /* THIS IS A MODIFIED VERSION, DO NOT REPLACE WITH A STOCK VERSION */
-
 (function (angular) {
     'use strict';
-
     angular.module('ngBootstrap', []).directive('input', ['$compile', '$parse', function ($compile, $parse) {
         return {
             restrict: 'E',
@@ -95,6 +93,14 @@
                 });
 
                 $element.daterangepicker(options, dateRangeChanged);
+                $element.on('show.daterangepicker', function (ev, picker) {
+                    angular.element(picker.container)
+                        .find('.calendar.left .calendar-date tbody')
+                        .append('<tr><td colspan="7" class="calendar-label">start date</td></tr>');
+                    angular.element(picker.container)
+                        .find('.calendar.right .calendar-date tbody')
+                        .append('<tr><td colspan="7" class="calendar-label">end date</td></tr>');
+                });
             }
         };
     }]);
