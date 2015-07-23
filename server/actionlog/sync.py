@@ -197,6 +197,7 @@ class AccountSync(BaseSync, ISyncComposite):
 
         return ad_group_sources
 
+    @newrelic.agent.function_trace()
     def get_latest_success_by_child(self, include_level_archived=False):
         result = {}
 
@@ -217,6 +218,7 @@ class AccountSync(BaseSync, ISyncComposite):
 
         return result
 
+    @newrelic.agent.function_trace()
     def get_latest_source_success(self, include_maintenance=False, include_deprecated=False):
         result = {}
 
