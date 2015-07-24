@@ -256,6 +256,7 @@ def build_angular_app(app, params):
     dest_folder = os.path.join(params['tmp_folder_git'], app)
     with lcd(dest_folder):
         local('npm install')
+        local('bower install')
         local('grunt')
         local('rm -rf node_modules')
 
