@@ -21,7 +21,7 @@ class ViewHelpersTestCase(TestCase):
         last_successful_ags_sync_times = {}
         for ags in ad_group_sources:
             last_successful_ags_sync_times.update(
-                actionlog.sync.AdGroupSourceSync(ags).get_latest_success_by_child(recompute=False)
+                actionlog.sync.AdGroupSourceSync(ags).get_latest_success_by_child()
             )
 
         last_sync_messages = helpers.get_last_sync_messages(ad_group_sources, last_successful_ags_sync_times)
@@ -33,7 +33,7 @@ class ViewHelpersTestCase(TestCase):
         last_successful_source_sync_times = {}
         for ags in ad_group_sources:
             last_successful_source_sync_times.update(
-                actionlog.sync.AdGroupSourceSync(ags).get_latest_source_success(recompute=False)
+                actionlog.sync.AdGroupSourceSync(ags).get_latest_source_success()
             )
 
         sources = models.Source.objects.filter(pk__in=last_successful_source_sync_times.keys())
@@ -49,7 +49,7 @@ class ViewHelpersTestCase(TestCase):
         last_successful_ad_group_sync_times = {}
         for ag in ad_groups:
             last_successful_ad_group_sync_times.update(
-                actionlog.sync.AdGroupSync(ag).get_latest_success_by_child(recompute=False)
+                actionlog.sync.AdGroupSync(ag).get_latest_success_by_child()
             )
 
         last_sync_messages = helpers.get_last_sync_messages(ad_groups, last_successful_ad_group_sync_times)
@@ -60,23 +60,25 @@ class ViewHelpersTestCase(TestCase):
         last_successful_source_sync_times = {}
         for ag in ad_groups:
             last_successful_source_sync_times.update(
-                actionlog.sync.AdGroupSync(ag).get_latest_source_success(recompute=False)
+                actionlog.sync.AdGroupSync(ag).get_latest_source_success()
             )
 
         sources = models.Source.objects.filter(pk__in=last_successful_source_sync_times.keys())
         last_source_sync_messages = helpers.get_last_sync_messages(sources, last_successful_source_sync_times)
-        self.assertEqual(len(last_source_sync_messages), 6)
+        self.assertEqual(len(last_source_sync_messages), 7)
         self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
         self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
         self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
         self.assertEquals(last_source_sync_messages[4], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
         self.assertEquals(last_source_sync_messages[5], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_source_sync_messages[6], ([], True))
+        self.assertEquals(last_source_sync_messages[7], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
 
         archived_ad_groups = models.AdGroup.objects.filter(pk__in=[5])
         last_successful_archived_sync_times = {}
         for ad_group in archived_ad_groups:
             last_successful_archived_sync_times.update(
-                actionlog.sync.AdGroupSync(ad_group).get_latest_success_by_child(recompute=False)
+                actionlog.sync.AdGroupSync(ad_group).get_latest_success_by_child()
             )
 
         last_sync_messages = helpers.get_last_sync_messages(archived_ad_groups, last_successful_archived_sync_times)
@@ -89,7 +91,7 @@ class ViewHelpersTestCase(TestCase):
         last_successful_campaign_sync_times = {}
         for campaign in campaigns:
             last_successful_campaign_sync_times.update(
-                actionlog.sync.CampaignSync(campaign).get_latest_success_by_child(recompute=False)
+                actionlog.sync.CampaignSync(campaign).get_latest_success_by_child()
             )
 
         last_sync_messages = helpers.get_last_sync_messages(campaigns, last_successful_campaign_sync_times)
@@ -100,21 +102,25 @@ class ViewHelpersTestCase(TestCase):
         last_successful_source_sync_times = {}
         for campaign in campaigns:
             last_successful_source_sync_times.update(
-                actionlog.sync.CampaignSync(campaign).get_latest_source_success(recompute=False)
+                actionlog.sync.CampaignSync(campaign).get_latest_source_success()
             )
 
         sources = models.Source.objects.filter(pk__in=last_successful_source_sync_times.keys())
         last_source_sync_messages = helpers.get_last_sync_messages(sources, last_successful_source_sync_times)
-        self.assertEqual(len(last_source_sync_messages), 6)
+        self.assertEqual(len(last_source_sync_messages), 7)
         self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
         self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
         self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_source_sync_messages[4], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_source_sync_messages[5], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_source_sync_messages[6], ([], True))
+        self.assertEquals(last_source_sync_messages[7], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
 
         archived_campaigns = models.Campaign.objects.filter(pk__in=[4])
         last_successful_archived_sync_times = {}
         for campaign in archived_campaigns:
             last_successful_archived_sync_times.update(
-                actionlog.sync.CampaignSync(campaign).get_latest_success_by_child(recompute=False)
+                actionlog.sync.CampaignSync(campaign).get_latest_success_by_child()
             )
 
         last_sync_messages = helpers.get_last_sync_messages(archived_campaigns, last_successful_archived_sync_times)
@@ -142,10 +148,14 @@ class ViewHelpersTestCase(TestCase):
 
         sources = models.Source.objects.filter(pk__in=last_successful_source_sync_times.keys())
         last_source_sync_messages = helpers.get_last_sync_messages(sources, last_successful_source_sync_times)
-        self.assertEqual(len(last_source_sync_messages), 6)
+        self.assertEqual(len(last_source_sync_messages), 7)
         self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
         self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
         self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_source_sync_messages[4], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_source_sync_messages[5], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_source_sync_messages[6], ([], True))
+        self.assertEquals(last_source_sync_messages[7], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
 
         archived_accounts = models.Account.objects.filter(pk__in=[3])
         last_successful_archived_sync_times = {}
@@ -171,7 +181,7 @@ class ViewHelpersTestCase(TestCase):
         last_successful_ags_sync_times = {}
         for ags in ad_group_sources:
             last_successful_ags_sync_times.update(
-                actionlog.sync.AdGroupSourceSync(ags).get_latest_success_by_child(recompute=False)
+                actionlog.sync.AdGroupSourceSync(ags).get_latest_success_by_child()
             )
 
         data_status = helpers.get_data_status(
@@ -211,9 +221,7 @@ class ViewHelpersTestCase(TestCase):
         ad_group_source.source.source_type.available_actions = []
         ad_group_source.source.source_type.save()
 
-        last_successful_sync_time = actionlog.sync.AdGroupSourceSync(ad_group_source).get_latest_success_by_child(
-            recompute=False
-        )
+        last_successful_sync_time = actionlog.sync.AdGroupSourceSync(ad_group_source).get_latest_success_by_child()
 
         data_status = helpers.get_data_status(
             [ad_group_source],
@@ -263,9 +271,7 @@ class ViewHelpersTestCase(TestCase):
         ad_group_sources_settings = helpers.get_ad_group_sources_settings([ad_group_source])
         ad_group_sources_states = helpers.get_ad_group_sources_states([ad_group_source])
 
-        last_successful_sync_time = actionlog.sync.AdGroupSourceSync(ad_group_source).get_latest_success_by_child(
-            recompute=False
-        )
+        last_successful_sync_time = actionlog.sync.AdGroupSourceSync(ad_group_source).get_latest_success_by_child()
         data_status = helpers.get_data_status(
             [ad_group_source],
             helpers.get_last_sync_messages([ad_group_source], last_successful_sync_time),
@@ -289,9 +295,7 @@ class ViewHelpersTestCase(TestCase):
         ad_group_sources_settings = helpers.get_ad_group_sources_settings([ad_group_source])
         ad_group_sources_states = helpers.get_ad_group_sources_states([ad_group_source])
 
-        last_successful_sync_time = actionlog.sync.AdGroupSourceSync(ad_group_source).get_latest_success_by_child(
-            recompute=False
-        )
+        last_successful_sync_time = actionlog.sync.AdGroupSourceSync(ad_group_source).get_latest_success_by_child()
         data_status = helpers.get_data_status(
             [ad_group_source],
             helpers.get_last_sync_messages([ad_group_source], last_successful_sync_time),

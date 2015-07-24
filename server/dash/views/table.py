@@ -113,10 +113,7 @@ class AllAccountsSourcesTable(object):
         if not hasattr(self, '_last_success_actions'):
             self._last_success_actions = actionlog.sync.GlobalSync(
                 sources=self.filtered_sources
-            ).get_latest_success_by_source(
-                include_maintenance=True,
-                include_deprecated=True,
-            )
+            ).get_latest_source_success()
         return self._last_success_actions
 
     def is_sync_in_progress(self):
@@ -175,10 +172,7 @@ class AccountSourcesTable(object):
             self._last_success_actions = actionlog.sync.AccountSync(
                 self.account,
                 sources=self.filtered_sources
-            ).get_latest_source_success(
-                include_maintenance=True,
-                include_deprecated=True,
-            )
+            ).get_latest_source_success()
         return self._last_success_actions
 
     def is_sync_in_progress(self):
@@ -237,11 +231,7 @@ class CampaignSourcesTable(object):
             self._last_success_actions = actionlog.sync.CampaignSync(
                 self.campaign,
                 sources=self.filtered_sources
-            ).get_latest_source_success(
-                recompute=False,
-                include_maintenance=True,
-                include_deprecated=True,
-            )
+            ).get_latest_source_success()
         return self._last_success_actions
 
     def is_sync_in_progress(self):
@@ -302,11 +292,7 @@ class AdGroupSourcesTable(object):
             self._last_success_actions = actionlog.sync.AdGroupSync(
                 self.ad_group,
                 sources=self.filtered_sources
-            ).get_latest_source_success(
-                recompute=False,
-                include_maintenance=True,
-                include_deprecated=True,
-            )
+            ).get_latest_source_success()
         return self._last_success_actions
 
     def is_sync_in_progress(self):
@@ -871,7 +857,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
         totals_data['available_budget'] = totals_data['budget'] - sum(account_total_spend.values())
         totals_data['unspent_budget'] = totals_data['budget'] - (totals_data.get('cost') or 0)
 
-        last_success_actions = actionlog.sync.GlobalSync(sources=filtered_sources).get_latest_success_by_account()
+        last_success_actions = actionlog.sync.GlobalSync(sources=filtered_sources).get_latest_success_by_child()
         last_success_actions = {aid: val for aid, val in last_success_actions.items() if aid in account_ids}
 
         last_sync = helpers.get_last_sync(last_success_actions.values())
@@ -919,7 +905,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
         if user.has_perm('zemauth.data_status_column'):
             response['data_status'] = self.get_data_status(
                 accounts,
-                actionlog.sync.GlobalSync(sources=filtered_sources).get_latest_success_by_account()
+                last_success_actions,
             )
 
         return self.create_api_response(response)
@@ -1030,7 +1016,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
             ), request.user)
 
         ad_group_sync = actionlog.sync.AdGroupSync(ad_group, sources=filtered_sources)
-        last_success_actions = ad_group_sync.get_latest_success_by_child(recompute=False)
+        last_success_actions = ad_group_sync.get_latest_success_by_child()
 
         last_sync = helpers.get_last_sync(last_success_actions.values())
 
@@ -1176,7 +1162,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         ), request.user)
 
         ad_group_sync = actionlog.sync.AdGroupSync(ad_group, sources=filtered_sources)
-        last_success_actions = ad_group_sync.get_latest_success_by_child(recompute=False)
+        last_success_actions = ad_group_sync.get_latest_success_by_child()
         last_sync = helpers.get_last_sync(last_success_actions.values())
 
         response_dict = {
@@ -1357,7 +1343,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         )
 
         campaign_sync = actionlog.sync.CampaignSync(campaign, sources=filtered_sources)
-        last_success_actions = campaign_sync.get_latest_success_by_child(recompute=False)
+        last_success_actions = campaign_sync.get_latest_success_by_child()
 
         last_sync = helpers.get_last_sync(last_success_actions.values())
 
@@ -1393,10 +1379,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         if request.user.has_perm('zemauth.data_status_column'):
             response['data_status'] = self.get_data_status(
                 ad_groups,
-                actionlog.sync.CampaignSync(campaign, sources=filtered_sources).get_latest_success_by_child(
-                    recompute=False,
-                    include_level_archived=True
-                )
+                last_success_actions,
             )
 
         return self.create_api_response(response)
@@ -1550,9 +1533,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
         if user.has_perm('zemauth.data_status_column'):
             response['data_status'] = self.get_data_status(
                 campaigns,
-                actionlog.sync.AccountSync(account, sources=filtered_sources).get_latest_success_by_child(
-                    include_level_archived=True
-                )
+                last_success_actions,
             )
 
         return self.create_api_response(response)

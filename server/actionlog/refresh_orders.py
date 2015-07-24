@@ -3,13 +3,9 @@ from datetime import datetime
 from actionlog import sync
 from utils import statsd_helper
 
-import dash.models
-
 
 def refresh_fetch_all_orders():
-    last_success_times = sync.GlobalSync(
-        sources=dash.models.Source.objects.all()
-    ).get_latest_success_by_child(recompute=False).values()
+    last_success_times = sync.GlobalSync().get_latest_success_by_child().values()
 
     last_sync = None
     if len(last_success_times) and None not in last_success_times:
