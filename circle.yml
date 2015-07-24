@@ -19,7 +19,7 @@ dependencies:
                 client
         - bower install:
             pwd:
-                 client
+                client
 
 checkout:
     post:
