@@ -17,6 +17,9 @@ dependencies:
         - npm install:
             pwd:
                 client
+        - bower install:
+            pwd:
+                 client
 
 checkout:
     post:
