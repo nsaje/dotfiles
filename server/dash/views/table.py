@@ -682,8 +682,12 @@ class SourcesTable(api_common.BaseApiView):
             ad_group_level=False):
         rows = []
         for i, source in enumerate(sources):
-            newrelic.agent.record_custom_metric('Custom/GetRowsLoop', i)
-            states = [s for s in sources_states if s.ad_group_source.source_id == source.id]
+
+            @newrelic.agent.function_trace()
+            def _get_states():
+                return [s for s in sources_states if s.ad_group_source.source_id == source.id]
+
+            states = _get_states()
 
             source_settings = None
             if ad_group_level and ad_group_sources_settings:
