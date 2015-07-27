@@ -271,6 +271,24 @@
     model: dash.adgroupsettings
     pk: 3
 
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        archived: True
+        ad_group: 6
+        tracking_code: ''
+        enable_ga_tracking: False
+    model: dash.adgroupsettings
+    pk: 4
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        archived: True
+        ad_group: 7
+    model: dash.adgroupsettings
+    pk: 5
+
 # test adgroup
 
 -   fields:
@@ -656,6 +674,16 @@
         archived: True
     model: dash.campaignsettings
     pk: 2
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        name: 'test campaign 5'
+        account_manager: NULL
+        campaign: 5
+        archived: True
+    model: dash.campaignsettings
+    pk: 3
 
 # test defaultsourcesettings
 
