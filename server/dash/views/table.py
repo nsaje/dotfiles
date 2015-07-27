@@ -1059,7 +1059,7 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         last_change_dt = helpers.parse_datetime(request.GET.get('last_change'))
 
-        last_change_dt = helpers.get_content_ad_last_change_dt(ad_group, filtered_sources, last_change_dt)
+        new_last_change_dt = helpers.get_content_ad_last_change_dt(ad_group, filtered_sources, last_change_dt)
         changed_content_ads = helpers.get_changed_content_ads(ad_group, filtered_sources, last_change_dt)
 
         ad_group_sources_states = models.AdGroupSourceState.objects.distinct('ad_group_source_id')\
@@ -1090,7 +1090,7 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
         response_dict = {
             'rows': rows,
             'notifications': notifications,
-            'last_change': last_change_dt,
+            'last_change': new_last_change_dt,
             'in_progress': any(n['in_progress'] for n in notifications.values())
         }
 

@@ -4,7 +4,7 @@ import pytz
 import newrelic.agent
 
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Q, Max
 
 import actionlog.api
 import actionlog.constants
@@ -343,30 +343,27 @@ def get_content_ad_notifications(ad_group):
     return notifications
 
 
-def get_changed_content_ads(ad_group, sources, last_change_dt):
+def _get_changed_content_ad_sources(ad_group, sources, last_change_dt):
     content_ad_sources = models.ContentAdSource.objects.filter(
         content_ad__ad_group=ad_group,
-        source=sources,
-        modified_dt__gt=last_change_dt
-    ).select_related('content_ad')
+        source=sources
+    )
 
+    if last_change_dt is not None:
+        content_ad_sources = content_ad_sources.filter(modified_dt__gt=last_change_dt)
+
+    return content_ad_sources
+
+
+def get_changed_content_ads(ad_group, sources, last_change_dt=None):
+    content_ad_sources = _get_changed_content_ad_sources(ad_group, sources, last_change_dt).select_related('content_ad')
     return set(s.content_ad for s in content_ad_sources)
 
 
 @newrelic.agent.function_trace()
 def get_content_ad_last_change_dt(ad_group, sources, last_change_dt=None):
-    content_ad_sources = models.ContentAdSource.objects.filter(
-        content_ad__ad_group=ad_group,
-        source=sources
-    ).select_related('content_ad')
-
-    if last_change_dt is not None:
-        content_ad_sources = content_ad_sources.filter(modified_dt__gt=last_change_dt)
-
-    if len(content_ad_sources) == 0:
-        return None
-
-    return max([s.modified_dt for s in content_ad_sources])
+    content_ad_sources = _get_changed_content_ad_sources(ad_group, sources, last_change_dt)
+    return content_ad_sources.aggregate(Max('modified_dt'))['modified_dt__max']
 
 
 @newrelic.agent.function_trace()
