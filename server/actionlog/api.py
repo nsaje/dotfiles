@@ -4,6 +4,7 @@ import traceback
 import urlparse
 import collections
 from operator import attrgetter
+import newrelic.agent
 
 from datetime import datetime
 
@@ -310,6 +311,7 @@ def age_oldest_waiting_action(manual_action=True):
     return int((datetime.utcnow() - waiting_actions[0].created_dt).total_seconds() / 3600)
 
 
+@newrelic.agent.function_trace()
 def is_sync_in_progress(ad_groups=None, campaigns=None, accounts=None, sources=None):
     '''
     sync is in progress if one of the following is true:

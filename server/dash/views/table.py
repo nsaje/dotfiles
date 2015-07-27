@@ -1193,6 +1193,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
 
         return self.create_api_response(response_dict)
 
+    @newrelic.agent.function_trace()
     def _get_total_row(self, stats):
         return {
             'impressions': stats['impressions'],

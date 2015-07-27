@@ -304,6 +304,7 @@ def get_ad_group_sources_notifications(ad_group_sources, ad_group_settings,
     return notifications
 
 
+@newrelic.agent.function_trace()
 def get_content_ad_notifications(ad_group):
     actions = actionlog.models.ActionLog.objects.filter(
         state=actionlog.constants.ActionState.WAITING,
@@ -342,6 +343,7 @@ def get_content_ad_notifications(ad_group):
     return notifications
 
 
+@newrelic.agent.function_trace()
 def get_content_ad_last_change_dt(ad_group, sources, last_change_dt=None):
     content_ad_sources = models.ContentAdSource.objects.filter(
         content_ad__ad_group=ad_group,
@@ -360,6 +362,7 @@ def get_content_ad_last_change_dt(ad_group, sources, last_change_dt=None):
     return last_change_dt, changed_content_ads
 
 
+@newrelic.agent.function_trace()
 def get_content_ad_submission_status(user, ad_group_sources_states, content_ad_sources):
     submission_status = []
     for content_ad_source in content_ad_sources:
