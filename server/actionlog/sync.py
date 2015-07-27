@@ -47,7 +47,7 @@ class BaseSync(object):
         return sync_data
 
     @newrelic.agent.function_trace()
-    def get_latest_success_by_child(self, ):
+    def get_latest_success_by_child(self):
         return self.add_demo_child_syncs(
             self._construct_last_sync_result(self.get_child_sync_key())
         )
@@ -232,7 +232,7 @@ class CampaignSync(BaseSync, ISyncComposite):
         if self.obj.id in dash.models.Campaign.demo_objects.all().values_list('id', flat=True):
             for ad_group in self.obj.adgroup_set.all():
                 if ad_group.id not in sync_data:
-                    sync_data[ad_group] = datetime.utcnow()
+                    sync_data[ad_group.id] = datetime.utcnow()
 
         return sync_data
 
