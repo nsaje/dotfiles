@@ -343,6 +343,16 @@ def get_content_ad_notifications(ad_group):
     return notifications
 
 
+def get_changed_content_ads(ad_group, sources, last_change_dt):
+    content_ad_sources = models.ContentAdSource.objects.filter(
+        content_ad__ad_group=ad_group,
+        source=sources,
+        modified_dt__gt=last_change_dt
+    ).select_related('content_ad')
+
+    return set(s.content_ad for s in content_ad_sources)
+
+
 @newrelic.agent.function_trace()
 def get_content_ad_last_change_dt(ad_group, sources, last_change_dt=None):
     content_ad_sources = models.ContentAdSource.objects.filter(
@@ -353,13 +363,10 @@ def get_content_ad_last_change_dt(ad_group, sources, last_change_dt=None):
     if last_change_dt is not None:
         content_ad_sources = content_ad_sources.filter(modified_dt__gt=last_change_dt)
 
-    changed_content_ads = set(s.content_ad for s in content_ad_sources)
+    if len(content_ad_sources) == 0:
+        return None
 
-    last_change_dt = None
-    if len(content_ad_sources):
-        last_change_dt = max([s.modified_dt for s in content_ad_sources])
-
-    return last_change_dt, changed_content_ads
+    return max([s.modified_dt for s in content_ad_sources])
 
 
 @newrelic.agent.function_trace()
