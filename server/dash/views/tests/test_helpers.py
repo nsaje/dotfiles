@@ -323,6 +323,39 @@ class ViewHelpersTestCase(TestCase):
             helpers.parse_post_request_content_ad_ids({'ids': ['1', 'a']}, 'ids')
 
 
+class GetChangedContentAdsTestCase(TestCase):
+    fixtures = ['test_api']
+
+    def setUp(self):
+        self.ag = models.AdGroup.objects.get(id=2)
+        self.sources = models.Source.objects.all()
+
+    def test_get_content_ad_last_change_dt(self):
+        last_change_dt = helpers.get_content_ad_last_change_dt(self.ag, self.sources)
+        self.assertEqual(datetime.datetime(2015, 7, 1), last_change_dt)
+
+        last_change_dt = helpers.get_content_ad_last_change_dt(self.ag, self.sources,
+                                                               last_change_dt=datetime.datetime(2015, 7, 1))
+        self.assertEqual(None, last_change_dt)
+
+    def test_get_changed_content_ads(self):
+        changed_content_ads = helpers.get_changed_content_ads(self.ag, self.sources)
+        self.assertItemsEqual([
+            models.ContentAd.objects.get(id=4),
+            models.ContentAd.objects.get(id=5),
+        ], changed_content_ads)
+
+        changed_content_ads = helpers.get_changed_content_ads(self.ag, self.sources,
+                                                              last_change_dt=datetime.datetime(2015, 2, 23))
+        self.assertItemsEqual([
+            models.ContentAd.objects.get(id=5),
+        ], changed_content_ads)
+
+        changed_content_ads = helpers.get_changed_content_ads(self.ag, self.sources,
+                                                              last_change_dt=datetime.datetime(2015, 7, 1))
+        self.assertItemsEqual([], changed_content_ads)
+
+
 class GetSelectedContentAdsTest(TestCase):
     fixtures = ['test_api']
 
