@@ -18,6 +18,7 @@ from dash import models
 from dash import constants
 from dash import regions
 from dash import consistency
+from dash import threads
 
 import utils.url_helper
 
@@ -624,7 +625,7 @@ def update_content_ads_state(content_ads, state, request):
                     )
                 )
 
-    actionlog.zwei_actions.send_multiple(actions)
+    threads.SendActionLogsThread(actions).start()
 
 
 def add_content_ads_state_change_to_history(ad_group, content_ads, state, request):

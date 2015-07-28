@@ -4,7 +4,7 @@ import json
 from mock import patch
 import datetime
 
-from django.test import TestCase, Client, RequestFactory
+from django.test import TransactionTestCase, TestCase, Client
 from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -14,7 +14,6 @@ from zemauth.models import User
 from dash import models
 from dash import constants
 from dash import api
-from dash.views import views
 
 
 class UserTest(TestCase):
@@ -248,7 +247,7 @@ http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
 
-class AdGroupContentAdStateTest(TestCase):
+class AdGroupContentAdStateTest(TransactionTestCase):
     fixtures = ['test_api', 'test_views']
 
     def _post_content_ad_state(self, ad_group_id, data):
@@ -416,7 +415,7 @@ class AdGroupContentAdStateTest(TestCase):
         )
 
 
-class AdGroupContentAdArchive(TestCase):
+class AdGroupContentAdArchive(TransactionTestCase):
     fixtures = ['test_api', 'test_views']
 
     def _post_content_ad_archive(self, ad_group_id, data):
