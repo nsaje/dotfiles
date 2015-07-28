@@ -2,6 +2,7 @@ from collections import defaultdict
 import datetime
 import decimal
 import logging
+import newrelic.agent
 
 from django.db import transaction, IntegrityError
 from django.db.models import Q
@@ -597,6 +598,7 @@ def _update_content_ad_source_submission_status(content_ad_source, submission_st
         content_ad_source.submission_status = submission_status
 
 
+@newrelic.agent.function_trace()
 def update_content_ads_state(content_ads, state, request):
     actions = []
     with transaction.atomic():
