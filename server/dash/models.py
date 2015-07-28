@@ -1,6 +1,7 @@
 import jsonfield
 import binascii
 import datetime
+import newrelic.agent
 
 from decimal import Decimal
 import pytz
@@ -121,6 +122,7 @@ class Account(models.Model):
 
         return settings
 
+    @newrelic.agent.function_trace()
     def can_archive(self):
         for campaign in self.campaign_set.all():
             if not campaign.can_archive():
@@ -128,6 +130,7 @@ class Account(models.Model):
 
         return True
 
+    @newrelic.agent.function_trace()
     def can_restore(self):
         return True
 
@@ -772,6 +775,7 @@ class AdGroup(models.Model):
 
     admin_link.allow_tags = True
 
+    @newrelic.agent.function_trace()
     def get_current_settings(self):
         if not self.pk:
             raise exc.BaseError(

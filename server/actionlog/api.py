@@ -222,6 +222,7 @@ def get_ad_group_sources_waiting(**kwargs):
     return [action.ad_group_source for action in actions]
 
 
+@newrelic.agent.function_trace()
 def is_waiting_for_set_actions(ad_group):
     action_types = (constants.Action.SET_CAMPAIGN_STATE, constants.Action.SET_PROPERTY)
     ad_group_sources = ad_group.adgroupsource_set.all()

@@ -1,5 +1,6 @@
 import json
 import logging
+import newrelic.agent
 
 from collections import OrderedDict
 from decimal import Decimal
@@ -679,6 +680,7 @@ class AdGroupAgency(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
+    @newrelic.agent.function_trace()
     def get_dict(self, settings, ad_group):
         result = {}
 
@@ -690,6 +692,7 @@ class AdGroupAgency(api_common.BaseApiView):
 
         return result
 
+    @newrelic.agent.function_trace()
     def get_history(self, ad_group, user):
         settings = models.AdGroupSettings.objects.\
             filter(ad_group=ad_group).\
@@ -723,6 +726,7 @@ class AdGroupAgency(api_common.BaseApiView):
 
         return history
 
+    @newrelic.agent.function_trace()
     def convert_changes_to_string(self, changes, user):
         if changes is None:
             return 'Created settings'
@@ -742,6 +746,7 @@ class AdGroupAgency(api_common.BaseApiView):
 
         return ', '.join(change_strings)
 
+    @newrelic.agent.function_trace()
     def convert_settings_to_dict(self, old_settings, new_settings, user):
         settings_dict = OrderedDict()
         for field in models.AdGroupSettings._settings_fields:
