@@ -759,3 +759,10 @@ class AdGroupSourceSettingsWriter(object):
         settings = self.ad_group_source.ad_group.get_current_settings().copy_settings()
         settings.changes_text = changes_text
         settings.save(request)
+
+
+def get_content_ad(content_ad_id):
+    try:
+        return models.ContentAd.objects.get(pk=content_ad_id)
+    except models.ContentAd.DoesNotExist:
+        return None

@@ -92,3 +92,30 @@ class GAReportsAggregationTest(TestCase):
 
         result_by_source = reports.api.query(self.report_date, self.report_date, ['source'], ad_group=1)
         self.assertEqual(len(result_by_source), 3)
+
+
+class GAReportsAggregationKeywordTest(TestCase):
+
+    fixtures = ['test_ga_aggregation.yaml', 'test_api.yaml']
+
+    def test_report_init(self):
+        report_log = convapi.models.GAReportLog()
+
+        csv_file = open('convapi/fixtures/ga_report_keyword_20140901.csv').read()
+        csvreport = convapi.parse.CsvReport(csv_file, report_log)
+
+        self.assertEqual(csvreport.first_col, convapi.parse.KEYWORD_COL_NAME)
+
+        self.assertEqual((True, []), csvreport.is_ad_group_specified())
+        self.assertEqual((True, []), csvreport.is_media_source_specified())
+
+    def test_report_init_error(self):
+        report_log = convapi.models.GAReportLog()
+
+        csv_file = open('convapi/fixtures/errors_ga_report_keyword_20140901.csv').read()
+        csvreport = convapi.parse.CsvReport(csv_file, report_log)
+
+        self.assertEqual(csvreport.first_col, convapi.parse.KEYWORD_COL_NAME)
+
+        self.assertEqual((False, ['z1yahoo.com1z']), csvreport.is_ad_group_specified())
+        self.assertEqual((False, ['z111z']), csvreport.is_media_source_specified())
