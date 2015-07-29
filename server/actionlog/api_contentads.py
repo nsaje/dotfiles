@@ -45,7 +45,7 @@ def init_insert_content_ad_action(content_ad_source, request=None, send=True):
     logger.info(msg)
 
     if send:
-        actionlog.zwei_actions.send(action)
+        actionlog.zwei_actions.send([action])
 
     return action
 
@@ -89,7 +89,7 @@ def init_insert_content_ad_batch(batch, source, request, send=True):
     logger.info(msg)
 
     if send:
-        actionlog.zwei_actions.send(action)
+        actionlog.zwei_actions.send([action])
 
     return action
 
@@ -123,7 +123,7 @@ def init_update_content_ad_action(content_ad_source, changes, request, send=True
     logger.info(msg)
 
     if send:
-        actionlog.zwei_actions.send(action)
+        actionlog.zwei_actions.send([action])
 
     return action
 
@@ -147,7 +147,7 @@ def init_get_content_ad_status_action(ad_group_source, order, request, send=True
     logger.info(msg)
 
     if send:
-        actionlog.zwei_actions.send(action)
+        actionlog.zwei_actions.send([action])
 
     return action
 
@@ -173,7 +173,7 @@ def init_submit_ad_group_action(ad_group_source, content_ad_source, request, sen
     logger.info(msg)
 
     if send:
-        actionlog.zwei_actions.send(action)
+        actionlog.zwei_actions.send([action])
 
     return action
 

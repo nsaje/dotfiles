@@ -93,7 +93,7 @@ def _process_callback(batch, ad_group_id, ad_group_sources, filename, request, r
         batch.save()
         return
 
-    actionlog.zwei_actions.send_multiple(actions)
+    actionlog.zwei_actions.send(actions)
 
 
 def _save_error_report(rows, filename):

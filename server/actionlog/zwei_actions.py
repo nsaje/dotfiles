@@ -44,17 +44,7 @@ def _decrypt_payload_credentials(payload):
     return payload
 
 
-def send(action):
-    try:
-        payload = _decrypt_payload_credentials(action.payload)
-        data = json.dumps(payload, cls=json_helper.JSONEncoder)
-        request = urllib2.Request(settings.ZWEI_API_URL, data)
-        request_signer.urllib2_secure_open(request, settings.ZWEI_API_SIGN_KEY)
-    except Exception as e:
-        _handle_error(action, e)
-
-
-def send_multiple(actionlogs):
+def send(actionlogs):
     try:
         data = []
         for action in actionlogs:

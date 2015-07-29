@@ -45,27 +45,7 @@ class SendTestCase(TestCase):
 
     @override_settings(CREDENTIALS_ENCRIPTION_KEY='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     def test_send(self):
-        actionlog.zwei_actions.send(self.action_log)
-        self.assertEqual(1, self.mock_urlopen.call_count)
-        self.assertEqual(settings.ZWEI_API_URL, self.mock_urlopen.call_args[0][0].get_full_url())
-        self.assertEqual(
-            {
-                "args": {
-                    "date": "2015-07-01",
-                    "source_campaign_key": "1234567890"
-                },
-                "source": "outbrain",
-                "action": "get_reports",
-                "credentials": {},
-                "callback_url": "http://localhost/",
-                "expiration_dt": "2015-07-01T12:00:00"
-            },
-            json.loads(self.mock_urlopen.call_args[0][0].data)
-        )
-
-    @override_settings(CREDENTIALS_ENCRIPTION_KEY='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-    def test_send_multiple(self):
-        actionlog.zwei_actions.send_multiple([self.action_log])
+        actionlog.zwei_actions.send([self.action_log])
         self.assertEqual(1, self.mock_urlopen.call_count)
         self.assertEqual(settings.ZWEI_API_BATCH_URL, self.mock_urlopen.call_args[0][0].get_full_url())
         self.assertEqual(

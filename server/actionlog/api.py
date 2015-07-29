@@ -129,7 +129,7 @@ def create_campaign(ad_group_source, name, request):
     except exceptions.InsertActionException:
         pass
     else:
-        zwei_actions.send(action)
+        zwei_actions.send([action])
 
 
 @transaction.atomic
@@ -188,7 +188,7 @@ def send_delayed_actionlogs(ad_group_sources=None, send=True):
             new_actionlogs.append(actionlog)
 
     if send:
-        zwei_actions.send_multiple(new_actionlogs)
+        zwei_actions.send(new_actionlogs)
 
     return new_actionlogs
 
