@@ -22,8 +22,10 @@ logger = logging.getLogger(__name__)
 
 
 def init_insert_content_ad_action(content_ad_source, request=None, send=True):
-    ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.ad_group,
-                                                            source=content_ad_source.source)
+    ad_group_source = dash.models.AdGroupSource.objects.filter(
+        ad_group=content_ad_source.content_ad.ad_group,
+        source=content_ad_source.source
+    ).select_related('source__source_type', 'source_credentials').get()
     batch = content_ad_source.content_ad.batch
 
     action = _create_action(
@@ -55,10 +57,10 @@ def init_insert_content_ad_batch(batch, source, request, send=True):
         logger.info('init_insert_content_ad_batch: no content ad sources for batch id: {}'.format(batch.id))
         return None
 
-    ad_group_source = dash.models.AdGroupSource.objects.get(
+    ad_group_source = dash.models.AdGroupSource.objects.filter(
         ad_group=content_ad_sources[0].content_ad.ad_group,
         source=source
-    )
+    ).select_related('source__source_type', 'source_credentials').get()
 
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key,
@@ -95,8 +97,10 @@ def init_insert_content_ad_batch(batch, source, request, send=True):
 def init_update_content_ad_action(content_ad_source, changes, request, send=True):
     assert type(changes) is dict, 'changes is not of type dict. changes: {}'.format(changes)
 
-    ad_group_source = dash.models.AdGroupSource.objects.get(ad_group=content_ad_source.content_ad.ad_group,
-                                                            source=content_ad_source.source)
+    ad_group_source = dash.models.AdGroupSource.objects.filter(
+        ad_group=content_ad_source.content_ad.ad_group,
+        source=content_ad_source.source
+    ).select_related('source__source_type', 'source_credentials').get()
     batch = content_ad_source.content_ad.batch
 
     args = {
