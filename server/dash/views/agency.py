@@ -122,8 +122,7 @@ class AdGroupSettings(api_common.BaseApiView):
         self.set_ad_group(ad_group, form.cleaned_data)
 
         settings = current_settings.copy_settings()
-        self.set_settings(settings, form.cleaned_data,
-                          request.user.has_perm('zemauth.can_toggle_ga_performance_tracking'))
+        self.set_settings(settings, form.cleaned_data)
 
         actionlogs_to_send = []
         with transaction.atomic():
@@ -189,7 +188,7 @@ class AdGroupSettings(api_common.BaseApiView):
     def set_ad_group(self, ad_group, resource):
         ad_group.name = resource['name']
 
-    def set_settings(self, settings, resource, can_set_tracking_codes):
+    def set_settings(self, settings, resource):
         settings.state = resource['state']
         settings.start_date = resource['start_date']
         settings.end_date = resource['end_date']
@@ -198,9 +197,8 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
         settings.ad_group_name = resource['name']
-        if can_set_tracking_codes:
-            settings.enable_ga_tracking = resource['enable_ga_tracking']
-            settings.tracking_code = resource['tracking_code']
+        settings.enable_ga_tracking = resource['enable_ga_tracking']
+        settings.tracking_code = resource['tracking_code']
 
 
 class CampaignSettings(api_common.BaseApiView):
