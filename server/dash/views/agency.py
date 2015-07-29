@@ -632,51 +632,6 @@ class AdGroupAgency(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_put')
-    def put(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.ad_group_agency_tab_view'):
-            raise exc.MissingDataError()
-
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        previous_ad_group_name = ad_group.name
-
-        current_settings = ad_group.get_current_settings()
-
-        resource = json.loads(request.body)
-
-        form = forms.AdGroupAgencySettingsForm(resource.get('settings', {}))
-        if not form.is_valid():
-            raise exc.ValidationError(errors=dict(form.errors))
-
-        settings = current_settings.copy_settings()
-        settings.tracking_code = form.cleaned_data['tracking_code']
-
-        actions = []
-        with transaction.atomic():
-            settings.save(request)
-
-            current_settings.ad_group_name = previous_ad_group_name
-            settings.ad_group_name = ad_group.name
-            actions = api.order_ad_group_settings_update(
-                ad_group, current_settings, settings, request, send=False)
-
-        zwei_actions.send_multiple(actions)
-
-        user = request.user
-        changes = current_settings.get_setting_changes(settings)
-        if changes:
-            send_ad_group_settings_change_mail_if_necessary(ad_group, user, request)
-
-        response = {
-            'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
-            'history': self.get_history(ad_group, request.user),
-            'can_archive': ad_group.can_archive(),
-            'can_restore': ad_group.can_restore(),
-        }
-
-        return self.create_api_response(response)
-
     @newrelic.agent.function_trace()
     def get_history(self, ad_group, user):
         settings = models.AdGroupSettings.objects.\
