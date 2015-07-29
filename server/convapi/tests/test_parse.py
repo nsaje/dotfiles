@@ -41,3 +41,12 @@ class KeywordTest(TestCase):
         self.assertEqual(keyword.url, 'http://testurl.com')
         self.assertEqual(keyword.ad_group_id, 1)
         self.assertEqual(keyword.source_param, '')
+
+    def test_init_corrupted_keyword(self):
+        keyword_string = 'zz'
+        keyword = Keyword(keyword_string)
+
+        self.assertEqual(keyword.id, keyword_string)
+        self.assertIsNone(keyword.url)
+        self.assertIsNone(keyword.ad_group_id)
+        self.assertEqual(keyword.source_param, '')

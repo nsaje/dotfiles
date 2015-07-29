@@ -147,8 +147,6 @@ def process_ga_report(ga_report_task):
         report_log.state = constants.GAReportState.EMPTY_REPORT
         report_log.save()
     except Exception as e:
-        import traceback
-        print traceback.format_exc()
         logger.warning(e.message)
         report_log.add_error(e.message)
         report_log.state = constants.GAReportState.FAILED

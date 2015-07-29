@@ -251,7 +251,7 @@ class IdentifierBase():
         self.id = id_string
         self.url = None
         self.ad_group_id = None
-        self.source_param = None
+        self.source_param = ''
 
         self._parse(id_string)
 
@@ -263,6 +263,9 @@ class Keyword(IdentifierBase):
     def _parse(self, keyword):
         pattern = re.compile('^z1([0-9]*)(.*)1z$')
         result = pattern.match(keyword)
+
+        if not result:
+            return
 
         self.source_param = result.group(2)
 
@@ -278,6 +281,14 @@ class Keyword(IdentifierBase):
 
         self.url = content_ad.url
         self.ad_group_id = content_ad.ad_group_id
+
+        if self.ad_group_id is None or self.source_param == '':
+            logger.warning(
+                'Could not parse keyword %s. ad_group_id: %s, source_param: %s',
+                keyword,
+                self.ad_group_id,
+                self.source_param
+            )
 
 
 class LandingPageUrl(IdentifierBase):
@@ -296,7 +307,7 @@ class LandingPageUrl(IdentifierBase):
         if '_z1_msid' in query_params:
             self.source_param = query_params['_z1_msid']
 
-        if self.ad_group_id is None or self.source_param is None:
+        if self.ad_group_id is None or self.source_param == '':
             logger.warning(
                 'Could not parse landing page url %s. ad_group_id: %s, source_param: %s',
                 raw_url,
