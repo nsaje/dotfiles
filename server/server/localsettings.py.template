@@ -59,7 +59,8 @@ CLIENT_STATIC_URL = ''
 EINS_HOST = ''
 
 # Zwei API
-ZWEI_API_URL = 'http://127.0.0.1/'
+ZWEI_API_URL = 'http://127.0.0.1/purcel/task/'
+ZWEI_API_BATCH_URL = 'http://127.0.0.1/purcel/tasks/'
 ZWEI_API_GET_DASH_URL_URL = ZWEI_API_URL + 'purcel/dash_url/'
 ZWEI_API_SIGN_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 

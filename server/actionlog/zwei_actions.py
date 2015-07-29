@@ -26,6 +26,8 @@ def _handle_error(action, e):
 
 
 def _decrypt_payload_credentials(payload):
+    # Decrypt has to be the last thing to happen before sending to zwei.
+    # Payload with decrypted credentials should never be logged.
     payload = copy.deepcopy(payload)
     if not payload.get('credentials'):
         return payload
@@ -44,20 +46,25 @@ def _decrypt_payload_credentials(payload):
 
 def send(action):
     try:
-        # Decrypt has to be the last thing to happen before sending to zwei.
-        # Payload with decrypted credentials should never be logged.
         payload = _decrypt_payload_credentials(action.payload)
         data = json.dumps(payload, cls=json_helper.JSONEncoder)
         request = urllib2.Request(settings.ZWEI_API_URL, data)
-
         request_signer.urllib2_secure_open(request, settings.ZWEI_API_SIGN_KEY)
     except Exception as e:
         _handle_error(action, e)
 
 
 def send_multiple(actionlogs):
-    for actionlog in actionlogs:
-        send(actionlog)
+    try:
+        data = []
+        for action in actionlogs:
+            data.append(_decrypt_payload_credentials(action.payload))
+
+        request = urllib2.Request(settings.ZWEI_API_BATCH_URL, json.dumps(data, cls=json_helper.JSONEncoder))
+        request_signer.urllib2_secure_open(request, settings.ZWEI_API_SIGN_KEY)
+    except Exception as e:
+        for action in actionlogs:
+            _handle_error(action, e)
 
 
 def get_supply_dash_url(source_type, credentials, source_campaign_key):
