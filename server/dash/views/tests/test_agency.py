@@ -261,7 +261,6 @@ class AdGroupAgencyTest(TestCase):
 
         self.assertEqual(json.loads(response.content), {
             'data': {
-                'settings': {},
                 'can_archive': True,
                 'can_restore': True,
                 'history': [{

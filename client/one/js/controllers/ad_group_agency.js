@@ -1,6 +1,5 @@
 /*globals oneApp,moment*/
 oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
-    $scope.settings = {};
     $scope.alerts = [];
     $scope.history = [];
     $scope.canArchive = false;
@@ -13,7 +12,6 @@ oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', function ($sc
         $scope.requestInProgress = true;
         api.adGroupAgency.get(id).then(
             function (data) {
-                $scope.settings = data.settings;
                 $scope.history = data.history;
                 $scope.canArchive = data.canArchive;
                 $scope.canRestore = data.canRestore;

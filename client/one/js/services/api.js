@@ -1397,14 +1397,11 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
             $http.get(url, config).
                 success(function (data, status) {
-                    var settings;
                     var history;
-                    if (data && data.data && data.data.settings) {
-                        settings = data.data.settings;
+                    if (data && data.data) {
                         history = convertHistoryFromApi(data.data.history);
                     }
                     deferred.resolve({
-                        settings: settings,
                         history: history,
                         canArchive: data.data.can_archive,
                         canRestore: data.data.can_restore

@@ -622,7 +622,6 @@ class AdGroupAgency(api_common.BaseApiView):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         response = {
-            'settings': {},
             'history': self.get_history(ad_group, request.user),
             'can_archive': ad_group.can_archive(),
             'can_restore': ad_group.can_restore(),
