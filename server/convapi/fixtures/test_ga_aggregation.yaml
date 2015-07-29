@@ -181,3 +181,32 @@
     conversions_value_cc: 4000
   model: reports.goalconversionstats
   pk: 2
+
+# UploadBatch
+
+- fields:
+    name: 'batch 1'
+    created_dt: '2015-02-23T00:00:00'
+    display_url: 'example.com'
+    brand_name: 'Example'
+    description: 'Example description'
+    call_to_action: 'Call to action'
+  model: dash.uploadbatch
+  pk: 1
+
+# ContentAd
+
+- fields:
+    image_id: '123456789'
+    image_width: 200
+    image_height: 300
+    batch: 1
+    archived: False
+    url: 'http://testurl.com'
+    tracker_urls: ['http://testurl.com', 'http://testurl2.com']
+    title: 'Test Article unicode Čžš'
+    ad_group: 1
+    created_dt: '2015-02-21T00:00:00'
+    state: 1
+  model: dash.contentad
+  pk: 1

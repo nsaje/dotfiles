@@ -4,7 +4,7 @@ from convapi.parse import Keyword
 
 
 class KeywordTest(TestCase):
-    fixtures = ['test_api.yaml']
+    fixtures = ['test_ga_aggregation.yaml']
 
     def test_init(self):
         keyword_string = 'z11b1_gumgum1z'

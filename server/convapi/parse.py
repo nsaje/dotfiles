@@ -261,19 +261,13 @@ class IdentifierBase():
 
 class Keyword(IdentifierBase):
     def _parse(self, keyword):
-        pattern = re.compile('^z1([0-9]*)(.*)1z$')
-        result = pattern.match(keyword)
-
-        if not result:
-            return
-
-        self.source_param = result.group(2)
+        content_ad_id, self.source_param = self._parse_keyword(keyword)
 
         content_ad = None
         try:
-            content_ad_id = int(result.group(1))
+            content_ad_id = int(content_ad_id)
             content_ad = dash.api.get_content_ad(content_ad_id)
-        except ValueError:
+        except (ValueError, TypeError):
             pass
 
         if content_ad is None:
@@ -289,6 +283,15 @@ class Keyword(IdentifierBase):
                 self.ad_group_id,
                 self.source_param
             )
+
+    def _parse_keyword(self, keyword):
+        pattern = re.compile('^z1([0-9]*)(.*)1z$')
+        result = pattern.match(keyword)
+
+        if not result:
+            return None, ''
+
+        return result.group(1), result.group(2)
 
 
 class LandingPageUrl(IdentifierBase):
