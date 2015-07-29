@@ -200,34 +200,6 @@ class AdGroupSourceSettingsStateForm(forms.Form):
     )
 
 
-class AdGroupAgencySettingsForm(forms.Form):
-    id = forms.IntegerField()
-    tracking_code = forms.CharField(required=False)
-
-    def clean_tracking_code(self):
-        tracking_code = self.cleaned_data.get('tracking_code')
-
-        err_msg = 'Tracking code structure is not valid.'
-
-        if tracking_code:
-            # This is a bit of a hack we're doing here but if we don't prepend 'http:' to
-            # the provided tracking code, then rfc3987 doesn't know how to parse it.
-            if not tracking_code.startswith('?'):
-                tracking_code = '?' + tracking_code
-
-            test_url = 'http:{0}'.format(tracking_code)
-            # We use { } for macros which rfc3987 doesn't allow so here we replace macros
-            # with a single world so that it can still be correctly validated.
-            test_url = re.sub('{[^}]+}', 'MACRO', test_url)
-
-            try:
-                rfc3987.parse(test_url, rule='IRI')
-            except ValueError:
-                raise forms.ValidationError(err_msg)
-
-        return self.cleaned_data.get('tracking_code')
-
-
 class AccountAgencySettingsForm(forms.Form):
     id = forms.IntegerField()
     name = forms.CharField(

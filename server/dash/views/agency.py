@@ -623,11 +623,8 @@ class AdGroupAgency(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        settings = ad_group.get_current_settings()
-
         response = {
-            'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
+            'settings': {},
             'history': self.get_history(ad_group, request.user),
             'can_archive': ad_group.can_archive(),
             'can_restore': ad_group.can_restore(),
@@ -679,18 +676,6 @@ class AdGroupAgency(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
-
-    @newrelic.agent.function_trace()
-    def get_dict(self, settings, ad_group):
-        result = {}
-
-        if settings:
-            result = {
-                'id': str(ad_group.pk),
-                'tracking_code': settings.tracking_code
-            }
-
-        return result
 
     @newrelic.agent.function_trace()
     def get_history(self, ad_group, user):

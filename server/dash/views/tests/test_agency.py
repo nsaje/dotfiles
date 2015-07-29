@@ -289,11 +289,7 @@ class AdGroupAgencyTest(TestCase):
 
         self.assertEqual(json.loads(response.content), {
             'data': {
-                'action_is_waiting': True,
-                'settings': {
-                    'tracking_code': tracking_code,
-                    'id': '1'
-                },
+                'settings': {},
                 'can_archive': True,
                 'can_restore': True,
                 'history': [{
@@ -341,77 +337,6 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Enable GA tracking', 'old_value': 'True', 'value': 'True'},
                     ],
                     'show_old_settings': True
-                }]
-            },
-            'success': True
-        })
-
-    @patch('dash.api.redirector_helper.insert_adgroup')
-    @patch('dash.views.agency.actionlog_api.is_waiting_for_set_actions')
-    def test_put(self, mock_is_waiting, mock_insert_redirector_adgroup):
-        mock_is_waiting.return_value = True
-
-        ad_group_id = 1
-        tracking_code = 'code=test'
-
-        ad_group = models.AdGroup.objects.get(pk=1)
-
-        request = HttpRequest()
-        request.user = User(id=1)
-
-        data = {
-            'settings': {
-                'id': '1',
-                'tracking_code': tracking_code
-            }
-        }
-
-        with patch('django.utils.timezone.now') as mock_now:
-            mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 24)
-
-            response = self.client.put(
-                reverse('ad_group_agency', kwargs={'ad_group_id': ad_group_id}),
-                json.dumps(data),
-                follow=True
-            )
-
-        mock_is_waiting.assert_called_once(ad_group)
-
-        self.assertTrue(mock_insert_redirector_adgroup.called)
-        self.assertEqual(mock_insert_redirector_adgroup.call_args[0][0], ad_group_id)
-        self.assertEqual(mock_insert_redirector_adgroup.call_args[0][1], tracking_code)
-
-        self.assertEqual(json.loads(response.content), {
-            'data': {
-                'action_is_waiting': True,
-                'settings': {
-                    'tracking_code': tracking_code,
-                    'id': '1'
-                },
-                'can_archive': True,
-                'can_restore': True,
-                'history': [{
-                    'changed_by': 'superuser@test.com',
-                    'changes_text': 'Created settings',
-                    'datetime': '2015-06-05T09:22:24',
-                    'settings': [
-                        {'name': 'State', 'value': 'Paused'},
-                        {'name': 'Start date', 'value': ANY},
-                        {'name': 'End date', 'value': 'I\'ll stop it myself'},
-                        {'name': 'Max CPC bid', 'value': '$0.40'},
-                        {'name': 'Daily budget', 'value': '$10.00'},
-                        {'name': 'Device targeting', 'value': 'Mobile, Desktop'},
-                        {'name': 'Locations', 'value': 'United States'},
-                        {'name': 'Tracking code', 'value': tracking_code},
-                        {'name': 'Archived', 'value': 'False'},
-                        {'name': 'Display URL', 'value': ''},
-                        {'name': 'Brand name', 'value': ''},
-                        {'name': 'Description', 'value': ''},
-                        {'name': 'Call to action', 'value': ''},
-                        {'name': 'AdGroup name', 'value': ''},
-                        {'name': 'Enable GA tracking', 'value': 'True'}
-                    ],
-                    'show_old_settings': False
                 }]
             },
             'success': True
