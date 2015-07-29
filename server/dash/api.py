@@ -625,7 +625,7 @@ def update_content_ads_state(content_ads, state, request):
                     )
                 )
 
-    threads.SendActionLogsThread(actions).start()
+    actionlog.zwei_actions.send_multiple(actions)
 
 
 def add_content_ads_state_change_to_history(ad_group, content_ads, state, request):
