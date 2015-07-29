@@ -47,7 +47,7 @@ class SendTestCase(TestCase):
     def test_send(self):
         actionlog.zwei_actions.send([self.action_log])
         self.assertEqual(1, self.mock_urlopen.call_count)
-        self.assertEqual(settings.ZWEI_API_BATCH_URL, self.mock_urlopen.call_args[0][0].get_full_url())
+        self.assertEqual(settings.ZWEI_API_TASKS_URL, self.mock_urlopen.call_args[0][0].get_full_url())
         self.assertEqual(
             [
                 {

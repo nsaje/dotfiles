@@ -4,7 +4,7 @@ import json
 from mock import patch
 import datetime
 
-from django.test import TransactionTestCase, TestCase, Client
+from django.test import TestCase, Client
 from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -247,7 +247,7 @@ http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
 
-class AdGroupContentAdStateTest(TransactionTestCase):
+class AdGroupContentAdStateTest(TestCase):
     fixtures = ['test_api', 'test_views']
 
     def _post_content_ad_state(self, ad_group_id, data):
@@ -415,7 +415,7 @@ class AdGroupContentAdStateTest(TransactionTestCase):
         )
 
 
-class AdGroupContentAdArchive(TransactionTestCase):
+class AdGroupContentAdArchive(TestCase):
     fixtures = ['test_api', 'test_views']
 
     def _post_content_ad_archive(self, ad_group_id, data):
