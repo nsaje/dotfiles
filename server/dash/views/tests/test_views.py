@@ -353,8 +353,8 @@ class AdGroupContentAdStateTest(TransactionTestCase):
         restored_ad.refresh_from_db()
         self.assertEqual(restored_ad.state, constants.ContentAdSourceState.ACTIVE)
 
-    @patch('dash.views.views.actionlog.zwei_actions.send_multiple')
-    def test_update_content_ads(self, mock_send_multiple):
+    @patch('dash.views.views.actionlog.zwei_actions.send')
+    def test_update_content_ads(self, mock_send):
         content_ad = models.ContentAd.objects.get(pk=1)
         state = constants.ContentAdSourceState.INACTIVE
         request = None
@@ -368,7 +368,7 @@ class AdGroupContentAdStateTest(TransactionTestCase):
         for content_ad_source in content_ad.contentadsource_set.all():
             self.assertEqual(content_ad_source.state, constants.ContentAdSourceState.INACTIVE)
 
-        self.assertTrue(mock_send_multiple.called)
+        self.assertTrue(mock_send.called)
 
     def test_get_content_ad_ids_validation_error(self):
         username = User.objects.get(pk=1).email

@@ -47,7 +47,7 @@ class ZweiActionsTestCase(TestCase):
 
     @mock.patch('utils.request_signer._secure_opener.open')
     def test_log_encrypted_credentials_on_conneciton_fail(self, mock_urlopen):
-        exception = urllib2.HTTPError(settings.ZWEI_API_URL, 500, "Server is down.", None, None)
+        exception = urllib2.HTTPError(settings.ZWEI_API_TASKS_URL, 500, "Server is down.", None, None)
         test_helper.prepare_mock_urlopen(mock_urlopen, exception=exception)
         ad_group_source = dashmodels.AdGroupSource.objects.get(id=1)
 

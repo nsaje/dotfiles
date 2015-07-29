@@ -50,7 +50,7 @@ def send(actionlogs):
         for action in actionlogs:
             data.append(_decrypt_payload_credentials(action.payload))
 
-        request = urllib2.Request(settings.ZWEI_API_BATCH_URL, json.dumps(data, cls=json_helper.JSONEncoder))
+        request = urllib2.Request(settings.ZWEI_API_TASKS_URL, json.dumps(data, cls=json_helper.JSONEncoder))
         request_signer.urllib2_secure_open(request, settings.ZWEI_API_SIGN_KEY)
     except Exception as e:
         for action in actionlogs:
