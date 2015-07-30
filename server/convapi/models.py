@@ -18,9 +18,6 @@ class RawPostclickStats(models.Model):
     # _z1_parameters
     z1_adgid = models.CharField(max_length=32, blank=False, null=False)
     z1_msid = models.CharField(max_length=64, blank=False, null=False)
-    z1_did = models.CharField(max_length=64, blank=False, null=True)
-    z1_kid = models.CharField(max_length=64, blank=False, null=True)
-    z1_tid = models.CharField(max_length=64, blank=False, null=True)
 
     # postclick metrics
     visits = models.IntegerField(default=0, blank=False, null=False)
@@ -47,9 +44,6 @@ class RawGoalConversionStats(models.Model):
     # _z1_parameters
     z1_adgid = models.CharField(max_length=32, blank=False, null=False)
     z1_msid = models.CharField(max_length=64, blank=False, null=False)
-    z1_did = models.CharField(max_length=64, blank=False, null=True)
-    z1_kid = models.CharField(max_length=64, blank=False, null=True)
-    z1_tid = models.CharField(max_length=64, blank=False, null=True)
 
     # conversion metrics
     conversions = models.IntegerField(default=0, blank=False, null=False)
