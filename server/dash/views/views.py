@@ -96,7 +96,7 @@ def supply_dash_redirect(request):
         raise exc.MissingDataError()
 
     credentials = ad_group_source.source_credentials and \
-        ad_group_source.source_credentials.credentials
+        ad_group_source.source_credentials.decrypt()
 
     url_response = actionlog.zwei_actions.get_supply_dash_url(
         ad_group_source.source.source_type.type, credentials, ad_group_source.source_campaign_key)

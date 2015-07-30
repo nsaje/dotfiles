@@ -129,7 +129,7 @@ def create_campaign(ad_group_source, name, request):
     except exceptions.InsertActionException:
         pass
     else:
-        zwei_actions.send([action])
+        zwei_actions.send(action)
 
 
 @transaction.atomic
@@ -444,9 +444,6 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=Non
                 'action': action.action,
                 'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
-                'credentials':
-                    ad_group_source.source_credentials and
-                    ad_group_source.source_credentials.credentials,
                 'args': {
                     'source_campaign_key': ad_group_source.source_campaign_key,
                     'conf': conf,
@@ -490,9 +487,6 @@ def _init_fetch_status(ad_group_source, order, request=None):
                 'action': action.action,
                 'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
-                'credentials':
-                    ad_group_source.source_credentials and
-                    ad_group_source.source_credentials.credentials,
                 'args': {
                     'source_campaign_key': ad_group_source.source_campaign_key
                 },
@@ -537,9 +531,6 @@ def _init_fetch_reports(ad_group_source, date, order, request=None):
                 'action': action.action,
                 'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
-                'credentials':
-                    ad_group_source.source_credentials and
-                    ad_group_source.source_credentials.credentials,
                 'args': {
                     'source_campaign_key': ad_group_source.source_campaign_key,
                     'date': date.strftime('%Y-%m-%d'),
@@ -603,9 +594,6 @@ def _init_create_campaign(ad_group_source, name, request):
                 'action': action.action,
                 'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
-                'credentials':
-                    ad_group_source.source_credentials and
-                    ad_group_source.source_credentials.credentials,
                 'args': {
                     'name': name,
                     'extra': {},

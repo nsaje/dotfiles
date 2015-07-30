@@ -32,7 +32,7 @@ class Command(BaseCommand):
                 action.expiration_dt = expiration_date
                 action.save()
 
-                actionlog.zwei_actions.send([action])
+                actionlog.zwei_actions.send(action)
                 count_sent += 1
             if count_sent == 0:
                 logger.info("Action log %s doesn't exist" % action_id)

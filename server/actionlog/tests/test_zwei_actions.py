@@ -28,7 +28,6 @@ class SendTestCase(TestCase):
                 'action': 'get_reports',
                 'source': 'outbrain',
                 'expiration_dt': datetime.datetime(2015, 7, 1, 12),
-                'credentials': 'Ufw=\n',
                 'args': {
                     'source_campaign_key': '1234567890',
                     'date': '2015-07-01',
@@ -57,7 +56,7 @@ class SendTestCase(TestCase):
                     },
                     "source": "outbrain",
                     "action": "get_reports",
-                    "credentials": {},
+                    "credentials": self.action_log.ad_group_source.source_credentials.decrypt(),
                     "callback_url": "http://localhost/",
                     "expiration_dt": "2015-07-01T12:00:00"
                 }

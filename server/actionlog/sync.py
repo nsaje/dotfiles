@@ -319,7 +319,7 @@ class AdGroupSourceSync(BaseSync):
         except InsertActionException:
             return
 
-        zwei_actions.send([action])
+        zwei_actions.send(action)
 
     def trigger_content_ad_status(self, request=None):
         if not self.obj.can_manage_content_ads:
