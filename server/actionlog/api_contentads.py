@@ -119,7 +119,8 @@ def _create_update_content_ad_action(content_ad_source, ad_group_source, changes
 
 
 def init_update_content_ad_action(content_ad_source, changes, request, send=True):
-    assert type(changes) is dict, 'changes is not of type dict. changes: {}'.format(changes)
+    if type(changes) is not dict:
+        raise Exception('changes is not of type dict. changes: {}'.format(changes))
 
     ad_group_source = dash.models.AdGroupSource.objects.filter(
         ad_group=content_ad_source.content_ad.ad_group,
