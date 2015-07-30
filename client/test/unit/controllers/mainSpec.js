@@ -42,54 +42,6 @@ describe('MainCtrl', function () {
         expect($scope.accounts).toEqual(accounts);
     });
 
-    describe('should default to the first account', function() {
-        beforeEach(function () {
-            $scope.user.permissions['zemauth.all_accounts_sources_view'] = false;
-            $scope.user.permissions['zemauth.account_campaigns_view'] = true;
-            $scope.accounts = [
-                {
-                    name: 'Test account 1',
-                    archived: false,
-                    id: 1
-                },
-                {
-                    name: 'Test account 2',
-                    archived: false,
-                    id: 2
-                }
-            ];
-        });
-
-        it(function () {
-            spyOn($state, 'go');
-            expect($state.go).toHaveBeenCalledWith('main.accounts.campaigns', {id: 1});
-        });
-    });
-
-    describe('should default to the first non archived account', function() {
-        beforeEach(function () {
-            $scope.user.permissions['zemauth.all_accounts_sources_view'] = false;
-            $scope.user.permissions['zemauth.account_campaigns_view'] = true;
-            $scope.accounts = [
-                {
-                    name: 'Test account 1',
-                    archived: true,
-                    id: 1
-                },
-                {
-                    name: 'Test account 2',
-                    archived: false,
-                    id: 2
-                }
-            ];
-        });
-
-        it(function () {
-            spyOn($state, 'go');
-            expect($state.go).toHaveBeenCalledWith('main.accounts.campaigns', {id: 2});
-        });
-    });
-
     describe('hasPermission', function () {
         beforeEach(function () {
             $scope.user = { permissions: {} };
