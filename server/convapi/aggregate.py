@@ -254,7 +254,9 @@ bounced_visits=%s, pageviews=%s, duration=%s',
         ad_group_id = identifier.ad_group_id
 
         if ad_group_id is None:
-            logger.warning('Cannot ad_group_id from %s', identifier.id)
+            logger.warning(
+                'Cannot handle identifier with no ad_group_id %s',
+                identifier.id.decode('ascii', 'ignore'))
             return
 
         RawPostclickStats.objects.filter(datetime=dt, ad_group_id=ad_group_id).delete()
