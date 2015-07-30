@@ -140,7 +140,7 @@ landing_page_url=%s',
                     self.date,
                     identifier.id.decode('ascii', 'ignore')
                  )
-                self.report_log.add_error('Cannot resolve article for url=%s' % url.raw_url.decode('ascii', 'ignore'))
+                self.report_log.add_error('Cannot resolve article for identifier=%s' % identifier.id.decode('ascii', 'ignore'))
                 continue
 
             key = (self.report.get_date(), article.id, identifier.ad_group_id, source.id)
