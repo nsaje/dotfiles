@@ -257,13 +257,15 @@ oneApp.controller('MainCtrl',
             if ($scope.canAccessAllAccounts()) {
                 state = 'main.allAccounts.accounts';
             } else {
-                var nonArchived = $scope.accounts && $scope.accounts.filter(function(account) {
-                    return account.archived === false;
-                });
+                $scope.accounts.some(function(account) {
+                    id = account.id;
 
-                if (nonArchived && nonArchived.length > 0) {
-                    id = nonArchived[0].id;
-                }
+                    if (id && account.archived === false) {
+                        return true;
+                    }
+
+                    return false;
+                });
 
                 state = $scope.getDefaultAccountState();
             }
