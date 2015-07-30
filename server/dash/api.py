@@ -602,8 +602,8 @@ def _update_content_ad_source_submission_status(content_ad_source, submission_st
 @newrelic.agent.function_trace()
 def update_content_ads_state(content_ads, state, request):
     with transaction.atomic():
-        content_ads.update(state=state)
-        content_ad_sources = models.ConetntAd.objects.filter(
+        models.ContentAd.objects.filter(id__in=[ca.id for ca in content_ads]).update(state=state)
+        content_ad_sources = models.ContentAdSource.objects.filter(
             ~Q(state=state) | ~Q(source_state=state),
             content_ad_id__in=[ca.id for ca in content_ads],
         ).select_related('content_ad__ad_group', 'content_ad__batch', 'source')
@@ -613,14 +613,12 @@ def update_content_ads_state(content_ads, state, request):
         content_ad_sources_changes = []
         for content_ad_source in content_ad_sources:
             content_ad_sources_changes.append(
-                content_ad_source,
-                {'state': content_ad_source.state}
+                (content_ad_source, {'state': content_ad_source.state})
             )
 
-        actions = actionlog.api_contentads.init_update_content_ad_action(
+        actions = actionlog.api_contentads.init_bulk_update_content_ad_actions(
             content_ad_sources_changes,
-            request,
-            send=False,
+            request
         )
 
     actionlog.zwei_actions.send(actions)

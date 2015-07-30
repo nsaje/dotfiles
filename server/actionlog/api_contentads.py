@@ -144,8 +144,8 @@ def init_bulk_update_content_ad_actions(content_ad_sources_changes, request):
 
     actions = []
     for content_ad_source, changes in content_ad_sources_changes:
-        ad_group_source = ad_group_sources.get(content_ad_source.content_ad.ad_group_id, content_ad_source.source_id)
-        actions.append(_create_update_content_ad_action(content_ad_source, ad_group_source, request))
+        ad_group_source = ad_group_sources.get((content_ad_source.content_ad.ad_group_id, content_ad_source.source_id))
+        actions.append(_create_update_content_ad_action(content_ad_source, ad_group_source, changes, request))
 
     return actions
 
