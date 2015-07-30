@@ -25,7 +25,7 @@ def init_insert_content_ad_action(content_ad_source, request=None, send=True):
     ad_group_source = dash.models.AdGroupSource.objects.filter(
         ad_group=content_ad_source.content_ad.ad_group,
         source=content_ad_source.source
-    ).select_related('ad_group', 'source__source_type', 'source_credentials').get()
+    ).select_related('ad_group', 'source__source_type').get()
     batch = content_ad_source.content_ad.batch
 
     action = _create_action(
@@ -60,7 +60,7 @@ def init_insert_content_ad_batch(batch, source, request, send=True):
     ad_group_source = dash.models.AdGroupSource.objects.filter(
         ad_group=content_ad_sources[0].content_ad.ad_group,
         source=source
-    ).select_related('ad_group', 'source__source_type', 'source_credentials').get()
+    ).select_related('ad_group', 'source__source_type').get()
 
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key,
@@ -94,15 +94,8 @@ def init_insert_content_ad_batch(batch, source, request, send=True):
     return action
 
 
-def init_update_content_ad_action(content_ad_source, changes, request, send=True):
-    assert type(changes) is dict, 'changes is not of type dict. changes: {}'.format(changes)
-
-    ad_group_source = dash.models.AdGroupSource.objects.filter(
-        ad_group=content_ad_source.content_ad.ad_group,
-        source=content_ad_source.source
-    ).select_related('ad_group', 'source__source_type', 'source_credentials').get()
+def _create_update_content_ad_action(content_ad_source, ad_group_source, changes, request):
     batch = content_ad_source.content_ad.batch
-
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key,
         'content_ad': _get_content_ad_dict(ad_group_source, content_ad_source, batch),
@@ -122,10 +115,39 @@ def init_update_content_ad_action(content_ad_source, changes, request, send=True
     )
     logger.info(msg)
 
+    return action
+
+
+def init_update_content_ad_action(content_ad_source, changes, request, send=True):
+    assert type(changes) is dict, 'changes is not of type dict. changes: {}'.format(changes)
+
+    ad_group_source = dash.models.AdGroupSource.objects.filter(
+        ad_group=content_ad_source.content_ad.ad_group,
+        source=content_ad_source.source
+    ).select_related('ad_group', 'source__source_type').get()
+
+    action = _create_update_content_ad_action(content_ad_source, ad_group_source, changes, request)
+
     if send:
         actionlog.zwei_actions.send(action)
 
     return action
+
+
+def init_bulk_update_content_ad_actions(content_ad_sources_changes, request):
+    ad_group_sources = {
+        (ags.ad_group_id, ags.source_id): ags for ags in dash.models.AdGroupSource.objects.filter(
+            ad_group_id__in=[cas.content_ad.ad_group_id for cas, _ in content_ad_sources_changes],
+            source_id__in=[cas.source_id for cas, _ in content_ad_sources_changes]
+        ).select_related('ad_group', 'source__source_type')
+    }
+
+    actions = []
+    for content_ad_source, changes in content_ad_sources_changes:
+        ad_group_source = ad_group_sources.get(content_ad_source.content_ad.ad_group_id, content_ad_source.source_id)
+        actions.append(_create_update_content_ad_action(content_ad_source, ad_group_source, request))
+
+    return actions
 
 
 def init_get_content_ad_status_action(ad_group_source, order, request, send=True):
