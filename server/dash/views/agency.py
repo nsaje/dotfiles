@@ -635,7 +635,8 @@ class AdGroupAgency(api_common.BaseApiView):
     def get_history(self, ad_group, user):
         settings = models.AdGroupSettings.objects.\
             filter(ad_group=ad_group).\
-            order_by('created_dt')
+            order_by('created_dt').\
+            select_related('created_by')
 
         history = []
         for i in range(0, len(settings)):
