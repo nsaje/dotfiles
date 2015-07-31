@@ -332,27 +332,6 @@ oneApp.config(['$provide', function ($provide) {
             defaultGetWrapper('/api/ad_groups/{id}/agency/', $delegate.adGroupAgency.get)
         );
 
-        $delegate.adGroupAgency.save = function demo(settings) {
-            var deferred = $q.defer(),
-                cacheId = '/api/ad_groups/' + settings.id + '/settings/',
-                cachedData = zemDemoCacheService.get(cacheId),
-                save = function () {
-                    angular.forEach(settings, function (v, k) {
-                        if (k == 'id') { return; }
-                        cachedData.settings[k] = v;
-                    });
-                    $delegate.adGroupSettings.save(cachedData.settings).then(function (data) {
-                        deferred.resolve(data);
-                    });
-                };
-            if (cachedData) { save(); return deferred.promise; }
-            $delegate.adGroupSettings.get(settings.id).then(function (data) {
-                cachedData = zemDemoCacheService.get(cacheId);
-                save();
-            });
-            return deferred.promise;
-        };
-
         /* Ad group media sources */
         $delegate.availableSources.list = defaultGetWrapper('/api/sources/',
                                                             $delegate.availableSources.list);
