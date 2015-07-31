@@ -194,6 +194,10 @@ class NavigationDataView(api_common.BaseApiView):
 
                     if include_archived_flag:
                         ad_group['archived'] = ad_group_settings.archived if ad_group_settings else False
+                    ad_group['state'] = constants.AdGroupSettingsState.get_text(
+                        ad_group_settings.state if ad_group_settings
+                        else constants.AdGroupSettingsState.INACTIVE
+                    ).lower()
 
     def fetch_ad_groups(self, data, user, sources):
         ad_groups = models.AdGroup.objects.all().\

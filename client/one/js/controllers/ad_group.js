@@ -63,8 +63,23 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
     // this function is used by ad_grou_ conrollers to set $scope.$scope.isAdGroupPaused
     $scope.setAdGroupPaused = function(val) {
         $scope.isAdGroupPaused = val;
+        
     };
 
+    $scope.getAdGroup = function (id) {
+        var selectedAdGroup = null;
+        $scope.accounts.forEach(function (account) {
+            account.campaigns.forEach(function (campaign) {
+                campaign.adGroups.forEach(function (adGroup) {
+                    if (adGroup.id === id) {
+                        selectedAdGroup = adGroup;
+                    }
+                });
+            });
+        });
+        return selectedAdGroup;
+    };
+    
     $scope.setAdGroupData = function (key, value) {
         var data = $scope.adGroupData[$state.params.id] || {};
         data[key] = value;
@@ -85,11 +100,13 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
         });
     };
 
-    $scope.updateAccounts = function (newAdGroupName) {
+    $scope.updateAccounts = function (newAdGroupName, newAdGroupState) {
         if (!$scope.accounts || !newAdGroupName) {
             return;
         }
         $scope.adGroup.name = newAdGroupName;
+        $scope.adGroup.state = newAdGroupState === constants.adGroupSourceSettingsState.ACTIVE ?
+            'enabled' : 'paused';
     };
 
     $scope.updateBreadcrumbAndTitle = function () {
