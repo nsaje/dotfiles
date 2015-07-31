@@ -153,7 +153,7 @@ class AdGroupSettings(api_common.BaseApiView):
         if changes:
             send_ad_group_settings_change_mail_if_necessary(ad_group, user, request)
 
-        zwei_actions.send_multiple(actionlogs_to_send)
+        zwei_actions.send(actionlogs_to_send)
 
         response = {
             'settings': self.get_dict(settings, ad_group),
@@ -262,7 +262,7 @@ class CampaignSettings(api_common.BaseApiView):
                     )
                 )
 
-        zwei_actions.send_multiple(actions)
+        zwei_actions.send(actions)
 
         response = {
             'settings': self.get_dict(settings, campaign),

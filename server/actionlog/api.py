@@ -188,7 +188,7 @@ def send_delayed_actionlogs(ad_group_sources=None, send=True):
             new_actionlogs.append(actionlog)
 
     if send:
-        zwei_actions.send_multiple(new_actionlogs)
+        zwei_actions.send(new_actionlogs)
 
     return new_actionlogs
 
@@ -444,9 +444,6 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=Non
                 'action': action.action,
                 'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
-                'credentials':
-                    ad_group_source.source_credentials and
-                    ad_group_source.source_credentials.credentials,
                 'args': {
                     'source_campaign_key': ad_group_source.source_campaign_key,
                     'conf': conf,
@@ -490,9 +487,6 @@ def _init_fetch_status(ad_group_source, order, request=None):
                 'action': action.action,
                 'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
-                'credentials':
-                    ad_group_source.source_credentials and
-                    ad_group_source.source_credentials.credentials,
                 'args': {
                     'source_campaign_key': ad_group_source.source_campaign_key
                 },
@@ -537,9 +531,6 @@ def _init_fetch_reports(ad_group_source, date, order, request=None):
                 'action': action.action,
                 'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
-                'credentials':
-                    ad_group_source.source_credentials and
-                    ad_group_source.source_credentials.credentials,
                 'args': {
                     'source_campaign_key': ad_group_source.source_campaign_key,
                     'date': date.strftime('%Y-%m-%d'),
@@ -603,9 +594,6 @@ def _init_create_campaign(ad_group_source, name, request):
                 'action': action.action,
                 'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
-                'credentials':
-                    ad_group_source.source_credentials and
-                    ad_group_source.source_credentials.credentials,
                 'args': {
                     'name': name,
                     'extra': {},

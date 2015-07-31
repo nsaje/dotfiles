@@ -236,7 +236,6 @@ def _create_action(ad_group_source, action, args={}, content_ad_source=None, req
                 'action': action.action,
                 'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
-                'credentials': ad_group_source.source_credentials and ad_group_source.source_credentials.credentials,
                 'args': args,
                 'callback_url': callback
             }

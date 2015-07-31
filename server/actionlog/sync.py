@@ -357,7 +357,7 @@ class AdGroupSourceSync(BaseSync):
 
                 actions.append(action)
 
-        zwei_actions.send_multiple(actions)
+        zwei_actions.send(actions)
 
     def get_dates_to_sync_reports(self):
         start_dt = None

@@ -338,12 +338,12 @@ class ProcessCallbackTest(TestCase):
         self.mock_save_error_report = self.save_error_report_patcher.start()
         self.mock_save_error_report.return_value = 'mock_key'
 
-        self.send_multiple_patcher = patch('dash.upload.actionlog.zwei_actions.send_multiple')
-        self.mock_send_multiple = self.send_multiple_patcher.start()
+        self.actionlog_send_patcher = patch('dash.upload.actionlog.zwei_actions.send')
+        self.mock_actionlog_send = self.actionlog_send_patcher.start()
 
     def tearDown(self):
         self.save_error_report_patcher.stop()
-        self.send_multiple_patcher.stop()
+        self.actionlog_send_patcher.stop()
 
     def test_process_callback(self, mock_redirect_insert):
         image_id = 'test_image_id'
@@ -424,7 +424,7 @@ class ProcessCallbackTest(TestCase):
         action = ActionLog.objects.get(content_ad_source_id=content_ad_source.id)
         self.assertEqual(action.ad_group_source_id, ad_group_source.id)
 
-        self.mock_send_multiple.assert_called_with([action])
+        self.mock_actionlog_send.assert_called_with([action])
 
     def test_process_callback_errors(self, mock_redirect_insert):
         redirect_id = "u123456"
@@ -472,7 +472,7 @@ class ProcessCallbackTest(TestCase):
         self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
 
         self.assertFalse(mock_redirect_insert.called)
-        self.assertFalse(self.mock_send_multiple.called)
+        self.assertFalse(self.mock_actionlog_send.called)
 
         self.mock_save_error_report.assert_called_with([row], filename)
 
@@ -534,7 +534,7 @@ class ProcessCallbackTest(TestCase):
 
         self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
 
-        self.assertFalse(self.mock_send_multiple.called)
+        self.assertFalse(self.mock_actionlog_send.called)
 
     @patch('dash.upload._create_redirect_id')
     def test_process_callback_exception(self, mock_redirect_insert, mock_create_redirect_id):
@@ -579,5 +579,5 @@ class ProcessCallbackTest(TestCase):
         self.assertEqual(prev_action_count, new_action_count)
 
         self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
-        self.assertFalse(self.mock_send_multiple.called)
+        self.assertFalse(self.mock_actionlog_send.called)
         self.mock_save_error_report.assert_called_with([row], filename)

@@ -268,7 +268,7 @@ def _process_zwei_response(action, data, request):
 
         logger.info('Process action successful. Action: %s', action)
 
-    actionlog.zwei_actions.send_multiple(actions)
+    actionlog.zwei_actions.send(actions)
 
 
 def _get_reports_cache_key_val(data, ad_group, source, date):

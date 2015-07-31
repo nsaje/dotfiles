@@ -71,7 +71,6 @@ class ContentAdsApiTestCase(TestCase):
             'source': ad_group_source.source.source_type.type,
             'action': constants.Action.INSERT_CONTENT_AD,
             'expiration_dt': expiration_dt,
-            'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
                 'content_ad': {
@@ -131,7 +130,6 @@ class ContentAdsApiTestCase(TestCase):
             'source': ad_group_source.source.source_type.type,
             'action': constants.Action.INSERT_CONTENT_AD,
             'expiration_dt': expiration_dt,
-            'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
                 'content_ad': {
@@ -193,7 +191,6 @@ class ContentAdsApiTestCase(TestCase):
             'source': ad_group_source.source.source_type.type,
             'action': constants.Action.INSERT_CONTENT_AD_BATCH,
             'expiration_dt': expiration_dt,
-            'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
                 'content_ads': [{
@@ -281,7 +278,6 @@ class ContentAdsApiTestCase(TestCase):
             'source': ad_group_source.source.source_type.type,
             'action': constants.Action.UPDATE_CONTENT_AD,
             'expiration_dt': expiration_dt,
-            'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
                 'changes': {
@@ -344,7 +340,6 @@ class ContentAdsApiTestCase(TestCase):
             'source': ad_group_source.source.source_type.type,
             'action': constants.Action.GET_CONTENT_AD_STATUS,
             'expiration_dt': expiration_dt,
-            'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
             },
@@ -381,7 +376,6 @@ class ContentAdsApiTestCase(TestCase):
             'source': ad_group_source.source.source_type.type,
             'action': constants.Action.SUBMIT_AD_GROUP,
             'expiration_dt': expiration_dt,
-            'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
                 'content_ad': {
