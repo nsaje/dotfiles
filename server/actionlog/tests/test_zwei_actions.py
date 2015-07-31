@@ -42,7 +42,7 @@ class SendTestCase(TestCase):
         self.mock_urlopen = patcher_urlopen.start()
         test_helper.prepare_mock_urlopen(self.mock_urlopen)
 
-    @override_settings(CREDENTIALS_ENCRIPTION_KEY='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+    @override_settings(CREDENTIALS_ENCRYPTION_KEY='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     def test_send(self):
         actionlog.zwei_actions.send(self.action_log)
         self.assertEqual(1, self.mock_urlopen.call_count)
@@ -64,7 +64,7 @@ class SendTestCase(TestCase):
             json.loads(self.mock_urlopen.call_args[0][0].data)
         )
 
-    @override_settings(CREDENTIALS_ENCRIPTION_KEY='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+    @override_settings(CREDENTIALS_ENCRYPTION_KEY='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     def test_send_batch(self):
         actionlog.zwei_actions.send([self.action_log])
         self.assertEqual(1, self.mock_urlopen.call_count)
