@@ -6,7 +6,6 @@ from collections import OrderedDict
 from decimal import Decimal
 from django.db import transaction
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.contrib.auth import models as authmodels
 
 from actionlog import api as actionlog_api
@@ -29,48 +28,6 @@ from zemauth.models import User as ZemUser
 
 
 logger = logging.getLogger(__name__)
-
-
-def get_campaign_url(ad_group, request):
-    campaign_settings_url = request.build_absolute_uri(
-        reverse('admin:dash_campaign_change', args=(ad_group.campaign.pk,)))
-    campaign_settings_url = campaign_settings_url.replace('http://', 'https://')
-
-    return campaign_settings_url
-
-
-def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
-    if not settings.SEND_AD_GROUP_SETTINGS_CHANGE_MAIL:
-        return
-
-    campaign_settings = models.CampaignSettings.objects.\
-        filter(campaign=ad_group.campaign).\
-        order_by('-created_dt')[:1]
-
-    if not campaign_settings or not campaign_settings[0].account_manager:
-        logger.error('Could not send e-mail because there is no account manager set for campaign with id %s.', ad_group.campaign.pk)
-
-        desc = {
-            'campaign_settings_url': get_campaign_url(ad_group, request)
-        }
-        pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.ADOPS,
-            incident_key='ad_group_settings_change_mail_failed',
-            description='E-mail notification for ad group settings change was not sent because the campaign settings or account manager is not set.',
-            details=desc,
-        )
-        return
-
-    if user.pk == campaign_settings[0].account_manager.pk:
-        return
-
-    email_helper.send_ad_group_settings_change_email(
-        user,
-        campaign_settings[0].account_manager,
-        request,
-        ad_group,
-        get_campaign_url(ad_group, request)
-    )
 
 
 class AdGroupSettings(api_common.BaseApiView):
@@ -151,7 +108,7 @@ class AdGroupSettings(api_common.BaseApiView):
         user = request.user
         changes = current_settings.get_setting_changes(settings)
         if changes:
-            send_ad_group_settings_change_mail_if_necessary(ad_group, user, request)
+            email_helper.send_ad_group_settings_change_mail_if_necessary(ad_group, user, request)
 
         zwei_actions.send(actionlogs_to_send)
 

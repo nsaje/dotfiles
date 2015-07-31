@@ -91,6 +91,53 @@ class EmailHelperTestCase(TestCase):
         self.assertEqual(mail.outbox[0].to, [account_manager.email])
 
     @override_settings(
+        SEND_AD_GROUP_SETTINGS_CHANGE_MAIL=True
+    )
+    def test_send_ad_group_settings_change_mail_if_necessary(self):
+        account_manager = User.objects.create_user('manager@user.com')
+
+        account = dash_models.Account()
+        account.save(self.request)
+
+        campaign = dash_models.Campaign(
+            account=account,
+        )
+        campaign.save(self.request)
+
+        ad_group = dash_models.AdGroup(
+            id=9,
+            campaign=campaign,
+        )
+        ad_group.save(self.request)
+
+        campaign_settings = dash_models.CampaignSettings(campaign=campaign)
+        campaign_settings.account_manager = account_manager
+        campaign_settings.save(self.request)
+        
+        email_helper.send_ad_group_settings_change_mail_if_necessary(
+            ad_group,
+            self.user,
+            self.request,
+        )
+
+        subject = 'Settings change - ad group , campaign , account '
+        body = 'Hi account manager of \n\nWe\'d like to notify you that test@user.com has made a change in the settings of the ad group , campaign , account . Please check https://testserver/ad_groups/9/agency for details.\n\nYours truly,\nZemanta\n    '
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, subject)
+        self.assertEqual(mail.outbox[0].body, body)
+        self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
+        self.assertEqual(mail.outbox[0].to, [account_manager.email])
+
+        email_helper.send_ad_group_settings_change_mail_if_necessary(
+            ad_group,
+            account_manager,
+            self.request,
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        
+
+    @override_settings(
         HOSTNAME='testhost',
         PAGER_DUTY_ENABLED=True,
         PAGER_DUTY_URL='http://pagerduty.example.com',

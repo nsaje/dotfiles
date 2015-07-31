@@ -10,6 +10,7 @@ from django.contrib.auth import models as auth_models
 from django.contrib import auth
 from django.db import models, transaction
 from django.contrib.postgres.fields import ArrayField
+from django.core.urlresolvers import reverse
 
 import utils.string_helper
 
@@ -223,6 +224,13 @@ class Campaign(models.Model, PermissionMixin):
             return '<a href="/admin/dash/campaign/%d/">Edit</a>' % self.id
         else:
             return 'N/A'
+
+    def get_campaign_url(self, request):
+        campaign_settings_url = request.build_absolute_uri(
+            reverse('admin:dash_campaign_change', args=(self.pk,))
+        )
+        campaign_settings_url = campaign_settings_url.replace('http://', 'https://')
+        return campaign_settings_url
 
     admin_link.allow_tags = True
 
