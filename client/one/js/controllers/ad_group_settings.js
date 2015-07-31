@@ -111,7 +111,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
                 var currAdGroup = $scope.adGroup.id,
                     adGroupToEdit = null;
                 $scope.errors = {};
-                if (prevAdGroup != currAdGroup || true) {
+                if (prevAdGroup != currAdGroup) {
                     adGroupToEdit = $scope.getAdGroup(prevAdGroup);
                     adGroupToEdit.name = data.settings.name;
                     adGroupToEdit.state = data.settings.state === stateActive ? 'enabled' : 'paused';
