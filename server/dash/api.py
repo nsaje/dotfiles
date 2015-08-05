@@ -314,6 +314,8 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
             source=ad_group_source.source):
         content_ad_sources[content_ad_source.get_source_id()] = content_ad_source
 
+    unsynced_content_ad_sources_actions = []
+
     for data in content_ad_data:
         content_ad_source = content_ad_sources.get(data['id'])
 
@@ -327,6 +329,19 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
             changed = True
 
         if 'submission_status' in data and data['submission_status'] != content_ad_source.submission_status:
+            is_unsynced = all([
+                content_ad_source.submission_status == constants.ContentAdSubmissionStatus.PENDING,
+                data['submission_status'] == constants.ContentAdSubmissionStatus.APPROVED,
+                content_ad_source.content_ad.state != data['state'],
+            ])
+            if is_unsynced:
+                # Content ad state was not synced with media source
+                unsynced_content_ad_sources_actions.append(
+                    (content_ad_source, {'state': content_ad_source.content_ad.state})
+                )
+                continue
+                    
+            
             _update_content_ad_source_submission_status(content_ad_source, data['submission_status'])
             changed = True
 
@@ -337,6 +352,16 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
         if changed:
             content_ad_source.save()
 
+    if unsynced_content_ad_sources_actions:
+        actionlog.api_contentads.init_bulk_update_content_ad_actions(
+            unsynced_content_ad_sources_actions,
+            None
+        )
+        logger.info(
+            'Found unsynced content ads for ad group %s on sources: %s',
+            ad_group_source.ad_group, 
+            ', '.join(set(action[0].source.name for action in unsynced_content_ad_sources_actions))
+        )
 
 def update_content_ad_source_state(content_ad_source, data):
     state = data.get('source_state')

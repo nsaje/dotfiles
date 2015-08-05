@@ -88,6 +88,10 @@ class UpdateContentAdSourceState(TestCase):
             'state': 2,
             'submission_status': constants.ContentAdSubmissionStatus.APPROVED
         }]
+        
+        content_ad_source = models.ContentAdSource.objects.get(pk=1)
+        content_ad_source.content_ad.state = 2
+        content_ad_source.content_ad.save()
 
         api.update_multiple_content_ad_source_states(ad_group_source, content_ad_data)
 
