@@ -27,8 +27,18 @@ class Command(BaseCommand):
             logging.exception("Failed parsing command line arguments")
             sys.exit(1)
 
-        adgroup_sources = dash.models.AdGroupSource.objects.filter(ad_group__id=adgroup_id, source__deprecated=False)
-        content_ad_ids = dash.models.ContentAd.objects.filter(ad_group__id=adgroup_id).values_list('id', flat=True)
+        adgroup = dash.models.AdGroup.objects.get(pk=adgroup_id)
+        if adgroup.is_archived():
+            print("AdGroup {adgid} OK - archived".format(adgid=adgroup_id))
+            sys.exit(0)
+
+        adgroup_sources = []
+        original_adgroup_sources = dash.models.AdGroupSource.objects.filter(ad_group__id=adgroup_id, source__deprecated=False)
+        for adgroup_source in original_adgroup_sources:
+            if adgroup_source.get_current_settings().state != dash.constants.AdGroupSettingsState.INACTIVE:
+                adgroup_sources.append(adgroup_source)
+
+        content_ad_ids = dash.models.ContentAd.objects.filter(ad_group__id=adgroup_id, archived=False).values_list('id', flat=True)
         count_content_ad_ids = len(content_ad_ids)
 
         integrity_check = True
