@@ -159,3 +159,18 @@ class SupplyReportRecipient(models.Model):
     source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+
+
+class ContentAdPostClickStats(models.Model):
+    zuid = models.CharField(max_length=256, editable=False, null=True)
+    content_ad = models.ForeignKey('dash.ContentAd', on_delete=models.PROTECT)
+    source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
+
+class ContentGoalConversionStats(models.Model):
+    account = models.ForeignKey('dash.Account', on_delete=models.PROTECT)
+    # clarify which slug is it
+    slug = models.CharField(max_length=50, null=True, blank=True, unique=True, verbose_name='Slug')
+    zuid = models.CharField(max_length=256, editable=False, null=True)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
