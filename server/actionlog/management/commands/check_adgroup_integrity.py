@@ -32,11 +32,20 @@ class Command(BaseCommand):
             print("AdGroup {adgid} OK - archived".format(adgid=adgroup_id))
             sys.exit(0)
 
+        if adgroup.get_current_settings().state == dash.constants.AdGroupSettingsState.INACTIVE:
+            print("AdGroup {adgid} OK - inactive".format(adgid=adgroup_id))
+            sys.exit(0)
+
         adgroup_sources = []
         original_adgroup_sources = dash.models.AdGroupSource.objects.filter(ad_group__id=adgroup_id, source__deprecated=False)
         for adgroup_source in original_adgroup_sources:
-            if adgroup_source.get_current_settings().state != dash.constants.AdGroupSettingsState.INACTIVE:
-                adgroup_sources.append(adgroup_source)
+            current_state = dash.models.AdGroupSourceState.objects \
+                .filter(ad_group_source=adgroup_source).latest('created_dt')
+
+            if current_state.state == dash.constants.AdGroupSourceSettingsState.INACTIVE:
+                continue
+
+            adgroup_sources.append(adgroup_source)
 
         content_ad_ids = dash.models.ContentAd.objects.filter(ad_group__id=adgroup_id, archived=False).values_list('id', flat=True)
         count_content_ad_ids = len(content_ad_ids)
