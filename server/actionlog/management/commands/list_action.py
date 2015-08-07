@@ -30,6 +30,6 @@ class Command(BaseCommand):
         actions = actionlog.models.ActionLog.objects.filter(state=state, action=name).order_by('-created_dt')[:limit]
         for action in actions:
             if verbose:
-                print('{id}\t{payload}\t{created}'.format(action.id, action.payload, action.created_dt.isoformat()))
+                print('{id}\t{payload}\t{created}'.format(id=action.id, payload=action.payload, created=action.created_dt.isoformat()))
             else:
                 print(action.id)

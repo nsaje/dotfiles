@@ -18,11 +18,13 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--adgroup', help='Adgroup id.'),
+        make_option('--ignore_inactive', default=True, help='If true inactive adgroups will be ignored', type=bool)
     )
 
     def handle(self, *args, **options):
         try:
             adgroup_id = int(options['adgroup'])
+            ignore_inactive = bool(options['ignore_inactive'])
         except:
             logging.exception("Failed parsing command line arguments")
             sys.exit(1)
@@ -42,7 +44,7 @@ class Command(BaseCommand):
             current_state = dash.models.AdGroupSourceState.objects \
                 .filter(ad_group_source=adgroup_source).latest('created_dt')
 
-            if current_state.state == dash.constants.AdGroupSourceSettingsState.INACTIVE:
+            if ignore_inactive and current_state.state == dash.constants.AdGroupSourceSettingsState.INACTIVE:
                 continue
 
             adgroup_sources.append(adgroup_source)
