@@ -18,7 +18,6 @@ from dash import models
 from dash import constants
 from dash import regions
 from dash import consistency
-from dash import threads
 
 import utils.url_helper
 
@@ -443,8 +442,18 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     )
             elif field_name == 'target_regions':
                 diff = set(new_settings.target_regions).symmetric_difference(set(current_settings.target_regions))
+                did_dmas_change = len([tr for tr in diff if tr in regions.DMA_BY_CODE]) > 0
+                did_countries_change = len([tr for tr in diff if tr in regions.COUNTRY_BY_CODE]) > 0
 
-                if source.can_modify_country_targeting() or source.can_modify_dma_targeting_automatic():
+                modify_country_auto = source.can_modify_country_targeting()
+                modify_dma_man = source.can_modify_dma_targeting_manual()
+                modify_dma_auto = source.can_modify_dma_targeting_automatic()
+
+                # if dmas and countries change and one of them is manual create only manual actions
+                # so that target regions are not propagated only partially
+                if (modify_dma_auto and modify_country_auto) or\
+                   (modify_dma_auto and not did_countries_change) or\
+                   (modify_country_auto and not did_dmas_change):
                     actions.extend(
                         actionlog.api.set_ad_group_source_settings(
                             {field_name: new_field_value},
@@ -454,39 +463,30 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                             send=send
                         )
                     )
+                else:
+                    new_country_targeting = [tr for tr in new_field_value if tr in regions.COUNTRY_BY_CODE]
+                    new_dma_targeting = [regions.DMA_BY_CODE[tr] for tr in new_field_value if tr in regions.DMA_BY_CODE]
 
-                did_countries_change = len([tr for tr in diff if tr in regions.COUNTRY_BY_CODE]) > 0
+                    if not new_country_targeting and not new_dma_targeting:
+                        new_country_targeting = 'cleared' if new_dma_targeting else 'Worldwide'
 
-                new_country_targeting = [tr for tr in new_field_value if tr in regions.COUNTRY_BY_CODE]
-                new_dma_targeting = [regions.DMA_BY_CODE[tr] for tr in new_field_value if tr in regions.DMA_BY_CODE]
+                    new_field_value = {
+                        'countries': new_country_targeting
+                    }
 
-                if not new_country_targeting and not new_dma_targeting:
-                    new_country_targeting = 'cleared' if new_dma_targeting else 'Worldwide'
+                    if did_dmas_change and (modify_dma_auto or modify_dma_man):
+                        if not new_dma_targeting:
+                            new_dma_targeting = 'cleared (no DMA targeting)'
 
-                if did_countries_change and not source.can_modify_country_targeting():
-                    actionlog.api.init_set_ad_group_manual_property(
-                        ad_group_source,
-                        request,
-                        'target_regions_countries',
-                        new_country_targeting
-                    )
+                        new_field_value['dma'] = new_dma_targeting
 
-                did_dmas_change = len([tr for tr in diff if tr in regions.DMA_BY_CODE]) > 0
-                if did_dmas_change and not source.can_modify_dma_targeting_automatic() and\
-                   source.can_modify_dma_targeting_manual():
-                    if not new_dma_targeting:
-                        new_dma_targeting = ['cleared (no DMA targeting)']
-
-                    # append country codes to the manual action for a better overview of
-                    # the overall location targeting
-                    new_dma_targeting.append('countries: ' + str(new_country_targeting))
-
-                    actionlog.api.init_set_ad_group_manual_property(
-                        ad_group_source,
-                        request,
-                        'target_regions_dma',
-                        new_dma_targeting
-                    )
+                    if did_countries_change or (did_dmas_change and (modify_dma_man or modify_dma_auto)):
+                        actionlog.api.init_set_ad_group_manual_property(
+                            ad_group_source,
+                            request,
+                            'target_regions',
+                            new_field_value
+                        )
             else:
                 if field_name == 'enable_ga_tracking':
                     # do not create an action - only used for our redirector
