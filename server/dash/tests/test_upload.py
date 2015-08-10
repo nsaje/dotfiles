@@ -432,7 +432,7 @@ class ProcessCallbackTest(TestCase):
 
         settings = ad_group_source.ad_group.get_current_settings()
         self.assertEqual(settings.changes_text,
-                         u'Test batch name set with 10 creatives was uploaded to: AdsNative.')
+                         u'Test batch name set with 10 creatives was imported to: AdsNative.')
 
     @override_settings(
         SEND_AD_GROUP_SETTINGS_CHANGE_MAIL=False
