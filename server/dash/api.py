@@ -339,8 +339,6 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
                 unsynced_content_ad_sources_actions.append(
                     (content_ad_source, {'state': content_ad_source.content_ad.state})
                 )
-                continue
-                    
             
             _update_content_ad_source_submission_status(content_ad_source, data['submission_status'])
             changed = True

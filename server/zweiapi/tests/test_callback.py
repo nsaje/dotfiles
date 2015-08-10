@@ -164,12 +164,12 @@ class GetContentAdStatusTest(TestCase):
         content_ad_source = dash.models.ContentAdSource.objects.get(id=1)
         self.assertEqual(
             content_ad_source.source_state,
-            dash.constants.ContentAdSourceState.ACTIVE
-        )
+            dash.constants.ContentAdSourceState.INACTIVE
+        ) # we still update the state in z1 but trigger a zwei action
 
         self.assertEqual(
             content_ad_source.submission_status,
-            dash.constants.ContentAdSubmissionStatus.PENDING
+            dash.constants.ContentAdSubmissionStatus.APPROVED
         )
 
         self.assertEqual(
