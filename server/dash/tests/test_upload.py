@@ -345,6 +345,9 @@ class ProcessCallbackTest(TestCase):
         self.save_error_report_patcher.stop()
         self.actionlog_send_patcher.stop()
 
+    @override_settings(
+        SEND_AD_GROUP_SETTINGS_CHANGE_MAIL=False
+    )
     def test_process_callback(self, mock_redirect_insert):
         image_id = 'test_image_id'
         image_width = 100
@@ -431,6 +434,9 @@ class ProcessCallbackTest(TestCase):
         self.assertEqual(settings.changes_text,
                          u'Test batch name set with 10 creatives was uploaded to: AdsNative.')
 
+    @override_settings(
+        SEND_AD_GROUP_SETTINGS_CHANGE_MAIL=False
+    )
     def test_process_callback_errors(self, mock_redirect_insert):
         redirect_id = "u123456"
 
