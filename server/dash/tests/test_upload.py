@@ -5,7 +5,7 @@ import httplib
 import urllib2
 
 from django.http import HttpRequest
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from dash import models
 from dash import upload
@@ -481,6 +481,9 @@ class ProcessCallbackTest(TestCase):
 
         self.mock_save_error_report.assert_called_with([row], filename)
 
+    @override_settings(
+        SEND_AD_GROUP_SETTINGS_CHANGE_MAIL=False
+    )
     def test_process_callback_redirector_error(self, mock_redirect_insert):
         image_id = 'test_image_id'
         image_width = 100
