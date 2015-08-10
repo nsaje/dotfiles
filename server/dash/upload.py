@@ -359,6 +359,9 @@ def _validate_crops(crop_list):
                     raise ValueError('Coordinate is not an integer')
 
 def _add_to_history(request, batch, ad_group_sources):
+    if not ad_group_sources:
+        return
+    
     ad_group = ad_group_sources[0].ad_group
     changes_text = '{} set with {} creatives was uploaded to: {}.'.format(
         batch.name,
