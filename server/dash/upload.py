@@ -363,7 +363,7 @@ def _add_to_history(request, batch, ad_group_sources):
         return
     
     ad_group = ad_group_sources[0].ad_group
-    changes_text = '{} set with {} creatives was uploaded to: {}.'.format(
+    changes_text = '{} set with {} creatives was imported to: {}.'.format(
         batch.name,
         batch.batch_size,
         ', '.join(s.source.name for s in ad_group_sources)
