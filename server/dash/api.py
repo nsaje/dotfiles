@@ -390,7 +390,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                 continue
 
             new_field_value = field_value
-            force_tracking_codes_manual_change = False
+            force_manual_change = False
             if field_name == 'tracking_code':
                 new_field_value = utils.url_helper.combine_tracking_codes(
                     new_settings.get_tracking_codes(),
@@ -401,18 +401,18 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                 # be assigned automatically
                 if any(('=' not in tc) for tc in new_field_value.split('&')) and\
                    ad_group_source.source.source_type.type == constants.SourceType.GRAVITY:
-                    force_tracking_codes_manual_change = True
+                    force_manual_change = True
 
             if field_name == 'ad_group_name':
                 new_field_value = ad_group_source.get_external_name(new_adgroup_name=field_value)
 
-            if field_name == 'start_date' and source.can_modify_start_date() or\
-               field_name == 'end_date' and source.can_modify_end_date() or\
-               field_name == 'target_devices' and source.can_modify_device_targeting() or\
+            if (field_name == 'start_date' and source.can_modify_start_date() or
+               field_name == 'end_date' and source.can_modify_end_date() or
+               field_name == 'target_devices' and source.can_modify_device_targeting() or
                (field_name == 'tracking_code' and source.can_modify_tracking_codes() and not
-                source.update_tracking_codes_on_content_ads() and not force_tracking_codes_manual_change) or\
-               field_name == 'iab_category' and source.can_modify_ad_group_iab_category_automatic() or\
-               field_name == 'ad_group_name' and source.can_modify_ad_group_name():
+                source.update_tracking_codes_on_content_ads()) or
+               field_name == 'iab_category' and source.can_modify_ad_group_iab_category_automatic() or
+               field_name == 'ad_group_name' and source.can_modify_ad_group_name()) and not force_manual_change:
 
                 new_field_name = field_name
                 if field_name == 'ad_group_name':
