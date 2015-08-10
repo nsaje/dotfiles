@@ -385,6 +385,7 @@ class ProcessCallbackTest(TestCase):
         errors = []
 
         batch = models.UploadBatch.objects.create(name=batch_name)
+        batch.batch_size = 10
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
 
         request = HttpRequest()
@@ -425,6 +426,10 @@ class ProcessCallbackTest(TestCase):
         self.assertEqual(action.ad_group_source_id, ad_group_source.id)
 
         self.mock_actionlog_send.assert_called_with([action])
+
+        settings = ad_group_source.ad_group.get_current_settings()
+        self.assertEqual(settings.changes_text,
+                         u'Test batch name set with 10 creatives was uploaded to: AdsNative.')
 
     def test_process_callback_errors(self, mock_redirect_insert):
         redirect_id = "u123456"
