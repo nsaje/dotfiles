@@ -21,7 +21,7 @@ class Command(BaseCommand):
         try:
             state = int(options['state'])
             name = options['name']
-            limit = min(int(options.get('limit', 100)), 1)
+            limit = max(int(options.get('limit', 100)), 1)
             verbose = bool(options.get('verbose', False))
         except:
             logging.exception("Failed parsing command line arguments")
