@@ -161,6 +161,7 @@ class SupplyReportRecipient(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
 
 
+"""
 class ContentAdPostClickStats(models.Model):
     zuid = models.CharField(max_length=256, editable=False, null=True)
     content_ad = models.ForeignKey('dash.ContentAd', on_delete=models.PROTECT)
@@ -174,3 +175,4 @@ class ContentGoalConversionStats(models.Model):
     slug = models.CharField(max_length=50, null=True, blank=True, unique=True, verbose_name='Slug')
     zuid = models.CharField(max_length=256, editable=False, null=True)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+"""
