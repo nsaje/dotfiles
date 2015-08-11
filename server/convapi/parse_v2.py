@@ -25,8 +25,14 @@ class CsvReport(object):
     def __init__(self, csv_report_text, report_log):
         self.csv_report_text = csv_report_text
         self.report_log = report_log
+        # mapping from each url in report to corresponding z1 code or utm term
+        self.report_z1_codes = {}
+        self.report_utmterm_codes = {}
         self.entries = []
         self.start_date = None
+        # first column of report - Keyword or Landing Page
+        self.report_id = None
+        self.z11z_pattern = re.compile('^z1([0-9]*)(.*)1z$')
 
     def is_empty(self):
         return self.entries == []
@@ -92,6 +98,8 @@ class CsvReport(object):
             self.fieldnames = reader.fieldnames
             self.entries = []
             for entry in reader:
+                url = entry[self.report_id]
+                self.report_z1_codes[url] = self._parse_z11z_keyword(url)
                 self.entries.append(entry)
         except:
             raise exc.CsvParseException('Could not parse CSV')
@@ -102,6 +110,35 @@ class CsvReport(object):
 
         self._check_incomplete(f_footer)
         # self.report_log.state = constants.GAReportState.PARSED
+
+    def _parse_z11z_keyword(self, url):
+        result = self.z11z_pattern.match(url)
+        if not result:
+            return None, ''
+        else:
+            content_ad_id, source_param = result.group(1), result.group(2)
+
+        content_ad = None
+        try:
+            content_ad_id = int(content_ad_id)
+            content_ad = dash.api.get_content_ad(content_ad_id)
+        except (ValueError, TypeError):
+            pass
+
+        if content_ad is None:
+            return None, ''
+
+        url = content_ad.url
+        ad_group_id = content_ad.ad_group_id
+        if ad_group_id is None or source_param == '':
+            logger.warning(
+                'Could not parse keyword %s. ad_group_id: %s, source_param: %s',
+                keyword,
+                self.ad_group_id,
+                self.source_param
+            )
+            return None, ''
+        return content_ad, source_param
 
     def _check_incomplete(self, footer):
         sessions_total = self._get_sessions_total(footer)
