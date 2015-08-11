@@ -186,8 +186,11 @@ def process_ga_report_v2(ga_report_task):
         filename = ga_report_task.attachment_name
         report_log.csv_filename = filename
 
-        csvreport = parse_v2.CsvReport(content, report_log)
+        csvreport = parse_v2.CsvReport(content)
+        # parse will throw exceptions in case of errors
         csvreport.parse()
+        report_log.for_date = csvreport.get_date()
+        report_log.state = constants.GAReportState.PARSED
 
         ad_group_errors = ad_group_specified_errors(csvreport)
         media_source_errors = media_source_specified_errors(csvreport)

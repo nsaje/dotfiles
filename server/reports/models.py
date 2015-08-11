@@ -162,7 +162,7 @@ class SupplyReportRecipient(models.Model):
 
 
 """
-class ContentAdPostClickStats(models.Model):
+class ContentAdPostclickStats(models.Model):
     zuid = models.CharField(max_length=256, editable=False, null=True)
     content_ad = models.ForeignKey('dash.ContentAd', on_delete=models.PROTECT)
     source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)

@@ -23,9 +23,8 @@ logger = logging.getLogger(__name__)
 
 class CsvReport(object):
 
-    def __init__(self, csv_report_text, report_log):
+    def __init__(self, csv_report_text):
         self.csv_report_text = csv_report_text
-        self.report_log = report_log
         # mapping from each url in report to corresponding z1 code or utm term
         self.report_z1_codes = {}
         self.report_utmterm_codes = {}
@@ -73,24 +72,24 @@ class CsvReport(object):
 
         date = datetime.datetime.strptime(group_dict['start_date'], "%Y%m%d")
 
-        report_id = None
+        first_column_name = None
         if any(ln.startswith(LANDING_PAGE_COL_NAME) for ln in lines):
-            report_id = LANDING_PAGE_COL_NAME
+            first_column_name = LANDING_PAGE_COL_NAME
         elif any(ln.startswith(KEYWORD_COL_NAME) for ln in lines):
-            report_id = KEYWORD_COL_NAME
+            first_column_name = KEYWORD_COL_NAME
 
-        if not report_id:
+        if not first_column_name:
             raise exc.EmptyReportException(
                 'Header Check: There should be a line starting with "Landing Page" or "Keyword"')
 
-        return date, report_id
+        return date, first_column_name
 
     def parse(self):
         self._parse(self.csv_report_text)
 
     def _parse(self, csv_report_text):
-        report_date, report_id = self._parse_header(self._extract_header_lines(csv_report_text))
-        self.report_id = report_id
+        report_date, first_column_name = self._parse_header(self._extract_header_lines(csv_report_text))
+        self.report_id = first_column_name
         self.start_date = report_date
 
         f_body, f_footer = self._extract_body_and_footer(csv_report_text)
@@ -110,8 +109,7 @@ class CsvReport(object):
             missing_fieldnames = list(set(REQUIRED_FIELDS) - (set(self.fieldnames) & set(REQUIRED_FIELDS)))
             raise exc.CsvParseException('Not all required fields are present. Missing: {}'.format(','.join(missing_fieldnames)))
 
-        self._check_incomplete(f_footer)
-        # self.report_log.state = constants.GAReportState.PARSED
+        self._check_session_counts(f_footer)
 
     def _parse_z11z_keyword(self, url):
         result = self.z11z_pattern.match(url)
@@ -169,7 +167,7 @@ class CsvReport(object):
         return ad_group_id, source_param
 
 
-    def _check_incomplete(self, footer):
+    def _check_session_counts(self, footer):
         sessions_total = self._get_sessions_total(footer)
         sessions_sum = sum(int(entry['Sessions'].strip().replace(',', '')) for entry in self.entries)
         if sessions_total != sessions_sum:
@@ -187,6 +185,7 @@ class CsvReport(object):
             raise exc.CsvParseException('Could not parse total sessions')
 
     def _extract_header_lines(self, raw_report_string):
+        # assuming headers are less than 10 lines
         return raw_report_string.split('\n')[:10]
 
     def _extract_body_and_footer(self, raw_report_string):
@@ -214,27 +213,30 @@ class CsvReport(object):
 
         return StringIO.StringIO('\n'.join(mainlines)), StringIO.StringIO('\n'.join(day_index_lines))
 
+    def _get_term_or_keyword_dict(self):
+        if self.report_id == LANDING_PAGE_COL_NAME:
+            return self.report_z1_codes
+        elif self.report_id == KEYWORD_COL_NAME:
+            return self.report_utmterm_codes
+        else:
+            raise exc.CsvParseException('Invalid GA report CSV section.')
+
+    def _get_id_and_source_param(self, entry):
+        data_dict = self._get_term_or_keyword_dict()
+        return data_dict[entry[self.report_id]]
+
     def is_media_source_specified(self):
-        return True, []
-        """
         media_source_not_specified = []
         for entry in self.entries:
-            identifier = self.get_identifier_object(entry)
-            if identifier.source_param == '':
-                media_source_not_specified.append(identifier.id)
-
+            media_id, source_param = self._get_id_and_source_param(entry)
+            if source_param == '':
+                media_source_not_specified.append(media_id)
         return (len(media_source_not_specified) == 0, list(media_source_not_specified))
-        """
 
     def is_ad_group_specified(self):
-        return True, []
-        """
         ad_group_not_specified = set()
-
-        for entry in self.get_entries():
-            identifier = self.get_identifier_object(entry)
-            if identifier.ad_group_id is None:
-                ad_group_not_specified.add(identifier.id)
-
+        for entry in self.entries:
+            media_id, _ = self._get_id_and_source_param(entry)
+            if media_id is None:
+                ad_group_not_specified.add(media_id)
         return (len(ad_group_not_specified) == 0, list(ad_group_not_specified))
-        """
