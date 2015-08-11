@@ -115,7 +115,8 @@ class GetContentAdStatusTest(TestCase):
             dash.constants.ContentAdSubmissionStatus.APPROVED
         )
 
-    def test_get_content_ad_status_with_sync(self):
+    @mock.patch('dash.views.views.actionlog.zwei_actions.send')
+    def test_get_content_ad_status_with_sync(self, mock_send):
         zwei_response_data = {
             'status': 'success',
             'data': [{
@@ -153,7 +154,7 @@ class GetContentAdStatusTest(TestCase):
         self.assertTrue(
             'args' not in actionlog.models.ActionLog.objects.all().order_by('-created_dt')[0].payload
         )
-        
+
         response = self.client.post(
             reverse('api.zwei_callback', kwargs={'action_id': action_log.id}),
             content_type='application/json',
@@ -165,17 +166,19 @@ class GetContentAdStatusTest(TestCase):
         self.assertEqual(
             content_ad_source.source_state,
             dash.constants.ContentAdSourceState.INACTIVE
-        ) # we still update the state in z1 but trigger a zwei action
+        )  # we still update the state in z1 but trigger a zwei action
 
         self.assertEqual(
             content_ad_source.submission_status,
             dash.constants.ContentAdSubmissionStatus.APPROVED
         )
 
-        self.assertEqual(
-            actionlog.models.ActionLog.objects.all().order_by('-created_dt')[0].payload['args']['changes'],
-            { 'state': dash.constants.ContentAdSourceState.ACTIVE }
-        )
+        action = actionlog.models.ActionLog.objects.all().\
+                 order_by('-created_dt')[0]
+
+        self.assertEqual(action.payload['args']['changes'], {'state': dash.constants.ContentAdSourceState.ACTIVE})
+
+        mock_send.assert_called_with([action])
 
 
 class UpdateContentAdTest(TestCase):
