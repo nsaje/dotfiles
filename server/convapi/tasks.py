@@ -9,6 +9,7 @@ from convapi import exc
 from convapi import models
 from convapi import constants
 from convapi.parse import CsvReport
+from convapi import parse_v2
 from convapi.aggregate import ReportEmail
 from convapi.helpers import get_from_s3
 from utils.statsd_helper import statsd_incr, statsd_timer
@@ -185,9 +186,8 @@ def process_ga_report_v2(ga_report_task):
         filename = ga_report_task.attachment_name
         report_log.csv_filename = filename
 
-        """
-        # TODO
-        csvreport = CsvReport(content, report_log)
+        csvreport = parse_v2.CsvReport(content, report_log)
+        csvreport.parse()
 
         ad_group_errors = ad_group_specified_errors(csvreport)
         media_source_errors = media_source_specified_errors(csvreport)
@@ -209,7 +209,7 @@ def process_ga_report_v2(ga_report_task):
             report_log.state = constants.GAReportState.FAILED
             report_log.save()
 
-        if len(csvreport.get_entries()) == 0:
+        if csvreport.is_empty():
             logger.warning('Report is empty (has no entries)')
             statsd_incr('convapi.aggregated_emails')
             report_log.add_error('Report is empty (has no entries)')
@@ -221,6 +221,8 @@ def process_ga_report_v2(ga_report_task):
         report_log.for_date = csvreport.get_date()
         report_log.save()
 
+        """
+        # TODO
         report_aggregate(
             csvreport=csvreport,
             sender=ga_report_task.sender,
@@ -237,8 +239,10 @@ def process_ga_report_v2(ga_report_task):
         report_log.add_error(e.message)
         report_log.state = constants.GAReportState.EMPTY_REPORT
         report_log.save()
+        raise
     except Exception as e:
         logger.warning(e.message)
         report_log.add_error(e.message)
         report_log.state = constants.GAReportState.FAILED
         report_log.save()
+        raise
