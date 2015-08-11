@@ -151,3 +151,94 @@ def process_ga_report(ga_report_task):
         report_log.add_error(e.message)
         report_log.state = constants.GAReportState.FAILED
         report_log.save()
+
+
+@app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
+          default_retry_delay=settings.CELERY_TASK_RETRY_DEPLAY)
+@transaction.atomic
+def process_ga_report_v2(ga_report_task):
+    try:
+        report_log = models.GAReportLog()
+        report_log.email_subject = ga_report_task.subject
+        report_log.from_address = ga_report_task.from_address
+        report_log.state = constants.GAReportState.RECEIVED
+
+        if int(ga_report_task.attachment_count) != 1:
+            logger.warning('ERROR: single attachment expected')
+            report_log.add_error('ERROR: single attachment expected')
+            report_log.state = constants.GAReportState.FAILED
+            report_log.save()
+
+        content = get_from_s3(ga_report_task.attachment_s3_key)
+        if content is None:
+            logger.warning('ERROR: Get attachment from s3 failed')
+            report_log.add_error('ERROR: Get attachment from s3 failed')
+            report_log.state = constants.GAReportState.FAILED
+            report_log.save()
+
+        if ga_report_task.attachment_content_type != 'text/csv':
+            logger.warning('ERROR: content type is not CSV')
+            report_log.add_error('ERROR: content type is not CSV')
+            report_log.state = constants.GAReportState.FAILED
+            report_log.save()
+
+        filename = ga_report_task.attachment_name
+        report_log.csv_filename = filename
+
+        """
+        # TODO
+        csvreport = CsvReport(content, report_log)
+
+        ad_group_errors = ad_group_specified_errors(csvreport)
+        media_source_errors = media_source_specified_errors(csvreport)
+
+        message = ''
+        if len(ad_group_errors) > 0:
+            message += '\nERROR: not all landing page urls have a valid ad_group specified:\n'
+            for landing_url in ad_group_errors:
+                message += landing_url + '\n'
+
+        if len(media_source_errors) > 0:
+            message += '\nERROR: not all landing page urls have a media source specified: \n'
+            for landing_url in media_source_errors:
+                message += landing_url + '\n'
+
+        if too_many_errors(ad_group_errors, media_source_errors):
+            logger.warning("Too many errors in ad_group_errors and media_source_errors lists.")
+            report_log.add_error("Too many errors in urls. Cannot recognize adgroup and media sources for some urls:\n %s \n\n %s" % ('\n'.join(ad_group_errors), '\n'.join(media_source_errors)))
+            report_log.state = constants.GAReportState.FAILED
+            report_log.save()
+
+        if len(csvreport.get_entries()) == 0:
+            logger.warning('Report is empty (has no entries)')
+            statsd_incr('convapi.aggregated_emails')
+            report_log.add_error('Report is empty (has no entries)')
+            report_log.state = constants.GAReportState.EMPTY_REPORT
+            report_log.save()
+
+        report_log.sender = ga_report_task.sender
+        report_log.email_subject = ga_report_task.subject
+        report_log.for_date = csvreport.get_date()
+        report_log.save()
+
+        report_aggregate(
+            csvreport=csvreport,
+            sender=ga_report_task.sender,
+            recipient=ga_report_task.recipient,
+            subject=ga_report_task.subject,
+            date=ga_report_task.date,
+            text=None,
+            report_log=report_log
+        )
+        """
+    except exc.EmptyReportException as e:
+        logger.warning(e.message)
+        statsd_incr('convapi.aggregated_emails')
+        report_log.add_error(e.message)
+        report_log.state = constants.GAReportState.EMPTY_REPORT
+        report_log.save()
+    except Exception as e:
+        logger.warning(e.message)
+        report_log.add_error(e.message)
+        report_log.state = constants.GAReportState.FAILED
+        report_log.save()
