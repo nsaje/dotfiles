@@ -3,21 +3,15 @@ import logging
 import time
 import email.utils
 
-from threading import Thread
-
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
-from django.db import transaction
 from django.conf import settings
 
 import newrelic.agent
 
 from auth import MailGunRequestAuth, GASourceAuth
-from parse import CsvReport
-from aggregate import ReportEmail
 from helpers import store_to_s3
 from utils.statsd_helper import statsd_incr
-from convapi import exc
 from convapi import models
 from convapi import constants
 from convapi import tasks
@@ -90,7 +84,7 @@ def mailgun_gareps(request):
         tasks.process_ga_report.apply_async((ga_report_task, ),
                                              queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE)
 
-        ga_report_task = GAReportTask(request.POST.get('subject'),
+        ga_report_v2_task = GAReportTask(request.POST.get('subject'),
                                              request.POST.get('Date'),
                                              request.POST.get('sender'),
                                              request.POST.get('recipient'),
@@ -101,7 +95,7 @@ def mailgun_gareps(request):
                                              request.POST.get('attachment-count', 0),
                                              content_type)
 
-        tasks.process_ga_report.apply_async((ga_report_task, ),
+        tasks.process_ga_report.apply_async((ga_report_v2_task, ),
                                              queue=settings.CELERY_DEFAULT_CONVAPI_V2_QUEUE)
 
     except Exception as e:
