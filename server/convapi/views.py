@@ -67,7 +67,7 @@ def mailgun_gareps(request):
     statsd_incr('convapi.accepted_emails')
     try:
         ga_report_task = None
-        
+
         csvreport_date_raw = email.utils.parsedate(request.POST.get('Date'))
         csvreport_date = datetime.datetime.fromtimestamp(time.mktime(csvreport_date_raw))
         attachment_name = request.FILES.get('attachment-1').name
@@ -89,6 +89,21 @@ def mailgun_gareps(request):
 
         tasks.process_ga_report.apply_async((ga_report_task, ),
                                              queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE)
+
+        ga_report_task = GAReportTask(request.POST.get('subject'),
+                                             request.POST.get('Date'),
+                                             request.POST.get('sender'),
+                                             request.POST.get('recipient'),
+                                             request.POST.get('from'),
+                                             None,
+                                             key,
+                                             attachment_name,
+                                             request.POST.get('attachment-count', 0),
+                                             content_type)
+
+        tasks.process_ga_report.apply_async((ga_report_task, ),
+                                             queue=settings.CELERY_DEFAULT_CONVAPI_V2_QUEUE)
+
     except Exception as e:
         report_log = models.GAReportLog()
         report_log.email_subject = ga_report_task.subject if ga_report_task is not None else None
