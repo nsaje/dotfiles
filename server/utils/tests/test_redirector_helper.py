@@ -23,12 +23,12 @@ class ValidateURLTest(TestCase):
         response.getcode = lambda: 200
         mock_urlopen.return_value = response
 
-        self.assertEqual(redirector_helper.validate_url(url), True)
+        self.assertEqual(redirector_helper.validate_url(url, 1), True)
 
         call = mock_urlopen.call_args[0][0]
 
         self.assertEqual(call.get_full_url(), settings.R1_VALIDATE_API_URL)
-        self.assertEqual(call.data, json.dumps({"url": url}))
+        self.assertEqual(call.data, json.dumps({"url": url, "adgroupid": 1}))
 
     def test_code_error(self, mock_urlopen):
         url = 'https://example.com/image'
@@ -38,7 +38,7 @@ class ValidateURLTest(TestCase):
         mock_urlopen.return_value = response
 
         with self.assertRaises(Exception):
-            redirector_helper.validate_url(url)
+            redirector_helper.validate_url(url, 1)
         self.assertEqual(len(mock_urlopen.call_args_list), 3)
 
     def test_status_not_success(self, mock_urlopen):
@@ -50,7 +50,7 @@ class ValidateURLTest(TestCase):
         mock_urlopen.return_value = response
 
         with self.assertRaises(Exception):
-            redirector_helper.validate_url(url)
+            redirector_helper.validate_url(url, 1)
         self.assertEqual(len(mock_urlopen.call_args_list), 3)
 
 

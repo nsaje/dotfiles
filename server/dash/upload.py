@@ -219,7 +219,7 @@ def _clean_url(url, ad_group):
     except (ValidationError, UnicodeEncodeError):
         raise ValidationError('Invalid URL')
 
-    if not redirector_helper.validate_url(url):
+    if not redirector_helper.validate_url(url, ad_group.id):
         raise ValidationError('Content unreachable')
 
     return url

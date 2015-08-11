@@ -12,9 +12,9 @@ logger = logging.getLogger(__name__)
 NUM_RETRIES = 3
 
 
-def validate_url(url):
+def validate_url(url, ad_group_id):
     try:
-        data = json.dumps({'url': url})
+        data = json.dumps({'url': url, 'adgroupid': ad_group_id})
         return _call_api_retry(settings.R1_VALIDATE_API_URL, data)
     except Exception as e:
         logger.exception('Exception in validate_url')
