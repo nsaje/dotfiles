@@ -4,7 +4,7 @@ import pytz
 import newrelic.agent
 
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Q, Max
 
 import actionlog.api
 import actionlog.constants
@@ -304,6 +304,7 @@ def get_ad_group_sources_notifications(ad_group_sources, ad_group_settings,
     return notifications
 
 
+@newrelic.agent.function_trace()
 def get_content_ad_notifications(ad_group):
     actions = actionlog.models.ActionLog.objects.filter(
         state=actionlog.constants.ActionState.WAITING,
@@ -342,24 +343,30 @@ def get_content_ad_notifications(ad_group):
     return notifications
 
 
-def get_content_ad_last_change_dt(ad_group, sources, last_change_dt=None):
+def _get_changed_content_ad_sources(ad_group, sources, last_change_dt):
     content_ad_sources = models.ContentAdSource.objects.filter(
         content_ad__ad_group=ad_group,
         source=sources
-    ).select_related('content_ad')
+    )
 
     if last_change_dt is not None:
         content_ad_sources = content_ad_sources.filter(modified_dt__gt=last_change_dt)
 
-    changed_content_ads = set(s.content_ad for s in content_ad_sources)
-
-    last_change_dt = None
-    if len(content_ad_sources):
-        last_change_dt = max([s.modified_dt for s in content_ad_sources])
-
-    return last_change_dt, changed_content_ads
+    return content_ad_sources
 
 
+def get_changed_content_ads(ad_group, sources, last_change_dt=None):
+    content_ad_sources = _get_changed_content_ad_sources(ad_group, sources, last_change_dt).select_related('content_ad')
+    return set(s.content_ad for s in content_ad_sources)
+
+
+@newrelic.agent.function_trace()
+def get_content_ad_last_change_dt(ad_group, sources, last_change_dt=None):
+    content_ad_sources = _get_changed_content_ad_sources(ad_group, sources, last_change_dt)
+    return content_ad_sources.aggregate(Max('modified_dt'))['modified_dt__max']
+
+
+@newrelic.agent.function_trace()
 def get_content_ad_submission_status(user, ad_group_sources_states, content_ad_sources):
     submission_status = []
     for content_ad_source in content_ad_sources:
@@ -575,7 +582,7 @@ def get_last_sync_messages(objects, last_sync_times):
 
 
 def get_selected_content_ads(
-        ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected):
+        ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected, include_archived):
     if select_all:
         content_ads = models.ContentAd.objects.filter(
             Q(ad_group__id=ad_group_id) | Q(id__in=content_ad_ids_selected)).exclude(
@@ -586,6 +593,9 @@ def get_selected_content_ads(
                 id__in=content_ad_ids_not_selected)
     else:
         content_ads = models.ContentAd.objects.filter(id__in=content_ad_ids_selected)
+
+    if not include_archived:
+        content_ads = content_ads.exclude_archived()
 
     return content_ads.order_by('created_dt')
 

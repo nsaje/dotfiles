@@ -4,7 +4,7 @@ import json
 from mock import patch
 import datetime
 
-from django.test import TestCase, Client, RequestFactory
+from django.test import TestCase, Client
 from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -14,7 +14,6 @@ from zemauth.models import User
 from dash import models
 from dash import constants
 from dash import api
-from dash.views import views
 
 
 class UserTest(TestCase):
@@ -154,9 +153,24 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.jpg\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
+'''
+
+        self.assertEqual(response.content, expected_content)
+
+    def test_get_all_include_archived(self):
+        data = {
+            'select_all': True,
+            'archived': 'true'
+        }
+
+        response = self._get_csv_from_server(data)
+
+        expected_content = '''url,title,image_url\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -170,8 +184,7 @@ http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.
         response = self._get_csv_from_server(data)
 
         expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -184,8 +197,8 @@ http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.
         response = self._get_csv_from_server(data)
 
         expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.jpg\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -199,10 +212,9 @@ http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.
         response = self._get_csv_from_server(data)
 
         expected_lines = ['url,title,image_url',
-                          'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg',
-                          'http://testurl.com,Test Article with no content_ad_sources 4,/123456789/200x300.jpg',
-                          'http://testurl.com,Test Article with no content_ad_sources 3,/123456789/200x300.jpg',
-                          'http://testurl.com,Test Article with no content_ad_sources 2,/123456789/200x300.jpg']
+                          'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg',
+                          'http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg',
+                          'http://testurl.com,Test Article with no content_ad_sources 3,123456789.jpg']
 
         lines = response.content.splitlines()
 
@@ -215,8 +227,8 @@ http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.
         response = self._get_csv_from_server(data)
 
         expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 1,/123456789/200x300.jpg\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -341,8 +353,8 @@ class AdGroupContentAdStateTest(TestCase):
         restored_ad.refresh_from_db()
         self.assertEqual(restored_ad.state, constants.ContentAdSourceState.ACTIVE)
 
-    @patch('dash.views.views.actionlog.zwei_actions.send_multiple')
-    def test_update_content_ads(self, mock_send_multiple):
+    @patch('dash.views.views.actionlog.zwei_actions.send')
+    def test_update_content_ads(self, mock_send):
         content_ad = models.ContentAd.objects.get(pk=1)
         state = constants.ContentAdSourceState.INACTIVE
         request = None
@@ -356,7 +368,7 @@ class AdGroupContentAdStateTest(TestCase):
         for content_ad_source in content_ad.contentadsource_set.all():
             self.assertEqual(content_ad_source.state, constants.ContentAdSourceState.INACTIVE)
 
-        self.assertTrue(mock_send_multiple.called)
+        self.assertTrue(mock_send.called)
 
     def test_get_content_ad_ids_validation_error(self):
         username = User.objects.get(pk=1).email
@@ -468,7 +480,7 @@ class AdGroupContentAdArchive(TestCase):
     def test_archive_set_batch(self):
         ad_group_id = 2
         batch_id = 2
-        content_ads = models.ContentAd.objects.filter(batch__id=batch_id)
+        content_ads = models.ContentAd.objects.filter(batch__id=batch_id, archived=False)
 
         self.assertGreater(len(content_ads), 0)
 
@@ -479,7 +491,9 @@ class AdGroupContentAdArchive(TestCase):
 
         response = self._post_content_ad_archive(ad_group_id, payload)
 
-        content_ads = models.ContentAd.objects.filter(batch__id=batch_id)
+        for content_ad in content_ads:
+            content_ad.refresh_from_db()
+
         self.assertTrue(all([ad.archived is True for ad in content_ads]))
 
         response_dict = json.loads(response.content)
@@ -491,7 +505,7 @@ class AdGroupContentAdArchive(TestCase):
 
     def test_archive_pause_active_before_archiving(self):
         ad_group_id = 1
-        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id, archived=False)
         self.assertGreater(len(content_ads), 0)
         self.assertFalse(all([ad.state == constants.ContentAdSourceState.INACTIVE for ad in content_ads]))
 
@@ -899,11 +913,10 @@ class AdGroupSourcesTest(TestCase):
         self.client.login(username=username, password='secret')
 
         ad_group_source = models.AdGroupSource.objects.get(id=3)
-        ad_group_source.source.source_type.available_actions.add(
-            models.SourceAction.objects.get(
-                action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
-            )
-        )
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
+        ]
+        ad_group_source.source.source_type.save()
 
         response = self.client.get(
             reverse(

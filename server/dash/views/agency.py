@@ -1,11 +1,11 @@
 import json
 import logging
+import newrelic.agent
 
 from collections import OrderedDict
 from decimal import Decimal
 from django.db import transaction
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.contrib.auth import models as authmodels
 
 from actionlog import api as actionlog_api
@@ -28,48 +28,6 @@ from zemauth.models import User as ZemUser
 
 
 logger = logging.getLogger(__name__)
-
-
-def get_campaign_url(ad_group, request):
-    campaign_settings_url = request.build_absolute_uri(
-        reverse('admin:dash_campaign_change', args=(ad_group.campaign.pk,)))
-    campaign_settings_url = campaign_settings_url.replace('http://', 'https://')
-
-    return campaign_settings_url
-
-
-def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
-    if not settings.SEND_AD_GROUP_SETTINGS_CHANGE_MAIL:
-        return
-
-    campaign_settings = models.CampaignSettings.objects.\
-        filter(campaign=ad_group.campaign).\
-        order_by('-created_dt')[:1]
-
-    if not campaign_settings or not campaign_settings[0].account_manager:
-        logger.error('Could not send e-mail because there is no account manager set for campaign with id %s.', ad_group.campaign.pk)
-
-        desc = {
-            'campaign_settings_url': get_campaign_url(ad_group, request)
-        }
-        pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.ADOPS,
-            incident_key='ad_group_settings_change_mail_failed',
-            description='E-mail notification for ad group settings change was not sent because the campaign settings or account manager is not set.',
-            details=desc,
-        )
-        return
-
-    if user.pk == campaign_settings[0].account_manager.pk:
-        return
-
-    email_helper.send_ad_group_settings_change_email(
-        user,
-        campaign_settings[0].account_manager,
-        request,
-        ad_group,
-        get_campaign_url(ad_group, request)
-    )
 
 
 class AdGroupSettings(api_common.BaseApiView):
@@ -150,9 +108,9 @@ class AdGroupSettings(api_common.BaseApiView):
         user = request.user
         changes = current_settings.get_setting_changes(settings)
         if changes:
-            send_ad_group_settings_change_mail_if_necessary(ad_group, user, request)
+            email_helper.send_ad_group_settings_change_mail_if_necessary(ad_group, user, request)
 
-        zwei_actions.send_multiple(actionlogs_to_send)
+        zwei_actions.send(actionlogs_to_send)
 
         response = {
             'settings': self.get_dict(settings, ad_group),
@@ -261,7 +219,7 @@ class CampaignSettings(api_common.BaseApiView):
                     )
                 )
 
-        zwei_actions.send_multiple(actions)
+        zwei_actions.send(actions)
 
         response = {
             'settings': self.get_dict(settings, campaign),
@@ -622,11 +580,7 @@ class AdGroupAgency(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        settings = ad_group.get_current_settings()
-
         response = {
-            'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
             'history': self.get_history(ad_group, request.user),
             'can_archive': ad_group.can_archive(),
             'can_restore': ad_group.can_restore(),
@@ -634,66 +588,12 @@ class AdGroupAgency(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_put')
-    def put(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.ad_group_agency_tab_view'):
-            raise exc.MissingDataError()
-
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        previous_ad_group_name = ad_group.name
-
-        current_settings = ad_group.get_current_settings()
-
-        resource = json.loads(request.body)
-
-        form = forms.AdGroupAgencySettingsForm(resource.get('settings', {}))
-        if not form.is_valid():
-            raise exc.ValidationError(errors=dict(form.errors))
-
-        settings = current_settings.copy_settings()
-        settings.tracking_code = form.cleaned_data['tracking_code']
-
-        actions = []
-        with transaction.atomic():
-            settings.save(request)
-
-            current_settings.ad_group_name = previous_ad_group_name
-            settings.ad_group_name = ad_group.name
-            actions = api.order_ad_group_settings_update(
-                ad_group, current_settings, settings, request, send=False)
-
-        zwei_actions.send_multiple(actions)
-
-        user = request.user
-        changes = current_settings.get_setting_changes(settings)
-        if changes:
-            send_ad_group_settings_change_mail_if_necessary(ad_group, user, request)
-
-        response = {
-            'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
-            'history': self.get_history(ad_group, request.user),
-            'can_archive': ad_group.can_archive(),
-            'can_restore': ad_group.can_restore(),
-        }
-
-        return self.create_api_response(response)
-
-    def get_dict(self, settings, ad_group):
-        result = {}
-
-        if settings:
-            result = {
-                'id': str(ad_group.pk),
-                'tracking_code': settings.tracking_code
-            }
-
-        return result
-
+    @newrelic.agent.function_trace()
     def get_history(self, ad_group, user):
         settings = models.AdGroupSettings.objects.\
             filter(ad_group=ad_group).\
-            order_by('created_dt')
+            order_by('created_dt').\
+            select_related('created_by')
 
         history = []
         for i in range(0, len(settings)):
@@ -723,6 +623,7 @@ class AdGroupAgency(api_common.BaseApiView):
 
         return history
 
+    @newrelic.agent.function_trace()
     def convert_changes_to_string(self, changes, user):
         if changes is None:
             return 'Created settings'
@@ -742,6 +643,7 @@ class AdGroupAgency(api_common.BaseApiView):
 
         return ', '.join(change_strings)
 
+    @newrelic.agent.function_trace()
     def convert_settings_to_dict(self, old_settings, new_settings, user):
         settings_dict = OrderedDict()
         for field in models.AdGroupSettings._settings_fields:

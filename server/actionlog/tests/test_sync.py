@@ -2,289 +2,754 @@ import httplib
 import mock
 import datetime
 
-import dash.models
-import actionlog.models
-
 from django.test import TestCase
 from django.conf import settings
+from django.http.request import HttpRequest
+
+import dash.models
+import actionlog.models
+import zemauth.models
 
 from actionlog import sync, constants
 
 from utils.command_helpers import last_n_days
+from utils import test_helper
 
 
-class ActionLogSyncTestCase(TestCase):
+class GlobalLastSuccessfulChildSyncTestCase(TestCase):
 
-    fixtures = ['test_api.yaml', 'test_sync.yaml']
+    fixtures = ['test_api.yaml']
 
-    def test_global_latest_success_by_account_ignore_archived(self):
-        latest_success_by_account = sync.GlobalSync().get_latest_success_by_account()
+    @mock.patch('actionlog.sync.datetime', test_helper.MockDateTime)
+    def test_get_latest_success_by_child(self):
+        utcnow = datetime.datetime.utcnow()
+        sync.datetime.utcnow = classmethod(lambda cls: utcnow)
 
-        self.assertEqual(
-            latest_success_by_account,
-            {
-                1: datetime.datetime(2014, 6, 10, 9, 58, 21),
-                2: None,
-                3: datetime.datetime(2014, 6, 10, 9, 58, 21)
-            })
+        last_sync = sync.GlobalSync().get_latest_success_by_child()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            2: None,
+            4: utcnow,
+        }, last_sync)
 
-    def test_global_latest_success_by_source_ignore_archived(self):
-        latest_success_by_source = sync.GlobalSync().get_latest_success_by_source()
+    def test_get_latest_success_by_child_none(self):
+        s = dash.models.Source.objects.get(id=6)
+        s.maintenance = False
+        s.save()
 
-        self.assertEqual(
-            latest_success_by_source,
-            {
-                1: None,
-                2: None,
-                3: None,
-                4: datetime.datetime(2014, 6, 10, 9, 58, 21),
-                5: datetime.datetime(2014, 6, 10, 9, 58, 21),
-                7: datetime.datetime(2014, 6, 10, 9, 58, 21)
-            })
+        last_sync = sync.GlobalSync().get_latest_success_by_child()
+        self.assertEqual(None, last_sync[1])
 
-    def test_ad_group_source_latest_status_sync(self):
-        latest_status_sync_dt = sync.AdGroupSourceSync(
-            dash.models.AdGroupSource.objects.get(pk=1)
-        ).get_latest_status_sync()
+    def test_get_latest_success_by_child_deprecated(self):
+        s = dash.models.Source.objects.get(id=6)
+        s.maintenance = False
+        s.deprecated = True
+        s.save()
 
-        self.assertEqual(latest_status_sync_dt.isoformat(), '2014-07-01T07:07:07')
+        last_sync = sync.GlobalSync().get_latest_success_by_child()
+        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[1])
 
-        latest_status_sync_dt = sync.AdGroupSourceSync(
-            dash.models.AdGroupSource.objects.get(pk=5)
-        ).get_latest_status_sync()
+    def test_get_latest_success_by_child_sources_filtered(self):
+        s = dash.models.Source.objects.get(id=6)
+        s.maintenance = False
+        s.save()
 
-        self.assertEqual(latest_status_sync_dt.isoformat(), '2014-07-01T11:11:11')
-
-    def test_ad_group_source_latest_report_sync(self):
-        latest_report_sync_dt = sync.AdGroupSourceSync(
-            dash.models.AdGroupSource.objects.get(pk=1)
-        ).get_latest_report_sync()
-
-        self.assertEqual(latest_report_sync_dt.isoformat(), '2014-07-01T12:12:12')
-
-        latest_report_sync_dt = sync.AdGroupSourceSync(
-            dash.models.AdGroupSource.objects.get(pk=2)
-        ).get_latest_report_sync()
-
-        self.assertEqual(latest_report_sync_dt.isoformat(), '2014-07-01T18:00:00')
-
-        latest_report_sync_dt = sync.AdGroupSourceSync(
-            dash.models.AdGroupSource.objects.get(pk=5)
-        ).get_latest_report_sync()
-
-        self.assertEqual(latest_report_sync_dt.isoformat(), '2014-07-01T13:00:00')
-
-    def test_ad_group_source_latest_success(self):
-        latest_success_dict = sync.AdGroupSourceSync(
-            dash.models.AdGroupSource.objects.get(pk=1)
+        last_sync = sync.GlobalSync(
+            sources=dash.models.Source.objects.filter(id__in=[1, 2, 3, 4])
         ).get_latest_success_by_child()
+        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[1])
 
-        self.assertEqual(len(latest_success_dict), 1)
-        self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
+    @mock.patch('actionlog.sync.datetime', test_helper.MockDateTime)
+    def test_get_latest_success_by_child_exclude_archived_account(self):
+        utcnow = datetime.datetime.utcnow()
+        sync.datetime.utcnow = classmethod(lambda cls: utcnow)
 
-        latest_success_dict = sync.AdGroupSourceSync(
-            dash.models.AdGroupSource.objects.get(pk=5)
-        ).get_latest_success_by_child()
+        r = HttpRequest()
+        r.user = zemauth.models.User.objects.create_user('test@example.com')
 
-        self.assertEqual(len(latest_success_dict), 1)
-        self.assertEqual(latest_success_dict[5].isoformat(), '2014-07-01T11:11:11')
+        acc = dash.models.Account.objects.get(id=2)
+        acc.archive(r)
 
-    def test_cached_ad_group_source_latest_success(self):
-        latest_success_dict = sync.AdGroupSourceSync(
-            dash.models.AdGroupSource.objects.get(pk=1)
-        ).get_latest_success_by_child()
+        last_sync = sync.GlobalSync().get_latest_success_by_child()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            4: utcnow
+        }, last_sync)
 
-        self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
+    def test_get_latest_success_by_child_exclude_archived_campaign(self):
+        r = HttpRequest()
+        r.user = zemauth.models.User.objects.create_user('test@example.com')
 
-        latest_success_dict = sync.AdGroupSourceSync(
-            dash.models.AdGroupSource.objects.get(pk=1)
-        ).get_latest_success_by_child(recompute=False)
+        c = dash.models.Campaign.objects.get(id=2)
+        for ags in dash.models.AdGroupSource.objects.filter(ad_group__campaign=c):
+            ags.last_successful_sync_dt = None
+            ags.save()
 
-        self.assertEqual(latest_success_dict[1].isoformat(), '2014-06-10T09:58:21')
+        last_sync = sync.GlobalSync().get_latest_success_by_child()
+        self.assertEqual(None, last_sync[1])
 
-    def test_ad_group_source_latest_source_success(self):
-        latest_success_dict = sync.AdGroupSourceSync(
-            dash.models.AdGroupSource.objects.get(pk=1)
+        c.archive(r)
+
+        last_sync = sync.GlobalSync().get_latest_success_by_child()
+        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[1])
+
+    def test_get_latest_success_by_child_exclude_archived_ad_group(self):
+        r = HttpRequest()
+        r.user = zemauth.models.User.objects.create_user('test@example.com')
+
+        ag = dash.models.AdGroup.objects.get(id=1)
+        for ags in dash.models.AdGroupSource.objects.filter(ad_group=ag):
+            ags.last_successful_sync_dt = None
+            ags.save()
+
+        last_sync = sync.GlobalSync().get_latest_success_by_child()
+        self.assertEqual(None, last_sync[1])
+
+        ag.archive(r)
+
+        last_sync = sync.GlobalSync().get_latest_success_by_child()
+        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[1])
+
+
+class GlobalLastSuccessfulSourceSyncTestCase(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def test_get_latest_source_success(self):
+        last_sync = sync.GlobalSync().get_latest_source_success()
+        self.assertEqual({
+            1: None,
+            2: None,
+            3: None,
+            4: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            5: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            6: None,
+            7: datetime.datetime(2014, 6, 10, 9, 58, 21),
+        }, last_sync)
+
+    def test_get_last_source_success_deprecated(self):
+        s = dash.models.Source.objects.get(id=6)
+        s.maintenance = False
+        s.deprecated = True
+        s.save()
+
+        last_sync = sync.GlobalSync().get_latest_source_success()
+        self.assertEqual({
+            1: None,
+            2: None,
+            3: None,
+            4: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            5: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            6: None,
+            7: datetime.datetime(2014, 6, 10, 9, 58, 21),
+        }, last_sync)
+
+    def test_get_last_souce_success_sources_filtered(self):
+        last_sync = sync.GlobalSync(
+            sources=dash.models.Source.objects.filter(id__in=[1, 2, 3])
         ).get_latest_source_success()
+        self.assertEqual({
+            1: None,
+            2: None,
+            3: None
+        }, last_sync)
 
-        self.assertEqual(len(latest_success_dict), 1)
-        self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
+    def test_get_last_souce_success_archived_account(self):
+        r = HttpRequest()
+        r.user = zemauth.models.User.objects.create_user('test@example.com')
 
-        latest_success_dict = sync.AdGroupSourceSync(
-            dash.models.AdGroupSource.objects.get(pk=5)
+        acc = dash.models.Account.objects.get(id=2)
+        for ags in dash.models.AdGroupSource.objects.filter(ad_group__campaign__account=acc):
+            ags.last_successful_sync_dt = None
+            ags.save()
+
+        last_sync = sync.GlobalSync().get_latest_source_success()
+        self.assertEqual(None, last_sync[1])
+        self.assertEqual(None, last_sync[2])
+
+        acc.archive(r)
+
+        last_sync = sync.GlobalSync().get_latest_source_success()
+        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[1])
+        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[2])
+
+    def test_get_last_souce_success_archived_campaign(self):
+        r = HttpRequest()
+        r.user = zemauth.models.User.objects.create_user('test@example.com')
+
+        c1 = dash.models.Campaign.objects.get(id=3)
+        c2 = dash.models.Campaign.objects.get(id=4)
+        for ags in dash.models.AdGroupSource.objects.filter(ad_group__campaign__in=[c1, c2]):
+            ags.last_successful_sync_dt = None
+            ags.save()
+
+        last_sync = sync.GlobalSync().get_latest_source_success()
+        self.assertEqual(None, last_sync[1])
+        self.assertEqual(None, last_sync[2])
+
+        c1.archive(r)
+        c2.archive(r)
+
+        last_sync = sync.GlobalSync().get_latest_source_success()
+        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[1])
+        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[2])
+
+    def test_get_last_souce_success_archived_ad_group(self):
+        r = HttpRequest()
+        r.user = zemauth.models.User.objects.create_user('test@example.com')
+
+        ad_groups = dash.models.AdGroup.objects.filter(id__in=[3, 4, 5, 7])
+        for ags in dash.models.AdGroupSource.objects.filter(ad_group=ad_groups):
+            ags.last_successful_sync_dt = None
+            ags.save()
+
+        last_sync = sync.GlobalSync().get_latest_source_success()
+        self.assertEqual(None, last_sync[1])
+        self.assertEqual(None, last_sync[2])
+
+        for ag in ad_groups:
+            ag.archive(r)
+
+        last_sync = sync.GlobalSync().get_latest_source_success()
+        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[1])
+        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[2])
+
+
+class AccountLastSuccessfulChildSyncTestCase(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.acc = dash.models.Account.objects.get(id=1)
+
+    def test_get_latest_success_by_child(self):
+        last_sync = sync.AccountSync(self.acc).get_latest_success_by_child()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            2: datetime.datetime(2014, 6, 10, 9, 58, 21)
+        }, last_sync)
+
+    def test_get_latest_success_by_child_none(self):
+        s = dash.models.Source.objects.get(id=6)
+        s.maintenance = False
+        s.last_successful_sync_dt = None
+        s.save()
+
+        last_sync = sync.AccountSync(self.acc).get_latest_success_by_child()
+        self.assertEqual({
+            1: None,
+            2: datetime.datetime(2014, 6, 10, 9, 58, 21)
+        }, last_sync)
+
+    def test_get_latest_success_by_child_deprecated(self):
+        s = dash.models.Source.objects.get(id=6)
+        s.maintenance = False
+        s.deprecated = True
+        s.last_successful_sync_dt = None
+        s.save()
+
+        last_sync = sync.AccountSync(self.acc).get_latest_success_by_child()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            2: datetime.datetime(2014, 6, 10, 9, 58, 21)
+        }, last_sync)
+
+    def test_get_latest_success_by_child_sources_filtered(self):
+        sources = dash.models.Source.objects.filter(id__in=[1, 2, 3])
+        s = dash.models.Source.objects.get(id=6)
+        s.maintenance = False
+        s.deprecated = False
+        s.last_successful_sync_dt = None
+        s.save()
+
+        last_sync = sync.AccountSync(self.acc, sources=sources).get_latest_success_by_child()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            2: datetime.datetime(2014, 6, 10, 9, 58, 21)
+        }, last_sync)
+
+    def test_get_latest_success_by_child_exclude_archived_campaign(self):
+        c = dash.models.Campaign.objects.get(id=2)
+        for ag in c.adgroup_set.all():
+            for ags in ag.adgroupsource_set.all():
+                ags.last_successful_sync_dt = None
+                ags.save()
+
+        last_sync = sync.AccountSync(self.acc).get_latest_success_by_child()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            2: None
+        }, last_sync)
+
+        r = HttpRequest()
+        r.user = zemauth.models.User.objects.create_user('test@example.com')
+        c.archive(r)
+
+        last_sync = sync.AccountSync(self.acc).get_latest_success_by_child()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21)
+        }, last_sync)
+
+    def test_get_latest_success_by_child_exclude_archived_ad_group(self):
+        ag = dash.models.AdGroup.objects.get(id=1)
+        for ags in ag.adgroupsource_set.all():
+            ags.last_successful_sync_dt = None
+            ags.save()
+
+        last_sync = sync.AccountSync(self.acc).get_latest_success_by_child()
+        self.assertEqual({
+            1: None,
+            2: datetime.datetime(2014, 6, 10, 9, 58, 21)
+        }, last_sync)
+
+        r = HttpRequest()
+        r.user = zemauth.models.User.objects.create_user('test@example.com')
+        ag.archive(r)
+
+        last_sync = sync.AccountSync(self.acc).get_latest_success_by_child()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            2: datetime.datetime(2014, 6, 10, 9, 58, 21)
+        }, last_sync)
+
+    @mock.patch('actionlog.sync.datetime', test_helper.MockDateTime)
+    def test_get_latest_success_by_child_demo_account(self):
+        utcnow = datetime.datetime.utcnow()
+        sync.datetime.utcnow = classmethod(lambda cls: utcnow)
+
+        acc = dash.models.Account.objects.get(id=4)
+        last_sync = sync.AccountSync(acc).get_latest_success_by_child()
+        self.assertEqual({
+            6: utcnow,
+        }, last_sync)
+
+
+class AccountLastSuccessfulSourceSyncTestCase(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.acc = dash.models.Account.objects.get(id=1)
+
+    def test_get_latest_source_success(self):
+        last_sync = sync.AccountSync(self.acc).get_latest_source_success()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            2: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            3: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            4: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            5: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            6: None,
+            7: datetime.datetime(2014, 6, 10, 9, 58, 21),
+        }, last_sync)
+
+    def test_get_latest_source_success_maintenance(self):
+        ags = dash.models.AdGroupSource.objects.get(ad_group_id=1, source_id=6)
+        ags.last_successful_sync_dt = datetime.datetime(2014, 6, 10, 9, 58, 21)
+        ags.save()
+
+        s = dash.models.Source.objects.get(id=6)
+        self.assertTrue(s.maintenance)
+
+        last_sync = sync.AccountSync(self.acc).get_latest_source_success()
+        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[6])
+
+    def test_get_latest_source_success_deprecated(self):
+        ags = dash.models.AdGroupSource.objects.get(ad_group_id=1, source_id=6)
+        ags.last_successful_sync_dt = datetime.datetime(2014, 6, 10, 9, 58, 21)
+        ags.save()
+
+        s = dash.models.Source.objects.get(id=6)
+        s.maintenance = False
+        s.deprecated = True
+        s.save()
+
+        last_sync = sync.AccountSync(self.acc).get_latest_source_success()
+        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[6])
+
+    def test_get_latest_source_success_sources_filtered(self):
+        sources = dash.models.Source.objects.filter(id__in=[1, 2, 6])
+
+        last_sync = sync.AccountSync(self.acc, sources=sources).get_latest_source_success()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            2: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            6: None,
+        }, last_sync)
+
+    @mock.patch('actionlog.sync.datetime', test_helper.MockDateTime)
+    def test_get_latest_source_success_demo_account(self):
+        utcnow = datetime.datetime.utcnow()
+        sync.datetime.utcnow = classmethod(lambda cls: utcnow)
+
+        acc = dash.models.Account.objects.get(id=4)
+
+        last_sync = sync.AccountSync(acc).get_latest_source_success()
+        self.assertEqual({
+            1: utcnow,
+            2: utcnow,
+            3: utcnow,
+            4: utcnow,
+            5: utcnow,
+            6: utcnow,
+            7: utcnow,
+            8: utcnow,
+        }, last_sync)
+
+    def test_get_latest_source_success_archived_campaign(self):
+        c = dash.models.Campaign.objects.get(id=1)
+        for ag in c.adgroup_set.all():
+            for ags in ag.adgroupsource_set.all():
+                ags.last_successful_sync_dt = None
+                ags.save()
+
+        last_sync = sync.AccountSync(self.acc).get_latest_source_success()
+        self.assertEqual({
+            1: None,
+            2: None,
+            3: None,
+            4: None,
+            5: None,
+            6: None,
+            7: None,
+        }, last_sync)
+
+        r = HttpRequest()
+        r.user = zemauth.models.User.objects.create_user('test@example.com')
+        c.archive(r)
+
+        last_sync = sync.AccountSync(self.acc).get_latest_source_success()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            4: datetime.datetime(2014, 6, 10, 9, 58, 21),
+        }, last_sync)
+
+    def test_get_latest_source_success_archived_ad_group(self):
+        ag = dash.models.AdGroup.objects.get(id=1)
+        for ags in ag.adgroupsource_set.all():
+            ags.last_successful_sync_dt = None
+            ags.save()
+
+        last_sync = sync.AccountSync(self.acc).get_latest_source_success()
+        self.assertEqual({
+            1: None,
+            2: None,
+            3: None,
+            4: None,
+            5: None,
+            6: None,
+            7: None,
+        }, last_sync)
+
+        r = HttpRequest()
+        r.user = zemauth.models.User.objects.create_user('test@example.com')
+        ag.archive(r)
+
+        last_sync = sync.AccountSync(self.acc).get_latest_source_success()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            2: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            4: datetime.datetime(2014, 6, 10, 9, 58, 21),
+        }, last_sync)
+
+
+class CampaignLastSuccessfulChildSyncTestCase(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.campaign = dash.models.Campaign.objects.get(id=1)
+
+    def test_get_latest_success_by_child(self):
+        last_sync = sync.CampaignSync(self.campaign).get_latest_success_by_child()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            9: datetime.datetime(2014, 6, 10, 9, 58, 21),
+        }, last_sync)
+
+    def test_get_latest_success_by_child_none(self):
+        s = dash.models.Source.objects.get(id=6)
+        s.maintenance = False
+        s.save()
+
+        last_sync = sync.CampaignSync(self.campaign).get_latest_success_by_child()
+        self.assertEqual({
+            1: None,
+            9: datetime.datetime(2014, 6, 10, 9, 58, 21),
+        }, last_sync)
+
+    def test_get_latest_success_by_child_deprecated(self):
+        s = dash.models.Source.objects.get(id=6)
+        s.maintenance = False
+        s.deprecated = True
+        s.save()
+
+        last_sync = sync.CampaignSync(self.campaign).get_latest_success_by_child()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            9: datetime.datetime(2014, 6, 10, 9, 58, 21),
+        }, last_sync)
+
+    def test_get_latest_success_by_child_sources_filtered(self):
+        for ags in dash.models.AdGroupSource.objects.filter(ad_group__campaign=self.campaign, source_id__in=[2, 7]):
+            ags.last_successful_sync_dt = None
+            ags.save()
+
+        last_sync = sync.CampaignSync(self.campaign).get_latest_success_by_child()
+        self.assertEqual({
+            1: None,
+            9: None,
+        }, last_sync)
+
+        last_sync = sync.CampaignSync(
+            self.campaign,
+            sources=dash.models.Source.objects.filter(id__in=[1, 3, 6])
+        ).get_latest_success_by_child()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21)
+        }, last_sync)
+
+    def test_get_latest_success_by_child_exclude_archived_ad_group(self):
+        last_sync = sync.CampaignSync(self.campaign).get_latest_success_by_child()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            9: datetime.datetime(2014, 6, 10, 9, 58, 21)
+        }, last_sync)
+
+        ag = dash.models.AdGroup.objects.get(id=9)
+
+        r = HttpRequest()
+        r.user = zemauth.models.User.objects.create_user('test@example.com')
+        ag.archive(r)
+
+        last_sync = sync.CampaignSync(self.campaign).get_latest_success_by_child()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21)
+        }, last_sync)
+
+    @mock.patch('actionlog.sync.datetime', test_helper.MockDateTime)
+    def test_get_latest_success_by_child_demo_campaign(self):
+        utcnow = datetime.datetime.utcnow()
+        sync.datetime.utcnow = classmethod(lambda cls: utcnow)
+
+        campaign = dash.models.Campaign.objects.get(id=6)
+        last_sync = sync.CampaignSync(campaign).get_latest_success_by_child()
+        self.assertEqual({
+            8: utcnow,
+        }, last_sync)
+
+
+class CamapaignLastSuccessfulSourceSyncTestCase(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.campaign = dash.models.Campaign.objects.get(id=1)
+
+    def test_get_latest_source_success(self):
+        last_sync = sync.CampaignSync(self.campaign).get_latest_source_success()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            2: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            3: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            4: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            5: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            6: None,
+            7: datetime.datetime(2014, 6, 10, 9, 58, 21)
+        }, last_sync)
+
+    def test_get_latest_source_success_maintenance(self):
+        s = dash.models.Source.objects.get(id=6)
+        self.assertTrue(s.maintenance)
+
+        ags = dash.models.AdGroupSource.objects.get(ad_group_id=1, source_id=6)
+        ags.last_successful_sync_dt = datetime.datetime(2014, 6, 10, 9, 58, 21)
+        ags.save()
+
+        last_sync = sync.CampaignSync(self.campaign).get_latest_source_success()
+        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[6])
+
+    def test_get_latest_source_success_deprecated(self):
+        ags = dash.models.AdGroupSource.objects.get(ad_group_id=1, source_id=6)
+        ags.last_successful_sync_dt = datetime.datetime(2014, 6, 10, 9, 58, 21)
+        ags.save()
+
+        s = dash.models.Source.objects.get(id=6)
+        s.deprecated = True
+        s.maintenance = False
+        s.save()
+
+        last_sync = sync.CampaignSync(self.campaign).get_latest_source_success()
+        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[6])
+
+    def test_get_latest_source_success_sources_filtered(self):
+        last_sync = sync.CampaignSync(
+            self.campaign,
+            sources=dash.models.Source.objects.filter(id__in=[1, 2, 3])
         ).get_latest_source_success()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            2: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            3: datetime.datetime(2014, 6, 10, 9, 58, 21)
+        }, last_sync)
 
-        self.assertEqual(len(latest_success_dict), 1)
-        self.assertEqual(latest_success_dict[5].isoformat(), '2014-07-01T11:11:11')
+    @mock.patch('actionlog.sync.datetime', test_helper.MockDateTime)
+    def test_get_latest_source_success_demo_campaign(self):
+        utcnow = datetime.datetime.utcnow()
+        sync.datetime.utcnow = classmethod(lambda cls: utcnow)
 
-    def test_cached_ad_group_source_latest_source_success(self):
-        latest_success_dict = sync.AdGroupSourceSync(
-            dash.models.AdGroupSource.objects.get(pk=1)
+        campaign = dash.models.Campaign.objects.get(id=6)
+        last_sync = sync.CampaignSync(campaign).get_latest_source_success()
+        self.assertEqual({
+            1: utcnow,
+            2: utcnow,
+            3: utcnow,
+            4: utcnow,
+            5: utcnow,
+            6: utcnow,
+            7: utcnow,
+            8: utcnow,
+        }, last_sync)
+
+    def test_get_latest_source_success_archived_ad_group(self):
+        for ags in dash.models.AdGroupSource.objects.filter(ad_group_id=9):
+            ags.last_successful_sync_dt = None
+            ags.save()
+
+        last_sync = sync.CampaignSync(self.campaign).get_latest_source_success()
+        self.assertEqual(None, last_sync[2])
+
+        ag = dash.models.AdGroup.objects.get(id=9)
+
+        r = HttpRequest()
+        r.user = zemauth.models.User.objects.create_user('test@example.com')
+        ag.archive(r)
+
+        last_sync = sync.CampaignSync(self.campaign).get_latest_source_success()
+        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[2])
+
+
+class AdGroupLastSuccessfulChildSyncTestCase(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.ad_group = dash.models.AdGroup.objects.get(id=1)
+
+    def test_get_latest_success_by_child(self):
+        last_sync = sync.AdGroupSync(self.ad_group).get_latest_success_by_child()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            2: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            3: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            4: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            5: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            18: datetime.datetime(2014, 6, 10, 9, 58, 21)
+        }, last_sync)
+
+    def test_get_latest_success_by_child_none(self):
+        s = dash.models.Source.objects.get(id=6)
+        s.maintenance = False
+        s.save()
+
+        last_sync = sync.AdGroupSync(self.ad_group).get_latest_success_by_child()
+        self.assertEqual(None, last_sync[9])
+
+    def test_get_latest_success_by_child_deprecated(self):
+        s = dash.models.Source.objects.get(id=6)
+        s.maintenance = False
+        s.deprecated = True
+        s.save()
+
+        last_sync = sync.AdGroupSync(self.ad_group).get_latest_success_by_child()
+        self.assertTrue(9 not in last_sync)
+
+    def test_get_latest_success_by_child_sources_filtered(self):
+        last_sync = sync.AdGroupSync(
+            self.ad_group,
+            sources=dash.models.Source.objects.filter(id__in=[1, 2, 3])
+        ).get_latest_success_by_child()
+        ags_ids = dash.models.AdGroupSource.objects\
+                                           .filter(ad_group=self.ad_group, source_id__in=[1, 2, 3])\
+                                           .values_list('id', flat=True)
+        self.assertItemsEqual(
+            ags_ids,
+            last_sync.keys()
+        )
+
+
+class AdGroupLastSuccessfulSourceSyncTestCase(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.ad_group = dash.models.AdGroup.objects.get(id=1)
+
+    def test_get_latest_source_success(self):
+        last_sync = sync.AdGroupSync(self.ad_group).get_latest_source_success()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            2: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            3: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            4: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            5: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            6: None,
+            7: datetime.datetime(2014, 6, 10, 9, 58, 21)
+        }, last_sync)
+
+    def test_get_latest_source_success_maintenance(self):
+        s = dash.models.Source.objects.get(id=6)
+        self.assertTrue(s.maintenance)
+
+        ags = dash.models.AdGroupSource.objects.get(ad_group_id=1, source_id=6)
+        ags.last_successful_sync_dt = datetime.datetime(2014, 6, 10, 9, 58, 21)
+        ags.save()
+
+        last_sync = sync.AdGroupSync(self.ad_group).get_latest_source_success()
+        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[6])
+
+    def test_get_latest_source_success_deprecated(self):
+        ags = dash.models.AdGroupSource.objects.get(ad_group_id=1, source_id=6)
+        ags.last_successful_sync_dt = datetime.datetime(2014, 6, 10, 9, 58, 21)
+        ags.save()
+
+        s = dash.models.Source.objects.get(id=6)
+        s.maintenance = False
+        s.deprecated = True
+        s.save()
+
+        last_sync = sync.AdGroupSync(self.ad_group).get_latest_source_success()
+        self.assertEqual(datetime.datetime(2014, 6, 10, 9, 58, 21), last_sync[6])
+
+    def test_get_latest_source_success_sources_filtered(self):
+        last_sync = sync.AdGroupSync(
+            self.ad_group,
+            sources=dash.models.Source.objects.filter(id__in=[1, 2, 3])
         ).get_latest_source_success()
+        self.assertEqual({
+            1: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            2: datetime.datetime(2014, 6, 10, 9, 58, 21),
+            3: datetime.datetime(2014, 6, 10, 9, 58, 21)
+        }, last_sync)
 
-        self.assertEqual(len(latest_success_dict), 1)
-        self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
+    @mock.patch('actionlog.sync.datetime', test_helper.MockDateTime)
+    def test_get_latest_source_success_demo_ad_group(self):
+        utcnow = datetime.datetime.utcnow()
+        sync.datetime.utcnow = classmethod(lambda cls: utcnow)
 
-        latest_success_dict = sync.AdGroupSourceSync(
-            dash.models.AdGroupSource.objects.get(pk=1)
-        ).get_latest_source_success(recompute=False)
+        ad_group = dash.models.AdGroup.objects.get(id=8)
 
-        self.assertEqual(len(latest_success_dict), 1)
-        self.assertEqual(latest_success_dict[1].isoformat(), '2014-06-10T09:58:21')
-
-    def test_ad_group_latest_success(self):
-        latest_success_dict = sync.AdGroupSync(
-            dash.models.AdGroup.objects.get(pk=1)
-        ).get_latest_success_by_child()
-
-        self.assertEqual(len(latest_success_dict), 6)
-        self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
-        self.assertEqual(latest_success_dict[2].isoformat(), '2014-07-01T08:08:08')
-        self.assertEqual(latest_success_dict[3].isoformat(), '2014-07-01T09:09:09')
-        self.assertEqual(latest_success_dict[4].isoformat(), '2014-07-01T10:10:10')
-        self.assertEqual(latest_success_dict[5].isoformat(), '2014-07-01T11:11:11')
-
-        latest_success_dict = sync.AdGroupSync(
-            dash.models.AdGroup.objects.get(pk=2)
-        ).get_latest_success_by_child()
-
-        self.assertEqual(len(latest_success_dict), 3)
-        self.assertEqual(latest_success_dict[6], None)
-        self.assertEqual(latest_success_dict[7], None)
-        self.assertEqual(latest_success_dict[8], None)
-
-    def test_cached_ad_group_latest_success(self):
-        latest_success_dict = sync.AdGroupSync(
-            dash.models.AdGroup.objects.get(pk=1)
-        ).get_latest_success_by_child()
-
-        self.assertEqual(len(latest_success_dict), 6)
-        self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
-        self.assertEqual(latest_success_dict[2].isoformat(), '2014-07-01T08:08:08')
-        self.assertEqual(latest_success_dict[3].isoformat(), '2014-07-01T09:09:09')
-        self.assertEqual(latest_success_dict[4].isoformat(), '2014-07-01T10:10:10')
-        self.assertEqual(latest_success_dict[5].isoformat(), '2014-07-01T11:11:11')
-
-        latest_success_dict = sync.AdGroupSync(
-            dash.models.AdGroup.objects.get(pk=1)
-        ).get_latest_success_by_child(recompute=False)
-
-        self.assertEqual(len(latest_success_dict), 6)
-        self.assertEqual(latest_success_dict[1].isoformat(), '2014-06-10T09:58:21')
-        self.assertEqual(latest_success_dict[2].isoformat(), '2014-06-10T09:58:21')
-        self.assertEqual(latest_success_dict[3].isoformat(), '2014-06-10T09:58:21')
-        self.assertEqual(latest_success_dict[4].isoformat(), '2014-06-10T09:58:21')
-        self.assertEqual(latest_success_dict[5].isoformat(), '2014-06-10T09:58:21')
-
-    def test_ad_group_latest_source_success(self):
-        latest_success_dict = sync.AdGroupSync(
-            dash.models.AdGroup.objects.get(pk=1)
-        ).get_latest_source_success()
-
-        self.assertEqual(len(latest_success_dict), 6)
-        self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
-        self.assertEqual(latest_success_dict[2].isoformat(), '2014-07-01T08:08:08')
-        self.assertEqual(latest_success_dict[3].isoformat(), '2014-07-01T09:09:09')
-        self.assertEqual(latest_success_dict[4].isoformat(), '2014-07-01T10:10:10')
-        self.assertEqual(latest_success_dict[5].isoformat(), '2014-07-01T11:11:11')
-
-        latest_success_dict = sync.AdGroupSync(
-            dash.models.AdGroup.objects.get(pk=1)
-        ).get_latest_source_success()
-
-        self.assertEqual(len(latest_success_dict), 6)
-        self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
-        self.assertEqual(latest_success_dict[2].isoformat(), '2014-07-01T08:08:08')
-        self.assertEqual(latest_success_dict[3].isoformat(), '2014-07-01T09:09:09')
-        self.assertEqual(latest_success_dict[4].isoformat(), '2014-07-01T10:10:10')
-        self.assertEqual(latest_success_dict[5].isoformat(), '2014-07-01T11:11:11')
-
-    def test_cached_ad_group_latest_source_success(self):
-        latest_success_dict = sync.AdGroupSync(
-            dash.models.AdGroup.objects.get(pk=1)
-        ).get_latest_source_success()
-
-        self.assertEqual(len(latest_success_dict), 6)
-        self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
-        self.assertEqual(latest_success_dict[2].isoformat(), '2014-07-01T08:08:08')
-        self.assertEqual(latest_success_dict[3].isoformat(), '2014-07-01T09:09:09')
-        self.assertEqual(latest_success_dict[4].isoformat(), '2014-07-01T10:10:10')
-        self.assertEqual(latest_success_dict[5].isoformat(), '2014-07-01T11:11:11')
-
-        latest_success_dict = sync.AdGroupSync(
-            dash.models.AdGroup.objects.get(pk=1)
-        ).get_latest_source_success(recompute=False)
-
-        self.assertEqual(len(latest_success_dict), 6)
-        self.assertEqual(latest_success_dict[1].isoformat(), '2014-06-10T09:58:21')
-        self.assertEqual(latest_success_dict[2].isoformat(), '2014-06-10T09:58:21')
-        self.assertEqual(latest_success_dict[3].isoformat(), '2014-06-10T09:58:21')
-        self.assertEqual(latest_success_dict[4].isoformat(), '2014-06-10T09:58:21')
-        self.assertEqual(latest_success_dict[5].isoformat(), '2014-06-10T09:58:21')
-
-    def test_ad_group_latest_success_maintenance(self):
-        latest_success_dict = sync.AdGroupSync(
-            dash.models.AdGroup.objects.get(pk=1)
-        ).get_latest_success_by_child()
-
-        self.assertEqual(len(latest_success_dict), 6)
-        self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
-        self.assertEqual(latest_success_dict[2].isoformat(), '2014-07-01T08:08:08')
-        self.assertEqual(latest_success_dict[3].isoformat(), '2014-07-01T09:09:09')
-        self.assertEqual(latest_success_dict[4].isoformat(), '2014-07-01T10:10:10')
-        self.assertEqual(latest_success_dict[5].isoformat(), '2014-07-01T11:11:11')
-
-        # turn off maintenance mode for Source 6
-        m_source = dash.models.Source.objects.get(pk=6)
-        m_source.maintenance = False
-        m_source.save()
-
-        latest_success_dict = sync.AdGroupSync(
-            dash.models.AdGroup.objects.get(pk=1)
-        ).get_latest_success_by_child()
-
-        self.assertEqual(len(latest_success_dict), 7)
-        self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
-        self.assertEqual(latest_success_dict[2].isoformat(), '2014-07-01T08:08:08')
-        self.assertEqual(latest_success_dict[3].isoformat(), '2014-07-01T09:09:09')
-        self.assertEqual(latest_success_dict[4].isoformat(), '2014-07-01T10:10:10')
-        self.assertEqual(latest_success_dict[5].isoformat(), '2014-07-01T11:11:11')
-
-        # put the maintenance mode back on
-        m_source.maintenance = True
-        m_source.save()
-
-    def test_campaign_latest_success(self):
-        campaign1 = dash.models.Campaign.objects.get(pk=1)
-        latest_success_dict = sync.CampaignSync(campaign1).get_latest_success_by_child()
-        self.assertEqual(len(latest_success_dict), 1)
-        self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
-
-        campaign2 = dash.models.Campaign.objects.get(pk=2)
-        latest_success_dict = sync.CampaignSync(campaign2).get_latest_success_by_child()
-        self.assertEqual(len(latest_success_dict), 1)
-        self.assertEqual(latest_success_dict[2], None)
-
-    def test_cached_campaign_latest_success(self):
-        latest_success_dict = sync.CampaignSync(
-            dash.models.Campaign.objects.get(pk=1)
-        ).get_latest_success_by_child()
-
-        self.assertEqual(len(latest_success_dict), 1)
-        self.assertEqual(latest_success_dict[1].isoformat(), '2014-07-01T07:07:07')
-
-        latest_success_dict = sync.CampaignSync(
-            dash.models.Campaign.objects.get(pk=1)
-        ).get_latest_success_by_child(recompute=False)
-
-        self.assertEqual(len(latest_success_dict), 1)
-        self.assertEqual(latest_success_dict[1].isoformat(), '2014-06-10T09:58:21')
-
-    def test_global_latest_success(self):
-        latest_success_dict = sync.GlobalSync().get_latest_success_by_child()
-        self.assertEqual(len(latest_success_dict), 2)
-        self.assertEqual(latest_success_dict[1], None)
-        self.assertEqual(latest_success_dict[2], None)
+        last_sync = sync.AdGroupSync(ad_group).get_latest_source_success()
+        self.assertEqual({
+            1: utcnow,
+            2: utcnow,
+            3: utcnow,
+            4: utcnow,
+            5: utcnow,
+            6: utcnow,
+            7: utcnow,
+            8: utcnow,
+        }, last_sync)
 
 
 class ActionLogTriggerSyncTestCase(TestCase):
@@ -411,10 +876,10 @@ class ActionLogTriggerSyncTestCase(TestCase):
         self.assertEqual(dates[0], datetime.datetime.utcnow().date())
         self.assertEqual(dates[-1], ad_group_source.last_successful_sync_dt.date() - datetime.timedelta(days=settings.LAST_N_DAY_REPORTS - 1))
         self.assertEqual(
-            len(dates), 
+            len(dates),
             (datetime.datetime.utcnow().date() - (
-                    ad_group_source.last_successful_sync_dt.date() - datetime.timedelta(days=settings.LAST_N_DAY_REPORTS - 1)
-                )).days + 1
+                ad_group_source.last_successful_sync_dt.date() - datetime.timedelta(days=settings.LAST_N_DAY_REPORTS - 1)
+            )).days + 1
         )
 
 
@@ -426,10 +891,10 @@ class ActionLogSyncGetComponentsTestCase(TestCase):
         global_sync = sync.GlobalSync()
         child_syncs = global_sync.get_components()
 
-        self.assertEqual(len(list(child_syncs)), 2)
+        self.assertEqual(len(list(child_syncs)), 3)
 
     def test_account_sync_get_components(self):
-        account = dash.models.Account.objects.get(pk=3)
+        account = dash.models.Account.objects.get(pk=2)
 
         account_sync = sync.AccountSync(account)
         child_syncs = account_sync.get_components()
@@ -437,9 +902,9 @@ class ActionLogSyncGetComponentsTestCase(TestCase):
         self.assertEqual(len(list(child_syncs)), 1)
 
     def test_campaign_sync_get_components(self):
-        campaign = dash.models.Campaign.objects.get(pk=4)
+        campaign = dash.models.Campaign.objects.get(pk=3)
 
         campaign_sync = sync.CampaignSync(campaign)
         child_syncs = campaign_sync.get_components()
 
-        self.assertEqual(len(list(child_syncs)), 1)
+        self.assertEqual(len(list(child_syncs)), 2)

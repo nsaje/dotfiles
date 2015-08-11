@@ -1,6 +1,7 @@
-import datetime
 import dash.models
 import newrelic.agent
+
+from datetime import datetime, timedelta  # use import from in order to be able to mock it in tests
 
 import actionlog.models
 import actionlog.constants
@@ -22,23 +23,51 @@ class BaseSync(object):
             sources = dash.models.Source.objects.all()
         self.sources = sources
 
-    @newrelic.agent.function_trace()
-    def get_latest_success_by_child(self, recompute=True, include_level_archived=False, include_deprecated=False):
-        return {
-            child_sync.obj.id: _min_none(child_sync.get_latest_success_by_child(
-                recompute,
-            ).values()) for child_sync in self.get_components(archived=include_level_archived, deprecated=include_deprecated)
-        }
+    def _construct_last_sync_result(self, sync_key, include_maintenance=False, include_deprecated=False):
+
+        ad_group_sources = self.get_ad_group_sources(include_maintenance=include_maintenance,
+                                                     include_deprecated=include_deprecated)
+        vals = ad_group_sources.values_list(sync_key, 'last_successful_sync_dt')
+
+        per_key = {}
+        for key, last_successful_sync_dt in vals:
+            if key not in per_key:
+                per_key[key] = []
+
+            per_key[key].append(last_successful_sync_dt)
+
+        sync_data = {}
+        for key, syncs_list in per_key.iteritems():
+            if None in syncs_list:
+                sync_data[key] = None
+                continue
+
+            sync_data[key] = min(syncs_list)
+
+        return sync_data
 
     @newrelic.agent.function_trace()
-    def get_latest_source_success(self, recompute=True, include_maintenance=False, include_deprecated=False):
-        child_syncs = self.get_components(maintenance=include_maintenance, deprecated=include_deprecated)
-        child_source_sync_times_list = [
-            child_sync.get_latest_source_success(recompute=recompute, include_maintenance=include_maintenance, include_deprecated=include_deprecated)
-            for child_sync in child_syncs
-        ]
+    def get_latest_success_by_child(self):
+        return self.add_demo_child_syncs(
+            self._construct_last_sync_result(self.get_child_sync_key())
+        )
 
-        return self._merge_sync_times(child_source_sync_times_list)
+    @newrelic.agent.function_trace()
+    def get_latest_source_success(self):
+        return self.add_demo_source_syncs(
+            self._construct_last_sync_result('source_id',
+                                             include_maintenance=True,
+                                             include_deprecated=True)
+        )
+
+    def add_demo_source_syncs(self, sync_data):
+        cls = type(self.obj)
+        if hasattr(cls, 'demo_objects') and self.obj.id in cls.demo_objects.all().values_list('id', flat=True):
+            for source in self.sources:
+                if source.id not in sync_data:
+                    sync_data[source.id] = datetime.utcnow()
+
+        return sync_data
 
     def trigger_all(self, request=None):
         child_syncs = self.get_components()
@@ -60,26 +89,13 @@ class BaseSync(object):
         for child_sync in child_syncs:
             child_sync.trigger_content_ad_status(request)
 
-    def _merge_sync_times(self, sync_times_list):
-        merged_sync_times = {}
-        for sync_times in sync_times_list:
-            for key, value in sync_times.items():
-                if key in merged_sync_times:
-                    old_value = merged_sync_times[key]
-
-                    if old_value is None or value is None:
-                        value = None
-                    else:
-                        value = min(old_value, value)
-
-                merged_sync_times[key] = value
-
-        return merged_sync_times
-
 
 class ISyncComposite(object):
 
     def get_components(self):
+        raise NotImplementedError
+
+    def get_ad_group_sources(self):
         raise NotImplementedError
 
 
@@ -102,64 +118,41 @@ class GlobalSync(BaseSync, ISyncComposite):
             if len(list(account_sync.get_components(maintenance=maintenance, deprecated=deprecated))) > 0:
                 yield account_sync
 
-    def get_latest_success_by_account(self):
-        '''
-        this function is a faster way to get last succcessful sync times
-        on the account level
-        '''
-        qs = dash.models.AdGroupSource.objects.\
-            filter(source__maintenance=False).\
-            filter(source__deprecated=False).\
-            filter(source__in=self.sources).\
-            filter(ad_group__in=dash.models.AdGroup.objects.all().exclude_archived()).\
-            select_related('ad_group__campaign__account', 'source').\
-            values('ad_group__campaign__account', 'last_successful_sync_dt')
-
-        latest_success = {}
-        for row in qs:
-            aid = row['ad_group__campaign__account']
-            if aid not in latest_success:
-                latest_success[aid] = []
-            latest_success[aid].append(row['last_successful_sync_dt'])
-        result = {k: _min_none(v) for k, v in latest_success.iteritems()}
-        result = self._add_demo_accounts_sync_times(result)
-        return result
-
-    @newrelic.agent.function_trace()
-    def get_latest_success_by_source(self, include_maintenance=False, include_deprecated=False):
-        '''
-        this function is a faster way to get last succcessful sync times
-        by source on globally
-        '''
-        qs = dash.models.AdGroupSource.objects.\
+    def get_ad_group_sources(self, include_maintenance=False, include_deprecated=False):
+        ad_group_sources = dash.models.AdGroupSource.objects.\
             filter(ad_group__in=dash.models.AdGroup.objects.all().exclude_archived()).\
             filter(source__in=self.sources).\
-            select_related('source').\
-            values('source', 'last_successful_sync_dt')
+            select_related('ad_group__campaign', 'source')
 
         if not include_maintenance:
-            qs = qs.filter(source__maintenance=False)
+            ad_group_sources = ad_group_sources.exclude(source__maintenance=True)
 
         if not include_deprecated:
-            qs = qs.filter(source__deprecated=False)
+            ad_group_sources = ad_group_sources.exclude(source__deprecated=True)
 
-        latest_success = {}
-        for row in qs:
-            if row['source'] not in latest_success:
-                latest_success[row['source']] = row['last_successful_sync_dt']
-            else:
-                latest_success[row['source']] = _min_none([
-                    latest_success[row['source']], row['last_successful_sync_dt']
-                ])
-
-        return latest_success
+        return ad_group_sources
 
     def _add_demo_accounts_sync_times(self, result):
         demo_accounts = dash.models.Account.demo_objects.all()
-        now = datetime.datetime.now()
+        utcnow = datetime.utcnow()
         for account in demo_accounts:
-            result[account.id] = now
+            result[account.id] = utcnow
         return result
+
+    def add_demo_source_syncs(self, sync_data):
+        # doesn't apply, since there is no demo global view
+        return sync_data
+
+    def add_demo_child_syncs(self, sync_data):
+        # a user with all accounts permission can have access to demo account, so last sync time has to be set
+        demo_accounts = dash.models.Account.demo_objects.all()
+        utcnow = datetime.utcnow()
+        for account in demo_accounts:
+            sync_data[account.id] = utcnow
+        return sync_data
+
+    def get_child_sync_key(self):
+        return 'ad_group__campaign__account_id'
 
 
 class AccountSync(BaseSync, ISyncComposite):
@@ -175,6 +168,36 @@ class AccountSync(BaseSync, ISyncComposite):
             if len(list(campaign_sync.get_components(maintenance=maintenance, deprecated=deprecated))) > 0:
                 yield campaign_sync
 
+    @newrelic.agent.function_trace()
+    def get_ad_group_sources(self, include_maintenance=False, include_deprecated=False):
+        campaigns = dash.models.Campaign.objects.filter(account=self.obj).exclude_archived()
+        ad_groups = dash.models.AdGroup.objects\
+                                       .filter(campaign__in=campaigns)\
+                                       .exclude_archived()
+        ad_group_sources = dash.models.AdGroupSource.objects\
+                                                    .filter(ad_group=ad_groups)\
+                                                    .filter(source__in=self.sources)\
+                                                    .select_related('ad_group', 'source')
+
+        if not include_maintenance:
+            ad_group_sources = ad_group_sources.exclude(source__maintenance=True)
+
+        if not include_deprecated:
+            ad_group_sources = ad_group_sources.exclude(source__deprecated=True)
+
+        return ad_group_sources
+
+    def add_demo_child_syncs(self, sync_data):
+        if self.obj.id in dash.models.Account.demo_objects.all().values_list('id', flat=True):
+            for campaign in self.obj.campaign_set.all():
+                if campaign.id not in sync_data:
+                    sync_data[campaign.id] = datetime.utcnow()
+
+        return sync_data
+
+    def get_child_sync_key(self):
+        return 'ad_group__campaign_id'
+
 
 class CampaignSync(BaseSync, ISyncComposite):
 
@@ -188,6 +211,33 @@ class CampaignSync(BaseSync, ISyncComposite):
             ad_group_sync = AdGroupSync(ad_group, sources=self.sources)
             if len(list(ad_group_sync.get_components(maintenance=maintenance, deprecated=deprecated))) > 0:
                 yield ad_group_sync
+
+    @newrelic.agent.function_trace()
+    def get_ad_group_sources(self, include_maintenance=False, include_deprecated=False):
+        ad_groups = dash.models.AdGroup.objects.filter(campaign=self.obj).exclude_archived()
+        ad_group_sources = dash.models.AdGroupSource.objects\
+                                                    .filter(ad_group=ad_groups)\
+                                                    .filter(source__in=self.sources)\
+                                                    .select_related('ad_group', 'source')
+
+        if not include_maintenance:
+            ad_group_sources = ad_group_sources.exclude(source__maintenance=True)
+
+        if not include_deprecated:
+            ad_group_sources = ad_group_sources.exclude(source__deprecated=True)
+
+        return ad_group_sources
+
+    def add_demo_child_syncs(self, sync_data):
+        if self.obj.id in dash.models.Campaign.demo_objects.all().values_list('id', flat=True):
+            for ad_group in self.obj.adgroup_set.all():
+                if ad_group.id not in sync_data:
+                    sync_data[ad_group.id] = datetime.utcnow()
+
+        return sync_data
+
+    def get_child_sync_key(self):
+        return 'ad_group_id'
 
 
 class AdGroupSync(BaseSync, ISyncComposite):
@@ -220,74 +270,40 @@ class AdGroupSync(BaseSync, ISyncComposite):
 
             yield AdGroupSourceSync(ags, sources=self.sources)
 
+    @newrelic.agent.function_trace()
+    def get_ad_group_sources(self, include_maintenance=False, include_deprecated=False):
+        ad_group_sources = dash.models.AdGroupSource.objects\
+                                                    .filter(ad_group=self.obj)\
+                                                    .filter(source__in=self.sources)\
+                                                    .select_related('ad_group', 'source')
+
+        if not include_maintenance:
+            ad_group_sources = ad_group_sources.exclude(source__maintenance=True)
+
+        if not include_deprecated:
+            ad_group_sources = ad_group_sources.exclude(source__deprecated=True)
+
+        return ad_group_sources
+
+    def add_demo_child_syncs(self, sync_data):
+        if self.obj.id in dash.models.AdGroup.demo_objects.all().values_list('id', flat=True):
+            for ad_group_source in self.obj.adgroupsource_set.all():
+                if ad_group_source.id not in sync_data:
+                    sync_data[ad_group_source.id] = datetime.utcnow()
+
+        return sync_data
+
+    def get_child_sync_key(self):
+        return 'id'
+
 
 class AdGroupSourceSync(BaseSync):
 
-    def _get_latest_success(self, recompute=True):
-        if recompute:
-            status_sync_dt = self.get_latest_status_sync()
-            if not status_sync_dt:
-                return None
-            report_sync_dt = self.get_latest_report_sync()
-            if not report_sync_dt:
-                return None
-            return min(status_sync_dt, report_sync_dt)
-        else:
-            return self.obj.last_successful_sync_dt
+    def get_latest_success_by_child(self):
+        return {self.obj.id: self.obj.last_successful_sync_dt}
 
-    def get_latest_success_by_child(self, recompute=True, include_level_archive=False):
-        return {self.obj.id: self._get_latest_success(recompute=recompute)}
-
-    @newrelic.agent.function_trace()
-    def get_latest_source_success(self, recompute=True, include_maintenance=False, include_deprecated=False):
-        return {self.obj.source_id: self._get_latest_success(recompute=recompute)}
-
-    def get_latest_report_sync(self):
-        # the query below works like this:
-        # - we look at actionlogs with action=get_rtepors
-        # - we group the actions in the actionlog by order_id
-        # - we count how many successes there are and compare it to the total number of rows (therefore the CAST)
-        # - finally we join with the actionlog_actionlogorder table to get the 'created_dt'
-        sql = '''
-        SELECT ord.id, ord.created_dt, ord.order_type, action, order_id, n_success, tot
-        FROM (
-            SELECT action, order_id,
-                SUM(CAST(state=2 AS INTEGER)) AS n_success, count(*) AS tot
-            FROM actionlog_actionlog
-            WHERE action=%s
-            AND ad_group_source_id=%s
-            GROUP BY action, order_id
-        ) AS foo,
-        actionlog_actionlogorder AS ord
-        WHERE n_success = tot
-        AND ord.id = order_id
-        AND ord.order_type = %s
-        ORDER BY ord.created_dt DESC
-        LIMIT 1
-        '''
-        params = [
-            actionlog.constants.Action.FETCH_REPORTS,
-            self.obj.id,
-            actionlog.constants.ActionLogOrderType.FETCH_REPORTS
-        ]
-        results = actionlog.models.ActionLogOrder.objects.raw(sql, params)
-
-        if list(results):
-            return results[0].created_dt
-        else:
-            return None
-
-    def get_latest_status_sync(self):
-        try:
-            action = actionlog.models.ActionLog.objects.filter(
-                ad_group_source=self.obj,
-                action=actionlog.constants.Action.FETCH_CAMPAIGN_STATUS,
-                action_type=actionlog.constants.ActionType.AUTOMATIC,
-                state=actionlog.constants.ActionState.SUCCESS
-            ).latest('created_dt')
-            return action.created_dt
-        except:
-            return None
+    def get_latest_source_success(self):
+        return {self.obj.source_id: self.obj.last_successful_sync_dt}
 
     def trigger_all(self, request=None):
         self.trigger_status(request)
@@ -341,24 +357,18 @@ class AdGroupSourceSync(BaseSync):
 
                 actions.append(action)
 
-        zwei_actions.send_multiple(actions)
+        zwei_actions.send(actions)
 
     def get_dates_to_sync_reports(self):
         start_dt = None
-        latest_sync_dt = self._get_latest_success(recompute=False)
+        latest_sync_dt = self.obj.last_successful_sync_dt
         if latest_sync_dt:
-            start_dt = latest_sync_dt.date() - datetime.timedelta(days=settings.LAST_N_DAY_REPORTS - 1)
+            start_dt = latest_sync_dt.date() - timedelta(days=settings.LAST_N_DAY_REPORTS - 1)
         else:
             return last_n_days(settings.LAST_N_DAY_REPORTS)
         dates = [start_dt]
-        today = datetime.datetime.utcnow().date()
+        today = datetime.utcnow().date()
         while dates[-1] < today:
-            dates.append(dates[-1] + datetime.timedelta(days=1))
+            dates.append(dates[-1] + timedelta(days=1))
         assert(dates[-1] == today)
         return reversed(dates)
-
-
-def _min_none(values):
-    if None in values:
-        return None
-    return min(values)

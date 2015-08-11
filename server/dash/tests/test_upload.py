@@ -5,7 +5,7 @@ import httplib
 import urllib2
 
 from django.http import HttpRequest
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from dash import models
 from dash import upload
@@ -72,7 +72,7 @@ class CleanRowTest(TestCase):
 
     def setUp(self):
         # default test data
-        self.url = 'http://example.com'
+        self.url = u'http://example.com'
         self.title = 'test title'
         self.image_url = 'http://example.com/image'
         self.crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
@@ -148,7 +148,7 @@ class CleanRowTest(TestCase):
         self.assertEqual(errors, ['Missing title'])
 
     def test_url_without_protocol(self):
-        self.url = 'example.com'
+        self.url = u'example.com'
         data, errors = self._run_clean_row()
 
         self.assertEqual(data, {
@@ -165,7 +165,23 @@ class CleanRowTest(TestCase):
         self.assertEqual(errors, [])
 
     def test_invalid_url(self):
-        self.url = 'example'
+        self.url = u'example'
+        data, errors = self._run_clean_row()
+
+        self.assertEqual(data, {
+            'image': {
+                'id': self.image_id,
+                'width': self.image_width,
+                'height': self.image_height,
+                'hash': self.image_hash
+            },
+            'title': self.title,
+            'tracker_urls': self.tracker_urls.split(' '),
+        })
+        self.assertEqual(errors, ['Invalid URL'])
+
+    def test_unicode_url(self):
+        self.url = u'http://exampleś.com'
         data, errors = self._run_clean_row()
 
         self.assertEqual(data, {
@@ -247,6 +263,22 @@ class CleanRowTest(TestCase):
         })
         self.assertEqual(errors, ['Invalid tracker URLs'])
 
+    def test_unicode_tracker_urls(self):
+        self.tracker_urls = u'http://exampleś.com'
+        data, errors = self._run_clean_row()
+
+        self.assertEqual(data, {
+            'image': {
+                'id': self.image_id,
+                'width': self.image_width,
+                'height': self.image_height,
+                'hash': self.image_hash
+            },
+            'title': self.title,
+            'url': self.url
+        })
+        self.assertEqual(errors, ['Invalid tracker URLs'])
+
     def test_invalid_tracker_urls_not_https(self):
         self.tracker_urls = 'http://example.com/p.gif'
         data, errors = self._run_clean_row()
@@ -306,13 +338,16 @@ class ProcessCallbackTest(TestCase):
         self.mock_save_error_report = self.save_error_report_patcher.start()
         self.mock_save_error_report.return_value = 'mock_key'
 
-        self.send_multiple_patcher = patch('dash.upload.actionlog.zwei_actions.send_multiple')
-        self.mock_send_multiple = self.send_multiple_patcher.start()
+        self.actionlog_send_patcher = patch('dash.upload.actionlog.zwei_actions.send')
+        self.mock_actionlog_send = self.actionlog_send_patcher.start()
 
     def tearDown(self):
         self.save_error_report_patcher.stop()
-        self.send_multiple_patcher.stop()
+        self.actionlog_send_patcher.stop()
 
+    @override_settings(
+        SEND_AD_GROUP_SETTINGS_CHANGE_MAIL=False
+    )
     def test_process_callback(self, mock_redirect_insert):
         image_id = 'test_image_id'
         image_width = 100
@@ -353,6 +388,7 @@ class ProcessCallbackTest(TestCase):
         errors = []
 
         batch = models.UploadBatch.objects.create(name=batch_name)
+        batch.batch_size = 10
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
 
         request = HttpRequest()
@@ -392,8 +428,15 @@ class ProcessCallbackTest(TestCase):
         action = ActionLog.objects.get(content_ad_source_id=content_ad_source.id)
         self.assertEqual(action.ad_group_source_id, ad_group_source.id)
 
-        self.mock_send_multiple.assert_called_with([action])
+        self.mock_actionlog_send.assert_called_with([action])
 
+        settings = ad_group_source.ad_group.get_current_settings()
+        self.assertEqual(settings.changes_text,
+                         u'Test batch name set with 10 creatives was imported to: AdsNative.')
+
+    @override_settings(
+        SEND_AD_GROUP_SETTINGS_CHANGE_MAIL=False
+    )
     def test_process_callback_errors(self, mock_redirect_insert):
         redirect_id = "u123456"
 
@@ -440,10 +483,13 @@ class ProcessCallbackTest(TestCase):
         self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
 
         self.assertFalse(mock_redirect_insert.called)
-        self.assertFalse(self.mock_send_multiple.called)
+        self.assertFalse(self.mock_actionlog_send.called)
 
         self.mock_save_error_report.assert_called_with([row], filename)
 
+    @override_settings(
+        SEND_AD_GROUP_SETTINGS_CHANGE_MAIL=False
+    )
     def test_process_callback_redirector_error(self, mock_redirect_insert):
         image_id = 'test_image_id'
         image_width = 100
@@ -502,7 +548,7 @@ class ProcessCallbackTest(TestCase):
 
         self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
 
-        self.assertFalse(self.mock_send_multiple.called)
+        self.assertFalse(self.mock_actionlog_send.called)
 
     @patch('dash.upload._create_redirect_id')
     def test_process_callback_exception(self, mock_redirect_insert, mock_create_redirect_id):
@@ -547,5 +593,5 @@ class ProcessCallbackTest(TestCase):
         self.assertEqual(prev_action_count, new_action_count)
 
         self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
-        self.assertFalse(self.mock_send_multiple.called)
+        self.assertFalse(self.mock_actionlog_send.called)
         self.mock_save_error_report.assert_called_with([row], filename)

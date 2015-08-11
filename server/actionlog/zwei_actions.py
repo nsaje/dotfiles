@@ -1,4 +1,3 @@
-import binascii
 import copy
 import json
 import logging
@@ -8,7 +7,6 @@ import urllib2
 from django.conf import settings
 
 from actionlog import constants
-from utils import encryption_helpers
 from utils import json_helper
 from utils import request_signer
 
@@ -25,53 +23,37 @@ def _handle_error(action, e):
     action.save()
 
 
-def _decrypt_payload_credentials(payload):
-    payload = copy.deepcopy(payload)
-    if not payload.get('credentials'):
-        return payload
+def send(actions):
+    if not isinstance(actions, list) and not isinstance(actions, tuple):
+        actions = [actions]
 
-    payload['credentials'] = json.loads(
-        encryption_helpers.aes_decrypt(
-            binascii.a2b_base64(
-                payload['credentials']
-            ),
-            settings.CREDENTIALS_ENCRYPTION_KEY
-        )
-    )
-
-    return payload
-
-
-def send(action):
+    credentials_lookup = {}
     try:
-        # Decrypt has to be the last thing to happen before sending to zwei.
-        # Payload with decrypted credentials should never be logged.
-        payload = _decrypt_payload_credentials(action.payload)
-        data = json.dumps(payload, cls=json_helper.JSONEncoder)
-        request = urllib2.Request(settings.ZWEI_API_URL, data)
+        data = []
+        for action in actions:
+            if action.ad_group_source_id not in credentials_lookup and\
+               action.ad_group_source.source_credentials.credentials:
+                credentials_lookup[action.ad_group_source_id] = action.ad_group_source.source_credentials.decrypt()
+            payload = copy.deepcopy(action.payload)
+            payload['credentials'] = credentials_lookup.get(action.ad_group_source_id) or ''
+            data.append(payload)
 
+        request = urllib2.Request(settings.ZWEI_API_TASKS_URL, json.dumps(data, cls=json_helper.JSONEncoder))
         request_signer.urllib2_secure_open(request, settings.ZWEI_API_SIGN_KEY)
     except Exception as e:
-        _handle_error(action, e)
-
-
-def send_multiple(actionlogs):
-    for actionlog in actionlogs:
-        send(actionlog)
+        for action in actions:
+            _handle_error(action, e)
 
 
 def get_supply_dash_url(source_type, credentials, source_campaign_key):
     try:
-        # Decrypt has to be the last thing to happen before sending to zwei.
-        # Payload with decrypted credentials should never be logged.
-        enc_payload = {
+        payload = {
             'source': source_type,
             'credentials': credentials,
             'args': {
                 'source_campaign_key': source_campaign_key
             }
         }
-        payload = _decrypt_payload_credentials(enc_payload)
         data = json.dumps(payload, cls=json_helper.JSONEncoder)
         request = urllib2.Request(settings.ZWEI_API_GET_DASH_URL_URL, data)
 

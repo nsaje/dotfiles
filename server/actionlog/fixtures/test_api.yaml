@@ -43,6 +43,14 @@
     model: dash.account
     pk: 3
 
+-   fields:
+        created_dt: '2015-07-14T09:58:21'
+        modified_dt: '2015-07-14T09:58:21'
+        modified_by: 1
+        name: 'demo account'
+    model: dash.account
+    pk: 4
+
 # test campaign
 
 -   fields:
@@ -90,17 +98,14 @@
     model: dash.campaign
     pk: 5
 
-# source actions
-
-- fields: {}
-  model: dash.sourceaction
-  pk: 1
-- fields: {}
-  model: dash.sourceaction
-  pk: 2
-- fields: {}
-  model: dash.sourceaction
-  pk: 3
+-   fields:
+        created_dt: '2015-07-14T09:58:21'
+        modified_dt: '2015-07-14T09:58:21'
+        modified_by: 1
+        account: 4 # demo account
+        name: 'demo campaign'
+    model: dash.campaign
+    pk: 6
 
 # source types
 
@@ -266,6 +271,24 @@
     model: dash.adgroupsettings
     pk: 3
 
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        archived: True
+        ad_group: 6
+        tracking_code: ''
+        enable_ga_tracking: False
+    model: dash.adgroupsettings
+    pk: 4
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        archived: True
+        ad_group: 7
+    model: dash.adgroupsettings
+    pk: 5
+
 # test adgroup
 
 -   fields:
@@ -330,6 +353,25 @@
         name: 'test adgroup 7'
     model: dash.adgroup
     pk: 7
+
+-   fields:
+        created_dt: '2015-07-14T09:58:21'
+        modified_dt: '2015-07-14T09:58:21'
+        modified_by: 1
+        campaign: 6
+        name: 'demo ad group'
+        is_demo: True
+    model: dash.adgroup
+    pk: 8
+
+-   fields:
+        created_dt: '2015-07-14T09:58:21'
+        modified_dt: '2015-07-14T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'test adgroup 7'
+    model: dash.adgroup
+    pk: 9
 
 # test adgroupsource
 
@@ -532,6 +574,15 @@
     model: dash.adgroupsource
     pk: 23
 
+-   fields:
+        source: 2
+        ad_group: 9
+        source_campaign_key: '["fake"]'
+        source_credentials: 1
+        last_successful_sync_dt: '2014-06-10T09:58:21'
+    model: dash.adgroupsource
+    pk: 24
+
 # test ad group source credentials
 
 -   fields:
@@ -624,6 +675,16 @@
     model: dash.campaignsettings
     pk: 2
 
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        name: 'test campaign 5'
+        account_manager: NULL
+        campaign: 5
+        archived: True
+    model: dash.campaignsettings
+    pk: 3
+
 # test defaultsourcesettings
 
 -   fields:
@@ -709,7 +770,7 @@
         image_width: 200
         image_height: 300
         batch: 2
-        archived: False
+        archived: True
         url: 'http://testurl.com'
         title: 'Test Article with no content_ad_sources 2'
         ad_group: 1
@@ -771,6 +832,30 @@
         modified_dt: '2015-02-23T00:00:00'
     model: dash.contentadsource
     pk: 2
+
+-   fields:
+        source: 2
+        content_ad: 4
+        submission_status: 2
+        state: 1
+        source_state: 1
+        source_content_ad_id: NULL
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 3
+
+-   fields:
+        source: 3
+        content_ad: 5
+        submission_status: 2
+        state: 1
+        source_state: 1
+        source_content_ad_id: NULL
+        created_dt: '2015-07-01T00:00:00'
+        modified_dt: '2015-07-01T00:00:00'
+    model: dash.contentadsource
+    pk: 4
 
 # test adgroupsourcesettings
 
@@ -848,3 +933,11 @@
     model: dash.adgroupsourcestate
     pk: 3
 
+# DemoAdGroupRealAdGroup
+
+-   fields:
+        demo_ad_group: 8
+        real_ad_group: 1
+        multiplication_factor: 1
+    model: dash.demoadgrouprealadgroup
+    pk: 1

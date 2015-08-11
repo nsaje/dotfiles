@@ -251,9 +251,11 @@ def _process_zwei_response(action, data, request):
             )
 
         elif action.action == actionlog.constants.Action.GET_CONTENT_AD_STATUS:
-            dash.api.update_multiple_content_ad_source_states(
-                action.ad_group_source,
-                data['data']
+            actions.extend(
+                dash.api.update_multiple_content_ad_source_states(
+                    action.ad_group_source,
+                    data['data']
+                )
             )
 
         elif action.action == actionlog.constants.Action.SUBMIT_AD_GROUP:
@@ -268,7 +270,7 @@ def _process_zwei_response(action, data, request):
 
         logger.info('Process action successful. Action: %s', action)
 
-    actionlog.zwei_actions.send_multiple(actions)
+    actionlog.zwei_actions.send(actions)
 
 
 def _get_reports_cache_key_val(data, ad_group, source, date):

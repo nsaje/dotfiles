@@ -349,4 +349,4 @@ class AccountTestCase(TestCase):
     def test_queryset_exclude_archived(self):
         qs = models.Account.objects.all().exclude_archived()
 
-        self.assertEqual(len(qs), 2)
+        self.assertEqual(len(qs), 3)

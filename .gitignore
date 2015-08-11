@@ -102,6 +102,8 @@ node_modules
 
 # bower
 client/lib/components/angular-mocks
+client/lib/components/angular-ui-router
+client/lib/components/ng-bs-daterangepicker
 
 # Server Django project
 server/server/localsettings.py

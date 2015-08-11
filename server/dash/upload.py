@@ -14,6 +14,7 @@ import actionlog.zwei_actions
 
 from utils import redirector_helper
 from utils import s3helpers
+from utils import email_helper
 
 from dash import models
 from dash import api
@@ -77,6 +78,9 @@ def _process_callback(batch, ad_group_id, ad_group_sources, filename, request, r
 
             batch.status = constants.UploadBatchStatus.DONE
             batch.save()
+
+            _add_to_history(request, batch, ad_group_sources)
+            
     except UploadFailedException:
         batch.error_report_key = _save_error_report(rows, filename)
         batch.status = constants.UploadBatchStatus.FAILED
@@ -89,7 +93,7 @@ def _process_callback(batch, ad_group_id, ad_group_sources, filename, request, r
         batch.save()
         return
 
-    actionlog.zwei_actions.send_multiple(actions)
+    actionlog.zwei_actions.send(actions)
 
 
 def _save_error_report(rows, filename):
@@ -209,8 +213,10 @@ def _clean_row(batch, ad_group, row):
 
 def _clean_url(url, ad_group):
     try:
+        # URL is considered invalid if it contains any unicode chars
+        url = url.encode('ascii')
         url = _validate_url(url)
-    except ValidationError:
+    except (ValidationError, UnicodeEncodeError):
         raise ValidationError('Invalid URL')
 
     if not redirector_helper.validate_url(url):
@@ -230,8 +236,10 @@ def _clean_tracker_urls(tracker_urls_string):
 
     for url in tracker_urls:
         try:
+            # URL is considered invalid if it contains any unicode chars
+            url = url.encode('ascii')
             validate_url(url)
-        except ValidationError:
+        except (ValidationError, UnicodeEncodeError):
             raise ValidationError('Invalid tracker URLs')
 
         result.append(url)
@@ -324,3 +332,19 @@ def _validate_crops(crop_list):
             for k in range(2):
                 if not isinstance(crop_list[i][j][k], (int, long)):
                     raise ValueError('Coordinate is not an integer')
+
+def _add_to_history(request, batch, ad_group_sources):
+    if not ad_group_sources:
+        return
+    
+    ad_group = ad_group_sources[0].ad_group
+    changes_text = '{} set with {} creatives was imported to: {}.'.format(
+        batch.name,
+        batch.batch_size,
+        ', '.join(s.source.name for s in ad_group_sources)
+    )
+    settings = ad_group.get_current_settings().copy_settings()
+    settings.changes_text = changes_text
+    settings.save(request)
+    email_helper.send_ad_group_settings_change_mail_if_necessary(ad_group, request.user, request)
+

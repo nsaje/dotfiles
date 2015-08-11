@@ -2,6 +2,7 @@ import jsonfield
 import binascii
 import datetime
 import urlparse
+import newrelic.agent
 
 from decimal import Decimal
 import pytz
@@ -10,6 +11,7 @@ from django.contrib.auth import models as auth_models
 from django.contrib import auth
 from django.db import models, transaction
 from django.contrib.postgres.fields import ArrayField
+from django.core.urlresolvers import reverse
 
 import utils.string_helper
 
@@ -121,6 +123,7 @@ class Account(models.Model):
 
         return settings
 
+    @newrelic.agent.function_trace()
     def can_archive(self):
         for campaign in self.campaign_set.all():
             if not campaign.can_archive():
@@ -128,6 +131,7 @@ class Account(models.Model):
 
         return True
 
+    @newrelic.agent.function_trace()
     def can_restore(self):
         return True
 
@@ -187,10 +191,9 @@ class Account(models.Model):
         def exclude_archived(self):
             archived_settings = AccountSettings.objects.\
                 distinct('account_id').\
-                order_by('account_id', '-created_dt').\
-                select_related('account')
+                order_by('account_id', '-created_dt')
 
-            return self.exclude(pk__in=[s.account.id for s in archived_settings if s.archived])
+            return self.exclude(pk__in=[s.account_id for s in archived_settings if s.archived])
 
 
 class Campaign(models.Model, PermissionMixin):
@@ -221,6 +224,13 @@ class Campaign(models.Model, PermissionMixin):
             return '<a href="/admin/dash/campaign/%d/">Edit</a>' % self.id
         else:
             return 'N/A'
+
+    def get_campaign_url(self, request):
+        campaign_settings_url = request.build_absolute_uri(
+            reverse('admin:dash_campaign_change', args=(self.pk,))
+        )
+        campaign_settings_url = campaign_settings_url.replace('http://', 'https://')
+        return campaign_settings_url
 
     admin_link.allow_tags = True
 
@@ -314,10 +324,9 @@ class Campaign(models.Model, PermissionMixin):
         def exclude_archived(self):
             archived_settings = CampaignSettings.objects.\
                 distinct('campaign_id').\
-                order_by('campaign_id', '-created_dt').\
-                select_related('campaign')
+                order_by('campaign_id', '-created_dt')
 
-            return self.exclude(pk__in=[s.campaign.id for s in archived_settings if s.archived])
+            return self.exclude(pk__in=[s.campaign_id for s in archived_settings if s.archived])
 
 
 class SettingsBase(models.Model):
@@ -448,26 +457,13 @@ class CampaignSettings(SettingsBase):
         ordering = ('-created_dt',)
 
 
-class SourceAction(models.Model):
-    action = models.IntegerField(
-        primary_key=True,
-        choices=constants.SourceAction.get_choices()
-    )
-
-    def __str__(self):
-        return constants.SourceAction.get_text(self.action)
-
-
 class SourceType(models.Model):
     type = models.CharField(
         max_length=127,
         unique=True
     )
 
-    available_actions = models.ManyToManyField(
-        SourceAction,
-        blank=True
-    )
+    available_actions = ArrayField(models.PositiveSmallIntegerField(), null=True, blank=True)
 
     min_cpc = models.DecimalField(
         max_digits=10,
@@ -516,57 +512,72 @@ class SourceType(models.Model):
     )
 
     def can_update_state(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_STATE).exists()
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_UPDATE_STATE in self.available_actions
 
     def can_update_cpc(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_CPC).exists()
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_UPDATE_CPC in self.available_actions
 
     def can_update_daily_budget_manual(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_MANUAL).exists()
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_MANUAL in self.available_actions
 
     def can_update_daily_budget_automatic(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC).exists()
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC in self.available_actions
 
     def can_manage_content_ads(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_MANAGE_CONTENT_ADS).exists()
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MANAGE_CONTENT_ADS in self.available_actions
 
     def has_3rd_party_dashboard(self):
-        return self.available_actions.filter(action=constants.SourceAction.HAS_3RD_PARTY_DASHBOARD).exists()
+        return self.available_actions is not None and\
+            constants.SourceAction.HAS_3RD_PARTY_DASHBOARD in self.available_actions
 
     def can_modify_start_date(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_START_DATE).exists()
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_START_DATE in self.available_actions
 
     def can_modify_end_date(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_END_DATE).exists()
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_END_DATE in self.available_actions
 
     def can_modify_device_targeting(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_DEVICE_TARGETING).exists()
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_DEVICE_TARGETING in self.available_actions
 
     def can_modify_dma_targeting_automatic(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC).exists()
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC in self.available_actions
 
     def can_modify_dma_targeting_manual(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL).exists()
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL in self.available_actions
 
     def can_modify_country_targeting(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING).exists()
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING in self.available_actions
 
     def can_modify_tracking_codes(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_TRACKING_CODES).exists()
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_TRACKING_CODES in self.available_actions
 
     def can_modify_ad_group_name(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_AD_GROUP_NAME).exists()
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_AD_GROUP_NAME in self.available_actions
 
     def can_modify_ad_group_iab_category_automatic(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY_AUTOMATIC).exists()
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY_AUTOMATIC in self.available_actions
 
     def can_modify_ad_group_iab_category_manual(self):
-        return self.available_actions.filter(action=constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL).exists()
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL in self.available_actions
 
     def update_tracking_codes_on_content_ads(self):
-        return self.available_actions.filter(
-            action=constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS
-        ).exists()
+        return self.available_actions is not None and\
+            constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS in self.available_actions
 
     def supports_dma_targeting(self):
         return self.can_modify_dma_targeting_manual() or self.can_modify_dma_targeting_automatic()
@@ -772,6 +783,7 @@ class AdGroup(models.Model):
 
     admin_link.allow_tags = True
 
+    @newrelic.agent.function_trace()
     def get_current_settings(self):
         if not self.pk:
             raise exc.BaseError(
@@ -853,10 +865,9 @@ class AdGroup(models.Model):
         def exclude_archived(self):
             archived_settings = AdGroupSettings.objects.\
                 distinct('ad_group_id').\
-                order_by('ad_group_id', '-created_dt').\
-                select_related('ad_group')
+                order_by('ad_group_id', '-created_dt')
 
-            return self.exclude(pk__in=[s.ad_group.id for s in archived_settings if s.archived])
+            return self.exclude(pk__in=[s.ad_group_id for s in archived_settings if s.archived])
 
     class Meta:
         ordering = ('name',)
@@ -1260,6 +1271,13 @@ class ContentAd(models.Model):
     tracker_urls = ArrayField(models.CharField(max_length=2048), null=True)
 
     objects = QuerySetManager()
+
+
+    def get_original_image_url(self, width=None, height=None):
+        if self.image_id is None:
+            return None
+
+        return '{z3_image_url}{image_id}.jpg'.format(z3_image_url=settings.Z3_API_IMAGE_URL, image_id=self.image_id)
 
     def get_image_url(self, width=None, height=None):
         if self.image_id is None:

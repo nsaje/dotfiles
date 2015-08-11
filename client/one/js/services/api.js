@@ -1357,21 +1357,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
     }
 
     function AdGroupAgency() {
-        function convertFromApi(settings) {
-            return {
-                id: settings.id,
-                trackingCode: settings.tracking_code
-            };
-        }
-
-        function convertToApi(settings) {
-            var result = {
-                id: settings.id,
-                tracking_code: settings.trackingCode
-            };
-
-            return result;
-        }
 
         function convertHistoryFromApi(history) {
             return history.map(function (item) {
@@ -1390,7 +1375,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                         if (typeof oldValue === 'string') {
                             oldValue = oldValue.replace('@', '&#8203;@');
                         }
-                        
+
                         return {
                             name: setting.name,
                             value: value,
@@ -1400,15 +1385,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     datetime: item.datetime,
                     showOldSettings: item.show_old_settings
                 };
-            }); 
-        }
-
-        function convertValidationErrorFromApi(errors) {
-            var result = {
-                trackingCode: errors.tracking_code
-            };
-
-            return result;
+            });
         }
 
         this.get = function (id) {
@@ -1420,60 +1397,18 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
             $http.get(url, config).
                 success(function (data, status) {
-                    var settings;
                     var history;
-                    if (data && data.data && data.data.settings) {
-                        settings = convertFromApi(data.data.settings);
+                    if (data && data.data) {
                         history = convertHistoryFromApi(data.data.history);
                     }
                     deferred.resolve({
-                        settings: settings,
                         history: history,
-                        actionIsWaiting: data.data.action_is_waiting,
                         canArchive: data.data.can_archive,
-                        canRestore: data.data.can_restore,
+                        canRestore: data.data.can_restore
                     });
                 }).
                 error(function(data, status, headers, config) {
                     deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-
-        this.save = function (settings) {
-            var deferred = $q.defer();
-            var url = '/api/ad_groups/' + settings.id + '/agency/';
-            var config = {
-                params: {}
-            };
-
-            var data = {
-                'settings': convertToApi(settings)
-            };
-
-            $http.put(url, data, config).
-                success(function (data, status) {
-                    var settings;
-                    var history;
-                    if (data && data.data && data.data.settings) {
-                        settings = convertFromApi(data.data.settings);
-                        history = convertHistoryFromApi(data.data.history);
-                    }
-                    deferred.resolve({
-                        settings: settings,
-                        history: history,
-                        actionIsWaiting: data.data.action_is_waiting,
-                        canArchive: data.data.can_archive,
-                        canRestore: data.data.can_restore,
-                    });
-                }).
-                error(function(data, status, headers, config) {
-                    var resource;
-                    if (status === 400 && data && data.data.error_code === 'ValidationError') {
-                        resource = convertValidationErrorFromApi(data.data.errors);
-                    }
-                    deferred.reject(resource);
                 });
 
             return deferred.promise;

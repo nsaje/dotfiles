@@ -113,10 +113,7 @@ class AllAccountsSourcesTable(object):
         if not hasattr(self, '_last_success_actions'):
             self._last_success_actions = actionlog.sync.GlobalSync(
                 sources=self.filtered_sources
-            ).get_latest_success_by_source(
-                include_maintenance=True,
-                include_deprecated=True,
-            )
+            ).get_latest_source_success()
         return self._last_success_actions
 
     def is_sync_in_progress(self):
@@ -175,11 +172,7 @@ class AccountSourcesTable(object):
             self._last_success_actions = actionlog.sync.AccountSync(
                 self.account,
                 sources=self.filtered_sources
-            ).get_latest_source_success(
-                recompute=False,
-                include_maintenance=True,
-                include_deprecated=True,
-            )
+            ).get_latest_source_success()
         return self._last_success_actions
 
     def is_sync_in_progress(self):
@@ -238,11 +231,7 @@ class CampaignSourcesTable(object):
             self._last_success_actions = actionlog.sync.CampaignSync(
                 self.campaign,
                 sources=self.filtered_sources
-            ).get_latest_source_success(
-                recompute=False,
-                include_maintenance=True,
-                include_deprecated=True,
-            )
+            ).get_latest_source_success()
         return self._last_success_actions
 
     def is_sync_in_progress(self):
@@ -303,11 +292,7 @@ class AdGroupSourcesTable(object):
             self._last_success_actions = actionlog.sync.AdGroupSync(
                 self.ad_group,
                 sources=self.filtered_sources
-            ).get_latest_source_success(
-                recompute=False,
-                include_maintenance=True,
-                include_deprecated=True,
-            )
+            ).get_latest_source_success()
         return self._last_success_actions
 
     def is_sync_in_progress(self):
@@ -697,7 +682,6 @@ class SourcesTable(api_common.BaseApiView):
             ad_group_level=False):
         rows = []
         for i, source in enumerate(sources):
-            newrelic.agent.record_custom_metric('Custom/GetRowsLoop', i)
             states = [s for s in sources_states if s.ad_group_source.source_id == source.id]
 
             source_settings = None
@@ -872,7 +856,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
         totals_data['available_budget'] = totals_data['budget'] - sum(account_total_spend.values())
         totals_data['unspent_budget'] = totals_data['budget'] - (totals_data.get('cost') or 0)
 
-        last_success_actions = actionlog.sync.GlobalSync(sources=filtered_sources).get_latest_success_by_account()
+        last_success_actions = actionlog.sync.GlobalSync(sources=filtered_sources).get_latest_success_by_child()
         last_success_actions = {aid: val for aid, val in last_success_actions.items() if aid in account_ids}
 
         last_sync = helpers.get_last_sync(last_success_actions.values())
@@ -920,7 +904,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
         if user.has_perm('zemauth.data_status_column'):
             response['data_status'] = self.get_data_status(
                 accounts,
-                actionlog.sync.GlobalSync(sources=filtered_sources).get_latest_success_by_account()
+                last_success_actions,
             )
 
         return self.create_api_response(response)
@@ -1031,7 +1015,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
             ), request.user)
 
         ad_group_sync = actionlog.sync.AdGroupSync(ad_group, sources=filtered_sources)
-        last_success_actions = ad_group_sync.get_latest_success_by_child(recompute=False)
+        last_success_actions = ad_group_sync.get_latest_success_by_child()
 
         last_sync = helpers.get_last_sync(last_success_actions.values())
 
@@ -1075,8 +1059,8 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         last_change_dt = helpers.parse_datetime(request.GET.get('last_change'))
 
-        last_change_dt, changed_content_ads = helpers.get_content_ad_last_change_dt(
-            ad_group, filtered_sources, last_change_dt)
+        new_last_change_dt = helpers.get_content_ad_last_change_dt(ad_group, filtered_sources, last_change_dt)
+        changed_content_ads = helpers.get_changed_content_ads(ad_group, filtered_sources, last_change_dt)
 
         ad_group_sources_states = models.AdGroupSourceState.objects.distinct('ad_group_source_id')\
             .filter(
@@ -1106,7 +1090,7 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
         response_dict = {
             'rows': rows,
             'notifications': notifications,
-            'last_change': last_change_dt,
+            'last_change': new_last_change_dt,
             'in_progress': any(n['in_progress'] for n in notifications.values())
         }
 
@@ -1177,7 +1161,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         ), request.user)
 
         ad_group_sync = actionlog.sync.AdGroupSync(ad_group, sources=filtered_sources)
-        last_success_actions = ad_group_sync.get_latest_success_by_child(recompute=False)
+        last_success_actions = ad_group_sync.get_latest_success_by_child()
         last_sync = helpers.get_last_sync(last_success_actions.values())
 
         response_dict = {
@@ -1194,7 +1178,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 'size': size
             },
             'notifications': helpers.get_content_ad_notifications(ad_group),
-            'last_change': helpers.get_content_ad_last_change_dt(ad_group, filtered_sources)[0],
+            'last_change': helpers.get_content_ad_last_change_dt(ad_group, filtered_sources),
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
             'is_sync_recent': helpers.is_sync_recent(last_success_actions.values()),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress([ad_group], sources=filtered_sources),
@@ -1209,6 +1193,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
 
         return self.create_api_response(response_dict)
 
+    @newrelic.agent.function_trace()
     def _get_total_row(self, stats):
         return {
             'impressions': stats['impressions'],
@@ -1355,7 +1340,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         )
 
         campaign_sync = actionlog.sync.CampaignSync(campaign, sources=filtered_sources)
-        last_success_actions = campaign_sync.get_latest_success_by_child(recompute=False)
+        last_success_actions = campaign_sync.get_latest_success_by_child()
 
         last_sync = helpers.get_last_sync(last_success_actions.values())
 
@@ -1391,10 +1376,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         if request.user.has_perm('zemauth.data_status_column'):
             response['data_status'] = self.get_data_status(
                 ad_groups,
-                actionlog.sync.CampaignSync(campaign, sources=filtered_sources).get_latest_success_by_child(
-                    recompute=False,
-                    include_level_archived=True
-                )
+                last_success_actions,
             )
 
         return self.create_api_response(response)
@@ -1511,7 +1493,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
             order_by('ad_group_id', '-created_dt')
 
         account_sync = actionlog.sync.AccountSync(account, sources=filtered_sources)
-        last_success_actions = account_sync.get_latest_success_by_child(recompute=False)
+        last_success_actions = account_sync.get_latest_success_by_child()
 
         last_sync = helpers.get_last_sync(last_success_actions.values())
 
@@ -1548,10 +1530,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
         if user.has_perm('zemauth.data_status_column'):
             response['data_status'] = self.get_data_status(
                 campaigns,
-                actionlog.sync.AccountSync(account, sources=filtered_sources).get_latest_success_by_child(
-                    recompute=False,
-                    include_level_archived=True
-                )
+                last_success_actions,
             )
 
         return self.create_api_response(response)

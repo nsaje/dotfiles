@@ -273,19 +273,19 @@ a:visited {
     padding-right: 6px;
 
     &.enabled > li > a {
-		color: #2fa8c7;
-	}
+        color: #2fa8c7;
+    }
 
     & > li > a {
-		color: #2fa8c7;
-    	padding-left: 7px;
-    	padding-right: 6px
-	}
+        color: #2fa8c7;
+        padding-left: 7px;
+        padding-right: 6px
+    }
 
     & > li > a:hover {
-		background: #f68620;
-		color: #fff;
-	}
+        background: #f68620;
+        color: #fff;
+    }
 }
 
 .zem-tabset .nav-tabs {
@@ -571,6 +571,10 @@ div[datepicker] {
     td.available + td.start-date,
     td.available + td.end-date {
         .border-radius(0);
+    }
+
+    .calendar-label {
+        font-weight: bold;
     }
 }
 
@@ -1027,6 +1031,11 @@ a.help-popover:visited {
             float: left;
         }
     }
+}
+
+.table-container {
+    width: 100%;
+    overflow: auto;
 }
 
 .page-account-agency,
@@ -1789,9 +1798,23 @@ a.help-popover:visited {
     background-image: url('img/data_status_icon.svg');
 }
 
-.table-container {
-    width: 100%;
-    overflow: auto;
+.adgroup-status-icon-placeholder() {
+    background-size: 10px;
+    background-position: 10px;
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+	margin: 0 5px 0 0;
+}
+
+.adgroup-enabled-icon {
+    .adgroup-status-icon-placeholder();
+    background-image: url('img/adgroup_status_enabled_icon.png');
+}
+
+.adgroup-paused-icon {
+    .adgroup-status-icon-placeholder();
+    background-image: url('img/adgroup_status_paused_icon.png');
 }
 
 .table {
@@ -2353,9 +2376,9 @@ zem-editable-currency-field {
 }
 
 zem-submission-status {
-	.popover{
-		max-width: 600px;
-	}
+    .popover{
+        max-width: 600px;
+    }
 }
 
 .table .submission-status {
@@ -2398,6 +2421,10 @@ zem-submission-status {
 
 .submission-status-popover {
 
+    .submission-status-emphasis {
+        font-style: italic;
+    }
+
     .submission-status-popover-table {
         display: table;
         font-size: 11px;
@@ -2417,9 +2444,6 @@ zem-submission-status {
                     margin: 3px 0;
                 }
 
-				.submission-status-emphasis {
-					font-style: italic;
-				}
             }
 
             .left-cell {

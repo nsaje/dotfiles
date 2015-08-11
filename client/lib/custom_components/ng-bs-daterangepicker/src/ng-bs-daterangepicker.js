@@ -7,10 +7,19 @@
  */
 
 /* THIS IS A MODIFIED VERSION, DO NOT REPLACE WITH A STOCK VERSION */
-
 (function (angular) {
+    function addLabelsToCalendar(picker) {
+        if (angular.element(picker).find('.calendar.left .calendar-date tbody .calendar-label').length) {
+            return;
+        }
+        angular.element(picker)
+            .find('.calendar.left .calendar-date tbody')
+            .append('<tr><td colspan="7" class="calendar-label">start date</td></tr>');
+        angular.element(picker)
+            .find('.calendar.right .calendar-date tbody')
+            .append('<tr><td colspan="7" class="calendar-label">end date</td></tr>');
+    }
     'use strict';
-
     angular.module('ngBootstrap', []).directive('input', ['$compile', '$parse', function ($compile, $parse) {
         return {
             restrict: 'E',
@@ -95,6 +104,14 @@
                 });
 
                 $element.daterangepicker(options, dateRangeChanged);
+                $element.on('show.daterangepicker', function (ev, picker) {
+                    addLabelsToCalendar(picker.container);
+                });
+                angular.element(window.document).on('click', '.calendar-date .available', function () {
+                    angular.element(this).parent('.calendar-date').promise().done(function () {
+                        addLabelsToCalendar('.daterangepicker.show-calendar');
+                    });
+                });
             }
         };
     }]);

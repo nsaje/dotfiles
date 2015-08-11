@@ -16,4 +16,4 @@ class SendActionLogsThread(Thread):
         super(SendActionLogsThread, self).__init__(*args, **kwargs)
 
     def run(self):
-        actionlog.zwei_actions.send_multiple(self.action_logs)
+        actionlog.zwei_actions.send(self.action_logs)

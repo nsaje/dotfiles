@@ -28,6 +28,7 @@ from utils import statsd_helper
 from utils import api_common
 from utils import exc
 from utils import s3helpers
+from utils import email_helper
 
 import actionlog.api
 import actionlog.api_contentads
@@ -96,7 +97,7 @@ def supply_dash_redirect(request):
         raise exc.MissingDataError()
 
     credentials = ad_group_source.source_credentials and \
-        ad_group_source.source_credentials.credentials
+        ad_group_source.source_credentials.decrypt()
 
     url_response = actionlog.zwei_actions.get_supply_dash_url(
         ad_group_source.source.source_type.type, credentials, ad_group_source.source_campaign_key)
@@ -194,6 +195,10 @@ class NavigationDataView(api_common.BaseApiView):
 
                     if include_archived_flag:
                         ad_group['archived'] = ad_group_settings.archived if ad_group_settings else False
+                    ad_group['state'] = constants.AdGroupSettingsState.get_text(
+                        ad_group_settings.state if ad_group_settings
+                        else constants.AdGroupSettingsState.INACTIVE
+                    ).lower()
 
     def fetch_ad_groups(self, data, user, sources):
         ad_groups = models.AdGroup.objects.all().\
@@ -484,6 +489,7 @@ class AdGroupSources(api_common.BaseApiView):
         settings = ad_group_source.ad_group.get_current_settings().copy_settings()
         settings.changes_text = changes_text
         settings.save(request)
+        
 
     def _can_target_existing_regions(self, source, ad_group_settings):
         return source.source_type.supports_dma_targeting() and ad_group_settings.targets_dma() or\
@@ -729,7 +735,13 @@ class AdGroupContentAdArchive(api_common.BaseApiView):
         content_ad_ids_not_selected = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_not_selected')
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived=False
+        )
 
         active_content_ads = [ad for ad in content_ads if ad.state == constants.ContentAdSourceState.ACTIVE]
         if active_content_ads:
@@ -778,7 +790,13 @@ class AdGroupContentAdRestore(api_common.BaseApiView):
         content_ad_ids_not_selected = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_not_selected')
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived=True
+        )
 
         api.add_content_ads_archived_change_to_history(ad_group, content_ads, False, request)
 
@@ -814,12 +832,17 @@ class AdGroupContentAdState(api_common.BaseApiView):
         content_ad_ids_not_selected = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_not_selected')
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
-
-        content_ads = content_ads.exclude_archived()
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived=False
+        )
 
         api.update_content_ads_state(content_ads, state, request)
         api.add_content_ads_state_change_to_history(ad_group, content_ads, state, request)
+        email_helper.send_ad_group_settings_change_mail_if_necessary(ad_group, request.user, request)
 
         return self.create_api_response()
 
@@ -842,19 +865,27 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
 
         select_all = request.GET.get('select_all', False)
         select_batch_id = request.GET.get('select_batch')
+        include_archived = request.GET.get('archived') == 'true' and\
+            request.user.has_perm('zemauth.view_archived_entities')
 
         content_ad_ids_selected = helpers.parse_get_request_content_ad_ids(request.GET, 'content_ad_ids_selected')
         content_ad_ids_not_selected = helpers.parse_get_request_content_ad_ids(request.GET, 'content_ad_ids_not_selected')
 
         content_ads = helpers.get_selected_content_ads(
-            ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected)
+            ad_group_id,
+            select_all,
+            select_batch_id,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived
+        )
 
         content_ad_dicts = []
         for content_ad in content_ads:
             content_ad_dicts.append({
                 'url': content_ad.url,
                 'title': content_ad.title,
-                'image_url': content_ad.get_image_url(),
+                'image_url': content_ad.get_original_image_url(),
             })
 
         filename = '{}_{}_{}_content_ads'.format(

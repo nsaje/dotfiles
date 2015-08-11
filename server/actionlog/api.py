@@ -4,6 +4,7 @@ import traceback
 import urlparse
 import collections
 from operator import attrgetter
+import newrelic.agent
 
 from datetime import datetime
 
@@ -187,7 +188,7 @@ def send_delayed_actionlogs(ad_group_sources=None, send=True):
             new_actionlogs.append(actionlog)
 
     if send:
-        zwei_actions.send_multiple(new_actionlogs)
+        zwei_actions.send(new_actionlogs)
 
     return new_actionlogs
 
@@ -221,6 +222,7 @@ def get_ad_group_sources_waiting(**kwargs):
     return [action.ad_group_source for action in actions]
 
 
+@newrelic.agent.function_trace()
 def is_waiting_for_set_actions(ad_group):
     action_types = (constants.Action.SET_CAMPAIGN_STATE, constants.Action.SET_PROPERTY)
     ad_group_sources = ad_group.adgroupsource_set.all()
@@ -310,6 +312,7 @@ def age_oldest_waiting_action(manual_action=True):
     return int((datetime.utcnow() - waiting_actions[0].created_dt).total_seconds() / 3600)
 
 
+@newrelic.agent.function_trace()
 def is_sync_in_progress(ad_groups=None, campaigns=None, accounts=None, sources=None):
     '''
     sync is in progress if one of the following is true:
@@ -441,9 +444,6 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=Non
                 'action': action.action,
                 'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
-                'credentials':
-                    ad_group_source.source_credentials and
-                    ad_group_source.source_credentials.credentials,
                 'args': {
                     'source_campaign_key': ad_group_source.source_campaign_key,
                     'conf': conf,
@@ -487,9 +487,6 @@ def _init_fetch_status(ad_group_source, order, request=None):
                 'action': action.action,
                 'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
-                'credentials':
-                    ad_group_source.source_credentials and
-                    ad_group_source.source_credentials.credentials,
                 'args': {
                     'source_campaign_key': ad_group_source.source_campaign_key
                 },
@@ -534,9 +531,6 @@ def _init_fetch_reports(ad_group_source, date, order, request=None):
                 'action': action.action,
                 'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
-                'credentials':
-                    ad_group_source.source_credentials and
-                    ad_group_source.source_credentials.credentials,
                 'args': {
                     'source_campaign_key': ad_group_source.source_campaign_key,
                     'date': date.strftime('%Y-%m-%d'),
@@ -600,9 +594,6 @@ def _init_create_campaign(ad_group_source, name, request):
                 'action': action.action,
                 'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
-                'credentials':
-                    ad_group_source.source_credentials and
-                    ad_group_source.source_credentials.credentials,
                 'args': {
                     'name': name,
                     'extra': {},

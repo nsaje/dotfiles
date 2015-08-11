@@ -94,7 +94,7 @@
                                 <input type="radio" name="geo-targeting-radio" value='custom'  ng-model="settings.targetRegionsMode"> Custom
                             </label>
                         </div>
-                        <select class="form-control" zem-multiselect multiple ng-model="settings.targetRegions"  ng-options="c.code as c.name for c in regions.legacy">
+                        <select class="form-control" zem-multiselect multiple ng-model="settings.targetRegions"  ng-options="c.code as c.name for c in availableRegions()">
                         </select>
                     </div>
                 </div>

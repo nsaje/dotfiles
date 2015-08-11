@@ -45,6 +45,24 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
         }
     };
 
+    $scope.availableRegions = function() {
+        // In case the full country and dma list is not given to the user
+        // at least show the ones that are selected
+        var avRegions = regions.legacy.slice();
+
+        if ($scope.settings.targetRegions) {
+            for (var locationCode, found, i=0; i < $scope.settings.targetRegions.length; i++) {
+                locationCode = $scope.settings.targetRegions[i];
+                found = avRegions.filter(function(lc) { return lc.code === locationCode;});
+                if (found.length === 0) {
+                    avRegions.push(regions.getByCode(locationCode));
+                }
+            }
+        }
+
+        return avRegions;
+    };
+
     $scope.getSettings = function (id) {
         api.adGroupSettings.get(id).then(
             function (data) {
@@ -82,20 +100,35 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
     };
 
     $scope.saveSettings = function () {
+        var prevAdGroup = $scope.adGroup.id,
+            stateActive = constants.adGroupSourceSettingsState.ACTIVE;
         $scope.saved = null;
         $scope.discarded = null;
         $scope.saveRequestInProgress = true;
 
         api.adGroupSettings.save($scope.settings).then(
             function (data) {
+                var currAdGroup = $scope.adGroup.id,
+                    adGroupToEdit = null;
                 $scope.errors = {};
-                $scope.settings = data.settings;
-                $scope.actionIsWaiting = data.actionIsWaiting;
-                $scope.updateAccounts(data.settings.name);
-                $scope.updateBreadcrumbAndTitle();
+                if (prevAdGroup != currAdGroup) {
+                    adGroupToEdit = $scope.getAdGroup(prevAdGroup);
+                    adGroupToEdit.name = data.settings.name;
+                    adGroupToEdit.state = data.settings.state === stateActive ? 'enabled' : 'paused';
+                } else {
+                    $scope.settings = data.settings;
+                    $scope.actionIsWaiting = data.actionIsWaiting;
+                    
+                    $scope.updateAccounts(data.settings.name, data.settings.state);
+                    $scope.updateBreadcrumbAndTitle();
+                    $scope.setAdGroupPaused(
+                        $scope.settings.state === constants.adGroupSettingsState.INACTIVE
+                    );
+                }
+                
+
                 $scope.saveRequestInProgress = false;
                 $scope.saved = true;
-                $scope.setAdGroupPaused($scope.settings.state === constants.adGroupSettingsState.INACTIVE);
             },
             function (data) {
                 $scope.errors = data;
