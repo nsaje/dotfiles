@@ -4,6 +4,7 @@ import re
 import csv
 import StringIO
 import logging
+from utils import url_helper
 
 LANDING_PAGE_COL_NAME = 'Landing Page'
 KEYWORD_COL_NAME = 'Keyword'
@@ -30,7 +31,7 @@ class CsvReport(object):
         self.report_utmterm_codes = {}
         self.entries = []
         self.start_date = None
-        # first column of report - Keyword or Landing Page
+        # first column of csv in GA report - Keyword or Landing Page
         self.report_id = None
         self.z11z_pattern = re.compile('^z1([0-9]*)(.*)1z$')
 
@@ -99,14 +100,15 @@ class CsvReport(object):
             self.entries = []
             for entry in reader:
                 url = entry[self.report_id]
-                self.report_z1_codes[url] = self._parse_z11z_keyword(url)
+                self.report_utmterm_codes[url] = self._parse_z11z_keyword(url)
+                self.report_z1_codes[url] = self._parse_landing_page(url)
                 self.entries.append(entry)
         except:
             raise exc.CsvParseException('Could not parse CSV')
 
         if not set(self.fieldnames) >= set(REQUIRED_FIELDS):
             missing_fieldnames = list(set(REQUIRED_FIELDS) - (set(self.fieldnames) & set(REQUIRED_FIELDS)))
-            raise exc.CsvParseException('Not all required fields are present. Missing: %s' % ','.join(missing_fieldnames))
+            raise exc.CsvParseException('Not all required fields are present. Missing: {}'.format(','.join(missing_fieldnames)))
 
         self._check_incomplete(f_footer)
         # self.report_log.state = constants.GAReportState.PARSED
@@ -138,7 +140,34 @@ class CsvReport(object):
                 self.source_param
             )
             return None, ''
+        # TODO: fetch all content ad's at once
         return content_ad, source_param
+
+    def _parse_landing_page(self, raw_url):
+        url, query_params = url_helper.clean_url(raw_url)
+
+        # parse ad group id
+        try:
+            if '_z1_adgid' in query_params:
+                ad_group_id = int(query_params['_z1_adgid'])
+            elif '_z1_agid' in query_params:
+                ad_group_id = int(query_params['_z1_agid'])
+        except ValueError:
+            pass
+
+        source_param = ''
+        if '_z1_msid' in query_params:
+            source_param = query_params['_z1_msid']
+
+        if ad_group_id is None or source_param == '':
+            logger.warning(
+                'Could not parse landing page url %s. ad_group_id: %s, source_param: %s',
+                raw_url,
+                ad_group_id,
+                source_param
+            )
+        return ad_group_id, source_param
+
 
     def _check_incomplete(self, footer):
         sessions_total = self._get_sessions_total(footer)
