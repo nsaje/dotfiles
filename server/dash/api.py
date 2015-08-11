@@ -398,13 +398,31 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
             if field_name == 'ad_group_name':
                 new_field_value = ad_group_source.get_external_name(new_adgroup_name=field_value)
 
+            can_modify_target_regions_automatically = False
+            did_dmas_change = False
+            did_countries_change = False
+            if field_name == 'target_regions':
+                did_dmas_change = models.AdGroupSettings.did_dma_targeting_change(new_settings.target_regions,
+                                                                                  current_settings.target_regions)
+                did_countries_change = models.AdGroupSettings.did_country_targeting_change(new_settings.target_regions,
+                                                                                           current_settings.target_regions)
+                modify_country_auto = source.can_modify_country_targeting()
+                modify_dma_auto = source.can_modify_dma_targeting_automatic()
+
+                can_modify_target_regions_automatically = any([
+                    (modify_dma_auto and modify_country_auto),
+                    (modify_dma_auto and not did_countries_change),
+                    (modify_country_auto and not did_dmas_change)
+                ])
+
             if field_name == 'start_date' and source.can_modify_start_date() or\
                field_name == 'end_date' and source.can_modify_end_date() or\
                field_name == 'target_devices' and source.can_modify_device_targeting() or\
                (field_name == 'tracking_code' and source.can_modify_tracking_codes() and not
                 source.update_tracking_codes_on_content_ads()) or\
                field_name == 'iab_category' and source.can_modify_ad_group_iab_category_automatic() or\
-               field_name == 'ad_group_name' and source.can_modify_ad_group_name():
+               field_name == 'ad_group_name' and source.can_modify_ad_group_name() or\
+               field_name == 'target_regions' and can_modify_target_regions_automatically:
 
                 new_field_name = field_name
                 if field_name == 'ad_group_name':
@@ -440,53 +458,6 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                             send=send
                         )
                     )
-            elif field_name == 'target_regions':
-                diff = set(new_settings.target_regions).symmetric_difference(set(current_settings.target_regions))
-                did_dmas_change = len([tr for tr in diff if tr in regions.DMA_BY_CODE]) > 0
-                did_countries_change = len([tr for tr in diff if tr in regions.COUNTRY_BY_CODE]) > 0
-
-                modify_country_auto = source.can_modify_country_targeting()
-                modify_dma_man = source.can_modify_dma_targeting_manual()
-                modify_dma_auto = source.can_modify_dma_targeting_automatic()
-
-                # if dmas and countries change and one of them is manual create only manual actions
-                # so that target regions are not propagated only partially
-                if (modify_dma_auto and modify_country_auto) or\
-                   (modify_dma_auto and not did_countries_change) or\
-                   (modify_country_auto and not did_dmas_change):
-                    actions.extend(
-                        actionlog.api.set_ad_group_source_settings(
-                            {field_name: new_field_value},
-                            ad_group_source,
-                            request,
-                            order,
-                            send=send
-                        )
-                    )
-                else:
-                    new_country_targeting = [tr for tr in new_field_value if tr in regions.COUNTRY_BY_CODE]
-                    new_dma_targeting = [regions.DMA_BY_CODE[tr] for tr in new_field_value if tr in regions.DMA_BY_CODE]
-
-                    if not new_country_targeting and not new_dma_targeting:
-                        new_country_targeting = 'cleared' if new_dma_targeting else 'Worldwide'
-
-                    new_field_value = {
-                        'countries': new_country_targeting
-                    }
-
-                    if did_dmas_change and (modify_dma_auto or modify_dma_man):
-                        if not new_dma_targeting:
-                            new_dma_targeting = 'cleared (no DMA targeting)'
-
-                        new_field_value['dma'] = new_dma_targeting
-
-                    if did_countries_change or (did_dmas_change and (modify_dma_man or modify_dma_auto)):
-                        actionlog.api.init_set_ad_group_manual_property(
-                            ad_group_source,
-                            request,
-                            'target_regions',
-                            new_field_value
-                        )
             else:
                 if field_name == 'enable_ga_tracking':
                     # do not create an action - only used for our redirector
@@ -499,6 +470,16 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     tracking_slug = ad_group_source.source.tracking_slug
                     new_field_value = _substitute_tracking_macros(new_field_value, tracking_slug)
 
+                if field_name == 'target_regions':
+                    new_field_value = get_manual_target_regions_action_value(
+                        ad_group_source,
+                        new_field_value,
+                        did_dmas_change,
+                        did_countries_change
+                    )
+                    if new_field_value is None:
+                        continue
+
                 actionlog.api.init_set_ad_group_manual_property(
                     ad_group_source,
                     request,
@@ -507,6 +488,30 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                 )
 
     return actions
+
+
+def get_manual_target_regions_action_value(ad_group_source, target_regions, did_dmas_change, did_countries_change):
+    new_country_targeting = [tr for tr in target_regions if tr in regions.COUNTRY_BY_CODE]
+    new_dma_targeting = [regions.DMA_BY_CODE[tr] for tr in target_regions if tr in regions.DMA_BY_CODE]
+
+    if not new_country_targeting and not new_dma_targeting:
+        new_country_targeting = 'cleared' if new_dma_targeting else 'Worldwide'
+
+    new_field_value = {
+        'countries': new_country_targeting
+    }
+
+    support_dma_targeting = ad_group_source.source.source_type.supports_dma_targeting()
+    if did_dmas_change and support_dma_targeting:
+        if not new_dma_targeting:
+            new_dma_targeting = 'cleared (no DMA targeting)'
+
+        new_field_value['dma'] = new_dma_targeting
+
+    if did_countries_change or (did_dmas_change and support_dma_targeting):
+        return new_field_value
+
+    return None
 
 
 def _substitute_tracking_macros(tracking_code, tracking_slug):

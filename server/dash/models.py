@@ -1035,8 +1035,25 @@ class AdGroupSettings(SettingsBase):
         dt += datetime.timedelta(days=1)
         return dt
 
-    def targets_dma(self):
-        return any([(tr in regions.DMA_BY_CODE) for tr in self.target_regions])
+    @classmethod
+    def targets_dma(cls, target_regions):
+        return any([(tr in regions.DMA_BY_CODE) for tr in target_regions])
+
+    @classmethod
+    def targets_countries(cls, target_regions):
+        return any([(tr in regions.COUNTRY_BY_CODE) for tr in target_regions])
+
+    @classmethod
+    def did_dma_targeting_change(cls, target_regions_before, target_regions_after):
+        return cls.targets_dma(cls._target_regions_changes(target_regions_before, target_regions_after))
+
+    @classmethod
+    def did_country_targeting_change(cls, target_regions_before, target_regions_after):
+        return cls.targets_countries(cls._target_regions_changes(target_regions_before, target_regions_after))
+
+    @classmethod
+    def _target_regions_changes(cls, target_regions_before, target_regions_after):
+        return set(target_regions_after).symmetric_difference(set(target_regions_before))
 
     @classmethod
     def get_defaults_dict(cls):
