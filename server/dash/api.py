@@ -100,6 +100,30 @@ def create_campaign_callback(ad_group_source, source_campaign_key, request):
     ad_group_source.last_successful_sync_dt = datetime.datetime.utcnow()
     ad_group_source.save(request)
 
+    manual_updates_after_campaign_creation(ad_group_source, request)
+
+
+def manual_updates_after_campaign_creation(ad_group_source, request):
+    ad_group_settings = ad_group_source.ad_group.get_current_settings()
+    source_type = ad_group_source.source.source_type
+
+    if (ad_group_settings.targets_dma() and source_type.can_modify_dma_targeting_manual()) or\
+       (ad_group_settings.targets_countries() and not source_type.can_modify_country_targeting()):
+        new_field_value = get_manual_target_regions_action_value(
+            ad_group_source,
+            ad_group_settings.target_regions,
+            models.AdGroupSettings.did_dma_targeting_change([], ad_group_settings.target_regions),
+            models.AdGroupSettings.did_country_targeting_change([], ad_group_settings.target_regions),
+        )
+
+    if new_field_value is not None:
+        actionlog.api.init_set_ad_group_manual_property(
+            ad_group_source,
+            request,
+            'target_regions',
+            new_field_value
+        )
+
 
 def insert_content_ad_callback(
         ad_group_source,

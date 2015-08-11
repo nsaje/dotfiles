@@ -616,8 +616,7 @@ class SourcesTable(api_common.BaseApiView):
            ad_group_source.ad_group.content_ads_tab_with_cms and not ad_group_source.can_manage_content_ads):
             enabled = False
             message = self._get_status_setting_disabled_message(ad_group_source)
-        elif (not ad_group_source.source.source_type.supports_dma_targeting() and
-                ad_group_settings.targets_dma(ad_group_settings.target_regions)
+        elif (not ad_group_source.source.source_type.supports_dma_targeting() and ad_group_settings.targets_dma()
                 and ad_group_source_settings.state == constants.AdGroupSourceSettingsState.INACTIVE):
             enabled = False
             message = 'This source can not be enabled because it does not support DMA targeting.'

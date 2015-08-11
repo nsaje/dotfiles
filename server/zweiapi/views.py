@@ -233,16 +233,6 @@ def _process_zwei_response(action, data, request):
             content_ad_sources = dash.api.add_content_ad_sources(action.ad_group_source)
             actions.extend(dash.api.submit_content_ads(content_ad_sources, request=None))
 
-
-            ad_group_settings = action.ad_group_source.ad_group.get_current_settings()
-            source = action.ad_group_source.source
-            # does any target regions need to be update manually
-            if source.supports_dma_targeting()  source.can_modify_country_targeting()
-            """
-            action.ad_group_source.ad_group.get_current_settings()
-            """
-            # TODO: send the PAUSE campaign and manual DMA?
-
         elif action.action == actionlog.constants.Action.INSERT_CONTENT_AD:
             if 'source_content_ad_id' in data['data']:
                 dash.api.insert_content_ad_callback(
