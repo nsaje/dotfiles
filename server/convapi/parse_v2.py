@@ -36,7 +36,11 @@ class GaReportRow(dict):
         return self.ga_row_dict.get(column, None)
 
     def sessions(self):
-        return int(self.ga_row_dict['Sessions'].strip().replace(',', ''))
+        raw_sessions = self.ga_row_dict['Sessions'].replace(',', '').strip()
+        if raw_sessions == '':
+            return 0
+        else:
+            return int(raw_sessions)
 
     def as_dict(self):
         '''
@@ -130,6 +134,8 @@ class CsvReport(object):
             self.entries = []
             for entry in reader:
                 keyword_or_url = entry[self.report_id]
+                if keyword_or_url is None or keyword_or_url.strip() == '':
+                    continue
                 content_ad_id, source_param = self._parse_keyword_or_url(keyword_or_url)
                 goals = self._parse_goals(self.fieldnames, entry)
                 report_entry = GaReportRow(entry, self.start_date, content_ad_id, source_param, goals)
