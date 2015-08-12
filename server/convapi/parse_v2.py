@@ -4,6 +4,7 @@ import re
 import csv
 import StringIO
 import logging
+
 from utils import url_helper
 
 LANDING_PAGE_COL_NAME = 'Landing Page'
@@ -21,6 +22,30 @@ REQUIRED_FIELDS = [
 logger = logging.getLogger(__name__)
 
 
+class GaReportRow(dict):
+    def __init__(self, ga_row_dict, content_ad_id, source_param):
+        self.ga_row_dict = ga_row_dict
+        self.content_ad_id = content_ad_id
+        self.source_param = source_param
+
+    def get_ga_field(self, column):
+        return self.ga_row_dict.get(column, None)
+
+    def sessions(self):
+        return int(self.ga_row_dict['Sessions'].strip().replace(',', ''))
+
+    def as_dict(self):
+        '''
+        return self as dict
+        '''
+        ret = {
+            'content_ad_id': self.content_ad_id,
+            'source_param': self.source_param,
+        }
+        ret.extend(self.ga_row_dict)
+        return ret
+
+
 class CsvReport(object):
 
     def __init__(self, csv_report_text):
@@ -32,6 +57,7 @@ class CsvReport(object):
         self.start_date = None
         # first column of csv in GA report - Keyword or Landing Page
         self.report_id = None
+
         self.z11z_pattern = re.compile('^z1([0-9]*)(.*)1z$')
 
     def is_empty(self):
@@ -50,13 +76,13 @@ class CsvReport(object):
 
         start_end_lines = [0, 4]
         for line_index in start_end_lines:
-           if not lines[line_index].startswith('# -----'):
-              raise exc.CsvParseException('Line {idx} should start with "# -----"'.format(idx=line_index))
+            if not lines[line_index].startswith('# -----'):
+                raise exc.CsvParseException('Line {idx} should start with "# -----"'.format(idx=line_index))
 
         comment_lines = [2, 3]
         for line_index in comment_lines:
-           if not lines[line_index].startswith('#'):
-               raise exc.CsvParseException('Line {idx{ should start with "#"'.format(idx=line_index))
+            if not lines[line_index].startswith('#'):
+                raise exc.CsvParseException('Line {idx{ should start with "#"'.format(idx=line_index))
 
         dateline = lines[3]
         m = re.search(r'(?P<start_date>[0-9]{8})-(?P<end_date>[0-9]{8})', dateline)
@@ -98,10 +124,10 @@ class CsvReport(object):
             self.fieldnames = reader.fieldnames
             self.entries = []
             for entry in reader:
-                url = entry[self.report_id]
-                self.report_utmterm_codes[url] = self._parse_z11z_keyword(url)
-                self.report_z1_codes[url] = self._parse_landing_page(url)
-                self.entries.append(entry)
+                keyword_or_url = entry[self.report_id]
+                content_ad_id, source_param = self._parse_keyword_or_url(keyword_or_url)
+                report_entry = GaReportRow(entry, content_ad_id, source_param)
+                self.entries.append(report_entry)
         except:
             raise exc.CsvParseException('Could not parse CSV')
 
@@ -111,45 +137,49 @@ class CsvReport(object):
 
         self._check_session_counts(f_footer)
 
-    def _parse_z11z_keyword(self, url):
-        result = self.z11z_pattern.match(url)
+    def _parse_keyword_or_url(self, data):
+        if self.report_id == LANDING_PAGE_COL_NAME:
+            return self._parse_landing_page(data)
+        else:
+            return self._parse_z11z_keyword(data)
+
+    def _parse_z11z_keyword(self, keyword):
+        result = self.z11z_pattern.match(keyword)
         if not result:
             return None, ''
         else:
             content_ad_id, source_param = result.group(1), result.group(2)
 
-        content_ad = None
         try:
             content_ad_id = int(content_ad_id)
-            content_ad = dash.api.get_content_ad(content_ad_id)
         except (ValueError, TypeError):
             pass
 
+        """
+        # TODO: check this
         if content_ad is None:
             return None, ''
+        """
 
-        url = content_ad.url
-        ad_group_id = content_ad.ad_group_id
-        if ad_group_id is None or source_param == '':
+        if source_param == '':
             logger.warning(
-                'Could not parse keyword %s. ad_group_id: %s, source_param: %s',
+                'Could not parse keyword %s. content_ad_id: %s, source_param: %s',
                 keyword,
-                self.ad_group_id,
+                self.content_ad_id,
                 self.source_param
             )
             return None, ''
+
         # TODO: fetch all content ad's at once
-        return content_ad, source_param
+        return content_ad_id, source_param
 
     def _parse_landing_page(self, raw_url):
         url, query_params = url_helper.clean_url(raw_url)
-
-        # parse ad group id
+        # parse caid
+        content_ad_id = None
         try:
-            if '_z1_adgid' in query_params:
-                ad_group_id = int(query_params['_z1_adgid'])
-            elif '_z1_agid' in query_params:
-                ad_group_id = int(query_params['_z1_agid'])
+            if '_z1_caid' in query_params:
+                content_ad_id = int(query_params['_z1_caid'])
         except ValueError:
             pass
 
@@ -157,19 +187,18 @@ class CsvReport(object):
         if '_z1_msid' in query_params:
             source_param = query_params['_z1_msid']
 
-        if ad_group_id is None or source_param == '':
+        if content_ad_id is None or source_param == '':
             logger.warning(
-                'Could not parse landing page url %s. ad_group_id: %s, source_param: %s',
+                'Could not parse landing page url %s. content_ad_id: %s, source_param: %s',
                 raw_url,
-                ad_group_id,
+                content_ad_id,
                 source_param
             )
-        return ad_group_id, source_param
-
+        return content_ad_id, source_param
 
     def _check_session_counts(self, footer):
         sessions_total = self._get_sessions_total(footer)
-        sessions_sum = sum(int(entry['Sessions'].strip().replace(',', '')) for entry in self.entries)
+        sessions_sum = sum(entry.sessions() for entry in self.entries)
         if sessions_total != sessions_sum:
             raise exc.IncompleteReportException(
                 'Number of total sessions ({}) is not equal to sum of session counts ({})'.format(
@@ -221,22 +250,16 @@ class CsvReport(object):
         else:
             raise exc.CsvParseException('Invalid GA report CSV section.')
 
-    def _get_id_and_source_param(self, entry):
-        data_dict = self._get_term_or_keyword_dict()
-        return data_dict[entry[self.report_id]]
-
     def is_media_source_specified(self):
         media_source_not_specified = []
         for entry in self.entries:
-            media_id, source_param = self._get_id_and_source_param(entry)
-            if source_param == '':
-                media_source_not_specified.append(media_id)
+            if entry.source_param == '':
+                media_source_not_specified.append(entry.source_param)
         return (len(media_source_not_specified) == 0, list(media_source_not_specified))
 
     def is_ad_group_specified(self):
-        ad_group_not_specified = set()
+        content_ad_not_specified = set()
         for entry in self.entries:
-            media_id, _ = self._get_id_and_source_param(entry)
-            if media_id is None:
-                ad_group_not_specified.add(media_id)
-        return (len(ad_group_not_specified) == 0, list(ad_group_not_specified))
+            if entry.content_ad_id is None:
+                content_ad_not_specified.add(entry.get_ga_field(self.report_id))
+        return (len(content_ad_not_specified) == 0, list(content_ad_not_specified))
