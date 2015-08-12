@@ -100,10 +100,9 @@ def create_campaign_callback(ad_group_source, source_campaign_key, request):
     ad_group_source.last_successful_sync_dt = datetime.datetime.utcnow()
     ad_group_source.save(request)
 
-    manual_updates_after_campaign_creation(ad_group_source, request)
-
 
 def manual_updates_after_campaign_creation(ad_group_source, request):
+
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
     source_type = ad_group_source.source.source_type
 

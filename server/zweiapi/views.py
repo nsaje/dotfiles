@@ -233,6 +233,8 @@ def _process_zwei_response(action, data, request):
             content_ad_sources = dash.api.add_content_ad_sources(action.ad_group_source)
             actions.extend(dash.api.submit_content_ads(content_ad_sources, request=None))
 
+            dash.api.manual_updates_after_campaign_creation(action.ad_group_source, request=None)
+
         elif action.action == actionlog.constants.Action.INSERT_CONTENT_AD:
             if 'source_content_ad_id' in data['data']:
                 dash.api.insert_content_ad_callback(

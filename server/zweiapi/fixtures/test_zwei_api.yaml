@@ -2,7 +2,7 @@
 
 -   fields:
         date_joined: '2014-06-16T12:21:29'
-        email: luka.silovinac@zemanta.com
+        email: superuser@test.com
         first_name: ''
         groups: []
         is_active: true
@@ -10,7 +10,7 @@
         is_superuser: true
         last_login: '2014-06-16T12:21:29'
         last_name: ''
-        password: pbkdf2_sha256$12000$ekG2j1OyTgy0$dzdTxiFUkB0uQXWdvV4enBMdOs/8D/J7Jl5zDtKsMZA=
+        password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
         user_permissions: []
         username: ''
     model: zemauth.user
@@ -52,6 +52,7 @@
 -   fields:
         type: 'outbrain'
         delete_traffic_metrics_threshold: 10
+        available_actions: []
     model: dash.sourcetype
     pk: 3
 
