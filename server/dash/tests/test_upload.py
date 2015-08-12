@@ -5,7 +5,7 @@ import httplib
 import urllib2
 
 from django.http import HttpRequest
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from dash import models
 from dash import upload
@@ -345,6 +345,9 @@ class ProcessCallbackTest(TestCase):
         self.save_error_report_patcher.stop()
         self.actionlog_send_patcher.stop()
 
+    @override_settings(
+        SEND_AD_GROUP_SETTINGS_CHANGE_MAIL=False
+    )
     def test_process_callback(self, mock_redirect_insert):
         image_id = 'test_image_id'
         image_width = 100
@@ -385,6 +388,7 @@ class ProcessCallbackTest(TestCase):
         errors = []
 
         batch = models.UploadBatch.objects.create(name=batch_name)
+        batch.batch_size = 10
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
 
         request = HttpRequest()
@@ -426,6 +430,13 @@ class ProcessCallbackTest(TestCase):
 
         self.mock_actionlog_send.assert_called_with([action])
 
+        settings = ad_group_source.ad_group.get_current_settings()
+        self.assertEqual(settings.changes_text,
+                         u'Test batch name set with 10 creatives was imported to: AdsNative.')
+
+    @override_settings(
+        SEND_AD_GROUP_SETTINGS_CHANGE_MAIL=False
+    )
     def test_process_callback_errors(self, mock_redirect_insert):
         redirect_id = "u123456"
 
@@ -476,6 +487,9 @@ class ProcessCallbackTest(TestCase):
 
         self.mock_save_error_report.assert_called_with([row], filename)
 
+    @override_settings(
+        SEND_AD_GROUP_SETTINGS_CHANGE_MAIL=False
+    )
     def test_process_callback_redirector_error(self, mock_redirect_insert):
         image_id = 'test_image_id'
         image_width = 100
