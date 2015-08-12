@@ -130,11 +130,9 @@ class CsvReport(object):
                 content_ad_id, source_param = self._parse_keyword_or_url(keyword_or_url)
                 goals = self._parse_goals(self.fieldnames, entry)
                 report_entry = GaReportRow(entry, content_ad_id, source_param, goals)
-                print report_entry.as_dict()
                 self.entries.append(report_entry)
         except:
-            raise  # TODO: Remove
-            #raise exc.CsvParseException('Could not parse CSV')
+            raise exc.CsvParseException('Could not parse CSV')
 
         if not set(self.fieldnames) >= set(REQUIRED_FIELDS):
             missing_fieldnames = list(set(REQUIRED_FIELDS) - (set(self.fieldnames) & set(REQUIRED_FIELDS)))
@@ -205,14 +203,6 @@ class CsvReport(object):
         ix_goal = goal_field.index('(Goal')
         goal_number = ' '.join(goal_field[ix_goal:].split()[:2]) + ')'
         return goal_number.replace('(', '').replace(')', '')
-        """
-        ix_goal = goal_field.index('(Goal')
-        goal_number = ' '.join(goal_field[ix_goal:].split()[:2]) + ')'
-        goal_name = goal_field[:ix_goal].strip()
-        if len(goal_name) > 16:
-            goal_name = goal_name[:13] + '...'
-        return goal_name + ' ' + goal_number
-        """
 
     def _parse_goals(self, fieldnames, row_dict):
         goal_fields = filter(lambda field: '(Goal' in field, fieldnames)
