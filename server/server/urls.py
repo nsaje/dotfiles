@@ -13,6 +13,7 @@ from zemauth.forms import AuthenticationForm
 import zweiapi.views
 import actionlog.views
 import convapi.views
+import reports.views
 
 import dash.views.daily_stats
 import dash.views.export
@@ -357,6 +358,15 @@ urlpatterns += patterns(
     )
 )
 
+# Reports Api
+urlpatterns += patterns(
+    '',
+    url(
+        r'^reports/ga/contentadstats',
+        login_required(reports.views.GaContentAdReport.as_view()),
+        name='reports_ga_contentadstats_post',
+    )
+)
 
 # Source OAuth
 urlpatterns += patterns(

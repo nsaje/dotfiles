@@ -161,14 +161,25 @@ class SupplyReportRecipient(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
 
 
-"""
 class ContentAdPostclickStats(models.Model):
-    zuid = models.CharField(max_length=256, editable=False, null=True)
+    date = models.DateTimeField(auto_now_add=True, verbose_name='Report date')
     content_ad = models.ForeignKey('dash.ContentAd', on_delete=models.PROTECT)
     source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)
+
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
+    visits = models.IntegerField(default=0, blank=False, null=False)
+    new_visits = models.IntegerField(default=0, blank=False, null=False)
+    bounced_visits = models.IntegerField(default=0, blank=False, null=False)
+    pageviews = models.IntegerField(default=0, blank=False, null=False)
+    total_time_on_site = models.IntegerField(default=0, blank=False, null=False)
 
+    class Meta:
+        unique_together = (
+            ('date', 'content_ad', 'source'),
+        )
+
+"""
 class ContentGoalConversionStats(models.Model):
     account = models.ForeignKey('dash.Account', on_delete=models.PROTECT)
     # clarify which slug is it

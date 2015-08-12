@@ -1,7 +1,8 @@
+import csv
 import datetime
 import exc
+import json
 import re
-import csv
 import StringIO
 import logging
 
@@ -21,10 +22,12 @@ REQUIRED_FIELDS = [
 
 logger = logging.getLogger(__name__)
 
+Z11Z_RE = re.compile('^z1([0-9]*)(.*)1z$')
 
 class GaReportRow(dict):
-    def __init__(self, ga_row_dict, content_ad_id, source_param, goals):
+    def __init__(self, ga_row_dict, report_date, content_ad_id, source_param, goals):
         self.ga_row_dict = ga_row_dict
+        self.report_date = report_date.isoformat()
         self.content_ad_id = content_ad_id
         self.source_param = source_param
         self.goals = goals
@@ -43,8 +46,9 @@ class GaReportRow(dict):
             'content_ad_id': self.content_ad_id,
             'source_param': self.source_param,
         }
-        ret.update(self.ga_row_dict)
-        ret.update(self.goals)
+        ret['ga_report'] = self.ga_row_dict
+        ret['goals'] = self.goals
+        ret['report_date'] = self.report_date
         return ret
 
 
@@ -53,20 +57,19 @@ class CsvReport(object):
     def __init__(self, csv_report_text):
         self.csv_report_text = csv_report_text
         # mapping from each url in report to corresponding z1 code or utm term
-        self.report_z1_codes = {}
-        self.report_utmterm_codes = {}
         self.entries = []
         self.start_date = None
         # first column of csv in GA report - Keyword or Landing Page
         self.report_id = None
-
-        self.z11z_pattern = re.compile('^z1([0-9]*)(.*)1z$')
 
     def is_empty(self):
         return self.entries == []
 
     def get_date(self):
         return self.start_date
+
+    def serialize_entries(self):
+        return json.dumps( [entry.as_dict() for entry in self.entries] )
 
     def _parse_header(self, lines):
         '''
@@ -129,7 +132,7 @@ class CsvReport(object):
                 keyword_or_url = entry[self.report_id]
                 content_ad_id, source_param = self._parse_keyword_or_url(keyword_or_url)
                 goals = self._parse_goals(self.fieldnames, entry)
-                report_entry = GaReportRow(entry, content_ad_id, source_param, goals)
+                report_entry = GaReportRow(entry, self.start_date, content_ad_id, source_param, goals)
                 self.entries.append(report_entry)
         except:
             raise exc.CsvParseException('Could not parse CSV')
@@ -147,7 +150,7 @@ class CsvReport(object):
             return self._parse_z11z_keyword(data)
 
     def _parse_z11z_keyword(self, keyword):
-        result = self.z11z_pattern.match(keyword)
+        result = Z11Z_RE.match(keyword)
         if not result:
             return None, ''
         else:
@@ -264,14 +267,6 @@ class CsvReport(object):
                 day_index_lines.append(line)
 
         return StringIO.StringIO('\n'.join(mainlines)), StringIO.StringIO('\n'.join(day_index_lines))
-
-    def _get_term_or_keyword_dict(self):
-        if self.report_id == LANDING_PAGE_COL_NAME:
-            return self.report_z1_codes
-        elif self.report_id == KEYWORD_COL_NAME:
-            return self.report_utmterm_codes
-        else:
-            raise exc.CsvParseException('Invalid GA report CSV section.')
 
     def is_media_source_specified(self):
         media_source_not_specified = []
