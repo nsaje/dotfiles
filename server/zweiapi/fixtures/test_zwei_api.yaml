@@ -97,6 +97,7 @@
         name: Outbrain
         tracking_slug: 'outbrain'
         source_type: 3
+        maintenance: False
     model: dash.source
     pk: 3
 
