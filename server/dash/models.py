@@ -679,7 +679,6 @@ class Source(models.Model):
         ])
 
     def needs_to_modify_target_regions_manually(self, did_countries_change, did_dmas_change):
-        print did_dmas_change, 'AND', self.can_modify_dma_targeting_manual(), 'OR', did_countries_change, 'AND', not self.can_modify_country_targeting(), self.maintenance, self.deprecated
         return ((did_dmas_change and self.can_modify_dma_targeting_manual()) or
                 (did_countries_change and not self.can_modify_country_targeting()))
 
