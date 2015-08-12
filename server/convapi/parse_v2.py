@@ -23,10 +23,11 @@ logger = logging.getLogger(__name__)
 
 
 class GaReportRow(dict):
-    def __init__(self, ga_row_dict, content_ad_id, source_param):
+    def __init__(self, ga_row_dict, content_ad_id, source_param, goals):
         self.ga_row_dict = ga_row_dict
         self.content_ad_id = content_ad_id
         self.source_param = source_param
+        self.goals = goals
 
     def get_ga_field(self, column):
         return self.ga_row_dict.get(column, None)
@@ -42,7 +43,8 @@ class GaReportRow(dict):
             'content_ad_id': self.content_ad_id,
             'source_param': self.source_param,
         }
-        ret.extend(self.ga_row_dict)
+        ret.update(self.ga_row_dict)
+        ret.update(self.goals)
         return ret
 
 
@@ -126,10 +128,13 @@ class CsvReport(object):
             for entry in reader:
                 keyword_or_url = entry[self.report_id]
                 content_ad_id, source_param = self._parse_keyword_or_url(keyword_or_url)
-                report_entry = GaReportRow(entry, content_ad_id, source_param)
+                goals = self._parse_goals(self.fieldnames, entry)
+                report_entry = GaReportRow(entry, content_ad_id, source_param, goals)
+                print report_entry.as_dict()
                 self.entries.append(report_entry)
         except:
-            raise exc.CsvParseException('Could not parse CSV')
+            raise  # TODO: Remove
+            #raise exc.CsvParseException('Could not parse CSV')
 
         if not set(self.fieldnames) >= set(REQUIRED_FIELDS):
             missing_fieldnames = list(set(REQUIRED_FIELDS) - (set(self.fieldnames) & set(REQUIRED_FIELDS)))
@@ -195,6 +200,34 @@ class CsvReport(object):
                 source_param
             )
         return content_ad_id, source_param
+
+    def _get_goal_name(self, goal_field):
+        ix_goal = goal_field.index('(Goal')
+        goal_number = ' '.join(goal_field[ix_goal:].split()[:2]) + ')'
+        return goal_number.replace('(', '').replace(')', '')
+        """
+        ix_goal = goal_field.index('(Goal')
+        goal_number = ' '.join(goal_field[ix_goal:].split()[:2]) + ')'
+        goal_name = goal_field[:ix_goal].strip()
+        if len(goal_name) > 16:
+            goal_name = goal_name[:13] + '...'
+        return goal_name + ' ' + goal_number
+        """
+
+    def _parse_goals(self, fieldnames, row_dict):
+        goal_fields = filter(lambda field: '(Goal' in field, fieldnames)
+        result = {}
+        for goal_field in goal_fields:
+            goal_name = self._get_goal_name(goal_field)
+            metric_fields = result.get(goal_name, {})
+            if 'Completions)' in goal_field:
+                metric_fields['conversions'] = row_dict[goal_field]
+            elif 'Value)' in goal_field:
+                metric_fields['value'] = row_dict[goal_field]
+            elif 'Conversion Rate)' in goal_field:
+                metric_fields['conversion_rate'] = row_dict[goal_field]
+            result[goal_name] = metric_fields
+        return result
 
     def _check_session_counts(self, footer):
         sessions_total = self._get_sessions_total(footer)
