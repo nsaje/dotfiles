@@ -36,34 +36,39 @@ class GaContentAdReport(api_common.BaseApiView):
             raise
 
         for entry in data_blob:
-            ga_entry = entry['ga_report']
-            try:
-                report_date = datetime.datetime.strptime(entry['report_date'], "%Y-%m-%dT%H:%M:%S")
+            stats = _create_contentad_postclick_stats(entry)
+            if stats is None:
+                continue
+            bulk_objects.append(stats)
 
-                visits = int(ga_report['Sessions'])
-                bounce_rate = float(entry['Bounce Rate'].replace('%', '').replace(',', '')) / 100
-
-                stats = reports.models.ContentAdPostclickStats(
-                    date=report_date,
-                    created_dt=created_dt,
-                    visits=visits,
-                    new_visits=int(entry['New Users']),
-                    bounced_visits=int(bounce_rate * visits),
-                    pageviews=int(round(float(ga_entry['Pages / Session']) * visits)),
-                    total_time_on_site=visits * _parse_duration(ga_entry['Avg. Session Duration']),
-                )
-                stats.source_id = track_source_map[entry['source_param']]
-                stats.content_ad_id = int(entry['content_ad_id'])
-                bulk_objects.append(stats)
-            except:
-                logging.exception("Failed parsing content ad {blob}".format(blob=json.dumps(entry)))
-                pass
-
-        # TODO: setup transaction
         reports.models.ContentAdPostclickStats.objects.bulk_create(bulk_objects)
 
         return self.create_api_response({})
 
+
+def _create_contentad_postclick_stats(entry):
+    ga_entry = entry['ga_report']
+    try:
+        report_date = datetime.datetime.strptime(entry['report_date'], "%Y-%m-%dT%H:%M:%S")
+
+        visits = int(ga_report['Sessions'])
+        bounce_rate = float(entry['Bounce Rate'].replace('%', '').replace(',', '')) / 100
+
+        stats = reports.models.ContentAdPostclickStats(
+            date=report_date,
+            created_dt=created_dt,
+            visits=visits,
+            new_visits=int(entry['New Users']),
+            bounced_visits=int(bounce_rate * visits),
+            pageviews=int(round(float(ga_entry['Pages / Session']) * visits)),
+            total_time_on_site=visits * _parse_duration(ga_entry['Avg. Session Duration']),
+        )
+        stats.source_id = track_source_map[entry['source_param']]
+        stats.content_ad_id = int(entry['content_ad_id'])
+        return stats
+    except:
+        logging.exception("Failed parsing content ad {blob}".format(blob=json.dumps(entry)))
+    return None
 
 def _parse_duration(self, durstr):
     hours_str, minutes_str, seconds_str = durstr.replace('<', '').split(':')
