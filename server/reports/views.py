@@ -29,8 +29,6 @@ class GaContentAdReport(api_common.BaseApiView):
         created_dt = datetime.datetime.utcnow()
 
         bulk_objects = []
-        print type(request.body)
-        print request.body
         try:
             data_blob = json.loads(request.body)
         except:
@@ -38,7 +36,6 @@ class GaContentAdReport(api_common.BaseApiView):
             raise
 
         for entry in data_blob:
-            print entry
             ga_entry = entry['ga_report']
             try:
                 report_date = datetime.datetime.strptime(entry['report_date'], "%Y-%m-%dT%H:%M:%S")
