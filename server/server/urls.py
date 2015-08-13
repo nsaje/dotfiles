@@ -358,15 +358,6 @@ urlpatterns += patterns(
     )
 )
 
-# Reports Api
-urlpatterns += patterns(
-    '',
-    url(
-        r'^reports/ga/contentadstats',
-        login_required(reports.views.GaContentAdReport.as_view()),
-        name='reports_ga_contentadstats_post',
-    )
-)
 
 # Source OAuth
 urlpatterns += patterns(

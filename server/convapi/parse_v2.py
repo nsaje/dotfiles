@@ -24,7 +24,8 @@ logger = logging.getLogger(__name__)
 
 Z11Z_RE = re.compile('^z1([0-9]*)(.*)1z$')
 
-class GaReportRow(dict):
+
+class GaReportRow(object):
     def __init__(self, ga_row_dict, report_date, content_ad_id, source_param, goals):
         self.ga_row_dict = ga_row_dict
         self.report_date = report_date.isoformat()
@@ -42,18 +43,12 @@ class GaReportRow(dict):
         else:
             return int(raw_sessions)
 
-    def as_dict(self):
-        '''
-        return self as dict
-        '''
-        ret = {
-            'content_ad_id': self.content_ad_id,
-            'source_param': self.source_param,
-        }
-        ret['ga_report'] = self.ga_row_dict
-        ret['goals'] = self.goals
-        ret['report_date'] = self.report_date
-        return ret
+    def __str__(self):
+        return "{date}-{caid}-{source_param}".format(
+            date=self.report_date,
+            caid=self.content_ad_id,
+            source_param=self.source_param,
+        )
 
 
 class CsvReport(object):
@@ -72,8 +67,8 @@ class CsvReport(object):
     def get_date(self):
         return self.start_date
 
-    def serialize_entries(self):
-        return json.dumps( [entry.as_dict() for entry in self.entries] )
+    def entries(self):
+        return self.entries
 
     def _parse_header(self, lines):
         '''
