@@ -157,13 +157,7 @@ class CsvReport(object):
         try:
             content_ad_id = int(content_ad_id)
         except (ValueError, TypeError):
-            pass
-
-        """
-        # TODO: check this
-        if content_ad is None:
             return None, ''
-        """
 
         if source_param == '':
             logger.warning(
@@ -185,7 +179,7 @@ class CsvReport(object):
             if '_z1_caid' in query_params:
                 content_ad_id = int(query_params['_z1_caid'])
         except ValueError:
-            pass
+            return None, ''
 
         source_param = ''
         if '_z1_msid' in query_params:
@@ -198,6 +192,7 @@ class CsvReport(object):
                 content_ad_id,
                 source_param
             )
+            return None, ''
         return content_ad_id, source_param
 
     def _get_goal_name(self, goal_field):

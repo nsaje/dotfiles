@@ -111,7 +111,30 @@ Landing Page,Device Category,Sessions
 
 
     def test_parse_landing_page(self):
-        pass
+        parser = parse_v2.CsvReport("")
+
+        # some valid cases
+        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid=55310&_z1_msid=b1_gumgum"
+        caid, src_par = parser._parse_landing_page(landing_page)
+        self.assertEqual(55310, caid)
+        self.assertEqual('b1_gumgum', src_par)
+
+        # some invalid cases
+
+        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid=&_z1_msid=b1_gumgum"
+        caid, src_par = parser._parse_landing_page(landing_page)
+        self.assertIsNone(caid)
+        self.assertEqual('', src_par)
+
+        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_msid=b1_gumgum"
+        caid, src_par = parser._parse_landing_page(landing_page)
+        self.assertIsNone(caid)
+        self.assertEqual('', src_par)
+
+        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid="
+        caid, src_par = parser._parse_landing_page(landing_page)
+        self.assertIsNone(caid)
+        self.assertEqual('', src_par)
 
     def test_get_goal_name(self):
         pass
