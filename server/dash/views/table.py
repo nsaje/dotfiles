@@ -614,7 +614,8 @@ class SourcesTable(api_common.BaseApiView):
         if not ad_group_source.source.can_update_state() or (
            ad_group_source.ad_group.content_ads_tab_with_cms and not ad_group_source.can_manage_content_ads):
             message = self._get_status_setting_disabled_message(ad_group_source)
-        elif ad_group_source_settings.state == constants.AdGroupSourceSettingsState.INACTIVE:
+        elif ad_group_source_settings is not None and\
+                ad_group_source_settings.state == constants.AdGroupSourceSettingsState.INACTIVE:
             message = self._get_status_setting_disabled_message_for_target_regions(
                 ad_group_source, ad_group_settings, ad_group_source_settings)
 
