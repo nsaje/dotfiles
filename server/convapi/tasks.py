@@ -194,7 +194,6 @@ def process_ga_report_v2(ga_report_task):
 
         # TODO: push report to reports API which will store the data
         #
-        print csvreport.serialize_entries()
 
         ad_group_errors = ad_group_specified_errors(csvreport)
         media_source_errors = media_source_specified_errors(csvreport)
