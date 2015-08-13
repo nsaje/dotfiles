@@ -14,6 +14,19 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
+            name='ContentAdGoalConversionStats',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('date', models.DateTimeField(verbose_name=b'Report date')),
+                ('goal_type', models.CharField(max_length=256, editable=False)),
+                ('goal_name', models.CharField(max_length=256, editable=False)),
+                ('created_dt', models.DateTimeField(auto_now_add=True, verbose_name=b'Created at')),
+                ('conversions', models.CharField(max_length=256, editable=False)),
+                ('content_ad', models.ForeignKey(to='dash.ContentAd', on_delete=django.db.models.deletion.PROTECT)),
+                ('source', models.ForeignKey(to='dash.Source', on_delete=django.db.models.deletion.PROTECT)),
+            ],
+        ),
+        migrations.CreateModel(
             name='ContentAdPostclickStats',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
@@ -31,5 +44,9 @@ class Migration(migrations.Migration):
         migrations.AlterUniqueTogether(
             name='contentadpostclickstats',
             unique_together=set([('date', 'content_ad', 'source')]),
+        ),
+        migrations.AlterUniqueTogether(
+            name='contentadgoalconversionstats',
+            unique_together=set([('date', 'content_ad', 'source', 'goal_type', 'goal_name')]),
         ),
     ]
