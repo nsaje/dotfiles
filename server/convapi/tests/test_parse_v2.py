@@ -137,7 +137,16 @@ Landing Page,Device Category,Sessions
         self.assertEqual('', src_par)
 
     def test_get_goal_name(self):
-        pass
+        parser = parse_v2.CsvReport("")
+
+        goal_name = "Yell Free Listings (Goal 1 Conversion Rate)"
+        self.assertEqual("Goal 1", parser._get_goal_name(goal_name))
+
+        goal_name = "Yell Free Listings (Goal 1 Completions)"
+        self.assertEqual("Goal 1", parser._get_goal_name(goal_name))
+
+        goal_name = "Yell Free Listings (Goal 2 Value)"
+        self.assertEqual("Goal 2", parser._get_goal_name(goal_name))
 
     def test_parse_goals(self):
         pass
