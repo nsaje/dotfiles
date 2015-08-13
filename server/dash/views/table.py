@@ -647,10 +647,9 @@ class SourcesTable(api_common.BaseApiView):
                 ad_group_source=ad_group_source, state=constants.AdGroupSourceSettingsState.ACTIVE)
 
             # disable when waiting for manual actions for target_regions after campaign creation
-            # check if waiting for manual actions related to target_regions and
-            # if the source was ever enabled
-            if source.needs_to_modify_target_regions_manually(targets_countries, targets_dma) and\
-               actionlog.api.is_waiting_for_manual_target_regions_action(ad_group_source) and\
+            # message this only when the source is about to be enabled for the first time
+            if source.can_modify_target_regions_manually(targets_countries, targets_dma) and\
+               actionlog.api.is_waiting_for_manual_set_target_regions_action(ad_group_source) and\
                not activation_settings.exists():
 
                 message = ('This source needs to set {} targeting manually,'

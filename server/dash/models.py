@@ -678,7 +678,7 @@ class Source(models.Model):
             (modify_country_auto and not did_dmas_change)
         ])
 
-    def needs_to_modify_target_regions_manually(self, did_countries_change, did_dmas_change):
+    def can_modify_target_regions_manually(self, did_countries_change, did_dmas_change):
         return ((did_dmas_change and self.can_modify_dma_targeting_manual()) or
                 (did_countries_change and not self.can_modify_country_targeting()))
 
@@ -1049,24 +1049,18 @@ class AdGroupSettings(SettingsBase):
         return dt
 
     def targets_dma(self):
-        return any([(tr in regions.DMA_BY_CODE) for tr in self.target_regions])
+        return any(tr in regions.DMA_BY_CODE for tr in self.target_regions)
 
     def targets_countries(self):
-        return any([(tr in regions.COUNTRY_BY_CODE) for tr in self.target_regions])
+        return any(tr in regions.COUNTRY_BY_CODE for tr in self.target_regions)
 
-    @classmethod
-    def did_dma_targeting_change(cls, target_regions_before, target_regions_after):
-        diff = cls._target_regions_changes(target_regions_before, target_regions_after)
-        return any([(tr in regions.DMA_BY_CODE) for tr in diff])
+    def differs_in_dma_targeting(self, other_target_regions):
+        diff = set(self.target_regions).symmetric_difference(set(other_target_regions))
+        return any(tr in regions.DMA_BY_CODE for tr in diff)
 
-    @classmethod
-    def did_country_targeting_change(cls, target_regions_before, target_regions_after):
-        diff = cls._target_regions_changes(target_regions_before, target_regions_after)
-        return any([(tr in regions.COUNTRY_BY_CODE) for tr in diff])
-
-    @classmethod
-    def _target_regions_changes(cls, target_regions_before, target_regions_after):
-        return set(target_regions_after).symmetric_difference(set(target_regions_before))
+    def differs_in_country_targeting(self, other_target_regions):
+        diff = set(self.target_regions).symmetric_difference(set(other_target_regions))
+        return any(tr in regions.COUNTRY_BY_CODE for tr in diff)
 
     @classmethod
     def get_defaults_dict(cls):

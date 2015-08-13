@@ -222,7 +222,7 @@ def get_ad_group_sources_waiting(**kwargs):
     return [action.ad_group_source for action in actions]
 
 
-def is_waiting_for_manual_target_regions_action(ad_group_source):
+def is_waiting_for_manual_set_target_regions_action(ad_group_source):
     set_property_action = models.ActionLog.objects.filter(
         action=constants.Action.SET_PROPERTY,
         action_type=constants.ActionType.MANUAL,
