@@ -28,6 +28,7 @@ from utils import statsd_helper
 from utils import api_common
 from utils import exc
 from utils import s3helpers
+from utils import email_helper
 
 import actionlog.api
 import actionlog.api_contentads
@@ -488,6 +489,7 @@ class AdGroupSources(api_common.BaseApiView):
         settings = ad_group_source.ad_group.get_current_settings().copy_settings()
         settings.changes_text = changes_text
         settings.save(request)
+        
 
     def _can_target_existing_regions(self, source, ad_group_settings):
         return (source.source_type.supports_dma_targeting() and ad_group_settings.targets_dma()) or\
@@ -840,6 +842,7 @@ class AdGroupContentAdState(api_common.BaseApiView):
 
         api.update_content_ads_state(content_ads, state, request)
         api.add_content_ads_state_change_to_history(ad_group, content_ads, state, request)
+        email_helper.send_ad_group_settings_change_mail_if_necessary(ad_group, request.user, request)
 
         return self.create_api_response()
 

@@ -18,6 +18,7 @@ import actionlog.zwei_actions
 from utils import redirector_helper
 from utils import s3helpers
 from utils import url_helper
+from utils import email_helper
 
 from dash import models
 from dash import api
@@ -44,11 +45,11 @@ def process_async(content_ads_data, filename, batch, ad_group, request):
     pool.map_async(
         partial(_clean_row, batch, ad_group),
         content_ads_data,
-        callback=partial(_process_callback, batch, ad_group.id, ad_group_sources, filename, request),
+        callback=partial(_process_callback, batch, ad_group, ad_group_sources, filename, request),
     )
 
 
-def _process_callback(batch, ad_group_id, ad_group_sources, filename, request, results):
+def _process_callback(batch, ad_group, ad_group_sources, filename, request, results):
     try:
         # ensure content ads are only commited to DB
         # if all of them are successfully processed
@@ -60,7 +61,7 @@ def _process_callback(batch, ad_group_id, ad_group_sources, filename, request, r
             for row, cleaned_data, errors in results:
                 if not errors:
                     content_ad, content_ad_sources = _create_objects(
-                        cleaned_data, batch, ad_group_id, ad_group_sources)
+                        cleaned_data, batch, ad_group.id, ad_group_sources)
 
                     errors = _create_redirect_id(content_ad)
 
@@ -81,6 +82,9 @@ def _process_callback(batch, ad_group_id, ad_group_sources, filename, request, r
 
             batch.status = constants.UploadBatchStatus.DONE
             batch.save()
+
+            _add_to_history(request, batch, ad_group)
+
     except UploadFailedException:
         batch.error_report_key = _save_error_report(rows, filename)
         batch.status = constants.UploadBatchStatus.FAILED
@@ -353,3 +357,14 @@ def _validate_crops(crop_list):
             for k in range(2):
                 if not isinstance(crop_list[i][j][k], (int, long)):
                     raise ValueError('Coordinate is not an integer')
+
+
+def _add_to_history(request, batch, ad_group):
+    changes_text = 'Imported batch "{}" with {} content ads.'.format(
+        batch.name,
+        batch.batch_size
+    )
+    settings = ad_group.get_current_settings().copy_settings()
+    settings.changes_text = changes_text
+    settings.save(request)
+    email_helper.send_ad_group_settings_change_mail_if_necessary(ad_group, request.user, request)

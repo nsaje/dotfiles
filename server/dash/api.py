@@ -329,12 +329,16 @@ def update_content_ads_submission_status(ad_group_source, request=None):
 
 @transaction.atomic()
 def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
+    """ Returns update_content_ad actions for content_ad_sources
+    that are not in sync with external systems. """
     content_ad_sources = {}
 
     for content_ad_source in models.ContentAdSource.objects.filter(
             content_ad__ad_group=ad_group_source.ad_group,
             source=ad_group_source.source):
         content_ad_sources[content_ad_source.get_source_id()] = content_ad_source
+
+    unsynced_content_ad_sources_actions = []
 
     for data in content_ad_data:
         content_ad_source = content_ad_sources.get(data['id'])
@@ -349,6 +353,17 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
             changed = True
 
         if 'submission_status' in data and data['submission_status'] != content_ad_source.submission_status:
+            is_unsynced = all([
+                content_ad_source.submission_status == constants.ContentAdSubmissionStatus.PENDING,
+                data['submission_status'] == constants.ContentAdSubmissionStatus.APPROVED,
+                content_ad_source.content_ad.state != data['state'],
+            ])
+            if is_unsynced:
+                # Content ad state was not synced with media source
+                unsynced_content_ad_sources_actions.append(
+                    (content_ad_source, {'state': content_ad_source.content_ad.state})
+                )
+
             _update_content_ad_source_submission_status(content_ad_source, data['submission_status'])
             changed = True
 
@@ -358,6 +373,17 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
 
         if changed:
             content_ad_source.save()
+
+    if unsynced_content_ad_sources_actions:
+        logger.info(
+            'Found unsynced content ads for ad group %s on sources: %s',
+            ad_group_source.ad_group,
+            ', '.join(set(action[0].source.name for action in unsynced_content_ad_sources_actions))
+        )
+        return actionlog.api_contentads.init_bulk_update_content_ad_actions(
+            unsynced_content_ad_sources_actions, None)
+
+    return []
 
 
 def update_content_ad_source_state(content_ad_source, data):
@@ -412,11 +438,18 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                 continue
 
             new_field_value = field_value
+            force_manual_change = False
             if field_name == 'tracking_code':
                 new_field_value = utils.url_helper.combine_tracking_codes(
                     new_settings.get_tracking_codes(),
                     ad_group_source.get_tracking_ids(),
                 )
+
+                # Temporary bug fix for a bug in Gravity - codes that don't have a value assigned can not
+                # be assigned automatically
+                if any(('=' not in tc) for tc in new_field_value.split('&')) and\
+                   ad_group_source.source.source_type.type == constants.SourceType.GRAVITY:
+                    force_manual_change = True
 
             if field_name == 'ad_group_name':
                 new_field_value = ad_group_source.get_external_name(new_adgroup_name=field_value)
@@ -427,15 +460,15 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                 did_dmas_change = new_settings.differs_in_dma_targeting(current_settings.target_regions)
                 did_countries_change = new_settings.differs_in_country_targeting(current_settings.target_regions)
 
-            if field_name == 'start_date' and source.can_modify_start_date() or\
-               field_name == 'end_date' and source.can_modify_end_date() or\
-               field_name == 'target_devices' and source.can_modify_device_targeting() or\
+            if (field_name == 'start_date' and source.can_modify_start_date() or
+               field_name == 'end_date' and source.can_modify_end_date() or
+               field_name == 'target_devices' and source.can_modify_device_targeting() or
                (field_name == 'tracking_code' and source.can_modify_tracking_codes() and not
-                source.update_tracking_codes_on_content_ads()) or\
-               field_name == 'iab_category' and source.can_modify_ad_group_iab_category_automatic() or\
-               field_name == 'ad_group_name' and source.can_modify_ad_group_name() or\
+                source.update_tracking_codes_on_content_ads()) or
+               field_name == 'iab_category' and source.can_modify_ad_group_iab_category_automatic() or
+               field_name == 'ad_group_name' and source.can_modify_ad_group_name() or
                field_name == 'target_regions' and source.can_modify_target_regions_automatically(
-                   did_countries_change, did_dmas_change):
+                   did_countries_change, did_dmas_change)) and not force_manual_change:
                 new_field_name = field_name
                 if field_name == 'ad_group_name':
                     new_field_name = 'name'

@@ -195,3 +195,35 @@ The reporting data is an estimate. Final amounts are tallied and should be invoi
         )
     except Exception as e:
         logger.error('Supply report e-mail to %s was not sent because an exception was raised: %s', email, traceback.format_exc(e))
+
+
+def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
+    if not settings.SEND_AD_GROUP_SETTINGS_CHANGE_MAIL:
+        return
+
+    campaign_settings = ad_group.campaign.get_current_settings()
+
+    if not campaign_settings or not campaign_settings.account_manager:
+        logger.error('Could not send e-mail because there is no account manager set for campaign with id %s.', ad_group.campaign.pk)
+
+        desc = {
+            'campaign_settings_url': ad_group.campaign.get_campaign_url(request)
+        }
+        pagerduty_helper.trigger(
+            event_type=pagerduty_helper.PagerDutyEventType.ADOPS,
+            incident_key='ad_group_settings_change_mail_failed',
+            description='E-mail notification for ad group settings change was not sent because the campaign settings or account manager is not set.',
+            details=desc,
+        )
+        return
+
+    if user.pk == campaign_settings.account_manager.pk:
+        return
+
+    send_ad_group_settings_change_email(
+        user,
+        campaign_settings.account_manager,
+        request,
+        ad_group,
+        ad_group.campaign.get_campaign_url(request)
+    )

@@ -88,6 +88,10 @@ class UpdateContentAdSourceState(TestCase):
             'state': 2,
             'submission_status': constants.ContentAdSubmissionStatus.APPROVED
         }]
+        
+        content_ad_source = models.ContentAdSource.objects.get(pk=1)
+        content_ad_source.content_ad.state = 2
+        content_ad_source.content_ad.save()
 
         api.update_multiple_content_ad_source_states(ad_group_source, content_ad_data)
 
@@ -492,6 +496,80 @@ class UpdateAdGroupSourceSettings(TestCase):
                 'dma': 'cleared (no DMA targeting)'
             }
         })
+
+    @mock.patch('dash.api.redirector_helper.insert_adgroup')
+    def test_tracking_codes_automatic_action_for_gravity(self, insert_adgroup_mock):
+        """ Tests a fix for a bug in gravitys dashboard - when a tracking code does not
+        have a value assigned, it should create a manual action, even though the source
+        is set to create an automatic action for tracking code changes.
+
+        This test tests if the automatic action is created.
+        """
+
+        ad_group_source = models.AdGroupSource.objects.get(id=2)
+        ad_group_source.source.source_type.available_actions.append(
+            constants.SourceAction.CAN_MODIFY_TRACKING_CODES
+        )
+        ad_group_source.source.source_type.save()
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.tracking_code = 'test=123'
+
+        api.order_ad_group_settings_update(
+            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
+
+        # should have an automatic action
+        automatic_actions = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            action=actionlog.constants.Action.SET_CAMPAIGN_STATE
+        )
+        manual_actions = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action_type=actionlog.constants.ActionType.MANUAL,
+            action=actionlog.constants.Action.SET_CAMPAIGN_STATE
+        )
+        self.assertEqual(1, len(automatic_actions))
+        self.assertEqual(0, len(manual_actions))
+        self.assertIn('tracking_code', automatic_actions[0].payload['args']['conf'])
+
+    @mock.patch('dash.api.redirector_helper.insert_adgroup')
+    def test_tracking_codes_manual_action_for_gravity(self, insert_adgroup_mock):
+        """ Tests a fix for a bug in gravitys dashboard - when a tracking code does not
+        have a value assigned, it should create a manual action, even though the source
+        is set to create an automatic action for tracking code changes.
+
+        This test tests if the manual action is created.
+        """
+
+        ad_group_source = models.AdGroupSource.objects.get(id=2)  # should be Gravity
+        ad_group_source.source.source_type.available_actions.append(
+            constants.SourceAction.CAN_MODIFY_TRACKING_CODES
+        )
+        ad_group_source.source.source_type.save()
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.tracking_code = 'test'
+
+        api.order_ad_group_settings_update(
+            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
+
+        # should have an automatic action
+        automatic_actions = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            action=actionlog.constants.Action.SET_CAMPAIGN_STATE
+        )
+        manual_actions = actionlog.models.ActionLog.objects.filter(
+            ad_group_source=ad_group_source,
+            action_type=actionlog.constants.ActionType.MANUAL,
+            action=actionlog.constants.Action.SET_PROPERTY,
+        )
+        self.assertEqual(0, len(automatic_actions))
+        self.assertEqual(1, len(manual_actions))
+        self.assertEqual('tracking_code', manual_actions[0].payload['property'])
 
     def test_iab_category_manual(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)

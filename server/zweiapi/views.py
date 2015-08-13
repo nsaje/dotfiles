@@ -253,9 +253,11 @@ def _process_zwei_response(action, data, request):
             )
 
         elif action.action == actionlog.constants.Action.GET_CONTENT_AD_STATUS:
-            dash.api.update_multiple_content_ad_source_states(
-                action.ad_group_source,
-                data['data']
+            actions.extend(
+                dash.api.update_multiple_content_ad_source_states(
+                    action.ad_group_source,
+                    data['data']
+                )
             )
 
         elif action.action == actionlog.constants.Action.SUBMIT_AD_GROUP:
