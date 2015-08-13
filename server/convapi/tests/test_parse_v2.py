@@ -97,6 +97,17 @@ Landing Page,Device Category,Sessions
         self.assertIsNone(caid)
         self.assertEqual('', src_par)
 
+        # no caid
+        keyword = 'z1asdfsadfasdhjkl1z'
+        caid, src_par = parser._parse_z11z_keyword(keyword)
+        self.assertIsNone(caid)
+        self.assertEqual('', src_par)
+
+        # no media source
+        keyword = 'z112351z'
+        caid, src_par = parser._parse_z11z_keyword(keyword)
+        self.assertIsNone(caid)
+        self.assertEqual('', src_par)
 
 
     def test_parse_landing_page(self):
