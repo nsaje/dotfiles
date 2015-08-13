@@ -149,7 +149,22 @@ Landing Page,Device Category,Sessions
         self.assertEqual("Goal 2", parser._get_goal_name(goal_name))
 
     def test_parse_goals(self):
-        pass
+        parser = parse_v2.CsvReport("")
+
+        fieldnames = [
+            "Yell Free Listings (Goal 1 Conversion Rate)",
+            "Yell Free Listings (Goal 1 Completions)",
+            "Yell Free Listings (Goal 2 Value)",
+        ]
+        row_dict = {
+            "Yell Free Listings (Goal 1 Conversion Rate)": "2%",
+            "Yell Free Listings (Goal 1 Completions)": "5",
+            "Yell Free Listings (Goal 2 Value)": "$123"
+        }
+        resp = parser._parse_goals(fieldnames, row_dict)
+        self.assertEqual(5, resp['Goal 1']['conversions'])
+        self.assertEqual("2%", resp['Goal 1']['conversion_rate'])
+        self.assertEqual("$123", resp['Goal 2']['value'])
 
     def test_parse(self):
         pass

@@ -207,7 +207,7 @@ class CsvReport(object):
             goal_name = self._get_goal_name(goal_field)
             metric_fields = result.get(goal_name, {})
             if 'Completions)' in goal_field:
-                metric_fields['conversions'] = row_dict[goal_field]
+                metric_fields['conversions'] = int(row_dict[goal_field])
             elif 'Value)' in goal_field:
                 metric_fields['value'] = row_dict[goal_field]
             elif 'Conversion Rate)' in goal_field:
