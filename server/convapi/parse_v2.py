@@ -67,9 +67,6 @@ class CsvReport(object):
     def get_date(self):
         return self.start_date
 
-    def entries(self):
-        return self.entries
-
     def _parse_header(self, lines):
         '''
         Parse header and return tuple (report date,

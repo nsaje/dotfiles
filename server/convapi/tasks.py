@@ -12,6 +12,9 @@ from convapi.parse import CsvReport
 from convapi import parse_v2
 from convapi.aggregate import ReportEmail
 from convapi.helpers import get_from_s3
+
+from reports import api_contentads
+
 from utils.statsd_helper import statsd_incr, statsd_timer
 
 logger = logging.getLogger(__name__)
@@ -191,9 +194,8 @@ def process_ga_report_v2(ga_report_task):
         csvreport.parse()
         report_log.for_date = csvreport.get_date()
         report_log.state = constants.GAReportState.PARSED
-
-        # TODO: push report to reports API which will store the data
-        #
+        # serialize report
+        api_contentads.process_report(csvreport.entries)
 
         ad_group_errors = ad_group_specified_errors(csvreport)
         media_source_errors = media_source_specified_errors(csvreport)
