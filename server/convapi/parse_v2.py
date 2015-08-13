@@ -22,7 +22,7 @@ REQUIRED_FIELDS = [
 
 logger = logging.getLogger(__name__)
 
-Z11Z_RE = re.compile('^z1([0-9]*)(.*)1z$')
+Z11Z_RE = re.compile('.*z1([0-9]*)(.*?)1z.*')
 
 
 class GaReportRow(object):
