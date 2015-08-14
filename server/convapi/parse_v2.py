@@ -24,7 +24,11 @@ logger = logging.getLogger(__name__)
 Z11Z_RE = re.compile('.*z1([0-9]+)([a-zA-Z].+?)1z.*')
 
 HARRYS_FIELD_KEYWORDS = ["conversion rate", "transactions", "revenue"]
-GOAL_FIELD_KEYWORDS = ["conversions", "completions", "value"] + HARRYS_FIELD_KEYWORDS
+GOAL_FIELD_KEYWORDS = sorted(["conversions", "completions", "value"] + HARRYS_FIELD_KEYWORDS)
+
+GOAL_CONVERSION_KEYWORDS = sorted(['completions', 'transactions'])
+GOAL_VALUE_KEWORDS = sorted(['value', 'revenue'])
+GOAL_RATE_KEYWORDS = ['conversion rate']
 
 
 class GaReportRow(object):
@@ -198,13 +202,14 @@ class CsvReport(object):
         return content_ad_id, source_param
 
     def _get_goal_name(self, goal_field):
-        ix_goal = goal_field.index('(Goal')
+        try:
+            ix_goal = goal_field.index('(Goal')
+        except:
+            ix_goal = -1
         if ix_goal != -1:
             return goal_field[:ix_goal].strip()
         else:
             return 'Goal 1'
-        #goal_number = ' '.join(goal_field[ix_goal:].split()[:2]) + ')'
-        #return goal_number.replace('(', '').replace(')', '')
 
     def _get_goal_fields(self, fields):
         goal_fields = filter(lambda field: '(Goal' in field, fields)
@@ -216,17 +221,21 @@ class CsvReport(object):
             if idx_mid != -1:
                 goal_fields = fields[idx_mid:]
 
+        # reparse
+        if goal_fields == []:
+            goal_fields = fields
+
         # filter out fields which do not contain any relevanty goal field
         # keyword
         ret = []
         for goal_field in goal_fields:
+            found = False
             for goal_keyword in GOAL_FIELD_KEYWORDS:
-                found = False
                 if goal_field in goal_fields:
                     if goal_keyword in goal_field.lower():
                         found = True
-                if found:
-                    ret.append(goal_field)
+            if found:
+                ret.append(goal_field)
         return ret
 
     def _parse_goals(self, fieldnames, row_dict):
@@ -235,14 +244,22 @@ class CsvReport(object):
         for goal_field in goal_fields:
             goal_name = self._get_goal_name(goal_field)
             metric_fields = result.get(goal_name, {})
-            if 'Completions)' in goal_field:
+            if self._subset_match(goal_field.lower(), GOAL_CONVERSION_KEYWORDS):
                 metric_fields['conversions'] = int(row_dict[goal_field])
-            elif 'Value)' in goal_field:
+            elif self._subset_match(goal_field.lower(), GOAL_VALUE_KEWORDS):
                 metric_fields['value'] = row_dict[goal_field]
-            elif 'Conversion Rate)' in goal_field:
+            elif self._subset_match(goal_field.lower(), GOAL_RATE_KEYWORDS):
                 metric_fields['conversion_rate'] = row_dict[goal_field]
             result[goal_name] = metric_fields
         return result
+
+    def _subset_match(self, value, lst):
+        # if any string in lst matches a subset of value return true
+        for el in lst:
+            if el in value:
+                return True
+        return False
+
 
     def _check_session_counts(self, footer):
         sessions_total = self._get_sessions_total(footer)
