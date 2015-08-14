@@ -140,13 +140,24 @@ Landing Page,Device Category,Sessions
         parser = parse_v2.CsvReport("")
 
         goal_name = "Yell Free Listings (Goal 1 Conversion Rate)"
-        self.assertEqual("Goal 1", parser._get_goal_name(goal_name))
+        self.assertEqual("Yell Free Listings", parser._get_goal_name(goal_name))
 
         goal_name = "Yell Free Listings (Goal 1 Completions)"
-        self.assertEqual("Goal 1", parser._get_goal_name(goal_name))
+        self.assertEqual("Yell Free Listings", parser._get_goal_name(goal_name))
 
         goal_name = "Yell Free Listings (Goal 2 Value)"
-        self.assertEqual("Goal 2", parser._get_goal_name(goal_name))
+        self.assertEqual("Yell Free Listings", parser._get_goal_name(goal_name))
+
+    def test_get_goal_name_1(self):
+        parser = parse_v2.CsvReport("")
+        goal_name = "*Lead: Whitepaper (Content Fact Sheet) (Goal 1 Conversion Rate)"
+        self.assertEqual("*Lead: Whitepaper (Content Fact Sheet)", parser._get_goal_name(goal_name))
+
+        goal_name = "*Lead: Whitepaper (Content Fact Sheet) (Goal 1 Completions)"
+        self.assertEqual("*Lead: Whitepaper (Content Fact Sheet)", parser._get_goal_name(goal_name))
+
+        goal_name = "*Lead: Whitepaper (Content Fact Sheet) (Goal 1 Value)"
+        self.assertEqual("*Lead: Whitepaper (Content Fact Sheet)", parser._get_goal_name(goal_name))
 
     def test_parse_goals(self):
         parser = parse_v2.CsvReport("")
@@ -162,9 +173,9 @@ Landing Page,Device Category,Sessions
             "Yell Free Listings (Goal 2 Value)": "$123"
         }
         resp = parser._parse_goals(fieldnames, row_dict)
-        self.assertEqual(5, resp['Goal 1']['conversions'])
-        self.assertEqual("2%", resp['Goal 1']['conversion_rate'])
-        self.assertEqual("$123", resp['Goal 2']['value'])
+        self.assertEqual(5, resp['Yell Free Listings']['conversions'])
+        self.assertEqual("2%", resp['Yell Free Listings']['conversion_rate'])
+        self.assertEqual("$123", resp['Yell Free Listings']['value'])
 
     def test_parse(self):
         pass

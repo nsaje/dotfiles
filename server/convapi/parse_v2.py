@@ -197,8 +197,14 @@ class CsvReport(object):
 
     def _get_goal_name(self, goal_field):
         ix_goal = goal_field.index('(Goal')
-        goal_number = ' '.join(goal_field[ix_goal:].split()[:2]) + ')'
-        return goal_number.replace('(', '').replace(')', '')
+
+        if ix_goal != -1:
+            return goal_field[:ix_goal].strip()
+        else:
+            return 'Goal 1'
+
+        #goal_number = ' '.join(goal_field[ix_goal:].split()[:2]) + ')'
+        #return goal_number.replace('(', '').replace(')', '')
 
     def _parse_goals(self, fieldnames, row_dict):
         goal_fields = filter(lambda field: '(Goal' in field, fieldnames)
