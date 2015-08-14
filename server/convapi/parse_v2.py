@@ -1,7 +1,6 @@
 import csv
 import datetime
 import exc
-import json
 import re
 import StringIO
 import logging
@@ -23,6 +22,9 @@ REQUIRED_FIELDS = [
 logger = logging.getLogger(__name__)
 
 Z11Z_RE = re.compile('.*z1([0-9]+)([a-zA-Z].+?)1z.*')
+
+HARRYS_FIELD_KEYWORDS = ["conversion rate", "transactions", "revenue"]
+GOAL_FIELD_KEYWORDS = ["conversions", "completions", "value"] + HARRYS_FIELD_KEYWORDS
 
 
 class GaReportRow(object):
@@ -197,17 +199,38 @@ class CsvReport(object):
 
     def _get_goal_name(self, goal_field):
         ix_goal = goal_field.index('(Goal')
-
         if ix_goal != -1:
             return goal_field[:ix_goal].strip()
         else:
             return 'Goal 1'
-
         #goal_number = ' '.join(goal_field[ix_goal:].split()[:2]) + ')'
         #return goal_number.replace('(', '').replace(')', '')
 
+    def _get_goal_fields(self, fields):
+        goal_fields = filter(lambda field: '(Goal' in field, fields)
+        if goal_fields == []:
+            idx_mid = -1
+            for field in fields:
+                if "Session Duration" in field:
+                    idx_mid = fields.index(field) + 1
+            if idx_mid != -1:
+                goal_fields = fields[idx_mid:]
+
+        # filter out fields which do not contain any relevanty goal field
+        # keyword
+        ret = []
+        for goal_field in goal_fields:
+            for goal_keyword in GOAL_FIELD_KEYWORDS:
+                found = False
+                if goal_field in goal_fields:
+                    if goal_keyword in goal_field.lower():
+                        found = True
+                if found:
+                    ret.append(goal_field)
+        return ret
+
     def _parse_goals(self, fieldnames, row_dict):
-        goal_fields = filter(lambda field: '(Goal' in field, fieldnames)
+        goal_fields = self._get_goal_fields(fieldnames)
         result = {}
         for goal_field in goal_fields:
             goal_name = self._get_goal_name(goal_field)
