@@ -677,19 +677,6 @@ class Source(models.Model):
     def update_tracking_codes_on_content_ads(self):
         return self.source_type.update_tracking_codes_on_content_ads()
 
-    def can_modify_target_regions_automatically(self, did_countries_change, did_dmas_change):
-        modify_country_auto = self.can_modify_country_targeting()
-        modify_dma_auto = self.can_modify_dma_targeting_automatic()
-        return any([
-            (modify_dma_auto and modify_country_auto),
-            (modify_dma_auto and not did_countries_change),
-            (modify_country_auto and not did_dmas_change)
-        ])
-
-    def can_modify_target_regions_manually(self, did_countries_change, did_dmas_change):
-        return ((did_dmas_change and self.can_modify_dma_targeting_manual()) or
-                (did_countries_change and not self.can_modify_country_targeting()))
-
     def __unicode__(self):
         return self.name
 

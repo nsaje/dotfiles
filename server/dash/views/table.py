@@ -16,7 +16,6 @@ import utils.pagination
 from utils import api_common
 from utils import statsd_helper
 from utils import exc
-from utils import url_helper
 from utils.sort_helper import sort_results
 
 import reports.api
@@ -648,7 +647,7 @@ class SourcesTable(api_common.BaseApiView):
 
             # disable when waiting for manual actions for target_regions after campaign creation
             # message this only when the source is about to be enabled for the first time
-            if source.can_modify_target_regions_manually(targets_countries, targets_dma) and\
+            if api.can_modify_selected_target_regions_manually(source, targets_countries, targets_dma) and\
                actionlog.api.is_waiting_for_manual_set_target_regions_action(ad_group_source) and\
                not activation_settings.exists():
 

@@ -106,8 +106,8 @@ def order_additional_updates_after_campaign_creation(ad_group_source, request):
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
     source = ad_group_source.source
 
-    if source.can_modify_target_regions_manually(
-            ad_group_settings.targets_countries(), ad_group_settings.targets_dma()):
+    if can_modify_selected_target_regions_manually(
+            source, ad_group_settings.targets_countries(), ad_group_settings.targets_dma()):
 
         new_field_value = _get_manual_action_target_regions_value(
             ad_group_source,
@@ -467,8 +467,8 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                 source.update_tracking_codes_on_content_ads()) or
                field_name == 'iab_category' and source.can_modify_ad_group_iab_category_automatic() or
                field_name == 'ad_group_name' and source.can_modify_ad_group_name() or
-               field_name == 'target_regions' and source.can_modify_target_regions_automatically(
-                   did_countries_change, did_dmas_change)) and not force_manual_change:
+               field_name == 'target_regions' and can_modify_selected_target_regions_automatically(
+                   source, did_countries_change, did_dmas_change)) and not force_manual_change:
                 new_field_name = field_name
                 if field_name == 'ad_group_name':
                     new_field_name = 'name'
@@ -516,7 +516,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     new_field_value = _substitute_tracking_macros(new_field_value, tracking_slug)
 
                 if field_name == 'target_regions':
-                    if not source.can_modify_target_regions_manually(did_countries_change, did_dmas_change):
+                    if not can_modify_selected_target_regions_manually(source, did_countries_change, did_dmas_change):
                         continue
 
                     new_field_value = _get_manual_action_target_regions_value(
@@ -814,3 +814,18 @@ def get_content_ad(content_ad_id):
         return models.ContentAd.objects.get(pk=content_ad_id)
     except models.ContentAd.DoesNotExist:
         return None
+
+
+def can_modify_selected_target_regions_automatically(source, did_countries_change, did_dmas_change):
+    modify_country_auto = source.can_modify_country_targeting()
+    modify_dma_auto = source.can_modify_dma_targeting_automatic()
+    return any([
+        (modify_dma_auto and modify_country_auto),
+        (modify_dma_auto and not did_countries_change),
+        (modify_country_auto and not did_dmas_change)
+    ])
+
+
+def can_modify_selected_target_regions_manually(source, did_countries_change, did_dmas_change):
+    return ((did_dmas_change and source.can_modify_dma_targeting_manual()) or
+            (did_countries_change and not source.can_modify_country_targeting()))
