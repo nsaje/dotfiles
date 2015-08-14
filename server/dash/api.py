@@ -457,8 +457,8 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
             did_dmas_change = False
             did_countries_change = False
             if field_name == 'target_regions':
-                did_dmas_change = new_settings.differs_in_dma_targeting(current_settings.target_regions)
-                did_countries_change = new_settings.differs_in_country_targeting(current_settings.target_regions)
+                did_dmas_change = new_settings.targets_dma() or current_settings.targets_dma()
+                did_countries_change = new_settings.targets_countries() or current_settings.targets_countries()
 
             if (field_name == 'start_date' and source.can_modify_start_date() or
                field_name == 'end_date' and source.can_modify_end_date() or

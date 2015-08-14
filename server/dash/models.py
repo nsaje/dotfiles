@@ -1062,14 +1062,6 @@ class AdGroupSettings(SettingsBase):
     def targets_countries(self):
         return any(tr in regions.COUNTRY_BY_CODE for tr in self.target_regions)
 
-    def differs_in_dma_targeting(self, other_target_regions):
-        diff = set(self.target_regions).symmetric_difference(set(other_target_regions))
-        return any(tr in regions.DMA_BY_CODE for tr in diff)
-
-    def differs_in_country_targeting(self, other_target_regions):
-        diff = set(self.target_regions).symmetric_difference(set(other_target_regions))
-        return any(tr in regions.COUNTRY_BY_CODE for tr in diff)
-
     @classmethod
     def get_defaults_dict(cls):
         return {
