@@ -16,7 +16,6 @@ import utils.pagination
 from utils import api_common
 from utils import statsd_helper
 from utils import exc
-from utils import url_helper
 from utils.sort_helper import sort_results
 
 import reports.api
@@ -609,20 +608,18 @@ class SourcesTable(api_common.BaseApiView):
         }
 
     def _get_editable_fields_status_setting(self, ad_group_source, ad_group_settings, ad_group_source_settings):
-        enabled = True
         message = None
 
         if not ad_group_source.source.can_update_state() or (
            ad_group_source.ad_group.content_ads_tab_with_cms and not ad_group_source.can_manage_content_ads):
-            enabled = False
             message = self._get_status_setting_disabled_message(ad_group_source)
-        elif not ad_group_source.source.source_type.supports_dma_targeting() and ad_group_settings.targets_dma()\
-                and ad_group_source_settings.state == constants.AdGroupSourceSettingsState.INACTIVE:
-            enabled = False
-            message = 'This source can not be enabled because it does not support DMA targeting.'
+        elif ad_group_source_settings is not None and\
+                ad_group_source_settings.state == constants.AdGroupSourceSettingsState.INACTIVE:
+            message = self._get_status_setting_disabled_message_for_target_regions(
+                ad_group_source, ad_group_settings, ad_group_source_settings)
 
         return {
-            'enabled': enabled,
+            'enabled': message is None,
             'message': message
         }
 
@@ -634,6 +631,32 @@ class SourcesTable(api_common.BaseApiView):
             return 'Please contact support to enable this source.'
 
         return 'This source must be managed manually.'
+
+    def _get_status_setting_disabled_message_for_target_regions(self, ad_group_source, ad_group_settings,
+                                                                ad_group_source_settings):
+
+        source = ad_group_source.source
+        if not source.source_type.supports_dma_targeting() and ad_group_settings.targets_dma():
+            return 'This source can not be enabled because it does not support DMA targeting.'
+        else:
+            targets_countries = ad_group_settings.targets_countries()
+            targets_dma = ad_group_settings.targets_dma()
+
+            activation_settings = models.AdGroupSourceSettings.objects.filter(
+                ad_group_source=ad_group_source, state=constants.AdGroupSourceSettingsState.ACTIVE)
+
+            # disable when waiting for manual actions for target_regions after campaign creation
+            # message this only when the source is about to be enabled for the first time
+            if api.can_modify_selected_target_regions_manually(source, targets_countries, targets_dma) and\
+               actionlog.api.is_waiting_for_manual_set_target_regions_action(ad_group_source) and\
+               not activation_settings.exists():
+
+                message = ('This source needs to set {} targeting manually,'
+                           'please contact support to enable this source.')
+
+                return message.format('DMA' if source.can_modify_dma_targeting_manual() else 'country')
+
+        return None
 
     def _get_bid_cpc_daily_budget_disabled_message(self, ad_group_source, ad_group_settings):
         if ad_group_source.source.maintenance:
