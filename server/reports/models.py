@@ -188,7 +188,6 @@ class ContentAdGoalConversionStats(models.Model):
     content_ad = models.ForeignKey('dash.ContentAd', on_delete=models.PROTECT)
     source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)
 
-    goal_type = models.CharField(max_length=256, editable=False, null=False)
     goal_type = models.SlugField(
         max_length=5,
         default=constants.ReportType.GOOGLE_ANALYTICS,

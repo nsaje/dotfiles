@@ -8,7 +8,6 @@ from utils import exc
 import dash.models
 import reports.models
 
-from reports import constants
 from reports import models
 from reports import aggregate_fields
 from reports import api_helpers
@@ -80,7 +79,7 @@ def _transform_row(row):
     return result
 
 
-def process_report(parsed_report_rows):
+def process_report(parsed_report_rows, report_type):
     # get all sources and their corresponding slugs
     # construct a dict from source tracking param to it's id
     sources = dash.models.Source.objects.all()
@@ -96,7 +95,7 @@ def process_report(parsed_report_rows):
             continue
         bulk_contentad_stats.append(stats)
 
-        goal_conversion_stats = _create_contentad_goal_conversion_stats(entry, constants.ReportType.GOOGLE_ANALYTICS, track_source_map)
+        goal_conversion_stats = _create_contentad_goal_conversion_stats(entry, report_type, track_source_map)
         bulk_goal_conversion_stats.extend(goal_conversion_stats)
 
     reports.models.ContentAdPostclickStats.objects.bulk_create(bulk_contentad_stats)

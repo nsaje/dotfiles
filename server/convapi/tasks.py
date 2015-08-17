@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 import logging
+import reports
 
 from django.conf import settings
 from django.db import transaction
@@ -195,7 +196,7 @@ def process_ga_report_v2(ga_report_task):
         report_log.for_date = csvreport.get_date()
         report_log.state = constants.GAReportState.PARSED
         # serialize report
-        api_contentads.process_report(csvreport.entries)
+        api_contentads.process_report(csvreport.entries, reports.constants.ReportType.GOOGLE_ANALYTICS)
 
         ad_group_errors = ad_group_specified_errors(csvreport)
         media_source_errors = media_source_specified_errors(csvreport)

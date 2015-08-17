@@ -5,6 +5,7 @@ from django.test import TestCase
 
 from convapi import parse_v2
 from reports import api_contentads
+from reports import constants
 
 
 class ApiContentAdsTest(TestCase):
@@ -124,7 +125,7 @@ class GaContentAdReportTest(TestCase):
         self.assertEqual(0, reports.models.ContentAdPostclickStats.objects.count())
         self.assertEqual(0, reports.models.ContentAdGoalConversionStats.objects.count())
 
-        api_contentads.process_report(self.sample_data)
+        api_contentads.process_report(self.sample_data, constants.ReportType.GOOGLE_ANALYTICS)
 
         self.assertEqual(1, reports.models.ContentAdPostclickStats.objects.count())
         self.assertEqual(1, reports.models.ContentAdGoalConversionStats.objects.count())
