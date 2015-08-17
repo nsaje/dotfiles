@@ -139,16 +139,22 @@ class CsvReport(object):
         date = datetime.datetime.strptime(group_dict['start_date'], "%Y%m%d")
 
         first_column_name = None
-        if any(ln.startswith(LANDING_PAGE_COL_NAME) for ln in lines):
+        if self._contains_column(lines, LANDING_PAGE_COL_NAME):
             first_column_name = LANDING_PAGE_COL_NAME
-        elif any(ln.startswith(KEYWORD_COL_NAME) for ln in lines):
+        elif self._contains_column(lines, KEYWORD_COL_NAME):
             first_column_name = KEYWORD_COL_NAME
 
         if not first_column_name:
             raise exc.EmptyReportException(
-                'Header Check: There should be a line starting with "Landing Page" or "Keyword"')
+                'Header Check: There should be a line containing a column "Landing Page" or "Keyword"')
 
         return date, first_column_name
+
+    def _contains_column(self, lines, name):
+        return any(line.startswith('{col},'.format(col=name)) or\
+                   line.endswith(',{col}'.format(col=name)) or\
+                   ',{col},'.format(col=name) in line\
+                   for line in lines)
 
     def parse(self):
         self._parse(self.csv_report_text)
@@ -172,9 +178,10 @@ class CsvReport(object):
                 report_entry = GaReportRow(entry, self.start_date, content_ad_id, source_param, goals)
                 self.entries.append(report_entry)
         except:
-            raise exc.CsvParseException('Could not parse CSV')
+            #raise exc.CsvParseException('Could not parse CSV')
+            raise
 
-        if not set(self.fieldnames) >= set(REQUIRED_FIELDS):
+        if self.fieldnames is None and not set(self.fieldnames or []) >= set(REQUIRED_FIELDS):
             missing_fieldnames = list(set(REQUIRED_FIELDS) - (set(self.fieldnames) & set(REQUIRED_FIELDS)))
             raise exc.CsvParseException('Not all required fields are present. Missing: {}'.format(','.join(missing_fieldnames)))
 
@@ -207,7 +214,6 @@ class CsvReport(object):
             )
             return None, ''
 
-        # TODO: fetch all content ad's at once
         return content_ad_id, source_param
 
     def _parse_landing_page(self, raw_url):
@@ -244,6 +250,16 @@ class CsvReport(object):
         else:
             return 'Goal 1'
 
+    def _get_goal_value_determinant(self, goal_field):
+        try:
+            ix_goal = goal_field.index('(Goal')
+        except:
+            ix_goal = -1
+        if ix_goal != -1:
+            return goal_field[ix_goal:].strip()
+        else:
+            return goal_field
+
     def _get_goal_fields(self, fields):
         goal_fields = filter(lambda field: '(Goal' in field, fields)
         if goal_fields == []:
@@ -276,12 +292,17 @@ class CsvReport(object):
         result = {}
         for goal_field in goal_fields:
             goal_name = self._get_goal_name(goal_field)
+            goal_value_determinant = self._get_goal_value_determinant(goal_field).lower()
+
+            if row_dict[goal_field] == '':
+                continue
+
             metric_fields = result.get(goal_name, {})
-            if self._subset_match(goal_field.lower(), GOAL_CONVERSION_KEYWORDS):
+            if self._subset_match(goal_value_determinant, GOAL_CONVERSION_KEYWORDS):
                 metric_fields['conversions'] = int(row_dict[goal_field])
-            elif self._subset_match(goal_field.lower(), GOAL_VALUE_KEWORDS):
+            elif self._subset_match(goal_value_determinant, GOAL_VALUE_KEWORDS):
                 metric_fields['value'] = row_dict[goal_field]
-            elif self._subset_match(goal_field.lower(), GOAL_RATE_KEYWORDS):
+            elif self._subset_match(goal_value_determinant, GOAL_RATE_KEYWORDS):
                 metric_fields['conversion_rate'] = row_dict[goal_field]
             result[goal_name] = metric_fields
         return result
@@ -292,7 +313,6 @@ class CsvReport(object):
             if el in value:
                 return True
         return False
-
 
     def _check_session_counts(self, footer):
         sessions_total = self._get_sessions_total(footer)
