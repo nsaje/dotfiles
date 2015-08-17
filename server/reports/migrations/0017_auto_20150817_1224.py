@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('date', models.DateTimeField(verbose_name=b'Report date')),
-                ('goal_type', models.CharField(max_length=256, editable=False)),
+                ('goal_type', models.SlugField(default=b'ga', max_length=5, choices=[(b'ga', b'Google Analytics'), (b'omniture', b'Omniture')])),
                 ('goal_name', models.CharField(max_length=256, editable=False)),
                 ('created_dt', models.DateTimeField(auto_now_add=True, verbose_name=b'Created at')),
                 ('conversions', models.CharField(max_length=256, editable=False)),
@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
             name='ContentAdPostclickStats',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('date', models.DateTimeField(auto_now_add=True, verbose_name=b'Report date')),
+                ('date', models.DateTimeField(verbose_name=b'Report date')),
                 ('created_dt', models.DateTimeField(auto_now_add=True, verbose_name=b'Created at')),
                 ('visits', models.IntegerField(default=0)),
                 ('new_visits', models.IntegerField(default=0)),

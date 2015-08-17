@@ -1,5 +1,8 @@
 from django.db import models
 
+from reports import constants
+
+
 TRAFFIC_METRICS = {'impressions', 'clicks', 'cost_cc', 'data_cost_cc'}
 POSTCLICK_METRICS = {'visits', 'pageviews', 'new_visits', 'bounced_visits', 'duration'}
 CONVERSION_METRICS = {'conversions', 'conversions_value_cc'}
@@ -186,6 +189,12 @@ class ContentAdGoalConversionStats(models.Model):
     source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)
 
     goal_type = models.CharField(max_length=256, editable=False, null=False)
+    goal_type = models.SlugField(
+        max_length=5,
+        default=constants.ReportType.GOOGLE_ANALYTICS,
+        choices=constants.ReportType.get_choices()
+    )
+
     goal_name = models.CharField(max_length=256, editable=False, null=False)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')

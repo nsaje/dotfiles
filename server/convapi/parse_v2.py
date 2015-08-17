@@ -122,7 +122,7 @@ class CsvReport(object):
         comment_lines = [2, 3]
         for line_index in comment_lines:
             if not lines[line_index].startswith('#'):
-                raise exc.CsvParseException('Line {idx{ should start with "#"'.format(idx=line_index))
+                raise exc.CsvParseException('Line {idx} should start with "#"'.format(idx=line_index))
 
         dateline = lines[3]
         m = re.search(r'(?P<start_date>[0-9]{8})-(?P<end_date>[0-9]{8})', dateline)
