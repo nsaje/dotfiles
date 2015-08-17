@@ -39,6 +39,19 @@ class GaReportRow(object):
         self.source_param = source_param
         self.goals = goals
 
+    def is_caid_useful(self):
+        return self.content_ad_id is not None and\
+            self.source_param != '' and\
+            self.source_param is not None
+
+    def are_goals_useful(self):
+        if len(self.goals) == 0:
+            return False
+        first_key = self.goals.keys()[0]
+        if len(self.goals[first_key]) >= 2:
+            return True
+        return False
+
     def get_ga_field(self, column):
         return self.ga_row_dict.get(column, None)
 
@@ -72,6 +85,26 @@ class CsvReport(object):
 
     def get_date(self):
         return self.start_date
+
+    def debug_parsing_overview(self):
+        count_all = len(self.entries)
+        count_caid_useful = 0
+        for entry in self.entries:
+            if not entry.is_caid_useful():
+                continue
+            count_caid_useful += 1
+
+        count_goal_useful = 0
+        for entry in self.entries:
+            if not entry.are_goals_useful():
+                continue
+            count_goal_useful += 1
+        return "Overview report_dt: {dt} cads: {count_useful_ca}/{count_all} goals {useful_ga}/{count_all}".format(
+            dt=self.start_date.date().isoformat() if self.start_date != None else '',
+            count_useful_ca=count_caid_useful,
+            count_all=count_all,
+            useful_ga=count_goal_useful,
+        )
 
     def _parse_header(self, lines):
         '''

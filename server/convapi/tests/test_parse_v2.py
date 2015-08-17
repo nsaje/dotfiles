@@ -191,7 +191,6 @@ Landing Page,Device Category,Sessions
         self.assertEqual("2%", resp['Goal 1']['conversion_rate'])
         self.assertEqual("$123", resp['Goal 1']['value'])
 
-
     def test_parse_unnamed_goals(self):
         parser = parse_v2.CsvReport("")
 
