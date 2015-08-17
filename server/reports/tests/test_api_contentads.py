@@ -1,7 +1,7 @@
 import datetime
 import reports.models
 
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 
 from convapi import parse_v2
 from reports import api_contentads
@@ -90,7 +90,7 @@ class ApiContentAdsTest(TestCase):
         })
 
 
-class GaContentAdReportTest(TestCase):
+class GaContentAdReportTest(TransactionTestCase):
     fixtures = ['test_api_contentads']
 
     sample_data = [
@@ -100,7 +100,7 @@ class GaContentAdReportTest(TestCase):
                 "Avg. Session Duration": "00:00:12",
                 "Bounce Rate": "92.41%",
                 "Device Category": "mobile",
-                "Landing Page": "/lasko?_z1_caid=1000&_z1_msid=gravity",
+                "Landing Page": "/lasko?_z1_caid=1&_z1_msid=gravity",
                 "New Users": "531",
                 "Pages / Session": "1.12",
                 "Sessions": "553",
@@ -109,7 +109,35 @@ class GaContentAdReportTest(TestCase):
                 "Yell Free Listings (Goal 1 Value)": "\u00a30.00",
             },
             datetime.datetime(2015, 4, 16),
-            1000,
+            1,
+            "gravity",
+            {
+                "Goal 1": {
+                    "conversion_rate": "0.00%",
+                    "conversions": "0",
+                    "value": "\u00a30.00"
+                }
+            }
+        )
+    ]
+
+    sample_invalid_data_1 = [
+        parse_v2.GaReportRow(
+            {
+                "% New Sessions": "96.02%",
+                "Avg. Session Duration": "00:00:12",
+                "Bounce Rate": "92.41%",
+                "Device Category": "mobile",
+                "Landing Page": "/lasko?_z1_caid=12345&_z1_msid=gravity",
+                "New Users": "531",
+                "Pages / Session": "1.12",
+                "Sessions": "553",
+                "Yell Free Listings (Goal 1 Completions)": "0",
+                "Yell Free Listings (Goal 1 Conversion Rate)": "0.00%",
+                "Yell Free Listings (Goal 1 Value)": "\u00a30.00",
+            },
+            datetime.datetime(2015, 4, 16),
+            12345,
             "gravity",
             {
                 "Goal 1": {
@@ -129,3 +157,23 @@ class GaContentAdReportTest(TestCase):
 
         self.assertEqual(1, reports.models.ContentAdPostclickStats.objects.count())
         self.assertEqual(1, reports.models.ContentAdGoalConversionStats.objects.count())
+
+    def test_double_correct_row(self):
+        self.assertEqual(0, reports.models.ContentAdPostclickStats.objects.count())
+        self.assertEqual(0, reports.models.ContentAdGoalConversionStats.objects.count())
+
+        api_contentads.process_report(self.sample_data, constants.ReportType.GOOGLE_ANALYTICS)
+        api_contentads.process_report(self.sample_data, constants.ReportType.GOOGLE_ANALYTICS)
+
+        self.assertEqual(1, reports.models.ContentAdPostclickStats.objects.count())
+        self.assertEqual(1, reports.models.ContentAdGoalConversionStats.objects.count())
+
+    def test_invalid_caid(self):
+        self.assertEqual(0, reports.models.ContentAdPostclickStats.objects.count())
+        self.assertEqual(0, reports.models.ContentAdGoalConversionStats.objects.count())
+
+        with self.assertRaises(Exception):
+            api_contentads.process_report(self.sample_invalid_data_1, constants.ReportType.GOOGLE_ANALYTICS)
+
+        self.assertEqual(0, reports.models.ContentAdPostclickStats.objects.count())
+        self.assertEqual(0, reports.models.ContentAdGoalConversionStats.objects.count())

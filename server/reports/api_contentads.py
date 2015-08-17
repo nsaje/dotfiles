@@ -8,6 +8,7 @@ from utils import exc
 import dash.models
 import reports.models
 
+from django.db import transaction
 from reports import models
 from reports import aggregate_fields
 from reports import api_helpers
@@ -98,8 +99,30 @@ def process_report(parsed_report_rows, report_type):
         goal_conversion_stats = _create_contentad_goal_conversion_stats(entry, report_type, track_source_map)
         bulk_goal_conversion_stats.extend(goal_conversion_stats)
 
-    reports.models.ContentAdPostclickStats.objects.bulk_create(bulk_contentad_stats)
-    reports.models.ContentAdGoalConversionStats.objects.bulk_create(bulk_goal_conversion_stats)
+    with transaction.atomic():
+        for obj in bulk_contentad_stats:
+            reports.models.ContentAdPostclickStats.objects.filter(
+                date=obj.date,
+                content_ad__id=obj.content_ad_id,
+                source__id=obj.source_id
+            ).delete()
+
+        for obj in bulk_goal_conversion_stats:
+            reports.models.ContentAdGoalConversionStats.objects.filter(
+                date=obj.date,
+                content_ad__id=obj.content_ad_id,
+                source__id=obj.source_id,
+                goal_type=report_type,
+            ).delete()
+
+        for obj in bulk_contentad_stats:
+            obj.save()
+
+        for obj in bulk_goal_conversion_stats:
+            obj.save()
+
+        #print reports.models.ContentAdPostclickStats.objects.bulk_create(bulk_contentad_stats)
+        #print reports.models.ContentAdGoalConversionStats.objects.bulk_create(bulk_goal_conversion_stats)
 
 
 def _create_contentad_postclick_stats(entry, track_source_map):

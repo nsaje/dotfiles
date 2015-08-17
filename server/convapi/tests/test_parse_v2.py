@@ -50,7 +50,7 @@ Device Category,Landing Page,Sessions
 # 20150416-20150416
 # ----------------------------------------
 
-Device Category,Sessions,Keywords
+Device Category,Sessions,Keyword
 """.strip().replace('\t', '')
         parser = parse_v2.CsvReport("")
         try:
