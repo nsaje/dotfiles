@@ -206,6 +206,18 @@ class SourceType(ConstantBase):
     }
 
 
+class TrackingPixelStatus(ConstantBase):
+    NOT_USED = 1
+    INACTIVE = 2
+    ACTIVE = 3
+
+    _VALUES = {
+        NOT_USED: 'Not used',
+        INACTIVE: 'Inactive',
+        ACTIVE: 'Active',
+    }
+
+
 class UploadBatchStatus(ConstantBase):
     DONE = 1
     FAILED = 2
