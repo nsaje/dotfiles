@@ -352,6 +352,14 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
             content_ad_source.source_state = data['state']
             changed = True
 
+        if content_ad_source.content_ad.state != data['state']:
+            logger.warning(
+                'Found inconsistent content ad state on media source %s for content ad %d: source state=%d, z1 state=%d, source submission status=%d, z1 submission status=%d',
+                content_ad_source.source.name, content_ad_source.content_ad.pk,
+                data['state'], content_ad_source.content_ad.state,
+                data['submission_status'], content_ad_source.submission_status,
+            )
+            
         if 'submission_status' in data and data['submission_status'] != content_ad_source.submission_status:
             is_unsynced = all([
                 content_ad_source.submission_status == constants.ContentAdSubmissionStatus.PENDING,
