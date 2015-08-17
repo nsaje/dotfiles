@@ -121,9 +121,6 @@ def process_report(parsed_report_rows, report_type):
         for obj in bulk_goal_conversion_stats:
             obj.save()
 
-        #print reports.models.ContentAdPostclickStats.objects.bulk_create(bulk_contentad_stats)
-        #print reports.models.ContentAdGoalConversionStats.objects.bulk_create(bulk_goal_conversion_stats)
-
 
 def _create_contentad_postclick_stats(entry, track_source_map):
     created_dt = datetime.datetime.utcnow()
