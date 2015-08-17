@@ -235,6 +235,121 @@ class UpdateContentAdTest(TestCase):
         )
 
 
+class CreateCampaignManualActionsTest(TestCase):
+    fixtures = ['test_zwei_api.yaml']
+
+    def setUp(self):
+        password = 'secret'
+        user = zemauth.models.User.objects.get(pk=1)
+
+        self.request = HttpRequest()
+        self.request.user = user
+        self.client.login(username=user.email, password=password)
+
+    def _fire_campaign_creation_callback(self, ad_group_source, target_regions=None, available_actions=None):
+        if available_actions:
+            ad_group_source.source.source_type.available_actions.extend(available_actions)
+            ad_group_source.source.source_type.save()
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.target_regions = target_regions
+        ad_group_settings.save(self.request)
+
+        # setup actionlog
+        action_log = actionlog.models.ActionLog(
+            action=actionlog.constants.Action.CREATE_CAMPAIGN,
+            state=actionlog.constants.ActionState.WAITING,
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            ad_group_source=ad_group_source
+        )
+        action_log.save()
+
+        zwei_response_data = {
+            'status': 'success',
+            'data': {
+                'source_campaign_key': 'asd'
+            }
+        }
+
+        response = self.client.post(
+            reverse('api.zwei_callback', kwargs={'action_id': action_log.id}),
+            content_type='application/json',
+            data=json.dumps(zwei_response_data)
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def _get_created_manual_actions(self, ad_group_source):
+        return actionlog.models.ActionLog.objects.filter(
+            action=actionlog.constants.Action.SET_PROPERTY,
+            ad_group_source=ad_group_source,
+            action_type=actionlog.constants.ActionType.MANUAL
+        )
+
+    def test_manual_update_after_campaign_creation_manual_dma_targeting(self):
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
+
+        self._fire_campaign_creation_callback(
+            ad_group_source,
+            ['GB', '693'],
+            [
+                dash.constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL,
+                dash.constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
+            ])
+
+        manual_actions = self._get_created_manual_actions(ad_group_source)
+
+        # should create manual actions
+        self.assertTrue(len(manual_actions), 1)
+        self.assertEqual('target_regions', manual_actions[0].payload['property'])
+
+    def test_no_manual_update_after_campaign_creation_auto_targeting(self):
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
+
+        self._fire_campaign_creation_callback(
+            ad_group_source,
+            ['GB', '693'],
+            [
+                dash.constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
+                dash.constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
+            ])
+
+        manual_actions = self._get_created_manual_actions(ad_group_source)
+
+        # should not create manual actions
+        self.assertFalse(manual_actions.exists())
+
+    def test_no_manual_update_after_campaign_creation_dma_targeting_not_supported(self):
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
+
+        self._fire_campaign_creation_callback(
+            ad_group_source,
+            ['GB', '693'],
+            [
+                dash.constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
+            ])
+
+        manual_actions = self._get_created_manual_actions(ad_group_source)
+
+        # should not create manual actions
+        self.assertFalse(manual_actions.exists())
+
+    def test_no_manual_update_after_campaign_creation_no_dma_targeting(self):
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
+
+        self._fire_campaign_creation_callback(
+            ad_group_source,
+            ['GB'],
+            [
+                dash.constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
+                dash.constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
+            ])
+
+        manual_actions = self._get_created_manual_actions(ad_group_source)
+
+        # should not create manual actions
+        self.assertFalse(manual_actions.exists())
+
+
 class SubmitAdGroupTest(TestCase):
 
     fixtures = ['test_zwei_api.yaml']

@@ -12,7 +12,7 @@ from utils.test_helper import QuerySetMatcher
 from zemauth.models import User
 from dash import models
 from dash import constants
-from dash import views
+from dash.views import table
 from actionlog.models import ActionLog
 import actionlog.constants
 
@@ -578,7 +578,7 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
         ad_group_source.source.source_type.available_actions = [
             constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
         result = view._get_supply_dash_url(ad_group_source)
 
         self.assertEqual(result, '/supply_dash/?ad_group_id=1&source_id=1')
@@ -587,7 +587,7 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source.source.source_type.available_actions = []
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
         result = view._get_supply_dash_url(ad_group_source)
 
         self.assertIsNone(result)
@@ -598,7 +598,7 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
             constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
         ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
         result = view._get_supply_dash_url(ad_group_source)
 
         self.assertIsNone(result)
@@ -609,7 +609,7 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
             constants.SourceAction.HAS_3RD_PARTY_DASHBOARD
         ]
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
         result = view._get_supply_dash_disabled_message(ad_group_source)
 
         self.assertIsNone(result)
@@ -618,7 +618,7 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source.source.source_type.available_actions = []
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
         result = view._get_supply_dash_disabled_message(ad_group_source)
 
         self.assertEqual(result,
@@ -632,7 +632,7 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
         ]
         ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
         result = view._get_supply_dash_disabled_message(ad_group_source)
 
         self.assertEqual(result,
@@ -657,7 +657,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.ad_group.content_ads_tab_with_cms = False
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
         result = view._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
 
         self.assertEqual(result, {
@@ -674,7 +674,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.ad_group.content_ads_tab_with_cms = False
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
         result = view._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
 
         self.assertEqual(result, {
@@ -692,7 +692,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.ad_group.content_ads_tab_with_cms = False
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
         result = view._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
 
         self.assertEqual(result, {
@@ -711,7 +711,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.can_manage_content_ads = False
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
         result = view._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
 
         self.assertEqual(result, {
@@ -730,13 +730,76 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
         ad_group_source.ad_group.content_ads_tab_with_cms = False
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
 
         result = view._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
 
         self.assertEqual(result, {
             'enabled': False,
             'message': 'This source can not be enabled because it does not support DMA targeting.'
+        })
+
+    def test_get_editable_fields_status_setting_waiting_manual_target_regions_action(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_source_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.target_regions = ['693']
+
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.CAN_UPDATE_STATE,
+            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+        ]
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        action_log = actionlog.models.ActionLog(
+            state=actionlog.constants.ActionState.WAITING,
+            action=actionlog.constants.Action.SET_PROPERTY,
+            action_type=actionlog.constants.ActionType.MANUAL,
+            ad_group_source=ad_group_source,
+            payload={'property': 'target_regions', 'value': ['693']}
+        )
+        action_log.save(None)
+
+        for adgs_settings in models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source):
+            adgs_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+            adgs_settings.save(None)
+
+        view = table.SourcesTable()
+
+        result = view._get_editable_fields_status_setting(ad_group_source, ad_group_settings, adgs_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This source needs to set DMA targeting manually,please contact support to enable this source.'
+        })
+
+    def test_get_editable_fields_status_setting_no_manual_target_regions_action(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_source_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.target_regions = ['693']
+
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.CAN_UPDATE_STATE,
+            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+        ]
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        for adgs_settings in models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source):
+            adgs_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+            adgs_settings.save(None)
+
+        view = table.SourcesTable()
+
+        result = view._get_editable_fields_status_setting(ad_group_source, ad_group_settings, adgs_settings)
+
+        self.assertEqual(result, {
+            'enabled': True,
+            'message': None
         })
 
     def test_get_editable_fields_bid_cpc_enabled(self):
@@ -747,7 +810,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_CPC]
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
         result = view._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
 
         self.assertEqual(result, {
@@ -763,7 +826,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.source.source_type.available_actions = []
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
         result = view._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
 
         self.assertEqual(result, {
@@ -780,7 +843,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_CPC]
         ad_group_source.source.maintenance = True
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
         result = view._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
 
         self.assertEqual(result, {
@@ -797,7 +860,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.source.source_type.available_actions = []
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
         result = view._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
 
         self.assertEqual(result, {
@@ -815,7 +878,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC
         ]
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
         result = view._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
 
         self.assertEqual(result, {
@@ -831,7 +894,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.source.source_type.available_actions = []
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
         result = view._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
 
         self.assertEqual(result, {
@@ -850,7 +913,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ]
         ad_group_source.source.maintenance = True
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
         result = view._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
 
         self.assertEqual(result, {
@@ -867,7 +930,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.source.source_type.available_actions = []
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
         result = view._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
 
         self.assertEqual(result, {

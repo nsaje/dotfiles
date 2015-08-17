@@ -1044,7 +1044,10 @@ class AdGroupSettings(SettingsBase):
         return dt
 
     def targets_dma(self):
-        return any([(tr in regions.DMA_BY_CODE) for tr in self.target_regions])
+        return any(tr in regions.DMA_BY_CODE for tr in self.target_regions)
+
+    def targets_countries(self):
+        return any(tr in regions.COUNTRY_BY_CODE for tr in self.target_regions)
 
     @classmethod
     def get_defaults_dict(cls):

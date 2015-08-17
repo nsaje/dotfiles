@@ -179,7 +179,10 @@ def _refresh_stats_data(start_date, end_date, ad_map, source_map):
                     d_row[metric] = val
                 demo_rows.append(d_row)
 
-            reports.update.stats_update_adgroup_all(dt, demo_ad_group, demo_rows)
+            try: 
+                reports.update.stats_update_adgroup_all(dt, demo_ad_group, demo_rows)
+            except:
+                logger.exception('Error saving demo stats for demo ad group %s (real=%s) with multiplication factor %d', repr(demo_ad_group), repr(real_ad_group), multiplication_factor)
 
             # CONTENT ADS
             _copy_content_ad_stats(dt, real_ad_group, multiplication_factor, ad_map, source_map)
