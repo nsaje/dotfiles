@@ -26,6 +26,40 @@ Landing Page,Device Category,Sessions
                stack=traceback.format_exc())
            )
 
+        complete_head = """
+# ----------------------------------------
+# All Web Site Data
+# Landing Pages
+# 20150416-20150416
+# ----------------------------------------
+
+Device Category,Landing Page,Sessions
+""".strip().replace('\t', '')
+        parser = parse_v2.CsvReport("")
+        try:
+            parser._parse_header(complete_head.split('\n'))
+        except:
+           self.fail('Should not raise an exception {stack}'.format(
+               stack=traceback.format_exc())
+           )
+
+        complete_head = """
+# ----------------------------------------
+# All Web Site Data
+# Landing Pages
+# 20150416-20150416
+# ----------------------------------------
+
+Device Category,Sessions,Keywords
+""".strip().replace('\t', '')
+        parser = parse_v2.CsvReport("")
+        try:
+            parser._parse_header(complete_head.split('\n'))
+        except:
+           self.fail('Should not raise an exception {stack}'.format(
+               stack=traceback.format_exc())
+           )
+
         incomplete_head_1 = """
 # ----------------------------------------
 # ----------------------------------------""".strip().replace('\t', '')
