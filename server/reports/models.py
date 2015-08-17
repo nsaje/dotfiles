@@ -162,7 +162,7 @@ class SupplyReportRecipient(models.Model):
 
 
 class ContentAdPostclickStats(models.Model):
-    date = models.DateTimeField(auto_now_add=True, verbose_name='Report date')
+    date = models.DateTimeField(auto_now_add=False, verbose_name='Report date')
     content_ad = models.ForeignKey('dash.ContentAd', on_delete=models.PROTECT)
     source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)
 
