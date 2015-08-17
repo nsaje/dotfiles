@@ -1459,6 +1459,7 @@ class TrackingPixel(models.Model):
                                  choices=constants.TrackingPixelStatus.get_choices())
     last_verified_dt = models.DateTimeField(verbose_name='Last verified on')
     archived = models.BooleanField(default=False)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created on')
 
 
 class DemoAdGroupRealAdGroup(models.Model):
