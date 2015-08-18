@@ -445,12 +445,16 @@ class AccountAgency(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.account_agency_view'):
             raise exc.MissingDataError()
 
+        show_archived = request.GET.get('show_archived') == 'true' and\
+            request.user.has_perm('zemauth.view_archived_entities')
+
         account = helpers.get_account(request.user, account_id)
         account_settings = account.get_current_settings()
 
         response = {
             'settings': self.get_dict(account_settings, account),
             'history': self.get_history(account),
+            'tracking_pixels': self.get_tracking_pixels(account, show_archived),
             'can_archive': account.can_archive(),
             'can_restore': account.can_restore(),
         }
@@ -538,6 +542,21 @@ class AccountAgency(api_common.BaseApiView):
             })
 
         return history
+
+    def get_tracking_pixels(self, account, show_archived):
+        tracking_pixels = models.TrackingPixel.objects.filter(account=account)
+        if show_archived is False:
+            tracking_pixels = tracking_pixels.filter(archived=False)
+
+        return [
+            {
+                'id': tracking_pixel.id,
+                'slug': tracking_pixel.slug,
+                'status': tracking_pixel.status,
+                'last_verified_dt': tracking_pixel.last_verified_dt,
+                'archived': tracking_pixel.archived
+            } for tracking_pixel in tracking_pixels
+        ]
 
     def convert_changes_to_string(self, changes, settings_dict):
         if changes is None:
