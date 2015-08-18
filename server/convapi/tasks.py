@@ -229,19 +229,6 @@ def process_ga_report_v2(ga_report_task):
         report_log.email_subject = ga_report_task.subject
         report_log.for_date = csvreport.get_date()
         report_log.save()
-
-        """
-        # TODO
-        report_aggregate(
-            csvreport=csvreport,
-            sender=ga_report_task.sender,
-            recipient=ga_report_task.recipient,
-            subject=ga_report_task.subject,
-            date=ga_report_task.date,
-            text=None,
-            report_log=report_log
-        )
-        """
     except exc.EmptyReportException as e:
         logger.warning(e.message)
         statsd_incr('convapi.aggregated_emails')
