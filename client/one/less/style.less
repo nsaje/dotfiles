@@ -2519,6 +2519,38 @@ zem-submission-status {
     font-size: 12px;
 }
 
+.tutorial.popover {
+    padding: 0px;
+    z-index: 100000;
+    &:before {
+        display: block;
+        height: 0px;
+    }
+    .popover-inner {
+        background-color: #fff;
+        color: #414141;
+        font-weight: 300;
+        border: 2px solid #f68620;
+        border-radius: 6px;
+        .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
+    }
+    & > .arrow {
+        border-width: 11px;
+    }
+    &.top > .arrow {
+        border-top-color: #f68620;
+        bottom: -20px;
+    }
+    &.left > .arrow {
+        border-left-color: #f68620;
+        right: -20px;
+    }
+    &.right > .arrow {
+        border-right-color: #f68620;
+        left: -20px;
+    }
+}
+
 .table div.zem-selection-menu.dropdown {
     .dropdown-toggle {
         line-height: 18px;
