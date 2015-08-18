@@ -39,7 +39,7 @@ class GaReportRow(object):
         self.source_param = source_param
         self.goals = goals
 
-    def is_caid_useful(self):
+    def is_row_valid(self):
         return self.content_ad_id is not None and\
             self.source_param != '' and\
             self.source_param is not None
@@ -88,11 +88,11 @@ class CsvReport(object):
 
     def debug_parsing_overview(self):
         count_all = len(self.entries)
-        count_caid_useful = 0
+        count_valid_rows = 0
         for entry in self.entries:
-            if not entry.is_caid_useful():
+            if not entry.is_row_valid():
                 continue
-            count_caid_useful += 1
+            count_valid_rows += 1
 
         count_goal_useful = 0
         for entry in self.entries:
@@ -101,7 +101,7 @@ class CsvReport(object):
             count_goal_useful += 1
         return "Overview report_dt: {dt} cads: {count_useful_ca}/{count_all} goals {useful_ga}/{count_all}".format(
             dt=self.start_date.date().isoformat() if self.start_date != None else '',
-            count_useful_ca=count_caid_useful,
+            count_useful_ca=count_valid_rows,
             count_all=count_all,
             useful_ga=count_goal_useful,
         )
