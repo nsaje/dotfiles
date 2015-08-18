@@ -34,6 +34,13 @@ def ad_group_specified_errors(csvreport):
         errors.extend(ad_group_not_specified)
     return errors
 
+def content_ad_specified_errors(csvreport):
+    errors = []
+    is_content_ad_specified, content_ad_not_specified = csvreport.is_content_ad_specified()
+    if not is_content_ad_specified:
+        errors.extend(content_ad_not_specified)
+    return errors
+
 def media_source_specified_errors(csvreport):
     errors = []
     is_media_source_specified, media_source_not_specified = csvreport.is_media_source_specified()
@@ -198,23 +205,23 @@ def process_ga_report_v2(ga_report_task):
         # serialize report
         api_contentads.process_report(csvreport.entries, reports.constants.ReportType.GOOGLE_ANALYTICS)
 
-        ad_group_errors = ad_group_specified_errors(csvreport)
+        content_ad_errors = content_ad_specified_errors(csvreport)
         media_source_errors = media_source_specified_errors(csvreport)
 
         message = ''
-        if len(ad_group_errors) > 0:
-            message += '\nERROR: not all landing page urls have a valid ad_group specified:\n'
-            for landing_url in ad_group_errors:
-                message += landing_url + '\n'
+        if len(content_ad_errors) > 0:
+            message += '\nERROR: not all landing page urls have a valid content ad specified:\n'
+            for err in content_ad_errors:
+                message += err + '\n'
 
         if len(media_source_errors) > 0:
             message += '\nERROR: not all landing page urls have a media source specified: \n'
             for landing_url in media_source_errors:
                 message += landing_url + '\n'
 
-        if too_many_errors(ad_group_errors, media_source_errors):
-            logger.warning("Too many errors in ad_group_errors and media_source_errors lists.")
-            report_log.add_error("Too many errors in urls. Cannot recognize adgroup and media sources for some urls:\n %s \n\n %s" % ('\n'.join(ad_group_errors), '\n'.join(media_source_errors)))
+        if too_many_errors(content_ad_errors, media_source_errors):
+            logger.warning("Too many errors in content_ad_errors and media_source_errors lists.")
+            report_log.add_error("Too many errors in urls. Cannot recognize content ad and media sources for some urls:\n %s \n\n %s" % ('\n'.join(content_ad_errors), '\n'.join(media_source_errors)))
             report_log.state = constants.GAReportState.FAILED
             report_log.save()
 

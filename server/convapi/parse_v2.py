@@ -367,7 +367,7 @@ class CsvReport(object):
                 media_source_not_specified.append(entry.source_param)
         return (len(media_source_not_specified) == 0, list(media_source_not_specified))
 
-    def is_ad_group_specified(self):
+    def is_content_ad_specified(self):
         content_ad_not_specified = set()
         for entry in self.entries:
             if entry.content_ad_id is None:
