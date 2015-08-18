@@ -202,8 +202,6 @@ def process_ga_report_v2(ga_report_task):
         csvreport.parse()
         report_log.for_date = csvreport.get_date()
         report_log.state = constants.GAReportState.PARSED
-        # serialize report
-        api_contentads.process_report(csvreport.entries, reports.constants.ReportType.GOOGLE_ANALYTICS)
 
         content_ad_errors = content_ad_specified_errors(csvreport)
         media_source_errors = media_source_specified_errors(csvreport)
@@ -223,22 +221,27 @@ def process_ga_report_v2(ga_report_task):
             logger.warning("Too many errors in content_ad_errors and media_source_errors lists.")
             report_log.add_error("Too many errors in urls. Cannot recognize content ad and media sources for some urls:\n %s \n\n %s" % ('\n'.join(content_ad_errors), '\n'.join(media_source_errors)))
             report_log.state = constants.GAReportState.FAILED
+            statsd_incr('convapi_v2.too_many_errors')
             report_log.save()
 
         if csvreport.is_empty():
             logger.warning('Report is empty (has no entries)')
-            statsd_incr('convapi.aggregated_emails')
             report_log.add_error('Report is empty (has no entries)')
             report_log.state = constants.GAReportState.EMPTY_REPORT
+            statsd_incr('convapi_v2.empty_report')
             report_log.save()
 
         report_log.sender = ga_report_task.sender
         report_log.email_subject = ga_report_task.subject
         report_log.for_date = csvreport.get_date()
         report_log.save()
+
+        # serialize report - this happens even if report is failed/empty
+        api_contentads.process_report(csvreport.entries, reports.constants.ReportType.GOOGLE_ANALYTICS)
+
     except exc.EmptyReportException as e:
         logger.warning(e.message)
-        statsd_incr('convapi.aggregated_emails')
+        statsd_incr('convapi_v2.empty_report')
         report_log.add_error(e.message)
         report_log.state = constants.GAReportState.EMPTY_REPORT
         report_log.save()
