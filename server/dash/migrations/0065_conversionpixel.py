@@ -8,7 +8,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dash', '0065_trackingpixel'),
+        ('dash', '0064_remove_sourcetype_available_actions_new'),
     ]
 
     operations = [
@@ -23,12 +23,5 @@ class Migration(migrations.Migration):
                 ('created_dt', models.DateTimeField(auto_now_add=True, verbose_name=b'Created on')),
                 ('account', models.ForeignKey(related_name='+', on_delete=django.db.models.deletion.PROTECT, to='dash.Account')),
             ],
-        ),
-        migrations.RemoveField(
-            model_name='trackingpixel',
-            name='account',
-        ),
-        migrations.DeleteModel(
-            name='TrackingPixel',
         ),
     ]
