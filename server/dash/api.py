@@ -451,11 +451,8 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
             force_manual_change = False
             if field_name == 'tracking_code':
                 new_field_value = utils.url_helper.combine_tracking_codes(
-                    *utils.url_helper.get_ad_group_tracking_codes(
-                        new_settings.get_tracking_codes(),
-                        ad_group_source.get_tracking_ids(),
-                        new_settings.enable_ga_tracking
-                    )
+                    new_settings.get_tracking_codes(),
+                    ad_group_source.get_tracking_ids() if new_settings.enable_ga_tracking else ''
                 )
 
                 # Temporary bug fix for a bug in Gravity - codes that don't have a value assigned can not

@@ -26,13 +26,6 @@ def combine_tracking_codes(*args):
     return '&'.join([arg for arg in args if arg])
 
 
-def get_ad_group_tracking_codes(user_tracking_codes, tracking_ids, enable_ga_tracking):
-    tracking_codes = [user_tracking_codes]
-    if enable_ga_tracking:
-        tracking_codes.append(tracking_ids)
-    return tracking_codes
-
-
 def add_tracking_codes_to_url(url, tracking_codes):
     if not tracking_codes:
         return url

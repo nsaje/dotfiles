@@ -647,11 +647,8 @@ def _init_create_campaign(ad_group_source, name, request):
             # tracking code should always be ad group settings first, ad group source ids second
             payload['args']['extra'].update({
                 'tracking_code': utils.url_helper.combine_tracking_codes(
-                    *utils.url_helper.get_ad_group_tracking_codes(
-                        ad_group_tracking_codes,
-                        ad_group_source.get_tracking_ids(),
-                        ad_group_settings.enable_ga_tracking
-                    )
+                    ad_group_tracking_codes,
+                    ad_group_source.get_tracking_ids() if ad_group_settings.enable_ga_tracking else ''
                 ),
                 'tracking_slug': ad_group_source.source.tracking_slug
             })
