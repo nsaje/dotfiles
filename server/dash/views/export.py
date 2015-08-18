@@ -434,6 +434,31 @@ class AdGroupAdsExport(ExportApiView):
 
 
 class AdGroupAdsPlusExport(ExportApiView):
+
+    common_csv_columns = [
+        ('image_url', 'Image URL'),
+        ('title', 'Title'),
+        ('url', 'URL'),
+        ('uploaded', 'Uploaded'),
+        ('cost', 'Spend'),
+        ('cpc', 'Avg. CPC'),
+        ('clicks', 'Clicks'),
+        ('impressions', 'Impressions'),
+        ('ctr', 'CTR')
+    ]
+
+    common_excel_columns = [
+        {'key': 'image_url', 'name': 'Image URL', 'width': 40},
+        {'key': 'title', 'name': 'Title', 'width': 30},
+        {'key': 'url', 'name': 'URL', 'width': 40},
+        {'key': 'uploaded', 'name': 'Uploaded', 'width': 40, 'format': 'date'},
+        {'key': 'cost', 'name': 'Spend', 'width': 40},
+        {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
+        {'key': 'clicks', 'name': 'Clicks'},
+        {'key': 'impressions', 'name': 'Impressions', 'width': 15},
+        {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
+    ]
+
     @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_plus_export_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -484,18 +509,7 @@ class AdGroupAdsPlusExport(ExportApiView):
             source=sources
         )
 
-        fieldnames = OrderedDict([
-            ('date', 'Date'),
-            ('image_url', 'Image URL'),
-            ('title', 'Title'),
-            ('url', 'URL'),
-            ('uploaded', 'Uploaded'),
-            ('cost', 'Spend'),
-            ('cpc', 'Avg. CPC'),
-            ('clicks', 'Clicks'),
-            ('impressions', 'Impressions'),
-            ('ctr', 'CTR')
-        ])
+        fieldnames = OrderedDict([('date', 'Date')] + self.common_csv_columns)
         content = export.get_csv_content(fieldnames, ads_results)
         return self.create_csv_response(filename, content=content)
 
@@ -519,18 +533,7 @@ class AdGroupAdsPlusExport(ExportApiView):
 
         self.add_source_data(sources_results)
 
-        ads_columns = [
-            {'key': 'date', 'name': 'Date', 'format': 'date'},
-            {'key': 'image_url', 'name': 'Image URL', 'width': 40},
-            {'key': 'title', 'name': 'Title', 'width': 30},
-            {'key': 'url', 'name': 'URL', 'width': 40},
-            {'key': 'uploaded', 'name': 'Uploaded', 'width': 40, 'format': 'date'},
-            {'key': 'cost', 'name': 'Spend', 'width': 40},
-            {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
-            {'key': 'clicks', 'name': 'Clicks'},
-            {'key': 'impressions', 'name': 'Impressions', 'width': 15},
-            {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
-        ]
+        ads_columns = [{'key': 'date', 'name': 'Date', 'format': 'date'}] + self.common_excel_columns
         sources_columns = list(ads_columns)  # make a shallow copy
         sources_columns.insert(5, {'key': 'source', 'name': 'Source', 'width': 20})
 
@@ -560,17 +563,7 @@ class AdGroupAdsPlusExport(ExportApiView):
 
         self.add_source_data(sources_results)
 
-        ads_columns = [
-            {'key': 'image_url', 'name': 'Image URL', 'width': 40},
-            {'key': 'title', 'name': 'Title', 'width': 30},
-            {'key': 'url', 'name': 'URL', 'width': 40},
-            {'key': 'uploaded', 'name': 'Uploaded', 'width': 40, 'format': 'date'},
-            {'key': 'cost', 'name': 'Spend', 'width': 40},
-            {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
-            {'key': 'clicks', 'name': 'Clicks'},
-            {'key': 'impressions', 'name': 'Impressions', 'width': 15},
-            {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
-        ]
+        ads_columns = self.common_excel_columns
         sources_columns = list(ads_columns)  # make a shallow copy
         sources_columns.insert(4, {'key': 'source', 'name': 'Source', 'width': 20})
 
@@ -589,8 +582,12 @@ class AdGroupAdsPlusExport(ExportApiView):
             ad_group=ad_group,
             source=sources
         )
-        fieldnames = OrderedDict([
-            ('image_url', 'Image URL'),
+        fieldnames = OrderedDict(self._create_common_csv_columns())
+        content = export.get_csv_content(fieldnames, ads_results)
+        return self.create_csv_response(filename, content=content)
+
+    def _create_common_csv_columns(self):
+        return [('image_url', 'Image URL'),
             ('title', 'Title'),
             ('url', 'URL'),
             ('uploaded', 'Uploaded'),
@@ -599,9 +596,7 @@ class AdGroupAdsPlusExport(ExportApiView):
             ('clicks', 'Clicks'),
             ('impressions', 'Impressions'),
             ('ctr', 'CTR')
-        ])
-        content = export.get_csv_content(fieldnames, ads_results)
-        return self.create_csv_response(filename, content=content)
+            ]
 
     def add_source_data(self, results):
         sources = {source.id: source for source in models.Source.objects.all()}
