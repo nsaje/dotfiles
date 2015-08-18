@@ -454,7 +454,7 @@ class AccountAgency(api_common.BaseApiView):
         response = {
             'settings': self.get_dict(account_settings, account),
             'history': self.get_history(account),
-            'tracking_pixels': self.get_tracking_pixels(account, show_archived),
+            'conversion_pixels': self.get_conversion_pixels(account, show_archived),
             'can_archive': account.can_archive(),
             'can_restore': account.can_restore(),
         }
@@ -543,19 +543,19 @@ class AccountAgency(api_common.BaseApiView):
 
         return history
 
-    def get_tracking_pixels(self, account, show_archived):
-        tracking_pixels = models.TrackingPixel.objects.filter(account=account)
+    def get_conversion_pixels(self, account, show_archived):
+        conversion_pixels = models.ConversionPixel.objects.filter(account=account)
         if show_archived is False:
-            tracking_pixels = tracking_pixels.filter(archived=False)
+            conversion_pixels = conversion_pixels.filter(archived=False)
 
         return [
             {
-                'id': tracking_pixel.id,
-                'slug': tracking_pixel.slug,
-                'status': tracking_pixel.status,
-                'last_verified_dt': tracking_pixel.last_verified_dt,
-                'archived': tracking_pixel.archived
-            } for tracking_pixel in tracking_pixels
+                'id': conversion_pixel.id,
+                'slug': conversion_pixel.slug,
+                'status': conversion_pixel.status,
+                'last_verified_dt': conversion_pixel.last_verified_dt,
+                'archived': conversion_pixel.archived
+            } for conversion_pixel in conversion_pixels
         ]
 
     def convert_changes_to_string(self, changes, settings_dict):

@@ -1035,14 +1035,14 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             });
         }
 
-        function convertTrackingPixelsFromApi(trackingPixels) {
-            return trackingPixels.map(function (trackingPixel) {
+        function convertConversionPixelsFromApi(conversionPixels) {
+            return conversionPixels.map(function (conversionPixel) {
                 return {
-                    id: trackingPixel.id,
-                    slug: trackingPixel.slug,
-                    status: trackingPixel.status,
-                    lastVerifiedDt: trackingPixel.lastVerifiedDt,
-                    archived: trackingPixel.archived
+                    id: conversionPixel.id,
+                    slug: conversionPixel.slug,
+                    status: conversionPixel.status,
+                    lastVerifiedDt: conversionPixel.lastVerifiedDt,
+                    archived: conversionPixel.archived
                 };
             });
         }
@@ -1059,7 +1059,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     deferred.resolve({
                         settings: convertSettingsFromApi(data.data.settings),
                         history: convertHistoryFromApi(data.data.history),
-                        trackingPixels: convertTrackingPixelsFromApi(data.data.tracking_pixels),
+                        conversionPixels: convertConversionPixelsFromApi(data.data.conversion_pixels),
                         canArchive: data.data.can_archive,
                         canRestore: data.data.can_restore
                     });

@@ -2,7 +2,7 @@
 oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
     $scope.settings = {};
     $scope.history = [];
-    $scope.trackingPixels = [];
+    $scope.conversionPixels = [];
     $scope.canArchive = false;
     $scope.canRestore = true;
     $scope.errors = {};
@@ -40,7 +40,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
             function (data) {
                 $scope.settings = data.settings;
                 $scope.history = data.history;
-                $scope.trackingPixels = data.trackingPixels;
+                $scope.conversionPixels = data.conversionPixels;
                 $scope.canArchive = data.canArchive;
                 $scope.canRestore = data.canRestore;
                 $scope.discarded = discarded;
@@ -64,7 +64,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                 $scope.errors = {};
                 $scope.settings = data.settings;
                 $scope.history = data.history;
-                $scope.trackingPixels = data.trackingPixels;
+                $scope.conversionPixels = data.conversionPixels;
                 $scope.canArchive = data.canArchive;
                 $scope.canRestore = data.canRestore;
                 $scope.updateAccounts(data.settings.name);

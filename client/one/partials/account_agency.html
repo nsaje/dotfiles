@@ -65,10 +65,10 @@
             </div>
         </div>
 
-        <div class="section table-tracking-pixels">
+        <div class="section table-conversion-pixels">
             <div class="title">Set Up Conversion Pixels</div>
-            <div class="loader-container" ng-if="trackingPixels.length">
-                <div class="loader" ng-show="trackingPixels.length && requestInProgress"></div>
+            <div class="loader-container" ng-if="conversionPixels.length">
+                <div class="loader" ng-show="conversionPixels.length && requestInProgress"></div>
                 <table class="table with-button-after table-hover">
                     <thead>
                         <tr>
@@ -85,7 +85,7 @@
                             </td>
                         </tr>
 
-                        <tr ng-repeat="item in trackingPixels | orderBy:orderField:orderReverse">
+                        <tr ng-repeat="item in conversionPixels | orderBy:orderField:orderReverse">
                             <td>{{ item.slug }}</td>
                             <td>{{ item.status }}</td>
                             <td class="no-wrap">{{ (item.lastVerifiedDt | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
@@ -93,8 +93,8 @@
                                 <div class="dropdown dropdown-big" dropdown aria-haspopup="true">
                                 <a href class="btn btn-default btn-big dropdown-toggle" dropdown-toggle>Actions&nbsp;<span class="caret" /></a>
                                 <ul class="dropdown-menu dropdown-menu-activation" role="menu">
-                                    <li><a tabindex="-1" ng-click="archiveTrackingPixel(item.id)" href="#">Archive</a></li>
-                                    <li><a tabindex="-1" ng-click="copyTrackingPixelTage(item.id)" href="#">Copy tag</a></li>
+                                    <li><a tabindex="-1" ng-click="archiveConversionPixel(item.id)" href="#">Archive</a></li>
+                                    <li><a tabindex="-1" ng-click="copyConversionPixelTage(item.id)" href="#">Copy tag</a></li>
                                 </ul>
                                 </div>
                             </td>
