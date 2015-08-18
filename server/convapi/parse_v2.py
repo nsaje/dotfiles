@@ -178,8 +178,7 @@ class CsvReport(object):
                 report_entry = GaReportRow(entry, self.start_date, content_ad_id, source_param, goals)
                 self.entries.append(report_entry)
         except:
-            #raise exc.CsvParseException('Could not parse CSV')
-            raise
+            raise exc.CsvParseException('Could not parse CSV')
 
         if self.fieldnames is None and not set(self.fieldnames or []) >= set(REQUIRED_FIELDS):
             missing_fieldnames = list(set(REQUIRED_FIELDS) - (set(self.fieldnames) & set(REQUIRED_FIELDS)))
