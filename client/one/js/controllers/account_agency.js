@@ -1,5 +1,5 @@
 /*globals oneApp*/
-oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
+oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', function ($scope, $state, $modal, api) {
     $scope.settings = {};
     $scope.history = [];
     $scope.conversionPixels = [];
@@ -102,6 +102,20 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                 $scope.refreshPage();
             });
         }
+    };
+
+    $scope.addConversionPixel = function () {
+        var modalInstance = $modal.open({
+            templateUrl: '/partials/add_conversion_pixel_modal.html',
+            controller: 'AddConversionPixelModalCtrl',
+            windowClass: 'modal',
+            scope: $scope
+        });
+
+        modalInstance.result.then(function() {
+        });
+
+        return modalInstance;
     };
 
     var getUser = function (userId) {
