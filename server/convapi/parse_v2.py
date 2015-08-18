@@ -78,7 +78,7 @@ class CsvReport(object):
         self.entries = []
         self.start_date = None
         # first column of csv in GA report - Keyword or Landing Page
-        self.report_id = None
+        self.first_column = None
 
     def is_empty(self):
         return self.entries == []
@@ -161,7 +161,7 @@ class CsvReport(object):
 
     def _parse(self, csv_report_text):
         report_date, first_column_name = self._parse_header(self._extract_header_lines(csv_report_text))
-        self.report_id = first_column_name
+        self.first_column = first_column_name
         self.start_date = report_date
 
         f_body, f_footer = self._extract_body_and_footer(csv_report_text)
@@ -170,7 +170,7 @@ class CsvReport(object):
             self.fieldnames = reader.fieldnames
             self.entries = []
             for entry in reader:
-                keyword_or_url = entry[self.report_id]
+                keyword_or_url = entry[self.first_column]
                 if keyword_or_url is None or keyword_or_url.strip() == '':
                     continue
                 content_ad_id, source_param = self._parse_keyword_or_url(keyword_or_url)
@@ -187,7 +187,7 @@ class CsvReport(object):
         self._check_session_counts(f_footer)
 
     def _parse_keyword_or_url(self, data):
-        if self.report_id == LANDING_PAGE_COL_NAME:
+        if self.first_column == LANDING_PAGE_COL_NAME:
             return self._parse_landing_page(data)
         else:
             return self._parse_z11z_keyword(data)
@@ -338,7 +338,7 @@ class CsvReport(object):
         inside = False
         split_raw_report_string = raw_report_string.split('\n')
         for line in split_raw_report_string:
-            if not inside and line.startswith(self.report_id):
+            if not inside and line.startswith(self.first_column):
                 inside = True
             if inside:
                 # There are instances of CSV files, that have 'Pages/Session' instead of 'Pages / Session'
@@ -369,5 +369,5 @@ class CsvReport(object):
         content_ad_not_specified = set()
         for entry in self.entries:
             if entry.content_ad_id is None:
-                content_ad_not_specified.add(entry.get_ga_field(self.report_id))
+                content_ad_not_specified.add(entry.get_ga_field(self.first_column))
         return (len(content_ad_not_specified) == 0, list(content_ad_not_specified))
