@@ -34,11 +34,11 @@
                             <div class="loader" ng-show="user.requestInProgress"></div>
 
                             <div class="dropdown" dropdown ng-show="!user.requestInProgress" aria-haspopup="true">
-                            <a href class="btn btn-default dropdown-toggle" dropdown-toggle>Edit&nbsp;<span class="caret"></a>
-                            <ul class="dropdown-menu dropdown-menu-activation" role="menu">
-                                <li><a ng-show="!user.is_active" tabindex="-1" ng-click="userActionChange('resend', user.id)" href="#">Resend Activation Mail</a></li>
-                                <li><a tabindex="-1" ng-click="userActionChange('remove', user.id)" href="#">Remove</a></li>
-                            </ul>
+                                <a href class="btn btn-default dropdown-toggle" dropdown-toggle>Edit&nbsp;<span class="caret"></a>
+                                <ul class="dropdown-menu dropdown-menu-activation" role="menu">
+                                    <li><a ng-show="!user.is_active" tabindex="-1" ng-click="userActionChange('resend', user.id)" href="#">Resend Activation Mail</a></li>
+                                    <li><a tabindex="-1" ng-click="userActionChange('remove', user.id)" href="#">Remove</a></li>
+                                </ul>
                             </div>
                         </div>
                     </div>
@@ -63,6 +63,46 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="section table-tracking-pixels">
+            <div class="title">Set Up Conversion Pixels</div>
+            <div class="loader-container" ng-if="trackingPixels.length">
+                <div class="loader" ng-show="trackingPixels.length && requestInProgress"></div>
+                <table class="table with-button-after table-hover">
+                    <thead>
+                        <tr>
+                            <th class="arrow" ng-class="{ordered: orderField === 'slug' && !orderReverse, 'ordered-reverse': orderField === 'slug' && orderReverse}"><a href class="order" ng-click="orderField = 'slug'; orderReverse = !orderReverse">Slug</a></th>
+                            <th class="arrow" ng-class="{ordered: orderField === 'status' && !orderReverse, 'ordered-reverse': orderField === 'status' && orderReverse}"><a href class="order" ng-click="orderField = 'status'; orderReverse = !orderReverse">Status</a></th>
+                            <th class="arrow" ng-class="{ordered: orderField === 'lastVerifiedDt' && !orderReverse, 'ordered-reverse': orderField === 'lastVerifiedDt' && orderReverse}"><a href class="order" ng-click="orderField = 'lastVerifiedDt'; orderReverse = !orderReverse">Last verified</a></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-if="requestInProgress">
+                            <td colspan="3" class="loader-row">
+                                <div class="loader"></div>
+                            </td>
+                        </tr>
+
+                        <tr ng-repeat="item in trackingPixels | orderBy:orderField:orderReverse">
+                            <td>{{ item.slug }}</td>
+                            <td>{{ item.status }}</td>
+                            <td class="no-wrap">{{ (item.lastVerifiedDt | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
+                            <td>
+                                <div class="dropdown dropdown-big" dropdown aria-haspopup="true">
+                                <a href class="btn btn-default btn-big dropdown-toggle" dropdown-toggle>Actions&nbsp;<span class="caret" /></a>
+                                <ul class="dropdown-menu dropdown-menu-activation" role="menu">
+                                    <li><a tabindex="-1" ng-click="archiveTrackingPixel(item.id)" href="#">Archive</a></li>
+                                    <li><a tabindex="-1" ng-click="copyTrackingPixelTage(item.id)" href="#">Copy tag</a></li>
+                                </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <button type="button" class="btn btn-default" ng-click="addPixel()">Add Pixel</button><br />
         </div>
 
         <button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
