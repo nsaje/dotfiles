@@ -256,29 +256,15 @@ class CsvReport(object):
             return goal_field
 
     def _get_goal_fields(self, fields):
-        # parse well formatted goals if there are any
-        goal_fields = filter(lambda field: '(Goal' in field, fields)
-        if goal_fields == []:
-            idx_mid = -1
-            for field in fields:
-                if "Session Duration" in field:
-                    idx_mid = fields.index(field) + 1
-            if idx_mid != -1:
-                goal_fields = fields[idx_mid:]
-
-        # reparse in case we didn't find any goals
-        if goal_fields == []:
-            goal_fields = fields
-
         # filter out fields which do not contain any relevant goal field
         ret = []
-        for goal_field in goal_fields:
+        for field in fields:
             found = False
             for goal_keyword in GOAL_FIELD_KEYWORDS:
-                if goal_keyword in goal_field.lower():
+                if goal_keyword in field.lower():
                     found = True
             if found:
-                ret.append(goal_field)
+                ret.append(field)
         return ret
 
     def _parse_goals(self, fieldnames, row_dict):
