@@ -250,7 +250,7 @@ class CsvReport(object):
         else:
             return 'Goal 1'
 
-    def _get_goal_value_determinant(self, goal_field):
+    def _get_goal_value_type(self, goal_field):
         try:
             ix_goal = goal_field.index('(Goal')
         except:
@@ -292,17 +292,17 @@ class CsvReport(object):
         result = {}
         for goal_field in goal_fields:
             goal_name = self._get_goal_name(goal_field)
-            goal_value_determinant = self._get_goal_value_determinant(goal_field).lower()
+            goal_value_type = self._get_goal_value_type(goal_field).lower()
 
             if row_dict[goal_field] == '':
                 continue
 
             metric_fields = result.get(goal_name, {})
-            if self._subset_match(goal_value_determinant, GOAL_CONVERSION_KEYWORDS):
+            if self._subset_match(goal_value_type, GOAL_CONVERSION_KEYWORDS):
                 metric_fields['conversions'] = int(row_dict[goal_field])
-            elif self._subset_match(goal_value_determinant, GOAL_VALUE_KEWORDS):
+            elif self._subset_match(goal_value_type, GOAL_VALUE_KEWORDS):
                 metric_fields['value'] = row_dict[goal_field]
-            elif self._subset_match(goal_value_determinant, GOAL_RATE_KEYWORDS):
+            elif self._subset_match(goal_value_type, GOAL_RATE_KEYWORDS):
                 metric_fields['conversion_rate'] = row_dict[goal_field]
             result[goal_name] = metric_fields
         return result
