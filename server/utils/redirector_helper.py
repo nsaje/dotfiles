@@ -42,7 +42,7 @@ def insert_adgroup(ad_group_id, tracking_codes, disable_auto_tracking=False):
             'trackingcode': tracking_codes,
             'disableautotracking': disable_auto_tracking,
         })
-        return _call_api_retry(url, data)
+        return _call_api_retry(url, data, method='PUT')
     except Exception as e:
         logger.exception('Exception in insert_adgroup_try')
         raise e
