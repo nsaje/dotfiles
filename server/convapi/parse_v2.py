@@ -24,10 +24,10 @@ logger = logging.getLogger(__name__)
 Z11Z_RE = re.compile('.*z1([0-9]+)([a-zA-Z].+?)1z.*')
 
 HARRYS_FIELD_KEYWORDS = ["conversion rate", "transactions", "revenue"]
-GOAL_FIELD_KEYWORDS = sorted(["conversions", "completions", "value"] + HARRYS_FIELD_KEYWORDS)
+GOAL_FIELD_KEYWORDS = ["conversions", "completions", "value"] + HARRYS_FIELD_KEYWORDS
 
-GOAL_CONVERSION_KEYWORDS = sorted(['completions', 'transactions'])
-GOAL_VALUE_KEWORDS = sorted(['value', 'revenue'])
+GOAL_CONVERSION_KEYWORDS = ['completions', 'transactions']
+GOAL_VALUE_KEWORDS = ['value', 'revenue']
 GOAL_RATE_KEYWORDS = ['conversion rate']
 
 
@@ -108,8 +108,7 @@ class CsvReport(object):
 
     def _parse_header(self, lines):
         '''
-        Parse header and return tuple (report date,
-
+        Parse header and return tuple (report date, first col. name)
         '''
         if len(lines) < 5:
             raise exc.CsvParseException('Too few lines.')
