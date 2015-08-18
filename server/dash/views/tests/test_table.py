@@ -148,6 +148,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             'title': u'Test Article unicode Čžš',
             'upload_time': '2015-02-22T19:00:00',
             'url': 'http://testurl.com',
+            'redirector_url': 'http://localhost:8080/b/abc/z1/1/1/',
         }, {
             'archived': False,
             'status_setting': 2,
@@ -155,6 +156,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             'ctr': None,
             'title': 'Test Article with no content_ad_sources 1',
             'url': 'http://testurl.com',
+            'redirector_url': 'http://localhost:8080/b/abc/z1/1/2/',
             'clicks': None,
             'cpc': None,
             'image_urls': {

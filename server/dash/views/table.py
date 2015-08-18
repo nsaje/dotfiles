@@ -1209,6 +1209,16 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
 
         return content_ad.url
 
+    def _get_redirector_url(self, ad_group, content_ad, is_demo):
+        if is_demo:
+            return None
+
+        return settings.R1_BLANK_REDIRECT_URL.format(
+            redirect_id=content_ad.redirect_id,
+            ad_group_id=ad_group.id,
+            content_ad_id=content_ad.id
+        )
+
     @newrelic.agent.function_trace()
     def _get_rows(self, content_ads, stats, ad_group, has_view_archived_permission, show_archived):
         stats = {s['content_ad']: s for s in stats}
@@ -1226,11 +1236,13 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 continue
 
             url = self._get_url(ad_group, content_ad, is_demo)
+            redirector_url = self._get_redirector_url(ad_group, content_ad, is_demo)
 
             row = {
                 'id': str(content_ad.id),
                 'title': content_ad.title,
                 'url': url,
+                'redirector_url': redirector_url,
                 'batch_name': content_ad.batch.name,
                 'batch_id': content_ad.batch.id,
                 'display_url': content_ad.batch.display_url,
