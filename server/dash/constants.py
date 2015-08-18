@@ -206,7 +206,7 @@ class SourceType(ConstantBase):
     }
 
 
-class TrackingPixelStatus(ConstantBase):
+class ConversionPixelStatus(ConstantBase):
     NOT_USED = 1
     INACTIVE = 2
     ACTIVE = 3

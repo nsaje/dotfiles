@@ -1452,11 +1452,11 @@ class CampaignBudgetSettings(models.Model):
         ordering = ('-created_dt',)
 
 
-class TrackingPixel(models.Model):
+class ConversionPixel(models.Model):
     account = models.ForeignKey(Account, related_name='+', on_delete=models.PROTECT)
     slug = models.TextField()
-    status = models.IntegerField(default=constants.TrackingPixelStatus.NOT_USED,
-                                 choices=constants.TrackingPixelStatus.get_choices())
+    status = models.IntegerField(default=constants.ConversionPixelStatus.NOT_USED,
+                                 choices=constants.ConversionPixelStatus.get_choices())
     last_verified_dt = models.DateTimeField(verbose_name='Last verified on')
     archived = models.BooleanField(default=False)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created on')
