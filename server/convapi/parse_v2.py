@@ -150,10 +150,7 @@ class CsvReport(object):
         return date, first_column_name
 
     def _contains_column(self, lines, name):
-        return any(line.startswith('{col},'.format(col=name)) or\
-                   line.endswith(',{col}'.format(col=name)) or\
-                   ',{col},'.format(col=name) in line\
-                   for line in lines)
+        return any(name in set(line.split(',')) for line in lines)
 
     def parse(self):
         self._parse(self.csv_report_text)
