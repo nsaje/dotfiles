@@ -1,6 +1,7 @@
 import json
 import logging
 import newrelic.agent
+import re
 
 from collections import OrderedDict
 from decimal import Decimal
@@ -437,6 +438,28 @@ class CampaignBudget(api_common.BaseApiView):
             item['comment'] = h.comment
             result.append(item)
         return result
+
+
+class ConversionPixel(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_post')
+    def post(self, request, account_id, slug):
+        if re.match('^[^w-]$', slug):
+            raise exc.ValidationError(message='Slug contains invalid characters.')
+
+        try:
+            models.ConversionPixel.objects.get(account_id=account_id, slug=slug)
+            raise exc.ValidationError(message='Slug has to be unique.')
+        except models.ConversionPixel.DoesNotExist:
+            pass
+
+        pixel = models.ConversionPixel.objects.create(account_id=account_id, slug=slug)
+        return self.create_api_response({
+            'id': pixel.id,
+            'slug': pixel.slug,
+            'status': pixel.status,
+            'last_verified_dt': pixel.last_verified_dt,
+            'archived': pixel.archived,
+        })
 
 
 class AccountAgency(api_common.BaseApiView):

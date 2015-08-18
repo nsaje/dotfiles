@@ -1,5 +1,5 @@
 <div class="modal-body">
-    <form class="upload-form form-horizontal">
+    <div class="upload-form form-horizontal">
         <div class="form-group">
             <label for="unique-identifier-input" class="col-xs-4 control-label">
                 Unique identifier
@@ -9,17 +9,17 @@
                 http://one.zemanta.com/something/
             </div>
             <div class="col-xs-2">
-                <input type="text" id="unique-identifier-input" class="form-control" ng-model="formData.uniqueIdentifier" />
+                <input type="text" id="unique-identifier-input" class="form-control" ng-model="slug" />
             </div>
         </div>
 
         <div class="form-group">
             <div class="col-xs-4">
-                <button type="button" class="btn btn-add" ng-click="addConversionPixel()">Add Conversion Pixel</button>
+                    <button type="button" class="btn btn-add" ng-click="addConversionPixel()">Add Conversion Pixel</button>
             </div>
             <div class="col-xs-3">
                 <button type="button" class="btn btn-default" ng-click="$dismiss()">Cancel</button>
             </div>
         </div>
-    </form>
+    </div>
 </div>

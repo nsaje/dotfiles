@@ -2112,6 +2112,34 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         };
     }
 
+    function ConversionPixel() {
+        function convertFromApi(conversionPixel) {
+            return {
+                id: conversionPixel.id,
+                slug: conversionPixel.slug,
+                status: conversionPixel.status,
+                lastVerifiedDt: conversionPixel.last_verified_dt,
+                archived: conversionPixel.archived
+            };
+        }
+
+        this.post = function (accountId, slug) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + accountId + '/conversion_pixel/' + slug + '/';
+
+            $http.post(url).
+                success(function (data, status) {
+                    console.log(data);
+                    deferred.resolve(convertFromApi(data.data));
+                }).
+                error(function (data, status) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     // Helpers
 
     function convertGoals(row, convertedRow) {
@@ -2185,6 +2213,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         campaignAdGroupsExportAllowed: new CampaignAdGroupsExportAllowed(),
         adGroupAdsPlusUpload: new AdGroupAdsPlusUpload(),
         availableSources: new AvailableSources(),
+        conversionPixel: new ConversionPixel(),
         adGroupContentAdState: new AdGroupContentAdState(),
         adGroupContentAdArchive: new AdGroupContentAdArchive()
         // Also, don't forget to add me to DEMO!

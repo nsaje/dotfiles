@@ -112,7 +112,9 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', fun
             scope: $scope
         });
 
-        modalInstance.result.then(function() {
+        modalInstance.result.then(function(conversionPixel) {
+            $scope.conversionPixels.push(conversionPixel);
+            console.log($scope.conversionPixels);
         });
 
         return modalInstance;
