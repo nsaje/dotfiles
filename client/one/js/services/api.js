@@ -1035,6 +1035,18 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             });
         }
 
+        function convertTrackingPixelsFromApi(trackingPixels) {
+            return trackingPixels.map(function (trackingPixel) {
+                return {
+                    id: trackingPixel.id,
+                    slug: trackingPixel.slug,
+                    status: trackingPixel.status,
+                    lastVerifiedDt: trackingPixel.lastVerifiedDt,
+                    archived: trackingPixel.archived
+                };
+            });
+        }
+
         this.get = function (id) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + id + '/agency/';
@@ -1047,8 +1059,9 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     deferred.resolve({
                         settings: convertSettingsFromApi(data.data.settings),
                         history: convertHistoryFromApi(data.data.history),
+                        trackingPixels: convertTrackingPixelsFromApi(data.data.tracking_pixels),
                         canArchive: data.data.can_archive,
-                        canRestore: data.data.can_restore,
+                        canRestore: data.data.can_restore
                     });
                 }).
                 error(function(data, status, headers) {
