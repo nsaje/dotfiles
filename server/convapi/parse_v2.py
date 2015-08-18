@@ -47,10 +47,10 @@ class GaReportRow(object):
     def are_goals_useful(self):
         if len(self.goals) == 0:
             return False
-        first_key = self.goals.keys()[0]
-        if len(self.goals[first_key]) >= 2:
+        if 'conversions' in self.goals.keys():
             return True
-        return False
+        else:
+            return False
 
     def get_ga_field(self, column):
         return self.ga_row_dict.get(column, None)
