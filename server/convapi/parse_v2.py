@@ -150,7 +150,8 @@ class CsvReport(object):
         return date, first_column_name
 
     def _contains_column(self, lines, name):
-        return any(name in set(line.split(',')) for line in lines)
+        # TODO: Fix the commma parser
+        return any(name in line for line in lines)
 
     def parse(self):
         self._parse(self.csv_report_text)
