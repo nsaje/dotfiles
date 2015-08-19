@@ -154,14 +154,11 @@ class CsvReport(object):
         return any(name in line for line in lines)
 
     def parse(self):
-        self._parse(self.csv_report_text)
-
-    def _parse(self, csv_report_text):
-        report_date, first_column_name = self._parse_header(self._extract_header_lines(csv_report_text))
+        report_date, first_column_name = self._parse_header(self._extract_header_lines(self.csv_report_text))
         self.first_column = first_column_name
         self.start_date = report_date
 
-        f_body, f_footer = self._extract_body_and_footer(csv_report_text)
+        f_body, f_footer = self._extract_body_and_footer(self.csv_report_text)
         reader = csv.DictReader(f_body)
         try:
             self.fieldnames = reader.fieldnames
