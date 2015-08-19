@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 import dash.models
 
-class CampaignBudgetDepletionSettings(models.Model):
+class CampaignBudgetDepletionNotifaction(models.Model):
     account_manager = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
@@ -38,5 +38,5 @@ class CampaignBudgetDepletionSettings(models.Model):
         verbose_name='Campaign\'s yesterday\'s spend'
     )
 
-    def __str__(self):
-        return unicode(self).encode('ascii', 'ignore')
+    def __unicode__(self):
+        return '{0} {1}'.format(self.account_manager_id, self.campaign_id)

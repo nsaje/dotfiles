@@ -44,7 +44,7 @@ INSTALLED_APPS = (
     'zweiapi',
     'convapi',
     'raven.contrib.django.raven_compat',
-    'budget_automation',
+    'automation',
 )
 
 MIDDLEWARE_CLASSES = (
