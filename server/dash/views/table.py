@@ -1209,13 +1209,12 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
 
         return content_ad.url
 
-    def _get_redirector_url(self, ad_group, content_ad, is_demo):
+    def _get_redirector_url(self, content_ad, is_demo):
         if is_demo:
             return None
 
         return settings.R1_BLANK_REDIRECT_URL.format(
             redirect_id=content_ad.redirect_id,
-            ad_group_id=ad_group.id,
             content_ad_id=content_ad.id
         )
 
@@ -1236,7 +1235,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 continue
 
             url = self._get_url(ad_group, content_ad, is_demo)
-            redirector_url = self._get_redirector_url(ad_group, content_ad, is_demo)
+            redirector_url = self._get_redirector_url(content_ad, is_demo)
 
             row = {
                 'id': str(content_ad.id),
