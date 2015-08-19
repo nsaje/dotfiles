@@ -4,7 +4,7 @@ import datetime
 import json
 from mock import patch
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
@@ -17,6 +17,9 @@ from actionlog.models import ActionLog
 import actionlog.constants
 
 
+@override_settings(
+    R1_BLANK_REDIRECT_URL='http://example.com/b/{redirect_id}/z1/{ad_group_id}/{content_ad_id}/'
+)
 @patch('dash.views.table.reports.api_contentads.query')
 class AdGroupAdsPlusTableTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
@@ -114,7 +117,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         for row in result['data']['rows']:
             row['submission_status'] = sorted(row['submission_status'])
 
-        self.assertItemsEqual(result['data']['rows'], [{
+        self.assertItemsEqual(sorted(result['data']['rows']), [{
             'batch_name': 'batch 1',
             'archived': False,
             'batch_id': 1,
@@ -148,7 +151,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             'title': u'Test Article unicode Čžš',
             'upload_time': '2015-02-22T19:00:00',
             'url': 'http://testurl.com',
-            'redirector_url': 'http://localhost:8080/b/abc/z1/1/1/',
+            'redirector_url': 'http://example.com/b/abc/z1/1/1/',
         }, {
             'archived': False,
             'status_setting': 2,
@@ -156,7 +159,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             'ctr': None,
             'title': 'Test Article with no content_ad_sources 1',
             'url': 'http://testurl.com',
-            'redirector_url': 'http://localhost:8080/b/abc/z1/1/2/',
+            'redirector_url': 'http://example.com/b/abc/z1/1/2/',
             'clicks': None,
             'cpc': None,
             'image_urls': {
