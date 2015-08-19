@@ -18,7 +18,7 @@ import actionlog.constants
 
 
 @override_settings(
-    R1_BLANK_REDIRECT_URL='http://example.com/b/{redirect_id}/z1/{ad_group_id}/{content_ad_id}/'
+    R1_BLANK_REDIRECT_URL='http://example.com/b/{redirect_id}/z1/1/{content_ad_id}/'
 )
 @patch('dash.views.table.reports.api_contentads.query')
 class AdGroupAdsPlusTableTest(TestCase):
