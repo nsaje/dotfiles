@@ -1,5 +1,5 @@
 /*globals oneApp*/
-oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', function ($scope, $state, $modal, api) {
+oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'zemFilterService', function ($scope, $state, $modal, api, zemFilterService) {
     $scope.settings = {};
     $scope.history = [];
     $scope.conversionPixels = [];
@@ -7,6 +7,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', fun
     $scope.canRestore = true;
     $scope.errors = {};
     $scope.requestInProgress = false;
+    $scope.listPixelsInProgress = false;
     $scope.saved = null;
     $scope.discarded = null;
     $scope.orderField = 'datetime';
@@ -40,7 +41,6 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', fun
             function (data) {
                 $scope.settings = data.settings;
                 $scope.history = data.history;
-                $scope.conversionPixels = data.conversionPixels;
                 $scope.canArchive = data.canArchive;
                 $scope.canRestore = data.canRestore;
                 $scope.discarded = discarded;
@@ -54,6 +54,21 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', fun
         });
     };
 
+    $scope.getConversionPixels = function () {
+        $scope.listPixelsInProgress = true;
+        api.conversionPixel.list($scope.account.id).then(
+            function (data) {
+                $scope.conversionPixels = data;
+            },
+            function (data) {
+                // error
+                return;
+            }
+        ).finally(function () {
+            $scope.listPixelsInProgress = false;
+        });
+    };
+
     $scope.saveSettings = function () {
         $scope.saved = null;
         $scope.discarded = null;
@@ -64,7 +79,6 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', fun
                 $scope.errors = {};
                 $scope.settings = data.settings;
                 $scope.history = data.history;
-                $scope.conversionPixels = data.conversionPixels;
                 $scope.canArchive = data.canArchive;
                 $scope.canRestore = data.canRestore;
                 $scope.updateAccounts(data.settings.name);
@@ -114,10 +128,21 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', fun
 
         modalInstance.result.then(function(conversionPixel) {
             $scope.conversionPixels.push(conversionPixel);
-            console.log($scope.conversionPixels);
+            $scope.getSettings();
         });
 
         return modalInstance;
+    };
+
+    var getConversionPixel = function (conversionPixelId) {
+        var result;
+        $scope.conversionPixels.forEach(function (conversionPixel) {
+            if (conversionPixel.id === conversionPixelId) {
+                result = conversionPixel;
+            }
+        });
+
+        return result;
     };
 
     var getUser = function (userId) {
@@ -224,7 +249,38 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', fun
         });
     };
 
+    $scope.archiveConversionPixel = function (conversionPixelId) {
+        var conversionPixel = getConversionPixel(conversionPixelId);
+        if (conversionPixel) {
+            if (conversionPixel.archived) {
+                return;
+            }
+
+            conversionPixel.requestInProgress = true;
+        }
+
+        api.conversionPixel.archive(conversionPixelId).then(
+            function (data) {
+                if (conversionPixel) {
+                    conversionPixel.requestInProgress = false;
+                    conversionPixel.archived = true;
+                }
+
+                $scope.getSettings(); // update history
+            }
+        );
+    };
+
+    $scope.filterConversionPixels = function (conversionPixel) {
+        if (zemFilterService.getShowArchived()) {
+            return true;
+        }
+
+        return !conversionPixel.archived;
+    };
+
     $scope.getSettings();
+    $scope.getConversionPixels();
 
     if ($scope.hasPermission('zemauth.account_agency_access_permissions')) {
         $scope.getUsers();

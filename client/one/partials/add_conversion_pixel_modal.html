@@ -1,4 +1,5 @@
 <div class="modal-body">
+    <div class="title">Add a New Conversion Pixel</div>
     <div class="upload-form form-horizontal">
         <div class="form-group">
             <label for="unique-identifier-input" class="col-xs-4 control-label">
@@ -8,7 +9,7 @@
             <div class="col-xs-5" style="vertical-align: middle; line-height: 34px; text-align: right;">
                 http://one.zemanta.com/something/
             </div>
-            <div class="col-xs-2">
+            <div class="col-xs-2" stye="padding-left: 0px;">
                 <input type="text" id="unique-identifier-input" class="form-control" ng-model="slug" />
             </div>
         </div>
@@ -20,6 +21,7 @@
             <div class="col-xs-3">
                 <button type="button" class="btn btn-default" ng-click="$dismiss()">Cancel</button>
             </div>
+            <div class="loader" ng-show="addConversionPixelInProgress"></div>
         </div>
     </div>
 </div>

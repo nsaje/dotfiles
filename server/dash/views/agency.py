@@ -440,9 +440,26 @@ class CampaignBudget(api_common.BaseApiView):
         return result
 
 
+class ConversionPixelsList(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'conversion_pixels_list')
+    def get(self, reqeust, account_id):
+        account = helpers.get_account(reqeust.user, account_id)
+        return self.create_api_response([
+            {
+                'id': conversion_pixel.id,
+                'slug': conversion_pixel.slug,
+                'status': constants.ConversionPixelStatus.get_text(conversion_pixel.status),
+                'last_verified_dt': conversion_pixel.last_verified_dt,
+                'archived': conversion_pixel.archived
+            } for conversion_pixel in models.ConversionPixel.objects.filter(account=account)
+        ])
+
+
 class ConversionPixel(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_post')
     def post(self, request, account_id, slug):
+        helpers.get_account(request.user, account_id)  # check access to account
+
         if re.match('^[^w-]$', slug):
             raise exc.ValidationError(message='Slug contains invalid characters.')
 
@@ -452,13 +469,38 @@ class ConversionPixel(api_common.BaseApiView):
         except models.ConversionPixel.DoesNotExist:
             pass
 
-        pixel = models.ConversionPixel.objects.create(account_id=account_id, slug=slug)
+        conversion_pixel = models.ConversionPixel.objects.create(account_id=account_id, slug=slug)
         return self.create_api_response({
-            'id': pixel.id,
-            'slug': pixel.slug,
-            'status': pixel.status,
-            'last_verified_dt': pixel.last_verified_dt,
-            'archived': pixel.archived,
+            'id': conversion_pixel.id,
+            'slug': conversion_pixel.slug,
+            'status': constants.ConversionPixelStatus.get_text(conversion_pixel.status),
+            'last_verified_dt': conversion_pixel.last_verified_dt,
+            'archived': conversion_pixel.archived,
+        })
+
+
+class ConversionPixelArchive(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_archive')
+    def put(self, request, conversion_pixel_id):
+        try:
+            conversion_pixel = models.ConversionPixel.objects.get(id=conversion_pixel_id)
+        except models.ConversionPixel.DoesNotExist:
+            raise exc.MissingDataError('Conversion pixel does not exist')
+
+        try:
+            helpers.get_account(request.user, conversion_pixel.account_id)  # check access to account
+        except exc.MissingDataError:
+            raise exc.MissingDataError('Conversion pixel does not exist')
+
+        conversion_pixel.archived = True
+        conversion_pixel.save()
+
+        return self.create_api_response({
+            'id': conversion_pixel.id,
+            'slug': conversion_pixel.slug,
+            'status': constants.ConversionPixelStatus.get_text(conversion_pixel.status),
+            'last_verified_dt': conversion_pixel.last_verified_dt,
+            'archived': conversion_pixel.archived,
         })
 
 
@@ -468,16 +510,12 @@ class AccountAgency(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.account_agency_view'):
             raise exc.MissingDataError()
 
-        show_archived = request.GET.get('show_archived') == 'true' and\
-            request.user.has_perm('zemauth.view_archived_entities')
-
         account = helpers.get_account(request.user, account_id)
         account_settings = account.get_current_settings()
 
         response = {
             'settings': self.get_dict(account_settings, account),
             'history': self.get_history(account),
-            'conversion_pixels': self.get_conversion_pixels(account, show_archived),
             'can_archive': account.can_archive(),
             'can_restore': account.can_restore(),
         }
@@ -565,21 +603,6 @@ class AccountAgency(api_common.BaseApiView):
             })
 
         return history
-
-    def get_conversion_pixels(self, account, show_archived):
-        conversion_pixels = models.ConversionPixel.objects.filter(account=account)
-        if show_archived is False:
-            conversion_pixels = conversion_pixels.filter(archived=False)
-
-        return [
-            {
-                'id': conversion_pixel.id,
-                'slug': conversion_pixel.slug,
-                'status': conversion_pixel.status,
-                'last_verified_dt': conversion_pixel.last_verified_dt,
-                'archived': conversion_pixel.archived
-            } for conversion_pixel in conversion_pixels
-        ]
 
     def convert_changes_to_string(self, changes, settings_dict):
         if changes is None:

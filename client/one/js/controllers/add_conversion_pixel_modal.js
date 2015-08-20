@@ -1,6 +1,6 @@
 /* globals oneApp */
 oneApp.controller('AddConversionPixelModalCtrl', ['$scope', '$modalInstance', '$state', '$filter', 'api', function($scope, $modalInstance, $state, $filter, api) {
-    $scope.isInProgress = false;
+    $scope.addConversionPixelInProgress = false;
     $scope.slug = '';
 
     $scope.addConversionPixel = function (slug) {
@@ -8,14 +8,14 @@ oneApp.controller('AddConversionPixelModalCtrl', ['$scope', '$modalInstance', '$
             return;
         }
 
-        $scope.isInProgress = true;
+        $scope.addConversionPixelInProgress = true;
         api.conversionPixel.post($scope.account.id, $scope.slug).then(
             function(data) {
-                $scope.isInProgress = false;
+                $scope.addConversionPixelInProgress = false;
                 $modalInstance.close(data);
             },
             function(data) {
-                $scope.isInProgress = false;
+                $scope.addConversionPixelInProgress = false;
             }
         );
     };

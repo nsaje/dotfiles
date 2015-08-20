@@ -1035,18 +1035,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             });
         }
 
-        function convertConversionPixelsFromApi(conversionPixels) {
-            return conversionPixels.map(function (conversionPixel) {
-                return {
-                    id: conversionPixel.id,
-                    slug: conversionPixel.slug,
-                    status: conversionPixel.status,
-                    lastVerifiedDt: conversionPixel.lastVerifiedDt,
-                    archived: conversionPixel.archived
-                };
-            });
-        }
-
         this.get = function (id) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + id + '/agency/';
@@ -1059,7 +1047,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     deferred.resolve({
                         settings: convertSettingsFromApi(data.data.settings),
                         history: convertHistoryFromApi(data.data.history),
-                        conversionPixels: convertConversionPixelsFromApi(data.data.conversion_pixels),
                         canArchive: data.data.can_archive,
                         canRestore: data.data.can_restore
                     });
@@ -2123,13 +2110,42 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             };
         }
 
+        this.list = function (accountId) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + accountId + '/conversion_pixels/';
+
+            $http.get(url).
+                success(function (data, status) {
+                    deferred.resolve(data.data.map(convertFromApi));
+                }).
+                error(function (data, status){
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
         this.post = function (accountId, slug) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + accountId + '/conversion_pixel/' + slug + '/';
 
             $http.post(url).
                 success(function (data, status) {
-                    console.log(data);
+                    deferred.resolve(convertFromApi(data.data));
+                }).
+                error(function (data, status) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.archive = function (conversionPixelId) {
+            var deferred = $q.defer();
+            var url = '/api/conversion_pixels/' + conversionPixelId + '/archive/';
+
+            $http.put(url).
+                success(function(data, status) {
                     deferred.resolve(convertFromApi(data.data));
                 }).
                 error(function (data, status) {

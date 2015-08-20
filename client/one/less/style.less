@@ -1675,6 +1675,10 @@ a.help-popover:visited {
     .section.table-conversion-pixels {
         .section.table-account-agency;
         margin-bottom: 20px;
+
+        table > tbody > tr {
+            height: calc(~"1.428571429em + 24px");
+        }
     }
 }
 
@@ -2309,6 +2313,13 @@ zem-editable-currency-field {
       -ms-transform: translate(0, 0);
       transform: translate(0, 0);
     }
+
+    .title {
+        padding: 3px 0;
+        font-weight: bold;
+        font-size: 18px;
+    }
+
 
     .modal-dialog {
         margin-top: 22vh;

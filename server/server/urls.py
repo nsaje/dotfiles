@@ -265,8 +265,16 @@ urlpatterns += patterns(
         name='account_reactivation',
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/conversion_pixel/(?P<slug>[^/]*)/',
+        r'^api/accounts/(?P<account_id>\d+)/conversion_pixels/',
+        login_required(dash.views.agency.ConversionPixelsList.as_view()),
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/conversion_pixel/(?P<slug>[^/]+)/',
         login_required(dash.views.agency.ConversionPixel.as_view()),
+    ),
+    url(
+        r'^api/conversion_pixels/(?P<conversion_pixel_id>\d+)/archive',
+        login_required(dash.views.agency.ConversionPixelArchive.as_view()),
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/',
