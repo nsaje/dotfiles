@@ -858,7 +858,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
         except exc.MissingDataError, e:
             email = request.user.email
             if email == settings.DEMO_USER_EMAIL or email in settings.DEMO_USERS:
-                content_ad_dicts = [{ 'url': '', 'title': '', 'image_url': '' }]
+                content_ad_dicts = [{ 'url': '', 'title': '', 'image_url': '', 'display_url': '', 'brand_name': '', 'description': '', 'call_to_action': ''}]
                 content = self._create_content_ad_csv(content_ad_dicts)
                 return self.create_csv_response('contentads', content=content)
             raise e
@@ -886,6 +886,10 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
                 'url': content_ad.url,
                 'title': content_ad.title,
                 'image_url': content_ad.get_original_image_url(),
+                'display_url': content_ad.batch.display_url,
+                'brand_name': content_ad.batch.brand_name,
+                'description': content_ad.batch.description,
+                'call_to_action': content_ad.batch.call_to_action,
             })
 
         filename = '{}_{}_{}_content_ads'.format(
@@ -900,7 +904,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
     def _create_content_ad_csv(self, content_ads):
         string = StringIO.StringIO()
 
-        writer = unicodecsv.DictWriter(string, ['url', 'title', 'image_url'])
+        writer = unicodecsv.DictWriter(string, ['url', 'title', 'image_url', 'display_url', 'brand_name', 'description', 'call_to_action'])
         writer.writeheader()
 
         for row in content_ads:

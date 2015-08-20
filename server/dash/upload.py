@@ -91,8 +91,8 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
         batch.num_errors = num_errors
         batch.save()
         return
-    except Exception:
-        logger.exception('Exception in ProcessUploadThread')
+    except Exception as e:
+        logger.exception('Exception in ProcessUploadThread: {0}'.format(e))
         batch.status = constants.UploadBatchStatus.FAILED
         batch.save()
         return
@@ -164,6 +164,10 @@ def _create_objects(data, batch, ad_group_id, ad_group_sources):
         url=data['url'],
         title=data['title'],
         batch=batch,
+        display_url=data['display_url'],
+        brand_name=data['brand_name'],
+        description=data['description'],
+        call_to_action=data['call_to_action'],
         ad_group_id=ad_group_id,
         tracker_urls=data['tracker_urls']
     )
@@ -184,24 +188,33 @@ def _create_objects(data, batch, ad_group_id, ad_group_sources):
 
 def _clean_row(batch, ad_group, row):
     try:
-        title = row.get('title')
-        url = row.get('url')
-        image_url = row.get('image_url')
-        crop_areas = row.get('crop_areas')
-        tracker_urls_string = row.get('tracker_urls')
-
-        cleaners = {
-            'title': partial(_clean_title, title),
-            'url': partial(_clean_url, url, ad_group),
-            'image': partial(_clean_image, image_url, crop_areas),
-            'tracker_urls': partial(_clean_tracker_urls, tracker_urls_string)
-        }
-
         errors = []
         data = {}
-        for key, cleaner in cleaners.items():
+        for key in ['title', 'url', 'image', 'tracker_urls', 'display_url', 'brand_name', 'description', 'call_to_action']:
             try:
-                data[key] = cleaner()
+                if key == 'title': 
+                    data[key] = _clean_title(row.get('title'))
+                
+                elif key == 'url':
+                    data[key] = _clean_url(row.get('url'), ad_group)
+                
+                elif key == 'image': 
+                    data[key] = _clean_image(row.get('image_url'), row.get('crop_areas'))
+                
+                elif key == 'tracker_urls': 
+                    data[key] = _clean_tracker_urls(row.get('tracker_urls'))
+
+                elif key == 'description': 
+                    pass
+                    #data[key] = _clean_description(row.get('description'))
+                elif key == 'display_url': 
+                    pass
+                elif key == 'brand_name': 
+                    pass
+                elif key == 'call_to_action': 
+                    pass
+                else:
+                    raise Exception("Unknown key")	# should never happen, guards against coding errors
             except ValidationError as e:
                 errors.extend(e.messages)
 
@@ -228,7 +241,6 @@ def _clean_url(url, ad_group):
 
     if not _is_content_reachable(url_with_tracking_codes):
         raise ValidationError('Content unreachable')
-
     return url
 
 

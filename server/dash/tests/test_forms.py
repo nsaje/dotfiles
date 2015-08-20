@@ -215,7 +215,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors['content_ads'],
-            ['Fourth column in header should be Crop areas or Tracker URLs.']
+            ['Unrecognized column number 4: "aaa".']
         )
 
     def test_header_no_tracker_urls(self):
@@ -224,7 +224,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors['content_ads'],
-            ['Fifth column in header should be Crop areas or Tracker URLs.']
+            ['Unrecognized column number 5: "aaa".']
         )
 
     def test_windows_1252_encoding(self):

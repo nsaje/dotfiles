@@ -382,7 +382,11 @@ class ProcessCallbackTest(TestCase):
             },
             'tracker_urls': tracker_url_list,
             'title': title,
-            'url': url
+            'url': url,
+            'display_url': 'brand.com',
+            'brand_name': 'Brand inc.',
+            'description': 'This content is a must read',
+            'call_to_action': 'Act!',
         }
 
         errors = []
@@ -399,11 +403,19 @@ class ProcessCallbackTest(TestCase):
 
         results = [(row, cleaned_data, errors)]
         upload._process_callback(batch, models.AdGroup.objects.get(pk=ad_group_id), [ad_group_source], filename, request, results)
+        
+        # check for errors first, before proceeding to the rest
+        self.assertEqual(batch.status, constants.UploadBatchStatus.DONE)
+        self.assertIn(batch.num_errors, [0, None])
 
         content_ad = models.ContentAd.objects.latest()
         self.assertEqual(content_ad.title, title)
         self.assertEqual(content_ad.url, url)
         self.assertEqual(content_ad.ad_group_id, ad_group_id)
+        self.assertEqual(content_ad.display_url, cleaned_data['display_url'])
+        self.assertEqual(content_ad.brand_name, cleaned_data['brand_name'])
+        self.assertEqual(content_ad.description, cleaned_data['description'])
+        self.assertEqual(content_ad.call_to_action, cleaned_data['call_to_action'])
 
         self.assertEqual(content_ad.redirect_id, redirect_id)
         self.assertEqual(content_ad.image_id, image_id)
@@ -421,7 +433,6 @@ class ProcessCallbackTest(TestCase):
         )
         self.assertEqual(content_ad_source.state, constants.ContentAdSourceState.ACTIVE)
 
-        self.assertEqual(batch.status, constants.UploadBatchStatus.DONE)
 
         mock_redirect_insert.assert_called_with(content_ad.url, content_ad.id, content_ad.ad_group_id)
 
@@ -472,8 +483,9 @@ class ProcessCallbackTest(TestCase):
         prev_action_count = ActionLog.objects.all().count()
 
         results = [(row, cleaned_data, errors)]
-        upload._process_callback(batch, ad_group_id, [ad_group_source], filename, request, results)
-
+        upload._process_callback(batch, models.AdGroup.objects.get(pk=ad_group_id), [ad_group_source], filename, request, results)
+        self.assertEqual(batch.num_errors, 1) 
+        
         new_content_ad_count = models.ContentAd.objects.all().count()
         new_action_count = ActionLog.objects.all().count()
 
@@ -500,6 +512,7 @@ class ProcessCallbackTest(TestCase):
         title = 'test title'
         image_url = 'http://example.com/image'
         crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
+        tracker_url_list = ['https://example.com/p.gif']
 
         row = {
             'url': url,
@@ -519,8 +532,13 @@ class ProcessCallbackTest(TestCase):
                 'height': image_height,
                 'hash': image_hash
             },
+            'tracker_urls': tracker_url_list,
             'title': title,
-            'url': url
+            'url': url,
+            'display_url': 'brand.com',
+            'brand_name': 'Brand inc.',
+            'description': 'This content is a must read',
+            'call_to_action': 'Act!',
         }
 
         errors = []
@@ -538,7 +556,11 @@ class ProcessCallbackTest(TestCase):
         prev_action_count = ActionLog.objects.all().count()
 
         results = [(row, cleaned_data, errors)]
-        upload._process_callback(batch, ad_group_id, [ad_group_source], filename, request, results)
+        upload._process_callback(batch, models.AdGroup.objects.get(pk=ad_group_id), [ad_group_source], filename, request, results)
+        
+        # first we need to test if they were really errors we're expecting - they could be other exceptions
+        # ideally we should check if specific exception we were expecting happened, as something else might have gone wrong too
+        self.assertEqual(batch.num_errors, 1)
 
         new_content_ad_count = models.ContentAd.objects.all().count()
         new_action_count = ActionLog.objects.all().count()
