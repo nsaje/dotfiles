@@ -85,13 +85,13 @@
                         <tr ng-class="{'archived': item.archived}" ng-repeat="item in conversionPixels | orderBy:pixelOrderField:pixelOrderReverse | filter: filterConversionPixels">
                             <td>
                                 {{ item.slug }}
-                                <div class="loader" ng-show="item.requestInProgress"></div>
+                                <span class="loader" ng-if="item.requestInProgress"></span>
                             </td>
                             <td>{{ item.status }}</td>
                             <td class="no-wrap">{{ (item.lastVerifiedDt | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
                             <td>
                                 <div ng-show="!item.archived" class="dropdown dropdown-big" dropdown aria-haspopup="true">
-                                    <a href class="btn btn-default btn-big dropdown-toggle" dropdown-toggle>Actions&nbsp;<span class="caret" /></a>
+                                    <a href class="btn btn-default btn-big dropdown-toggle" ng-class="{'disabled': item.requestInProgress}"dropdown-toggle>Actions&nbsp;<span class="caret" /></a>
                                     <ul class="dropdown-menu dropdown-menu-activation" role="menu">
                                         <li><a tabindex="-1" ng-click="archiveConversionPixel(item.id)" href="#">Archive</a></li>
                                         <li><a tabindex="-1" ng-click="copyConversionPixelTag(item.id)" href="#">Copy tag</a></li>
