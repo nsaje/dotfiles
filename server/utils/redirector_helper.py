@@ -28,6 +28,10 @@ def _insert_redirect_try(url, content_ad_id, ad_group_id):
         'creativeid': int(content_ad_id),
         'adgroupid': int(ad_group_id),
     })
+
+    if settings.R1_REDIRECTS_API_URL == "dummyserver":
+        return 999888
+
     request = urllib2.Request(settings.R1_REDIRECTS_API_URL, data)
     response = request_signer.urllib2_secure_open(request, settings.R1_API_SIGN_KEY)
 
