@@ -124,21 +124,17 @@ def process_report(parsed_report_rows, report_type):
 
 def _create_contentad_postclick_stats(entry, track_source_map):
     created_dt = datetime.datetime.utcnow()
-
-    ga_report = entry.ga_row_dict
     try:
-        report_date = entry.report_date
-        visits = int(ga_report['Sessions'])
-        bounce_rate = float(ga_report['Bounce Rate'].replace('%', '').replace(',', '')) / 100
+        visits = entry.visits
 
         stats = reports.models.ContentAdPostclickStats(
-            date=report_date,
+            date=entry.report_date,
             created_dt=created_dt,
             visits=visits,
-            new_visits=int(ga_report['New Users']),
-            bounced_visits=int(bounce_rate * visits),
-            pageviews=int(round(float(ga_report['Pages / Session']) * visits)),
-            total_time_on_site=visits * _parse_duration(ga_report['Avg. Session Duration']),
+            new_visits=entry.new_visits,
+            bounced_visits=entry.bounced_visits,
+            pageviews=entry.pageviews,
+            total_time_on_site=entry.total_time_on_site,
         )
         stats.source_id = track_source_map[entry.source_param]
         stats.content_ad_id = int(entry.content_ad_id)
@@ -174,8 +170,3 @@ def _create_contentad_goal_conversion_stats(entry, goal_type, track_source_map):
         ))
         raise
     return []
-
-
-def _parse_duration(durstr):
-    hours_str, minutes_str, seconds_str = durstr.replace('<', '').split(':')
-    return int(seconds_str) + 60 * int(minutes_str) + 60 * 60 * int(hours_str)

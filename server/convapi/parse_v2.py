@@ -34,6 +34,18 @@ GOAL_RATE_KEYWORDS = ['conversion rate']
 class GaReportRow(object):
     def __init__(self, ga_row_dict, report_date, content_ad_id, source_param, goals):
         self.ga_row_dict = ga_row_dict
+
+        self.visits = int(ga_row_dict.get('Sessions'))
+        self.bounce_rate_raw = ga_row_dict.get('Bounce Rate')
+        if ga_row_dict.get('Bounce Rate') is not None:
+            self.bounce_rate = float(ga_row_dict['Bounce Rate'].replace('%', '').replace(',', '')) / 100
+        else:
+            self.bounce_rate = None
+        self.pageviews = int(round(float(ga_row_dict['Pages / Session']) * self.visits))
+        self.new_visits = int(ga_row_dict['New Users'])
+        self.bounced_visits = int(self.bounce_rate * self.visits)
+        self.total_time_on_site = self.visits * self._parse_duration(ga_row_dict['Avg. Session Duration'])
+
         self.report_date = report_date.isoformat()
         self.content_ad_id = content_ad_id
         self.source_param = source_param
@@ -54,6 +66,10 @@ class GaReportRow(object):
 
     def get_ga_field(self, column):
         return self.ga_row_dict.get(column, None)
+
+    def _parse_duration(self, durstr):
+        hours_str, minutes_str, seconds_str = durstr.replace('<', '').split(':')
+        return int(seconds_str) + 60 * int(minutes_str) + 60 * 60 * int(hours_str)
 
     def sessions(self):
         raw_sessions = self.ga_row_dict['Sessions'].replace(',', '').strip()
@@ -150,7 +166,6 @@ class CsvReport(object):
         return date, first_column_name
 
     def _contains_column(self, lines, name):
-        # TODO: Fix the commma parser
         return any(name in line for line in lines)
 
     def parse(self):
