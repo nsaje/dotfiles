@@ -6,10 +6,10 @@
                 Unique identifier
                 <zem-help-popover content="" placement="top"></zem-help-popover>
             </label>
-            <div class="col-xs-6" style="vertical-align: middle; line-height: 34px; text-align: right; padding-right: 0px;">
+            <span class="col-xs-6 text-vertical-align-middle text-align-right no-padding-right">
                 https://cookiepixie.zemanta.com/p.gif?id={{ account.id }}-
-            </div>
-            <div class="col-xs-2" stye="padding-left: 0px;">
+            </span>
+            <div class="col-xs-2">
                 <input type="text" id="unique-identifier-input" class="form-control" ng-model="slug" ng-focus="clearError()" ng-change="clearError()" />
             </div>
         </div>
@@ -22,9 +22,9 @@
                 <button type="button" class="btn btn-default" ng-click="$dismiss()">Cancel</button>
             </div>
             <div class="loader" ng-show="addConversionPixelInProgress"></div>
-            <div class="col-xs-4 small error" style="vertical-align: middle" ng-if="!!error">
+            <span class="col-xs-4 small error" ng-if="!!error">
                 {{ error }}
-            </div>
+            </span>
         </div>
     </form>
 </div>
