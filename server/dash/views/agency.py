@@ -1,7 +1,6 @@
 import json
 import logging
 import newrelic.agent
-import re
 
 from collections import OrderedDict
 from decimal import Decimal
@@ -22,7 +21,6 @@ from dash import constants
 from utils import api_common
 from utils import statsd_helper
 from utils import exc
-from utils import pagerduty_helper
 from utils import email_helper
 
 from zemauth.models import User as ZemUser
@@ -469,7 +467,7 @@ class ConversionPixels(api_common.BaseApiView):
         if not slug:
             raise exc.ValidationError(message='Unique identifier is required.')
 
-        if re.match('[^0-9a-zA-Z_-]', slug):
+        if not slug.isalnum():
             raise exc.ValidationError(message='Unique identifier contains invalid characters.')
 
         try:
