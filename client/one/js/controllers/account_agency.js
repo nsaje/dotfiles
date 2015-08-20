@@ -12,6 +12,8 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
     $scope.discarded = null;
     $scope.orderField = 'datetime';
     $scope.orderReverse = true;
+    $scope.pixelOrderField = 'slug';
+    $scope.pixelOrderReverse = false;
     $scope.users = null;
     $scope.addUserRequestInProgress = false;
     $scope.addUserData = {};

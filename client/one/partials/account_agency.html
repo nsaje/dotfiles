@@ -75,14 +75,14 @@
                 <table class="table with-button-after table-hover">
                     <thead>
                         <tr>
-                            <th class="arrow" ng-class="{ordered: orderField === 'slug' && !orderReverse, 'ordered-reverse': orderField === 'slug' && orderReverse}"><a href class="order" ng-click="orderField = 'slug'; orderReverse = !orderReverse">Slug</a></th>
-                            <th class="arrow" ng-class="{ordered: orderField === 'status' && !orderReverse, 'ordered-reverse': orderField === 'status' && orderReverse}"><a href class="order" ng-click="orderField = 'status'; orderReverse = !orderReverse">Status</a></th>
-                            <th class="arrow" ng-class="{ordered: orderField === 'lastVerifiedDt' && !orderReverse, 'ordered-reverse': orderField === 'lastVerifiedDt' && orderReverse}"><a href class="order" ng-click="orderField = 'lastVerifiedDt'; orderReverse = !orderReverse">Last verified</a></th>
+                            <th class="arrow" ng-class="{ordered: pixelOrderField === 'slug' && !pixelOrderReverse, 'ordered-reverse': pixelOrderField === 'slug' && pixelOrderReverse}"><a href class="order" ng-click="pixelOrderField = 'slug'; pixelOrderReverse = !pixelOrderReverse">Slug</a></th>
+                            <th class="arrow" ng-class="{ordered: pixelOrderField === 'status' && !pixelOrderReverse, 'ordered-reverse': pixelOrderField === 'status' && pixelOrderReverse}"><a href class="order" ng-click="pixelOrderField = 'status'; pixelOrderReverse = !pixelOrderReverse">Status</a></th>
+                            <th class="arrow" ng-class="{ordered: pixelOrderField === 'lastVerifiedDt' && !pixelOrderReverse, 'ordered-reverse': pixelOrderField === 'lastVerifiedDt' && pixelOrderReverse}"><a href class="order" ng-click="pixelOrderField = 'lastVerifiedDt'; pixelOrderReverse = !pixelOrderReverse">Last verified</a></th>
                             <th></th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr ng-class="{'archived': item.archived}" ng-repeat="item in conversionPixels | orderBy:orderField:orderReverse | filter: filterConversionPixels">
+                        <tr ng-class="{'archived': item.archived}" ng-repeat="item in conversionPixels | orderBy:pixelOrderField:pixelOrderReverse | filter: filterConversionPixels">
                             <td>
                                 {{ item.slug }}
                                 <div class="loader" ng-show="item.requestInProgress"></div>
