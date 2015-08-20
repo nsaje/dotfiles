@@ -65,7 +65,7 @@
             </div>
         </div>
 
-        <div class="section table-conversion-pixels">
+        <div class="section table-conversion-pixels" ng-if="hasPermission('zemauth.manage_conversion_pixels')">
             <div class="title">
                 Set Up Conversion Pixels
                 <div class="loader" ng-show="listPixelsInProgress"></div>
