@@ -442,8 +442,11 @@ class CampaignBudget(api_common.BaseApiView):
 
 class ConversionPixels(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'conversion_pixels_list')
-    def get(self, reqeust, account_id):
-        account = helpers.get_account(reqeust.user, account_id)
+    def get(self, request, account_id):
+        if not request.user.has_perm('zemauth.manage_conversion_pixels'):
+            raise exc.MissingDataError()
+
+        account = helpers.get_account(request.user, account_id)
         return self.create_api_response([
             {
                 'id': conversion_pixel.id,
@@ -455,6 +458,9 @@ class ConversionPixels(api_common.BaseApiView):
         ])
 
     def post(self, request, account_id):
+        if not request.user.has_perm('zemauth.manage_conversion_pixels'):
+            raise exc.MissingDataError()
+
         helpers.get_account(request.user, account_id)  # check access to account
 
         data = json.loads(request.body)
@@ -485,6 +491,9 @@ class ConversionPixels(api_common.BaseApiView):
 class ConversionPixelArchive(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_archive')
     def put(self, request, conversion_pixel_id):
+        if not request.user.has_perm('zemauth.manage_conversion_pixels'):
+            raise exc.MissingDataError()
+
         try:
             conversion_pixel = models.ConversionPixel.objects.get(id=conversion_pixel_id)
         except models.ConversionPixel.DoesNotExist:
