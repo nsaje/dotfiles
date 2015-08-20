@@ -459,7 +459,7 @@ class ConversionPixels(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.manage_conversion_pixels'):
             raise exc.MissingDataError()
 
-        helpers.get_account(request.user, account_id)  # check access to account
+        account = helpers.get_account(request.user, account_id)  # check access to account
 
         data = json.loads(request.body)
         slug = data.get('slug')
@@ -477,6 +477,11 @@ class ConversionPixels(api_common.BaseApiView):
             pass
 
         conversion_pixel = models.ConversionPixel.objects.create(account_id=account_id, slug=slug)
+
+        new_settings = account.get_current_settings().copy_settings()
+        new_settings.changes_text = 'Added conversion pixel with unique identifier {}.'.format(slug)
+        new_settings.save(request)
+
         return self.create_api_response({
             'id': conversion_pixel.id,
             'slug': conversion_pixel.slug,
@@ -498,12 +503,16 @@ class ConversionPixelArchive(api_common.BaseApiView):
             raise exc.MissingDataError('Conversion pixel does not exist')
 
         try:
-            helpers.get_account(request.user, conversion_pixel.account_id)  # check access to account
+            account = helpers.get_account(request.user, conversion_pixel.account_id)  # check access to account
         except exc.MissingDataError:
             raise exc.MissingDataError('Conversion pixel does not exist')
 
         conversion_pixel.archived = True
         conversion_pixel.save()
+
+        new_settings = account.get_current_settings().copy_settings()
+        new_settings.changes_text = 'Archived conversion pixel with unique identifier {}.'.format(conversion_pixel.slug)
+        new_settings.save(request)
 
         return self.create_api_response({
             'id': conversion_pixel.id,
