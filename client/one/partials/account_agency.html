@@ -72,7 +72,7 @@
             </div>
             <div class="loader-container" ng-if="conversionPixels.length">
                 <div class="loader" ng-show="conversionPixels.length && listPixelsInProgress"></div>
-                <table class="table with-button-after table-hover">
+                <table class="table table-hover">
                     <thead>
                         <tr>
                             <th class="arrow" ng-class="{ordered: pixelOrderField === 'slug' && !pixelOrderReverse, 'ordered-reverse': pixelOrderField === 'slug' && pixelOrderReverse}"><a href class="order" ng-click="pixelOrderField = 'slug'; pixelOrderReverse = !pixelOrderReverse">Slug</a></th>
@@ -90,7 +90,7 @@
                             <td>{{ item.status }}</td>
                             <td class="no-wrap">{{ (item.lastVerifiedDt | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
                             <td>
-                                <div ng-show="!item.archived" class="dropdown dropdown-big" dropdown aria-haspopup="true">
+                                <div ng-show="!item.archived" class="dropdown" dropdown aria-haspopup="true">
                                     <a href class="btn btn-default btn-big dropdown-toggle" ng-class="{'disabled': item.requestInProgress}"dropdown-toggle>Actions&nbsp;<span class="caret" /></a>
                                     <ul class="dropdown-menu dropdown-menu-activation" role="menu">
                                         <li><a tabindex="-1" ng-click="archiveConversionPixel(item.id)" href="#">Archive</a></li>

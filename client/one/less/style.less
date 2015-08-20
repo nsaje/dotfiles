@@ -1676,11 +1676,22 @@ a.help-popover:visited {
         .section.table-account-agency;
         margin-bottom: 20px;
 
-        table > tbody > tr {
-            /* @line-height-base as defined in bootstrap + button padding for
-               those rows that have button hidden to be the same height as
-               those with button shown */
-            height: calc(~"1.428571429em + 24px");
+        table {
+            border-bottom: 1px solid #e3e3e3;
+            margin-bottom: 10px;
+
+            &> tbody > tr {
+                /* @line-height-base as defined in bootstrap + button padding for
+                   those rows that have button hidden to be the same height as
+                   those with button shown */
+                height: calc(~"1.428571429em + 24px");
+
+                &> td {
+                    vertical-align: middle;
+                    padding-top: 4px;
+                    padding-bottom: 4px;
+                }
+            }
         }
     }
 }
@@ -1888,17 +1899,6 @@ a.help-popover:visited {
         }
     }
 
-    &.with-button-after {
-        border-bottom: 1px solid #e3e3e3;
-        margin-bottom: 10px;
-
-        td {
-            vertical-align: middle;
-            padding-top: 4px;
-            padding-bottom: 4px;
-        }
-    }
-
     &.table-hover tbody tr:hover td,
     &.table-hover tbody tr:hover th {
         background-color: rgba(246, 246, 246, 0.5);
@@ -2009,7 +2009,7 @@ a.help-popover:visited {
 }
 
 .table .dropdown {
-    &:not(.dropdown-big) .btn {
+    &.dropdown-small .btn {
         line-height: 17px;
         padding: 0 6px;
     }
@@ -2067,7 +2067,7 @@ a.help-popover:visited {
         }
     }
 
-    &:not(.dropdown-big) .dropdown-menu {
+    &.dropdown-small .dropdown-menu {
         padding: 0;
         min-width: 0;
         .dropdown-menu;
@@ -2332,36 +2332,45 @@ zem-editable-currency-field {
             border-top: 3px solid @default-color;
             border-radius: 3px;
 
+            [class^='col-xs-'] {
+                padding-left: 5px;
+                padding-right: 5px;
+
+                &:first-child {
+                    padding-left: 15px;
+                }
+
+                &:last-child {
+                    padding-right: 15px;
+                }
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .loader {
+                margin: 7px 0;
+            }
+
+            .conversion-pixel-form {
+                .form-group:last-child {
+                    margin-top: 30px;
+                    margin-bottom: 0;
+                }
+
+
+            }
+
             .upload-form {
                 .form-group:last-child {
                     margin-top: 50px;
                     margin-bottom: 0;
                 }
 
-                [class^='col-xs-'] {
-                    padding-left: 5px;
-                    padding-right: 5px;
-
-                    &:first-child {
-                        padding-left: 15px;
-                    }
-
-                    &:last-child {
-                        padding-right: 15px;
-                    }
-                }
-
                 input[type=text][readonly] {
                     cursor: default;
                     background-color: #fff;
-                }
-
-                .loader {
-                    margin: 7px 0;
-                }
-
-                .btn {
-                    width: 100%;
                 }
 
                 .control-label.small {

@@ -1,22 +1,22 @@
 <div class="modal-body">
     <div class="title">Add a New Conversion Pixel</div>
-    <div class="upload-form form-horizontal">
+    <form id="add-conversion-pixel-form" ng-submit="addConversionPixel()" class="modal-form conversion-pixel-form form-horizontal">
         <div class="form-group" ng-class="{'has-error': !!error}">
             <label for="unique-identifier-input" class="col-xs-4 control-label">
                 Unique identifier
                 <zem-help-popover content="" placement="top"></zem-help-popover>
             </label>
-            <div class="col-xs-6" style="vertical-align: middle; line-height: 34px; text-align: right;">
+            <div class="col-xs-6" style="vertical-align: middle; line-height: 34px; text-align: right; padding-right: 0px;">
                 https://cookiepixie.zemanta.com/p.gif?id={{ account.id }}-
             </div>
             <div class="col-xs-2" stye="padding-left: 0px;">
-                <input type="text" id="unique-identifier-input" class="form-control" ng-model="slug" ng-focus="clearError()" />
+                <input type="text" id="unique-identifier-input" class="form-control" ng-model="slug" ng-focus="clearError()" ng-change="clearError()" />
             </div>
         </div>
 
         <div class="form-group">
             <div class="col-xs-4">
-                    <button type="button" class="btn btn-add" ng-click="addConversionPixel()">Add Conversion Pixel</button>
+                <button type="submit" class="btn btn-add">Add Conversion Pixel</button>
             </div>
             <div class="col-xs-3">
                 <button type="button" class="btn btn-default" ng-click="$dismiss()">Cancel</button>
@@ -26,5 +26,5 @@
                 {{ error }}
             </div>
         </div>
-    </div>
+    </form>
 </div>
