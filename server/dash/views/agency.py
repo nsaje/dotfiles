@@ -440,7 +440,7 @@ class CampaignBudget(api_common.BaseApiView):
         return result
 
 
-class ConversionPixelsList(api_common.BaseApiView):
+class ConversionPixels(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'conversion_pixels_list')
     def get(self, reqeust, account_id):
         account = helpers.get_account(reqeust.user, account_id)
@@ -454,14 +454,17 @@ class ConversionPixelsList(api_common.BaseApiView):
             } for conversion_pixel in models.ConversionPixel.objects.filter(account=account)
         ])
 
-
-class ConversionPixel(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_post')
-    def post(self, request, account_id, slug):
+    def post(self, request, account_id):
         helpers.get_account(request.user, account_id)  # check access to account
 
-        if re.match('^[^w-]$', slug):
-            raise exc.ValidationError(message='Slug contains invalid characters.')
+        data = json.loads(request.body)
+        slug = data.get('slug')
+
+        if not slug:
+            raise exc.ValidationError(message='Unique identifier is required.')
+
+        if re.match('[^0-9a-zA-Z_-]', slug):
+            raise exc.ValidationError(message='Unique identifier contains invalid characters.')
 
         try:
             models.ConversionPixel.objects.get(account_id=account_id, slug=slug)

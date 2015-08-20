@@ -1,7 +1,7 @@
 <div class="modal-body">
     <div class="title">Add a New Conversion Pixel</div>
     <div class="upload-form form-horizontal">
-        <div class="form-group">
+        <div class="form-group" ng-class="{'has-error': !!error}">
             <label for="unique-identifier-input" class="col-xs-4 control-label">
                 Unique identifier
                 <zem-help-popover content="" placement="top"></zem-help-popover>
@@ -10,7 +10,7 @@
                 http://one.zemanta.com/something/
             </div>
             <div class="col-xs-2" stye="padding-left: 0px;">
-                <input type="text" id="unique-identifier-input" class="form-control" ng-model="slug" />
+                <input type="text" id="unique-identifier-input" class="form-control" ng-model="slug" ng-focus="clearError()" />
             </div>
         </div>
 
@@ -22,6 +22,9 @@
                 <button type="button" class="btn btn-default" ng-click="$dismiss()">Cancel</button>
             </div>
             <div class="loader" ng-show="addConversionPixelInProgress"></div>
+            <div class="col-xs-4 small error" style="vertical-align: middle" ng-if="!!error">
+                {{ error }}
+            </div>
         </div>
     </div>
 </div>

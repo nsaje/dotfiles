@@ -2119,7 +2119,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     deferred.resolve(data.data.map(convertFromApi));
                 }).
                 error(function (data, status){
-                    deferred.reject(data);
+                    deferred.reject(data.data);
                 });
 
             return deferred.promise;
@@ -2127,14 +2127,17 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
         this.post = function (accountId, slug) {
             var deferred = $q.defer();
-            var url = '/api/accounts/' + accountId + '/conversion_pixel/' + slug + '/';
+            var url = '/api/accounts/' + accountId + '/conversion_pixels/';
+            var config = {
+                slug: slug
+            };
 
-            $http.post(url).
+            $http.post(url, config).
                 success(function (data, status) {
                     deferred.resolve(convertFromApi(data.data));
                 }).
                 error(function (data, status) {
-                    deferred.reject(data);
+                    deferred.reject(data.data);
                 });
 
             return deferred.promise;
@@ -2149,7 +2152,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     deferred.resolve(convertFromApi(data.data));
                 }).
                 error(function (data, status) {
-                    deferred.reject(data);
+                    deferred.reject(data.data);
                 });
 
             return deferred.promise;
