@@ -35,14 +35,14 @@ class GaReportRow(object):
     def __init__(self, ga_row_dict, report_date, content_ad_id, source_param, goals):
         self.ga_row_dict = ga_row_dict
 
-        self.visits = int(ga_row_dict.get('Sessions'))
+        self.visits = self._atoi(ga_row_dict.get('Sessions'))
         self.bounce_rate_raw = ga_row_dict.get('Bounce Rate')
         if ga_row_dict.get('Bounce Rate') is not None:
-            self.bounce_rate = float(ga_row_dict['Bounce Rate'].replace('%', '').replace(',', '')) / 100
+            self.bounce_rate = self._atof(ga_row_dict['Bounce Rate'].replace('%', '')) / 100
         else:
             self.bounce_rate = None
-        self.pageviews = int(round(float(ga_row_dict['Pages / Session']) * self.visits))
-        self.new_visits = int(ga_row_dict['New Users'])
+        self.pageviews = int(round(self._atof(ga_row_dict['Pages / Session']) * self.visits))
+        self.new_visits = self._atoi(ga_row_dict['New Users'])
         self.bounced_visits = int(self.bounce_rate * self.visits)
         self.total_time_on_site = self.visits * self._parse_duration(ga_row_dict['Avg. Session Duration'])
 
@@ -50,6 +50,14 @@ class GaReportRow(object):
         self.content_ad_id = content_ad_id
         self.source_param = source_param
         self.goals = goals
+
+    def _atoi(self, raw_str):
+        # TODO: Implement locale specific parsing
+        return int(raw_str.replace(',', ''))
+
+    def _atof(self, raw_str):
+        # TODO: Implement locale specific parsing
+        return float(raw_str.replace(',', ''))
 
     def is_row_valid(self):
         return self.content_ad_id is not None and\
@@ -153,10 +161,13 @@ class CsvReport(object):
 
         date = datetime.datetime.strptime(group_dict['start_date'], "%Y%m%d")
 
+        non_comment_lines = [line for line in lines if not (
+            line.startswith('#') and line.replace(',', '').strip() != '')]
+
         first_column_name = None
-        if self._contains_column(lines, LANDING_PAGE_COL_NAME):
+        if self._contains_column(non_comment_lines, LANDING_PAGE_COL_NAME):
             first_column_name = LANDING_PAGE_COL_NAME
-        elif self._contains_column(lines, KEYWORD_COL_NAME):
+        elif self._contains_column(non_comment_lines, KEYWORD_COL_NAME):
             first_column_name = KEYWORD_COL_NAME
 
         if not first_column_name:
@@ -190,7 +201,7 @@ class CsvReport(object):
             raise exc.CsvParseException('Could not parse CSV')
 
         if self.fieldnames is None and not set(self.fieldnames or []) >= set(REQUIRED_FIELDS):
-            missing_fieldnames = list(set(REQUIRED_FIELDS) - (set(self.fieldnames) & set(REQUIRED_FIELDS)))
+            missing_fieldnames = list(set(REQUIRED_FIELDS) - (set(self.fieldnames or []) & set(REQUIRED_FIELDS)))
             raise exc.CsvParseException('Not all required fields are present. Missing: {}'.format(','.join(missing_fieldnames)))
 
         self._check_session_counts(f_footer)

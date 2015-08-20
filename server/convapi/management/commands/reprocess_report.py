@@ -45,7 +45,7 @@ class Command(BaseCommand):
                     csvreport.parse()
                     logger.info(csvreport.debug_parsing_overview())
                     # serialize report
-                    api_contentads.process_report(csvreport.entries, constants.ReportType.GOOGLE_ANALYTICS)
+                    # api_contentads.process_report(csvreport.entries, constants.ReportType.GOOGLE_ANALYTICS)
                 except:
                     traceback.print_exc()
                     logger.exception("Failed processing file {}".format(filename))
