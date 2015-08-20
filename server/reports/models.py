@@ -1,5 +1,8 @@
 from django.db import models
 
+from reports import constants
+
+
 TRAFFIC_METRICS = {'impressions', 'clicks', 'cost_cc', 'data_cost_cc'}
 POSTCLICK_METRICS = {'visits', 'pageviews', 'new_visits', 'bounced_visits', 'duration'}
 CONVERSION_METRICS = {'conversions', 'conversions_value_cc'}
@@ -159,3 +162,45 @@ class SupplyReportRecipient(models.Model):
     source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+
+
+class ContentAdPostclickStats(models.Model):
+    date = models.DateTimeField(auto_now_add=False, verbose_name='Report date')
+    content_ad = models.ForeignKey('dash.ContentAd', on_delete=models.PROTECT)
+    source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
+    visits = models.IntegerField(default=0, blank=False, null=False)
+    new_visits = models.IntegerField(default=0, blank=False, null=False)
+    bounced_visits = models.IntegerField(default=0, blank=False, null=False)
+    pageviews = models.IntegerField(default=0, blank=False, null=False)
+    total_time_on_site = models.IntegerField(default=0, blank=False, null=False)
+
+    class Meta:
+        unique_together = (
+            ('date', 'content_ad', 'source'),
+        )
+
+
+class ContentAdGoalConversionStats(models.Model):
+    date = models.DateTimeField(auto_now_add=False, verbose_name='Report date')
+    content_ad = models.ForeignKey('dash.ContentAd', on_delete=models.PROTECT)
+    source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)
+
+    goal_type = models.SlugField(
+        max_length=15,
+        default=constants.ReportType.GOOGLE_ANALYTICS,
+        choices=constants.ReportType.get_choices()
+    )
+
+    goal_name = models.CharField(max_length=256, editable=False, null=False)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
+    conversions = models.CharField(max_length=256, editable=False, null=False)
+
+    class Meta:
+        unique_together = (
+            ('date', 'content_ad', 'source', 'goal_type', 'goal_name'),
+        )
