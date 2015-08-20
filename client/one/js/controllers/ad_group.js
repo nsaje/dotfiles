@@ -100,13 +100,14 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
         });
     };
 
-    $scope.updateAccounts = function (newAdGroupName, newAdGroupState) {
+    $scope.updateAccounts = function (newAdGroupName, newAdGroupState, newAdGroupStatus) {
         if (!$scope.accounts || !newAdGroupName) {
             return;
         }
         $scope.adGroup.name = newAdGroupName;
         $scope.adGroup.state = newAdGroupState === constants.adGroupSourceSettingsState.ACTIVE ?
             'enabled' : 'paused';
+        $scope.adGroup.status = newAdGroupStatus;
     };
 
     $scope.updateBreadcrumbAndTitle = function () {

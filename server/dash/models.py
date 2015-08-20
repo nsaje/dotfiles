@@ -1020,6 +1020,12 @@ class AdGroupSettings(SettingsBase):
             ("settings_view", "Can view settings in dashboard."),
         )
 
+    def is_running(self):
+        running1 = self.end_date is None and self.state == constants.AdGroupSettingsState.ACTIVE and self.start_date <= datetime.datetime.utcnow().date()
+        running2 = self.end_date is not None and self.state == constants.AdGroupSettingsState.ACTIVE and (self.start_date <= datetime.datetime.utcnow().date() <= self.end_date)
+        return (running1 or running2) and constants.AdGroupRunningStatus.ACTIVE or constants.AdGroupRunningStatus.INACTIVE
+        
+        
     def _convert_date_utc_datetime(self, date):
         dt = datetime.datetime(
             date.year,

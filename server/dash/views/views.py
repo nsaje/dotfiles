@@ -199,6 +199,8 @@ class NavigationDataView(api_common.BaseApiView):
                         ad_group_settings.state if ad_group_settings
                         else constants.AdGroupSettingsState.INACTIVE
                     ).lower()
+                    ad_group['status'] = constants.AdGroupRunningStatus.get_text(ad_group_settings.is_running() if ad_group_settings else constants.AdGroupSettingsState.INACTIVE).lower()
+                    
 
     def fetch_ad_groups(self, data, user, sources):
         ad_groups = models.AdGroup.objects.all().\

@@ -39,6 +39,11 @@
     -webkit-border-bottom-left-radius: @radius;
 }
 
+.nav-item-active() {
+    background-color: #2ea9c9;
+    .border-radius(0 2px 2px 0);
+}
+
 // HTML
 
 body {
@@ -1145,7 +1150,7 @@ a.help-popover:visited {
         top: 0px;
         bottom: 15px;
         width: 205px;
-        padding-left: 15px;
+        padding-left: 0;
 
         > .loader {
             display: block;
@@ -1231,10 +1236,8 @@ a.help-popover:visited {
 
         #nav {
             height: 100%;
-            border: 1px solid #d2d2d2;
-            padding: 5px;
+            padding: 0;
             overflow: auto;
-            .border-radius(2px);
 
             .account-group {
                 padding-bottom: 10px;    
@@ -1242,35 +1245,51 @@ a.help-popover:visited {
 
             .list-group {
                 margin-bottom: 0;
-
+                
+                &.list-campaigns {
+                    border-top: 1px solid #f4f4f4;
+                }
+                
                 &.ad-groups {
-                    padding-left: 5px;    
+                    padding-left: 0px;    
                 }
             }
 
             .list-group-item {
-                border: 0;   padding: 3px; 
-                &.active {
-                    color: #414141;
-                    background-color: #fff;    
+                border: 0; padding: 0;
 
+                &:last-child,
+                &:first-child {
+                    border: 0;
+                    border-radius: 0;
+                }
+                
+                &.active {
+                    .nav-item-active();
                     .ad-group-name {
-                        font-weight: 600;
+                        color: white;
                     }
                 }
             }
 
+            .account-name, .campaign-name, .ad-group-item {
+                padding: 0 0 0 5px;
+                display: block;
+                margin: 0;
+            }
+
             .account-name {
+                text-transform: uppercase;
+                color: #2ea9c9;
                 font-size: 16px;
-                font-weight: 600;
-                color: #f68620;
 
                 &.archived {
                     color: #d9d9d9;
                 }
-
+                
+                &:hover,
                 &.active {
-                    text-decoration: underline;
+                    text-decoration: none;
                 }
             }
 
@@ -1284,7 +1303,13 @@ a.help-popover:visited {
                 }
 
                 &.active {
-                    text-decoration: underline;
+					.nav-item-active();
+					color: white;
+                }
+				
+				&:hover,
+                &.active {
+                    text-decoration: none;
                 }
             }
 
@@ -1804,17 +1829,42 @@ a.help-popover:visited {
     display: inline-block;
     width: 10px;
     height: 10px;
-	margin: 0 5px 0 0;
+    margin: 0 5px 0 0;
 }
 
-.adgroup-enabled-icon {
-    .adgroup-status-icon-placeholder();
-    background-image: url('img/adgroup_status_enabled_icon.png');
+.adgroup-status-enabled-running-icon {
+    .adgroup-status-icon-placeholder(); 
+    background-image: url('img/adgroup_status_enabled_green.svg');
 }
 
-.adgroup-paused-icon {
-    .adgroup-status-icon-placeholder();
-    background-image: url('img/adgroup_status_paused_icon.png');
+.adgroup-status-enabled-stopped-icon {
+    .adgroup-status-icon-placeholder(); 
+    background-image: url('img/adgroup_status_enabled_red.svg');
+}
+
+.adgroup-status-paused-stopped-icon {
+    .adgroup-status-icon-placeholder(); 
+    background-image: url('img/adgroup_status_paused_gray.svg');
+}
+
+.adgroup-status-paused-running-icon {
+    .adgroup-status-icon-placeholder(); 
+    background-image: url('img/adgroup_status_paused_red.svg');
+}
+
+#nav-new .nav-name.active, #nav .ad-group-item.active {
+    .adgroup-status-enabled-running-icon {
+        background-image: url('img/adgroup_status_enabled_white.svg');
+    }
+    .adgroup-status-enabled-stopped-icon {
+        background-image: url('img/adgroup_status_enabled_white.svg');
+    }
+    .adgroup-status-paused-stopped-icon {
+        background-image: url('img/adgroup_status_paused_white.svg');
+    }
+    .adgroup-status-paused-running-icon {
+        background-image: url('img/adgroup_status_paused_white.svg');
+    }
 }
 
 .table {
