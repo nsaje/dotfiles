@@ -19,6 +19,14 @@ DATABASES = {
         'NAME': '',
         'USER': '',
         'PASSWORD': ''
+    },
+    'redshift': {
+    	'NAME': 'cluster_name',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'USER': 'user',
+        'PASSWORD': 'pw',
+        'HOST': 'localhost',
+        'PORT': 5439,
     }
 }
 
