@@ -78,6 +78,16 @@ class CleanRowTest(TestCase):
         self.crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
         self.tracker_urls = 'https://example.com/p.gif'
 
+        self.display_url = ''
+        self.brand_name = ''
+        self.description = ''
+        self.call_to_action = ''
+
+        self.batch_display_url = 'abc.com'
+        self.batch_brand_name = 'ABC inc.'
+        self.batch_description = "Oh my desc!"
+        self.batch_call_to_action = "Act!"
+
         self.image_id = 'test_image_id'
         self.image_width = 100
         self.image_height = 200
@@ -92,6 +102,22 @@ class CleanRowTest(TestCase):
         self.mock_urlopen = self.urlopen_patcher.start()
         self.mock_urlopen.return_value = Mock(code=httplib.OK)
 
+        self.default_expected_data = {
+            'image': {
+                'id': self.image_id,
+                'width': self.image_width,
+                'height': self.image_height,
+                'hash': self.image_hash
+            },
+            'title': self.title,
+            'tracker_urls': self.tracker_urls.split(' '),
+            'url': self.url,
+            'display_url': self.batch_display_url,
+            'brand_name': self.batch_brand_name,
+            'description': self.batch_description,
+            'call_to_action': self.batch_call_to_action,
+        }
+
     def tearDown(self):
         self.process_image_patcher.stop()
         self.urlopen_patcher.stop()
@@ -102,11 +128,21 @@ class CleanRowTest(TestCase):
             'title': self.title,
             'image_url': self.image_url,
             'crop_areas': self.crop_areas,
-            'tracker_urls': self.tracker_urls
+            'tracker_urls': self.tracker_urls,
+            'display_url': self.display_url,
+            'brand_name': self.brand_name,
+            'description': self.description,
+            'call_to_action': self.call_to_action,
+            
         }
 
         batch_name = 'Test batch name'
-        batch = models.UploadBatch.objects.create(name=batch_name)
+        batch = models.UploadBatch.objects.create(name=batch_name,
+                                                display_url=self.batch_display_url,
+                                                brand_name=self.batch_brand_name,
+                                                description=self.batch_description,
+                                                call_to_action=self.batch_call_to_action)
+
         ad_group = models.AdGroup.objects.get(pk=1)
 
         result_row, data, errors = upload._clean_row(batch, ad_group, row)
@@ -117,216 +153,173 @@ class CleanRowTest(TestCase):
 
     def test_clean_row(self):
         data, errors = self._run_clean_row()
-
-        self.assertEqual(data, {
-            'image': {
-                'id': self.image_id,
-                'width': self.image_width,
-                'height': self.image_height,
-                'hash': self.image_hash
-            },
-            'title': self.title,
-            'tracker_urls': self.tracker_urls.split(' '),
-            'url': self.url
-        })
+        expected_data = dict(self.default_expected_data)
+        self.assertEqual(data, expected_data)
         self.assertEqual(errors, [])
 
     def test_invalid_title(self):
         self.title = ''
         data, errors = self._run_clean_row()
-
-        self.assertEqual(data, {
-            'image': {
-                'id': self.image_id,
-                'width': self.image_width,
-                'height': self.image_height,
-                'hash': self.image_hash
-            },
-            'tracker_urls': self.tracker_urls.split(' '),
-            'url': self.url
-        })
+        expected_data = dict(self.default_expected_data)
+        expected_data.pop('title')
+        self.assertEqual(data, expected_data)
         self.assertEqual(errors, ['Missing title'])
 
     def test_url_without_protocol(self):
         self.url = u'example.com'
         data, errors = self._run_clean_row()
-
-        self.assertEqual(data, {
-            'image': {
-                'id': self.image_id,
-                'width': self.image_width,
-                'height': self.image_height,
-                'hash': self.image_hash
-            },
-            'url': 'http://{}'.format(self.url),
-            'title': self.title,
-            'tracker_urls': self.tracker_urls.split(' ')
-        })
+        expected_data = dict(self.default_expected_data)
+        self.assertEqual(data, expected_data)
         self.assertEqual(errors, [])
 
     def test_invalid_url(self):
         self.url = u'example'
         data, errors = self._run_clean_row()
-
-        self.assertEqual(data, {
-            'image': {
-                'id': self.image_id,
-                'width': self.image_width,
-                'height': self.image_height,
-                'hash': self.image_hash
-            },
-            'title': self.title,
-            'tracker_urls': self.tracker_urls.split(' '),
-        })
+        expected_data = dict(self.default_expected_data)
+        expected_data.pop('url')
+        self.assertEqual(data, expected_data)
         self.assertEqual(errors, ['Invalid URL'])
 
     def test_unicode_url(self):
         self.url = u'http://exampleś.com'
         data, errors = self._run_clean_row()
-
-        self.assertEqual(data, {
-            'image': {
-                'id': self.image_id,
-                'width': self.image_width,
-                'height': self.image_height,
-                'hash': self.image_hash
-            },
-            'title': self.title,
-            'tracker_urls': self.tracker_urls.split(' '),
-        })
+        expected_data = dict(self.default_expected_data)
+        expected_data.pop('url')
+        self.assertEqual(data, expected_data)
         self.assertEqual(errors, ['Invalid URL'])
 
     def test_invalid_image_url(self):
         self.image_url = 'example/image'
         data, errors = self._run_clean_row()
-
-        self.assertEqual(data, {
-            'title': self.title,
-            'tracker_urls': self.tracker_urls.split(' '),
-            'url': self.url
-        })
+        expected_data = dict(self.default_expected_data)
+        expected_data.pop('image')
+        self.assertEqual(data, expected_data)
         self.assertEqual(errors, ['Invalid Image URL'])
 
     def test_invalid_crop_areas(self):
         self.crop_areas = '((((177, 122)))'
         data, errors = self._run_clean_row()
-
-        self.assertEqual(data, {
-            'title': self.title,
-            'tracker_urls': self.tracker_urls.split(' '),
-            'url': self.url
-        })
+        expected_data = dict(self.default_expected_data)
+        expected_data.pop('image')
+        self.assertEqual(data, expected_data)
         self.assertEqual(errors, ['Invalid crop areas'])
 
     def test_image_not_downloaded(self):
         self.mock_process_image.side_effect = image_helper.ImageProcessingException
 
         data, errors = self._run_clean_row()
-
-        self.assertEqual(data, {
-            'title': self.title,
-            'tracker_urls': self.tracker_urls.split(' '),
-            'url': self.url
-        })
+        expected_data = dict(self.default_expected_data)
+        expected_data.pop('image')
+        self.assertEqual(data, expected_data)
         self.assertEqual(errors, ['Image could not be processed'])
 
     def test_content_unreachable(self):
         self.mock_urlopen.side_effect = urllib2.URLError('Error')
 
         data, errors = self._run_clean_row()
-
-        self.assertEqual(data, {
-            'image': {
-                'id': self.image_id,
-                'width': self.image_width,
-                'height': self.image_height,
-                'hash': self.image_hash
-            },
-            'tracker_urls': self.tracker_urls.split(' '),
-            'title': self.title,
-        })
+        expected_data = dict(self.default_expected_data)
+        expected_data.pop('url')
+        self.assertEqual(data, expected_data)
         self.assertEqual(errors, ['Content unreachable'])
 
     def test_invalid_tracker_urls(self):
         self.tracker_urls = 'invalid_url'
         data, errors = self._run_clean_row()
-
-        self.assertEqual(data, {
-            'image': {
-                'id': self.image_id,
-                'width': self.image_width,
-                'height': self.image_height,
-                'hash': self.image_hash
-            },
-            'url': self.url,
-            'title': self.title,
-        })
+        expected_data = dict(self.default_expected_data)
+        expected_data.pop('tracker_urls')
+        self.assertEqual(data, expected_data)
         self.assertEqual(errors, ['Invalid tracker URLs'])
 
     def test_unicode_tracker_urls(self):
         self.tracker_urls = u'http://exampleś.com'
         data, errors = self._run_clean_row()
-
-        self.assertEqual(data, {
-            'image': {
-                'id': self.image_id,
-                'width': self.image_width,
-                'height': self.image_height,
-                'hash': self.image_hash
-            },
-            'title': self.title,
-            'url': self.url
-        })
+        expected_data = dict(self.default_expected_data)
+        expected_data.pop('tracker_urls')
+        self.assertEqual(data, expected_data)
         self.assertEqual(errors, ['Invalid tracker URLs'])
 
     def test_invalid_tracker_urls_not_https(self):
         self.tracker_urls = 'http://example.com/p.gif'
         data, errors = self._run_clean_row()
-
-        self.assertEqual(data, {
-            'image': {
-                'id': self.image_id,
-                'width': self.image_width,
-                'height': self.image_height,
-                'hash': self.image_hash
-            },
-            'url': self.url,
-            'title': self.title,
-        })
+        expected_data = dict(self.default_expected_data)
+        expected_data.pop('tracker_urls')
+        self.assertEqual(data, expected_data)
         self.assertEqual(errors, ['Invalid tracker URLs'])
 
     def test_multiple_tracker_urls(self):
         self.tracker_urls = 'https://example.com/p1.gif https://example.com/p2.gif'
         data, errors = self._run_clean_row()
-
-        self.assertEqual(data, {
-            'image': {
-                'id': self.image_id,
-                'width': self.image_width,
-                'height': self.image_height,
-                'hash': self.image_hash
-            },
-            'url': self.url,
-            'title': self.title,
-            'tracker_urls': self.tracker_urls.split(' ')
-        })
+        expected_data = dict(self.default_expected_data)
+        expected_data['tracker_urls'] = self.tracker_urls.split(' ')
+        self.assertEqual(data, expected_data)
         self.assertEqual(errors, [])
 
     def test_invalid_multiple_tracker_urls(self):
         self.tracker_urls = 'https://example.com/p1.gif invalid_url'
         data, errors = self._run_clean_row()
-
-        self.assertEqual(data, {
-            'image': {
-                'id': self.image_id,
-                'width': self.image_width,
-                'height': self.image_height,
-                'hash': self.image_hash
-            },
-            'url': self.url,
-            'title': self.title,
-        })
+        expected_data = dict(self.default_expected_data)
+        expected_data.pop('tracker_urls')
+        self.assertEqual(data, expected_data)
         self.assertEqual(errors, ['Invalid tracker URLs'])
+
+    def test_no_batch_data(self):
+        self.batch_display_url = ''
+        self.batch_brand_name = ''
+        self.batch_description = ''
+        self.batch_call_to_action = ''
+        data, errors = self._run_clean_row()
+        expected_data = dict(self.default_expected_data)
+        expected_data.pop('display_url')
+        expected_data.pop('brand_name')
+        expected_data.pop('description')
+        expected_data.pop('call_to_action')
+        self.assertEqual(data, expected_data)
+        self.assertItemsEqual(errors, 
+            [u'Display URL has to be present in CSV or default value should be submitted in the upload form',
+            u'Brand name has to be present in CSV or default value should be submitted in the upload form',
+            u'Description has to be present in CSV or default value should be submitted in the upload form',
+            u'Call to action has to be present in CSV or default value should be submitted in the upload form'])
+
+    def test_csv_override(self):
+        self.display_url = 'def.com'
+        self.brand_name = 'NewBrand inc.'
+        self.description = 'Better description'
+        self.call_to_action = 'Act Now!'
+        data, errors = self._run_clean_row()
+        expected_data = dict(self.default_expected_data)
+        expected_data['display_url'] = self.display_url
+        expected_data['brand_name'] = self.brand_name
+        expected_data['description'] = self.description
+        expected_data['call_to_action'] = self.call_to_action
+        self.assertItemsEqual(errors, [])
+        self.assertEqual(data, expected_data)
+
+    def test_csv_override_max_lengths(self):
+        self.display_url = 'a' * 300 + ".com"
+        self.brand_name = 'b' * 300
+        self.description = 'c' * 300
+        self.call_to_action = 'd' * 300
+        data, errors = self._run_clean_row()
+        expected_data = dict(self.default_expected_data)
+        expected_data.pop('display_url')
+        expected_data.pop('brand_name')
+        expected_data.pop('description')
+        expected_data.pop('call_to_action')
+        self.assertItemsEqual(errors, [u'Display URL is too long (304/25).',
+                                       u'Brand name is too long (300/25).',
+                                       u'Description is too long (300/140).',
+                                       u'Call to action is too long (300/25).'])
+        self.assertEqual(data, expected_data)
+
+    def test_csv_override_invalid_display_url(self):
+        self.display_url = 'aaaa'
+        data, errors = self._run_clean_row()
+        expected_data = dict(self.default_expected_data)
+        expected_data.pop('display_url')
+        self.assertItemsEqual(errors, [u'Display URL is invalid.'])
+        self.assertEqual(data, expected_data)
+        
+        
 
 
 @patch('dash.upload.redirector_helper.insert_redirect')

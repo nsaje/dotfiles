@@ -304,6 +304,21 @@ class UserForm(forms.Form):
     )
 
 
+DISPLAY_URL_MAX_LENGTH = 25
+
+class DisplayURLField(forms.URLField):
+    def clean(self, value):
+        display_url = super(forms.URLField, self).clean(value)
+        display_url = display_url.strip()
+        display_url = re.sub(r'^https?://', '', display_url)
+        display_url = re.sub(r'/$', '', display_url)
+
+        validate_length = validators.MaxLengthValidator(DISPLAY_URL_MAX_LENGTH, message = self.error_messages['max_length'])
+        validate_length(display_url)
+
+        return display_url
+
+
 class AdGroupAdsPlusUploadForm(forms.Form):
     content_ads = forms.FileField(
         error_messages={'required': 'Please choose a file to upload.'}
@@ -316,41 +331,41 @@ class AdGroupAdsPlusUploadForm(forms.Form):
             'max_length': 'Batch name is too long (%(show_value)d/%(limit_value)d).'
         }
     )
-    display_url = forms.URLField(
-        # max length is validated in clean_display_url, that's why it is not set here, error message is still taken from here
+    display_url = DisplayURLField(
+        required=False,
+        label= "Display URL", 
+        # max_length is should be validated _after_ http:// has been stripped out
+        # that's why it is validated in DisplayURLField.clean() and max_length isn't set here
         error_messages={
+            'invalid': 'Display URL is invalid.',
             'max_length': 'Display URL is too long (%(show_value)d/%(limit_value)d).'
         }
     )
     brand_name = forms.CharField(
+        required=False,
         max_length=25,
+        label="Brand name",
         error_messages={
             'max_length': 'Brand name is too long (%(show_value)d/%(limit_value)d).'
         }
     )
     description = forms.CharField(
+        required = False,
         max_length=140,
+        label="Description",
         error_messages={
             'max_length': 'Description is too long (%(show_value)d/%(limit_value)d).'
-        }
+        } 
     )
     call_to_action = forms.CharField(
+        required=False,
+        label="Call to action",
         max_length=25,
         error_messages={
             'max_length': 'Call to action is too long (%(show_value)d/%(limit_value)d).'
         }
     )
 
-    def clean_display_url(self):
-        display_url = self.cleaned_data['display_url']
-        display_url = display_url.strip()
-        display_url = re.sub(r'^https?://', '', display_url)
-        display_url = re.sub(r'/$', '', display_url)
-
-        validate_length = validators.MaxLengthValidator(25, message = self.fields['display_url'].error_messages['max_length'])
-        validate_length(display_url)
-
-        return display_url
 
     def _get_header(self, lines):
         reader = unicodecsv.reader(lines)
@@ -446,7 +461,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
 
         return data
 
-    # we validate form as a whole after each field has been validated to see if the fields that are submitted as empty in the form are specified in CSV as columns
+    # we validate form as a whole after all fields have been validated to see if the fields that are submitted as empty in the form are specified in CSV as columns
     def clean(self):
         cleaned_data = super(AdGroupAdsPlusUploadForm, self).clean()
         

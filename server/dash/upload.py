@@ -4,11 +4,12 @@ import unicodecsv
 import StringIO
 import urllib2
 import httplib
+import re
 from functools import partial
 from multiprocessing.pool import ThreadPool
 
 from django.db import transaction
-from django.forms import ValidationError
+from django.forms import ValidationError, URLField
 from django.core import validators
 from django.conf import settings
 from django.db.models import F
@@ -24,6 +25,7 @@ from dash import models
 from dash import api
 from dash import constants
 from dash import image_helper
+from dash.forms import AdGroupAdsPlusUploadForm, DISPLAY_URL_MAX_LENGTH	# we'll use error messages for validators and max lengths
 
 logger = logging.getLogger(__name__)
 
@@ -194,25 +196,14 @@ def _clean_row(batch, ad_group, row):
             try:
                 if key == 'title': 
                     data[key] = _clean_title(row.get('title'))
-                
                 elif key == 'url':
                     data[key] = _clean_url(row.get('url'), ad_group)
-                
                 elif key == 'image': 
                     data[key] = _clean_image(row.get('image_url'), row.get('crop_areas'))
-                
                 elif key == 'tracker_urls': 
                     data[key] = _clean_tracker_urls(row.get('tracker_urls'))
-
-                elif key == 'description': 
-                    pass
-                    #data[key] = _clean_description(row.get('description'))
-                elif key == 'display_url': 
-                    pass
-                elif key == 'brand_name': 
-                    pass
-                elif key == 'call_to_action': 
-                    pass
+                elif key in ['description', 'display_url', 'brand_name', 'call_to_action']:: 
+                    data[key] = _clean_inherited_csv_field(key, row.get(key), batch.description)
                 else:
                     raise Exception("Unknown key")	# should never happen, guards against coding errors
             except ValidationError as e:
@@ -226,6 +217,17 @@ def _clean_row(batch, ad_group, row):
     except Exception as e:
         logger.exception('Exception in upload._clean_row')
         raise
+
+# This function cleans the fields that are, when column is not present or the value is empty, inherited from form submission
+def _clean_inherited_csv_field(field_name, value_from_csv, cleaned_value_from_form):
+    field = AdGroupAdsPlusUploadForm.base_fields[field_name]
+    if not value_from_csv:
+        if cleaned_value_from_form:
+            return cleaned_value_from_form
+        else:
+            raise ValidationError("{0} has to be present in CSV or default value should be submitted in the upload form".format(field.label))
+    value = field.clean(value_from_csv)
+    return value
 
 
 def _clean_url(url, ad_group):
