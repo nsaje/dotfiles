@@ -1259,11 +1259,11 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 'url_with_tracking_codes': url_with_tracking_codes,
                 'batch_name': content_ad.batch.name,
                 'batch_id': content_ad.batch.id,
-                'display_url': content_ad.batch.display_url,
-                'brand_name': content_ad.batch.brand_name,
-                'description': content_ad.batch.description,
-                'call_to_action': content_ad.batch.call_to_action,
-                'upload_time': content_ad.batch.created_dt,
+                'display_url': content_ad.display_url,
+                'brand_name': content_ad.brand_name,
+                'description': content_ad.description,
+                'call_to_action': content_ad.call_to_action,
+                'upload_time': content_ad.created_dt,
                 'image_urls': {
                     'square': content_ad.get_image_url(160, 160),
                     'landscape': content_ad.get_image_url(256, 160)

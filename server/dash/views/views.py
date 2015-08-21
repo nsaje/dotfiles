@@ -619,7 +619,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.upload_content_ads'):
             raise exc.ForbiddenError(message='Not allowed')
-
+      
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         form = forms.AdGroupAdsPlusUploadForm(request.POST, request.FILES)
@@ -627,18 +627,17 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
             raise exc.ValidationError(errors=form.errors)
 
         batch_name = form.cleaned_data['batch_name']
+        content_ads = form.cleaned_data['content_ads'],
         display_url = form.cleaned_data['display_url']
-        brand_name = form.cleaned_data['brand_name']
-        description = form.cleaned_data['description']
-        call_to_action = form.cleaned_data['call_to_action']
-        content_ads = form.cleaned_data['content_ads']
+        upload_form_cleaned_fields = {
+            'display_url': form.cleaned_data['display_url'],
+            'brand_name': form.cleaned_data['brand_name'],
+            'description': form.cleaned_data['description'],
+            'call_to_action': form.cleaned_data['call_to_action'],
+        }
 
         batch = models.UploadBatch.objects.create(
             name=batch_name,
-            display_url=display_url,
-            brand_name=brand_name,
-            description=description,
-            call_to_action=call_to_action,
             processed_content_ads=0,
             batch_size=len(content_ads)
         )
@@ -646,10 +645,10 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
         current_settings = ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
 
-        new_settings.display_url = display_url
-        new_settings.brand_name = brand_name
-        new_settings.description = description
-        new_settings.call_to_action = call_to_action
+        new_settings.display_url = upload_form_cleaned_fields['display_url']
+        new_settings.brand_name = upload_form_cleaned_fields['brand_name']
+        new_settings.description = upload_form_cleaned_fields['description']
+        new_settings.call_to_action = upload_form_cleaned_fields['call_to_action']
 
         new_settings.save(request)
 
@@ -657,6 +656,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
             content_ads,
             request.FILES['content_ads'].name,
             batch,
+            upload_form_cleaned_fields,
             ad_group,
             request
         )
@@ -886,10 +886,10 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
                 'url': content_ad.url,
                 'title': content_ad.title,
                 'image_url': content_ad.get_original_image_url(),
-                'display_url': content_ad.batch.display_url,
-                'brand_name': content_ad.batch.brand_name,
-                'description': content_ad.batch.description,
-                'call_to_action': content_ad.batch.call_to_action,
+                'display_url': content_ad.display_url,
+                'brand_name': content_ad.brand_name,
+                'description': content_ad.description,
+                'call_to_action': content_ad.call_to_action,
             })
 
         filename = '{}_{}_{}_content_ads'.format(

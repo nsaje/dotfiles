@@ -91,10 +91,10 @@ class CleanRowTest(TestCase):
         self.description = ''
         self.call_to_action = ''
 
-        self.batch_display_url = 'abc.com'
-        self.batch_brand_name = 'ABC inc.'
-        self.batch_description = "Oh my desc!"
-        self.batch_call_to_action = "Act!"
+        self.upload_form_display_url = 'abc.com'
+        self.upload_form_brand_name = 'ABC inc.'
+        self.upload_form_description = "Oh my desc!"
+        self.upload_form_call_to_action = "Act!"
 
         self.image_id = 'test_image_id'
         self.image_width = 100
@@ -120,10 +120,10 @@ class CleanRowTest(TestCase):
             'title': self.title,
             'tracker_urls': self.tracker_urls.split(' '),
             'url': self.url,
-            'display_url': self.batch_display_url,
-            'brand_name': self.batch_brand_name,
-            'description': self.batch_description,
-            'call_to_action': self.batch_call_to_action,
+            'display_url': self.upload_form_display_url,
+            'brand_name': self.upload_form_brand_name,
+            'description': self.upload_form_description,
+            'call_to_action': self.upload_form_call_to_action,
         }
 
     def tearDown(self):
@@ -145,15 +145,15 @@ class CleanRowTest(TestCase):
         }
 
         batch_name = 'Test batch name'
-        batch = models.UploadBatch.objects.create(name=batch_name,
-                                                display_url=self.batch_display_url,
-                                                brand_name=self.batch_brand_name,
-                                                description=self.batch_description,
-                                                call_to_action=self.batch_call_to_action)
+        batch = models.UploadBatch.objects.create(name=batch_name)
+        upload_form_cleaned_fields = {'display_url': self.upload_form_display_url,
+                                      'brand_name': self.upload_form_brand_name,
+                                      'description': self.upload_form_description,
+                                      'call_to_action': self.upload_form_call_to_action}
 
         ad_group = models.AdGroup.objects.get(pk=1)
 
-        result_row, data, errors = upload._clean_row(batch, ad_group, row)
+        result_row, data, errors = upload._clean_row(batch, upload_form_cleaned_fields, ad_group, row)
 
         self.assertEqual(row, result_row)
 
@@ -270,11 +270,11 @@ class CleanRowTest(TestCase):
         self.assertEqual(data, expected_data)
         self.assertEqual(errors, ['Invalid tracker URLs'])
 
-    def test_no_batch_data(self):
-        self.batch_display_url = ''
-        self.batch_brand_name = ''
-        self.batch_description = ''
-        self.batch_call_to_action = ''
+    def test_no_upload_form_fields(self):
+        self.upload_form_display_url = ''
+        self.upload_form_brand_name = ''
+        self.upload_form_description = ''
+        self.upload_form_call_to_action = ''
         data, errors = self._run_clean_row()
         expected_data = dict(self.default_expected_data)
         expected_data.pop('display_url')

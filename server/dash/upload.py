@@ -39,13 +39,13 @@ class UploadFailedException(Exception):
     pass
 
 
-def process_async(content_ads_data, filename, batch, ad_group, request):
+def process_async(content_ads_data, filename, batch, upload_form_cleaned_fields, ad_group, request):
     ad_group_sources = [s for s in models.AdGroupSource.objects.filter(ad_group_id=ad_group.id)
                         if s.can_manage_content_ads and s.source.can_manage_content_ads()]
 
     pool = ThreadPool(processes=NUM_THREADS)
     pool.map_async(
-        partial(_clean_row, batch, ad_group),
+        partial(_clean_row, batch, upload_form_cleaned_fields, ad_group),
         content_ads_data,
         callback=partial(_process_callback, batch, ad_group, ad_group_sources, filename, request),
     )
@@ -185,7 +185,7 @@ def _create_objects(data, batch, ad_group_id, ad_group_sources):
     return content_ad, content_ad_sources
 
 
-def _clean_row(batch, ad_group, row):
+def _clean_row(batch, upload_form_cleaned_fields, ad_group, row):
     try:
         errors = []
         data = {}
@@ -200,7 +200,7 @@ def _clean_row(batch, ad_group, row):
                 elif key == 'tracker_urls': 
                     data[key] = _clean_tracker_urls(row.get('tracker_urls'))
                 elif key in ['description', 'display_url', 'brand_name', 'call_to_action']:
-                    data[key] = _clean_inherited_csv_field(key, row.get(key), getattr(batch, key))
+                    data[key] = _clean_inherited_csv_field(key, row.get(key), upload_form_cleaned_fields[key])
                 else:
                     raise Exception("Unknown key")	# should never happen, guards against coding errors
             except ValidationError as e:

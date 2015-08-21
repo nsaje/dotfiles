@@ -1247,10 +1247,6 @@ class UploadBatch(models.Model):
     )
     error_report_key = models.CharField(max_length=1024, null=True, blank=True)
     num_errors = models.PositiveIntegerField(null=True)
-    display_url = models.CharField(max_length=25, blank=True, default='')
-    brand_name = models.CharField(max_length=25, blank=True, default='')
-    description = models.CharField(max_length=140, blank=True, default='')
-    call_to_action = models.CharField(max_length=25, blank=True, default='')
 
     processed_content_ads = models.PositiveIntegerField(null=True)
     batch_size = models.PositiveIntegerField(null=True)

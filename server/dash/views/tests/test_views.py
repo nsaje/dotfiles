@@ -755,9 +755,79 @@ class AdGroupAdsPlusUploadTest(TestCase):
             },
             follow=True
         )
-
         self.assertEqual(response.status_code, 200)
         self.assertTrue(mock_process_async.called)
+
+    @patch('dash.views.views.upload.process_async')
+    def test_post_empty_fields(self, mock_process_async):
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        ad_group_settings = models.AdGroupSettings(
+            ad_group_id=1,
+            created_by_id=1,
+        )
+        ad_group_settings.save(request)
+
+        mock_file = SimpleUploadedFile('testfile.csv', 'Url,title,image_url,display_url,brand_name,description,call_to_action\nhttp://example.com,testtitle,http://example.com/image,test.com,testbrand,testdesc,testcall')
+
+        response = self._get_client().post(
+            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),
+            {
+                'content_ads': mock_file,
+                'batch_name': 'testname',
+                'display_url': '',
+                'brand_name': '',
+                'description': '',
+                'call_to_action': '',
+            },
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(mock_process_async.called)
+
+    @patch('dash.views.views.upload.process_async')
+    def test_post_empty_fields_not_in_csv(self, mock_process_async):
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        ad_group_settings = models.AdGroupSettings(
+            ad_group_id=1,
+            created_by_id=1,
+        )
+        ad_group_settings.save(request)
+
+        mock_file = SimpleUploadedFile('testfile.csv', 'Url,title,image_url\nhttp://example.com,testtitle,http://example.com/image')
+
+        response = self._get_client().post(
+            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),
+            {
+                'content_ads': mock_file,
+                'batch_name': 'testname',
+                'display_url': '',
+                'brand_name': '',
+                'description': '',
+                'call_to_action': '',
+            },
+            follow=True
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json.loads(response.content), 
+                    {
+                        "data": {
+                        "message": None, 
+                        "errors": {
+                            "display_url": ["Display URL has to be present here or as a column in CSV"], 
+                            "call_to_action": ["Call to action has to be present here or as a column in CSV"], 
+                            "brand_name": ["Brand name has to be present here or as a column in CSV"], 
+                            "description": ["Description has to be present here or as a column in CSV"]
+                            }, 
+                        "error_code": "ValidationError"
+                        }, 
+                        "success": False
+                    })
+        self.assertFalse(mock_process_async.called)
+
 
     def test_validation_error(self):
         response = self._get_client().post(

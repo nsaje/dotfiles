@@ -471,13 +471,10 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         
         # after individual fields are validated we need to check if CSV has columns for the ones that are submitted empty
         # we take advantage of the fact that field names of this form have exactly the same names as normalized names of csv columns
-        for column_and_field_name, human_field_name in [('display_url', 'Display URL'), 
-                                                        ('brand_name', 'Brand name'),
-                                                        ('description', 'Description'),
-                                                        ('call_to_action', 'Call to action'),]:
+        for column_and_field_name in ['display_url', 'brand_name', 'description', 'call_to_action']:
             if not self.cleaned_data.get(column_and_field_name): 	# if empty field was sumitted in the form
                 if column_and_field_name not in self.csv_column_names:	# and that field is not present as a CSV column 
-                    self.add_error(column_and_field_name, forms.ValidationError("{0} has to be present here or as a column in CSV".format(human_field_name)))
+                    self.add_error(column_and_field_name, forms.ValidationError("{0} has to be present here or as a column in CSV".format(self.fields[column_and_field_name].label)))
             
 
 
