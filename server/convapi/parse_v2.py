@@ -101,7 +101,6 @@ class GaReportRow(object):
         return int(seconds_str) + 60 * int(minutes_str) + 60 * 60 * int(hours_str)
 
     def sessions(self):
-        print self.ga_row_dicts
         all_row_raw_sessions = [ga_row_dict['Sessions'].replace(',', '').strip() for ga_row_dict in self.ga_row_dicts]
         all_row_sessions = [int(raw_sessions) if raw_sessions not in ('', None) else 0 for raw_sessions in all_row_raw_sessions]
         return sum(all_row_sessions)
