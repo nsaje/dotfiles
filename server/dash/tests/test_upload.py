@@ -33,7 +33,6 @@ class ErrorReportTest(TestCase):
         call_to_action = 'Now!'
         errors = 'Error message'
 
-
         content_ads = [{
             'url': url,
             'title': title,
