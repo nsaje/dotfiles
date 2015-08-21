@@ -202,7 +202,7 @@ def _clean_row(batch, ad_group, row):
                     data[key] = _clean_image(row.get('image_url'), row.get('crop_areas'))
                 elif key == 'tracker_urls': 
                     data[key] = _clean_tracker_urls(row.get('tracker_urls'))
-                elif key in ['description', 'display_url', 'brand_name', 'call_to_action']:: 
+                elif key in ['description', 'display_url', 'brand_name', 'call_to_action']:
                     data[key] = _clean_inherited_csv_field(key, row.get(key), batch.description)
                 else:
                     raise Exception("Unknown key")	# should never happen, guards against coding errors
