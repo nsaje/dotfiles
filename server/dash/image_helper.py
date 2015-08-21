@@ -18,8 +18,6 @@ class ImageProcessingException(Exception):
 def process_image(url, crop_areas):
     if not url:
         return None, 0, 0
-    if settings.Z3_API_IMAGE_URL == "dummyserver":
-        return 999, 300, 200, "DummyServerDummyHash"
 
     payload = {'image_url': url}
 

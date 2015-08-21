@@ -229,7 +229,7 @@ module.exports = function (grunt) {
             dev: {
                 constants: {
                     config: {
-                        static_url: 'http://localhost:9999',
+                        static_url: 'http://192.168.100.50:9999',
                         debug: true
                     }
                 } 
