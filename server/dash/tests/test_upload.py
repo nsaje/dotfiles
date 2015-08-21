@@ -22,40 +22,49 @@ class ErrorReportTest(TestCase):
         self.error_report = content
         return None
 
-    def test_error_report(self):
+    def test_error_report_all_fields(self):
         url = 'http://example.com'
         title = 'test title'
         image_url = 'http://example.com/image'
         crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
+        display_url = 'abc.com'
+        brand_name = 'Brand Inc.'
+        description = 'Very nice!'
+        call_to_action = 'Now!'
         errors = 'Error message'
+
 
         content_ads = [{
             'url': url,
             'title': title,
             'image_url': image_url,
             'crop_areas': crop_areas,
-            'errors': errors
+            'display_url': display_url,
+            'brand_name': brand_name,
+            'description': description,
+            'call_to_action': call_to_action,
+            'errors': errors,
         }]
         filename = 'testname.csv'
 
         upload._upload_error_report_to_s3 = self._fake_upload_error_report_to_s3
         upload._save_error_report(content_ads, filename)
         self.assertEqual(
-            '''url,title,image_url,crop_areas,errors
-http://example.com,test title,http://example.com/image,"(((44, 22), (144, 122)), ((33, 22), (177, 122)))",Error message\n'''.replace("\n", '\r\n'),
+            '''url,title,image_url,crop_areas,display_url,brand_name,description,call_to_action,errors
+http://example.com,test title,http://example.com/image,"(((44, 22), (144, 122)), ((33, 22), (177, 122)))",abc.com,Brand Inc.,Very nice!,Now!,Error message\n'''.replace("\n", '\r\n'),
             self.error_report)
 
-    def test_error_report_no_crop_areas(self):
+    def test_error_report_no_optional_fields(self):
         url = 'http://example.com'
         title = 'test title'
         image_url = 'http://example.com/image'
-        crop_areas = ''
+        errors = 'Error message'
 
         content_ads = [{
             'url': url,
             'title': title,
             'image_url': image_url,
-            'crop_areas': crop_areas
+            'errors': errors,
         }]
         filename = 'testname.csv'
 
@@ -63,7 +72,7 @@ http://example.com,test title,http://example.com/image,"(((44, 22), (144, 122)),
         upload._save_error_report(content_ads, filename)
         self.assertEqual(
             '''url,title,image_url,errors
-http://example.com,test title,http://example.com/image,\n'''.replace("\n", '\r\n'),
+http://example.com,test title,http://example.com/image,Error message\n'''.replace("\n", '\r\n'),
             self.error_report)
 
 
@@ -275,10 +284,10 @@ class CleanRowTest(TestCase):
         expected_data.pop('call_to_action')
         self.assertEqual(data, expected_data)
         self.assertItemsEqual(errors, 
-            [u'Display URL has to be present in CSV or default value should be submitted in the upload form',
-            u'Brand name has to be present in CSV or default value should be submitted in the upload form',
-            u'Description has to be present in CSV or default value should be submitted in the upload form',
-            u'Call to action has to be present in CSV or default value should be submitted in the upload form'])
+            [u'Display URL has to be present in CSV or default value should be submitted in the upload form.',
+            u'Brand name has to be present in CSV or default value should be submitted in the upload form.',
+            u'Description has to be present in CSV or default value should be submitted in the upload form.',
+            u'Call to action has to be present in CSV or default value should be submitted in the upload form.'])
 
     def test_csv_override(self):
         self.display_url = 'def.com'

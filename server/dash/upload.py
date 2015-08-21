@@ -107,22 +107,19 @@ def _save_error_report(rows, filename):
 
     fields = ['url', 'title', 'image_url']
 
-    if any(row.get('crop_areas') for row in rows):
-        fields.append('crop_areas')
-
-    if any(row.get('tracker_urls') for row in rows):
-        fields.append('tracker_urls')
+    optional_fields = ['crop_areas', 'tracker_urls', 'display_url', 'brand_name', 'description', 'call_to_action']
+    for field_name in optional_fields:
+        if any(row.get(field_name) for row in rows):
+            fields.append(field_name)
 
     fields.append('errors')
     writer = unicodecsv.DictWriter(string, fields)
 
     writer.writeheader()
     for row in rows:
-        if 'crop_areas' not in fields and 'crop_areas' in row:
-            del row['crop_areas']
-
-        if 'tracker_urls' not in fields and 'tracker_urls' in row:
-            del row['tracker_urls']
+        for field_name in optional_fields:
+            if field_name not in fields and field_name in row:
+                del row['field_name']
 
         writer.writerow(row)
 
@@ -225,7 +222,7 @@ def _clean_inherited_csv_field(field_name, value_from_csv, cleaned_value_from_fo
         if cleaned_value_from_form:
             return cleaned_value_from_form
         else:
-            raise ValidationError("{0} has to be present in CSV or default value should be submitted in the upload form".format(field.label))
+            raise ValidationError("{0} has to be present in CSV or default value should be submitted in the upload form.".format(field.label))
     value = field.clean(value_from_csv)
     return value
 
