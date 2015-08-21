@@ -237,7 +237,8 @@ def process_ga_report_v2(ga_report_task):
         report_log.save()
 
         # serialize report - this happens even if report is failed/empty
-        api_contentads.process_report(csvreport.entries, reports.constants.ReportType.GOOGLE_ANALYTICS)
+        valid_entries = csvreport.valid_entries()
+        api_contentads.process_report(valid_entries, reports.constants.ReportType.GOOGLE_ANALYTICS)
 
     except exc.EmptyReportException as e:
         logger.warning(e.message)

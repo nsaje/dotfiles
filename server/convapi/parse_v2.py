@@ -110,6 +110,9 @@ class CsvReport(object):
     def get_date(self):
         return self.start_date
 
+    def valid_entries(self):
+        return [entry for entry in self.entries if entry.is_row_valid()]
+
     def debug_parsing_overview(self):
         count_all = len(self.entries)
         count_valid_rows = 0
