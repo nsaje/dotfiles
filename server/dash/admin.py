@@ -776,7 +776,7 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
 
     def ad_group_name(self, obj):
         ad_group = obj.content_ad.ad_group
-        return u'<a href="{account_url}">{account_name}</a> / <a href="{campaign_url}">{campaign_name}</a> / <a href="{ad_group_url}">{ad_group_name}</a> + ({ad_group_id})'.format(
+        return u'<a href="{account_url}">{account_name}</a> / <a href="{campaign_url}">{campaign_name}</a> / <a href="{ad_group_url}">{ad_group_name}</a> - ({ad_group_id})'.format(
             account_url=reverse('admin:dash_account_change', args=(ad_group.campaign.account.id, )),
             account_name=ad_group.campaign.account.name,
             campaign_url=reverse('admin:dash_campaign_change', args=(ad_group.campaign.id, )),
