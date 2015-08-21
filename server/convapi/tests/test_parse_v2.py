@@ -269,5 +269,29 @@ Landing Page,Device Category,Sessions
         fields_raw = "Landing Page,Sessions,% New Sessions,New Users,Bounce Rate,Pages / Session,Avg. Session Duration,Revenue"
         self.assertEqual(set(["Revenue"]), set(parser._get_goal_fields(fields_raw.split(','))))
 
-    def test_parse(self):
-        pass
+
+    def test_merge(self):
+        # GA report can potentially contain multiple entries for a single
+        # content ad
+        complete_csv = """
+# ----------------------------------------
+# All Web Site Data
+# Landing Pages
+# 20150416-20150416
+# ----------------------------------------
+
+Landing Page,Device Category,Sessions,Goal Completions
+/unexpected-scenario?_z1_adgid=1&_z1_caid=10&_z1_msid=yahoo,desktop,6,1
+/unexpected-scenario?_z1_adgid=1&_z1_caid=10&_z1_msid=yahoo,mobile,6,2
+/unexpected-scenario?_z1_adgid=1&_z1_caid=10&_z1_msid=yahoo,tablet,6,3
+,,600,96.33%,578,95.50%,1.06,00:00:10,0.00%,0,A$0.00
+
+Day Index,Sessions
+4/16/15,18
+,18
+""".strip().replace('\t', '')
+
+        parser = parse_v2.CsvReport(complete_csv)
+        parser.parse()
+        self.assertEqual(1, len(parser.entries))
+        self.assertEqual(6, parser.valid_entries()[0].goals['Goal 1']['conversions'], 6)
