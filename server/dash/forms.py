@@ -243,28 +243,14 @@ class AccountAgencySettingsForm(forms.Form):
         return sales_representative
 
 
-class CampaignSettingsForm(forms.Form):
+class CampaignAgencyForm(forms.Form):
     id = forms.IntegerField()
-    name = forms.CharField(
-        max_length=127,
-        error_messages={'required': 'Please specify campaign name.'}
-    )
     account_manager = forms.IntegerField()
     sales_representative = forms.IntegerField(
         required=False
     )
-    service_fee = forms.DecimalField(
-        min_value=0,
-        max_value=100,
-        decimal_places=2,
-    )
     iab_category = forms.ChoiceField(
         choices=constants.IABCategory.get_choices(),
-    )
-    promotion_goal = forms.TypedChoiceField(
-        choices=constants.PromotionGoal.get_choices(),
-        coerce=int,
-        empty_value=None
     )
 
     def clean_account_manager(self):
@@ -297,6 +283,20 @@ class CampaignSettingsForm(forms.Form):
             raise forms.ValidationError(err_msg)
 
         return sales_representative
+
+
+class CampaignSettingsForm(forms.Form):
+    id = forms.IntegerField()
+    name = forms.CharField(
+        max_length=127,
+        error_messages={'required': 'Please specify campaign name.'}
+    )
+    campaign_goal = forms.TypedChoiceField(
+        choices=constants.CampaignGoal.get_choices(),
+        coerce=int,
+        empty_value=None
+    )
+    goal_quantity = forms.DecimalField(decimal_places=4)
 
 
 class CampaignBudgetForm(forms.Form):

@@ -236,6 +236,10 @@ urlpatterns += patterns(
         login_required(dash.views.views.CampaignAdGroups.as_view()),
     ),
     url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/agency/',
+        login_required(dash.views.agency.CampaignAgency.as_view()),
+    ),
+    url(
         r'^api/campaigns/(?P<campaign_id>\d+)/settings/',
         login_required(dash.views.agency.CampaignSettings.as_view()),
     ),

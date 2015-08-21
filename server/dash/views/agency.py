@@ -159,8 +159,8 @@ class AdGroupSettings(api_common.BaseApiView):
             settings.tracking_code = resource['tracking_code']
 
 
-class CampaignSettings(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'campaign_settings_get')
+class CampaignAgency(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_agency_get')
     def get(self, request, campaign_id):
         if not request.user.has_perm('zemauth.campaign_settings_view'):
             raise exc.MissingDataError()
@@ -180,26 +180,40 @@ class CampaignSettings(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_settings_put')
+    @statsd_helper.statsd_timer('dash.api', 'campaign_agency_put')
     def put(self, request, campaign_id):
         if not request.user.has_perm('zemauth.campaign_settings_view'):
             raise exc.MissingDataError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
-
         resource = json.loads(request.body)
 
-        form = forms.CampaignSettingsForm(resource.get('settings', {}))
+        form = forms.CampaignAgencyForm(resource.get('settings', {}))
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
         self.set_campaign(campaign, form.cleaned_data)
 
-        settings = models.CampaignSettings()
+        settings = campaign.get_current_settings().copy_settings()
         self.set_settings(settings, campaign, form.cleaned_data)
 
+        self.propagate(campaign, settings, request)
+
+        response = {
+            'settings': self.get_dict(settings, campaign),
+            'history': self.get_history(campaign),
+            'can_archive': campaign.can_archive(),
+            'can_restore': campaign.can_restore(),
+        }
+
+        return self.create_api_response(response)
+
+    @classmethod
+    def propagate(cls, campaign, settings, request):
         actions = []
+        # TODO: decorator
         with transaction.atomic():
+            # TODO: this is kinda weird to be here
             campaign.save(request)
             settings.save(request)
             # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
@@ -219,15 +233,6 @@ class CampaignSettings(api_common.BaseApiView):
                 )
 
         zwei_actions.send(actions)
-
-        response = {
-            'settings': self.get_dict(settings, campaign),
-            'history': self.get_history(campaign),
-            'can_archive': campaign.can_archive(),
-            'can_restore': campaign.can_restore(),
-        }
-
-        return self.create_api_response(response)
 
     def get_history(self, campaign):
         settings = models.CampaignSettings.objects.\
@@ -355,12 +360,9 @@ class CampaignSettings(api_common.BaseApiView):
 
     def set_settings(self, settings, campaign, resource):
         settings.campaign = campaign
-        settings.name = resource['name']
         settings.account_manager = resource['account_manager']
         settings.sales_representative = resource['sales_representative']
-        settings.service_fee = Decimal(resource['service_fee']) / 100
         settings.iab_category = resource['iab_category']
-        settings.promotion_goal = resource['promotion_goal']
 
     def get_user_list(self, settings, perm_name):
         users = list(ZemUser.objects.get_users_with_perm(perm_name))
@@ -370,6 +372,63 @@ class CampaignSettings(api_common.BaseApiView):
             users.append(manager)
 
         return [{'id': str(user.id), 'name': helpers.get_user_full_name_or_email(user)} for user in users]
+
+
+class CampaignSettings(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_settings_get')
+    def get(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.campaign_settings_view'):
+            raise exc.MissingDataError()
+
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        campaign_settings = campaign.get_current_settings()
+
+        response = {
+            'settings': self.get_dict(campaign_settings, campaign),
+        }
+
+        return self.create_api_response(response)
+
+    @statsd_helper.statsd_timer('dash.api', 'campaign_settings_put')
+    def put(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.campaign_settings_view'):
+            raise exc.MissingDataError()
+
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        resource = json.loads(request.body)
+
+        form = forms.CampaignSettingsForm(resource.get('settings', {}))
+        if not form.is_valid():
+            raise exc.ValidationError(errors=dict(form.errors))
+
+        settings = campaign.get_current_settings().copy_settings()
+        self.set_settings(settings, campaign, form.cleaned_data)
+
+        CampaignAgency.propagate(campaign, settings, request)
+
+        response = {
+            'settings': self.get_dict(settings, campaign)
+        }
+
+        return self.create_api_response(response)
+
+    def get_dict(self, settings, campaign):
+        result = {}
+
+        if settings:
+            result = {
+                'id': str(campaign.pk),
+                'name': campaign.name,
+                'campaign_goal': settings.campaign_goal,
+                'goal_quantity': settings.goal_quantity
+            }
+
+        return result
+
+    def set_settings(self, settings, campaign, resource):
+        settings.name = resource['name']
+        settings.campaign_goal = resource['campaign_goal']
+        settings.goal_quantity = resource['goal_quantity']
 
 
 class CampaignBudget(api_common.BaseApiView):

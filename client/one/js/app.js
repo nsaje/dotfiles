@@ -133,9 +133,14 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             templateUrl: '/partials/campaign_budget.html',
             controller: 'CampaignBudgetCtrl'
         })
+        .state('main.campaigns.archived', {
+            url: '/archived',  // TODO: check url
+            templateUrl: '/partials/campaign_archived.html'
+        })
         .state('main.campaigns.settings', {
-            url: '/settings',
-            templateUrl: '/partials/campaign_settings.html'
+            url: '/settings',  // TODO: check url
+            templateUrl: '/partials/campaign_settings.html',
+            controller: 'CampaignSettingsCtrl'
         });
 
 

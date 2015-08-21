@@ -125,6 +125,9 @@ oneApp.controller('MainCtrl',
         if ($state.includes('**.agency') && $scope.hasPermission('zemauth.campaign_settings_view')) {
             return 'main.campaigns.agency';
         }
+        if ($state.includes('**.settings') && $scope.hasPermission('zemauth.campaign_settings_view')) {
+            return 'main.campaigns.settings';
+        }
 
         // otherwise get default state
         if ($scope.hasPermission('zemauth.campaign_ad_groups_view')) {
@@ -138,6 +141,9 @@ oneApp.controller('MainCtrl',
         }
         if ($scope.hasPermission('zemauth.campaign_budget_management_view')) {
             return 'main.campaings.budget';
+        }
+        if ($scope.hasPermission('zemauth.campaign_settings_view')) {
+            return 'main.campaigns.settings';
         }
 
         // no permissions

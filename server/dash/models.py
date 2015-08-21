@@ -420,7 +420,8 @@ class CampaignSettings(SettingsBase):
         'sales_representative',
         'service_fee',
         'iab_category',
-        'promotion_goal',
+        'campaign_goal',
+        'goal_quantity',
         'archived'
     ]
 
@@ -459,6 +460,18 @@ class CampaignSettings(SettingsBase):
         default=constants.PromotionGoal.BRAND_BUILDING,
         choices=constants.PromotionGoal.get_choices()
     )
+    campaign_goal = models.IntegerField(
+        default=constants.CampaignGoal.NEW_UNIQUE_VISITORS,
+        choices=constants.CampaignGoal.get_choices()
+    )
+    goal_quantity = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        blank=False,
+        null=False,
+        default=0
+    )
+
     archived = models.BooleanField(default=False)
 
     def save(self, request, *args, **kwargs):
@@ -1300,7 +1313,6 @@ class ContentAd(models.Model):
     tracker_urls = ArrayField(models.CharField(max_length=2048), null=True)
 
     objects = QuerySetManager()
-
 
     def get_original_image_url(self, width=None, height=None):
         if self.image_id is None:
