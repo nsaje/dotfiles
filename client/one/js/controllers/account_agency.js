@@ -268,9 +268,22 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
                     conversionPixel.archived = true;
                 }
 
-                $scope.getSettings(); // update history
+                $scope.getSettings();
             }
         );
+    };
+
+    $scope.copyConversionPixelTag = function (slug) {
+        var scope = $scope.$new(true);
+        scope.conversionPixelTag = 'https://cookiepixel.zemanta.com/p/' + $scope.account.id + '/' + slug + '/';
+
+        var modalInstance = $modal.open({
+            templateUrl: '/partials/copy_conversion_pixel_modal.html',
+            windowClass: 'modal',
+            scope: scope
+        });
+
+        return modalInstance;
     };
 
     $scope.filterConversionPixels = function (conversionPixel) {
