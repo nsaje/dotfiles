@@ -4,6 +4,7 @@ oneApp.controller('MainCtrl',
      '$state',
      '$location',
      '$document',
+     '$modalStack',
      'zemMoment',
      'user',
      'zemUserSettings',
@@ -16,6 +17,7 @@ oneApp.controller('MainCtrl',
         $state,
         $location,
         $document,
+        $modalStack,
         zemMoment,
         user,
         zemUserSettings,
@@ -284,6 +286,11 @@ oneApp.controller('MainCtrl',
                     return;
                 }
 
+                if (!!$modalStack.getTop()) {
+                    // some modal window exists
+                    return;
+                }
+
                 if (el) {
                     el.select2('open');
                 }
@@ -299,7 +306,7 @@ oneApp.controller('MainCtrl',
             $location.search('end_date', $scope.dateRange.endDate ? $scope.dateRange.endDate.format('YYYY-MM-DD') : null);
         }
     });
-
+ 
     $scope.getShowArchived = function () {
         return zemFilterService.getShowArchived();
     };
