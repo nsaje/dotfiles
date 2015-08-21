@@ -782,7 +782,8 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
             campaign_url=reverse('admin:dash_campaign_change', args=(ad_group.campaign.id, )),
             campaign_name=ad_group.campaign.name,
             ad_group_url=reverse('admin:dash_adgroup_change', args=(ad_group.id, )),
-            ad_group_name=ad_group.name
+            ad_group_name=ad_group.name,
+            ad_group_id=str(ad_group.id),
             )
     ad_group_name.allow_tags = True
 
