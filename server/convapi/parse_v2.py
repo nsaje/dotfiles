@@ -33,18 +33,18 @@ GOAL_RATE_KEYWORDS = ['conversion rate']
 
 class GaReportRow(object):
     def __init__(self, ga_row_dict, report_date, content_ad_id, source_param, goals):
-        self.ga_row_dict = ga_row_dict
+        self.ga_row_dicts = [ga_row_dict]
 
         self.visits = self._atoi(ga_row_dict.get('Sessions'))
         self.bounce_rate_raw = ga_row_dict.get('Bounce Rate')
         if ga_row_dict.get('Bounce Rate') is not None:
             self.bounce_rate = self._atof(ga_row_dict['Bounce Rate'].replace('%', '')) / 100
         else:
-            self.bounce_rate = None
-        self.pageviews = int(round(self._atof(ga_row_dict['Pages / Session']) * self.visits))
-        self.new_visits = self._atoi(ga_row_dict['New Users'])
+            self.bounce_rate = 0
+        self.pageviews = int(round(self._atof(ga_row_dict.get('Pages / Session', '0')) * self.visits))
+        self.new_visits = self._atoi(ga_row_dict.get('New Users', '0'))
         self.bounced_visits = int(self.bounce_rate * self.visits)
-        self.total_time_on_site = self.visits * self._parse_duration(ga_row_dict['Avg. Session Duration'])
+        self.total_time_on_site = self.visits * self._parse_duration(ga_row_dict.get('Avg. Session Duration', '00:00:00'))
 
         self.report_date = report_date.isoformat()
         self.content_ad_id = content_ad_id
@@ -59,6 +59,27 @@ class GaReportRow(object):
         # TODO: Implement locale specific parsing
         return float(raw_str.replace(',', ''))
 
+    def key(self):
+        return (self.report_date, self.content_ad_id, self.source_param)
+
+    def merge_with(self, ga_report_row):
+        self.ga_row_dicts.extend(ga_report_row.ga_row_dicts)
+        self.visits += ga_report_row.visits
+        self.bounce_rate = (self.bounce_rate + ga_report_row.bounce_rate) / 2
+        self.pageviews += ga_report_row.pageviews
+        self.new_visits += ga_report_row.new_visits
+        self.bounced_visits += ga_report_row.bounced_visits
+        self.total_time_on_site += ga_report_row.total_time_on_site
+
+        # merge goal conversions only for now
+        for ga_report_row_goal in ga_report_row.goals:
+            if ga_report_row_goal in self.goals:
+                self.goals[ga_report_row_goal]['conversions'] = self.goals[ga_report_row_goal].get('conversions', 0)
+                self.goals[ga_report_row_goal]['conversions'] +=\
+                    ga_report_row.goals.get(ga_report_row_goal, {'conversions': 0}).get('conversions', 0)
+            else:
+                self.goals[ga_report_row_goal] = ga_report_row.goals[ga_report_row_goal]
+
     def is_row_valid(self):
         return self.content_ad_id is not None and\
             self.source_param != '' and\
@@ -72,19 +93,17 @@ class GaReportRow(object):
                 return True
         return False
 
-    def get_ga_field(self, column):
-        return self.ga_row_dict.get(column, None)
+    def get_ga_fields(self, column):
+        return [ga_row_dict.get(column, None) for ga_row_dict in self.ga_row_dicts]
 
     def _parse_duration(self, durstr):
         hours_str, minutes_str, seconds_str = durstr.replace('<', '').split(':')
         return int(seconds_str) + 60 * int(minutes_str) + 60 * 60 * int(hours_str)
 
     def sessions(self):
-        raw_sessions = self.ga_row_dict['Sessions'].replace(',', '').strip()
-        if raw_sessions == '':
-            return 0
-        else:
-            return int(raw_sessions)
+        all_row_raw_sessions = [ga_row_dict['Sessions'].replace(',', '').strip() for ga_row_dict in self.ga_row_dicts]
+        all_row_sessions = [int(raw_sessions) if raw_sessions not in ('', None) else 0 for raw_sessions in all_row_raw_sessions]
+        return sum(all_row_sessions)
 
     def __str__(self):
         return "{date}-{caid}-{source_param}".format(
@@ -99,27 +118,30 @@ class CsvReport(object):
     def __init__(self, csv_report_text):
         self.csv_report_text = csv_report_text
         # mapping from each url in report to corresponding z1 code or utm term
-        self.entries = []
+        self.entries = {}
         self.start_date = None
         # first column of csv in GA report - Keyword or Landing Page
         self.first_column = None
 
     def is_empty(self):
-        return self.entries == []
+        return self.entries == {}
 
     def get_date(self):
         return self.start_date
 
+    def valid_entries(self):
+        return [entry for entry in self.entries.values() if entry.is_row_valid()]
+
     def debug_parsing_overview(self):
-        count_all = len(self.entries)
+        count_all = len(self.entries.values())
         count_valid_rows = 0
-        for entry in self.entries:
+        for entry in self.entries.values():
             if not entry.is_row_valid():
                 continue
             count_valid_rows += 1
 
         count_goal_useful = 0
-        for entry in self.entries:
+        for entry in self.entries.values():
             if not entry.are_goals_useful():
                 continue
             count_goal_useful += 1
@@ -188,7 +210,7 @@ class CsvReport(object):
         reader = csv.DictReader(f_body)
         try:
             self.fieldnames = reader.fieldnames
-            self.entries = []
+            self.entries = {}
             for entry in reader:
                 keyword_or_url = entry[self.first_column]
                 if keyword_or_url is None or keyword_or_url.strip() == '':
@@ -196,7 +218,12 @@ class CsvReport(object):
                 content_ad_id, source_param = self._parse_keyword_or_url(keyword_or_url)
                 goals = self._parse_goals(self.fieldnames, entry)
                 report_entry = GaReportRow(entry, self.start_date, content_ad_id, source_param, goals)
-                self.entries.append(report_entry)
+
+                existing_entry = self.entries.get(report_entry.key())
+                if existing_entry is None:
+                    self.entries[report_entry.key()] = report_entry
+                else:
+                    existing_entry.merge_with(report_entry)
         except:
             raise exc.CsvParseException('Could not parse CSV')
 
@@ -320,7 +347,7 @@ class CsvReport(object):
 
     def _check_session_counts(self, footer):
         sessions_total = self._get_sessions_total(footer)
-        sessions_sum = sum(entry.sessions() for entry in self.entries)
+        sessions_sum = sum(entry.sessions() for entry in self.entries.values())
         if sessions_total != sessions_sum:
             raise exc.IncompleteReportException(
                 'Number of total sessions ({}) is not equal to sum of session counts ({})'.format(
@@ -366,14 +393,14 @@ class CsvReport(object):
 
     def is_media_source_specified(self):
         media_source_not_specified = []
-        for entry in self.entries:
+        for entry in self.entries.values():
             if entry.source_param == '':
                 media_source_not_specified.append(entry.source_param)
         return (len(media_source_not_specified) == 0, list(media_source_not_specified))
 
     def is_content_ad_specified(self):
         content_ad_not_specified = set()
-        for entry in self.entries:
+        for entry in self.entries.values():
             if entry.content_ad_id is None:
                 content_ad_not_specified.add(entry.get_ga_field(self.first_column))
         return (len(content_ad_not_specified) == 0, list(content_ad_not_specified))
