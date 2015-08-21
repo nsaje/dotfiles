@@ -255,13 +255,13 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
                             name: data.name,
                             adGroups: []
                         });
-                        
+
                         if ($window.isDemo) {
                             $state.go('main.campaigns.ad_groups', {id: data.id});
                         } else {
                             $state.go('main.campaigns.agency', {id: data.id});
                         }
-                        
+
                     }
                 });
             },

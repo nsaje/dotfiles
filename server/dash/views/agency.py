@@ -5,7 +5,7 @@ import newrelic.agent
 from collections import OrderedDict
 from decimal import Decimal
 from django.db import transaction
-from django.conf import settings
+# from django.conf import settings
 from django.contrib.auth import models as authmodels
 
 from actionlog import api as actionlog_api
@@ -21,7 +21,6 @@ from dash import constants
 from utils import api_common
 from utils import statsd_helper
 from utils import exc
-from utils import pagerduty_helper
 from utils import email_helper
 
 from zemauth.models import User as ZemUser
@@ -261,13 +260,6 @@ class CampaignSettings(api_common.BaseApiView):
     def format_decimal_to_percent(self, num):
         return '{:.2f}'.format(num * 100).rstrip('0').rstrip('.')
 
-    def get_full_name_or_email(self, user):
-        if user is None:
-            return '/'
-
-        result = user.get_full_name() or user.email
-        return result.encode('utf-8')
-
     def convert_settings_to_dict(self, old_settings, new_settings):
         settings_dict = OrderedDict([
             ('name', {
@@ -276,11 +268,11 @@ class CampaignSettings(api_common.BaseApiView):
             }),
             ('account_manager', {
                 'name': 'Account Manager',
-                'value': self.get_full_name_or_email(new_settings.account_manager)
+                'value': helpers.get_user_full_name_or_email(new_settings.account_manager)
             }),
             ('sales_representative', {
                 'name': 'Sales Representative',
-                'value': self.get_full_name_or_email(new_settings.sales_representative)
+                'value': helpers.get_user_full_name_or_email(new_settings.sales_representative)
             }),
             ('service_fee', {
                 'name': 'Service Fee',
@@ -305,11 +297,11 @@ class CampaignSettings(api_common.BaseApiView):
 
             if old_settings.account_manager is not None:
                 settings_dict['account_manager']['old_value'] = \
-                    self.get_full_name_or_email(old_settings.account_manager)
+                    helpers.get_user_full_name_or_email(old_settings.account_manager)
 
             if old_settings.sales_representative is not None:
                 settings_dict['sales_representative']['old_value'] = \
-                    self.get_full_name_or_email(old_settings.sales_representative)
+                    helpers.get_user_full_name_or_email(old_settings.sales_representative)
 
             settings_dict['service_fee']['old_value'] = \
                 self.format_decimal_to_percent(old_settings.service_fee) + '%'
@@ -377,7 +369,7 @@ class CampaignSettings(api_common.BaseApiView):
         if manager is not None and manager not in users:
             users.append(manager)
 
-        return [{'id': str(user.id), 'name': self.get_full_name_or_email(user)} for user in users]
+        return [{'id': str(user.id), 'name': helpers.get_user_full_name_or_email(user)} for user in users]
 
 
 class CampaignBudget(api_common.BaseApiView):
@@ -450,6 +442,8 @@ class AccountAgency(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(account_settings, account),
+            'account_managers': self.get_user_list(account_settings, 'campaign_settings_account_manager'),
+            'sales_reps': self.get_user_list(account_settings, 'campaign_settings_sales_rep'),
             'history': self.get_history(account),
             'can_archive': account.can_archive(),
             'can_restore': account.can_restore(),
@@ -494,6 +488,8 @@ class AccountAgency(api_common.BaseApiView):
     def set_settings(self, settings, account, resource):
         settings.account = account
         settings.name = resource['name']
+        settings.default_account_manager = resource['default_account_manager']
+        settings.default_sales_representative = resource['default_sales_representative']
 
     def get_dict(self, settings, account):
         result = {}
@@ -503,6 +499,12 @@ class AccountAgency(api_common.BaseApiView):
                 'id': str(account.pk),
                 'name': account.name,
                 'archived': settings.archived,
+                'default_account_manager':
+                    str(settings.default_account_manager.id)
+                    if settings.default_account_manager is not None else None,
+                'default_sales_representative':
+                    str(settings.default_sales_representative.id)
+                    if settings.default_sales_representative is not None else None,
             }
 
         return result
@@ -563,13 +565,38 @@ class AccountAgency(api_common.BaseApiView):
                 'name': 'Archived',
                 'value': str(new_settings.archived)
             }),
+            ('default_account_manager', {
+                'name': 'Account Manager',
+                'value': helpers.get_user_full_name_or_email(new_settings.default_account_manager)
+            }),
+            ('default_sales_representative', {
+                'name': 'Sales Representative',
+                'value': helpers.get_user_full_name_or_email(new_settings.default_sales_representative)
+            }),
         ])
 
         if old_settings is not None:
             settings_dict['name']['old_value'] = old_settings.name.encode('utf-8')
             settings_dict['archived']['old_value'] = str(old_settings.archived)
 
+            if old_settings.default_account_manager is not None:
+                settings_dict['default_account_manager']['old_value'] = \
+                    helpers.get_user_full_name_or_email(old_settings.default_account_manager)
+
+            if old_settings.default_sales_representative is not None:
+                settings_dict['default_sales_representative']['old_value'] = \
+                    helpers.get_user_full_name_or_email(old_settings.default_sales_representative)
+
         return settings_dict
+
+    def get_user_list(self, settings, perm_name):
+        users = list(ZemUser.objects.get_users_with_perm(perm_name))
+
+        manager = settings.default_account_manager
+        if manager is not None and manager not in users:
+            users.append(manager)
+
+        return [{'id': str(user.id), 'name': helpers.get_user_full_name_or_email(user)} for user in users]
 
 
 class AdGroupAgency(api_common.BaseApiView):

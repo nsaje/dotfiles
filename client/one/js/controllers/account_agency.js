@@ -4,6 +4,8 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
     $scope.history = [];
     $scope.canArchive = false;
     $scope.canRestore = true;
+    $scope.accountManagers = [];
+    $scope.salesReps = [];
     $scope.errors = {};
     $scope.requestInProgress = false;
     $scope.saved = null;
@@ -41,7 +43,13 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                 $scope.history = data.history;
                 $scope.canArchive = data.canArchive;
                 $scope.canRestore = data.canRestore;
-                $scope.discarded = discarded;
+
+                if (discarded) {
+                    $scope.discarded = true;
+                } else {
+                    $scope.accountManagers = data.accountManagers;
+                    $scope.salesReps = data.salesReps;
+                }
             },
             function (data) {
                 // error

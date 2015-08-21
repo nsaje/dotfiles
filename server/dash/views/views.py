@@ -520,6 +520,7 @@ class AccountCampaigns(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         account = helpers.get_account(request.user, account_id)
+        account_settings = account.get_current_settings()
 
         name = create_name(models.Campaign.objects.filter(account=account), 'New campaign')
 
@@ -532,7 +533,10 @@ class AccountCampaigns(api_common.BaseApiView):
         settings = models.CampaignSettings(
             name=name,
             campaign=campaign,
-            account_manager=request.user,
+            account_manager=(account_settings.default_account_manager
+                             if account_settings.default_account_manager else request.user),
+            sales_representative=(account_settings.default_sales_representative
+                                  if account_settings.default_sales_representative else None)
         )
         settings.save(request)
 

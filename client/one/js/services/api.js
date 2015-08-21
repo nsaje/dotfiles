@@ -987,21 +987,27 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         function convertSettingsFromApi(settings) {
             return {
                 id: settings.id,
-                name: settings.name
+                name: settings.name,
+                defaultAccountManager: settings.default_account_manager,
+                defaultSalesRepresentative: settings.default_sales_representative
             };
         }
 
         function convertSettingsToApi(settings) {
             return {
                 id: settings.id,
-                name: settings.name
+                name: settings.name,
+                default_account_manager: settings.defaultAccountManager,
+                default_sales_representative: settings.defaultSalesRepresentative
             };
         }
 
         function convertValidationErrorFromApi(errors) {
             return {
                 id: errors.id,
-                name: errors.name
+                name: errors.name,
+                defaultAccountManager: errors.default_account_manager,
+                defaultSalesRepresentative: errors.default_sales_representative
             };
         }
 
@@ -1047,8 +1053,10 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     deferred.resolve({
                         settings: convertSettingsFromApi(data.data.settings),
                         history: convertHistoryFromApi(data.data.history),
+                        accountManagers: data.data.account_managers,
+                        salesReps: data.data.sales_reps,
                         canArchive: data.data.can_archive,
-                        canRestore: data.data.can_restore,
+                        canRestore: data.data.can_restore
                     });
                 }).
                 error(function(data, status, headers) {
@@ -1225,7 +1233,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                         if (typeof oldValue === 'string') {
                             oldValue = oldValue.replace('@', '&#8203;@');
                         }
-                        
+
                         return {
                             name: setting.name,
                             value: value,
@@ -1235,7 +1243,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     datetime: item.datetime,
                     showOldSettings: item.show_old_settings
                 };
-            }); 
+            });
         }
 
         function convertSettingsToApi(settings) {

@@ -373,7 +373,9 @@ class SettingsBase(models.Model):
 class AccountSettings(SettingsBase):
     _settings_fields = [
         'name',
-        'archived'
+        'archived',
+        'default_account_manager',
+        'default_sales_representative'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -383,6 +385,18 @@ class AccountSettings(SettingsBase):
         editable=True,
         blank=False,
         null=False
+    )
+    default_account_manager = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        related_name="+",
+        on_delete=models.PROTECT
+    )
+    default_sales_representative = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        related_name="+",
+        on_delete=models.PROTECT
     )
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)

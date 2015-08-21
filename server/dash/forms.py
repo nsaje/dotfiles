@@ -206,6 +206,41 @@ class AccountAgencySettingsForm(forms.Form):
         max_length=127,
         error_messages={'required': 'Please specify account name.'}
     )
+    default_account_manager = forms.IntegerField()
+    default_sales_representative = forms.IntegerField(
+        required=False
+    )
+
+    def clean_default_account_manager(self):
+        account_manager_id = self.cleaned_data.get('default_account_manager')
+
+        err_msg = 'Invalid account manager.'
+
+        try:
+            account_manager = ZemUser.objects.\
+                get_users_with_perm('campaign_settings_account_manager', True).\
+                get(pk=account_manager_id)
+        except ZemUser.DoesNotExist:
+            raise forms.ValidationError(err_msg)
+
+        return account_manager
+
+    def clean_default_sales_representative(self):
+        sales_representative_id = self.cleaned_data.get('default_sales_representative')
+
+        if sales_representative_id is None:
+            return None
+
+        err_msg = 'Invalid sales representative.'
+
+        try:
+            sales_representative = ZemUser.objects.\
+                get_users_with_perm('campaign_settings_sales_rep').\
+                get(pk=sales_representative_id)
+        except ZemUser.DoesNotExist:
+            raise forms.ValidationError(err_msg)
+
+        return sales_representative
 
 
 class CampaignSettingsForm(forms.Form):
