@@ -627,7 +627,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
             raise exc.ValidationError(errors=form.errors)
 
         batch_name = form.cleaned_data['batch_name']
-        content_ads = form.cleaned_data['content_ads'],
+        content_ads = form.cleaned_data['content_ads']
         display_url = form.cleaned_data['display_url']
         upload_form_cleaned_fields = {
             'display_url': form.cleaned_data['display_url'],
