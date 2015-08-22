@@ -628,7 +628,7 @@ class ActionLogApiTestCase(TestCase):
                 'extra': {
                     'tracking_code': url_helper.combine_tracking_codes(
                         ad_group_settings.get_tracking_codes(),
-                        ad_group_source.get_tracking_ids(),
+                        ad_group_source.get_tracking_ids(),  # should have tracking ids
                     ),
                     'tracking_slug': 'yahoo',
                     'target_regions': ['UK', 'US', 'CA'],
@@ -666,8 +666,7 @@ class ActionLogApiTestCase(TestCase):
                 'extra': {
                     'iab_category': 'IAB24',
                     'tracking_code':  url_helper.combine_tracking_codes(
-                        ad_group_settings.get_tracking_codes(),
-                        ad_group_source_extra.get_tracking_ids(),
+                        ad_group_settings.get_tracking_codes()  # no tracking ids as ga tracking is disabled
                     ),
                     'tracking_slug': 'industrybrains',
                     'target_devices': [],
