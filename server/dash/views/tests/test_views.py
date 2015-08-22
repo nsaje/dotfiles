@@ -817,10 +817,10 @@ class AdGroupAdsPlusUploadTest(TestCase):
                         "data": {
                         "message": None, 
                         "errors": {
-                            "display_url": ["Display URL has to be present here or as a column in CSV"], 
-                            "call_to_action": ["Call to action has to be present here or as a column in CSV"], 
-                            "brand_name": ["Brand name has to be present here or as a column in CSV"], 
-                            "description": ["Description has to be present here or as a column in CSV"]
+                            "display_url": ["Display URL has to be present here or as a column in CSV."], 
+                            "call_to_action": ["Call to action has to be present here or as a column in CSV."], 
+                            "brand_name": ["Brand name has to be present here or as a column in CSV."], 
+                            "description": ["Description has to be present here or as a column in CSV."]
                             }, 
                         "error_code": "ValidationError"
                         }, 

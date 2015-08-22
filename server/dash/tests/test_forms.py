@@ -131,7 +131,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
 
         form = self._init_form(csv_file, {'display_url': ''})
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'display_url': ['Display URL has to be present here or as a column in CSV']})
+        self.assertEqual(form.errors, {'display_url': ['Display URL has to be present here or as a column in CSV.']})
 
     def test_empty_brand_name_and_not_in_csv(self):
         csv_file = self._get_csv_file(
@@ -140,7 +140,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
 
         form = self._init_form(csv_file, {'brand_name': ''})
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'brand_name': ['Brand name has to be present here or as a column in CSV']})
+        self.assertEqual(form.errors, {'brand_name': ['Brand name has to be present here or as a column in CSV.']})
 
 
     def test_empty_description_and_not_in_csv(self):
@@ -150,7 +150,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
 
         form = self._init_form(csv_file, {'description': ''})
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'description': ['Description has to be present here or as a column in CSV']})
+        self.assertEqual(form.errors, {'description': ['Description has to be present here or as a column in CSV.']})
 
     def test_empty_call_to_action_and_not_in_csv(self):
         csv_file = self._get_csv_file(
@@ -159,7 +159,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
 
         form = self._init_form(csv_file, {'call_to_action': ''})
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'call_to_action': ['Call to action has to be present here or as a column in CSV']})
+        self.assertEqual(form.errors, {'call_to_action': ['Call to action has to be present here or as a column in CSV.']})
 
     def test_invalid_display_url(self):
         csv_file = self._get_csv_file(
