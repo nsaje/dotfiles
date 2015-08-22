@@ -4,6 +4,7 @@ import re
 import unicodecsv
 import dateutil.parser
 import rfc3987
+from collections import Counter
 from decimal import Decimal
 
 import utils.string_helper
@@ -367,7 +368,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
     )
 
 
-    def _get_header(self, lines):
+    def _get_csv_header(self, lines):
         reader = unicodecsv.reader(lines)
 
         try:
@@ -375,8 +376,9 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         except StopIteration:
             raise forms.ValidationError('Uploaded file is empty.')
 
-    def _get_column_names(self, header):
-        column_names = [col.strip().lower().replace(' ', '_') for col in header]
+    def _get_csv_column_names(self, header):
+        # this function maps original CSV column names to internal, normalized ones that are then used across the application
+        column_names = [col.strip(" _").lower().replace(' ', '_')  for col in header]
 
         if column_names[0] != 'url':
             raise forms.ValidationError('First column in header should be URL.')
@@ -386,14 +388,27 @@ class AdGroupAdsPlusUploadForm(forms.Form):
 
         if column_names[2] != 'image_url':
             raise forms.ValidationError('Third column in header should be Image URL.')
+        
 
         for n, field in enumerate(column_names):
+            # we also accept "(optional)" as part of every optional parameter since that's how those columns are presented in our csv template that user can download
+            # we want to make sure that if the user downloads the template, fills it in and uploades, it immediately works.
+            field = re.sub("_*\(optional\)", "", field)
+            # accept both variants
+            if field == "tracker_url":
+                field = "tracker_urls"
             if n >= 3 and field not in ['crop_areas', 'tracker_urls', 'display_url', 'brand_name', 'description', 'call_to_action']:
                 raise forms.ValidationError('Unrecognized column number {0}: "{1}".'.format(n+1, header[n]))
+            column_names[n] = field
+
+        # Make sure each column_name appears only once
+        for column_name, count in Counter(column_names).iteritems():
+            if count > 1:	
+                raise forms.ValidationError("Column \"{0}\" appears multiple times ({1}) in the CSV file.".format(column_name, count))
 
         return column_names
 
-    def _get_content_ad_data(self, reader):
+    def _get_csv_content_ad_data(self, reader):
         next(reader)  # ignore header
 
         count_rows = 0
@@ -445,11 +460,11 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         # try all supported encodings one by one
         for encoding in encodings:
             try:
-                header = self._get_header(lines)
-                self.csv_column_names = self._get_column_names(header)	# we save self.csv_column_names to be used by form-wide clean()
+                header = self._get_csv_header(lines)
+                self.csv_column_names = self._get_csv_column_names(header)	# we save self.csv_column_names to be used by form-wide clean()
 
                 reader = unicodecsv.DictReader(lines, self.csv_column_names, encoding=encoding)
-                data = self._get_content_ad_data(reader)
+                data = self._get_csv_content_ad_data(reader)
                 break
             except unicodecsv.Error:
                 raise forms.ValidationError('Uploaded file is not a valid CSV file.')

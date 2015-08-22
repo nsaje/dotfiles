@@ -246,6 +246,37 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
             }]
         })
 
+    def test_form_optional_fields_in_csv_alternative_column_names(self):
+        # optional fields in csv are present (display url, brand name, description, call to action) and override batch ones for each content ad
+        # those optional fields have alternative endings like spaces added, 
+        csv_file = self._get_csv_file(
+            ['Url', 'Title', 'Image Url', 'Crop Areas(optional)', 'Tracker URL', 'Display URL (optional)', 'Brand name  (optional)', 'Description  ', 'Call to action _(optional)_ '],
+            [[self.url, self.title, self.image_url, self.crop_areas, self.tracker_urls, self.display_url + "2", self.brand_name + "2", self.description + "2", self.call_to_action + "2"]])
+
+        form = self._init_form(csv_file, None)
+
+        self.assertEqual(form.errors, {})
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data, {
+            'batch_name': self.batch_name,
+            'display_url': self.display_url,
+            'brand_name': self.brand_name,
+            'description': self.description,
+            'call_to_action': self.call_to_action,
+            'content_ads': [{
+                u'crop_areas': self.crop_areas,
+                u'image_url': self.image_url,
+                u'title': self.title,
+                u'url': self.url,
+                u'tracker_urls': self.tracker_urls,
+                u'display_url': self.display_url + "2",	# make sure these are coming from the CSV and thus override the fields in the form
+                u'brand_name': self.brand_name + "2",
+                u'description': self.description + "2",
+                u'call_to_action': self.call_to_action + "2",
+
+            }]
+        })
+
     def test_form_optional_fields_not_in_batch(self):
         # optional fields in csv are present (display url, brand name, description, call to action) and corresponding form fields are empty
         csv_file = self._get_csv_file(
@@ -272,6 +303,17 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
                 u'call_to_action': self.call_to_action,
             }]
         })
+
+
+    def test_form_optional_fields_duplicated(self):
+        csv_file = self._get_csv_file(
+            ['Url', 'Title', 'Image Url', 'Crop Areas', 'Crop Areas'],
+            [[self.url, self.title, self.image_url, self.crop_areas, self.tracker_urls]])
+
+        form = self._init_form(csv_file, None)
+        self.assertEqual(form.errors, {'content_ads': [u'Column "crop_areas" appears multiple times (2) in the CSV file.']})
+        
+
 
 
     def test_incorrect_csv_format(self):
