@@ -71,15 +71,16 @@ def _copy_content_ads():
 
             batch = ad.batch
             batch.pk = None
-            batch.brand_name = 'Example.com'
-            batch.display_url = 'example.com'
-            batch.description = ''
             batch.save()
 
             ad.pk = None
             ad.ad_group = demo_ad_group
             ad.url = 'http://www.example.com/{}/{}'.format(slugify(ad.title), i)
             ad.batch_id = batch.id
+            ad.display_url = 'example.com'
+            ad.brand_name = 'Example.com'
+            ad.description = ''
+            ad.call_to_action = ''
             ad.save()
 
             ad_map[real_ad_id] = ad.id
