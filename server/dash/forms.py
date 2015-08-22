@@ -334,7 +334,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
     )
     display_url = DisplayURLField(
         required=False,
-        label= "Display URL", 
+        label="Display URL",
         # max_length is should be validated _after_ http:// has been stripped out
         # that's why it is validated in DisplayURLField.clean() and max_length isn't set here
         error_messages={
@@ -391,13 +391,19 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         
 
         for n, field in enumerate(column_names):
-            # we also accept "(optional)" as part of every optional parameter since that's how those columns are presented in our csv template that user can download
-            # we want to make sure that if the user downloads the template, fills it in and uploades, it immediately works.
+            # We accept "(optional)" in the names of optional columns.
+            # That's how those columns are presented in our csv template (that user can download)
+            # If the user downloads the template, fills it in and uploades, it immediately works.
             field = re.sub("_*\(optional\)", "", field)
             # accept both variants
             if field == "tracker_url":
                 field = "tracker_urls"
-            if n >= 3 and field not in ['crop_areas', 'tracker_urls', 'display_url', 'brand_name', 'description', 'call_to_action']:
+            if n >= 3 and field not in ['crop_areas', 
+                                        'tracker_urls', 
+                                        'display_url', 
+                                        'brand_name', 
+                                        'description', 
+                                        'call_to_action']:
                 raise forms.ValidationError('Unrecognized column number {0}: "{1}".'.format(n+1, header[n]))
             column_names[n] = field
 
@@ -476,19 +482,20 @@ class AdGroupAdsPlusUploadForm(forms.Form):
 
         return data
 
-    # we validate form as a whole after all fields have been validated to see if the fields that are submitted as empty in the form are specified in CSV as columns
+    # we validate form as a whole after all fields have been validated to see 
+    # if the fields that are submitted as empty in the form are specified in CSV as columns
     def clean(self):
         cleaned_data = super(AdGroupAdsPlusUploadForm, self).clean()
         
-        # The code that follows assumes individual fields have validated
         if self.errors:
             return
         
-        # after individual fields are validated we need to check if CSV has columns for the ones that are submitted empty
-        # we take advantage of the fact that field names of this form have exactly the same names as normalized names of csv columns
+        # after individual fields are validated we need to check if CSV has columns for the ones 
+        # that are submitted empty. We take an advantage of the fact that fields of this form 
+        # have exactly the same names as normalized names of csv columns
         for column_and_field_name in ['display_url', 'brand_name', 'description', 'call_to_action']:
-            if not self.cleaned_data.get(column_and_field_name): 	# if empty field was sumitted in the form
-                if column_and_field_name not in self.csv_column_names:	# and that field is not present as a CSV column 
+            if not self.cleaned_data.get(column_and_field_name): 	# if field is empty in the form
+                if column_and_field_name not in self.csv_column_names:	# and is not present as a CSV column 
                     self.add_error(column_and_field_name, forms.ValidationError("{0} has to be present here or as a column in CSV".format(self.fields[column_and_field_name].label)))
             
 

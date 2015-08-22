@@ -559,8 +559,8 @@ class ProcessCallbackTest(TestCase):
         results = [(row, cleaned_data, errors)]
         upload._process_callback(batch, models.AdGroup.objects.get(pk=ad_group_id), [ad_group_source], filename, request, results)
         
-        # first we need to test if they were really errors we're expecting - they could be other exceptions
-        # ideally we should check if specific exception we were expecting happened, as something else might have gone wrong too
+        # first test if there really were errors we're expecting (there could be other exceptions)
+        # ideally we should check if specific exception we were expecting happened, 
         self.assertEqual(batch.num_errors, 1)
 
         new_content_ad_count = models.ContentAd.objects.all().count()

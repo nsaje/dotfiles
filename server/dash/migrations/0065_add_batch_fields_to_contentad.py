@@ -10,10 +10,10 @@ def forward_copy_from_batch_to_content_ad(apps, schema_editor):
     # we will copy the fields display_url, brand_name, description and call_to_action from UploadBatch to ContentAd
     ContentAd = apps.get_model("dash", "ContentAd")
     for contentad in ContentAd.objects.all():
-	contentad.display_url = contentad.batch.display_url
-	contentad.brand_name = contentad.batch.brand_name
-	contentad.description = contentad.batch.description
-	contentad.call_to_action = contentad.batch.call_to_action
+        contentad.display_url = contentad.batch.display_url
+        contentad.brand_name = contentad.batch.brand_name
+        contentad.description = contentad.batch.description
+        contentad.call_to_action = contentad.batch.call_to_action
         contentad.save()
         
 def backward_copy_from_batch_to_content_ad(apps, schema_editor):

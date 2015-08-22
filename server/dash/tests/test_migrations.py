@@ -3,19 +3,17 @@ from zemauth.models import User
 from utils.migrationtest import MigrationTest
 from utils.test_decorators import skipIfNoMigrations
 
+# based on https://github.com/plumdog/django_migration_testcase
+
 @skipIfNoMigrations
 class ContentAdBatchMigrationTest(MigrationTest):
 
     # At present, we can only run migrations for one app at a time.
     app_name = 'dash'
 
-    # At present, these need to be full names of migrations, not just
-    # prefixes.
     before = '0064_remove_sourcetype_available_actions_new'
     after = '0065_add_batch_fields_to_contentad'
  
-    # Can have any name, is just a test method. MigrationTest
-    # subclasses django.test.TransactionTestCase
     def test_migration(self):
         # Load some data. Don't directly import models. At this point,
         # the database is at self.before, and the models have fields

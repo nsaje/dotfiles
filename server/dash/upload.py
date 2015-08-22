@@ -25,7 +25,7 @@ from dash import models
 from dash import api
 from dash import constants
 from dash import image_helper
-from dash.forms import AdGroupAdsPlusUploadForm, DISPLAY_URL_MAX_LENGTH	# we'll use error messages for validators and max lengths
+from dash.forms import AdGroupAdsPlusUploadForm # to get fields & validators
 
 logger = logging.getLogger(__name__)
 

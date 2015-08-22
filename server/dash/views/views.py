@@ -619,7 +619,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.upload_content_ads'):
             raise exc.ForbiddenError(message='Not allowed')
-      
+
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         form = forms.AdGroupAdsPlusUploadForm(request.POST, request.FILES)
@@ -629,6 +629,9 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
         batch_name = form.cleaned_data['batch_name']
         content_ads = form.cleaned_data['content_ads']
         display_url = form.cleaned_data['display_url']
+
+        # we could have passed form.cleaned_data around, 
+        # but it's better to have a version that is more predictable
         upload_form_cleaned_fields = {
             'display_url': form.cleaned_data['display_url'],
             'brand_name': form.cleaned_data['brand_name'],

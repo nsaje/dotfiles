@@ -218,7 +218,8 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
 
 
     def test_form_optional_fields_in_csv(self):
-        # optional fields in csv are present (display url, brand name, description, call to action) and override batch ones for each content ad
+        # optional fields in csv are present (display url, brand name, description, call to action)
+        # they override the ones from the batch upload form for each content ad
         csv_file = self._get_csv_file(
             ['Url', 'Title', 'Image Url', 'Crop Areas', 'Tracker URLs', 'Display URL', 'Brand name', 'Description', 'Call to action'],
             [[self.url, self.title, self.image_url, self.crop_areas, self.tracker_urls, self.display_url + "2", self.brand_name + "2", self.description + "2", self.call_to_action + "2"]])
@@ -238,7 +239,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
                 u'title': self.title,
                 u'url': self.url,
                 u'tracker_urls': self.tracker_urls,
-                u'display_url': self.display_url + "2",	# make sure these are coming from the CSV and thus override the fields in the form
+                u'display_url': self.display_url + "2",	# From CSV
                 u'brand_name': self.brand_name + "2",
                 u'description': self.description + "2",
                 u'call_to_action': self.call_to_action + "2",
@@ -247,8 +248,9 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         })
 
     def test_form_optional_fields_in_csv_alternative_column_names(self):
-        # optional fields in csv are present (display url, brand name, description, call to action) and override batch ones for each content ad
-        # those optional fields have alternative endings like spaces added, 
+        # optional fields in csv are present (display url, brand name, description, call to action)
+        # they override the ones from the batch upload form for each content ad.
+        # Those optional fields have alternative endings like spaces and (optional) added. 
         csv_file = self._get_csv_file(
             ['Url', 'Title', 'Image Url', 'Crop Areas(optional)', 'Tracker URL', 'Display URL (optional)', 'Brand name  (optional)', 'Description  ', 'Call to action _(optional)_ '],
             [[self.url, self.title, self.image_url, self.crop_areas, self.tracker_urls, self.display_url + "2", self.brand_name + "2", self.description + "2", self.call_to_action + "2"]])
@@ -269,7 +271,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
                 u'title': self.title,
                 u'url': self.url,
                 u'tracker_urls': self.tracker_urls,
-                u'display_url': self.display_url + "2",	# make sure these are coming from the CSV and thus override the fields in the form
+                u'display_url': self.display_url + "2",	# From CSV
                 u'brand_name': self.brand_name + "2",
                 u'description': self.description + "2",
                 u'call_to_action': self.call_to_action + "2",
@@ -278,7 +280,8 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         })
 
     def test_form_optional_fields_not_in_batch(self):
-        # optional fields in csv are present (display url, brand name, description, call to action) and corresponding form fields are empty
+        # optional fields in csv are present (display url, brand name, description, call to action)
+        # and those fields are not present in the batch upload form
         csv_file = self._get_csv_file(
             ['Url', 'Title', 'Image Url', 'Crop Areas', 'Tracker URLs', 'Display URL', 'Brand name', 'Description', 'Call to action'],
             [[self.url, self.title, self.image_url, self.crop_areas, self.tracker_urls, self.display_url, self.brand_name, self.description, self.call_to_action]])
