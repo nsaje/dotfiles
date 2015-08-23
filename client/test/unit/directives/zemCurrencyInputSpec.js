@@ -78,7 +78,7 @@ describe('zemCurrencyInput', function () {
         var element = prepareElement();
 
         setVal(element, '0012');
-        expect(element.val()).toEqual('001,2');
+        expect(element.val()).toEqual('0,012');
         expect($scope.value).toEqual('0012');
     });
 
