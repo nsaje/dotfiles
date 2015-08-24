@@ -3,6 +3,7 @@
     	<div class="loader-image"></div>
     </div>
 </div>
+
 <div class="page page-ad-group-settings" ng-if="hasPermission('dash.settings_view') && !(hasPermission('zemauth.view_archived_entities') && adGroup && adGroup.archived) && !loadRequestInProgress">
     <alert ng-repeat="alert in alerts" type="{{ alert.type }}" close="closeAlert($index)" ng-bind-html="alert.message"></alert>
     <alert type="info" ng-show="actionIsWaiting">
