@@ -34,10 +34,30 @@ GOAL_RATE_KEYWORDS = ['conversion rate']
 class GaReportRow(object):
     def __init__(self, ga_row_dict, report_date, content_ad_id, source_param, goals):
         self.ga_row_dict = ga_row_dict
+
+        self.visits = self._atoi(ga_row_dict.get('Sessions'))
+        self.bounce_rate_raw = ga_row_dict.get('Bounce Rate')
+        if ga_row_dict.get('Bounce Rate') is not None:
+            self.bounce_rate = self._atof(ga_row_dict['Bounce Rate'].replace('%', '')) / 100
+        else:
+            self.bounce_rate = None
+        self.pageviews = int(round(self._atof(ga_row_dict['Pages / Session']) * self.visits))
+        self.new_visits = self._atoi(ga_row_dict['New Users'])
+        self.bounced_visits = int(self.bounce_rate * self.visits)
+        self.total_time_on_site = self.visits * self._parse_duration(ga_row_dict['Avg. Session Duration'])
+
         self.report_date = report_date.isoformat()
         self.content_ad_id = content_ad_id
         self.source_param = source_param
         self.goals = goals
+
+    def _atoi(self, raw_str):
+        # TODO: Implement locale specific parsing
+        return int(raw_str.replace(',', ''))
+
+    def _atof(self, raw_str):
+        # TODO: Implement locale specific parsing
+        return float(raw_str.replace(',', ''))
 
     def is_row_valid(self):
         return self.content_ad_id is not None and\
@@ -47,13 +67,17 @@ class GaReportRow(object):
     def are_goals_useful(self):
         if len(self.goals) == 0:
             return False
-        if 'conversions' in self.goals.keys():
-            return True
-        else:
-            return False
+        for key, goal_dict in self.goals.iteritems():
+            if 'conversions' in goal_dict.keys():
+                return True
+        return False
 
     def get_ga_field(self, column):
         return self.ga_row_dict.get(column, None)
+
+    def _parse_duration(self, durstr):
+        hours_str, minutes_str, seconds_str = durstr.replace('<', '').split(':')
+        return int(seconds_str) + 60 * int(minutes_str) + 60 * 60 * int(hours_str)
 
     def sessions(self):
         raw_sessions = self.ga_row_dict['Sessions'].replace(',', '').strip()
@@ -137,10 +161,13 @@ class CsvReport(object):
 
         date = datetime.datetime.strptime(group_dict['start_date'], "%Y%m%d")
 
+        non_comment_lines = [line for line in lines if not (
+            line.startswith('#') and line.replace(',', '').strip() != '')]
+
         first_column_name = None
-        if self._contains_column(lines, LANDING_PAGE_COL_NAME):
+        if self._contains_column(non_comment_lines, LANDING_PAGE_COL_NAME):
             first_column_name = LANDING_PAGE_COL_NAME
-        elif self._contains_column(lines, KEYWORD_COL_NAME):
+        elif self._contains_column(non_comment_lines, KEYWORD_COL_NAME):
             first_column_name = KEYWORD_COL_NAME
 
         if not first_column_name:
@@ -150,17 +177,14 @@ class CsvReport(object):
         return date, first_column_name
 
     def _contains_column(self, lines, name):
-        return any(name in set(line.split(',')) for line in lines)
+        return any(name in line for line in lines)
 
     def parse(self):
-        self._parse(self.csv_report_text)
-
-    def _parse(self, csv_report_text):
-        report_date, first_column_name = self._parse_header(self._extract_header_lines(csv_report_text))
+        report_date, first_column_name = self._parse_header(self._extract_header_lines(self.csv_report_text))
         self.first_column = first_column_name
         self.start_date = report_date
 
-        f_body, f_footer = self._extract_body_and_footer(csv_report_text)
+        f_body, f_footer = self._extract_body_and_footer(self.csv_report_text)
         reader = csv.DictReader(f_body)
         try:
             self.fieldnames = reader.fieldnames
@@ -177,7 +201,7 @@ class CsvReport(object):
             raise exc.CsvParseException('Could not parse CSV')
 
         if self.fieldnames is None and not set(self.fieldnames or []) >= set(REQUIRED_FIELDS):
-            missing_fieldnames = list(set(REQUIRED_FIELDS) - (set(self.fieldnames) & set(REQUIRED_FIELDS)))
+            missing_fieldnames = list(set(REQUIRED_FIELDS) - (set(self.fieldnames or []) & set(REQUIRED_FIELDS)))
             raise exc.CsvParseException('Not all required fields are present. Missing: {}'.format(','.join(missing_fieldnames)))
 
         self._check_session_counts(f_footer)

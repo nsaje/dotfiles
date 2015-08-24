@@ -759,6 +759,9 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         constants.ContentAdSubmissionStatus.NOT_SUBMITTED: '#bcbcbc',
     }
 
+    def get_queryset(self, request):
+        return models.ContentAdSource.objects.filter(content_ad__ad_group__is_demo=False)
+
     def submission_status_(self, obj):
         return '<span style="color:{color}">{submission_status}</span>'.format(
             color=self.display_submission_status_colors[obj.submission_status],

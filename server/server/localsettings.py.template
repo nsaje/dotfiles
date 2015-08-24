@@ -98,8 +98,8 @@ USE_S3 = False
 QUERY_AGGREGATE_REPORTS=False
 
 # email of the demo user
-DEMO_USER_EMAIL = ''
-DEMO_USER_PASSWORD = ''
+DEMO_USER_EMAIL = 'test.account@zemanta.si'
+DEMO_USER_PASSWORD = 'zemantadsp'
 
 # cache settings
 CACHES = {
@@ -125,6 +125,7 @@ CELERY_ACCEPT_CONTENT = ['pickle']
 
 CELERY_QUEUE_PREFIX = 'test'
 CELERY_DEFAULT_CONVAPI_QUEUE = CELERY_QUEUE_PREFIX + '-' +'convapi'
+CELERY_DEFAULT_CONVAPI_V2_QUEUE = CELERY_QUEUE_PREFIX + '-' + 'convapi_v2'
 
 BROKER_TRANSPORT_OPTIONS = {
     'visibility_timeout': 10 * 60,
