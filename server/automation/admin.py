@@ -8,7 +8,7 @@ class CampaignBudgetDepletionNotifactionAdmin(admin.ModelAdmin):
         'account_manager',
         'campaign',
         'available_budget',
-        'yesterdays_spendt',
+        'yesterdays_spend',
         'created_dt'
     )
     readonly_fields = ['created_dt']

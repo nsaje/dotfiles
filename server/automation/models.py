@@ -29,7 +29,7 @@ class CampaignBudgetDepletionNotifaction(models.Model):
         default=0,
         verbose_name='Budget available at creation'
     )
-    yesterdays_spendt = models.DecimalField(
+    yesterdays_spend = models.DecimalField(
         max_digits=20,
         decimal_places=4,
         blank=True,
