@@ -405,13 +405,13 @@ class CsvReport(object):
     def is_media_source_specified(self):
         media_source_not_specified = []
         for entry in self.entries.values():
-            if entry.source_param == '':
+            if entry.source_param == '' is None or entry.source_param == '':
                 media_source_not_specified.append(entry.source_param)
         return (len(media_source_not_specified) == 0, list(media_source_not_specified))
 
     def is_content_ad_specified(self):
         content_ad_not_specified = set()
         for entry in self.entries.values():
-            if entry.content_ad_id is None:
-                content_ad_not_specified.add(entry.get_ga_field(self.first_column))
+            if entry.content_ad_id is None or entry.content_ad_id == '':
+                content_ad_not_specified.add(entry.content_ad_id)
         return (len(content_ad_not_specified) == 0, list(content_ad_not_specified))
