@@ -1226,11 +1226,20 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             'ctr': stats['ctr']
         }
 
-    def _get_url(self, ad_group, content_ad, is_demo, tracking_codes=None):
+    def _get_url(self, ad_group, content_ad, is_demo):
         if is_demo:
             return 'http://www.example.com/{}/{}'.format(ad_group.name, content_ad.id)
 
-        return content_ad.url_with_tracking_codes(tracking_codes)
+        return content_ad.url
+
+    def _get_redirector_url(self, content_ad, is_demo):
+        if is_demo:
+            return None
+
+        return settings.R1_BLANK_REDIRECT_URL.format(
+            redirect_id=content_ad.redirect_id,
+            content_ad_id=content_ad.id
+        )
 
     @newrelic.agent.function_trace()
     def _get_rows(self, content_ads, stats, ad_group, has_view_archived_permission, show_archived):
@@ -1238,7 +1247,6 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         rows = []
 
         is_demo = ad_group in models.AdGroup.demo_objects.all()
-        tracking_codes = ad_group.get_test_tracking_params()
 
         for content_ad in content_ads:
             stat = stats.get(content_ad.id, {})
@@ -1250,13 +1258,13 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 continue
 
             url = self._get_url(ad_group, content_ad, is_demo)
-            url_with_tracking_codes = self._get_url(ad_group, content_ad, is_demo, tracking_codes)
+            redirector_url = self._get_redirector_url(content_ad, is_demo)
 
             row = {
                 'id': str(content_ad.id),
                 'title': content_ad.title,
                 'url': url,
-                'url_with_tracking_codes': url_with_tracking_codes,
+                'redirector_url': redirector_url,
                 'batch_name': content_ad.batch.name,
                 'batch_id': content_ad.batch.id,
                 'upload_time': content_ad.batch.created_dt,

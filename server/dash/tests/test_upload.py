@@ -106,9 +106,9 @@ class CleanRowTest(TestCase):
         self.mock_process_image.return_value = (
             self.image_id, self.image_width, self.image_height, self.image_hash)
 
-        self.urlopen_patcher = patch('dash.upload.urllib2.urlopen')
-        self.mock_urlopen = self.urlopen_patcher.start()
-        self.mock_urlopen.return_value = Mock(code=httplib.OK)
+        self.validate_url_patcher = patch('dash.upload.redirector_helper.validate_url')
+        self.mock_validate_url = self.validate_url_patcher.start()
+        self.mock_validate_url.return_value = True
 
         self.default_expected_data = {
             'image': {
@@ -128,7 +128,7 @@ class CleanRowTest(TestCase):
 
     def tearDown(self):
         self.process_image_patcher.stop()
-        self.urlopen_patcher.stop()
+        self.validate_url_patcher.stop()
 
     def _run_clean_row(self):
         row = {
@@ -222,7 +222,7 @@ class CleanRowTest(TestCase):
         self.assertEqual(errors, ['Image could not be processed'])
 
     def test_content_unreachable(self):
-        self.mock_urlopen.side_effect = urllib2.URLError('Error')
+        self.mock_validate_url.return_value = False
 
         data, errors = self._run_clean_row()
         expected_data = dict(self.default_expected_data)
