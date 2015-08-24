@@ -22,6 +22,8 @@ REQUIRED_FIELDS = [
 logger = logging.getLogger(__name__)
 
 Z11Z_RE = re.compile('.*z1([0-9]+)([a-zA-Z].+?)1z.*')
+LANDING_PAGE_CAID_RE = re.compile('^[0-9]+')
+LANDING_PAGE_MSID_RE = re.compile('^[_a-zA-Z0-9]+')
 
 HARRYS_FIELD_KEYWORDS = ["conversion rate", "transactions", "revenue"]
 GOAL_FIELD_KEYWORDS = ["conversions", "completions", "value"] + HARRYS_FIELD_KEYWORDS
@@ -268,13 +270,22 @@ class CsvReport(object):
         content_ad_id = None
         try:
             if '_z1_caid' in query_params:
-                content_ad_id = int(query_params['_z1_caid'])
+                content_ad_id_raw = query_params['_z1_caid']
+                results = LANDING_PAGE_CAID_RE.search(content_ad_id_raw)
+                if results is not None:
+                    content_ad_id_raw = results.group(0)
+
+                content_ad_id = int(content_ad_id_raw)
         except ValueError:
             return None, ''
 
         source_param = ''
         if '_z1_msid' in query_params:
-            source_param = query_params['_z1_msid']
+            source_param = query_params['_z1_msid'] or ''
+            results = LANDING_PAGE_MSID_RE.search(source_param)
+            if results is not None:
+                source_param = results.group(0)
+
 
         if content_ad_id is None or source_param == '':
             logger.warning(
