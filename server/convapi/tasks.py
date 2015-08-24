@@ -210,12 +210,12 @@ def process_ga_report_v2(ga_report_task):
         if len(content_ad_errors) > 0:
             message += '\nERROR: not all landing page urls have a valid content ad specified:\n'
             for err in content_ad_errors:
-                message += err + '\n'
+                message += err or '' + '\n'
 
         if len(media_source_errors) > 0:
             message += '\nERROR: not all landing page urls have a media source specified: \n'
             for landing_url in media_source_errors:
-                message += landing_url + '\n'
+                message += landing_url or '' + '\n'
 
         if too_many_errors(content_ad_errors, media_source_errors):
             logger.warning("Too many errors in content_ad_errors and media_source_errors lists.")
