@@ -121,7 +121,7 @@ class AdGroupSourceTest(TestCase):
         ad_group_source = models.AdGroupSource(ad_group=ad_group, source=source)
         ad_group_source.save(request)
 
-        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=%s' % (ad_group.id))
+        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=%s&_z1_msid=' % (ad_group.id))
 
         source_type.type = constants.SourceType.ZEMANTA
         source_type.save()
@@ -332,18 +332,6 @@ class AdGroupTestCase(TestCase):
         qs = models.AdGroup.objects.all().exclude_archived()
 
         self.assertEqual(len(qs), 6)
-
-    def test_get_test_tracking_params(self):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        params = ad_group.get_test_tracking_params()
-
-        self.assertEqual(params, 'param1=foo&param2=bar&_z1_adgid=1&_z1_msid=z1')
-
-    def test_get_test_tracking_params_ga_disabled(self):
-        ad_group = models.AdGroup.objects.get(pk=2)
-        params = ad_group.get_test_tracking_params()
-
-        self.assertEqual(params, 'param1=foo&param2=bar')
 
 
 class CampaignTestCase(TestCase):
