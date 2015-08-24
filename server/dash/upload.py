@@ -97,14 +97,15 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
 
     actionlog.zwei_actions.send(actions)
 
+MANDATORY_CSV_FIELDS = ['url', 'title', 'image_url']
+OPTIONAL_CSV_FIELDS = ['crop_areas', 'tracker_urls', 'display_url', 'brand_name', 'description', 'call_to_action']
 
 def _save_error_report(rows, filename):
     string = StringIO.StringIO()
 
-    fields = ['url', 'title', 'image_url']
+    fields = list(MANDATORY_CSV_FIELDS)
 
-    optional_fields = ['crop_areas', 'tracker_urls', 'display_url', 'brand_name', 'description', 'call_to_action']
-    for field_name in optional_fields:
+    for field_name in OPTIONAL_CSV_FIELDS:
         if any(row.get(field_name) for row in rows):
             fields.append(field_name)
 
@@ -113,9 +114,9 @@ def _save_error_report(rows, filename):
 
     writer.writeheader()
     for row in rows:
-        for field_name in optional_fields:
+        for field_name in OPTIONAL_CSV_FIELDS:
             if field_name not in fields and field_name in row:
-                del row['field_name']
+                del row[field_name]
 
         writer.writerow(row)
 
@@ -198,7 +199,7 @@ def _clean_row(batch, upload_form_cleaned_fields, ad_group, row):
                 elif key in ['description', 'display_url', 'brand_name', 'call_to_action']:
                     data[key] = _clean_inherited_csv_field(key, row.get(key), upload_form_cleaned_fields[key])
                 else:
-                    raise Exception("Unknown key")	# should never happen, guards against coding errors
+                    raise Exception("Unknown key: {0}".format(key))	# should never happen, guards against coding errors
             except ValidationError as e:
                 errors.extend(e.messages)
 
