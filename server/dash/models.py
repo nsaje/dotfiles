@@ -1024,10 +1024,7 @@ class AdGroupSettings(SettingsBase):
         if self.state != constants.AdGroupSettingsState.ACTIVE:
             return constants.AdGroupRunningStatus.INACTIVE
         now = datetime.datetime.utcnow().date()
-        is_running = self.start_date <= now
-        if self.end_date is not None:
-            is_running = is_running and now <= self.end_date
-        if is_running:
+        if self.start_date <= now and (self.end_date is None or now <= self.end_date):
             return constants.AdGroupRunningStatus.ACTIVE
         return constants.AdGroupRunningStatus.INACTIVE
         
