@@ -21,7 +21,7 @@ from dash import models
 from dash import api
 from dash import constants
 from dash import image_helper
-from dash.forms import AdGroupAdsPlusUploadForm # to get fields & validators
+from dash.forms import AdGroupAdsPlusUploadForm, MANDATORY_CSV_FIELDS, OPTIONAL_CSV_FIELDS # to get fields & validators
 
 logger = logging.getLogger(__name__)
 
@@ -97,8 +97,6 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
 
     actionlog.zwei_actions.send(actions)
 
-MANDATORY_CSV_FIELDS = ['url', 'title', 'image_url']
-OPTIONAL_CSV_FIELDS = ['crop_areas', 'tracker_urls', 'display_url', 'brand_name', 'description', 'call_to_action']
 
 def _save_error_report(rows, filename):
     string = StringIO.StringIO()

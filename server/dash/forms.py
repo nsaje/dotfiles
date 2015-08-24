@@ -306,6 +306,8 @@ class UserForm(forms.Form):
 
 
 DISPLAY_URL_MAX_LENGTH = 25
+MANDATORY_CSV_FIELDS = ['url', 'title', 'image_url']
+OPTIONAL_CSV_FIELDS = ['crop_areas', 'tracker_urls', 'display_url', 'brand_name', 'description', 'call_to_action']
 
 class DisplayURLField(forms.URLField):
     def clean(self, value):
@@ -398,13 +400,8 @@ class AdGroupAdsPlusUploadForm(forms.Form):
             # accept both variants
             if field == "tracker_url":
                 field = "tracker_urls"
-            if n >= 3 and field not in ['crop_areas', 
-                                        'tracker_urls', 
-                                        'display_url', 
-                                        'brand_name', 
-                                        'description', 
-                                        'call_to_action']:
-                raise forms.ValidationError('Unrecognized column number {0}: "{1}".'.format(n+1, header[n]))
+            if n >= 3 and field not in OPTIONAL_CSV_FIELDS:
+                raise forms.ValidationError('Unrecognized column name "{0}".'.format(header[n]))
             column_names[n] = field
 
         # Make sure each column_name appears only once

@@ -357,7 +357,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors['content_ads'],
-            ['Unrecognized column number 4: "aaa".']
+            ['Unrecognized column name "aaa".']
         )
 
     def test_header_unknown_fifth_column(self):
@@ -366,7 +366,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors['content_ads'],
-            ['Unrecognized column number 5: "aaa".']
+            ['Unrecognized column name "aaa".']
         )
 
     def test_windows_1252_encoding(self):
