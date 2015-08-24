@@ -12,7 +12,19 @@
             <label ng-repeat="error in errors.name" class="control-label error" for="name-input">{{ error }}</label>
         </div>
 
-        <div class="form-group" ng-if="hasPermission('zemauth.account_agency_access_permissions')">
+        <button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
+        <button type="button" class="btn btn-default" ng-click="getSettings(true)">Discard</button>
+        <button type="button" class="btn btn-default pull-right" ng-class="{'disabled': !canArchive}" title="{{ (!canArchive && 'All of the account\'s campaigns have to be paused in order to archive the account.') || '' }}" ng-click="archiveAccount()">Archive account</button>
+        <div class="loader" ng-show="requestInProgress"></div>
+        <span ng-show="saved" class="success">Your updates have been saved.</span>
+        <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
+        <span ng-show="discarded" class="success">Your updates have been discarded.</span>
+    </form>
+
+    <br />
+
+    <div class="form-horizontal table-access-permissions" ng-if="hasPermission('zemauth.account_agency_access_permissions')">
+        <div class="form-group">
             <label for="first-name-input" class="col-xs-2 control-label">
                 Access Permissions
                 <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Users who have access to the account you're currently on." placement="top"></zem-help-popover>
@@ -34,7 +46,7 @@
                             <div class="loader" ng-show="user.requestInProgress"></div>
 
                             <div class="dropdown" dropdown ng-show="!user.requestInProgress" aria-haspopup="true">
-                                <a href class="btn btn-default dropdown-toggle" dropdown-toggle>Edit&nbsp;<span class="caret"></a>
+                                <a href class="btn btn-default dropdown-toggle" dropdown-toggle>Edit&nbsp;<span class="caret"></span></a>
                                 <ul class="dropdown-menu dropdown-menu-activation" role="menu">
                                     <li><a ng-show="!user.is_active" tabindex="-1" ng-click="userActionChange('resend', user.id)" href="#">Resend Activation Mail</a></li>
                                     <li><a tabindex="-1" ng-click="userActionChange('remove', user.id)" href="#">Remove</a></li>
@@ -64,55 +76,47 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="section table-conversion-pixels" ng-if="hasPermission('zemauth.manage_conversion_pixels')">
-            <div class="title">
-                Set Up Conversion Pixels
-                <div class="loader" ng-show="listPixelsInProgress"></div>
-            </div>
-            <div class="loader-container" ng-if="conversionPixels.length">
-                <div class="loader" ng-show="conversionPixels.length && listPixelsInProgress"></div>
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th class="arrow" ng-class="{ordered: pixelOrderField === 'slug' && !pixelOrderReverse, 'ordered-reverse': pixelOrderField === 'slug' && pixelOrderReverse}"><a href class="order" ng-click="pixelOrderField = 'slug'; pixelOrderReverse = !pixelOrderReverse">Slug</a></th>
-                            <th class="arrow" ng-class="{ordered: pixelOrderField === 'status' && !pixelOrderReverse, 'ordered-reverse': pixelOrderField === 'status' && pixelOrderReverse}"><a href class="order" ng-click="pixelOrderField = 'status'; pixelOrderReverse = !pixelOrderReverse">Status</a></th>
-                            <th class="arrow" ng-class="{ordered: pixelOrderField === 'lastVerifiedDt' && !pixelOrderReverse, 'ordered-reverse': pixelOrderField === 'lastVerifiedDt' && pixelOrderReverse}"><a href class="order" ng-click="pixelOrderField = 'lastVerifiedDt'; pixelOrderReverse = !pixelOrderReverse">Last verified</a></th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr ng-class="{'archived': item.archived}" ng-repeat="item in conversionPixels | orderBy:pixelOrderField:pixelOrderReverse | filter: filterConversionPixels">
-                            <td>
-                                {{ item.slug }}
-                                <span class="loader" ng-if="item.requestInProgress"></span>
-                            </td>
-                            <td>{{ item.status }}</td>
-                            <td class="no-wrap">{{ (item.lastVerifiedDt | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
-                            <td>
-                                <div ng-show="!item.archived" class="dropdown" dropdown aria-haspopup="true">
-                                    <a href class="btn btn-default btn-big dropdown-toggle" ng-class="{'disabled': item.requestInProgress}"dropdown-toggle>Actions&nbsp;<span class="caret" /></a>
-                                    <ul class="dropdown-menu dropdown-menu-activation" role="menu">
-                                        <li><a tabindex="-1" ng-click="archiveConversionPixel(item.id)" href="#">Archive</a></li>
-                                        <li><a tabindex="-1" ng-click="copyConversionPixelTag(item.slug)" href="#">Copy tag</a></li>
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <button type="button" class="btn btn-default" ng-click="addConversionPixel()">Add Pixel</button><br />
+    <div class="section table-conversion-pixels" ng-if="hasPermission('zemauth.manage_conversion_pixels')">
+        <div class="title">
+            Set Up Conversion Pixels
+            <div class="loader" ng-show="listPixelsInProgress"></div>
         </div>
-
-        <button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
-        <button type="button" class="btn btn-default" ng-click="getSettings(true)">Discard</button>
-        <button type="button" class="btn btn-default pull-right" ng-class="{'disabled': !canArchive}" title="{{ (!canArchive && 'All of the account\'s campaigns have to be paused in order to archive the account.') || '' }}" ng-click="archiveAccount()">Archive account</button>
-        <div class="loader" ng-show="requestInProgress"></div>
-        <span ng-show="saved" class="success">Your updates have been saved.</span>
-        <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
-        <span ng-show="discarded" class="success">Your updates have been discarded.</span>
-    </form>
+        <div class="loader-container" ng-if="conversionPixels.length">
+            <div class="loader" ng-show="conversionPixels.length && listPixelsInProgress"></div>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="arrow" ng-class="{ordered: pixelOrderField === 'slug' && !pixelOrderReverse, 'ordered-reverse': pixelOrderField === 'slug' && pixelOrderReverse}"><a href class="order" ng-click="pixelOrderField = 'slug'; pixelOrderReverse = !pixelOrderReverse">Slug</a></th>
+                        <th class="arrow" ng-class="{ordered: pixelOrderField === 'status' && !pixelOrderReverse, 'ordered-reverse': pixelOrderField === 'status' && pixelOrderReverse}"><a href class="order" ng-click="pixelOrderField = 'status'; pixelOrderReverse = !pixelOrderReverse">Status</a></th>
+                        <th class="arrow" ng-class="{ordered: pixelOrderField === 'lastVerifiedDt' && !pixelOrderReverse, 'ordered-reverse': pixelOrderField === 'lastVerifiedDt' && pixelOrderReverse}"><a href class="order" ng-click="pixelOrderField = 'lastVerifiedDt'; pixelOrderReverse = !pixelOrderReverse">Last verified</a></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-class="{'archived': item.archived}" ng-repeat="item in conversionPixels | orderBy:pixelOrderField:pixelOrderReverse | filter: filterConversionPixels">
+                        <td>
+                            {{ item.slug }}
+                            <span class="loader" ng-if="item.requestInProgress"></span>
+                        </td>
+                        <td>{{ item.status }}</td>
+                        <td class="no-wrap">{{ (item.lastVerifiedDt | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
+                        <td>
+                            <div ng-show="!item.archived" class="dropdown" dropdown aria-haspopup="true">
+                                <a href class="btn btn-default btn-big dropdown-toggle" ng-class="{'disabled': item.requestInProgress}"dropdown-toggle>Actions&nbsp;<span class="caret" /></a>
+                                <ul class="dropdown-menu dropdown-menu-activation" role="menu">
+                                    <li><a tabindex="-1" ng-click="archiveConversionPixel(item.id)" href="#">Archive</a></li>
+                                    <li><a tabindex="-1" ng-click="copyConversionPixelTag(item.slug)" href="#">Copy tag</a></li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <button type="button" class="btn btn-default" ng-click="addConversionPixel()">Add Pixel</button><br />
+    </div>
 
     <div class="section table-account-agency">
         <div class="title">History<zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="History of settings changes." placement="top"></zem-help-popover>
