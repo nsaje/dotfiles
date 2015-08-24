@@ -445,7 +445,7 @@ class ConversionPixels(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         account = helpers.get_account(request.user, account_id)
-        return self.create_api_response([
+        rows = [
             {
                 'id': conversion_pixel.id,
                 'slug': conversion_pixel.slug,
@@ -453,7 +453,11 @@ class ConversionPixels(api_common.BaseApiView):
                 'last_verified_dt': conversion_pixel.last_verified_dt,
                 'archived': conversion_pixel.archived
             } for conversion_pixel in models.ConversionPixel.objects.filter(account=account)
-        ])
+        ]
+
+        return self.create_api_response({
+            'rows': rows
+        })
 
     def post(self, request, account_id):
         if not request.user.has_perm('zemauth.manage_conversion_pixels'):

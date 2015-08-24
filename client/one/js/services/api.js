@@ -2116,7 +2116,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
             $http.get(url).
                 success(function (data, status) {
-                    deferred.resolve(data.data.map(convertFromApi));
+                    deferred.resolve(data.data.rows.map(convertFromApi));
                 }).
                 error(function (data, status){
                     deferred.reject(data.data);
