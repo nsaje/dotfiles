@@ -7,7 +7,7 @@ from functools import partial
 from multiprocessing.pool import ThreadPool
 
 from django.db import transaction
-from django.forms import ValidationError, URLField
+from django.forms import ValidationError
 from django.core import validators
 from django.db.models import F
 
