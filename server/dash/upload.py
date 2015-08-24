@@ -214,13 +214,14 @@ def _clean_row(batch, upload_form_cleaned_fields, ad_group, row):
 # This function cleans the fields that are, when column is not present or the value is empty, inherited from form submission
 def _clean_inherited_csv_field(field_name, value_from_csv, cleaned_value_from_form):
     field = AdGroupAdsPlusUploadForm.base_fields[field_name]
-    if not value_from_csv:
-        if cleaned_value_from_form:
-            return cleaned_value_from_form
-        else:
-            raise ValidationError("{0} has to be present in CSV or default value should be submitted in the upload form.".format(field.label))
-    value = field.clean(value_from_csv)
-    return value
+
+    if value_from_csv:
+        return field.clean(value_from_csv)
+
+    if cleaned_value_from_form:
+        return cleaned_value_from_form
+
+    raise ValidationError("{0} has to be present in CSV or default value should be submitted in the upload form.".format(field.label))
 
 
 def _clean_url(url, ad_group):
