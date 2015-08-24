@@ -27,19 +27,19 @@ class ContentAdBatchMigrationTest(MigrationTest):
         UploadBatch = self.get_model_before('UploadBatch')
 
         user = User.objects.create_user('test@example.com')
-	account = Account.objects.create(modified_by_id = user.id)
-	campaign = Campaign.objects.create(modified_by_id = user.id, account_id = account.id)
-	ad_group = AdGroup.objects.create(modified_by_id = user.id, campaign_id = campaign.id)
-	batch = UploadBatch.objects.create(name='test', 
-					   display_url="abc.com",
-					   brand_name="Brand inc.",
-					   description="This desc!", 
-					   call_to_action="Act!",)
+        account = Account.objects.create(modified_by_id = user.id)
+        campaign = Campaign.objects.create(modified_by_id = user.id, account_id = account.id)
+        ad_group = AdGroup.objects.create(modified_by_id = user.id, campaign_id = campaign.id)
+        batch = UploadBatch.objects.create(name='test', 
+                                           display_url="abc.com",
+                                           brand_name="Brand inc.",
+                                           description="This desc!", 
+                                           call_to_action="Act!",)
         content_ad1 = ContentAd.objects.create(
             url='test.com',
             title='test',
             ad_group_id=ad_group.id,
-	    batch_id=batch.id,
+            batch_id=batch.id,
 
         )
         # Trigger the migration
@@ -51,8 +51,8 @@ class ContentAdBatchMigrationTest(MigrationTest):
 
         ContentAd = self.get_model_after('ContentAd')
 
-	ca = ContentAd.objects.get(url='test.com')
-	self.assertEqual(ca.display_url, "abc.com")
-	self.assertEqual(ca.brand_name, "Brand inc.")
-	self.assertEqual(ca.description ,"This desc!")
-	self.assertEqual(ca.call_to_action, "Act!")
+        ca = ContentAd.objects.get(url='test.com')
+        self.assertEqual(ca.display_url, "abc.com")
+        self.assertEqual(ca.brand_name, "Brand inc.")
+        self.assertEqual(ca.description ,"This desc!")
+        self.assertEqual(ca.call_to_action, "Act!")
