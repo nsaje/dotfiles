@@ -447,7 +447,37 @@ class AdGroupAdsPlusExport(ExportApiView):
         ('ctr', 'CTR')
     ]
 
+    # this duplication might look strange but is necessary - excel package does
+    # runtime magic substitution of percen format with it's internal types
+    common_csv_date_columns = [
+        ('date', 'Date'),
+        ('image_url', 'Image URL'),
+        ('title', 'Title'),
+        ('url', 'URL'),
+        ('uploaded', 'Uploaded'),
+        ('cost', 'Spend'),
+        ('cpc', 'Avg. CPC'),
+        ('clicks', 'Clicks'),
+        ('impressions', 'Impressions'),
+        ('ctr', 'CTR')
+    ]
+
     common_excel_columns = [
+        {'key': 'image_url', 'name': 'Image URL', 'width': 40},
+        {'key': 'title', 'name': 'Title', 'width': 30},
+        {'key': 'url', 'name': 'URL', 'width': 40},
+        {'key': 'uploaded', 'name': 'Uploaded', 'width': 40, 'format': 'date'},
+        {'key': 'cost', 'name': 'Spend', 'width': 40},
+        {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
+        {'key': 'clicks', 'name': 'Clicks'},
+        {'key': 'impressions', 'name': 'Impressions', 'width': 15},
+        {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
+    ]
+
+    # this duplication might look strange but is necessary - excel package does
+    # runtime magic substitution of percen format with it's internal types
+    common_excel_date_columns = [
+        {'key': 'date', 'name': 'Date', 'format': 'date'},
         {'key': 'image_url', 'name': 'Image URL', 'width': 40},
         {'key': 'title', 'name': 'Title', 'width': 30},
         {'key': 'url', 'name': 'URL', 'width': 40},
@@ -509,7 +539,7 @@ class AdGroupAdsPlusExport(ExportApiView):
             source=sources
         )
 
-        fieldnames = OrderedDict([('date', 'Date')] + self.common_csv_columns)
+        fieldnames = OrderedDict(self.common_csv_date_columns)
         content = export.get_csv_content(fieldnames, ads_results)
         return self.create_csv_response(filename, content=content)
 
@@ -533,14 +563,15 @@ class AdGroupAdsPlusExport(ExportApiView):
 
         self.add_source_data(sources_results)
 
-        ads_columns = [{'key': 'date', 'name': 'Date', 'format': 'date'}] + self.common_excel_columns
-        sources_columns = list(ads_columns)  # make a shallow copy
+        ads_columns = list(self.common_excel_date_columns)
+        sources_columns =  list(self.common_excel_date_columns)  # make a shallow copy
         sources_columns.insert(5, {'key': 'source', 'name': 'Source', 'width': 20})
 
         content = export.get_excel_content([
             ('Detailed Report', ads_columns, ads_results),
             ('Per Source Report', sources_columns, sources_results)
         ])
+
         return self.create_excel_response(filename, content=content)
 
     def create_by_content_ad_excel(self, filename, start_date, end_date, user, ad_group, sources):
@@ -582,21 +613,9 @@ class AdGroupAdsPlusExport(ExportApiView):
             ad_group=ad_group,
             source=sources
         )
-        fieldnames = OrderedDict(self._create_common_csv_columns())
+        fieldnames = OrderedDict(self.common_csv_columns)
         content = export.get_csv_content(fieldnames, ads_results)
         return self.create_csv_response(filename, content=content)
-
-    def _create_common_csv_columns(self):
-        return [('image_url', 'Image URL'),
-            ('title', 'Title'),
-            ('url', 'URL'),
-            ('uploaded', 'Uploaded'),
-            ('cost', 'Spend'),
-            ('cpc', 'Avg. CPC'),
-            ('clicks', 'Clicks'),
-            ('impressions', 'Impressions'),
-            ('ctr', 'CTR')
-            ]
 
     def add_source_data(self, results):
         sources = {source.id: source for source in models.Source.objects.all()}
