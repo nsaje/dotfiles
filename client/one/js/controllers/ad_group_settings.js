@@ -65,7 +65,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
     };
 
     $scope.getSettings = function (id) {
-        $scope.loadRequestInProgress = true
+        $scope.loadRequestInProgress = true;
 
         api.adGroupSettings.get(id).then(
             function (data) {
