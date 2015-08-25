@@ -244,7 +244,9 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                             campaign.adGroups.push({
                                 id: data.id,
                                 name: data.name,
-                                contentAdsTabWithCMS: data.contentAdsTabWithCMS
+                                contentAdsTabWithCMS: data.contentAdsTabWithCMS,
+                                status: 'stopped',
+                                state: 'paused'
                             });
 
                             $state.go('main.adGroups.settings', {id: data.id});
