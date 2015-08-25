@@ -81,7 +81,7 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', 'api', function ($s
                 $scope.refreshPage();
             });
         }
-    };i
+    };
 
     $scope.restoreCampaign = function () {
         if ($scope.canRestore) {
