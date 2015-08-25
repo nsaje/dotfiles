@@ -5,6 +5,12 @@ import reports.models
 import dash.models
 
 
+def refresh_contentadstats(date, ad_group_id, source_id=None):
+    pass
+    # TODO delete all rows that will be replaced
+    # TODO bulk insert rows
+
+
 def refresh_adgroup_stats(**constraints):
     # make sure we only filter by the allowed dimensions
     assert len(set(constraints.keys()) - {'datetime', 'ad_group', 'source'}) == 0

@@ -1,3 +1,5 @@
+from mock import patch
+
 import datetime
 
 from django import test
@@ -409,7 +411,8 @@ class DeleteOnEmptyReportTestCase(test.TestCase):
 class ContentAdStatsUpdateTest(test.TestCase):
     fixtures = ['test_api.yaml']
 
-    def test_update_content_ads_source_traffic_stats(self):
+    @patch('reports.update.reports.refresh.refresh_contentadstats')
+    def test_update_content_ads_source_traffic_stats(self, mock_refresh_contentadstats):
         date = datetime.date(2015, 4, 1)
         ad_group = dash.models.AdGroup.objects.get(pk=1)
         source = dash.models.Source.objects.get(pk=1)
@@ -433,3 +436,5 @@ class ContentAdStatsUpdateTest(test.TestCase):
         self.assertEqual(stats[0].clicks, 100)
         self.assertEqual(stats[0].cost_cc, 300)
         self.assertEqual(stats[0].data_cost_cc, 200)
+
+        mock_refresh_contentadstats.assert_called_with(date, ad_group.id, source.id)
