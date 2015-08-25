@@ -11,10 +11,20 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         logger.info('Testing Redshift connection')
-        self.setupTables()
+        self.create_schema()
+        self.generate_data(max_lines=10)
+        self.query_sample()
 
     @transaction.atomic
-    def setupTables(self, max_lines=10000):
+    def query_sample(self, limit=100):
+        query = "SELECT * FROM contentadstats LIMIT {l}".format(l=limit)
+        cursor = connections['redshift'].cursor()
+        cursor.execute(query)
+
+        for row in cursor.fetchall():
+            print row
+
+    def create_schema(self):
         # this can take quite some time
         query =\
         """
@@ -45,7 +55,13 @@ class Command(BaseCommand):
         DISTSTYLE EVEN
         SORTKEY (datetime);
         """
+        cursor = connections['redshift'].cursor()
+        cursor.execute(query)
 
+
+    @transaction.atomic
+    def generate_data(self, max_lines=10000):
+        # this can take quite some time
         insert_data_queries = []
         for i in xrange(max_lines):
             q = "INSERT INTO contentadstats (datetime,content_ad_id,adgroup_id,source_id,campaign_id,account_id,impressions,clicks,cost_cc,data_cost_cc,visits,new_visits,bounced_visits,pageviews,total_time_on_site,conversions,touchpoints) \
@@ -72,8 +88,9 @@ class Command(BaseCommand):
             insert_data_queries.append("{q};".format(q=q))
 
         cursor = connections['redshift'].cursor()
-        cursor.execute(query)
-        for i in xrange(len(insert_data_queries) / 1000):
+
+
+        for i in xrange(max(len(insert_data_queries) / 1000, 1)):
             queries = "\n".join(insert_data_queries[i:i+1000])
-            print queries
+            print("Progress {count}".format(count=i))
             cursor.execute(queries)
