@@ -260,7 +260,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
         conversionPixel.requestInProgress = true;
         api.conversionPixel.archive(conversionPixelId).then(
             function (data) {
-                conversionPixel.archived = true;
+                conversionPixel.archived = data.archived;
                 $scope.getSettings();
             }
         ).finally(function () {
@@ -277,7 +277,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
         conversionPixel.requestInProgress = true;
         api.conversionPixel.restore(conversionPixelId).then(
             function (data) {
-                conversionPixel.archived = false;
+                conversionPixel.archived = data.archived;
                 $scope.getSettings();
             }
         ).finally(function () {

@@ -277,12 +277,14 @@ oneApp.controller('MainCtrl',
 
     $document.bind('keyup', function (e) {
         if (e) {
+            // nav search shortcut
             if (String.fromCharCode(e.keyCode).toLowerCase() === 'f') {
                 var el = $('#nav-search .select2-container');
 
                 if (document.activeElement.tagName.toLowerCase() === 'input' ||
                     document.activeElement.tagName.toLowerCase() === 'select' ||
                     document.activeElement.tagName.toLowerCase() === 'textarea') {
+                    // input element in focus
                     return;
                 }
 
