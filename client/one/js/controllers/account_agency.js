@@ -253,24 +253,36 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
 
     $scope.archiveConversionPixel = function (conversionPixelId) {
         var conversionPixel = getConversionPixel(conversionPixelId);
-        if (conversionPixel) {
-            if (conversionPixel.archived) {
-                return;
-            }
-
-            conversionPixel.requestInProgress = true;
+        if (!conversionPixel) {
+            return;
         }
 
+        conversionPixel.requestInProgress = true;
         api.conversionPixel.archive(conversionPixelId).then(
             function (data) {
-                if (conversionPixel) {
-                    conversionPixel.requestInProgress = false;
-                    conversionPixel.archived = true;
-                }
-
+                conversionPixel.archived = true;
                 $scope.getSettings();
             }
-        );
+        ).finally(function () {
+            conversionPixel.requestInProgress = false;
+        });
+    };
+
+    $scope.restoreConversionPixel = function (conversionPixelId) {
+        var conversionPixel = getConversionPixel(conversionPixelId);
+        if (!conversionPixel) {
+            return;
+        }
+
+        conversionPixel.requestInProgress = true;
+        api.conversionPixel.restore(conversionPixelId).then(
+            function (data) {
+                conversionPixel.archived = false;
+                $scope.getSettings();
+            }
+        ).finally(function () {
+            conversionPixel.requestInProgress = false;
+        });
     };
 
     $scope.copyConversionPixelTag = function (slug) {

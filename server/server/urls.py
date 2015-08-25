@@ -266,15 +266,11 @@ urlpatterns += patterns(
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/conversion_pixels/',
-        login_required(dash.views.agency.ConversionPixels.as_view()),
+        login_required(dash.views.agency.AccountConversionPixels.as_view()),
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/conversion_pixels/',
-        login_required(dash.views.agency.ConversionPixels.as_view()),
-    ),
-    url(
-        r'^api/conversion_pixels/(?P<conversion_pixel_id>\d+)/archive',
-        login_required(dash.views.agency.ConversionPixelArchive.as_view()),
+        r'^api/conversion_pixel/(?P<conversion_pixel_id>\d+)/',
+        login_required(dash.views.agency.ConversionPixel.as_view()),
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/',

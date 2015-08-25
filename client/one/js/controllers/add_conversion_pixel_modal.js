@@ -12,7 +12,9 @@ oneApp.controller('AddConversionPixelModalCtrl', ['$scope', '$modalInstance', '$
                 $modalInstance.close(data);
             },
             function(data) {
-                $scope.error = data.message;
+                if (data && data.message) {
+                    $scope.error = data.message;
+                }
                 $scope.addConversionPixelInProgress = false;
             }
         );

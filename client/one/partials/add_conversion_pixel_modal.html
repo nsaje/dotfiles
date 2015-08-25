@@ -4,13 +4,13 @@
         <div class="form-group" ng-class="{'has-error': !!error}">
             <label for="unique-identifier-input" class="col-xs-4 control-label">
                 Unique identifier
-                <zem-help-popover content="" placement="top"></zem-help-popover>
+                <zem-help-popover content="Conversion pixel's unique identifier" placement="bottom"></zem-help-popover>
             </label>
             <span class="col-xs-6 text-vertical-align-middle text-align-right no-padding-right">
                 https://cookiepixie.zemanta.com/p.gif?id={{ account.id }}-
             </span>
             <div class="col-xs-2">
-                <input type="text" id="unique-identifier-input" class="form-control" ng-model="slug" ng-focus="clearError()" ng-change="clearError()" />
+                <input type="text" zem-focus-select id="unique-identifier-input" class="form-control" ng-model="slug" ng-focus="clearError()" ng-change="clearError()" />
             </div>
         </div>
 

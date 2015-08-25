@@ -2145,9 +2145,32 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
         this.archive = function (conversionPixelId) {
             var deferred = $q.defer();
-            var url = '/api/conversion_pixels/' + conversionPixelId + '/archive/';
+            var url = '/api/conversion_pixel/' + conversionPixelId + '/';
 
-            $http.put(url).
+            var data = {
+                archived: true
+            };
+
+            $http.put(url, data).
+                success(function(data, status) {
+                    deferred.resolve(convertFromApi(data.data));
+                }).
+                error(function (data, status) {
+                    deferred.reject(data.data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.restore = function (conversionPixelId) {
+            var deferred = $q.defer();
+            var url = '/api/conversion_pixel/' + conversionPixelId + '/';
+
+            var data = {
+                archived: false
+            };
+
+            $http.put(url, data).
                 success(function(data, status) {
                     deferred.resolve(convertFromApi(data.data));
                 }).

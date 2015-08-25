@@ -1681,15 +1681,47 @@ a.help-popover:visited {
             margin-bottom: 10px;
 
             &> tbody > tr {
-                /* @line-height-base as defined in bootstrap + button padding for
-                   those rows that have button hidden to be the same height as
-                   those with button shown */
-                height: calc(~"1.428571429em + 24px");
+                &.archived {
+                    .dropdown {
+                        & a.dropdown-toggle:not(.disabled),
+                        & a.dropdown-toggle:not(.disabled):hover,
+                        & a.dropdown-toggle:not(.disabled):active,
+                        & a.dropdown-toggle:not(.disabled):visited {
+                            color: @default-color;
+                        }
+
+                        .dropdown-menu li {
+                            a {
+                                color: @default-color;
+                            }
+
+                            a:hover {
+                                color: white;
+                            }
+                        }
+                    }
+                }
 
                 &> td {
                     vertical-align: middle;
                     padding-top: 4px;
                     padding-bottom: 4px;
+
+                    &.pixel-slug {
+                        width: 250px;
+                    }
+
+                    &.pixel-status {
+                        width: 80px;
+                    }
+
+                    &.pixel-last-verified {
+                        width: 150px;
+                    }
+
+                    .loader {
+                        margin-left: 5px;
+                    }
                 }
             }
         }

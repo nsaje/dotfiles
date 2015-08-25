@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             name='ConversionPixel',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('slug', models.CharField(max_length=50)),
+                ('slug', models.CharField(max_length=32)),
                 ('status', models.IntegerField(default=1, choices=[(1, b'Not used'), (2, b'Inactive'), (3, b'Active')])),
                 ('last_verified_dt', models.DateTimeField(null=True, verbose_name=b'Last verified on')),
                 ('archived', models.BooleanField(default=False)),

@@ -1,6 +1,7 @@
 import json
 import logging
 import newrelic.agent
+import re
 
 from collections import OrderedDict
 from decimal import Decimal
@@ -438,7 +439,7 @@ class CampaignBudget(api_common.BaseApiView):
         return result
 
 
-class ConversionPixels(api_common.BaseApiView):
+class AccountConversionPixels(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'conversion_pixels_list')
     def get(self, request, account_id):
         if not request.user.has_perm('zemauth.manage_conversion_pixels'):
@@ -459,6 +460,7 @@ class ConversionPixels(api_common.BaseApiView):
             'rows': rows
         })
 
+    @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_post')
     def post(self, request, account_id):
         if not request.user.has_perm('zemauth.manage_conversion_pixels'):
             raise exc.MissingDataError()
@@ -471,7 +473,7 @@ class ConversionPixels(api_common.BaseApiView):
         if not slug:
             raise exc.ValidationError(message='Unique identifier is required.')
 
-        if not slug.isalnum():
+        if re.search(r'[^a-z]', slug):
             raise exc.ValidationError(message='Unique identifier contains invalid characters.')
 
         try:
@@ -483,7 +485,7 @@ class ConversionPixels(api_common.BaseApiView):
         conversion_pixel = models.ConversionPixel.objects.create(account_id=account_id, slug=slug)
 
         new_settings = account.get_current_settings().copy_settings()
-        new_settings.changes_text = 'Added conversion pixel with unique identifier {}.'.format(slug)
+        new_settings.changes_text = u'Added conversion pixel with unique identifier {}.'.format(slug)
         new_settings.save(request)
 
         return self.create_api_response({
@@ -495,8 +497,8 @@ class ConversionPixels(api_common.BaseApiView):
         })
 
 
-class ConversionPixelArchive(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_archive')
+class ConversionPixel(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_put')
     def put(self, request, conversion_pixel_id):
         if not request.user.has_perm('zemauth.manage_conversion_pixels'):
             raise exc.MissingDataError()
@@ -511,12 +513,21 @@ class ConversionPixelArchive(api_common.BaseApiView):
         except exc.MissingDataError:
             raise exc.MissingDataError('Conversion pixel does not exist')
 
-        conversion_pixel.archived = True
-        conversion_pixel.save()
+        data = json.loads(request.body)
 
-        new_settings = account.get_current_settings().copy_settings()
-        new_settings.changes_text = 'Archived conversion pixel with unique identifier {}.'.format(conversion_pixel.slug)
-        new_settings.save(request)
+        if 'archived' in data:
+            if not isinstance(data['archived'], bool):
+                raise exc.ValidationError(message='Invalid value')
+
+            conversion_pixel.archived = data['archived']
+            conversion_pixel.save()
+
+            new_settings = account.get_current_settings().copy_settings()
+            new_settings.changes_text = u'{} conversion pixel with unique identifier {}.'.format(
+                'Archived' if data['archived'] else 'Restored',
+                conversion_pixel.slug
+            )
+            new_settings.save(request)
 
         return self.create_api_response({
             'id': conversion_pixel.id,
