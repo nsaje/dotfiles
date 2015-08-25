@@ -227,34 +227,3 @@ def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
         ad_group,
         ad_group.campaign.get_campaign_url(request)
     )
-
-
-def send_depleted_budget_notification_email(account_manager, campaign):
-    body = u'''<p>Hi {name},</p>
-<p>
-Your campaign {camp} is about to run out of available budget.
-</p>
-<p>
-As always, please don't hesitate to contact help@zemanta.com with any questions.
-</p>
-<p>
-Thanks,<br/>
-Zemanta Client Services
-</p>
-    '''
-
-    body = body.format(
-        name=account_manager.first_name,
-        camp=campaign.name
-    )
-    print('Sending email for campaign ',campaign.name,' to ',account_manager.email)
-    try:
-        send_mail(
-            'Campaign budget',
-            body,
-            'Zemanta <{}>'.format('z@zem.com'), #What email address should be used?
-            [account_manager.email],
-            fail_silently=False
-        )
-    except Exception as e:
-        logger.error('Budget depletion e-mail for campaign %s to %s was not sent because an exception was raised: %s', campaign.name, account_manager.email, traceback.format_exc(e))
