@@ -29,7 +29,7 @@ class ViewsTest(TestCase):
     def test_mailgun_gareps_no_attachment(self):
         # Create an instance of a GET request.
         timestamp, signature = self._authorize()
-        request = self.factory.post('/convapi/mailgun/gareps/', {            
+        request = self.factory.post('/convapi/mailgun/gareps/', {
             'subject': 'test',
             'sender': 'test@zemanta.com',
             'timestamp': timestamp,
