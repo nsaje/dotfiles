@@ -1469,6 +1469,9 @@ class ConversionPixel(models.Model):
     archived = models.BooleanField(default=False)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created on')
 
+    class Meta:
+        unique_together = ('slug', 'account')
+
 
 class DemoAdGroupRealAdGroup(models.Model):
     demo_ad_group = models.OneToOneField(AdGroup, on_delete=models.PROTECT, related_name='+')
