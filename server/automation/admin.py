@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from . import models
 
-class CampaignBudgetDepletionNotifactionAdmin(admin.ModelAdmin):
+class CampaignBudgetDepletionNotificationAdmin(admin.ModelAdmin):
     search_fields = ['account_manager', 'campaign']
     list_display = (
         'account_manager',
@@ -13,4 +13,4 @@ class CampaignBudgetDepletionNotifactionAdmin(admin.ModelAdmin):
     )
     readonly_fields = ['created_dt']
 
-admin.site.register(models.CampaignBudgetDepletionNotifaction, CampaignBudgetDepletionNotifactionAdmin)
+admin.site.register(models.CampaignBudgetDepletionNotification, CampaignBudgetDepletionNotificationAdmin)

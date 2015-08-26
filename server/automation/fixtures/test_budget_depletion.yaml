@@ -1,7 +1,7 @@
 # Users
 - fields:
     date_joined: '2014-06-04T09:58:21'
-    email: ''
+    email: 'em@il.com'
     first_name: ''
     groups: []
     is_active: true
