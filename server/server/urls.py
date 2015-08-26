@@ -13,6 +13,7 @@ from zemauth.forms import AuthenticationForm
 import zweiapi.views
 import actionlog.views
 import convapi.views
+import reports.views
 
 import dash.views.daily_stats
 import dash.views.export

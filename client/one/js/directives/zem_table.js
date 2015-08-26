@@ -1,7 +1,7 @@
 /*global $,oneApp,constants*/
 "use strict";
 
-oneApp.directive('zemTable', ['config', function(config) {
+oneApp.directive('zemTable', ['config', '$window', function(config, $window) {
     return {
         restrict: 'E',
         scope: {
@@ -77,6 +77,12 @@ oneApp.directive('zemTable', ['config', function(config) {
                 }
 
                 return editableFields[field].message;
+            };
+
+            $scope.openUrl = function(data, $event) {
+                $event.stopPropagation();
+                $event.preventDefault();
+                $window.open(data.destinationUrl || data.url, '_blank');
             };
         }]
     };
