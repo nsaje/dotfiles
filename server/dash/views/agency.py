@@ -473,7 +473,7 @@ class AccountConversionPixels(api_common.BaseApiView):
         if not slug:
             raise exc.ValidationError(message='Unique identifier is required.')
 
-        if re.search(r'[^a-z]', slug):
+        if re.search(r'[^a-z]+', slug):
             raise exc.ValidationError(message='Unique identifier contains invalid characters.')
 
         try:

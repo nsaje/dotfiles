@@ -7,7 +7,7 @@
                 <zem-help-popover content="Conversion pixel's unique identifier" placement="bottom"></zem-help-popover>
             </label>
             <span class="col-xs-6 text-vertical-align-middle text-align-right no-padding-right">
-                https://cookiepixie.zemanta.com/p.gif?id={{ account.id }}-
+                {{ getConversionPixelTagPrefix() }}
             </span>
             <div class="col-xs-2">
                 <input type="text" zem-focus-select id="unique-identifier-input" class="form-control" ng-model="slug" ng-focus="clearError()" ng-change="clearError()" />

@@ -285,9 +285,13 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
         });
     };
 
+    $scope.getConversionPixelTagPrefix = function () {
+        return 'https://cookiepixie.zemanta.com/p/' + $scope.account.id + '/';
+    };
+
     $scope.copyConversionPixelTag = function (slug) {
         var scope = $scope.$new(true);
-        scope.conversionPixelTag = 'https://cookiepixel.zemanta.com/p/' + $scope.account.id + '/' + slug + '/';
+        scope.conversionPixelTag = $scope.getConversionPixelTagPrefix() + slug + '/';
 
         var modalInstance = $modal.open({
             templateUrl: '/partials/copy_conversion_pixel_modal.html',
