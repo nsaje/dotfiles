@@ -38,7 +38,7 @@ oneApp.directive('zemTable', ['config', '$window',  function(config, $window) {
                 } else if (event.which === 2 || (event.which ===1 && (event.metaKey || event.ctrlKey))) {
                     // MIDDLE CLICK or CMD+LEFTCLICK - new tab
                     var url_bare = $state.href(field_data.state, {id: field_data.id});
-                    var url_full = url_bare + "?" + $location.search();
+                    var url_full = url_bare + "?" + getParams($location.search());
                     $window.open(url_full, "_blank");
                 }
             };
