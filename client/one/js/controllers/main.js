@@ -277,8 +277,8 @@ oneApp.controller('MainCtrl',
 
     $document.bind('keyup', function (e) {
         if (e) {
-            // nav search shortcut
             if (String.fromCharCode(e.keyCode).toLowerCase() === 'f') {
+                // nav search shortcut
                 var el = $('#nav-search .select2-container');
 
                 if (document.activeElement.tagName.toLowerCase() === 'input' ||
