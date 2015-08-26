@@ -1,19 +1,12 @@
 <div class="modal-body">
     <form class="upload-form form-horizontal">
-        <div class="form-group" ng-class="{'has-error': !!errors.file}">
-            <div class="col-xs-3">
-                <input type="text" id="file-input" readonly class="form-control" placeholder="No file chosen" ng-model="formData.file.name">
-            </div>
-            <div class="col-xs-4">
-                <button type="button" class="btn btn-default" zem-file-input="formData.file">Choose file</button>
-            </div>
-            <div class="col-xs-5">
-                <label ng-repeat="error in errors.file" class="control-label small error" for="file-input" ng-bind-html="error"></label>
-                <label ng-class="{'error-shown': errors.file}" class="control-label small sample-link">
-                    <a href="{{ config.static_url }}/one/assets/Zemanta_Content_Ads_Template.csv">Download sample CSV</a>
-                </label>
-            </div>
-        </div>
+		<div class="form-group">
+			<div class="col-xs-6">
+				<span class="form-title">Content ad information</span>
+				&nbsp;&nbsp;&nbsp;&nbsp;
+				<a href ng-click="editContentAdInfo = true;" ng-show="!editContentAdInfo">Edit</a>
+			</div>
+		</div>
         <div class="form-group" ng-class="{'has-error': !!errors.batchName}">
             <label for="batch-name-input" class="col-xs-3 control-label">
                 Batch name
@@ -26,19 +19,35 @@
                 <label ng-repeat="error in errors.batchName" class="control-label small error" for="batch-name-input">{{ error }}</label>
             </div>
         </div>
-
-        <hr>
-
+        <div class="form-group" ng-class="{'has-error': !!errors.file}">
+            <div class="col-xs-3">
+                <label ng-repeat="error in errors.file" class="control-label small error" for="file-input" ng-bind-html="error"></label>
+                <label ng-class="{'error-shown': errors.file}" class="control-label small sample-link">
+                    <a href="{{ config.static_url }}/one/assets/Zemanta_Content_Ads_Template.csv">Download sample CSV</a>
+                </label>
+            </div>
+            <div class="col-xs-5">
+                <button type="button" class="btn btn-default" zem-file-input="formData.file">Choose file</button>
+            </div>
+        </div>
+		<div class="form-group">
+			<div class="col-xs-3"></div>
+            <div class="col-xs-5">
+				<input type="text" id="file-input" readonly class="form-control" placeholder="No file chosen" ng-model="formData.file.name">
+                
+            </div>
+		</div>
         <div class="form-group" ng-class="{'has-error': !!errors.displayUrl}">
             <label for="display-url-input" class="col-xs-3 control-label">
                 Display URL
                 <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Advertiser's display URL." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-5">
-                <input id="display-url-input" type="text" class="form-control" ng-model="formData.displayUrl" ng-focus="clearErrors('displayUrl')">
+                <input id="display-url-input" type="text" class="form-control" ng-model="formData.displayUrl" ng-focus="clearErrors('displayUrl')" ng-show="editContentAdInfo">
+				<span class="input-placeholder" ng-show="!editContentAdInfo">{{formData.displayUrl}}</span>
             </div>
 
-            <label ng-if="!errors.displayUrl" class="control-label small">{{formData.displayUrl.length}}/25</label>
+            <label ng-if="!errors.displayUrl" class="control-label small" ng-show="editContentAdInfo">{{formData.displayUrl.length}}/25</label>
             <label ng-repeat="error in errors.displayUrl" class="control-label small error" for="display-url-input">{{ error }}</label>
         </div>
 
@@ -48,10 +57,11 @@
                 <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Advertiser's brand name." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-5">
-                <input id="brand-name-input" type="text" class="form-control" ng-model="formData.brandName" ng-focus="clearErrors('brandName')">
+                <input id="brand-name-input" type="text" class="form-control" ng-model="formData.brandName" ng-focus="clearErrors('brandName')" ng-show="editContentAdInfo">
+				<span class="input-placeholder" ng-show="!editContentAdInfo">{{formData.brandName}}</span>
             </div>
 
-            <label ng-if="!errors.brandName" class="control-label small">{{formData.brandName.length}}/25</label>
+            <label ng-if="!errors.brandName" class="control-label small" ng-show="editContentAdInfo">{{formData.brandName.length}}/25</label>
             <label ng-repeat="error in errors.brandName" class="control-label small error" for="brand-name-input">{{ error }}</label>
         </div>
 
@@ -61,10 +71,11 @@
                 <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Call to action text." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-5">
-                <input id="call-to-action-input" type="text" class="form-control" ng-model="formData.callToAction" ng-focus="clearErrors('callToAction')">
+                <input id="call-to-action-input" type="text" class="form-control" ng-model="formData.callToAction" ng-focus="clearErrors('callToAction')" ng-show="editContentAdInfo">
+				<span class="input-placeholder" ng-show="!editContentAdInfo">{{formData.callToAction}}</span>
             </div>
 
-            <label ng-if="!errors.callToAction" class="control-label small">{{formData.callToAction.length}}/25</label>
+            <label ng-if="!errors.callToAction" class="control-label small" ng-show="editContentAdInfo">{{formData.callToAction.length}}/25</label>
             <label ng-repeat="error in errors.callToAction" class="control-label small error" for="call-to-action-input">{{ error }}</label>
         </div>
 
@@ -74,11 +85,12 @@
                 <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Description of a content ad." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-5">
-                <textarea id="description-input" type="text" class="form-control" ng-model="formData.description" ng-focus="clearErrors('description')">
+                <textarea id="description-input" type="text" class="form-control" ng-model="formData.description" ng-focus="clearErrors('description')" ng-show="editContentAdInfo">
                 </textarea>
+				<span class="input-placeholder" ng-show="!editContentAdInfo">{{formData.description}}</span>
             </div>
 
-            <label ng-if="!errors.description" class="control-label small">{{formData.description.length}}/140</label>
+            <label ng-if="!errors.description" class="control-label small" ng-show="editContentAdInfo">{{formData.description.length}}/140</label>
             <label ng-repeat="error in errors.description" class="control-label small error" for="description-input">{{ error }}</label>
         </div>
 

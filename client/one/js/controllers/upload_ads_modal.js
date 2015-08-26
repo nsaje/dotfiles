@@ -84,9 +84,14 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
         api.adGroupAdsPlusUpload.getDefaults($state.params.id).then(
             function(data) {
                 angular.extend($scope.formData, data.defaults);
-                $scope.formData.batchName = getCurrentTimeString();
+                $scope.formData.batchName = '';
             });
     };
+
+    $scope.$watch('formData.file', function (newValue, oldValue) {
+        if ($scope.formData.batchName != '') { return; }
+        $scope.formData.batchName = newValue.name;
+    });
 
     $scope.init();
 }]);
