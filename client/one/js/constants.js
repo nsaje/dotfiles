@@ -3,6 +3,10 @@ var constants = {
         ACTIVE: 1,
         INACTIVE: 2
     },
+    adGroupRunningStatus: {
+        ACTIVE: 1,
+        INACTIVE: 2
+    },
     adGroupSourceSettingsState: {
         ACTIVE: 1,
         INACTIVE: 2

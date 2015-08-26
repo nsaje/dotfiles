@@ -22,6 +22,8 @@ REQUIRED_FIELDS = [
 logger = logging.getLogger(__name__)
 
 Z11Z_RE = re.compile('.*z1([0-9]+)([a-zA-Z].+?)1z.*')
+LANDING_PAGE_CAID_RE = re.compile('^[0-9]+')
+LANDING_PAGE_MSID_RE = re.compile('^[_a-zA-Z0-9]+')
 
 HARRYS_FIELD_KEYWORDS = ["conversion rate", "transactions", "revenue"]
 GOAL_FIELD_KEYWORDS = ["conversions", "completions", "value"] + HARRYS_FIELD_KEYWORDS
@@ -268,13 +270,22 @@ class CsvReport(object):
         content_ad_id = None
         try:
             if '_z1_caid' in query_params:
-                content_ad_id = int(query_params['_z1_caid'])
+                content_ad_id_raw = query_params['_z1_caid']
+                results = LANDING_PAGE_CAID_RE.search(content_ad_id_raw)
+                if results is not None:
+                    content_ad_id_raw = results.group(0)
+
+                content_ad_id = int(content_ad_id_raw)
         except ValueError:
             return None, ''
 
         source_param = ''
         if '_z1_msid' in query_params:
-            source_param = query_params['_z1_msid']
+            source_param = query_params['_z1_msid'] or ''
+            results = LANDING_PAGE_MSID_RE.search(source_param)
+            if results is not None:
+                source_param = results.group(0)
+
 
         if content_ad_id is None or source_param == '':
             logger.warning(
@@ -394,13 +405,13 @@ class CsvReport(object):
     def is_media_source_specified(self):
         media_source_not_specified = []
         for entry in self.entries.values():
-            if entry.source_param == '':
+            if entry.source_param == '' is None or entry.source_param == '':
                 media_source_not_specified.append(entry.source_param)
         return (len(media_source_not_specified) == 0, list(media_source_not_specified))
 
     def is_content_ad_specified(self):
         content_ad_not_specified = set()
         for entry in self.entries.values():
-            if entry.content_ad_id is None:
-                content_ad_not_specified.add(entry.get_ga_field(self.first_column))
+            if entry.content_ad_id is None or entry.content_ad_id == '':
+                content_ad_not_specified.add(entry.content_ad_id)
         return (len(content_ad_not_specified) == 0, list(content_ad_not_specified))
