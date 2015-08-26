@@ -11,6 +11,15 @@ class AdGroupSettingsState(ConstantBase):
         INACTIVE: 'Paused'
     }
 
+class AdGroupRunningStatus(ConstantBase):
+    ACTIVE = 1
+    INACTIVE = 2
+
+    _VALUES = {
+        ACTIVE: 'Running',
+        INACTIVE: 'Stopped'
+    }
+
 
 class AdGroupSourceSettingsState(ConstantBase):
     # keep in sync with zwei
