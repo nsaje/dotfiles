@@ -437,4 +437,4 @@ class ContentAdStatsUpdateTest(test.TestCase):
         self.assertEqual(stats[0].cost_cc, 300)
         self.assertEqual(stats[0].data_cost_cc, 200)
 
-        mock_refresh_contentadstats.assert_called_with(date, ad_group.id, source.id)
+        mock_refresh_contentadstats.assert_called_with(date, ad_group, source)

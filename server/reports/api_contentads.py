@@ -92,9 +92,9 @@ def process_report(date, parsed_report_rows, report_type):
 
     bulk_contentad_stats = []
     bulk_goal_conversion_stats = []
-    content_ad_ids = []
+    content_ad_ids = set()
     for entry in parsed_report_rows:
-        content_ad_ids.append(entry.content_ad_id)
+        content_ad_ids.add(entry.content_ad_id)
 
         stats = _create_contentad_postclick_stats(entry, track_source_map)
         if stats is None:
@@ -127,7 +127,7 @@ def process_report(date, parsed_report_rows, report_type):
 
     # refresh aggregation table
     for ad_group in dash.models.AdGroup.objects.filter(contentad__id__in=content_ad_ids):
-        refresh.refresh_contentadstats(date, ad_group.id)
+        refresh.refresh_contentadstats(date, ad_group)
 
 
 def _create_contentad_postclick_stats(entry, track_source_map):

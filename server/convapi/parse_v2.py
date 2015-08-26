@@ -124,7 +124,7 @@ class CsvReport(object):
                 continue
             count_goal_useful += 1
         return "Overview report_dt: {dt} cads: {count_useful_ca}/{count_all} goals {useful_ga}/{count_all}".format(
-            dt=self.start_date.date().isoformat() if self.start_date != None else '',
+            dt=self.start_date.isoformat() if self.start_date != None else '',
             count_useful_ca=count_valid_rows,
             count_all=count_all,
             useful_ga=count_goal_useful,
@@ -159,7 +159,7 @@ class CsvReport(object):
         if group_dict['start_date'] != group_dict['end_date']:
             raise exc.CsvParseException('start date and end date should be identical')
 
-        date = datetime.datetime.strptime(group_dict['start_date'], "%Y%m%d")
+        date = datetime.datetime.strptime(group_dict['start_date'], "%Y%m%d").date()
 
         non_comment_lines = [line for line in lines if not (
             line.startswith('#') and line.replace(',', '').strip() != '')]
