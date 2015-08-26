@@ -10,6 +10,9 @@ describe('AddConversionPixelModalCtrl', function() {
         $q = _$q_;
         $timeout = _$timeout_;
         $scope = $rootScope.$new();
+        $scope.account = {
+            id: 1
+        };
 
         openedDeferred = $q.defer();
         $modalInstance = {
@@ -35,9 +38,7 @@ describe('AddConversionPixelModalCtrl', function() {
 
         $state = _$state_;
         $state.params = {
-            account: {
-                id: 123
-            }
+            id: 1
         };
 
         $controller(
@@ -57,14 +58,14 @@ describe('AddConversionPixelModalCtrl', function() {
             spyOn($modalInstance, 'close');
 
             $scope.addConversionPixel('slug');
-            $scope.digest();
+            $scope.$digest();
 
             expect(api.conversionPixel.post).toHaveBeenCalled();
             expect($scope.addConversionPixelInProgress).toBe(true);
             expect($modalInstance.close).not.toHaveBeenCalled();
 
             deferred.reject({message: 'error message'});
-            $scope.digest();
+            $scope.$digest();
 
             expect($scope.addConversionPixelInProgress).toBe(false);
             expect($modalInstance.close).not.toHaveBeenCalled();
@@ -81,17 +82,17 @@ describe('AddConversionPixelModalCtrl', function() {
             spyOn($modalInstance, 'close');
 
             $scope.addConversionPixel('slug');
-            $scope.digest();
+            $scope.$digest();
 
             expect(api.conversionPixel.post).toHaveBeenCalled();
             expect($scope.addConversionPixelInProgress).toBe(true);
             expect($modalInstance.close).not.toHaveBeenCalled();
 
             deferred.resolve({id: 1, slug: 'slug', archived: false, lastVerifiedDt: null, status: 1});
-            $scope.digest();
+            $scope.$digest();
 
             expect($scope.addConversionPixelInProgress).toBe(false);
-            excpet($modalInstance.close).toHaveBeenCalledWith({id: 1, slug: 'slug', archived: false, lastVerifiedDt: null, status: 1});
+            expect($modalInstance.close).toHaveBeenCalledWith({id: 1, slug: 'slug', archived: false, lastVerifiedDt: null, status: 1});
         });
     });
 });
