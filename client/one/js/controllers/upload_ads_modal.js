@@ -89,7 +89,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
     };
 
     $scope.$watch('formData.file', function (newValue, oldValue) {
-        if ($scope.formData.batchName != '') { return; }
+        if ($scope.formData.batchName !== '') { return; }
         $scope.formData.batchName = newValue.name;
     });
 
