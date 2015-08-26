@@ -1,7 +1,7 @@
 /*global $,oneApp,constants*/
 "use strict";
 
-oneApp.directive('zemTable', ['config', '$window', function(config, $window) {
+oneApp.directive('zemTable', ['config', '$window',  function(config, $window) {
     return {
         restrict: 'E',
         scope: {
@@ -15,7 +15,7 @@ oneApp.directive('zemTable', ['config', '$window', function(config, $window) {
             dataStatus: '=zemTableDataStatus'
         },
         templateUrl: '/partials/zem_table.html',
-        controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
+        controller: ['$scope', '$state', '$location', '$element', '$attrs', function ($scope, $state, $location, $element, $attrs) {
             $scope.config = config;
             $scope.numberColumnTypes = ['currency', 'percent', 'number', 'seconds', 'datetime'];
             $scope.selectedRowsCount = 0;
@@ -23,6 +23,24 @@ oneApp.directive('zemTable', ['config', '$window', function(config, $window) {
             
             $scope.isNumberColumnType = function (columnType) {
                 return $scope.numberColumnTypes.indexOf(columnType) > -1;
+            };
+            function getParams(dict) {
+                var str = [];
+                for(var p in dict) {
+                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(dict[p]));
+                }
+                return str.join("&");
+            };            
+            $scope.linkNavClick = function(field_data, event) {
+                event.stopPropagation();
+                if (event.which === 1 && !event.metaKey && !event.ctrlKey) {
+                    $state.go(field_data.state, {id: field_data.id});
+                } else if (event.which === 2 || (event.which ===1 && (event.metaKey || event.ctrlKey))) {
+                    // MIDDLE CLICK or CMD+LEFTCLICK - new tab
+                    var url_bare = $state.href(field_data.state, {id: field_data.id});
+                    var url_full = url_bare + "?" + $location.search();
+                    $window.open(url_full, "_blank");
+                }
             };
 
             $scope.callOrderCallback = function (field) {
