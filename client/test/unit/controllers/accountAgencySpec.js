@@ -1,12 +1,13 @@
 'use strict';
 
 describe('AccountAgencyCtrl', function () {
-    var $scope, $state, $q, api;
+    var $modalStack, $scope, $state, $q, api;
+
+    beforeEach(module('one'));
+    beforeEach(module('stateMock'));
 
     beforeEach(function () {
-        module('one');
-
-        inject(function ($rootScope, $controller, _$state_, _$q_) {
+        inject(function ($rootScope, $controller, _$state_, _$q_, _$modalStack_) {
             $q = _$q_;
             $scope = $rootScope.$new();
 
@@ -23,6 +24,7 @@ describe('AccountAgencyCtrl', function () {
                     }
                 };
             };
+
             api = {
                 conversionPixel: {
                     list: mockApiFunc,
@@ -41,7 +43,29 @@ describe('AccountAgencyCtrl', function () {
             $state = _$state_;
             $state.params = {id: 1};
 
+            $modalStack = _$modalStack_;
+
             $controller('AccountAgencyCtrl', {$scope: $scope, api: api});
+        });
+    });
+
+    describe('addConversionPixel', function(done) {
+        it('opens a modal window', function () {
+            $scope.addConversionPixel().result
+                .catch(function(error) {
+                    expect(error).toBeUndefined();
+                })
+                .finally(done);
+        });
+    });
+
+    describe('copyConversionPixelTag', function(done) {
+        it('opens a modal window', function () {
+            $scope.copyConversionPixelTag().result
+                .catch(function(error) {
+                    expect(error).toBeUndefined();
+                })
+                .finally(done);
         });
     });
 
