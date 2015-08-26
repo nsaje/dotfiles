@@ -467,26 +467,29 @@ class AccountConversionPixels(api_common.BaseApiView):
 
         account = helpers.get_account(request.user, account_id)  # check access to account
 
-        data = json.loads(request.body)
+        try:
+            data = json.loads(request.body)
+        except ValueError:
+            raise exc.MissingDataError()
+
         slug = data.get('slug')
 
-        if not slug:
-            raise exc.ValidationError(message='Unique identifier is required.')
-
-        if re.search(r'[^a-z]+', slug):
-            raise exc.ValidationError(message='Unique identifier contains invalid characters.')
+        form = forms.ConversionPixelForm({'slug': slug})
+        if not form.is_valid():
+            raise exc.ValidationError(message=' '.join(dict(form.errors)['slug']))
 
         try:
             models.ConversionPixel.objects.get(account_id=account_id, slug=slug)
-            raise exc.ValidationError(message='Slug has to be unique.')
+            raise exc.ValidationError(message='Unique identifier has to be unique.')
         except models.ConversionPixel.DoesNotExist:
             pass
 
-        conversion_pixel = models.ConversionPixel.objects.create(account_id=account_id, slug=slug)
+        with transaction.atomic():
+            conversion_pixel = models.ConversionPixel.objects.create(account_id=account_id, slug=slug)
 
-        new_settings = account.get_current_settings().copy_settings()
-        new_settings.changes_text = u'Added conversion pixel with unique identifier {}.'.format(slug)
-        new_settings.save(request)
+            new_settings = account.get_current_settings().copy_settings()
+            new_settings.changes_text = u'Added conversion pixel with unique identifier {}.'.format(slug)
+            new_settings.save(request)
 
         return self.create_api_response({
             'id': conversion_pixel.id,
@@ -513,21 +516,25 @@ class ConversionPixel(api_common.BaseApiView):
         except exc.MissingDataError:
             raise exc.MissingDataError('Conversion pixel does not exist')
 
-        data = json.loads(request.body)
+        try:
+            data = json.loads(request.body)
+        except ValueError:
+            raise exc.MissingDataError()
 
         if 'archived' in data:
             if not isinstance(data['archived'], bool):
                 raise exc.ValidationError(message='Invalid value')
 
-            conversion_pixel.archived = data['archived']
-            conversion_pixel.save()
+            with transaction.atomic():
+                conversion_pixel.archived = data['archived']
+                conversion_pixel.save()
 
-            new_settings = account.get_current_settings().copy_settings()
-            new_settings.changes_text = u'{} conversion pixel with unique identifier {}.'.format(
-                'Archived' if data['archived'] else 'Restored',
-                conversion_pixel.slug
-            )
-            new_settings.save(request)
+                new_settings = account.get_current_settings().copy_settings()
+                new_settings.changes_text = u'{} conversion pixel with unique identifier {}.'.format(
+                    'Archived' if data['archived'] else 'Restored',
+                    conversion_pixel.slug
+                )
+                new_settings.save(request)
 
         return self.create_api_response({
             'id': conversion_pixel.id,
