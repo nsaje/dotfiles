@@ -759,6 +759,9 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         constants.ContentAdSubmissionStatus.NOT_SUBMITTED: '#bcbcbc',
     }
 
+    def get_queryset(self, request):
+        return models.ContentAdSource.objects.filter(content_ad__ad_group__is_demo=False)
+
     def submission_status_(self, obj):
         return '<span style="color:{color}">{submission_status}</span>'.format(
             color=self.display_submission_status_colors[obj.submission_status],
@@ -773,7 +776,16 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
 
     def ad_group_name(self, obj):
         ad_group = obj.content_ad.ad_group
-        return ad_group.campaign.account.name + ' / ' + ad_group.campaign.name + ' / ' + ad_group.name + ' (' + str(ad_group.id) + ')'
+        return u'<a href="{account_url}">{account_name}</a> / <a href="{campaign_url}">{campaign_name}</a> / <a href="{ad_group_url}">{ad_group_name}</a> - ({ad_group_id})'.format(
+            account_url=reverse('admin:dash_account_change', args=(ad_group.campaign.account.id, )),
+            account_name=ad_group.campaign.account.name,
+            campaign_url=reverse('admin:dash_campaign_change', args=(ad_group.campaign.id, )),
+            campaign_name=ad_group.campaign.name,
+            ad_group_url=reverse('admin:dash_adgroup_change', args=(ad_group.id, )),
+            ad_group_name=ad_group.name,
+            ad_group_id=str(ad_group.id),
+            )
+    ad_group_name.allow_tags = True
 
     def save_model(self, request, content_ad_source, form, change):
         current_content_ad_source = models.ContentAdSource.objects.get(id=content_ad_source.id)

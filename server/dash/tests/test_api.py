@@ -88,7 +88,7 @@ class UpdateContentAdSourceState(TestCase):
             'state': 2,
             'submission_status': constants.ContentAdSubmissionStatus.APPROVED
         }]
-        
+
         content_ad_source = models.ContentAdSource.objects.get(pk=1)
         content_ad_source.content_ad.state = 2
         content_ad_source.content_ad.save()
@@ -634,24 +634,63 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.assertFalse(manual_actions.exists())
 
     @mock.patch('dash.api.redirector_helper.insert_adgroup')
-    def test_ga_tracking_propagation(self, insert_adgroup_mock):
-        ad_group_source1 = models.AdGroupSource.objects.get(id=1)
+    def test_ga_tracking_propagation_remove_tracking_ids(self, insert_adgroup_mock):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.source_type.available_actions.append(
+            constants.SourceAction.CAN_MODIFY_TRACKING_CODES
+        )
+        ad_group_source.source.source_type.save()
 
         adgs1 = models.AdGroupSettings()
         adgs2 = models.AdGroupSettings()
         adgs2.enable_ga_tracking = False  # the only change (default is True)
 
-        ret = api.order_ad_group_settings_update(ad_group_source1.ad_group, adgs1, adgs2, None)
+        api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
         insert_adgroup_mock.assert_called_with(1, '', disable_auto_tracking=True)
 
-        manual_actions = actionlog.models.ActionLog.objects.filter(
-            ad_group_source=ad_group_source1,
-            action_type=actionlog.constants.ActionType.MANUAL
+        manual_actions = self._get_manual_set_property_actions(ad_group_source)
+        auto_actions = self._get_automatic_set_campaign_state_actions(ad_group_source)
+
+        self.assertFalse(manual_actions.exists())
+        self.assertEqual(len(auto_actions), 1)
+
+        # should create automatic action with tracking code change - remove tracking ids
+        self.assertDictEqual(
+            self._get_automatic_action_conf(auto_actions[0]),
+            {
+                'tracking_code': ''
+            }
         )
 
-        # no manual nor automatic actions created
+    @mock.patch('dash.api.redirector_helper.insert_adgroup')
+    def test_ga_tracking_propagation_add_tracking_ids(self, insert_adgroup_mock):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.source_type.available_actions.append(
+            constants.SourceAction.CAN_MODIFY_TRACKING_CODES
+        )
+        ad_group_source.source.source_type.save()
+
+        adgs1 = models.AdGroupSettings()
+        adgs1.enable_ga_tracking = False
+        adgs2 = models.AdGroupSettings()
+        adgs2.enable_ga_tracking = True  # the only change
+
+        api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
+        insert_adgroup_mock.assert_called_with(1, '', disable_auto_tracking=False)
+
+        manual_actions = self._get_manual_set_property_actions(ad_group_source)
+        auto_actions = self._get_automatic_set_campaign_state_actions(ad_group_source)
+
         self.assertFalse(manual_actions.exists())
-        self.assertEqual([], ret)
+        self.assertEqual(len(auto_actions), 1)
+
+        # should create automatic action with tracking code change - add tracking ids
+        self.assertDictEqual(
+            self._get_automatic_action_conf(auto_actions[0]),
+            {
+                'tracking_code': '_z1_adgid=1&_z1_msid={sourceDomain}'
+            }
+        )
 
 
 class UpdateAdGroupSourceState(TestCase):

@@ -177,6 +177,7 @@ if TESTING:
     Z3_API_THUMBNAIL_URL = ''
 
     CELERY_DEFAULT_CONVAPI_QUEUE = CELERY_DEFAULT_CONVAPI_QUEUE
+    CELERY_DEFAULT_CONVAPI_V2_QUEUE = CELERY_DEFAULT_CONVAPI_V2_QUEUE
 
 # App specific
 ACTIONLOG_RECENT_HOURS = 2
@@ -205,6 +206,3 @@ if os.environ.get('E2E'):
 if 'e2e' in DATABASES:
     DATABASES['e2e'] = {}
     del DATABASES['e2e']
-
-# User agent used when validating uploaded content ads URLs
-URL_VALIDATOR_USER_AGENT = 'Mozilla/5.0 (compatible; Zemanta/1.0; +http://www.zemanta.com)'
