@@ -67,6 +67,12 @@ def mailgun_gareps(request):
         attachment_name = request.FILES.get('attachment-1').name
         content = request.FILES.get('attachment-1').read()
         key = store_to_s3(csvreport_date, attachment_name, content)
+        logger.info("Unable to store to S3 {date}-{att_name}-{cl}".format(
+               date=csvreport_date_raw or '',
+               att_name=attachment_name or '',
+               cl=len(content) if content else 0
+           ))
+
         # temporary HACK
         content_type = 'text/csv'
 
@@ -95,7 +101,7 @@ def mailgun_gareps(request):
                                              request.POST.get('attachment-count', 0),
                                              content_type)
 
-        tasks.process_ga_report.apply_async((ga_report_v2_task, ),
+        tasks.process_ga_report_v2.apply_async((ga_report_v2_task, ),
                                              queue=settings.CELERY_DEFAULT_CONVAPI_V2_QUEUE)
 
     except Exception as e:
