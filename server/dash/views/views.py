@@ -13,6 +13,8 @@ import StringIO
 import unicodecsv
 import slugify
 
+from collections import OrderedDict
+
 from django.db import transaction
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -852,6 +854,13 @@ class AdGroupContentAdState(api_common.BaseApiView):
         return self.create_api_response()
 
 
+CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict([
+                        ['url', 'url'],
+                        ['title', 'title'],
+                        ['image_url', 'image_url'],
+                        ['description', 'description (optional)'],
+                    ])
+
 class AdGroupContentAdCSV(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
     def get(self, request, ad_group_id):
@@ -863,7 +872,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
         except exc.MissingDataError, e:
             email = request.user.email
             if email == settings.DEMO_USER_EMAIL or email in settings.DEMO_USERS:
-                content_ad_dicts = [{ 'url': '', 'title': '', 'image_url': '', 'display_url': '', 'brand_name': '', 'description': '', 'call_to_action': ''}]
+                content_ad_dicts = [{ 'url': '', 'title': '', 'image_url': '', 'description': ''}]
                 content = self._create_content_ad_csv(content_ad_dicts)
                 return self.create_csv_response('contentads', content=content)
             raise e
@@ -887,7 +896,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
 
         content_ad_dicts = []
         for content_ad in content_ads:
-            content_ad_dicts.append({
+            content_ad_dict = {
                 'url': content_ad.url,
                 'title': content_ad.title,
                 'image_url': content_ad.get_original_image_url(),
@@ -895,7 +904,14 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
                 'brand_name': content_ad.brand_name,
                 'description': content_ad.description,
                 'call_to_action': content_ad.call_to_action,
-            })
+            }
+            
+            # delete keys that are not to be exported
+            for k in content_ad_dict.keys():
+                if k not in CSV_EXPORT_COLUMN_NAMES_DICT.keys():
+                    del content_ad_dict[k]
+                    
+            content_ad_dicts.append(content_ad_dict)
 
         filename = '{}_{}_{}_content_ads'.format(
             slugify.slugify(ad_group.campaign.account.name),
@@ -909,8 +925,10 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
     def _create_content_ad_csv(self, content_ads):
         string = StringIO.StringIO()
 
-        writer = unicodecsv.DictWriter(string, ['url', 'title', 'image_url', 'display_url', 'brand_name', 'description', 'call_to_action'])
-        writer.writeheader()
+        writer = unicodecsv.DictWriter(string, CSV_EXPORT_COLUMN_NAMES_DICT.keys())
+
+        # write the header manually as it is different than keys in the dict
+        writer.writerow(CSV_EXPORT_COLUMN_NAMES_DICT)
 
         for row in content_ads:
             writer.writerow(row)

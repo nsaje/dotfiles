@@ -220,6 +220,7 @@ def _clean_inherited_csv_field(field_name, value_from_csv, cleaned_value_from_fo
     if cleaned_value_from_form:
         return cleaned_value_from_form
 
+    # this currently can never happen as the form values are still mandatory
     raise ValidationError("{0} has to be present in CSV or default value should be submitted in the upload form.".format(field.label))
 
 

@@ -131,7 +131,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
 
         form = self._init_form(csv_file, {'display_url': ''})
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'display_url': ['Display URL has to be present here or as a column in CSV.']})
+        self.assertEqual(form.errors, {'display_url': ['This field is required.']})
 
     def test_empty_brand_name_and_not_in_csv(self):
         csv_file = self._get_csv_file(
@@ -140,7 +140,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
 
         form = self._init_form(csv_file, {'brand_name': ''})
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'brand_name': ['Brand name has to be present here or as a column in CSV.']})
+        self.assertEqual(form.errors, {'brand_name': ['This field is required.']})
 
 
     def test_empty_description_and_not_in_csv(self):
@@ -150,7 +150,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
 
         form = self._init_form(csv_file, {'description': ''})
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'description': ['Description has to be present here or as a column in CSV.']})
+        self.assertEqual(form.errors, {'description': ['This field is required.']})
 
     def test_empty_call_to_action_and_not_in_csv(self):
         csv_file = self._get_csv_file(
@@ -159,7 +159,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
 
         form = self._init_form(csv_file, {'call_to_action': ''})
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'call_to_action': ['Call to action has to be present here or as a column in CSV.']})
+        self.assertEqual(form.errors, {'call_to_action': ['This field is required.']})
 
     def test_invalid_display_url(self):
         csv_file = self._get_csv_file(
@@ -276,34 +276,6 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
                 u'description': self.description + "2",
                 u'call_to_action': self.call_to_action + "2",
 
-            }]
-        })
-
-    def test_form_optional_fields_not_in_batch(self):
-        # optional fields in csv are present (display url, brand name, description, call to action)
-        # and those fields are not present in the batch upload form
-        csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Crop Areas', 'Tracker URLs', 'Display URL', 'Brand name', 'Description', 'Call to action'],
-            [[self.url, self.title, self.image_url, self.crop_areas, self.tracker_urls, self.display_url, self.brand_name, self.description, self.call_to_action]])
-
-        form = self._init_form(csv_file, {'display_url': '', 'brand_name': '', 'description': '', 'call_to_action': ''})
-        self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data, {
-            'batch_name': self.batch_name,
-            'display_url': '',
-            'brand_name': '',
-            'description': '',
-            'call_to_action': '',
-            'content_ads': [{
-                u'crop_areas': self.crop_areas,
-                u'image_url': self.image_url,
-                u'title': self.title,
-                u'url': self.url,
-                u'tracker_urls': self.tracker_urls,
-                u'display_url': self.display_url,
-                u'brand_name': self.brand_name,
-                u'description': self.description,
-                u'call_to_action': self.call_to_action,
             }]
         })
 

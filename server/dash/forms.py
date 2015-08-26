@@ -335,7 +335,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         }
     )
     display_url = DisplayURLField(
-        required=False,
+        required=True,
         label="Display URL",
         # max_length is should be validated _after_ http:// has been stripped out
         # that's why it is validated in DisplayURLField.clean() and max_length isn't set here
@@ -345,7 +345,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         }
     )
     brand_name = forms.CharField(
-        required=False,
+        required=True,
         max_length=25,
         label="Brand name",
         error_messages={
@@ -353,7 +353,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         }
     )
     description = forms.CharField(
-        required = False,
+        required=True,
         max_length=140,
         label="Description",
         error_messages={
@@ -361,7 +361,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         } 
     )
     call_to_action = forms.CharField(
-        required=False,
+        required=True,
         label="Call to action",
         max_length=25,
         error_messages={
