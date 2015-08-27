@@ -31,7 +31,12 @@ oneApp.directive('zemTable', ['config', '$window',  function(config, $window) {
                 var transferredParams = ['start_date', 'end_date', 'filtered_sources', 'show_archived'];
                 for(var p in dict) {
                     if (transferredParams.indexOf(p) > -1) {
-                        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(dict[p]));
+                        if (dict[p]) {
+                            str.push(encodeURIComponent(p) + "=" + encodeURIComponent(dict[p]));
+                        } else
+                        {	
+                            str.push(encodeURIComponent(p));
+                        }
                     }
                 }
                 return str.join("&");
