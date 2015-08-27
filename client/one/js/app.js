@@ -116,8 +116,7 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         .state('main.campaigns.ad_groups', {
             url: '/ad_groups',
             templateUrl: '/partials/campaign_ad_groups.html',
-            controller: 'CampaignAdGroupsCtrl',
-            privateURLParams: ['ad_group_ids', 'ad_group_totals'],
+            controller: 'CampaignAdGroupsCtrl'
         })
         .state('main.campaigns.sources', {
             url: '/sources',
@@ -194,4 +193,13 @@ oneApp.run(['$state', '$rootScope', '$location', 'config', function($state, $roo
         $location.search(locationSearch);
         $rootScope.stateChangeFired = true;
     });
+
+    $rootScope.tabClick = function(event) {
+        // Function to fix opening tabs in new tab when clicking with the middle button
+        if (event.which === 2 || (event.which ===1 && (event.metaKey || event.ctrlKey))) {
+           // MIDDLE CLICK or CMD+LEFTCLICK
+           // the regular link will open in new tab if we stop the event propagation
+        }
+    }
+    
 }]);
