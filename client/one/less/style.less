@@ -7,6 +7,7 @@
 @add-color: #f68620;
 @add-color-hover: #dd771b;
 @add-filter-color: #2fa8c7;
+@internal-color: #0ab00a;
 
 // Mixins
 
@@ -40,7 +41,7 @@
 }
 
 .nav-item-active() {
-    background-color: #2ea9c9;
+    background-color: @default-color;
     .border-radius(0 2px 2px 0);
 }
 
@@ -132,10 +133,16 @@ a:visited {
         }
     }
 
+    .form-title,
     label.control-label {
         font-size: 15px;
         font-weight: 600;
         color: #414141;
+    }
+
+    .input-placeholder{
+        font-size: 15px;
+        line-height: 34px;
     }
 }
 
@@ -593,19 +600,19 @@ div[datepicker] {
         content: ">";
         font-size: 15px;
         font-weight: normal;
-        color: #414141;
+        color: white;
     }
 
     & > li a,
     & > li span {
         font-size: 15px;
         font-weight: normal;
-        color: #414141;
+        color: white;
 
         &.active {
             font-size: 15px;
             font-weight: normal;
-            color: #414141;
+            color: white;
             font-weight: bold;
         }
     }
@@ -1031,7 +1038,7 @@ a.help-popover:visited {
             width: 0;
             height: 0;
             display: block;
-            border-top: 7px solid #16a085;
+            border-top: 7px solid @internal-color;
             border-right: 7px solid transparent;
             float: left;
         }
@@ -1048,7 +1055,7 @@ a.help-popover:visited {
 .profile-container .dropdown-menu {
     .internal {
         position: absolute;
-        border-top: 7px solid #16a085;
+        border-top: 7px solid @internal-color;
         border-right: 7px solid transparent;
         z-index: 1;
         top: 5px;
@@ -1058,21 +1065,21 @@ a.help-popover:visited {
 
 .button-bar .button-bar-item .internal {
     position: absolute;
-    border-top: 12px solid #16a085;
+    border-top: 12px solid @internal-color;
     border-right: 12px solid transparent;
     z-index: 1;
 }
 
 .zem-tabset .internal {
     position: absolute;
-    border-top: 12px solid #16a085;
+    border-top: 12px solid @internal-color;
     border-right: 12px solid transparent;
     top: 0px;
     left: 0px;
 }
 
 .custom-cols .internal {
-    border-top: 7px solid #16a085;
+    border-top: 7px solid @internal-color;
     border-right: 7px solid transparent;
     line-height: 5px;
     margin-right: 3px;
@@ -1080,44 +1087,75 @@ a.help-popover:visited {
 }
 
 .header {
+    height: 60px;
     line-height: 51px;
+    background-color: @default-color;
+    margin-bottom: 10px;
 
     .logo-container {
         width: 205px;
         padding-left: 15px;
+        margin: 20px 0 20px 0;
         float: left;
         .logo {
             height: 20px;
+            display: block;
         }
+        height: 20px;
     }
 
     .breadcrumb-container {
         float: left;
         margin-left: 5px;
+        color: white;
+        height: 60px;
+        line-height: 60px;
     }
 
     .profile-container {
         float: right;
         padding-left: 15px;
         padding-right: 15px;
+        color: white;
+        height: 60px;
+        line-height: 60px;
 
         .content {
             float: right;
+            position: relative;
+            width: 170px;
+
+            .contact-content {
+                position: absolute;
+                height: 50px;
+                line-height: 50px;
+                top: 5px;
+                left: 0;
+                text-align: right;
+            }
 
             a.contact,
             a.contact:hover,
             a.contact:active,
             a.contact:visited {
                 font-size: 15px;
-                font-weight: normal;
-                color: #414141;
+                font-weight: bold;
+                color: white;
             }
 
             .profile {
-                img {
-                    height: 40px;
-                    margin-top: -5px;
-                }
+                position: absolute;
+                top: 7px;
+                right: 0;
+            }
+
+            .glyphicon {
+                border-left: 2px solid #2b8da7;
+                padding: 5px 0 5px 15px;
+                margin-left: 20px;
+                display: inline-block;
+                color: white;
+                font-size: 25px;
             }
         }
     }
@@ -1347,7 +1385,7 @@ a.help-popover:visited {
                     width: 0;
                     height: 0;
                     display: block;
-                    border-top: 8px solid #16a085;
+                    border-top: 8px solid @internal-color;
                     border-right: 8px solid transparent;
                 }
             }

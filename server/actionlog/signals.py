@@ -1,6 +1,6 @@
 from django.db.models.signals import pre_save
 from django.core import urlresolvers
-
+from django.conf import settings as s
 from utils import pagerduty_helper
 
 from actionlog import constants
@@ -12,7 +12,7 @@ def trigger_alert_pre_save_signal_handler(sender, instance, **kwargs):
            instance.action_type == constants.ActionType.AUTOMATIC and
            instance.action == constants.Action.SET_CAMPAIGN_STATE):
 
-        event_type = pagerduty_helper.PagerDutyEventType.ADOPS 
+        event_type = pagerduty_helper.PagerDutyEventType.ADOPS
         if not instance.ad_group_source.source.has_3rd_party_dashboard():
             event_type = pagerduty_helper.PagerDutyEventType.ENGINEERS
 
@@ -20,9 +20,9 @@ def trigger_alert_pre_save_signal_handler(sender, instance, **kwargs):
 
 
 def _trigger_stop_campaign_alert(action_log_id, event_type):
-    # Base URL is hardcoded for a lack of better alternatives
-    admin_url = 'https://one.zemanta.com{0}'.format(
-        urlresolvers.reverse('admin:actionlog_actionlog_change', args=(action_log_id,)))
+    admin_url = s.BASE_URL + '{0}'.format(
+        urlresolvers.reverse('admin:actionlog_actionlog_change',
+                             args=(action_log_id,)))
 
     pagerduty_helper.trigger(
         event_type=event_type,

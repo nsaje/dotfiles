@@ -171,7 +171,7 @@ def process_ga_report(ga_report_task):
 def process_ga_report_v2(ga_report_task):
     try:
         report_log = models.GAReportLog()
-        report_log.email_subject = ga_report_task.subject
+        report_log.email_subject = '{subj}_v2'.format(subj=ga_report_task.subject)
         report_log.from_address = ga_report_task.from_address
         report_log.state = constants.GAReportState.RECEIVED
 
@@ -239,6 +239,9 @@ def process_ga_report_v2(ga_report_task):
         # serialize report - this happens even if report is failed/empty
         valid_entries = csvreport.valid_entries()
         api_contentads.process_report(valid_entries, reports.constants.ReportType.GOOGLE_ANALYTICS)
+
+        report_log.state = constants.GAReportState.SUCCESS
+        report_log.save()
 
     except exc.EmptyReportException as e:
         logger.warning(e.message)
