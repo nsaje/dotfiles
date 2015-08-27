@@ -30,6 +30,10 @@ from zemauth.models import User as ZemUser
 logger = logging.getLogger(__name__)
 
 
+def _get_conversion_pixel_url(account_id, slug):
+    return settings.CONVERSION_PIXEL_PREFIX + '{}-{}/'.format(account_id, slug)
+
+
 class AdGroupSettings(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_get')
     def get(self, request, ad_group_id):
@@ -450,6 +454,7 @@ class AccountConversionPixels(api_common.BaseApiView):
             {
                 'id': conversion_pixel.id,
                 'slug': conversion_pixel.slug,
+                'url': _get_conversion_pixel_url(account.id, conversion_pixel.slug),
                 'status': constants.ConversionPixelStatus.get_text(conversion_pixel.status),
                 'last_verified_dt': conversion_pixel.last_verified_dt,
                 'archived': conversion_pixel.archived
@@ -457,7 +462,8 @@ class AccountConversionPixels(api_common.BaseApiView):
         ]
 
         return self.create_api_response({
-            'rows': rows
+            'rows': rows,
+            'conversion_pixel_tag_prefix': settings.CONVERSION_PIXEL_PREFIX + str(account.id) + '/',
         })
 
     @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_post')
@@ -494,6 +500,7 @@ class AccountConversionPixels(api_common.BaseApiView):
         return self.create_api_response({
             'id': conversion_pixel.id,
             'slug': conversion_pixel.slug,
+            'url': _get_conversion_pixel_url(account.id, slug),
             'status': constants.ConversionPixelStatus.get_text(conversion_pixel.status),
             'last_verified_dt': conversion_pixel.last_verified_dt,
             'archived': conversion_pixel.archived,
@@ -539,6 +546,7 @@ class ConversionPixel(api_common.BaseApiView):
         return self.create_api_response({
             'id': conversion_pixel.id,
             'slug': conversion_pixel.slug,
+            'url': _get_conversion_pixel_url(account.id, conversion_pixel.slug),
             'status': constants.ConversionPixelStatus.get_text(conversion_pixel.status),
             'last_verified_dt': conversion_pixel.last_verified_dt,
             'archived': conversion_pixel.archived,

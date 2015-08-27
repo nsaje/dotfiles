@@ -18,6 +18,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
     $scope.addUserRequestInProgress = false;
     $scope.addUserData = {};
     $scope.addUserErrors = null;
+    $scope.conversionPixelTagPrefix = '';
 
     $scope.userActionChange = function (action, userId) {
         if (action === '') {
@@ -60,7 +61,8 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
         $scope.listPixelsInProgress = true;
         api.conversionPixel.list($scope.account.id).then(
             function (data) {
-                $scope.conversionPixels = data;
+                $scope.conversionPixels = data.rows;
+                $scope.conversionPixelTagPrefix = data.conversionPixelTagPrefix;
             },
             function (data) {
                 // error
@@ -134,17 +136,6 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
         });
 
         return modalInstance;
-    };
-
-    var getConversionPixel = function (conversionPixelId) {
-        var result;
-        $scope.conversionPixels.forEach(function (conversionPixel) {
-            if (conversionPixel.id === conversionPixelId) {
-                result = conversionPixel;
-            }
-        });
-
-        return result;
     };
 
     var getUser = function (userId) {
@@ -251,14 +242,9 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
         });
     };
 
-    $scope.archiveConversionPixel = function (conversionPixelId) {
-        var conversionPixel = getConversionPixel(conversionPixelId);
-        if (!conversionPixel) {
-            return;
-        }
-
+    $scope.archiveConversionPixel = function (conversionPixel) {
         conversionPixel.requestInProgress = true;
-        api.conversionPixel.archive(conversionPixelId).then(
+        api.conversionPixel.archive(conversionPixel.id).then(
             function (data) {
                 conversionPixel.archived = data.archived;
                 $scope.getSettings();
@@ -268,14 +254,9 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
         });
     };
 
-    $scope.restoreConversionPixel = function (conversionPixelId) {
-        var conversionPixel = getConversionPixel(conversionPixelId);
-        if (!conversionPixel) {
-            return;
-        }
-
+    $scope.restoreConversionPixel = function (conversionPixel) {
         conversionPixel.requestInProgress = true;
-        api.conversionPixel.restore(conversionPixelId).then(
+        api.conversionPixel.restore(conversionPixel.id).then(
             function (data) {
                 conversionPixel.archived = data.archived;
                 $scope.getSettings();
@@ -285,13 +266,9 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
         });
     };
 
-    $scope.getConversionPixelTagPrefix = function () {
-        return 'https://cookiepixie.zemanta.com/p/' + $scope.account.id + '/';
-    };
-
-    $scope.copyConversionPixelTag = function (slug) {
+    $scope.copyConversionPixelTag = function (conversionPixel) {
         var scope = $scope.$new(true);
-        scope.conversionPixelTag = $scope.getConversionPixelTagPrefix() + slug + '/';
+        scope.conversionPixelTag = conversionPixel.url;
 
         var modalInstance = $modal.open({
             templateUrl: '/partials/copy_conversion_pixel_modal.html',

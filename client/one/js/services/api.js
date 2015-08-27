@@ -2105,6 +2105,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             return {
                 id: conversionPixel.id,
                 slug: conversionPixel.slug,
+                url: conversionPixel.url,
                 status: conversionPixel.status,
                 lastVerifiedDt: conversionPixel.last_verified_dt,
                 archived: conversionPixel.archived
@@ -2117,7 +2118,12 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
             $http.get(url).
                 success(function (data, status) {
-                    deferred.resolve(data.data.rows.map(convertFromApi));
+                    var ret = {
+                        rows: data.data.rows.map(convertFromApi),
+                        conversionPixelTagPrefix: data.data.conversion_pixel_tag_prefix
+                    };
+
+                    deferred.resolve(ret);
                 }).
                 error(function (data, status){
                     deferred.reject(data.data);
