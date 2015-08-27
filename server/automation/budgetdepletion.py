@@ -87,16 +87,13 @@ def _get_active_campaigns_subset(campaigns):
 
 
 def _send_depleted_budget_notification_email(campaign_name, campaign_url, account_name, email):
-    body = u'''<p>Hi account manager of {camp}</p>
-<p>
-We'd like to notify you that campaign {camp}, {account}
-is about to run out of available budget.
-Please check <a href="{camp_url}">{camp_url}</a> for details.
-</p>
-<p>
-Yours truly,<br/>
+    body = u'''Hi account manager of {camp}
+
+We'd like to notify you that campaign {camp}, {account} is about to run out of available budget.
+Please check {camp_url} for details.
+
+Yours truly,
 Zemanta
-</p>
     '''
     body = body.format(
         camp=campaign_name,
@@ -112,8 +109,7 @@ Zemanta
             body,
             'Zemanta <{}>'.format(settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL),
             settings.DEPLETING_CAMPAIGN_BUDGET_DEBUGGING_EMAILS,
-            fail_silently=False,
-            html_message=body
+            fail_silently=False
         )
     except Exception as e:
         logger.exception('Budget depletion e-mail for campaign %s to %s was not sent because an exception was raised:',
