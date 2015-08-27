@@ -15,19 +15,24 @@ oneApp.directive('zemTable', ['config', '$window',  function(config, $window) {
             dataStatus: '=zemTableDataStatus'
         },
         templateUrl: '/partials/zem_table.html',
-        controller: ['$scope', '$state', '$location', '$element', '$attrs', function ($scope, $state, $location, $element, $attrs) {
+        controller: ['$scope', '$state', '$location', '$element', '$attrs', 'zemUserSettings', function ($scope, $state, $location, $element, $attrs, zemUserSettings) {
             $scope.config = config;
             $scope.numberColumnTypes = ['currency', 'percent', 'number', 'seconds', 'datetime'];
             $scope.selectedRowsCount = 0;
             $scope.constants = constants;
             
+        
             $scope.isNumberColumnType = function (columnType) {
                 return $scope.numberColumnTypes.indexOf(columnType) > -1;
             };
-            function getParams(dict) {
+
+            function filterAndFormatParams(dict) {
                 var str = [];
+                var transferredParams = ['start_date', 'end_date', 'filtered_sources', 'show_archived'];
                 for(var p in dict) {
-                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(dict[p]));
+                    if (transferredParams.indexOf(p) > -1) {
+                        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(dict[p]));
+                    }
                 }
                 return str.join("&");
             };            
@@ -38,9 +43,9 @@ oneApp.directive('zemTable', ['config', '$window',  function(config, $window) {
                 } else if (event.which === 2 || (event.which ===1 && (event.metaKey || event.ctrlKey))) {
                     // MIDDLE CLICK or CMD+LEFTCLICK - new tab
                     var url_bare = $state.href(field_data.state, {id: field_data.id});
-                    var url_full = url_bare + "?" + getParams($location.search());
+                    var url_full = url_bare + "?" + filterAndFormatParams($location.search());
                     $window.open(url_full, "_blank");
-                }
+                 }
             };
 
             $scope.callOrderCallback = function (field) {

@@ -19,9 +19,11 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         }
 
         if ('zemauth.view_archived_entities' in user.permissions) {
-            showArchived = $location.search().show_archived || false;
+            if ($location.search().show_archived == "1") {
+                showArchived = true;
+            }
         }
-    }
+   }
 
     function setFilteredSourcesLocation() {
         if (filteredSources.length > 0) {
@@ -33,7 +35,7 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
 
     function setShowArchivedLocation() {
         if (showArchived) {
-            $location.search('show_archived', showArchived);
+            $location.search('show_archived', 1);
         } else {
             $location.search('show_archived', null);
         }

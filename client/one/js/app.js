@@ -116,7 +116,8 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         .state('main.campaigns.ad_groups', {
             url: '/ad_groups',
             templateUrl: '/partials/campaign_ad_groups.html',
-            controller: 'CampaignAdGroupsCtrl'
+            controller: 'CampaignAdGroupsCtrl',
+            privateURLParams: ['ad_group_ids', 'ad_group_totals'],
         })
         .state('main.campaigns.sources', {
             url: '/sources',
