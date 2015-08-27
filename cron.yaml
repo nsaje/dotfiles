@@ -26,4 +26,4 @@ cron:
   job: '30 16 * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py send_supply_report_emails > /dev/null 2>&1'
 
 - hosts: [knot01.zemanta.com]
-  job: '0 10 * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py notify_depleted_budget_campaigns > /dev/null 2>&1'
+  job: '0 * * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py notify_depleted_budget_campaigns > /dev/null 2>&1'
