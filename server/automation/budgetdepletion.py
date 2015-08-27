@@ -8,6 +8,7 @@ import pytz
 from django.conf import settings
 import traceback
 from django.core.mail import send_mail
+from utils import pagerduty_helper
 logger = logging.getLogger(__name__)
 
 
@@ -110,12 +111,20 @@ Zemanta
             ),
             body,
             'Zemanta <{}>'.format(settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL),
-            ['davorin.kopic@zemanta.com', 'bostjan@zemanta.com'],
+            settings.DEPLETING_CAMPAIGN_BUDGET_DEBUGGING_EMAILS,
             fail_silently=False
         )
-        # Emails will initially only be sent to Davorin and Bostjan for testing
     except Exception as e:
-        logger.error('Budget depletion e-mail for campaign %s to %s was not sent because an exception was raised: %s',
-                     campaign_name,
-                     email,
-                     traceback.format_exc(e))
+        logger.exception('Budget depletion e-mail for campaign %s to %s was not sent because an exception was raised:',
+                         campaign_name,
+                         email)
+        desc = {
+            'campaign_name': campaign_name,
+            'email': email
+        }
+        pagerduty_helper.trigger(
+            event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
+            incident_key='ad_group_settings_change_mail_failed',
+            description='Budget depletion e-mail for campaign was not sent because an exception was raised: {}'.format(traceback.format_exc(e)),
+            details=desc
+        )

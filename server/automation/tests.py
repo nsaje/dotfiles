@@ -55,11 +55,11 @@ class BudgetDepletionTestCase(test.TestCase):
             'campaign_name',
             'campaign_url',
             'account_name',
-            'manager@user.com'
+            settings.DEPLETING_CAMPAIGN_BUDGET_DEBUGGING_EMAILS
         )
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(
             settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL)
         )
         self.assertEqual(mail.outbox[0].to,
-                         ['davorin.kopic@zemanta.com', 'bostjan@zemanta.com'])
+                         settings.DEPLETING_CAMPAIGN_BUDGET_DEBUGGING_EMAILS)

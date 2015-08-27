@@ -20,7 +20,6 @@ def trigger_alert_pre_save_signal_handler(sender, instance, **kwargs):
 
 
 def _trigger_stop_campaign_alert(action_log_id, event_type):
-    # Base URL is hardcoded for a lack of better alternatives
     admin_url = s.BASE_URL + '{0}'.format(
         urlresolvers.reverse('admin:actionlog_actionlog_change',
                              args=(action_log_id,)))
