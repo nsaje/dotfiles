@@ -7,6 +7,7 @@
 @add-color: #f68620;
 @add-color-hover: #dd771b;
 @add-filter-color: #2fa8c7;
+@internal-color: #0ab00a;
 
 // Mixins
 
@@ -1037,7 +1038,7 @@ a.help-popover:visited {
             width: 0;
             height: 0;
             display: block;
-            border-top: 7px solid #16a085;
+            border-top: 7px solid @internal-color;
             border-right: 7px solid transparent;
             float: left;
         }
@@ -1054,7 +1055,7 @@ a.help-popover:visited {
 .profile-container .dropdown-menu {
     .internal {
         position: absolute;
-        border-top: 7px solid #16a085;
+        border-top: 7px solid @internal-color;
         border-right: 7px solid transparent;
         z-index: 1;
         top: 5px;
@@ -1064,21 +1065,21 @@ a.help-popover:visited {
 
 .button-bar .button-bar-item .internal {
     position: absolute;
-    border-top: 12px solid #16a085;
+    border-top: 12px solid @internal-color;
     border-right: 12px solid transparent;
     z-index: 1;
 }
 
 .zem-tabset .internal {
     position: absolute;
-    border-top: 12px solid #16a085;
+    border-top: 12px solid @internal-color;
     border-right: 12px solid transparent;
     top: 0px;
     left: 0px;
 }
 
 .custom-cols .internal {
-    border-top: 7px solid #16a085;
+    border-top: 7px solid @internal-color;
     border-right: 7px solid transparent;
     line-height: 5px;
     margin-right: 3px;
@@ -1384,7 +1385,7 @@ a.help-popover:visited {
                     width: 0;
                     height: 0;
                     display: block;
-                    border-top: 8px solid #16a085;
+                    border-top: 8px solid @internal-color;
                     border-right: 8px solid transparent;
                 }
             }
