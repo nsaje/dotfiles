@@ -61,7 +61,7 @@ describe('AccountAgencyCtrl', function () {
 
     describe('copyConversionPixelTag', function(done) {
         it('opens a modal window', function () {
-            $scope.copyConversionPixelTag().result
+            $scope.copyConversionPixelTag({id: 1, slug: 'slug', status: 1, lastVerifiedDt: null, archived: false, url: ''}).result
                 .catch(function(error) {
                     expect(error).toBeUndefined();
                 })
@@ -106,12 +106,13 @@ describe('AccountAgencyCtrl', function () {
 
             expect($scope.listPixelsInProgress).toBe(true);
 
-            deferred.resolve([{id: 1, slug: 'abc', archived: false, status: 1, lastVerifiedDt: null}]);
+            deferred.resolve({rows: [{id: 1, slug: 'abc', archived: false, status: 1, lastVerifiedDt: null}], conversionPixelTagPrefix: 'test'});
             $scope.$digest();
 
             expect($scope.listPixelsInProgress).toBe(false);
             expect(api.conversionPixel.list).toHaveBeenCalled();
             expect($scope.conversionPixels).toEqual([{id: 1, slug: 'abc', archived: false, status: 1, lastVerifiedDt: null}]);
+            expect($scope.conversionPixelTagPrefix).toEqual('test');
         });
     });
 
@@ -120,7 +121,7 @@ describe('AccountAgencyCtrl', function () {
             $scope.conversionPixels = [{id: 1, archived: false, status: 1, slug: 'slug', lastVerifiedDt: null}];
         });
 
-        it('updates history on success', function() {
+        it('does nothing on failure', function() {
             var deferred = $q.defer();
 
             spyOn(api.conversionPixel, 'archive').and.callFake(function() {
@@ -128,7 +129,9 @@ describe('AccountAgencyCtrl', function () {
             });
             spyOn($scope, 'getSettings');
 
-            $scope.archiveConversionPixel(1);
+            $scope.conversionPixels = [{id: 1, slug: 'slug', url: '', archived: false, lastVerifiedDt: null}];
+
+            $scope.archiveConversionPixel($scope.conversionPixels[0]);
             $scope.$digest();
 
             expect($scope.conversionPixels[0].requestInProgress).toBe(true);
@@ -150,7 +153,9 @@ describe('AccountAgencyCtrl', function () {
             });
             spyOn($scope, 'getSettings');
 
-            $scope.archiveConversionPixel(1);
+            $scope.conversionPixels = [{id: 1, slug: 'slug', url: '', archived: false, lastVerifiedDt: null}];
+
+            $scope.archiveConversionPixel($scope.conversionPixels[0]);
             $scope.$digest();
 
             expect(api.conversionPixel.archive).toHaveBeenCalled();
@@ -180,7 +185,9 @@ describe('AccountAgencyCtrl', function () {
             });
             spyOn($scope, 'getSettings');
 
-            $scope.restoreConversionPixel(1);
+            $scope.conversionPixels = [{id: 1, slug: 'slug', url: '', archived: true, lastVerifiedDt: null}];
+
+            $scope.restoreConversionPixel($scope.conversionPixels[0]);
             $scope.$digest();
 
             expect($scope.conversionPixels[0].requestInProgress).toBe(true);
@@ -202,7 +209,9 @@ describe('AccountAgencyCtrl', function () {
             });
             spyOn($scope, 'getSettings');
 
-            $scope.restoreConversionPixel(1);
+            $scope.conversionPixels = [{id: 1, slug: 'slug', url: '', archived: true, lastVerifiedDt: null}];
+
+            $scope.restoreConversionPixel($scope.conversionPixels[0]);
             $scope.$digest();
 
             expect(api.conversionPixel.restore).toHaveBeenCalled();

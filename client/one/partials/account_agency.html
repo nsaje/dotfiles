@@ -90,7 +90,7 @@
                             <a href class="order" ng-click="pixelOrderField = 'slug'; pixelOrderReverse = !pixelOrderReverse">Slug</a>
                             <zem-help-popover content="Conversion pixel's unique identifier" placement="top"></zem-help-popover>
                         </th>
-                        <th class="arrow text-center" ng-class="{ordered: pixelOrderField === 'status' && !pixelOrderReverse, 'ordered-reverse': pixelOrderField === 'status' && pixelOrderReverse}">
+                        <th class="arrow" ng-class="{ordered: pixelOrderField === 'status' && !pixelOrderReverse, 'ordered-reverse': pixelOrderField === 'status' && pixelOrderReverse}">
                             <a href class="order" ng-click="pixelOrderField = 'status'; pixelOrderReverse = !pixelOrderReverse">Status</a>
                             <zem-help-popover content="<em>Active</em> if conversion has been recorded in the past 7 days, <em>Inactive</em> otherwise, and <em>No activity yet</em> if the conversion pixel has not been triggered yet." placement="top"></zem-help-popover>
                         </th>
@@ -107,7 +107,7 @@
                             {{ item.slug }}
                             <span class="loader" ng-if="item.requestInProgress"></span>
                         </td>
-                        <td class="pixel-status text-center">{{ item.status }}</td>
+                        <td class="pixel-status">{{ item.status }}</td>
                         <td class="no-wrap pixel-last-verified">{{ (item.lastVerifiedDt | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
                         <td>
                             <div class="dropdown" dropdown aria-haspopup="true">
