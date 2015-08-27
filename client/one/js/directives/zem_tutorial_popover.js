@@ -6,7 +6,8 @@ oneApp.directive('zemTutorialPopover', ['$compile', '$timeout', function($compil
         restrict: 'A',
         compile: function (tElem, tAttrs) {
             return function (scope, element, attrs) {
-
+                var ngClick = element.attr('ng-click');
+                
                 //TODO: add toggle switch to it - show only under certain permission
                 element.attr('popover', attrs.zemTutorialPopover);
                 element.attr('popover-placement', attrs.zemTutorialPopoverPlacement);
@@ -17,8 +18,11 @@ oneApp.directive('zemTutorialPopover', ['$compile', '$timeout', function($compil
 
                 // prevent recursive compilation
                 element.removeAttr('zem-tutorial-popover');
+                element.removeAttr('ng-click');
 
                 $compile(element)(scope);
+
+                element.attr('ng-click', ngClick);
 
                 $timeout(function() {
                     element.trigger('openTutorial');
@@ -27,6 +31,7 @@ oneApp.directive('zemTutorialPopover', ['$compile', '$timeout', function($compil
                         element.trigger('closeTutorial');
                     });
                 }, 0);
+
             };
         }
     };
