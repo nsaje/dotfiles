@@ -216,9 +216,9 @@ class SourceType(ConstantBase):
 
 
 class ConversionPixelStatus(ConstantBase):
-    NOT_USED = 1
+    ACTIVE = 1
     INACTIVE = 2
-    ACTIVE = 3
+    NOT_USED = 3
 
     _VALUES = {
         NOT_USED: 'Not used',
