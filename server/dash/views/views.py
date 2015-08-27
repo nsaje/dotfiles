@@ -123,6 +123,7 @@ class User(api_common.BaseApiView):
                 'id': str(user.pk),
                 'email': user.email,
                 'name': user.get_full_name(),
+                'show_onboarding_guidance': user.show_onboarding_guidance,
                 'permissions': user.get_all_permissions_with_access_levels(),
                 'timezone_offset': pytz.timezone(settings.DEFAULT_TIME_ZONE).utcoffset(
                     datetime.datetime.utcnow(), is_dst=True).total_seconds()

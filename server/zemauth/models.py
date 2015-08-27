@@ -79,6 +79,11 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
                     'active. Unselect this instead of deleting accounts.')
     )
 
+    show_onboarding_guidance = models.BooleanField(
+        default=False,
+        help_text='Designates weather user has self-manage access and needs onboarding guidance.'
+    )
+
     objects = UserManager()
 
     USERNAME_FIELD = 'email'

@@ -6,9 +6,17 @@ oneApp.directive('zemTutorialPopover', ['$compile', '$timeout', function($compil
         restrict: 'A',
         compile: function (tElem, tAttrs) {
             return function (scope, element, attrs) {
-                var ngClick = element.attr('ng-click');
+                var ngClick = attrs.ngClick,
+                    condition = attrs.zemTutorialPopoverConditionPromise,
+                    openPopover = function () {
+                        element.trigger('openTutorial');
+                        element.on('click', function(e) {
+                            element.trigger('closeTutorial');
+                        });
+                    };
+
+                if (!scope.user.showOnboardingGuidance) { return; }
                 
-                //TODO: add toggle switch to it - show only under certain permission
                 element.attr('popover', attrs.zemTutorialPopover);
                 element.attr('popover-placement', attrs.zemTutorialPopoverPlacement);
                 element.attr('popover-trigger', 'openTutorial');
@@ -24,12 +32,14 @@ oneApp.directive('zemTutorialPopover', ['$compile', '$timeout', function($compil
 
                 element.attr('ng-click', ngClick);
 
-                $timeout(function() {
-                    element.trigger('openTutorial');
-                    // TODO: close when click on popover
-                    element.on('click', function(e) {
-                        element.trigger('closeTutorial');
-                    });
+                $timeout(function () {
+                    if (condition) {
+                        scope.$eval(condition).then(function (rowsCount) {
+                            if (!rowsCount) { openPopover(); }
+                        });
+                    } else {
+                        openPopover();
+                    }
                 }, 0);
 
             };

@@ -69,7 +69,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 name: data.name,
                 email: data.email,
                 permissions: data.permissions,
-                timezoneOffset: data.timezone_offset
+                timezoneOffset: data.timezone_offset,
+                showOnboardingGuidance: data.show_onboarding_guidance
             };
         };
     }
