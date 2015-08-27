@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 import dash.models
 
+
 class CampaignBudgetDepletionNotification(models.Model):
     account_manager = models.ForeignKey(
         settings.AUTH_USER_MODEL,

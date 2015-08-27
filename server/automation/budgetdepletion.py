@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 
 def manager_has_been_notified(campaign):
     today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
-    today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
+    today = today_utc.astimezone(
+        pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
     yesterday = today - datetime.timedelta(days=1, hours=-1)
     account_manager = campaign.get_current_settings().account_manager
     return automation.models.CampaignBudgetDepletionNotification.objects.filter(
@@ -24,7 +25,12 @@ def manager_has_been_notified(campaign):
 
 def notify_campaign_with_depleting_budget(campaign, available_budget, yesterdays_spend):
     account_manager = campaign.get_current_settings().account_manager
-    _send_depleted_budget_notification_email(account_manager.first_name, account_manager.email, campaign.name)
+    campaign_url = settings.BASE_URL + '/campaigns/{}/ad_groups'.format(campaign.pk)
+    _send_depleted_budget_notification_email(
+        campaign.name,
+        campaign_url,
+        campaign.account.name,
+        account_manager.email)
     automation.models.CampaignBudgetDepletionNotification(
         campaign=campaign,
         available_budget=available_budget,
@@ -37,21 +43,26 @@ def budget_is_depleting(available_budget, yesterdays_spend):
 
 
 def get_yesterdays_spends(campaigns):
-    return {campaign.id: sum(reports.api.get_yesterday_cost(campaign=campaign).values()) for campaign in campaigns}
+    return {campaign.id:
+            sum(reports.api.get_yesterday_cost(campaign=campaign).values())
+            for campaign in campaigns}
 
 
 def get_available_budgets(campaigns):
     total_budgets = _get_total_budgets(campaigns)
     total_spends = _get_total_spends(campaigns)
-    return {k: float(total_budgets[k]) - float(total_spends[k]) for k in total_budgets if k in total_spends}
+    return {k: float(total_budgets[k]) - float(total_spends[k])
+            for k in total_budgets if k in total_spends}
 
 
 def _get_total_budgets(campaigns):
-    return {campaign.id: budget.CampaignBudget(campaign).get_total() for campaign in campaigns}
+    return {campaign.id: budget.CampaignBudget(campaign).get_total()
+            for campaign in campaigns}
 
 
 def _get_total_spends(campaigns):
-    return {campaign.id: budget.CampaignBudget(campaign).get_spend() for campaign in campaigns}
+    return {campaign.id: budget.CampaignBudget(campaign).get_spend()
+            for campaign in campaigns}
 
 
 def get_active_campaigns():
@@ -74,31 +85,37 @@ def _get_active_campaigns_subset(campaigns):
     return campaigns
 
 
-def _send_depleted_budget_notification_email(first_name, email, campaign_name):
-    body = u'''<p>Hi {name},</p>
+def _send_depleted_budget_notification_email(campaign_name, campaign_url, account_name, email):
+    body = u'''<p>Hi account manager of {camp}</p>
 <p>
-Your campaign {camp} is about to run out of available budget.
+We'd like to notify you that campaign {camp}, {account}
+is about to run out of available budget.
+Please check <a href="{camp_url}">{camp_url}</a> for details.
 </p>
 <p>
-As always, please don't hesitate to contact help@zemanta.com with any questions.
-</p>
-<p>
-Thanks,<br/>
-Zemanta Client Services
+Yours truly,<br/>
+Zemanta
 </p>
     '''
-
     body = body.format(
-        name=first_name,
-        camp=campaign_name
+        camp=campaign_name,
+        account=account_name,
+        camp_url=campaign_url
     )
     try:
         send_mail(
-            '{} - Campaign budget depletion approaching'.format(campaign_name),
+            'Campaign budget low - {camp}, {account}'.format(
+                camp=campaign_name,
+                account=account_name
+            ),
             body,
             'Zemanta <{}>'.format(settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL),
-            ['davorin.kopic@zemanta.com','bostjan@zemanta.com'],
+            ['davorin.kopic@zemanta.com', 'bostjan@zemanta.com'],
             fail_silently=False
-        ) #Emails will initially only be sent to davorin and bostjan for testing
+        )
+        # Emails will initially only be sent to Davorin and Bostjan for testing
     except Exception as e:
-        logger.error('Budget depletion e-mail for campaign %s to %s was not sent because an exception was raised: %s', campaign_name, email, traceback.format_exc(e))
+        logger.error('Budget depletion e-mail for campaign %s to %s was not sent because an exception was raised: %s',
+                     campaign_name,
+                     email,
+                     traceback.format_exc(e))
