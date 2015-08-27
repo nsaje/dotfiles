@@ -1,5 +1,5 @@
 <div class="logo-container">
-    <a ui-sref="{{'main'}}"><img class="logo" ng-src="{{ config.static_url }}/one/img/logo_one.png"></a>
+    <a ui-sref="{{'main'}}"><img class="logo" ng-src="{{ config.static_url }}/one/img/logo_one_white.png"></a>
 </div>
 
 <div class="breadcrumb-container">
@@ -13,17 +13,18 @@
 
 <div class="profile-container">
     <div class="content">
-        <a href="mailto:help@zemanta.com" class="contact">Contact support</a>
-        <span class="profile dropdown" dropdown>
+        <div class="contact-content">
+			<a href="mailto:help@zemanta.com" class="contact">Contact support</a>
+		</div>
+        <div class="profile dropdown" dropdown>
             <a href class="dropdown-toggle" dropdown-toggle>
-                <img ng-src="{{ config.static_url }}/one/img/human.svg">
+				<i class="glyphicon glyphicon-user"></i>
             </a>
             <ul class="dropdown-menu dropdown-menu-right" dropdown-menu>
-
                 <li class="dropdown-header">{{ user.email }}</li>
                 <li ng-if="hasPermission('zemauth.switch_to_demo_mode')" ><zem-internal-feature ng-if="isPermissionInternal('zemauth.switch_to_demo_mode')" popover-placement="bottom"></zem-internal-feature><a ng-href="/demo_mode">Demo mode</a></li>
                 <li><a ng-href="/signout">Sign out</a></li>
             </ul>
-        </span>
+        </div>
     </div>
 </div>
