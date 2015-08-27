@@ -305,3 +305,6 @@ Day Index,Sessions
         parser.parse()
         self.assertEqual(1, len(parser.entries))
         self.assertEqual(6, parser.valid_entries()[0].goals['Goal 1']['conversions'], 6)
+
+        self.assertTrue(parser.is_media_source_specified())
+        self.assertTrue(parser.is_content_ad_specified())

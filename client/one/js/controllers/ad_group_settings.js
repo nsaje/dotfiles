@@ -47,9 +47,9 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
 
     var getAdGroupStatus = function (settings) {
         var now = new Date(),
-            running0 = settings.state === constants.adGroupSettingsState.INACTIVE,
-            running1 = settings.endDate && (now <= moment(settings.endDate).toDate() && moment(settings.startDate).toDate() >= now),
-            running2 = !settings.endDate && (moment(settings.startDate).toDate() >= now);
+            running0 = settings.state === constants.adGroupSettingsState.ACTIVE,
+            running1 = settings.endDate && (now <= moment(settings.endDate).toDate() && moment(settings.startDate).toDate() <= now),
+            running2 = !settings.endDate && (moment(settings.startDate).toDate() <= now);
         return running0 && (running1 || running2) ? 'running' : 'stopped';
     };
 
