@@ -112,7 +112,8 @@ Zemanta
             body,
             'Zemanta <{}>'.format(settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL),
             settings.DEPLETING_CAMPAIGN_BUDGET_DEBUGGING_EMAILS,
-            fail_silently=False
+            fail_silently=False,
+            html_message=body
         )
     except Exception as e:
         logger.exception('Budget depletion e-mail for campaign %s to %s was not sent because an exception was raised:',
