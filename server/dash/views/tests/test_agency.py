@@ -8,6 +8,7 @@ from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
 from django.core import mail
 from django.contrib.auth.models import Permission
+from django.conf import settings
 
 from zemauth.models import User
 from dash import models
@@ -335,6 +336,7 @@ class AccountConversionPixelsTestCase(TestCase):
         self.assertEqual([{
             'id': 1,
             'slug': 'test',
+            'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
             'status': constants.ConversionPixelStatus.get_text(constants.ConversionPixelStatus.NOT_USED),
             'last_verified_dt': None,
             'archived': False
@@ -369,6 +371,7 @@ class AccountConversionPixelsTestCase(TestCase):
         self.assertEqual([{
             'id': 1,
             'slug': 'test',
+            'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
             'status': constants.ConversionPixelStatus.get_text(constants.ConversionPixelStatus.NOT_USED),
             'last_verified_dt': None,
             'archived': False
@@ -395,6 +398,7 @@ class AccountConversionPixelsTestCase(TestCase):
         self.assertEqual({
             'id': 2,
             'slug': 'slug',
+            'url': settings.CONVERSION_PIXEL_PREFIX + '1/slug/',
             'status': constants.ConversionPixelStatus.get_text(constants.ConversionPixelStatus.NOT_USED),
             'last_verified_dt': None,
             'archived': False,
@@ -530,6 +534,7 @@ class ConversionPixelTestCase(TestCase):
         self.assertEqual({
             'id': 1,
             'slug': 'test',
+            'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
             'status': constants.ConversionPixelStatus.get_text(constants.ConversionPixelStatus.NOT_USED),
             'last_verified_dt': None,
             'archived': True,

@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 def _get_conversion_pixel_url(account_id, slug):
-    return settings.CONVERSION_PIXEL_PREFIX + '{}-{}/'.format(account_id, slug)
+    return settings.CONVERSION_PIXEL_PREFIX + '{}/{}/'.format(account_id, slug)
 
 
 class AdGroupSettings(api_common.BaseApiView):
