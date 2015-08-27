@@ -112,7 +112,6 @@ def production(*args):
 
 @task
 def deploy(*args):
-    post_to_slack('Deploying')
     env.hosts = selected_hosts
 
     apps = []
@@ -123,6 +122,8 @@ def deploy(*args):
     else:
         abort("Unknown apps!")
 
+    post_to_slack('Deploying: ' + ', '.join(APPS))
+        
     params = {}
     clone_code(params)
 
