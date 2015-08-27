@@ -1461,7 +1461,7 @@ class CampaignBudgetSettings(models.Model):
 
 
 class ConversionPixel(models.Model):
-    account = models.ForeignKey(Account, related_name='+', on_delete=models.PROTECT)
+    account = models.ForeignKey(Account, on_delete=models.PROTECT)
     slug = models.CharField(blank=False, null=False, max_length=32)
     status = models.IntegerField(default=constants.ConversionPixelStatus.NOT_USED,
                                  choices=constants.ConversionPixelStatus.get_choices())
