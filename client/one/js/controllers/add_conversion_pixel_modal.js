@@ -8,16 +8,16 @@ oneApp.controller('AddConversionPixelModalCtrl', ['$scope', '$modalInstance', '$
         $scope.addConversionPixelInProgress = true;
         api.conversionPixel.post($scope.account.id, $scope.slug).then(
             function(data) {
-                $scope.addConversionPixelInProgress = false;
                 $modalInstance.close(data);
             },
             function(data) {
                 if (data && data.message) {
                     $scope.error = data.message;
                 }
-                $scope.addConversionPixelInProgress = false;
             }
-        );
+        ).finally(function() {
+            $scope.addConversionPixelInProgress = false;
+        });
     };
 
     $scope.clearError = function () {
