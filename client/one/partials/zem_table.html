@@ -103,7 +103,7 @@
                                     <span ng-if="!row[col.field].url">{{ row[col.field].text }}</span>
                                 </span>
                                 <span ng-switch-when="linkNav" class="pointer">
-                                    <a ng-click="linkNavClick(row[col.field], $event)">{{ row[col.field].text }} </a>
+                                    <a zem-in-link="{{row[col.field].state}}({id: {{row[col.field].id}}})">{{ row[col.field].text }} </a>
                                 </span>
                                 <span ng-switch-when="clickPermissionOrText">
                                     <a ng-if="col.hasPermission" ng-click="col.clickCallback(row.id)" href>{{ row[col.field] }}</a>
