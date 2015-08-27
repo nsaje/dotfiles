@@ -1680,25 +1680,12 @@ a.help-popover:visited {
     }
 }
 
-.page-ad-group-agency,
-.page-campaign-agency,
-.page-account-agency,
-.page-campaign-budget {
-    .section.ad-group-agency-history-table,
-    .section.table-campaign-agency,
-    .section.table-campaign-budget,
-    .section.table-account-agency {
-        margin-top: 30px;
-
-        .title {
-            padding: 3px 0;
-            font-weight: 600;
-            font-size: 15px;
-        }
+.page-account-agency {
+    form#form-account-agency {
+        margin-bottom: 45px;
     }
 
     .section.table-conversion-pixels {
-        .section.table-account-agency;
         margin-bottom: 20px;
 
         table {
@@ -1749,6 +1736,26 @@ a.help-popover:visited {
                     }
                 }
             }
+        }
+    }
+}
+
+.page-ad-group-agency,
+.page-campaign-agency,
+.page-account-agency,
+.page-campaign-budget {
+    .section.ad-group-agency-history-table,
+    .section.table-campaign-agency,
+    .section.table-campaign-budget,
+    .section.table-account-agency,
+    .section.table-conversion-pixels,
+    .table-access-permissions {
+        margin-top: 30px;
+
+        .title {
+            padding: 3px 0;
+            font-weight: 600;
+            font-size: 15px;
         }
     }
 }
@@ -2399,13 +2406,6 @@ zem-editable-currency-field {
       transform: translate(0, 0);
     }
 
-    .title {
-        padding: 3px 0;
-        font-weight: bold;
-        font-size: 18px;
-    }
-
-
     .modal-dialog {
         margin-top: 22vh;
         width: 610px;
@@ -2436,9 +2436,24 @@ zem-editable-currency-field {
             }
 
             .conversion-pixel-form {
+                margin-bottom: 20px;
+
                 .form-group:last-child {
-                    margin-top: 30px;
+                    margin-top: 200px;
                     margin-bottom: 0;
+                }
+
+                .title {
+                    font-weight: bold;
+                    font-size: 20px;
+                    padding-bottom: 25px;
+                    padding-top: 10px;
+                    padding-left: 15px;
+                }
+
+                .form-group, .title {
+                    margin-left: 10px;
+                    margin-right: 20px;
                 }
 
                 .text-align-right {
