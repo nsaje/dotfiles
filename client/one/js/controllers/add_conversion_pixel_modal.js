@@ -2,7 +2,8 @@
 oneApp.controller('AddConversionPixelModalCtrl', ['$scope', '$modalInstance', '$state', 'api', function($scope, $modalInstance, $state, api) {
     $scope.addConversionPixelInProgress = false;
     $scope.slug = '';
-    $scope.error = null;
+    $scope.error = false;
+    $scope.errorMessage = '';
 
     $scope.addConversionPixel = function () {
         $scope.addConversionPixelInProgress = true;
@@ -11,8 +12,9 @@ oneApp.controller('AddConversionPixelModalCtrl', ['$scope', '$modalInstance', '$
                 $modalInstance.close(data);
             },
             function(data) {
+                $scope.error = true;
                 if (data && data.message) {
-                    $scope.error = data.message;
+                    $scope.errorMessage = data.message;
                 }
             }
         ).finally(function() {
@@ -21,6 +23,7 @@ oneApp.controller('AddConversionPixelModalCtrl', ['$scope', '$modalInstance', '$
     };
 
     $scope.clearError = function () {
-        $scope.error = null;
+        $scope.error = false;
+        $scope.errorMessage = '';
     };
 }]);

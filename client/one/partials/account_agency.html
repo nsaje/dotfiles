@@ -99,6 +99,7 @@
                             <zem-help-popover content="The last time when the conversion pixel was triggered." placement="top"></zem-help-popover>
                         </th>
                         <th></th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -119,11 +120,19 @@
                                 </ul>
                             </div>
                         </td>
+                        <td>
+                            <span ng-if="!!item.error" class="error">
+                                An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
+                            </span>
+                        </td>
                     </tr>
                 </tbody>
             </table>
         </div>
-        <button type="button" class="btn btn-default" ng-click="addConversionPixel()">Add Pixel</button><br />
+        <button type="button" class="btn btn-default" ng-class="{'disabled': !!listPixelsInProgress || !!listPixelsError}"ng-click="addConversionPixel()">Add Pixel</button>
+        <span ng-if="!!listPixelsError" class="error">
+            An error has occured while loading conversion pixels. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
+        </span>
     </div>
 
     <div class="section table-account-agency">

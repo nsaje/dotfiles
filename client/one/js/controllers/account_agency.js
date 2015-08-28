@@ -8,6 +8,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
     $scope.errors = {};
     $scope.requestInProgress = false;
     $scope.listPixelsInProgress = false;
+    $scope.listPixelsError = false;
     $scope.saved = null;
     $scope.discarded = null;
     $scope.orderField = 'datetime';
@@ -65,8 +66,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
                 $scope.conversionPixelTagPrefix = data.conversionPixelTagPrefix;
             },
             function (data) {
-                // error
-                return;
+                $scope.listPixelsError = true;
             }
         ).finally(function () {
             $scope.listPixelsInProgress = false;
@@ -244,10 +244,14 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
 
     $scope.archiveConversionPixel = function (conversionPixel) {
         conversionPixel.requestInProgress = true;
+        conversionPixel.error = false;
         api.conversionPixel.archive(conversionPixel.id).then(
             function (data) {
                 conversionPixel.archived = data.archived;
                 $scope.getSettings();
+            },
+            function (data) {
+                conversionPixel.error = true;
             }
         ).finally(function () {
             conversionPixel.requestInProgress = false;
@@ -256,10 +260,14 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
 
     $scope.restoreConversionPixel = function (conversionPixel) {
         conversionPixel.requestInProgress = true;
+        conversionPixel.error = false;
         api.conversionPixel.restore(conversionPixel.id).then(
             function (data) {
                 conversionPixel.archived = data.archived;
                 $scope.getSettings();
+            },
+            function (data) {
+                conversionPixel.error = true;
             }
         ).finally(function () {
             conversionPixel.requestInProgress = false;

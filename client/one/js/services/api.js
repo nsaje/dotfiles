@@ -2126,7 +2126,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     deferred.resolve(ret);
                 }).
                 error(function (data, status){
-                    deferred.reject(data.data);
+                    deferred.reject();
                 });
 
             return deferred.promise;
@@ -2144,7 +2144,12 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     deferred.resolve(convertFromApi(data.data));
                 }).
                 error(function (data, status) {
-                    deferred.reject(data.data);
+                    var ret = null;
+                    if (status === 400 && data && data.data.error_code === 'ValidationError') {
+                        ret = data.data;
+                    }
+
+                    deferred.reject(ret);
                 });
 
             return deferred.promise;
@@ -2163,7 +2168,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     deferred.resolve(convertFromApi(data.data));
                 }).
                 error(function (data, status) {
-                    deferred.reject(data.data);
+                    deferred.reject();
                 });
 
             return deferred.promise;
@@ -2182,7 +2187,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     deferred.resolve(convertFromApi(data.data));
                 }).
                 error(function (data, status) {
-                    deferred.reject(data.data);
+                    deferred.reject();
                 });
 
             return deferred.promise;

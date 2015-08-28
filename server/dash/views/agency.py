@@ -476,7 +476,7 @@ class AccountConversionPixels(api_common.BaseApiView):
         try:
             data = json.loads(request.body)
         except ValueError:
-            raise exc.MissingDataError()
+            raise exc.ValidationError()
 
         slug = data.get('slug')
 
@@ -526,7 +526,7 @@ class ConversionPixel(api_common.BaseApiView):
         try:
             data = json.loads(request.body)
         except ValueError:
-            raise exc.MissingDataError()
+            raise exc.ValidationError()
 
         if 'archived' in data:
             if not isinstance(data['archived'], bool):
