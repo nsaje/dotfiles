@@ -35,8 +35,8 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', 'api', function (
             function (data) {
                 $scope.errors = {};
                 $scope.settings = data.settings;
-                $scope.updateBreadcrumbAndTitle();
                 $scope.updateAccounts(data.settings.name);
+                $scope.updateBreadcrumbAndTitle();
                 $scope.requestInProgress = false;
                 $scope.saved = true;
             },
