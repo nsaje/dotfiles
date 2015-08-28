@@ -10,8 +10,7 @@ class ContentAdBatchMigrationTest(MigrationTest):
 
     # At present, we can only run migrations for one app at a time.
     app_name = 'dash'
-
-    before = '0065_auto_20150820_1233'
+    before = '0065_auto_20150828_1151'
     after = '0066_add_batch_fields_to_contentad'
  
     def test_migration(self):
