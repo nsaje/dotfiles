@@ -44,6 +44,7 @@ INSTALLED_APPS = (
     'zweiapi',
     'convapi',
     'raven.contrib.django.raven_compat',
+    'automation',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -208,3 +209,6 @@ if os.environ.get('E2E'):
 if 'e2e' in DATABASES:
     DATABASES['e2e'] = {}
     del DATABASES['e2e']
+
+# User agent used when validating uploaded content ads URLs
+URL_VALIDATOR_USER_AGENT = 'Mozilla/5.0 (compatible; Zemanta/1.0; +http://www.zemanta.com)'
