@@ -63,13 +63,16 @@ describe('AddConversionPixelModalCtrl', function() {
             expect(api.conversionPixel.post).toHaveBeenCalled();
             expect($scope.addConversionPixelInProgress).toBe(true);
             expect($modalInstance.close).not.toHaveBeenCalled();
+            expect($scope.error).toEqual(false);
+            expect($scope.errorMessage).toEqual('');
 
             deferred.reject({message: 'error message'});
             $scope.$digest();
 
             expect($scope.addConversionPixelInProgress).toBe(false);
             expect($modalInstance.close).not.toHaveBeenCalled();
-            expect($scope.error).toEqual('error message');
+            expect($scope.error).toEqual(true);
+            expect($scope.errorMessage).toEqual('error message');
         });
 
         it('closes the modal window on success', function() {
