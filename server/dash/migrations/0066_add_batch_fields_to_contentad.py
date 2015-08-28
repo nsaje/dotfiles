@@ -24,7 +24,7 @@ def backward_copy_from_batch_to_content_ad(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dash', '0064_remove_sourcetype_available_actions_new'),
+        ('dash', '0065_auto_20150828_1151'),
     ]
 
     operations = [
