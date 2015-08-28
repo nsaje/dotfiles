@@ -4,6 +4,7 @@ oneApp.controller('MainCtrl',
      '$state',
      '$location',
      '$document',
+     '$q',
      'zemMoment',
      'user',
      'zemUserSettings',
@@ -11,25 +12,53 @@ oneApp.controller('MainCtrl',
      'api',
      'zemFilterService',
      'zemFullStoryService',
-      function (
-        $scope,
-        $state,
-        $location,
-        $document,
-        zemMoment,
-        user,
-        zemUserSettings,
-        accounts,
-        api,
-        zemFilterService,
-        zemFullStoryService
-) {
+     function (
+         $scope,
+         $state,
+         $location,
+         $document,
+         $q,
+         zemMoment,
+         user,
+         zemUserSettings,
+         accounts,
+         api,
+         zemFilterService,
+         zemFullStoryService
+     ) {
+    var userActions = [];
     $scope.accounts = accounts;
     $scope.user = user;
     $scope.currentRoute = $scope.current;
     $scope.inputDateFormat = 'M/D/YYYY';
     $scope.maxDate = zemMoment();
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
+
+    $scope.remindToAddBudget = $q.defer();
+    $scope.addUserAction = function (action, account, campaign, adgroup) {
+        userActions.push({
+            action: action, account: account, campaign: campaign, adGroup: adgroup
+        });
+    };
+    $scope.filterUserActions = function (conditions, groupBy) {
+        var valid = groupBy ? {} : [];
+        angular.forEach($scope.userActions, function (obj) {
+            var ok = true;
+            angular.forEach(conditions, function (val, key) {
+                if (obj[key] != val) {
+                    ok = false;
+                }
+            });
+            if (!ok) { return; }
+            if (groupBy) {
+                if (!valid[obj[groupBy]]) { valid[obj[groupBy]] = []; }
+                valid[obj[groupBy]].push(obj);
+            } else {
+                valid.push(obj);
+            }
+        });
+        return valid;
+    };      
 
     $scope.adGroupData = {};
     $scope.account = null;
@@ -83,6 +112,10 @@ oneApp.controller('MainCtrl',
 
     $scope.canAccessAllAccounts = function () {
         return !!$scope.getDefaultAllAccountsState();
+    };
+
+    $scope.canShowBudgetNotification = function () {
+        return $scope.remindToAddBudget.promise;
     };
 
     $scope.getDefaultAccountState = function () {

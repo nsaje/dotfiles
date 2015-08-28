@@ -1,5 +1,7 @@
 /* globals oneApp, options, angular */
 oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal', '$location', '$q', 'api', 'zemUserSettings', 'zemCustomTableColsService', '$timeout', 'zemFilterService', function($scope, $window, $state, $modal, $location, $q, api, zemUserSettings, zemCustomTableColsService, $timeout, zemFilterService) {
+    var contentAdsNotLoaded = $q.defer();
+    
     $scope.order = '-upload_time';
     $scope.loadRequestInProgress = false;
     $scope.selectedColumnsCount = 0;
@@ -21,7 +23,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
     $scope.selectionMenuConfig = {};
 
-    $scope.contentAdsLoaded = $q.defer();
+    
 
     // selection triplet - all, a batch, or specific content ads can be selected
     $scope.selectedAll = false;
@@ -653,10 +655,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 $scope.updateContentAdSelection();
 
                 initUploadBatches(data.batches);
-                $scope.contentAdsLoaded.resolve($scope.rows.length);
+                contentAdsNotLoaded.resolve($scope.rows.length == 0);
             },
             function(data) {
-                $scope.contentAdsLoaded.resolve(null);
+                contentAdsNotLoaded.resolve(true);
                 // error
                 return;
             }
@@ -774,7 +776,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
     $scope.canShowOnboardingGuidance = function () {
-        return $scope.contentAdsLoaded.promise;
+        return contentAdsNotLoaded.promise;
     };
 
     var updateTableData = function(rowsUpdates, totalsUpdates) {

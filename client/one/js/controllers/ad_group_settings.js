@@ -1,5 +1,6 @@
 /*globals oneApp,constants,options*/
-oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', function ($scope, $state, api, regions) {
+oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', 'api', 'regions', function ($scope, $state, $q, api, regions) {
+    var freshSettings = $q.defer();
     $scope.settings = {};
     $scope.sourcesWithoutDMASupport = [];
     $scope.actionIsWaiting = false;
@@ -19,6 +20,10 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
     $scope.startDatePicker = {isOpen: false};
     $scope.endDatePicker = {isOpen: false};
 
+    $scope.adGroupHasFreshSettings = function () {
+        return freshSettings.promise;
+    };
+    
     $scope.closeAlert = function(index) {
         $scope.alerts.splice(index, 1);
     };
@@ -78,6 +83,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
                 $scope.actionIsWaiting = data.actionIsWaiting;
                 setSourcesWithoutDMASupport(data.adGroupSources);
                 $scope.setAdGroupPaused($scope.settings.state === constants.adGroupSettingsState.INACTIVE);
+                freshSettings.resolve(data.settings.name == 'New ad group');
             },
             function (data) {
                 // error

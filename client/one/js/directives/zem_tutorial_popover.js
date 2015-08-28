@@ -22,7 +22,7 @@ oneApp.directive('zemTutorialPopover', ['$compile', '$timeout', function($compil
                 element.attr('popover-trigger', 'openTutorial');
                 element.attr('popover-popup-delay', '500');
                 element.attr('popover-append-to-body', 'false');
-                element.attr('popover-class', 'tutorial');
+                element.attr('popover-class', attrs.zemTutorialPopoverType || 'tutorial');
 
                 // prevent recursive compilation
                 element.removeAttr('zem-tutorial-popover');
@@ -34,8 +34,9 @@ oneApp.directive('zemTutorialPopover', ['$compile', '$timeout', function($compil
 
                 $timeout(function () {
                     if (condition) {
-                        scope.$eval(condition).then(function (rowsCount) {
-                            if (!rowsCount) { openPopover(); }
+                        scope.$eval(condition).then(function (promisedCondition) {
+                            console.log('promise condition', promisedCondition)
+                            if (promisedCondition) { openPopover(); }
                         });
                     } else {
                         openPopover();

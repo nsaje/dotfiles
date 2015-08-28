@@ -1,11 +1,16 @@
 /*globals oneApp,constants,options,moment*/
-oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
+oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', 'api', function ($scope, $state, $q, api) {
+    var campaignFreshSettings = $q.defer();
     $scope.settings = {};
     $scope.errors = {};
     $scope.options = options;
     $scope.requestInProgress = false;
     $scope.saved = null;
     $scope.discarded = null;
+    
+    $scope.campaignHasFreshSettings = function () {
+        return campaignFreshSettings.promise;
+    };
 
     $scope.getSettings = function (discarded) {
         $scope.saved = null;
@@ -16,6 +21,7 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', 'api', function (
             function (data) {
                 $scope.settings = data.settings;
                 $scope.discarded = discarded;
+                campaignFreshSettings.resolve(data.settings.name === 'New campaign');
             },
             function (data) {
                 // error

@@ -29,7 +29,13 @@
             <label ng-repeat="error in errors.campaignGoal" class="control-label error" for="goal-select">{{ error }}</label>
         </div>
 
-        <button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
+        <button
+			 type="button" class="btn btn-primary" ng-click="saveSettings()"
+			 zem-tutorial-popover-condition-promise="campaignHasFreshSettings()"
+             zem-tutorial-popover="Click here to save campaign settings"
+			 zem-tutorial-popover-placement="top">
+			Save
+		</button>
         <button type="button" class="btn btn-default" ng-click="getSettings(true)">Discard</button>
 
         <div class="loader" ng-show="requestInProgress"></div>

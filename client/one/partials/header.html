@@ -14,7 +14,12 @@
 <div class="profile-container">
     <div class="content">
         <div class="contact-content">
-			<a href="mailto:help@zemanta.com" class="contact">Contact support</a>
+			<a href="mailto:help@zemanta.com" class="contact"
+			   zem-tutorial-popover-condition-promise="canShowBudgetNotification()"
+               zem-tutorial-popover="Contact support and ask for budget"
+			   zem-tutorial-popover-placement="bottom">
+				Contact support
+			</a>
 		</div>
         <div class="profile dropdown" dropdown>
             <a href class="dropdown-toggle" dropdown-toggle>

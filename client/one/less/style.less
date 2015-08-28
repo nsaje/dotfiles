@@ -2607,6 +2607,7 @@ zem-submission-status {
 }
 
 .tutorial.popover {
+    background: transparent;
     padding: 0px;
     z-index: 100000;
     &:before {
@@ -2623,6 +2624,10 @@ zem-submission-status {
     }
     & > .arrow {
         border-width: 11px;
+    }
+    &.bottom > .arrow {
+        border-bottom-color: #f68620;   
+        top: -20px;
     }
     &.top > .arrow {
         border-top-color: #f68620;
