@@ -192,8 +192,6 @@ class CampaignAgency(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        self.set_campaign(campaign, form.cleaned_data)
-
         settings = campaign.get_current_settings().copy_settings()
         self.set_settings(settings, campaign, form.cleaned_data)
 
@@ -291,6 +289,14 @@ class CampaignAgency(api_common.BaseApiView):
                 'name': 'Promotion Goal',
                 'value': constants.PromotionGoal.get_text(new_settings.promotion_goal)
             }),
+            ('campaign_goal', {
+                'name': 'Campaign goal',
+                'value': constants.CampaignGoal.get_text(new_settings.campaign_goal),
+            }),
+            ('goal_quantity', {
+                'name': 'Goal quantity',
+                'value': new_settings.goal_quantity,
+            }),
             ('archived', {
                 'name': 'Archived',
                 'value': str(new_settings.archived)
@@ -355,9 +361,6 @@ class CampaignAgency(api_common.BaseApiView):
 
         return result
 
-    def set_campaign(self, campaign, resource):
-        campaign.name = resource['name']
-
     def set_settings(self, settings, campaign, resource):
         settings.campaign = campaign
         settings.account_manager = resource['account_manager']
@@ -403,6 +406,7 @@ class CampaignSettings(api_common.BaseApiView):
 
         settings = campaign.get_current_settings().copy_settings()
         self.set_settings(settings, campaign, form.cleaned_data)
+        self.set_campaign(campaign, form.cleaned_data)
 
         CampaignAgency.propagate(campaign, settings, request)
 
@@ -429,6 +433,9 @@ class CampaignSettings(api_common.BaseApiView):
         settings.name = resource['name']
         settings.campaign_goal = resource['campaign_goal']
         settings.goal_quantity = resource['goal_quantity']
+
+    def set_campaign(self, campaign, resource):
+        campaign.name = resource['name']
 
 
 class CampaignBudget(api_common.BaseApiView):

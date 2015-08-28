@@ -1209,7 +1209,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         function convertSettingsFromApi(settings) {
             return {
                 id: settings.id,
-                name: settings.name,
                 accountManager: settings.account_manager,
                 salesRepresentative: settings.sales_representative,
                 IABCategory: settings.iab_category
@@ -1249,7 +1248,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         function convertSettingsToApi(settings) {
             return {
                 id: settings.id,
-                name: settings.name,
                 account_manager: settings.accountManager,
                 sales_representative: settings.salesRepresentative,
                 iab_category: settings.IABCategory
@@ -1259,7 +1257,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         function convertValidationErrorFromApi(errors) {
             var result = {
                 id: errors.id,
-                name: errors.name,
                 accountManager: errors.account_manager,
                 salesRepresentative: errors.sales_representative,
                 IABCategory: errors.iab_category

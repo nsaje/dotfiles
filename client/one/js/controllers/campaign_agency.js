@@ -53,7 +53,6 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', 'api', function ($s
                 $scope.canRestore = data.canRestore;
                 $scope.errors = {};
                 $scope.settings = data.settings;
-                $scope.updateAccounts(data.settings.name);
                 $scope.updateBreadcrumbAndTitle();
                 $scope.requestInProgress = false;
                 $scope.saved = true;
