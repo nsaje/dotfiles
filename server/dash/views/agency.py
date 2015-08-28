@@ -35,6 +35,8 @@ class AdGroupSettings(api_common.BaseApiView):
     def get(self, request, ad_group_id):
         if not request.user.has_perm('dash.settings_view'):
             raise exc.MissingDataError()
+        import time
+        time.sleep(3)
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
