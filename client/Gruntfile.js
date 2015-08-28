@@ -247,7 +247,7 @@ module.exports = function (grunt) {
         protractor: {
             local: {
                 configFile: 'test/protractor.conf.js',
-                chromeDriver: 'node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager update',
+                chromeDriver: 'node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager update'
             },
             sauce: {
                 configFile: 'test/protractor.conf-sauce.js'

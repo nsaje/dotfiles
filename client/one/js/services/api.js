@@ -616,13 +616,13 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
         this.listContentAdStats = function (id, startDate, endDate, metrics) {
             var url = '/api/ad_groups/' + id + '/contentads_plus/daily_stats/';
-            return getData(url, startDate, endDate, metrics)
-        }
+            return getData(url, startDate, endDate, metrics);
+        };
 
         this.list = function (level, id, startDate, endDate, selectedIds, totals, metrics, groupSources) {
             var url = '/api/' + level + (id ? ('/' + id) : '') + '/daily_stats/';
-            return getData(url, startDate, endDate, metrics, selectedIds, totals, groupSources)
-        }
+            return getData(url, startDate, endDate, metrics, selectedIds, totals, groupSources);
+        };
 
         function getData(url, startDate, endDate, metrics, selectedIds, totals, groupSources) {
             var deferred = $q.defer();
@@ -1967,14 +1967,14 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 var result = {};
                 if (status == '413') {
                     data = {
-                    "data": {
-                        "status": 2,
-                        "errors": {
-                            "content_ads": ["File too large."]
+                        "data": {
+                            "status": 2,
+                            "errors": {
+                                "content_ads": ["File too large."]
                             }
                         },
                         "success": false
-                    }
+                    };
                     result.errors = convertValidationErrorsFromApi(data.data.errors);
                 } else if (data && data.data && data.data.errors) {
                     result.errors = convertValidationErrorsFromApi(data.data.errors);
