@@ -1049,7 +1049,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                         settings: convertSettingsFromApi(data.data.settings),
                         history: convertHistoryFromApi(data.data.history),
                         canArchive: data.data.can_archive,
-                        canRestore: data.data.can_restore,
+                        canRestore: data.data.can_restore
                     });
                 }).
                 error(function(data, status, headers) {
@@ -2100,6 +2100,100 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         };
     }
 
+    function ConversionPixel() {
+        function convertFromApi(conversionPixel) {
+            return {
+                id: conversionPixel.id,
+                slug: conversionPixel.slug,
+                url: conversionPixel.url,
+                status: conversionPixel.status,
+                lastVerifiedDt: conversionPixel.last_verified_dt,
+                archived: conversionPixel.archived
+            };
+        }
+
+        this.list = function (accountId) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + accountId + '/conversion_pixels/';
+
+            $http.get(url).
+                success(function (data, status) {
+                    var ret = {
+                        rows: data.data.rows.map(convertFromApi),
+                        conversionPixelTagPrefix: data.data.conversion_pixel_tag_prefix
+                    };
+
+                    deferred.resolve(ret);
+                }).
+                error(function (data, status){
+                    deferred.reject();
+                });
+
+            return deferred.promise;
+        };
+
+        this.post = function (accountId, slug) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + accountId + '/conversion_pixels/';
+            var config = {
+                slug: slug
+            };
+
+            $http.post(url, config).
+                success(function (data, status) {
+                    deferred.resolve(convertFromApi(data.data));
+                }).
+                error(function (data, status) {
+                    var ret = null;
+                    if (status === 400 && data && data.data.error_code === 'ValidationError') {
+                        ret = data.data;
+                    }
+
+                    deferred.reject(ret);
+                });
+
+            return deferred.promise;
+        };
+
+        this.archive = function (conversionPixelId) {
+            var deferred = $q.defer();
+            var url = '/api/conversion_pixel/' + conversionPixelId + '/';
+
+            var data = {
+                archived: true
+            };
+
+            $http.put(url, data).
+                success(function(data, status) {
+                    deferred.resolve(convertFromApi(data.data));
+                }).
+                error(function (data, status) {
+                    deferred.reject();
+                });
+
+            return deferred.promise;
+        };
+
+        this.restore = function (conversionPixelId) {
+            var deferred = $q.defer();
+            var url = '/api/conversion_pixel/' + conversionPixelId + '/';
+
+            var data = {
+                archived: false
+            };
+
+            $http.put(url, data).
+                success(function(data, status) {
+                    deferred.resolve(convertFromApi(data.data));
+                }).
+                error(function (data, status) {
+                    deferred.reject();
+                });
+
+            return deferred.promise;
+        };
+    }
+
     // Helpers
 
     function convertGoals(row, convertedRow) {
@@ -2173,6 +2267,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         campaignAdGroupsExportAllowed: new CampaignAdGroupsExportAllowed(),
         adGroupAdsPlusUpload: new AdGroupAdsPlusUpload(),
         availableSources: new AvailableSources(),
+        conversionPixel: new ConversionPixel(),
         adGroupContentAdState: new AdGroupContentAdState(),
         adGroupContentAdArchive: new AdGroupContentAdArchive()
         // Also, don't forget to add me to DEMO!
