@@ -403,7 +403,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         var modalInstance = $modal.open({
             templateUrl: '/partials/upload_ads_modal.html',
             controller: 'UploadAdsModalCtrl',
-            windowClass: 'upload-ads-modal',
+            windowClass: 'modal',
             scope: $scope
         });
 

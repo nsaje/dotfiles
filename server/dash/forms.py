@@ -209,6 +209,23 @@ class AccountAgencySettingsForm(forms.Form):
     )
 
 
+def validate_lower_case_only(st):
+    if re.search(r'[^a-z]+', st):
+        raise forms.ValidationError(message='Please use only lower case letters for unique identifier.')
+
+
+class ConversionPixelForm(forms.Form):
+    slug = forms.CharField(
+        max_length=32,
+        required=True,
+        validators=[validate_lower_case_only],
+        error_messages={
+            'required': 'Please specify a unique identifier.',
+            'max_length': 'Unique identifier is too long (%(show_value)d/%(limit_value)d).',
+        }
+    )
+
+
 class CampaignSettingsForm(forms.Form):
     id = forms.IntegerField()
     name = forms.CharField(
