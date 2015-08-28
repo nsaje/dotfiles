@@ -1,15 +1,18 @@
 from mock import patch
-
 import datetime
 
 from django import test
 from django.db.models import Sum
 
 from reports import refresh
-
 import reports.models
-import dash.models
 import reports.update
+from reports import constants
+from reports import update
+
+import dash.models
+
+from convapi import parse_v2
 
 
 class StatsUpdateTestCase(test.TestCase):
@@ -311,7 +314,7 @@ class DeleteOnEmptyReportTestCase(test.TestCase):
         ad_group = dash.models.AdGroup.objects.get(id=1)
         source = dash.models.Source.objects.get(id=1)
 
-        reports.refresh.refresh_adgroup_stats(ad_group=ad_group, source=source)
+        refresh.refresh_adgroup_stats(ad_group=ad_group, source=source)
 
         article_stats1 = reports.models.ArticleStats.objects.filter(ad_group=ad_group, source=source, datetime=dt1)
         self.assertEqual(sum(stat.clicks for stat in article_stats1), 8)
@@ -362,7 +365,7 @@ class DeleteOnEmptyReportTestCase(test.TestCase):
         ad_group = dash.models.AdGroup.objects.get(id=1)
         source = dash.models.Source.objects.get(id=2)
 
-        reports.refresh.refresh_adgroup_stats(ad_group=ad_group, source=source)
+        refresh.refresh_adgroup_stats(ad_group=ad_group, source=source)
 
         article_stats1 = reports.models.ArticleStats.objects.filter(ad_group=ad_group, source=source, datetime=dt1)
         self.assertEqual(sum(stat.clicks for stat in article_stats1), 5)
@@ -438,3 +441,129 @@ class ContentAdStatsUpdateTest(test.TestCase):
         self.assertEqual(stats[0].data_cost_cc, 200)
 
         mock_refresh_contentadstats.assert_called_with(date, ad_group, source)
+
+
+class GaContentAdReportTest(test.TransactionTestCase):
+    fixtures = ['test_api_contentads']
+
+    date = datetime.datetime(2015, 4, 16)
+
+    sample_data = [
+        parse_v2.GaReportRow(
+            {
+                "% New Sessions": "96.02%",
+                "Avg. Session Duration": "00:00:12",
+                "Bounce Rate": "92.41%",
+                "Device Category": "mobile",
+                "Landing Page": "/lasko?_z1_caid=1&_z1_msid=gravity",
+                "New Users": "531",
+                "Pages / Session": "1.12",
+                "Sessions": "553",
+                "Yell Free Listings (Goal 1 Completions)": "0",
+                "Yell Free Listings (Goal 1 Conversion Rate)": "0.00%",
+                "Yell Free Listings (Goal 1 Value)": "\u00a30.00",
+            },
+            datetime.datetime(2015, 4, 16),
+            1,
+            "gravity",
+            {
+                "Goal 1": {
+                    "conversion_rate": "0.00%",
+                    "conversions": "0",
+                    "value": "\u00a30.00"
+                }
+            }
+        ),
+        parse_v2.GaReportRow(
+            {
+                "% New Sessions": "96.02%",
+                "Avg. Session Duration": "00:00:12",
+                "Bounce Rate": "92.41%",
+                "Device Category": "mobile",
+                "Landing Page": "/lasko?_z1_caid=1&_z1_msid=gravity",
+                "New Users": "531",
+                "Pages / Session": "1.12",
+                "Sessions": "553",
+                "Yell Free Listings (Goal 1 Completions)": "0",
+                "Yell Free Listings (Goal 1 Conversion Rate)": "0.00%",
+                "Yell Free Listings (Goal 1 Value)": "\u00a30.00",
+            },
+            datetime.datetime(2015, 4, 16),
+            3,
+            "gravity",
+            {
+                "Goal 1": {
+                    "conversion_rate": "0.00%",
+                    "conversions": "0",
+                    "value": "\u00a30.00"
+                }
+            }
+        )
+    ]
+
+    sample_invalid_data_1 = [
+        parse_v2.GaReportRow(
+            {
+                "% New Sessions": "96.02%",
+                "Avg. Session Duration": "00:00:12",
+                "Bounce Rate": "92.41%",
+                "Device Category": "mobile",
+                "Landing Page": "/lasko?_z1_caid=12345&_z1_msid=gravity",
+                "New Users": "531",
+                "Pages / Session": "1.12",
+                "Sessions": "553",
+                "Yell Free Listings (Goal 1 Completions)": "0",
+                "Yell Free Listings (Goal 1 Conversion Rate)": "0.00%",
+                "Yell Free Listings (Goal 1 Value)": "\u00a30.00",
+            },
+            datetime.datetime(2015, 4, 16),
+            12345,
+            "gravity",
+            {
+                "Goal 1": {
+                    "conversion_rate": "0.00%",
+                    "conversions": "0",
+                    "value": "\u00a30.00"
+                }
+            }
+        )
+    ]
+
+    @patch('reports.update.refresh.refresh_contentadstats')
+    def test_correct_row(self, mock_refresh_contentadstats):
+        self.assertEqual(5, reports.models.ContentAdPostclickStats.objects.count())
+        self.assertEqual(3, reports.models.ContentAdGoalConversionStats.objects.count())
+
+        update.process_report(self.date, self.sample_data, constants.ReportType.GOOGLE_ANALYTICS)
+
+        self.assertEqual(7, reports.models.ContentAdPostclickStats.objects.count())
+        self.assertEqual(5, reports.models.ContentAdGoalConversionStats.objects.count())
+
+        self.assertEqual(mock_refresh_contentadstats.call_count, 2)
+        mock_refresh_contentadstats.assert_any_call(self.date, dash.models.AdGroup.objects.get(pk=1))
+        mock_refresh_contentadstats.assert_any_call(self.date, dash.models.AdGroup.objects.get(pk=2))
+
+    @patch('reports.update.refresh.refresh_contentadstats')
+    def test_double_correct_row(self, mock_refresh_contentadstats):
+        self.assertEqual(5, reports.models.ContentAdPostclickStats.objects.count())
+        self.assertEqual(3, reports.models.ContentAdGoalConversionStats.objects.count())
+
+        update.process_report(self.date, self.sample_data, constants.ReportType.GOOGLE_ANALYTICS)
+        update.process_report(self.date, self.sample_data, constants.ReportType.GOOGLE_ANALYTICS)
+
+        self.assertEqual(7, reports.models.ContentAdPostclickStats.objects.count())
+        self.assertEqual(5, reports.models.ContentAdGoalConversionStats.objects.count())
+
+        self.assertEqual(mock_refresh_contentadstats.call_count, 4)
+        mock_refresh_contentadstats.assert_any_call(self.date, dash.models.AdGroup.objects.get(pk=1))
+        mock_refresh_contentadstats.assert_any_call(self.date, dash.models.AdGroup.objects.get(pk=2))
+
+    def test_invalid_caid(self):
+        self.assertEqual(5, reports.models.ContentAdPostclickStats.objects.count())
+        self.assertEqual(3, reports.models.ContentAdGoalConversionStats.objects.count())
+
+        with self.assertRaises(Exception):
+            update.process_report(self.date, self.sample_invalid_data_1, constants.ReportType.GOOGLE_ANALYTICS)
+
+        self.assertEqual(5, reports.models.ContentAdPostclickStats.objects.count())
+        self.assertEqual(3, reports.models.ContentAdGoalConversionStats.objects.count())

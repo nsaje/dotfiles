@@ -105,6 +105,7 @@ def _get_goals_json(goals):
     return json.dumps(result)
 
 
+@transaction.atomic
 def refresh_contentadstats(date, ad_group, source=None):
     source_id = source.id if source is not None else None
 

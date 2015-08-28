@@ -14,7 +14,7 @@ from convapi import parse_v2
 from convapi.aggregate import ReportEmail
 from convapi.helpers import get_from_s3
 
-from reports import api_contentads
+from reports import update
 
 from utils.statsd_helper import statsd_incr, statsd_timer
 
@@ -238,7 +238,7 @@ def process_ga_report_v2(ga_report_task):
 
         # serialize report - this happens even if report is failed/empty
         valid_entries = csvreport.valid_entries()
-        api_contentads.process_report(csvreport.get_date, valid_entries, reports.constants.ReportType.GOOGLE_ANALYTICS)
+        update.process_report(csvreport.get_date, valid_entries, reports.constants.ReportType.GOOGLE_ANALYTICS)
 
         report_log.state = constants.GAReportState.SUCCESS
         report_log.save()
