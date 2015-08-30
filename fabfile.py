@@ -74,11 +74,22 @@ SLACK = "https://hooks.slack.com/services/T024VACMF/B09N8H15E/m7bd1bCZ6uWwf4xmUw
 SLACK_EMOJI = { 'info': ':information_source:', 'error': ':rage:', 'success': ':sunglasses:' }
 def post_to_slack(msg, msg_type='info'):
     emoji = SLACK_EMOJI.get(msg_type)
+    hour = datetime.now().hour
+    
+    if hour >= 8 and hour < 14:
+        state = ':innocent:'
+    elif hour >= 14 and hour < 18:
+        state = ':smiling_imp:'
+    elif hour >= 18:
+        state = ':scream:'
+    else:
+        state = ':angry_celan:'
+    
     data = urllib.urlencode({
 	'payload': json.dumps({
 	    'text': '{} {}'.format(emoji, msg),
 	    'username': 'fab/z1/' + getpass.getuser(),
-            'icon_emoji': ':pray:',
+            'icon_emoji': state,
 	})
     })
     req = urllib2.Request(SLACK, data)
