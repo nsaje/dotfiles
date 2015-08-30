@@ -12,8 +12,8 @@ oneApp.directive('zemHtmlPopover', ['$http', '$templateCache', '$compile', '$par
                 tElem.attr('popover-html-unsafe', '{{popover}}');
             }
             return function (scope, element, attrs) {
-                scope.popover = attrs.zemHtmlPopover;
-                var templateUrl = $parse(scope.popover)(scope);
+                var templateUrl = $parse(attrs.zemHtmlPopover)(scope);
+                scope.popover = " ";
 
                 function loadTemplate() {
                     $http.get(templateUrl, {cache: $templateCache })
@@ -34,7 +34,7 @@ oneApp.directive('zemHtmlPopover', ['$http', '$templateCache', '$compile', '$par
                         loadTemplate();
                     });
                 } else {
-                    loadTemplate();
+                    element.on("mouseenter", loadTemplate);
                 }
             };
         }
