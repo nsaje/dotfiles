@@ -640,7 +640,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
             'display_url': form.cleaned_data['display_url'],
             'brand_name': form.cleaned_data['brand_name'],
             'description': form.cleaned_data['description'],
-            'call_to_action': form.cleaned_data['call_to_action'],
+            'call_to_action': form.cleaned_data['call_to_action']
         }
 
         batch = models.UploadBatch.objects.create(
