@@ -285,6 +285,8 @@ class AccountRestore(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         account.restore(request)
 
+        actionlog.sync.AccountSync(account).trigger_all(self.request)
+
         return self.create_api_response({})
 
 
@@ -309,6 +311,8 @@ class CampaignRestore(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign.restore(request)
 
+        actionlog.sync.CampaignSync(campaign).trigger_all(self.request)
+
         return self.create_api_response({})
 
 
@@ -332,6 +336,8 @@ class AdGroupRestore(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         ad_group.restore(request)
+
+        actionlog.sync.AdGroupSync(ad_group).trigger_all(self.request)
 
         return self.create_api_response({})
 
