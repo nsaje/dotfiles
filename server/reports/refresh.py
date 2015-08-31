@@ -4,6 +4,7 @@ from django.db.models import Sum, Max
 from django.db import connection, transaction
 
 import reports.models
+from reports.db_raw_helpers import dictfetchall
 from reports import redshift
 
 import dash.models
@@ -29,7 +30,7 @@ def _get_joined_stats_rows(date, ad_group_id, source_id):
 
     with connection.cursor() as cursor:
         cursor.execute(query, params)
-        rows = _dictfetchall(cursor)
+        rows = dictfetchall(cursor)
 
     return map(_normalize_join_cols, rows)
 

@@ -1,4 +1,5 @@
 from itertools import repeat
+from reports.db_raw_helpers import dictfetchall
 
 from django.db import connections
 
@@ -15,7 +16,7 @@ def delete_contentadstats(date, ad_group_id, source_id):
         query = query + ' AND source_id = %s'
         params.append(source_id)
 
-    _execute(cursor, query, params)
+    cursor.execute(query, params)
     cursor.close()
 
 
@@ -31,16 +32,22 @@ def insert_contentadstats(rows):
         cols=','.join(cols),
         rows=','.join(_get_row_string(cursor, cols, row) for row in rows))
 
-    _execute(cursor, query, [])
+    cursor.execute(query, [])
     cursor.close()
+
+
+def sum_contentadstats():
+    query = 'SELECT SUM(impressions) as impressions, SUM(visits) as visits FROM contentadstats'
+
+    cursor = _get_cursor()
+    cursor.execute(query, [])
+
+    cursor.close()
+    return dictfetchall(cursor)
 
 
 def _get_cursor():
     return connections[STATS_DB_NAME].cursor()
-
-
-def _execute(cursor, query, params):
-    cursor.execute(query, params)
 
 
 def _get_row_string(cursor, cols, row):
