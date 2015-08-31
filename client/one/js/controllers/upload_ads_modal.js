@@ -1,4 +1,4 @@
-/* globals angular,oneApp */
+/* globals angular,oneApp,defaults */
 oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$state', '$timeout', '$filter', function($scope, $modalInstance, api, $state, $timeout, $filter) {
     $scope.errors = null;
     $scope.formData = {};
@@ -22,17 +22,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
                 return {id: term, text: term};
             }
         },
-        data: (function () {
-            var data = [];
-            angular.forEach([
-                'Read More', 'Book Now', 'Contact Us',
-                'Download', 'Learn More', 'Shop Now',
-                'Sign Up', 'Watch More'
-            ], function (v) {
-                data.push({id: v, text:v});
-            });
-            return data;
-        }())
+        data: defaults.callToAction
     };
 
     $scope.pollBatchStatus = function(batchId) {
