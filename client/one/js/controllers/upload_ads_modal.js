@@ -1,4 +1,4 @@
-/* globals oneApp */
+/* globals angular,oneApp */
 oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$state', '$timeout', '$filter', function($scope, $modalInstance, api, $state, $timeout, $filter) {
     $scope.errors = null;
     $scope.formData = {};
@@ -11,6 +11,28 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
 
         datetime = new Date(timestamp + $scope.user.timezoneOffset * 1000);
         return $filter('date')(datetime, 'M/d/yyyy h:mm a');
+    };
+
+    $scope.callToActionSelect2Config = {
+        dropdownCssClass: 'service-fee-select2',
+        createSearchChoice: function (term, data) {
+            if ($(data).filter(function() { 
+                return this.text.localeCompare(term)===0;
+            }).length===0) {
+                return {id: term, text: term};
+            }
+        },
+        data: (function () {
+            var data = [];
+            angular.forEach([
+                'Read More', 'Book Now', 'Contact Us',
+                'Download', 'Learn More', 'Shop Now',
+                'Sign Up', 'Watch More'
+            ], function (v) {
+                data.push({id: v, text:v});
+            });
+            return data;
+        }())
     };
 
     $scope.pollBatchStatus = function(batchId) {
@@ -90,6 +112,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
 
     $scope.$watch('formData.file', function (newValue, oldValue) {
         if ($scope.formData.batchName !== '') { return; }
+        if (! newValue) { return; }
         $scope.formData.batchName = newValue.name;
     });
 
