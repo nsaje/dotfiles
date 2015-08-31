@@ -11,12 +11,12 @@
                 <button type="button" class="btn btn-default" zem-file-input="formData.file">Choose file</button>
             </div>
         </div>
-		<div class="form-group">
-			<div class="col-xs-3"></div>
+        <div class="form-group">
+            <div class="col-xs-3"></div>
             <div class="col-xs-5">
                 <input type="text" id="file-input" readonly class="form-control" placeholder="No file chosen" ng-model="formData.file.name">
             </div>
-		</div>
+        </div>
         <div class="form-group" ng-class="{'has-error': !!errors.batchName}">
             <label for="batch-name-input" class="col-xs-3 control-label">
                 Batch name
@@ -29,13 +29,13 @@
                 <label ng-repeat="error in errors.batchName" class="control-label small error" for="batch-name-input">{{ error }}</label>
             </div>
         </div>
-		<hr />
-		<div class="form-group">
-			<div class="col-xs-6">
-				<span class="form-title">Default content ad information</span>
-				<zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="These settings will be used as defaults to generate content ads unless otherwise specified in upload CSV. Not all media sources / ad formats require all of them." placement="top"></zem-help-popover>
-			</div>
-		</div>
+        <hr />
+        <div class="form-group">
+            <div class="col-xs-6">
+                <span class="form-title">Default content ad information</span>
+                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="These settings will be used as defaults to generate content ads unless otherwise specified in upload CSV. Not all media sources / ad formats require all of them." placement="top"></zem-help-popover>
+            </div>
+        </div>
         <div class="form-group" ng-class="{'has-error': !!errors.displayUrl}">
             <label for="display-url-input" class="col-xs-3 control-label">
                 Display URL
@@ -68,7 +68,7 @@
                 <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Call to action text." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-5">
-				<div ui-select2="callToActionSelect2Config" id="call-to-action-input" class="form-control" ng-model="formData.callToAction" zem-select2-model-transform="text"></div>
+                <div ui-select2="callToActionSelect2Config" id="call-to-action-input" class="form-control" ng-model="formData.callToAction" zem-select2-model-transform="text"></div>
             </div>
 
             <label ng-if="!errors.callToAction" class="control-label small">{{formData.callToAction.length}}/25</label>
