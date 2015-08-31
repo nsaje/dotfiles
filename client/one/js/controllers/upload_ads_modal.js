@@ -3,16 +3,6 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
     $scope.errors = null;
     $scope.formData = {};
 
-    var getCurrentTimeString = function() {
-        var datetime = new Date();  // get current local time
-
-        // add UTC timezone offset to simulate time in UTC timezone
-        var timestamp = datetime.getTime() + datetime.getTimezoneOffset() * 60 * 1000;
-
-        datetime = new Date(timestamp + $scope.user.timezoneOffset * 1000);
-        return $filter('date')(datetime, 'M/d/yyyy h:mm a');
-    };
-
     $scope.callToActionSelect2Config = {
         dropdownCssClass: 'service-fee-select2',
         createSearchChoice: function (term, data) {
