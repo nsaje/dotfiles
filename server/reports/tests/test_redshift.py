@@ -21,7 +21,7 @@ class RedshiftTest(TestCase):
 
         redshift.delete_contentadstats(date, ad_group_id, source_id)
 
-        query = 'DELETE FROM contentadstats WHERE TRUNC(datetime) = %s AND adgroup_id = %s AND source_id = %s'
+        query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s AND source_id = %s'
         params = ['2015-01-01', 1, 2]
 
         mock_cursor.execute.assert_called_with(query, params)
@@ -35,7 +35,7 @@ class RedshiftTest(TestCase):
 
         redshift.delete_contentadstats(date, ad_group_id, None)
 
-        query = 'DELETE FROM contentadstats WHERE TRUNC(datetime) = %s AND adgroup_id = %s'
+        query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s'
         params = ['2015-01-01', 1]
 
         mock_cursor.execute.assert_called_with(query, params)
