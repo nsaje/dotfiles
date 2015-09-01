@@ -2,6 +2,7 @@ import json
 import logging
 import unicodecsv
 import StringIO
+ 
 from functools import partial
 from multiprocessing.pool import ThreadPool
 
@@ -20,6 +21,7 @@ from dash import models
 from dash import api
 from dash import constants
 from dash import image_helper
+from dash.forms import AdGroupAdsPlusUploadForm, MANDATORY_CSV_FIELDS, OPTIONAL_CSV_FIELDS # to get fields & validators
 
 logger = logging.getLogger(__name__)
 
@@ -33,13 +35,13 @@ class UploadFailedException(Exception):
     pass
 
 
-def process_async(content_ads_data, filename, batch, ad_group, request):
+def process_async(content_ads_data, filename, batch, upload_form_cleaned_fields, ad_group, request):
     ad_group_sources = [s for s in models.AdGroupSource.objects.filter(ad_group_id=ad_group.id)
                         if s.can_manage_content_ads and s.source.can_manage_content_ads()]
 
     pool = ThreadPool(processes=NUM_THREADS)
     pool.map_async(
-        partial(_clean_row, batch, ad_group),
+        partial(_clean_row, batch, upload_form_cleaned_fields, ad_group),
         content_ads_data,
         callback=partial(_process_callback, batch, ad_group, ad_group_sources, filename, request),
     )
@@ -87,8 +89,8 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
         batch.num_errors = num_errors
         batch.save()
         return
-    except Exception:
-        logger.exception('Exception in ProcessUploadThread')
+    except Exception as e:
+        logger.exception('Exception in ProcessUploadThread: {0}'.format(e))
         batch.status = constants.UploadBatchStatus.FAILED
         batch.save()
         return
@@ -99,24 +101,20 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
 def _save_error_report(rows, filename):
     string = StringIO.StringIO()
 
-    fields = ['url', 'title', 'image_url']
+    fields = list(MANDATORY_CSV_FIELDS)
 
-    if any(row.get('crop_areas') for row in rows):
-        fields.append('crop_areas')
-
-    if any(row.get('tracker_urls') for row in rows):
-        fields.append('tracker_urls')
+    for field_name in OPTIONAL_CSV_FIELDS:
+        if any(row.get(field_name) for row in rows):
+            fields.append(field_name)
 
     fields.append('errors')
     writer = unicodecsv.DictWriter(string, fields)
 
     writer.writeheader()
     for row in rows:
-        if 'crop_areas' not in fields and 'crop_areas' in row:
-            del row['crop_areas']
-
-        if 'tracker_urls' not in fields and 'tracker_urls' in row:
-            del row['tracker_urls']
+        for field_name in OPTIONAL_CSV_FIELDS:
+            if field_name not in fields and field_name in row:
+                del row[field_name]
 
         writer.writerow(row)
 
@@ -160,6 +158,10 @@ def _create_objects(data, batch, ad_group_id, ad_group_sources):
         url=data['url'],
         title=data['title'],
         batch=batch,
+        display_url=data['display_url'],
+        brand_name=data['brand_name'],
+        description=data['description'],
+        call_to_action=data['call_to_action'],
         ad_group_id=ad_group_id,
         tracker_urls=data['tracker_urls']
     )
@@ -178,26 +180,24 @@ def _create_objects(data, batch, ad_group_id, ad_group_sources):
     return content_ad, content_ad_sources
 
 
-def _clean_row(batch, ad_group, row):
+def _clean_row(batch, upload_form_cleaned_fields, ad_group, row):
     try:
-        title = row.get('title')
-        url = row.get('url')
-        image_url = row.get('image_url')
-        crop_areas = row.get('crop_areas')
-        tracker_urls_string = row.get('tracker_urls')
-
-        cleaners = {
-            'title': partial(_clean_title, title),
-            'url': partial(_clean_url, url, ad_group),
-            'image': partial(_clean_image, image_url, crop_areas),
-            'tracker_urls': partial(_clean_tracker_urls, tracker_urls_string)
-        }
-
         errors = []
         data = {}
-        for key, cleaner in cleaners.items():
+        for key in ['title', 'url', 'image', 'tracker_urls', 'display_url', 'brand_name', 'description', 'call_to_action']:
             try:
-                data[key] = cleaner()
+                if key == 'title': 
+                    data[key] = _clean_title(row.get('title'))
+                elif key == 'url':
+                    data[key] = _clean_url(row.get('url'), ad_group)
+                elif key == 'image': 
+                    data[key] = _clean_image(row.get('image_url'), row.get('crop_areas'))
+                elif key == 'tracker_urls': 
+                    data[key] = _clean_tracker_urls(row.get('tracker_urls'))
+                elif key in ['description', 'display_url', 'brand_name', 'call_to_action']:
+                    data[key] = _clean_inherited_csv_field(key, row.get(key), upload_form_cleaned_fields[key])
+                else:
+                    raise Exception("Unknown key: {0}".format(key))	# should never happen, guards against coding errors
             except ValidationError as e:
                 errors.extend(e.messages)
 
@@ -210,6 +210,19 @@ def _clean_row(batch, ad_group, row):
         logger.exception('Exception in upload._clean_row')
         raise
 
+# This function cleans the fields that are, when column is not present or the value is empty, inherited from form submission
+def _clean_inherited_csv_field(field_name, value_from_csv, cleaned_value_from_form):
+    field = AdGroupAdsPlusUploadForm.base_fields[field_name]
+
+    if value_from_csv:
+        return field.clean(value_from_csv)
+
+    if cleaned_value_from_form:
+        return cleaned_value_from_form
+
+    # this currently can never happen as the form values are still mandatory
+    raise ValidationError("{0} has to be present in CSV or default value should be submitted in the upload form.".format(field.label))
+
 
 def _clean_url(url, ad_group):
     try:
@@ -221,7 +234,6 @@ def _clean_url(url, ad_group):
 
     if not redirector_helper.validate_url(url, ad_group.id):
         raise ValidationError('Content unreachable')
-
     return url
 
 
