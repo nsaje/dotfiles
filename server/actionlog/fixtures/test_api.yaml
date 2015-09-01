@@ -890,8 +890,8 @@
         state: 1
         source_state: 2
         source_content_ad_id: NULL
-        created_dt: '2015-07-01T00:00:00'
-        modified_dt: '2015-07-01T00:00:00'
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
     model: dash.contentadsource
     pk: 5
 

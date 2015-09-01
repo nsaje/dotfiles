@@ -279,7 +279,7 @@ class AdGroupContentAdStateTest(TestCase):
         self.assertEqual(content_ad.state, constants.ContentAdSourceState.INACTIVE)
 
         content_ad_sources = models.ContentAdSource.objects.filter(content_ad=content_ad)
-        self.assertEqual(len(content_ad_sources), 2)
+        self.assertEqual(len(content_ad_sources), 3)
 
         for content_ad_source in content_ad_sources:
             self.assertEqual(content_ad_source.state, constants.ContentAdSourceState.INACTIVE)
