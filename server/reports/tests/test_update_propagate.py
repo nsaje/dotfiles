@@ -430,7 +430,7 @@ class ContentAdStatsUpdateTest(test.TestCase):
             'data_cost_cc': 200
         }]
 
-        reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, rows)
+        reports.update.update_content_ads_source_traffic_stats(date.isoformat(), ad_group, source, rows)
 
         stats = reports.models.ContentAdStats.objects.filter(content_ad_source=1, date=date)
         self.assertEqual(len(stats), 1)

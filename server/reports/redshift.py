@@ -12,7 +12,7 @@ STATS_DB_NAME = 'stats'
 def delete_contentadstats(date, ad_group_id, source_id):
     cursor = _get_cursor()
 
-    query = 'DELETE FROM contentadstats WHERE TRUNC(datetime) = %s AND adgroup_id = %s'
+    query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s'
     params = [date.isoformat(), ad_group_id]
 
     if source_id:
