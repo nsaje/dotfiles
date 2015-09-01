@@ -6,7 +6,7 @@ import re
 from collections import OrderedDict
 from decimal import Decimal
 from django.db import transaction
-# from django.conf import settings
+from django.conf import settings
 from django.contrib.auth import models as authmodels
 
 from actionlog import api as actionlog_api

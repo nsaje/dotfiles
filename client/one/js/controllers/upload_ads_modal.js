@@ -75,6 +75,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
         ).then(function(batchId) {
             $scope.pollBatchStatus(batchId);
 
+            api.
             $scope.remindToAddBudget.resolve(true);
         }, function(data) {
             $scope.isInProgress = false;
