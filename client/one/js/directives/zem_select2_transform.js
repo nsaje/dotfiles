@@ -13,9 +13,12 @@ oneApp.directive('zemSelect2ModelTransform', ['$compile', function($compile) {
             ngModel.$parsers.push(function (value) {
                 return value ? value.id : '';
             });
-
+            
             ngModel.$formatters.push(function (value) {
-                var text = isNaN(value) ? '' : value + '%';
+                var text;
+                if (attr.zemSelect2ModelTransform == "percentage") {
+                    text = isNaN(value) ? '' : value + '%';
+                } else { text = value; }
                 return {id: value, text: text};
             });
         }
