@@ -1,5 +1,5 @@
 /* globals oneApp, options, angular */
-oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal', '$location', 'api', 'zemUserSettings', 'zemCustomTableColsService', '$timeout', 'zemFilterService', function($scope, $window, $state, $modal, $location, api, zemUserSettings, zemCustomTableColsService, $timeout, zemFilterService) {
+oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal', '$location', 'api', 'zemUserSettings', 'zemCustomTableColsService', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', function($scope, $window, $state, $modal, $location, api, zemUserSettings, zemCustomTableColsService, $timeout, zemFilterService, zemPostclickMetricsService) {
     $scope.order = '-upload_time';
     $scope.loadRequestInProgress = false;
     $scope.selectedColumnsCount = 0;
@@ -397,6 +397,9 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     }, {
         'name': 'Traffic Acquisition',
         'fields': ['cost', 'cpc', 'clicks', 'impressions', 'ctr']
+    }, {
+        'name': 'Audience Metrics',
+        'fields': ['visits', 'pageviews', 'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos', 'click_discrepancy']
     }];
 
     $scope.addContentAds = function() {
@@ -689,6 +692,22 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     var initColumns = function () {
         var cols;
 
+        // TODO: Check for correct permissions
+        zemPostclickMetricsService.insertAcquisitionColumns(
+            $scope.columns,
+            $scope.columns.length - 2,
+            $scope.hasPermission('zemauth.aggregate_postclick_acquisition'),
+            $scope.isPermissionInternal('zemauth.aggregate_postclick_acquisition')
+        );
+
+        // TODO: Check for correct permissions
+        zemPostclickMetricsService.insertEngagementColumns(
+            $scope.columns,
+            $scope.columns.length - 2,
+            $scope.hasPermission('zemauth.aggregate_postclick_engagement'),
+            $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
+        );
+
         cols = zemCustomTableColsService.load('adGroupAdsPlus', $scope.columns);
         $scope.selectedColumnsCount = cols.length;
 
@@ -743,6 +762,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
         pollSyncStatus();
         setDisabledExportOptions();
+
+        setChartOptions(null);
     };
 
     $scope.pollTableUpdates = function () {
@@ -823,6 +844,46 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 return;
             }
         );
+    };
+
+    var setChartOptions = function (goals) {
+        // TODO: check permissions
+        $scope.chartMetricOptions = options.adGroupChartMetrics;
+
+        if ($scope.hasPermission('zemauth.content_ads_postclick_acquisition')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatAcquisitionChartOptions(
+                $scope.chartMetricOptions,
+                $scope.isPermissionInternal('zemauth.content_ads_postclick_acquisition')
+            );
+        }
+
+        if ($scope.hasPermission('zemauth.content_ads_postclick_engagement')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatEngagementChartOptions(
+                $scope.chartMetricOptions,
+                $scope.isPermissionInternal('zemauth.content_ads_postclick_engagement')
+            );
+
+            if (goals) {
+                $scope.chartMetricOptions = $scope.chartMetricOptions.concat(Object.keys(goals).map(function (goalId) {
+                    var typeName = {
+                        'conversions': 'Conversions',
+                        'conversion_rate': 'Conversion Rate'
+                    }[goals[goalId].type];
+
+                    if (typeName === undefined) {
+                        return;
+                    }
+
+                    return {
+                        name: goals[goalId].name + ': ' + typeName,
+                        value: goalId,
+                        internal: $scope.isPermissionInternal('zemauth.content_ads_postclick_engagement')
+                    }
+                }).filter(function (option) {
+                    return option !== undefined;
+                }));
+            }
+        }
     };
 
     var setDisabledExportOptions = function() {

@@ -293,7 +293,7 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
         demo_users = settings.DEMO_USERS
 
         settings.DEMO_USERS = ('demo@example.com', )
-        
+
         request = http.HttpRequest()
         request.GET['type'] = 'csv'
         request.GET['start_date'] = '2014-06-30'
@@ -317,7 +317,7 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
         demo_users = settings.DEMO_USERS
 
         settings.DEMO_USERS = ('demo@example.com', )
-        
+
         request = http.HttpRequest()
         request.GET['type'] = 'excel'
         request.GET['start_date'] = '2014-06-30'
