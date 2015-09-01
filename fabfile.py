@@ -11,6 +11,9 @@ import fabric.utils
 
 import yaml
 import json
+import urllib
+import urllib2
+import getpass
 
 # Taken from ratel and modified.
 
@@ -67,6 +70,32 @@ if env.ssh_config_path and os.path.isfile(os.path.expanduser(env.ssh_config_path
     env.use_ssh_config = True
 
 
+SLACK = "https://hooks.slack.com/services/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"
+SLACK_EMOJI = { 'info': ':information_source:', 'error': ':rage:', 'success': ':sunglasses:' }
+def post_to_slack(msg, msg_type='info'):
+    emoji = SLACK_EMOJI.get(msg_type)
+    hour = datetime.now().hour
+    
+    if hour >= 8 and hour < 14:
+        state = ':innocent:'
+    elif hour >= 14 and hour < 18:
+        state = ':smiling_imp:'
+    elif hour >= 18:
+        state = ':scream:'
+    else:
+        state = ':angry_celan:'
+    
+    data = urllib.urlencode({
+	'payload': json.dumps({
+	    'text': '{} {}'.format(emoji, msg),
+	    'username': 'fab/z1/' + getpass.getuser(),
+            'icon_emoji': state,
+	})
+    })
+    req = urllib2.Request(SLACK, data)
+    response = urllib2.urlopen(req)
+    return response.read() == 'ok'
+    
 # SETTINGS
 @task
 def staging(*args):
@@ -106,6 +135,8 @@ def deploy(*args):
     else:
         abort("Unknown apps!")
 
+    post_to_slack('Deploying: ' + ', '.join(apps))
+        
     params = {}
     clone_code(params)
 
@@ -141,6 +172,7 @@ def deploy(*args):
 
 @task
 def migrate(*args):
+    post_to_slack('Migrating')
     env.hosts = selected_hosts
 
     apps = []
@@ -170,6 +202,7 @@ def migrate(*args):
 
 @task
 def revert(*args):
+    post_to_slack('Reverting')
     env.hosts = selected_hosts
 
     apps = []
@@ -572,8 +605,10 @@ def task(txt):
 
 
 def ok(txt):
+    post_to_slack(txt, 'success')
     return fabric.colors.green(txt, True)
 
 
 def error(txt):
+    post_to_slack(txt, 'error')
     return fabric.colors.red(txt, True)

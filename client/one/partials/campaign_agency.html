@@ -44,7 +44,7 @@
                 <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Fee for management of the campaign; calculated based on media spend." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-3">
-                <div ui-select2="serviceFeeSelect2Config" id="service-fee-select" class="form-control" ng-model="settings.serviceFee" zem-select2-model-transform></div>
+                <div ui-select2="serviceFeeSelect2Config" id="service-fee-select" class="form-control" ng-model="settings.serviceFee" zem-select2-model-transform="percentage"></div>
             </div>
             <label ng-repeat="error in errors.serviceFee" class="control-label error" for="service-fee-select">{{ error }}</label>
         </div>

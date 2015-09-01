@@ -1,6 +1,7 @@
 import json
 import logging
 import newrelic.agent
+import re
 
 from collections import OrderedDict
 from decimal import Decimal
@@ -21,7 +22,6 @@ from dash import constants
 from utils import api_common
 from utils import statsd_helper
 from utils import exc
-from utils import pagerduty_helper
 from utils import email_helper
 
 from zemauth.models import User as ZemUser
@@ -30,11 +30,17 @@ from zemauth.models import User as ZemUser
 logger = logging.getLogger(__name__)
 
 
+def _get_conversion_pixel_url(account_id, slug):
+    return settings.CONVERSION_PIXEL_PREFIX + '{}/{}/'.format(account_id, slug)
+
+
 class AdGroupSettings(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_get')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('dash.settings_view'):
             raise exc.MissingDataError()
+        import time
+        time.sleep(3)
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
@@ -437,6 +443,116 @@ class CampaignBudget(api_common.BaseApiView):
             item['comment'] = h.comment
             result.append(item)
         return result
+
+
+class AccountConversionPixels(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'conversion_pixels_list')
+    def get(self, request, account_id):
+        if not request.user.has_perm('zemauth.manage_conversion_pixels'):
+            raise exc.MissingDataError()
+
+        account = helpers.get_account(request.user, account_id)
+        rows = [
+            {
+                'id': conversion_pixel.id,
+                'slug': conversion_pixel.slug,
+                'url': _get_conversion_pixel_url(account.id, conversion_pixel.slug),
+                'status': constants.ConversionPixelStatus.get_text(conversion_pixel.status),
+                'last_verified_dt': conversion_pixel.last_verified_dt,
+                'archived': conversion_pixel.archived
+            } for conversion_pixel in models.ConversionPixel.objects.filter(account=account)
+        ]
+
+        return self.create_api_response({
+            'rows': rows,
+            'conversion_pixel_tag_prefix': settings.CONVERSION_PIXEL_PREFIX + str(account.id) + '/',
+        })
+
+    @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_post')
+    def post(self, request, account_id):
+        if not request.user.has_perm('zemauth.manage_conversion_pixels'):
+            raise exc.MissingDataError()
+
+        account = helpers.get_account(request.user, account_id)  # check access to account
+
+        try:
+            data = json.loads(request.body)
+        except ValueError:
+            raise exc.ValidationError()
+
+        slug = data.get('slug')
+
+        form = forms.ConversionPixelForm({'slug': slug})
+        if not form.is_valid():
+            raise exc.ValidationError(message=' '.join(dict(form.errors)['slug']))
+
+        try:
+            models.ConversionPixel.objects.get(account_id=account_id, slug=slug)
+            raise exc.ValidationError(message='Conversion pixel with this identifier already exists.')
+        except models.ConversionPixel.DoesNotExist:
+            pass
+
+        with transaction.atomic():
+            conversion_pixel = models.ConversionPixel.objects.create(account_id=account_id, slug=slug)
+
+            new_settings = account.get_current_settings().copy_settings()
+            new_settings.changes_text = u'Added conversion pixel with unique identifier {}.'.format(slug)
+            new_settings.save(request)
+
+        return self.create_api_response({
+            'id': conversion_pixel.id,
+            'slug': conversion_pixel.slug,
+            'url': _get_conversion_pixel_url(account.id, slug),
+            'status': constants.ConversionPixelStatus.get_text(conversion_pixel.status),
+            'last_verified_dt': conversion_pixel.last_verified_dt,
+            'archived': conversion_pixel.archived,
+        })
+
+
+class ConversionPixel(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_put')
+    def put(self, request, conversion_pixel_id):
+        if not request.user.has_perm('zemauth.manage_conversion_pixels'):
+            raise exc.MissingDataError()
+
+        try:
+            conversion_pixel = models.ConversionPixel.objects.get(id=conversion_pixel_id)
+        except models.ConversionPixel.DoesNotExist:
+            raise exc.MissingDataError('Conversion pixel does not exist')
+
+        try:
+            account = helpers.get_account(request.user, conversion_pixel.account_id)  # check access to account
+        except exc.MissingDataError:
+            raise exc.MissingDataError('Conversion pixel does not exist')
+
+        try:
+            data = json.loads(request.body)
+        except ValueError:
+            raise exc.ValidationError()
+
+        if 'archived' in data:
+            if not isinstance(data['archived'], bool):
+                raise exc.ValidationError(message='Invalid value')
+
+            with transaction.atomic():
+                conversion_pixel.archived = data['archived']
+                conversion_pixel.save()
+
+                new_settings = account.get_current_settings().copy_settings()
+                new_settings.changes_text = u'{} conversion pixel with unique identifier {}.'.format(
+                    'Archived' if data['archived'] else 'Restored',
+                    conversion_pixel.slug
+                )
+                new_settings.save(request)
+
+        return self.create_api_response({
+            'id': conversion_pixel.id,
+            'slug': conversion_pixel.slug,
+            'url': _get_conversion_pixel_url(account.id, conversion_pixel.slug),
+            'status': constants.ConversionPixelStatus.get_text(conversion_pixel.status),
+            'last_verified_dt': conversion_pixel.last_verified_dt,
+            'archived': conversion_pixel.archived,
+        })
 
 
 class AccountAgency(api_common.BaseApiView):

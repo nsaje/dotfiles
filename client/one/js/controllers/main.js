@@ -4,6 +4,7 @@ oneApp.controller('MainCtrl',
      '$state',
      '$location',
      '$document',
+     '$modalStack',
      'zemMoment',
      'user',
      'zemUserSettings',
@@ -16,6 +17,7 @@ oneApp.controller('MainCtrl',
         $state,
         $location,
         $document,
+        $modalStack,
         zemMoment,
         user,
         zemUserSettings,
@@ -276,11 +278,18 @@ oneApp.controller('MainCtrl',
     $document.bind('keyup', function (e) {
         if (e) {
             if (String.fromCharCode(e.keyCode).toLowerCase() === 'f') {
+                // nav search shortcut
                 var el = $('#nav-search .select2-container');
 
                 if (document.activeElement.tagName.toLowerCase() === 'input' ||
                     document.activeElement.tagName.toLowerCase() === 'select' ||
                     document.activeElement.tagName.toLowerCase() === 'textarea') {
+                    // input element in focus
+                    return;
+                }
+
+                if (!!$modalStack.getTop()) {
+                    // some modal window exists
                     return;
                 }
 
@@ -299,7 +308,7 @@ oneApp.controller('MainCtrl',
             $location.search('end_date', $scope.dateRange.endDate ? $scope.dateRange.endDate.format('YYYY-MM-DD') : null);
         }
     });
-
+ 
     $scope.getShowArchived = function () {
         return zemFilterService.getShowArchived();
     };

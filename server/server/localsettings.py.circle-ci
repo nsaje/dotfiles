@@ -23,6 +23,8 @@ DATABASES = {
     }
 }
 
+BASE_URL = 'https://one.zemanta.com'
+
 # Email settings
 EMAIL_USE_TLS = True
 EMAIL_HOST = ''
@@ -139,3 +141,8 @@ R1_REDIRECTS_API_URL = 'https://r1.zemanta.com/api/redirects/'
 R1_REDIRECTS_ADGROUP_API_URL = 'https://r1.zemanta.com/api/adgroup/{adgroup}/'
 R1_VALIDATE_API_URL = 'https://r1.zemanta.com/api/validate/'
 R1_BLANK_REDIRECT_URL = 'http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/'
+
+# Budget automation
+DEPLETING_AVAILABLE_BUDGET_SCALAR = 1.5
+DEPLETING_CAMPAIGN_BUDGET_EMAIL = 'help@zemanta.com'
+DEPLETING_CAMPAIGN_BUDGET_DEBUGGING_EMAILS = ['davorin.kopic@zemanta.com', 'bostjan@zemanta.com']
