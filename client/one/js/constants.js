@@ -181,3 +181,16 @@ var options = {
         {name: 'pages per session', value: constants.campaignGoal.PAGES_PER_SESSION}
     ]
 };
+
+var defaults = {
+    callToAction: [
+        {id: 'Read Mode', text: 'Read More'},
+        {id: 'Book Now', text: 'Book Now'},
+        {id: 'Contact Us', text: 'Contact Us'},
+        {id: 'Download', text: 'Download'},
+        {id: 'Learn More', text: 'Learn More'},
+        {id: 'Shop Now', text: 'Shop Now'},
+        {id: 'Sign Up', text: 'Sign Up'},
+        {id: 'Watch More', text: 'Watch More'}
+    ]
+};

@@ -446,7 +446,7 @@ oneApp.config(['$provide', function ($provide) {
                     displayUrl: 'zemanta.com',
                     brandName: 'Zemanta',
                     description: 'Zemanta Content DSP brings science to the top of the funnel marketing',
-                    callToAction: 'Read more'
+                    callToAction: 'Read More'
                 }
             });
             return deferred.promise;

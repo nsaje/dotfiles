@@ -26,14 +26,13 @@ def init_insert_content_ad_action(content_ad_source, request=None, send=True):
         ad_group=content_ad_source.content_ad.ad_group,
         source=content_ad_source.source
     ).select_related('ad_group', 'source__source_type').get()
-    batch = content_ad_source.content_ad.batch
 
     action = _create_action(
         ad_group_source,
         actionlog.constants.Action.INSERT_CONTENT_AD,
         args={
             'source_campaign_key': ad_group_source.source_campaign_key,
-            'content_ad': _get_content_ad_dict(ad_group_source, content_ad_source, batch)
+            'content_ad': _get_content_ad_dict(ad_group_source, content_ad_source)
         },
         request=request,
         content_ad_source=content_ad_source
@@ -64,7 +63,7 @@ def init_insert_content_ad_batch(batch, source, request, send=True):
 
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key,
-        'content_ads': [_get_content_ad_dict(ad_group_source, cas, batch) for cas in content_ad_sources],
+        'content_ads': [_get_content_ad_dict(ad_group_source, cas) for cas in content_ad_sources],
         'extra': {}
     }
 
@@ -95,10 +94,9 @@ def init_insert_content_ad_batch(batch, source, request, send=True):
 
 
 def _create_update_content_ad_action(content_ad_source, ad_group_source, changes, request):
-    batch = content_ad_source.content_ad.batch
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key,
-        'content_ad': _get_content_ad_dict(ad_group_source, content_ad_source, batch),
+        'content_ad': _get_content_ad_dict(ad_group_source, content_ad_source),
         'changes': changes,
     }
 
@@ -176,10 +174,9 @@ def init_get_content_ad_status_action(ad_group_source, order, request, send=True
 
 
 def init_submit_ad_group_action(ad_group_source, content_ad_source, request, send=False):
-    batch = content_ad_source.content_ad.batch
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key,
-        'content_ad': _get_content_ad_dict(ad_group_source, content_ad_source, batch)
+        'content_ad': _get_content_ad_dict(ad_group_source, content_ad_source)
     }
 
     action = _create_action(
@@ -201,7 +198,7 @@ def init_submit_ad_group_action(ad_group_source, content_ad_source, request, sen
     return action
 
 
-def _get_content_ad_dict(ad_group_source, content_ad_source, batch):
+def _get_content_ad_dict(ad_group_source, content_ad_source):
     if ad_group_source.source.update_tracking_codes_on_content_ads() and\
             ad_group_source.can_manage_content_ads:
         ad_group_tracking_codes = ad_group_source.ad_group.get_current_settings().get_tracking_codes()
@@ -228,10 +225,10 @@ def _get_content_ad_dict(ad_group_source, content_ad_source, batch):
         'image_height': content_ad_source.content_ad.image_height,
         'image_hash': content_ad_source.content_ad.image_hash,
         'redirect_id': content_ad_source.content_ad.redirect_id,
-        'display_url': batch.display_url,
-        'brand_name': batch.brand_name,
-        'description': batch.description,
-        'call_to_action': batch.call_to_action,
+        'display_url': content_ad_source.content_ad.display_url,
+        'brand_name': content_ad_source.content_ad.brand_name,
+        'description': content_ad_source.content_ad.description,
+        'call_to_action': content_ad_source.content_ad.call_to_action,
         'tracking_slug': ad_group_source.source.tracking_slug,
         'tracker_urls': content_ad_source.content_ad.tracker_urls
     }

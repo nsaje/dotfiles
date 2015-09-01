@@ -13,6 +13,8 @@ import StringIO
 import unicodecsv
 import slugify
 
+from collections import OrderedDict
+
 from django.db import transaction
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -284,6 +286,8 @@ class AccountRestore(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         account.restore(request)
 
+        actionlog.sync.AccountSync(account).trigger_all(self.request)
+
         return self.create_api_response({})
 
 
@@ -308,6 +312,8 @@ class CampaignRestore(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign.restore(request)
 
+        actionlog.sync.CampaignSync(campaign).trigger_all(self.request)
+
         return self.create_api_response({})
 
 
@@ -331,6 +337,8 @@ class AdGroupRestore(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         ad_group.restore(request)
+
+        actionlog.sync.AdGroupSync(ad_group).trigger_all(self.request)
 
         return self.create_api_response({})
 
@@ -634,29 +642,35 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
             raise exc.ValidationError(errors=form.errors)
 
         batch_name = form.cleaned_data['batch_name']
-        display_url = form.cleaned_data['display_url']
-        brand_name = form.cleaned_data['brand_name']
-        description = form.cleaned_data['description']
-        call_to_action = form.cleaned_data['call_to_action']
         content_ads = form.cleaned_data['content_ads']
+        display_url = form.cleaned_data['display_url']
+
+        # we could have passed form.cleaned_data around, 
+        # but it's better to have a version that is more predictable
+        upload_form_cleaned_fields = {
+            'display_url': form.cleaned_data['display_url'],
+            'brand_name': form.cleaned_data['brand_name'],
+            'description': form.cleaned_data['description'],
+            'call_to_action': form.cleaned_data['call_to_action'],
+        }
 
         batch = models.UploadBatch.objects.create(
             name=batch_name,
-            display_url=display_url,
-            brand_name=brand_name,
-            description=description,
-            call_to_action=call_to_action,
             processed_content_ads=0,
-            batch_size=len(content_ads)
+            batch_size=len(content_ads),
+            display_url = upload_form_cleaned_fields['display_url'],
+            brand_name = upload_form_cleaned_fields['brand_name'],
+            description = upload_form_cleaned_fields['description'],
+            call_to_action = upload_form_cleaned_fields['call_to_action'],
         )
 
         current_settings = ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
 
-        new_settings.display_url = display_url
-        new_settings.brand_name = brand_name
-        new_settings.description = description
-        new_settings.call_to_action = call_to_action
+        new_settings.display_url = upload_form_cleaned_fields['display_url']
+        new_settings.brand_name = upload_form_cleaned_fields['brand_name']
+        new_settings.description = upload_form_cleaned_fields['description']
+        new_settings.call_to_action = upload_form_cleaned_fields['call_to_action']
 
         new_settings.save(request)
 
@@ -664,6 +678,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
             content_ads,
             request.FILES['content_ads'].name,
             batch,
+            upload_form_cleaned_fields,
             ad_group,
             request
         )
@@ -854,6 +869,13 @@ class AdGroupContentAdState(api_common.BaseApiView):
         return self.create_api_response()
 
 
+CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict([
+                        ['url', 'url'],
+                        ['title', 'title'],
+                        ['image_url', 'image_url'],
+                        ['description', 'description (optional)'],
+                    ])
+
 class AdGroupContentAdCSV(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
     def get(self, request, ad_group_id):
@@ -865,7 +887,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
         except exc.MissingDataError, e:
             email = request.user.email
             if email == settings.DEMO_USER_EMAIL or email in settings.DEMO_USERS:
-                content_ad_dicts = [{ 'url': '', 'title': '', 'image_url': '' }]
+                content_ad_dicts = [{ 'url': '', 'title': '', 'image_url': '', 'description': ''}]
                 content = self._create_content_ad_csv(content_ad_dicts)
                 return self.create_csv_response('contentads', content=content)
             raise e
@@ -889,11 +911,22 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
 
         content_ad_dicts = []
         for content_ad in content_ads:
-            content_ad_dicts.append({
+            content_ad_dict = {
                 'url': content_ad.url,
                 'title': content_ad.title,
                 'image_url': content_ad.get_original_image_url(),
-            })
+                'display_url': content_ad.display_url,
+                'brand_name': content_ad.brand_name,
+                'description': content_ad.description,
+                'call_to_action': content_ad.call_to_action,
+            }
+            
+            # delete keys that are not to be exported
+            for k in content_ad_dict.keys():
+                if k not in CSV_EXPORT_COLUMN_NAMES_DICT.keys():
+                    del content_ad_dict[k]
+                    
+            content_ad_dicts.append(content_ad_dict)
 
         filename = '{}_{}_{}_content_ads'.format(
             slugify.slugify(ad_group.campaign.account.name),
@@ -907,8 +940,10 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
     def _create_content_ad_csv(self, content_ads):
         string = StringIO.StringIO()
 
-        writer = unicodecsv.DictWriter(string, ['url', 'title', 'image_url'])
-        writer.writeheader()
+        writer = unicodecsv.DictWriter(string, CSV_EXPORT_COLUMN_NAMES_DICT.keys())
+
+        # write the header manually as it is different than keys in the dict
+        writer.writerow(CSV_EXPORT_COLUMN_NAMES_DICT)
 
         for row in content_ads:
             writer.writerow(row)

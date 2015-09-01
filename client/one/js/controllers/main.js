@@ -5,6 +5,7 @@ oneApp.controller('MainCtrl',
      '$location',
      '$document',
      '$q',
+     '$modalStack',
      'zemMoment',
      'user',
      'zemUserSettings',
@@ -12,21 +13,21 @@ oneApp.controller('MainCtrl',
      'api',
      'zemFilterService',
      'zemFullStoryService',
-     function (
-         $scope,
-         $state,
-         $location,
-         $document,
-         $q,
-         zemMoment,
-         user,
-         zemUserSettings,
-         accounts,
-         api,
-         zemFilterService,
-         zemFullStoryService
-     ) {
-    var userActions = [];
+      function (
+        $scope,
+        $state,
+        $location,
+          $document,
+          $q,
+        $modalStack,
+        zemMoment,
+        user,
+        zemUserSettings,
+        accounts,
+        api,
+        zemFilterService,
+        zemFullStoryService
+) {
     $scope.accounts = accounts;
     $scope.user = user;
     $scope.currentRoute = $scope.current;
@@ -34,31 +35,7 @@ oneApp.controller('MainCtrl',
     $scope.maxDate = zemMoment();
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
 
-    $scope.remindToAddBudget = $q.defer();
-    $scope.addUserAction = function (action, account, campaign, adgroup) {
-        userActions.push({
-            action: action, account: account, campaign: campaign, adGroup: adgroup
-        });
-    };
-    $scope.filterUserActions = function (conditions, groupBy) {
-        var valid = groupBy ? {} : [];
-        angular.forEach($scope.userActions, function (obj) {
-            var ok = true;
-            angular.forEach(conditions, function (val, key) {
-                if (obj[key] != val) {
-                    ok = false;
-                }
-            });
-            if (!ok) { return; }
-            if (groupBy) {
-                if (!valid[obj[groupBy]]) { valid[obj[groupBy]] = []; }
-                valid[obj[groupBy]].push(obj);
-            } else {
-                valid.push(obj);
-            }
-        });
-        return valid;
-    };      
+    $scope.remindToAddBudget = $q.defer(); 
 
     $scope.adGroupData = {};
     $scope.account = null;
@@ -315,11 +292,18 @@ oneApp.controller('MainCtrl',
     $document.bind('keyup', function (e) {
         if (e) {
             if (String.fromCharCode(e.keyCode).toLowerCase() === 'f') {
+                // nav search shortcut
                 var el = $('#nav-search .select2-container');
 
                 if (document.activeElement.tagName.toLowerCase() === 'input' ||
                     document.activeElement.tagName.toLowerCase() === 'select' ||
                     document.activeElement.tagName.toLowerCase() === 'textarea') {
+                    // input element in focus
+                    return;
+                }
+
+                if (!!$modalStack.getTop()) {
+                    // some modal window exists
                     return;
                 }
 
@@ -338,7 +322,7 @@ oneApp.controller('MainCtrl',
             $location.search('end_date', $scope.dateRange.endDate ? $scope.dateRange.endDate.format('YYYY-MM-DD') : null);
         }
     });
-
+ 
     $scope.getShowArchived = function () {
         return zemFilterService.getShowArchived();
     };

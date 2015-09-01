@@ -717,20 +717,12 @@
 -   fields:
         name: 'batch 1'
         created_dt: '2015-02-23T00:00:00'
-        display_url: 'example.com'
-        brand_name: 'Example'
-        description: 'Example description'
-        call_to_action: 'Call to action'
     model: dash.uploadbatch
     pk: 1
 
 -   fields:
         name: 'batch 2'
         created_dt: '2015-02-23T00:00:00'
-        display_url: 'example.com'
-        brand_name: 'Example'
-        description: 'Example description'
-        call_to_action: 'Call to action'
     model: dash.uploadbatch
     pk: 2
 
@@ -749,6 +741,10 @@
         redirect_id: 'abc'
         created_dt: '2015-02-21T00:00:00'
         state: 1
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
     model: dash.contentad
     pk: 1
 
@@ -764,6 +760,10 @@
         redirect_id: 'abc'
         created_dt: '2015-02-21T00:00:01'
         state: 2
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
     model: dash.contentad
     pk: 2
 
@@ -778,6 +778,10 @@
         ad_group: 1
         created_dt: '2015-02-23T00:00:00'
         state: 2
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
     model: dash.contentad
     pk: 3
 
@@ -792,6 +796,10 @@
         ad_group: 2
         created_dt: '2015-02-21T00:00:00'
         state: 2
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
     model: dash.contentad
     pk: 4
 
@@ -806,6 +814,10 @@
         ad_group: 2
         created_dt: '2015-02-21T00:00:00'
         state: 2
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
     model: dash.contentad
     pk: 5
 

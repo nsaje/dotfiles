@@ -231,6 +231,18 @@ class SourceType(ConstantBase):
     }
 
 
+class ConversionPixelStatus(ConstantBase):
+    ACTIVE = 1
+    INACTIVE = 2
+    NOT_USED = 3
+
+    _VALUES = {
+        NOT_USED: 'Not used',
+        INACTIVE: 'Inactive',
+        ACTIVE: 'Active',
+    }
+
+
 class UploadBatchStatus(ConstantBase):
     DONE = 1
     FAILED = 2

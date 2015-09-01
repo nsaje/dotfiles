@@ -4,6 +4,7 @@ import re
 import unicodecsv
 import dateutil.parser
 import rfc3987
+from collections import Counter
 from decimal import Decimal
 
 import utils.string_helper
@@ -243,6 +244,25 @@ class AccountAgencySettingsForm(forms.Form):
         return sales_representative
 
 
+
+
+def validate_lower_case_only(st):
+    if re.search(r'[^a-z]+', st):
+        raise forms.ValidationError(message='Please use only lower case letters for unique identifier.')
+
+
+class ConversionPixelForm(forms.Form):
+    slug = forms.CharField(
+        max_length=32,
+        required=True,
+        validators=[validate_lower_case_only],
+        error_messages={
+            'required': 'Please specify a unique identifier.',
+            'max_length': 'Unique identifier is too long (%(show_value)d/%(limit_value)d).',
+        }
+    )
+
+
 class CampaignAgencyForm(forms.Form):
     id = forms.IntegerField()
     account_manager = forms.IntegerField()
@@ -339,6 +359,23 @@ class UserForm(forms.Form):
     )
 
 
+DISPLAY_URL_MAX_LENGTH = 25
+MANDATORY_CSV_FIELDS = ['url', 'title', 'image_url']
+OPTIONAL_CSV_FIELDS = ['crop_areas', 'tracker_urls', 'display_url', 'brand_name', 'description', 'call_to_action']
+
+class DisplayURLField(forms.URLField):
+    def clean(self, value):
+        display_url = super(forms.URLField, self).clean(value)
+        display_url = display_url.strip()
+        display_url = re.sub(r'^https?://', '', display_url)
+        display_url = re.sub(r'/$', '', display_url)
+
+        validate_length = validators.MaxLengthValidator(DISPLAY_URL_MAX_LENGTH, message = self.error_messages['max_length'])
+        validate_length(display_url)
+
+        return display_url
+
+
 class AdGroupAdsPlusUploadForm(forms.Form):
     content_ads = forms.FileField(
         error_messages={'required': 'Please choose a file to upload.'}
@@ -351,51 +388,43 @@ class AdGroupAdsPlusUploadForm(forms.Form):
             'max_length': 'Batch name is too long (%(show_value)d/%(limit_value)d).'
         }
     )
-    display_url = forms.URLField(
-        required=True  # max length is validated in clean_display_url
+    display_url = DisplayURLField(
+        required=True,
+        label="Display URL",
+        # max_length is should be validated _after_ http:// has been stripped out
+        # that's why it is validated in DisplayURLField.clean() and max_length isn't set here
+        error_messages={
+            'invalid': 'Display URL is invalid.',
+            'max_length': 'Display URL is too long (%(show_value)d/%(limit_value)d).'
+        }
     )
     brand_name = forms.CharField(
-        max_length=25,
         required=True,
+        max_length=25,
+        label="Brand name",
         error_messages={
             'max_length': 'Brand name is too long (%(show_value)d/%(limit_value)d).'
         }
     )
     description = forms.CharField(
-        max_length=140,
         required=True,
+        max_length=140,
+        label="Description",
         error_messages={
             'max_length': 'Description is too long (%(show_value)d/%(limit_value)d).'
-        }
+        } 
     )
     call_to_action = forms.CharField(
-        max_length=25,
         required=True,
+        label="Call to action",
+        max_length=25,
         error_messages={
             'max_length': 'Call to action is too long (%(show_value)d/%(limit_value)d).'
         }
     )
 
-    def clean_display_url(self):
-        display_url = self.cleaned_data['display_url']
-        display_url = display_url.strip()
-        display_url = re.sub(r'^https?://', '', display_url)
-        display_url = re.sub(r'/$', '', display_url)
 
-        validate_length = validators.MaxLengthValidator(25)
-
-        try:
-            # this try except is used to set custom message
-            # in case validation fails (django 1.7 does not
-            # support setting message on MaxLengthValidator
-            # - this is fixed in django 1.8)
-            validate_length(display_url)
-        except forms.ValidationError:
-            raise forms.ValidationError('Display URL is too long ({}/25).'.format(len(display_url)))
-
-        return display_url
-
-    def _get_header(self, lines):
+    def _get_csv_header(self, lines):
         reader = unicodecsv.reader(lines)
 
         try:
@@ -403,27 +432,40 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         except StopIteration:
             raise forms.ValidationError('Uploaded file is empty.')
 
-    def _get_fields(self, header):
-        fields = [col.strip().lower().replace(' ', '_') for col in header]
+    def _get_csv_column_names(self, header):
+        # this function maps original CSV column names to internal, normalized ones that are then used across the application
+        column_names = [col.strip(" _").lower().replace(' ', '_')  for col in header]
 
-        if fields[0] != 'url':
+        if column_names[0] != 'url':
             raise forms.ValidationError('First column in header should be URL.')
 
-        if fields[1] != 'title':
+        if column_names[1] != 'title':
             raise forms.ValidationError('Second column in header should be Title.')
 
-        if fields[2] != 'image_url':
+        if column_names[2] != 'image_url':
             raise forms.ValidationError('Third column in header should be Image URL.')
+        
 
-        if len(fields) > 3 and fields[3] not in ['crop_areas', 'tracker_urls']:
-            raise forms.ValidationError('Fourth column in header should be Crop areas or Tracker URLs.')
+        for n, field in enumerate(column_names):
+            # We accept "(optional)" in the names of optional columns.
+            # That's how those columns are presented in our csv template (that user can download)
+            # If the user downloads the template, fills it in and uploades, it immediately works.
+            field = re.sub("_*\(optional\)", "", field)
+            # accept both variants
+            if field == "tracker_url":
+                field = "tracker_urls"
+            if n >= 3 and field not in OPTIONAL_CSV_FIELDS:
+                raise forms.ValidationError('Unrecognized column name "{0}".'.format(header[n]))
+            column_names[n] = field
 
-        if len(fields) > 4 and fields[4] not in ['crop_areas', 'tracker_urls']:
-            raise forms.ValidationError('Fifth column in header should be Crop areas or Tracker URLs.')
+        # Make sure each column_name appears only once
+        for column_name, count in Counter(column_names).iteritems():
+            if count > 1:	
+                raise forms.ValidationError("Column \"{0}\" appears multiple times ({1}) in the CSV file.".format(column_name, count))
 
-        return fields
+        return column_names
 
-    def _get_content_ad_data(self, reader):
+    def _get_csv_content_ad_data(self, reader):
         next(reader)  # ignore header
 
         count_rows = 0
@@ -475,11 +517,11 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         # try all supported encodings one by one
         for encoding in encodings:
             try:
-                header = self._get_header(lines)
-                fields = self._get_fields(header)
+                header = self._get_csv_header(lines)
+                self.csv_column_names = self._get_csv_column_names(header)	# we save self.csv_column_names to be used by form-wide clean()
 
-                reader = unicodecsv.DictReader(lines, fields, encoding=encoding)
-                data = self._get_content_ad_data(reader)
+                reader = unicodecsv.DictReader(lines, self.csv_column_names, encoding=encoding)
+                data = self._get_csv_content_ad_data(reader)
                 break
             except unicodecsv.Error:
                 raise forms.ValidationError('Uploaded file is not a valid CSV file.')
@@ -490,3 +532,23 @@ class AdGroupAdsPlusUploadForm(forms.Form):
             raise forms.ValidationError('Unknown file encoding.')
 
         return data
+
+    # we validate form as a whole after all fields have been validated to see 
+    # if the fields that are submitted as empty in the form are specified in CSV as columns
+    def clean(self):
+        cleaned_data = super(AdGroupAdsPlusUploadForm, self).clean()
+        
+        if self.errors:
+            return
+        
+        # after individual fields are validated we need to check if CSV has columns for the ones 
+        # that are submitted empty. We take an advantage of the fact that fields of this form 
+        # have exactly the same names as normalized names of csv columns
+        for column_and_field_name in ['display_url', 'brand_name', 'description', 'call_to_action']:
+            if not self.cleaned_data.get(column_and_field_name): 	# if field is empty in the form
+                if column_and_field_name not in self.csv_column_names:	# and is not present as a CSV column 
+                    self.add_error(column_and_field_name, forms.ValidationError("{0} has to be present here or as a column in CSV.".format(self.fields[column_and_field_name].label)))
+            
+
+
+
