@@ -39,7 +39,6 @@ import actionlog.zwei_actions
 
 from dash import models
 from dash import constants
-from dash import regions
 from dash import api
 from dash import forms
 from dash import upload
@@ -1032,3 +1031,19 @@ def oauth_redirect(request, source_name):
         credentials.save()
 
     return redirect(reverse('admin:dash_sourcecredentials_change', args=(credentials.id,)))
+
+
+def sharethrough_approval(request):
+    data = json.loads(request.body)
+    content_ad_source = models.ContentAdSource.objects.get(content_ad_id=data['crid'],
+                                                           source=models.Source.objects.get(name='Sharethrough'))
+
+    if data['status'] == 0:
+        content_ad_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
+    else:
+        content_ad_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
+        content_ad_source.submission_errors = constants.SharethroughApprovalStatus.get_text(data['status'])
+
+    content_ad_source.save()
+
+    return HttpResponse('OK')
