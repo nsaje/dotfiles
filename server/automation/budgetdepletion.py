@@ -87,16 +87,13 @@ def _get_active_campaigns_subset(campaigns):
 
 
 def _send_depleted_budget_notification_email(campaign_name, campaign_url, account_name, email):
-    body = u'''<p>Hi account manager of {camp}</p>
-<p>
-We'd like to notify you that campaign {camp}, {account}
-is about to run out of available budget.
-Please check <a href="{camp_url}">{camp_url}</a> for details.
-</p>
-<p>
-Yours truly,<br/>
+    body = u'''Hi account manager of {camp}
+
+We'd like to notify you that campaign {camp}, {account} is about to run out of available budget.
+Please check {camp_url} for details.
+
+Yours truly,
 Zemanta
-</p>
     '''
     body = body.format(
         camp=campaign_name,

@@ -64,3 +64,15 @@
         name: 'test adgroup 1'
     model: dash.adgroup
     pk: 1
+
+# test conversion pixel
+
+-   fields:
+        account: 1
+        slug: 'test'
+        archived: false
+        status: 3
+        last_verified_dt: null
+        created_dt: '2015-08-25T09:58:21'
+    model: dash.conversionpixel
+    pk: 1

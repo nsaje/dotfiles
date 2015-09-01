@@ -1248,6 +1248,7 @@ class UploadBatch(models.Model):
     description = models.CharField(max_length=140, blank=True, default='')
     call_to_action = models.CharField(max_length=25, blank=True, default='')
 
+
     processed_content_ads = models.PositiveIntegerField(null=True)
     batch_size = models.PositiveIntegerField(null=True)
 
@@ -1258,6 +1259,10 @@ class UploadBatch(models.Model):
 class ContentAd(models.Model):
     url = models.CharField(max_length=2048, editable=False)
     title = models.CharField(max_length=256, editable=False)
+    display_url = models.CharField(max_length=25, blank=True, default='')
+    brand_name = models.CharField(max_length=25, blank=True, default='')
+    description = models.CharField(max_length=140, blank=True, default='')
+    call_to_action = models.CharField(max_length=25, blank=True, default='')
 
     ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT)
     batch = models.ForeignKey(UploadBatch, on_delete=models.PROTECT)
@@ -1458,6 +1463,19 @@ class CampaignBudgetSettings(models.Model):
     class Meta:
         get_latest_by = 'created_dt'
         ordering = ('-created_dt',)
+
+
+class ConversionPixel(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.PROTECT)
+    slug = models.CharField(blank=False, null=False, max_length=32)
+    status = models.IntegerField(default=constants.ConversionPixelStatus.NOT_USED,
+                                 choices=constants.ConversionPixelStatus.get_choices())
+    last_verified_dt = models.DateTimeField(null=True, verbose_name='Last verified on')
+    archived = models.BooleanField(default=False)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created on')
+
+    class Meta:
+        unique_together = ('slug', 'account')
 
 
 class DemoAdGroupRealAdGroup(models.Model):
