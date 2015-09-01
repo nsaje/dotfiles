@@ -722,7 +722,7 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
             raise exc.MissingDataException()
 
         response_data = {'status': batch.status, 'count': batch.processed_content_ads, 'all': batch.batch_size}
-
+        
         if batch.status == constants.UploadBatchStatus.FAILED:
             if batch.error_report_key:
                 text = '{} error{}. <a href="{}">Download Report.</a>'.format(

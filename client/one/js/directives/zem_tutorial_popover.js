@@ -13,6 +13,9 @@ oneApp.directive('zemTutorialPopover', ['$compile', '$timeout', function($compil
                         element.on('click', function(e) {
                             element.trigger('closeTutorial');
                         });
+                        element.parent().on('click', '.popover', function (e) {
+                            element.trigger('closeTutorial');
+                        });
                     };
 
                 if (!scope.user.showOnboardingGuidance) { return; }
@@ -35,7 +38,6 @@ oneApp.directive('zemTutorialPopover', ['$compile', '$timeout', function($compil
                 $timeout(function () {
                     if (condition) {
                         scope.$eval(condition).then(function (promisedCondition) {
-                            console.log('promise condition', promisedCondition)
                             if (promisedCondition) { openPopover(); }
                         });
                     } else {
