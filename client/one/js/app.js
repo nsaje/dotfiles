@@ -196,9 +196,11 @@ oneApp.run(['$state', '$rootScope', '$location', 'config', function($state, $roo
 
     $rootScope.tabClick = function(event) {
         // Function to fix opening tabs in new tab when clicking with the middle button
+        // This is effectively a workaround for a bug in bootstrap-ui
         if (event.which === 2 || (event.which ===1 && (event.metaKey || event.ctrlKey))) {
            // MIDDLE CLICK or CMD+LEFTCLICK
            // the regular link will open in new tab if we stop the event propagation
+           event.stopPropagation();
         }
     }
     
