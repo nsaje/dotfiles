@@ -42,8 +42,10 @@ def sum_contentadstats():
     cursor = _get_cursor()
     cursor.execute(query, [])
 
+    result = dictfetchall(cursor)
+
     cursor.close()
-    return dictfetchall(cursor)
+    return result[0]
 
 
 def _get_cursor():
