@@ -3,9 +3,12 @@ from reports.db_raw_helpers import dictfetchall
 
 from django.db import connections
 
+from utils.statsd_helper import statsd_timer
+
 STATS_DB_NAME = 'stats'
 
 
+@statsd_timer('reports.redshift', 'delete_contentadstats')
 def delete_contentadstats(date, ad_group_id, source_id):
     cursor = _get_cursor()
 
@@ -20,6 +23,7 @@ def delete_contentadstats(date, ad_group_id, source_id):
     cursor.close()
 
 
+@statsd_timer('reports.redshift', 'insert_contentadstats')
 def insert_contentadstats(rows):
     if not rows:
         return
@@ -36,6 +40,7 @@ def insert_contentadstats(rows):
     cursor.close()
 
 
+@statsd_timer('reports.redshift', 'sum_contentadstats')
 def sum_contentadstats():
     query = 'SELECT SUM(impressions) as impressions, SUM(visits) as visits FROM contentadstats'
 
@@ -46,6 +51,16 @@ def sum_contentadstats():
 
     cursor.close()
     return result[0]
+
+
+@statsd_timer('reports.redshift', 'vacuum_contentadstats')
+def vacuum_contentadstats():
+    query = 'VACUUM FULL contentadstats'
+
+    cursor = _get_cursor()
+    cursor.execute(query, [])
+
+    cursor.close()
 
 
 def _get_cursor():

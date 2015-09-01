@@ -64,3 +64,13 @@ class RedshiftTest(TestCase):
 
         query = 'SELECT SUM(impressions) as impressions, SUM(visits) as visits FROM contentadstats'
         mock_cursor.execute.assert_called_with(query, [])
+
+    def test_vacuum_contentadstats(self, mock_get_cursor):
+        mock_cursor = Mock()
+        mock_get_cursor.return_value = mock_cursor
+
+        redshift.vacuum_contentadstats()
+
+        query = 'VACUUM FULL contentadstats'
+
+        mock_cursor.execute.assert_called_with(query, [])
