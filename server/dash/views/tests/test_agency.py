@@ -755,3 +755,35 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(campaign.name, 'test campaign 2')
         self.assertEqual(settings.goal_quantity, 10)
         self.assertEqual(settings.campaign_goal, 2)
+
+    def test_validation(self):
+        response = self.client.put(
+            '/api/campaigns/1/settings/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'name': 'test campaign 2',
+                    'campaign_goal': 2,
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+        self.assertTrue('goal_quantity' in content['data']['errors'])
+        self.assertFalse(content['success'])
+
+        response = self.client.put(
+            '/api/campaigns/1/settings/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'name': 'test campaign 2',
+                    'campaign_goal': 50,
+                    'goal_quantity': 10,
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+        self.assertFalse(content['success'])
+        self.assertTrue('campaign_goal' in content['data']['errors'])
