@@ -133,9 +133,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                     adGroupToEdit.name = data.settings.name;
                     adGroupToEdit.state = data.settings.state === stateActive ? 'enabled' : 'paused';
                 } else {
-                    
-
-                    
                     $scope.settings = data.settings;
                     $scope.actionIsWaiting = data.actionIsWaiting;
                     
