@@ -50,11 +50,13 @@ STAGING_SERVERS = {
 PRODUCTION_SERVERS = {
     'knot01': 'knot01.zemanta.com',
     'knot02': 'knot02.zemanta.com',
+    'knot03': 'knot03.zemanta.com',
 }
 
 GIT_REPOSITORY = 'git@github.com:Zemanta/zemanta-eins.git'
 DEFAULT_BRANCH = 'master'
 
+DOCKER_HOSTS = ('knot03.zemanta.com', )
 
 DEPLOYER_REQUIREMENTS = [
     ['virtualenvwrapper==4.3'],
@@ -136,6 +138,12 @@ def deploy(*args):
         abort("Unknown apps!")
 
     post_to_slack('Deploying: ' + ', '.join(apps))
+
+    if env.host in DOCKER_HOSTS and "server" in apps:
+        print header("\n\n\t~~~~~~~~~~~~ Deploying server@%s ~~~~~~~~~~~~" % (env.host, ))
+        run('/home/one/deploy.sh')
+        print ok("Server successfully deployed at %s" % (env.host, ))
+        return
         
     params = {}
     clone_code(params)
@@ -516,6 +524,9 @@ def deploy_angular_app(app, params):
 
 @parallel
 def deploy_cron_jobs(params):
+    if env.host in DOCKER_HOSTS:
+        return
+
     # with cd(params['app_folder']):
     cron_yaml_path = os.path.join(params['tmp_folder_git'], 'cron.yaml')
     with open(cron_yaml_path, 'r') as f:
@@ -529,6 +540,11 @@ def deploy_cron_jobs(params):
 
 
 def real_migrate(app, params):
+    if env.host in DOCKER_HOSTS and app == "server":
+        run('/home/one/migration.sh')
+        print ok("%s successfully migrated %s" % (app.capitalize(), env.host))
+        return
+    
     print task("Create virtualenv [%s@%s]" % (app, env.host))
     create_virtualenv(app, params)
 
