@@ -4,48 +4,57 @@
 oneApp.directive('zemLazyPopover', ['$http', '$templateCache', '$compile', '$parse', '$timeout', '$position', '$document', function($http, $templateCache, $compile, $parse, $timeout, $position, $document) {
     // zem-lazy-popover = path to template
     // zem-lazy-popover-placement = top/bottom/left/right
-    // popover-updater = scope item to watch (optional)
 
     return {
         restrict: 'A',
-        scope: false,
+//        scope: { animation: '&', isOpen: '&' },
 //        transclude: true,
         compile: function (tElem, tAttrs) {
             return function (scope, element, attrs) {
                 var appendToBody = false;
                 var ttScope = null;
                 var tooltip = null;
+
                 var positionTooltip = function () {
                   if (!tooltip) { return; }
-
                   var ttPosition = $position.positionElements(element, tooltip, ttScope.placement, ttScope.appendToBody);
                   ttPosition.top += 'px';
                   ttPosition.left += 'px';
-
                   // Now set the calculated positioning.
                   tooltip.css( ttPosition );
                 };
-                element.on("mouseleave", function() {
-                    if (tooltip) {
-                        tooltip.remove();
-                        tooltip = null;
-                    }
+
+                var hide = function() {
+                    // We don't even try hiding it, just removing it.
                     if (ttScope) {
                         ttScope.$destroy();
                         ttScope = null;
                     }
-                });
-                element.on("mouseenter", function() {
                     if (tooltip) {
+                        tooltip.remove();
+                        tooltip = null;
+                    }
+                };
+                
+                
+                
+                element.on("mouseenter", function() {
+                    if (ttScope) {
                         return
                     }
+                    ttScope = scope.$new(false);
                     var templateUrl = attrs.zemLazyPopover;
-                    console.log("TU", templateUrl);
                     $http.get(templateUrl, {cache: $templateCache })
                         .success(function (content) {
-                            ttScope = scope.$new(false);
+                            if (!ttScope) {
+                                // Mouseleave might have happened already
+                                return;
+                            }
                             ttScope.placement = angular.isDefined(attrs.zemLazyPopoverPlacement) ? attrs.zemLazyPopoverPlacement : "";
                             ttScope.appendToBody = angular.isDefined(attrs.zemLazyPopoverAppendToBody) ? scope.$parent.$eval(attrs.zemLazyPopoverAppendToBody) : false;
+//                            ttScope.animation = angular.isDefined(attrs.zemLazyPopoverAnimation) ? scope.$parent.$eval(attrs.zemLazyPopoverAnimation) : false;
+ //                           ttScope.animation = true;
+                            ttScope.isOpen = true;
 //                            console.log(content);
                             tooltip = $compile(content)(ttScope, function (tooltip) {
                                 // Place it somewhere out of view, so we can render & get the size first
@@ -57,9 +66,13 @@ oneApp.directive('zemLazyPopover', ['$http', '$templateCache', '$compile', '$par
                                 }
                                 $timeout(function () {
 //                                  console.log(tooltip);
-//                                  console.log(tooltip[0].outerHTML);
-                                  positionTooltip();
+                                  console.log(tooltip[0].outerHTML);
+                                    positionTooltip();
                                 });
+                                element.on("mouseleave", hide);
+                                scope.$on("$locationChangeSuccess", hide);
+                                scope.$on("$destroy", hide);
+
                             });
                             
 
