@@ -748,11 +748,11 @@ class AccountAgency(api_common.BaseApiView):
                 'value': str(new_settings.archived)
             }),
             ('default_account_manager', {
-                'name': 'Account Manager',
+                'name': 'Default Account Manager',
                 'value': helpers.get_user_full_name_or_email(new_settings.default_account_manager)
             }),
             ('default_sales_representative', {
-                'name': 'Sales Representative',
+                'name': 'Default Sales Representative',
                 'value': helpers.get_user_full_name_or_email(new_settings.default_sales_representative)
             }),
         ])

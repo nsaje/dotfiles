@@ -658,7 +658,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 contentAdsNotLoaded.resolve($scope.rows.length == 0);
             },
             function(data) {
-                contentAdsNotLoaded.resolve(true);
                 // error
                 return;
             }
