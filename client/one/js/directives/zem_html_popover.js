@@ -15,33 +15,23 @@ oneApp.directive('zemHtmlPopover', ['$http', '$templateCache', '$compile', '$par
             return function (scope, element, attrs) {
                 var templateUrl = $parse(attrs.zemHtmlPopover)(scope);
                 scope.popover = " ";
-                var unwatch_function = null
-                var skipme = 0
-                var compiled = null
-                compiled = $compile(element);
 
                 function loadTemplate() {
-                    var to_run = compiled;
-                   compiled(scope);
-//                    compiled = $compile(element)(scope);
-                    if (!to_run) { 
-                            $timeout(function () {
-                        compiled.triggerHandler('mouseenter');
-                        });
-                    }
                     $http.get(templateUrl, {cache: $templateCache })
                         .success(function (content) {
                             var container = $('<div/>');
                             container.html($compile(content.trim())(scope));
                             $timeout(function () {
                                 scope.popover = container.html();
-                           });
+                            });
                         });
                 }
-                
+
                 element.removeAttr('zem-html-popover');
+                $compile(element)(scope);
 
                 if (angular.isDefined(attrs.popoverUpdater)) {
+                    var unwatch_function = null
                     // We only start watching on first mouseenter
                     element.on("mouseenter", function () {
                         loadTemplate();
@@ -51,14 +41,12 @@ oneApp.directive('zemHtmlPopover', ['$http', '$templateCache', '$compile', '$par
                             });
                         }
                     });
-                    /*element.on("mouseleave", function() {
+                    element.on("mouseleave", function() {
                         unwatch_function();
                         unwatch_function = null;
-                    });*/
+                    });
                 } else {
-                    unwatch_function = element.on("mouseenter", loadTemplate);
-
-                    element.on("mouseleave", function() {scope.popover = null; });
+                    element.on("mouseenter", loadTemplate);
                 }
             };
         }
