@@ -24,9 +24,12 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
                             $scope.isInProgress = false;
                             $modalInstance.close();
 
-                            api.campaignBudget.get($scope.campaign.id).then(function (data) {
-                                $scope.remindToAddBudget.resolve(data.available <= 0);
-                            });
+                            if ($scope.user.showOnboardingGuidance) {
+                                api.campaignBudget.get($scope.campaign.id).then(function (data) {
+                                    $scope.remindToAddBudget.resolve(data.available <= 0);
+                                });
+                            }
+                            
                         } else if (data.status === constants.uploadBatchStatus.FAILED) {
                             $scope.isInProgress = false;
                             $scope.errors = data.errors;
