@@ -214,12 +214,13 @@ class CampaignAgency(api_common.BaseApiView):
         return self.create_api_response(response)
 
     @classmethod
-    @transaction.atomic
     def propagate_and_save(cls, campaign, settings, request):
         actions = []
 
-        campaign.save(request)
-        settings.save(request)
+        with transaction.atomic():
+            campaign.save(request)
+            settings.save(request)
+        
         # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
         campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
 
