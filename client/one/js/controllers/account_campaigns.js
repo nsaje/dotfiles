@@ -1,5 +1,5 @@
 /*globals oneApp,constants,moment*/
-oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$state', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($window, $location, $scope, $state, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
+oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$state', '$timeout', '$q', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($window, $location, $scope, $state, $timeout, $q, api, zemCustomTableColsService, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
     $scope.getTableDataRequestInProgress = false;
     $scope.addCampaignRequestInProgress = false;
     $scope.isSyncInProgress = false;
@@ -16,7 +16,12 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     $scope.order = '-cost';
     $scope.isIncompletePostclickMetrics = false;
 
-    var userSettings = zemUserSettings.getInstance($scope, 'accountCampaigns');
+    var userSettings = zemUserSettings.getInstance($scope, 'accountCampaigns'),
+        canShowAddCampaignTutorial = $q.defer();
+
+    $scope.showAddCampaignTutorial = function () {
+        return canShowAddCampaignTutorial.promise;
+    };
 
     $scope.exportOptions = [
         {name: 'By Day (CSV)', value: 'csv'},
@@ -247,20 +252,23 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         $scope.addCampaignRequestInProgress = true;
 
         api.accountCampaigns.create(accountId).then(
-            function (data) {
+            function (campaignData) {
                 $scope.accounts.forEach(function (account) {
                     if (account.id.toString() === accountId.toString()) {
                         account.campaigns.push({
-                            id: data.id,
-                            name: data.name,
+                            id: campaignData.id,
+                            name: campaignData.name,
                             adGroups: []
                         });
 
                         if ($window.isDemo) {
-                            $state.go('main.campaigns.ad_groups', {id: data.id});
+                            $state.go('main.campaigns.ad_groups', {id: campaignData.id});
+                        } else if ($scope.user.showOnboardingGuidance) {
+                            $state.go('main.campaigns.settings', {id: campaignData.id});
                         } else {
-                            $state.go('main.campaigns.agency', {id: data.id});
+                            $state.go('main.campaigns.agency', {id: campaignData.id});
                         }
+                        
 
                     }
                 });
@@ -382,6 +390,12 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
 
                 $scope.dataStatus = data.dataStatus;
                 $scope.selectRows();
+
+                canShowAddCampaignTutorial.resolve($scope.rows.length == 0);
+                if ($scope.user.showOnboardingGuidance) {
+                    $scope.user.automaticallyCreateAdGroup = $scope.rows.length == 0;
+                }
+                
             },
             function (data) {
                 // error

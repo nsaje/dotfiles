@@ -42,6 +42,8 @@ oneApp.controller('MainCtrl',
     $scope.campaign = null;
     $scope.adGroup = null;
 
+    $scope.user.automaticallyCreateAdGroup = false;
+
     $scope.refreshNavData = function (accounts) {
         $scope.accounts = accounts;
     };

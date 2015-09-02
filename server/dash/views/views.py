@@ -626,7 +626,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
                 'display_url': current_settings.display_url,
                 'brand_name': current_settings.brand_name,
                 'description': current_settings.description,
-                'call_to_action': current_settings.call_to_action
+                'call_to_action': current_settings.call_to_action or 'Read More'
             }
         })
 

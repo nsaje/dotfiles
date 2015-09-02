@@ -1,6 +1,7 @@
 /*globals oneApp,constants,options*/
-oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', 'api', 'regions', function ($scope, $state, $q, api, regions) {
-    var freshSettings = $q.defer();
+oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'regions', function ($scope, $state, $q, $timeout, api, regions) {
+    var freshSettings = $q.defer(),
+        goToContentAds = false;
     $scope.settings = {};
     $scope.sourcesWithoutDMASupport = [];
     $scope.actionIsWaiting = false;
@@ -84,6 +85,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', 'api', 'regi
                 setSourcesWithoutDMASupport(data.adGroupSources);
                 $scope.setAdGroupPaused($scope.settings.state === constants.adGroupSettingsState.INACTIVE);
                 freshSettings.resolve(data.settings.name == 'New ad group');
+                goToContentAds = data.settings.name == 'New ad group';
             },
             function (data) {
                 // error
@@ -131,6 +133,9 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', 'api', 'regi
                     adGroupToEdit.name = data.settings.name;
                     adGroupToEdit.state = data.settings.state === stateActive ? 'enabled' : 'paused';
                 } else {
+                    
+
+                    
                     $scope.settings = data.settings;
                     $scope.actionIsWaiting = data.actionIsWaiting;
                     
@@ -140,10 +145,15 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', 'api', 'regi
                         $scope.settings.state === constants.adGroupSettingsState.INACTIVE
                     );
                 }
-                
 
                 $scope.saveRequestInProgress = false;
                 $scope.saved = true;
+
+                if ($scope.user.showOnboardingGuidance && goToContentAds) {
+                    $timeout(function() {
+                        $state.go('main.adGroups.adsPlus', {id: $scope.settings.id});
+                    }, 100);
+                }
             },
             function (data) {
                 $scope.errors = data;

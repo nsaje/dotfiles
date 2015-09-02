@@ -1,5 +1,5 @@
 /*globals oneApp,constants,options,moment*/
-oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', 'api', function ($scope, $state, $q, api) {
+oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', function ($scope, $state, $q, $timeout, api) {
     var campaignFreshSettings = $q.defer();
     $scope.settings = {};
     $scope.errors = {};
@@ -45,6 +45,23 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', 'api', func
                 $scope.updateBreadcrumbAndTitle();
                 $scope.requestInProgress = false;
                 $scope.saved = true;
+
+                if ($scope.user.automaticallyCreateAdGroup && $scope.user.showOnboardingGuidance) {
+                    $scope.user.automaticallyCreateAdGroup = false;
+                    api.campaignAdGroups.create($scope.campaign.id).then(function (adGroupData) {
+                        
+                        $scope.campaign.adGroups.push({
+                            id: adGroupData.id,
+                            name: adGroupData.name,
+                            contentAdsTabWithCMS: data.contentAdsTabWithCMS,
+                            status: 'stopped',
+                            state: 'paused'
+                        });
+                        $timeout(function () {
+                            $state.go('main.adGroups.settings', {id: adGroupData.id});
+                        }, 100);
+                    });
+                }
             },
             function (data) {
                 $scope.errors = data;
