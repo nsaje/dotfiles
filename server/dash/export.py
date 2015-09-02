@@ -63,15 +63,6 @@ def _generate_content_ad_rows(dimensions, start_date, end_date, user, ordering, 
         **constraints
     ), user)
 
-    postclick_stats = reports.api_contentads.query_redshift(
-        start_date,
-        end_date,
-        dimensions,
-    )
-    postclick_caid_map = {}
-    for postclick_stat in postclick_stats:
-        postclick_caid_map[postclick_stat['caid']] = postclick_stat
-
     for stat in stats:
         content_ad = content_ads[stat['content_ad']]
         stat['title'] = content_ad.title
@@ -79,16 +70,7 @@ def _generate_content_ad_rows(dimensions, start_date, end_date, user, ordering, 
         stat['image_url'] = content_ad.get_image_url()
         stat['uploaded'] = content_ad.created_dt.date()
 
-        postclick_stat = postclick_caid_map.get(content_ad.id)
-        if postclick_stat is not None:
-            stat['visits'] = postclick_stat['visits_sum']
-            stat['new_visits'] = postclick_stat['new_visits_sum']
-            stat['pageviews'] = postclick_stat['pageviews']
-            stat['percent_new_users'] = postclick_stat['percent_new_users']
-            stat['bounce_rate'] = postclick_stat['bounce_rate']
-            stat['pv_per_visit'] = postclick_stat['pv_per_visit']
-            stat['avg_tos'] = postclick_stat['avg_tos']
-
+        # TODO: check if postclick data is included
     return sort_results(stats, ordering)
 
 
