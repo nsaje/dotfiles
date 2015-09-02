@@ -34,8 +34,8 @@
                         <td ng-if="col.shown" ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type), 'input-one-char': col.type === 'checkbox', 'text-center': col.type === 'link', 'image': col.type === 'image'}" class="{{ col.extraTdCss }}" ng-repeat="col in columns | filter: {checked: true}">
                             <span ng-switch="col.type">
                                 <span ng-switch-when="image">
-                                    <img ng-if="row[col.field].square" ng-src="{{row[col.field].square}}" popover-append-to-body="true" popover-trigger="mouseenter" zem-html-popover="'thumbnailPopover.html'" popover-placement="left">
-                                    <img ng-if="!row[col.field].square">
+                                    <img ng-show="row[col.field].square" ng-src="{{row[col.field].square}}" popover-append-to-body="true" popover-trigger="mouseenter" zem-html-popover="'thumbnailPopover.html'" popover-placement="left"/>
+                                    <img ng-show="!row[col.field].square"/>
                                 </span>
                                 <span ng-switch-when="submissionStatus">
                                     <zem-submission-status status-items="row[col.field]" archived="row[col.archivedField]" />
@@ -102,8 +102,8 @@
                                     <a ng-href="{{ row[col.field].url }}" ng-click="openUrl(row[col.field], $event)" ng-attr-title="{{ row[col.titleField] }}" ng-if="!!row[col.field].url">{{ row[col.field].text }}</a>
                                     <span ng-if="!row[col.field].url">{{ row[col.field].text }}</span>
                                 </span>
-                                <span ng-switch-when="linkNav">
-                                    <a ui-sref="{{row[col.field].state}}({id: {{row[col.field].id}}})">{{ row[col.field].text }}</a>
+                                <span ng-switch-when="linkNav" class="pointer">
+                                    <a zem-in-link="{{row[col.field].state}}({id: {{row[col.field].id}}})">{{ row[col.field].text }} </a>
                                 </span>
                                 <span ng-switch-when="clickPermissionOrText">
                                     <a ng-if="col.hasPermission" ng-click="col.clickCallback(row.id)" href>{{ row[col.field] }}</a>
@@ -216,7 +216,7 @@
 
 <script id="thumbnailPopover.html" type="text/ng-template">
     <div class="thumbnail-popover">
-        <img ng-src="{{ row[col.field].landscape }}">
-        <img ng-src="{{ row[col.field].square }}">
+        <img ng-src="{{ row[col.field].landscape }}"/>
+        <img ng-src="{{ row[col.field].square }}"/>
     </div>
 </script>

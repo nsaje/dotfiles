@@ -4,6 +4,7 @@
 oneApp.directive('zemHtmlPopover', ['$http', '$templateCache', '$compile', '$parse', '$timeout', function($http, $templateCache, $compile, $parse, $timeout) {
     // zem-html-popover = path to template
     // popover-updater = scope item to watch (optional)
+
     return {
         restrict: 'A',
         scope: true,
@@ -12,8 +13,8 @@ oneApp.directive('zemHtmlPopover', ['$http', '$templateCache', '$compile', '$par
                 tElem.attr('popover-html-unsafe', '{{popover}}');
             }
             return function (scope, element, attrs) {
-                scope.popover = attrs.zemHtmlPopover;
-                var templateUrl = $parse(scope.popover)(scope);
+                var templateUrl = $parse(attrs.zemHtmlPopover)(scope);
+                scope.popover = " ";
 
                 function loadTemplate() {
                     $http.get(templateUrl, {cache: $templateCache })
@@ -30,11 +31,22 @@ oneApp.directive('zemHtmlPopover', ['$http', '$templateCache', '$compile', '$par
                 $compile(element)(scope);
 
                 if (angular.isDefined(attrs.popoverUpdater)) {
-                    scope.$watch(attrs.popoverUpdater, function () {
+                    var unwatch_function = null
+                    // We only start watching on first mouseenter
+                    element.on("mouseenter", function () {
                         loadTemplate();
+                        if (!unwatch_function) {
+                            unwatch_function = scope.$watch(attrs.popoverUpdater, function () {
+                                loadTemplate();
+                            });
+                        }
+                    });
+                    element.on("mouseleave", function() {
+                        unwatch_function();
+                        unwatch_function = null;
                     });
                 } else {
-                    loadTemplate();
+                    element.on("mouseenter", loadTemplate);
                 }
             };
         }

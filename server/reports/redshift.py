@@ -8,14 +8,16 @@ from utils import db_aggregates
 from django.db.models import Sum
 
 from django.db import connections
+from django.conf import settings
 
-STATS_DB_NAME = 'stats'
+from utils.statsd_helper import statsd_timer
 
 
+@statsd_timer('reports.redshift', 'delete_contentadstats')
 def delete_contentadstats(date, ad_group_id, source_id):
     cursor = _get_cursor()
 
-    query = 'DELETE FROM contentadstats WHERE TRUNC(datetime) = %s AND adgroup_id = %s'
+    query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s'
     params = [date.isoformat(), ad_group_id]
 
     if source_id:
@@ -26,6 +28,7 @@ def delete_contentadstats(date, ad_group_id, source_id):
     cursor.close()
 
 
+@statsd_timer('reports.redshift', 'insert_contentadstats')
 def insert_contentadstats(rows):
     if not rows:
         return
@@ -42,14 +45,27 @@ def insert_contentadstats(rows):
     cursor.close()
 
 
+@statsd_timer('reports.redshift', 'sum_contentadstats')
 def sum_contentadstats():
     query = 'SELECT SUM(impressions) as impressions, SUM(visits) as visits FROM contentadstats'
 
     cursor = _get_cursor()
     cursor.execute(query, [])
 
+    result = dictfetchall(cursor)
+
     cursor.close()
-    return dictfetchall(cursor)
+    return result[0]
+
+
+@statsd_timer('reports.redshift', 'vacuum_contentadstats')
+def vacuum_contentadstats():
+    query = 'VACUUM FULL contentadstats'
+
+    cursor = _get_cursor()
+    cursor.execute(query, [])
+
+    cursor.close()
 
 
 def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakdown=None, **constraints):
@@ -159,7 +175,7 @@ def _sum_statement(expr, stat_name):
 
 
 def _get_cursor():
-    return connections[STATS_DB_NAME].cursor()
+    return connections[settings.STATS_DB_NAME].cursor()
 
 
 def _get_results(statement):

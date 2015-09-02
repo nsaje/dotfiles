@@ -269,6 +269,7 @@ def update_content_ads_source_traffic_stats(date, ad_group, source, rows):
             data_cost_cc=row.get('data_cost_cc'),
         )
 
+    date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
     reports.refresh.refresh_contentadstats(date, ad_group, source)
 
 

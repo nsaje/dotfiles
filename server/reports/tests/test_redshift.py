@@ -21,7 +21,7 @@ class RedshiftTest(TestCase):
 
         redshift.delete_contentadstats(date, ad_group_id, source_id)
 
-        query = 'DELETE FROM contentadstats WHERE TRUNC(datetime) = %s AND adgroup_id = %s AND source_id = %s'
+        query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s AND source_id = %s'
         params = ['2015-01-01', 1, 2]
 
         mock_cursor.execute.assert_called_with(query, params)
@@ -35,7 +35,7 @@ class RedshiftTest(TestCase):
 
         redshift.delete_contentadstats(date, ad_group_id, None)
 
-        query = 'DELETE FROM contentadstats WHERE TRUNC(datetime) = %s AND adgroup_id = %s'
+        query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s'
         params = ['2015-01-01', 1]
 
         mock_cursor.execute.assert_called_with(query, params)
@@ -63,4 +63,14 @@ class RedshiftTest(TestCase):
         redshift.sum_contentadstats()
 
         query = 'SELECT SUM(impressions) as impressions, SUM(visits) as visits FROM contentadstats'
+        mock_cursor.execute.assert_called_with(query, [])
+
+    def test_vacuum_contentadstats(self, mock_get_cursor):
+        mock_cursor = Mock()
+        mock_get_cursor.return_value = mock_cursor
+
+        redshift.vacuum_contentadstats()
+
+        query = 'VACUUM FULL contentadstats'
+
         mock_cursor.execute.assert_called_with(query, [])

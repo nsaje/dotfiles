@@ -1,6 +1,7 @@
 /*globals oneApp,constants,options*/
 oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', function ($scope, $state, api, regions) {
     $scope.settings = {};
+    $scope.loadRequestInProgress = true;
     $scope.sourcesWithoutDMASupport = [];
     $scope.actionIsWaiting = false;
     $scope.errors = {};
@@ -72,6 +73,8 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
     };
 
     $scope.getSettings = function (id) {
+        $scope.loadRequestInProgress = true;
+
         api.adGroupSettings.get(id).then(
             function (data) {
                 $scope.settings = data.settings;
@@ -83,7 +86,9 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
                 // error
                 return;
             }
-        );
+        ).finally(function () {
+            $scope.loadRequestInProgress = false;
+        });
     };
 
     $scope.discardSettings = function () {
