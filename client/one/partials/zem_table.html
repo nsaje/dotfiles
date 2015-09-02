@@ -34,7 +34,7 @@
                         <td ng-if="col.shown" ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type), 'input-one-char': col.type === 'checkbox', 'text-center': col.type === 'link', 'image': col.type === 'image'}" class="{{ col.extraTdCss }}" ng-repeat="col in columns | filter: {checked: true}">
                             <span ng-switch="col.type">
                                 <span ng-switch-when="image">
-                                    <img ng-show="row[col.field].square" ng-src="{{row[col.field].square}}" popover-append-to-body="true" popover-trigger="mouseenter" zem-html-popover="'thumbnailPopover.html'" popover-placement="left"/>
+                                    <img ng-show="row[col.field].square" ng-src="{{row[col.field].square}}" zem-lazy-popover="thumbnailPopover.html", zem-lazy-popover-append-to-body="false"  zem-lazy-popover-placement="left"/>
                                     <img ng-show="!row[col.field].square"/>
                                 </span>
                                 <span ng-switch-when="submissionStatus">
@@ -215,8 +215,19 @@
 </div>
 
 <script id="thumbnailPopover.html" type="text/ng-template">
-    <div class="thumbnail-popover">
-        <img ng-src="{{ row[col.field].landscape }}"/>
-        <img ng-src="{{ row[col.field].square }}"/>
+    <div class="popover {{ placement }}">
+        <div class="arrow"></div>
+
+        <div class="popover-inner">
+            <h3 class="popover-title" ng-bind="title" ng-show="title"></h3>
+            <div class="popover-content" 
+                <div class="thumbnail-popover">
+                    <img ng-src="{{ row[col.field].landscape }}"/>
+                    <img ng-src="{{ row[col.field].square }}"/>
+                </div>
+            </div>
+        </div>
     </div>
 </script>
+
+

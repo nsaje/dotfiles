@@ -31,7 +31,7 @@
                     <tr ng-repeat="item in history | orderBy:orderField:orderReverse">
                         <td class="no-wrap">{{ (item.datetime | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
                         <td>{{ item.changedBy }}</td>
-                        <td zem-html-popover="'popoverContent.html'" popover-trigger="mouseenter" popover-append-to-body="true">{{ item.changesText }}</td>
+                        <td zem-lazy-popover="popoverContent.html" zem-lazy-popover-append-to-body="true" zem-lazy-popover-placement="top">{{ item.changesText }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -47,20 +47,32 @@
 </div>
 
 <script id="popoverContent.html" type="text/ng-template">
-    <div class="history-popover-table">
-        <div class="history-popover-row">
-            <div ng-if="item.showOldSettings" class="history-popover-cell header-cell left-cell"><strong>Old Settings</strong></div>
-            <div class="history-popover-cell header-cell"><strong>New Settings</strong></div>
-        </div>
-        <div class="history-popover-row" ng-repeat="setting in item.settings">
-            <div ng-if="item.showOldSettings" class="history-popover-cell left-cell">
-                <div><strong>{{setting.name}}</strong></div>
-                <div class="setting-value" ng-bind-html="setting.oldValue"></div>
-            </div>
-            <div class="history-popover-cell">
-                <div><strong>{{setting.name}}</strong></div>
-                <div class="setting-value" ng-bind-html="setting.value"></div>
+    <div class="popover {{ placement }}">
+        <div class="arrow"></div>
+
+        <div class="popover-inner">
+            <h3 class="popover-title" ng-bind="title" ng-show="title"></h3>
+            <div class="popover-content">
+                <div class="history-popover-table">
+                    <div class="history-popover-row">
+                        <div ng-if="item.showOldSettings" class="history-popover-cell header-cell left-cell"><strong>Old Settings</strong></div>
+                        <div class="history-popover-cell header-cell"><strong>New Settings</strong></div>
+                    </div>
+                    <div class="history-popover-row" ng-repeat="setting in item.settings">
+                        <div ng-if="item.showOldSettings" class="history-popover-cell left-cell">
+                            <div><strong>{{setting.name}}</strong></div>
+                            <div class="setting-value" ng-bind-html="setting.oldValue"></div>
+                        </div>
+                        <div class="history-popover-cell">
+                            <div><strong>{{setting.name}}</strong></div>
+                            <div class="setting-value" ng-bind-html="setting.value"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </script>
+
+
+
