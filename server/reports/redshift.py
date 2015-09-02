@@ -40,6 +40,11 @@ def insert_contentadstats(rows):
     cursor.close()
 
 
+@statsd_timer('reports.redshift', 'insert_touchpointconversions')
+def insert_touchpointconversions():
+    raise NotImplementedError
+
+
 @statsd_timer('reports.redshift', 'sum_contentadstats')
 def sum_contentadstats():
     query = 'SELECT SUM(impressions) as impressions, SUM(visits) as visits FROM contentadstats'

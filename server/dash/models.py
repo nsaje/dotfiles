@@ -207,6 +207,7 @@ class Campaign(models.Model, PermissionMixin):
     account = models.ForeignKey(Account, on_delete=models.PROTECT)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
     groups = models.ManyToManyField(auth_models.Group)
+    conversion_pixels = models.ManyToManyField('ConversionPixel')
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)

@@ -48,6 +48,10 @@ def insert_adgroup(ad_group_id, tracking_codes, disable_auto_tracking=False):
         raise e
 
 
+def fetch_touchpoints_impressions():
+    return _call_api_retry(settings.R1_CONVERSION_STATS_URL, method='GET')
+
+
 def _call_api_retry(url, data, method='POST'):
     for _ in xrange(NUM_RETRIES):
         try:
