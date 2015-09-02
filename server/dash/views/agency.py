@@ -202,7 +202,7 @@ class CampaignAgency(api_common.BaseApiView):
         settings = campaign.get_current_settings().copy_settings()
         self.set_settings(settings, campaign, form.cleaned_data)
 
-        self.propagate(campaign, settings, request)
+        self.propagate_and_save(campaign, settings, request)
 
         response = {
             'settings': self.get_dict(settings, campaign),
@@ -214,28 +214,27 @@ class CampaignAgency(api_common.BaseApiView):
         return self.create_api_response(response)
 
     @classmethod
-    def propagate(cls, campaign, settings, request):
+    @transaction.atomic
+    def propagate_and_save(cls, campaign, settings, request):
         actions = []
-        # TODO: decorator
-        with transaction.atomic():
-            # TODO: this is kinda weird to be here
-            campaign.save(request)
-            settings.save(request)
-            # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
-            campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
 
-            for ad_group in campaign_ad_groups:
-                adgroup_settings = ad_group.get_current_settings()
-                actions.extend(
-                    api.order_ad_group_settings_update(
-                        ad_group,
-                        adgroup_settings,
-                        adgroup_settings,
-                        request,
-                        send=False,
-                        iab_update=True
-                    )
+        campaign.save(request)
+        settings.save(request)
+        # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
+        campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
+
+        for ad_group in campaign_ad_groups:
+            adgroup_settings = ad_group.get_current_settings()
+            actions.extend(
+                api.order_ad_group_settings_update(
+                    ad_group,
+                    adgroup_settings,
+                    adgroup_settings,
+                    request,
+                    send=False,
+                    iab_update=True
                 )
+            )
 
         zwei_actions.send(actions)
 
@@ -415,7 +414,7 @@ class CampaignSettings(api_common.BaseApiView):
         self.set_settings(settings, campaign, form.cleaned_data)
         self.set_campaign(campaign, form.cleaned_data)
 
-        CampaignAgency.propagate(campaign, settings, request)
+        CampaignAgency.propagate_and_save(campaign, settings, request)
 
         response = {
             'settings': self.get_dict(settings, campaign)
