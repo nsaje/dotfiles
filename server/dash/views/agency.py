@@ -547,7 +547,7 @@ class AccountConversionPixels(api_common.BaseApiView):
 
         try:
             models.ConversionPixel.objects.get(account_id=account_id, slug=slug)
-            raise exc.ValidationError(message='Unique identifier has to be unique.')
+            raise exc.ValidationError(message='Conversion pixel with this identifier already exists.')
         except models.ConversionPixel.DoesNotExist:
             pass
 

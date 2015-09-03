@@ -282,9 +282,13 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
         });
     };
 
+    $scope.getConversionPixelTag = function (url) {
+        return '<img src="' + url + '" height="1" width="1" border="0" alt="" />';
+    };
+
     $scope.copyConversionPixelTag = function (conversionPixel) {
         var scope = $scope.$new(true);
-        scope.conversionPixelTag = conversionPixel.url;
+        scope.conversionPixelTag = $scope.getConversionPixelTag(conversionPixel.url);
 
         var modalInstance = $modal.open({
             templateUrl: '/partials/copy_conversion_pixel_modal.html',

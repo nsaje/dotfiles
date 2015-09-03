@@ -171,11 +171,11 @@ class ContentAdPostclickStats(models.Model):
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
-    visits = models.IntegerField(default=0, blank=False, null=False)
-    new_visits = models.IntegerField(default=0, blank=False, null=False)
-    bounced_visits = models.IntegerField(default=0, blank=False, null=False)
-    pageviews = models.IntegerField(default=0, blank=False, null=False)
-    total_time_on_site = models.IntegerField(default=0, blank=False, null=False)
+    visits = models.IntegerField(null=True)
+    new_visits = models.IntegerField(null=True)
+    bounced_visits = models.IntegerField(null=True)
+    pageviews = models.IntegerField(null=True)
+    total_time_on_site = models.IntegerField(null=True)
 
     class Meta:
         unique_together = (
@@ -198,7 +198,7 @@ class ContentAdGoalConversionStats(models.Model):
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
-    conversions = models.CharField(max_length=256, editable=False, null=False)
+    conversions = models.IntegerField(null=True)
 
     class Meta:
         unique_together = (

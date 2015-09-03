@@ -3,6 +3,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     var freshSettings = $q.defer(),
         goToContentAds = false;
     $scope.settings = {};
+    $scope.loadRequestInProgress = true;
     $scope.sourcesWithoutDMASupport = [];
     $scope.actionIsWaiting = false;
     $scope.errors = {};
@@ -78,6 +79,8 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     };
 
     $scope.getSettings = function (id) {
+        $scope.loadRequestInProgress = true;
+
         api.adGroupSettings.get(id).then(
             function (data) {
                 $scope.settings = data.settings;
@@ -91,7 +94,9 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 // error
                 return;
             }
-        );
+        ).finally(function () {
+            $scope.loadRequestInProgress = false;
+        });
     };
 
     $scope.discardSettings = function () {
