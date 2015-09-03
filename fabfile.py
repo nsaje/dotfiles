@@ -127,11 +127,10 @@ def production(*args):
 def docker_deploy(app, params):
     if env.host not in DOCKER_HOSTS:
         return
-    
     print header("\n\n\t~~~~~~~~~~~~ Deploying server@%s ~~~~~~~~~~~~" % (env.host, ))
     run('/home/one/deploy.sh')
     print ok("Server successfully deployed at %s" % (env.host, ))
-    params['docker'] = True
+
 
 @task
 def deploy(*args):
@@ -151,8 +150,6 @@ def deploy(*args):
 
     if "server" in apps:
         execute(docker_deploy, "server", params)
-        if params.get('docker'):
-            return
 
     clone_code(params)
         
@@ -389,6 +386,9 @@ def unpack(app, params):
 
 
 def copy_django_settings(app, params):
+    if env.host in DOCKER_HOSTS:
+        return
+
     run("cp ~/apps/config/%s-localsettings.py %s/%s/%s/localsettings.py" % (
         app, params['app_folder'], app, app))
 
@@ -429,6 +429,8 @@ def is_db_migrated(app, params):
 
 @serial
 def switch_django_app(app, params):
+    if env.host in DOCKER_HOSTS:
+        return
     with cd('~/.virtualenvs'):
         virtualenv_folder = os.path.join('~/.virtualenvs', params['venv_name'])
 
@@ -461,6 +463,8 @@ def switch_angular_app(app, params):
 
 @parallel
 def switchback_django_app(app):
+    if env.host in DOCKER_HOSTS:
+        return
     with cd('~/.virtualenvs'):
         run("cp -a {app}/previous {app}-reverting".format(app=app))
         run("rm -f {app} && mv {app}-reverting {app}".format(app=app))
@@ -494,6 +498,8 @@ def run_migrate(app, params):
 
 @parallel
 def deploy_django_app(app, params):
+    if env.host in DOCKER_HOSTS:
+        return
     print task("Create virtualenv [%s@%s]" % (app, env.host))
     create_virtualenv(app, params)
 
