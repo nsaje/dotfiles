@@ -528,6 +528,8 @@ def deploy_django_app(app, params):
 
 @parallel
 def deploy_angular_app(app, params):
+    if env.host in DOCKER_HOSTS:
+        return
     print task("Unpack [%s@%s]" % (app, env.host))
     unpack(app, params)
 
