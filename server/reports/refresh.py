@@ -8,8 +8,6 @@ import reports.models
 from reports.db_raw_helpers import dictfetchall
 from reports import redshift
 
-from utils.statsd_helper import statsd_incr
-
 import dash.models
 
 
@@ -111,7 +109,6 @@ def _get_goals_json(goals):
 
 @transaction.atomic(using=settings.STATS_DB_NAME)
 def refresh_contentadstats(date, ad_group, source=None):
-    statsd_incr('reports.refresh.refresh_contentadstats_start')
     source_id = source.id if source is not None else None
 
     # join data
@@ -123,7 +120,6 @@ def refresh_contentadstats(date, ad_group, source=None):
 
     redshift.delete_contentadstats(date, ad_group.id, source_id)
     redshift.insert_contentadstats(rows)
-    statsd_incr('reports.refresh.refresh_contentadstats_end')
 
 
 def refresh_adgroup_stats(**constraints):
