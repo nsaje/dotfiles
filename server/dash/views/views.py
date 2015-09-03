@@ -125,6 +125,7 @@ class User(api_common.BaseApiView):
                 'id': str(user.pk),
                 'email': user.email,
                 'name': user.get_full_name(),
+                'show_onboarding_guidance': user.show_onboarding_guidance,
                 'permissions': user.get_all_permissions_with_access_levels(),
                 'timezone_offset': pytz.timezone(settings.DEFAULT_TIME_ZONE).utcoffset(
                     datetime.datetime.utcnow(), is_dst=True).total_seconds()
@@ -530,6 +531,7 @@ class AccountCampaigns(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         account = helpers.get_account(request.user, account_id)
+        account_settings = account.get_current_settings()
 
         name = create_name(models.Campaign.objects.filter(account=account), 'New campaign')
 
@@ -542,7 +544,10 @@ class AccountCampaigns(api_common.BaseApiView):
         settings = models.CampaignSettings(
             name=name,
             campaign=campaign,
-            account_manager=request.user,
+            account_manager=(account_settings.default_account_manager
+                             if account_settings.default_account_manager else request.user),
+            sales_representative=(account_settings.default_sales_representative
+                                  if account_settings.default_sales_representative else None)
         )
         settings.save(request)
 
@@ -621,7 +626,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
                 'display_url': current_settings.display_url,
                 'brand_name': current_settings.brand_name,
                 'description': current_settings.description,
-                'call_to_action': current_settings.call_to_action
+                'call_to_action': current_settings.call_to_action or 'Read More'
             }
         })
 
@@ -717,7 +722,7 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
             raise exc.MissingDataException()
 
         response_data = {'status': batch.status, 'count': batch.processed_content_ads, 'all': batch.batch_size}
-
+        
         if batch.status == constants.UploadBatchStatus.FAILED:
             if batch.error_report_key:
                 text = '{} error{}. <a href="{}">Download Report.</a>'.format(

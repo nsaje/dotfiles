@@ -142,6 +142,22 @@ class PromotionGoal(ConstantBase):
     }
 
 
+class CampaignGoal(ConstantBase):
+    CPA = 1
+    PERCENT_BOUNCE_RATE = 2
+    NEW_UNIQUE_VISITORS = 3
+    SECONDS_TIME_ON_SITE = 4
+    PAGES_PER_SESSION = 5
+
+    _VALUES = {
+        CPA: 'CPA',
+        PERCENT_BOUNCE_RATE: '% bounce rate',
+        NEW_UNIQUE_VISITORS: 'new unique visitors',
+        SECONDS_TIME_ON_SITE: 'seconds time on site',
+        PAGES_PER_SESSION: 'pages per session'
+    }
+
+
 class SourceAction(ConstantBase):
     CAN_UPDATE_STATE = 1
     CAN_UPDATE_CPC = 2

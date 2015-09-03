@@ -662,3 +662,124 @@ class UserActivationTest(TestCase):
 
         decoded_response = json.loads(response.content)
         self.assertFalse(decoded_response.get('success'), 'Failed sending message')
+
+
+class CampaignAgencyTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    def setUp(self):
+        password = 'secret'
+        self.user = User.objects.get(pk=1)
+        self.client.login(username=self.user.email, password=password)
+
+        with patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
+
+    def test_get(self):
+        response = self.client.get(
+            '/api/campaigns/1/agency/'
+        )
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        self.assertEqual(content['data']['settings']['name'], 'test campaign 1')
+        self.assertEqual(content['data']['settings']['iab_category'], 'IAB24')
+
+    def test_post(self):
+        response = self.client.put(
+            '/api/campaigns/1/agency/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'account_manager': 1,
+                    'iab_category': 'IAB17',
+                    'name': 'ignore name'
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+
+        self.assertTrue(content['success'], True)
+
+        campaign = models.Campaign.objects.get(pk=1)
+        settings = campaign.get_current_settings()
+
+        self.assertEqual(campaign.name, 'test campaign 1')
+        self.assertEqual(settings.account_manager_id, 1)
+        self.assertEqual(settings.iab_category, 'IAB17')
+
+
+class CampaignSettingsTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    def setUp(self):
+        password = 'secret'
+        self.user = User.objects.get(pk=1)
+        self.client.login(username=self.user.email, password=password)
+
+        with patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
+
+    def test_get(self):
+        response = self.client.get(
+            '/api/campaigns/1/settings/'
+        )
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        self.assertEqual(content['data']['settings']['name'], 'test campaign 1')
+        self.assertEqual(content['data']['settings']['campaign_goal'], 3)
+        self.assertEqual(content['data']['settings']['goal_quantity'], 0)
+
+    def test_post(self):
+        response = self.client.put(
+            '/api/campaigns/1/settings/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'name': 'test campaign 2',
+                    'campaign_goal': 2,
+                    'goal_quantity': 10,
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        
+        campaign = models.Campaign.objects.get(pk=1)
+        settings = campaign.get_current_settings()
+        self.assertEqual(campaign.name, 'test campaign 2')
+        self.assertEqual(settings.goal_quantity, 10)
+        self.assertEqual(settings.campaign_goal, 2)
+
+    def test_validation(self):
+        response = self.client.put(
+            '/api/campaigns/1/settings/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'name': 'test campaign 2',
+                    'campaign_goal': 2,
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+        self.assertTrue('goal_quantity' in content['data']['errors'])
+        self.assertFalse(content['success'])
+
+        response = self.client.put(
+            '/api/campaigns/1/settings/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'name': 'test campaign 2',
+                    'campaign_goal': 50,
+                    'goal_quantity': 10,
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+        self.assertFalse(content['success'])
+        self.assertTrue('campaign_goal' in content['data']['errors'])

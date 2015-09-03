@@ -7,9 +7,12 @@
             <div ng-if="hasPermission('zemauth.upload_content_ads')" class="button-bar-item">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.upload_content_ads')" popover-placement="bottom"></zem-internal-feature>
                 <button
-                    type="button"
-                    class="btn btn-add"
-                    ng-click="addContentAds()">
+                     type="button"
+                     class="btn btn-add"
+                     ng-click="addContentAds()"
+                     zem-tutorial-popover-condition-promise="canShowOnboardingGuidance()"
+                     zem-tutorial-popover="Click here to add content ads"
+                     zem-tutorial-popover-placement="top">
                     + Content Ads
                 </button>
             </div>

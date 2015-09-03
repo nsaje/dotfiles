@@ -12,6 +12,32 @@
             <label ng-repeat="error in errors.name" class="control-label error" for="name-input">{{ error }}</label>
         </div>
 
+		<div class="form-group" ng-class="{'has-error': !!errors.defaultAccountManager}">
+            <label for="account-manager-select" class="col-xs-2 control-label">
+                Default Account Manager
+                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Account manager responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-3">
+                <select ui-select2="{minimumResultsForSearch: 5}" id="account-manager-select" class="form-control" ng-model="settings.defaultAccountManager">
+                    <option ng-repeat="manager in accountManagers | orderBy:getName" value="{{ manager.id }}">{{ manager.name }}</option>
+                </select>
+            </div>
+            <label ng-repeat="error in errors.defaultAccountManager" class="control-label error" for="account-manager-select">{{ error }}</label>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.defaultSalesRepresentative}">
+            <label for="sales-representative-select" class="col-xs-2 control-label">
+                Default Sales Representative
+                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Sales representative responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-3">
+                <select ui-select2="{minimumResultsForSearch: 5}" id="sales-representative-select" class="form-control" ng-model="settings.defaultSalesRepresentative">
+                    <option ng-repeat="rep in salesReps | orderBy:getName" value="{{ rep.id }}">{{ rep.name }}</option>
+                </select>
+            </div>
+            <label ng-repeat="error in errors.defaultSalesRepresentative" class="control-label error" for="sales-representative-select">{{ error }}</label>
+        </div>
+
         <button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
         <button type="button" class="btn btn-default" ng-click="getSettings(true)">Discard</button>
         <button type="button" class="btn btn-default pull-right" ng-class="{'disabled': !canArchive}" title="{{ (!canArchive && 'All of the account\'s campaigns have to be paused in order to archive the account.') || '' }}" ng-click="archiveAccount()">Archive account</button>
