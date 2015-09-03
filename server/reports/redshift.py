@@ -126,7 +126,6 @@ def _prepare_constraints(constraints, field_mapping):
 def _prepare_aggregates(aggregates, field_mapping):
     processed_aggrs = []
     for key, aggr in aggregates.iteritems():
-        # TODO: should this be a part of aggregate_fields? "as_redshift_aggregate"
         field_name = aggr.input_field.name
         field_name = field_mapping.get(field_name, field_name)
         if isinstance(aggr, db_aggregates.SumDivision):
@@ -138,6 +137,10 @@ def _prepare_aggregates(aggregates, field_mapping):
         else:
             # TODO: proper exception class
             raise Exception('Unknown aggregator')
+
+    # HACK: should be added to aggregates
+    processed_aggrs.append(_click_discrepancy_statement('clicks', 'visits', 'click_discrepancy'))
+
     return processed_aggrs
 
 
@@ -159,6 +162,15 @@ def _construct_select_statement(table, fields, constraints, breakdown=None):
         constraints=' AND '.join(constraints),
         group_by=group_by
     )
+
+
+def _click_discrepancy_statement(clicks_col, visits_col, stat_name):
+    return ('CASE WHEN SUM({clicks}) = 0 THEN NULL WHEN SUM({visits}) = 0 THEN 1'
+            ' ELSE SUM(CAST({clicks} AS FLOAT)) - SUM({visits}) / SUM({clicks})'
+            ' END as {stat_name}').format(
+                clicks=_quote(clicks_col),
+                visits=_quote(visits_col),
+                stat_name=_quote(stat_name))
 
 
 def _sum_division_statement(expr, divisor, stat_name):

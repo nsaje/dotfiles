@@ -137,7 +137,7 @@ def _add_computed_metrics(result):
     if result.get('clicks') is None or result.get('visits') is None or result['clicks'] == 0:
         result['click_discrepancy'] = None
     else:
-        result['click_discrepancy'] =  100.0 * max(0, result['clicks'] - result['visits']) / result['clicks']
+        result['click_discrepancy'] = 100.0 * max(0, result['clicks'] - result['visits']) / result['clicks']
 
     for goal_name, metrics in result.get('goals', {}).iteritems():
         metrics['conversion_rate'] = metrics['conversions'] / result['visits'] if result['visits'] > 0 else None
