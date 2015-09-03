@@ -125,12 +125,13 @@ def production(*args):
         abort("Unknown hosts!")
 
 def docker_deploy(app, params):
-    if env.host in DOCKER_HOSTS:
-        print header("\n\n\t~~~~~~~~~~~~ Deploying server@%s ~~~~~~~~~~~~" % (env.host, ))
-        run('/home/one/deploy.sh')
-        print ok("Server successfully deployed at %s" % (env.host, ))
-        params['docker'] = True
+    if env.host not in DOCKER_HOSTS:
+        return
     
+    print header("\n\n\t~~~~~~~~~~~~ Deploying server@%s ~~~~~~~~~~~~" % (env.host, ))
+    run('/home/one/deploy.sh')
+    print ok("Server successfully deployed at %s" % (env.host, ))
+    params['docker'] = True
 
 @task
 def deploy(*args):
