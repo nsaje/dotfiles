@@ -33,7 +33,23 @@ def _get_joined_stats_rows(date, ad_group_id, source_id):
         cursor.execute(query, params)
         rows = dictfetchall(cursor)
 
-    return map(_normalize_join_cols, rows)
+    # HACK: just to add some data
+    
+    import random
+    results = map(_normalize_join_cols, rows)
+    if results:
+        print results
+        for r in results:
+            visits = int(random.random() * 100)
+            cc = {
+                'bounced_visits': visits * 5,
+                'new_visits': visits * 3,
+                'pageviews': visits * 7,
+                'total_time_on_site': int(random.random() * 33),
+                'visits': visits * 10
+            }
+            r.update(cc)
+    return results
 
 
 def _normalize_join_cols(row):
