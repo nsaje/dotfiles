@@ -4,6 +4,7 @@ import dash.models
 from utils import redirector_helper
 
 MAX_CONVERSION_WINDOW_DAYS = 90
+MIN_DELAY_BETWEEN_CONVERSIONS_MINS = 10
 
 
 def _get_touchpoint_conversion_pairs(impression, potential_touchpoints):
@@ -43,8 +44,13 @@ def fetch_touchpoints_impressions(date):
             if dict_key not in latest_impression_ts_by_slug:
                 latest_impression_ts_by_slug[dict_key] = datetime.datetime.min
 
+            latest_impression_ts = latest_impression_ts_by_slug[dict_key]
+            if imp['timestamp'] - latest_impression_ts < datetime.timedelta(minutes=MIN_DELAY_BETWEEN_CONVERSIONS_MINS):
+                # TODO: suggested by andraz, discuss with product
+                continue
+
             potential_impression_touchpoints = [tp for tp in obj['touchpoints'] if
-                                                tp['timestamp'] > latest_impression_ts_by_slug[dict_key] and
+                                                tp['timestamp'] > latest_impression_ts and
                                                 tp['timestamp'] < imp['timestamp']]
 
             latest_impression_ts_by_slug[dict_key] = imp['timestamp']
