@@ -8,6 +8,8 @@ SECRET_KEY = '=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l'
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
+STATS_DB_NAME = 'stats'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -20,6 +22,14 @@ DATABASES = {
         'NAME': 'circle_test',
         'USER': 'ubuntu',
         'PASSWORD': ''
+    },
+    'stats': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': 5439
     }
 }
 

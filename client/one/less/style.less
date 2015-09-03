@@ -2253,6 +2253,24 @@ div[datepicker] {
     }
 }
 
+.loader-main-area {
+    padding-top: 50px;
+    width: auto;
+    height: 200px;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.loader-image {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background: transparent url('img/loader.gif') no-repeat center center;
+    background-size: cover;
+    vertical-align: middle;
+}
+
+
 .loader {
     display: inline-block;
     width: 20px;
@@ -2721,6 +2739,43 @@ zem-submission-status {
     font-size: 12px;
 }
 
+.tutorial.popover {
+    background: transparent;
+    padding: 0px;
+    z-index: 100000;
+    &:before {
+        display: block;
+        height: 0px;
+    }
+    .popover-inner {
+        background-color: #fff;
+        color: #414141;
+        font-weight: 300;
+        border: 2px solid #f68620;
+        border-radius: 6px;
+        .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
+    }
+    & > .arrow {
+        border-width: 11px;
+    }
+    &.bottom > .arrow {
+        border-bottom-color: #f68620;   
+        top: -20px;
+    }
+    &.top > .arrow {
+        border-top-color: #f68620;
+        bottom: -20px;
+    }
+    &.left > .arrow {
+        border-left-color: #f68620;
+        right: -20px;
+    }
+    &.right > .arrow {
+        border-right-color: #f68620;
+        left: -20px;
+    }
+}
+
 .table div.zem-selection-menu.dropdown {
     .dropdown-toggle {
         line-height: 18px;
@@ -2779,3 +2834,4 @@ zem-submission-status {
         }
     }
 }
+

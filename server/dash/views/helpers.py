@@ -708,3 +708,11 @@ def parse_post_request_content_ad_ids(request_data, param_name):
         return map(int, content_ad_ids)
     except ValueError:
         raise exc.ValidationError()
+
+
+def get_user_full_name_or_email(user):
+    if user is None:
+        return '/'
+
+    result = user.get_full_name() or user.email
+    return result.encode('utf-8')
