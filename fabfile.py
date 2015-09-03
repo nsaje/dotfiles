@@ -452,6 +452,8 @@ def switch_django_app(app, params):
 
 @parallel
 def switch_angular_app(app, params):
+    if env.host in DOCKER_HOSTS:
+        return
     with cd("~/apps/"):
         # remember which was previous app release
         test_output = run('test -L {0}'.format(app), quiet=True)
