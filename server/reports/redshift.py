@@ -166,6 +166,7 @@ def _construct_select_statement(table, fields, constraints, breakdown=None):
 
 def _click_discrepancy_statement(clicks_col, visits_col, stat_name):
     return ('CASE WHEN SUM({clicks}) = 0 THEN NULL WHEN SUM({visits}) = 0 THEN 1'
+            ' WHEN SUM({clicks}) < SUM({visits}) THEN 0'
             ' ELSE SUM(CAST({clicks} AS FLOAT)) - SUM({visits}) / SUM({clicks})'
             ' END as {stat_name}').format(
                 clicks=_quote(clicks_col),
