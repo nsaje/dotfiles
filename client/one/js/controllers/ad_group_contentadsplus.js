@@ -655,7 +655,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 $scope.updateContentAdSelection();
 
                 initUploadBatches(data.batches);
-                contentAdsNotLoaded.resolve($scope.rows.length == 0);
+                contentAdsNotLoaded.resolve($scope.rows.length === 0);
             },
             function(data) {
                 // error
