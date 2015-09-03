@@ -48,6 +48,7 @@ class UserTest(TestCase):
                     'email': 'user@test.com',
                     'name': '',
                     'permissions': {},
+                    'show_onboarding_guidance': False,
                     'timezone_offset': -18000.0
                 }
             },
@@ -68,6 +69,7 @@ class UserTest(TestCase):
                     'email': 'user@test.com',
                     'name': '',
                     'permissions': {},
+                    'show_onboarding_guidance': False,                    
                     'timezone_offset': -14400.0
                 }
             },
@@ -89,6 +91,7 @@ class UserTest(TestCase):
                     'email': 'user@test.com',
                     'name': '',
                     'permissions': {},
+                    'show_onboarding_guidance': False,                    
                     'timezone_offset': -14400.0
                 }
             },

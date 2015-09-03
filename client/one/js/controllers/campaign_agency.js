@@ -1,17 +1,5 @@
-/*globals oneApp,constants,options,moment*/
+/*globals oneApp,constants,moment*/
 oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
-    $scope.serviceFeeSelect2Config = {
-        dropdownCssClass: 'service-fee-select2',
-        createSearchChoice: function (term, data) {
-            if ($(data).filter(function() { 
-                return this.text.localeCompare(term)===0;
-            }).length===0) {
-                return {id: term, text: term + '%'};
-            }
-        },
-        data: [{id: '15', text: '15%'}, {id: '20', text: '20%'}, {id: '25', text: '25%'}]
-    };
-
     $scope.settings = {};
     $scope.history = [];
     $scope.canArchive = false;
@@ -19,7 +7,6 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', 'api', function ($s
     $scope.accountManagers = [];
     $scope.salesReps = [];
     $scope.errors = {};
-    $scope.options = options;
     $scope.requestInProgress = false;
     $scope.saved = null;
     $scope.discarded = null;
@@ -31,7 +18,7 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', 'api', function ($s
         $scope.discarded = null;
         $scope.requestInProgress = true;
         $scope.errors = {};
-        api.campaignSettings.get($state.params.id).then(
+        api.campaignAgency.get($state.params.id).then(
             function (data) {
                 $scope.settings = data.settings;
                 $scope.history = data.history;
@@ -59,14 +46,13 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', 'api', function ($s
         $scope.discarded = null;
         $scope.requestInProgress = true;
 
-        api.campaignSettings.save($scope.settings).then(
+        api.campaignAgency.save($scope.settings).then(
             function (data) {
                 $scope.history = data.history;
                 $scope.canArchive = data.canArchive;
                 $scope.canRestore = data.canRestore;
                 $scope.errors = {};
                 $scope.settings = data.settings;
-                $scope.updateAccounts(data.settings.name);
                 $scope.updateBreadcrumbAndTitle();
                 $scope.requestInProgress = false;
                 $scope.saved = true;

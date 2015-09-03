@@ -42,7 +42,8 @@ class Command(BaseCommand):
         statsd_gauge('reports.conversions_total_aggr', n_conversions_aggregate)
 
         # content ads
-        statsd_gauge('reports.impressions_contentads_total', n_impressions_contentads)
-        statsd_gauge('reports.impressions_contentads_total_aggr', n_impressions_contentads_aggregate)
-        statsd_gauge('reports.visits_contentads_total', n_visits_contentads)
-        statsd_gauge('reports.visits_contentads_total_aggr', n_visits_contentads_aggregate)
+        # TODO temp fix
+        #statsd_gauge('reports.impressions_contentads_total', n_impressions_contentads)
+        #statsd_gauge('reports.impressions_contentads_total_aggr', n_impressions_contentads_aggregate)
+        #statsd_gauge('reports.visits_contentads_total', n_visits_contentads)
+        #statsd_gauge('reports.visits_contentads_total_aggr', n_visits_contentads_aggregate)

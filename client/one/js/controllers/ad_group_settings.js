@@ -1,5 +1,7 @@
 /*globals oneApp,constants,options*/
-oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', function ($scope, $state, api, regions) {
+oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'regions', function ($scope, $state, $q, $timeout, api, regions) {
+    var freshSettings = $q.defer(),
+        goToContentAds = false;
     $scope.settings = {};
     $scope.loadRequestInProgress = true;
     $scope.sourcesWithoutDMASupport = [];
@@ -20,6 +22,10 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
     $scope.startDatePicker = {isOpen: false};
     $scope.endDatePicker = {isOpen: false};
 
+    $scope.adGroupHasFreshSettings = function () {
+        return freshSettings.promise;
+    };
+    
     $scope.closeAlert = function(index) {
         $scope.alerts.splice(index, 1);
     };
@@ -81,6 +87,8 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
                 $scope.actionIsWaiting = data.actionIsWaiting;
                 setSourcesWithoutDMASupport(data.adGroupSources);
                 $scope.setAdGroupPaused($scope.settings.state === constants.adGroupSettingsState.INACTIVE);
+                freshSettings.resolve(data.settings.name == 'New ad group');
+                goToContentAds = data.settings.name == 'New ad group';
             },
             function (data) {
                 // error
@@ -139,10 +147,15 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
                         $scope.settings.state === constants.adGroupSettingsState.INACTIVE
                     );
                 }
-                
 
                 $scope.saveRequestInProgress = false;
                 $scope.saved = true;
+
+                if ($scope.user.showOnboardingGuidance && goToContentAds) {
+                    $timeout(function() {
+                        $state.go('main.adGroups.adsPlus', {id: $scope.settings.id});
+                    }, 100);
+                }
             },
             function (data) {
                 $scope.errors = data;
