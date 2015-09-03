@@ -124,6 +124,13 @@ def production(*args):
     else:
         abort("Unknown hosts!")
 
+def docker_deploy(app, params):
+    if env.host in DOCKER_HOSTS:
+        print header("\n\n\t~~~~~~~~~~~~ Deploying server@%s ~~~~~~~~~~~~" % (env.host, ))
+        run('/home/one/deploy.sh')
+        print ok("Server successfully deployed at %s" % (env.host, ))
+        params['docker'] = True
+    
 
 @task
 def deploy(*args):
@@ -139,15 +146,15 @@ def deploy(*args):
 
     post_to_slack('Deploying: ' + ', '.join(apps))
 
-    if env.host in DOCKER_HOSTS and "server" in apps:
-        print header("\n\n\t~~~~~~~~~~~~ Deploying server@%s ~~~~~~~~~~~~" % (env.host, ))
-        run('/home/one/deploy.sh')
-        print ok("Server successfully deployed at %s" % (env.host, ))
-        return
-        
     params = {}
-    clone_code(params)
 
+    if "server" in apps:
+        execute(docker_deploy, "server", params)
+        if params.get('docker'):
+            return
+
+    clone_code(params)
+        
     all_apps_params = {}
 
     # First deploy without switching on all the servers.
