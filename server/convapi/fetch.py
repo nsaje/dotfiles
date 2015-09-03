@@ -36,29 +36,19 @@ def fetch_touchpoints_impressions(date):
 
     touchpoint_conversion_pairs = []
     for obj in touchpoints_impressions.itervalues():
-        touchpoints = sorted(obj['touchpoints'], key=lambda x: x['timestamp'])
         impressions = sorted(obj['impressions'], key=lambda x: x['timestamp'])
 
-        tp_start_ix_by_slug = defaultdict(int)
+        latest_impression_ts_by_slug = {}
         for imp in impressions:
-            potential_impression_touchpoints = []
+            dict_key = (imp['account_id'], imp['slug'])
+            if dict_key not in latest_impression_ts_by_slug:
+                latest_impression_ts_by_slug[dict_key] = datetime.datetime.min
 
-            end_reached = True
-            tp_start_ix = tp_start_ix_by_slug[(imp['account_id'], imp['slug'])]
-            for tp_ix, tp in enumerate(touchpoints[tp_start_ix:]):
-                if tp['timestamp'] > imp['timestamp']:
-                    # potential touchpoints for next impression start from here
-                    tp_start_ix_by_slug[(imp['account_id'], imp['slug'])] = tp_ix
-                    end_reached = False
-                    break
+            potential_impression_touchpoints = [tp for tp in obj['touchpoints'] if
+                                                tp['timestamp'] > latest_impression_ts_by_slug[dict_key] and
+                                                tp['timestamp'] < imp['timestamp']]
 
-                potential_impression_touchpoints.append(tp)
-
-            if end_reached:
-                # current impression appears later than every touchpoint
-                # subsequent impressions with same (account, slug) should have no potential touchpoints
-                tp_start_ix_by_slug[(imp['account_id'], imp['slug'])] = len(touchpoints)
-
+            latest_impression_ts_by_slug[dict_key] = imp['timestamp']
             touchpoint_conversion_pairs.extend(
                 _get_touchpoint_conversion_pairs(imp, potential_impression_touchpoints)
             )
