@@ -221,21 +221,21 @@ class CampaignAgency(api_common.BaseApiView):
             campaign.save(request)
             settings.save(request)
         
-        # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
-        campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
-
-        for ad_group in campaign_ad_groups:
-            adgroup_settings = ad_group.get_current_settings()
-            actions.extend(
-                api.order_ad_group_settings_update(
-                    ad_group,
-                    adgroup_settings,
-                    adgroup_settings,
-                    request,
-                    send=False,
-                    iab_update=True
+            # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
+            campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
+    
+            for ad_group in campaign_ad_groups:
+                adgroup_settings = ad_group.get_current_settings()
+                actions.extend(
+                    api.order_ad_group_settings_update(
+                        ad_group,
+                        adgroup_settings,
+                        adgroup_settings,
+                        request,
+                        send=False,
+                        iab_update=True
+                    )
                 )
-            )
 
         zwei_actions.send(actions)
 
