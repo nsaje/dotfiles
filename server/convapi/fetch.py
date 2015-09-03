@@ -49,9 +49,9 @@ def fetch_touchpoints_impressions(date):
                 # TODO: suggested by andraz, discuss with product
                 continue
 
-            potential_impression_touchpoints = [tp for tp in obj['redirects'] if
-                                                tp['timestamp'] > latest_impression_ts and
-                                                tp['timestamp'] < imp['timestamp']]
+            potential_impression_touchpoints = [redirect for redirect in obj['redirects'] if
+                                                redirect['timestamp'] > latest_impression_ts and
+                                                redirect['timestamp'] < imp['timestamp']]
 
             latest_impression_ts_by_slug[dict_key] = imp['timestamp']
             touchpoint_conversion_pairs.extend(
