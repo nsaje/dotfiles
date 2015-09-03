@@ -109,7 +109,6 @@ def _get_goals_json(goals):
 
 @transaction.atomic(using=settings.STATS_DB_NAME)
 def refresh_contentadstats(date, ad_group, source=None):
-    return  # TODO temp fix
     source_id = source.id if source is not None else None
 
     # join data
