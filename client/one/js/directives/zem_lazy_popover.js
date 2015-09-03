@@ -7,13 +7,13 @@ oneApp.directive('zemLazyPopover', ['$http', '$templateCache', '$compile', '$par
 
     return {
         restrict: 'A',
-//        scope: { animation: '&', isOpen: '&' },
-//        transclude: true,
+   //        transclude: true,
         compile: function (tElem, tAttrs) {
             return function (scope, element, attrs) {
                 var appendToBody = false;
                 var ttScope = null;
                 var tooltip = null;
+                var transitionTimeout;
 
                 var positionTooltip = function () {
                   if (!tooltip) { return; }
@@ -25,39 +25,88 @@ oneApp.directive('zemLazyPopover', ['$http', '$templateCache', '$compile', '$par
                 };
 
                 var hide = function() {
-                    // We don't even try hiding it, just removing it.
-                    if (ttScope) {
-                        ttScope.$destroy();
-                        ttScope = null;
-                    }
+                    // This function hides the tooltip
+                    // it's implemented by removing the tooltip entirely from DOM and angular
+                    // Add fade commands
                     if (tooltip) {
-                        tooltip.remove();
-                        tooltip = null;
+                        tooltip.removeClass("in");
+                        tooltip.addClass("out");
                     }
+
+                    function removeTooltip() {
+                        transitionTimeout = null;
+                        if (tooltip) {
+                            tooltip.remove();
+                            tooltip = null;
+                        }
+                        if (ttScope) {
+                            ttScope.$destroy();
+                            ttScope = null;
+                        }
+                    }
+                    // Last thing before destorying the scope is removing the 
+                    if (ttScope) {
+                        ttScope.$on("$destroy", function () {
+                          element.off("mouseleave", hide);
+                        });
+                        // If there's fadeout or similar animation, wait a bit with removal
+                        if (ttScope.animationClass) {
+                            // If transition-out has already been initiated, we are on the way out anyway
+                            if ( !transitionTimeout ) {
+                               transitionTimeout = $timeout(removeTooltip, 500);
+                            }
+                        } else {
+                            removeTooltip();
+                        }
+                    }
+
+
                 };
-                
-                
+
                 
                 element.on("mouseenter", function() {
+                    // If we have a timeout set, cancel it and add in classes
+                    if ( transitionTimeout ) {
+                        $timeout.cancel( transitionTimeout );
+                        transitionTimeout = null;
+                        if (tooltip) {
+                            tooltip.removeClass("out");
+                            tooltip.addClass("in");
+                        }
+                    }
+                    // If the scope already exists, do nothing
                     if (ttScope) {
                         return
                     }
                     ttScope = scope.$new(false);
-                    var templateUrl = attrs.zemLazyPopover;
+
+                    element.on("mouseleave", hide);
+                    scope.$on("$destroy", hide);
+
+
+                    var templateUrl = $parse(attrs.zemLazyPopover)(scope);
+                    
                     $http.get(templateUrl, {cache: $templateCache })
-                        .success(function (content) {
+                        .success(function (template_content) {
                             if (!ttScope) {
                                 // Mouseleave might have happened already
                                 return;
                             }
                             ttScope.placement = angular.isDefined(attrs.zemLazyPopoverPlacement) ? attrs.zemLazyPopoverPlacement : "";
                             ttScope.appendToBody = angular.isDefined(attrs.zemLazyPopoverAppendToBody) ? scope.$parent.$eval(attrs.zemLazyPopoverAppendToBody) : false;
-//                            ttScope.animation = angular.isDefined(attrs.zemLazyPopoverAnimation) ? scope.$parent.$eval(attrs.zemLazyPopoverAnimation) : false;
- //                           ttScope.animation = true;
-                            ttScope.isOpen = true;
-//                            console.log(content);
-                            tooltip = $compile(content)(ttScope, function (tooltip) {
-                                // Place it somewhere out of view, so we can render & get the size first
+                            ttScope.animationClass = angular.isDefined(attrs.zemLazyPopoverAnimationClass) ? attrs.zemLazyPopoverAnimationClass : false;
+                            var content = '<div class="popover {{ placement }} {{animationClass }}">' +
+                                          '<div class="arrow"></div>' + 
+                                          '<div class="popover-inner">' +
+                                          '<div class="popover-content">' +
+                                          template_content + 
+                                          '</div>' +
+                                          '</div>' +
+                                          '</div>'
+
+                            $compile(content)(ttScope, function (tooltip_new) {
+                                tooltip = tooltip_new;
+                                // Place it somewhere out of the view, so we can render & get the size first
                                 tooltip.css({ top: -5000, left: 0, display: 'block' });
                                 if (ttScope.appendToBody) {
                                     $document.find( 'body' ).append( tooltip );
@@ -65,23 +114,21 @@ oneApp.directive('zemLazyPopover', ['$http', '$templateCache', '$compile', '$par
                                     element.after( tooltip );
                                 }
                                 $timeout(function () {
-//                                  console.log(tooltip);
-                                  console.log(tooltip[0].outerHTML);
-                                    positionTooltip();
+                                    // By the time we reach this, we might have already moved the mouse away
+
+                                    if (tooltip) {
+                                        tooltip.addClass("in");
+                                        positionTooltip();
+                                    }
+                                    ttScope.$watch(function () {
+                                        $timeout(positionTooltip, 0, false);
+                                    });
+
                                 });
-                                element.on("mouseleave", hide);
-                                scope.$on("$locationChangeSuccess", hide);
-                                scope.$on("$destroy", hide);
-
                             });
-                            
-
                         
                         });
-                    
                 });
-                
-                
             };
         }
     };
