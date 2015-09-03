@@ -70,9 +70,10 @@ def vacuum_contentadstats():
 
 def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakdown=None, **constraints):
 
+    print 'REDSHIFT'
     constraints = _prepare_constraints(constraints, field_mapping)
-    constraints.append('{} >= \'{}\''.format(_quote('datetime'), start_date))
-    constraints.append('{} <= \'{}\''.format(_quote('datetime'), end_date))
+    constraints.append('{} >= \'{}\''.format(_quote('date'), start_date))
+    constraints.append('{} <= \'{}\''.format(_quote('date'), end_date))
 
     aggregates = _prepare_aggregates(aggregates, field_mapping)
 

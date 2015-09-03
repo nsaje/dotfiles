@@ -7,7 +7,7 @@ from reports import exc
 
 
 CONTENTADSTATS_FIELD_MAPPING = {
-    'date': 'datetime',
+    'date': 'date',
     'duration': 'total_time_on_site',
     'content_ad': 'content_ad_id',
     'source': 'source_id',
