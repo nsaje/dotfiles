@@ -2,26 +2,31 @@
 "use strict";
 
 oneApp.directive('zemLazyPopover', ['$http', '$templateCache', '$compile', '$parse', '$timeout', '$position', '$document', function($http, $templateCache, $compile, $parse, $timeout, $position, $document) {
-    // zem-lazy-popover = path to template
+    // zem-lazy-popover = path to template (evaluated)
     // zem-lazy-popover-placement = top/bottom/left/right
+    // zem-lazy-popover-animation-class = fade
+    // zem-lazy-popover-append-to-body = true/false
+    
+    
+    // We have a global one-popup policy, so here's the previous one to close
+    var closeExisting = null;
 
     return {
         restrict: 'A',
-   //        transclude: true,
         compile: function (tElem, tAttrs) {
-            return function (scope, element, attrs) {
+            return function link (scope, element, attrs) {
                 var appendToBody = false;
                 var ttScope = null;
                 var tooltip = null;
                 var transitionTimeout;
 
                 var positionTooltip = function () {
-                  if (!tooltip) { return; }
-                  var ttPosition = $position.positionElements(element, tooltip, ttScope.placement, ttScope.appendToBody);
-                  ttPosition.top += 'px';
-                  ttPosition.left += 'px';
-                  // Now set the calculated positioning.
-                  tooltip.css( ttPosition );
+                    if (!tooltip) { return; }
+                    var ttPosition = $position.positionElements(element, tooltip, ttScope.placement, ttScope.appendToBody);
+                    ttPosition.top += 'px';
+                    ttPosition.left += 'px';
+                    // Now set the calculated positioning.
+                    tooltip.css( ttPosition );
                 };
 
                 var hide = function() {
@@ -53,14 +58,14 @@ oneApp.directive('zemLazyPopover', ['$http', '$templateCache', '$compile', '$par
                         if (ttScope.animationClass) {
                             // If transition-out has already been initiated, we are on the way out anyway
                             if ( !transitionTimeout ) {
+                               // We save the function for closing the current tooltip, so if we're displaying a different one we can close it earlier han timeout
+                               closeExisting = removeTooltip;
                                transitionTimeout = $timeout(removeTooltip, 500);
                             }
                         } else {
                             removeTooltip();
                         }
                     }
-
-
                 };
 
                 
@@ -73,6 +78,11 @@ oneApp.directive('zemLazyPopover', ['$http', '$templateCache', '$compile', '$par
                             tooltip.removeClass("out");
                             tooltip.addClass("in");
                         }
+                    }
+                    // If there's any other popup active, close it immediately   
+                    if (closeExisting) {
+                      closeExisting();
+                      closeExisting = null;
                     }
                     // If the scope already exists, do nothing
                     if (ttScope) {
@@ -120,9 +130,11 @@ oneApp.directive('zemLazyPopover', ['$http', '$templateCache', '$compile', '$par
                                         tooltip.addClass("in");
                                         positionTooltip();
                                     }
-                                    ttScope.$watch(function () {
-                                        $timeout(positionTooltip, 0, false);
-                                    });
+                                    if (ttScope) {
+                                        ttScope.$watch(function () {
+                                            $timeout(positionTooltip, 0, false);
+                                        });
+                                    }
 
                                 });
                             });
