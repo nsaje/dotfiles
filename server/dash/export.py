@@ -70,7 +70,6 @@ def _generate_content_ad_rows(dimensions, start_date, end_date, user, ordering, 
         stat['image_url'] = content_ad.get_image_url()
         stat['uploaded'] = content_ad.created_dt.date()
 
-        # TODO: check if postclick data is included
     return sort_results(stats, ordering)
 
 

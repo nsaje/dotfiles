@@ -17,7 +17,6 @@ from utils.sort_helper import sort_results
 from utils import exc
 
 import reports.api_contentads
-import reports.api_helpers
 
 
 class ExportApiView(api_common.BaseApiView):
@@ -444,7 +443,14 @@ class AdGroupAdsPlusExport(ExportApiView):
         ('cpc', 'Avg. CPC'),
         ('clicks', 'Clicks'),
         ('impressions', 'Impressions'),
-        ('ctr', 'CTR')
+        ('ctr', 'CTR'),
+        ('visits', 'Visits'),
+        ('click_discrepancy', 'Click Discrepancy'),
+        ('pageviews', 'Pageviews'),
+        ('percent_new_users', '% New Users'),
+        ('bounce_rate', 'Bounce Rate'),
+        ('pv_per_visit', 'PV/Visit'),
+        ('avg_tos', 'Avg. ToS')
     ]
 
     # this duplication might look strange but is necessary - excel package does
@@ -463,6 +469,13 @@ class AdGroupAdsPlusExport(ExportApiView):
         {'key': 'clicks', 'name': 'Clicks'},
         {'key': 'impressions', 'name': 'Impressions', 'width': 15},
         {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
+        {'key': 'visits', 'name': 'Visits'},
+        {'key': 'click_discrepancy', 'name': 'Click Discrepancy', 'format': 'percent'},
+        {'key': 'pageviews', 'name': 'Pageviews'},
+        {'key': 'percent_new_users', 'name': '% New Users', 'format': 'percent'},
+        {'key': 'bounce_rate', 'name': 'Bounce Rate', 'format': 'percent'},
+        {'key': 'pv_per_visit', 'name': 'PV/Visit'},
+        {'key': 'avg_tos', 'name': 'Avg. ToS'}
     ]
 
     # this duplication might look strange but is necessary - excel package does
@@ -618,7 +631,6 @@ class AdGroupAdsPlusExport(ExportApiView):
         {'key': 'clicks', 'name': 'Clicks'},
         {'key': 'impressions', 'name': 'Impressions', 'width': 15},
         {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
-
 
         ret = []
         for col in columns:

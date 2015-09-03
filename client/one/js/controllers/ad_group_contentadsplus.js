@@ -23,8 +23,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
     $scope.selectionMenuConfig = {};
 
-    
-
     // selection triplet - all, a batch, or specific content ads can be selected
     $scope.selectedAll = false;
     $scope.selectedBatchId = null;
@@ -403,7 +401,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         'fields': ['cost', 'cpc', 'clicks', 'impressions', 'ctr']
     }, {
         'name': 'Audience Metrics',
-        'fields': ['visits', 'pageviews', 'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos', 'click_discrepancy']
+        'fields': ['percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos', 'visits', 'pageviews', 'click_discrepancy']
     }];
 
     $scope.addContentAds = function() {
@@ -871,27 +869,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 $scope.chartMetricOptions,
                 $scope.isPermissionInternal('zemauth.content_ads_postclick_engagement')
             );
-
-            if (goals) {
-                $scope.chartMetricOptions = $scope.chartMetricOptions.concat(Object.keys(goals).map(function (goalId) {
-                    var typeName = {
-                        'conversions': 'Conversions',
-                        'conversion_rate': 'Conversion Rate'
-                    }[goals[goalId].type];
-
-                    if (typeName === undefined) {
-                        return;
-                    }
-
-                    return {
-                        name: goals[goalId].name + ': ' + typeName,
-                        value: goalId,
-                        internal: $scope.isPermissionInternal('zemauth.content_ads_postclick_engagement')
-                    }
-                }).filter(function (option) {
-                    return option !== undefined;
-                }));
-            }
         }
     };
 

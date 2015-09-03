@@ -1190,7 +1190,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         response_dict = {
             'rows': rows,
             'batches': [{'id': batch.id, 'name': batch.name} for batch in batches],
-            'totals': self._get_total_row(total_stats),
+            'totals': total_stats,
             'order': order,
             'pagination': {
                 'currentPage': current_page,
@@ -1215,16 +1215,6 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             )
 
         return self.create_api_response(response_dict)
-
-    @newrelic.agent.function_trace()
-    def _get_total_row(self, stats):
-        return {
-            'impressions': stats['impressions'],
-            'clicks': stats['clicks'],
-            'cost': stats['cost'],
-            'cpc': stats['cpc'],
-            'ctr': stats['ctr']
-        }
 
     def _get_url(self, ad_group, content_ad, is_demo):
         if is_demo:
@@ -1276,12 +1266,9 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                     'square': content_ad.get_image_url(160, 160),
                     'landscape': content_ad.get_image_url(256, 160)
                 },
-                'impressions': stat.get('impressions'),
-                'clicks': stat.get('clicks'),
-                'cost': stat.get('cost'),
-                'cpc': stat.get('cpc'),
-                'ctr': stat.get('ctr')
             }
+
+            row.update(stat)
 
             if has_view_archived_permission:
                 row['archived'] = archived
