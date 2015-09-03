@@ -284,17 +284,9 @@ class CampaignAgency(api_common.BaseApiView):
                 'name': 'Sales Representative',
                 'value': helpers.get_user_full_name_or_email(new_settings.sales_representative)
             }),
-            ('service_fee', {
-                'name': 'Service Fee',
-                'value': self.format_decimal_to_percent(new_settings.service_fee) + '%'
-            }),
             ('iab_category', {
                 'name': 'IAB Category',
                 'value': constants.IABCategory.get_text(new_settings.iab_category)
-            }),
-            ('promotion_goal', {
-                'name': 'Promotion Goal',
-                'value': constants.PromotionGoal.get_text(new_settings.promotion_goal)
             }),
             ('campaign_goal', {
                 'name': 'Campaign goal',
@@ -321,14 +313,8 @@ class CampaignAgency(api_common.BaseApiView):
                 settings_dict['sales_representative']['old_value'] = \
                     helpers.get_user_full_name_or_email(old_settings.sales_representative)
 
-            settings_dict['service_fee']['old_value'] = \
-                self.format_decimal_to_percent(old_settings.service_fee) + '%'
-
             settings_dict['iab_category']['old_value'] = \
                 constants.IABCategory.get_text(old_settings.iab_category)
-
-            settings_dict['promotion_goal']['old_value'] = \
-                constants.PromotionGoal.get_text(old_settings.promotion_goal)
 
             settings_dict['archived']['old_value'] = str(old_settings.archived)
 
@@ -361,9 +347,7 @@ class CampaignAgency(api_common.BaseApiView):
                 'sales_representative':
                     str(settings.sales_representative.id)
                     if settings.sales_representative is not None else None,
-                'service_fee': self.format_decimal_to_percent(settings.service_fee),
                 'iab_category': settings.iab_category,
-                'promotion_goal': settings.promotion_goal
             }
 
         return result
@@ -381,7 +365,8 @@ class CampaignAgency(api_common.BaseApiView):
         if manager is not None and manager not in users:
             users.append(manager)
 
-        return [{'id': str(user.id), 'name': helpers.get_user_full_name_or_email(user)} for user in users]
+        return [{'id': str(user.id),
+                 'name': helpers.get_user_full_name_or_email(user)} for user in users]
 
 
 class CampaignSettings(api_common.BaseApiView):

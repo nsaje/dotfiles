@@ -682,8 +682,6 @@ class CampaignAgencyTest(TestCase):
         content = json.loads(response.content)
         self.assertTrue(content['success'])
         self.assertEqual(content['data']['settings']['name'], 'test campaign 1')
-        self.assertEqual(content['data']['settings']['service_fee'], '20')
-        self.assertEqual(content['data']['settings']['promotion_goal'], 1)
         self.assertEqual(content['data']['settings']['iab_category'], 'IAB24')
 
     def test_post(self):
@@ -694,8 +692,6 @@ class CampaignAgencyTest(TestCase):
                     'id': 1,
                     'account_manager': 1,
                     'iab_category': 'IAB17',
-                    'service_fee': '0.3',
-                    'promotion_goal': 1,
                     'name': 'ignore name'
                 }
             }),
