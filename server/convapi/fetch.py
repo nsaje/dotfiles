@@ -32,10 +32,10 @@ def _get_touchpoint_conversion_pairs(impression, potential_touchpoints):
 
 
 def fetch_touchpoints_impressions(date):
-    touchpoints_impressions = redirector_helper.fetch_touchpoints_impressions(date)
+    redirects_impressions = redirector_helper.fetch_redirects_impressions(date)
 
     touchpoint_conversion_pairs = []
-    for obj in touchpoints_impressions.itervalues():
+    for obj in redirects_impressions.itervalues():
         impressions = sorted(obj['impressions'], key=lambda x: x['timestamp'])
 
         latest_impression_ts_by_slug = {}
@@ -49,7 +49,7 @@ def fetch_touchpoints_impressions(date):
                 # TODO: suggested by andraz, discuss with product
                 continue
 
-            potential_impression_touchpoints = [tp for tp in obj['touchpoints'] if
+            potential_impression_touchpoints = [tp for tp in obj['redirects'] if
                                                 tp['timestamp'] > latest_impression_ts and
                                                 tp['timestamp'] < imp['timestamp']]
 

@@ -7,7 +7,7 @@ from convapi import fetch
 import dash.models
 
 
-@mock.patch('convapi.fetch.redirector_helper.fetch_touchpoints_impressions')
+@mock.patch('convapi.fetch.redirector_helper.fetch_redirects_impressions')
 class FetchTouchpointsImpressionsTestCase(TestCase):
 
     fixtures = ['test_api.yaml']
@@ -36,7 +36,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                     'timestamp': datetime.datetime(2015, 9, 2, 15, 15, 15),
                     'account_id': 1,
                 }],
-                'touchpoints': [{
+                'redirects': [{
                     'click_id': 54321,
                     'zuid': '1234-12345-123456',
                     'timestamp': datetime.datetime(2015, 9, 2, 15),
@@ -78,7 +78,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                     'timestamp': datetime.datetime(2015, 9, 2, 15, 15, 15),
                     'account_id': 1,
                 }],
-                'touchpoints': [{
+                'redirects': [{
                     'click_id': 54321,
                     'zuid': '1234-12345-123456',
                     'timestamp': datetime.datetime(2015, 9, 2, 15),
@@ -103,7 +103,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                     'timestamp': datetime.datetime(2015, 9, 2, 15, 15, 15),
                     'account_id': 1,
                 }],
-                'touchpoints': [{
+                'redirects': [{
                     'click_id': 54321,
                     'zuid': '1234-12345-123456',
                     'timestamp': datetime.datetime(2015, 9, 2, 15),
@@ -128,7 +128,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                     'timestamp': datetime.datetime(2015, 9, 2, 15, 15, 15),
                     'account_id': 1,
                 }],
-                'touchpoints': [{
+                'redirects': [{
                     'click_id': 54321,
                     'zuid': '1234-12345-123456',
                     'timestamp': datetime.datetime(2015, 9, 2, 15),
@@ -156,7 +156,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                     'timestamp': datetime.datetime(2015, 9, 2, 15, 15, 15),
                     'account_id': 1,
                 }],
-                'touchpoints': [{
+                'redirects': [{
                     'click_id': 54321,
                     'zuid': '1234-12345-123456',
                     'timestamp': datetime.datetime(2015, 9, 2, 15, 15, 15) - datetime.timedelta(
@@ -182,7 +182,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                     'timestamp': datetime.datetime(2015, 9, 2, 15, 15, 15),
                     'account_id': 1,
                 }],
-                'touchpoints': [{
+                'redirects': [{
                     'click_id': 54321,
                     'zuid': '1234-12345-123456',
                     'timestamp': datetime.datetime(2015, 9, 2, 15),
@@ -251,7 +251,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                     'timestamp': datetime.datetime(2015, 9, 2, 18),
                     'account_id': 1,
                 }],
-                'touchpoints': [{
+                'redirects': [{
                     'click_id': 54321,
                     'zuid': '1234-12345-123456',
                     'timestamp': datetime.datetime(2015, 9, 2, 15),
@@ -320,7 +320,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                     'timestamp': datetime.datetime(2015, 9, 2, 18),
                     'account_id': 1,
                 }],
-                'touchpoints': [{
+                'redirects': [{
                     'click_id': 54321,
                     'zuid': '1234-12345-123456',
                     'timestamp': datetime.datetime(2015, 9, 2, 17),
@@ -389,7 +389,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                     'timestamp': datetime.datetime(2015, 9, 2, 18),
                     'account_id': 1,
                 }],
-                'touchpoints': [{
+                'redirects': [{
                     'click_id': 54321,
                     'zuid': '1234-12345-123456',
                     'timestamp': datetime.datetime(2015, 9, 2, 15),
@@ -488,7 +488,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                     'timestamp': datetime.datetime(2015, 9, 2, 18),
                     'account_id': 1,
                 }],
-                'touchpoints': [{
+                'redirects': [{
                     'click_id': 54321,
                     'zuid': '1234-12345-123456',
                     'timestamp': datetime.datetime(2015, 9, 2, 17),

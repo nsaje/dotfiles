@@ -48,7 +48,7 @@ def insert_adgroup(ad_group_id, tracking_codes, disable_auto_tracking=False):
         raise e
 
 
-def fetch_touchpoints_impressions():
+def fetch_redirects_impressions():
     return _call_api_retry(settings.R1_CONVERSION_STATS_URL, method='GET')
 
 
