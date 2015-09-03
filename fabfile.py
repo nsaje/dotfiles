@@ -126,7 +126,7 @@ def production(*args):
 
 def docker_deploy(app, params):
     if env.host not in DOCKER_HOSTS:
-        return
+        return params
     print header("\n\n\t~~~~~~~~~~~~ Deploying server@%s ~~~~~~~~~~~~" % (env.host, ))
     run('/home/one/deploy.sh')
     print ok("Server successfully deployed at %s" % (env.host, ))
@@ -501,7 +501,7 @@ def run_migrate(app, params):
 @parallel
 def deploy_django_app(app, params):
     if env.host in DOCKER_HOSTS:
-        return
+        return params
     print task("Create virtualenv [%s@%s]" % (app, env.host))
     create_virtualenv(app, params)
 
@@ -531,19 +531,17 @@ def deploy_django_app(app, params):
 @parallel
 def deploy_angular_app(app, params):
     if env.host in DOCKER_HOSTS:
-        return
+        return params
     print task("Unpack [%s@%s]" % (app, env.host))
     unpack(app, params)
-
+    
     print ok("%s successfully deployed at %s" % (app.capitalize(), env.host))
-
-    return params
 
 
 @parallel
 def deploy_cron_jobs(params):
     if env.host in DOCKER_HOSTS:
-        return
+        return params
 
     # with cd(params['app_folder']):
     cron_yaml_path = os.path.join(params['tmp_folder_git'], 'cron.yaml')
