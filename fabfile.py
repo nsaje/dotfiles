@@ -531,11 +531,13 @@ def deploy_django_app(app, params):
 @parallel
 def deploy_angular_app(app, params):
     if env.host in DOCKER_HOSTS:
+        params['app_folder'] = "~/apps/%s-%s-%s" % (app, params['timestamp'], params['commit_hash'])
         return params
     print task("Unpack [%s@%s]" % (app, env.host))
     unpack(app, params)
     
     print ok("%s successfully deployed at %s" % (app.capitalize(), env.host))
+    return params
 
 
 @parallel
