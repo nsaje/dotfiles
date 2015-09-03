@@ -296,6 +296,14 @@ class CampaignAgency(api_common.BaseApiView):
                 'name': 'Goal quantity',
                 'value': new_settings.goal_quantity,
             }),
+            ('service_fee', {
+                'name': 'Service Fee',
+                'value': self.format_decimal_to_percent(new_settings.service_fee) + '%'
+            }),
+            ('promotion_goal', {
+                'name': 'Promotion Goal',
+                'value': constants.PromotionGoal.get_text(new_settings.promotion_goal)
+            }),
             ('archived', {
                 'name': 'Archived',
                 'value': str(new_settings.archived)

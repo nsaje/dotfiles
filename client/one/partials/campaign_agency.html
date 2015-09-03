@@ -33,7 +33,7 @@
             </label>
             <div class="col-xs-3">
                 <select ui-select2="{minimumResultsForSearch: 2}" id="iab-category-select" class="form-control" ng-model="settings.IABCategory">
-                    <option ng-repeat="category in options.iabCategories" value="{{category.value}}">{{category.name}}</option>
+                    <option ng-repeat="category in iabCategories" value="{{category.value}}">{{category.name}}</option>
                 </select>
             </div>
             <label ng-repeat="error in errors.IABCategory" class="control-label error" for="iab-category-select">{{ error }}</label>
