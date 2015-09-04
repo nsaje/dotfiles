@@ -1056,4 +1056,7 @@ def sharethrough_approval(request):
 
     content_ad_source.save()
 
+    actionlog.api_contentads.init_update_content_ad_action(content_ad_source, {'state': content_ad_source.state},
+                                                           request=None, send=True)
+
     return HttpResponse('OK')
