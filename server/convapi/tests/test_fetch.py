@@ -25,6 +25,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
         dash.models.ContentAd.objects.get(id=1)
 
     def test_fetch(self, redirector_fetch_mock):
+        self.maxDiff = None
         redirector_fetch_mock.return_value = {
             '1234-12345-123456': [
                 {
@@ -41,13 +42,14 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.fetch_touchpoints_impressions(datetime.datetime(2015, 9, 2))
-        redirector_fetch_mock.assert_called_with(datetime.datetime(2015, 9, 2))
+        conversion_pairs = fetch.fetch_touchpoint_conversions(datetime.date(2015, 9, 2))
+        redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
 
         expected = [
             {
                 'zuid': '1234-12345-123456',
                 'slug': 'test_slug',
+                'date': datetime.date(2015, 9, 2),
                 'conversion_id': '12345',
                 'conversion_timestamp': datetime.datetime(2015, 9, 2, 15, 15, 15),
                 'touchpoint_timestamp': datetime.datetime(2015, 9, 2, 15),
@@ -56,8 +58,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 1,
                 'source_id': 3,
-                'conversion_lag': (datetime.datetime(2015, 9, 2, 15, 15, 15) -
-                                   datetime.datetime(2015, 9, 2, 15)).total_seconds()
+                'conversion_lag': 1,
             }
         ]
 
@@ -80,8 +81,8 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.fetch_touchpoints_impressions(datetime.datetime(2015, 9, 2))
-        redirector_fetch_mock.assert_called_with(datetime.datetime(2015, 9, 2))
+        conversion_pairs = fetch.fetch_touchpoint_conversions(datetime.date(2015, 9, 2))
+        redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
 
         self.assertEqual([], conversion_pairs)
 
@@ -102,8 +103,8 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.fetch_touchpoints_impressions(datetime.datetime(2015, 9, 2))
-        redirector_fetch_mock.assert_called_with(datetime.datetime(2015, 9, 2))
+        conversion_pairs = fetch.fetch_touchpoint_conversions(datetime.date(2015, 9, 2))
+        redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
 
         self.assertEqual([], conversion_pairs)
 
@@ -134,13 +135,14 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.fetch_touchpoints_impressions(datetime.datetime(2015, 9, 2))
-        redirector_fetch_mock.assert_called_with(datetime.datetime(2015, 9, 2))
+        conversion_pairs = fetch.fetch_touchpoint_conversions(datetime.date(2015, 9, 2))
+        redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
 
         expected = [
             {
                 'zuid': '1234-12345-123456',
                 'slug': 'test_slug',
+                'date': datetime.date(2015, 9, 2),
                 'conversion_id': '12345',
                 'conversion_timestamp': datetime.datetime(2015, 9, 2, 15, 15, 15),
                 'touchpoint_timestamp': datetime.datetime(2015, 9, 2, 15),
@@ -149,11 +151,11 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 1,
                 'source_id': 3,
-                'conversion_lag': (datetime.datetime(2015, 9, 2, 15, 15, 15) -
-                                   datetime.datetime(2015, 9, 2, 15)).total_seconds()
+                'conversion_lag': 1,
             }, {
                 'slug': 'test_slug',
                 'zuid': '1234-12345-123456',
+                'date': datetime.date(2015, 9, 2),
                 'conversion_id': '12345',
                 'conversion_timestamp': datetime.datetime(2015, 9, 2, 15, 15, 15),
                 'touchpoint_timestamp': datetime.datetime(2015, 9, 1, 18),
@@ -162,8 +164,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 2,
                 'source_id': 5,
-                'conversion_lag': (datetime.datetime(2015, 9, 2, 15, 15, 15) -
-                                   datetime.datetime(2015, 9, 1, 18)).total_seconds()
+                'conversion_lag': 1,
             }
         ]
 
@@ -219,13 +220,14 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.fetch_touchpoints_impressions(datetime.datetime(2015, 9, 2))
-        redirector_fetch_mock.assert_called_with(datetime.datetime(2015, 9, 2))
+        conversion_pairs = fetch.fetch_touchpoint_conversions(datetime.date(2015, 9, 2))
+        redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
 
         expected = [
             {
                 'zuid': '1234-12345-123456',
                 'slug': 'test_slug',
+                'date': datetime.date(2015, 9, 2),
                 'conversion_id': '12345',
                 'conversion_timestamp': datetime.datetime(2015, 9, 2, 15, 15, 15),
                 'touchpoint_timestamp': datetime.datetime(2015, 9, 2, 15),
@@ -234,12 +236,12 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 1,
                 'source_id': 3,
-                'conversion_lag': (datetime.datetime(2015, 9, 2, 15, 15, 15) -
-                                   datetime.datetime(2015, 9, 2, 15)).total_seconds()
+                'conversion_lag': 1,
             },
             {
                 'zuid': '1234-12345-123456',
                 'slug': 'test_slug',
+                'date': datetime.date(2015, 9, 2),
                 'conversion_id': '12345',
                 'conversion_timestamp': datetime.datetime(2015, 9, 2, 15, 15, 15),
                 'touchpoint_timestamp': datetime.datetime(2015, 9, 1, 18),
@@ -248,8 +250,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 2,
                 'source_id': 5,
-                'conversion_lag': (datetime.datetime(2015, 9, 2, 15, 15, 15) -
-                                   datetime.datetime(2015, 9, 1, 18)).total_seconds()
+                'conversion_lag': 1,
             }
         ]
 
@@ -305,13 +306,14 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.fetch_touchpoints_impressions(datetime.datetime(2015, 9, 2))
-        redirector_fetch_mock.assert_called_with(datetime.datetime(2015, 9, 2))
+        conversion_pairs = fetch.fetch_touchpoint_conversions(datetime.date(2015, 9, 2))
+        redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
 
         expected = [
             {
                 'zuid': '1234-12345-123456',
                 'slug': 'test_slug',
+                'date': datetime.date(2015, 9, 2),
                 'conversion_id': '12346',
                 'conversion_timestamp': datetime.datetime(2015, 9, 2, 18),
                 'touchpoint_timestamp': datetime.datetime(2015, 9, 2, 17),
@@ -320,12 +322,12 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 1,
                 'source_id': 3,
-                'conversion_lag': (datetime.datetime(2015, 9, 2, 18) -
-                                   datetime.datetime(2015, 9, 2, 17)).total_seconds()
+                'conversion_lag': 1,
             },
             {
                 'zuid': '1234-12345-123456',
                 'slug': 'test_slug',
+                'date': datetime.date(2015, 9, 2),
                 'conversion_id': '12345',
                 'conversion_timestamp': datetime.datetime(2015, 9, 2, 15, 15, 15),
                 'touchpoint_timestamp': datetime.datetime(2015, 9, 1, 18),
@@ -334,8 +336,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 2,
                 'source_id': 5,
-                'conversion_lag': (datetime.datetime(2015, 9, 2, 15, 15, 15) -
-                                   datetime.datetime(2015, 9, 1, 18)).total_seconds()
+                'conversion_lag': 1,
             }
         ]
 
@@ -391,13 +392,14 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.fetch_touchpoints_impressions(datetime.datetime(2015, 9, 2))
-        redirector_fetch_mock.assert_called_with(datetime.datetime(2015, 9, 2))
+        conversion_pairs = fetch.fetch_touchpoint_conversions(datetime.date(2015, 9, 2))
+        redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
 
         expected = [
             {
                 'zuid': '1234-12345-123456',
                 'slug': 'test_slug',
+                'date': datetime.date(2015, 9, 2),
                 'conversion_id': '12345',
                 'conversion_timestamp': datetime.datetime(2015, 9, 2, 15, 15, 15),
                 'touchpoint_timestamp': datetime.datetime(2015, 9, 2, 15),
@@ -406,12 +408,12 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 1,
                 'source_id': 3,
-                'conversion_lag': (datetime.datetime(2015, 9, 2, 15, 15, 15) -
-                                   datetime.datetime(2015, 9, 2, 15)).total_seconds()
+                'conversion_lag': 1,
             },
             {
                 'zuid': '1234-12345-123456',
                 'slug': 'test_slug',
+                'date': datetime.date(2015, 9, 2),
                 'conversion_id': '12345',
                 'conversion_timestamp': datetime.datetime(2015, 9, 2, 15, 15, 15),
                 'touchpoint_timestamp': datetime.datetime(2015, 9, 1, 18),
@@ -420,12 +422,12 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 2,
                 'source_id': 5,
-                'conversion_lag': (datetime.datetime(2015, 9, 2, 15, 15, 15) -
-                                   datetime.datetime(2015, 9, 1, 18)).total_seconds()
+                'conversion_lag': 1,
             },
             {
                 'zuid': '1234-12345-123456',
                 'slug': 'test_slug2',
+                'date': datetime.date(2015, 9, 2),
                 'conversion_id': '12346',
                 'conversion_timestamp': datetime.datetime(2015, 9, 2, 18),
                 'touchpoint_timestamp': datetime.datetime(2015, 9, 2, 15),
@@ -434,12 +436,12 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 1,
                 'source_id': 3,
-                'conversion_lag': (datetime.datetime(2015, 9, 2, 18) -
-                                   datetime.datetime(2015, 9, 2, 15)).total_seconds()
+                'conversion_lag': 1,
             },
             {
                 'zuid': '1234-12345-123456',
                 'slug': 'test_slug2',
+                'date': datetime.date(2015, 9, 2),
                 'conversion_id': '12346',
                 'conversion_timestamp': datetime.datetime(2015, 9, 2, 18),
                 'touchpoint_timestamp': datetime.datetime(2015, 9, 1, 18),
@@ -448,8 +450,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 2,
                 'source_id': 5,
-                'conversion_lag': (datetime.datetime(2015, 9, 2, 18) -
-                                   datetime.datetime(2015, 9, 1, 18)).total_seconds()
+                'conversion_lag': 2,
             }
         ]
 
@@ -505,13 +506,14 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.fetch_touchpoints_impressions(datetime.datetime(2015, 9, 2))
-        redirector_fetch_mock.assert_called_with(datetime.datetime(2015, 9, 2))
+        conversion_pairs = fetch.fetch_touchpoint_conversions(datetime.date(2015, 9, 2))
+        redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
 
         expected = [
             {
                 'zuid': '1234-12345-123456',
                 'slug': 'test_slug',
+                'date': datetime.date(2015, 9, 2),
                 'conversion_id': '12345',
                 'conversion_timestamp': datetime.datetime(2015, 9, 2, 15, 15, 15),
                 'touchpoint_timestamp': datetime.datetime(2015, 9, 1, 18),
@@ -520,12 +522,12 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'source_id': 5,
                 'content_ad_id': 2,
-                'conversion_lag': (datetime.datetime(2015, 9, 2, 15, 15, 15) -
-                                   datetime.datetime(2015, 9, 1, 18)).total_seconds()
+                'conversion_lag': 1,
             },
             {
                 'zuid': '1234-12345-123456',
                 'slug': 'test_slug2',
+                'date': datetime.date(2015, 9, 2),
                 'conversion_id': '12346',
                 'conversion_timestamp': datetime.datetime(2015, 9, 2, 18),
                 'touchpoint_timestamp': datetime.datetime(2015, 9, 2, 17),
@@ -534,12 +536,12 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 1,
                 'source_id': 3,
-                'conversion_lag': (datetime.datetime(2015, 9, 2, 18) -
-                                   datetime.datetime(2015, 9, 2, 17)).total_seconds()
+                'conversion_lag': 1,
             },
             {
                 'zuid': '1234-12345-123456',
                 'slug': 'test_slug2',
+                'date': datetime.date(2015, 9, 2),
                 'conversion_id': '12346',
                 'conversion_timestamp': datetime.datetime(2015, 9, 2, 18),
                 'touchpoint_timestamp': datetime.datetime(2015, 9, 1, 18),
@@ -548,8 +550,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 2,
                 'source_id': 5,
-                'conversion_lag': (datetime.datetime(2015, 9, 2, 18) -
-                                   datetime.datetime(2015, 9, 1, 18)).total_seconds()
+                'conversion_lag': 2,
             }
         ]
 

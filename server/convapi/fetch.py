@@ -7,7 +7,7 @@ from utils import redirector_helper
 MIN_DELAY_BETWEEN_CONVERSIONS_MINS = 10
 
 
-def fetch_touchpoints_impressions(date):
+def fetch_touchpoint_conversions(date):
     redirects_impressions = redirector_helper.fetch_redirects_impressions(date)
 
     touchpoint_conversions = []
@@ -53,8 +53,9 @@ def fetch_touchpoints_impressions(date):
                 continue
 
             potential_touchpoint_conversion = {
-                'slug': slug,
                 'zuid': zuid,
+                'slug': slug,
+                'date': date,
                 'conversion_id': impression_id,
                 'conversion_timestamp': impression_ts,
                 'account_id': account_id,
@@ -63,7 +64,7 @@ def fetch_touchpoints_impressions(date):
                 'content_ad_id': content_ad_id,
                 'source_id': source.id,
                 'touchpoint_timestamp': redirect_ts,
-                'conversion_lag': (impression_ts - redirect_ts).total_seconds()
+                'conversion_lag': (impression_ts - redirect_ts).days + 1
             }
 
             touchpoint_conversion_dict[redirect_id][conversion_key] = potential_touchpoint_conversion

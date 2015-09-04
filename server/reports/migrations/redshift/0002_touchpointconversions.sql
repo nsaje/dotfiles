@@ -5,16 +5,16 @@ CREATE TABLE touchpointconversions (
     date timestamp,
 
     conversion_id integer,
-    conversion_ts timestamp,
-
-    redirect_ts timestamp,
-    t_diff integer,
+    conversion_timestamp timestamp,
 
     account_id integer,
     campaign_id integer,
     ad_group_id integer,
     content_ad_id integer,
     source_id integer,
+
+    touchpoint_timestamp timestamp,
+    conversion_lag integer,
 )
 DISTSTYLE EVEN
 SORTKEY (date);
