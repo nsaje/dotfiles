@@ -3,6 +3,7 @@ import json
 import logging
 import traceback
 import urllib2
+import datetime
 
 from django.conf import settings
 
@@ -22,6 +23,23 @@ def _handle_error(action, e):
     action.message = msg
     action.save()
 
+
+def resend(actions):
+    if not isinstance(actions, list) and not isinstance(actions, tuple):
+        actions = [actions]
+
+    assert all(action.state == constants.ActionState.FAILED for action in actions)
+
+    modified_date = datetime.datetime.utcnow()
+    expiration_date = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+    for action in actions:
+        action.payload['expiration_dt'] = expiration_date.isoformat()
+        action.modified_dt = modified_date
+        action.state = constants.ActionState.WAITING
+        action.expiration_dt = expiration_date
+        action.save()
+
+    send(actions)
 
 def send(actions):
     if not isinstance(actions, list) and not isinstance(actions, tuple):
