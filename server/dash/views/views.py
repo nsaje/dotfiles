@@ -1038,8 +1038,11 @@ def oauth_redirect(request, source_name):
     return redirect(reverse('admin:dash_sourcecredentials_change', args=(credentials.id,)))
 
 
+@statsd_helper.statsd_timer('dash', 'sharethrough_approval')
 def sharethrough_approval(request):
     data = json.loads(request.body)
+
+    logger.info('sharethrough approval, content ad id: %s, status: %s', data['crid'], data['status'])
     content_ad_source = models.ContentAdSource.objects.get(content_ad_id=data['crid'],
                                                            source=models.Source.objects.get(name='Sharethrough'))
 
