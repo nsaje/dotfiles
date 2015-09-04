@@ -38,7 +38,7 @@ oneApp.factory('zemPostclickMetricsService', function() {
             initialOrder: 'desc'
         });
     }
-
+        
     function insertEngagementColumns(columns, position, isShown, isInternal) {
         columns.splice(position, 0, {
             name: '% New Users',
@@ -168,5 +168,5 @@ oneApp.factory('zemPostclickMetricsService', function() {
         concatAcquisitionChartOptions: concatAcquisitionChartOptions,
         concatEngagementChartOptions: concatEngagementChartOptions,
         insertGoalColumns: insertGoalColumns
-    };
+    }
 });
