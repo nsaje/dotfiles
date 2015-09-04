@@ -16,8 +16,6 @@ from utils import statsd_helper
 from utils.sort_helper import sort_results
 from utils import exc
 
-import reports.api_contentads
-
 
 class ExportApiView(api_common.BaseApiView):
     def dispatch(self, request, *args, **kwargs):
@@ -454,8 +452,8 @@ class AdGroupAdsPlusExport(ExportApiView):
     ]
 
     # this duplication might look strange but is necessary - excel package does
-    # runtime magic substitution of percen format with it's internal types
-    common_csv_date_columns = [
+    # runtime magic substitution of percent format with it's internal types
+    common_csv_columns_w_date = [
         ('date', 'Date'),
     ] + common_csv_columns
 
@@ -479,8 +477,8 @@ class AdGroupAdsPlusExport(ExportApiView):
     ]
 
     # this duplication might look strange but is necessary - excel package does
-    # runtime magic substitution of percen format with it's internal types
-    common_excel_date_columns = [
+    # runtime magic substitution of percent format with it's internal types
+    common_excel_columns_w_date = [
         {'key': 'date', 'name': 'Date', 'format': 'date'},
     ] + common_excel_columns
 
@@ -534,7 +532,7 @@ class AdGroupAdsPlusExport(ExportApiView):
             source=sources
         )
 
-        fieldnames = OrderedDict(self.common_csv_date_columns)
+        fieldnames = OrderedDict(self.common_csv_columns_w_date)
         content = export.get_csv_content(fieldnames, ads_results)
         return self.create_csv_response(filename, content=content)
 
@@ -558,8 +556,8 @@ class AdGroupAdsPlusExport(ExportApiView):
 
         self.add_source_data(sources_results)
 
-        ads_columns = self.override_excel_format(list(self.common_excel_date_columns))
-        sources_columns =  list(self.common_excel_date_columns)  # make a shallow copy
+        ads_columns = self.override_excel_format(list(self.common_excel_columns_w_date))
+        sources_columns = list(self.common_excel_columns_w_date)  # make a shallow copy
         sources_columns.insert(5, {'key': 'source', 'name': 'Source', 'width': 20})
 
         sources_columns = self.override_excel_format(sources_columns)
@@ -616,30 +614,17 @@ class AdGroupAdsPlusExport(ExportApiView):
 
     def override_excel_format(self, columns):
         '''
-        This func is needed due to very strange runtime behaviour of list
-        concatenation with xslx package. format's are substitutde with actual
-        Format objects before that is actually needed(list concatenation)
+        This function is needed due to very strange runtime behaviour of list
+        concatenation with xslx package. Column format's are substituted with actual
+        Format objects before that is actually needed.
         '''
 
-        {'key': 'date', 'name': 'Date', 'format': 'date'},
-        {'key': 'image_url', 'name': 'Image URL', 'width': 40},
-        {'key': 'title', 'name': 'Title', 'width': 30},
-        {'key': 'url', 'name': 'URL', 'width': 40},
-        {'key': 'uploaded', 'name': 'Uploaded', 'width': 40, 'format': 'date'},
-        {'key': 'cost', 'name': 'Spend', 'width': 40},
-        {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
-        {'key': 'clicks', 'name': 'Clicks'},
-        {'key': 'impressions', 'name': 'Impressions', 'width': 15},
-        {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
+        by_format_mapping = {col['key']: col.get('format') for col in self.common_excel_columns_w_date}
 
         ret = []
         for col in columns:
-            if col.get('key') in ('date', 'uploaded'):
-                col['format'] = 'date'
-            elif col.get('key') in ('cpc'):
-                col['format'] = 'currency'
-            elif col.get('key') in ('ctr'):
-                col['format'] = 'percent'
+            if by_format_mapping.get(col['key']):
+                col['format'] = by_format_mapping[col['key']]
             ret.append(dict(col))
         return ret
 
