@@ -17,17 +17,20 @@ def fetch_touchpoints_impressions(date):
             account_id = redirect_impression['account_id']
             content_ad_id = redirect_impression['content_ad_id']
             conversion_key = (account_id, slug)
+            source_slug = redirect_impression['source']
 
-            click_id = redirect_impression['click_id']
-            click_ts = redirect_impression['click_timestamp']
+            redirect_id = redirect_impression['redirect_id']
+            redirect_ts = redirect_impression['redirect_timestamp']
+
+            impression_id = redirect_impression['impression_id']
             impression_ts = redirect_impression['impression_timestamp']
 
-            if click_ts > impression_ts:
+            if redirect_ts > impression_ts:
                 continue
 
-            if click_id in touchpoint_conversion_dict and\
-               conversion_key in touchpoint_conversion_dict[click_id] and\
-               impression_ts > touchpoint_conversion_dict[click_id][conversion_key]['impression_timestamp']:
+            if redirect_id in touchpoint_conversion_dict and\
+               conversion_key in touchpoint_conversion_dict[redirect_id] and\
+               impression_ts > touchpoint_conversion_dict[redirect_id][conversion_key]['conversion_timestamp']:
                 continue
 
             try:
@@ -37,13 +40,32 @@ def fetch_touchpoints_impressions(date):
 
             try:
                 ca = dash.models.ContentAd.objects.select_related('ad_group__campaign').get(id=content_ad_id)
-            except:
+            except dash.models.ContentAd.DoesNotExist:
+                continue
+
+            try:
+                source = dash.models.Source.objects.get(tracking_slug=source_slug)
+            except dash.models.Source.DoesNotExist:
                 continue
 
             if ca.ad_group.campaign.account_id != pixel.account_id:
                 continue
 
-            touchpoint_conversion_dict[click_id][conversion_key] = redirect_impression
+            potential_touchpoint_conversion = {
+                'slug': slug,
+                'zuid': zuid,
+                'conversion_id': impression_id,
+                'conversion_timestamp': impression_ts,
+                'account_id': account_id,
+                'campaign_id': ca.ad_group.campaign_id,
+                'ad_group_id': ca.ad_group_id,
+                'content_ad_id': content_ad_id,
+                'source_id': source.id,
+                'touchpoint_timestamp': redirect_ts,
+                'conversion_lag': (impression_ts - redirect_ts).total_seconds()
+            }
+
+            touchpoint_conversion_dict[redirect_id][conversion_key] = potential_touchpoint_conversion
 
         for touchpoint in touchpoint_conversion_dict.itervalues():
             touchpoint_conversions.extend(touchpoint.itervalues())
