@@ -1,8 +1,3 @@
-"""
-Script for processing or reprocessing reports
-
-WARNING: This will delete records in the DB tables
-"""
 import logging
 
 from django.core.management.base import BaseCommand
