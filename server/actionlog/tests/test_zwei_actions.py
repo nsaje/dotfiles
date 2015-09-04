@@ -122,6 +122,8 @@ class ResendTestCase(TestCase):
             actionlog.zwei_actions.resend([self.action_log])
 
         self.action_log.state = -1
+        self.mock_urlopen.call_count = 0
+
         
         actionlog.zwei_actions.resend([self.action_log])
         self.assertEqual(1, self.mock_urlopen.call_count)
