@@ -501,7 +501,11 @@ def run_migrate(app, params):
 @parallel
 def deploy_django_app(app, params):
     if env.host in DOCKER_HOSTS:
+        params['app_folder'] = "~/apps/%s-%s-%s" % (app, params['timestamp'], params['commit_hash'])
+        params['venv_name'] = '%s-%s-%s' % (app, params['timestamp'], params['commit_hash'])
+
         return params
+    
     print task("Create virtualenv [%s@%s]" % (app, env.host))
     create_virtualenv(app, params)
 
