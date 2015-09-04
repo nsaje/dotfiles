@@ -282,7 +282,7 @@ class AdGroupContentAdStateTest(TestCase):
         self.assertEqual(content_ad.state, constants.ContentAdSourceState.INACTIVE)
 
         content_ad_sources = models.ContentAdSource.objects.filter(content_ad=content_ad)
-        self.assertEqual(len(content_ad_sources), 2)
+        self.assertEqual(len(content_ad_sources), 3)
 
         for content_ad_source in content_ad_sources:
             self.assertEqual(content_ad_source.state, constants.ContentAdSourceState.INACTIVE)
@@ -975,3 +975,77 @@ class AdGroupSourcesTest(TestCase):
             {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False},  # should return False when DMAs used
             {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True},
         ])
+
+
+class SharethroughApprovalTest(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.client = Client()
+
+    def test_approved_creative(self):
+        data = {
+            'status': 0,
+            'crid': 1,
+            'seat': 'abc123',
+            'expiry': '2015-12-31'
+        }
+        cas = models.ContentAdSource.objects.get(content_ad_id=1, source=models.Source.objects.get(name='Sharethrough'))
+        self.assertEqual(1, cas.submission_status)
+
+        self.client.post(
+            reverse('sharethrough_approval'),
+            follow=True,
+            content_type='application/json',
+            data=json.dumps(data)
+        )
+
+        cas = models.ContentAdSource.objects.get(id=cas.id)
+
+        self.assertEqual(2, cas.submission_status)
+        self.assertEqual(None, cas.submission_errors)
+
+    def test_rejected_creative(self):
+        data = {
+            'status': 1,
+            'crid': 1,
+            'seat': 'abc123',
+            'expiry': '2015-12-31'
+        }
+        cas = models.ContentAdSource.objects.get(content_ad_id=1, source=models.Source.objects.get(name='Sharethrough'))
+        self.assertEqual(1, cas.submission_status)
+
+        self.client.post(
+            reverse('sharethrough_approval'),
+            follow=True,
+            content_type='application/json',
+            data=json.dumps(data)
+        )
+
+        cas = models.ContentAdSource.objects.get(id=cas.id)
+
+        self.assertEqual(3, cas.submission_status)
+        self.assertEqual(constants.SharethroughApprovalStatus.get_text(1), cas.submission_errors)
+
+    def test_rejected_creative_other(self):
+        data = {
+            'status': 5,
+            'crid': 1,
+            'seat': 'abc123',
+            'expiry': '2015-12-31'
+        }
+        cas = models.ContentAdSource.objects.get(content_ad_id=1, source=models.Source.objects.get(name='Sharethrough'))
+        self.assertEqual(1, cas.submission_status)
+
+        self.client.post(
+            reverse('sharethrough_approval'),
+            follow=True,
+            content_type='application/json',
+            data=json.dumps(data)
+        )
+
+        cas = models.ContentAdSource.objects.get(id=cas.id)
+
+        self.assertEqual(3, cas.submission_status)
+        self.assertEqual(None, cas.submission_errors)

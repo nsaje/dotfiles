@@ -388,6 +388,16 @@ urlpatterns += patterns(
     )
 )
 
+# Sharethrough callback
+urlpatterns += patterns(
+    '',
+    url(
+        r'^sharethrough_approval/',
+        dash.views.views.sharethrough_approval,
+        name='sharethrough_approval'
+    )
+)
+
 # Health Check
 urlpatterns += patterns(
     '',

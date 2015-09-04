@@ -161,6 +161,11 @@ class AdGroupAdsPlusTableTest(TestCase):
                 'status': 2,
                 'source_state': '(paused)',
                 'text': 'Approved / Paused'
+            }, {
+                'name': 'Sharethrough',
+                'status': 1,
+                'source_state': '',
+                'text': 'Pending / Paused',
             }],
             'title': u'Test Article unicode Čžš',
             'upload_time': '2015-02-22T19:00:00',
@@ -557,6 +562,11 @@ class AdGroupAdsPlusTableUpdatesTest(TestCase):
                     'source_state': '(paused)',
                     'text': 'Approved / Paused',
                     'name': 'Gravity'
+                }, {
+                    'status': 1,
+                    'source_state': '',
+                    'text': 'Pending / Paused',
+                    'name': 'Sharethrough'
                 }],
                 'status_setting': 1
             }

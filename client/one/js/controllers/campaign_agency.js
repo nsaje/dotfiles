@@ -1,4 +1,4 @@
-/*globals oneApp,constants,moment*/
+/*globals oneApp,constants,options,moment*/
 oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
     $scope.settings = {};
     $scope.history = [];
@@ -12,6 +12,7 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', 'api', function ($s
     $scope.discarded = null;
     $scope.orderField = 'datetime';
     $scope.orderReverse = true;
+    $scope.iabCategories = options.iabCategories;
 
     $scope.getSettings = function (discarded) {
         $scope.saved = null;
