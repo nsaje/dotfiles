@@ -44,8 +44,9 @@ def _transform_row(row):
     result = {}
     for name, val in row.items():
         name = CONTENTADSTATS_FIELD_REVERSE_MAPPING.get(name, name)
-        name = aggregate_fields.transform_name(name)
+
         val = aggregate_fields.transform_val(name, val)
+        name = aggregate_fields.transform_name(name)
 
         result[name] = val
 

@@ -35,6 +35,13 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
                 'clicks': 103,
                 'impressions': 100000,
                 'ctr': 1.03,
+                'visits': 40,
+                'click_discrepancy': 0.2,
+                'pageviews': 123,
+                'percent_new_users': 33.0,
+                'bounce_rate': 12.0,
+                'pv_per_visit': 0.9,
+                'avg_tos': 1.0,
                 'some_random_metric': '12'
             }],
             [{
@@ -46,6 +53,13 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
                 'clicks': 103,
                 'impressions': 100000,
                 'ctr': 1.03,
+                'visits': 30,
+                'click_discrepancy': 0.1,
+                'pageviews': 122,
+                'percent_new_users': 32.0,
+                'bounce_rate': 11.0,
+                'pv_per_visit': 0.8,
+                'avg_tos': 0.9,
                 'some_random_metric': '13'
             }]
         ]
@@ -67,7 +81,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
 
         response = export.AdGroupAdsPlusExport().get(request, self.ad_group_id)
 
-        expected_content = '''Date,Image URL,Title,URL,Uploaded,Spend,Avg. CPC,Clicks,Impressions,CTR\r\n2014-07-01,/123456789/200x300.jpg,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://testurl.com,2015-02-21,1000.12,10.23,103,100000,1.03\r\n'''
+        expected_content = '''Date,Image URL,Title,URL,Uploaded,Spend,Avg. CPC,Clicks,Impressions,CTR,Visits,Click Discrepancy,Pageviews,% New Users,Bounce Rate,PV/Visit,Avg. ToS\r\n2014-07-01,/123456789/200x300.jpg,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://testurl.com,2015-02-21,1000.12,10.23,103,100000,1.03,40,0.2,123,33.0,12.0,0.9,1.0\r\n'''
 
         filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.csv'.format(
             slugify.slugify(self.account_name),
@@ -147,7 +161,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
 
         response = export.AdGroupAdsPlusExport().get(request, self.ad_group_id)
 
-        expected_content = '''Image URL,Title,URL,Uploaded,Spend,Avg. CPC,Clicks,Impressions,CTR\r\n/123456789/200x300.jpg,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://testurl.com,2015-02-21,1000.12,10.23,103,100000,1.03\r\n'''
+        expected_content = '''Image URL,Title,URL,Uploaded,Spend,Avg. CPC,Clicks,Impressions,CTR,Visits,Click Discrepancy,Pageviews,% New Users,Bounce Rate,PV/Visit,Avg. ToS\r\n/123456789/200x300.jpg,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://testurl.com,2015-02-21,1000.12,10.23,103,100000,1.03,40,0.2,123,33.0,12.0,0.9,1.0\r\n'''
 
         filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.csv'.format(
             slugify.slugify(self.account_name),

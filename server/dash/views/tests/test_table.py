@@ -37,13 +37,20 @@ class AdGroupAdsPlusTableTest(TestCase):
         date = datetime.date(2015, 2, 22)
 
         mock_stats1 = [{
+            'ctr': '12.5000',
+            'content_ad': 1,
             'date': date.isoformat(),
             'cpc': '0.0100',
             'clicks': 1000,
             'impressions': 1000000,
             'cost': 100,
-            'ctr': '12.5000',
-            'content_ad': 1
+            'visits': 40,
+            'click_discrepancy': 0.2,
+            'pageviews': 123,
+            'percent_new_users': 33.0,
+            'bounce_rate': 12.0,
+            'pv_per_visit': 0.9,
+            'avg_tos': 1.0,
         }]
         mock_stats2 = {
             'date': date.isoformat(),
@@ -52,7 +59,14 @@ class AdGroupAdsPlusTableTest(TestCase):
             'impressions': 2000000,
             'cost': 200,
             'ctr': '15.5000',
-            'content_ad': 1
+            'content_ad': 2,
+            'visits': 30,
+            'click_discrepancy': 0.1,
+            'pageviews': 122,
+            'percent_new_users': 32.0,
+            'bounce_rate': 11.0,
+            'pv_per_visit': 0.8,
+            'avg_tos': 0.9,
         }
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
@@ -117,7 +131,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         for row in result['data']['rows']:
             row['submission_status'] = sorted(row['submission_status'])
 
-        self.assertItemsEqual(sorted(result['data']['rows']), [{
+        expected_row_1 = {
             'batch_name': 'batch 1',
             'archived': False,
             'batch_id': 1,
@@ -152,7 +166,16 @@ class AdGroupAdsPlusTableTest(TestCase):
             'upload_time': '2015-02-22T19:00:00',
             'url': 'http://testurl.com',
             'redirector_url': 'http://example.com/b/abc/z1/1/1/',
-        }, {
+            'visits': 40,
+            'click_discrepancy': 0.2,
+            'pageviews': 123,
+            'percent_new_users': 33.0,
+            'bounce_rate': 12.0,
+            'pv_per_visit': 0.9,
+            'avg_tos': 1.0,
+        }
+
+        expected_row_2 = {
             'archived': False,
             'status_setting': 2,
             'upload_time': '2015-02-22T19:00:00',
@@ -175,16 +198,33 @@ class AdGroupAdsPlusTableTest(TestCase):
             'description': 'Example description',
             'call_to_action': 'Call to action',
             'impressions': None,
-            'id': '2'
-        }])
+            'id': '2',
+            'visits': None,
+            'click_discrepancy': None,
+            'pageviews': None,
+            'percent_new_users': None,
+            'bounce_rate': None,
+            'pv_per_visit': None,
+            'avg_tos': None,
+        }
+
+        self.assertItemsEqual(sorted(result['data']['rows']), [expected_row_1, expected_row_2])
 
         self.assertIn('totals', result['data'])
+
         self.assertEqual(result['data']['totals'], {
             'clicks': 1500,
             'cost': 200,
             'cpc': '0.0200',
             'ctr': '15.5000',
-            'impressions': 2000000
+            'impressions': 2000000,
+            'visits': 30,
+            'click_discrepancy': 0.1,
+            'pageviews': 122,
+            'percent_new_users': 32.0,
+            'bounce_rate': 11.0,
+            'pv_per_visit': 0.8,
+            'avg_tos': 0.9,
         })
 
         batches = models.UploadBatch.objects.filter(
@@ -261,6 +301,7 @@ class AdGroupAdsPlusTableTest(TestCase):
 
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 1)
+        # TODO: tests adjust tests
         self.assertEqual(result['data']['rows'][0]['id'], '1')
 
     def test_get_order(self, mock_query):
