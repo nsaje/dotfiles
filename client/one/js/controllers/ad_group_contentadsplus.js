@@ -695,20 +695,18 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     var initColumns = function () {
         var cols;
 
-        // TODO: Check for correct permissions
         zemPostclickMetricsService.insertAcquisitionColumns(
             $scope.columns,
             $scope.columns.length - 2,
-            $scope.hasPermission('zemauth.aggregate_postclick_acquisition'),
-            $scope.isPermissionInternal('zemauth.aggregate_postclick_acquisition')
+            $scope.hasPermission('zemauth.content_ads_postclick_acquisition'),
+            $scope.isPermissionInternal('zemauth.content_ads_postclick_acquisition')
         );
 
-        // TODO: Check for correct permissions
         zemPostclickMetricsService.insertEngagementColumns(
             $scope.columns,
             $scope.columns.length - 2,
-            $scope.hasPermission('zemauth.aggregate_postclick_engagement'),
-            $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
+            $scope.hasPermission('zemauth.content_ads_postclick_engagement'),
+            $scope.isPermissionInternal('zemauth.content_ads_postclick_engagement')
         );
 
         cols = zemCustomTableColsService.load('adGroupAdsPlus', $scope.columns);
@@ -854,7 +852,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
     var setChartOptions = function (goals) {
-        // TODO: check permissions
         $scope.chartMetricOptions = options.adGroupChartMetrics;
 
         if ($scope.hasPermission('zemauth.content_ads_postclick_acquisition')) {

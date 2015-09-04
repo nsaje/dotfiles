@@ -1048,8 +1048,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
                 end_date,
                 [ad_group],
                 filtered_sources,
-            ) if (request.user.has_perm('zemauth.content_ads_postclick_acquisition') or
-                  request.user.has_perm('zemauth.content_ads_postclick_engagement')) else False
+            ) if has_aggregate_postclick_permission(request.user) else False
 
         return self.create_api_response({
             'rows': rows,
