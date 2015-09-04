@@ -556,11 +556,9 @@ class AdGroupAdsPlusExport(ExportApiView):
 
         self.add_source_data(sources_results)
 
-        ads_columns = self.override_excel_format(list(self.common_excel_columns_w_date))
+        ads_columns = self._copy_columns(self.common_excel_columns_w_date)
         sources_columns = list(self.common_excel_columns_w_date)  # make a shallow copy
         sources_columns.insert(5, {'key': 'source', 'name': 'Source', 'width': 20})
-
-        sources_columns = self.override_excel_format(sources_columns)
 
         content = export.get_excel_content([
             ('Detailed Report', ads_columns, ads_results),
@@ -589,7 +587,7 @@ class AdGroupAdsPlusExport(ExportApiView):
 
         self.add_source_data(sources_results)
 
-        ads_columns = self.common_excel_columns
+        ads_columns = self._copy_columns(self.common_excel_columns)
         sources_columns = list(ads_columns)  # make a shallow copy
         sources_columns.insert(4, {'key': 'source', 'name': 'Source', 'width': 20})
 
@@ -612,21 +610,8 @@ class AdGroupAdsPlusExport(ExportApiView):
         content = export.get_csv_content(fieldnames, ads_results)
         return self.create_csv_response(filename, content=content)
 
-    def override_excel_format(self, columns):
-        '''
-        This function is needed due to very strange runtime behaviour of list
-        concatenation with xslx package. Column format's are substituted with actual
-        Format objects before that is actually needed.
-        '''
-
-        by_format_mapping = {col['key']: col.get('format') for col in self.common_excel_columns_w_date}
-
-        ret = []
-        for col in columns:
-            if by_format_mapping.get(col['key']):
-                col['format'] = by_format_mapping[col['key']]
-            ret.append(dict(col))
-        return ret
+    def _copy_columns(self, columns):
+        return [dict(col) for col in columns]
 
     def add_source_data(self, results):
         sources = {source.id: source for source in models.Source.objects.all()}
