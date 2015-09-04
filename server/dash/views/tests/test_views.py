@@ -977,7 +977,7 @@ class AdGroupSourcesTest(TestCase):
         ])
 
 
-@patch('dash.views.views.actionlog.zwei_actions.send')
+@patch('dash.views.views.actionlog.api_contentads.init_update_content_ad_action')
 class SharethroughApprovalTest(TestCase):
 
     fixtures = ['test_api.yaml']
@@ -985,7 +985,7 @@ class SharethroughApprovalTest(TestCase):
     def setUp(self):
         self.client = Client()
 
-    def test_approved_creative(self, mock_send):
+    def test_approved_creative(self, mock_update):
         data = {
             'status': 0,
             'crid': 1,
@@ -1006,9 +1006,9 @@ class SharethroughApprovalTest(TestCase):
 
         self.assertEqual(2, cas.submission_status)
         self.assertEqual(None, cas.submission_errors)
-        self.assertTrue(mock_send.called)
+        self.assertTrue(mock_update.called)
 
-    def test_rejected_creative(self, mock_send):
+    def test_rejected_creative(self, mock_update):
         data = {
             'status': 1,
             'crid': 1,
@@ -1029,9 +1029,9 @@ class SharethroughApprovalTest(TestCase):
 
         self.assertEqual(3, cas.submission_status)
         self.assertEqual(constants.SharethroughApprovalStatus.get_text(1), cas.submission_errors)
-        self.assertTrue(mock_send.called)
+        self.assertTrue(mock_update.called)
 
-    def test_rejected_creative_other(self, mock_send):
+    def test_rejected_creative_other(self, mock_update):
         data = {
             'status': 5,
             'crid': 1,
@@ -1052,4 +1052,4 @@ class SharethroughApprovalTest(TestCase):
 
         self.assertEqual(3, cas.submission_status)
         self.assertEqual(None, cas.submission_errors)
-        self.assertTrue(mock_send.called)
+        self.assertTrue(mock_update.called)
