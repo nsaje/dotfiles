@@ -5,11 +5,10 @@ import types
 
 def dictfetchall(cursor):
     desc = cursor.description
-    fetch_results = cursor.fetchall()
 
     return [
         dict(zip([col[0] for col in desc], row))
-        for row in fetch_results
+        for row in cursor.fetchall()
     ]
 
 
