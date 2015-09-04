@@ -229,6 +229,18 @@
     model: dash.source
     pk: 8
 
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Sharethrough
+        tracking_slug: 'b1_sharethrough'
+        source_type: 1
+        maintenance: false
+        bidder_slug: 'sharethrough'
+        content_ad_submission_type: 1
+    model: dash.source
+    pk: 9
+
 # test adgroupsettings
 
 -   fields:
@@ -870,6 +882,18 @@
         modified_dt: '2015-07-01T00:00:00'
     model: dash.contentadsource
     pk: 4
+
+-   fields:
+        source: 9
+        content_ad: 1
+        submission_status: 1
+        state: 1
+        source_state: 2
+        source_content_ad_id: NULL
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 5
 
 # test adgroupsourcesettings
 
