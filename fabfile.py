@@ -129,7 +129,7 @@ def docker_deploy(app, params):
         return params
     print header("\n\n\t~~~~~~~~~~~~ Deploying server@%s ~~~~~~~~~~~~" % (env.host, ))
     run('/home/one/deploy.sh')
-    print ok("Server successfully deployed at %s" % (env.host, ))
+    print ok("Server successfully deployed and switched at %s" % (env.host, ))
 
 
 @task
