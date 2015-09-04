@@ -81,7 +81,7 @@ def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakd
 
     if breakdown:
         breakdown = _prepare_breakdown(breakdown, field_mapping)
-        statement = _construct_select_statement(
+        statement = _create_select_query(
             'contentadstats',
             breakdown + aggregates,
             constraints,
@@ -91,7 +91,7 @@ def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakd
         results = _get_results(statement)
         return [_translate_row(row, reverse_field_mapping) for row in results]
 
-    statement = _construct_select_statement(
+    statement = _create_select_query(
         'contentadstats',
         aggregates,
         constraints
@@ -109,8 +109,7 @@ def _prepare_constraints(constraints, field_mapping):
 
         if isinstance(v, collections.Sequence) or isinstance(v, QuerySet):
             if v:
-                result.append('{} IN ({})'.format(k,
-                                                  ','.join([str(get_obj_id(x)) for x in v])))
+                result.append('{} IN ({})'.format(k, ','.join([str(get_obj_id(x)) for x in v])))
             else:
                 result.append('FALSE')
         else:
@@ -127,14 +126,14 @@ def _prepare_aggregates(aggregates, field_mapping):
         if isinstance(aggr, db_aggregates.SumDivision):
             divisor = aggr.input_field.name
             divisor = field_mapping.get(divisor, divisor)
-            processed_aggrs.append(_sum_division_statement(field_name, divisor, key))
+            processed_aggrs.append(_sum_division_aggregate(field_name, divisor, key))
         elif isinstance(aggr, Sum):
-            processed_aggrs.append(_sum_statement(field_name, key))
+            processed_aggrs.append(_sum_aggregate(field_name, key))
         else:
             raise exc.ReportsUnknownAggregator('Unknown aggregator')
 
-    # HACK: should be added to aggregates
-    processed_aggrs.append(_click_discrepancy_statement('clicks', 'visits', 'click_discrepancy'))
+    # HACK: should be added to aggregate_fields
+    processed_aggrs.append(_click_discrepancy_aggregate('clicks', 'visits', 'click_discrepancy'))
 
     return processed_aggrs
 
@@ -147,7 +146,7 @@ def _translate_row(row, reverse_field_mapping):
     return {reverse_field_mapping.get(k, k): v for k, v in row.iteritems()}
 
 
-def _construct_select_statement(table, fields, constraints, breakdown=None):
+def _create_select_query(table, fields, constraints, breakdown=None):
     group_by = ''
     if breakdown:
         group_by = 'GROUP BY {}'.format(','.join(breakdown))
@@ -159,7 +158,7 @@ def _construct_select_statement(table, fields, constraints, breakdown=None):
     )
 
 
-def _click_discrepancy_statement(clicks_col, visits_col, stat_name):
+def _click_discrepancy_aggregate(clicks_col, visits_col, stat_name):
     return ('CASE WHEN SUM({clicks}) = 0 THEN NULL WHEN SUM({visits}) = 0 THEN 1'
             ' WHEN SUM({clicks}) < SUM({visits}) THEN 0'
             ' ELSE SUM(CAST({clicks} AS FLOAT)) - SUM({visits}) / SUM({clicks})'
@@ -169,7 +168,7 @@ def _click_discrepancy_statement(clicks_col, visits_col, stat_name):
                 stat_name=quote(stat_name))
 
 
-def _sum_division_statement(expr, divisor, stat_name):
+def _sum_division_aggregate(expr, divisor, stat_name):
     return ('CASE WHEN SUM({divisor}) <> 0 THEN SUM(CAST({expr} AS FLOAT)) / SUM({divisor}) '
             'ELSE NULL END as {stat_name}').format(
                 expr=quote(expr),
@@ -177,7 +176,7 @@ def _sum_division_statement(expr, divisor, stat_name):
                 stat_name=quote(stat_name))
 
 
-def _sum_statement(expr, stat_name):
+def _sum_aggregate(expr, stat_name):
     return 'SUM({}) AS {}'.format(quote(expr), quote(stat_name))
 
 
