@@ -18,10 +18,8 @@ def resend_action(modeladmin, request, queryset):
         zwei_actions.resend([
             action for action in queryset
         ])
-    except AssertionError:
-        modeladmin.message_user(request,
-                                'Not all selected actions have failed!',
-                                level=messages.ERROR)
+    except AssertionError, ex:
+        modeladmin.message_user(request, str(ex), level=messages.ERROR)
 resend_action.short_description = "Resend failed actions"
 
 class CountFilterQuerySet(db_models.QuerySet):

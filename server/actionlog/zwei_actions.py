@@ -28,7 +28,8 @@ def resend(actions):
     if not isinstance(actions, list) and not isinstance(actions, tuple):
         actions = [actions]
 
-    assert all(action.state == constants.ActionState.FAILED for action in actions)
+    if not all(action.state == constants.ActionState.FAILED for action in actions):
+        raise AssertionError('Not all selected actions have failed!')
 
     modified_date = datetime.datetime.utcnow()
     expiration_date = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
