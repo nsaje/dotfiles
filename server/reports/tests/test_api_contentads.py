@@ -14,7 +14,7 @@ class ApiContentAdsTest(TestCase):
     def _get_query(self, mock_get_results):
         return mock_get_results.call_args[0][0]
 
-    def assert_breakdown(self, mock_get_results, breakdown):
+    def check_breakdown(self, mock_get_results, breakdown):
         query = self._get_query(mock_get_results)
 
         self.assertEqual(breakdown is not None, 'GROUP BY' in query)
@@ -35,7 +35,7 @@ class ApiContentAdsTest(TestCase):
         for bf in breakdown_fields:
             self.assertEqual(1, len([x for x in select_fields if bf in x]))
 
-    def assert_constraints(self, mock_get_results, **constraints):
+    def check_constraints(self, mock_get_results, **constraints):
         query = self._get_query(mock_get_results)
         where_constraints = query.split('WHERE')[1].split('GROUP BY')[0].split('AND')
         self.assertEqual(len(where_constraints), len(constraints))
@@ -82,8 +82,8 @@ class ApiContentAdsTest(TestCase):
             'bounce_rate': 100.0
         })
 
-        self.assert_breakdown(_get_results, breakdown)
-        self.assert_constraints(_get_results, **constraints)
+        self.check_breakdown(_get_results, breakdown)
+        self.check_constraints(_get_results, **constraints)
 
     def test_query_breakdown_by_content_ad(self, _get_results):
         constraints = dict(
@@ -95,8 +95,8 @@ class ApiContentAdsTest(TestCase):
 
         api_contentads.query(breakdown=breakdown, **constraints)
 
-        self.assert_breakdown(_get_results, breakdown)
-        self.assert_constraints(_get_results, **constraints)
+        self.check_breakdown(_get_results, breakdown)
+        self.check_constraints(_get_results, **constraints)
 
     def test_query_breakdown_by_date(self, _get_results):
         constraints = dict(
@@ -107,8 +107,8 @@ class ApiContentAdsTest(TestCase):
         breakdown = ['date']
         api_contentads.query(breakdown=breakdown, **constraints)
 
-        self.assert_breakdown(_get_results, breakdown)
-        self.assert_constraints(_get_results, **constraints)
+        self.check_breakdown(_get_results, breakdown)
+        self.check_constraints(_get_results, **constraints)
 
     def test_query_filter_by_date(self, _get_results):
         constraints = dict(
@@ -117,4 +117,4 @@ class ApiContentAdsTest(TestCase):
             date=datetime.date(2015, 2, 1),
         )
         api_contentads.query(**constraints)
-        self.assert_constraints(_get_results, **constraints)
+        self.check_constraints(_get_results, **constraints)
