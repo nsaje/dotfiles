@@ -448,6 +448,7 @@ def switch_django_app(app, params):
 
     print task("Restart service")
     run("supervisorctl restart %s" % app)
+    print ok("%s successfully switched at %s" % (app.capitalize(), env.host))
 
 
 @parallel
@@ -461,6 +462,7 @@ def switch_angular_app(app, params):
             run("cp -a {app} {folder}/previous".format(folder=params['app_folder'], app=app))
 
         run("ln -Tsf %s %s" % (params['app_folder'], app))
+    print ok("%s successfully switched at %s" % (app.capitalize(), env.host))
 
 
 @parallel
