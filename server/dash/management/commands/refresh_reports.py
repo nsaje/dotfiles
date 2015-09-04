@@ -16,12 +16,12 @@ class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--adgroups', help='Comma separated list of adgroup ids. If none specified, nothing happens.'),
         make_option('--from', help='Date from YYYYMMDD'),
-        make_option('--verbose', help='Write out as much information as possible.', action='store_true'),
         make_option('--to', help='Date to YYYYMMDD'),
+        make_option('--verbose', help='Write out as much information as possible.', action='store_true'),
     )
 
     def handle(self, *args, **options):
-        logger.info('Inserting stats into Redshift')
+        logger.info('Refreshing reports')
 
         adgroup_ids = parse_id_list(options, 'adgroups') if options['adgroups'] is not None else []
         date_from = datetime.datetime.strptime(options['from'], '%Y%m%d') if options['from'] else None
@@ -32,23 +32,22 @@ class Command(BaseCommand):
             logging.exception("Failed parsing command line arguments")
             sys.exit(1)
 
-        n = len(adgroup_ids)
-        n_days = int((date_to - date_from).days)
+        nr_days = int((date_to - date_from).days)
         for i, agid in enumerate(adgroup_ids):
-            for days in range(n_days):
-                day = date_from + datetime.timedelta(days)
+            for day in range(nr_days):
+                report_date = date_from + datetime.timedelta(day)
                 if verbose:
-                    print 'Refreshing {i}/{n}({i_day}/{n_day})\t{agid}\t{date}'.format(
+                    print 'Refreshing {i}/{n}({day}/{nr_day})\t{agid}\t{date}\t'.format(
                         i=i,
-                        n=n,
-                        i_day=days,
-                        n_day=n_days,
+                        n=len(adgroup_ids),
+                        day=day,
+                        nr_day=nr_days,
                         agid=agid,
-                        date=day
+                        date=report_date
                     ),
 
                 refresh.refresh_contentadstats(
-                    day,
+                    report_date,
                     models.AdGroup.objects.get(id=agid)
                 )
 
