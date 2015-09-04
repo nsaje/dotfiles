@@ -263,10 +263,8 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
 
                         if ($window.isDemo) {
                             $state.go('main.campaigns.ad_groups', {id: campaignData.id});
-                        } else if ($scope.user.showOnboardingGuidance) {
-                            $state.go('main.campaigns.settings', {id: campaignData.id});
                         } else {
-                            $state.go('main.campaigns.agency', {id: campaignData.id});
+                            $state.go('main.campaigns.settings', {id: campaignData.id});
                         }
                         
 
