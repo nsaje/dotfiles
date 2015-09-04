@@ -1,61 +1,51 @@
-import datetime
+from collections import defaultdict
 
 import dash.models
 from utils import redirector_helper
 
-MAX_CONVERSION_WINDOW_DAYS = 90
 MIN_DELAY_BETWEEN_CONVERSIONS_MINS = 10
-
-
-def _get_touchpoint_conversion_pairs(impression, potential_touchpoints):
-    try:
-        pixel = dash.models.ConversionPixel.objects.get(slug=impression['slug'], account_id=impression['account_id'])
-    except dash.models.ConversionPixel.DoesNotExist:
-        return []
-
-    pairs = []
-    for tp in potential_touchpoints:
-        try:
-            ca = dash.models.ContentAd.objects.select_related('ad_group__campaign').get(id=tp['creative_id'])
-        except dash.models.ContentAd.DoesNotExist:
-            continue
-
-        if pixel not in ca.ad_group.campaign.conversion_pixels.all():
-            continue
-
-        if impression['timestamp'] - tp['timestamp'] > datetime.timedelta(days=MAX_CONVERSION_WINDOW_DAYS):
-            continue
-
-        pairs.append((impression, tp))
-
-    return pairs
 
 
 def fetch_touchpoints_impressions(date):
     redirects_impressions = redirector_helper.fetch_redirects_impressions(date)
 
-    touchpoint_conversion_pairs = []
-    for obj in redirects_impressions.itervalues():
-        impressions = sorted(obj['impressions'], key=lambda x: x['timestamp'])
+    touchpoint_conversions = []
+    for zuid, zuid_redirects_impressions in redirects_impressions.iteritems():
+        touchpoint_conversion_dict = defaultdict(dict)
+        for redirect_impression in zuid_redirects_impressions:
+            slug = redirect_impression['slug']
+            account_id = redirect_impression['account_id']
+            content_ad_id = redirect_impression['content_ad_id']
+            conversion_key = (account_id, slug)
 
-        latest_impression_ts_by_slug = {}
-        for imp in impressions:
-            dict_key = (imp['account_id'], imp['slug'])
-            if dict_key not in latest_impression_ts_by_slug:
-                latest_impression_ts_by_slug[dict_key] = datetime.datetime.min
+            click_id = redirect_impression['click_id']
+            click_ts = redirect_impression['click_timestamp']
+            impression_ts = redirect_impression['impression_timestamp']
 
-            latest_impression_ts = latest_impression_ts_by_slug[dict_key]
-            if imp['timestamp'] - latest_impression_ts < datetime.timedelta(minutes=MIN_DELAY_BETWEEN_CONVERSIONS_MINS):
-                # TODO: suggested by andraz, discuss with product
+            if click_ts > impression_ts:
                 continue
 
-            potential_impression_touchpoints = [redirect for redirect in obj['redirects'] if
-                                                redirect['timestamp'] > latest_impression_ts and
-                                                redirect['timestamp'] < imp['timestamp']]
+            if click_id in touchpoint_conversion_dict and\
+               conversion_key in touchpoint_conversion_dict[click_id] and\
+               impression_ts > touchpoint_conversion_dict[click_id][conversion_key]['impression_timestamp']:
+                continue
 
-            latest_impression_ts_by_slug[dict_key] = imp['timestamp']
-            touchpoint_conversion_pairs.extend(
-                _get_touchpoint_conversion_pairs(imp, potential_impression_touchpoints)
-            )
+            try:
+                pixel = dash.models.ConversionPixel.objects.get(slug=slug, account_id=account_id)
+            except dash.models.ConversionPixel.DoesNotExist:
+                continue
 
-    return touchpoint_conversion_pairs
+            try:
+                ca = dash.models.ContentAd.objects.select_related('ad_group__campaign').get(id=content_ad_id)
+            except:
+                continue
+
+            if ca.ad_group.campaign.account_id != pixel.account_id:
+                continue
+
+            touchpoint_conversion_dict[click_id][conversion_key] = redirect_impression
+
+        for touchpoint in touchpoint_conversion_dict.itervalues():
+            touchpoint_conversions.extend(touchpoint.itervalues())
+
+    return touchpoint_conversions
