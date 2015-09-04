@@ -1,4 +1,5 @@
 from collections import defaultdict
+import datetime
 
 import dash.models
 from utils import redirector_helper
@@ -14,16 +15,16 @@ def fetch_touchpoints_impressions(date):
         touchpoint_conversion_dict = defaultdict(dict)
         for redirect_impression in zuid_redirects_impressions:
             slug = redirect_impression['slug']
-            account_id = redirect_impression['account_id']
-            content_ad_id = redirect_impression['content_ad_id']
+            account_id = redirect_impression['accountId']
+            content_ad_id = redirect_impression['contentAdId']
             conversion_key = (account_id, slug)
             source_slug = redirect_impression['source']
 
-            redirect_id = redirect_impression['redirect_id']
-            redirect_ts = redirect_impression['redirect_timestamp']
+            redirect_id = redirect_impression['redirectId']
+            redirect_ts = datetime.datetime.strptime(redirect_impression['redirectTimestamp'], '%Y-%m-%dT%H:%M:%SZ')
 
-            impression_id = redirect_impression['impression_id']
-            impression_ts = redirect_impression['impression_timestamp']
+            impression_id = redirect_impression['impressionId']
+            impression_ts = datetime.datetime.strptime(redirect_impression['impressionTimestamp'], '%Y-%m-%dT%H:%M:%SZ')
 
             if redirect_ts > impression_ts:
                 continue

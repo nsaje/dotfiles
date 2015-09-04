@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 import urllib2
 
 from django.conf import settings
@@ -48,8 +49,18 @@ def insert_adgroup(ad_group_id, tracking_codes, disable_auto_tracking=False):
         raise e
 
 
-def fetch_redirects_impressions():
-    return _call_api_retry(settings.R1_CONVERSION_STATS_URL, method='GET')
+def fetch_redirects_impressions(date, timeout=300):
+    job_id = _call_api_retry(settings.R1_CONVERSION_STATS_URL.format(date=date.strftime('%Y-%m-%d')), method='GET')
+
+    start_time = time.time()
+    while (time.time() - start_time) < timeout:
+        result = _call_api_retry(settings.R1_CONVERSION_STATS_RESULT_URL.format(str(job_id)), method='GET')
+        if not result:
+            continue
+
+        return result
+
+    raise Exception('Redirect conversion stats timeout')
 
 
 def _call_api_retry(url, data, method='POST'):
