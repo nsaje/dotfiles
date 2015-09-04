@@ -24,5 +24,5 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         date = parse_date(options, 'date')
 
-        conversion_touchpoint_pairs = fetch.fetch_touchpoints_impressions(date)
-        update.update_touchpoint_conversions(conversion_touchpoint_pairs)
+        touchpoint_conversion_pairs = fetch.fetch_touchpoint_conversions(date)
+        update.update_touchpoint_conversions(touchpoint_conversion_pairs)
