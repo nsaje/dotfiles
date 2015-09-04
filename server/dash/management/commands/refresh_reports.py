@@ -1,11 +1,12 @@
 import sys
 import logging
 import datetime
-from dateutil import rrule
 
+from dateutil import rrule
 from optparse import make_option
 from utils.command_helpers import parse_id_list
 from django.core.management.base import BaseCommand
+
 from reports import refresh
 from dash import models
 
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
 
     option_list = BaseCommand.option_list + (
-        make_option('--adgroups', help='Comma separated list of adgroup ids. If none specified, nothing happens.'),
+        make_option('--adgroups', help='Comma separated list of adgroup ids.'),
         make_option('--from', help='Date from YYYYMMDD'),
         make_option('--to', help='Date to YYYYMMDD'),
         make_option('--verbose', help='Write out as much information as possible.', action='store_true'),

@@ -301,7 +301,6 @@ class AdGroupAdsPlusTableTest(TestCase):
 
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 1)
-
         self.assertEqual(result['data']['rows'][0]['id'], '1')
 
     def test_get_order(self, mock_query):
