@@ -1,16 +1,17 @@
 import collections
 from itertools import repeat
 
+from django.conf import settings
+from django.db import connections
+from django.db.models import Sum
 from django.db.models.query import QuerySet
 
-from reports.db_raw_helpers import dictfetchall, get_obj_id, _quote
-from utils import db_aggregates
-from django.db.models import Sum
-
-from django.db import connections
-from django.conf import settings
-
 from utils.statsd_helper import statsd_timer
+
+from utils import db_aggregates
+
+from reports import exc
+from reports.db_raw_helpers import dictfetchall, get_obj_id, quote
 
 
 @statsd_timer('reports.redshift', 'delete_contentadstats')
@@ -70,14 +71,12 @@ def vacuum_contentadstats():
 
 def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakdown=None, **constraints):
 
-    print 'REDSHIFT'
     constraints = _prepare_constraints(constraints, field_mapping)
-    constraints.append('{} >= \'{}\''.format(_quote('date'), start_date))
-    constraints.append('{} <= \'{}\''.format(_quote('date'), end_date))
+    constraints.append('{} >= \'{}\''.format(quote('date'), start_date))
+    constraints.append('{} <= \'{}\''.format(quote('date'), end_date))
 
     aggregates = _prepare_aggregates(aggregates, field_mapping)
 
-    # TODO: could this be precomputed
     reverse_field_mapping = {v: k for k, v in field_mapping.iteritems()}
 
     if breakdown:
@@ -90,7 +89,6 @@ def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakd
         )
 
         results = _get_results(statement)
-        print 'breakdown', "\n", statement, "\n", results, "\n", [_translate_row(row, reverse_field_mapping) for row in results]
         return [_translate_row(row, reverse_field_mapping) for row in results]
 
     statement = _construct_select_statement(
@@ -101,15 +99,13 @@ def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakd
 
     results = _get_results(statement)
 
-    assert len(results) == 1
-    print 'aggregate', "\n", statement, "\n", results, "\n", _translate_row(results[0], reverse_field_mapping)
     return _translate_row(results[0], reverse_field_mapping)
 
 
 def _prepare_constraints(constraints, field_mapping):
     result = []
     for k, v in constraints.iteritems():
-        k = _quote(field_mapping.get(k, k))
+        k = quote(field_mapping.get(k, k))
 
         if isinstance(v, collections.Sequence) or isinstance(v, QuerySet):
             if v:
@@ -135,8 +131,7 @@ def _prepare_aggregates(aggregates, field_mapping):
         elif isinstance(aggr, Sum):
             processed_aggrs.append(_sum_statement(field_name, key))
         else:
-            # TODO: proper exception class
-            raise Exception('Unknown aggregator')
+            raise exc.ReportsUnknownAggregator('Unknown aggregator')
 
     # HACK: should be added to aggregates
     processed_aggrs.append(_click_discrepancy_statement('clicks', 'visits', 'click_discrepancy'))
@@ -145,7 +140,7 @@ def _prepare_aggregates(aggregates, field_mapping):
 
 
 def _prepare_breakdown(breakdown, field_mapping):
-    return [_quote(field_mapping.get(field, field)) for field in breakdown]
+    return [quote(field_mapping.get(field, field)) for field in breakdown]
 
 
 def _translate_row(row, reverse_field_mapping):
@@ -169,23 +164,21 @@ def _click_discrepancy_statement(clicks_col, visits_col, stat_name):
             ' WHEN SUM({clicks}) < SUM({visits}) THEN 0'
             ' ELSE SUM(CAST({clicks} AS FLOAT)) - SUM({visits}) / SUM({clicks})'
             ' END as {stat_name}').format(
-                clicks=_quote(clicks_col),
-                visits=_quote(visits_col),
-                stat_name=_quote(stat_name))
+                clicks=quote(clicks_col),
+                visits=quote(visits_col),
+                stat_name=quote(stat_name))
 
 
 def _sum_division_statement(expr, divisor, stat_name):
-    # TODO: needs a better name?
     return ('CASE WHEN SUM({divisor}) <> 0 THEN SUM(CAST({expr} AS FLOAT)) / SUM({divisor}) '
             'ELSE NULL END as {stat_name}').format(
-                expr=_quote(expr),
-                divisor=_quote(divisor),
-                stat_name=_quote(stat_name))
+                expr=quote(expr),
+                divisor=quote(divisor),
+                stat_name=quote(stat_name))
 
 
 def _sum_statement(expr, stat_name):
-    # TODO: needs a better name?
-    return 'SUM({}) AS {}'.format(_quote(expr), _quote(stat_name))
+    return 'SUM({}) AS {}'.format(quote(expr), quote(stat_name))
 
 
 def _get_cursor():

@@ -19,7 +19,7 @@ def get_obj_id(obj):
     return obj
 
 
-def _quote(field):
+def quote(field):
     if isinstance(field, collections.Sequence) and not isinstance(field, types.StringTypes):
-        return [_quote(f) for f in field]
+        return [quote(f) for f in field]
     return '"{}"'.format(field)
