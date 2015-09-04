@@ -275,7 +275,7 @@ def update_content_ads_source_traffic_stats(date, ad_group, source, rows):
     reports.refresh.refresh_contentadstats(date, ad_group, source)
 
 
-@transaction.atomic(using=settings.STATS_DB)
+@transaction.atomic(using=settings.STATS_DB_NAME)
 def insert_touchpoint_conversions(date, conversion_touchpoint_pairs):
     redshift.delete_touchpoint_conversions(date)
     redshift.insert_touchpoint_conversions(date, conversion_touchpoint_pairs)
