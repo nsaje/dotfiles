@@ -4,6 +4,7 @@ oneApp.controller('MainCtrl',
      '$state',
      '$location',
      '$document',
+     '$q',
      '$modalStack',
      'zemMoment',
      'user',
@@ -17,6 +18,7 @@ oneApp.controller('MainCtrl',
         $state,
         $location,
         $document,
+        $q,
         $modalStack,
         zemMoment,
         user,
@@ -33,10 +35,14 @@ oneApp.controller('MainCtrl',
     $scope.maxDate = zemMoment();
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
 
+    $scope.remindToAddBudget = $q.defer(); 
+
     $scope.adGroupData = {};
     $scope.account = null;
     $scope.campaign = null;
     $scope.adGroup = null;
+
+    $scope.user.automaticallyCreateAdGroup = false;
 
     $scope.refreshNavData = function (accounts) {
         $scope.accounts = accounts;
@@ -87,6 +93,10 @@ oneApp.controller('MainCtrl',
         return !!$scope.getDefaultAllAccountsState();
     };
 
+    $scope.canShowBudgetNotification = function () {
+        return $scope.remindToAddBudget.promise;
+    };
+
     $scope.getDefaultAccountState = function () {
         // keep the same tab if possible
         if ($state.includes('**.sources') && $scope.hasPermission('zemauth.account_sources_view')) {
@@ -127,6 +137,9 @@ oneApp.controller('MainCtrl',
         if ($state.includes('**.agency') && $scope.hasPermission('zemauth.campaign_settings_view')) {
             return 'main.campaigns.agency';
         }
+        if ($state.includes('**.settings') && $scope.hasPermission('zemauth.campaign_settings_view')) {
+            return 'main.campaigns.settings';
+        }
 
         // otherwise get default state
         if ($scope.hasPermission('zemauth.campaign_ad_groups_view')) {
@@ -140,6 +153,9 @@ oneApp.controller('MainCtrl',
         }
         if ($scope.hasPermission('zemauth.campaign_budget_management_view')) {
             return 'main.campaings.budget';
+        }
+        if ($scope.hasPermission('zemauth.campaign_settings_view')) {
+            return 'main.campaigns.settings';
         }
 
         // no permissions

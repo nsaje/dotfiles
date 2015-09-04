@@ -85,3 +85,32 @@ class SendTestCase(TestCase):
             ],
             json.loads(self.mock_urlopen.call_args[0][0].data)
         )
+
+
+class ResendTestCase(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.action_log = actionlog.models.ActionLog.objects.create(
+            action='get_reports',
+            state=1,
+            action_type=1,
+            ad_group_source=dash.models.AdGroupSource.objects.get(id=1),
+            expiration_dt=datetime.datetime(2015, 7, 1, 12),
+            payload={
+                'action': 'get_reports',
+                'source': 'outbrain',
+                'expiration_dt': datetime.datetime(2015, 7, 1, 12),
+                'args': {
+                    'source_campaign_key': '1234567890',
+                    'date': '2015-07-01',
+                },
+                'callback_url': 'http://localhost/'
+            }
+        )
+
+    def test_resend_not_failed_actions(self):
+        with self.assertRaises(AssertionError):
+            actionlog.zwei_actions.resend(self.action_log)
+        with self.assertRaises(AssertionError):
+            actionlog.zwei_actions.resend([self.action_log])

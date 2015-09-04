@@ -180,9 +180,8 @@ if TESTING:
     CELERY_DEFAULT_CONVAPI_QUEUE = CELERY_DEFAULT_CONVAPI_QUEUE
     CELERY_DEFAULT_CONVAPI_V2_QUEUE = CELERY_DEFAULT_CONVAPI_V2_QUEUE
 
-    # TODO this is a workaround until we decide
-    # what to do with Redshift when testing
-    del DATABASES['stats']
+    del DATABASES[STATS_DB_NAME]
+    STATS_DB_NAME = 'default'
 
 # App specific
 ACTIONLOG_RECENT_HOURS = 2

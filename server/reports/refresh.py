@@ -2,6 +2,7 @@ import json
 
 from django.db.models import Sum, Max
 from django.db import connection, transaction
+from django.conf import settings
 
 import reports.models
 from reports.db_raw_helpers import dictfetchall
@@ -106,7 +107,7 @@ def _get_goals_json(goals):
     return json.dumps(result)
 
 
-@transaction.atomic
+@transaction.atomic(using=settings.STATS_DB_NAME)
 def refresh_contentadstats(date, ad_group, source=None):
     source_id = source.id if source is not None else None
 

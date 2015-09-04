@@ -11,6 +11,7 @@ class AdGroupSettingsState(ConstantBase):
         INACTIVE: 'Paused'
     }
 
+
 class AdGroupRunningStatus(ConstantBase):
     ACTIVE = 1
     INACTIVE = 2
@@ -142,6 +143,22 @@ class PromotionGoal(ConstantBase):
     }
 
 
+class CampaignGoal(ConstantBase):
+    CPA = 1
+    PERCENT_BOUNCE_RATE = 2
+    NEW_UNIQUE_VISITORS = 3
+    SECONDS_TIME_ON_SITE = 4
+    PAGES_PER_SESSION = 5
+
+    _VALUES = {
+        CPA: 'CPA',
+        PERCENT_BOUNCE_RATE: '% bounce rate',
+        NEW_UNIQUE_VISITORS: 'new unique visitors',
+        SECONDS_TIME_ON_SITE: 'seconds time on site',
+        PAGES_PER_SESSION: 'pages per session'
+    }
+
+
 class SourceAction(ConstantBase):
     CAN_UPDATE_STATE = 1
     CAN_UPDATE_CPC = 2
@@ -236,4 +253,22 @@ class UploadBatchStatus(ConstantBase):
         DONE: 'Done',
         FAILED: 'Failed',
         IN_PROGRESS: 'In progress'
+    }
+
+
+class SharethroughApprovalStatus(ConstantBase):
+    APPROVED = 0
+    REJECTED_INAPPROPRIATE_CONTENT = 1
+    REJECTED_CONTENT_QUALITY = 2
+    REJECTED_INACCURATE_TITLE_DESCRIPTION = 3
+    REJECTED_LANDING_PAGE_QUALITY = 4
+    REJECTED_OTHER = 5
+
+    _VALUES = {
+        APPROVED: 'Approved',
+        REJECTED_INAPPROPRIATE_CONTENT: 'Inappropriate Content',
+        REJECTED_CONTENT_QUALITY: 'Content quality',
+        REJECTED_INACCURATE_TITLE_DESCRIPTION: 'Inaccurate title/description',
+        REJECTED_LANDING_PAGE_QUALITY: 'Landing page quality',
+        REJECTED_OTHER: None  # don't show anything
     }

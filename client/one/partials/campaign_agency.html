@@ -1,17 +1,5 @@
 <div class="page page-campaign-agency" ng-if="!campaign.archived">
     <form id="form-campaign-agency" class="form-horizontal">
-        <div class="form-group" ng-class="{'has-error': !!errors.name}">
-            <label for="name-input" class="col-xs-3 control-label">
-                Name
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Name of the campaign." placement="top"></zem-help-popover>
-            </label>
-            <div class="col-xs-3">
-                <input id="name-input" type="text" class="form-control" ng-model="settings.name">
-            </div>
-
-            <label ng-repeat="error in errors.name" class="control-label error" for="name-input">{{ error }}</label>
-        </div>
-
         <div class="form-group" ng-class="{'has-error': !!errors.accountManager}">
             <label for="account-manager-select" class="col-xs-3 control-label">
                 Account Manager
@@ -38,17 +26,6 @@
             <label ng-repeat="error in errors.salesRepresentative" class="control-label error" for="sales-representative-select">{{ error }}</label>
         </div>
 
-        <div class="form-group" ng-class="{'has-error': !!errors.serviceFee}">
-            <label for="service-fee-select" class="col-xs-3 control-label">
-                Service Fee
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Fee for management of the campaign; calculated based on media spend." placement="top"></zem-help-popover>
-            </label>
-            <div class="col-xs-3">
-                <div ui-select2="serviceFeeSelect2Config" id="service-fee-select" class="form-control" ng-model="settings.serviceFee" zem-select2-model-transform="percentage"></div>
-            </div>
-            <label ng-repeat="error in errors.serviceFee" class="control-label error" for="service-fee-select">{{ error }}</label>
-        </div>
-
         <div class="form-group" ng-class="{'has-error': !!errors.IABCategory}">
             <label for="iab-category-select" class="col-xs-3 control-label">
                 IAB Category
@@ -56,23 +33,10 @@
             </label>
             <div class="col-xs-3">
                 <select ui-select2="{minimumResultsForSearch: 2}" id="iab-category-select" class="form-control" ng-model="settings.IABCategory">
-                    <option ng-repeat="category in options.iabCategories" value="{{category.value}}">{{category.name}}</option>
+                    <option ng-repeat="category in iabCategories" value="{{category.value}}">{{category.name}}</option>
                 </select>
             </div>
             <label ng-repeat="error in errors.IABCategory" class="control-label error" for="iab-category-select">{{ error }}</label>
-        </div>
-
-        <div class="form-group" ng-class="{'has-error': !!errors.promotionGoal}">
-            <label for="promotion-goal-select" class="col-xs-3 control-label">
-                Promotion goal
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The top level goal of this campaign." placement="top"></zem-help-popover>
-            </label>
-            <div class="col-xs-3">
-                <select ui-select2="{minimumResultsForSearch: 10}" id="promotion-goal-select" class="form-control" ng-model="settings.promotionGoal">
-                    <option ng-repeat="goal in options.promotionGoals" value="{{goal.value}}">{{goal.name}}</option>
-                </select>
-            </div>
-            <label ng-repeat="error in errors.promotionGoal" class="control-label error" for="promotion-goal-select">{{ error }}</label>
         </div>
 
 		<button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>

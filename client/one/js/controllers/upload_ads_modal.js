@@ -23,6 +23,13 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
                         if (data.status === constants.uploadBatchStatus.DONE) {
                             $scope.isInProgress = false;
                             $modalInstance.close();
+
+                            if ($scope.user.showOnboardingGuidance) {
+                                api.campaignBudget.get($scope.campaign.id).then(function (data) {
+                                    $scope.remindToAddBudget.resolve(data.available <= 0);
+                                });
+                            }
+                            
                         } else if (data.status === constants.uploadBatchStatus.FAILED) {
                             $scope.isInProgress = false;
                             $scope.errors = data.errors;
@@ -74,6 +81,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
             $state.params.id, $scope.formData
         ).then(function(batchId) {
             $scope.pollBatchStatus(batchId);
+            
         }, function(data) {
             $scope.isInProgress = false;
             $scope.countUploaded = 0;

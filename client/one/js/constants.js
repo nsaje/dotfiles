@@ -62,6 +62,13 @@ var constants = {
         TRAFFIC_ACQUISITION: 2,
         CONVERSIONS: 3
     },
+    campaignGoal: {
+        CPA: 1,
+        PERCENT_BOUNCE_RATE: 2,
+        NEW_UNIQUE_VISITORS: 3,
+        SECONDS_TIME_ON_SITE: 4,
+        PAGES_PER_SESSION: 5
+    },
     entityType: {
         AD_GROUP: 'adGroup',
         CAMPAIGN: 'campaign',
@@ -165,6 +172,13 @@ var options = {
         {name: 'Brand Building', value: constants.promotionGoal.BRAND_BUILDING},
         {name: 'Traffic Acquisition', value: constants.promotionGoal.TRAFFIC_ACQUISITION},
         {name: 'Conversions', value: constants.promotionGoal.CONVERSIONS}
+    ],
+    campaignGoals: [
+        {name: 'CPA', value: constants.campaignGoal.CPA},
+        {name: '% bounce rate', value: constants.campaignGoal.PERCENT_BOUNCE_RATE},
+        {name: 'new unique visitors', value: constants.campaignGoal.NEW_UNIQUE_VISITORS},
+        {name: 'seconds time on site', value: constants.campaignGoal.SECONDS_TIME_ON_SITE},
+        {name: 'pages per session', value: constants.campaignGoal.PAGES_PER_SESSION}
     ]
 };
 

@@ -2,10 +2,9 @@ from itertools import repeat
 from reports.db_raw_helpers import dictfetchall
 
 from django.db import connections
+from django.conf import settings
 
 from utils.statsd_helper import statsd_timer
-
-STATS_DB_NAME = 'stats'
 
 
 @statsd_timer('reports.redshift', 'delete_contentadstats')
@@ -69,7 +68,7 @@ def vacuum_contentadstats():
 
 
 def _get_cursor():
-    return connections[STATS_DB_NAME].cursor()
+    return connections[settings.STATS_DB_NAME].cursor()
 
 
 def _get_row_string(cursor, cols, row):
