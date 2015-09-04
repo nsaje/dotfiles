@@ -4,13 +4,23 @@ import datetime
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.utils.html import escape
+from django.contrib import messages
 from django.db import models as db_models
 
 from actionlog import models
 from actionlog import constants
+from actionlog import zwei_actions
 
 import dash.constants
 
+def resend_action(modeladmin, request, queryset):
+    try:
+        zwei_actions.resend([
+            action for action in queryset
+        ])
+    except AssertionError, ex:
+        modeladmin.message_user(request, str(ex), level=messages.ERROR)
+resend_action.short_description = "Resend failed actions"
 
 class CountFilterQuerySet(db_models.QuerySet):
     def count(self):
@@ -89,6 +99,8 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
         constants.ActionState.WAITING: '#428bca',
         constants.ActionState.DELAYED: '#E6C440',
     }
+
+    actions = [resend_action]
 
     def state_(self, obj):
         return '<span style="color:{color}">{state}</span>'.format(
