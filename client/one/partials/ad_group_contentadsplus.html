@@ -7,9 +7,12 @@
             <div ng-if="hasPermission('zemauth.upload_content_ads')" class="button-bar-item">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.upload_content_ads')" popover-placement="bottom"></zem-internal-feature>
                 <button
-                    type="button"
-                    class="btn btn-add"
-                    ng-click="addContentAds()">
+                     type="button"
+                     class="btn btn-add"
+                     ng-click="addContentAds()"
+                     zem-tutorial-popover-condition-promise="canShowOnboardingGuidance()"
+                     zem-tutorial-popover="Click here to add content ads"
+                     zem-tutorial-popover-placement="top">
                     + Content Ads
                 </button>
             </div>
@@ -87,6 +90,7 @@
     </div>
 </div>
 
+<!-- We have the popup defined here, so it's not repeated for each row -->
 <script id="submissionStatusPopover.html" type="text/ng-template">
     <div class="submission-status-popover">
         <div class="submission-status-popover-table">

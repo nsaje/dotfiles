@@ -1,6 +1,6 @@
 /*global angular*/
 
-var oneApp = angular.module('one', ['templates-one', 'ngBootstrap', 'ngSanitize', 'ui.router', 'ui.bootstrap', 'ui.bootstrap.datetimepicker', 'ui.select2', 'highcharts-ng', 'config']);
+var oneApp = angular.module('one', ['templates-one', 'ngBootstrap', 'ngSanitize', 'ui.router', 'ui.bootstrap', 'ui.bootstrap.tooltip', 'ui.bootstrap.datetimepicker', 'ui.select2', 'highcharts-ng', 'config']);
 
 oneApp.config(['$compileProvider', 'config', function ($compileProvider, config) {
     $compileProvider.debugInfoEnabled(config.debug);
@@ -133,9 +133,14 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             templateUrl: '/partials/campaign_budget.html',
             controller: 'CampaignBudgetCtrl'
         })
+        .state('main.campaigns.archived', {
+            url: '/archived',
+            templateUrl: '/partials/campaign_archived.html'
+        })
         .state('main.campaigns.settings', {
             url: '/settings',
-            templateUrl: '/partials/campaign_settings.html'
+            templateUrl: '/partials/campaign_settings.html',
+            controller: 'CampaignSettingsCtrl'
         });
 
 
@@ -175,6 +180,10 @@ oneApp.config(['datepickerConfig', 'datepickerPopupConfig', function (datepicker
   datepickerConfig.showWeeks = false;
   datepickerConfig.formatDayHeader = 'EEE';
   datepickerPopupConfig.showButtonBar = false;
+}]);
+
+oneApp.config(['$tooltipProvider', function($tooltipProvider) {
+    $tooltipProvider.setTriggers({'openTutorial': 'closeTutorial'});
 }]);
 
 var locationSearch;
