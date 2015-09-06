@@ -42,7 +42,7 @@
                                 </span>
                                 <span ng-switch-when="currency">
                                     <span class="non-editable-currency-field" ng-if="!isFieldEditable(row, col.field)" ng-class="{'currency-3': col.fractionSize === 3}">
-                                        <span ng-if="col.settingsField" zem-lazy-popover-append-to-body="true" zem-lazy-popover-html="{{ getSettingsFieldMessage(row, col.field) }}" zem-lazy-popover-placement="right" zem-lazy-popover-animation-class="fade">
+                                        <span ng-if="col.settingsField" zem-lazy-popover-append-to-body="true" zem-lazy-popover-html-unsafe="{{ getSettingsFieldMessage(row, col.field) }}" zem-lazy-popover-placement="right" zem-lazy-popover-animation-class="fade">
                                             {{ (row[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
                                         </span>
                                         <span ng-if="!col.settingsField">
@@ -94,7 +94,7 @@
                                 </span>
                                 <span ng-switch-when="link">
                                     <a ng-if="row[col.field] !== null" ng-href="{{ row[col.field] }}" target="_blank"><img ng-src="{{ config.static_url }}/one/img/link.svg" class="link-img"></a>
-                                    <img ng-if="row[col.field] === null" ng-src="{{ config.static_url }}/one/img/link.svg" class="link-img link-img-disabled" zem-lazy-popover-html="{{row.supply_dash_disabled_message}}" zem-lazy-popover-placement="right" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade">
+                                    <img ng-if="row[col.field] === null" ng-src="{{ config.static_url }}/one/img/link.svg" class="link-img link-img-disabled" zem-lazy-popover-text="{{row.supply_dash_disabled_message}}" zem-lazy-popover-placement="right" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade">
 
 
                                 </span>
@@ -114,7 +114,7 @@
                                 </span>
                                 <span 
                                     ng-switch-when="notification"
-                                    zem-lazy-popover-html="{{ notifications[row.id].message }}" 
+                                    zem-lazy-popover-html-unsafe="{{ notifications[row.id].message }}" 
                                     zem-lazy-popover-placement="bottom" 
                                     zem-lazy-popover-animation-class="fade">
                                     <span ng-if="row[col.field]" class="text" ng-class="{'important': notifications[row.id].important}">{{ row[col.field] }}</span>
@@ -124,7 +124,7 @@
                                     <span
                                         ng-style="{'margin-left': col.internal ? '20px' : '3px'}"
                                         ng-class="{'okay-icon': dataStatus[row.id].ok, 'alert-icon': !dataStatus[row.id].ok}"
-                                        zem-lazy-popover-html="{{ dataStatus[row.id].message }}"
+                                        zem-lazy-popover-html-unsafe="{{ dataStatus[row.id].message }}"
                                         zem-lazy-popover-placement="left"
                                         zem-lazy-popover-animation-class="fade"
                                         zem-lazy-popover-append-to-body="true">
