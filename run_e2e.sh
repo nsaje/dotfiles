@@ -17,7 +17,7 @@ $SCRIPTPATH/server/manage.py runserver localhost:$SERVER_PORT &
 CURR_DIR=$PWD
 cd $SCRIPTPATH/client
 
-grunt dev
+grunt dev & 
 # wait until we have the port open
 while ! fuser $STATIC_PORT/tcp 2>/dev/null 1>/dev/null; do sleep 1; done
 
