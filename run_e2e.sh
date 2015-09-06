@@ -18,7 +18,8 @@ CURR_DIR=$PWD
 cd $SCRIPTPATH/client
 
 grunt dev
-while netstat -lnt | awk "\$4 ~ /:$STATIC_PORT\$/ {exit 1}"; do sleep 1; done
+# wait until we have the port open
+while ! fuser $STATIC_PORT/tcp 2>/dev/null 1>/dev/null; do sleep 1; done
 
 grunt e2e
 STATUS=$?
