@@ -17,10 +17,8 @@ $SCRIPTPATH/server/manage.py runserver localhost:$SERVER_PORT &
 CURR_DIR=$PWD
 cd $SCRIPTPATH/client
 
-# Still not ideal, but we need to wait less...
-grunt e2ebuild
-grunt e2eserve&
-sleep 5
+grunt dev
+while netstat -lnt | awk "\$4 ~ /:$STATIC_PORT\$/ {exit 1}"; do sleep 1; done
 
 grunt e2e
 STATUS=$?
