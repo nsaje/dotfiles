@@ -16,9 +16,11 @@ $SCRIPTPATH/server/manage.py runserver localhost:$SERVER_PORT &
 
 CURR_DIR=$PWD
 cd $SCRIPTPATH/client
-grunt dev&
 
-sleep 40
+# Still not ideal, but we need to wait less...
+grunt e2ebuild
+grunt e2eserve&
+sleep 5
 
 grunt e2e
 STATUS=$?
