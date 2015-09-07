@@ -34,7 +34,7 @@
                         <td ng-if="col.shown" ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type), 'input-one-char': col.type === 'checkbox', 'text-center': col.type === 'link', 'image': col.type === 'image'}" class="{{ col.extraTdCss }}" ng-repeat="col in columns | filter: {checked: true}">
                             <span ng-switch="col.type">
                                 <span ng-switch-when="image">
-                                    <img ng-show="row[col.field].square" ng-src="{{row[col.field].square}}" zem-lazy-popover-template="'thumbnailPopover.html'" zem-lazy-popover-placement="left" zem-lazy-popover-animation-class="fade"/>
+                                    <img ng-show="row[col.field].square" ng-src="{{row[col.field].square}}" zem-lazy-popover-template="'thumbnailPopover.html'" zem-lazy-popover-placement="left" zem-lazy-popover-animation-class="fade" zem-lazy-popover-append-to-body="true"/>
                                     <img ng-show="!row[col.field].square"/>
                                 </span>
                                 <span ng-switch-when="submissionStatus">
