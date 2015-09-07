@@ -441,7 +441,13 @@ class OmnitureReport(Report):
         workbook = xlrd.open_workbook(file_contents=self.xlsx_report_blob)
         sheet = workbook.sheet_by_index(0)
         for row_idx in range(0, sheet.nrows):
+            line = []
             for col_idx in range(0, sheet.ncols):
-                value = sheet.cell(row_idx, col_idx)
+                value = sheet.cell(row_idx, col_idx).value
                 if not value:
                     break
+                line.append(value)
+            if len(line) == 1 and ':' in line[0]:
+                print "Header value", line[0].split(':')
+            elif len(line) > 1:
+                print "Body", line
