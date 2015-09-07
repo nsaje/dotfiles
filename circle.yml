@@ -21,7 +21,7 @@ dependencies:
             pwd:
                 client
     cache_directories:
-	- client/node_modules
+        - client/node_modules
         - client/lib
 
 checkout:
