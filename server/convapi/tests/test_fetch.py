@@ -42,7 +42,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.fetch_touchpoint_conversions(datetime.date(2015, 9, 2))
+        conversion_pairs = fetch.process_touchpoint_conversions(datetime.date(2015, 9, 2))
         redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
 
         expected = [
@@ -81,7 +81,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.fetch_touchpoint_conversions(datetime.date(2015, 9, 2))
+        conversion_pairs = fetch.process_touchpoint_conversions(datetime.date(2015, 9, 2))
         redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
 
         self.assertEqual([], conversion_pairs)
@@ -103,7 +103,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.fetch_touchpoint_conversions(datetime.date(2015, 9, 2))
+        conversion_pairs = fetch.process_touchpoint_conversions(datetime.date(2015, 9, 2))
         redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
 
         self.assertEqual([], conversion_pairs)
@@ -135,7 +135,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.fetch_touchpoint_conversions(datetime.date(2015, 9, 2))
+        conversion_pairs = fetch.process_touchpoint_conversions(datetime.date(2015, 9, 2))
         redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
 
         expected = [
@@ -220,7 +220,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.fetch_touchpoint_conversions(datetime.date(2015, 9, 2))
+        conversion_pairs = fetch.process_touchpoint_conversions(datetime.date(2015, 9, 2))
         redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
 
         expected = [
@@ -306,7 +306,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.fetch_touchpoint_conversions(datetime.date(2015, 9, 2))
+        conversion_pairs = fetch.process_touchpoint_conversions(datetime.date(2015, 9, 2))
         redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
 
         expected = [
@@ -392,7 +392,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.fetch_touchpoint_conversions(datetime.date(2015, 9, 2))
+        conversion_pairs = fetch.process_touchpoint_conversions(datetime.date(2015, 9, 2))
         redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
 
         expected = [
@@ -506,7 +506,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.fetch_touchpoint_conversions(datetime.date(2015, 9, 2))
+        conversion_pairs = fetch.process_touchpoint_conversions(datetime.date(2015, 9, 2))
         redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
 
         expected = [
