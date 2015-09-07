@@ -134,7 +134,7 @@ oneApp.controller('MainCtrl',
         if ($state.includes('**.sources') && $scope.hasPermission('zemauth.campaign_sources_view')) {
             return 'main.campaigns.sources';
         }
-        if ($state.includes('**.agency') && $scope.hasPermission('zemauth.campaign_settings_view')) {
+        if ($state.includes('**.agency') && $scope.hasPermission('zemauth.campaign_agency_view')) {
             return 'main.campaigns.agency';
         }
         if ($state.includes('**.settings') && $scope.hasPermission('zemauth.campaign_settings_view')) {
@@ -148,7 +148,7 @@ oneApp.controller('MainCtrl',
         if ($scope.hasPermission('zemauth.campaign_sources_view')) {
             return 'main.campaings.sources';
         }
-        if ($scope.hasPermission('zemauth.campaign_settings_view')) {
+        if ($scope.hasPermission('zemauth.campaign_agency_view')) {
             return 'main.campaigns.agency';
         }
         if ($scope.hasPermission('zemauth.campaign_budget_management_view')) {
