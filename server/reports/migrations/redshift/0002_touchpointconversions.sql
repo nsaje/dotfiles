@@ -14,7 +14,7 @@ CREATE TABLE touchpointconversions (
     source_id integer,
 
     touchpoint_timestamp timestamp,
-    conversion_lag integer,
+    conversion_lag integer
 )
 DISTSTYLE EVEN
 SORTKEY (date);
