@@ -40,11 +40,11 @@ class GAReportLogAdmin(admin.ModelAdmin):
 
     def state_(self, obj):
         color = '#000'
-        if obj.state == constants.GAReportState.SUCCESS:
+        if obj.state == constants.ReportState.SUCCESS:
             color = '#5cb85c'
-        if obj.state == constants.GAReportState.FAILED:
+        if obj.state == constants.ReportState.FAILED:
             color = '#d9534f'
-        if obj.state == constants.GAReportState.EMPTY_REPORT:
+        if obj.state == constants.ReportState.EMPTY_REPORT:
             color = '#f0f'
         return '<span style="color:{color}">{state}</span>'.format(
             color=color,

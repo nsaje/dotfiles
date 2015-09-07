@@ -67,14 +67,14 @@ def report_aggregate(csvreport, sender, recipient, subject, date, text, report_l
             report_email.aggregate()
 
         statsd_incr('convapi.aggregated_emails')
-        report_log.state = constants.GAReportState.SUCCESS
+        report_log.state = constants.ReportState.SUCCESS
         report_log.save()
     except BaseException as e:
         logger.exception('Base exception occured')
         raise
     except Exception as e:
         report_log.add_error(e.message)
-        report_log.state = constants.GAReportState.FAILED
+        report_log.state = constants.ReportState.FAILED
         report_log.save()
 
 @app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
@@ -85,25 +85,25 @@ def process_ga_report(ga_report_task):
         report_log = models.GAReportLog()
         report_log.email_subject = ga_report_task.subject
         report_log.from_address = ga_report_task.from_address
-        report_log.state = constants.GAReportState.RECEIVED
+        report_log.state = constants.ReportState.RECEIVED
 
         if int(ga_report_task.attachment_count) != 1:
             logger.warning('ERROR: single attachment expected')
             report_log.add_error('ERROR: single attachment expected')
-            report_log.state = constants.GAReportState.FAILED
+            report_log.state = constants.ReportState.FAILED
             report_log.save()
 
         content = get_from_s3(ga_report_task.attachment_s3_key)
         if content is None:
             logger.warning('ERROR: Get attachment from s3 failed')
             report_log.add_error('ERROR: Get attachment from s3 failed')
-            report_log.state = constants.GAReportState.FAILED
+            report_log.state = constants.ReportState.FAILED
             report_log.save()
 
         if ga_report_task.attachment_content_type != 'text/csv':
             logger.warning('ERROR: content type is not CSV')
             report_log.add_error('ERROR: content type is not CSV')
-            report_log.state = constants.GAReportState.FAILED
+            report_log.state = constants.ReportState.FAILED
             report_log.save()
 
         filename = ga_report_task.attachment_name
@@ -128,14 +128,14 @@ def process_ga_report(ga_report_task):
         if too_many_errors(ad_group_errors, media_source_errors):
             logger.warning("Too many errors in ad_group_errors and media_source_errors lists.")
             report_log.add_error("Too many errors in urls. Cannot recognize adgroup and media sources for some urls:\n %s \n\n %s" % ('\n'.join(ad_group_errors), '\n'.join(media_source_errors)))
-            report_log.state = constants.GAReportState.FAILED
+            report_log.state = constants.ReportState.FAILED
             report_log.save()
 
         if len(csvreport.get_entries()) == 0:
             logger.warning('Report is empty (has no entries)')
             statsd_incr('convapi.aggregated_emails')
             report_log.add_error('Report is empty (has no entries)')
-            report_log.state = constants.GAReportState.EMPTY_REPORT
+            report_log.state = constants.ReportState.EMPTY_REPORT
             report_log.save()
 
         report_log.sender = ga_report_task.sender
@@ -156,12 +156,12 @@ def process_ga_report(ga_report_task):
         logger.warning(e.message)
         statsd_incr('convapi.aggregated_emails')
         report_log.add_error(e.message)
-        report_log.state = constants.GAReportState.EMPTY_REPORT
+        report_log.state = constants.ReportState.EMPTY_REPORT
         report_log.save()
     except Exception as e:
         logger.warning(e.message)
         report_log.add_error(e.message)
-        report_log.state = constants.GAReportState.FAILED
+        report_log.state = constants.ReportState.FAILED
         report_log.save()
 
 
@@ -170,89 +170,139 @@ def process_ga_report(ga_report_task):
 @transaction.atomic
 def process_ga_report_v2(ga_report_task):
     try:
-        report_log = models.GAReportLog()
-        report_log.email_subject = '{subj}_v2'.format(subj=ga_report_task.subject)
-        report_log.from_address = ga_report_task.from_address
-        report_log.state = constants.GAReportState.RECEIVED
+        # create report log and validate incoming task
+        report_log, content = _create_and_validate_report_log(ga_report_task)
 
-        if int(ga_report_task.attachment_count) != 1:
-            logger.warning('ERROR: single attachment expected')
-            report_log.add_error('ERROR: single attachment expected')
-            report_log.state = constants.GAReportState.FAILED
-            report_log.save()
-
-        content = get_from_s3(ga_report_task.attachment_s3_key)
-        if content is None:
-            logger.warning('ERROR: Get attachment from s3 failed')
-            report_log.add_error('ERROR: Get attachment from s3 failed')
-            report_log.state = constants.GAReportState.FAILED
-            report_log.save()
-
-        if ga_report_task.attachment_content_type != 'text/csv':
-            logger.warning('ERROR: content type is not CSV')
-            report_log.add_error('ERROR: content type is not CSV')
-            report_log.state = constants.GAReportState.FAILED
-            report_log.save()
-
-        filename = ga_report_task.attachment_name
-        report_log.csv_filename = filename
-
-        csvreport = parse_v2.CsvReport(content)
+        csvreport = parse_v2.GAReport(content)
         # parse will throw exceptions in case of errors
         csvreport.parse()
-        report_log.for_date = csvreport.get_date()
-        report_log.state = constants.GAReportState.PARSED
 
-        content_ad_errors = content_ad_specified_errors(csvreport)
-        media_source_errors = media_source_specified_errors(csvreport)
-
-        message = ''
-        if len(content_ad_errors) > 0:
-            message += '\nERROR: not all landing page urls have a valid content ad specified:\n'
-            for err in content_ad_errors:
-                message += err or '' + '\n'
-
-        if len(media_source_errors) > 0:
-            message += '\nERROR: not all landing page urls have a media source specified: \n'
-            for landing_url in media_source_errors:
-                message += landing_url or '' + '\n'
-
-        if too_many_errors(content_ad_errors, media_source_errors):
-            logger.warning("Too many errors in content_ad_errors and media_source_errors lists.")
-            report_log.add_error("Too many errors in urls. Cannot recognize content ad and media sources for some urls:\n %s \n\n %s" % ('\n'.join(content_ad_errors), '\n'.join(media_source_errors)))
-            report_log.state = constants.GAReportState.FAILED
-            statsd_incr('convapi_v2.too_many_errors')
-            report_log.save()
-
-        if csvreport.is_empty():
-            logger.warning('Report is empty (has no entries)')
-            report_log.add_error('Report is empty (has no entries)')
-            report_log.state = constants.GAReportState.EMPTY_REPORT
-            statsd_incr('convapi_v2.empty_report')
-            report_log.save()
-
-        report_log.sender = ga_report_task.sender
-        report_log.email_subject = ga_report_task.subject
-        report_log.for_date = csvreport.get_date()
-        report_log.save()
+        _update_report_log_after_parsing(csvreport, report_log, ga_report_task)
 
         # serialize report - this happens even if report is failed/empty
         valid_entries = csvreport.valid_entries()
-        update.process_report(csvreport.get_date, valid_entries, reports.constants.ReportType.GOOGLE_ANALYTICS)
+        update.process_report(
+            csvreport.get_date(),
+            valid_entries,
+            reports.constants.ReportType.GOOGLE_ANALYTICS
+        )
 
-        report_log.state = constants.GAReportState.SUCCESS
+        report_log.state = constants.ReportState.SUCCESS
         report_log.save()
-
     except exc.EmptyReportException as e:
         logger.warning(e.message)
         statsd_incr('convapi_v2.empty_report')
         report_log.add_error(e.message)
-        report_log.state = constants.GAReportState.EMPTY_REPORT
+        report_log.state = constants.ReportState.EMPTY_REPORT
         report_log.save()
         raise
     except Exception as e:
         logger.warning(e.message)
         report_log.add_error(e.message)
-        report_log.state = constants.GAReportState.FAILED
+        report_log.state = constants.ReportState.FAILED
         report_log.save()
         raise
+
+
+@app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
+          default_retry_delay=settings.CELERY_TASK_RETRY_DEPLAY)
+@transaction.atomic
+def process_omniture_report(ga_report_task):
+    try:
+        # create report log and validate incoming task
+        report_log, content = _create_and_validate_report_log(ga_report_task)
+
+        report = parse_v2.OmnitureReport(content)
+        # parse will throw exceptions in case of errors
+        report.parse()
+
+        _update_report_log_after_parsing(report, report_log, ga_report_task)
+
+        # serialize report - this happens even if report is failed/empty
+        valid_entries = report.valid_entries()
+        update.process_report(report.get_date(), valid_entries, reports.constants.ReportType.GOOGLE_ANALYTICS)
+
+        report_log.state = constants.ReportState.SUCCESS
+        report_log.save()
+    except exc.EmptyReportException as e:
+        logger.warning(e.message)
+        statsd_incr('convapi_v2.empty_report')
+        report_log.add_error(e.message)
+        report_log.state = constants.ReportState.EMPTY_REPORT
+        report_log.save()
+        raise
+    except Exception as e:
+        logger.warning(e.message)
+        report_log.add_error(e.message)
+        report_log.state = constants.ReportState.FAILED
+        report_log.save()
+        raise
+
+
+def _create_and_validate_report_log(ga_report_task):
+    report_log = models.GAReportLog()
+    report_log.email_subject = '{subj}_v2'.format(subj=ga_report_task.subject)
+    report_log.from_address = ga_report_task.from_address
+    report_log.state = constants.ReportState.RECEIVED
+
+    if int(ga_report_task.attachment_count) != 1:
+        logger.warning('ERROR: single attachment expected')
+        report_log.add_error('ERROR: single attachment expected')
+        report_log.state = constants.ReportState.FAILED
+        report_log.save()
+
+    content = get_from_s3(ga_report_task.attachment_s3_key)
+    if content is None:
+        logger.warning('ERROR: Get attachment from s3 failed')
+        report_log.add_error('ERROR: Get attachment from s3 failed')
+        report_log.state = constants.ReportState.FAILED
+        report_log.save()
+
+    if ga_report_task.attachment_content_type != 'text/csv':
+        logger.warning('ERROR: content type is not CSV')
+        report_log.add_error('ERROR: content type is not CSV')
+        report_log.state = constants.ReportState.FAILED
+        report_log.save()
+
+    filename = ga_report_task.attachment_name
+    report_log.csv_filename = filename
+    return report_log, content
+
+
+def _update_report_log_after_parsing(csvreport, report_log, ga_report_task):
+    report_log.for_date = csvreport.get_date()
+    report_log.state = constants.ReportState.PARSED
+
+    content_ad_errors = content_ad_specified_errors(csvreport)
+    media_source_errors = media_source_specified_errors(csvreport)
+
+    message = ''
+    if len(content_ad_errors) > 0:
+        message += '\nERROR: not all landing page urls have a valid content ad specified:\n'
+        for err in content_ad_errors:
+            message += err or '' + '\n'
+
+    if len(media_source_errors) > 0:
+        message += '\nERROR: not all landing page urls have a media source specified: \n'
+        for landing_url in media_source_errors:
+            message += landing_url or '' + '\n'
+
+    if too_many_errors(content_ad_errors, media_source_errors):
+        logger.warning("Too many errors in content_ad_errors and media_source_errors lists.")
+        report_log.add_error("Too many errors in urls. Cannot recognize content ad and media sources for some urls:\n %s \n\n %s" % ('\n'.join(content_ad_errors), '\n'.join(media_source_errors)))
+        report_log.state = constants.ReportState.FAILED
+        statsd_incr('convapi_v2.too_many_errors')
+        report_log.save()
+
+    if csvreport.is_empty():
+        logger.warning('Report is empty (has no entries)')
+        report_log.add_error('Report is empty (has no entries)')
+        report_log.state = constants.ReportState.EMPTY_REPORT
+        statsd_incr('convapi_v2.empty_report')
+        report_log.save()
+
+    report_log.sender = ga_report_task.sender
+    report_log.email_subject = ga_report_task.subject
+    report_log.for_date = csvreport.get_date()
+    report_log.save()
+

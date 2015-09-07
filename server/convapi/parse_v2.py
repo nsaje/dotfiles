@@ -53,14 +53,6 @@ class GaReportRow(object):
         self.source_param = source_param
         self.goals = goals
 
-    def _atoi(self, raw_str):
-        # TODO: Implement locale specific parsing
-        return int(raw_str.replace(',', ''))
-
-    def _atof(self, raw_str):
-        # TODO: Implement locale specific parsing
-        return float(raw_str.replace(',', ''))
-
     def key(self):
         return (self.report_date, self.content_ad_id, self.source_param)
 
@@ -98,14 +90,22 @@ class GaReportRow(object):
     def get_ga_fields(self, column):
         return [ga_row_dict.get(column, None) for ga_row_dict in self.ga_row_dicts]
 
-    def _parse_duration(self, durstr):
-        hours_str, minutes_str, seconds_str = durstr.replace('<', '').split(':')
-        return int(seconds_str) + 60 * int(minutes_str) + 60 * 60 * int(hours_str)
-
     def sessions(self):
         all_row_raw_sessions = [ga_row_dict['Sessions'].replace(',', '').strip() for ga_row_dict in self.ga_row_dicts]
         all_row_sessions = [int(raw_sessions) if raw_sessions not in ('', None) else 0 for raw_sessions in all_row_raw_sessions]
         return sum(all_row_sessions)
+
+    def _atoi(self, raw_str):
+        # TODO: Implement locale specific parsing
+        return int(raw_str.replace(',', ''))
+
+    def _atof(self, raw_str):
+        # TODO: Implement locale specific parsing
+        return float(raw_str.replace(',', ''))
+
+    def _parse_duration(self, durstr):
+        hours_str, minutes_str, seconds_str = durstr.replace('<', '').split(':')
+        return int(seconds_str) + 60 * int(minutes_str) + 60 * 60 * int(hours_str)
 
     def __str__(self):
         return "{date}-{caid}-{source_param}".format(
@@ -115,15 +115,12 @@ class GaReportRow(object):
         )
 
 
-class CsvReport(object):
+class Report(object):
 
-    def __init__(self, csv_report_text):
-        self.csv_report_text = csv_report_text
+    def __init__(self):
         # mapping from each url in report to corresponding z1 code or utm term
         self.entries = {}
         self.start_date = None
-        # first column of csv in GA report - Keyword or Landing Page
-        self.first_column = None
 
     def is_empty(self):
         return self.entries == {}
@@ -153,6 +150,53 @@ class CsvReport(object):
             count_all=count_all,
             useful_ga=count_goal_useful,
         )
+
+    def _parse_z11z_keyword(self, keyword):
+        result = Z11Z_RE.match(keyword)
+        if not result:
+            return None, ''
+        else:
+            content_ad_id, source_param = result.group(1), result.group(2)
+
+        try:
+            content_ad_id = int(content_ad_id)
+        except (ValueError, TypeError):
+            return None, ''
+
+        if source_param == '':
+            logger.warning(
+                'Could not parse keyword %s. content_ad_id: %s, source_param: %s',
+                keyword,
+                self.content_ad_id,
+                self.source_param
+            )
+            return None, ''
+
+        return content_ad_id, source_param
+
+    def is_media_source_specified(self):
+        media_source_not_specified = []
+        for entry in self.entries.values():
+            if entry.source_param == '' is None or entry.source_param == '':
+                media_source_not_specified.append(entry.source_param)
+        return (len(media_source_not_specified) == 0, list(media_source_not_specified))
+
+    def is_content_ad_specified(self):
+        content_ad_not_specified = set()
+        for entry in self.entries.values():
+            if entry.content_ad_id is None or entry.content_ad_id == '':
+                content_ad_not_specified.add(entry.content_ad_id)
+        return (len(content_ad_not_specified) == 0, list(content_ad_not_specified))
+
+
+class GAReport(Report):
+
+    def __init__(self, csv_report_text):
+        Report.__init__(self)
+
+        self.csv_report_text = csv_report_text
+        # first column of csv in GA report - Keyword or Landing Page
+        self.first_column = None
 
     def _parse_header(self, lines):
         '''
@@ -240,29 +284,6 @@ class CsvReport(object):
             return self._parse_landing_page(data)
         else:
             return self._parse_z11z_keyword(data)
-
-    def _parse_z11z_keyword(self, keyword):
-        result = Z11Z_RE.match(keyword)
-        if not result:
-            return None, ''
-        else:
-            content_ad_id, source_param = result.group(1), result.group(2)
-
-        try:
-            content_ad_id = int(content_ad_id)
-        except (ValueError, TypeError):
-            return None, ''
-
-        if source_param == '':
-            logger.warning(
-                'Could not parse keyword %s. content_ad_id: %s, source_param: %s',
-                keyword,
-                self.content_ad_id,
-                self.source_param
-            )
-            return None, ''
-
-        return content_ad_id, source_param
 
     def _parse_landing_page(self, raw_url):
         url, query_params = url_helper.clean_url(raw_url)
@@ -402,16 +423,17 @@ class CsvReport(object):
 
         return StringIO.StringIO('\n'.join(mainlines)), StringIO.StringIO('\n'.join(day_index_lines))
 
-    def is_media_source_specified(self):
-        media_source_not_specified = []
-        for entry in self.entries.values():
-            if entry.source_param == '' is None or entry.source_param == '':
-                media_source_not_specified.append(entry.source_param)
-        return (len(media_source_not_specified) == 0, list(media_source_not_specified))
+class OmnitureReport(Report):
 
-    def is_content_ad_specified(self):
-        content_ad_not_specified = set()
-        for entry in self.entries.values():
-            if entry.content_ad_id is None or entry.content_ad_id == '':
-                content_ad_not_specified.add(entry.content_ad_id)
-        return (len(content_ad_not_specified) == 0, list(content_ad_not_specified))
+    def __init__(self, csv_report_text):
+        Report.__init__(self)
+
+        self.csv_report_blob = csv_report_blob
+        # first column of csv in GA report - Keyword or Landing Page
+        self.first_column = None
+
+    def _parse_header(self, lines):
+        pass
+
+    def parse(self):
+        pass

@@ -18,7 +18,7 @@ class ParseReportTest(TestCase):
 
 Landing Page,Device Category,Sessions
 """.strip().replace('\t', '')
-        parser = parse_v2.CsvReport("")
+        parser = parse_v2.GAReport("")
         try:
             parser._parse_header(complete_head.split('\n'))
         except:
@@ -35,7 +35,7 @@ Landing Page,Device Category,Sessions
 
 Device Category,Landing Page,Sessions
 """.strip().replace('\t', '')
-        parser = parse_v2.CsvReport("")
+        parser = parse_v2.GAReport("")
         try:
             parser._parse_header(complete_head.split('\n'))
         except:
@@ -52,7 +52,7 @@ Device Category,Landing Page,Sessions
 
 Device Category,Sessions,Keyword
 """.strip().replace('\t', '')
-        parser = parse_v2.CsvReport("")
+        parser = parse_v2.GAReport("")
         try:
             parser._parse_header(complete_head.split('\n'))
         except:
@@ -69,7 +69,7 @@ Device Category,Sessions,Keyword
 
 "Device, Category","Landing Page","Sessions"
 """.strip().replace('\t', '')
-        parser = parse_v2.CsvReport("")
+        parser = parse_v2.GAReport("")
         try:
             parser._parse_header(complete_head.split('\n'))
         except:
@@ -99,7 +99,7 @@ $ ----------------------------------------""".strip().replace('\t', '')
 
 Landing Page,Device Category,Sessions
 """.strip().replace('\t', '')
-        parser = parse_v2.CsvReport("")
+        parser = parse_v2.GAReport("")
         with self.assertRaises(exc.CsvParseException):
             parser._parse_header(invalid_date_head.split('\n'))
 
@@ -112,12 +112,12 @@ Landing Page,Device Category,Sessions
 
 Landing Page,Device Category,Sessions
 """.strip().replace('\t', '')
-        parser = parse_v2.CsvReport("")
+        parser = parse_v2.GAReport("")
         with self.assertRaises(exc.CsvParseException):
             parser._parse_header(invalid_date_head_1.split('\n'))
 
     def test_parse_z11z_keyword(self):
-        parser = parse_v2.CsvReport("")
+        parser = parse_v2.GAReport("")
 
         # some valid cases
 
@@ -161,7 +161,7 @@ Landing Page,Device Category,Sessions
         self.assertEqual('', src_par)
 
     def test_parse_landing_page(self):
-        parser = parse_v2.CsvReport("")
+        parser = parse_v2.GAReport("")
 
         # some valid cases
         landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid=55310&_z1_msid=b1_gumgum"
@@ -197,7 +197,7 @@ Landing Page,Device Category,Sessions
         self.assertEqual('', src_par)
 
     def test_get_goal_name(self):
-        parser = parse_v2.CsvReport("")
+        parser = parse_v2.GAReport("")
 
         goal_name = "Yell Free Listings (Goal 1 Conversion Rate)"
         self.assertEqual("Yell Free Listings", parser._get_goal_name(goal_name))
@@ -209,7 +209,7 @@ Landing Page,Device Category,Sessions
         self.assertEqual("Yell Free Listings", parser._get_goal_name(goal_name))
 
     def test_get_goal_name_1(self):
-        parser = parse_v2.CsvReport("")
+        parser = parse_v2.GAReport("")
         goal_name = "*Lead: Whitepaper (Content Fact Sheet) (Goal 1 Conversion Rate)"
         self.assertEqual("*Lead: Whitepaper (Content Fact Sheet)", parser._get_goal_name(goal_name))
 
@@ -220,7 +220,7 @@ Landing Page,Device Category,Sessions
         self.assertEqual("*Lead: Whitepaper (Content Fact Sheet)", parser._get_goal_name(goal_name))
 
     def test_parse_goals(self):
-        parser = parse_v2.CsvReport("")
+        parser = parse_v2.GAReport("")
 
         row_dict = {
             "Yell Free Listings (Goal 1 Conversion Rate)": "2%",
@@ -253,7 +253,7 @@ Landing Page,Device Category,Sessions
         self.assertEqual("$123", resp['Goal 1']['value'])
 
     def test_parse_unnamed_goals(self):
-        parser = parse_v2.CsvReport("")
+        parser = parse_v2.GAReport("")
 
         fields_raw = "Landing Page,Device Category,Sessions,% New Sessions,New Users,Bounce Rate,Pages / Session,Avg. Session Duration"
         self.assertEqual([], parser._get_goal_fields(fields_raw.split(',')))
@@ -301,7 +301,7 @@ Day Index,Sessions
 ,18
 """.strip().replace('\t', '')
 
-        parser = parse_v2.CsvReport(complete_csv)
+        parser = parse_v2.GAReport(complete_csv)
         parser.parse()
         self.assertEqual(1, len(parser.entries))
         self.assertEqual(6, parser.valid_entries()[0].goals['Goal 1']['conversions'], 6)
