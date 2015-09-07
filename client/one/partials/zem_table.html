@@ -213,10 +213,11 @@
     </div>
 </div>
 
+<!-- yes, we intentionally have width and height in html, so popup gets correctly sized immediately -->
 <script id="thumbnailPopover.html" type="text/ng-template">
     <div class="thumbnail-popover">
-        <img width="256" height="160" ng-src="{{ row[col.field].landscape }}"/>
-        <img width="160" height="160" ng-src="{{ row[col.field].square }}"/>
+        <img width="128" height="80" ng-src="{{ row[col.field].landscape }}"/>
+        <img width="80" height="80" ng-src="{{ row[col.field].square }}"/>
     </div>
 </script>
 
