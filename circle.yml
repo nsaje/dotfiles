@@ -22,7 +22,6 @@ dependencies:
                 client
     cache_directories:
         - client/node_modules
-        - client/lib
         - "~/.npm/_git-remotes/"
 
 checkout:
