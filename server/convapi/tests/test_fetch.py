@@ -13,7 +13,6 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
     fixtures = ['test_api.yaml']
 
     def setUp(self):
-        # TODO: move to fixtures ??
         dash.models.ConversionPixel.objects.create(
             account_id=1,
             slug='test_slug'
