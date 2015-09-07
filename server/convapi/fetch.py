@@ -7,7 +7,7 @@ from utils import redirector_helper
 MIN_DELAY_BETWEEN_CONVERSIONS_MINS = 10
 
 
-def fetch_touchpoint_conversions(date):
+def process_touchpoint_conversions(date):
     '''
     Processes click and pixel impression data fetched from r1 and return valid touchpoint-conversion pairs.
     Input:
