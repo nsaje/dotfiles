@@ -47,7 +47,7 @@ oneApp.directive('zemFilter', ['config', function(config) {
 
             $scope.isSourceDeprecated = function (source) {
                 return source.deprecated;
-            }
+            };
 
             $scope.isSourceNotFiltered = function (source) {
                 return !$scope.isSourceFiltered(source);

@@ -237,6 +237,10 @@ urlpatterns += patterns(
         login_required(dash.views.views.CampaignAdGroups.as_view()),
     ),
     url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/agency/',
+        login_required(dash.views.agency.CampaignAgency.as_view()),
+    ),
+    url(
         r'^api/campaigns/(?P<campaign_id>\d+)/settings/',
         login_required(dash.views.agency.CampaignSettings.as_view()),
     ),
@@ -264,6 +268,16 @@ urlpatterns += patterns(
         r'^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/activate',
         login_required(dash.views.agency.UserActivation.as_view()),
         name='account_reactivation',
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/conversion_pixels/',
+        login_required(dash.views.agency.AccountConversionPixels.as_view()),
+        name='account_conversion_pixels',
+    ),
+    url(
+        r'^api/conversion_pixel/(?P<conversion_pixel_id>\d+)/',
+        login_required(dash.views.agency.ConversionPixel.as_view()),
+        name='conversion_pixel',
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/',
@@ -371,6 +385,16 @@ urlpatterns += patterns(
         r'^source/oauth/(?P<source_name>yahoo)',
         dash.views.views.oauth_redirect,
         name='source.oauth.redirect'
+    )
+)
+
+# Sharethrough callback
+urlpatterns += patterns(
+    '',
+    url(
+        r'^sharethrough_approval/',
+        dash.views.views.sharethrough_approval,
+        name='sharethrough_approval'
     )
 )
 

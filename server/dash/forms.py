@@ -207,30 +207,70 @@ class AccountAgencySettingsForm(forms.Form):
         max_length=127,
         error_messages={'required': 'Please specify account name.'}
     )
-
-
-class CampaignSettingsForm(forms.Form):
-    id = forms.IntegerField()
-    name = forms.CharField(
-        max_length=127,
-        error_messages={'required': 'Please specify campaign name.'}
+    default_account_manager = forms.IntegerField()
+    default_sales_representative = forms.IntegerField(
+        required=False
     )
+
+    def clean_default_account_manager(self):
+        account_manager_id = self.cleaned_data.get('default_account_manager')
+
+        err_msg = 'Invalid account manager.'
+
+        try:
+            account_manager = ZemUser.objects.\
+                get_users_with_perm('campaign_settings_account_manager', True).\
+                get(pk=account_manager_id)
+        except ZemUser.DoesNotExist:
+            raise forms.ValidationError(err_msg)
+
+        return account_manager
+
+    def clean_default_sales_representative(self):
+        sales_representative_id = self.cleaned_data.get('default_sales_representative')
+
+        if sales_representative_id is None:
+            return None
+
+        err_msg = 'Invalid sales representative.'
+
+        try:
+            sales_representative = ZemUser.objects.\
+                get_users_with_perm('campaign_settings_sales_rep').\
+                get(pk=sales_representative_id)
+        except ZemUser.DoesNotExist:
+            raise forms.ValidationError(err_msg)
+
+        return sales_representative
+
+
+
+
+def validate_lower_case_only(st):
+    if re.search(r'[^a-z]+', st):
+        raise forms.ValidationError(message='Please use only lower case letters for unique identifier.')
+
+
+class ConversionPixelForm(forms.Form):
+    slug = forms.CharField(
+        max_length=32,
+        required=True,
+        validators=[validate_lower_case_only],
+        error_messages={
+            'required': 'Please specify a unique identifier.',
+            'max_length': 'Unique identifier is too long (%(show_value)d/%(limit_value)d).',
+        }
+    )
+
+
+class CampaignAgencyForm(forms.Form):
+    id = forms.IntegerField()
     account_manager = forms.IntegerField()
     sales_representative = forms.IntegerField(
         required=False
     )
-    service_fee = forms.DecimalField(
-        min_value=0,
-        max_value=100,
-        decimal_places=2,
-    )
     iab_category = forms.ChoiceField(
         choices=constants.IABCategory.get_choices(),
-    )
-    promotion_goal = forms.TypedChoiceField(
-        choices=constants.PromotionGoal.get_choices(),
-        coerce=int,
-        empty_value=None
     )
 
     def clean_account_manager(self):
@@ -263,6 +303,20 @@ class CampaignSettingsForm(forms.Form):
             raise forms.ValidationError(err_msg)
 
         return sales_representative
+
+
+class CampaignSettingsForm(forms.Form):
+    id = forms.IntegerField()
+    name = forms.CharField(
+        max_length=127,
+        error_messages={'required': 'Please specify campaign name.'}
+    )
+    campaign_goal = forms.TypedChoiceField(
+        choices=constants.CampaignGoal.get_choices(),
+        coerce=int,
+        empty_value=None
+    )
+    goal_quantity = forms.DecimalField(decimal_places=4)
 
 
 class CampaignBudgetForm(forms.Form):

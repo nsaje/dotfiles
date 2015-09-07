@@ -44,6 +44,7 @@ INSTALLED_APPS = (
     'zweiapi',
     'convapi',
     'raven.contrib.django.raven_compat',
+    'automation',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -179,6 +180,9 @@ if TESTING:
     CELERY_DEFAULT_CONVAPI_QUEUE = CELERY_DEFAULT_CONVAPI_QUEUE
     CELERY_DEFAULT_CONVAPI_V2_QUEUE = CELERY_DEFAULT_CONVAPI_V2_QUEUE
 
+    del DATABASES[STATS_DB_NAME]
+    STATS_DB_NAME = 'default'
+
 # App specific
 ACTIONLOG_RECENT_HOURS = 2
 
@@ -199,6 +203,8 @@ DEFAULT_TIME_ZONE = 'America/New_York'
 # Placeholder value for source_campaign_key while campaign is being created
 SOURCE_CAMPAIGN_KEY_PENDING_VALUE = 'PENDING'
 
+CONVERSION_PIXEL_PREFIX = 'http://cookiepixie.zemanta.com/p/'
+
 if os.environ.get('E2E'):
     print 'Using E2E database !!!'
     DATABASES['default'] = DATABASES['e2e']
@@ -206,3 +212,6 @@ if os.environ.get('E2E'):
 if 'e2e' in DATABASES:
     DATABASES['e2e'] = {}
     del DATABASES['e2e']
+
+# User agent used when validating uploaded content ads URLs
+URL_VALIDATOR_USER_AGENT = 'Mozilla/5.0 (compatible; Zemanta/1.0; +http://www.zemanta.com)'

@@ -1,6 +1,6 @@
 /*global angular*/
 
-var oneApp = angular.module('one', ['templates-one', 'ngBootstrap', 'ngSanitize', 'ui.router', 'ui.bootstrap', 'ui.bootstrap.datetimepicker', 'ui.select2', 'highcharts-ng', 'config']);
+var oneApp = angular.module('one', ['templates-one', 'ngBootstrap', 'ngSanitize', 'ui.router', 'ui.bootstrap', 'ui.bootstrap.tooltip', 'ui.bootstrap.datetimepicker', 'ui.select2', 'highcharts-ng', 'config']);
 
 oneApp.config(['$compileProvider', 'config', function ($compileProvider, config) {
     $compileProvider.debugInfoEnabled(config.debug);
@@ -133,9 +133,14 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             templateUrl: '/partials/campaign_budget.html',
             controller: 'CampaignBudgetCtrl'
         })
+        .state('main.campaigns.archived', {
+            url: '/archived',
+            templateUrl: '/partials/campaign_archived.html'
+        })
         .state('main.campaigns.settings', {
             url: '/settings',
-            templateUrl: '/partials/campaign_settings.html'
+            templateUrl: '/partials/campaign_settings.html',
+            controller: 'CampaignSettingsCtrl'
         });
 
 
@@ -177,6 +182,10 @@ oneApp.config(['datepickerConfig', 'datepickerPopupConfig', function (datepicker
   datepickerPopupConfig.showButtonBar = false;
 }]);
 
+oneApp.config(['$tooltipProvider', function($tooltipProvider) {
+    $tooltipProvider.setTriggers({'openTutorial': 'closeTutorial'});
+}]);
+
 var locationSearch;
 // Fixes https://github.com/angular-ui/ui-router/issues/679
 oneApp.run(['$state', '$rootScope', '$location', 'config', function($state, $rootScope, $location, config) {
@@ -193,4 +202,15 @@ oneApp.run(['$state', '$rootScope', '$location', 'config', function($state, $roo
         $location.search(locationSearch);
         $rootScope.stateChangeFired = true;
     });
+
+    $rootScope.tabClick = function(event) {
+        // Function to fix opening tabs in new tab when clicking with the middle button
+        // This is effectively a workaround for a bug in bootstrap-ui
+        if (event.which === 2 || (event.which ===1 && (event.metaKey || event.ctrlKey))) {
+           // MIDDLE CLICK or CMD+LEFTCLICK
+           // the regular link will open in new tab if we stop the event propagation
+           event.stopPropagation();
+        }
+    }
+    
 }]);

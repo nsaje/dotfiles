@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 import datetime
 from mock import patch, ANY
@@ -7,6 +8,7 @@ from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
 from django.core import mail
 from django.contrib.auth.models import Permission
+from django.conf import settings
 
 from zemauth.models import User
 from dash import models
@@ -314,6 +316,306 @@ class AdGroupAgencyTest(TestCase):
         })
 
 
+class AccountConversionPixelsTestCase(TestCase):
+    fixtures = ['test_api.yaml', 'test_views.yaml']
+
+    def setUp(self):
+        user = User.objects.get(pk=1)
+        self.client.login(username=user.email, password='secret')
+
+    def test_get(self):
+        account = models.Account.objects.get(pk=1)
+        response = self.client.get(
+            reverse('account_conversion_pixels', kwargs={'account_id': account.id}),
+            follow=True
+        )
+        decoded_response = json.loads(response.content)
+
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(decoded_response['success'])
+        self.assertEqual([{
+            'id': 1,
+            'slug': 'test',
+            'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
+            'status': constants.ConversionPixelStatus.get_text(constants.ConversionPixelStatus.NOT_USED),
+            'last_verified_dt': None,
+            'archived': False
+        }], decoded_response['data']['rows'])
+
+    def test_get_no_permissions(self):
+        permission = Permission.objects.get(codename='manage_conversion_pixels')
+        user = User.objects.get(pk=2)
+        user.user_permissions.remove(permission)
+
+        self.client.login(username=user.email, password='secret')
+        response = self.client.get(
+            reverse('account_conversion_pixels', kwargs={'account_id': 1}),
+            follow=True
+        )
+        self.assertEqual(404, response.status_code)
+
+    def test_get_with_permissions(self):
+        permission = Permission.objects.get(codename='manage_conversion_pixels')
+        user = User.objects.get(pk=2)
+        user.user_permissions.add(permission)
+
+        self.client.login(username=user.email, password='secret')
+        response = self.client.get(
+            reverse('account_conversion_pixels', kwargs={'account_id': 1}),
+            follow=True
+        )
+        decoded_response = json.loads(response.content)
+
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(decoded_response['success'])
+        self.assertEqual([{
+            'id': 1,
+            'slug': 'test',
+            'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
+            'status': constants.ConversionPixelStatus.get_text(constants.ConversionPixelStatus.NOT_USED),
+            'last_verified_dt': None,
+            'archived': False
+        }], decoded_response['data']['rows'])
+
+    def test_get_non_existing_account(self):
+        response = self.client.get(
+            reverse('account_conversion_pixels', kwargs={'account_id': 9876}),
+            follow=True
+        )
+        self.assertEqual(404, response.status_code)
+
+    def test_post(self):
+        response = self.client.post(
+            reverse('account_conversion_pixels', kwargs={'account_id': 1}),
+            json.dumps({'slug': 'slug'}),
+            content_type='application/json',
+            follow=True,
+        )
+        decoded_response = json.loads(response.content)
+
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(decoded_response['success'])
+        self.assertEqual({
+            'id': 2,
+            'slug': 'slug',
+            'url': settings.CONVERSION_PIXEL_PREFIX + '1/slug/',
+            'status': constants.ConversionPixelStatus.get_text(constants.ConversionPixelStatus.NOT_USED),
+            'last_verified_dt': None,
+            'archived': False,
+        }, decoded_response['data'])
+
+        latest_account_settings = models.AccountSettings.objects.latest('created_dt')
+        self.assertEqual('Added conversion pixel with unique identifier slug.',
+                         latest_account_settings.changes_text)
+
+    def test_post_without_permissions(self):
+        permission = Permission.objects.get(codename='manage_conversion_pixels')
+        user = User.objects.get(pk=2)
+        user.user_permissions.remove(permission)
+
+        self.client.login(username=user.email, password='secret')
+        response = self.client.post(
+            reverse('account_conversion_pixels', kwargs={'account_id': 1}),
+            json.dumps({'slug': 'slug'}),
+            content_type='application/json',
+            follow=True
+        )
+        self.assertEqual(404, response.status_code)
+
+    def test_post_with_permissions(self):
+        permission = Permission.objects.get(codename='manage_conversion_pixels')
+        user = User.objects.get(pk=2)
+        user.user_permissions.add(permission)
+
+        self.client.login(username=user.email, password='secret')
+        response = self.client.post(
+            reverse('account_conversion_pixels', kwargs={'account_id': 1}),
+            json.dumps({'slug': 'slug'}),
+            content_type='application/json',
+            follow=True
+        )
+        self.assertEqual(200, response.status_code)
+
+    def test_post_slug_empty(self):
+        pixels_before = list(models.ConversionPixel.objects.all())
+        response = self.client.post(
+            reverse('account_conversion_pixels', kwargs={'account_id': 1}),
+            json.dumps({'slug': ''}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(list(models.ConversionPixel.objects.all()), pixels_before)
+
+    def test_post_slug_invalid_chars(self):
+        pixels_before = list(models.ConversionPixel.objects.all())
+        response = self.client.post(
+            reverse('account_conversion_pixels', kwargs={'account_id': 1}),
+            json.dumps({'slug': 'A'}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(list(models.ConversionPixel.objects.all()), pixels_before)
+
+        response = self.client.post(
+            reverse('account_conversion_pixels', kwargs={'account_id': 1}),
+            json.dumps({'slug': '1'}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(list(models.ConversionPixel.objects.all()), pixels_before)
+
+        response = self.client.post(
+            reverse('account_conversion_pixels', kwargs={'account_id': 1}),
+            json.dumps({'slug': 'č'}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(list(models.ConversionPixel.objects.all()), pixels_before)
+
+        response = self.client.post(
+            reverse('account_conversion_pixels', kwargs={'account_id': 1}),
+            json.dumps({'slug': '-'}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(list(models.ConversionPixel.objects.all()), pixels_before)
+
+        response = self.client.post(
+            reverse('account_conversion_pixels', kwargs={'account_id': 1}),
+            json.dumps({'slug': '_'}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(list(models.ConversionPixel.objects.all()), pixels_before)
+
+    def test_post_slug_too_long(self):
+        pixels_before = list(models.ConversionPixel.objects.all())
+        response = self.client.post(
+            reverse('account_conversion_pixels', kwargs={'account_id': 1}),
+            json.dumps({'slug': 'a' * (models.ConversionPixel._meta.get_field('slug').max_length + 1)}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(list(models.ConversionPixel.objects.all()), pixels_before)
+
+
+class ConversionPixelTestCase(TestCase):
+    fixtures = ['test_api.yaml', 'test_views.yaml']
+
+    def setUp(self):
+        user = User.objects.get(pk=1)
+        self.client.login(username=user.email, password='secret')
+
+    def test_put(self):
+        response = self.client.put(
+            reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
+            json.dumps({'archived': True}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual({
+            'id': 1,
+            'slug': 'test',
+            'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
+            'status': constants.ConversionPixelStatus.get_text(constants.ConversionPixelStatus.NOT_USED),
+            'last_verified_dt': None,
+            'archived': True,
+        }, decoded_response['data'])
+
+        latest_account_settings = models.AccountSettings.objects.latest('created_dt')
+        self.assertEqual('Archived conversion pixel with unique identifier test.',
+                         latest_account_settings.changes_text)
+
+    def test_put_no_permissions(self):
+        permission = Permission.objects.get(codename='manage_conversion_pixels')
+        user = User.objects.get(pk=2)
+        user.user_permissions.remove(permission)
+
+        self.client.login(username=user.email, password='secret')
+        response = self.client.put(
+            reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
+            json.dumps({'archived': True}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(404, response.status_code)
+
+    def test_put_with_permissions(self):
+        permission = Permission.objects.get(codename='manage_conversion_pixels')
+        user = User.objects.get(pk=2)
+        user.user_permissions.add(permission)
+
+        self.client.login(username=user.email, password='secret')
+        response = self.client.put(
+            reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
+            json.dumps({'archived': True}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(200, response.status_code)
+
+    def test_put_invalid_pixel(self):
+        conversion_pixel = models.ConversionPixel.objects.latest('id')
+        response = self.client.put(
+            reverse('conversion_pixel', kwargs={'conversion_pixel_id': conversion_pixel.id + 1}),
+            json.dumps({'archived': True}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(404, response.status_code)
+        decoded_response = json.loads(response.content)
+
+        self.assertEqual('Conversion pixel does not exist', decoded_response['data']['message'])
+
+    def test_put_invalid_account(self):
+        new_conversion_pixel = models.ConversionPixel.objects.create(account_id=2, slug='abcd')
+        response = self.client.put(
+            reverse('conversion_pixel', kwargs={'conversion_pixel_id': new_conversion_pixel.id}),
+            json.dumps({'archived': True}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(404, response.status_code)
+        decoded_response = json.loads(response.content)
+
+        self.assertEqual('Conversion pixel does not exist', decoded_response['data']['message'])
+
+    def test_put_invalid_archived_value(self):
+        response = self.client.put(
+            reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
+            json.dumps({'archived': 1}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(400, response.status_code)
+        decoded_response = json.loads(response.content)
+
+        self.assertEqual('Invalid value', decoded_response['data']['message'])
+
+
 class UserActivationTest(TestCase):
     fixtures = ['test_views.yaml']
 
@@ -360,3 +662,124 @@ class UserActivationTest(TestCase):
 
         decoded_response = json.loads(response.content)
         self.assertFalse(decoded_response.get('success'), 'Failed sending message')
+
+
+class CampaignAgencyTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    def setUp(self):
+        password = 'secret'
+        self.user = User.objects.get(pk=1)
+        self.client.login(username=self.user.email, password=password)
+
+        with patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
+
+    def test_get(self):
+        response = self.client.get(
+            '/api/campaigns/1/agency/'
+        )
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        self.assertEqual(content['data']['settings']['name'], 'test campaign 1')
+        self.assertEqual(content['data']['settings']['iab_category'], 'IAB24')
+
+    def test_post(self):
+        response = self.client.put(
+            '/api/campaigns/1/agency/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'account_manager': 1,
+                    'iab_category': 'IAB17',
+                    'name': 'ignore name'
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+
+        self.assertTrue(content['success'], True)
+
+        campaign = models.Campaign.objects.get(pk=1)
+        settings = campaign.get_current_settings()
+
+        self.assertEqual(campaign.name, 'test campaign 1')
+        self.assertEqual(settings.account_manager_id, 1)
+        self.assertEqual(settings.iab_category, 'IAB17')
+
+
+class CampaignSettingsTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    def setUp(self):
+        password = 'secret'
+        self.user = User.objects.get(pk=1)
+        self.client.login(username=self.user.email, password=password)
+
+        with patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
+
+    def test_get(self):
+        response = self.client.get(
+            '/api/campaigns/1/settings/'
+        )
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        self.assertEqual(content['data']['settings']['name'], 'test campaign 1')
+        self.assertEqual(content['data']['settings']['campaign_goal'], 3)
+        self.assertEqual(content['data']['settings']['goal_quantity'], 0)
+
+    def test_post(self):
+        response = self.client.put(
+            '/api/campaigns/1/settings/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'name': 'test campaign 2',
+                    'campaign_goal': 2,
+                    'goal_quantity': 10,
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        
+        campaign = models.Campaign.objects.get(pk=1)
+        settings = campaign.get_current_settings()
+        self.assertEqual(campaign.name, 'test campaign 2')
+        self.assertEqual(settings.goal_quantity, 10)
+        self.assertEqual(settings.campaign_goal, 2)
+
+    def test_validation(self):
+        response = self.client.put(
+            '/api/campaigns/1/settings/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'name': 'test campaign 2',
+                    'campaign_goal': 2,
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+        self.assertTrue('goal_quantity' in content['data']['errors'])
+        self.assertFalse(content['success'])
+
+        response = self.client.put(
+            '/api/campaigns/1/settings/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'name': 'test campaign 2',
+                    'campaign_goal': 50,
+                    'goal_quantity': 10,
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+        self.assertFalse(content['success'])
+        self.assertTrue('campaign_goal' in content['data']['errors'])

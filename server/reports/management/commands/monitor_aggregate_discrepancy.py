@@ -1,4 +1,3 @@
-
 from django.core.management.base import BaseCommand
 from django.db.models import Sum
 
@@ -25,9 +24,9 @@ class Command(BaseCommand):
         n_conversions_aggregate = reports.models.AdGroupGoalConversionStats.objects\
             .aggregate(conversions=Sum('conversions')).get('conversions') or 0
 
-        statsd_gauge('reports.impressions_total', n_imps)
-        statsd_gauge('reports.impressions_total_aggr', n_imps_aggregate)
-        statsd_gauge('reports.visits_total', n_visits)
-        statsd_gauge('reports.visits_total_aggr', n_visits_aggregate)
-        statsd_gauge('reports.conversions_total', n_conversions)
-        statsd_gauge('reports.conversions_total_aggr', n_conversions_aggregate)
+        statsd_gauge('reports.articlestats.impressions_total', n_imps)
+        statsd_gauge('reports.articlestats.impressions_total_aggr', n_imps_aggregate)
+        statsd_gauge('reports.articlestats.visits_total', n_visits)
+        statsd_gauge('reports.articlestats.visits_total_aggr', n_visits_aggregate)
+        statsd_gauge('reports.articlestats.conversions_total', n_conversions)
+        statsd_gauge('reports.articlestats.conversions_total_aggr', n_conversions_aggregate)
