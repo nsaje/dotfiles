@@ -33,7 +33,7 @@ DATABASES = {
     },
     'stats_e2e': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '',
+        'NAME': 'e2e_meta',
         'USER': '',
         'PASSWORD': '',
         'HOST': '',
@@ -41,7 +41,7 @@ DATABASES = {
     },
     'stats_e2e_meta': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '',
+        'NAME': 'e2e_meta',
         'USER': '',
         'PASSWORD': '',
         'HOST': '',

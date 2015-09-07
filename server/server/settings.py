@@ -180,8 +180,11 @@ if TESTING:
     CELERY_DEFAULT_CONVAPI_QUEUE = CELERY_DEFAULT_CONVAPI_QUEUE
     CELERY_DEFAULT_CONVAPI_V2_QUEUE = CELERY_DEFAULT_CONVAPI_V2_QUEUE
 
-    del DATABASES[STATS_DB_NAME]
-    STATS_DB_NAME = 'default'
+    # del DATABASES[STATS_DB_NAME]
+    # STATS_DB_NAME = 'default'
+    for n in ('stats', 'stats_e2e', 'stats_e2e_meta'):
+        if n in DATABASES:
+            del DATABASES[n]
 
 # App specific
 ACTIONLOG_RECENT_HOURS = 2
@@ -210,6 +213,7 @@ if os.environ.get('E2E'):
     DATABASES['default'] = DATABASES['e2e']
 
 if os.environ.get('E2EREDSHIFTDB'):
+    STATS_DB_NAME = 'stats'
     new_stats_db_name = os.environ.get('E2EREDSHIFTDB')
     DATABASES[STATS_DB_NAME] = DATABASES['stats_e2e']
     del DATABASES['stats_e2e']
@@ -220,13 +224,13 @@ if os.environ.get('E2EREDSHIFTDB'):
 
     if os.environ.get('REDSHIFT_E2E_USER'):
         print 'Updating credentials'
-        credential = {
+        credentials = {
             'USER': os.environ.get('REDSHIFT_E2E_USER'),
             'PASSWORD': os.environ.get('REDSHIFT_E2E_PASS'),
             'HOST': os.environ.get('REDSHIFT_E2E_HOST')
         }
 
-        DATABASES[STATS_DB_NAME].update(credential)
+        DATABASES[STATS_DB_NAME].update(credentials)
         DATABASES['stats_e2e_meta'].update(credentials)
 
 
@@ -234,5 +238,12 @@ if 'e2e' in DATABASES:
     DATABASES['e2e'] = {}
     del DATABASES['e2e']
 
+if 'stats_e2e' in DATABASES:
+    DATABASES['stats_e2e'] = {}
+    del DATABASES['stats_e2e']
+
+
 # User agent used when validating uploaded content ads URLs
 URL_VALIDATOR_USER_AGENT = 'Mozilla/5.0 (compatible; Zemanta/1.0; +http://www.zemanta.com)'
+
+DATABASE_ROUTERS = ['server.dbrouter.BlaRouter']
