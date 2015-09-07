@@ -4,10 +4,14 @@ STATIC_PORT=9999
 
 export E2E=1
 
+current_time=$(date "+%Y%m%d%H%M%S")
+export E2EREDSHIFTDB="stats_e2e_$current_time"
+
 STATUS=1
 echo 'Loading fixtures' &&
 $SCRIPTPATH/server/manage.py syncdb --noinput &&
 $SCRIPTPATH/server/manage.py migrate --noinput &&
+$SCRIPTPATH/server/manage.py prepare_redshift &&
 $SCRIPTPATH/server/manage.py loaddata demo_groups &&
 $SCRIPTPATH/server/manage.py loaddata demo_data
 

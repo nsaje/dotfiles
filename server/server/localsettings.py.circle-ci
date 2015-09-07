@@ -25,11 +25,27 @@ DATABASES = {
     },
     'stats': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'e2e_meta',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': 5439,
+    },
+    'stats_e2e': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': '',
         'USER': '',
         'PASSWORD': '',
         'HOST': '',
-        'PORT': 5439
+        'PORT': 5439,
+    },
+    'stats_e2e_meta': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': 5439,
     }
 }
 

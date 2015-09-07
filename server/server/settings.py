@@ -209,6 +209,27 @@ if os.environ.get('E2E'):
     print 'Using E2E database !!!'
     DATABASES['default'] = DATABASES['e2e']
 
+if os.environ.get('E2EREDSHIFTDB'):
+    new_stats_db_name = os.environ.get('E2EREDSHIFTDB')
+    DATABASES[STATS_DB_NAME] = DATABASES['stats_e2e']
+    del DATABASES['stats_e2e']
+
+    DATABASES[STATS_DB_NAME]['NAME'] = new_stats_db_name
+
+    print 'Using e2e redshift DB', new_stats_db_name
+
+    if os.environ.get('REDSHIFT_E2E_USER'):
+        print 'Updating credentials'
+        credential = {
+            'USER': os.environ.get('REDSHIFT_E2E_USER'),
+            'PASSWORD': os.environ.get('REDSHIFT_E2E_PASS'),
+            'HOST': os.environ.get('REDSHIFT_E2E_HOST')
+        }
+
+        DATABASES[STATS_DB_NAME].update(credential)
+        DATABASES['stats_e2e_meta'].update(credentials)
+
+
 if 'e2e' in DATABASES:
     DATABASES['e2e'] = {}
     del DATABASES['e2e']
