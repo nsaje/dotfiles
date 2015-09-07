@@ -23,7 +23,7 @@ def process_touchpoint_conversions(date):
     Valid touchpoint-conversion pairs in a list. A conversion is valid when:
         - zuid matches
         - click occurred on a content ad belonging to a campaign with a tracking pixel set up,
-          and that pixel’s slug matches conversion slug
+          and that pixel's slug matches conversion slug
         - no other conversion matching these criteria happened between the click and conversion
     '''
     redirects_impressions = redirector_helper.fetch_redirects_impressions(date)
