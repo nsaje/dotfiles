@@ -55,7 +55,7 @@ def fetch_redirects_impressions(date, timeout=300):
     start_time = time.time()
     while (time.time() - start_time) < timeout:
         result = _call_api_retry(settings.R1_CONVERSION_STATS_RESULT_URL.format(str(job_id)), method='GET')
-        if not result:
+        if result is None:
             time.sleep(10)
             continue
 
