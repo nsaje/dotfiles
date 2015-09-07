@@ -109,7 +109,7 @@ def mailgun_gareps(request):
         report_log.email_subject = ga_report_task.subject if ga_report_task is not None else None
         report_log.from_address = ga_report_task.from_address if ga_report_task is not None else None
         report_log.csv_filename = request.FILES.get('attachment-1').name if request.FILES.get('attachment-1') is not None else None
-        report_log.state = constants.GAReportState.FAILED
+        report_log.state = constants.ReportState.FAILED
         report_log.save()
         logger.exception(e.message)
 
