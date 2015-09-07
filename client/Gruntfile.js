@@ -105,12 +105,6 @@ module.exports = function (grunt) {
                     {expand: true, flatten: true, src: 'one/assets/*', dest: 'dist/one/assets/'}
                 ]
             },
-            // This is used for dev instead of uglifying which takes half of build time
-            onedev: {
-                files: [
-                        {src: 'dist/one/zemanta-one.js', dest: 'dist/one/zemanta-one.min.js'},
-                    ]
-            },
             one_lib: {
                 files: [
                     {
@@ -181,15 +175,10 @@ module.exports = function (grunt) {
                 files: [
                     'one/js/**/*.js',
                     'one/partials/**/*.html',
+                    'one/less/**/*.less',
                     'one/img/**/*'
                 ],
-                tasks: ['html2js:one', 'concat:one', 'copy:onedev', 'copy:one']
-            },
-            one_css: {
-                files: [
-                    'one/less/**/*.less',
-                ],
-                tasks: ['less:one', 'copy:one']
+                tasks: ['build:one']
             },
             actionlog: {
                 files: [
