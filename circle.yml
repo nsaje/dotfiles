@@ -20,6 +20,9 @@ dependencies:
         - bower install:
             pwd:
                 client
+    cache_directories:
+	- client/node_modules
+        - client/lib
 
 checkout:
     post:
