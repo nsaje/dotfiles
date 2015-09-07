@@ -1,9 +1,10 @@
 import csv
 import datetime
 import exc
+import logging
 import re
 import StringIO
-import logging
+import xlrd
 
 from utils import url_helper
 
@@ -423,12 +424,13 @@ class GAReport(Report):
 
         return StringIO.StringIO('\n'.join(mainlines)), StringIO.StringIO('\n'.join(day_index_lines))
 
+
 class OmnitureReport(Report):
 
-    def __init__(self, csv_report_text):
+    def __init__(self, xlsx_report_blob):
         Report.__init__(self)
 
-        self.csv_report_blob = csv_report_blob
+        self.xlsx_report_blob = xlsx_report_blob
         # first column of csv in GA report - Keyword or Landing Page
         self.first_column = None
 
@@ -436,4 +438,10 @@ class OmnitureReport(Report):
         pass
 
     def parse(self):
-        pass
+        workbook = xlrd.open_workbook(file_contents=self.xlsx_report_blob)
+        sheet = workbook.sheet_by_index(0)
+        for row_idx in range(0, sheet.nrows):
+            for col_idx in range(0, sheet.ncols):
+                value = sheet.cell(row_idx, col_idx)
+                if not value:
+                    break

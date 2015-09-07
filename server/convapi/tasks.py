@@ -170,8 +170,9 @@ def process_ga_report(ga_report_task):
 @transaction.atomic
 def process_ga_report_v2(ga_report_task):
     try:
+        report_log = models.GAReportLog()
         # create report log and validate incoming task
-        report_log, content = _create_and_validate_report_log(ga_report_task)
+        content = _update_and_validate_report_log(ga_report_task, report_log)
 
         csvreport = parse_v2.GAReport(content)
         # parse will throw exceptions in case of errors
@@ -209,8 +210,9 @@ def process_ga_report_v2(ga_report_task):
 @transaction.atomic
 def process_omniture_report(ga_report_task):
     try:
+        report_log = models.GAReportLog()
         # create report log and validate incoming task
-        report_log, content = _create_and_validate_report_log(ga_report_task)
+        content = _update_and_validate_report_log(ga_report_task, report_log)
 
         report = parse_v2.OmnitureReport(content)
         # parse will throw exceptions in case of errors
@@ -239,8 +241,7 @@ def process_omniture_report(ga_report_task):
         raise
 
 
-def _create_and_validate_report_log(ga_report_task):
-    report_log = models.GAReportLog()
+def _update_and_validate_report_log(ga_report_task, report_log):
     report_log.email_subject = '{subj}_v2'.format(subj=ga_report_task.subject)
     report_log.from_address = ga_report_task.from_address
     report_log.state = constants.ReportState.RECEIVED
@@ -266,7 +267,7 @@ def _create_and_validate_report_log(ga_report_task):
 
     filename = ga_report_task.attachment_name
     report_log.csv_filename = filename
-    return report_log, content
+    return content
 
 
 def _update_report_log_after_parsing(csvreport, report_log, ga_report_task):
