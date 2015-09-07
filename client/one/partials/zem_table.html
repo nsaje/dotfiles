@@ -213,7 +213,7 @@
     </div>
 </div>
 
-<!-- yes, we intentionally have width and height in html, so popup gets correctly sized immediately -->
+<!-- yes, we have width and height in html, so popup gets correctly sized immediately on html load, otherwise flickering due to resize ensues -->
 <script id="thumbnailPopover.html" type="text/ng-template">
     <div class="thumbnail-popover">
         <img width="128" height="80" ng-src="{{ row[col.field].landscape }}"/>
