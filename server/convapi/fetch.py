@@ -8,6 +8,24 @@ MIN_DELAY_BETWEEN_CONVERSIONS_MINS = 10
 
 
 def fetch_touchpoint_conversions(date):
+    '''
+    Processes click and pixel impression data fetched from r1 and return valid touchpoint-conversion pairs.
+    Input:
+        {
+            zuid: [
+                (redirect, pixel_impression), ...
+            ]
+        }
+    Redirector returns pairs of redirects and pixel impressions joined by zuid (we get every pair where zuid matches).
+    It returns only those pairs that are equal to or less than 90 (max conversion window) days apart.
+
+    Output:
+    Valid touchpoint-conversion pairs in a list. A conversion is valid when:
+        - zuid matches
+        - click occurred on a content ad belonging to a campaign with a tracking pixel set up,
+          and that pixel’s slug matches conversion slug
+        - no other conversion matching these criteria happened between the click and conversion
+    '''
     redirects_impressions = redirector_helper.fetch_redirects_impressions(date)
 
     touchpoint_conversions = []
