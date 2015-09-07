@@ -9,9 +9,8 @@ from utils import redirector_helper
 
 
 @override_settings(
-    R1_REDIRECTS_API_URL='https://r1.example.com/api/redirects/',
-    R1_REDIRECTS_ADGROUP_API_URL='https://r1.example.com/api/redirects/',
-    R1_API_SIGN_KEY='AAAAAAAAAAAAAAAAAAAAAAAA'
+    R1_API_SIGN_KEY='AAAAAAAAAAAAAAAAAAAAAAAA',
+    R1_VALIDATE_API_URL='https://r1.zemanta.com/api/validate/',
 )
 @patch('utils.request_signer._secure_opener.open')
 class ValidateURLTest(TestCase):
