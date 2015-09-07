@@ -2,12 +2,13 @@ from collections import defaultdict
 import datetime
 
 import dash.models
-from utils import redirector_helper
+from utils import statsd_helper
 
 MIN_DELAY_BETWEEN_CONVERSIONS_MINS = 10
 
 
-def process_touchpoint_conversions(date):
+@statsd_helper.statsd_timer('convapi', 'process_touchpoint_conversions')
+def process_touchpoint_conversions(redirects_impressions):
     '''
     Processes click and pixel impression data fetched from r1 and return valid touchpoint-conversion pairs.
     Input:
@@ -26,8 +27,6 @@ def process_touchpoint_conversions(date):
           and that pixel's slug matches conversion slug
         - no other conversion matching these criteria happened between the click and conversion
     '''
-    redirects_impressions = redirector_helper.fetch_redirects_impressions(date)
-
     touchpoint_conversions = []
     for zuid, zuid_redirects_impressions in redirects_impressions.iteritems():
         touchpoint_conversion_dict = defaultdict(dict)
@@ -73,7 +72,7 @@ def process_touchpoint_conversions(date):
             potential_touchpoint_conversion = {
                 'zuid': zuid,
                 'slug': slug,
-                'date': date,
+                'date': impression_ts.date(),
                 'conversion_id': impression_id,
                 'conversion_timestamp': impression_ts,
                 'account_id': account_id,

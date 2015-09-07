@@ -6,6 +6,7 @@ import urllib2
 from django.conf import settings
 
 from utils import request_signer
+from utils import statsd_helper
 
 
 logger = logging.getLogger(__name__)
@@ -49,6 +50,7 @@ def insert_adgroup(ad_group_id, tracking_codes, disable_auto_tracking=False):
         raise e
 
 
+@statsd_helper.statsd_timer('redirector_helper', 'fetch_redirects_impressions')
 def fetch_redirects_impressions(date, timeout=300):
     job_id = _call_api_retry(settings.R1_CONVERSION_STATS_URL.format(date=date.strftime('%Y-%m-%d')), method='GET')
 
@@ -59,6 +61,7 @@ def fetch_redirects_impressions(date, timeout=300):
             time.sleep(10)
             continue
 
+        statsd_helper.statsd_gauge('redirector_helper.fetch_redirects_impressions_size', len(json.dumps(result)))
         return result
 
     raise Exception('Redirect conversion stats timeout')

@@ -3,12 +3,11 @@ import datetime
 from django.test import TestCase
 import mock
 
-from convapi import fetch
+from convapi import process
 import dash.models
 
 
-@mock.patch('convapi.fetch.redirector_helper.fetch_redirects_impressions')
-class FetchTouchpointsImpressionsTestCase(TestCase):
+class ProcessTouchpointsImpressionsTestCase(TestCase):
 
     fixtures = ['test_api.yaml']
 
@@ -23,9 +22,9 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
         )
         dash.models.ContentAd.objects.get(id=1)
 
-    def test_fetch(self, redirector_fetch_mock):
+    def test_process(self):
         self.maxDiff = None
-        redirector_fetch_mock.return_value = {
+        redirects_impressions = {
             '1234-12345-123456': [
                 {
                     'zuid': '1234-12345-123456',
@@ -41,9 +40,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.process_touchpoint_conversions(datetime.date(2015, 9, 2))
-        redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
-
+        conversion_pairs = process.process_touchpoint_conversions(redirects_impressions)
         expected = [
             {
                 'zuid': '1234-12345-123456',
@@ -63,8 +60,8 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
 
         self.assertEqual(expected, conversion_pairs)
 
-    def test_fetch_nonexisting_slug(self, redirector_fetch_mock):
-        redirector_fetch_mock.return_value = {
+    def test_process_nonexisting_slug(self):
+        redirects_impressions = {
             '1234-12345-123456': [
                 {
                     'zuid': '1234-12345-123456',
@@ -80,13 +77,12 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.process_touchpoint_conversions(datetime.date(2015, 9, 2))
-        redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
+        conversion_pairs = process.process_touchpoint_conversions(redirects_impressions)
 
         self.assertEqual([], conversion_pairs)
 
-    def test_fetch_nonexisting_contentad(self, redirector_fetch_mock):
-        redirector_fetch_mock.return_value = {
+    def test_process_nonexisting_contentad(self):
+        redirects_impressions = {
             '1234-12345-123456': [
                 {
                     'zuid': '1234-12345-123456',
@@ -102,13 +98,12 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.process_touchpoint_conversions(datetime.date(2015, 9, 2))
-        redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
+        conversion_pairs = process.process_touchpoint_conversions(redirects_impressions)
 
         self.assertEqual([], conversion_pairs)
 
-    def test_fetch_multiple_touchpoints(self, redirector_fetch_mock):
-        redirector_fetch_mock.return_value = {
+    def test_process_multiple_touchpoints(self):
+        redirects_impressions = {
             '1234-12345-123456': [
                 {
                     'zuid': '1234-12345-123456',
@@ -134,8 +129,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.process_touchpoint_conversions(datetime.date(2015, 9, 2))
-        redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
+        conversion_pairs = process.process_touchpoint_conversions(redirects_impressions)
 
         expected = [
             {
@@ -169,8 +163,8 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
 
         self.assertItemsEqual(expected, conversion_pairs)
 
-    def test_fetch_multiple_impressions_same_slug(self, redirector_fetch_mock):
-        redirector_fetch_mock.return_value = {
+    def test_process_multiple_impressions_same_slug(self):
+        redirects_impressions = {
             '1234-12345-123456': [
                 {
                     'zuid': '1234-12345-123456',
@@ -219,8 +213,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.process_touchpoint_conversions(datetime.date(2015, 9, 2))
-        redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
+        conversion_pairs = process.process_touchpoint_conversions(redirects_impressions)
 
         expected = [
             {
@@ -255,8 +248,8 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
 
         self.assertItemsEqual(expected, conversion_pairs)
 
-    def test_fetch_multiple_subsequent_pairs_same_slug(self, redirector_fetch_mock):
-        redirector_fetch_mock.return_value = {
+    def test_process_multiple_subsequent_pairs_same_slug(self):
+        redirects_impressions = {
             '1234-12345-123456': [
                 {
                     'zuid': '1234-12345-123456',
@@ -305,8 +298,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.process_touchpoint_conversions(datetime.date(2015, 9, 2))
-        redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
+        conversion_pairs = process.process_touchpoint_conversions(redirects_impressions)
 
         expected = [
             {
@@ -341,8 +333,8 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
 
         self.assertItemsEqual(expected, conversion_pairs)
 
-    def test_fetch_multiple_impressions_different_slug(self, redirector_fetch_mock):
-        redirector_fetch_mock.return_value = {
+    def test_process_multiple_impressions_different_slug(self):
+        redirects_impressions = {
             '1234-12345-123456': [
                 {
                     'zuid': '1234-12345-123456',
@@ -391,8 +383,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.process_touchpoint_conversions(datetime.date(2015, 9, 2))
-        redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
+        conversion_pairs = process.process_touchpoint_conversions(redirects_impressions)
 
         expected = [
             {
@@ -455,8 +446,8 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
 
         self.assertItemsEqual(expected, conversion_pairs)
 
-    def test_fetch_multiple_subsequent_pairs_different_slug(self, redirector_fetch_mock):
-        redirector_fetch_mock.return_value = {
+    def test_process_multiple_subsequent_pairs_different_slug(self):
+        redirects_impressions = {
             '1234-12345-123456': [
                 {
                     'zuid': '1234-12345-123456',
@@ -505,8 +496,7 @@ class FetchTouchpointsImpressionsTestCase(TestCase):
             ]
         }
 
-        conversion_pairs = fetch.process_touchpoint_conversions(datetime.date(2015, 9, 2))
-        redirector_fetch_mock.assert_called_with(datetime.date(2015, 9, 2))
+        conversion_pairs = process.process_touchpoint_conversions(redirects_impressions)
 
         expected = [
             {
