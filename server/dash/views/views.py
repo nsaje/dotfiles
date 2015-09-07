@@ -1052,7 +1052,6 @@ def sharethrough_approval(request):
         content_ad_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
     else:
         content_ad_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
-        content_ad_source.submission_errors = constants.SharethroughApprovalStatus.get_text(data['status'])
 
     content_ad_source.save()
 

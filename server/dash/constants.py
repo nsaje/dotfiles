@@ -254,21 +254,3 @@ class UploadBatchStatus(ConstantBase):
         FAILED: 'Failed',
         IN_PROGRESS: 'In progress'
     }
-
-
-class SharethroughApprovalStatus(ConstantBase):
-    APPROVED = 0
-    REJECTED_INAPPROPRIATE_CONTENT = 1
-    REJECTED_CONTENT_QUALITY = 2
-    REJECTED_INACCURATE_TITLE_DESCRIPTION = 3
-    REJECTED_LANDING_PAGE_QUALITY = 4
-    REJECTED_OTHER = 5
-
-    _VALUES = {
-        APPROVED: 'Approved',
-        REJECTED_INAPPROPRIATE_CONTENT: 'Inappropriate Content',
-        REJECTED_CONTENT_QUALITY: 'Content quality',
-        REJECTED_INACCURATE_TITLE_DESCRIPTION: 'Inaccurate title/description',
-        REJECTED_LANDING_PAGE_QUALITY: 'Landing page quality',
-        REJECTED_OTHER: None  # don't show anything
-    }
