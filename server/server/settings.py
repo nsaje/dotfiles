@@ -246,4 +246,3 @@ if 'stats_e2e' in DATABASES:
 # User agent used when validating uploaded content ads URLs
 URL_VALIDATOR_USER_AGENT = 'Mozilla/5.0 (compatible; Zemanta/1.0; +http://www.zemanta.com)'
 
-DATABASE_ROUTERS = ['server.dbrouter.BlaRouter']
