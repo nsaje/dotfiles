@@ -91,8 +91,8 @@ Percent Shown as: Number,,,,,,,,,,
 ,,,,,,,,,,
 ,,,,,,,,,,
 ,Tracking Code,Visits,,Unique Visitors,,Bounce Rate,Page Views,,Total Seconds Spent,
-1.,CSY-PB-ZM-AB-adbistro_com:Fad-or-Fab-4-Unusual-New-Car-Features,1,0.0%,1,0.0%,100.0%,1,0.0%,0,0.0%
-2.,CSY-PB-ZM-AB-infolinks_com:Fires-and-Other-Home-Hazards-Spike-During-the-Holidays-Data-Show,1,0.0%,1,0.0%,
+1.,CSY-PB-ZM-AB-adbistro_com:Fad-or-Fab-4-Unusual-New-Car-Features,1,0.0%,1,0.0%,100.0%,1,0.0%,100,0.0%
+2.,CSY-PB-ZM-AB-infolinks_com:Fires-and-Other-Home-Hazards-Spike-During-the-Holidays-Data-Show,1,0.0%,1,0.0%,100.0%,1,0.0%,0,0.0%
 3.,CSY-PB-ZM-AB-adbistro_com:Bikers-Born-to-Be-Wild-VIDEO,1,0.0%,1,0.0%,100.0%,1,0.0%,0,0.0%
 4.,CSY-PB-ZM-AB-yahoo_com:7-Useful-Items-for-Your-Glove-Compartment,1,0.0%,1,0.0%,100.0%,1,0.0%,0,0.0%
 ,Total,"2,227",,"2,184",,88.6%,"2,670",,"63,745",
