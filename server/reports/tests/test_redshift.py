@@ -74,3 +74,40 @@ class RedshiftTest(TestCase):
         query = 'VACUUM FULL contentadstats'
 
         mock_cursor.execute.assert_called_with(query, [])
+
+    def test_insert_touchpoint_conversions(self, mock_get_cursor):
+        mock_cursor = Mock()
+        mock_cursor.mogrify.side_effect = ["('a',1)", "('b',2)"]
+        mock_get_cursor.return_value = mock_cursor
+
+        rows = [{'x': 1, 'y': 'a'}, {'x': 2, 'y': 'b'}]
+
+        redshift.insert_touchpoint_conversions(rows)
+
+        query = "INSERT INTO touchpointconversions (y,x) VALUES ('a',1),('b',2)"
+
+        mock_cursor.mogrify.assert_any_call('(%s,%s)', ['a', 1])
+        mock_cursor.mogrify.assert_any_call('(%s,%s)', ['b', 2])
+        mock_cursor.execute.assert_called_with(query, [])
+
+    def test_delete_touchpoint_conversions(self, mock_get_cursor):
+        mock_cursor = Mock()
+        mock_get_cursor.return_value = mock_cursor
+
+        date = datetime.date(2015, 1, 1)
+        redshift.delete_touchpoint_conversions(date)
+
+        query = 'DELETE FROM touchpointconversions WHERE date = %s'
+        params = ['2015-01-01']
+
+        mock_cursor.execute.assert_called_with(query, params)
+
+    def test_vacuum_touchpoint_conversions(self, mock_get_cursor):
+        mock_cursor = Mock()
+        mock_get_cursor.return_value = mock_cursor
+
+        redshift.vacuum_touchpoint_conversions()
+
+        query = 'VACUUM FULL touchpointconversions'
+
+        mock_cursor.execute.assert_called_with(query, [])

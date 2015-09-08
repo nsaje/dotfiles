@@ -90,6 +90,16 @@ def vacuum_contentadstats():
     cursor.close()
 
 
+@statsd_timer('reports.redshift', 'vacuum_touchpoint_conversions')
+def vacuum_touchpoint_conversions():
+    query = 'VACUUM FULL touchpointconversions'
+
+    cursor = _get_cursor()
+    cursor.execute(query, [])
+
+    cursor.close()
+
+
 def _get_cursor():
     return connections[settings.STATS_DB_NAME].cursor()
 
