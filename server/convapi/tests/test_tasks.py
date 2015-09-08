@@ -133,5 +133,4 @@ Percent Shown as: Number,,,,,,,,,,
         tasks.process_omniture_report(report_task)
 
         report_logs = models.GAReportLog.objects.all()[0]
-        # TODO: Finish test
-        # self.assertIsNone(report_logs.errors)
+        self.assertIsNone(report_logs.errors)
