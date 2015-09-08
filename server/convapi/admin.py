@@ -21,8 +21,8 @@ class TestReportsListFilter(admin.SimpleListFilter):
         in the right sidebar.
         """
         return (
-            ('NonTest', _('Reports')),
-            ('Test', _('Test Reports')),
+            ('non-test', _('Reports')),
+            ('test', _('Test Reports')),
         )
 
     def queryset(self, request, queryset):
