@@ -21,9 +21,12 @@ $SCRIPTPATH/server/manage.py runserver localhost:$SERVER_PORT &
 
 CURR_DIR=$PWD
 cd $SCRIPTPATH/client
-grunt dev&
 
-sleep 40
+# since in CircleCI and in local environment regular "grunt test" is run beforehand, 
+# it means everything has been already built and we don't need to run dev (=build+watch)
+grunt connect:dev:keepalive & 
+# wait until we have the port open
+while ! fuser $STATIC_PORT/tcp 2>/dev/null 1>/dev/null; do sleep 1; done
 
 grunt e2e
 STATUS=$?

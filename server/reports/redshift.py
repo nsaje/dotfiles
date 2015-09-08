@@ -29,6 +29,17 @@ def delete_contentadstats(date, ad_group_id, source_id):
     cursor.close()
 
 
+@statsd_timer('reports.redshift', 'delete_contentadstats')
+def delete_touchpoint_conversions(date):
+    cursor = _get_cursor()
+
+    query = 'DELETE FROM touchpointconversions WHERE date = %s'
+    params = [date.isoformat()]
+
+    cursor.execute(query, params)
+    cursor.close()
+
+
 @statsd_timer('reports.redshift', 'insert_contentadstats')
 def insert_contentadstats(rows):
     if not rows:
@@ -39,6 +50,23 @@ def insert_contentadstats(rows):
     cols = rows[0].keys()
 
     query = 'INSERT INTO contentadstats ({cols}) VALUES {rows}'.format(
+        cols=','.join(cols),
+        rows=','.join(_get_row_string(cursor, cols, row) for row in rows))
+
+    cursor.execute(query, [])
+    cursor.close()
+
+
+@statsd_timer('reports.redshift', 'insert_touchpointconversions')
+def insert_touchpoint_conversions(rows):
+    if not rows:
+        return
+
+    cursor = _get_cursor()
+
+    cols = rows[0].keys()
+
+    query = 'INSERT INTO touchpointconversions ({cols}) VALUES {rows}'.format(
         cols=','.join(cols),
         rows=','.join(_get_row_string(cursor, cols, row) for row in rows))
 
@@ -178,6 +206,16 @@ def _sum_division_aggregate(expr, divisor, stat_name):
 
 def _sum_aggregate(expr, stat_name):
     return 'SUM({}) AS {}'.format(quote(expr), quote(stat_name))
+
+
+@statsd_timer('reports.redshift', 'vacuum_touchpoint_conversions')
+def vacuum_touchpoint_conversions():
+    query = 'VACUUM FULL touchpointconversions'
+
+    cursor = _get_cursor()
+    cursor.execute(query, [])
+
+    cursor.close()
 
 
 def _get_cursor():

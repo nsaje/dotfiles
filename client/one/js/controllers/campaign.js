@@ -6,7 +6,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
         return [
             {heading: 'Ad groups', route: 'main.campaigns.ad_groups', active: true, hidden: !$scope.hasPermission('zemauth.campaign_ad_groups_view') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.campaign && $scope.campaign.archived), internal: $scope.isPermissionInternal('zemauth.campaign_ad_groups_view')},
             {heading: 'Media sources', route: 'main.campaigns.sources', active: false, hidden: !$scope.hasPermission('zemauth.campaign_sources_view') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.campaign && $scope.campaign.archived), internal: $scope.isPermissionInternal('zemauth.campaign_sources_view')},
-            {heading: 'Agency', route: 'main.campaigns.agency', active: false, hidden: !$scope.hasPermission('zemauth.campaign_settings_view'), internal: $scope.isPermissionInternal('zemauth.campaign_settings_view')},
+            {heading: 'Agency', route: 'main.campaigns.agency', active: false, hidden: !$scope.hasPermission('zemauth.campaign_agency_view'), internal: $scope.isPermissionInternal('zemauth.campaign_agency_view')},
             {heading: 'Budget', route: 'main.campaigns.budget', active: false, hidden: !$scope.hasPermission('zemauth.campaign_budget_management_view') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.campaign && $scope.campaign.archived), internal: $scope.isPermissionInternal('zemauth.campaign_budget_management_view')},
             // this tab is only shown for archived campaigns
             {heading: 'Settings', route: 'main.campaigns.archived', active: false, hidden: $scope.hasPermission('zemauth.campaign_settings_view') || !$scope.hasPermission('zemauth.view_archived_entities') || !$scope.campaign || !$scope.campaign.archived, internal: false},
@@ -72,8 +72,10 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
     $scope.setActiveTab();
 
     if ($scope.hasPermission('zemauth.view_archived_entities') && $scope.campaign && $scope.campaign.archived) {
-        if ($scope.hasPermission('zemauth.campaign_settings_view')) {
+        if ($scope.hasPermission('zemauth.campaign_agency_view')) {
             $state.go('main.campaigns.agency', {id: $scope.campaign.id});
+        } else if ($scope.hasPermission('zemauth.campaign_settings_view')) {
+            $state.go('main.campaigns.settings', {id: $scope.campaign.id});
         } else {
             $state.go('main.campaigns.archived', {id: $scope.campaign.id});
         }

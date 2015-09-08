@@ -18,6 +18,7 @@ def resend_action(modeladmin, request, queryset):
         zwei_actions.resend([
             action for action in queryset
         ])
+        modeladmin.message_user(request, 'Actions resent.')
     except AssertionError, ex:
         modeladmin.message_user(request, str(ex), level=messages.ERROR)
 resend_action.short_description = "Resend failed actions"

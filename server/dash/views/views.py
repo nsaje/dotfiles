@@ -23,6 +23,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth import login, authenticate
 from django.views.decorators.http import require_GET
+from django.views.decorators.csrf import csrf_exempt
 
 from dash.views import helpers
 
@@ -1039,6 +1040,7 @@ def oauth_redirect(request, source_name):
 
 
 @statsd_helper.statsd_timer('dash', 'sharethrough_approval')
+@csrf_exempt
 def sharethrough_approval(request):
     data = json.loads(request.body)
 
@@ -1050,8 +1052,10 @@ def sharethrough_approval(request):
         content_ad_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
     else:
         content_ad_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
-        content_ad_source.submission_errors = constants.SharethroughApprovalStatus.get_text(data['status'])
 
     content_ad_source.save()
+
+    actionlog.api_contentads.init_update_content_ad_action(content_ad_source, {'state': content_ad_source.state},
+                                                           request=None, send=True)
 
     return HttpResponse('OK')

@@ -169,7 +169,7 @@ class AdGroupSettings(api_common.BaseApiView):
 class CampaignAgency(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_agency_get')
     def get(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_settings_view'):
+        if not request.user.has_perm('zemauth.campaign_agency_view'):
             raise exc.MissingDataError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
@@ -189,7 +189,7 @@ class CampaignAgency(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_agency_put')
     def put(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_settings_view'):
+        if not request.user.has_perm('zemauth.campaign_agency_view'):
             raise exc.MissingDataError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)

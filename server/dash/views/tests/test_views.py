@@ -977,6 +977,7 @@ class AdGroupSourcesTest(TestCase):
         ])
 
 
+@patch('dash.views.views.actionlog.api_contentads.init_update_content_ad_action')
 class SharethroughApprovalTest(TestCase):
 
     fixtures = ['test_api.yaml']
@@ -984,7 +985,7 @@ class SharethroughApprovalTest(TestCase):
     def setUp(self):
         self.client = Client()
 
-    def test_approved_creative(self):
+    def test_approved_creative(self, mock_update):
         data = {
             'status': 0,
             'crid': 1,
@@ -1005,8 +1006,10 @@ class SharethroughApprovalTest(TestCase):
 
         self.assertEqual(2, cas.submission_status)
         self.assertEqual(None, cas.submission_errors)
+        self.assertTrue(mock_update.called)
+        mock_update.assert_called_with(cas, {'state': cas.state}, request=None, send=True)
 
-    def test_rejected_creative(self):
+    def test_rejected_creative(self, mock_update):
         data = {
             'status': 1,
             'crid': 1,
@@ -1026,26 +1029,6 @@ class SharethroughApprovalTest(TestCase):
         cas = models.ContentAdSource.objects.get(id=cas.id)
 
         self.assertEqual(3, cas.submission_status)
-        self.assertEqual(constants.SharethroughApprovalStatus.get_text(1), cas.submission_errors)
-
-    def test_rejected_creative_other(self):
-        data = {
-            'status': 5,
-            'crid': 1,
-            'seat': 'abc123',
-            'expiry': '2015-12-31'
-        }
-        cas = models.ContentAdSource.objects.get(content_ad_id=1, source=models.Source.objects.get(name='Sharethrough'))
-        self.assertEqual(1, cas.submission_status)
-
-        self.client.post(
-            reverse('sharethrough_approval'),
-            follow=True,
-            content_type='application/json',
-            data=json.dumps(data)
-        )
-
-        cas = models.ContentAdSource.objects.get(id=cas.id)
-
-        self.assertEqual(3, cas.submission_status)
         self.assertEqual(None, cas.submission_errors)
+        self.assertTrue(mock_update.called)
+        mock_update.assert_called_with(cas, {'state': cas.state}, request=None, send=True)

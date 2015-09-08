@@ -94,7 +94,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
         verbose_name_plural = _('users')
 
         permissions = (
-            ('campaign_settings_view', "Can view campaign's agency tab."),
+            ('campaign_settings_view', "Can view campaign's settings tab."),
+            ('campaign_agency_view', "Can view campaign's agency tab."),
             ('campaign_ad_groups_view', "Can view campaign's ad groups tab in dashboard."),
             ('campaign_settings_account_manager', 'Can be chosen as account manager.'),
             ('campaign_settings_sales_rep', 'Can be chosen as sales representative.'),

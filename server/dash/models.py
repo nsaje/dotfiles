@@ -452,7 +452,7 @@ class CampaignSettings(SettingsBase):
         default=Decimal('0.2000'),
     )
     iab_category = models.SlugField(
-        max_length=5,
+        max_length=10,
         default=constants.IABCategory.IAB24,
         choices=constants.IABCategory.get_choices()
     )
