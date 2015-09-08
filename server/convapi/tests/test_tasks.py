@@ -101,7 +101,7 @@ Percent Shown as: Number,,,,,,,,,,
 2.,CSY-PB-ZM-AB-infolinks_com-z12yahoo1z:Fires-and-Other-Home-Hazards-Spike-During-the-Holidays-Data-Show,1,0.0%,1,0.0%,100.0%,1,0.0%,0,0.0%
 3.,CSY-PB-ZM-AB-adbistro_com--z13yahoo1z:Bikers-Born-to-Be-Wild-VIDEO,1,0.0%,1,0.0%,100.0%,1,0.0%,0,0.0%
 4.,CSY-PB-ZM-AB-yahoo_com-z14yahoo1z:7-Useful-Items-for-Your-Glove-Compartment,1,0.0%,1,0.0%,100.0%,1,0.0%,0,0.0%
-,Total,"2,227",,"2,184",,88.6%,"2,670",,"63,745",
+,Total,4,,4,,88.6%,"2,670",,100,
     """.strip().decode('utf-8')
         # Create a workbook and add a worksheet.
         buf = StringIO.StringIO()

@@ -526,22 +526,19 @@ class OmnitureReport(Report):
         return header
 
     def _extract_date(self, date_raw):
-        """
-        date_raw_split = date_raw.split(' ')
-        date_raw_split.reverse()
-        date_part = ''
-        for date_el in date_raw_split:
-            date_part = date_el + date_part.replace('.', '')
-            report_date = parser.parse(date_part)
-            if report_date is not None:
-                break
-        """
-
-        # assume a specific but common format
+        # Example date: Fri. 4 Sep. 2015
         date_raw_split = date_raw.replace('.', '').split(' ')
         date_prefix = ' '.join(date_raw_split[:4])
         return datetime.datetime.strptime(date_prefix, '%a %d %b %Y')
-        # Fri. 4 Sep. 2015
+
+    def _check_session_counts(self, totals):
+        sessions_sum = sum(entry.visits for entry in self.entries.values())
+        sessions_total = _report_atoi(totals['Visits'])
+        if sessions_total != sessions_sum:
+            raise exc.IncompleteReportException(
+                'Number of total sessions ({}) is not equal to sum of session counts ({})'.format(
+                    sessions_total, sessions_sum)
+            )
 
     def parse(self):
         workbook = xlrd.open_workbook(file_contents=self.xlsx_report_blob)
@@ -570,14 +567,15 @@ class OmnitureReport(Report):
                     enum_columns = [(idx, el) for (idx, el) in enumerate(all_columns)]
                     continue
 
-            if 'Total' in line:
-                break
-
             # valid data is data with known column name(many columns are empty
             # in sample reports)
             keys = [idxel[1] for idxel in enum_columns if idxel[1] != '']
             values = [line[idxel[0]] for idxel in enum_columns if idxel[1] != '']
             omniture_row_dict = dict(zip(keys, values))
+
+            if 'Total' in line:  # footer with summary
+                self._check_session_counts(omniture_row_dict)
+                break
 
             keyword = omniture_row_dict.get('Tracking Code', '')
             content_ad_id, source_param = self._parse_z11z_keyword(keyword)
