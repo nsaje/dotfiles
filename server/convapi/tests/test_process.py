@@ -1,7 +1,6 @@
 import datetime
 
 from django.test import TestCase
-import mock
 
 from convapi import process
 import dash.models

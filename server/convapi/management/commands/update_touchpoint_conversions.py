@@ -18,8 +18,4 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         date = parse_date(options, 'date')
 
-        dates = []
-        if date:
-            dates.append(date)
-
-        process.update_touchpoint_conversions(dates)
+        process.update_touchpoint_conversions([date])

@@ -28,23 +28,22 @@ def _get_dates_to_sync():
     return [min_last_sync_dt.date() + datetime.timedelta(days=i) for i in range(0, num_days+1)]
 
 
+@statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions_full')
+def update_touchpoint_conversions_full():
+    dates = _get_dates_to_sync()
+    update_touchpoint_conversions(dates)
+    dash.models.ConversionPixel.all().update(last_sync_dt=datetime.datetime.utcnow())
+
+
 @statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions')
 def update_touchpoint_conversions(dates):
     '''
     Used for aggregating data from R1. If dates are not specified, it runs a full aggregation.
     '''
-    update_last_sync_dt = False
-    if not dates:
-        update_last_sync_dt = True
-        dates = _get_dates_to_sync()
-
     for date in dates:
         redirects_impressions = redirector_helper.fetch_redirects_impressions(date)
         touchpoint_conversion_pairs = process_touchpoint_conversions(redirects_impressions)
         reports.update.update_touchpoint_conversions(date, touchpoint_conversion_pairs)
-
-    if update_last_sync_dt:
-        dash.models.ConversionPixel.all().update(last_sync_dt=datetime.datetime.utcnow())
 
 
 @statsd_helper.statsd_timer('convapi', 'process_touchpoint_conversions')
