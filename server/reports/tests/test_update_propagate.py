@@ -446,7 +446,7 @@ class ContentAdStatsUpdateTest(test.TestCase):
 class GaContentAdReportTest(test.TransactionTestCase):
     fixtures = ['test_api_contentads']
 
-    date = datetime.datetime(2015, 4, 16)
+    date = datetime.date(2015, 4, 16)
 
     sample_data = [
         parse_v2.GaReportRow(
@@ -463,7 +463,7 @@ class GaContentAdReportTest(test.TransactionTestCase):
                 "Yell Free Listings (Goal 1 Conversion Rate)": "0.00%",
                 "Yell Free Listings (Goal 1 Value)": "\u00a30.00",
             },
-            datetime.datetime(2015, 4, 16),
+            datetime.date(2015, 4, 16),
             1,
             "gravity",
             {
@@ -488,7 +488,7 @@ class GaContentAdReportTest(test.TransactionTestCase):
                 "Yell Free Listings (Goal 1 Conversion Rate)": "0.00%",
                 "Yell Free Listings (Goal 1 Value)": "\u00a30.00",
             },
-            datetime.datetime(2015, 4, 16),
+            datetime.date(2015, 4, 16),
             3,
             "gravity",
             {
@@ -516,7 +516,7 @@ class GaContentAdReportTest(test.TransactionTestCase):
                 "Yell Free Listings (Goal 1 Conversion Rate)": "0.00%",
                 "Yell Free Listings (Goal 1 Value)": "\u00a30.00",
             },
-            datetime.datetime(2015, 4, 16),
+            datetime.date(2015, 4, 16),
             12345,
             "gravity",
             {
