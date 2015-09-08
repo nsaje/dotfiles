@@ -26,7 +26,7 @@ def delete_contentadstats(date, ad_group_id, source_id):
 def delete_touchpoint_conversions(date):
     cursor = _get_cursor()
 
-    query = 'DELETE FROM contentadstats WHERE date = %s'
+    query = 'DELETE FROM touchpointconversions WHERE date = %s'
     params = [date.isoformat()]
 
     cursor.execute(query, params)
