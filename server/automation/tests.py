@@ -55,7 +55,7 @@ class BudgetDepletionTestCase(test.TestCase):
             'campaign_name',
             'campaign_url',
             'account_name',
-            ['test@zemanta.com']
+            'test@zemanta.com'
         )
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(
