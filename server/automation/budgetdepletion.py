@@ -26,7 +26,7 @@ def manager_has_been_notified(campaign):
 
 def notify_campaign_with_depleting_budget(campaign, available_budget, yesterdays_spend):
     account_manager = campaign.get_current_settings().account_manager
-    campaign_url = settings.BASE_URL + '/campaigns/{}/ad_groups'.format(campaign.pk)
+    campaign_url = settings.BASE_URL + '/campaigns/{}/budget'.format(campaign.pk)
     _send_depleted_budget_notification_email(
         campaign.name,
         campaign_url,
@@ -108,7 +108,7 @@ Zemanta
             ),
             body,
             'Zemanta <{}>'.format(settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL),
-            settings.DEPLETING_CAMPAIGN_BUDGET_DEBUGGING_EMAILS,
+            email,
             fail_silently=False
         )
     except Exception as e:
