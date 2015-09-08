@@ -7,7 +7,7 @@ from dash import models
 logging.getLogger('requests').setLevel(logging.CRITICAL)
 requests.packages.urllib3.disable_warnings()
 
-AD_GROUP_IDS = [24]
+AD_GROUP_IDS = []
 
 API_TOKEN = ''
 
