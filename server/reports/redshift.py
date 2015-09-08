@@ -189,7 +189,7 @@ def _create_select_query(table, fields, constraints, breakdown=None):
 def _click_discrepancy_aggregate(clicks_col, visits_col, stat_name):
     return ('CASE WHEN SUM({clicks}) = 0 THEN NULL WHEN SUM({visits}) = 0 THEN 1'
             ' WHEN SUM({clicks}) < SUM({visits}) THEN 0'
-            ' ELSE SUM(CAST({clicks} AS FLOAT)) - SUM({visits}) / SUM({clicks})'
+            ' ELSE (SUM(CAST({clicks} AS FLOAT)) - SUM({visits})) / SUM({clicks})'
             ' END as {stat_name}').format(
                 clicks=quote(clicks_col),
                 visits=quote(visits_col),
