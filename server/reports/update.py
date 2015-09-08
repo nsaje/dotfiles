@@ -3,6 +3,7 @@ import datetime
 import logging
 
 from django.db import transaction
+from django.conf import settings
 
 import dash.models
 
@@ -10,6 +11,7 @@ import reports.api
 import reports.refresh
 import reports.models
 from reports import refresh
+from reports import redshift
 
 from utils import statsd_helper
 
@@ -271,6 +273,12 @@ def update_content_ads_source_traffic_stats(date, ad_group, source, rows):
 
     date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
     reports.refresh.refresh_contentadstats(date, ad_group, source)
+
+
+@transaction.atomic(using=settings.STATS_DB_NAME)
+def update_touchpoint_conversions(date, conversion_touchpoint_pairs):
+    redshift.delete_touchpoint_conversions(date)
+    redshift.insert_touchpoint_conversions(conversion_touchpoint_pairs)
 
 
 @transaction.atomic
