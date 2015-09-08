@@ -147,7 +147,7 @@ def _prepare_constraints(constraints, field_mapping):
             else:
                 result.append('FALSE')
         else:
-            result.append('{}={}'.format(k, quote_if_str(v)))
+            result.append('{}={}'.format(k, quote_if_str(get_obj_id(v))))
 
     return result
 
