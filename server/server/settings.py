@@ -180,11 +180,8 @@ if TESTING:
     CELERY_DEFAULT_CONVAPI_QUEUE = CELERY_DEFAULT_CONVAPI_QUEUE
     CELERY_DEFAULT_CONVAPI_V2_QUEUE = CELERY_DEFAULT_CONVAPI_V2_QUEUE
 
-    # del DATABASES[STATS_DB_NAME]
-    # STATS_DB_NAME = 'default'
-    for n in ('stats', 'stats_e2e', 'stats_e2e_meta'):
-        if n in DATABASES:
-            del DATABASES[n]
+    DATABASES.pop(STATS_DB_NAME, None)
+    DATABASES.pop(STATS_E2E_DB_NAME, None)
 
 # App specific
 ACTIONLOG_RECENT_HOURS = 2
@@ -212,18 +209,14 @@ if os.environ.get('E2E'):
     print 'Using E2E database !!!'
     DATABASES['default'] = DATABASES['e2e']
 
-if os.environ.get('E2EREDSHIFTDB'):
-    STATS_DB_NAME = 'stats'
-    new_stats_db_name = os.environ.get('E2EREDSHIFTDB')
-    DATABASES[STATS_DB_NAME] = DATABASES['stats_e2e']
-    del DATABASES['stats_e2e']
+if os.environ.get('E2E_REDDB'):
+    DATABASES[STATS_DB_NAME]['NAME'] = os.environ.get('E2E_REDDB')
 
-    DATABASES[STATS_DB_NAME]['NAME'] = new_stats_db_name
-
-    print 'Using e2e redshift DB', new_stats_db_name
+    print 'Using e2e Redshift DB named', DATABASES[STATS_DB_NAME]['NAME']
 
     if os.environ.get('REDSHIFT_E2E_USER'):
-        print 'Updating credentials'
+        print 'Updating Redshift credentials'
+
         credentials = {
             'USER': os.environ.get('REDSHIFT_E2E_USER'),
             'PASSWORD': os.environ.get('REDSHIFT_E2E_PASS'),
@@ -231,16 +224,12 @@ if os.environ.get('E2EREDSHIFTDB'):
         }
 
         DATABASES[STATS_DB_NAME].update(credentials)
-        DATABASES['stats_e2e_meta'].update(credentials)
+        DATABASES[STATS_E2E_DB_NAME].update(credentials)
 
 
 if 'e2e' in DATABASES:
     DATABASES['e2e'] = {}
     del DATABASES['e2e']
-
-if 'stats_e2e' in DATABASES:
-    DATABASES['stats_e2e'] = {}
-    del DATABASES['stats_e2e']
 
 
 # User agent used when validating uploaded content ads URLs
