@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
 
     option_list = BaseCommand.option_list + (
-        make_option('--date', help='Iso format.')
+        make_option('--date', help='Iso format.'),
     )
 
     def handle(self, *args, **options):
