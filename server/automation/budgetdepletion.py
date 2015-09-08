@@ -108,7 +108,7 @@ Zemanta
             ),
             body,
             'Zemanta <{}>'.format(settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL),
-            email,
+            [email],
             fail_silently=False
         )
     except Exception as e:
