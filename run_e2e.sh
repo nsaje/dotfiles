@@ -5,7 +5,7 @@ STATIC_PORT=9999
 export E2E=1
 
 current_time=$(date "+%Y%m%d%H%M%S")
-rand=$(< /dev/urandom tr -dc a-z-0-9 | head -c8)
+rand=$(< /dev/urandom tr -dc a-z0-9 | head -c8)
 export E2E_REDDB="stats_e2e_${current_time}_${rand}"
 
 STATUS=1
