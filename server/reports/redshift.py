@@ -132,16 +132,22 @@ def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakd
 
 def _prepare_constraints(constraints, field_mapping):
     result = []
+
+    def quote_if_str(val):
+        if isinstance(val, str):
+            return quote(val)
+        return str(val)
+
     for k, v in constraints.iteritems():
         k = quote(field_mapping.get(k, k))
 
         if isinstance(v, collections.Sequence) or isinstance(v, QuerySet):
             if v:
-                result.append('{} IN ({})'.format(k, ','.join([str(get_obj_id(x)) for x in v])))
+                result.append('{} IN ({})'.format(k, ','.join([quote_if_str(get_obj_id(x)) for x in v])))
             else:
                 result.append('FALSE')
         else:
-            result.append('{}={}'.format(k, get_obj_id(v)))
+            result.append('{}={}'.format(k, quote_if_str(v)))
 
     return result
 
