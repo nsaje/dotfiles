@@ -1,8 +1,11 @@
 from collections import defaultdict
 import datetime
+import logging
 
 import dash.models
 from utils import statsd_helper
+
+logger = logging.getLogger(__name__)
 
 MIN_DELAY_BETWEEN_CONVERSIONS_MINS = 10
 
@@ -33,6 +36,7 @@ def process_touchpoint_conversions(redirects_impressions):
         for redirect_impression in zuid_redirects_impressions:
             slug = redirect_impression['slug']
             account_id = redirect_impression['accountId']
+            ad_group_id = redirect_impression['adGroupId']
             content_ad_id = redirect_impression['contentAdId']
             conversion_key = (account_id, slug)
             source_slug = redirect_impression['source']
@@ -54,19 +58,25 @@ def process_touchpoint_conversions(redirects_impressions):
             try:
                 pixel = dash.models.ConversionPixel.objects.get(slug=slug, account_id=account_id)
             except dash.models.ConversionPixel.DoesNotExist:
+                logger.warning('Unknown conversion pixel. slug=%s account_id=%s', slug, account_id)
                 continue
 
             try:
                 ca = dash.models.ContentAd.objects.select_related('ad_group__campaign').get(id=content_ad_id)
             except dash.models.ContentAd.DoesNotExist:
+                logger.warning('Unknown content ad. content_ad_id=%s ad_group_id=%s source=%s',
+                               content_ad_id, ad_group_id, source_slug)
                 continue
 
             try:
                 source = dash.models.Source.objects.get(tracking_slug=source_slug)
             except dash.models.Source.DoesNotExist:
+                logger.warning('Unknown source slug. source=%s', source_slug)
                 continue
 
             if ca.ad_group.campaign.account_id != pixel.account_id:
+                logger.warning('Content ad does not belong to the same account as conversion pixel.'
+                               'content_ad_id=%s slug=%s', content_ad_id, slug)
                 continue
 
             potential_touchpoint_conversion = {
