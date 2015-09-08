@@ -1,10 +1,9 @@
+import datetime
 import json
 import logging
 import newrelic.agent
-import re
 
 from collections import OrderedDict
-from decimal import Decimal
 from django.db import transaction
 from django.conf import settings
 from django.contrib.auth import models as authmodels
@@ -19,6 +18,7 @@ from dash import models
 from dash import api
 from dash import budget
 from dash import constants
+from reports import redshift
 from utils import api_common
 from utils import statsd_helper
 from utils import exc
@@ -28,6 +28,9 @@ from zemauth.models import User as ZemUser
 
 
 logger = logging.getLogger(__name__)
+
+
+CONVERSION_PIXEL_INACTIVE_DAYS = 7
 
 
 def _get_conversion_pixel_url(account_id, slug):
@@ -498,23 +501,37 @@ class CampaignBudget(api_common.BaseApiView):
 
 
 class AccountConversionPixels(api_common.BaseApiView):
+    def _get_pixel_status(self, last_verified_dt):
+        if last_verified_dt is None:
+            return constants.ConversionPixelStatus.NOT_USED
+
+        if last_verified_dt > datetime.datetime.utcnow() - datetime.timedelta(days=CONVERSION_PIXEL_INACTIVE_DAYS):
+            return constants.ConversionPixelStatus.ACTIVE
+
+        return constants.ConversionPixelStatus.INACTIVE
+
     @statsd_helper.statsd_timer('dash.api', 'conversion_pixels_list')
     def get(self, request, account_id):
         if not request.user.has_perm('zemauth.manage_conversion_pixels'):
             raise exc.MissingDataError()
 
+        account_id = int(account_id)
         account = helpers.get_account(request.user, account_id)
+        last_verified_dts = redshift.get_pixels_last_verified_dt(account_id=account_id)
+
         rows = [
             {
                 'id': conversion_pixel.id,
                 'slug': conversion_pixel.slug,
                 'url': _get_conversion_pixel_url(account.id, conversion_pixel.slug),
-                'status': constants.ConversionPixelStatus.get_text(conversion_pixel.status),
-                'last_verified_dt': conversion_pixel.last_verified_dt,
+                'status': constants.ConversionPixelStatus.get_text(
+                    self._get_pixel_status(last_verified_dts.get((account_id, conversion_pixel.slug)))),
+                'last_verified_dt': last_verified_dts.get((account_id, conversion_pixel.slug)),
                 'archived': conversion_pixel.archived
             } for conversion_pixel in models.ConversionPixel.objects.filter(account=account)
         ]
 
+        print rows
         return self.create_api_response({
             'rows': rows,
             'conversion_pixel_tag_prefix': settings.CONVERSION_PIXEL_PREFIX + str(account.id) + '/',
@@ -555,8 +572,9 @@ class AccountConversionPixels(api_common.BaseApiView):
             'id': conversion_pixel.id,
             'slug': conversion_pixel.slug,
             'url': _get_conversion_pixel_url(account.id, slug),
-            'status': constants.ConversionPixelStatus.get_text(conversion_pixel.status),
-            'last_verified_dt': conversion_pixel.last_verified_dt,
+            'status': constants.ConversionPixelStatus.get_text(
+                constants.ConversionPixelStatus.NOT_USED),
+            'last_verified_dt': None,
             'archived': conversion_pixel.archived,
         })
 
@@ -599,10 +617,6 @@ class ConversionPixel(api_common.BaseApiView):
 
         return self.create_api_response({
             'id': conversion_pixel.id,
-            'slug': conversion_pixel.slug,
-            'url': _get_conversion_pixel_url(account.id, conversion_pixel.slug),
-            'status': constants.ConversionPixelStatus.get_text(conversion_pixel.status),
-            'last_verified_dt': conversion_pixel.last_verified_dt,
             'archived': conversion_pixel.archived,
         })
 
