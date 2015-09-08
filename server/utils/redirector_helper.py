@@ -56,7 +56,7 @@ def fetch_redirects_impressions(date, timeout=300):
 
     start_time = time.time()
     while (time.time() - start_time) < timeout:
-        result = _call_api_retry(settings.R1_CONVERSION_STATS_RESULT_URL.format(str(job_id)), method='GET')
+        result = _call_api_retry(settings.R1_CONVERSION_STATS_RESULT_URL.format(job_id=job_id), method='GET')
         if result is None:
             time.sleep(10)
             continue
@@ -67,7 +67,7 @@ def fetch_redirects_impressions(date, timeout=300):
     raise Exception('Redirect conversion stats timeout')
 
 
-def _call_api_retry(url, data, method='POST'):
+def _call_api_retry(url, data=None, method='POST'):
     for _ in xrange(NUM_RETRIES):
         try:
             return _call_api(url, data, method)
