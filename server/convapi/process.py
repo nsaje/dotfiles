@@ -21,7 +21,7 @@ def _get_dates_to_sync():
         filter(last_sync_dt__isnull=False).\
         aggregate(Min('last_sync_dt'))['lasy_sync_dt__min']
 
-    # add some buffer so we don't miss some data
+    # add a buffer so we don't miss some data
     min_last_sync_dt = min_last_sync_dt - datetime.timedelta(hours=ADDITIONAL_SYNC_HOURS)
 
     num_days = (datetime.datetime.utcnow() - min_last_sync_dt()).days()
