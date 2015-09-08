@@ -116,6 +116,88 @@ class GaReportRow(object):
         )
 
 
+class OmnitureReportRow(object):
+    def __init__(self, omniture_row_dict, report_date, content_ad_id, source_param, goals):
+        self.omniture_row_dict = [omniture_row_dict]
+
+        self.visits = self._atoi(ga_row_dict.get('Sessions'))
+        self.bounce_rate_raw = ga_row_dict.get('Bounce Rate')
+        if ga_row_dict.get('Bounce Rate') is not None:
+            self.bounce_rate = self._atof(ga_row_dict['Bounce Rate'].replace('%', '')) / 100
+        else:
+            self.bounce_rate = 0
+        self.pageviews = int(round(self._atof(ga_row_dict.get('Pages / Session', '0')) * self.visits))
+        self.new_visits = self._atoi(ga_row_dict.get('New Users', '0'))
+        self.bounced_visits = int(self.bounce_rate * self.visits)
+        self.total_time_on_site = self.visits * self._parse_duration(ga_row_dict.get('Avg. Session Duration', '00:00:00'))
+
+        self.report_date = report_date.isoformat()
+        self.content_ad_id = content_ad_id
+        self.source_param = source_param
+        self.goals = goals
+
+    def key(self):
+        return (self.report_date, self.content_ad_id, self.source_param)
+
+    def merge_with(self, ga_report_row):
+        self.ga_row_dicts.extend(ga_report_row.ga_row_dicts)
+        self.visits += ga_report_row.visits
+        self.bounce_rate = (self.bounce_rate + ga_report_row.bounce_rate) / 2
+        self.pageviews += ga_report_row.pageviews
+        self.new_visits += ga_report_row.new_visits
+        self.bounced_visits += ga_report_row.bounced_visits
+        self.total_time_on_site += ga_report_row.total_time_on_site
+
+        # merge goal conversions only for now
+        for ga_report_row_goal in ga_report_row.goals:
+            if ga_report_row_goal in self.goals:
+                self.goals[ga_report_row_goal]['conversions'] = self.goals[ga_report_row_goal].get('conversions', 0)
+                self.goals[ga_report_row_goal]['conversions'] +=\
+                    ga_report_row.goals.get(ga_report_row_goal, {'conversions': 0}).get('conversions', 0)
+            else:
+                self.goals[ga_report_row_goal] = ga_report_row.goals[ga_report_row_goal]
+
+    def is_row_valid(self):
+        return self.content_ad_id is not None and\
+            self.source_param != '' and\
+            self.source_param is not None
+
+    def are_goals_useful(self):
+        if len(self.goals) == 0:
+            return False
+        for key, goal_dict in self.goals.iteritems():
+            if 'conversions' in goal_dict.keys():
+                return True
+        return False
+
+    def get_ga_fields(self, column):
+        return [ga_row_dict.get(column, None) for ga_row_dict in self.ga_row_dicts]
+
+    def sessions(self):
+        all_row_raw_sessions = [ga_row_dict['Sessions'].replace(',', '').strip() for ga_row_dict in self.ga_row_dicts]
+        all_row_sessions = [int(raw_sessions) if raw_sessions not in ('', None) else 0 for raw_sessions in all_row_raw_sessions]
+        return sum(all_row_sessions)
+
+    def _atoi(self, raw_str):
+        # TODO: Implement locale specific parsing
+        return int(raw_str.replace(',', ''))
+
+    def _atof(self, raw_str):
+        # TODO: Implement locale specific parsing
+        return float(raw_str.replace(',', ''))
+
+    def _parse_duration(self, durstr):
+        hours_str, minutes_str, seconds_str = durstr.replace('<', '').split(':')
+        return int(seconds_str) + 60 * int(minutes_str) + 60 * 60 * int(hours_str)
+
+    def __str__(self):
+        return "{date}-{caid}-{source_param}".format(
+            date=self.report_date,
+            caid=self.content_ad_id,
+            source_param=self.source_param,
+        )
+
+
 class Report(object):
 
     def __init__(self):
@@ -431,23 +513,53 @@ class OmnitureReport(Report):
         Report.__init__(self)
 
         self.xlsx_report_blob = xlsx_report_blob
-        # first column of csv in GA report - Keyword or Landing Page
-        self.first_column = None
 
-    def _parse_header(self, lines):
-        pass
+    def _parse_header(self, workbook):
+        header = {}
+        sheet = workbook.sheet_by_index(0)
+        for row_idx in range(0, sheet.nrows):
+            line = []
+            for col_idx in range(0, sheet.ncols):
+                value = (sheet.cell(row_idx, col_idx).value or '').strip()
+                if not value:
+                    break
+                line.append(value)
+            if len(line) == 1 and ':' in line[0]:
+                print line
+                keyvalue = [(kv or '').strip() for kv in line[0].split(':')]
+                header[keyvalue[0]] = ''.join(keyvalue[1:])
+        return header
 
     def parse(self):
         workbook = xlrd.open_workbook(file_contents=self.xlsx_report_blob)
+
+        header = self._parse_header(workbook)
+        body_found = False
+
+        all_columns = []
+        enum_columns = []
         sheet = workbook.sheet_by_index(0)
         for row_idx in range(0, sheet.nrows):
             line = []
             for col_idx in range(0, sheet.ncols):
                 value = sheet.cell(row_idx, col_idx).value
-                if not value:
-                    break
                 line.append(value)
-            if len(line) == 1 and ':' in line[0]:
-                print "Header value", line[0].split(':')
-            elif len(line) > 1:
-                print "Body", line
+
+            if not body_found:
+                if not 'Tracking Code' in line:
+                    continue
+                else:
+                    body_found = True
+                    all_columns = line
+                    enum_columns = [(idx, el) for (idx, el) in enumerate(all_columns)]
+                    continue
+
+            if 'Total' in line:
+                break
+
+            # valid data is data with known column name(many columns are empty
+            # in sample reports)
+            keys = [idxel[1] for idxel in enum_columns if idxel[1] != '']
+            values = [line[idxel[0]] for idxel in enum_columns if idxel[1] != '']
+
+            omniture_row_dict = dict(zip(keys, values))
