@@ -89,6 +89,7 @@ def process_touchpoint_conversions(redirects_impressions):
                 'campaign_id': ca.ad_group.campaign_id,
                 'ad_group_id': ca.ad_group_id,
                 'content_ad_id': content_ad_id,
+                'touchpoint_id': redirect_id,
                 'source_id': source.id,
                 'touchpoint_timestamp': redirect_ts,
                 'conversion_lag': (impression_ts - redirect_ts).days + 1

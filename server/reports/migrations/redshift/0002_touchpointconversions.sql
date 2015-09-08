@@ -4,7 +4,7 @@ CREATE TABLE touchpointconversions (
 
     date timestamp,
 
-    conversion_id integer,
+    conversion_id varchar(36),
     conversion_timestamp timestamp,
 
     account_id integer,
@@ -13,6 +13,7 @@ CREATE TABLE touchpointconversions (
     content_ad_id integer,
     source_id integer,
 
+    touchpoint_id varchar(36),
     touchpoint_timestamp timestamp,
     conversion_lag integer
 )
