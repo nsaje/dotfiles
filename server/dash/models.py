@@ -1498,6 +1498,8 @@ class ConversionPixel(models.Model):
                                  choices=constants.ConversionPixelStatus.get_choices())
     last_verified_dt = models.DateTimeField(null=True, verbose_name='Last verified on')
     archived = models.BooleanField(default=False)
+
+    last_sync_dt = models.DateTimeField(blank=True, null=True)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created on')
 
     class Meta:

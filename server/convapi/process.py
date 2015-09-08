@@ -2,12 +2,49 @@ from collections import defaultdict
 import datetime
 import logging
 
+from django.db.models import Min
+
 import dash.models
+import reports.update
+
+from utils import redirector_helper
 from utils import statsd_helper
 
 logger = logging.getLogger(__name__)
 
-MIN_DELAY_BETWEEN_CONVERSIONS_MINS = 10
+
+ADDITIONAL_SYNC_HOURS = 2
+
+
+def _get_dates_to_sync():
+    min_last_sync_dt = dash.models.ConversionPixel.objects.\
+        filter(last_sync_dt__isnull=False).\
+        aggregate(Min('last_sync_dt'))['lasy_sync_dt__min']
+
+    # add some buffer so we don't miss some data
+    min_last_sync_dt = min_last_sync_dt - datetime.timedelta(hours=ADDITIONAL_SYNC_HOURS)
+
+    num_days = (datetime.datetime.utcnow() - min_last_sync_dt()).days()
+    return [min_last_sync_dt.date() + datetime.timedelta(days=i) for i in range(0, num_days+1)]
+
+
+@statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions')
+def update_touchpoint_conversions(dates):
+    '''
+    Used for aggregating data from R1. If dates are not specified, it runs a full aggregation.
+    '''
+    update_last_sync_dt = False
+    if not dates:
+        update_last_sync_dt = True
+        dates = _get_dates_to_sync()
+
+    for date in dates:
+        redirects_impressions = redirector_helper.fetch_redirects_impressions(date)
+        touchpoint_conversion_pairs = process_touchpoint_conversions(redirects_impressions)
+        reports.update.update_touchpoint_conversions(date, touchpoint_conversion_pairs)
+
+    if update_last_sync_dt:
+        dash.models.ConversionPixel.all().update(last_sync_dt=datetime.datetime.utcnow())
 
 
 @statsd_helper.statsd_timer('convapi', 'process_touchpoint_conversions')
@@ -75,8 +112,6 @@ def process_touchpoint_conversions(redirects_impressions):
                 continue
 
             if ca.ad_group.campaign.account_id != pixel.account_id:
-                logger.warning('Content ad does not belong to the same account as conversion pixel.'
-                               'content_ad_id=%s slug=%s', content_ad_id, slug)
                 continue
 
             potential_touchpoint_conversion = {
