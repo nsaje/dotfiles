@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from mock import patch, Mock
 from django.test import TestCase
 
 import dash
@@ -11,10 +12,15 @@ from convapi import tasks
 from convapi import models
 from convapi import views
 
+from reports import redshift
 
+
+@patch('reports.redshift._get_cursor')
 class TasksTest(TestCase):
-
     fixtures = ['test_ga_aggregation.yaml']
+
+    def setUp(self):
+        redshift.STATS_DB_NAME = 'default'
 
     def _fake_get_ga_from_s3(self, key):
         return """
@@ -32,7 +38,7 @@ Day Index,Sessions
 ,"553"
         """.strip()
 
-    def test_process_ga_report(self):
+    def test_process_ga_report(self, cursor):
         dash.models.Source.objects.create(source_type=None, name='Test source', tracking_slug='lasko', maintenance=False)
 
         tasks.get_from_s3 = self._fake_get_ga_from_s3
@@ -52,7 +58,7 @@ Day Index,Sessions
         report_logs = models.GAReportLog.objects.all()[0]
         self.assertIsNone(report_logs.errors)
 
-    def test_process_ga_report_v2(self):
+    def test_process_ga_report_v2(self, cursor):
         dash.models.Source.objects.create(source_type=None, name='Test source', tracking_slug='lasko', maintenance=False)
 
         tasks.get_from_s3 = self._fake_get_ga_from_s3
@@ -91,10 +97,10 @@ Percent Shown as: Number,,,,,,,,,,
 ,,,,,,,,,,
 ,,,,,,,,,,
 ,Tracking Code,Visits,,Unique Visitors,,Bounce Rate,Page Views,,Total Seconds Spent,
-1.,CSY-PB-ZM-AB-adbistro_com:Fad-or-Fab-4-Unusual-New-Car-Features,1,0.0%,1,0.0%,100.0%,1,0.0%,100,0.0%
-2.,CSY-PB-ZM-AB-infolinks_com:Fires-and-Other-Home-Hazards-Spike-During-the-Holidays-Data-Show,1,0.0%,1,0.0%,100.0%,1,0.0%,0,0.0%
-3.,CSY-PB-ZM-AB-adbistro_com:Bikers-Born-to-Be-Wild-VIDEO,1,0.0%,1,0.0%,100.0%,1,0.0%,0,0.0%
-4.,CSY-PB-ZM-AB-yahoo_com:7-Useful-Items-for-Your-Glove-Compartment,1,0.0%,1,0.0%,100.0%,1,0.0%,0,0.0%
+1.,CSY-PB-ZM-AB-adbistro_com-z11yahoo1z:Fad-or-Fab-4-Unusual-New-Car-Features,1,0.0%,1,0.0%,100.0%,1,0.0%,100,0.0%
+2.,CSY-PB-ZM-AB-infolinks_com-z12yahoo1z:Fires-and-Other-Home-Hazards-Spike-During-the-Holidays-Data-Show,1,0.0%,1,0.0%,100.0%,1,0.0%,0,0.0%
+3.,CSY-PB-ZM-AB-adbistro_com--z13yahoo1z:Bikers-Born-to-Be-Wild-VIDEO,1,0.0%,1,0.0%,100.0%,1,0.0%,0,0.0%
+4.,CSY-PB-ZM-AB-yahoo_com-z14yahoo1z:7-Useful-Items-for-Your-Glove-Compartment,1,0.0%,1,0.0%,100.0%,1,0.0%,0,0.0%
 ,Total,"2,227",,"2,184",,88.6%,"2,670",,"63,745",
     """.strip().decode('utf-8')
         # Create a workbook and add a worksheet.
@@ -109,7 +115,7 @@ Percent Shown as: Number,,,,,,,,,,
         workbook.close()
         return buf.getvalue()
 
-    def test_process_omniture_report(self):
+    def test_process_omniture_report(self, cursor):
         dash.models.Source.objects.create(source_type=None, name='Test source', tracking_slug='lasko', maintenance=False)
 
         tasks.get_from_s3 = self._fake_get_omniture_from_s3

@@ -6,7 +6,7 @@ import re
 import StringIO
 import xlrd
 
-from dateutil import parser
+import datetime
 
 from utils import url_helper
 
@@ -138,28 +138,28 @@ class OmnitureReportRow(object):
         self.report_date = report_date.isoformat()
         self.content_ad_id = content_ad_id
         self.source_param = source_param
-        self.goals = []
+        self.goals = {}
 
     def key(self):
         return (self.report_date, self.content_ad_id, self.source_param)
 
-    def merge_with(self, ga_report_row):
-        self.ga_row_dicts.extend(ga_report_row.ga_row_dicts)
-        self.visits += ga_report_row.visits
-        self.bounce_rate = (self.bounce_rate + ga_report_row.bounce_rate) / 2
-        self.pageviews += ga_report_row.pageviews
-        self.new_visits += ga_report_row.new_visits
-        self.bounced_visits += ga_report_row.bounced_visits
-        self.total_time_on_site += ga_report_row.total_time_on_site
+    def merge_with(self, omniture_report_row):
+        self.ga_row_dicts.extend(omniture_report_row.ga_row_dicts)
+        self.visits += omniture_report_row.visits
+        self.bounce_rate = (self.bounce_rate + omniture_report_row.bounce_rate) / 2
+        self.pageviews += omniture_report_row.pageviews
+        self.new_visits += omniture_report_row.new_visits
+        self.bounced_visits += omniture_report_row.bounced_visits
+        self.total_time_on_site += omniture_report_row.total_time_on_site
 
         # merge goal conversions only for now
-        for ga_report_row_goal in ga_report_row.goals:
-            if ga_report_row_goal in self.goals:
-                self.goals[ga_report_row_goal]['conversions'] = self.goals[ga_report_row_goal].get('conversions', 0)
-                self.goals[ga_report_row_goal]['conversions'] +=\
-                    ga_report_row.goals.get(ga_report_row_goal, {'conversions': 0}).get('conversions', 0)
+        for omniture_report_row_goal in omniture_report_row.goals:
+            if omniture_report_row_goal in self.goals:
+                self.goals[omniture_report_row_goal]['conversions'] = self.goals[omniture_report_row_goal].get('conversions', 0)
+                self.goals[omniture_report_row_goal]['conversions'] +=\
+                    omniture_report_row.goals.get(omniture_report_row_goal, {'conversions': 0}).get('conversions', 0)
             else:
-                self.goals[ga_report_row_goal] = ga_report_row.goals[ga_report_row_goal]
+                self.goals[omniture_report_row_goal] = omniture_report_row.goals[omniture_report_row_goal]
 
     def is_row_valid(self):
         return self.content_ad_id is not None and\
@@ -525,20 +525,31 @@ class OmnitureReport(Report):
                 header[keyvalue[0]] = ''.join(keyvalue[1:])
         return header
 
+    def _extract_date(self, date_raw):
+        """
+        date_raw_split = date_raw.split(' ')
+        date_raw_split.reverse()
+        date_part = ''
+        for date_el in date_raw_split:
+            date_part = date_el + date_part.replace('.', '')
+            report_date = parser.parse(date_part)
+            if report_date is not None:
+                break
+        """
+
+        # assume a specific but common format
+        date_raw_split = date_raw.replace('.', '').split(' ')
+        date_prefix = ' '.join(date_raw_split[:4])
+        return datetime.datetime.strptime(date_prefix, '%a %d %b %Y')
+        # Fri. 4 Sep. 2015
+
     def parse(self):
         workbook = xlrd.open_workbook(file_contents=self.xlsx_report_blob)
 
         header = self._parse_header(workbook)
         date_raw = header.get('Date', '')
+        self.start_date = self._extract_date(date_raw)
 
-        date_raw_split = date_raw.split(' ')
-        date_raw_split.reverse()
-        date_part = ''
-        for date_el in date_raw_split:
-            date_part = date_el + date_part
-            self.report_date = parser.parse(date_part)
-            if self.report_date is not None:
-                break
         body_found = False
 
         all_columns = []
@@ -570,7 +581,6 @@ class OmnitureReport(Report):
 
             keyword = omniture_row_dict.get('Tracking Code', '')
             content_ad_id, source_param = self._parse_z11z_keyword(keyword)
-
-            report_entry = OmnitureReportRow(omniture_row_dict, self.report_date, content_ad_id, source_param)
+            report_entry = OmnitureReportRow(omniture_row_dict, self.start_date, content_ad_id, source_param)
 
             self.entries[report_entry.key()] = report_entry
