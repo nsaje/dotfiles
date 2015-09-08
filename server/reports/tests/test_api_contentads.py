@@ -40,6 +40,29 @@ class ApiContentAdsTest(TestCase):
         where_constraints = query.split('WHERE')[1].split('GROUP BY')[0].split('AND')
         self.assertEqual(len(where_constraints), len(constraints))
 
+        self.assertIn('"date" >= \'{}\''.format(constraints['start_date']), query)
+        self.assertIn('"date" <= \'{}\''.format(constraints['end_date']), query)
+
+    def check_aggregations(self, mock_get_results):
+        required_statements = [
+            'CASE WHEN SUM("total_time_on_site") <> 0 THEN SUM(CAST("total_time_on_site" AS FLOAT)) / SUM("total_time_on_site") ELSE NULL END as "avg_tos"',
+            'SUM("impressions") AS "impressions_sum"',
+            'CASE WHEN SUM("clicks") <> 0 THEN SUM(CAST("clicks" AS FLOAT)) / SUM("clicks") ELSE NULL END as "ctr"',
+            'SUM("cost_cc") AS "cost_cc_sum"',
+            'CASE WHEN SUM("cost_cc") <> 0 THEN SUM(CAST("cost_cc" AS FLOAT)) / SUM("cost_cc") ELSE NULL END as "cpc_cc",SUM("pageviews") AS "pageviews_sum"',
+            'SUM("new_visits") AS "new_visits_sum"',
+            'SUM("visits") AS "visits_sum"',
+            'CASE WHEN SUM("bounced_visits") <> 0 THEN SUM(CAST("bounced_visits" AS FLOAT)) / SUM("bounced_visits") ELSE NULL END as "bounce_rate"',
+            'CASE WHEN SUM("new_visits") <> 0 THEN SUM(CAST("new_visits" AS FLOAT)) / SUM("new_visits") ELSE NULL END as "percent_new_users"',
+            'SUM("clicks") AS "clicks_sum"',
+            'CASE WHEN SUM("pageviews") <> 0 THEN SUM(CAST("pageviews" AS FLOAT)) / SUM("pageviews") ELSE NULL END as "pv_per_visit"',
+            'CASE WHEN SUM("clicks") = 0 THEN NULL WHEN SUM("visits") = 0 THEN 1 WHEN SUM("clicks") < SUM("visits") THEN 0 ELSE (SUM(CAST("clicks" AS FLOAT)) - SUM("visits")) / SUM("clicks") END as "click_discrepancy"'
+        ]
+        query = self._get_query(mock_get_results)
+
+        for rs in required_statements:
+            self.assertIn(rs, query)
+
     def test_query_filter_by_ad_group(self, _get_results):
         _get_results.return_value = [{
             'avg_tos': 1.0,
@@ -84,6 +107,7 @@ class ApiContentAdsTest(TestCase):
 
         self.check_breakdown(_get_results, breakdown)
         self.check_constraints(_get_results, **constraints)
+        self.check_aggregations(_get_results)
 
     def test_query_breakdown_by_content_ad(self, _get_results):
         constraints = dict(
@@ -97,6 +121,7 @@ class ApiContentAdsTest(TestCase):
 
         self.check_breakdown(_get_results, breakdown)
         self.check_constraints(_get_results, **constraints)
+        self.check_aggregations(_get_results)
 
     def test_query_breakdown_by_date(self, _get_results):
         constraints = dict(
@@ -109,6 +134,7 @@ class ApiContentAdsTest(TestCase):
 
         self.check_breakdown(_get_results, breakdown)
         self.check_constraints(_get_results, **constraints)
+        self.check_aggregations(_get_results)
 
     def test_query_filter_by_date(self, _get_results):
         constraints = dict(
@@ -118,3 +144,4 @@ class ApiContentAdsTest(TestCase):
         )
         api_contentads.query(**constraints)
         self.check_constraints(_get_results, **constraints)
+        self.check_aggregations(_get_results)
