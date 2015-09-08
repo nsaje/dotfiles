@@ -33,9 +33,9 @@ class TestReportsListFilter(admin.SimpleListFilter):
         """
         # Compare the requested value (either '80s' or '90s')
         # to decide how to filter the queryset.
-        if self.value() == 'Test':
+        if self.value() == 'test':
             return queryset.filter(from_address='test@zemanta.com')
-        elif self.value() == 'NonTest':
+        elif self.value() == 'non-test':
             return queryset.exclude(from_address='test@zemanta.com')
         return queryset
 
