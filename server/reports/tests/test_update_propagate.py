@@ -531,12 +531,12 @@ class GaContentAdReportTest(test.TransactionTestCase):
 
     @patch('reports.update.refresh.refresh_contentadstats')
     def test_correct_row(self, mock_refresh_contentadstats):
-        self.assertEqual(5, reports.models.ContentAdPostclickStats.objects.count())
+        self.assertEqual(6, reports.models.ContentAdPostclickStats.objects.count())
         self.assertEqual(3, reports.models.ContentAdGoalConversionStats.objects.count())
 
         update.process_report(self.date, self.sample_data, constants.ReportType.GOOGLE_ANALYTICS)
 
-        self.assertEqual(7, reports.models.ContentAdPostclickStats.objects.count())
+        self.assertEqual(8, reports.models.ContentAdPostclickStats.objects.count())
         self.assertEqual(5, reports.models.ContentAdGoalConversionStats.objects.count())
 
         self.assertEqual(mock_refresh_contentadstats.call_count, 2)
@@ -545,13 +545,13 @@ class GaContentAdReportTest(test.TransactionTestCase):
 
     @patch('reports.update.refresh.refresh_contentadstats')
     def test_double_correct_row(self, mock_refresh_contentadstats):
-        self.assertEqual(5, reports.models.ContentAdPostclickStats.objects.count())
+        self.assertEqual(6, reports.models.ContentAdPostclickStats.objects.count())
         self.assertEqual(3, reports.models.ContentAdGoalConversionStats.objects.count())
 
         update.process_report(self.date, self.sample_data, constants.ReportType.GOOGLE_ANALYTICS)
         update.process_report(self.date, self.sample_data, constants.ReportType.GOOGLE_ANALYTICS)
 
-        self.assertEqual(7, reports.models.ContentAdPostclickStats.objects.count())
+        self.assertEqual(8, reports.models.ContentAdPostclickStats.objects.count())
         self.assertEqual(5, reports.models.ContentAdGoalConversionStats.objects.count())
 
         self.assertEqual(mock_refresh_contentadstats.call_count, 4)
@@ -559,11 +559,11 @@ class GaContentAdReportTest(test.TransactionTestCase):
         mock_refresh_contentadstats.assert_any_call(self.date, dash.models.AdGroup.objects.get(pk=2))
 
     def test_invalid_caid(self):
-        self.assertEqual(5, reports.models.ContentAdPostclickStats.objects.count())
+        self.assertEqual(6, reports.models.ContentAdPostclickStats.objects.count())
         self.assertEqual(3, reports.models.ContentAdGoalConversionStats.objects.count())
 
         with self.assertRaises(Exception):
             update.process_report(self.date, self.sample_invalid_data_1, constants.ReportType.GOOGLE_ANALYTICS)
 
-        self.assertEqual(5, reports.models.ContentAdPostclickStats.objects.count())
+        self.assertEqual(6, reports.models.ContentAdPostclickStats.objects.count())
         self.assertEqual(3, reports.models.ContentAdGoalConversionStats.objects.count())
