@@ -19,20 +19,23 @@ ADDITIONAL_SYNC_HOURS = 2
 def _get_dates_to_sync():
     min_last_sync_dt = dash.models.ConversionPixel.objects.\
         filter(last_sync_dt__isnull=False).\
-        aggregate(Min('last_sync_dt'))['lasy_sync_dt__min']
+        aggregate(Min('last_sync_dt'))['last_sync_dt__min']
 
     # add a buffer so we don't miss some data
     min_last_sync_dt = min_last_sync_dt - datetime.timedelta(hours=ADDITIONAL_SYNC_HOURS)
 
-    num_days = (datetime.datetime.utcnow() - min_last_sync_dt()).days()
-    return [min_last_sync_dt.date() + datetime.timedelta(days=i) for i in range(0, num_days+1)]
+    dates = [min_last_sync_dt.date()]
+    while dates[-1] < datetime.datetime.utcnow().date():
+        dates.append(dates[-1] + datetime.timedelta(days=1))
+
+    return dates
 
 
 @statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions_full')
 def update_touchpoint_conversions_full():
     dates = _get_dates_to_sync()
     update_touchpoint_conversions(dates)
-    dash.models.ConversionPixel.all().update(last_sync_dt=datetime.datetime.utcnow())
+    dash.models.ConversionPixel.objects.all().update(last_sync_dt=datetime.datetime.utcnow())
 
 
 @statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions')

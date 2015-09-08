@@ -1,9 +1,82 @@
 import datetime
+import mock
 
 from django.test import TestCase
 
 from convapi import process
 import dash.models
+
+
+class UpdateTouchpointConversionsTestCase(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        dash.models.ConversionPixel.objects.create(
+            account_id=1,
+            slug='test_slug',
+            last_sync_dt=datetime.datetime(2015, 9, 8) + datetime.timedelta(hours=process.ADDITIONAL_SYNC_HOURS),
+        )
+        dash.models.ConversionPixel.objects.create(
+            account_id=1,
+            slug='test_slug2',
+            last_sync_dt=None
+        )
+
+    @mock.patch('convapi.process.redirector_helper')
+    @mock.patch('convapi.process.process_touchpoint_conversions')
+    @mock.patch('convapi.process.reports.update')
+    def test_update(self, mock_reports_update, mock_process_touchpoints_conversions, mock_redirector_helper):
+        mock_reports_update.update_touchpoints_conversions = mock.Mock()
+        mock_process_touchpoints_conversions.return_value = [{}, {}]
+        mock_redirector_helper.fetch_redirects_impressions = mock.Mock()
+        mock_redirector_helper.fetch_redirects_impressions.return_value = {'abc': [{}, {}]}
+
+        dates = [datetime.datetime(2015, 9, 7), datetime.datetime(2015, 9, 8), datetime.datetime(2015, 9, 9)]
+        process.update_touchpoint_conversions(dates)
+
+        mock_redirector_helper.fetch_redirects_impressions.assert_has_calls([mock.call(datetime.datetime(2015, 9, 7)),
+                                                                             mock.call(datetime.datetime(2015, 9, 8)),
+                                                                             mock.call(datetime.datetime(2015, 9, 9))])
+        mock_process_touchpoints_conversions.assert_has_calls([mock.call({'abc': [{}, {}]}),
+                                                               mock.call({'abc': [{}, {}]}),
+                                                               mock.call({'abc': [{}, {}]})])
+        mock_reports_update.update_touchpoint_conversions.assert_has_calls(
+            [mock.call(datetime.datetime(2015, 9, 7), [{}, {}]),
+             mock.call(datetime.datetime(2015, 9, 8), [{}, {}]),
+             mock.call(datetime.datetime(2015, 9, 9), [{}, {}])]
+        )
+
+    @mock.patch('convapi.process.update_touchpoint_conversions')
+    @mock.patch('convapi.process.datetime')
+    def test_update_full(self, datetime_mock, update_touchpoint_conversions_mock):
+        datetime_mock.datetime = mock.Mock()
+        datetime_mock.datetime.utcnow = mock.Mock()
+        datetime_mock.datetime.utcnow.return_value = datetime.datetime(2015, 9, 10)
+        datetime_mock.timedelta = datetime.timedelta
+
+        process.update_touchpoint_conversions_full()
+
+        update_touchpoint_conversions_mock.assert_called_once_with([datetime.date(2015, 9, 8),
+                                                                    datetime.date(2015, 9, 9),
+                                                                    datetime.date(2015, 9, 10)])
+
+    @mock.patch('convapi.process.update_touchpoint_conversions')
+    @mock.patch('convapi.process.datetime')
+    def test_update_full_additional_sync(self, datetime_mock, update_touchpoint_conversions_mock):
+        datetime_mock.datetime = mock.Mock()
+        datetime_mock.datetime.utcnow = mock.Mock()
+        datetime_mock.datetime.utcnow.return_value = datetime.datetime(2015, 9, 10)
+        datetime_mock.timedelta = datetime.timedelta
+
+        dash.models.ConversionPixel.objects.filter(slug='test_slug2').update(last_sync_dt=datetime.datetime(2015, 9, 8))
+
+        process.update_touchpoint_conversions_full()
+
+        update_touchpoint_conversions_mock.assert_called_once_with([datetime.date(2015, 9, 7),
+                                                                    datetime.date(2015, 9, 8),
+                                                                    datetime.date(2015, 9, 9),
+                                                                    datetime.date(2015, 9, 10)])
 
 
 class ProcessTouchpointsImpressionsTestCase(TestCase):
@@ -19,7 +92,6 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
             account_id=1,
             slug='test_slug2'
         )
-        dash.models.ContentAd.objects.get(id=1)
 
     def test_process(self):
         redirects_impressions = {
