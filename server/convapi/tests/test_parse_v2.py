@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import traceback
 
 from convapi import exc
@@ -308,3 +311,24 @@ Day Index,Sessions
 
         self.assertTrue(parser.is_media_source_specified())
         self.assertTrue(parser.is_content_ad_specified())
+
+class OmnitureReportTest(TestCase):
+
+    def test_parse_header(self):
+        csv_header = """
+,,,,,,,,,,
+AdobeÂ® Scheduled Report,,,,,,,,,,
+Report Suite: Global,,,,,,,,,,
+Date: Sun. 19 Apr. 2015,,,,,,,,,,
+Segment: All Visits (No Segment),,,,,,,,,,
+,,,,,,,,,,""".strip()
+        parse_v2.OmnitureReport(csv_header)
+
+    def test_extract_date(self):
+        pass
+
+    def test_session_counts(self):
+        pass
+
+    def test_parse(self):
+        pass

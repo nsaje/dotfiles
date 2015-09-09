@@ -11,6 +11,7 @@ import StringIO
 from convapi import tasks
 from convapi import models
 from convapi import views
+from utils import csv_utils
 
 from reports import redshift
 
@@ -103,17 +104,7 @@ Percent Shown as: Number,,,,,,,,,,
 4.,CSY-PB-ZM-AB-yahoo_com-z14yahoo1z:7-Useful-Items-for-Your-Glove-Compartment,1,0.0%,1,0.0%,100.0%,1,0.0%,0,0.0%
 ,Total,4,,4,,88.6%,"2,670",,100,
     """.strip().decode('utf-8')
-        # Create a workbook and add a worksheet.
-        buf = StringIO.StringIO()
-        workbook = xlsxwriter.Workbook(buf)
-        worksheet = workbook.add_worksheet()
-        lines = (line.split(',') for line in csv_omniture_report.split('\n'))
-        # Iterate over the data and write it out row by row.
-        for row, line in enumerate(lines):
-            for col, el in enumerate(line):
-                worksheet.write(row, col, el)
-        workbook.close()
-        return buf.getvalue()
+        return csv_utils.convert_to_xls(csv_omniture_report)
 
     def test_process_omniture_report(self, cursor):
         dash.models.Source.objects.create(source_type=None, name='Test source', tracking_slug='lasko', maintenance=False)
