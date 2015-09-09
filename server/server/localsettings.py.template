@@ -5,6 +5,10 @@ TEMPLATE_DEBUG = DEBUG
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l'
 
+STATS_DB_NAME = 'stats'
+STATS_E2E_DB_NAME = 'stats_e2e'
+
+
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 DATABASES = {
@@ -20,7 +24,15 @@ DATABASES = {
         'USER': '',
         'PASSWORD': ''
     },
-    'stats': {
+    STATS_DB_NAME: {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': 5439
+    },
+    STATS_E2E_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': '',
         'USER': '',
@@ -146,4 +158,3 @@ R1_CONVERSION_STATS_RESULT_URL = 'https://r1.zemanta.com/api/conversions/result/
 # Budget automation
 DEPLETING_AVAILABLE_BUDGET_SCALAR = 1.5
 DEPLETING_CAMPAIGN_BUDGET_EMAIL = 'help@zemanta.com'
-DEPLETING_CAMPAIGN_BUDGET_DEBUGGING_EMAILS = ['davorin.kopic@zemanta.com', 'bostjan@zemanta.com']

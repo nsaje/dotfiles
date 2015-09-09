@@ -100,7 +100,7 @@ def get_csv_content(fieldnames, data, title_text=None, start_date=None, end_date
             if not value and key in ['cost', 'cpc', 'clicks', 'impressions', 'ctr']:
                 value = 0
 
-            if key == 'ctr':
+            if value and key in ['ctr', 'click_discrepancy', 'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos']:
                 value = '{:.2f}'.format(value)
 
             row[key] = value
@@ -116,6 +116,7 @@ def get_excel_content(sheets_data, start_date=None, end_date=None):
 
     format_date = workbook.add_format({'num_format': u'm/d/yy'})
     format_percent = workbook.add_format({'num_format': u'0.00%'})
+    format_decimal = workbook.add_format({'num_format': u'0.00'})
     format_usd = workbook.add_format({'num_format': u'[$$-409]#,##0.00;-[$$-409]#,##0.00'})
 
     for name, columns, data in sheets_data:
@@ -130,6 +131,8 @@ def get_excel_content(sheets_data, start_date=None, end_date=None):
                     column['format'] = format_usd
                 elif format_id == 'percent':
                     column['format'] = format_percent
+                elif format_id == 'decimal':
+                    column['format'] = format_decimal
 
         _create_excel_worksheet(
             workbook,
@@ -152,8 +155,8 @@ def _get_excel_value(item, key):
     if not value and key in ['cost', 'cpc', 'clicks', 'impressions', 'ctr']:
         value = 0
 
-    if key == 'ctr':
-        value = value / 100
+    if value and key in ['ctr', 'click_discrepancy', 'percent_new_users', 'bounce_rate']:
+        value /= 100
 
     return value
 
