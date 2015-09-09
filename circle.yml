@@ -14,7 +14,8 @@ dependencies:
     override:
         - pip install -r server/requirements.txt
         - pip install -r server/requirements_dev.txt
-        - '[ -d "node_modules" ] || npm install':
+        - npm install:
+        #- '[ -d "node_modules" ] || npm install':
             pwd:
                 client
         - bower install:
@@ -30,7 +31,7 @@ checkout:
 
 test:
     override:
-        - 'case $CIRCLE_NODE_INDEX in 0) cd server && coverage run manage.py test && cd ../client && grunt test ;; 1) ./run_e2e.sh ;; esac':
+        - 'case $CIRCLE_NODE_INDEX in 0) cd server && coverage run manage.py test  ;; 1) && cd client && grunt test && cd .. && ./run_e2e.sh ;; esac':
             parallel: true
         #- coverage run manage.py test:
         #    pwd: server
