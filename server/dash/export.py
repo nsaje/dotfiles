@@ -152,8 +152,8 @@ def _get_excel_value(item, key):
     if not value and key in ['cost', 'cpc', 'clicks', 'impressions', 'ctr']:
         value = 0
 
-    if key == 'ctr':
-        value = value / 100
+    if value and key in ['ctr', 'click_discrepancy', 'percent_new_users', 'bounce_rate']:
+        value /= 100
 
     return value
 

@@ -110,6 +110,37 @@ class RefreshContentAdStats(test.TestCase):
 
         mock_redshift.insert_contentadstats.assert_called_with(test_helper.ListMatcher(rows))
 
+    def test_refresh_contentadstats_missing_contentad_stats(self, mock_redshift):
+        date = datetime.datetime(2015, 2, 2)
+        ad_group = dash.models.AdGroup.objects.get(pk=3)
+        source = dash.models.Source.objects.get(pk=1)
+
+        refresh.refresh_contentadstats(date, ad_group, source)
+
+        mock_redshift.delete_contentadstats.assert_called_with(
+            date, ad_group.id, source.id)
+
+        rows = [{
+            'conversions': '{}',
+            'cost_cc': None,
+            'pageviews': 5500,
+            'content_ad_id': 4,
+            'new_visits': 500,
+            'clicks': None,
+            'total_time_on_site': 90,
+            'bounced_visits': 550,
+            'visits': 5000,
+            'source_id': 1,
+            'date': datetime.date(2015, 2, 2),
+            'impressions': None,
+            'data_cost_cc': None,
+            'adgroup_id': 3,
+            'campaign_id': 1,
+            'account_id': 1
+        }]
+
+        mock_redshift.insert_contentadstats.assert_called_with(test_helper.ListMatcher(rows))
+
 
 class RefreshAdGroupStatsTestCase(test.TestCase):
     fixtures = ['test_reports_base.yaml', 'test_article_stats.yaml']
