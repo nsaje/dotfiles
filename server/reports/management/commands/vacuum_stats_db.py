@@ -9,4 +9,5 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         redshift.vacuum_contentadstats()
+        redshift.vacuum_touchpoint_conversions()
         statsd_gauge('reports.redshift.vacuum_stats', 1)
