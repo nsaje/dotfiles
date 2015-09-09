@@ -46,16 +46,6 @@ def _get_active_campaigns_subset(campaigns):
     return campaigns
 
 
-def get_autopilot_ad_group_sources_settings(adgroup):
-    autopilot_sources_settings = []
-    all_ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group=adgroup)
-    for current_source_settings in dash.views.helpers.get_ad_group_sources_settings(all_ad_group_sources):
-        if (current_source_settings.state == dash.constants.AdGroupSourceSettingsState.ACTIVE and
-                current_source_settings.autopilot):
-            autopilot_sources_settings.append(current_source_settings)
-    return autopilot_sources_settings
-
-
 def get_active_ad_groups(campaign):
     active_ad_groups = []
     adgroups = campaign.adgroup_set.all()

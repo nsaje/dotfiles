@@ -967,7 +967,7 @@ class AdGroupSettings(SettingsBase):
     id = models.AutoField(primary_key=True)
     ad_group = models.ForeignKey(AdGroup, related_name='settings', on_delete=models.PROTECT)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True, blank=True)
     state = models.IntegerField(
         default=constants.AdGroupSettingsState.INACTIVE,
         choices=constants.AdGroupSettingsState.get_choices()
@@ -1015,7 +1015,7 @@ class AdGroupSettings(SettingsBase):
         if self.start_date <= now and (self.end_date is None or now <= self.end_date):
             return constants.AdGroupRunningStatus.ACTIVE
         return constants.AdGroupRunningStatus.INACTIVE
-        
+
     def _convert_date_utc_datetime(self, date):
         dt = datetime.datetime(
             date.year,
@@ -1110,7 +1110,10 @@ class AdGroupSettings(SettingsBase):
 
     def save(self, request, *args, **kwargs):
         if self.pk is None:
-            self.created_by = request.user
+            if request is None:
+                self.created_by = None
+            else:
+                self.created_by = request.user
 
         super(AdGroupSettings, self).save(*args, **kwargs)
 
@@ -1187,6 +1190,11 @@ class AdGroupSourceSettings(models.Model):
         blank=True,
         null=True,
         verbose_name='Daily budget'
+    )
+    autopilot = models.BooleanField(
+        null=False,
+        blank=False,
+        default=False
     )
 
     def save(self, request, *args, **kwargs):
