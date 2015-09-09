@@ -472,8 +472,8 @@ class AdGroupAdsPlusExport(ExportApiView):
         {'key': 'pageviews', 'name': 'Pageviews'},
         {'key': 'percent_new_users', 'name': '% New Users', 'format': 'percent'},
         {'key': 'bounce_rate', 'name': 'Bounce Rate', 'format': 'percent'},
-        {'key': 'pv_per_visit', 'name': 'PV/Visit'},
-        {'key': 'avg_tos', 'name': 'Avg. ToS'}
+        {'key': 'pv_per_visit', 'name': 'PV/Visit', 'format': 'decimal'},
+        {'key': 'avg_tos', 'name': 'Avg. ToS', 'format': 'decimal'}
     ]
 
     # this duplication might look strange but is necessary - excel package does
