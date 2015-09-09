@@ -57,6 +57,15 @@
     model: dash.adgroup
     pk: 2
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'test adgroup 3'
+    model: dash.adgroup
+    pk: 3
+
 # test uploadbatch
 
 -   fields:
@@ -96,6 +105,16 @@
         created_dt: '2015-02-23T00:00:00'
     model: dash.contentad
     pk: 3
+
+-   fields:
+        image_id: '123456789'
+        batch: 1
+        url: 'http://testurl.com'
+        title: 'Test Article'
+        ad_group: 3
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.contentad
+    pk: 4
 
 # test source
 
@@ -360,6 +379,21 @@
         created_dt: '2015-02-23T00:00:00'
     model: reports.contentadpostclickstats
     pk: 5
+
+-   fields:
+        content_ad: 4
+        source: 1
+
+        visits: 5000
+        new_visits: 500
+        bounced_visits: 550
+        pageviews: 5500
+        total_time_on_site: 90
+
+        date: '2015-02-02'
+        created_dt: '2015-02-23T00:00:00'
+    model: reports.contentadpostclickstats
+    pk: 6
 
 # test ContentAdGoalConversionStats
 
