@@ -40,9 +40,6 @@ def update_touchpoint_conversions_full():
 
 @statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions')
 def update_touchpoint_conversions(dates):
-    '''
-    Used for aggregating data from R1. If dates are not specified, it runs a full aggregation.
-    '''
     for date in dates:
         redirects_impressions = redirector_helper.fetch_redirects_impressions(date)
         touchpoint_conversion_pairs = process_touchpoint_conversions(redirects_impressions)
