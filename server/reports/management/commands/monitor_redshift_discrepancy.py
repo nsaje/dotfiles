@@ -13,7 +13,7 @@ class Command(BaseCommand):
         n_impressions = reports.models.ContentAdStats.objects\
             .aggregate(impressions=Sum('impressions')).get('impressions') or 0
         n_visits = reports.models.ContentAdPostclickStats.objects\
-            .aggregate(impressions=Sum('visits')).get('visits') or 0
+            .aggregate(visits=Sum('visits')).get('visits') or 0
 
         redshift_sums = redshift.sum_contentadstats()
 
