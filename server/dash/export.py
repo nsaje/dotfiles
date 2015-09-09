@@ -97,7 +97,7 @@ def get_csv_content(fieldnames, data, title_text=None, start_date=None, end_date
         for key in fieldnames:
             value = item[key]
 
-            if not value and key in ['cost', 'cpc', 'clicks', 'impressions', 'ctr']:
+            if not value and key in ['cost', 'cpc', 'clicks', 'impressions', 'ctr', 'visits', 'pageviews']:
                 value = 0
 
             if value and key in ['ctr', 'click_discrepancy', 'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos']:
@@ -152,7 +152,7 @@ def get_excel_content(sheets_data, start_date=None, end_date=None):
 def _get_excel_value(item, key):
     value = item[key]
 
-    if not value and key in ['cost', 'cpc', 'clicks', 'impressions', 'ctr']:
+    if not value and key in ['cost', 'cpc', 'clicks', 'impressions', 'ctr', 'visits', 'pageviews']:
         value = 0
 
     if value and key in ['ctr', 'click_discrepancy', 'percent_new_users', 'bounce_rate']:
