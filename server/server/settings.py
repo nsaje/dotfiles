@@ -183,7 +183,12 @@ if TESTING:
     DATABASES.pop(STATS_DB_NAME, None)
     STATS_DB_NAME = 'default'
 
-    DATABASES.pop(STATS_E2E_DB_NAME, None)
+    # does not need to be defined in production environment
+    try:
+        DATABASES.pop(STATS_E2E_DB_NAME, None)
+    except NameError:
+        print 'E2E DB name not specified'
+
 
 # App specific
 ACTIONLOG_RECENT_HOURS = 2
