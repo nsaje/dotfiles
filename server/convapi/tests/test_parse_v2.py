@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import datetime
 import traceback
 
 from convapi import exc
@@ -8,6 +9,7 @@ from django.test import TestCase
 
 from convapi import parse_v2
 
+from utils import csv_utils
 
 class ParseReportTest(TestCase):
 
@@ -321,8 +323,11 @@ AdobeÂ® Scheduled Report,,,,,,,,,,
 Report Suite: Global,,,,,,,,,,
 Date: Sun. 19 Apr. 2015,,,,,,,,,,
 Segment: All Visits (No Segment),,,,,,,,,,
-,,,,,,,,,,""".strip()
-        parse_v2.OmnitureReport(csv_header)
+,,,,,,,,,,""".strip().decode('utf-8')
+        report = parse_v2.OmnitureReport(csv_utils.convert_to_xls(csv_header))
+        report.parse()
+        self.assertEqual(datetime.datetime(2015, 04, 19), report.get_date())
+        self.assertTrue(report.is_empty())
 
     def test_extract_date(self):
         pass
