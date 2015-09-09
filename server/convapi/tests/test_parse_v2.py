@@ -330,7 +330,26 @@ Segment: All Visits (No Segment),,,,,,,,,,
         self.assertTrue(report.is_empty())
 
     def test_extract_date(self):
-        pass
+        csv_header = """
+,,,,,,,,,,
+AdobeÂ® Scheduled Report,,,,,,,,,,
+Report Suite: Global,,,,,,,,,,
+Date: Sun. 19 Apr. 2015 2015-04-19 00:00:00,,,,,,,,,,
+Segment: All Visits (No Segment),,,,,,,,,,
+,,,,,,,,,,""".strip().decode('utf-8')
+        report = parse_v2.OmnitureReport(csv_utils.convert_to_xls(csv_header))
+        report.parse()
+        self.assertEqual(datetime.datetime(2015, 04, 19), report.get_date())
+
+        csv_header = """
+,,,,,,,,,,
+AdobeÂ® Scheduled Report,,,,,,,,,,
+Report Suite: Global,,,,,,,,,,
+Segment: All Visits (No Segment),,,,,,,,,,
+,,,,,,,,,,""".strip().decode('utf-8')
+        report = parse_v2.OmnitureReport(csv_utils.convert_to_xls(csv_header))
+        with self.assertRaises(Exception):
+           report.parse()
 
     def test_session_counts(self):
         pass
