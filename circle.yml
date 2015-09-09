@@ -14,8 +14,7 @@ dependencies:
     override:
         - pip install -r server/requirements.txt
         - pip install -r server/requirements_dev.txt
-        - npm install:
-        #- '[ -d "node_modules" ] || npm install':
+        - 'npm prune && npm install':
             pwd:
                 client
         - bower install:
