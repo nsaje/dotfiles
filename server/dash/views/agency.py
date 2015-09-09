@@ -531,7 +531,6 @@ class AccountConversionPixels(api_common.BaseApiView):
             } for conversion_pixel in models.ConversionPixel.objects.filter(account=account)
         ]
 
-        print rows
         return self.create_api_response({
             'rows': rows,
             'conversion_pixel_tag_prefix': settings.CONVERSION_PIXEL_PREFIX + str(account.id) + '/',
