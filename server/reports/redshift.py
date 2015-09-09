@@ -82,7 +82,6 @@ def sum_contentadstats():
 
 @statsd_timer('reports.redshift', 'get_pixel_last_verified_dt')
 def get_pixels_last_verified_dt(account_id=None):
-    print 'hi'
     query = 'SELECT account_id, slug, max(conversion_dt) FROM touchpointconversions'
     params = []
     if account_id:
