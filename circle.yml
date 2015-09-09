@@ -32,11 +32,6 @@ test:
     override:
         - 'case $CIRCLE_NODE_INDEX in 0) cd server && coverage run manage.py test  ;; 1) cd client && grunt test && cd .. && ./run_e2e.sh ;; esac':
             parallel: true
-        #- coverage run manage.py test:
-        #    pwd: server
-        #- grunt test:
-        #    pwd: client
-        #- ./run_e2e.sh
     post:
         - coverage report > coverage_report.txt:
             pwd: server
