@@ -20,5 +20,5 @@ class Command(BaseCommand):
         statsd_gauge('reports.contentadstats.impressions_total', n_impressions)
         statsd_gauge('reports.contentadstats.impressions_total_aggr', redshift_sums['impressions'])
 
-        statsd_gauge('reports.contentadstats.visits_contentads_total', n_visits)
-        statsd_gauge('reports.contentadstats.visits_contentads_total_aggr', redshift_sums['visits'])
+        statsd_gauge('reports.contentadstats.visits_total', n_visits)
+        statsd_gauge('reports.contentadstats.visits_total_aggr', redshift_sums['visits'])
