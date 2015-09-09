@@ -41,3 +41,63 @@ class CampaignBudgetDepletionNotification(models.Model):
 
     def __unicode__(self):
         return '{0} {1}'.format(self.account_manager_id, self.campaign_id)
+
+
+class ProposedAdGroupSourceBidCpc(models.Model):
+    campaign = models.ForeignKey(
+        dash.models.Campaign,
+        related_name='+',
+        on_delete=models.PROTECT
+    )
+    ad_group = models.ForeignKey(
+        dash.models.AdGroup,
+        related_name='+',
+        on_delete=models.PROTECT
+    )
+    ad_group_source = models.ForeignKey(
+        dash.models.AdGroupSource,
+        related_name='+',
+        on_delete=models.PROTECT
+    )
+    created_dt = models.DateTimeField(
+        auto_now_add=True,
+        blank=True,
+        null=True,
+        verbose_name='Created at',
+        db_index=True
+    )
+    yesterdays_spend_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='Adgroup Source\'s yesterday\'s spend'
+    )
+    current_cpc_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Yesterday\'s CPC'
+    )
+    proposed_cpc_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Proposed CPC'
+    )
+    current_daily_budget_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Yesterday\'s Daily budget'
+    )
+
+    def __unicode__(self):
+        return '{0} {1}'.format(
+            self.campaign,
+            self.ad_group,
+            self.ad_group_source)

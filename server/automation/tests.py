@@ -1,7 +1,7 @@
 from django.core import mail
 from django import test
 from mock import patch
-from automation import budgetdepletion
+from automation import budgetdepletion, helpers
 from dash import models
 from reports import refresh
 from django.conf import settings
@@ -15,12 +15,12 @@ class BudgetDepletionTestCase(test.TestCase):
         refresh.refresh_adgroup_stats()
 
     def test_get_active_campaigns(self):
-        campaigns = budgetdepletion.get_active_campaigns()
+        campaigns = helpers.get_active_campaigns()
         self.assertEqual(campaigns.filter(pk=1).count(), 1)
 
     def test_get_active_campaigns_subset(self):
         campaigns = models.Campaign.objects.all()
-        actives = budgetdepletion._get_active_campaigns_subset(campaigns)
+        actives = helpers._get_active_campaigns_subset(campaigns)
         self.assertEqual(actives.filter(pk=1).count(), 1)
         self.assertEqual(actives.filter(pk=2).count(), 0)
 
@@ -55,11 +55,21 @@ class BudgetDepletionTestCase(test.TestCase):
             'campaign_name',
             'campaign_url',
             'account_name',
-            settings.DEPLETING_CAMPAIGN_BUDGET_DEBUGGING_EMAILS
+            ['test@zemanta.com']
         )
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(
             settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL)
         )
-        self.assertEqual(mail.outbox[0].to,
-                         settings.DEPLETING_CAMPAIGN_BUDGET_DEBUGGING_EMAILS)
+        self.assertEqual(mail.outbox[0].to, ['test@zemanta.com'])
+
+    def test_get_active_ad_groups(self):
+            campaign1 = models.Campaign.objects.get(id=1)
+            actives = helpers.get_active_ad_groups(campaign1)
+            self.assertEqual(len(actives), 1)
+
+            campaign2 = models.Campaign.objects.get(id=2)
+            actives = helpers.get_active_ad_groups(campaign2)
+            self.assertEqual(len(actives), 0)
+
+    # TODO: test - get_active_ad_group_sources_states, calculate_proposed_cpc
