@@ -100,6 +100,10 @@ def process_touchpoint_conversions(redirects_impressions):
                 logger.warning('Unknown conversion pixel. slug=%s account_id=%s', slug, account_id)
                 continue
 
+            if pixel.archived:
+                statsd_helper.statsd_incr('convapi.process.skip_archived_pixel')
+                continue
+
             try:
                 ca = dash.models.ContentAd.objects.select_related('ad_group__campaign').get(id=content_ad_id)
             except dash.models.ContentAd.DoesNotExist:

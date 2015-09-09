@@ -132,6 +132,32 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
 
         self.assertEqual(expected, conversion_pairs)
 
+    def test_process_archived_pixel(self):
+        redirects_impressions = {
+            '1234-12345-123456': [
+                {
+                    'zuid': '1234-12345-123456',
+                    'slug': 'test_slug',
+                    'impressionId': '12345',
+                    'impressionTimestamp': '2015-09-02T15:15:15Z',
+                    'redirectId': '54321',
+                    'redirectTimestamp': '2015-09-02T15:00:00Z',
+                    'accountId': 1,
+                    'adGroupId': 1,
+                    'source': 'outbrain',
+                    'contentAdId': 1,
+                }
+            ]
+        }
+
+        px = dash.models.ConversionPixel.objects.get(account_id=1, slug='test_slug')
+        px.archived = True
+        px.save()
+
+        conversion_pairs = process.process_touchpoint_conversions(redirects_impressions)
+
+        self.assertEqual([], conversion_pairs)
+
     def test_process_nonexisting_slug(self):
         redirects_impressions = {
             '1234-12345-123456': [
