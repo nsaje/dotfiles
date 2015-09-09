@@ -210,7 +210,7 @@ DEFAULT_TIME_ZONE = 'America/New_York'
 # Placeholder value for source_campaign_key while campaign is being created
 SOURCE_CAMPAIGN_KEY_PENDING_VALUE = 'PENDING'
 
-CONVERSION_PIXEL_PREFIX = 'http://cookiepixie.zemanta.com/p/'
+CONVERSION_PIXEL_PREFIX = 'https://p1.zemanta.com/p/'
 
 if os.environ.get('E2E'):
     print 'Using E2E database !!!'
