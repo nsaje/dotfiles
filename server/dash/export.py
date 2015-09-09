@@ -150,7 +150,7 @@ def get_excel_content(sheets_data, start_date=None, end_date=None):
 
 
 def _get_excel_value(item, key):
-    value = item[key]
+    value = item.get(key)
 
     if not value and key in ['cost', 'cpc', 'clicks', 'impressions', 'ctr', 'visits', 'pageviews']:
         value = 0
