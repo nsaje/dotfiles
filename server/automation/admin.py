@@ -17,18 +17,18 @@ class CampaignBudgetDepletionNotificationAdmin(admin.ModelAdmin):
 admin.site.register(models.CampaignBudgetDepletionNotification, CampaignBudgetDepletionNotificationAdmin)
 
 
-class ProposedAdGroupSourceBidCpcAdmin(admin.ModelAdmin):
+class AutopilotAdGroupSourceBidCpcLogAdmin(admin.ModelAdmin):
     search_fields = ['ad_group__name']
     list_display = (
         'campaign',
         'ad_group',
         'ad_group_source',
-        'current_cpc_cc',
-        'proposed_cpc_cc',
+        'previous_cpc_cc',
+        'new_cpc_cc',
         'yesterdays_spend_cc',
         'current_daily_budget_cc',
         'created_dt'
     )
     readonly_fields = ['created_dt']
 
-admin.site.register(models.ProposedAdGroupSourceBidCpc, ProposedAdGroupSourceBidCpcAdmin)
+admin.site.register(models.AutopilotAdGroupSourceBidCpcLog, AutopilotAdGroupSourceBidCpcLogAdmin)

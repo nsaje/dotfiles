@@ -43,7 +43,7 @@ class CampaignBudgetDepletionNotification(models.Model):
         return '{0} {1}'.format(self.account_manager_id, self.campaign_id)
 
 
-class ProposedAdGroupSourceBidCpc(models.Model):
+class AutopilotAdGroupSourceBidCpcLog(models.Model):
     campaign = models.ForeignKey(
         dash.models.Campaign,
         related_name='+',
@@ -72,28 +72,28 @@ class ProposedAdGroupSourceBidCpc(models.Model):
         blank=True,
         null=True,
         default=0,
-        verbose_name='Adgroup Source\'s yesterday\'s spend'
+        verbose_name='Yesterday\'s spend'
     )
-    current_cpc_cc = models.DecimalField(
+    previous_cpc_cc = models.DecimalField(
         max_digits=10,
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Yesterday\'s CPC'
+        verbose_name='Previous CPC'
     )
-    proposed_cpc_cc = models.DecimalField(
+    new_cpc_cc = models.DecimalField(
         max_digits=10,
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Proposed CPC'
+        verbose_name='New CPC'
     )
     current_daily_budget_cc = models.DecimalField(
         max_digits=10,
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Yesterday\'s Daily budget'
+        verbose_name='Daily budget'
     )
 
     def __unicode__(self):
