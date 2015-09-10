@@ -30,6 +30,15 @@ AGGREGATE_FIELDS = dict(
     cpc_cc=db_aggregates.SumDivision('cost_cc', 'clicks')
 )
 
+PUBLISHERS_AGGREGATE_FIELDS = dict(
+    clicks_sum=Sum('clicks'),
+    impressions_sum=Sum('impressions'),
+    cost_cc_sum=Sum('cost_micro'),
+    ctr=db_aggregates.SumDivision('clicks', 'impressions'),
+    cpc_cc=db_aggregates.SumDivision('cost_micro', 'clicks')
+)
+
+
 POSTCLICK_AGGREGATE_FIELDS = dict(
     visits_sum=Sum('visits'),
     new_visits_sum=Sum('new_visits'),

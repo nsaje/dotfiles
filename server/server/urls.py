@@ -100,6 +100,10 @@ urlpatterns += patterns(
         login_required(dash.views.table.SourcesTable.as_view()),
     ),
     url(
+        r'^api/(?P<level_>(ad_groups))/(?P<id_>\d+)/publishers/table/',
+        login_required(dash.views.table.PublishersTable.as_view()),
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/allowed/',
         login_required(dash.views.export.AdGroupAdsExportAllowed.as_view())
     ),

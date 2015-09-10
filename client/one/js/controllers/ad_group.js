@@ -23,6 +23,12 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
             active: false,
             hidden: !$scope.hasPermission('zemauth.ad_group_agency_tab_view'),
             internal: $scope.isPermissionInternal('zemauth.ad_group_agency_tab_view')
+        }, {
+            heading: 'Publishers',
+            route: 'main.adGroups.publishers',
+            active: false,
+            hidden: !$scope.hasPermission('zemauth.can_see_publishers'),
+            internal: $scope.isPermissionInternal('zemauth.can_see_publishers')
         }];
 
         if ($scope.adGroup.contentAdsTabWithCMS) {

@@ -149,6 +149,39 @@ def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakd
     return _translate_row(results[0], reverse_field_mapping)
 
 
+def query_publishers(start_date, end_date, aggregates, field_mapping, breakdown=None, **constraints):
+
+    constraints = _prepare_constraints(constraints, field_mapping)
+    constraints.append('{} >= \'{}\''.format(quote('date'), start_date))
+    constraints.append('{} <= \'{}\''.format(quote('date'), end_date))
+
+    aggregates = _prepare_aggregates(aggregates, field_mapping, hack=False)
+
+    reverse_field_mapping = {v: k for k, v in field_mapping.iteritems()}
+
+    if breakdown:
+        breakdown = _prepare_breakdown(breakdown, field_mapping)
+        statement = _create_select_query(
+            'b1_publishers_1',
+            breakdown + aggregates,
+            constraints,
+            breakdown
+        )
+
+        results = _get_results(statement)
+        return [_translate_row(row, reverse_field_mapping) for row in results]
+
+    statement = _create_select_query(
+        'b1_publishers_1',
+        aggregates,
+        constraints
+    )
+
+    results = _get_results(statement)
+
+    return _translate_row(results[0], reverse_field_mapping)
+
+
 def _prepare_constraints(constraints, field_mapping):
     result = []
 
@@ -171,7 +204,7 @@ def _prepare_constraints(constraints, field_mapping):
     return result
 
 
-def _prepare_aggregates(aggregates, field_mapping):
+def _prepare_aggregates(aggregates, field_mapping, hack = True):
     processed_aggrs = []
     for key, aggr in aggregates.iteritems():
         field_name = aggr.input_field.name
@@ -186,7 +219,9 @@ def _prepare_aggregates(aggregates, field_mapping):
             raise exc.ReportsUnknownAggregator('Unknown aggregator')
 
     # HACK: should be added to aggregate_fields
-    processed_aggrs.append(_click_discrepancy_aggregate('clicks', 'visits', 'click_discrepancy'))
+    if hack:
+        # SOMEONE PLEASE REMOVE THIS HACK
+        processed_aggrs.append(_click_discrepancy_aggregate('clicks', 'visits', 'click_discrepancy'))
 
     return processed_aggrs
 
@@ -249,6 +284,7 @@ def _get_cursor():
 
 def _get_results(statement):
     cursor = _get_cursor()
+    print "XXXX", statement
     cursor.execute(statement, [])
 
     results = dictfetchall(cursor)

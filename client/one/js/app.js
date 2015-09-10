@@ -173,7 +173,14 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/ads_plus',
             templateUrl: '/partials/ad_group_contentadsplus.html',
             controller: 'AdGroupAdsPlusCtrl'
-        });
+        })
+        .state('main.adGroups.publishers', {
+            url: '/publishers',
+            templateUrl: '/partials/ad_group_publishers.html',
+            controller: 'AdGroupPublishersCtrl'
+        })
+
+        ;
 }]);
 
 oneApp.config(['datepickerConfig', 'datepickerPopupConfig', function (datepickerConfig, datepickerPopupConfig) {

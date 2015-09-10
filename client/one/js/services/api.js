@@ -279,6 +279,48 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         };
     }
 
+    function AdGroupPublishersTable() {
+        function convertFromApi(data) {
+            data.lastChange = data.last_change;
+            data.dataStatus = data.data_status;
+
+            data.notifications = convertNotifications(data.notifications);
+
+            return data;
+        }
+
+        this.get = function (id, startDate, endDate, order) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + id + '/publishers/table/';
+            var config = {
+                params: {}
+            };
+
+            config.params.order = order;
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    if (data && data.data) {
+                        deferred.resolve(data.data);
+                    }
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+
     function AdGroupAdsTable() {
         function convertFromApi(row) {
             row.titleLink = {
@@ -2319,6 +2361,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         adGroupSources: new AdGroupSources(),
         sourcesTable: new SourcesTable(),
         adGroupSourcesTable: new AdGroupSourcesTable(),
+        adGroupPublishersTable: new AdGroupPublishersTable(),
         adGroupAdsTable: new AdGroupAdsTable(),
         adGroupAdsPlusTable: new AdGroupAdsPlusTable(),
         adGroupSync: new AdGroupSync(),

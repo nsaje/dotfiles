@@ -21,6 +21,7 @@ from utils.sort_helper import sort_results
 import reports.api
 import reports.api_helpers
 import reports.api_contentads
+import reports.api_publishers
 import actionlog.sync
 
 
@@ -1627,3 +1628,130 @@ class AccountCampaignsTable(api_common.BaseApiView):
                 rows = sort_results(rows, [order])
 
         return rows
+
+
+
+## Publishers APIs
+class AdGroupPublishersTable(object):
+    def __init__(self, user, id_):
+        self.user = user
+        self.ad_group = helpers.get_ad_group(user, id_)
+
+    def get_stats(self, start_date, end_date):
+        publishers_stats = reports.api_helpers.filter_by_permissions(reports.api_publishers.query(
+            start_date,
+            end_date,
+            ['domain', 'exchange'],
+            ad_group=self.ad_group,
+        ), self.user)
+
+#        totals_stats = reports.api_helpers.filter_by_permissions(reports.api_publishers.query(
+ #           start_date,
+  #          end_date,
+   #         ad_group=self.ad_group,
+    #    ), self.user)
+        totals_stats = []
+
+        return publishers_stats, totals_stats
+
+
+class PublishersTable(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'zemauth.publishers_table_get')
+    @newrelic.agent.function_trace()
+    def get(self, request, level_, id_=None):
+        newrelic.agent.set_transaction_name('dash.views.table:PublishersTable#%s' % (level_))
+
+        user = request.user
+
+        ad_group_level = False
+        if level_ == 'ad_groups':
+            ad_group_level = True
+            level_publishers_table = AdGroupPublishersTable(user, id_)
+        else:
+            # Not yet supported!
+            pass
+
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
+        publishers_data, totals_data = level_publishers_table.get_stats(start_date, end_date)
+
+        response = {
+            'rows': self.get_rows(
+                id_,
+                level_publishers_table,
+                user,
+                publishers_data,
+                order=request.GET.get('order', None),
+                ad_group_level=ad_group_level,
+            ),
+#            'totals': self.get_totals(
+ #               ad_group_level,
+  #              user,
+   #             totals_data,
+    #        ),
+            'totals': [],
+        }
+
+        return self.create_api_response(response)
+
+    @newrelic.agent.function_trace()
+    def get_totals(self,
+                   ad_group_level,
+                   user,
+                   totals_data):
+        result = {
+            'cost': totals_data['cost'],
+            'cpc': totals_data['cpc'],
+            'clicks': totals_data['clicks'],
+            'impressions': totals_data['impressions'],
+            'ctr': totals_data['ctr'],
+        }
+
+        return result
+
+    def from_micro_cpm(self, num):
+        if not num:	
+            return None
+        else:
+            return num * 1.0 / 1000000
+
+    @newrelic.agent.function_trace()
+    def get_rows(
+            self,
+            id_,
+            level_publishers_table,
+            user,
+            publishers_data,
+            order=None,
+            ad_group_level=False):
+        rows = []
+        for i, publisher_data in enumerate(publishers_data):
+            print publisher_data
+
+            row = {
+                'domain': publisher_data.get('domain', None),
+                'exchange': publisher_data.get('exchange', None),
+                'cost': self.from_micro_cpm(publisher_data.get('cost', 0)),
+                'cpc': self.from_micro_cpm(publisher_data.get('cpc', 0)),
+                'clicks': publisher_data.get('clicks', None),
+                'impressions': publisher_data.get('impressions', None),
+                'ctr': publisher_data.get('ctr', None),
+            }
+
+            rows.append(row)
+
+        if order:
+            rows = sort_results(rows, [order])
+
+        return rows
+
+
+
+
+
+
+
+
+
+
