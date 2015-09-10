@@ -1,9 +1,14 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
+import datetime
 import logging
 import reports
 import StringIO
 import unicodecsv
 import xlsxwriter
+import xlrd
 
 from django.conf import settings
 from django.db import transaction
@@ -104,7 +109,8 @@ def process_ga_report(ga_report_task):
             report_log.save()
 
         if ga_report_task.attachment_name.endswith('.xls'):
-            content = _convert_ga_omniture(content)
+            content = _convert_ga_omniture(content, ga_report_task.attachment_name)
+            print "CONTENT ACTUALL", content
 
         elif ga_report_task.attachment_name.endswith('.zip'):
             pass
@@ -181,16 +187,23 @@ def _convert_ga_omniture(content, attachment_name):
     csv_file = StringIO.StringIO()
     writer = unicodecsv.writer(csv_file, encoding='utf-8')
 
-    workbook = xlrd.open_workbook(file_contents=content)
+    workbook = xlrd.open_workbook(file_contents=content) #, encoding_override="utf-8")
 
     header = _parse_omniture_header(workbook)
     date_raw = header.get('Date', '')
-    self.start_date = self._extract_date(date_raw)
-
+    start_date = _extract_omniture_date(date_raw)
+    ga_date = start_date.strftime("%Y%m%d")
 
     # write the header manually as it is different than keys in the dict
-
-
+    writer.writerows([
+        ("# ----------------------------------------"),
+        ("# Automatic Omni to GA Conversion - {}".format(attachment_name)),
+        ("# Keywords"),
+        ("# {dt}-{dt}".format(dt=ga_date)),
+        ("# ----------------------------------------"),
+        (''),
+    ])
+#Landing Page	Device Category	Sessions	% New Sessions	New Users	Bounce Rate	Pages / Session	Avg. Session Duration	Pageviews	ToS
     body_found = False
 
     all_columns = []
@@ -236,18 +249,20 @@ def _parse_omniture_header(workbook):
     for row_idx in range(0, sheet.nrows):
         line = []
         for col_idx in range(0, sheet.ncols):
-            value = (sheet.cell(row_idx, col_idx).value or '').strip()
+            raw_val = sheet.cell_value(row_idx, col_idx)
+            value = (unicode(raw_val).encode('utf-8') or '').strip()
             if not value:
                 break
             line.append(value)
         if len(line) == 1 and ':' in line[0]:
             keyvalue = [(kv or '').strip() for kv in line[0].split(':')]
             header[keyvalue[0]] = ''.join(keyvalue[1:])
+
     return header
 
 
 # TODO: Remove after we switch to new parser w Redshift
-def _extract_omniture_date(self, date_raw):
+def _extract_omniture_date(date_raw):
     # Example date: Fri. 4 Sep. 2015
     date_raw_split = date_raw.replace('.', '').split(' ')
     date_prefix = ' '.join(date_raw_split[:4])

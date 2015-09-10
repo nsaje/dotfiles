@@ -31,7 +31,7 @@ Day Index,Sessions
         """.strip()
 
     def _fake_get_omni_from_s3(self, key):
-        with open('convapi/fixtures/omniture_tracking_codes.xls') as f:
+        with open('convapi/fixtures/omniture_tracking_codes.xls', 'rb') as f:
             return f.read()
 
     def test_process_ga_report(self):
@@ -63,7 +63,7 @@ Day Index,Sessions
             'testuser@zemanta.com',
             None,
             'lasko',
-            'omniture_tracking_codes.xsl',
+            'omniture_tracking_codes.xls',
             1,
             'text/csv',
         )
