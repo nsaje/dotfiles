@@ -662,6 +662,11 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             return getData(url, startDate, endDate, metrics);
         };
 
+        this.listPublishersStats = function (id, startDate, endDate, selectedIds, totals, metrics) {
+            var url = '/api/ad_groups/' + id + '/publishers/daily_stats/';
+            return getData(url, startDate, endDate, metrics, selectedIds, totals);
+        };
+
         this.list = function (level, id, startDate, endDate, selectedIds, totals, metrics, groupSources) {
             var url = '/api/' + level + (id ? ('/' + id) : '') + '/daily_stats/';
             return getData(url, startDate, endDate, metrics, selectedIds, totals, groupSources);

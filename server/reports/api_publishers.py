@@ -18,7 +18,7 @@ PUBLISHERS_FIELD_REVERSE_MAPPING = {v: k for k, v in PUBLISHERS_FIELD_MAPPING.it
 logger = logging.getLogger(__name__)
 
 
-def query(start_date, end_date, breakdown=None, **constraints):
+def query(start_date, end_date, breakdown=None, order=None, **constraints):
 
     if breakdown and len(set(breakdown) - api_helpers.DIMENSIONS) != 0:
         raise exc.ReportsQueryError('Invalid breakdown')
@@ -29,6 +29,7 @@ def query(start_date, end_date, breakdown=None, **constraints):
         aggregate_fields.PUBLISHERS_AGGREGATE_FIELDS,
         PUBLISHERS_FIELD_MAPPING,
         breakdown,
+        order,
         **constraints)
 
     if breakdown:

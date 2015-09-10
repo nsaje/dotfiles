@@ -214,6 +214,11 @@ urlpatterns += patterns(
         name='ad_group_ads_plus_daily_stats'
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/publishers/daily_stats/',
+        login_required(dash.views.daily_stats.AdGroupPublishersDailyStats.as_view()),
+        name='ad_group_publishers_daily_stats'
+    ),
+    url(
         r'^api/campaigns/(?P<campaign_id>\d+)/daily_stats/',
         login_required(dash.views.daily_stats.CampaignDailyStats.as_view()),
         name='campaign_daily_stats'

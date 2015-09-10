@@ -231,6 +231,56 @@ class AdGroupDailyStats(BaseDailyStatsView):
         ))
 
 
+class AdGroupPublishersDailyStats(BaseDailyStatsView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_publishers_daily_stats_get')
+    def get(self, request, ad_group_id):
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+
+        metrics = request.GET.getlist('metrics')
+#        selected_ids = request.GET.getlist('selected_ids')
+        totals = request.GET.get('totals')
+
+ #       filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+
+        totals_kwargs = None
+        selected_kwargs = None
+        sources = []
+
+        if totals:
+            totals_kwargs = {'ad_group': int(ad_group.id)}
+
+        stats = self.get_stats(request, totals_kwargs, selected_kwargs, 'source')
+
+        return self.create_api_response(self.get_response_dict(
+            stats,
+            totals,
+            {},
+            metrics,
+            'domain'
+        ))
+
+    def get_stats(self, request, totals_kwargs, selected_kwargs=None, group_key=None):
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
+        totals_stats = []
+        if totals_kwargs:
+            totals_stats = reports.api_publishers.query(
+                start_date,
+                end_date,
+                ['date'],
+                ['date'],
+                **totals_kwargs
+            )
+
+        breakdown_stats = []
+
+        return breakdown_stats + totals_stats
+
+
+
+
+
 class AccountsDailyStats(BaseDailyStatsView):
     @statsd_helper.statsd_timer('dash.api', 'accounts_daily_stats_get')
     def get(self, request):
@@ -308,3 +358,4 @@ class AdGroupAdsPlusDailyStats(BaseDailyStatsView):
         )
 
         return sort_results(stats, ['date'])
+

@@ -149,7 +149,7 @@ def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakd
     return _translate_row(results[0], reverse_field_mapping)
 
 
-def query_publishers(start_date, end_date, aggregates, field_mapping, breakdown=None, **constraints):
+def query_publishers(start_date, end_date, aggregates, field_mapping, breakdown=None, order=None, **constraints):
 
     constraints = _prepare_constraints(constraints, field_mapping)
     constraints.append('{} >= \'{}\''.format(quote('date'), start_date))
@@ -165,7 +165,8 @@ def query_publishers(start_date, end_date, aggregates, field_mapping, breakdown=
             'b1_publishers_1',
             breakdown + aggregates,
             constraints,
-            breakdown
+            breakdown,
+            order
         )
 
         results = _get_results(statement)
@@ -234,16 +235,20 @@ def _translate_row(row, reverse_field_mapping):
     return {reverse_field_mapping.get(k, k): v for k, v in row.iteritems()}
 
 
-def _create_select_query(table, fields, constraints, breakdown=None):
+def _create_select_query(table, fields, constraints, breakdown=None, order_fields=None):
     group_by = ''
     if breakdown:
         group_by = 'GROUP BY {}'.format(','.join(breakdown))
-    return 'SELECT {fields} FROM {table} WHERE {constraints} {group_by}'.format(
+    cmd = 'SELECT {fields} FROM {table} WHERE {constraints} {group_by}'.format(
         fields=','.join(fields),
         table=table,
         constraints=' AND '.join(constraints),
         group_by=group_by
     )
+    if order_fields:
+        cmd += " ORDER BY " + ",".join(order_fields)
+    cmd += " LIMIT 30"
+    return cmd
 
 
 def _click_discrepancy_aggregate(clicks_col, visits_col, stat_name):
