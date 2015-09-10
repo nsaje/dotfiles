@@ -181,6 +181,19 @@ def process_ga_report(ga_report_task):
         report_log.save()
 
 
+def _report_atoi(raw_str):
+    # TODO: Implement locale specific parsing
+    ret_str = raw_str.replace(',', '')
+    dot_loc = ret_str.find('.')
+    return int(ret_str[:dot_loc])
+
+
+def _report_atof(raw_str):
+    # TODO: Implement locale specific parsing
+    ret_str = raw_str.replace(',', '')
+    return float(ret_str)
+
+
 # TODO: Remove after we switch to new parser w Redshift
 # temporary conversion from Omniture to GA report type
 def _convert_ga_omniture(content, attachment_name):
@@ -195,15 +208,23 @@ def _convert_ga_omniture(content, attachment_name):
     ga_date = start_date.strftime("%Y%m%d")
 
     # write the header manually as it is different than keys in the dict
+    #writer.writerow(("# ----------------------------------------",))
     writer.writerows([
-        ("# ----------------------------------------"),
-        ("# Automatic Omni to GA Conversion - {}".format(attachment_name)),
-        ("# Keywords"),
-        ("# {dt}-{dt}".format(dt=ga_date)),
-        ("# ----------------------------------------"),
-        (''),
+        ("# ----------------------------------------",),
+        ("# Automatic Omni to GA Conversion - {}".format(attachment_name),),
+        ("# Keywords",),
+        ("# {dt}-{dt}".format(dt=ga_date),),
+        ("# ----------------------------------------",),
+        tuple(),
     ])
-#Landing Page	Device Category	Sessions	% New Sessions	New Users	Bounce Rate	Pages / Session	Avg. Session Duration	Pageviews	ToS
+
+    # write header
+
+    writer.writerow((
+        "Keyword", "Sessions", "% New Sessions", "New Users",
+        "Bounce Rate", "Pages / Session",
+        "Avg. Session Duration", "Pageviews",)
+    )
     body_found = False
 
     all_columns = []
@@ -212,11 +233,13 @@ def _convert_ga_omniture(content, attachment_name):
     for row_idx in range(0, sheet.nrows):
         line = []
         for col_idx in range(0, sheet.ncols):
-            value = sheet.cell(row_idx, col_idx).value
+            raw_val = sheet.cell_value(row_idx, col_idx)
+            value = (unicode(raw_val).encode('utf-8') or '').strip()
+            #value = sheet.cell(row_idx, col_idx).value
             line.append(value)
 
         if not body_found:
-            if not 'Tracking Code' in line:
+            if not 'tracking code' in ' '.join(line).lower():
                 continue
             else:
                 body_found = True
@@ -225,19 +248,55 @@ def _convert_ga_omniture(content, attachment_name):
                 continue
 
         # valid data is data with known column name(many columns are empty
-        # in sample reports)
+        # in sample omniture reports)
         keys = [idxel[1] for idxel in enum_columns if idxel[1] != '']
         values = [line[idxel[0]] for idxel in enum_columns if idxel[1] != '']
         omniture_row_dict = dict(zip(keys, values))
 
-
         if 'Total' in line:  # footer with summary
-            self._check_session_counts(omniture_row_dict)
+            # write GA footer
+            # TODO: Finish it
             break
 
-        #keyword = omniture_row_dict.get('Tracking Code', '')
-        #content_ad_id, source_param = self._parse_z11z_keyword(keyword)
-        #report_entry = OmnitureReportRow(omniture_row_dict, self.start_date, content_ad_id, source_param)
+        # "Keyword", "Sessions", "% New Sessions", "New Users", "Bounce Rate",
+        # "Pages / Session", "Avg. Session Duration", "Pageviews",))
+        sessions = omniture_row_dict['Visits']
+        new_users = omniture_row_dict['Unique Visitors']
+        percent_new_sessions = "{:.2f}%".format(
+            _report_atof(omniture_row_dict['Visits']) / _report_atof(omniture_row_dict['Unique Visitors'])
+        )
+        bounce_rate = "{:.2f}%".format(_report_atof(omniture_row_dict['Bounces']) / _report_atof(sessions) * 100)
+        pages_per_session = "{:.2f}".format(_report_atof(omniture_row_dict['Page Views']) / _report_atof(sessions))
+
+        tts = _report_atoi(omniture_row_dict['Total Seconds Spent'])
+        hours = tts/3600
+        minutes = (tts - hours * 3600) / 60
+        seconds = (tts - hours * 3600) % 60
+        avg_session_duration = "{hours:02d}:{minutes:02d}:{seconds:02d}".format(
+            hours=hours,
+            minutes=minutes,
+            seconds=seconds
+        )
+        pageviews = omniture_row_dict['Page Views']
+
+        keyword = None
+        for key in omniture_row_dict:
+            if 'tracking code' in key.lower():
+                keyword = omniture_row_dict[key]
+
+        if keyword is None:
+            continue
+
+        writer.writerow((
+            keyword,
+            sessions,
+            percent_new_sessions,
+            new_users,
+            bounce_rate,
+            pages_per_session,
+            avg_session_duration,
+            pageviews,
+        ))
 
     return csv_file.getvalue()
 
