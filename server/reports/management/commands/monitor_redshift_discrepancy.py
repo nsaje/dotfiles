@@ -13,12 +13,12 @@ class Command(BaseCommand):
         n_impressions = reports.models.ContentAdStats.objects\
             .aggregate(impressions=Sum('impressions')).get('impressions') or 0
         n_visits = reports.models.ContentAdPostclickStats.objects\
-            .aggregate(impressions=Sum('visits')).get('visits') or 0
+            .aggregate(visits=Sum('visits')).get('visits') or 0
 
         redshift_sums = redshift.sum_contentadstats()
 
         statsd_gauge('reports.contentadstats.impressions_total', n_impressions)
         statsd_gauge('reports.contentadstats.impressions_total_aggr', redshift_sums['impressions'])
 
-        statsd_gauge('reports.contentadstats.visits_contentads_total', n_visits)
-        statsd_gauge('reports.contentadstats.visits_contentads_total_aggr', redshift_sums['visits'])
+        statsd_gauge('reports.contentadstats.visits_total', n_visits)
+        statsd_gauge('reports.contentadstats.visits_total_aggr', redshift_sums['visits'])

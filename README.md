@@ -285,3 +285,4 @@ Current monitors:
   - causes: production data changes
   - solution: update the transaction monitor with new demo campaigns and adgroups 
 If any monitor fails in the *first four steps*, there was a problem with login (usually database timeouts etc.). 
+

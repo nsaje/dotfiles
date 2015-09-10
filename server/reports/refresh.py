@@ -18,16 +18,18 @@ def _get_joined_stats_rows(date, ad_group_id, source_id):
                       visits, new_visits, bounced_visits, pageviews, total_time_on_site
             FROM reports_contentadstats s FULL OUTER JOIN reports_contentadpostclickstats p
             ON s.date = p.date AND s.content_ad_id = p.content_ad_id AND s.source_id = p.source_id
-            WHERE s.date = %s
-            AND s.content_ad_id IN (
-                SELECT id FROM dash_contentad WHERE ad_group_id = %s
-            )'''
+            WHERE (s.date = %(date)s OR p.date = %(date)s)
+            AND (s.content_ad_id IN (
+                SELECT id FROM dash_contentad WHERE ad_group_id = %(ad_group_id)s
+            ) OR p.content_ad_id IN (
+                SELECT id FROM dash_contentad WHERE ad_group_id = %(ad_group_id)s
+            ))'''
 
-    params = [date.isoformat(), ad_group_id]
+    params = {'date': date.isoformat(), 'ad_group_id': ad_group_id}
 
     if source_id:
-        query = query + ' AND s.source_id = %s'
-        params.append(source_id)
+        query = query + ' AND (s.source_id = %(source_id)s OR p.source_id = %(source_id)s)'
+        params['source_id'] = source_id
 
     with connection.cursor() as cursor:
         cursor.execute(query, params)

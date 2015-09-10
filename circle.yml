@@ -14,12 +14,14 @@ dependencies:
     override:
         - pip install -r server/requirements.txt
         - pip install -r server/requirements_dev.txt
-        - npm install:
+        - 'npm prune && npm install':
             pwd:
                 client
         - bower install:
             pwd:
                 client
+    cache_directories:
+        - "client/node_modules"
 
 checkout:
     post:
@@ -28,11 +30,8 @@ checkout:
 
 test:
     override:
-        - coverage run manage.py test:
-            pwd: server
-        - grunt test:
-            pwd: client
-        - ./run_e2e.sh
+        - 'case $CIRCLE_NODE_INDEX in 0) cd server && coverage run manage.py test  ;; 1) cd client && grunt test && cd .. && ./run_e2e.sh ;; esac':
+            parallel: true
     post:
         - coverage report > coverage_report.txt:
             pwd: server
