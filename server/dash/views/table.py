@@ -1674,7 +1674,14 @@ class PublishersTable(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
+        page = request.GET.get('page')
+        order = request.GET.get('order') or 'cost'
+        size = request.GET.get('size')
+        size = max(min(int(size or 5), 4294967295), 1)
+
         publishers_data, totals_data = level_publishers_table.get_stats(start_date, end_date)
+        # since we're not dealing with a QuerySet this kind of pagination is braindead, but we'll polish later
+        publishers_data, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(publishers_data, page, size)
 
         response = {
             'rows': self.get_rows(
@@ -1685,6 +1692,15 @@ class PublishersTable(api_common.BaseApiView):
                 order=request.GET.get('order', None),
                 ad_group_level=ad_group_level,
             ),
+            'pagination': {
+                'currentPage': current_page,
+                'numPages': num_pages,
+                'count': count,
+                'startIndex': start_index,
+                'endIndex': end_index,
+                'size': size
+            },
+
 #            'totals': self.get_totals(
  #               ad_group_level,
   #              user,

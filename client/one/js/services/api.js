@@ -289,7 +289,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             return data;
         }
 
-        this.get = function (id, startDate, endDate, order) {
+        this.get = function (id, page, size, startDate, endDate, order) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/publishers/table/';
             var config = {
@@ -297,6 +297,14 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             };
 
             config.params.order = order;
+
+            if (page) {
+                config.params.page = page;
+            }
+
+            if (size) {
+                config.params.size = size;
+            }
 
             if (startDate) {
                 config.params.start_date = startDate.format();

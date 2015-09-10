@@ -12,6 +12,13 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.chartBtnTitle = 'Hide chart';
     $scope.order = '-cost';
 
+    $scope.sizeRange = [5, 10, 20, 50];
+    $scope.size = $scope.sizeRange[0];
+    $scope.pagination = {
+        currentPage: 1
+    };
+
+
     var userSettings = zemUserSettings.getInstance($scope, 'adGroupPublishers');
 
     $scope.exportOptions = [
@@ -163,7 +170,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
-        api.adGroupPublishersTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
+        api.adGroupPublishersTable.get($state.params.id, $scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
 
                 $scope.rows = data.rows;
@@ -172,6 +179,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 $scope.notifications = data.notifications;
                 $scope.lastChange = data.lastChange;
                 $scope.dataStatus = data.dataStatus;
+                $scope.pagination = data.pagination;
+
             },
             function (data) {
                 // error
@@ -279,19 +288,65 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         var sourceIds = $location.search().source_ids || (data && data.sourceIds && data.sourceIds.join(','));
         var sourceTotals = $location.search().source_totals || (data && data.sourceTotals ? 1 : null);
 
+
+        var page = parseInt($location.search().page)
+        if (isNaN(page)) {
+            page = data && data.page;
+        }
+        var size = parseInt($location.search().size || '0'); 
+
+
         userSettings.register('chartMetric1');
         userSettings.register('chartMetric2');
         userSettings.register('order');
+        userSettings.register('size');
         userSettings.registerGlobal('chartHidden');
+
+        if (size !== 0 && $scope.size !== size) {
+            $scope.size = size;
+        }
+        // if nothing in local storage or page query var set first as default
+        if ($scope.size === 0) {
+            $scope.size = $scope.sizeRange[0];
+        }
+
 
         setChartOptions();
 
-        $scope.getAdGroupState();
+        if (page !== undefined && $scope.pagination.currentPage !== page) {
+            $scope.pagination.currentPage = page;
+            $scope.setAdGroupData('page', page);
+            $location.search('page', page);
+        }
+
+        $scope.loadPage();
+
+        $scope.getAdGroupState();	// To display message if the adgroup is paused
         $scope.initColumns();
 
         getTableData();
         getDailyStats();
     };
+
+
+    $scope.loadPage = function(page) {
+        if(page && page > 0 && page <= $scope.pagination.numPages) {
+            $scope.pagination.currentPage = page;
+        }
+
+        if ($scope.pagination.currentPage && $scope.pagination.size) {
+            $location.search('page', $scope.pagination.currentPage);
+            $scope.setAdGroupData('page', $scope.pagination.currentPage);
+
+            getTableData();
+        }
+    };
+
+    $scope.$watch('size', function(newValue, oldValue) {
+        if (newValue !== oldValue) {
+            $scope.loadPage();
+        }
+    });
 
 
     var updateTableData = function (rowsUpdates, totalsUpdates) {
