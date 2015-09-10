@@ -7,7 +7,7 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dash', '0066_add_batch_fields_to_contentad'),
+        ('dash', '070_conversionpixel_last_sync_dt'),
     ]
 
     operations = [
