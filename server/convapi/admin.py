@@ -1,9 +1,43 @@
-
 from django.contrib import admin
+from django.utils.translation import ugettext_lazy as _
 
 from convapi import models
 from convapi import constants
 
+class TestReportsListFilter(admin.SimpleListFilter):
+    # Human-readable title which will be displayed in the
+    # right admin sidebar just above the filter options.
+    title = _('Report Type')
+
+    # Parameter for the filter that will be used in the URL query.
+    parameter_name = 'test-report'
+
+    def lookups(self, request, model_admin):
+        """
+        Returns a list of tuples. The first element in each
+        tuple is the coded value for the option that will
+        appear in the URL query. The second element is the
+        human-readable name for the option that will appear
+        in the right sidebar.
+        """
+        return (
+            ('non-test', _('Reports')),
+            ('test', _('Test Reports')),
+        )
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value
+        provided in the query string and retrievable via
+        `self.value()`.
+        """
+        # Compare the requested value (either '80s' or '90s')
+        # to decide how to filter the queryset.
+        if self.value() == 'test':
+            return queryset.filter(from_address='test@zemanta.com')
+        elif self.value() == 'non-test':
+            return queryset.exclude(from_address='test@zemanta.com')
+        return queryset
 
 class GAReportLogAdmin(admin.ModelAdmin):
 
@@ -32,6 +66,7 @@ class GAReportLogAdmin(admin.ModelAdmin):
 
     list_filter = (
         'state',
+        TestReportsListFilter,
     )
 
     def no_errors_(self, obj):
