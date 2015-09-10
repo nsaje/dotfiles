@@ -373,7 +373,9 @@ class SettingsBase(models.Model):
 class AccountSettings(SettingsBase):
     _settings_fields = [
         'name',
-        'archived'
+        'archived',
+        'default_account_manager',
+        'default_sales_representative'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -383,6 +385,18 @@ class AccountSettings(SettingsBase):
         editable=True,
         blank=False,
         null=False
+    )
+    default_account_manager = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        related_name="+",
+        on_delete=models.PROTECT
+    )
+    default_sales_representative = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        related_name="+",
+        on_delete=models.PROTECT
     )
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
@@ -406,7 +420,8 @@ class CampaignSettings(SettingsBase):
         'sales_representative',
         'service_fee',
         'iab_category',
-        'promotion_goal',
+        'campaign_goal',
+        'goal_quantity',
         'archived'
     ]
 
@@ -437,7 +452,7 @@ class CampaignSettings(SettingsBase):
         default=Decimal('0.2000'),
     )
     iab_category = models.SlugField(
-        max_length=5,
+        max_length=10,
         default=constants.IABCategory.IAB24,
         choices=constants.IABCategory.get_choices()
     )
@@ -445,6 +460,18 @@ class CampaignSettings(SettingsBase):
         default=constants.PromotionGoal.BRAND_BUILDING,
         choices=constants.PromotionGoal.get_choices()
     )
+    campaign_goal = models.IntegerField(
+        default=constants.CampaignGoal.NEW_UNIQUE_VISITORS,
+        choices=constants.CampaignGoal.get_choices()
+    )
+    goal_quantity = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        blank=False,
+        null=False,
+        default=0
+    )
+
     archived = models.BooleanField(default=False)
 
     def save(self, request, *args, **kwargs):
@@ -1283,7 +1310,6 @@ class ContentAd(models.Model):
 
     objects = QuerySetManager()
 
-
     def get_original_image_url(self, width=None, height=None):
         if self.image_id is None:
             return None
@@ -1467,6 +1493,8 @@ class ConversionPixel(models.Model):
                                  choices=constants.ConversionPixelStatus.get_choices())
     last_verified_dt = models.DateTimeField(null=True, verbose_name='Last verified on')
     archived = models.BooleanField(default=False)
+
+    last_sync_dt = models.DateTimeField(blank=True, null=True)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created on')
 
     class Meta:

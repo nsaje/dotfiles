@@ -31,11 +31,6 @@ class EncryptionHelperTestCase(unittest.TestCase):
         with self.assertRaises(request_signer.SignatureError):
             request_signer.sign_urllib2_request(request, self.secret_key)
 
-    def test_sign_invalid_method(self):
-        request = urllib2.Request(self.url)
-        with self.assertRaises(request_signer.SignatureError):
-            request_signer.sign_urllib2_request(request, self.secret_key)
-
     def test_sign_invalid_key(self):
         request = urllib2.Request(self.url, self.data)
 

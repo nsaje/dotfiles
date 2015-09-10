@@ -1,29 +1,5 @@
-<div class="submission-status" popover-append-to-body="false" popover-trigger="mouseenter" zem-html-popover="'submissionStatusPopover.html'" popover-updater="statusItems" popover-placement="top">
+<div class="submission-status" zem-lazy-popover-template="'submissionStatusPopover.html'" zem-lazy-popover-placement="top" zem-lazy-popover-animation-class="fade">
     <span ng-if="approved.length" class="cell approved" ng-class="{'archived': archived}">{{approved.length}}</span>
     <span ng-if="nonApproved.length" class="cell" ng-class="{'archived': archived}">{{nonApproved.length}}</span>
     <span ng-if="zeroStatusItems" class="cell" ng-class="{'archived': archived}">0</span>
 </div>
-
-<script id="submissionStatusPopover.html" type="text/ng-template">
-    <div class="submission-status-popover">
-        <div class="submission-status-popover-table">
-            <div class="submission-status-popover-row" ng-class="{'submission-status-emphasis': item.source_state !== ''}" ng-repeat="item in nonApproved">
-                <span class="submission-status-popover-cell left-cell">{{item.name}}<span ng-if="item.source_state === ''">:&nbsp;</span><span ng-if="item.source_state != ''">&nbsp;{{item.source_state}}:&nbsp;</span></span>
-                <span class="submission-status-popover-cell bold">{{item.text}}</span>
-            </div>
-            <div ng-if="approved.length && nonApproved.length" class="submission-status-popover-row">
-                <span class="submission-status-popover-cell divider"><hr></span>
-                <span class="submission-status-popover-cell divider"><hr></span>
-            </div>
-            <div class="submission-status-popover-row" ng-class="{'submission-status-emphasis': item.source_state !== ''}" ng-repeat="item in approved">
-                <span class="submission-status-popover-cell left-cell submission-status-label">{{item.name}}<span ng-if="item.source_state === ''">:&nbsp;</span>&nbsp;{{item.source_state}}<span ng-if="item.source_state != ''">:&nbsp;</span></span>
-                <span class="submission-status-popover-cell" >{{item.text}}</span>
-            </div>
-
-            <div ng-if="zeroStatusItems" class="submission-status-popover-row">
-                No Media Sources added yet.
-            </div>
-
-        </div>
-    </div>
-</script>

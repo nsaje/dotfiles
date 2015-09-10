@@ -50,11 +50,13 @@ STAGING_SERVERS = {
 PRODUCTION_SERVERS = {
     'knot01': 'knot01.zemanta.com',
     'knot02': 'knot02.zemanta.com',
+    'knot03': 'knot03.zemanta.com',
 }
 
 GIT_REPOSITORY = 'git@github.com:Zemanta/zemanta-eins.git'
 DEFAULT_BRANCH = 'master'
 
+DOCKER_HOSTS = ('knot03.zemanta.com', )
 
 DEPLOYER_REQUIREMENTS = [
     ['virtualenvwrapper==4.3'],
@@ -122,6 +124,13 @@ def production(*args):
     else:
         abort("Unknown hosts!")
 
+def docker_deploy(app, params):
+    if env.host not in DOCKER_HOSTS:
+        return params
+    print header("\n\n\t~~~~~~~~~~~~ Deploying server@%s ~~~~~~~~~~~~" % (env.host, ))
+    run('/home/one/deploy.sh')
+    print ok("Server successfully deployed and switched at %s" % (env.host, ))
+
 
 @task
 def deploy(*args):
@@ -136,10 +145,14 @@ def deploy(*args):
         abort("Unknown apps!")
 
     post_to_slack('Deploying: ' + ', '.join(apps))
-        
-    params = {}
-    clone_code(params)
 
+    params = {}
+
+    if "server" in apps:
+        execute(docker_deploy, "server", params)
+
+    clone_code(params)
+        
     all_apps_params = {}
 
     # First deploy without switching on all the servers.
@@ -373,6 +386,9 @@ def unpack(app, params):
 
 
 def copy_django_settings(app, params):
+    if env.host in DOCKER_HOSTS:
+        return
+
     run("cp ~/apps/config/%s-localsettings.py %s/%s/%s/localsettings.py" % (
         app, params['app_folder'], app, app))
 
@@ -413,6 +429,8 @@ def is_db_migrated(app, params):
 
 @serial
 def switch_django_app(app, params):
+    if env.host in DOCKER_HOSTS:
+        return
     with cd('~/.virtualenvs'):
         virtualenv_folder = os.path.join('~/.virtualenvs', params['venv_name'])
 
@@ -430,10 +448,13 @@ def switch_django_app(app, params):
 
     print task("Restart service")
     run("supervisorctl restart %s" % app)
+    print ok("%s successfully switched at %s" % (app.capitalize(), env.host))
 
 
 @parallel
 def switch_angular_app(app, params):
+    if env.host in DOCKER_HOSTS:
+        return
     with cd("~/apps/"):
         # remember which was previous app release
         test_output = run('test -L {0}'.format(app), quiet=True)
@@ -441,10 +462,13 @@ def switch_angular_app(app, params):
             run("cp -a {app} {folder}/previous".format(folder=params['app_folder'], app=app))
 
         run("ln -Tsf %s %s" % (params['app_folder'], app))
+    print ok("%s successfully switched at %s" % (app.capitalize(), env.host))
 
 
 @parallel
 def switchback_django_app(app):
+    if env.host in DOCKER_HOSTS:
+        return
     with cd('~/.virtualenvs'):
         run("cp -a {app}/previous {app}-reverting".format(app=app))
         run("rm -f {app} && mv {app}-reverting {app}".format(app=app))
@@ -478,6 +502,12 @@ def run_migrate(app, params):
 
 @parallel
 def deploy_django_app(app, params):
+    if env.host in DOCKER_HOSTS:
+        params['app_folder'] = "~/apps/%s-%s-%s" % (app, params['timestamp'], params['commit_hash'])
+        params['venv_name'] = '%s-%s-%s' % (app, params['timestamp'], params['commit_hash'])
+
+        return params
+    
     print task("Create virtualenv [%s@%s]" % (app, env.host))
     create_virtualenv(app, params)
 
@@ -506,16 +536,21 @@ def deploy_django_app(app, params):
 
 @parallel
 def deploy_angular_app(app, params):
+    if env.host in DOCKER_HOSTS:
+        params['app_folder'] = "~/apps/%s-%s-%s" % (app, params['timestamp'], params['commit_hash'])
+        return params
     print task("Unpack [%s@%s]" % (app, env.host))
     unpack(app, params)
-
+    
     print ok("%s successfully deployed at %s" % (app.capitalize(), env.host))
-
     return params
 
 
 @parallel
 def deploy_cron_jobs(params):
+    if env.host in DOCKER_HOSTS:
+        return params
+
     # with cd(params['app_folder']):
     cron_yaml_path = os.path.join(params['tmp_folder_git'], 'cron.yaml')
     with open(cron_yaml_path, 'r') as f:
@@ -529,6 +564,11 @@ def deploy_cron_jobs(params):
 
 
 def real_migrate(app, params):
+    if env.host in DOCKER_HOSTS and app == "server":
+        run('/home/one/migration.sh')
+        print ok("%s successfully migrated %s" % (app.capitalize(), env.host))
+        return
+    
     print task("Create virtualenv [%s@%s]" % (app, env.host))
     create_virtualenv(app, params)
 

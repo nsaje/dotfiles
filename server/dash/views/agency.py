@@ -1,10 +1,9 @@
+import datetime
 import json
 import logging
 import newrelic.agent
-import re
 
 from collections import OrderedDict
-from decimal import Decimal
 from django.db import transaction
 from django.conf import settings
 from django.contrib.auth import models as authmodels
@@ -19,6 +18,7 @@ from dash import models
 from dash import api
 from dash import budget
 from dash import constants
+from reports import redshift
 from utils import api_common
 from utils import statsd_helper
 from utils import exc
@@ -28,6 +28,9 @@ from zemauth.models import User as ZemUser
 
 
 logger = logging.getLogger(__name__)
+
+
+CONVERSION_PIXEL_INACTIVE_DAYS = 7
 
 
 def _get_conversion_pixel_url(account_id, slug):
@@ -166,10 +169,10 @@ class AdGroupSettings(api_common.BaseApiView):
             settings.tracking_code = resource['tracking_code']
 
 
-class CampaignSettings(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'campaign_settings_get')
+class CampaignAgency(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_agency_get')
     def get(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_settings_view'):
+        if not request.user.has_perm('zemauth.campaign_agency_view'):
             raise exc.MissingDataError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
@@ -187,31 +190,43 @@ class CampaignSettings(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_settings_put')
+    @statsd_helper.statsd_timer('dash.api', 'campaign_agency_put')
     def put(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_settings_view'):
+        if not request.user.has_perm('zemauth.campaign_agency_view'):
             raise exc.MissingDataError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
-
         resource = json.loads(request.body)
 
-        form = forms.CampaignSettingsForm(resource.get('settings', {}))
+        form = forms.CampaignAgencyForm(resource.get('settings', {}))
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        self.set_campaign(campaign, form.cleaned_data)
-
-        settings = models.CampaignSettings()
+        settings = campaign.get_current_settings().copy_settings()
         self.set_settings(settings, campaign, form.cleaned_data)
 
+        self.propagate_and_save(campaign, settings, request)
+
+        response = {
+            'settings': self.get_dict(settings, campaign),
+            'history': self.get_history(campaign),
+            'can_archive': campaign.can_archive(),
+            'can_restore': campaign.can_restore(),
+        }
+
+        return self.create_api_response(response)
+
+    @classmethod
+    def propagate_and_save(cls, campaign, settings, request):
         actions = []
+
         with transaction.atomic():
             campaign.save(request)
             settings.save(request)
+        
             # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
             campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
-
+    
             for ad_group in campaign_ad_groups:
                 adgroup_settings = ad_group.get_current_settings()
                 actions.extend(
@@ -226,15 +241,6 @@ class CampaignSettings(api_common.BaseApiView):
                 )
 
         zwei_actions.send(actions)
-
-        response = {
-            'settings': self.get_dict(settings, campaign),
-            'history': self.get_history(campaign),
-            'can_archive': campaign.can_archive(),
-            'can_restore': campaign.can_restore(),
-        }
-
-        return self.create_api_response(response)
 
     def get_history(self, campaign):
         settings = models.CampaignSettings.objects.\
@@ -267,13 +273,6 @@ class CampaignSettings(api_common.BaseApiView):
     def format_decimal_to_percent(self, num):
         return '{:.2f}'.format(num * 100).rstrip('0').rstrip('.')
 
-    def get_full_name_or_email(self, user):
-        if user is None:
-            return '/'
-
-        result = user.get_full_name() or user.email
-        return result.encode('utf-8')
-
     def convert_settings_to_dict(self, old_settings, new_settings):
         settings_dict = OrderedDict([
             ('name', {
@@ -282,19 +281,27 @@ class CampaignSettings(api_common.BaseApiView):
             }),
             ('account_manager', {
                 'name': 'Account Manager',
-                'value': self.get_full_name_or_email(new_settings.account_manager)
+                'value': helpers.get_user_full_name_or_email(new_settings.account_manager)
             }),
             ('sales_representative', {
                 'name': 'Sales Representative',
-                'value': self.get_full_name_or_email(new_settings.sales_representative)
-            }),
-            ('service_fee', {
-                'name': 'Service Fee',
-                'value': self.format_decimal_to_percent(new_settings.service_fee) + '%'
+                'value': helpers.get_user_full_name_or_email(new_settings.sales_representative)
             }),
             ('iab_category', {
                 'name': 'IAB Category',
                 'value': constants.IABCategory.get_text(new_settings.iab_category)
+            }),
+            ('campaign_goal', {
+                'name': 'Campaign goal',
+                'value': constants.CampaignGoal.get_text(new_settings.campaign_goal),
+            }),
+            ('goal_quantity', {
+                'name': 'Goal quantity',
+                'value': new_settings.goal_quantity,
+            }),
+            ('service_fee', {
+                'name': 'Service Fee',
+                'value': self.format_decimal_to_percent(new_settings.service_fee) + '%'
             }),
             ('promotion_goal', {
                 'name': 'Promotion Goal',
@@ -311,20 +318,14 @@ class CampaignSettings(api_common.BaseApiView):
 
             if old_settings.account_manager is not None:
                 settings_dict['account_manager']['old_value'] = \
-                    self.get_full_name_or_email(old_settings.account_manager)
+                    helpers.get_user_full_name_or_email(old_settings.account_manager)
 
             if old_settings.sales_representative is not None:
                 settings_dict['sales_representative']['old_value'] = \
-                    self.get_full_name_or_email(old_settings.sales_representative)
-
-            settings_dict['service_fee']['old_value'] = \
-                self.format_decimal_to_percent(old_settings.service_fee) + '%'
+                    helpers.get_user_full_name_or_email(old_settings.sales_representative)
 
             settings_dict['iab_category']['old_value'] = \
                 constants.IABCategory.get_text(old_settings.iab_category)
-
-            settings_dict['promotion_goal']['old_value'] = \
-                constants.PromotionGoal.get_text(old_settings.promotion_goal)
 
             settings_dict['archived']['old_value'] = str(old_settings.archived)
 
@@ -357,24 +358,16 @@ class CampaignSettings(api_common.BaseApiView):
                 'sales_representative':
                     str(settings.sales_representative.id)
                     if settings.sales_representative is not None else None,
-                'service_fee': self.format_decimal_to_percent(settings.service_fee),
                 'iab_category': settings.iab_category,
-                'promotion_goal': settings.promotion_goal
             }
 
         return result
 
-    def set_campaign(self, campaign, resource):
-        campaign.name = resource['name']
-
     def set_settings(self, settings, campaign, resource):
         settings.campaign = campaign
-        settings.name = resource['name']
         settings.account_manager = resource['account_manager']
         settings.sales_representative = resource['sales_representative']
-        settings.service_fee = Decimal(resource['service_fee']) / 100
         settings.iab_category = resource['iab_category']
-        settings.promotion_goal = resource['promotion_goal']
 
     def get_user_list(self, settings, perm_name):
         users = list(ZemUser.objects.get_users_with_perm(perm_name))
@@ -383,7 +376,69 @@ class CampaignSettings(api_common.BaseApiView):
         if manager is not None and manager not in users:
             users.append(manager)
 
-        return [{'id': str(user.id), 'name': self.get_full_name_or_email(user)} for user in users]
+        return [{'id': str(user.id),
+                 'name': helpers.get_user_full_name_or_email(user)} for user in users]
+
+
+class CampaignSettings(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_settings_get')
+    def get(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.campaign_settings_view'):
+            raise exc.MissingDataError()
+
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        campaign_settings = campaign.get_current_settings()
+
+        response = {
+            'settings': self.get_dict(campaign_settings, campaign),
+        }
+
+        return self.create_api_response(response)
+
+    @statsd_helper.statsd_timer('dash.api', 'campaign_settings_put')
+    def put(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.campaign_settings_view'):
+            raise exc.MissingDataError()
+
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        resource = json.loads(request.body)
+
+        form = forms.CampaignSettingsForm(resource.get('settings', {}))
+        if not form.is_valid():
+            raise exc.ValidationError(errors=dict(form.errors))
+
+        settings = campaign.get_current_settings().copy_settings()
+        self.set_settings(settings, campaign, form.cleaned_data)
+        self.set_campaign(campaign, form.cleaned_data)
+
+        CampaignAgency.propagate_and_save(campaign, settings, request)
+
+        response = {
+            'settings': self.get_dict(settings, campaign)
+        }
+
+        return self.create_api_response(response)
+
+    def get_dict(self, settings, campaign):
+        result = {}
+
+        if settings:
+            result = {
+                'id': str(campaign.pk),
+                'name': campaign.name,
+                'campaign_goal': settings.campaign_goal,
+                'goal_quantity': settings.goal_quantity
+            }
+
+        return result
+
+    def set_settings(self, settings, campaign, resource):
+        settings.name = resource['name']
+        settings.campaign_goal = resource['campaign_goal']
+        settings.goal_quantity = resource['goal_quantity']
+
+    def set_campaign(self, campaign, resource):
+        campaign.name = resource['name']
 
 
 class CampaignBudget(api_common.BaseApiView):
@@ -446,19 +501,32 @@ class CampaignBudget(api_common.BaseApiView):
 
 
 class AccountConversionPixels(api_common.BaseApiView):
+    def _get_pixel_status(self, last_verified_dt):
+        if last_verified_dt is None:
+            return constants.ConversionPixelStatus.NOT_USED
+
+        if last_verified_dt > datetime.datetime.utcnow() - datetime.timedelta(days=CONVERSION_PIXEL_INACTIVE_DAYS):
+            return constants.ConversionPixelStatus.ACTIVE
+
+        return constants.ConversionPixelStatus.INACTIVE
+
     @statsd_helper.statsd_timer('dash.api', 'conversion_pixels_list')
     def get(self, request, account_id):
         if not request.user.has_perm('zemauth.manage_conversion_pixels'):
             raise exc.MissingDataError()
 
+        account_id = int(account_id)
         account = helpers.get_account(request.user, account_id)
+        last_verified_dts = redshift.get_pixels_last_verified_dt(account_id=account_id)
+
         rows = [
             {
                 'id': conversion_pixel.id,
                 'slug': conversion_pixel.slug,
                 'url': _get_conversion_pixel_url(account.id, conversion_pixel.slug),
-                'status': constants.ConversionPixelStatus.get_text(conversion_pixel.status),
-                'last_verified_dt': conversion_pixel.last_verified_dt,
+                'status': constants.ConversionPixelStatus.get_text(
+                    self._get_pixel_status(last_verified_dts.get((account_id, conversion_pixel.slug)))),
+                'last_verified_dt': last_verified_dts.get((account_id, conversion_pixel.slug)),
                 'archived': conversion_pixel.archived
             } for conversion_pixel in models.ConversionPixel.objects.filter(account=account)
         ]
@@ -488,7 +556,7 @@ class AccountConversionPixels(api_common.BaseApiView):
 
         try:
             models.ConversionPixel.objects.get(account_id=account_id, slug=slug)
-            raise exc.ValidationError(message='Unique identifier has to be unique.')
+            raise exc.ValidationError(message='Conversion pixel with this identifier already exists.')
         except models.ConversionPixel.DoesNotExist:
             pass
 
@@ -503,8 +571,9 @@ class AccountConversionPixels(api_common.BaseApiView):
             'id': conversion_pixel.id,
             'slug': conversion_pixel.slug,
             'url': _get_conversion_pixel_url(account.id, slug),
-            'status': constants.ConversionPixelStatus.get_text(conversion_pixel.status),
-            'last_verified_dt': conversion_pixel.last_verified_dt,
+            'status': constants.ConversionPixelStatus.get_text(
+                constants.ConversionPixelStatus.NOT_USED),
+            'last_verified_dt': None,
             'archived': conversion_pixel.archived,
         })
 
@@ -547,10 +616,6 @@ class ConversionPixel(api_common.BaseApiView):
 
         return self.create_api_response({
             'id': conversion_pixel.id,
-            'slug': conversion_pixel.slug,
-            'url': _get_conversion_pixel_url(account.id, conversion_pixel.slug),
-            'status': constants.ConversionPixelStatus.get_text(conversion_pixel.status),
-            'last_verified_dt': conversion_pixel.last_verified_dt,
             'archived': conversion_pixel.archived,
         })
 
@@ -566,6 +631,8 @@ class AccountAgency(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(account_settings, account),
+            'account_managers': self.get_user_list(account_settings, 'campaign_settings_account_manager'),
+            'sales_reps': self.get_user_list(account_settings, 'campaign_settings_sales_rep'),
             'history': self.get_history(account),
             'can_archive': account.can_archive(),
             'can_restore': account.can_restore(),
@@ -610,6 +677,8 @@ class AccountAgency(api_common.BaseApiView):
     def set_settings(self, settings, account, resource):
         settings.account = account
         settings.name = resource['name']
+        settings.default_account_manager = resource['default_account_manager']
+        settings.default_sales_representative = resource['default_sales_representative']
 
     def get_dict(self, settings, account):
         result = {}
@@ -619,6 +688,12 @@ class AccountAgency(api_common.BaseApiView):
                 'id': str(account.pk),
                 'name': account.name,
                 'archived': settings.archived,
+                'default_account_manager':
+                    str(settings.default_account_manager.id)
+                    if settings.default_account_manager is not None else None,
+                'default_sales_representative':
+                    str(settings.default_sales_representative.id)
+                    if settings.default_sales_representative is not None else None,
             }
 
         return result
@@ -679,13 +754,38 @@ class AccountAgency(api_common.BaseApiView):
                 'name': 'Archived',
                 'value': str(new_settings.archived)
             }),
+            ('default_account_manager', {
+                'name': 'Default Account Manager',
+                'value': helpers.get_user_full_name_or_email(new_settings.default_account_manager)
+            }),
+            ('default_sales_representative', {
+                'name': 'Default Sales Representative',
+                'value': helpers.get_user_full_name_or_email(new_settings.default_sales_representative)
+            }),
         ])
 
         if old_settings is not None:
             settings_dict['name']['old_value'] = old_settings.name.encode('utf-8')
             settings_dict['archived']['old_value'] = str(old_settings.archived)
 
+            if old_settings.default_account_manager is not None:
+                settings_dict['default_account_manager']['old_value'] = \
+                    helpers.get_user_full_name_or_email(old_settings.default_account_manager)
+
+            if old_settings.default_sales_representative is not None:
+                settings_dict['default_sales_representative']['old_value'] = \
+                    helpers.get_user_full_name_or_email(old_settings.default_sales_representative)
+
         return settings_dict
+
+    def get_user_list(self, settings, perm_name):
+        users = list(ZemUser.objects.get_users_with_perm(perm_name))
+
+        manager = settings.default_account_manager
+        if manager is not None and manager not in users:
+            users.append(manager)
+
+        return [{'id': str(user.id), 'name': helpers.get_user_full_name_or_email(user)} for user in users]
 
 
 class AdGroupAgency(api_common.BaseApiView):

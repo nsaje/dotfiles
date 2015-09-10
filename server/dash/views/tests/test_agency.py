@@ -2,6 +2,7 @@
 import json
 import datetime
 from mock import patch, ANY
+import pytz
 
 from django.test import TestCase
 from django.core.urlresolvers import reverse
@@ -323,7 +324,11 @@ class AccountConversionPixelsTestCase(TestCase):
         user = User.objects.get(pk=1)
         self.client.login(username=user.email, password='secret')
 
-    def test_get(self):
+    @patch('dash.views.agency.redshift.get_pixels_last_verified_dt')
+    def test_get(self, redshift_get_mock):
+        utcnow = datetime.datetime.utcnow()
+        redshift_get_mock.return_value = {(1, 'test'): utcnow}
+
         account = models.Account.objects.get(pk=1)
         response = self.client.get(
             reverse('account_conversion_pixels', kwargs={'account_id': account.id}),
@@ -331,14 +336,15 @@ class AccountConversionPixelsTestCase(TestCase):
         )
         decoded_response = json.loads(response.content)
 
+        tz_now = pytz.utc.localize(utcnow).astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
         self.assertEqual(200, response.status_code)
         self.assertTrue(decoded_response['success'])
         self.assertEqual([{
             'id': 1,
             'slug': 'test',
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
-            'status': constants.ConversionPixelStatus.get_text(constants.ConversionPixelStatus.NOT_USED),
-            'last_verified_dt': None,
+            'status': constants.ConversionPixelStatus.get_text(constants.ConversionPixelStatus.ACTIVE),
+            'last_verified_dt': tz_now.isoformat(),
             'archived': False
         }], decoded_response['data']['rows'])
 
@@ -354,7 +360,11 @@ class AccountConversionPixelsTestCase(TestCase):
         )
         self.assertEqual(404, response.status_code)
 
-    def test_get_with_permissions(self):
+    @patch('dash.views.agency.redshift.get_pixels_last_verified_dt')
+    def test_get_with_permissions(self, redshift_get_mock):
+        utcnow = datetime.datetime.utcnow()
+        redshift_get_mock.return_value = {(1, 'test'): utcnow}
+
         permission = Permission.objects.get(codename='manage_conversion_pixels')
         user = User.objects.get(pk=2)
         user.user_permissions.add(permission)
@@ -366,14 +376,15 @@ class AccountConversionPixelsTestCase(TestCase):
         )
         decoded_response = json.loads(response.content)
 
+        tz_now = pytz.utc.localize(utcnow).astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
         self.assertEqual(200, response.status_code)
         self.assertTrue(decoded_response['success'])
         self.assertEqual([{
             'id': 1,
             'slug': 'test',
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
-            'status': constants.ConversionPixelStatus.get_text(constants.ConversionPixelStatus.NOT_USED),
-            'last_verified_dt': None,
+            'status': constants.ConversionPixelStatus.get_text(constants.ConversionPixelStatus.ACTIVE),
+            'last_verified_dt': tz_now.isoformat(),
             'archived': False
         }], decoded_response['data']['rows'])
 
@@ -533,10 +544,6 @@ class ConversionPixelTestCase(TestCase):
         decoded_response = json.loads(response.content)
         self.assertEqual({
             'id': 1,
-            'slug': 'test',
-            'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
-            'status': constants.ConversionPixelStatus.get_text(constants.ConversionPixelStatus.NOT_USED),
-            'last_verified_dt': None,
             'archived': True,
         }, decoded_response['data'])
 
@@ -662,3 +669,124 @@ class UserActivationTest(TestCase):
 
         decoded_response = json.loads(response.content)
         self.assertFalse(decoded_response.get('success'), 'Failed sending message')
+
+
+class CampaignAgencyTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    def setUp(self):
+        password = 'secret'
+        self.user = User.objects.get(pk=1)
+        self.client.login(username=self.user.email, password=password)
+
+        with patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
+
+    def test_get(self):
+        response = self.client.get(
+            '/api/campaigns/1/agency/'
+        )
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        self.assertEqual(content['data']['settings']['name'], 'test campaign 1')
+        self.assertEqual(content['data']['settings']['iab_category'], 'IAB24')
+
+    def test_post(self):
+        response = self.client.put(
+            '/api/campaigns/1/agency/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'account_manager': 1,
+                    'iab_category': 'IAB17',
+                    'name': 'ignore name'
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+
+        self.assertTrue(content['success'], True)
+
+        campaign = models.Campaign.objects.get(pk=1)
+        settings = campaign.get_current_settings()
+
+        self.assertEqual(campaign.name, 'test campaign 1')
+        self.assertEqual(settings.account_manager_id, 1)
+        self.assertEqual(settings.iab_category, 'IAB17')
+
+
+class CampaignSettingsTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    def setUp(self):
+        password = 'secret'
+        self.user = User.objects.get(pk=1)
+        self.client.login(username=self.user.email, password=password)
+
+        with patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
+
+    def test_get(self):
+        response = self.client.get(
+            '/api/campaigns/1/settings/'
+        )
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        self.assertEqual(content['data']['settings']['name'], 'test campaign 1')
+        self.assertEqual(content['data']['settings']['campaign_goal'], 3)
+        self.assertEqual(content['data']['settings']['goal_quantity'], 0)
+
+    def test_post(self):
+        response = self.client.put(
+            '/api/campaigns/1/settings/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'name': 'test campaign 2',
+                    'campaign_goal': 2,
+                    'goal_quantity': 10,
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        
+        campaign = models.Campaign.objects.get(pk=1)
+        settings = campaign.get_current_settings()
+        self.assertEqual(campaign.name, 'test campaign 2')
+        self.assertEqual(settings.goal_quantity, 10)
+        self.assertEqual(settings.campaign_goal, 2)
+
+    def test_validation(self):
+        response = self.client.put(
+            '/api/campaigns/1/settings/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'name': 'test campaign 2',
+                    'campaign_goal': 2,
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+        self.assertTrue('goal_quantity' in content['data']['errors'])
+        self.assertFalse(content['success'])
+
+        response = self.client.put(
+            '/api/campaigns/1/settings/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'name': 'test campaign 2',
+                    'campaign_goal': 50,
+                    'goal_quantity': 10,
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+        self.assertFalse(content['success'])
+        self.assertTrue('campaign_goal' in content['data']['errors'])

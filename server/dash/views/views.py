@@ -23,6 +23,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth import login, authenticate
 from django.views.decorators.http import require_GET
+from django.views.decorators.csrf import csrf_exempt
 
 from dash.views import helpers
 
@@ -39,7 +40,6 @@ import actionlog.zwei_actions
 
 from dash import models
 from dash import constants
-from dash import regions
 from dash import api
 from dash import forms
 from dash import upload
@@ -125,6 +125,7 @@ class User(api_common.BaseApiView):
                 'id': str(user.pk),
                 'email': user.email,
                 'name': user.get_full_name(),
+                'show_onboarding_guidance': user.show_onboarding_guidance,
                 'permissions': user.get_all_permissions_with_access_levels(),
                 'timezone_offset': pytz.timezone(settings.DEFAULT_TIME_ZONE).utcoffset(
                     datetime.datetime.utcnow(), is_dst=True).total_seconds()
@@ -285,6 +286,8 @@ class AccountRestore(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         account.restore(request)
 
+        actionlog.sync.AccountSync(account).trigger_all(self.request)
+
         return self.create_api_response({})
 
 
@@ -309,6 +312,8 @@ class CampaignRestore(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign.restore(request)
 
+        actionlog.sync.CampaignSync(campaign).trigger_all(self.request)
+
         return self.create_api_response({})
 
 
@@ -332,6 +337,8 @@ class AdGroupRestore(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         ad_group.restore(request)
+
+        actionlog.sync.AdGroupSync(ad_group).trigger_all(self.request)
 
         return self.create_api_response({})
 
@@ -524,6 +531,7 @@ class AccountCampaigns(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         account = helpers.get_account(request.user, account_id)
+        account_settings = account.get_current_settings()
 
         name = create_name(models.Campaign.objects.filter(account=account), 'New campaign')
 
@@ -536,7 +544,10 @@ class AccountCampaigns(api_common.BaseApiView):
         settings = models.CampaignSettings(
             name=name,
             campaign=campaign,
-            account_manager=request.user,
+            account_manager=(account_settings.default_account_manager
+                             if account_settings.default_account_manager else request.user),
+            sales_representative=(account_settings.default_sales_representative
+                                  if account_settings.default_sales_representative else None)
         )
         settings.save(request)
 
@@ -615,7 +626,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
                 'display_url': current_settings.display_url,
                 'brand_name': current_settings.brand_name,
                 'description': current_settings.description,
-                'call_to_action': current_settings.call_to_action
+                'call_to_action': current_settings.call_to_action or 'Read More'
             }
         })
 
@@ -707,7 +718,7 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
             raise exc.MissingDataException()
 
         response_data = {'status': batch.status, 'count': batch.processed_content_ads, 'all': batch.batch_size}
-
+        
         if batch.status == constants.UploadBatchStatus.FAILED:
             if batch.error_report_key:
                 text = '{} error{}. <a href="{}">Download Report.</a>'.format(
@@ -1022,3 +1033,25 @@ def oauth_redirect(request, source_name):
         credentials.save()
 
     return redirect(reverse('admin:dash_sourcecredentials_change', args=(credentials.id,)))
+
+
+@statsd_helper.statsd_timer('dash', 'sharethrough_approval')
+@csrf_exempt
+def sharethrough_approval(request):
+    data = json.loads(request.body)
+
+    logger.info('sharethrough approval, content ad id: %s, status: %s', data['crid'], data['status'])
+    content_ad_source = models.ContentAdSource.objects.get(content_ad_id=data['crid'],
+                                                           source=models.Source.objects.get(name='Sharethrough'))
+
+    if data['status'] == 0:
+        content_ad_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
+    else:
+        content_ad_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
+
+    content_ad_source.save()
+
+    actionlog.api_contentads.init_update_content_ad_action(content_ad_source, {'state': content_ad_source.state},
+                                                           request=None, send=True)
+
+    return HttpResponse('OK')

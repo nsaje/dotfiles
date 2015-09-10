@@ -1,4 +1,10 @@
-<div class="page page-ad-group-settings" ng-if="hasPermission('dash.settings_view') && !(hasPermission('zemauth.view_archived_entities') && adGroup && adGroup.archived)">
+<div class="page" ng-if="loadRequestInProgress">
+    <div class=loader-main-area>
+    	<div class="loader-image"></div>
+    </div>
+</div>
+
+<div class="page page-ad-group-settings" ng-if="hasPermission('dash.settings_view') && !(hasPermission('zemauth.view_archived_entities') && adGroup && adGroup.archived) && !loadRequestInProgress">
     <alert ng-repeat="alert in alerts" type="{{ alert.type }}" close="closeAlert($index)" ng-bind-html="alert.message"></alert>
     <alert type="info" ng-show="actionIsWaiting">
         Settings changes are being propagated to external sources. The sync might take a few hours. If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
@@ -66,7 +72,10 @@
                     Device targeting
                     <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The devices on which your content ads should be shown." placement="top"></zem-help-popover>
                 </label>
-                <div class="col">
+                <div class="col"
+			 zem-tutorial-popover-condition-promise="adGroupHasFreshSettings()"
+             zem-tutorial-popover="Set targeting and save"
+			 zem-tutorial-popover-placement="right">
                     <div class="checkbox" ng-repeat='device in settings.targetDevices'>
                         <label>
                             <input type="checkbox" ng-model="device.checked"> {{ device.name }}
