@@ -1270,11 +1270,6 @@ class UploadBatch(models.Model):
     )
     error_report_key = models.CharField(max_length=1024, null=True, blank=True)
     num_errors = models.PositiveIntegerField(null=True)
-    display_url = models.CharField(max_length=25, blank=True, default='')
-    brand_name = models.CharField(max_length=25, blank=True, default='')
-    description = models.CharField(max_length=140, blank=True, default='')
-    call_to_action = models.CharField(max_length=25, blank=True, default='')
-
 
     processed_content_ads = models.PositiveIntegerField(null=True)
     batch_size = models.PositiveIntegerField(null=True)
@@ -1498,6 +1493,8 @@ class ConversionPixel(models.Model):
                                  choices=constants.ConversionPixelStatus.get_choices())
     last_verified_dt = models.DateTimeField(null=True, verbose_name='Last verified on')
     archived = models.BooleanField(default=False)
+
+    last_sync_dt = models.DateTimeField(blank=True, null=True)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created on')
 
     class Meta:
