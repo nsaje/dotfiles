@@ -30,6 +30,10 @@ Day Index,Sessions
 ,"553"
         """.strip()
 
+    def _fake_get_omni_from_s3(self, key):
+        with open('convapi/fixtures/omniture_tracking_codes.xls') as f:
+            return f.read()
+
     def test_process_ga_report(self):
         dash.models.Source.objects.create(source_type=None, name='Test source', tracking_slug='lasko', maintenance=False)
 
@@ -49,6 +53,29 @@ Day Index,Sessions
 
         report_logs = models.GAReportLog.objects.all()[0]
         self.assertIsNone(report_logs.errors)
+
+    def test_omni_ga_conversion(self):
+        tasks.get_from_s3 = self._fake_get_omni_from_s3
+        ga_report_task = views.GAReportTask('GA mail',
+            '2015-07-12',
+            'testuser@zemanta.com',
+            'mailbot@zemanta.com',
+            'testuser@zemanta.com',
+            None,
+            'lasko',
+            'omniture_tracking_codes.xsl',
+            1,
+            'text/csv',
+        )
+        print "Processing"
+        tasks.process_ga_report(ga_report_task)
+        print "End processing"
+
+        report_logs = models.GAReportLog.objects.all()[0]
+        self.assertIsNone(report_logs.errors)
+
+    def test_omni_ga_zip_conversion(self):
+        pass
 
     def test_process_ga_report_v2(self):
         dash.models.Source.objects.create(source_type=None, name='Test source', tracking_slug='lasko', maintenance=False)

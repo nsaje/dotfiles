@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 import logging
 import reports
+import StringIO
+import unicodecsv
+import xlsxwriter
 
 from django.conf import settings
 from django.db import transaction
@@ -100,7 +103,14 @@ def process_ga_report(ga_report_task):
             report_log.state = constants.GAReportState.FAILED
             report_log.save()
 
+        if ga_report_task.attachment_name.endswith('.xls'):
+            content = _convert_ga_omniture(content)
+
+        elif ga_report_task.attachment_name.endswith('.zip'):
+            pass
+
         if ga_report_task.attachment_content_type != 'text/csv':
+            # assume content is omniture and convert it to GA report
             logger.warning('ERROR: content type is not CSV')
             report_log.add_error('ERROR: content type is not CSV')
             report_log.state = constants.GAReportState.FAILED
@@ -163,6 +173,109 @@ def process_ga_report(ga_report_task):
         report_log.add_error(e.message)
         report_log.state = constants.GAReportState.FAILED
         report_log.save()
+
+
+# TODO: Remove after we switch to new parser w Redshift
+# temporary conversion from Omniture to GA report type
+def _convert_ga_omniture(content, attachment_name):
+    csv_file = StringIO.StringIO()
+    writer = unicodecsv.writer(csv_file, encoding='utf-8')
+
+    workbook = xlrd.open_workbook(file_contents=content)
+
+    header = _parse_omniture_header(workbook)
+    date_raw = header.get('Date', '')
+    self.start_date = self._extract_date(date_raw)
+
+
+    # write the header manually as it is different than keys in the dict
+
+
+    body_found = False
+
+    all_columns = []
+    enum_columns = []
+    sheet = workbook.sheet_by_index(0)
+    for row_idx in range(0, sheet.nrows):
+        line = []
+        for col_idx in range(0, sheet.ncols):
+            value = sheet.cell(row_idx, col_idx).value
+            line.append(value)
+
+        if not body_found:
+            if not 'Tracking Code' in line:
+                continue
+            else:
+                body_found = True
+                all_columns = line
+                enum_columns = [(idx, el) for (idx, el) in enumerate(all_columns)]
+                continue
+
+        # valid data is data with known column name(many columns are empty
+        # in sample reports)
+        keys = [idxel[1] for idxel in enum_columns if idxel[1] != '']
+        values = [line[idxel[0]] for idxel in enum_columns if idxel[1] != '']
+        omniture_row_dict = dict(zip(keys, values))
+
+
+        if 'Total' in line:  # footer with summary
+            self._check_session_counts(omniture_row_dict)
+            break
+
+        #keyword = omniture_row_dict.get('Tracking Code', '')
+        #content_ad_id, source_param = self._parse_z11z_keyword(keyword)
+        #report_entry = OmnitureReportRow(omniture_row_dict, self.start_date, content_ad_id, source_param)
+
+    return csv_file.getvalue()
+
+
+# TODO: Remove after we switch to new parser w Redshift
+def _parse_omniture_header(workbook):
+    header = {}
+    sheet = workbook.sheet_by_index(0)
+    for row_idx in range(0, sheet.nrows):
+        line = []
+        for col_idx in range(0, sheet.ncols):
+            value = (sheet.cell(row_idx, col_idx).value or '').strip()
+            if not value:
+                break
+            line.append(value)
+        if len(line) == 1 and ':' in line[0]:
+            keyvalue = [(kv or '').strip() for kv in line[0].split(':')]
+            header[keyvalue[0]] = ''.join(keyvalue[1:])
+    return header
+
+
+# TODO: Remove after we switch to new parser w Redshift
+def _extract_omniture_date(self, date_raw):
+    # Example date: Fri. 4 Sep. 2015
+    date_raw_split = date_raw.replace('.', '').split(' ')
+    date_prefix = ' '.join(date_raw_split[:4])
+    return datetime.datetime.strptime(date_prefix, '%a %d %b %Y')
+
+
+# temporary conversion from Omniture zip to GA
+def _convert_ga_omniture_zip(content, attachment_name):
+    return ""
+
+
+def _convert_to_xls(csv_str, encoding='utf-8'):
+    '''
+    Convert CSV file in a string to xlsx
+    '''
+    lines = csv_str.encode('utf-8').strip().split('\n')
+    reader = unicodecsv.reader(lines, encoding=encoding)
+
+    # Create a workbook and add a worksheet.
+    buf = StringIO.StringIO()
+    workbook = xlsxwriter.Workbook(buf)
+    worksheet = workbook.add_worksheet()
+    # Iterate over the data and write it out row by row.
+    for row, line in enumerate(reader):
+        for col, el in enumerate(line):
+            worksheet.write(row, col, el)
+    workbook.close()
+    return buf.getvalue()
 
 
 @app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
