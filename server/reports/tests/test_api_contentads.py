@@ -45,17 +45,18 @@ class ApiContentAdsTest(TestCase):
 
     def check_aggregations(self, mock_get_results):
         required_statements = [
-            'CASE WHEN SUM("total_time_on_site") <> 0 THEN SUM(CAST("total_time_on_site" AS FLOAT)) / SUM("total_time_on_site") ELSE NULL END as "avg_tos"',
+            'CASE WHEN SUM("visits") <> 0 THEN SUM(CAST("total_time_on_site" AS FLOAT)) / SUM("visits") ELSE NULL END as "avg_tos"',
             'SUM("impressions") AS "impressions_sum"',
-            'CASE WHEN SUM("clicks") <> 0 THEN SUM(CAST("clicks" AS FLOAT)) / SUM("clicks") ELSE NULL END as "ctr"',
+            'CASE WHEN SUM("impressions") <> 0 THEN SUM(CAST("clicks" AS FLOAT)) / SUM("impressions") ELSE NULL END as "ctr"',
             'SUM("cost_cc") AS "cost_cc_sum"',
-            'CASE WHEN SUM("cost_cc") <> 0 THEN SUM(CAST("cost_cc" AS FLOAT)) / SUM("cost_cc") ELSE NULL END as "cpc_cc",SUM("pageviews") AS "pageviews_sum"',
+            'CASE WHEN SUM("clicks") <> 0 THEN SUM(CAST("cost_cc" AS FLOAT)) / SUM("clicks") ELSE NULL END as "cpc_cc"',
+            'SUM("pageviews") AS "pageviews_sum"',
             'SUM("new_visits") AS "new_visits_sum"',
             'SUM("visits") AS "visits_sum"',
-            'CASE WHEN SUM("bounced_visits") <> 0 THEN SUM(CAST("bounced_visits" AS FLOAT)) / SUM("bounced_visits") ELSE NULL END as "bounce_rate"',
-            'CASE WHEN SUM("new_visits") <> 0 THEN SUM(CAST("new_visits" AS FLOAT)) / SUM("new_visits") ELSE NULL END as "percent_new_users"',
+            'CASE WHEN SUM("visits") <> 0 THEN SUM(CAST("bounced_visits" AS FLOAT)) / SUM("visits") ELSE NULL END as "bounce_rate"',
+            'CASE WHEN SUM("visits") <> 0 THEN SUM(CAST("new_visits" AS FLOAT)) / SUM("visits") ELSE NULL END as "percent_new_users"',
             'SUM("clicks") AS "clicks_sum"',
-            'CASE WHEN SUM("pageviews") <> 0 THEN SUM(CAST("pageviews" AS FLOAT)) / SUM("pageviews") ELSE NULL END as "pv_per_visit"',
+            'CASE WHEN SUM("visits") <> 0 THEN SUM(CAST("pageviews" AS FLOAT)) / SUM("visits") ELSE NULL END as "pv_per_visit"',
             'CASE WHEN SUM("clicks") = 0 THEN NULL WHEN SUM("visits") = 0 THEN 1 WHEN SUM("clicks") < SUM("visits") THEN 0 ELSE (SUM(CAST("clicks" AS FLOAT)) - SUM("visits")) / SUM("clicks") END as "click_discrepancy"'
         ]
         query = self._get_query(mock_get_results)

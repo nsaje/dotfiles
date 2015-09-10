@@ -87,6 +87,25 @@ def sum_contentadstats():
     return result[0]
 
 
+@statsd_timer('reports.redshift', 'get_pixel_last_verified_dt')
+def get_pixels_last_verified_dt(account_id=None):
+    query = 'SELECT account_id, slug, max(conversion_timestamp) FROM touchpointconversions'
+    params = []
+    if account_id:
+        query += ' WHERE account_id = %s'
+        params.append(account_id)
+
+    query += ' GROUP BY slug, account_id'
+
+    cursor = _get_cursor()
+    cursor.execute(query, params)
+
+    result = cursor.fetchall()
+    cursor.close()
+
+    return {(row[0], row[1]): row[2] for row in result}
+
+
 @statsd_timer('reports.redshift', 'vacuum_contentadstats')
 def vacuum_contentadstats():
     query = 'VACUUM FULL contentadstats'
@@ -158,7 +177,7 @@ def _prepare_aggregates(aggregates, field_mapping):
         field_name = aggr.input_field.name
         field_name = field_mapping.get(field_name, field_name)
         if isinstance(aggr, db_aggregates.SumDivision):
-            divisor = aggr.input_field.name
+            divisor = aggr.extra['divisor']
             divisor = field_mapping.get(divisor, divisor)
             processed_aggrs.append(_sum_division_aggregate(field_name, divisor, key))
         elif isinstance(aggr, Sum):

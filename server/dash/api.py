@@ -456,7 +456,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
 
                 # Temporary bug fix for a bug in Gravity - codes that don't have a value assigned can not
                 # be assigned automatically
-                if any(('=' not in tc) for tc in new_field_value.split('&')) and\
+                if new_field_value and any(('=' not in tc) for tc in new_field_value.split('&')) and\
                    ad_group_source.source.source_type.type == constants.SourceType.GRAVITY:
                     force_manual_change = True
 

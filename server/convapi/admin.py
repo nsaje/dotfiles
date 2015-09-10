@@ -21,8 +21,8 @@ class TestReportsListFilter(admin.SimpleListFilter):
         in the right sidebar.
         """
         return (
-            ('NonTest', _('Reports')),
-            ('Test', _('Test Reports')),
+            ('non-test', _('Reports')),
+            ('test', _('Test Reports')),
         )
 
     def queryset(self, request, queryset):
@@ -33,9 +33,9 @@ class TestReportsListFilter(admin.SimpleListFilter):
         """
         # Compare the requested value (either '80s' or '90s')
         # to decide how to filter the queryset.
-        if self.value() == 'Test':
+        if self.value() == 'test':
             return queryset.filter(from_address='test@zemanta.com')
-        elif self.value() == 'NonTest':
+        elif self.value() == 'non-test':
             return queryset.exclude(from_address='test@zemanta.com')
         return queryset
 
@@ -75,11 +75,11 @@ class GAReportLogAdmin(admin.ModelAdmin):
 
     def state_(self, obj):
         color = '#000'
-        if obj.state == constants.ReportState.SUCCESS:
+        if obj.state == constants.GAReportState.SUCCESS:
             color = '#5cb85c'
-        if obj.state == constants.ReportState.FAILED:
+        if obj.state == constants.GAReportState.FAILED:
             color = '#d9534f'
-        if obj.state == constants.ReportState.EMPTY_REPORT:
+        if obj.state == constants.GAReportState.EMPTY_REPORT:
             color = '#f0f'
         return '<span style="color:{color}">{state}</span>'.format(
             color=color,
