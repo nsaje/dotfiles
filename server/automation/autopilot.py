@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 def update_ad_group_source_cpc(ad_group_source, new_cpc):
+    # TODO: only actually change cpc if CPC actually changed
     settings_writer = dash.api.AdGroupSourceSettingsWriter(ad_group_source)
     resource = dict()
     resource['cpc_cc'] = new_cpc
@@ -56,5 +57,11 @@ def get_autopilot_ad_group_sources_settings(adgroup):
 
 
 def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_spend):
-    # TODO this
-    return current_cpc+Decimal(0.5)
+    spending_perc = float(yesterdays_spend) / float(current_daily_budget) - 1
+    for row in settings.AUTOPILOT_CPC_CHANGE_TABLE:
+        cpc_adjustment_multiplier = 0
+        if row[0] <= spending_perc <= row[1]:
+            cpc_adjustment_multiplier = row[2]
+            break
+    # TODO: Maybe add AUTOPILOT_OVERSPENDING_PANIC_LIMIT, and send email if overspending is higher than it?
+    return current_cpc + current_cpc * cpc_adjustment_multiplier
