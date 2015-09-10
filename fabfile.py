@@ -403,13 +403,6 @@ def install_dependencies(app, params):
         run('pip install --no-index --find-links=file://$HOME/.wheel/wheelhouse --download-cache ~/.pip_download_cache -r requirements.txt')
 
 
-@serial
-def unittests(app, params):
-    dest_folder = os.path.join(params['app_folder'], app)
-    with cd(dest_folder), virtualenv():
-        run('python manage.py test --keepdb')
-
-
 def manage_static(app, params):
     dest_folder = os.path.join(params['app_folder'], app)
     with cd(dest_folder), virtualenv():
@@ -526,9 +519,6 @@ def deploy_django_app(app, params):
     print task('Manage static files [%s@%s]' % (app, env.host))
     manage_static(app, params)
 
-    print task("Unit test [%s@%s]" % (app, env.host))
-    unittests(app, params)
-
     print ok("%s successfully deployed at %s" % (app.capitalize(), env.host))
 
     return params
@@ -578,9 +568,6 @@ def real_migrate(app, params):
 
     print task('Install dependencies [%s@%s]' % (app, env.host))
     install_dependencies(app, params)
-
-    print task("Unit test [%s@%s]" % (app, env.host))
-    unittests(app, params)
 
     print task("Migrate [%s@%s]" % (app, env.host))
     run_migrate(app, params)
