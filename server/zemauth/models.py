@@ -140,6 +140,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_media_source_status_on_submission_popover', 'Can see media source status on submission status popover'),
             ('can_set_dma_targeting', 'Can set DMA targeting'),
             ('manage_conversion_pixels', 'Can manage conversion pixels'),
+            ('has_intercom', 'Can see intercom widget'),
         )
 
     def get_full_name(self):
