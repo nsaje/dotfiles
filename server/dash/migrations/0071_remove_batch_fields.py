@@ -7,7 +7,7 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dash', '070_conversionpixel_last_sync_dt'),
+        ('dash', '0070_conversionpixel_last_sync_dt'),
     ]
 
     operations = [
