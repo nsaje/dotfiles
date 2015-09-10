@@ -16,6 +16,8 @@ from utils import statsd_helper
 from utils.sort_helper import sort_results
 from utils import exc
 
+from reports.api_helpers import POSTCLICK_ACQUISITION_FIELDS, POSTCLICK_ENGAGEMENT_FIELDS
+
 
 class ExportApiView(api_common.BaseApiView):
     def dispatch(self, request, *args, **kwargs):
@@ -532,7 +534,7 @@ class AdGroupAdsPlusExport(ExportApiView):
             source=sources
         )
 
-        fieldnames = OrderedDict(self.common_csv_columns_w_date)
+        fieldnames = self._copy_csv_columns(self.common_csv_columns_w_date, user)
         content = export.get_csv_content(fieldnames, ads_results)
         return self.create_csv_response(filename, content=content)
 
@@ -556,8 +558,8 @@ class AdGroupAdsPlusExport(ExportApiView):
 
         self.add_source_data(sources_results)
 
-        ads_columns = self._copy_columns(self.common_excel_columns_w_date)
-        sources_columns = list(self.common_excel_columns_w_date)  # make a shallow copy
+        ads_columns = self._copy_excel_columns(self.common_excel_columns_w_date, user)
+        sources_columns = list(ads_columns)  # make a shallow copy
         sources_columns.insert(5, {'key': 'source', 'name': 'Source', 'width': 20})
 
         content = export.get_excel_content([
@@ -587,7 +589,7 @@ class AdGroupAdsPlusExport(ExportApiView):
 
         self.add_source_data(sources_results)
 
-        ads_columns = self._copy_columns(self.common_excel_columns)
+        ads_columns = self._copy_excel_columns(self.common_excel_columns, user)
         sources_columns = list(ads_columns)  # make a shallow copy
         sources_columns.insert(4, {'key': 'source', 'name': 'Source', 'width': 20})
 
@@ -606,12 +608,35 @@ class AdGroupAdsPlusExport(ExportApiView):
             ad_group=ad_group,
             source=sources
         )
-        fieldnames = OrderedDict(self.common_csv_columns)
+        fieldnames = self._copy_csv_columns(self.common_csv_columns, user)
         content = export.get_csv_content(fieldnames, ads_results)
         return self.create_csv_response(filename, content=content)
 
-    def _copy_columns(self, columns):
-        return [dict(col) for col in columns]
+    def _copy_excel_columns(self, columns, user):
+        columns_copy = []
+        include_acq_cols = user.has_perm('zemauth.content_ads_postclick_acquisition')
+        include_eng_cols = user.has_perm('zemauth.content_ads_postclick_engagement')
+        for col in columns:
+            key = col['key']
+            if (key in POSTCLICK_ACQUISITION_FIELDS and not include_acq_cols) or\
+               (key in POSTCLICK_ENGAGEMENT_FIELDS and not include_eng_cols):
+                continue
+
+            columns_copy.append(dict(col))
+        return columns_copy
+
+    def _copy_csv_columns(self, columns, user):
+        columns_copy = OrderedDict()
+        include_acq_cols = user.has_perm('zemauth.content_ads_postclick_acquisition')
+        include_eng_cols = user.has_perm('zemauth.content_ads_postclick_engagement')
+        for col in columns:
+            key = col[0]
+            if (key in POSTCLICK_ACQUISITION_FIELDS and not include_acq_cols) or\
+               (key in POSTCLICK_ENGAGEMENT_FIELDS and not include_eng_cols):
+                continue
+
+            columns_copy[key] = col[1]
+        return columns_copy
 
     def add_source_data(self, results):
         sources = {source.id: source for source in models.Source.objects.all()}
