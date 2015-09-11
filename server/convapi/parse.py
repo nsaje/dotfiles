@@ -285,7 +285,7 @@ class Keyword(IdentifierBase):
             )
 
     def _parse_keyword(self, keyword):
-        pattern = re.compile('^z1([0-9]*)(.*)1z$')
+        pattern = re.compile('.*z1([0-9]*)(.*)1z.*')
         result = pattern.match(keyword)
 
         if not result:
