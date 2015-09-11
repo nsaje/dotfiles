@@ -1047,13 +1047,13 @@ def sharethrough_approval(request):
     sig = request.GET.get('sig')
     if not sig:
         logger.warning('Sharethrough approval postback without signature. crid: %s', data['crid'])
+    else:
+        calculated = base64.urlsafe_b64encode(hmac.new(settings.SHARETHROUGH_PARAM_SIGN_KEY,
+                                                       msg=str(data['crid']),
+                                                       digestmod=hashlib.sha256)).digest()
 
-    calculated = base64.urlsafe_b64encode(hmac.new(settings.SHARETHROUGH_PARAM_SIGN_KEY,
-                                                   msg=str(data['crid']),
-                                                   digestmod=hashlib.sha256)).digest()
-
-    if sig != calculated:
-        logger.warning('Invalid sharethrough signature. crid: %s', data['crid'])
+        if sig != calculated:
+            logger.warning('Invalid sharethrough signature. crid: %s', data['crid'])
 
     content_ad_source = models.ContentAdSource.objects.get(content_ad_id=data['crid'],
                                                            source=models.Source.objects.get(name='Sharethrough'))
