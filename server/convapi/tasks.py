@@ -111,10 +111,6 @@ def process_ga_report(ga_report_task):
 
         if ga_report_task.attachment_name.endswith('.xls'):
             content = _convert_ga_omniture(content, ga_report_task.attachment_name)
-            print "CONTENT ACTUALL", content
-
-        elif ga_report_task.attachment_name.endswith('.zip'):
-            pass
 
         if ga_report_task.attachment_content_type != 'text/csv':
             # assume content is omniture and convert it to GA report
