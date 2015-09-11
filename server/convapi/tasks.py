@@ -255,7 +255,12 @@ def _convert_ga_omniture(content, attachment_name):
 
         if 'Total' in line:  # footer with summary
             # write GA footer
-            # TODO: Finish it
+            writer.writerows([
+                tuple(),
+                ('Day Index', 'Sessions',),
+                (start_date.strftime("%d/%m/%y"), omniture_row_dict['Visits'],),
+                ('', omniture_row_dict['Visits'],),
+            ])
             break
 
         # "Keyword", "Sessions", "% New Sessions", "New Users", "Bounce Rate",
