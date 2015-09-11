@@ -31,7 +31,7 @@ Day Index,Sessions
         """.strip()
 
     def _fake_get_omni_from_s3(self, key):
-        with open('convapi/fixtures/omniture_tracking_codes.xls', 'rb') as f:
+        with open('convapi/fixtures/omniture_tracking_codes_modified.xls', 'rb') as f:
             return f.read()
 
     def test_process_ga_report(self):
@@ -67,9 +67,7 @@ Day Index,Sessions
             1,
             'text/csv',
         )
-        print "Processing"
         tasks.process_ga_report(ga_report_task)
-        print "End processing"
 
         report_logs = models.GAReportLog.objects.all()[0]
         self.assertIsNone(report_logs.errors)
