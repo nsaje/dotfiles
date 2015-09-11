@@ -109,8 +109,10 @@ def process_ga_report(ga_report_task):
             report_log.state = constants.GAReportState.FAILED
             report_log.save()
 
+        logger.info("DEBUG: attachment_name {}".format(ga_report_task.attachment_name))
         if ga_report_task.attachment_name.endswith('.xls'):
             content = _convert_ga_omniture(content, ga_report_task.attachment_name)
+            logger.info("DEBUG: converted_report{}".format(content))
 
         if ga_report_task.attachment_content_type != 'text/csv':
             # assume content is omniture and convert it to GA report
