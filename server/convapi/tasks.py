@@ -341,25 +341,6 @@ def _extract_omniture_date(date_raw):
     return datetime.datetime.strptime(date_prefix, '%a %d %b %Y')
 
 
-def _convert_to_xls(csv_str, encoding='utf-8'):
-    '''
-    Convert CSV file in a string to xlsx
-    '''
-    lines = csv_str.encode('utf-8').strip().split('\n')
-    reader = unicodecsv.reader(lines, encoding=encoding)
-
-    # Create a workbook and add a worksheet.
-    buf = StringIO.StringIO()
-    workbook = xlsxwriter.Workbook(buf)
-    worksheet = workbook.add_worksheet()
-    # Iterate over the data and write it out row by row.
-    for row, line in enumerate(reader):
-        for col, el in enumerate(line):
-            worksheet.write(row, col, el)
-    workbook.close()
-    return buf.getvalue()
-
-
 @app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
           default_retry_delay=settings.CELERY_TASK_RETRY_DEPLAY)
 @transaction.atomic
