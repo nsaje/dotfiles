@@ -18,6 +18,17 @@ class QuerySetMatcher():
         return list(self.obj) == list(other)
 
 
+class ListMatcher():
+    """Checks if both lists contain the same elements.
+    For use with Mock.assert_called_with()."""
+
+    def __init__(self, obj):
+        self.obj = obj
+
+    def __eq__(self, other):
+        return sorted(self.obj) == sorted(other)
+
+
 def is_equal(val1, val2):
     if isinstance(val1, float) or isinstance(val2, float):
         return round(val1, 4) == round(val2, 4)

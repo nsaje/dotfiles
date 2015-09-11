@@ -373,7 +373,9 @@ class SettingsBase(models.Model):
 class AccountSettings(SettingsBase):
     _settings_fields = [
         'name',
-        'archived'
+        'archived',
+        'default_account_manager',
+        'default_sales_representative'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -383,6 +385,18 @@ class AccountSettings(SettingsBase):
         editable=True,
         blank=False,
         null=False
+    )
+    default_account_manager = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        related_name="+",
+        on_delete=models.PROTECT
+    )
+    default_sales_representative = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        related_name="+",
+        on_delete=models.PROTECT
     )
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
@@ -406,7 +420,8 @@ class CampaignSettings(SettingsBase):
         'sales_representative',
         'service_fee',
         'iab_category',
-        'promotion_goal',
+        'campaign_goal',
+        'goal_quantity',
         'archived'
     ]
 
@@ -437,7 +452,7 @@ class CampaignSettings(SettingsBase):
         default=Decimal('0.2000'),
     )
     iab_category = models.SlugField(
-        max_length=5,
+        max_length=10,
         default=constants.IABCategory.IAB24,
         choices=constants.IABCategory.get_choices()
     )
@@ -445,6 +460,18 @@ class CampaignSettings(SettingsBase):
         default=constants.PromotionGoal.BRAND_BUILDING,
         choices=constants.PromotionGoal.get_choices()
     )
+    campaign_goal = models.IntegerField(
+        default=constants.CampaignGoal.NEW_UNIQUE_VISITORS,
+        choices=constants.CampaignGoal.get_choices()
+    )
+    goal_quantity = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        blank=False,
+        null=False,
+        default=0
+    )
+
     archived = models.BooleanField(default=False)
 
     def save(self, request, *args, **kwargs):
@@ -1251,10 +1278,6 @@ class UploadBatch(models.Model):
     )
     error_report_key = models.CharField(max_length=1024, null=True, blank=True)
     num_errors = models.PositiveIntegerField(null=True)
-    display_url = models.CharField(max_length=25, blank=True, default='')
-    brand_name = models.CharField(max_length=25, blank=True, default='')
-    description = models.CharField(max_length=140, blank=True, default='')
-    call_to_action = models.CharField(max_length=25, blank=True, default='')
 
     processed_content_ads = models.PositiveIntegerField(null=True)
     batch_size = models.PositiveIntegerField(null=True)
@@ -1266,6 +1289,10 @@ class UploadBatch(models.Model):
 class ContentAd(models.Model):
     url = models.CharField(max_length=2048, editable=False)
     title = models.CharField(max_length=256, editable=False)
+    display_url = models.CharField(max_length=25, blank=True, default='')
+    brand_name = models.CharField(max_length=25, blank=True, default='')
+    description = models.CharField(max_length=140, blank=True, default='')
+    call_to_action = models.CharField(max_length=25, blank=True, default='')
 
     ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT)
     batch = models.ForeignKey(UploadBatch, on_delete=models.PROTECT)
@@ -1290,7 +1317,6 @@ class ContentAd(models.Model):
     tracker_urls = ArrayField(models.CharField(max_length=2048), null=True)
 
     objects = QuerySetManager()
-
 
     def get_original_image_url(self, width=None, height=None):
         if self.image_id is None:
@@ -1466,6 +1492,18 @@ class CampaignBudgetSettings(models.Model):
     class Meta:
         get_latest_by = 'created_dt'
         ordering = ('-created_dt',)
+
+
+class ConversionPixel(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.PROTECT)
+    slug = models.CharField(blank=False, null=False, max_length=32)
+    archived = models.BooleanField(default=False)
+
+    last_sync_dt = models.DateTimeField(blank=True, null=True)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created on')
+
+    class Meta:
+        unique_together = ('slug', 'account')
 
 
 class DemoAdGroupRealAdGroup(models.Model):

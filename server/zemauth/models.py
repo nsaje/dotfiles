@@ -79,6 +79,11 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
                     'active. Unselect this instead of deleting accounts.')
     )
 
+    show_onboarding_guidance = models.BooleanField(
+        default=False,
+        help_text='Designates weather user has self-manage access and needs onboarding guidance.'
+    )
+
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
@@ -89,7 +94,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
         verbose_name_plural = _('users')
 
         permissions = (
-            ('campaign_settings_view', "Can view campaign's agency tab."),
+            ('campaign_settings_view', "Can view campaign's settings tab."),
+            ('campaign_agency_view', "Can view campaign's agency tab."),
             ('campaign_ad_groups_view', "Can view campaign's ad groups tab in dashboard."),
             ('campaign_settings_account_manager', 'Can be chosen as account manager.'),
             ('campaign_settings_sales_rep', 'Can be chosen as sales representative.'),
@@ -134,6 +140,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_media_source_status_on_submission_popover', 'Can see media source status on submission status popover'),
             ('can_set_dma_targeting', 'Can set DMA targeting'),
             ('can_set_media_source_to_auto_pilot', 'Can set media source to auto-pilot'),
+            ('manage_conversion_pixels', 'Can manage conversion pixels'),
         )
 
     def get_full_name(self):

@@ -48,6 +48,7 @@ class UserTest(TestCase):
                     'email': 'user@test.com',
                     'name': '',
                     'permissions': {},
+                    'show_onboarding_guidance': False,
                     'timezone_offset': -18000.0
                 }
             },
@@ -68,6 +69,7 @@ class UserTest(TestCase):
                     'email': 'user@test.com',
                     'name': '',
                     'permissions': {},
+                    'show_onboarding_guidance': False,                    
                     'timezone_offset': -14400.0
                 }
             },
@@ -89,6 +91,7 @@ class UserTest(TestCase):
                     'email': 'user@test.com',
                     'name': '',
                     'permissions': {},
+                    'show_onboarding_guidance': False,                    
                     'timezone_offset': -14400.0
                 }
             },
@@ -152,9 +155,9 @@ class AdGroupContentAdCSVTest(TestCase):
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
+        expected_content = '''url,title,image_url,description (optional)\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,Example description\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,Example description\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -167,10 +170,10 @@ http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg\r
+        expected_content = '''url,title,image_url,description (optional)\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,Example description\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,Example description\r
+http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg,Example description\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -183,8 +186,8 @@ http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg\r
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
+        expected_content = '''url,title,image_url,description (optional)\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,Example description\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -196,9 +199,9 @@ http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
+        expected_content = '''url,title,image_url,description (optional)\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,Example description\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,Example description\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -211,10 +214,10 @@ http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
 
         response = self._get_csv_from_server(data)
 
-        expected_lines = ['url,title,image_url',
-                          'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg',
-                          'http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg',
-                          'http://testurl.com,Test Article with no content_ad_sources 3,123456789.jpg']
+        expected_lines = ['url,title,image_url,description (optional)',
+                          'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,Example description',
+                          'http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg,Example description',
+                          'http://testurl.com,Test Article with no content_ad_sources 3,123456789.jpg,Example description']
 
         lines = response.content.splitlines()
 
@@ -226,9 +229,9 @@ http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
+        expected_content = '''url,title,image_url,description (optional)\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,Example description\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,Example description\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -279,7 +282,7 @@ class AdGroupContentAdStateTest(TestCase):
         self.assertEqual(content_ad.state, constants.ContentAdSourceState.INACTIVE)
 
         content_ad_sources = models.ContentAdSource.objects.filter(content_ad=content_ad)
-        self.assertEqual(len(content_ad_sources), 2)
+        self.assertEqual(len(content_ad_sources), 3)
 
         for content_ad_source in content_ad_sources:
             self.assertEqual(content_ad_source.state, constants.ContentAdSourceState.INACTIVE)
@@ -755,9 +758,51 @@ class AdGroupAdsPlusUploadTest(TestCase):
             },
             follow=True
         )
-
         self.assertEqual(response.status_code, 200)
         self.assertTrue(mock_process_async.called)
+
+    @patch('dash.views.views.upload.process_async')
+    def test_post_empty_fields_not_in_csv(self, mock_process_async):
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        ad_group_settings = models.AdGroupSettings(
+            ad_group_id=1,
+            created_by_id=1,
+        )
+        ad_group_settings.save(request)
+
+        mock_file = SimpleUploadedFile('testfile.csv', 'Url,title,image_url\nhttp://example.com,testtitle,http://example.com/image')
+
+        response = self._get_client().post(
+            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),
+            {
+                'content_ads': mock_file,
+                'batch_name': 'testname',
+                'display_url': '',
+                'brand_name': '',
+                'description': '',
+                'call_to_action': '',
+            },
+            follow=True
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json.loads(response.content), 
+                    {
+                        "data": {
+                        "message": None, 
+                        "errors": {
+                            "display_url": ["This field is required."], 
+                            "call_to_action": ["This field is required."],
+                            "brand_name": ["This field is required."],
+                            "description": ["This field is required."],
+                            }, 
+                        "error_code": "ValidationError"
+                        }, 
+                        "success": False
+                    })
+        self.assertFalse(mock_process_async.called)
+
 
     def test_validation_error(self):
         response = self._get_client().post(
@@ -930,3 +975,60 @@ class AdGroupSourcesTest(TestCase):
             {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False},  # should return False when DMAs used
             {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True},
         ])
+
+
+@patch('dash.views.views.actionlog.api_contentads.init_update_content_ad_action')
+class SharethroughApprovalTest(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.client = Client()
+
+    def test_approved_creative(self, mock_update):
+        data = {
+            'status': 0,
+            'crid': 1,
+            'seat': 'abc123',
+            'expiry': '2015-12-31'
+        }
+        cas = models.ContentAdSource.objects.get(content_ad_id=1, source=models.Source.objects.get(name='Sharethrough'))
+        self.assertEqual(1, cas.submission_status)
+
+        self.client.post(
+            reverse('sharethrough_approval'),
+            follow=True,
+            content_type='application/json',
+            data=json.dumps(data)
+        )
+
+        cas = models.ContentAdSource.objects.get(id=cas.id)
+
+        self.assertEqual(2, cas.submission_status)
+        self.assertEqual(None, cas.submission_errors)
+        self.assertTrue(mock_update.called)
+        mock_update.assert_called_with(cas, {'state': cas.state}, request=None, send=True)
+
+    def test_rejected_creative(self, mock_update):
+        data = {
+            'status': 1,
+            'crid': 1,
+            'seat': 'abc123',
+            'expiry': '2015-12-31'
+        }
+        cas = models.ContentAdSource.objects.get(content_ad_id=1, source=models.Source.objects.get(name='Sharethrough'))
+        self.assertEqual(1, cas.submission_status)
+
+        self.client.post(
+            reverse('sharethrough_approval'),
+            follow=True,
+            content_type='application/json',
+            data=json.dumps(data)
+        )
+
+        cas = models.ContentAdSource.objects.get(id=cas.id)
+
+        self.assertEqual(3, cas.submission_status)
+        self.assertEqual(None, cas.submission_errors)
+        self.assertTrue(mock_update.called)
+        mock_update.assert_called_with(cas, {'state': cas.state}, request=None, send=True)

@@ -180,6 +180,16 @@ if TESTING:
     CELERY_DEFAULT_CONVAPI_QUEUE = CELERY_DEFAULT_CONVAPI_QUEUE
     CELERY_DEFAULT_CONVAPI_V2_QUEUE = CELERY_DEFAULT_CONVAPI_V2_QUEUE
 
+    DATABASES.pop(STATS_DB_NAME, None)
+    STATS_DB_NAME = 'default'
+
+    # does not need to be defined in production environment
+    try:
+        DATABASES.pop(STATS_E2E_DB_NAME, None)
+    except NameError:
+        print 'E2E DB name not specified'
+
+
 # App specific
 ACTIONLOG_RECENT_HOURS = 2
 
@@ -200,13 +210,35 @@ DEFAULT_TIME_ZONE = 'America/New_York'
 # Placeholder value for source_campaign_key while campaign is being created
 SOURCE_CAMPAIGN_KEY_PENDING_VALUE = 'PENDING'
 
+CONVERSION_PIXEL_PREFIX = 'https://p1.zemanta.com/p/'
+
 if os.environ.get('E2E'):
     print 'Using E2E database !!!'
     DATABASES['default'] = DATABASES['e2e']
+
+if os.environ.get('E2E_REDDB'):
+    DATABASES[STATS_DB_NAME]['NAME'] = os.environ.get('E2E_REDDB')
+
+    print 'Using e2e Redshift DB named', DATABASES[STATS_DB_NAME]['NAME']
+
+    if os.environ.get('REDSHIFT_E2E_USER'):
+        print 'Updating Redshift credentials'
+
+        credentials = {
+            'USER': os.environ.get('REDSHIFT_E2E_USER'),
+            'PASSWORD': os.environ.get('REDSHIFT_E2E_PASS'),
+            'HOST': os.environ.get('REDSHIFT_E2E_HOST')
+        }
+
+        DATABASES[STATS_DB_NAME].update(credentials)
+        DATABASES[STATS_E2E_DB_NAME].update(credentials)
+
 
 if 'e2e' in DATABASES:
     DATABASES['e2e'] = {}
     del DATABASES['e2e']
 
+
 # User agent used when validating uploaded content ads URLs
 URL_VALIDATOR_USER_AGENT = 'Mozilla/5.0 (compatible; Zemanta/1.0; +http://www.zemanta.com)'
+

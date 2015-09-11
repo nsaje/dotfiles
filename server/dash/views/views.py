@@ -13,6 +13,8 @@ import StringIO
 import unicodecsv
 import slugify
 
+from collections import OrderedDict
+
 from django.db import transaction
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -21,6 +23,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth import login, authenticate
 from django.views.decorators.http import require_GET
+from django.views.decorators.csrf import csrf_exempt
 
 from dash.views import helpers
 
@@ -37,7 +40,6 @@ import actionlog.zwei_actions
 
 from dash import models
 from dash import constants
-from dash import regions
 from dash import api
 from dash import forms
 from dash import upload
@@ -123,6 +125,7 @@ class User(api_common.BaseApiView):
                 'id': str(user.pk),
                 'email': user.email,
                 'name': user.get_full_name(),
+                'show_onboarding_guidance': user.show_onboarding_guidance,
                 'permissions': user.get_all_permissions_with_access_levels(),
                 'timezone_offset': pytz.timezone(settings.DEFAULT_TIME_ZONE).utcoffset(
                     datetime.datetime.utcnow(), is_dst=True).total_seconds()
@@ -283,6 +286,8 @@ class AccountRestore(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         account.restore(request)
 
+        actionlog.sync.AccountSync(account).trigger_all(self.request)
+
         return self.create_api_response({})
 
 
@@ -307,6 +312,8 @@ class CampaignRestore(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign.restore(request)
 
+        actionlog.sync.CampaignSync(campaign).trigger_all(self.request)
+
         return self.create_api_response({})
 
 
@@ -330,6 +337,8 @@ class AdGroupRestore(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         ad_group.restore(request)
+
+        actionlog.sync.AdGroupSync(ad_group).trigger_all(self.request)
 
         return self.create_api_response({})
 
@@ -522,6 +531,7 @@ class AccountCampaigns(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         account = helpers.get_account(request.user, account_id)
+        account_settings = account.get_current_settings()
 
         name = create_name(models.Campaign.objects.filter(account=account), 'New campaign')
 
@@ -534,7 +544,10 @@ class AccountCampaigns(api_common.BaseApiView):
         settings = models.CampaignSettings(
             name=name,
             campaign=campaign,
-            account_manager=request.user,
+            account_manager=(account_settings.default_account_manager
+                             if account_settings.default_account_manager else request.user),
+            sales_representative=(account_settings.default_sales_representative
+                                  if account_settings.default_sales_representative else None)
         )
         settings.save(request)
 
@@ -613,7 +626,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
                 'display_url': current_settings.display_url,
                 'brand_name': current_settings.brand_name,
                 'description': current_settings.description,
-                'call_to_action': current_settings.call_to_action
+                'call_to_action': current_settings.call_to_action or 'Read More'
             }
         })
 
@@ -629,29 +642,31 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
             raise exc.ValidationError(errors=form.errors)
 
         batch_name = form.cleaned_data['batch_name']
-        display_url = form.cleaned_data['display_url']
-        brand_name = form.cleaned_data['brand_name']
-        description = form.cleaned_data['description']
-        call_to_action = form.cleaned_data['call_to_action']
         content_ads = form.cleaned_data['content_ads']
+        display_url = form.cleaned_data['display_url']
+
+        # we could have passed form.cleaned_data around, 
+        # but it's better to have a version that is more predictable
+        upload_form_cleaned_fields = {
+            'display_url': form.cleaned_data['display_url'],
+            'brand_name': form.cleaned_data['brand_name'],
+            'description': form.cleaned_data['description'],
+            'call_to_action': form.cleaned_data['call_to_action']
+        }
 
         batch = models.UploadBatch.objects.create(
             name=batch_name,
-            display_url=display_url,
-            brand_name=brand_name,
-            description=description,
-            call_to_action=call_to_action,
             processed_content_ads=0,
-            batch_size=len(content_ads)
+            batch_size=len(content_ads),
         )
 
         current_settings = ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
 
-        new_settings.display_url = display_url
-        new_settings.brand_name = brand_name
-        new_settings.description = description
-        new_settings.call_to_action = call_to_action
+        new_settings.display_url = upload_form_cleaned_fields['display_url']
+        new_settings.brand_name = upload_form_cleaned_fields['brand_name']
+        new_settings.description = upload_form_cleaned_fields['description']
+        new_settings.call_to_action = upload_form_cleaned_fields['call_to_action']
 
         new_settings.save(request)
 
@@ -659,6 +674,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
             content_ads,
             request.FILES['content_ads'].name,
             batch,
+            upload_form_cleaned_fields,
             ad_group,
             request
         )
@@ -702,7 +718,7 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
             raise exc.MissingDataException()
 
         response_data = {'status': batch.status, 'count': batch.processed_content_ads, 'all': batch.batch_size}
-
+        
         if batch.status == constants.UploadBatchStatus.FAILED:
             if batch.error_report_key:
                 text = '{} error{}. <a href="{}">Download Report.</a>'.format(
@@ -849,6 +865,13 @@ class AdGroupContentAdState(api_common.BaseApiView):
         return self.create_api_response()
 
 
+CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict([
+                        ['url', 'url'],
+                        ['title', 'title'],
+                        ['image_url', 'image_url'],
+                        ['description', 'description (optional)'],
+                    ])
+
 class AdGroupContentAdCSV(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
     def get(self, request, ad_group_id):
@@ -860,7 +883,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
         except exc.MissingDataError, e:
             email = request.user.email
             if email == settings.DEMO_USER_EMAIL or email in settings.DEMO_USERS:
-                content_ad_dicts = [{ 'url': '', 'title': '', 'image_url': '' }]
+                content_ad_dicts = [{ 'url': '', 'title': '', 'image_url': '', 'description': ''}]
                 content = self._create_content_ad_csv(content_ad_dicts)
                 return self.create_csv_response('contentads', content=content)
             raise e
@@ -884,11 +907,22 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
 
         content_ad_dicts = []
         for content_ad in content_ads:
-            content_ad_dicts.append({
+            content_ad_dict = {
                 'url': content_ad.url,
                 'title': content_ad.title,
                 'image_url': content_ad.get_original_image_url(),
-            })
+                'display_url': content_ad.display_url,
+                'brand_name': content_ad.brand_name,
+                'description': content_ad.description,
+                'call_to_action': content_ad.call_to_action,
+            }
+            
+            # delete keys that are not to be exported
+            for k in content_ad_dict.keys():
+                if k not in CSV_EXPORT_COLUMN_NAMES_DICT.keys():
+                    del content_ad_dict[k]
+                    
+            content_ad_dicts.append(content_ad_dict)
 
         filename = '{}_{}_{}_content_ads'.format(
             slugify.slugify(ad_group.campaign.account.name),
@@ -902,8 +936,10 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
     def _create_content_ad_csv(self, content_ads):
         string = StringIO.StringIO()
 
-        writer = unicodecsv.DictWriter(string, ['url', 'title', 'image_url'])
-        writer.writeheader()
+        writer = unicodecsv.DictWriter(string, CSV_EXPORT_COLUMN_NAMES_DICT.keys())
+
+        # write the header manually as it is different than keys in the dict
+        writer.writerow(CSV_EXPORT_COLUMN_NAMES_DICT)
 
         for row in content_ads:
             writer.writerow(row)
@@ -997,3 +1033,25 @@ def oauth_redirect(request, source_name):
         credentials.save()
 
     return redirect(reverse('admin:dash_sourcecredentials_change', args=(credentials.id,)))
+
+
+@statsd_helper.statsd_timer('dash', 'sharethrough_approval')
+@csrf_exempt
+def sharethrough_approval(request):
+    data = json.loads(request.body)
+
+    logger.info('sharethrough approval, content ad id: %s, status: %s', data['crid'], data['status'])
+    content_ad_source = models.ContentAdSource.objects.get(content_ad_id=data['crid'],
+                                                           source=models.Source.objects.get(name='Sharethrough'))
+
+    if data['status'] == 0:
+        content_ad_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
+    else:
+        content_ad_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
+
+    content_ad_source.save()
+
+    actionlog.api_contentads.init_update_content_ad_action(content_ad_source, {'state': content_ad_source.state},
+                                                           request=None, send=True)
+
+    return HttpResponse('OK')

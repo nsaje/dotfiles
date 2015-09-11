@@ -1218,13 +1218,9 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
 
     @newrelic.agent.function_trace()
     def _get_total_row(self, stats):
-        return {
-            'impressions': stats['impressions'],
-            'clicks': stats['clicks'],
-            'cost': stats['cost'],
-            'cpc': stats['cpc'],
-            'ctr': stats['ctr']
-        }
+        totals = {}
+        helpers.copy_stats_to_row(stats, totals)
+        return totals
 
     def _get_url(self, ad_group, content_ad, is_demo):
         if is_demo:
@@ -1267,21 +1263,17 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 'redirector_url': redirector_url,
                 'batch_name': content_ad.batch.name,
                 'batch_id': content_ad.batch.id,
-                'display_url': content_ad.batch.display_url,
-                'brand_name': content_ad.batch.brand_name,
-                'description': content_ad.batch.description,
-                'call_to_action': content_ad.batch.call_to_action,
                 'upload_time': content_ad.batch.created_dt,
+                'display_url': content_ad.display_url,
+                'brand_name': content_ad.brand_name,
+                'description': content_ad.description,
+                'call_to_action': content_ad.call_to_action,
                 'image_urls': {
                     'square': content_ad.get_image_url(160, 160),
                     'landscape': content_ad.get_image_url(256, 160)
                 },
-                'impressions': stat.get('impressions'),
-                'clicks': stat.get('clicks'),
-                'cost': stat.get('cost'),
-                'cpc': stat.get('cpc'),
-                'ctr': stat.get('ctr')
             }
+            helpers.copy_stats_to_row(stat, row)
 
             if has_view_archived_permission:
                 row['archived'] = archived

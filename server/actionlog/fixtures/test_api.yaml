@@ -229,6 +229,18 @@
     model: dash.source
     pk: 8
 
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Sharethrough
+        tracking_slug: 'b1_sharethrough'
+        source_type: 1
+        maintenance: false
+        bidder_slug: 'sharethrough'
+        content_ad_submission_type: 1
+    model: dash.source
+    pk: 9
+
 # test adgroupsettings
 
 -   fields:
@@ -717,20 +729,12 @@
 -   fields:
         name: 'batch 1'
         created_dt: '2015-02-23T00:00:00'
-        display_url: 'example.com'
-        brand_name: 'Example'
-        description: 'Example description'
-        call_to_action: 'Call to action'
     model: dash.uploadbatch
     pk: 1
 
 -   fields:
         name: 'batch 2'
         created_dt: '2015-02-23T00:00:00'
-        display_url: 'example.com'
-        brand_name: 'Example'
-        description: 'Example description'
-        call_to_action: 'Call to action'
     model: dash.uploadbatch
     pk: 2
 
@@ -749,6 +753,10 @@
         redirect_id: 'abc'
         created_dt: '2015-02-21T00:00:00'
         state: 1
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
     model: dash.contentad
     pk: 1
 
@@ -764,6 +772,10 @@
         redirect_id: 'abc'
         created_dt: '2015-02-21T00:00:01'
         state: 2
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
     model: dash.contentad
     pk: 2
 
@@ -778,6 +790,10 @@
         ad_group: 1
         created_dt: '2015-02-23T00:00:00'
         state: 2
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
     model: dash.contentad
     pk: 3
 
@@ -792,6 +808,10 @@
         ad_group: 2
         created_dt: '2015-02-21T00:00:00'
         state: 2
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
     model: dash.contentad
     pk: 4
 
@@ -806,6 +826,10 @@
         ad_group: 2
         created_dt: '2015-02-21T00:00:00'
         state: 2
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
     model: dash.contentad
     pk: 5
 
@@ -858,6 +882,18 @@
         modified_dt: '2015-07-01T00:00:00'
     model: dash.contentadsource
     pk: 4
+
+-   fields:
+        source: 9
+        content_ad: 1
+        submission_status: 1
+        state: 1
+        source_state: 2
+        source_content_ad_id: NULL
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 5
 
 # test adgroupsourcesettings
 
