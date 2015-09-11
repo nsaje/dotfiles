@@ -223,7 +223,6 @@ def _convert_ga_omniture(content, attachment_name):
     body_found = False
 
     all_columns = []
-    enum_columns = []
     sheet = workbook.sheet_by_index(0)
     for row_idx in range(0, sheet.nrows):
         line = []
@@ -238,13 +237,12 @@ def _convert_ga_omniture(content, attachment_name):
             else:
                 body_found = True
                 all_columns = line
-                enum_columns = [(idx, el) for (idx, el) in enumerate(all_columns)]
                 continue
 
         # valid data is data with known column name(many columns are empty
         # in sample omniture reports)
-        keys = [idxel[1] for idxel in enum_columns if idxel[1] != '']
-        values = [line[idxel[0]] for idxel in enum_columns if idxel[1] != '']
+        keys = [idxel[1] for idxel in enumerate(all_columns) if idxel[1] != '']
+        values = [line[idxel[0]] for idxel in enumerate(all_columns) if idxel[1] != '']
         omniture_row_dict = dict(zip(keys, values))
 
         if 'Total' in line:  # footer with summary
@@ -259,54 +257,60 @@ def _convert_ga_omniture(content, attachment_name):
             ])
             break
 
-        # "Keyword", "Sessions", "% New Sessions", "New Users", "Bounce Rate",
-        # "Pages / Session", "Avg. Session Duration", "Pageviews",))
-        sessions = str(_report_atoi(omniture_row_dict['Visits']))
-        new_users = str(_report_atoi(omniture_row_dict['Unique Visitors']))
-        percent_new_sessions = "{:.2f}%".format(
-            _report_atof(omniture_row_dict['Visits']) / _report_atof(omniture_row_dict['Unique Visitors'])
-        )
-        bounce_rate = "{:.2f}%".format(_report_atof(omniture_row_dict['Bounces']) / _report_atof(sessions) * 100)
-        pages_per_session = "{:.2f}".format(_report_atof(omniture_row_dict['Page Views']) / _report_atof(sessions))
-
-        tts = _report_atoi(omniture_row_dict['Total Seconds Spent'])
-        hours = tts/3600
-        minutes = (tts - hours * 3600) / 60
-        seconds = (tts - hours * 3600) % 60
-        avg_session_duration = "{hours:02d}:{minutes:02d}:{seconds:02d}".format(
-            hours=hours,
-            minutes=minutes,
-            seconds=seconds
-        )
-        pageviews = omniture_row_dict['Page Views']
-
-        keyword = None
-        for key in omniture_row_dict:
-            if 'tracking code' in key.lower():
-                keyword = omniture_row_dict[key]
-
-        # if tracking code contains our keyword param then substitute everything
-        # with that keyword param
-        pattern = re.compile('.*(z1[0-9]*.*1z).*')
-        result = pattern.match(keyword)
-        if result:
-            keyword = result.group(1)
-
-        if keyword is None:
+        report_row = _omniture_dict_to_ga_report_row(omniture_row_dict)
+        if report_row is None:
             continue
-
-        writer.writerow((
-            keyword,
-            sessions,
-            percent_new_sessions,
-            new_users,
-            bounce_rate,
-            pages_per_session,
-            avg_session_duration,
-            pageviews,
-        ))
+        writer.writerow(report_row)
 
     return csv_file.getvalue()
+
+def _omniture_dict_to_ga_report_row(omniture_row_dict):
+    # "Keyword", "Sessions", "% New Sessions", "New Users", "Bounce Rate",
+    # "Pages / Session", "Avg. Session Duration", "Pageviews",))
+    sessions = str(_report_atoi(omniture_row_dict['Visits']))
+    new_users = str(_report_atoi(omniture_row_dict['Unique Visitors']))
+    percent_new_sessions = "{:.2f}%".format(
+        _report_atof(omniture_row_dict['Visits']) / _report_atof(omniture_row_dict['Unique Visitors'])
+    )
+    bounce_rate = "{:.2f}%".format(_report_atof(omniture_row_dict['Bounces']) / _report_atof(sessions) * 100)
+    pages_per_session = "{:.2f}".format(_report_atof(omniture_row_dict['Page Views']) / _report_atof(sessions))
+
+    tts = _report_atoi(omniture_row_dict['Total Seconds Spent'])
+    hours = tts/3600
+    minutes = (tts - hours * 3600) / 60
+    seconds = (tts - hours * 3600) % 60
+    avg_session_duration = "{hours:02d}:{minutes:02d}:{seconds:02d}".format(
+        hours=hours,
+        minutes=minutes,
+        seconds=seconds
+    )
+    pageviews = omniture_row_dict['Page Views']
+
+    keyword = None
+    for key in omniture_row_dict:
+        if 'tracking code' in key.lower():
+            keyword = omniture_row_dict[key]
+
+    # if tracking code contains our keyword param then substitute everything
+    # with that keyword param
+    pattern = re.compile('.*(z1[0-9]*.*1z).*')
+    result = pattern.match(keyword)
+    if result:
+        keyword = result.group(1)
+
+    if keyword is None:
+        return None
+
+    return (
+        keyword,
+        sessions,
+        percent_new_sessions,
+        new_users,
+        bounce_rate,
+        pages_per_session,
+        avg_session_duration,
+        pageviews,
+    )
 
 
 # TODO: Remove after we switch to new parser w Redshift
