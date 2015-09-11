@@ -205,7 +205,6 @@ def _convert_ga_omniture(content, attachment_name):
     ga_date = start_date.strftime("%Y%m%d")
 
     # write the header manually as it is different than keys in the dict
-    #writer.writerow(("# ----------------------------------------",))
     writer.writerows([
         ("# ----------------------------------------",),
         ("# Automatic Omni to GA Conversion - {}".format(attachment_name),),
@@ -216,7 +215,6 @@ def _convert_ga_omniture(content, attachment_name):
     ])
 
     # write header
-
     writer.writerow((
         "Keyword", "Sessions", "% New Sessions", "New Users",
         "Bounce Rate", "Pages / Session",
@@ -232,7 +230,6 @@ def _convert_ga_omniture(content, attachment_name):
         for col_idx in range(0, sheet.ncols):
             raw_val = sheet.cell_value(row_idx, col_idx)
             value = (unicode(raw_val).encode('utf-8') or '').strip()
-            #value = sheet.cell(row_idx, col_idx).value
             line.append(value)
 
         if not body_found:
@@ -338,11 +335,6 @@ def _extract_omniture_date(date_raw):
     date_raw_split = [date_part.strip() for date_part in date_raw_split if date_part.strip() != '']
     date_prefix = ' '.join(date_raw_split[:4])
     return datetime.datetime.strptime(date_prefix, '%a %d %b %Y')
-
-
-# temporary conversion from Omniture zip to GA
-def _convert_ga_omniture_zip(content, attachment_name):
-    return ""
 
 
 def _convert_to_xls(csv_str, encoding='utf-8'):
