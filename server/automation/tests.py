@@ -1,15 +1,25 @@
 from django.core import mail
 from django import test
 from mock import patch
-from automation import budgetdepletion, helpers
+from automation import budgetdepletion, helpers, autopilot
 from dash import models
 from reports import refresh
 from django.conf import settings
+import decimal
+import dash
+import datetime
 from automation import models as automationmodels
+from django.test.utils import override_settings
+
+
+class DatetimeMock(datetime.datetime):
+    @classmethod
+    def utcnow(cls):
+        return datetime.datetime(2014, 06, 05, 9, 58, 25)
 
 
 class BudgetDepletionTestCase(test.TestCase):
-    fixtures = ['test_budget_depletion.yaml']
+    fixtures = ['test_automation.yaml']
 
     def setUp(self):
         refresh.refresh_adgroup_stats()
@@ -72,4 +82,53 @@ class BudgetDepletionTestCase(test.TestCase):
             actives = helpers.get_active_ad_groups(campaign2)
             self.assertEqual(len(actives), 0)
 
-    # TODO: test - get_active_ad_group_sources_states, calculate_proposed_cpc
+    def test_persist_cpc_change_to_admin_log(self):
+        autopilot.persist_cpc_change_to_admin_log(
+            models.AdGroupSource.objects.get(id=1),
+            20.0,
+            0.15,
+            0.20,
+            30.0
+        )
+        log = automationmodels.AutopilotAdGroupSourceBidCpcLog.objects.all().latest('created_dt')
+        self.assertEqual(log.campaign, models.Campaign.objects.get(pk=1))
+        self.assertEqual(log.ad_group, models.AdGroup.objects.get(pk=1))
+        self.assertEqual(log.ad_group_source, models.AdGroupSource.objects.get(pk=1))
+        self.assertEqual(log.yesterdays_spend_cc, 20.0)
+        self.assertEqual(log.previous_cpc_cc, decimal.Decimal('0.15'))
+        self.assertEqual(log.new_cpc_cc, decimal.Decimal('0.20'))
+        self.assertEqual(log.current_daily_budget_cc, 30.0)
+
+    @patch('datetime.datetime', DatetimeMock)
+    def test_ad_group_sources_daily_budget_was_changed_recently(self):
+        self.assertTrue(autopilot.ad_group_sources_daily_budget_was_changed_recently(models.AdGroupSource.objects.get(id=1)))
+
+        self.assertFalse(autopilot.ad_group_sources_daily_budget_was_changed_recently(models.AdGroupSource.objects.get(id=2)))
+        settings_writer = dash.api.AdGroupSourceSettingsWriter(models.AdGroupSource.objects.get(id=2))
+        resource = dict()
+        resource['daily_budget_cc'] = decimal.Decimal(60.00)
+        settings_writer.set(resource, None)
+        self.assertTrue(autopilot.ad_group_sources_daily_budget_was_changed_recently(models.AdGroupSource.objects.get(id=2)))
+
+    @override_settings(
+        AUTOPILOT_CPC_CHANGE_TABLE=[
+            [-1, -0.5, 0.1],
+            [-0.5, 0, 0.5]
+            ]
+    )
+    def test_calculate_new_autopilot_cpc(self):
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0, 10, 5), decimal.Decimal('0'))
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, 8), decimal.Decimal('0.75'))
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, 10), decimal.Decimal('0.75'))
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, 2), decimal.Decimal('0.55'))
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, 0), decimal.Decimal('0.5'))
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, 5), decimal.Decimal('0.55'))
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 0, 5), decimal.Decimal('0.5'))
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, 0), decimal.Decimal('0.5'))
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, -10, 5), decimal.Decimal('0.5'))
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, -5), decimal.Decimal('0.5'))
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(-0.5, 10, 5), decimal.Decimal('0'))
+
+    ''' TODO: test -
+        get_autopilot_ad_group_sources_settings,
+    '''
