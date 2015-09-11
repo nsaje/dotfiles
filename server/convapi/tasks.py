@@ -335,6 +335,7 @@ def _parse_omniture_header(workbook):
 def _extract_omniture_date(date_raw):
     # Example date: Fri. 4 Sep. 2015
     date_raw_split = date_raw.replace('.', '').split(' ')
+    date_raw_split = [date_part.strip() for date_part in date_raw_split if date_part.strip() != '']
     date_prefix = ' '.join(date_raw_split[:4])
     return datetime.datetime.strptime(date_prefix, '%a %d %b %Y')
 
