@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 @csrf_exempt
+@statsd_helper.statsd_timer('zweiapi.views', 'zwei_callback')
 def zwei_callback(request, action_id):
     newrelic.agent.set_background_task(flag=True)
     logger.info('Received zwei callback: %s', action_id)
