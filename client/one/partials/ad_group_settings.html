@@ -144,7 +144,28 @@
                         <a href="{{ config.static_url }}/one/assets/SettingUpAutomatedGoogleAnalyticsReports.pdf" target="_self">Download a guide to setting up Automated Google Analytics Report</a>
                     </label>
                 </div>
+
+                <div class="checkbox col-xs-10" ng-if="hasPermission('zemauth.can_toggle_adobe_performance_tracking')">
+                    <label>
+                        <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_toggle_adobe_performance_tracking')" popover-placement="right"></zem-internal-feature>
+                        <input type="checkbox" id="enable-adobe-tracking" ng-model="settings.enableAdobeTracking"> Enable Adobe Analytics performance tracking
+                        <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="This adds performance tracking codes to all URLs." placement="top"></zem-help-popover>
+                    </label>
+                </div>
             </div>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.name}" ng-if="hasPermission('zemauth.can_toggle_adobe_performance_tracking')">
+            <label for="name-input" class="col-xs-2 control-label">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_toggle_adobe_performance_tracking')" popover-placement="right"></zem-internal-feature>
+                Adobe tracking param
+                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Name of the tracking parameter used for Adobe Analytics." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-1">
+                <input id="adobe-tracking-param-input" type="text" class="form-control" ng-model="settings.adobeTrackingParam">
+            </div>
+
+            <label ng-repeat="error in errors.name" class="control-label error" for="name-input">{{ error }}</label>
         </div>
 
 		<button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
