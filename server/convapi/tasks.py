@@ -7,6 +7,7 @@ import logging
 import reports
 import StringIO
 import unicodecsv
+import re
 import xlsxwriter
 import xlrd
 
@@ -254,19 +255,21 @@ def _convert_ga_omniture(content, attachment_name):
         omniture_row_dict = dict(zip(keys, values))
 
         if 'Total' in line:  # footer with summary
+            sessions = _report_atoi(omniture_row_dict['Visits'])
             # write GA footer
             writer.writerows([
+                ('', sessions),
                 tuple(),
                 ('Day Index', 'Sessions',),
-                (start_date.strftime("%d/%m/%y"), omniture_row_dict['Visits'],),
-                ('', omniture_row_dict['Visits'],),
+                (start_date.strftime("%d/%m/%y"), sessions,),
+                ('', sessions,),
             ])
             break
 
         # "Keyword", "Sessions", "% New Sessions", "New Users", "Bounce Rate",
         # "Pages / Session", "Avg. Session Duration", "Pageviews",))
-        sessions = omniture_row_dict['Visits']
-        new_users = omniture_row_dict['Unique Visitors']
+        sessions = str(_report_atoi(omniture_row_dict['Visits']))
+        new_users = str(_report_atoi(omniture_row_dict['Unique Visitors']))
         percent_new_sessions = "{:.2f}%".format(
             _report_atof(omniture_row_dict['Visits']) / _report_atof(omniture_row_dict['Unique Visitors'])
         )
@@ -288,6 +291,13 @@ def _convert_ga_omniture(content, attachment_name):
         for key in omniture_row_dict:
             if 'tracking code' in key.lower():
                 keyword = omniture_row_dict[key]
+
+        # if tracking code contains our keyword param then substitute everything
+        # with that keyword param
+        pattern = re.compile('.*(z1[0-9]*.*1z).*')
+        result = pattern.match(keyword)
+        if result:
+            keyword = result.group(1)
 
         if keyword is None:
             continue
