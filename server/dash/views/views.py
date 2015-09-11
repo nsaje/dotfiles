@@ -1050,7 +1050,7 @@ def sharethrough_approval(request):
 
     calculated = base64.urlsafe_b64encode(hmac.new(settings.SHARETHROUGH_PARAM_SIGN_KEY,
                                                    msg=str(data['crid']),
-                                                   digestmod=hashlib.sha256))
+                                                   digestmod=hashlib.sha256)).digest()
 
     if sig != calculated:
         logger.warning('Invalid sharethrough signature. crid: %s', data['crid'])
