@@ -11,10 +11,7 @@ logger = logging.getLogger(__name__)
 """
 This command creates a new database for end-to-end tests. The new database is created
 from the STATS_E2E_DB_NAME database connection and is created with parameters that
-are set for the STATS_DB_NAME database.
-
-If the new database is set to be owned by some other user than the STATS_E2E_DB_NAME database,
-then the STATS_E2E_DB_NAME user needs to have the "createuser" privilege.
+are at this point set for the STATS_DB_NAME database.
 """
 
 
