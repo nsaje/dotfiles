@@ -349,25 +349,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     });
 
 
-    var updateTableData = function (rowsUpdates, totalsUpdates) {
-        $scope.rows.forEach(function (row) {
-            var rowUpdates = rowsUpdates[row.id];
-            if (rowUpdates) {
-                updateObject(row, rowUpdates);
-            }
-        });
-
-        updateObject($scope.totals, totalsUpdates);
-    };
-
-    var updateObject = function (object, updates) {
-        for (var key in updates) {
-            if (updates.hasOwnProperty(key)) {
-                object[key] = updates[key];
-            }
-        }
-    };
-
     $scope.$on('$destroy', function () {
         $timeout.cancel($scope.lastChangeTimeout);
     });

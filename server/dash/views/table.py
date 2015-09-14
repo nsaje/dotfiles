@@ -1645,12 +1645,11 @@ class AdGroupPublishersTable(object):
             ad_group=self.ad_group,
         ), self.user)
 
-#        totals_stats = reports.api_helpers.filter_by_permissions(reports.api_publishers.query(
- #           start_date,
-  #          end_date,
-   #         ad_group=self.ad_group,
-    #    ), self.user)
-        totals_stats = []
+        totals_stats = reports.api_helpers.filter_by_permissions(reports.api_publishers.query(
+            start_date,
+            end_date,
+            ad_group=self.ad_group,
+        ), self.user)
 
         return publishers_stats, totals_stats
 
@@ -1701,12 +1700,11 @@ class PublishersTable(api_common.BaseApiView):
                 'size': size
             },
 
-#            'totals': self.get_totals(
- #               ad_group_level,
-  #              user,
-   #             totals_data,
-    #        ),
-            'totals': [],
+            'totals': self.get_totals(
+                ad_group_level,
+                user,
+                totals_data,
+            ),
         }
 
         return self.create_api_response(response)
@@ -1717,13 +1715,14 @@ class PublishersTable(api_common.BaseApiView):
                    user,
                    totals_data):
         result = {
-            'cost': totals_data['cost'],
-            'cpc': totals_data['cpc'],
+            'cost': self.from_micro_cpm(totals_data.get('cost', 0)),
+            'cpc': self.from_micro_cpm(totals_data.get('cpc', 0)),
             'clicks': totals_data['clicks'],
             'impressions': totals_data['impressions'],
             'ctr': totals_data['ctr'],
         }
-
+        print result
+        
         return result
 
     def from_micro_cpm(self, num):
@@ -1743,7 +1742,6 @@ class PublishersTable(api_common.BaseApiView):
             ad_group_level=False):
         rows = []
         for i, publisher_data in enumerate(publishers_data):
-            print publisher_data
 
             row = {
                 'domain': publisher_data.get('domain', None),
