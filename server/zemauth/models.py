@@ -140,6 +140,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_media_source_status_on_submission_popover', 'Can see media source status on submission status popover'),
             ('can_set_dma_targeting', 'Can set DMA targeting'),
             ('manage_conversion_pixels', 'Can manage conversion pixels'),
+            ('has_intercom', 'Can see intercom widget'),
             ('can_see_publishers', 'Can see publishers'),
         )
 
@@ -187,8 +188,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
 
             public_permissions_ids = [x.pk for x in public_permissions]
 
-            permissions = {'{}.{}'.format(x.content_type.app_label, x.codename): x.pk
-                           in public_permissions_ids for x in perms}
+            permissions = {'{}.{}'.format(x.content_type.app_label, x.codename): x.pk in public_permissions_ids for x in perms}
 
             setattr(self, perm_cache_name, permissions)
 

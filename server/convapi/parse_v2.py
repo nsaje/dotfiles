@@ -257,8 +257,8 @@ class CsvReport(object):
             logger.warning(
                 'Could not parse keyword %s. content_ad_id: %s, source_param: %s',
                 keyword,
-                self.content_ad_id,
-                self.source_param
+                content_ad_id,
+                source_param
             )
             return None, ''
 
