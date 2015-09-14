@@ -539,7 +539,8 @@ class OmnitureReport(Report):
         for row_idx in range(0, sheet.nrows):
             line = []
             for col_idx in range(0, sheet.ncols):
-                value = (sheet.cell(row_idx, col_idx).value or '').strip()
+                raw_val = sheet.cell_value(row_idx, col_idx)
+                value = (unicode(raw_val).encode('utf-8') or '').strip()
                 if not value:
                     break
                 line.append(value)
@@ -582,7 +583,8 @@ class OmnitureReport(Report):
         for row_idx in range(0, sheet.nrows):
             line = []
             for col_idx in range(0, sheet.ncols):
-                value = sheet.cell(row_idx, col_idx).value
+                raw_val = sheet.cell_value(row_idx, col_idx)
+                value = (unicode(raw_val).encode('utf-8') or '').strip()
                 line.append(value)
 
             if not body_found:
