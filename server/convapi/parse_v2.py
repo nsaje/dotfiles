@@ -567,7 +567,16 @@ class OmnitureReport(Report):
     def _check_session_counts(self, totals):
         sessions_sum = sum(entry.visits for entry in self.entries.values())
         sessions_total = _report_atoi(totals['Visits'])
-        if sessions_total != sessions_sum:
+
+        # compromise for Omniture reports which regularly contain a difference
+        # between session totals and sums of session entries
+        acceptable_deviation = False
+        if sessions_sum >= sessions_total:
+            deviation = abs(float(sessions_total) - float(sessions_sum)) / float(sessions_total)
+            if deviation <= 0.02:
+                acceptable_deviation = True
+
+        if sessions_total != sessions_sum and not acceptable_deviation:
             raise exc.IncompleteReportException(
                 'Number of total sessions ({}) is not equal to sum of session counts ({})'.format(
                     sessions_total, sessions_sum)
