@@ -8,6 +8,7 @@ import dash.models
 import reports.api
 import reports.update
 import reports.models
+import reports.refresh
 from reports.models import TRAFFIC_METRICS, POSTCLICK_METRICS, CONVERSION_METRICS
 
 logger = logging.getLogger(__name__)
@@ -187,6 +188,7 @@ def _refresh_stats_data(start_date, end_date, ad_map, source_map):
 
             # CONTENT ADS
             _copy_content_ad_stats(dt, real_ad_group, multiplication_factor, ad_map, source_map)
+            reports.refresh.refresh_contentadstats(dt, demo_ad_group)
 
 
 def _refresh_conversion_data(start_date, end_date):

@@ -141,6 +141,10 @@ cp test/protractor.localconf.json.template test/protractor.localconf.json
 
 and modify as needed.
 
+Then set your Amazon Redshift testing credentials for the `STATS_E2E_DB_NAME` database in `server/localsettings.py`. Use the template from the `server/localsettings.py.circle-ci` file. The credentials
+can be obtained here: [Amazon Redshift and E2E tests](https://sites.google.com/a/zemanta.com/root/engineering/amazon-redshift-e2e-credentials). These credentials can be the
+same for CircleCI and local testing.
+
 Then from project root run:
 ```bash
 ./run_e2e.sh
