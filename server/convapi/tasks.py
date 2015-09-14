@@ -8,7 +8,6 @@ import reports
 import StringIO
 import unicodecsv
 import re
-import xlsxwriter
 import xlrd
 
 from django.conf import settings
@@ -36,12 +35,14 @@ def too_many_errors(*errors):
         errors_count += len(error_list)
     return errors_count > constants.ALLOWED_ERRORS_COUNT
 
+
 def ad_group_specified_errors(csvreport):
     errors = []
     is_ad_group_specified, ad_group_not_specified = csvreport.is_ad_group_specified()
     if not is_ad_group_specified:
         errors.extend(ad_group_not_specified)
     return errors
+
 
 def content_ad_specified_errors(csvreport):
     errors = []
@@ -50,12 +51,14 @@ def content_ad_specified_errors(csvreport):
         errors.extend(content_ad_not_specified)
     return errors
 
+
 def media_source_specified_errors(csvreport):
     errors = []
     is_media_source_specified, media_source_not_specified = csvreport.is_media_source_specified()
     if not is_media_source_specified:
         errors.extend(media_source_not_specified)
     return errors
+
 
 @statsd_timer('convapi', 'report_aggregate')
 def report_aggregate(csvreport, sender, recipient, subject, date, text, report_log):
@@ -86,6 +89,7 @@ def report_aggregate(csvreport, sender, recipient, subject, date, text, report_l
         report_log.state = constants.ReportState.FAILED
         report_log.save()
 
+
 @app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
           default_retry_delay=settings.CELERY_TASK_RETRY_DEPLAY)
 @transaction.atomic
@@ -109,10 +113,8 @@ def process_ga_report(ga_report_task):
             report_log.state = constants.ReportState.FAILED
             report_log.save()
 
-        logger.info("DEBUG: attachment_name {}".format(ga_report_task.attachment_name))
         if ga_report_task.attachment_name.endswith('.xls'):
             content = _convert_ga_omniture(content, ga_report_task.attachment_name)
-            logger.info("DEBUG: converted_report{}".format(content))
 
         if ga_report_task.attachment_content_type != 'text/csv':
             # assume content is omniture and convert it to GA report
@@ -266,6 +268,7 @@ def _convert_ga_omniture(content, attachment_name):
 
     return csv_file.getvalue()
 
+
 def _omniture_dict_to_ga_report_row(omniture_row_dict):
     # "Keyword", "Sessions", "% New Sessions", "New Users", "Bounce Rate",
     # "Pages / Session", "Avg. Session Duration", "Pageviews",))
@@ -352,16 +355,23 @@ def process_ga_report_v2(ga_report_task):
         # create report log and validate incoming task
         content = _update_and_validate_report_log(ga_report_task, report_log)
 
-        csvreport = parse_v2.GAReport(content)
-        # parse will throw exceptions in case of errors
-        csvreport.parse()
+        # omniture parsing for now
+        report = None
+        if ga_report_task.attachment_name.endswith('.xls'):
+            # content = _convert_ga_omniture(content, ga_report_task.attachment_name)
+            report = parse_v2.OmnitureReport(content)
+            report.parse()
+        else:
+            report = parse_v2.GAReport(content)
+            # parse will throw exceptions in case of errors
+            report.parse()
 
-        _update_report_log_after_parsing(csvreport, report_log, ga_report_task)
+        _update_report_log_after_parsing(report, report_log, ga_report_task)
 
         # serialize report - this happens even if report is failed/empty
-        valid_entries = csvreport.valid_entries()
+        valid_entries = report.valid_entries()
         update.process_report(
-            csvreport.get_date(),
+            report.get_date(),
             valid_entries,
             reports.constants.ReportType.GOOGLE_ANALYTICS
         )

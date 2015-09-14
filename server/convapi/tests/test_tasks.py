@@ -102,6 +102,24 @@ Day Index,Sessions
         report_logs = models.GAReportLog.objects.all()[0]
         self.assertIsNone(report_logs.errors)
 
+    def test_process_ga_report_v2_omni(self, cursor):
+        tasks.get_from_s3 = self._fake_get_omni_from_s3
+        ga_report_task = views.GAReportTask('GA mail',
+            '2015-07-12',
+            'testuser@zemanta.com',
+            'mailbot@zemanta.com',
+            'testuser@zemanta.com',
+            None,
+            'lasko',
+            'omniture_tracking_codes.xls',
+            1,
+            'text/csv',
+        )
+        tasks.process_ga_report_v2(ga_report_task)
+
+        report_logs = models.GAReportLog.objects.all()[0]
+        self.assertIsNone(report_logs.errors)
+
     def _fake_get_omniture_from_s3(self, key):
         csv_omniture_report = """
 ,,,,,,,,,,

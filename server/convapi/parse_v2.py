@@ -38,7 +38,12 @@ GOAL_RATE_KEYWORDS = ['conversion rate']
 
 def _report_atoi(raw_str):
     # TODO: Implement locale specific parsing
-    return int(raw_str.replace(',', ''))
+    ret_str = raw_str.replace(',', '')
+    dot_loc = ret_str.find('.')
+    if dot_loc != -1:
+        return int(ret_str[:dot_loc])
+    else:
+        return int(ret_str)
 
 
 def _report_atof(raw_str):
@@ -144,7 +149,7 @@ class OmnitureReportRow(object):
         return (self.report_date, self.content_ad_id, self.source_param)
 
     def merge_with(self, omniture_report_row):
-        self.ga_row_dicts.extend(omniture_report_row.ga_row_dicts)
+        self.omniture_row_dict .extend(omniture_report_row.omniture_row_dict)
         self.visits += omniture_report_row.visits
         self.bounce_rate = (self.bounce_rate + omniture_report_row.bounce_rate) / 2
         self.pageviews += omniture_report_row.pageviews
@@ -588,7 +593,7 @@ class OmnitureReport(Report):
                 line.append(value)
 
             if not body_found:
-                if not 'Tracking Code' in line:
+                if not 'tracking code' in ' '.join(line).lower():
                     continue
                 else:
                     body_found = True
@@ -610,4 +615,8 @@ class OmnitureReport(Report):
             content_ad_id, source_param = self._parse_z11z_keyword(keyword)
             report_entry = OmnitureReportRow(omniture_row_dict, self.start_date, content_ad_id, source_param)
 
-            self.entries[report_entry.key()] = report_entry
+            existing_entry = self.entries.get(report_entry.key())
+            if existing_entry is None:
+                self.entries[report_entry.key()] = report_entry
+            else:
+                existing_entry.merge_with(report_entry)
