@@ -551,9 +551,10 @@ class OmnitureReport(Report):
     def _extract_date(self, date_raw):
         # Example date: Fri. 4 Sep. 2015
         date_raw_split = date_raw.replace('.', '').split(' ')
+        date_raw_split = [date_part.strip() for date_part in date_raw_split if date_part.strip() != '']
         date_prefix = ' '.join(date_raw_split[:4])
         ret = datetime.datetime.strptime(date_prefix, '%a %d %b %Y')
-        if ret is not None:
+        if ret:
             return ret.date()
         return None
 
