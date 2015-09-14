@@ -314,6 +314,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 config.params.end_date = endDate.format();
             }
 
+            addFilteredSources(config.params);
+
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {

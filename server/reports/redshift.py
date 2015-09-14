@@ -12,7 +12,7 @@ from utils import db_aggregates
 
 from reports import exc
 from reports.db_raw_helpers import dictfetchall, get_obj_id, quote
-
+from psycopg2.extensions import adapt as sqladapt
 
 @statsd_timer('reports.redshift', 'delete_contentadstats')
 def delete_contentadstats(date, ad_group_id, source_id):
@@ -149,13 +149,20 @@ def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakd
     return _translate_row(results[0], reverse_field_mapping)
 
 
-def query_publishers(start_date, end_date, aggregates, field_mapping, breakdown=None, order=None, **constraints):
+def query_publishers(start_date, end_date, aggregates, field_mapping, breakdown=None, order_fields_unmapped=None, order_direction = None, limit = None, offset = None, constraints_dict = {}):
 
-    constraints = _prepare_constraints(constraints, field_mapping)
+    constraints = _prepare_constraints(constraints_dict, field_mapping)
     constraints.append('{} >= \'{}\''.format(quote('date'), start_date))
     constraints.append('{} <= \'{}\''.format(quote('date'), end_date))
 
     aggregates = _prepare_aggregates(aggregates, field_mapping, hack=False)
+    if order_fields_unmapped:
+        order_fields = [field_mapping[unmapped_field] for unmapped_field in order_fields_unmapped]
+    else:
+        order_fields = None
+    if order_direction:
+        if order_direction.lower() not in ("asc", "desc"):
+            raise Exception("Order direction has to be either ASC or DESC")
 
     reverse_field_mapping = {v: k for k, v in field_mapping.iteritems()}
 
@@ -165,8 +172,11 @@ def query_publishers(start_date, end_date, aggregates, field_mapping, breakdown=
             'b1_publishers_1',
             breakdown + aggregates,
             constraints,
-            breakdown,
-            order
+            breakdown = breakdown,
+            order_fields = order_fields,
+            order_direction = order_direction,
+            limit = limit,
+            offset = offset,
         )
 
         results = _get_results(statement)
@@ -187,9 +197,11 @@ def _prepare_constraints(constraints, field_mapping):
     result = []
 
     def quote_if_str(val):
-        if isinstance(val, str):
-            return quote(val)
-        return str(val)
+        if isinstance(val, str) or isinstance(val, unicode):
+            return sqladapt(val).getquoted()
+        else:
+            # TODO, this is dangerous, we need to have an explicit list of types that are castable
+            return str(val)
 
     for k, v in constraints.iteritems():
         k = quote(field_mapping.get(k, k))
@@ -235,19 +247,25 @@ def _translate_row(row, reverse_field_mapping):
     return {reverse_field_mapping.get(k, k): v for k, v in row.iteritems()}
 
 
-def _create_select_query(table, fields, constraints, breakdown=None, order_fields=None):
-    group_by = ''
-    if breakdown:
-        group_by = 'GROUP BY {}'.format(','.join(breakdown))
-    cmd = 'SELECT {fields} FROM {table} WHERE {constraints} {group_by}'.format(
+def _create_select_query(table, fields, constraints, breakdown=None, order_fields=None, order_direction=None, limit = None, offset = None):
+    cmd = 'SELECT {fields} FROM {table} WHERE {constraints}'.format(
         fields=','.join(fields),
         table=table,
         constraints=' AND '.join(constraints),
-        group_by=group_by
     )
+    
+    if breakdown:
+        cmd += ' GROUP BY {}'.format(','.join(breakdown))
+
     if order_fields:
         cmd += " ORDER BY " + ",".join(order_fields)
-    cmd += " LIMIT 30"
+        if order_direction:
+            cmd += " " + order_direction + " "       
+    if limit:
+        cmd += " LIMIT " + str(limit)
+    if offset:
+        cmd += " OFFSET " + str(offset)
+        
     return cmd
 
 

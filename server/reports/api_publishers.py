@@ -10,15 +10,18 @@ PUBLISHERS_FIELD_MAPPING = {
     'domain': 'domain',
     'exchange': 'exchange',
     'date': 'date',
-    'ad_group': 'adgroup_id'
+    'ad_group': 'adgroup_id',
+    'cost': 'cost_cc_sum',
+        
 }
+
 PUBLISHERS_FIELD_REVERSE_MAPPING = {v: k for k, v in PUBLISHERS_FIELD_MAPPING.iteritems()}
 
 
 logger = logging.getLogger(__name__)
 
 
-def query(start_date, end_date, breakdown=None, order=None, **constraints):
+def query(start_date, end_date, breakdown=None, order_fields_unmapped=None, order_direction=None, offset=None, limit=None, constraints_dict={}):
 
     if breakdown and len(set(breakdown) - api_helpers.DIMENSIONS) != 0:
         raise exc.ReportsQueryError('Invalid breakdown')
@@ -29,8 +32,11 @@ def query(start_date, end_date, breakdown=None, order=None, **constraints):
         aggregate_fields.PUBLISHERS_AGGREGATE_FIELDS,
         PUBLISHERS_FIELD_MAPPING,
         breakdown,
-        order,
-        **constraints)
+        order_fields_unmapped = order_fields_unmapped,
+        order_direction = order_direction,
+        limit = limit,
+        offset = offset,
+        constraints_dict = constraints_dict)
 
     if breakdown:
         return [_transform_row(row) for row in results]

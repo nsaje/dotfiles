@@ -32,11 +32,11 @@ def query(start_date, end_date, breakdown=None, **constraints):
         aggregate_fields.ALL_AGGREGATE_FIELDS,
         CONTENTADSTATS_FIELD_MAPPING,
         breakdown,
-        **constraints)
+        constraints)
 
     if breakdown:
         return [_transform_row(row) for row in results]
-
+ 
     return _transform_row(results)
 
 

@@ -237,19 +237,28 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         metrics = request.GET.getlist('metrics')
-#        selected_ids = request.GET.getlist('selected_ids')
         totals = request.GET.get('totals')
 
- #       filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
-        totals_kwargs = None
+
+
+        totals_constraints = None
         selected_kwargs = None
-        sources = []
+        map_exchange_to_source_name = {}
 
+        # bidder_slug is unique, so no issues with taking all of the sources
+        for s in filtered_sources:
+            map_exchange_to_source_name[s.bidder_slug] = s.name
+        
         if totals:
-            totals_kwargs = {'ad_group': int(ad_group.id)}
+            totals_constraints = {'ad_group': int(ad_group.id)}
 
-        stats = self.get_stats(request, totals_kwargs, selected_kwargs, 'source')
+        if set(models.Source.objects.all()) != set(filtered_sources):
+            totals_constraints['exchange'] = map_exchange_to_source_name.keys()
+            
+
+        stats = self.get_stats(request, totals_constraints, selected_kwargs, 'source')
 
         return self.create_api_response(self.get_response_dict(
             stats,
@@ -259,18 +268,18 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
             'domain'
         ))
 
-    def get_stats(self, request, totals_kwargs, selected_kwargs=None, group_key=None):
+    def get_stats(self, request, totals_constraints, selected_kwargs=None, group_key=None):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
         totals_stats = []
-        if totals_kwargs:
+        if totals_constraints:
             totals_stats = reports.api_publishers.query(
                 start_date,
                 end_date,
                 ['date'],
                 ['date'],
-                **totals_kwargs
+                constraints_dict = totals_constraints
             )
 
         breakdown_stats = []
@@ -294,7 +303,7 @@ class AccountsDailyStats(BaseDailyStatsView):
 
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
-        totals_kwargs = None
+        totals_constraints = None
         selected_kwargs = None
         group_key = None
         group_names = None
@@ -302,7 +311,7 @@ class AccountsDailyStats(BaseDailyStatsView):
         accounts = models.Account.objects.all().filter_by_user(request.user)
 
         if totals:
-            totals_kwargs = {'account': accounts, 'source': filtered_sources}
+            totals_constraints = {'account': accounts, 'source': filtered_sources}
 
         if selected_ids:
             ids = [int(x) for x in selected_ids]
@@ -313,7 +322,7 @@ class AccountsDailyStats(BaseDailyStatsView):
             sources = models.Source.objects.filter(pk__in=ids)
             group_names = {source.id: source.name for source in sources}
 
-        stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key)
+        stats = self.get_stats(request, totals_constraints, selected_kwargs, group_key)
 
         return self.create_api_response(self.get_response_dict(
             stats,

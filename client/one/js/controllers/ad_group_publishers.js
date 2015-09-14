@@ -1,7 +1,7 @@
 /*globals oneApp,moment,constants,options*/
 
 oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($scope, $state, $location, $timeout, $window, api, zemCustomTableColsService, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
-    $scope.isIncompletePostclickMetrics = false;
+    $scope.selectedTotals = true;
     $scope.constants = constants;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
@@ -26,8 +26,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         {name: 'By Day (Excel)', value: 'excel'}
     ];
 
-
-
     $scope.columnCategories = [
         {
             'name': 'Traffic Acquisition',
@@ -50,7 +48,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             unselectable: true,
             order: false,
             disabled: false
-        },
+        }, 
         {
             name: 'Domain',
             field: 'domain',
@@ -65,13 +63,26 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             initialOrder: 'asc'
         },
         {
-            name: 'Exchange',
+            name: 'Link',
+            field: 'domain_link',
+            unselectable: true,
+            checked: true,
+            type: 'link',
+            shown: true,
+            hasTotalsLabel: false,
+            totalRow: false,
+            help: 'Link to a publisher where your content is being promoted.',
+            order: true,
+            initialOrder: 'asc'
+        },
+        {
+            name: 'Media Source',
             field: 'exchange',
             unselectable: true,
             checked: true,
             type: 'clickPermissionOrText',
             shown: true,
-            hasTotalsLabel: true,
+            hasTotalsLabel: false,
             totalRow: false,
             help: 'An exchange where your content is being promoted..',
             order: true,
@@ -133,19 +144,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             totalRow: true,
             order: true,
             initialOrder: 'desc'
-        }/*,
-        {
-            name: '',
-            nameCssClass: 'data-status-icon',
-            type: 'dataStatus',
-            internal: $scope.isPermissionInternal('zemauth.data_status_column'),
-            shown: $scope.hasPermission('zemauth.data_status_column'),
-            checked: true,
-            totalRow: false,
-            unselectable: true,
-            help: 'Status of third party data accuracy.',
-            disabled: false
-        },*/
+        }
     ];
 
     $scope.initColumns = function () {
@@ -283,10 +282,17 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         getTableData();
     });
 
+    $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
+        if (angular.equals(newValue, oldValue)) {
+            return;
+        }
+
+        getTableData();
+        getDailyStats();
+    }, true);
+
     $scope.init = function() {
         var data = $scope.adGroupData[$state.params.id];
-        var sourceIds = $location.search().source_ids || (data && data.sourceIds && data.sourceIds.join(','));
-        var sourceTotals = $location.search().source_totals || (data && data.sourceTotals ? 1 : null);
 
 
         var page = parseInt($location.search().page)

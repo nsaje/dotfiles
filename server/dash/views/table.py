@@ -1631,29 +1631,6 @@ class AccountCampaignsTable(api_common.BaseApiView):
 
 
 
-## Publishers APIs
-class AdGroupPublishersTable(object):
-    def __init__(self, user, id_):
-        self.user = user
-        self.ad_group = helpers.get_ad_group(user, id_)
-
-    def get_stats(self, start_date, end_date):
-        publishers_stats = reports.api_helpers.filter_by_permissions(reports.api_publishers.query(
-            start_date,
-            end_date,
-            ['domain', 'exchange'],
-            ad_group=self.ad_group,
-        ), self.user)
-
-        totals_stats = reports.api_helpers.filter_by_permissions(reports.api_publishers.query(
-            start_date,
-            end_date,
-            ad_group=self.ad_group,
-        ), self.user)
-
-        return publishers_stats, totals_stats
-
-
 class PublishersTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'zemauth.publishers_table_get')
     @newrelic.agent.function_trace()
@@ -1662,34 +1639,59 @@ class PublishersTable(api_common.BaseApiView):
 
         user = request.user
 
-        ad_group_level = False
-        if level_ == 'ad_groups':
-            ad_group_level = True
-            level_publishers_table = AdGroupPublishersTable(user, id_)
-        else:
-            # Not yet supported!
-            pass
-
+        adgroup = helpers.get_ad_group(user, id_)
+        
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+        
+        constraints_dict = {'adgroup_id': adgroup.id}
+
 
         page = request.GET.get('page')
         order = request.GET.get('order') or 'cost'
+        order_direction = "ASC"
+        if order.startswith("-"):
+            order = order[1:]
+            order_direction = "DESC"
         size = request.GET.get('size')
         size = max(min(int(size or 5), 4294967295), 1)
 
-        publishers_data, totals_data = level_publishers_table.get_stats(start_date, end_date)
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+
+        # Translation table for "exchange" in b1 to name of the source in One
+        # At the same time keys of this array are what we're filtering exchanges to
+        map_exchange_to_source_name = {}
+
+        # bidder_slug is unique, so no issues with taking all of the sources
+        for s in filtered_sources:
+            map_exchange_to_source_name[s.bidder_slug] = s.name
+        
+        # this is a really bad practice, but used extensively in models.py
+        # it should be factored out at the same time as that
+        if set(models.Source.objects.all()) != set(filtered_sources):
+            constraints_dict['exchange'] = map_exchange_to_source_name.keys()
+        
+        publishers_data = reports.api_publishers.query(
+            start_date,
+            end_date,
+            ['domain', 'exchange'],
+            order_fields_unmapped=[order],
+            order_direction = order_direction,
+            constraints_dict=constraints_dict,
+        )
+
+        totals_data = reports.api_publishers.query(
+            start_date,
+            end_date,
+            constraints_dict=constraints_dict,
+        )            
+
         # since we're not dealing with a QuerySet this kind of pagination is braindead, but we'll polish later
         publishers_data, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(publishers_data, page, size)
-
         response = {
             'rows': self.get_rows(
-                id_,
-                level_publishers_table,
-                user,
-                publishers_data,
-                order=request.GET.get('order', None),
-                ad_group_level=ad_group_level,
+                map_exchange_to_source_name,
+                publishers_data=publishers_data,
             ),
             'pagination': {
                 'currentPage': current_page,
@@ -1701,7 +1703,6 @@ class PublishersTable(api_common.BaseApiView):
             },
 
             'totals': self.get_totals(
-                ad_group_level,
                 user,
                 totals_data,
             ),
@@ -1711,7 +1712,6 @@ class PublishersTable(api_common.BaseApiView):
 
     @newrelic.agent.function_trace()
     def get_totals(self,
-                   ad_group_level,
                    user,
                    totals_data):
         result = {
@@ -1734,18 +1734,24 @@ class PublishersTable(api_common.BaseApiView):
     @newrelic.agent.function_trace()
     def get_rows(
             self,
-            id_,
-            level_publishers_table,
-            user,
-            publishers_data,
-            order=None,
-            ad_group_level=False):
+            map_exchange_to_source_name,
+            publishers_data):
+
+        print map_exchange_to_source_name
         rows = []
         for i, publisher_data in enumerate(publishers_data):
-
+            exchange = publisher_data.get('exchange', None)
+            source_name = map_exchange_to_source_name.get(exchange, exchange)
+            domain = publisher_data.get('domain', None)
+            if domain: 
+                domain_link = "http://" + domain
+            else:
+                domain_link = ""
+            
             row = {
-                'domain': publisher_data.get('domain', None),
-                'exchange': publisher_data.get('exchange', None),
+                'domain': domain,
+                'domain_link': domain_link,
+                'exchange': source_name, 
                 'cost': self.from_micro_cpm(publisher_data.get('cost', 0)),
                 'cpc': self.from_micro_cpm(publisher_data.get('cpc', 0)),
                 'clicks': publisher_data.get('clicks', None),
@@ -1755,8 +1761,8 @@ class PublishersTable(api_common.BaseApiView):
 
             rows.append(row)
 
-        if order:
-            rows = sort_results(rows, [order])
+#        if order:
+ #           rows = sort_results(rows, [order])
 
         return rows
 
