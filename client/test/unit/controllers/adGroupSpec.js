@@ -50,7 +50,7 @@ describe('AdGroupCtrl', function () {
 
     it('hides Content Ads+ tab when no permission', function() {
         var tabs = $scope.getTabs();
-        expect(tabs.length).toEqual(4);
+        expect(tabs.length).toEqual(5);
     });
 
     it('sets hidden and internal for Content Ads+ tab', function() {
@@ -58,8 +58,8 @@ describe('AdGroupCtrl', function () {
 
         var tabs = $scope.getTabs();
 
-        expect(tabs[4].hidden).toEqual(false);
-        expect(tabs[4].internal).toEqual(true);
+        expect(tabs[5].hidden).toEqual(false);
+        expect(tabs[5].internal).toEqual(true);
     });
 
     describe('setAdGroupData', function () {
