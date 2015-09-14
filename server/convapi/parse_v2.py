@@ -552,7 +552,10 @@ class OmnitureReport(Report):
         # Example date: Fri. 4 Sep. 2015
         date_raw_split = date_raw.replace('.', '').split(' ')
         date_prefix = ' '.join(date_raw_split[:4])
-        return datetime.datetime.strptime(date_prefix, '%a %d %b %Y')
+        ret = datetime.datetime.strptime(date_prefix, '%a %d %b %Y')
+        if ret is not None:
+            return ret.date()
+        return None
 
     def _check_session_counts(self, totals):
         sessions_sum = sum(entry.visits for entry in self.entries.values())

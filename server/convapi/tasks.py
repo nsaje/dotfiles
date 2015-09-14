@@ -400,7 +400,7 @@ def process_omniture_report(ga_report_task):
 
         # serialize report - this happens even if report is failed/empty
         valid_entries = report.valid_entries()
-        update.process_report(report.get_date(), valid_entries, reports.constants.ReportType.GOOGLE_ANALYTICS)
+        update.process_report(report.get_date(), valid_entries, reports.constants.ReportType.OMNITURE)
 
         report_log.state = constants.ReportState.SUCCESS
         report_log.save()
