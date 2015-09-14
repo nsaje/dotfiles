@@ -1,6 +1,15 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
+import datetime
 import logging
 import reports
+import StringIO
+import unicodecsv
+import re
+import xlsxwriter
+import xlrd
 
 from django.conf import settings
 from django.db import transaction
@@ -100,7 +109,13 @@ def process_ga_report(ga_report_task):
             report_log.state = constants.GAReportState.FAILED
             report_log.save()
 
+        logger.info("DEBUG: attachment_name {}".format(ga_report_task.attachment_name))
+        if ga_report_task.attachment_name.endswith('.xls'):
+            content = _convert_ga_omniture(content, ga_report_task.attachment_name)
+            logger.info("DEBUG: converted_report{}".format(content))
+
         if ga_report_task.attachment_content_type != 'text/csv':
+            # assume content is omniture and convert it to GA report
             logger.warning('ERROR: content type is not CSV')
             report_log.add_error('ERROR: content type is not CSV')
             report_log.state = constants.GAReportState.FAILED
@@ -163,6 +178,169 @@ def process_ga_report(ga_report_task):
         report_log.add_error(e.message)
         report_log.state = constants.GAReportState.FAILED
         report_log.save()
+
+
+def _report_atoi(raw_str):
+    # TODO: Implement locale specific parsing
+    ret_str = raw_str.replace(',', '')
+    dot_loc = ret_str.find('.')
+    return int(ret_str[:dot_loc])
+
+
+def _report_atof(raw_str):
+    # TODO: Implement locale specific parsing
+    ret_str = raw_str.replace(',', '')
+    return float(ret_str)
+
+
+# TODO: Remove after we switch to new parser w Redshift
+# temporary conversion from Omniture to GA report type
+def _convert_ga_omniture(content, attachment_name):
+    csv_file = StringIO.StringIO()
+    writer = unicodecsv.writer(csv_file, encoding='utf-8')
+
+    workbook = xlrd.open_workbook(file_contents=content) #, encoding_override="utf-8")
+
+    header = _parse_omniture_header(workbook)
+    date_raw = header.get('Date', '')
+    start_date = _extract_omniture_date(date_raw)
+    ga_date = start_date.strftime("%Y%m%d")
+
+    # write the header manually as it is different than keys in the dict
+    writer.writerows([
+        ("# ----------------------------------------",),
+        ("# Automatic Omni to GA Conversion - {}".format(attachment_name),),
+        ("# Keywords",),
+        ("# {dt}-{dt}".format(dt=ga_date),),
+        ("# ----------------------------------------",),
+        tuple(),
+    ])
+
+    # write header
+    writer.writerow((
+        "Keyword", "Sessions", "% New Sessions", "New Users",
+        "Bounce Rate", "Pages / Session",
+        "Avg. Session Duration", "Pageviews",)
+    )
+    body_found = False
+
+    all_columns = []
+    sheet = workbook.sheet_by_index(0)
+    for row_idx in range(0, sheet.nrows):
+        line = []
+        for col_idx in range(0, sheet.ncols):
+            raw_val = sheet.cell_value(row_idx, col_idx)
+            value = (unicode(raw_val).encode('utf-8') or '').strip()
+            line.append(value)
+
+        if not body_found:
+            if not 'tracking code' in ' '.join(line).lower():
+                continue
+            else:
+                body_found = True
+                all_columns = line
+                continue
+
+        # valid data is data with known column name(many columns are empty
+        # in sample omniture reports)
+        keys = [idxel[1] for idxel in enumerate(all_columns) if idxel[1] != '']
+        values = [line[idxel[0]] for idxel in enumerate(all_columns) if idxel[1] != '']
+        omniture_row_dict = dict(zip(keys, values))
+
+        if 'Total' in line:  # footer with summary
+            sessions = _report_atoi(omniture_row_dict['Visits'])
+            # write GA footer
+            writer.writerows([
+                ('', sessions),
+                tuple(),
+                ('Day Index', 'Sessions',),
+                (start_date.strftime("%d/%m/%y"), sessions,),
+                ('', sessions,),
+            ])
+            break
+
+        report_row = _omniture_dict_to_ga_report_row(omniture_row_dict)
+        if report_row is None:
+            continue
+        writer.writerow(report_row)
+
+    return csv_file.getvalue()
+
+def _omniture_dict_to_ga_report_row(omniture_row_dict):
+    # "Keyword", "Sessions", "% New Sessions", "New Users", "Bounce Rate",
+    # "Pages / Session", "Avg. Session Duration", "Pageviews",))
+    sessions = str(_report_atoi(omniture_row_dict['Visits']))
+    new_users = str(_report_atoi(omniture_row_dict['Unique Visitors']))
+    percent_new_sessions = "{:.2f}%".format(
+        _report_atof(omniture_row_dict['Visits']) / _report_atof(omniture_row_dict['Unique Visitors'])
+    )
+    bounce_rate = "{:.2f}%".format(_report_atof(omniture_row_dict['Bounces']) / _report_atof(sessions) * 100)
+    pages_per_session = "{:.2f}".format(_report_atof(omniture_row_dict['Page Views']) / _report_atof(sessions))
+
+    tts = _report_atoi(omniture_row_dict['Total Seconds Spent'])
+    hours = tts/3600
+    minutes = (tts - hours * 3600) / 60
+    seconds = (tts - hours * 3600) % 60
+    avg_session_duration = "{hours:02d}:{minutes:02d}:{seconds:02d}".format(
+        hours=hours,
+        minutes=minutes,
+        seconds=seconds
+    )
+    pageviews = omniture_row_dict['Page Views']
+
+    keyword = None
+    for key in omniture_row_dict:
+        if 'tracking code' in key.lower():
+            keyword = omniture_row_dict[key]
+
+    # if tracking code contains our keyword param then substitute everything
+    # with that keyword param
+    pattern = re.compile('.*(z1[0-9]*.*1z).*')
+    result = pattern.match(keyword)
+    if result:
+        keyword = result.group(1)
+
+    if keyword is None:
+        return None
+
+    return (
+        keyword,
+        sessions,
+        percent_new_sessions,
+        new_users,
+        bounce_rate,
+        pages_per_session,
+        avg_session_duration,
+        pageviews,
+    )
+
+
+# TODO: Remove after we switch to new parser w Redshift
+def _parse_omniture_header(workbook):
+    header = {}
+    sheet = workbook.sheet_by_index(0)
+    for row_idx in range(0, sheet.nrows):
+        line = []
+        for col_idx in range(0, sheet.ncols):
+            raw_val = sheet.cell_value(row_idx, col_idx)
+            value = (unicode(raw_val).encode('utf-8') or '').strip()
+            if not value:
+                break
+            line.append(value)
+        if len(line) == 1 and ':' in line[0]:
+            keyvalue = [(kv or '').strip() for kv in line[0].split(':')]
+            header[keyvalue[0]] = ''.join(keyvalue[1:])
+
+    return header
+
+
+# TODO: Remove after we switch to new parser w Redshift
+def _extract_omniture_date(date_raw):
+    # Example date: Fri. 4 Sep. 2015
+    date_raw_split = date_raw.replace('.', '').split(' ')
+    date_raw_split = [date_part.strip() for date_part in date_raw_split if date_part.strip() != '']
+    date_prefix = ' '.join(date_raw_split[:4])
+    return datetime.datetime.strptime(date_prefix, '%a %d %b %Y')
 
 
 @app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
