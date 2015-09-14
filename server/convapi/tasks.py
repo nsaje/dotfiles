@@ -358,7 +358,6 @@ def process_ga_report_v2(ga_report_task):
         # omniture parsing for now
         report = None
         if ga_report_task.attachment_name.endswith('.xls'):
-            # content = _convert_ga_omniture(content, ga_report_task.attachment_name)
             report = parse_v2.OmnitureReport(content)
             report.parse()
         else:

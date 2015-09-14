@@ -25,6 +25,7 @@ def too_many_errors(*errors):
         errors_count += len(error_list)
     return errors_count > constants.ALLOWED_ERRORS_COUNT
 
+
 def ad_group_specified_errors(csvreport):
     errors = []
     is_ad_group_specified, ad_group_not_specified = csvreport.is_ad_group_specified()
@@ -32,12 +33,24 @@ def ad_group_specified_errors(csvreport):
         errors.extend(ad_group_not_specified)
     return errors
 
+
 def media_source_specified_errors(csvreport):
     errors = []
     is_media_source_specified, media_source_not_specified = csvreport.is_media_source_specified()
     if not is_media_source_specified:
         errors.extend(media_source_not_specified)
     return errors
+
+
+def _first_valid_report_attachment(files):
+    valid_suffixes = ['.csv', '.xls']
+    for key in files:
+        attachment = files[key].name
+        if any(attachment.endswith(valid_suffix) for valid_suffix in valid_suffixes):
+            content = files.get(key).read()
+            return attachment, content
+
+    return None, None
 
 
 @csrf_exempt
@@ -58,14 +71,16 @@ def mailgun_gareps(request):
         statsd_incr('convapi.invalid_email_sender')
         return HttpResponse(status=406)
 
+
     statsd_incr('convapi.accepted_emails')
     try:
         ga_report_task = None
 
         csvreport_date_raw = email.utils.parsedate(request.POST.get('Date'))
         csvreport_date = datetime.datetime.fromtimestamp(time.mktime(csvreport_date_raw))
-        attachment_name = request.FILES.get('attachment-1').name
-        content = request.FILES.get('attachment-1').read()
+
+        attachment_name, content = _first_valid_report_attachment(request.FILES)
+
         key = store_to_s3(csvreport_date, attachment_name, content)
         logger.info("Unable to store to S3 {date}-{att_name}-{cl}".format(
                date=csvreport_date_raw or '',
