@@ -170,9 +170,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
                 $scope.totals.checked = $scope.selectedTotals;
-                $scope.notifications = data.notifications;
                 $scope.lastChange = data.lastChange;
-                $scope.dataStatus = data.dataStatus;
                 $scope.pagination = data.pagination;
 
             },

@@ -280,14 +280,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
     }
 
     function AdGroupPublishersTable() {
-        function convertFromApi(data) {
-            data.lastChange = data.last_change;
-            data.dataStatus = data.data_status;
-
-            data.notifications = convertNotifications(data.notifications);
-
-            return data;
-        }
 
         this.get = function (id, page, size, startDate, endDate, order) {
             var deferred = $q.defer();
