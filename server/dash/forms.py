@@ -139,28 +139,36 @@ class AdGroupSourceSettingsCpcForm(forms.Form):
         self.ad_group_source = kwargs.pop('ad_group_source')
         super(AdGroupSourceSettingsCpcForm, self).__init__(*args, **kwargs)
 
-    def clean_cpc_cc(self):
-        cpc_cc = self.cleaned_data.get('cpc_cc')
+    @classmethod
+    def validate_cpc_cc(cls, cpc_cc, source):
         if cpc_cc < 0:
             raise forms.ValidationError('This value must be positive')
 
-        decimal_places = self.ad_group_source.source.source_type.cpc_decimal_places
-        if decimal_places is not None and self._has_too_many_decimal_places(cpc_cc, decimal_places):
+        source_type = source.source_type
+        decimal_places = source_type.cpc_decimal_places
+        if decimal_places is not None and cls._has_too_many_decimal_places(cpc_cc, decimal_places):
             raise forms.ValidationError(
                 'CPC on {} cannot exceed {} decimal place{}.'.format(
-                    self.ad_group_source.source.name, decimal_places, 's' if decimal_places != 1 else ''))
+                    source.name, decimal_places, 's' if decimal_places != 1 else ''))
 
-        min_cpc = self.ad_group_source.source.source_type.min_cpc
+        min_cpc = source_type.min_cpc
         if min_cpc is not None and cpc_cc < min_cpc:
             raise forms.ValidationError(
                 'Minimum CPC is ${}.'.format(utils.string_helper.format_decimal(min_cpc, 2, 3)))
 
-        max_cpc = self.ad_group_source.source.source_type.max_cpc
+        max_cpc = source_type.max_cpc
         if max_cpc is not None and cpc_cc > max_cpc:
             raise forms.ValidationError(
                 'Maximum CPC is ${}.'.format(utils.string_helper.format_decimal(max_cpc, 2, 3)))
 
-    def _has_too_many_decimal_places(self, num, decimal_places):
+    def clean_cpc_cc(self):
+        cpc_cc = self.cleaned_data.get('cpc_cc')
+        source = self.ad_group_source.source
+
+        self.validate_cpc_cc(cpc_cc, source)
+
+    @classmethod
+    def _has_too_many_decimal_places(cls, num, decimal_places):
         rounded_num = num.quantize(Decimal('1.{}'.format('0' * decimal_places)))
         return rounded_num != num
 
@@ -177,20 +185,26 @@ class AdGroupSourceSettingsDailyBudgetForm(forms.Form):
         self.ad_group_source = kwargs.pop('ad_group_source')
         super(AdGroupSourceSettingsDailyBudgetForm, self).__init__(*args, **kwargs)
 
-    def clean_daily_budget_cc(self):
-        daily_budget_cc = self.cleaned_data.get('daily_budget_cc')
+    @classmethod
+    def validate_daily_budget_cc(cls, daily_budget_cc, source_type):
         if daily_budget_cc < 0:
             raise forms.ValidationError('This value must be positive')
 
-        min_daily_budget = self.ad_group_source.source.source_type.min_daily_budget
+        min_daily_budget = source_type.min_daily_budget
         if min_daily_budget is not None and daily_budget_cc < min_daily_budget:
             raise forms.ValidationError('Please provide budget of at least ${}.' \
-                .format(utils.string_helper.format_decimal(min_daily_budget, 0, 0)))
+                                        .format(utils.string_helper.format_decimal(min_daily_budget, 0, 0)))
 
-        max_daily_budget = self.ad_group_source.source.source_type.max_daily_budget
+        max_daily_budget = source_type.max_daily_budget
         if max_daily_budget is not None and daily_budget_cc > max_daily_budget:
             raise forms.ValidationError('Maximum allowed budget is ${}. If you want use a higher daily budget, please contact support.' \
-                .format(utils.string_helper.format_decimal(max_daily_budget, 0, 0)))
+                                        .format(utils.string_helper.format_decimal(max_daily_budget, 0, 0)))
+
+    def clean_daily_budget_cc(self):
+        daily_budget_cc = self.cleaned_data.get('daily_budget_cc')
+        source_type = self.ad_group_source.source.source_type
+
+        self.validate_daily_budget_cc(daily_budget_cc, source_type)
 
 
 class AdGroupSourceSettingsStateForm(forms.Form):

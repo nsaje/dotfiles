@@ -16,6 +16,7 @@ from dash import api
 from dash import constants
 from dash import models
 from dash import threads
+from dash import forms as dash_forms
 
 import actionlog.api_contentads
 import actionlog.zwei_actions
@@ -184,7 +185,30 @@ class SourceTypeForm(forms.ModelForm):
     )
 
 
+class DefaultSourceSettingsForm(forms.ModelForm):
+    daily_budget_cc = forms.DecimalField(decimal_places=4)
+
+    def clean_daily_budget_cc(self):
+        daily_budget_cc = self.cleaned_data.get('daily_budget_cc')
+        if daily_budget_cc:
+            source_type = self.instance.source.source_type
+            dash_forms.AdGroupSourceSettingsDailyBudgetForm.validate_daily_budget_cc(daily_budget_cc, source_type)
+
+    def clean_default_cpc_cc(self):
+        cpc_cc = self.cleaned_data.get('default_cpc_cc')
+        if cpc_cc:
+            source = self.instance.source
+            dash_forms.AdGroupSourceSettingsCpcForm.validate_cpc_cc(cpc_cc, source)
+
+    def clean_mobile_cpc_cc(self):
+        cpc_cc = self.cleaned_data.get('mobile_cpc_cc')
+        if cpc_cc:
+            source = self.instance.source
+            dash_forms.AdGroupSourceSettingsCpcForm.validate_cpc_cc(cpc_cc, source)
+
+
 class DefaultSourceSettingsAdmin(admin.ModelAdmin):
+    form = DefaultSourceSettingsForm
     search_fields = ['name']
     list_display = (
         'source',
