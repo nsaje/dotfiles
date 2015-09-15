@@ -226,6 +226,7 @@ def _prepare_aggregates(aggregates, field_mapping):
         else:
             raise exc.ReportsUnknownAggregator('Unknown aggregator')
 
+    # HACK: should be added to aggregate_fields
     processed_aggrs.append(_click_discrepancy_aggregate('clicks', 'visits', 'click_discrepancy'))
 
     return processed_aggrs
