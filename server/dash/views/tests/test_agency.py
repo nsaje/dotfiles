@@ -67,7 +67,9 @@ class AdGroupSettingsTest(TestCase):
                     'target_devices': ['desktop'],
                     'target_regions': ['693', 'GB'],
                     'tracking_code': '',
-                    'enable_ga_tracking': True
+                    'enable_ga_tracking': True,
+                    'enable_adobe_tracking': False,
+                    'adobe_tracking_param': ''
                 }
             },
             'success': True
@@ -286,6 +288,8 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Call to action', 'value': ''},
                         {'name': 'AdGroup name', 'value': ''},
                         {'name': 'Enable GA tracking', 'value': 'True'},
+                        {'name': 'Enable Adobe tracking', 'value': 'False'},
+                        {'name': 'Adobe tracking parameter', 'value': ''},
                     ],
                     'show_old_settings': False
                 },
@@ -309,6 +313,8 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Call to action', 'old_value': '', 'value': ''},
                         {'name': 'AdGroup name', 'old_value': '', 'value': ''},
                         {'name': 'Enable GA tracking', 'old_value': 'True', 'value': 'True'},
+                        {'name': 'Enable Adobe tracking', 'old_value': 'False', 'value': 'False'},
+                        {'name': 'Adobe tracking parameter', 'old_value': '', 'value': ''},
                     ],
                     'show_old_settings': True
                 }]

@@ -1,9 +1,12 @@
 import csv
 import datetime
 import exc
+import logging
 import re
 import StringIO
-import logging
+import xlrd
+
+import datetime
 
 from utils import url_helper
 
@@ -33,18 +36,33 @@ GOAL_VALUE_KEWORDS = ['value', 'revenue']
 GOAL_RATE_KEYWORDS = ['conversion rate']
 
 
+def _report_atoi(raw_str):
+    # TODO: Implement locale specific parsing
+    ret_str = raw_str.replace(',', '')
+    dot_loc = ret_str.find('.')
+    if dot_loc != -1:
+        return int(ret_str[:dot_loc])
+    else:
+        return int(ret_str)
+
+
+def _report_atof(raw_str):
+    # TODO: Implement locale specific parsing
+    return float(raw_str.replace(',', ''))
+
+
 class GaReportRow(object):
     def __init__(self, ga_row_dict, report_date, content_ad_id, source_param, goals):
         self.ga_row_dicts = [ga_row_dict]
 
-        self.visits = self._atoi(ga_row_dict.get('Sessions'))
+        self.visits = _report_atoi(ga_row_dict.get('Sessions'))
         self.bounce_rate_raw = ga_row_dict.get('Bounce Rate')
         if ga_row_dict.get('Bounce Rate') is not None:
-            self.bounce_rate = self._atof(ga_row_dict['Bounce Rate'].replace('%', '')) / 100
+            self.bounce_rate = _report_atof(ga_row_dict['Bounce Rate'].replace('%', '')) / 100
         else:
             self.bounce_rate = 0
-        self.pageviews = int(round(self._atof(ga_row_dict.get('Pages / Session', '0')) * self.visits))
-        self.new_visits = self._atoi(ga_row_dict.get('New Users', '0'))
+        self.pageviews = int(round(_report_atof(ga_row_dict.get('Pages / Session', '0')) * self.visits))
+        self.new_visits = _report_atoi(ga_row_dict.get('New Users', '0'))
         self.bounced_visits = int(self.bounce_rate * self.visits)
         self.total_time_on_site = self.visits * self._parse_duration(ga_row_dict.get('Avg. Session Duration', '00:00:00'))
 
@@ -52,14 +70,6 @@ class GaReportRow(object):
         self.content_ad_id = content_ad_id
         self.source_param = source_param
         self.goals = goals
-
-    def _atoi(self, raw_str):
-        # TODO: Implement locale specific parsing
-        return int(raw_str.replace(',', ''))
-
-    def _atof(self, raw_str):
-        # TODO: Implement locale specific parsing
-        return float(raw_str.replace(',', ''))
 
     def key(self):
         return (self.report_date, self.content_ad_id, self.source_param)
@@ -98,14 +108,14 @@ class GaReportRow(object):
     def get_ga_fields(self, column):
         return [ga_row_dict.get(column, None) for ga_row_dict in self.ga_row_dicts]
 
-    def _parse_duration(self, durstr):
-        hours_str, minutes_str, seconds_str = durstr.replace('<', '').split(':')
-        return int(seconds_str) + 60 * int(minutes_str) + 60 * 60 * int(hours_str)
-
     def sessions(self):
         all_row_raw_sessions = [ga_row_dict['Sessions'].replace(',', '').strip() for ga_row_dict in self.ga_row_dicts]
         all_row_sessions = [int(raw_sessions) if raw_sessions not in ('', None) else 0 for raw_sessions in all_row_raw_sessions]
         return sum(all_row_sessions)
+
+    def _parse_duration(self, durstr):
+        hours_str, minutes_str, seconds_str = durstr.replace('<', '').split(':')
+        return int(seconds_str) + 60 * int(minutes_str) + 60 * 60 * int(hours_str)
 
     def __str__(self):
         return "{date}-{caid}-{source_param}".format(
@@ -115,15 +125,86 @@ class GaReportRow(object):
         )
 
 
-class CsvReport(object):
+class OmnitureReportRow(object):
+    def __init__(self, omniture_row_dict, report_date, content_ad_id, source_param):
+        self.omniture_row_dict = [omniture_row_dict]
 
-    def __init__(self, csv_report_text):
-        self.csv_report_text = csv_report_text
+        self.visits = _report_atoi(omniture_row_dict.get('Visits'))
+        self.bounce_rate_raw = omniture_row_dict.get('Bounce Rate')
+        if omniture_row_dict.get('Bounce Rate') is not None:
+            self.bounce_rate = _report_atof(omniture_row_dict['Bounce Rate'].replace('%', '')) / 100
+        else:
+            self.bounce_rate = 0
+        self.pageviews = int(round(_report_atof(omniture_row_dict.get('Pages Views', '0')) * self.visits))
+        self.new_visits = _report_atoi(omniture_row_dict.get('Unique Visits', '0'))
+        self.bounced_visits = int(self.bounce_rate * self.visits)
+        self.total_time_on_site = self.visits * _report_atoi(omniture_row_dict.get('Total Seconds Spent', '0'))
+
+        self.report_date = report_date.isoformat()
+        self.content_ad_id = content_ad_id
+        self.source_param = source_param
+        self.goals = {}
+
+    def key(self):
+        return (self.report_date, self.content_ad_id, self.source_param)
+
+    def merge_with(self, omniture_report_row):
+        self.omniture_row_dict .extend(omniture_report_row.omniture_row_dict)
+        self.visits += omniture_report_row.visits
+        self.bounce_rate = (self.bounce_rate + omniture_report_row.bounce_rate) / 2
+        self.pageviews += omniture_report_row.pageviews
+        self.new_visits += omniture_report_row.new_visits
+        self.bounced_visits += omniture_report_row.bounced_visits
+        self.total_time_on_site += omniture_report_row.total_time_on_site
+
+        # merge goal conversions only for now
+        for omniture_report_row_goal in omniture_report_row.goals:
+            if omniture_report_row_goal in self.goals:
+                self.goals[omniture_report_row_goal]['conversions'] = self.goals[omniture_report_row_goal].get('conversions', 0)
+                self.goals[omniture_report_row_goal]['conversions'] +=\
+                    omniture_report_row.goals.get(omniture_report_row_goal, {'conversions': 0}).get('conversions', 0)
+            else:
+                self.goals[omniture_report_row_goal] = omniture_report_row.goals[omniture_report_row_goal]
+
+    def is_row_valid(self):
+        return self.content_ad_id is not None and\
+            self.source_param != '' and\
+            self.source_param is not None
+
+    def are_goals_useful(self):
+        if len(self.goals) == 0:
+            return False
+        for key, goal_dict in self.goals.iteritems():
+            if 'conversions' in goal_dict.keys():
+                return True
+        return False
+
+    def get_ga_fields(self, column):
+        return [ga_row_dict.get(column, None) for ga_row_dict in self.ga_row_dicts]
+
+    def sessions(self):
+        all_row_raw_sessions = [ga_row_dict['Sessions'].replace(',', '').strip() for ga_row_dict in self.ga_row_dicts]
+        all_row_sessions = [int(raw_sessions) if raw_sessions not in ('', None) else 0 for raw_sessions in all_row_raw_sessions]
+        return sum(all_row_sessions)
+
+    def _atof(self, raw_str):
+        # TODO: Implement locale specific parsing
+        return float(raw_str.replace(',', ''))
+
+    def __str__(self):
+        return "{date}-{caid}-{source_param}".format(
+            date=self.report_date,
+            caid=self.content_ad_id,
+            source_param=self.source_param,
+        )
+
+
+class Report(object):
+
+    def __init__(self):
         # mapping from each url in report to corresponding z1 code or utm term
         self.entries = {}
         self.start_date = None
-        # first column of csv in GA report - Keyword or Landing Page
-        self.first_column = None
 
     def is_empty(self):
         return self.entries == {}
@@ -153,6 +234,53 @@ class CsvReport(object):
             count_all=count_all,
             useful_ga=count_goal_useful,
         )
+
+    def _parse_z11z_keyword(self, keyword):
+        result = Z11Z_RE.match(keyword)
+        if not result:
+            return None, ''
+        else:
+            content_ad_id, source_param = result.group(1), result.group(2)
+
+        try:
+            content_ad_id = int(content_ad_id)
+        except (ValueError, TypeError):
+            return None, ''
+
+        if source_param == '':
+            logger.warning(
+                'Could not parse keyword %s. content_ad_id: %s, source_param: %s',
+                keyword,
+                self.content_ad_id,
+                self.source_param
+            )
+            return None, ''
+
+        return content_ad_id, source_param
+
+    def is_media_source_specified(self):
+        media_source_not_specified = []
+        for entry in self.entries.values():
+            if entry.source_param == '' is None or entry.source_param == '':
+                media_source_not_specified.append(entry.source_param)
+        return (len(media_source_not_specified) == 0, list(media_source_not_specified))
+
+    def is_content_ad_specified(self):
+        content_ad_not_specified = set()
+        for entry in self.entries.values():
+            if entry.content_ad_id is None or entry.content_ad_id == '':
+                content_ad_not_specified.add(entry.content_ad_id)
+        return (len(content_ad_not_specified) == 0, list(content_ad_not_specified))
+
+
+class GAReport(Report):
+
+    def __init__(self, csv_report_text):
+        Report.__init__(self)
+
+        self.csv_report_text = csv_report_text
+        # first column of csv in GA report - Keyword or Landing Page
+        self.first_column = None
 
     def _parse_header(self, lines):
         '''
@@ -257,8 +385,8 @@ class CsvReport(object):
             logger.warning(
                 'Could not parse keyword %s. content_ad_id: %s, source_param: %s',
                 keyword,
-                self.content_ad_id,
-                self.source_param
+                content_ad_id,
+                source_param
             )
             return None, ''
 
@@ -402,16 +530,102 @@ class CsvReport(object):
 
         return StringIO.StringIO('\n'.join(mainlines)), StringIO.StringIO('\n'.join(day_index_lines))
 
-    def is_media_source_specified(self):
-        media_source_not_specified = []
-        for entry in self.entries.values():
-            if entry.source_param == '' is None or entry.source_param == '':
-                media_source_not_specified.append(entry.source_param)
-        return (len(media_source_not_specified) == 0, list(media_source_not_specified))
 
-    def is_content_ad_specified(self):
-        content_ad_not_specified = set()
-        for entry in self.entries.values():
-            if entry.content_ad_id is None or entry.content_ad_id == '':
-                content_ad_not_specified.add(entry.content_ad_id)
-        return (len(content_ad_not_specified) == 0, list(content_ad_not_specified))
+class OmnitureReport(Report):
+
+    def __init__(self, xlsx_report_blob):
+        Report.__init__(self)
+
+        self.xlsx_report_blob = xlsx_report_blob
+
+    def _parse_header(self, workbook):
+        header = {}
+        sheet = workbook.sheet_by_index(0)
+        for row_idx in range(0, sheet.nrows):
+            line = []
+            for col_idx in range(0, sheet.ncols):
+                raw_val = sheet.cell_value(row_idx, col_idx)
+                value = (unicode(raw_val).encode('utf-8') or '').strip()
+                if not value:
+                    break
+                line.append(value)
+            if len(line) == 1 and ':' in line[0]:
+                keyvalue = [(kv or '').strip() for kv in line[0].split(':')]
+                header[keyvalue[0]] = ''.join(keyvalue[1:])
+        return header
+
+    def _extract_date(self, date_raw):
+        # Example date: Fri. 4 Sep. 2015
+        date_raw_split = date_raw.replace('.', '').split(' ')
+        date_raw_split = [date_part.strip() for date_part in date_raw_split if date_part.strip() != '']
+        date_prefix = ' '.join(date_raw_split[:4])
+        ret = datetime.datetime.strptime(date_prefix, '%a %d %b %Y')
+        if ret:
+            return ret.date()
+        return None
+
+    def _check_session_counts(self, totals):
+        sessions_sum = sum(entry.visits for entry in self.entries.values())
+        sessions_total = _report_atoi(totals['Visits'])
+
+        # compromise for Omniture reports which regularly contain a difference
+        # between session totals and sums of session entries
+        acceptable_deviation = False
+        if sessions_sum >= sessions_total:
+            deviation = abs(float(sessions_total) - float(sessions_sum)) / float(sessions_total)
+            if deviation <= 0.02:
+                acceptable_deviation = True
+
+        if sessions_total != sessions_sum and not acceptable_deviation:
+            raise exc.IncompleteReportException(
+                'Number of total sessions ({}) is not equal to sum of session counts ({})'.format(
+                    sessions_total, sessions_sum)
+            )
+
+    def parse(self):
+        workbook = xlrd.open_workbook(file_contents=self.xlsx_report_blob)
+
+        header = self._parse_header(workbook)
+        date_raw = header.get('Date', '')
+        self.start_date = self._extract_date(date_raw)
+
+        body_found = False
+
+        all_columns = []
+        enum_columns = []
+        sheet = workbook.sheet_by_index(0)
+        for row_idx in range(0, sheet.nrows):
+            line = []
+            for col_idx in range(0, sheet.ncols):
+                raw_val = sheet.cell_value(row_idx, col_idx)
+                value = (unicode(raw_val).encode('utf-8') or '').strip()
+                line.append(value)
+
+            if not body_found:
+                if not 'tracking code' in ' '.join(line).lower():
+                    continue
+                else:
+                    body_found = True
+                    all_columns = line
+                    enum_columns = [(idx, el) for (idx, el) in enumerate(all_columns)]
+                    continue
+
+            # valid data is data with known column name(many columns are empty
+            # in sample reports)
+            keys = [idxel[1] for idxel in enum_columns if idxel[1] != '']
+            values = [line[idxel[0]] for idxel in enum_columns if idxel[1] != '']
+            omniture_row_dict = dict(zip(keys, values))
+
+            if 'Total' in line:  # footer with summary
+                self._check_session_counts(omniture_row_dict)
+                break
+
+            keyword = omniture_row_dict.get('Tracking Code', '')
+            content_ad_id, source_param = self._parse_z11z_keyword(keyword)
+            report_entry = OmnitureReportRow(omniture_row_dict, self.start_date, content_ad_id, source_param)
+
+            existing_entry = self.entries.get(report_entry.key())
+            if existing_entry is None:
+                self.entries[report_entry.key()] = report_entry
+            else:
+                existing_entry.merge_with(report_entry)

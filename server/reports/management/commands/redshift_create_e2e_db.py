@@ -8,6 +8,12 @@ from django.db import connections
 
 logger = logging.getLogger(__name__)
 
+"""
+This command creates a new database for end-to-end tests. The new database is created
+from the STATS_E2E_DB_NAME database connection and is created with parameters that
+are at this point set for the STATS_DB_NAME database.
+"""
+
 
 class Command(BaseCommand):
 

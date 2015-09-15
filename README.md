@@ -141,6 +141,10 @@ cp test/protractor.localconf.json.template test/protractor.localconf.json
 
 and modify as needed.
 
+Then set your Amazon Redshift testing credentials for the `STATS_E2E_DB_NAME` database in `server/localsettings.py`. Use the template from the `server/localsettings.py.circle-ci` file. The credentials
+can be obtained here: [Amazon Redshift and E2E tests](https://sites.google.com/a/zemanta.com/root/engineering/amazon-redshift-e2e-credentials). These credentials can be the
+same for CircleCI and local testing.
+
 Then from project root run:
 ```bash
 ./run_e2e.sh
@@ -148,6 +152,21 @@ Then from project root run:
 It will load the fixtures for you and run server and client applications.
 
 The test suite will be run in your local Chrome browser.
+
+##### Notes on Amazon Redshift and E2E tests
+
+Each time when end-to-end tests are run, a new Amazon Redshift database with a random name is created. This way each e2e test suite run uses its own Amazon Redshift database. How it works:
+
+The DATABASES dictionary should contain 2 entries for Redshift database connections:
+
+ - `STATS_DB_NAME` - the database used for retrieving statistics
+ - `STATS_E2E_DB_NAME` - the database used for creating random named `STATS_DB_NAME` databases for E2E tests.
+
+1. `run_e2e.sh` generates a new database name and stores it in `E2E_REDDB` environmental variable.
+2. `server/settings.py` updates the `STATS_DB_NAME` connection with the newly generated database name and access credentials. Access credentials are either taken from environmental variables `REDSHIFT_E2E_USER`, `REDSHIFT_E2E_PASS` and `REDSHIFT_E2E_HOST` (usually used for CircleCI runs), or from credentials set for the `STATS_E2E_DB_NAME` database connection in `server/localsettings.py` (usually used for local development).
+3. `redshift_create_e2e_db` django command then connects with the `STATS_E2E_DB_NAME` connection and creates the database specified in `STATS_DB_NAME`. After that schema migrations are applied to the new database. Schema migration files are located in `reports/migrations/redshift/` directory.
+4. E2E tests execute.
+5. `redshift_cleanup_e2e_db` django command then drops the database that was created in the 3rd step.
 
 ##### Running tests on SauceLabs
 

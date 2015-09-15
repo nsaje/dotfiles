@@ -87,7 +87,8 @@ class AdGroupSettings(api_common.BaseApiView):
 
         settings = current_settings.copy_settings()
         self.set_settings(settings, form.cleaned_data,
-                          request.user.has_perm('zemauth.can_toggle_ga_performance_tracking'))
+                          request.user.has_perm('zemauth.can_toggle_ga_performance_tracking'),
+                          request.user.has_perm('zemauth.can_toggle_adobe_performance_tracking'))
 
         actionlogs_to_send = []
         with transaction.atomic():
@@ -145,7 +146,9 @@ class AdGroupSettings(api_common.BaseApiView):
                 'target_devices': settings.target_devices,
                 'target_regions': settings.target_regions,
                 'tracking_code': settings.tracking_code,
-                'enable_ga_tracking': settings.enable_ga_tracking
+                'enable_ga_tracking': settings.enable_ga_tracking,
+                'enable_adobe_tracking': settings.enable_adobe_tracking,
+                'adobe_tracking_param': settings.adobe_tracking_param
             }
 
         return result
@@ -153,7 +156,7 @@ class AdGroupSettings(api_common.BaseApiView):
     def set_ad_group(self, ad_group, resource):
         ad_group.name = resource['name']
 
-    def set_settings(self, settings, resource, can_set_tracking_codes):
+    def set_settings(self, settings, resource, can_set_ga_tracking_params, can_set_adobe_tracking_params):
         settings.state = resource['state']
         settings.start_date = resource['start_date']
         settings.end_date = resource['end_date']
@@ -162,9 +165,14 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
         settings.ad_group_name = resource['name']
-        if can_set_tracking_codes:
+
+        if can_set_ga_tracking_params:
             settings.enable_ga_tracking = resource['enable_ga_tracking']
             settings.tracking_code = resource['tracking_code']
+
+        if can_set_adobe_tracking_params:
+            settings.enable_adobe_tracking = resource['enable_adobe_tracking']
+            settings.adobe_tracking_param = resource['adobe_tracking_param']
 
 
 class CampaignAgency(api_common.BaseApiView):
@@ -866,6 +874,10 @@ class AdGroupAgency(api_common.BaseApiView):
         for field in models.AdGroupSettings._settings_fields:
             if field in ['display_url', 'brand_name', 'description', 'call_to_action'] and\
                     not user.has_perm('zemauth.new_content_ads_tab'):
+                continue
+
+            if field in ['enable_adobe_tracking', 'adobe_tracking_param'] and\
+                    not user.has_perm('zemauth.can_toggle_adobe_performance_tracking'):
                 continue
 
             settings_dict[field] = {

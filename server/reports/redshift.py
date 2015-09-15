@@ -51,7 +51,7 @@ def insert_contentadstats(rows):
 
     query = 'INSERT INTO contentadstats ({cols}) VALUES {rows}'.format(
         cols=','.join(cols),
-        rows=','.join(_get_row_string(cursor, cols, row) for row in rows))
+        rows=','.join(str(_get_row_string(cursor, cols, row)) for row in rows))
 
     cursor.execute(query, [])
     cursor.close()

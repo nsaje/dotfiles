@@ -188,7 +188,7 @@ oneApp.config(['$tooltipProvider', function($tooltipProvider) {
 
 var locationSearch;
 // Fixes https://github.com/angular-ui/ui-router/issues/679
-oneApp.run(['$state', '$rootScope', '$location', 'config', function($state, $rootScope, $location, config) {
+oneApp.run(['$state', '$rootScope', '$location', 'config', 'zemIntercomService', function($state, $rootScope, $location, config, zemIntercomService) {
     $rootScope.config = config;
     $rootScope.$state = $state;
 
@@ -201,6 +201,7 @@ oneApp.run(['$state', '$rootScope', '$location', 'config', function($state, $roo
         // Restore all query string parameters back to $location.search
         $location.search(locationSearch);
         $rootScope.stateChangeFired = true;
+        zemIntercomService.update();
     });
 
     $rootScope.tabClick = function(event) {

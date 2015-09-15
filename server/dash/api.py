@@ -422,9 +422,13 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
         order_type=actionlog.constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
     )
 
-    if 'tracking_code' in changes or 'enable_ga_tracking' in changes:
+    if any(prop in changes for prop in
+           ['tracking_code', 'enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param']):
         redirector_helper.insert_adgroup(ad_group.id, new_settings.get_tracking_codes(),
-                                         disable_auto_tracking=not new_settings.enable_ga_tracking)
+                                         new_settings.enable_ga_tracking,
+                                         new_settings.enable_adobe_tracking,
+                                         new_settings.adobe_tracking_param)
+
         if 'tracking_code' not in changes:
             changes['tracking_code'] = new_settings.get_tracking_codes()
 
@@ -513,7 +517,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                         )
                     )
             else:
-                if field_name == 'enable_ga_tracking':
+                if field_name in ['enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param']:
                     # do not create an action - only used for our redirector
                     continue
 

@@ -988,7 +988,9 @@ class AdGroupSettings(SettingsBase):
         'description',
         'call_to_action',
         'ad_group_name',
-        'enable_ga_tracking'
+        'enable_ga_tracking',
+        'enable_adobe_tracking',
+        'adobe_tracking_param',
     ]
 
     id = models.AutoField(primary_key=True)
@@ -1019,6 +1021,8 @@ class AdGroupSettings(SettingsBase):
     target_regions = jsonfield.JSONField(blank=True, default=[])
     tracking_code = models.TextField(blank=True)
     enable_ga_tracking = models.BooleanField(default=True)
+    enable_adobe_tracking = models.BooleanField(default=False)
+    adobe_tracking_param = models.CharField(max_length=10, blank=True, default='')
     archived = models.BooleanField(default=False)
     display_url = models.CharField(max_length=25, blank=True, default='')
     brand_name = models.CharField(max_length=25, blank=True, default='')
@@ -1105,7 +1109,9 @@ class AdGroupSettings(SettingsBase):
             'call_to_action': 'Call to action',
             'ad_group_name': 'AdGroup name',
             'enable_ga_tracking': 'Enable GA tracking',
-            'autopilot_state': 'Auto-Pilot'
+            'autopilot_state': 'Auto-Pilot',
+            'enable_adobe_tracking': 'Enable Adobe tracking',
+            'adobe_tracking_param': 'Adobe tracking parameter'
         }
 
         return NAMES[prop_name]
@@ -1129,7 +1135,7 @@ class AdGroupSettings(SettingsBase):
                 value = ', '.join(constants.AdTargetLocation.get_text(x) for x in value)
             else:
                 value = 'worldwide'
-        elif prop_name in ('archived', 'enable_ga_tracking'):
+        elif prop_name in ('archived', 'enable_ga_tracking', 'enable_adobe_tracking'):
             value = str(value)
 
         return value
