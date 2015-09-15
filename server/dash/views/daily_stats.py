@@ -252,7 +252,7 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
             map_exchange_to_source_name[s.bidder_slug] = s.name
         
         if totals:
-            totals_constraints = {'adgroup_id': int(ad_group.id)}
+            totals_constraints = {'ad_group': int(ad_group.id)}
 
         if set(models.Source.objects.all()) != set(filtered_sources):
             totals_constraints['exchange'] = map_exchange_to_source_name.keys()
@@ -277,9 +277,9 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
             totals_stats = reports.api_publishers.query(
                 start_date,
                 end_date,
-                ['date'],
-                ['date'],
-                constraints_dict = totals_constraints
+                order_fields = ['date'],
+                breakdown_fields = ['date'],
+                constraints = totals_constraints
             )
 
         breakdown_stats = []

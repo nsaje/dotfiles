@@ -1643,7 +1643,7 @@ class PublishersTable(api_common.BaseApiView):
         
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-        constraints_dict = {'adgroup_id': adgroup.id}
+        constraints = {'ad_group': adgroup.id}
 
 
         page = request.GET.get('page')
@@ -1668,7 +1668,7 @@ class PublishersTable(api_common.BaseApiView):
         # this is a really bad practice, but used extensively in models.py
         # it should be factored out at the same time as that
         if set(models.Source.objects.all()) != set(filtered_sources):
-            constraints_dict['exchange'] = map_exchange_to_source_name.keys()
+            constraints['exchange'] = map_exchange_to_source_name.keys()
         
         publishers_data = reports.api_publishers.query(
             start_date,
@@ -1676,13 +1676,13 @@ class PublishersTable(api_common.BaseApiView):
             breakdown_fields = ['domain', 'exchange'],
             order_fields = [order],
             order_direction = order_direction,
-            constraints_dict = constraints_dict,
+            constraints = constraints,
         )
 
         totals_data = reports.api_publishers.query(
             start_date,
             end_date,
-            constraints_dict=constraints_dict,
+            constraints=constraints,
         )            
 
         # since we're not dealing with a QuerySet this kind of pagination is braindead, but we'll polish later

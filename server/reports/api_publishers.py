@@ -34,7 +34,7 @@ OUTPUT_FIELDS_MAPPING = {'clicks_sum':      ('clicks',      lambda v: v),
                          'cost_micro_sum':  ('cost',        lambda v: from_micro_cpm(v)),
                          'cpc_micro':       ('cpc',         lambda v: from_micro_cpm(v)),
                          'ctr':             ('ctr',         lambda v: v * 100),
-                         'ad_group_id':     ('adgroup_id',  lambda v: v),
+                         'ad_group_id':     ('ad_group',    lambda v: v),
                          'exchange':        ('exchange',    lambda v: v),
                         }
 OUTPUT_FIELDS_REVERSE_MAPPING = {v[0]:k for k,v in OUTPUT_FIELDS_MAPPING.iteritems()}
@@ -42,7 +42,7 @@ OUTPUT_FIELDS_REVERSE_MAPPING = {v[0]:k for k,v in OUTPUT_FIELDS_MAPPING.iterite
 CONSTRAINTS_FIELDS_UNMAPPED_SET = set(OUTPUT_FIELDS_REVERSE_MAPPING.keys())
 BREAKDOWN_FIELDS_UNMAPPED_SET = set(['exchange', 'domain', 'date', ])
 
-def query(start_date, end_date, breakdown_fields=[], order_fields=[], order_direction=None, offset=None, limit=None, constraints_dict={}):
+def query(start_date, end_date, breakdown_fields=[], order_fields=[], order_direction=None, offset=None, limit=None, constraints={}):
     # map all query fields to their SQL representations first
     # then run query
     # then map SQL fields back to application fields
@@ -60,7 +60,7 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], order_dire
     order_fields = [OUTPUT_FIELDS_REVERSE_MAPPING[field] for field in order_fields]
 
     # map constraints fields	
-    unknown_fields = set(constraints_dict.keys()) - CONSTRAINTS_FIELDS_UNMAPPED_SET
+    unknown_fields = set(constraints.keys()) - CONSTRAINTS_FIELDS_UNMAPPED_SET
     if len(unknown_fields) > 0:
         raise exc.ReportsQueryError("Unsupported field constraint fields: %s" % str(unknown_fields))
     # TODO: map constrain fields too
@@ -76,7 +76,7 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], order_dire
         order_direction = order_direction,
         limit = limit,
         offset = offset,
-        constraints_dict = constraints_dict)
+        constraints = constraints)
 
 
 

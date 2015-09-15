@@ -30,7 +30,6 @@ AGGREGATE_FIELDS = dict(
     cpc_cc=db_aggregates.SumDivision('cost_cc', 'clicks')
 )
 
-
 POSTCLICK_AGGREGATE_FIELDS = dict(
     visits_sum=Sum('visits'),
     new_visits_sum=Sum('new_visits'),

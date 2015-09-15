@@ -149,9 +149,9 @@ def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakd
     return _translate_row(results[0], reverse_field_mapping)
 
 
-def query_general(table_name, start_date, end_date, aggregates, breakdown_fields=None, order_fields=None, order_direction = None, limit = None, offset = None, constraints_dict = {}):
+def query_general(table_name, start_date, end_date, aggregates, breakdown_fields=None, order_fields=None, order_direction = None, limit = None, offset = None, constraints = {}):
 
-    constraints = _prepare_constraints(constraints_dict, field_mapping = {})
+    constraints = _prepare_constraints(constraints, field_mapping = {})
     constraints.append('{} >= \'{}\''.format(quote('date'), start_date))
     constraints.append('{} <= \'{}\''.format(quote('date'), end_date))
 

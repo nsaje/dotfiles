@@ -1,4 +1,4 @@
-DIMENSIONS = set(['content_ad', 'article', 'ad_group', 'date', 'source', 'account', 'campaign', ])
+DIMENSIONS = set(['content_ad', 'article', 'ad_group', 'date', 'source', 'account', 'campaign'])
 TRAFFIC_FIELDS = ['clicks', 'impressions', 'cost', 'cpc', 'ctr', 'title', 'url']
 POSTCLICK_ACQUISITION_FIELDS = ['visits', 'click_discrepancy', 'pageviews']
 POSTCLICK_ENGAGEMENT_FIELDS = [
