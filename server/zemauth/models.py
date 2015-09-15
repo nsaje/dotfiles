@@ -141,6 +141,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_set_dma_targeting', 'Can set DMA targeting'),
             ('manage_conversion_pixels', 'Can manage conversion pixels'),
             ('has_intercom', 'Can see intercom widget'),
+            ('manage_conversion_goals', 'Can manage conversion goals on campaign')
         )
 
     def get_full_name(self):
