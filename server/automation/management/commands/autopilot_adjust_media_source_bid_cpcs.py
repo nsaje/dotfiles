@@ -2,12 +2,10 @@ import logging
 from django.core.management.base import BaseCommand
 import reports
 from automation import helpers, autopilot
-from freezegun import freeze_time
 logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    @freeze_time("2015-04-20 18:05:05", tz_offset=-4)
     def handle(self, *args, **options):
         logger.info('Running bid CPC adjusting Auto-Pilot.')
 

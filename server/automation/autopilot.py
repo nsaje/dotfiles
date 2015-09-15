@@ -141,7 +141,7 @@ Zemanta
         camp_url=campaign_url,
         changes=''.join(changesText)
     )
-    print body
+
     try:
         send_mail(
             'Campaign budget low - {camp}, {account}'.format(
