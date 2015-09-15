@@ -1639,12 +1639,10 @@ class PublishersTable(api_common.BaseApiView):
         newrelic.agent.set_transaction_name('dash.views.table:PublishersTable#%s' % (level_))
 
         user = request.user
-
         adgroup = helpers.get_ad_group(user, id_)
         
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-        
         constraints_dict = {'adgroup_id': adgroup.id}
 
 
@@ -1722,8 +1720,6 @@ class PublishersTable(api_common.BaseApiView):
             'impressions': totals_data['impressions'],
             'ctr': totals_data['ctr'],
         }
-        print result
-        
         return result
 
     def from_micro_cpm(self, num):
@@ -1738,7 +1734,6 @@ class PublishersTable(api_common.BaseApiView):
             map_exchange_to_source_name,
             publishers_data):
 
-        print map_exchange_to_source_name
         rows = []
         for i, publisher_data in enumerate(publishers_data):
             exchange = publisher_data.get('exchange', None)
@@ -1761,9 +1756,6 @@ class PublishersTable(api_common.BaseApiView):
             }
 
             rows.append(row)
-
-#        if order:
- #           rows = sort_results(rows, [order])
 
         return rows
 

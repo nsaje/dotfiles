@@ -34,6 +34,7 @@ def query(start_date, end_date, breakdown=None, constraints={}):
         breakdown,
         constraints)
 
+    print results
     if breakdown:
         return [_transform_row(row) for row in results]
  
