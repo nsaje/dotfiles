@@ -71,8 +71,8 @@ def mailgun_gareps(request):
         statsd_incr('convapi.invalid_email_sender')
         return HttpResponse(status=406)
 
-
     statsd_incr('convapi.accepted_emails')
+    key = None
     try:
         ga_report_task = None
 
@@ -105,25 +105,38 @@ def mailgun_gareps(request):
         tasks.process_ga_report.apply_async((ga_report_task, ),
                                              queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE)
 
-        ga_report_v2_task = GAReportTask(request.POST.get('subject'),
-                                             request.POST.get('Date'),
-                                             request.POST.get('sender'),
-                                             request.POST.get('recipient'),
-                                             request.POST.get('from'),
-                                             None,
-                                             key,
-                                             attachment_name,
-                                             request.POST.get('attachment-count', 0),
-                                             content_type)
-
-        tasks.process_ga_report_v2.apply_async((ga_report_v2_task, ),
-                                             queue=settings.CELERY_DEFAULT_CONVAPI_V2_QUEUE)
-
     except Exception as e:
         report_log = models.GAReportLog()
         report_log.email_subject = ga_report_task.subject if ga_report_task is not None else None
         report_log.from_address = ga_report_task.from_address if ga_report_task is not None else None
         report_log.csv_filename = request.FILES.get('attachment-1').name if request.FILES.get('attachment-1') is not None else None
+        report_log.state = constants.ReportState.FAILED
+        report_log.save()
+        logger.exception(e.message)
+
+
+    try:
+        report_task = GAReportTask(
+            request.POST.get('subject'),
+            request.POST.get('Date'),
+            request.POST.get('sender'),
+            request.POST.get('recipient'),
+            request.POST.get('from'),
+            None,
+            key,
+            attachment_name,
+            request.POST.get('attachment-count', 0),
+            content_type)
+
+        tasks.process_report_v2.apply_async(
+            (report_task, ),
+            queue=settings.CELERY_DEFAULT_CONVAPI_V2_QUEUE
+        )
+    except Exception as e:
+        report_log = models.eportLog()
+        report_log.email_subject = ga_report_task.subject if ga_report_task is not None else None
+        report_log.from_address = ga_report_task.from_address if ga_report_task is not None else None
+        report_log.report_filename = request.FILES.get('attachment-1').name if request.FILES.get('attachment-1') is not None else None
         report_log.state = constants.ReportState.FAILED
         report_log.save()
         logger.exception(e.message)

@@ -349,7 +349,7 @@ def _extract_omniture_date(date_raw):
 @app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
           default_retry_delay=settings.CELERY_TASK_RETRY_DEPLAY)
 @transaction.atomic
-def process_ga_report_v2(ga_report_task):
+def process_report_v2(ga_report_task):
     try:
         report_log = models.ReportLog()
         # create report log and validate incoming task
