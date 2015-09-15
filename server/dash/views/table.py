@@ -1705,6 +1705,7 @@ class PublishersTable(api_common.BaseApiView):
                 user,
                 totals_data,
             ),
+            'order': order,
         }
 
         return self.create_api_response(response)

@@ -21,11 +21,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     var userSettings = zemUserSettings.getInstance($scope, 'adGroupPublishers');
 
-    $scope.exportOptions = [
-        {name: 'By Day (CSV)', value: 'csv'},
-        {name: 'By Day (Excel)', value: 'excel'}
-    ];
-
     $scope.columnCategories = [
         {
             'name': 'Traffic Acquisition',
