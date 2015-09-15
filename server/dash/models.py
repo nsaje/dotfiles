@@ -792,7 +792,7 @@ class DefaultSourceSettings(models.Model):
     auto_add = models.BooleanField(null=False,
                                    blank=False,
                                    default=False,
-                                   verbose_name='Auto add to ad group at creation')
+                                   verbose_name='Automatically add this source to ad group at creation')
 
     objects = QuerySetManager()
 
