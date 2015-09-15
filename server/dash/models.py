@@ -789,6 +789,11 @@ class DefaultSourceSettings(models.Model):
         verbose_name='Default daily budget'
     )
 
+    auto_add = models.BooleanField(null=False,
+                                   blank=False,
+                                   default=False,
+                                   verbose_name='Auto add to ad group at creation')
+
     objects = QuerySetManager()
 
     class QuerySet(models.QuerySet):

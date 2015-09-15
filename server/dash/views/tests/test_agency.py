@@ -128,7 +128,7 @@ class AdGroupSettingsTest(TestCase):
         self.assertFalse(mock_order_ad_group_settings_update.called)
 
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
-        default_sources_settings = models.DefaultSourceSettings.objects.all().with_credentials()
+        default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
         self.assertEqual(len(ad_group_sources), len(default_sources_settings))
 
         for ad_group_source in ad_group_sources:

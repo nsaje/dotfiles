@@ -183,8 +183,7 @@ class AdGroupSettings(api_common.BaseApiView):
         zwei_actions.send(actionlogs_to_send)
 
     def _add_media_sources(self, ad_group_settings, request):
-        # TODO: add flag to model to select only flagged sources
-        default_sources_settings = models.DefaultSourceSettings.objects.all().with_credentials()
+        default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
         ad_group = ad_group_settings.ad_group
 
         ad_group_sources_w_defaults = []
