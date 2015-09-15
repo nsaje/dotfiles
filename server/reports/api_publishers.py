@@ -64,7 +64,7 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], order_dire
     unknown_fields = set(constraints.keys()) - CONSTRAINTS_FIELDS_UNMAPPED_SET
     if unknown_fields:
         raise exc.ReportsQueryError("Unsupported field constraint fields: {}".format(str(unknown_fields)))
-    constraints = {OUTPUT_FIELDS_REVERSE_MAPPING[field_name]: v for field_name, v in constraints}
+    constraints = {OUTPUT_FIELDS_REVERSE_MAPPING[field_name]: v for field_name, v in constraints.iteritems()}
         
     # now execute the query
     results = redshift.query_general(
