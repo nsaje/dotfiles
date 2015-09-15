@@ -12,6 +12,7 @@ PUBLISHERS_FIELD_MAPPING = {
     'date': 'date',
     'ad_group': 'adgroup_id',
     'cost': 'cost_cc_sum',
+    'cpc': 'cpc_cc',
         
 }
 

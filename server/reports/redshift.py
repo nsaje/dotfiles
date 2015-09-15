@@ -116,7 +116,7 @@ def vacuum_contentadstats():
     cursor.close()
 
 
-def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakdown=None, **constraints):
+def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakdown=None, constraints={}):
 
     constraints = _prepare_constraints(constraints, field_mapping)
     constraints.append('{} >= \'{}\''.format(quote('date'), start_date))

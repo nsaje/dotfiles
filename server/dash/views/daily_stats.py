@@ -361,9 +361,9 @@ class AdGroupAdsPlusDailyStats(BaseDailyStatsView):
         stats = reports.api_contentads.query(
             start_date,
             end_date,
-            ['date'],
-            ad_group=ad_group_id,
-            source=sources
+            breakdown = ['date'],
+            constraints = {'ad_group': ad_group_id,
+                           'source': sources}
         )
 
         return sort_results(stats, ['date'])

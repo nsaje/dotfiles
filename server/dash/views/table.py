@@ -1150,9 +1150,9 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
             start_date,
             end_date,
-            breakdown=['content_ad'],
-            ad_group=ad_group,
-            source=filtered_sources,
+            breakdown = ['content_ad'],
+            constraints = {'ad_group': ad_group,
+                           'source': filtered_sources},
         ), request.user)
 
         has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
@@ -1180,8 +1180,9 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         total_stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
             start_date,
             end_date,
-            ad_group=ad_group,
-            source=filtered_sources,
+            constraints = {'ad_group': ad_group,
+                           'source': filtered_sources
+            }
         ), request.user)
 
         ad_group_sync = actionlog.sync.AdGroupSync(ad_group, sources=filtered_sources)
@@ -1729,7 +1730,7 @@ class PublishersTable(api_common.BaseApiView):
         if not num:	
             return None
         else:
-            return num * 1.0 / 1000000
+            return num * 1.0 / 1000000000
 
     @newrelic.agent.function_trace()
     def get_rows(
