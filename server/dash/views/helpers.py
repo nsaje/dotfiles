@@ -743,7 +743,7 @@ def add_source_to_ad_group(default_source_settings, ad_group):
 def set_ad_group_source_defaults(default_source_settings, ad_group_settings, ad_group_source, request):
     # set defaults if available
     cpc_cc = default_source_settings.mobile_cpc_cc if ad_group_settings.is_mobile_only() else\
-        default_source_settings.desktop_cpc_cc
+        default_source_settings.default_cpc_cc
 
     daily_budget_cc = default_source_settings.daily_budget_cc
 

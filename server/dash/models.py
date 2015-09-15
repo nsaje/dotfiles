@@ -770,15 +770,15 @@ class DefaultSourceSettings(models.Model):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Default CPC (if mobile)'
+        verbose_name='Default CPC (if mobile targeting)'
     )
 
-    desktop_cpc_cc = models.DecimalField(
+    default_cpc_cc = models.DecimalField(
         max_digits=10,
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Default CPC (desktop/default)'
+        verbose_name='Default CPC'
     )
 
     daily_budget_cc = models.DecimalField(

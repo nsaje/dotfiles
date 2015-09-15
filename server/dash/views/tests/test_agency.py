@@ -143,7 +143,7 @@ class AdGroupSettingsTest(TestCase):
 
             self.assertEqual(ad_group_source_settings.daily_budget_cc, default_settings.daily_budget_cc)
             # the settings are desktop only
-            self.assertEqual(ad_group_source_settings.cpc_cc, default_settings.desktop_cpc_cc)
+            self.assertEqual(ad_group_source_settings.cpc_cc, default_settings.default_cpc_cc)
 
     def test_put_without_non_propagated_settings(self, mock_actionlog_api, mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=1)
