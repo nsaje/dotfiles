@@ -186,13 +186,13 @@ class SourceTypeForm(forms.ModelForm):
 
 
 class DefaultSourceSettingsForm(forms.ModelForm):
-    daily_budget_cc = forms.DecimalField(decimal_places=4)
-
     def clean_daily_budget_cc(self):
         daily_budget_cc = self.cleaned_data.get('daily_budget_cc')
         if daily_budget_cc:
             source_type = self.instance.source.source_type
             dash_forms.AdGroupSourceSettingsDailyBudgetForm.validate_daily_budget_cc(daily_budget_cc, source_type)
+
+        return daily_budget_cc
 
     def clean_default_cpc_cc(self):
         cpc_cc = self.cleaned_data.get('default_cpc_cc')
@@ -200,11 +200,15 @@ class DefaultSourceSettingsForm(forms.ModelForm):
             source = self.instance.source
             dash_forms.AdGroupSourceSettingsCpcForm.validate_cpc_cc(cpc_cc, source)
 
+        return cpc_cc
+
     def clean_mobile_cpc_cc(self):
         cpc_cc = self.cleaned_data.get('mobile_cpc_cc')
         if cpc_cc:
             source = self.instance.source
             dash_forms.AdGroupSourceSettingsCpcForm.validate_cpc_cc(cpc_cc, source)
+
+        return cpc_cc
 
 
 class DefaultSourceSettingsAdmin(admin.ModelAdmin):
@@ -212,7 +216,8 @@ class DefaultSourceSettingsAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'source',
-        'credentials_'
+        'credentials_',
+        'auto_add'
     )
 
     def credentials_(self, obj):
