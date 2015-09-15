@@ -1506,7 +1506,7 @@ class ConversionGoal(models.Model):
     name = models.CharField(max_length=256)
 
     pixel = models.ForeignKey(ConversionPixel, null=True, on_delete=models.PROTECT)
-    conversion_window = models.PositiveSmallIntegerField(null=True, blank=True)
+    window = models.PositiveSmallIntegerField(null=True, blank=True)
     goal_id = models.CharField(max_length=256, null=True, blank=True)
 
 
