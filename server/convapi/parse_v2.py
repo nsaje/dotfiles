@@ -217,7 +217,7 @@ class Report(object):
         return [entry for entry in self.entries.values() if entry.is_row_valid()]
 
     def reported_visits(self):
-        return sum(entry.visits for entry in self.entries.values())
+        return sum(entry.visits for entry in self.valid_entries())
 
     def imported_visits(self):
         return self._imported_visits
@@ -560,9 +560,13 @@ class OmnitureReport(Report):
                 if not value:
                     break
                 line.append(value)
-            if len(line) == 1 and ':' in line[0]:
+
+            if len(line) >= 1 and len(line) <= 2 and ':' in line[0]:
                 keyvalue = [(kv or '').strip() for kv in line[0].split(':')]
-                header[keyvalue[0]] = ''.join(keyvalue[1:])
+                val = ''.join(keyvalue[1:])
+                second_col = line[1] if len(line) > 1 else ''
+                header[keyvalue[0].replace('#','').strip()] = val + second_col
+
         return header
 
     def _extract_date(self, date_raw):
@@ -597,7 +601,7 @@ class OmnitureReport(Report):
         workbook = xlrd.open_workbook(file_contents=self.xlsx_report_blob)
 
         header = self._parse_header(workbook)
-        date_raw = header.get('Date', '')
+        date_raw = header.get('Date') or header.get('Range')
         self.start_date = self._extract_date(date_raw)
 
         body_found = False
@@ -613,7 +617,9 @@ class OmnitureReport(Report):
                 line.append(value)
 
             if not body_found:
-                if not 'tracking code' in ' '.join(line).lower():
+                if len(line) > 0 and ':' in line[0]:
+                    continue  # header
+                if not 'tracking code' in ' '.join(line[1:]).lower():
                     continue
                 else:
                     body_found = True

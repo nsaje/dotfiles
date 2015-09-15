@@ -25,6 +25,7 @@ from convapi.helpers import get_from_s3
 from reports import update
 
 from utils.compression import unzip
+from utils.csv_utils import convert_to_xls
 from utils.statsd_helper import statsd_incr, statsd_timer
 
 logger = logging.getLogger(__name__)
@@ -378,6 +379,11 @@ def process_report_v2(report_task, report_type):
                     break
 
         if report_type == reports.constants.ReportType.OMNITURE:
+            if attachment_name.endswith('.csv'):
+                # instead of writing yet another parser variant we convert it
+                # to an xls
+                content = convert_to_xls(content)
+
             report = parse_v2.OmnitureReport(content)
             report.parse()
         else:
