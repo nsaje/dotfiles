@@ -112,20 +112,33 @@ class InsertRedirectTest(TestCase):
 class InsertAdGroupTest(TestCase):
     def test_insert_adgroup(self, mock_urlopen):
         ad_group_id = 345
-
         tracking_codes = "lala=1"
+        enable_ga_tracking = True
+        enable_adobe_tracking = False
+        adobe_tracking_param = 'cid'
 
         response = Mock()
         response.read.return_value = '{"status": "ok"}'
         response.getcode = lambda: 200
         mock_urlopen.return_value = response
 
-        redirector_helper.insert_adgroup(ad_group_id, tracking_codes)
+        redirector_helper.insert_adgroup(
+            ad_group_id,
+            tracking_codes,
+            enable_ga_tracking,
+            enable_adobe_tracking,
+            adobe_tracking_param
+        )
 
         call = mock_urlopen.call_args[0][0]
 
         self.assertEqual(call.get_full_url(), settings.R1_REDIRECTS_ADGROUP_API_URL.format(adgroup=ad_group_id))
-        self.assertEqual(call.data, json.dumps({"trackingcode": tracking_codes, "disableautotracking": False}))
+        self.assertEqual(call.data, json.dumps({
+            "trackingcode": tracking_codes,
+            "enablegatracking": True,
+            "enableadobetracking": False,
+            "adobetrackingparam": 'cid'
+        }))
 
     def test_code_error(self, mock_urlopen):
         url = 'https://example.com/image'
@@ -135,7 +148,7 @@ class InsertAdGroupTest(TestCase):
         mock_urlopen.return_value = response
 
         with self.assertRaises(Exception):
-            redirector_helper.insert_adgroup(url, '')
+            redirector_helper.insert_adgroup(url, '', True, False, '')
         self.assertEqual(len(mock_urlopen.call_args_list), 3)
 
     def test_status_not_success(self, mock_urlopen):
@@ -147,5 +160,5 @@ class InsertAdGroupTest(TestCase):
         mock_urlopen.return_value = response
 
         with self.assertRaises(Exception):
-            redirector_helper.insert_adgroup(url, '')
+            redirector_helper.insert_adgroup(url, '', True, False, '')
         self.assertEqual(len(mock_urlopen.call_args_list), 3)
