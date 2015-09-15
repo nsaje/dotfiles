@@ -149,25 +149,20 @@ def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakd
     return _translate_row(results[0], reverse_field_mapping)
 
 
-def query_publishers(start_date, end_date, aggregates, field_mapping, breakdown=None, order_fields_unmapped=None, order_direction = None, limit = None, offset = None, constraints_dict = {}):
+def query_publishers(start_date, end_date, aggregates, breakdown=None, order_fields=None, order_direction = None, limit = None, offset = None, constraints_dict = {}):
 
-    constraints = _prepare_constraints(constraints_dict, field_mapping)
+    constraints = _prepare_constraints(constraints_dict, field_mapping = None)
     constraints.append('{} >= \'{}\''.format(quote('date'), start_date))
     constraints.append('{} <= \'{}\''.format(quote('date'), end_date))
 
-    aggregates = _prepare_aggregates(aggregates, field_mapping, hack=False)
-    if order_fields_unmapped:
-        order_fields = [field_mapping[unmapped_field] for unmapped_field in order_fields_unmapped]
-    else:
-        order_fields = None
+    aggregates = _prepare_aggregates_simple(aggregates)
+    # Do a verification here
     if order_direction:
         if order_direction.lower() not in ("asc", "desc"):
             raise Exception("Order direction has to be either ASC or DESC")
 
-    reverse_field_mapping = {v: k for k, v in field_mapping.iteritems()}
-
     if breakdown:
-        breakdown = _prepare_breakdown(breakdown, field_mapping)
+        breakdown = _prepare_breakdown(breakdown, {})
         statement = _create_select_query(
             'b1_publishers_1',
             breakdown + aggregates,
@@ -180,7 +175,7 @@ def query_publishers(start_date, end_date, aggregates, field_mapping, breakdown=
         )
 
         results = _get_results(statement)
-        return [_translate_row(row, reverse_field_mapping) for row in results]
+        return results
 
     statement = _create_select_query(
         'b1_publishers_1',
@@ -189,11 +184,11 @@ def query_publishers(start_date, end_date, aggregates, field_mapping, breakdown=
     )
 
     results = _get_results(statement)
+    return results
 
-    return _translate_row(results[0], reverse_field_mapping)
 
 
-def _prepare_constraints(constraints, field_mapping):
+def _prepare_constraints(constraints, field_mapping = None):
     result = []
 
     def quote_if_str(val):
@@ -204,7 +199,8 @@ def _prepare_constraints(constraints, field_mapping):
             return str(val)
 
     for k, v in constraints.iteritems():
-        k = quote(field_mapping.get(k, k))
+        if field_mapping:
+            k = quote(field_mapping.get(k, k))
 
         if isinstance(v, collections.Sequence) or isinstance(v, QuerySet):
             if v:
@@ -217,7 +213,7 @@ def _prepare_constraints(constraints, field_mapping):
     return result
 
 
-def _prepare_aggregates(aggregates, field_mapping, hack = True):
+def _prepare_aggregates(aggregates, field_mapping):
     processed_aggrs = []
     for key, aggr in aggregates.iteritems():
         field_name = aggr.input_field.name
@@ -231,10 +227,21 @@ def _prepare_aggregates(aggregates, field_mapping, hack = True):
         else:
             raise exc.ReportsUnknownAggregator('Unknown aggregator')
 
-    # HACK: should be added to aggregate_fields
-    if hack:
-        # SOMEONE PLEASE REMOVE THIS HACK
-        processed_aggrs.append(_click_discrepancy_aggregate('clicks', 'visits', 'click_discrepancy'))
+    processed_aggrs.append(_click_discrepancy_aggregate('clicks', 'visits', 'click_discrepancy'))
+
+    return processed_aggrs
+
+def _prepare_aggregates_simple(aggregates):
+    processed_aggrs = []
+    for key, aggr in aggregates.iteritems():
+        field_name = aggr.input_field.name
+        if isinstance(aggr, db_aggregates.SumDivision):
+            divisor = aggr.extra['divisor']
+            processed_aggrs.append(_sum_division_aggregate(field_name, divisor, key))
+        elif isinstance(aggr, Sum):
+            processed_aggrs.append(_sum_aggregate(field_name, key))
+        else:
+            raise exc.ReportsUnknownAggregator('Unknown aggregator')
 
     return processed_aggrs
 
@@ -311,7 +318,6 @@ def _get_results(statement):
     cursor.execute(statement, [])
 
     results = dictfetchall(cursor)
-
     cursor.close()
     return results
 

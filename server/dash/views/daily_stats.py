@@ -252,7 +252,7 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
             map_exchange_to_source_name[s.bidder_slug] = s.name
         
         if totals:
-            totals_constraints = {'ad_group': int(ad_group.id)}
+            totals_constraints = {'adgroup_id': int(ad_group.id)}
 
         if set(models.Source.objects.all()) != set(filtered_sources):
             totals_constraints['exchange'] = map_exchange_to_source_name.keys()

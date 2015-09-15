@@ -72,7 +72,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             hasTotalsLabel: false,
             totalRow: false,
             help: 'Link to a publisher where your content is being promoted.',
-            order: true,
+            order: false,
             initialOrder: 'asc'
         },
         {

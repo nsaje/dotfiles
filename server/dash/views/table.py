@@ -1716,8 +1716,8 @@ class PublishersTable(api_common.BaseApiView):
                    user,
                    totals_data):
         result = {
-            'cost': self.from_micro_cpm(totals_data.get('cost', 0)),
-            'cpc': self.from_micro_cpm(totals_data.get('cpc', 0)),
+            'cost': totals_data.get('cost', 0),
+            'cpc': totals_data.get('cpc', 0),
             'clicks': totals_data['clicks'],
             'impressions': totals_data['impressions'],
             'ctr': totals_data['ctr'],
@@ -1753,8 +1753,8 @@ class PublishersTable(api_common.BaseApiView):
                 'domain': domain,
                 'domain_link': domain_link,
                 'exchange': source_name, 
-                'cost': self.from_micro_cpm(publisher_data.get('cost', 0)),
-                'cpc': self.from_micro_cpm(publisher_data.get('cpc', 0)),
+                'cost': publisher_data.get('cost', 0),
+                'cpc': publisher_data.get('cpc', 0),
                 'clicks': publisher_data.get('clicks', None),
                 'impressions': publisher_data.get('impressions', None),
                 'ctr': publisher_data.get('ctr', None),
