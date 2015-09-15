@@ -123,7 +123,6 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
         source = models.Source.objects.get(pk=source_id)
         self._assert_response(response, source_id, source.name)
 
-
 class AccountDailyStatsTest(BaseDailyStatsTest):
     def test_get_by_source(self):
         source_id = 3
@@ -336,9 +335,9 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
         mock_query.assert_called_with(
             start_date,
             end_date,
-            ['date'],
-            ad_group=1,
-            source=matcher
+            breakdown = ['date'],
+            constraints = { 'ad_group': 1,
+                            'source': matcher}
         )
 
         self.assertJSONEqual(response.content, {

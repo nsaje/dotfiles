@@ -35,7 +35,7 @@ class ApiContentAdsTest(TestCase):
         for bf in breakdown_fields:
             self.assertEqual(1, len([x for x in select_fields if bf in x]))
 
-    def check_constraints(self, mock_get_results, **constraints):
+    def check_constraints(self, mock_get_results, constraints):
         query = self._get_query(mock_get_results)
         where_constraints = query.split('WHERE')[1].split('GROUP BY')[0].split('AND')
         self.assertEqual(len(where_constraints), len(constraints))
@@ -82,13 +82,14 @@ class ApiContentAdsTest(TestCase):
         }]
 
         constraints = dict(
-            start_date=datetime.date(2015, 2, 1),
-            end_date=datetime.date(2015, 2, 2),
             ad_group=1
         )
+        start_date=datetime.date(2015, 2, 1)
+        end_date=datetime.date(2015, 2, 2)
         breakdown = None
 
-        stats = api_contentads.query(breakdown=breakdown, **constraints)
+        stats = api_contentads.query(start_date, end_date, breakdown=breakdown, constraints=constraints)
+        constraints.update({'start_date': start_date, 'end_date': end_date})
 
         self.assertDictEqual(stats, {
             'avg_tos': 1.0,
@@ -107,42 +108,45 @@ class ApiContentAdsTest(TestCase):
         })
 
         self.check_breakdown(_get_results, breakdown)
-        self.check_constraints(_get_results, **constraints)
+        self.check_constraints(_get_results, constraints)
         self.check_aggregations(_get_results)
 
     def test_query_breakdown_by_content_ad(self, _get_results):
         constraints = dict(
-            start_date=datetime.date(2015, 2, 1),
-            end_date=datetime.date(2015, 2, 2),
             ad_group=1
         )
+        start_date=datetime.date(2015, 2, 1)
+        end_date=datetime.date(2015, 2, 2)
         breakdown = ['content_ad']
 
-        api_contentads.query(breakdown=breakdown, constraints=constraints)
-
+        api_contentads.query(start_date, end_date, breakdown=breakdown, constraints=constraints)
+        constraints.update({'start_date': start_date, 'end_date': end_date})
         self.check_breakdown(_get_results, breakdown)
-        self.check_constraints(_get_results, **constraints)
+        self.check_constraints(_get_results, constraints)
         self.check_aggregations(_get_results)
 
     def test_query_breakdown_by_date(self, _get_results):
         constraints = dict(
-            start_date=datetime.date(2015, 2, 1),
-            end_date=datetime.date(2015, 2, 2),
             ad_group=1
         )
+        start_date=datetime.date(2015, 2, 1)
+        end_date=datetime.date(2015, 2, 2)
         breakdown = ['date']
-        api_contentads.query(breakdown=breakdown, constraints = constraints)
+        api_contentads.query(start_date, end_date, breakdown=breakdown, constraints = constraints)
+        constraints.update({'start_date': start_date, 'end_date': end_date})
 
         self.check_breakdown(_get_results, breakdown)
-        self.check_constraints(_get_results, **constraints)
+        self.check_constraints(_get_results, constraints)
         self.check_aggregations(_get_results)
 
     def test_query_filter_by_date(self, _get_results):
         constraints = dict(
-            start_date=datetime.date(2015, 2, 1),
-            end_date=datetime.date(2015, 2, 2),
             date=datetime.date(2015, 2, 1),
         )
-        api_contentads.query(**constraints)
-        self.check_constraints(_get_results, constraints = constraints)
+        start_date=datetime.date(2015, 2, 1)
+        end_date=datetime.date(2015, 2, 2)
+        api_contentads.query(start_date, end_date, constraints=constraints)
+        constraints.update({'start_date': start_date, 'end_date': end_date})
+        
+        self.check_constraints(_get_results, constraints)
         self.check_aggregations(_get_results)
