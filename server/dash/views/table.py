@@ -1673,10 +1673,10 @@ class PublishersTable(api_common.BaseApiView):
         publishers_data = reports.api_publishers.query(
             start_date,
             end_date,
-            ['domain', 'exchange'],
-            order_fields_unmapped=[order],
+            breakdown_fields = ['domain', 'exchange'],
+            order_fields = [order],
             order_direction = order_direction,
-            constraints_dict=constraints_dict,
+            constraints_dict = constraints_dict,
         )
 
         totals_data = reports.api_publishers.query(

@@ -149,25 +149,25 @@ def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakd
     return _translate_row(results[0], reverse_field_mapping)
 
 
-def query_publishers(start_date, end_date, aggregates, breakdown=None, order_fields=None, order_direction = None, limit = None, offset = None, constraints_dict = {}):
+def query_general(table_name, start_date, end_date, aggregates, breakdown_fields=None, order_fields=None, order_direction = None, limit = None, offset = None, constraints_dict = {}):
 
-    constraints = _prepare_constraints(constraints_dict, field_mapping = None)
+    constraints = _prepare_constraints(constraints_dict, field_mapping = {})
     constraints.append('{} >= \'{}\''.format(quote('date'), start_date))
     constraints.append('{} <= \'{}\''.format(quote('date'), end_date))
 
     aggregates = _prepare_aggregates_simple(aggregates)
-    # Do a verification here
+
     if order_direction:
         if order_direction.lower() not in ("asc", "desc"):
             raise Exception("Order direction has to be either ASC or DESC")
 
-    if breakdown:
-        breakdown = _prepare_breakdown(breakdown, {})
+    if breakdown_fields:
+        breakdown_fields = _prepare_breakdown(breakdown_fields, {})
         statement = _create_select_query(
-            'b1_publishers_1',
-            breakdown + aggregates,
+            table_name, 
+            breakdown_fields + aggregates,
             constraints,
-            breakdown = breakdown,
+            breakdown = breakdown_fields,
             order_fields = order_fields,
             order_direction = order_direction,
             limit = limit,
@@ -178,7 +178,7 @@ def query_publishers(start_date, end_date, aggregates, breakdown=None, order_fie
         return results
 
     statement = _create_select_query(
-        'b1_publishers_1',
+        table_name,
         aggregates,
         constraints
     )
@@ -188,7 +188,7 @@ def query_publishers(start_date, end_date, aggregates, breakdown=None, order_fie
 
 
 
-def _prepare_constraints(constraints, field_mapping = None):
+def _prepare_constraints(constraints, field_mapping):
     result = []
 
     def quote_if_str(val):
@@ -199,8 +199,7 @@ def _prepare_constraints(constraints, field_mapping = None):
             return str(val)
 
     for k, v in constraints.iteritems():
-        if field_mapping:
-            k = quote(field_mapping.get(k, k))
+        k = quote(field_mapping.get(k, k))
 
         if isinstance(v, collections.Sequence) or isinstance(v, QuerySet):
             if v:
@@ -314,7 +313,6 @@ def _get_cursor():
 
 def _get_results(statement):
     cursor = _get_cursor()
-    print "XXXX", statement
     cursor.execute(statement, [])
 
     results = dictfetchall(cursor)

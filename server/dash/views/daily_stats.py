@@ -303,7 +303,7 @@ class AccountsDailyStats(BaseDailyStatsView):
 
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
-        totals_constraints = None
+        totals_kwargs = None
         selected_kwargs = None
         group_key = None
         group_names = None
@@ -311,7 +311,7 @@ class AccountsDailyStats(BaseDailyStatsView):
         accounts = models.Account.objects.all().filter_by_user(request.user)
 
         if totals:
-            totals_constraints = {'account': accounts, 'source': filtered_sources}
+            totals_kwargs = {'account': accounts, 'source': filtered_sources}
 
         if selected_ids:
             ids = [int(x) for x in selected_ids]
@@ -322,7 +322,7 @@ class AccountsDailyStats(BaseDailyStatsView):
             sources = models.Source.objects.filter(pk__in=ids)
             group_names = {source.id: source.name for source in sources}
 
-        stats = self.get_stats(request, totals_constraints, selected_kwargs, group_key)
+        stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key)
 
         return self.create_api_response(self.get_response_dict(
             stats,

@@ -3,7 +3,6 @@ import logging
 from django.db.models import Sum
 
 from utils import db_aggregates
-from reports import api_helpers
 from reports import redshift
 from reports import exc
 
@@ -39,24 +38,36 @@ OUTPUT_FIELDS_MAPPING = {'clicks_sum':      ('clicks',      lambda v: v),
                          'exchange':        ('exchange',    lambda v: v),
                         }
 OUTPUT_FIELDS_REVERSE_MAPPING = {v[0]:k for k,v in OUTPUT_FIELDS_MAPPING.iteritems()}
-ALLOWED_CONSTRAINTS_FIELDS_SET = set(OUTPUT_FIELDS_REVERSE_MAPPING.keys())
 
+CONSTRAINTS_FIELDS_UNMAPPED_SET = set(OUTPUT_FIELDS_REVERSE_MAPPING.keys())
+BREAKDOWN_FIELDS_UNMAPPED_SET = set(['exchange', 'domain', 'date', ])
 
-def query(start_date, end_date, breakdown=[], order_fields_unmapped=[], order_direction=None, offset=None, limit=None, constraints_dict={}):
+def query(start_date, end_date, breakdown_fields=[], order_fields=[], order_direction=None, offset=None, limit=None, constraints_dict={}):
+    # map all query fields to their SQL representations first
+    # then run query
+    # then map SQL fields back to application fields
+    
+    # map breakdown fields
+    unknown_fields = set(breakdown_fields) - BREAKDOWN_FIELDS_UNMAPPED_SET
+    if len(unknown_fields) != 0:
+        raise exc.ReportsQueryError('Invalid breakdowns: %s' % str(unknown_fields))
+    breakdown_fields = [OUTPUT_FIELDS_REVERSE_MAPPING[field] for field in breakdown_fields]
+    
+    # map order fields
+    unknown_fields = set(order_fields) - CONSTRAINTS_FIELDS_UNMAPPED_SET
+    if len(unknown_fields) != 0:
+        raise exc.ReportsQueryError('Invalid breakdowns: %s' % str(unknown_fields))
+    order_fields = [OUTPUT_FIELDS_REVERSE_MAPPING[field] for field in order_fields]
 
-    if breakdown and len(set(breakdown) - api_helpers.DIMENSIONS) != 0:
-        raise exc.ReportsQueryError('Invalid breakdown')
-
-    # this automatically enforces only valid fields
-    order_fields = [OUTPUT_FIELDS_REVERSE_MAPPING[field] for field in order_fields_unmapped]
-    breakdown_fields = [OUTPUT_FIELDS_REVERSE_MAPPING[field] for field in breakdown]
-    unknown_fields = set(constraints_dict.keys()) - ALLOWED_CONSTRAINTS_FIELDS_SET
+    # map constraints fields	
+    unknown_fields = set(constraints_dict.keys()) - CONSTRAINTS_FIELDS_UNMAPPED_SET
     if len(unknown_fields) > 0:
-        raise exc.ReportsQueryError("Unsupported field constraint fields: %s" % unknown_fields)
-    # TODO:
+        raise exc.ReportsQueryError("Unsupported field constraint fields: %s" % str(unknown_fields))
+    # TODO: map constrain fields too
         
-
-    results = redshift.query_publishers(
+    # now execute the query
+    results = redshift.query_general(
+        'b1_publishers_1',
         start_date,
         end_date,
         PUBLISHERS_AGGREGATE_FIELDS,
@@ -68,13 +79,14 @@ def query(start_date, end_date, breakdown=[], order_fields_unmapped=[], order_di
         constraints_dict = constraints_dict)
 
 
-    if breakdown:
-        return [_transform_row(row) for row in results]
+
+    if breakdown_fields:
+        return [_map_rowdict_to_output(row) for row in results]
  
-    return _transform_row(results[0])
+    return _map_rowdict_to_output(results[0])
 
 
-def _transform_row(row):
+def _map_rowdict_to_output(row):
     result = {}
     for name, val in row.items():
         (newname, mapfunc) = OUTPUT_FIELDS_MAPPING[name]
