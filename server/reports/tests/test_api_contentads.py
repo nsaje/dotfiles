@@ -118,7 +118,7 @@ class ApiContentAdsTest(TestCase):
         )
         breakdown = ['content_ad']
 
-        api_contentads.query(breakdown=breakdown, **constraints)
+        api_contentads.query(breakdown=breakdown, constraints=constraints)
 
         self.check_breakdown(_get_results, breakdown)
         self.check_constraints(_get_results, **constraints)
@@ -131,7 +131,7 @@ class ApiContentAdsTest(TestCase):
             ad_group=1
         )
         breakdown = ['date']
-        api_contentads.query(breakdown=breakdown, **constraints)
+        api_contentads.query(breakdown=breakdown, constraints = constraints)
 
         self.check_breakdown(_get_results, breakdown)
         self.check_constraints(_get_results, **constraints)
@@ -144,5 +144,5 @@ class ApiContentAdsTest(TestCase):
             date=datetime.date(2015, 2, 1),
         )
         api_contentads.query(**constraints)
-        self.check_constraints(_get_results, **constraints)
+        self.check_constraints(_get_results, constraints = constraints)
         self.check_aggregations(_get_results)
