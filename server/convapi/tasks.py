@@ -357,10 +357,14 @@ def process_ga_report_v2(ga_report_task):
 
         # omniture parsing for now
         report = None
+        report_type = None
+
         if ga_report_task.attachment_name.endswith('.xls'):
+            report_type = reports.constants.ReportType.OMNITURE
             report = parse_v2.OmnitureReport(content)
             report.parse()
         else:
+            report_type = reports.constants.ReportType.GOOGLE_ANALYTICS
             report = parse_v2.GAReport(content)
             # parse will throw exceptions in case of errors
             report.parse()
@@ -372,9 +376,11 @@ def process_ga_report_v2(ga_report_task):
         update.process_report(
             report.get_date(),
             valid_entries,
-            reports.constants.ReportType.GOOGLE_ANALYTICS
+            report_type
         )
 
+        report_log.visits_imported = report.imported_visits()
+        report_log.visits_reported = report.reported_visits()
         report_log.state = constants.ReportState.SUCCESS
         report_log.save()
     except exc.EmptyReportException as e:

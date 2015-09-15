@@ -205,6 +205,7 @@ class Report(object):
         # mapping from each url in report to corresponding z1 code or utm term
         self.entries = {}
         self.start_date = None
+        self._imported_visits = 0
 
     def is_empty(self):
         return self.entries == {}
@@ -214,6 +215,15 @@ class Report(object):
 
     def valid_entries(self):
         return [entry for entry in self.entries.values() if entry.is_row_valid()]
+
+    def reported_visits(self):
+        return sum(entry.visits for entry in self.entries.values())
+
+    def imported_visits(self):
+        return self._imported_visits
+
+    def add_imported_visits(self, count):
+        self._imported_visits += count
 
     def debug_parsing_overview(self):
         count_all = len(self.entries.values())
@@ -348,6 +358,7 @@ class GAReport(Report):
                 content_ad_id, source_param = self._parse_keyword_or_url(keyword_or_url)
                 goals = self._parse_goals(self.fieldnames, entry)
                 report_entry = GaReportRow(entry, self.start_date, content_ad_id, source_param, goals)
+                self.add_imported_visits(report_entry.visits or 0)
 
                 existing_entry = self.entries.get(report_entry.key())
                 if existing_entry is None:
@@ -623,6 +634,7 @@ class OmnitureReport(Report):
             keyword = omniture_row_dict.get('Tracking Code', '')
             content_ad_id, source_param = self._parse_z11z_keyword(keyword)
             report_entry = OmnitureReportRow(omniture_row_dict, self.start_date, content_ad_id, source_param)
+            self.add_imported_visits(report_entry.visits or 0)
 
             existing_entry = self.entries.get(report_entry.key())
             if existing_entry is None:

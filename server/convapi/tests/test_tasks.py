@@ -76,8 +76,8 @@ Day Index,Sessions
         )
         tasks.process_ga_report(ga_report_task)
 
-        report_logs = models.GAReportLog.objects.all()[0]
-        self.assertIsNone(report_logs.errors)
+        report_log = models.GAReportLog.objects.all()[0]
+        self.assertIsNone(report_log.errors)
 
     def test_omni_ga_zip_conversion(self, cursor):
         pass
@@ -99,8 +99,11 @@ Day Index,Sessions
         )
         tasks.process_ga_report_v2(ga_report_task)
 
-        report_logs = models.GAReportLog.objects.all()[0]
-        self.assertIsNone(report_logs.errors)
+        report_log = models.GAReportLog.objects.all()[0]
+        self.assertIsNone(report_log.errors)
+
+        self.assertEqual(553, report_log.visits_reported)
+        self.assertEqual(553, report_log.visits_imported)
 
     def test_process_ga_report_v2_omni(self, cursor):
         tasks.get_from_s3 = self._fake_get_omni_from_s3
@@ -117,8 +120,10 @@ Day Index,Sessions
         )
         tasks.process_ga_report_v2(ga_report_task)
 
-        report_logs = models.GAReportLog.objects.all()[0]
-        self.assertIsNone(report_logs.errors)
+        report_log = models.GAReportLog.objects.all()[0]
+        self.assertIsNone(report_log.errors)
+        self.assertEqual(234, report_log.visits_reported)
+        self.assertEqual(234, report_log.visits_imported)
 
     def _fake_get_omniture_from_s3(self, key):
         csv_omniture_report = """
@@ -164,5 +169,5 @@ Percent Shown as: Number,,,,,,,,,,
         )
         tasks.process_omniture_report(report_task)
 
-        report_logs = models.GAReportLog.objects.all()[0]
-        self.assertIsNone(report_logs.errors)
+        report_log = models.GAReportLog.objects.all()[0]
+        self.assertIsNone(report_log.errors)
