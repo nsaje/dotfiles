@@ -234,7 +234,7 @@ class AdGroupDailyStats(BaseDailyStatsView):
 class AdGroupPublishersDailyStats(BaseDailyStatsView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_publishers_daily_stats_get')
     def get(self, request, ad_group_id):
-       if not request.user.has_perm('zemauth.can_see_publishers'):
+        if not request.user.has_perm('zemauth.can_see_publishers'):
             raise exc.MissingDataError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)

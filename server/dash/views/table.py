@@ -1637,7 +1637,7 @@ class PublishersTable(api_common.BaseApiView):
     @newrelic.agent.function_trace()
     def get(self, request, level_, id_=None):
         newrelic.agent.set_transaction_name('dash.views.table:PublishersTable#%s' % (level_))
-       if not request.user.has_perm('zemauth.can_see_publishers'):
+        if not request.user.has_perm('zemauth.can_see_publishers'):
             raise exc.MissingDataError()
 
         user = request.user
