@@ -1168,7 +1168,7 @@ class AdGroupPublishersTableTest(TestCase):
             params,
             follow=True
         )
-        print mock_query.mock_calls
+
         mock_query.assert_any_call(
             date,
             date,
