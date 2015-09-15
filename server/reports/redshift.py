@@ -149,14 +149,15 @@ def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakd
     return _translate_row(results[0], reverse_field_mapping)
 
 
-def query_general(table_name, start_date, end_date, aggregates, breakdown_fields=None, order_fields=None, order_direction = None, limit = None, offset = None, constraints = {}):
+def query_general(table_name, start_date, end_date, aggregates, breakdown_fields=None, order_fields=None, order_direction=None, limit=None, offset=None, constraints={}):
 
-    constraints = _prepare_constraints(constraints, field_mapping = {})
+    constraints = _prepare_constraints(constraints, field_mapping={})
     constraints.append('{} >= \'{}\''.format(quote('date'), start_date))
     constraints.append('{} <= \'{}\''.format(quote('date'), end_date))
 
     aggregates = _prepare_aggregates_simple(aggregates)
 
+    # Warning - direction affects just the last order parameter
     if order_direction:
         if order_direction.lower() not in ("asc", "desc"):
             raise Exception("Order direction has to be either ASC or DESC")
@@ -167,15 +168,14 @@ def query_general(table_name, start_date, end_date, aggregates, breakdown_fields
             table_name, 
             breakdown_fields + aggregates,
             constraints,
-            breakdown = breakdown_fields,
-            order_fields = order_fields,
-            order_direction = order_direction,
-            limit = limit,
-            offset = offset,
+            breakdown=breakdown_fields,
+            order_fields=order_fields,
+            order_direction=order_direction,
+            limit=limit,
+            offset=offset,
         )
 
-        results = _get_results(statement)
-        return results
+        return _get_results(statement)
 
     statement = _create_select_query(
         table_name,
@@ -183,8 +183,7 @@ def query_general(table_name, start_date, end_date, aggregates, breakdown_fields
         constraints
     )
 
-    results = _get_results(statement)
-    return results
+    return _get_results(statement)
 
 
 

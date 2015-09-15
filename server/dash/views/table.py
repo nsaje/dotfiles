@@ -1637,6 +1637,8 @@ class PublishersTable(api_common.BaseApiView):
     @newrelic.agent.function_trace()
     def get(self, request, level_, id_=None):
         newrelic.agent.set_transaction_name('dash.views.table:PublishersTable#%s' % (level_))
+       if not request.user.has_perm('zemauth.can_see_publishers'):
+            raise exc.MissingDataError()
 
         user = request.user
         adgroup = helpers.get_ad_group(user, id_)
@@ -1710,7 +1712,6 @@ class PublishersTable(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    @newrelic.agent.function_trace()
     def get_totals(self,
                    user,
                    totals_data):
@@ -1723,20 +1724,13 @@ class PublishersTable(api_common.BaseApiView):
         }
         return result
 
-    def from_micro_cpm(self, num):
-        if not num:	
-            return None
-        else:
-            return num * 1.0 / 1000000000
-
-    @newrelic.agent.function_trace()
     def get_rows(
             self,
             map_exchange_to_source_name,
             publishers_data):
 
         rows = []
-        for i, publisher_data in enumerate(publishers_data):
+        for publisher_data in publishers_data:
             exchange = publisher_data.get('exchange', None)
             source_name = map_exchange_to_source_name.get(exchange, exchange)
             domain = publisher_data.get('domain', None)

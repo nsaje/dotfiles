@@ -79,7 +79,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             shown: true,
             hasTotalsLabel: false,
             totalRow: false,
-            help: 'An exchange where your content is being promoted..',
+            help: 'An exchange where your content is being promoted...',
             order: true,
             initialOrder: 'asc'
         },
@@ -143,9 +143,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     ];
 
     $scope.initColumns = function () {
-        var cols;
 
-        cols = zemCustomTableColsService.load('adGroupPublishers', $scope.columns);
+        var cols = zemCustomTableColsService.load('adGroupPublishers', $scope.columns);
         $scope.selectedColumnsCount = cols.length;
 
         $scope.$watch('columns', function (newValue, oldValue) {

@@ -43,27 +43,28 @@ CONSTRAINTS_FIELDS_UNMAPPED_SET = set(OUTPUT_FIELDS_REVERSE_MAPPING.keys())
 BREAKDOWN_FIELDS_UNMAPPED_SET = set(['exchange', 'domain', 'date', ])
 
 def query(start_date, end_date, breakdown_fields=[], order_fields=[], order_direction=None, offset=None, limit=None, constraints={}):
-    # map all query fields to their SQL representations first
-    # then run query
-    # then map SQL fields back to application fields
+    # This API tries to completely isolate the rest of the app from Redshift-tied part, so namings are decoupled:
+    # First map all query fields to their SQL representations first
+    # Then run the query (without any knowledge about the outside world of the app)
+    # Lastly map SQL fields back to application-used fields
     
     # map breakdown fields
     unknown_fields = set(breakdown_fields) - BREAKDOWN_FIELDS_UNMAPPED_SET
-    if len(unknown_fields) != 0:
-        raise exc.ReportsQueryError('Invalid breakdowns: %s' % str(unknown_fields))
+    if unknown_fields:
+        raise exc.ReportsQueryError('Invalid breakdowns: {}'.format(str(unknown_fields)))
     breakdown_fields = [OUTPUT_FIELDS_REVERSE_MAPPING[field] for field in breakdown_fields]
     
     # map order fields
     unknown_fields = set(order_fields) - CONSTRAINTS_FIELDS_UNMAPPED_SET
-    if len(unknown_fields) != 0:
-        raise exc.ReportsQueryError('Invalid breakdowns: %s' % str(unknown_fields))
+    if unknown_fields:
+        raise exc.ReportsQueryError('Invalid breakdowns: {}'.format(str(unknown_fields)))
     order_fields = [OUTPUT_FIELDS_REVERSE_MAPPING[field] for field in order_fields]
 
     # map constraints fields	
     unknown_fields = set(constraints.keys()) - CONSTRAINTS_FIELDS_UNMAPPED_SET
-    if len(unknown_fields) > 0:
-        raise exc.ReportsQueryError("Unsupported field constraint fields: %s" % str(unknown_fields))
-    # TODO: map constrain fields too
+    if unknown_fields:
+        raise exc.ReportsQueryError("Unsupported field constraint fields: {}".format(str(unknown_fields)))
+    constraints = {OUTPUT_FIELDS_REVERSE_MAPPING[field_name]: v for field_name, v in constraints}
         
     # now execute the query
     results = redshift.query_general(
@@ -72,14 +73,14 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], order_dire
         end_date,
         PUBLISHERS_AGGREGATE_FIELDS,
         breakdown_fields,
-        order_fields = order_fields,
-        order_direction = order_direction,
-        limit = limit,
-        offset = offset,
-        constraints = constraints)
+        order_fields=order_fields,
+        order_direction=order_direction,
+        limit=limit,
+        offset=offset,
+        constraints=constraints)
 
 
-
+    # map back to app-specific fields
     if breakdown_fields:
         return [_map_rowdict_to_output(row) for row in results]
  

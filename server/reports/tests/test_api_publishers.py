@@ -46,7 +46,8 @@ class ApiPublishersTest(TestCase):
         required_statements = [
             '"date"',
             'CASE WHEN SUM("clicks") <> 0 THEN SUM(CAST("cost_micro" AS FLOAT)) / SUM("clicks") ELSE NULL END as "cpc_micro"',
-            'SUM("cost_micro") AS "cost_micro_sum",SUM("impressions") AS "impressions_sum"',
+            'SUM("cost_micro") AS "cost_micro_sum"',
+            'SUM("impressions") AS "impressions_sum"',
             'CASE WHEN SUM("impressions") <> 0 THEN SUM(CAST("clicks" AS FLOAT)) / SUM("impressions") ELSE NULL END as "ctr"',
             'SUM("clicks") AS "clicks_sum"',
         ]
@@ -74,15 +75,14 @@ class ApiPublishersTest(TestCase):
 
         stats = api_publishers.query(start_date, end_date, breakdown_fields=breakdown, constraints=constraints)
         constraints.update({'start_date': start_date, 'end_date': end_date})
-        self.assertDictEqual(stats, 
-        {'clicks': 123,
-         'cost': 2.6638e-05,
-         'cpc': 1e-09,
-         'ctr': 100.0,
-         'impressions': 10560,
-         'date': '2015-01-01',
-         }
-        )
+        self.assertDictEqual(stats, {
+                                        'clicks': 123,
+                                        'cost': 2.6638e-05,
+                                        'cpc': 1e-09,
+                                        'ctr': 100.0,
+                                        'impressions': 10560,
+                                        'date': '2015-01-01',
+                                    })
 
         self.check_breakdown(_get_results, breakdown)
         self.check_constraints(_get_results, constraints)
