@@ -72,8 +72,8 @@ class GAReportLog(models.Model):
     nomatch = models.IntegerField(default=0, blank=False, null=False)
 
     state = models.IntegerField(
-        default=constants.GAReportState.RECEIVED,
-        choices=constants.GAReportState.get_choices(),
+        default=constants.ReportState.RECEIVED,
+        choices=constants.ReportState.get_choices(),
     )
 
     errors = models.TextField(blank=False, null=True)

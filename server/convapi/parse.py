@@ -194,7 +194,7 @@ class CsvReport(IReport):
 
         self._check_incomplete()
 
-        self.report_log.state = constants.GAReportState.PARSED
+        self.report_log.state = constants.ReportState.PARSED
 
     def _check_incomplete(self):
         sessions_total = self._get_sessions_total()
