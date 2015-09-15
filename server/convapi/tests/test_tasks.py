@@ -41,6 +41,10 @@ Day Index,Sessions
         with open('convapi/fixtures/omniture_tracking_codes_modified.xls', 'rb') as f:
             return f.read()
 
+    def _fake_get_omni_zip_from_s3(self, key):
+        with open('convapi/fixtures/omniture_tracking_codes_xls.zip', 'rb') as f:
+            return f.read()
+
     def test_process_ga_report(self, cursor):
         dash.models.Source.objects.create(source_type=None, name='Test source', tracking_slug='lasko', maintenance=False)
 
@@ -79,9 +83,6 @@ Day Index,Sessions
         report_log = models.GAReportLog.objects.all()[0]
         self.assertIsNone(report_log.errors)
 
-    def test_omni_ga_zip_conversion(self, cursor):
-        pass
-
     def test_process_ga_report_v2(self, cursor):
         dash.models.Source.objects.create(source_type=None, name='Test source', tracking_slug='lasko', maintenance=False)
 
@@ -97,7 +98,7 @@ Day Index,Sessions
             1,
             'text/csv',
         )
-        tasks.process_ga_report_v2(ga_report_task)
+        tasks.process_report_v2(ga_report_task)
 
         report_log = models.ReportLog.objects.all()[0]
         self.assertIsNone(report_log.errors)
@@ -118,7 +119,27 @@ Day Index,Sessions
             1,
             'text/csv',
         )
-        tasks.process_ga_report_v2(ga_report_task)
+        tasks.process_report_v2(ga_report_task)
+
+        report_log = models.ReportLog.objects.all()[0]
+        self.assertIsNone(report_log.errors)
+        self.assertEqual(234, report_log.visits_reported)
+        self.assertEqual(234, report_log.visits_imported)
+
+    def test_process_ga_report_v2_omni_zip(self, cursor):
+        tasks.get_from_s3 = self._fake_get_omni_zip_from_s3
+        ga_report_task = views.GAReportTask('GA mail',
+            '2015-07-12',
+            'testuser@zemanta.com',
+            'mailbot@zemanta.com',
+            'testuser@zemanta.com',
+            None,
+            'lasko',
+            'omniture_tracking_codes.zip',
+            1,
+            'text/csv',
+        )
+        tasks.process_report_v2(ga_report_task)
 
         report_log = models.ReportLog.objects.all()[0]
         self.assertIsNone(report_log.errors)

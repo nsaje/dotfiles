@@ -38,7 +38,7 @@ GOAL_RATE_KEYWORDS = ['conversion rate']
 
 def _report_atoi(raw_str):
     # TODO: Implement locale specific parsing
-    ret_str = raw_str.replace(',', '')
+    ret_str = (raw_str or '0').replace(',', '')
     dot_loc = ret_str.find('.')
     if dot_loc != -1:
         return int(ret_str[:dot_loc])

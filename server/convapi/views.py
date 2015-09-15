@@ -133,7 +133,7 @@ def mailgun_gareps(request):
             queue=settings.CELERY_DEFAULT_CONVAPI_V2_QUEUE
         )
     except Exception as e:
-        report_log = models.eportLog()
+        report_log = models.ReportLog()
         report_log.email_subject = ga_report_task.subject if ga_report_task is not None else None
         report_log.from_address = ga_report_task.from_address if ga_report_task is not None else None
         report_log.report_filename = request.FILES.get('attachment-1').name if request.FILES.get('attachment-1') is not None else None

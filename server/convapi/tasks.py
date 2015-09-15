@@ -24,6 +24,7 @@ from convapi.helpers import get_from_s3
 
 from reports import update
 
+from utils.compression import unzip
 from utils.statsd_helper import statsd_incr, statsd_timer
 
 logger = logging.getLogger(__name__)
@@ -359,7 +360,16 @@ def process_report_v2(ga_report_task):
         report = None
         report_type = None
 
-        if ga_report_task.attachment_name.endswith('.xls'):
+        attachment_name = ga_report_task.attachment_name
+        if attachment_name.endswith('.zip'):
+            files = unzip(content)
+            for filename in files:
+                if filename.endswith('.xls') or filename.endswith('.csv'):
+                    attachment_name = filename
+                    content = files[filename]
+                    break
+
+        if attachment_name.endswith('.xls'):
             report_type = reports.constants.ReportType.OMNITURE
             report = parse_v2.OmnitureReport(content)
             report.parse()
