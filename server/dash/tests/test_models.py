@@ -331,7 +331,7 @@ class AdGroupTestCase(TestCase):
     def test_queryset_exclude_archived(self):
         qs = models.AdGroup.objects.all().exclude_archived()
 
-        self.assertEqual(len(qs), 6)
+        self.assertEqual(len(qs), 7)
 
 
 class CampaignTestCase(TestCase):

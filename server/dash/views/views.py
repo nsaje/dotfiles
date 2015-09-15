@@ -431,7 +431,7 @@ class AdGroupSources(api_common.BaseApiView):
 
         sources = []
         for source_settings in models.DefaultSourceSettings.objects.\
-                filter(source__in=filtered_sources).exclude(credentials__isnull=True):
+                filter(source__in=filtered_sources).with_credentials():
 
             if source_settings.source in ad_group_sources:
                 continue
@@ -482,6 +482,8 @@ class AdGroupSources(api_common.BaseApiView):
         external_name = ad_group_source.get_external_name()
         actionlog.api.create_campaign(ad_group_source, external_name, request)
         self._add_to_history(ad_group_source, request)
+
+        helpers.set_ad_group_source_defaults(default_settings, ad_group.get_current_settings(), ad_group_source)
 
         return self.create_api_response(None)
 

@@ -11,6 +11,7 @@ import actionlog.constants
 import actionlog.models
 from dash import models
 from dash import constants
+from dash import api
 from utils import exc
 from utils import statsd_helper
 
@@ -737,3 +738,21 @@ def add_source_to_ad_group(default_source_settings, ad_group):
         ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
 
     return ad_group_source
+
+
+def set_ad_group_source_defaults(default_source_settings, ad_group_settings, ad_group_source, request):
+    # set defaults if available
+    cpc_cc = default_source_settings.mobile_cpc_cc if ad_group_settings.is_mobile_only() else\
+        default_source_settings.desktop_cpc_cc
+
+    daily_budget_cc = default_source_settings.daily_budget_cc
+
+    resource = {}
+    if daily_budget_cc is not None:
+        resource['daily_budget_cc'] = daily_budget_cc
+    if cpc_cc is not None:
+        resource['cpc_cc'] = cpc_cc
+
+    if resource:
+        settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
+        settings_writer.set(resource, request)

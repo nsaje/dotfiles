@@ -789,6 +789,12 @@ class DefaultSourceSettings(models.Model):
         verbose_name='Default daily budget'
     )
 
+    objects = QuerySetManager()
+
+    class QuerySet(models.QuerySet):
+        def with_credentials(self):
+            return self.exclude(credentials__isnull=True)
+
     class Meta:
         verbose_name_plural = "Default Source Settings"
 
@@ -1095,6 +1101,9 @@ class AdGroupSettings(SettingsBase):
 
     def targets_countries(self):
         return any(tr in regions.COUNTRY_BY_CODE for tr in self.target_regions)
+
+    def is_mobile_only(self):
+        return len(self.target_devices) == 1 and constants.AdTargetDevice.MOBILE in self.target_devices
 
     @classmethod
     def get_defaults_dict(cls):
