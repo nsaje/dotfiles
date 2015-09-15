@@ -18,6 +18,8 @@ from convapi import tasks
 
 logger = logging.getLogger(__name__)
 
+OMNITURE_REPORT_MAIL = 'omniture-reports@mailapi.zemanta.com'
+
 
 def too_many_errors(*errors):
     errors_count = 0
@@ -71,6 +73,7 @@ def mailgun_gareps(request):
         statsd_incr('convapi.invalid_email_sender')
         return HttpResponse(status=406)
 
+
     statsd_incr('convapi.accepted_emails')
     key = None
     try:
@@ -82,7 +85,7 @@ def mailgun_gareps(request):
         attachment_name, content = _first_valid_report_attachment(request.FILES)
 
         key = store_to_s3(csvreport_date, attachment_name, content)
-        logger.info("Unable to store to S3 {date}-{att_name}-{cl}".format(
+        logger.info("Storing to S3 {date}-{att_name}-{cl}".format(
                date=csvreport_date_raw or '',
                att_name=attachment_name or '',
                cl=len(content) if content else 0
@@ -91,19 +94,23 @@ def mailgun_gareps(request):
         # temporary HACK
         content_type = 'text/csv'
 
-        ga_report_task = GAReportTask(request.POST.get('subject'),
-                                             request.POST.get('Date'),
-                                             request.POST.get('sender'),
-                                             request.POST.get('recipient'),
-                                             request.POST.get('from'),
-                                             None,
-                                             key,
-                                             attachment_name,
-                                             request.POST.get('attachment-count', 0),
-                                             content_type)
+        ga_report_task = GAReportTask(
+            request.POST.get('subject'),
+            request.POST.get('Date'),
+            request.POST.get('sender'),
+            request.POST.get('recipient'),
+            request.POST.get('from'),
+            None,
+            key,
+            attachment_name,
+            request.POST.get('attachment-count', 0),
+            content_type
+        )
 
-        tasks.process_ga_report.apply_async((ga_report_task, ),
-                                             queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE)
+        tasks.process_ga_report.apply_async(
+            (ga_report_task, ),
+            queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE
+        )
 
     except Exception as e:
         report_log = models.GAReportLog()
@@ -113,7 +120,6 @@ def mailgun_gareps(request):
         report_log.state = constants.ReportState.FAILED
         report_log.save()
         logger.exception(e.message)
-
 
     try:
         report_task = GAReportTask(
@@ -128,10 +134,16 @@ def mailgun_gareps(request):
             request.POST.get('attachment-count', 0),
             content_type)
 
-        tasks.process_report_v2.apply_async(
-            (report_task, ),
-            queue=settings.CELERY_DEFAULT_CONVAPI_V2_QUEUE
-        )
+        if request.POST.get('to') == OMNITURE_REPORT_MAIL:
+            tasks.process_omniture_report_v2.apply_async(
+                (ga_report_task, ),
+                queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE
+            )
+        else:
+            tasks.process_ga_report_v2.apply_async(
+                (ga_report_task, ),
+                queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE
+            )
     except Exception as e:
         report_log = models.ReportLog()
         report_log.email_subject = ga_report_task.subject if ga_report_task is not None else None

@@ -350,17 +350,25 @@ def _extract_omniture_date(date_raw):
 @app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
           default_retry_delay=settings.CELERY_TASK_RETRY_DEPLAY)
 @transaction.atomic
-def process_report_v2(ga_report_task):
+def process_ga_report_v2(ga_report_task):
+    process_report_v2(ga_report_task, reports.constants.ReportType.GOOGLE_ANALYTICS)
+
+@app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
+          default_retry_delay=settings.CELERY_TASK_RETRY_DEPLAY)
+@transaction.atomic
+def process_omniture_report_v2(ga_report_task):
+    process_report_v2(ga_report_task, reports.constants.ReportType.OMNITURE)
+
+def process_report_v2(report_task, report_type):
     try:
         report_log = models.ReportLog()
         # create report log and validate incoming task
-        content = _update_and_validate_report_log_v2(ga_report_task, report_log)
+        content = _update_and_validate_report_log_v2(report_task, report_log)
 
         # omniture parsing for now
         report = None
-        report_type = None
 
-        attachment_name = ga_report_task.attachment_name
+        attachment_name = report_task.attachment_name
         if attachment_name.endswith('.zip'):
             files = unzip(content)
             for filename in files:
@@ -369,17 +377,15 @@ def process_report_v2(ga_report_task):
                     content = files[filename]
                     break
 
-        if attachment_name.endswith('.xls'):
-            report_type = reports.constants.ReportType.OMNITURE
+        if report_type == reports.constants.ReportType.OMNITURE:
             report = parse_v2.OmnitureReport(content)
             report.parse()
         else:
-            report_type = reports.constants.ReportType.GOOGLE_ANALYTICS
             report = parse_v2.GAReport(content)
             # parse will throw exceptions in case of errors
             report.parse()
 
-        _update_report_log_after_parsing(report, report_log, ga_report_task)
+        _update_report_log_after_parsing(report, report_log, report_task)
 
         # serialize report - this happens even if report is failed/empty
         valid_entries = report.valid_entries()

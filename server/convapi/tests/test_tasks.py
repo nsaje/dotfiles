@@ -98,7 +98,7 @@ Day Index,Sessions
             1,
             'text/csv',
         )
-        tasks.process_report_v2(ga_report_task)
+        tasks.process_ga_report_v2(ga_report_task)
 
         report_log = models.ReportLog.objects.all()[0]
         self.assertIsNone(report_log.errors)
@@ -119,7 +119,7 @@ Day Index,Sessions
             1,
             'text/csv',
         )
-        tasks.process_report_v2(ga_report_task)
+        tasks.process_omniture_report_v2(ga_report_task)
 
         report_log = models.ReportLog.objects.all()[0]
         self.assertIsNone(report_log.errors)
@@ -139,7 +139,7 @@ Day Index,Sessions
             1,
             'text/csv',
         )
-        tasks.process_report_v2(ga_report_task)
+        tasks.process_omniture_report_v2(ga_report_task)
 
         report_log = models.ReportLog.objects.all()[0]
         self.assertIsNone(report_log.errors)
