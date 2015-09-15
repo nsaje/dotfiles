@@ -99,7 +99,7 @@ Day Index,Sessions
         )
         tasks.process_ga_report_v2(ga_report_task)
 
-        report_log = models.GAReportLog.objects.all()[0]
+        report_log = models.ReportLog.objects.all()[0]
         self.assertIsNone(report_log.errors)
 
         self.assertEqual(553, report_log.visits_reported)
@@ -120,7 +120,7 @@ Day Index,Sessions
         )
         tasks.process_ga_report_v2(ga_report_task)
 
-        report_log = models.GAReportLog.objects.all()[0]
+        report_log = models.ReportLog.objects.all()[0]
         self.assertIsNone(report_log.errors)
         self.assertEqual(234, report_log.visits_reported)
         self.assertEqual(234, report_log.visits_imported)

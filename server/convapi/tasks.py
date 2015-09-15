@@ -351,9 +351,9 @@ def _extract_omniture_date(date_raw):
 @transaction.atomic
 def process_ga_report_v2(ga_report_task):
     try:
-        report_log = models.GAReportLog()
+        report_log = models.ReportLog()
         # create report log and validate incoming task
-        content = _update_and_validate_report_log(ga_report_task, report_log)
+        content = _update_and_validate_report_log_v2(ga_report_task, report_log)
 
         # omniture parsing for now
         report = None
@@ -460,6 +460,35 @@ def _update_and_validate_report_log(ga_report_task, report_log):
 
     filename = ga_report_task.attachment_name
     report_log.csv_filename = filename
+    return content
+
+
+def _update_and_validate_report_log_v2(ga_report_task, report_log):
+    report_log.email_subject = '{subj}_v2'.format(subj=ga_report_task.subject)
+    report_log.from_address = ga_report_task.from_address
+    report_log.state = constants.ReportState.RECEIVED
+
+    if int(ga_report_task.attachment_count) != 1:
+        logger.warning('ERROR: single attachment expected')
+        report_log.add_error('ERROR: single attachment expected')
+        report_log.state = constants.ReportState.FAILED
+        report_log.save()
+
+    content = get_from_s3(ga_report_task.attachment_s3_key)
+    if content is None:
+        logger.warning('ERROR: Get attachment from s3 failed')
+        report_log.add_error('ERROR: Get attachment from s3 failed')
+        report_log.state = constants.ReportState.FAILED
+        report_log.save()
+
+    if ga_report_task.attachment_content_type != 'text/csv':
+        logger.warning('ERROR: content type is not CSV')
+        report_log.add_error('ERROR: content type is not CSV')
+        report_log.state = constants.ReportState.FAILED
+        report_log.save()
+
+    filename = ga_report_task.attachment_name
+    report_log.report_filename = filename
     return content
 
 
