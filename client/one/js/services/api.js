@@ -794,9 +794,9 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 brandName: errors.brand_name,
                 description: errors.description,
                 callToAction: errors.call_to_action,
-                enableGaTracking: errors.enableGaTracking,
-                enableAdobeTracking: errors.enableAdobeTracking,
-                adobeTrackingParam: errors.adobeTrackingParam,
+                enableGaTracking: errors.enable_ga_tracking,
+                enableAdobeTracking: errors.enable_adobe_tracking,
+                adobeTrackingParam: errors.adobe_tracking_param,
             };
 
             return result;

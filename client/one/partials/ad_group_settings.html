@@ -156,7 +156,7 @@
         </div>
 
         <div class="form-group" ng-class="{'has-error': !!errors.name}" ng-if="hasPermission('zemauth.can_toggle_adobe_performance_tracking')">
-            <label for="name-input" class="col-xs-2 control-label">
+            <label for="adobe-tracking-param-input" class="col-xs-2 control-label">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_toggle_adobe_performance_tracking')" popover-placement="right"></zem-internal-feature>
                 Adobe tracking param
                 <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Name of the tracking parameter used for Adobe Analytics." placement="top"></zem-help-popover>
