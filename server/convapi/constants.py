@@ -2,7 +2,7 @@ from utils.constant_base import ConstantBase
 
 ALLOWED_ERRORS_COUNT = 2
 
-class GAReportState(ConstantBase):
+class ReportState(ConstantBase):
     FAILED = -1
     RECEIVED = 1
     PARSED = 2

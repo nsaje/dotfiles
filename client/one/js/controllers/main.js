@@ -13,6 +13,7 @@ oneApp.controller('MainCtrl',
      'api',
      'zemFilterService',
      'zemFullStoryService',
+     'zemIntercomService',
       function (
         $scope,
         $state,
@@ -26,7 +27,8 @@ oneApp.controller('MainCtrl',
         accounts,
         api,
         zemFilterService,
-        zemFullStoryService
+        zemFullStoryService,
+        zemIntercomService
 ) {
     $scope.accounts = accounts;
     $scope.user = user;
@@ -344,5 +346,6 @@ oneApp.controller('MainCtrl',
     }, true);
 
     zemFullStoryService.identify($scope.user);
+    zemIntercomService.boot($scope.user);
 
 }]);

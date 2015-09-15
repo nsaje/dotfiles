@@ -1,14 +1,22 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import datetime
 import traceback
 
 from convapi import exc
+from mock import patch
 from django.test import TestCase
 
 from convapi import parse_v2
 
+from utils import csv_utils
 
+
+@patch('reports.redshift._get_cursor')
 class ParseReportTest(TestCase):
 
-    def test_parse_header(self):
+    def test_parse_header(self, cursor):
         complete_head = """
 # ----------------------------------------
 # All Web Site Data
@@ -18,7 +26,7 @@ class ParseReportTest(TestCase):
 
 Landing Page,Device Category,Sessions
 """.strip().replace('\t', '')
-        parser = parse_v2.CsvReport("")
+        parser = parse_v2.GAReport("")
         try:
             parser._parse_header(complete_head.split('\n'))
         except:
@@ -35,7 +43,7 @@ Landing Page,Device Category,Sessions
 
 Device Category,Landing Page,Sessions
 """.strip().replace('\t', '')
-        parser = parse_v2.CsvReport("")
+        parser = parse_v2.GAReport("")
         try:
             parser._parse_header(complete_head.split('\n'))
         except:
@@ -52,7 +60,7 @@ Device Category,Landing Page,Sessions
 
 Device Category,Sessions,Keyword
 """.strip().replace('\t', '')
-        parser = parse_v2.CsvReport("")
+        parser = parse_v2.GAReport("")
         try:
             parser._parse_header(complete_head.split('\n'))
         except:
@@ -69,7 +77,7 @@ Device Category,Sessions,Keyword
 
 "Device, Category","Landing Page","Sessions"
 """.strip().replace('\t', '')
-        parser = parse_v2.CsvReport("")
+        parser = parse_v2.GAReport("")
         try:
             parser._parse_header(complete_head.split('\n'))
         except:
@@ -99,7 +107,7 @@ $ ----------------------------------------""".strip().replace('\t', '')
 
 Landing Page,Device Category,Sessions
 """.strip().replace('\t', '')
-        parser = parse_v2.CsvReport("")
+        parser = parse_v2.GAReport("")
         with self.assertRaises(exc.CsvParseException):
             parser._parse_header(invalid_date_head.split('\n'))
 
@@ -112,12 +120,12 @@ Landing Page,Device Category,Sessions
 
 Landing Page,Device Category,Sessions
 """.strip().replace('\t', '')
-        parser = parse_v2.CsvReport("")
+        parser = parse_v2.GAReport("")
         with self.assertRaises(exc.CsvParseException):
             parser._parse_header(invalid_date_head_1.split('\n'))
 
-    def test_parse_z11z_keyword(self):
-        parser = parse_v2.CsvReport("")
+    def test_parse_z11z_keyword(self, cursor):
+        parser = parse_v2.GAReport("")
 
         # some valid cases
 
@@ -160,8 +168,8 @@ Landing Page,Device Category,Sessions
         self.assertIsNone(caid)
         self.assertEqual('', src_par)
 
-    def test_parse_landing_page(self):
-        parser = parse_v2.CsvReport("")
+    def test_parse_landing_page(self, cursor):
+        parser = parse_v2.GAReport("")
 
         # some valid cases
         landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid=55310&_z1_msid=b1_gumgum"
@@ -196,8 +204,8 @@ Landing Page,Device Category,Sessions
         self.assertIsNone(caid)
         self.assertEqual('', src_par)
 
-    def test_get_goal_name(self):
-        parser = parse_v2.CsvReport("")
+    def test_get_goal_name(self, cursor):
+        parser = parse_v2.GAReport("")
 
         goal_name = "Yell Free Listings (Goal 1 Conversion Rate)"
         self.assertEqual("Yell Free Listings", parser._get_goal_name(goal_name))
@@ -208,8 +216,8 @@ Landing Page,Device Category,Sessions
         goal_name = "Yell Free Listings (Goal 2 Value)"
         self.assertEqual("Yell Free Listings", parser._get_goal_name(goal_name))
 
-    def test_get_goal_name_1(self):
-        parser = parse_v2.CsvReport("")
+    def test_get_goal_name_1(self, cursor):
+        parser = parse_v2.GAReport("")
         goal_name = "*Lead: Whitepaper (Content Fact Sheet) (Goal 1 Conversion Rate)"
         self.assertEqual("*Lead: Whitepaper (Content Fact Sheet)", parser._get_goal_name(goal_name))
 
@@ -219,8 +227,8 @@ Landing Page,Device Category,Sessions
         goal_name = "*Lead: Whitepaper (Content Fact Sheet) (Goal 1 Value)"
         self.assertEqual("*Lead: Whitepaper (Content Fact Sheet)", parser._get_goal_name(goal_name))
 
-    def test_parse_goals(self):
-        parser = parse_v2.CsvReport("")
+    def test_parse_goals(self, cursor):
+        parser = parse_v2.GAReport("")
 
         row_dict = {
             "Yell Free Listings (Goal 1 Conversion Rate)": "2%",
@@ -252,8 +260,8 @@ Landing Page,Device Category,Sessions
         self.assertEqual("2%", resp['Goal 1']['conversion_rate'])
         self.assertEqual("$123", resp['Goal 1']['value'])
 
-    def test_parse_unnamed_goals(self):
-        parser = parse_v2.CsvReport("")
+    def test_parse_unnamed_goals(self, cursor):
+        parser = parse_v2.GAReport("")
 
         fields_raw = "Landing Page,Device Category,Sessions,% New Sessions,New Users,Bounce Rate,Pages / Session,Avg. Session Duration"
         self.assertEqual([], parser._get_goal_fields(fields_raw.split(',')))
@@ -280,7 +288,7 @@ Landing Page,Device Category,Sessions
         self.assertEqual(set(["Revenue"]), set(parser._get_goal_fields(fields_raw.split(','))))
 
 
-    def test_merge(self):
+    def test_merge(self, cursor):
         # GA report can potentially contain multiple entries for a single
         # content ad
         complete_csv = """
@@ -301,10 +309,53 @@ Day Index,Sessions
 ,18
 """.strip().replace('\t', '')
 
-        parser = parse_v2.CsvReport(complete_csv)
+        parser = parse_v2.GAReport(complete_csv)
         parser.parse()
         self.assertEqual(1, len(parser.entries))
         self.assertEqual(6, parser.valid_entries()[0].goals['Goal 1']['conversions'], 6)
 
         self.assertTrue(parser.is_media_source_specified())
         self.assertTrue(parser.is_content_ad_specified())
+
+class OmnitureReportTest(TestCase):
+
+    def test_parse_header(self):
+        csv_header = """
+,,,,,,,,,,
+AdobeÂ® Scheduled Report,,,,,,,,,,
+Report Suite: Global,,,,,,,,,,
+Date: Sun. 19 Apr. 2015,,,,,,,,,,
+Segment: All Visits (No Segment),,,,,,,,,,
+,,,,,,,,,,""".strip().decode('utf-8')
+        report = parse_v2.OmnitureReport(csv_utils.convert_to_xls(csv_header))
+        report.parse()
+        self.assertEqual(datetime.date(2015, 04, 19), report.get_date())
+        self.assertTrue(report.is_empty())
+
+    def test_extract_date(self):
+        csv_header = """
+,,,,,,,,,,
+AdobeÂ® Scheduled Report,,,,,,,,,,
+Report Suite: Global,,,,,,,,,,
+Date: Sun. 19 Apr. 2015 2015-04-19 00:00:00,,,,,,,,,,
+Segment: All Visits (No Segment),,,,,,,,,,
+,,,,,,,,,,""".strip().decode('utf-8')
+        report = parse_v2.OmnitureReport(csv_utils.convert_to_xls(csv_header))
+        report.parse()
+        self.assertEqual(datetime.date(2015, 04, 19), report.get_date())
+
+        csv_header = """
+,,,,,,,,,,
+AdobeÂ® Scheduled Report,,,,,,,,,,
+Report Suite: Global,,,,,,,,,,
+Segment: All Visits (No Segment),,,,,,,,,,
+,,,,,,,,,,""".strip().decode('utf-8')
+        report = parse_v2.OmnitureReport(csv_utils.convert_to_xls(csv_header))
+        with self.assertRaises(Exception):
+           report.parse()
+
+    def test_session_counts(self):
+        pass
+
+    def test_parse(self):
+        pass

@@ -7,12 +7,16 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dash', '0048_move_type_data_to_source_type'),
+        ('dash', '0071_remove_batch_fields'),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='source',
-            name='type',
+            model_name='conversionpixel',
+            name='last_verified_dt',
+        ),
+        migrations.RemoveField(
+            model_name='conversionpixel',
+            name='status',
         ),
     ]

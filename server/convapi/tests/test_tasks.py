@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from mock import patch
 from django.test import TestCase
 
 import dash
@@ -8,13 +9,19 @@ import dash
 from convapi import tasks
 from convapi import models
 from convapi import views
+from utils import csv_utils
+
+from reports import redshift
 
 
+@patch('reports.redshift._get_cursor')
 class TasksTest(TestCase):
-
     fixtures = ['test_ga_aggregation.yaml']
 
-    def _fake_get_from_s3(self, key):
+    def setUp(self):
+        redshift.STATS_DB_NAME = 'default'
+
+    def _fake_get_ga_from_s3(self, key):
         return """
 # ----------------------------------------
 # All Web Site Data
@@ -30,10 +37,14 @@ Day Index,Sessions
 ,"553"
         """.strip()
 
-    def test_process_ga_report(self):
+    def _fake_get_omni_from_s3(self, key):
+        with open('convapi/fixtures/omniture_tracking_codes_modified.xls', 'rb') as f:
+            return f.read()
+
+    def test_process_ga_report(self, cursor):
         dash.models.Source.objects.create(source_type=None, name='Test source', tracking_slug='lasko', maintenance=False)
 
-        tasks.get_from_s3 = self._fake_get_from_s3
+        tasks.get_from_s3 = self._fake_get_ga_from_s3
         ga_report_task = views.GAReportTask('GA mail',
             '2015-01-01',
             'testuser@zemanta.com',
@@ -50,10 +61,31 @@ Day Index,Sessions
         report_logs = models.GAReportLog.objects.all()[0]
         self.assertIsNone(report_logs.errors)
 
-    def test_process_ga_report_v2(self):
+    def test_omni_ga_conversion(self, cursor):
+        tasks.get_from_s3 = self._fake_get_omni_from_s3
+        ga_report_task = views.GAReportTask('GA mail',
+            '2015-07-12',
+            'testuser@zemanta.com',
+            'mailbot@zemanta.com',
+            'testuser@zemanta.com',
+            None,
+            'lasko',
+            'omniture_tracking_codes.xls',
+            1,
+            'text/csv',
+        )
+        tasks.process_ga_report(ga_report_task)
+
+        report_logs = models.GAReportLog.objects.all()[0]
+        self.assertIsNone(report_logs.errors)
+
+    def test_omni_ga_zip_conversion(self, cursor):
+        pass
+
+    def test_process_ga_report_v2(self, cursor):
         dash.models.Source.objects.create(source_type=None, name='Test source', tracking_slug='lasko', maintenance=False)
 
-        tasks.get_from_s3 = self._fake_get_from_s3
+        tasks.get_from_s3 = self._fake_get_ga_from_s3
         ga_report_task = views.GAReportTask('GA mail',
             '2015-01-01',
             'testuser@zemanta.com',
@@ -66,6 +98,71 @@ Day Index,Sessions
             'text/csv',
         )
         tasks.process_ga_report_v2(ga_report_task)
+
+        report_logs = models.GAReportLog.objects.all()[0]
+        self.assertIsNone(report_logs.errors)
+
+    def test_process_ga_report_v2_omni(self, cursor):
+        tasks.get_from_s3 = self._fake_get_omni_from_s3
+        ga_report_task = views.GAReportTask('GA mail',
+            '2015-07-12',
+            'testuser@zemanta.com',
+            'mailbot@zemanta.com',
+            'testuser@zemanta.com',
+            None,
+            'lasko',
+            'omniture_tracking_codes.xls',
+            1,
+            'text/csv',
+        )
+        tasks.process_ga_report_v2(ga_report_task)
+
+        report_logs = models.GAReportLog.objects.all()[0]
+        self.assertIsNone(report_logs.errors)
+
+    def _fake_get_omniture_from_s3(self, key):
+        csv_omniture_report = """
+,,,,,,,,,,
+AdobeÂ® Scheduled Report,,,,,,,,,,
+Report Suite: Global,,,,,,,,,,
+Date: Sun. 19 Apr. 2015,,,,,,,,,,
+Segment: All Visits (No Segment),,,,,,,,,,
+,,,,,,,,,,
+Report Type: Ranked,,,,,,,,,,
+"Selected Metrics: Visits, Unique Visitors, Bounce Rate, Page Views, Total Seconds Spent",,,,,,,,,,
+Broken Down by: None,,,,,,,,,,
+Data Filter: CSY-PB-ZM-AB,,,,,,,,,,
+Compare to Report Suite: None,,,,,,,,,,
+Compare to Segment: None,,,,,,,,,,
+Item Filter: None,,,,,,,,,,
+Percent Shown as: Number,,,,,,,,,,
+,,,,,,,,,,
+,,,,,,,,,,
+,Tracking Code,Visits,,Unique Visitors,,Bounce Rate,Page Views,,Total Seconds Spent,
+1.,CSY-PB-ZM-AB-adbistro_com-z11yahoo1z:Fad-or-Fab-4-Unusual-New-Car-Features,1,0.0%,1,0.0%,100.0%,1,0.0%,100,0.0%
+2.,CSY-PB-ZM-AB-infolinks_com-z12yahoo1z:Fires-and-Other-Home-Hazards-Spike-During-the-Holidays-Data-Show,1,0.0%,1,0.0%,100.0%,1,0.0%,0,0.0%
+3.,CSY-PB-ZM-AB-adbistro_com--z13yahoo1z:Bikers-Born-to-Be-Wild-VIDEO,1,0.0%,1,0.0%,100.0%,1,0.0%,0,0.0%
+4.,CSY-PB-ZM-AB-yahoo_com-z14yahoo1z:7-Useful-Items-for-Your-Glove-Compartment,1,0.0%,1,0.0%,100.0%,1,0.0%,0,0.0%
+,Total,4,,4,,88.6%,"2,670",,100,
+    """.strip().decode('utf-8')
+        return csv_utils.convert_to_xls(csv_omniture_report)
+
+    def test_process_omniture_report(self, cursor):
+        dash.models.Source.objects.create(source_type=None, name='Test source', tracking_slug='lasko', maintenance=False)
+
+        tasks.get_from_s3 = self._fake_get_omniture_from_s3
+        report_task = views.GAReportTask('GA mail',
+            '2015-01-01',
+            'testuser@zemanta.com',
+            'mailbot@zemanta.com',
+            'testuser@zemanta.com',
+            None,
+            'lasko',
+            'Analytics All Web Site Data Landing Pages 20150406-20150406.csv',
+            1,
+            'text/csv',
+        )
+        tasks.process_omniture_report(report_task)
 
         report_logs = models.GAReportLog.objects.all()[0]
         self.assertIsNone(report_logs.errors)

@@ -1,10 +1,10 @@
 CREATE TABLE touchpointconversions (
-    zuid varchar(36),
+    zuid varchar(64),
     slug varchar(256),
 
-    date timestamp,
+    date date,
 
-    conversion_id varchar(36),
+    conversion_id varchar(64),
     conversion_timestamp timestamp,
 
     account_id integer,
@@ -13,7 +13,7 @@ CREATE TABLE touchpointconversions (
     content_ad_id integer,
     source_id integer,
 
-    touchpoint_id varchar(36),
+    touchpoint_id varchar(64),
     touchpoint_timestamp timestamp,
     conversion_lag integer
 )

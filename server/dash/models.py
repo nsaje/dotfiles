@@ -1527,9 +1527,6 @@ class CampaignBudgetSettings(models.Model):
 class ConversionPixel(models.Model):
     account = models.ForeignKey(Account, on_delete=models.PROTECT)
     slug = models.CharField(blank=False, null=False, max_length=32)
-    status = models.IntegerField(default=constants.ConversionPixelStatus.NOT_USED,
-                                 choices=constants.ConversionPixelStatus.get_choices())
-    last_verified_dt = models.DateTimeField(null=True, verbose_name='Last verified on')
     archived = models.BooleanField(default=False)
 
     last_sync_dt = models.DateTimeField(blank=True, null=True)
