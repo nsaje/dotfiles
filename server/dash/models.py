@@ -1104,7 +1104,8 @@ class AdGroupSettings(SettingsBase):
             'description': 'Description',
             'call_to_action': 'Call to action',
             'ad_group_name': 'AdGroup name',
-            'enable_ga_tracking': 'Enable GA tracking'
+            'enable_ga_tracking': 'Enable GA tracking',
+            'autopilot_state': 'Auto-Pilot'
         }
 
         return NAMES[prop_name]
@@ -1113,6 +1114,8 @@ class AdGroupSettings(SettingsBase):
     def get_human_value(cls, prop_name, value):
         if prop_name == 'state':
             value = constants.AdGroupSourceSettingsState.get_text(value)
+        elif prop_name == 'autopilot_state':
+            value = constants.AdGroupSourceSettingsAutopilotState.get_text(value)
         elif prop_name == 'end_date' and value is None:
             value = 'I\'ll stop it myself'
         elif prop_name == 'cpc_cc' and value is not None:
@@ -1218,10 +1221,9 @@ class AdGroupSourceSettings(models.Model):
         null=True,
         verbose_name='Daily budget'
     )
-    autopilot = models.BooleanField(
-        null=False,
-        blank=False,
-        default=False
+    autopilot_state = models.IntegerField(
+        default=constants.AdGroupSourceSettingsAutopilotState.INACTIVE,
+        choices=constants.AdGroupSourceSettingsAutopilotState.get_choices()
     )
 
     def save(self, request, *args, **kwargs):

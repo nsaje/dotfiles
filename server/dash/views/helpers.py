@@ -5,6 +5,7 @@ import newrelic.agent
 
 from django.conf import settings
 from django.db.models import Q, Max
+from django.core.exceptions import ObjectDoesNotExist
 
 import actionlog.api
 import actionlog.constants
@@ -687,6 +688,17 @@ def get_ad_group_sources_settings(ad_group_sources):
         filter(ad_group_source__in=ad_group_sources).\
         order_by('ad_group_source_id', '-created_dt').\
         select_related('ad_group_source')
+
+
+def get_ad_group_source_settings(ad_group_source):
+    try:
+        return models.AdGroupSourceSettings.objects.\
+            distinct('ad_group_source_id').\
+            filter(ad_group_source=ad_group_source).\
+            order_by('ad_group_source_id', '-created_dt').\
+            select_related('ad_group_source')[0:1].get()
+    except ObjectDoesNotExist:
+        return None
 
 
 def parse_get_request_content_ad_ids(request_data, param_name):

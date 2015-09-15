@@ -203,7 +203,7 @@ class NavigationDataView(api_common.BaseApiView):
                         else constants.AdGroupSettingsState.INACTIVE
                     ).lower()
                     ad_group['status'] = constants.AdGroupRunningStatus.get_text(ad_group_settings.get_running_status() if ad_group_settings else constants.AdGroupSettingsState.INACTIVE).lower()
-                    
+
 
     def fetch_ad_groups(self, data, user, sources):
         ad_groups = models.AdGroup.objects.all().\
@@ -500,7 +500,7 @@ class AdGroupSources(api_common.BaseApiView):
         settings = ad_group_source.ad_group.get_current_settings().copy_settings()
         settings.changes_text = changes_text
         settings.save(request)
-        
+
 
     def _can_target_existing_regions(self, source, ad_group_settings):
         return (source.source_type.supports_dma_targeting() and ad_group_settings.targets_dma()) or\
@@ -593,6 +593,9 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'daily_budget_cc' in resource and not daily_budget_form.is_valid():
             errors.update(daily_budget_form.errors)
 
+        autopilot_form = forms.AdGroupSourceSettingsAutopilotStateForm(resource)
+        if 'autopilot_state' in resource and not autopilot_form.is_valid():
+            errors.update(autopilot_form.errors)
         if errors:
             raise exc.ValidationError(errors=errors)
 
@@ -645,7 +648,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
         content_ads = form.cleaned_data['content_ads']
         display_url = form.cleaned_data['display_url']
 
-        # we could have passed form.cleaned_data around, 
+        # we could have passed form.cleaned_data around,
         # but it's better to have a version that is more predictable
         upload_form_cleaned_fields = {
             'display_url': form.cleaned_data['display_url'],
@@ -718,7 +721,7 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
             raise exc.MissingDataException()
 
         response_data = {'status': batch.status, 'count': batch.processed_content_ads, 'all': batch.batch_size}
-        
+
         if batch.status == constants.UploadBatchStatus.FAILED:
             if batch.error_report_key:
                 text = '{} error{}. <a href="{}">Download Report.</a>'.format(
@@ -916,12 +919,12 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
                 'description': content_ad.description,
                 'call_to_action': content_ad.call_to_action,
             }
-            
+
             # delete keys that are not to be exported
             for k in content_ad_dict.keys():
                 if k not in CSV_EXPORT_COLUMN_NAMES_DICT.keys():
                     del content_ad_dict[k]
-                    
+
             content_ad_dicts.append(content_ad_dict)
 
         filename = '{}_{}_{}_content_ads'.format(

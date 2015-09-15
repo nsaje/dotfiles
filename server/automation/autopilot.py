@@ -1,11 +1,16 @@
 import logging
 import dash
 from automation import models
+import automation.settings
 import datetime
 import pytz
 import decimal
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from dash import constants
+import traceback
+from django.core.mail import send_mail
+from utils import pagerduty_helper
 logger = logging.getLogger(__name__)
 
 
@@ -63,9 +68,16 @@ def get_autopilot_ad_group_sources_settings(adgroup):
     all_ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group=adgroup)
     for current_source_settings in dash.views.helpers.get_ad_group_sources_settings(all_ad_group_sources):
         if (current_source_settings.state == dash.constants.AdGroupSourceSettingsState.ACTIVE
-                and current_source_settings.autopilot):
+                and current_source_settings.autopilot_state == dash.constants.AdGroupSourceSettingsAutopilotState.ACTIVE):
             autopilot_sources_settings.append(current_source_settings)
     return autopilot_sources_settings
+
+
+def ad_group_source_is_on_autopilot(ad_group_source):
+    setting = dash.views.helpers.get_ad_group_source_settings(ad_group_source)
+    if setting is None:
+        return False
+    return setting.autopilot_state == constants.AdGroupSourceSettingsAutopilotState.ACTIVE
 
 
 def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_spend):
@@ -86,13 +98,72 @@ def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_sp
     if type(current_cpc) != decimal.Decimal:
         current_cpc = decimal.Decimal(current_cpc)
     spending_perc = yesterdays_spend / current_daily_budget - 1
-    for row in settings.AUTOPILOT_CPC_CHANGE_TABLE:
+    new_cpc = current_cpc
+    for row in automation.settings.AUTOPILOT_CPC_CHANGE_TABLE:
         if row[0] <= spending_perc <= row[1]:
-            current_cpc += current_cpc * decimal.Decimal(row[2])
-            current_cpc = current_cpc.quantize(
+            new_cpc += current_cpc * decimal.Decimal(row[2])
+            new_cpc = new_cpc.quantize(
                 decimal.Decimal('0.01'),
                 rounding=decimal.ROUND_HALF_UP)
             break
-    # TODO: Maybe add AUTOPILOT_OVERSPENDING_PANIC_LIMIT, and send email if overspending is higher than it?
-    # TODO: What to do with Lorand's suggestion of minimum CPC for autopilot?
-    return current_cpc
+    if new_cpc < automation.settings.AUTOPILOT_MINIMUM_CPC:
+        return current_cpc
+    return new_cpc
+
+
+def send_autopilot_CPC_changes_email(campaign_name, campaign_id, account_name, emails, changesData):
+    changesText = []
+    for adg, changes in changesData.iteritems():
+        changesText.append(
+            u'''
+
+AdGroup: {}:'''.format(adg)
+        )
+        for change in changes:
+            changesText.append(
+                u'''
+- changed CPC bid on {} from ${} to ${}'''.format(change[0], change[1], change[2])
+            )
+
+    campaign_url = settings.BASE_URL + '/campaigns/{}/'.format(campaign_id)
+    body = u'''Hi account manager of {camp}
+
+On your campaign {camp}, {account}, which is set to auto-pilot, the system made the following changes:{changes}
+
+Please check {camp_url} for details.
+
+Yours truly,
+Zemanta
+    '''
+    body = body.format(
+        camp=campaign_name,
+        account=account_name,
+        camp_url=campaign_url,
+        changes=''.join(changesText)
+    )
+    print body
+    try:
+        send_mail(
+            'Campaign budget low - {camp}, {account}'.format(
+                camp=campaign_name,
+                account=account_name
+            ),
+            body,
+            'Zemanta <{}>'.format(automation.settings.AUTOPILOT_EMAIL),
+            emails,
+            fail_silently=False
+        )
+    except Exception as e:
+        logger.exception('Auto-pilot bid CPC e-mail for campaign %s to %s was not sent because an exception was raised:',
+                         campaign_name,
+                         ''.join(emails))
+        desc = {
+            'campaign_name': campaign_name,
+            'email': ''.join(emails)
+        }
+        pagerduty_helper.trigger(
+            event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
+            incident_key='automation_bid_cpc_autopilot_email',
+            description='Auto-pilot bid CPC e-mail for campaign was not sent because an exception was raised: {}'.format(traceback.format_exc(e)),
+            details=desc
+        )

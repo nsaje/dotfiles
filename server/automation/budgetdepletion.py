@@ -7,6 +7,7 @@ from django.conf import settings
 import traceback
 from django.core.mail import send_mail
 from utils import pagerduty_helper
+import automation.settings
 logger = logging.getLogger(__name__)
 
 
@@ -30,7 +31,9 @@ def notify_campaign_with_depleting_budget(campaign, available_budget, yesterdays
         campaign.name,
         campaign_url,
         campaign.account.name,
-        [account_manager.email, sales_rep.email])
+        [account_manager.email, sales_rep.email],
+        available_budget,
+        yesterdays_spend)
     automation.models.CampaignBudgetDepletionNotification(
         campaign=campaign,
         available_budget=available_budget,
@@ -39,13 +42,23 @@ def notify_campaign_with_depleting_budget(campaign, available_budget, yesterdays
 
 
 def budget_is_depleting(available_budget, yesterdays_spend):
-    return (available_budget < yesterdays_spend * settings.DEPLETING_AVAILABLE_BUDGET_SCALAR) & (yesterdays_spend > 0)
+    return (available_budget < yesterdays_spend * automation.settings.DEPLETING_AVAILABLE_BUDGET_SCALAR) & (yesterdays_spend > 0)
 
 
-def _send_depleted_budget_notification_email(campaign_name, campaign_url, account_name, emails):
+def _send_depleted_budget_notification_email(
+        campaign_name,
+        campaign_url,
+        account_name,
+        emails,
+        available_budget,
+        yesterdays_spend
+        ):
     body = u'''Hi account manager of {camp}
 
 We'd like to notify you that campaign {camp}, {account} is about to run out of available budget.
+
+The available budget remaining today is ${avail}, and yesterday's spend was ${yest}.
+
 Please check {camp_url} for details.
 
 Yours truly,
@@ -54,7 +67,9 @@ Zemanta
     body = body.format(
         camp=campaign_name,
         account=account_name,
-        camp_url=campaign_url
+        camp_url=campaign_url,
+        avail=available_budget,
+        yest=yesterdays_spend
     )
     try:
         send_mail(
@@ -63,7 +78,7 @@ Zemanta
                 account=account_name
             ),
             body,
-            'Zemanta <{}>'.format(settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL),
+            'Zemanta <{}>'.format(automation.settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL),
             emails,
             fail_silently=False
         )
@@ -77,7 +92,7 @@ Zemanta
         }
         pagerduty_helper.trigger(
             event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
-            incident_key='ad_group_settings_change_mail_failed',
+            incident_key='automation_bid_cpc_autopilot_email',
             description='Budget depletion e-mail for campaign was not sent because an exception was raised: {}'.format(traceback.format_exc(e)),
             details=desc
         )

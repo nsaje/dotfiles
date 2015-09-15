@@ -4,12 +4,11 @@ from mock import patch
 from automation import budgetdepletion, helpers, autopilot
 from dash import models
 from reports import refresh
-from django.conf import settings
 import decimal
 import dash
 import datetime
 from automation import models as automationmodels
-from django.test.utils import override_settings
+import automation.settings
 
 
 class DatetimeMock(datetime.datetime):
@@ -34,7 +33,7 @@ class BudgetDepletionTestCase(test.TestCase):
         self.assertEqual(actives.filter(pk=1).count(), 1)
         self.assertEqual(actives.filter(pk=2).count(), 0)
 
-    @patch("django.conf.settings.DEPLETING_AVAILABLE_BUDGET_SCALAR", 1.0)
+    @patch("automation.settings.DEPLETING_AVAILABLE_BUDGET_SCALAR", 1.0)
     def test_budget_is_depleting(self):
         self.assertEqual(budgetdepletion.budget_is_depleting(100, 5), False)
         self.assertEqual(budgetdepletion.budget_is_depleting(100, 500), True)
@@ -65,11 +64,13 @@ class BudgetDepletionTestCase(test.TestCase):
             'campaign_name',
             'campaign_url',
             'account_name',
-            ['test@zemanta.com']
+            ['test@zemanta.com'],
+            1000,
+            1500
         )
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(
-            settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL)
+            automation.settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL)
         )
         self.assertEqual(mail.outbox[0].to, ['test@zemanta.com'])
 
@@ -110,11 +111,10 @@ class BudgetDepletionTestCase(test.TestCase):
         settings_writer.set(resource, None)
         self.assertTrue(autopilot.ad_group_sources_daily_budget_was_changed_recently(models.AdGroupSource.objects.get(id=2)))
 
-    @override_settings(
-        AUTOPILOT_CPC_CHANGE_TABLE=[
-            [-1, -0.5, 0.1],
-            [-0.5, 0, 0.5]
-            ]
+    @patch('automation.settings.AUTOPILOT_CPC_CHANGE_TABLE', [
+        [-1, -0.5, 0.1],
+        [-0.5, 0, 0.5]
+        ]
     )
     def test_calculate_new_autopilot_cpc(self):
         self.assertEqual(autopilot.calculate_new_autopilot_cpc(0, 10, 5), decimal.Decimal('0'))

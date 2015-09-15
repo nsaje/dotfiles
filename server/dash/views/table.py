@@ -23,6 +23,7 @@ import reports.api_helpers
 import reports.api_contentads
 import actionlog.sync
 
+from automation import autopilot
 
 def sort_rows_by_order_and_archived(rows, order):
     archived_order = 'archived'
@@ -386,6 +387,7 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
                     'current_bid_cpc': current_bid_cpc,
                     'daily_budget': daily_budget,
                     'current_daily_budget': current_daily_budget,
+                    'autopilot_state': setting.autopilot_state
                 }
 
             response['rows'] = rows
@@ -583,7 +585,9 @@ class SourcesTable(api_common.BaseApiView):
         enabled = True
         message = None
 
-        if not ad_group_source.source.can_update_cpc() or self._is_end_date_past(ad_group_settings):
+        if not ad_group_source.source.can_update_cpc() or\
+                self._is_end_date_past(ad_group_settings) or\
+                autopilot.ad_group_source_is_on_autopilot(ad_group_source):
             enabled = False
             message = self._get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_settings)
 
@@ -664,6 +668,9 @@ class SourcesTable(api_common.BaseApiView):
 
         if self._is_end_date_past(ad_group_settings):
             return 'The ad group has end date set in the past. No modifications to media source parameters are possible.'
+
+        if autopilot.ad_group_source_is_on_autopilot(ad_group_source):
+            return 'This value cannot be edited because the media source is on Auto-Pilot'
 
         return 'This media source doesn\'t support setting this value through the dashboard.'
 
@@ -802,6 +809,9 @@ class SourcesTable(api_common.BaseApiView):
                 if user.has_perm('zemauth.see_current_ad_group_source_state'):
                     row['current_bid_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None
                     row['current_daily_budget'] = states[0].daily_budget_cc if len(states) else None
+
+                if source_settings is not None:
+                    row['autopilot_state'] = source_settings.autopilot_state
 
             elif len(bid_cpc_values) > 0:
                 row['min_bid_cpc'] = float(min(bid_cpc_values))

@@ -36,3 +36,6 @@ cron:
 
 - hosts: [knot01.zemanta.com]
   job: '0 * * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py update_touchpoint_conversions > /dev/null 2>&1'
+
+- hosts: [knot01.zemanta.com]
+  job: '0 10 * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py autopilot_adjust_media_source_bid_cpcs > /dev/null 2>&1'
