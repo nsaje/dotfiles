@@ -10,7 +10,7 @@ from reports import exc
 logger = logging.getLogger(__name__)
 
 def from_micro_cpm(num):
-    if not num:	
+    if not num:
         return None
     else:
         return num * 1.0 / 1000000000
@@ -24,7 +24,7 @@ PUBLISHERS_AGGREGATE_FIELDS = dict(
     cpc_micro=db_aggregates.SumDivision('cost_micro', 'clicks')
 )
 
-#			  SQL NAME           DICT NAME      OUTPUT TRANSFORM FUNCTION       
+#			  SQL NAME           DICT NAME      OUTPUT TRANSFORM FUNCTION
 OUTPUT_FIELDS_MAPPING = {'clicks_sum':      ('clicks',      lambda v: v),
                          'impressions_sum': ('impressions', lambda v: v),
                          'domain':          ('domain',      lambda v: v),
@@ -60,12 +60,12 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], order_dire
         raise exc.ReportsQueryError('Invalid breakdowns: {}'.format(str(unknown_fields)))
     order_fields = [OUTPUT_FIELDS_REVERSE_MAPPING[field] for field in order_fields]
 
-    # map constraints fields	
+    # map constraints fields
     unknown_fields = set(constraints.keys()) - CONSTRAINTS_FIELDS_UNMAPPED_SET
     if unknown_fields:
         raise exc.ReportsQueryError("Unsupported field constraint fields: {}".format(str(unknown_fields)))
     constraints = {OUTPUT_FIELDS_REVERSE_MAPPING[field_name]: v for field_name, v in constraints.iteritems()}
-        
+
     # now execute the query
     results = redshift.query_general(
         'b1_publishers_1',
@@ -83,7 +83,7 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], order_dire
     # map back to app-specific fields
     if breakdown_fields:
         return [_map_rowdict_to_output(row) for row in results]
- 
+
     return _map_rowdict_to_output(results[0])
 
 

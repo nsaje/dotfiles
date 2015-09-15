@@ -12,6 +12,7 @@ from utils import db_aggregates
 
 from reports import exc
 from reports.db_raw_helpers import dictfetchall, get_obj_id, quote
+
 from psycopg2.extensions import adapt as sqladapt
 
 @statsd_timer('reports.redshift', 'delete_contentadstats')
@@ -165,7 +166,7 @@ def query_general(table_name, start_date, end_date, aggregates, breakdown_fields
     if breakdown_fields:
         breakdown_fields = _prepare_breakdown(breakdown_fields, {})
         statement = _create_select_query(
-            table_name, 
+            table_name,
             breakdown_fields + aggregates,
             constraints,
             breakdown=breakdown_fields,
@@ -266,12 +267,12 @@ def _create_select_query(table, fields, constraints, breakdown=None, order_field
     if order_fields:
         cmd += " ORDER BY " + ",".join(order_fields)
         if order_direction:
-            cmd += " " + order_direction + " "       
+            cmd += " " + order_direction + " "
     if limit:
         cmd += " LIMIT " + str(limit)
     if offset:
         cmd += " OFFSET " + str(offset)
-        
+    
     return cmd
 
 
