@@ -1634,7 +1634,6 @@ class AccountCampaignsTable(api_common.BaseApiView):
 
 class PublishersTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'zemauth.publishers_table_get')
-    @newrelic.agent.function_trace()
     def get(self, request, level_, id_=None):
         newrelic.agent.set_transaction_name('dash.views.table:PublishersTable#%s' % (level_))
         if not request.user.has_perm('zemauth.can_see_publishers'):
@@ -1675,10 +1674,10 @@ class PublishersTable(api_common.BaseApiView):
         publishers_data = reports.api_publishers.query(
             start_date,
             end_date,
-            breakdown_fields = ['domain', 'exchange'],
-            order_fields = [order],
-            order_direction = order_direction,
-            constraints = constraints,
+            breakdown_fields=['domain', 'exchange'],
+            order_fields=[order],
+            order_direction=order_direction,
+            constraints=constraints,
         )
 
         totals_data = reports.api_publishers.query(

@@ -970,7 +970,8 @@ class AdGroupPublishersTableTest(TestCase):
          'ctr': 100.0,
          'impressions': 10560,
          'date': date.isoformat(),
-         'domain': 'example.com'
+         'domain': 'example.com',
+         'exchange': 'someexchange',
         }]
         mock_stats2 = {
          'clicks': 323,
@@ -979,7 +980,6 @@ class AdGroupPublishersTableTest(TestCase):
          'ctr': 99.0,
          'impressions': 1560,
          'date': date.isoformat(),
-         'domain': 'example.com'
         }
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
@@ -1046,7 +1046,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'ctr': 100.0,
             u'domain': None,
             u'domain_link': u'',
-            u'exchange': u'MaintenanceSource',
+            u'exchange': 'someexchange',
             u'impressions': 10560,
             u'domain': 'example.com',
             u'domain_link': 'http://example.com',
@@ -1062,28 +1062,26 @@ class AdGroupPublishersTableTest(TestCase):
                                                         u'ctr': 99.0, 
                                                         u'impressions': 1560})
 
-    '''
-    # WORK STILL IN PROGRESS TO MAKE THESE TESTS WORK
     def test_get_filtered_sources(self, mock_query):
         date = datetime.date(2015, 2, 22)
 
         mock_stats1 = [{
-            'date': date.isoformat(),
-            'cpc': '0.0100',
-            'clicks': 1000,
-            'impressions': 1000000,
-            'cost': 100,
-            'ctr': '12.5000',
-            'content_ad': 1
+         'clicks': 123,
+         'cost': 2.4,
+         'cpc': 1.3,
+         'ctr': 100.0,
+         'impressions': 10560,
+         'date': date.isoformat(),
+         'domain': 'example.com',
+         'exchange': 'someexchange',
         }]
         mock_stats2 = {
-            'date': date.isoformat(),
-            'cpc': '0.0200',
-            'clicks': 1500,
-            'impressions': 2000000,
-            'cost': 200,
-            'ctr': '15.5000',
-            'content_ad': 1
+         'clicks': 123,
+         'cost': 2.4,
+         'cpc': 1.3,
+         'ctr': 100.0,
+         'impressions': 10560,
+         'date': date.isoformat(),
         }
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
@@ -1091,34 +1089,34 @@ class AdGroupPublishersTableTest(TestCase):
 
         params = {
             'page': 1,
-            'order': 'title',
+            'order': 'domain',
             'size': 2,
             'start_date': date.isoformat(),
             'end_date': date.isoformat(),
-            'filtered_sources': '1,2'
+            'filtered_sources': '1'
         }
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_publishers_table', kwargs={'id_': ad_group.id, 'level_': 'ad_groups'}),
             params,
             follow=True
         )
 
-        sources_matcher = QuerySetMatcher(models.Source.objects.filter(id__in=[1, 2]))
-
         mock_query.assert_any_call(
             date,
             date,
-            breakdown=['content_ad'],
-            constraints={'ad_group':ad_group,
-                         'source': sources_matcher}
+            breakdown_fields=['domain', 'exchange'],
+            order_fields=['domain'],
+            order_direction='ASC',
+            constraints={'ad_group': ad_group.id,
+                        'exchange': ['adsnative']}
         )
 
         mock_query.assert_any_call(
             date,
             date,
-            constraints={'ad_group': ad_group,
-                         'source': sources_matcher}
+            constraints = {"ad_group": ad_group.id,
+                        'exchange': ['adsnative']}
         )
 
         result = json.loads(response.content)
@@ -1130,28 +1128,28 @@ class AdGroupPublishersTableTest(TestCase):
 
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 1)
-        self.assertEqual(result['data']['rows'][0]['id'], '1')
+        self.assertEqual(result['data']['rows'], [{u'domain': u'example.com', u'domain_link': u'http://example.com', u'ctr': 100.0, u'exchange': u'someexchange', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123}])
 
-    def test_get_order(self, mock_query):
+    def test_get_reverse_order(self, mock_query):
         date = datetime.date(2015, 2, 22)
 
         mock_stats1 = [{
-            'date': date.isoformat(),
-            'cpc': '0.0100',
-            'clicks': 1000,
-            'impressions': 1000000,
-            'cost': 100,
-            'ctr': '12.5000',
-            'content_ad': 1
+         'clicks': 123,
+         'cost': 2.4,
+         'cpc': 1.3,
+         'ctr': 100.0,
+         'impressions': 10560,
+         'date': date.isoformat(),
+         'domain': 'example.com',
+         'exchange': 'someexchange',
         }]
         mock_stats2 = {
-            'date': date.isoformat(),
-            'cpc': '0.0200',
-            'clicks': 1500,
-            'impressions': 2000000,
-            'cost': 200,
-            'ctr': '15.5000',
-            'content_ad': 1
+         'clicks': 123,
+         'cost': 2.4,
+         'cpc': 1.3,
+         'ctr': 100.0,
+         'impressions': 10560,
+         'date': date.isoformat(),
         }
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
@@ -1159,33 +1157,31 @@ class AdGroupPublishersTableTest(TestCase):
 
         params = {
             'page': 1,
-            'order': '-title',
+            'order': '-cost',
             'size': 2,
             'start_date': date.isoformat(),
             'end_date': date.isoformat(),
         }
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_publishers_table', kwargs={'id_': ad_group.id, 'level_': 'ad_groups'}),
             params,
             follow=True
         )
-
-        sources_matcher = QuerySetMatcher(models.Source.objects.all())
-
+        print mock_query.mock_calls
         mock_query.assert_any_call(
             date,
             date,
-            breakdown=['content_ad'],
-            constraints={'ad_group': ad_group,
-                         'source': sources_matcher}
+            breakdown_fields=['domain', 'exchange'],
+            order_fields=['cost'],
+            order_direction='DESC',
+            constraints={'ad_group': ad_group.id,}
         )
 
         mock_query.assert_any_call(
             date,
             date,
-            constraints={'ad_group': ad_group,
-                         'source': sources_matcher}
+            constraints = {"ad_group": ad_group.id,}
         )
 
         result = json.loads(response.content)
@@ -1195,132 +1191,9 @@ class AdGroupPublishersTableTest(TestCase):
 
         self.assertIn('data', result)
 
-        self.assertIn('order', result['data'])
-        self.assertEqual(result['data']['order'], '-title')
-
         self.assertIn('rows', result['data'])
-        self.assertEqual(len(result['data']['rows']), 2)
-        self.assertEqual(result['data']['rows'][0]['title'], u'Test Article with no content_ad_sources 1')
-        self.assertEqual(result['data']['rows'][1]['title'], u'Test Article unicode \u010c\u017e\u0161')
-
-    def test_get_batches(self, mock_query):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        date = datetime.date(2015, 2, 22)
-
-        mock_stats1 = [{
-            'date': date.isoformat(),
-            'cpc': '0.0100',
-            'clicks': 1000,
-            'impressions': 1000000,
-            'cost': 100,
-            'ctr': '12.5000',
-            'content_ad': 1
-        }]
-        mock_stats2 = {
-            'date': date.isoformat(),
-            'cpc': '0.0200',
-            'clicks': 1500,
-            'impressions': 2000000,
-            'cost': 200,
-            'ctr': '15.5000',
-            'content_ad': 1
-        }
-        mock_query.side_effect = [mock_stats1, mock_stats2]
-
-        params = {
-            'page': 1,
-            'order': '-title',
-            'size': 2,
-            'start_date': date.isoformat(),
-            'end_date': date.isoformat(),
-        }
-
-        uploadBatches = models.UploadBatch.objects.filter(id__in=(1, 2))
-        for batch in uploadBatches:
-            batch.status = constants.UploadBatchStatus.DONE
-            batch.save()
-
-        response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
-            params,
-            follow=True
-        )
-
-        result = json.loads(response.content)
-
-        self.assertIn('batches', result['data'])
-        self.assertItemsEqual(result['data']['batches'], [{
-            'id': 1,
-            'name': 'batch 1'
-        }])
-
-    def test_get_batches_without_permission(self, mock_query):
-
-        # login without superuser permissions
-        self.user = User.objects.get(pk=2)
-        self.client.login(username=self.user.email, password='secret')
-
-        ad_group = models.AdGroup.objects.get(pk=1)
-        date = datetime.date(2015, 2, 22)
-
-        mock_stats1 = [{
-            'date': date.isoformat(),
-            'cpc': '0.0100',
-            'clicks': 1000,
-            'impressions': 1000000,
-            'cost': 100,
-            'ctr': '12.5000',
-            'content_ad': 1
-        }]
-        mock_stats2 = {
-            'date': date.isoformat(),
-            'cpc': '0.0200',
-            'clicks': 1500,
-            'impressions': 2000000,
-            'cost': 200,
-            'ctr': '15.5000',
-            'content_ad': 1
-        }
-        mock_query.side_effect = [mock_stats1, mock_stats2]
-
-        params = {
-            'page': 1,
-            'order': '-title',
-            'size': 2,
-            'start_date': date.isoformat(),
-            'end_date': date.isoformat(),
-        }
-
-        uploadBatches = models.UploadBatch.objects.filter(id__in=(1, 2))
-        for batch in uploadBatches:
-            batch.status = constants.UploadBatchStatus.DONE
-            batch.save()
-
-        response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
-            params,
-            follow=True
-        )
-
-        result = json.loads(response.content)
-
-        self.assertIn('batches', result['data'])
-        self.assertItemsEqual(result['data']['batches'], [])
-
-        self.assertIn('pagination', result['data'])
-        self.assertEqual(result['data']['pagination'], {
-            'count': 3,
-            'currentPage': 1,
-            'endIndex': 2,
-            'numPages': 2,
-            'size': 2,
-            'startIndex': 1
-        })
-
-        self.assertIn('rows', result['data'])
-    '''
-
-
+        self.assertEqual(len(result['data']['rows']), 1)
+        self.assertEqual(result['data']['rows'], [{u'domain': u'example.com', u'domain_link': u'http://example.com', u'ctr': 100.0, u'exchange': u'someexchange', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123}])
 
 
 
