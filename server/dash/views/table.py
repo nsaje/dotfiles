@@ -1,8 +1,5 @@
-import datetime
-
 import pytz
 from slugify import slugify
-from django.core import urlresolvers
 from django.conf import settings
 import newrelic.agent
 
@@ -23,7 +20,8 @@ import reports.api_helpers
 import reports.api_contentads
 import actionlog.sync
 
-from automation import autopilot
+from django.core import urlresolvers
+
 
 def sort_rows_by_order_and_archived(rows, order):
     archived_order = 'archived'
@@ -559,131 +557,6 @@ class SourcesTable(api_common.BaseApiView):
 
         return constants.AdGroupSourceSettingsState.INACTIVE
 
-    def _is_end_date_past(self, ad_group_settings):
-        end_utc_datetime = ad_group_settings.get_utc_end_datetime()
-
-        if end_utc_datetime is None:  # user will stop adgroup manually
-            return False
-
-        # if end date is in the past then we can't edit cpc and budget
-        return end_utc_datetime < datetime.datetime.utcnow()
-
-    def _get_editable_fields(self, ad_group_source, ad_group_settings, ad_group_source_settings, user):
-        editable_fields = {}
-
-        if not user.has_perm('zemauth.set_ad_group_source_settings'):
-            return editable_fields
-
-        editable_fields['status_setting'] = self._get_editable_fields_status_setting(ad_group_source, ad_group_settings,
-                                                                                     ad_group_source_settings)
-        editable_fields['bid_cpc'] = self._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
-        editable_fields['daily_budget'] = self._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
-
-        return editable_fields
-
-    def _get_editable_fields_bid_cpc(self, ad_group_source, ad_group_settings):
-        enabled = True
-        message = None
-
-        if not ad_group_source.source.can_update_cpc() or\
-                self._is_end_date_past(ad_group_settings) or\
-                autopilot.ad_group_source_is_on_autopilot(ad_group_source):
-            enabled = False
-            message = self._get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_settings)
-
-        return {
-            'enabled': enabled,
-            'message': message
-        }
-
-    def _get_editable_fields_daily_budget(self, ad_group_source, ad_group_settings):
-        enabled = True
-        message = None
-
-        if not ad_group_source.source.can_update_daily_budget_automatic() and\
-           not ad_group_source.source.can_update_daily_budget_manual() or\
-           self._is_end_date_past(ad_group_settings):
-            enabled = False
-            message = self._get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_settings)
-
-        return {
-            'enabled': enabled,
-            'message': message
-        }
-
-    def _get_editable_fields_status_setting(self, ad_group_source, ad_group_settings, ad_group_source_settings):
-        message = None
-
-        if not ad_group_source.source.can_update_state() or (
-           ad_group_source.ad_group.content_ads_tab_with_cms and not ad_group_source.can_manage_content_ads):
-            message = self._get_status_setting_disabled_message(ad_group_source)
-        elif ad_group_source_settings is not None and\
-                ad_group_source_settings.state == constants.AdGroupSourceSettingsState.INACTIVE:
-            message = self._get_status_setting_disabled_message_for_target_regions(
-                ad_group_source, ad_group_settings, ad_group_source_settings)
-
-        return {
-            'enabled': message is None,
-            'message': message
-        }
-
-    def _get_status_setting_disabled_message(self, ad_group_source):
-        if ad_group_source.source.maintenance:
-            return 'This source is currently in maintenance mode.'
-
-        if ad_group_source.ad_group.content_ads_tab_with_cms and not ad_group_source.can_manage_content_ads:
-            return 'Please contact support to enable this source.'
-
-        return 'This source must be managed manually.'
-
-    def _get_status_setting_disabled_message_for_target_regions(self, ad_group_source, ad_group_settings,
-                                                                ad_group_source_settings):
-
-        source = ad_group_source.source
-        if not source.source_type.supports_dma_targeting() and ad_group_settings.targets_dma():
-            return 'This source can not be enabled because it does not support DMA targeting.'
-        else:
-            targets_countries = ad_group_settings.targets_countries()
-            targets_dma = ad_group_settings.targets_dma()
-
-            activation_settings = models.AdGroupSourceSettings.objects.filter(
-                ad_group_source=ad_group_source, state=constants.AdGroupSourceSettingsState.ACTIVE)
-
-            # disable when waiting for manual actions for target_regions after campaign creation
-            # message this only when the source is about to be enabled for the first time
-            if api.can_modify_selected_target_regions_manually(source, targets_countries, targets_dma) and\
-               actionlog.api.is_waiting_for_manual_set_target_regions_action(ad_group_source) and\
-               not activation_settings.exists():
-
-                message = ('This source needs to set {} targeting manually,'
-                           'please contact support to enable this source.')
-
-                return message.format('DMA' if source.can_modify_dma_targeting_manual() else 'country')
-
-        return None
-
-    def _get_bid_cpc_daily_budget_disabled_message(self, ad_group_source, ad_group_settings):
-        if ad_group_source.source.maintenance:
-            return 'This value cannot be edited because the media source is currently in maintenance.'
-
-        if self._is_end_date_past(ad_group_settings):
-            return 'The ad group has end date set in the past. No modifications to media source parameters are possible.'
-
-        if autopilot.ad_group_source_is_on_autopilot(ad_group_source):
-            return 'This value cannot be edited because the media source is on Auto-Pilot'
-
-        return 'This media source doesn\'t support setting this value through the dashboard.'
-
-    def _get_supply_dash_disabled_message(self, ad_group_source):
-        if not ad_group_source.source.has_3rd_party_dashboard():
-            return "This media source doesn't have a dashboard of its own. " \
-                   "All campaign management is done through Zemanta One dashboard."
-        elif ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
-            return "Dashboard of this media source is not yet available because the " \
-                   "media source is still being set up for this ad group."
-
-        return None
-
     def _get_supply_dash_url(self, ad_group_source):
         if not ad_group_source.source.has_3rd_party_dashboard() or\
                ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
@@ -694,6 +567,16 @@ class SourcesTable(api_common.BaseApiView):
             ad_group_source.ad_group.id,
             ad_group_source.source.id
         )
+
+    def _get_supply_dash_disabled_message(self, ad_group_source):
+        if not ad_group_source.source.has_3rd_party_dashboard():
+            return "This media source doesn't have a dashboard of its own. " \
+                   "All campaign management is done through Zemanta One dashboard."
+        elif ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
+            return "Dashboard of this media source is not yet available because the " \
+                   "media source is still being set up for this ad group."
+
+        return None
 
     @newrelic.agent.function_trace()
     def get_rows(
@@ -780,7 +663,7 @@ class SourcesTable(api_common.BaseApiView):
 
                 ad_group_settings = level_sources_table.ad_group_settings
 
-                row['editable_fields'] = self._get_editable_fields(ad_group_source, ad_group_settings,
+                row['editable_fields'] = helpers.get_editable_fields(ad_group_source, ad_group_settings,
                                                                    source_settings, user)
 
                 if user.has_perm('zemauth.set_ad_group_source_settings')\

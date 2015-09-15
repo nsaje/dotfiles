@@ -148,11 +148,13 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             onAutopilotChange: function (sourceId, value) {
               api.adGroupSourceSettings.save($state.params.id, sourceId, {autopilot_state: value}).then(
                   function (data) {
+
                     $scope.rows.forEach(function (row) {
                         if (row.id === sourceId) {
-                            row.editable_fields = ['state']
+                            row.editable_fields = data.editable_fields
                         }
                     });
+
                       $scope.pollSourcesTableUpdates();
                   }
               );

@@ -14,6 +14,8 @@ from dash import models
 from dash import constants
 from utils import exc
 from utils import statsd_helper
+from automation import autopilot
+from dash import api
 
 STATS_START_DELTA = 30
 STATS_END_DELTA = 1
@@ -735,3 +737,126 @@ def copy_stats_to_row(stat, row):
                 'visits', 'click_discrepancy', 'pageviews',
                 'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos']:
         row[key] = stat.get(key)
+
+
+def _is_end_date_past(ad_group_settings):
+    end_utc_datetime = ad_group_settings.get_utc_end_datetime()
+
+    if end_utc_datetime is None:  # user will stop adgroup manually
+        return False
+
+    # if end date is in the past then we can't edit cpc and budget
+    return end_utc_datetime < datetime.datetime.utcnow()
+
+
+def get_editable_fields(ad_group_source, ad_group_settings, ad_group_source_settings, user):
+    editable_fields = {}
+
+    if not user.has_perm('zemauth.set_ad_group_source_settings'):
+        return editable_fields
+
+    editable_fields['status_setting'] = _get_editable_fields_status_setting(ad_group_source, ad_group_settings,
+                                                                                 ad_group_source_settings)
+    editable_fields['bid_cpc'] = _get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+    editable_fields['daily_budget'] = _get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+
+    return editable_fields
+
+
+def _get_editable_fields_bid_cpc(ad_group_source, ad_group_settings):
+    enabled = True
+    message = None
+
+    if not ad_group_source.source.can_update_cpc() or\
+            _is_end_date_past(ad_group_settings) or\
+            autopilot.ad_group_source_is_on_autopilot(ad_group_source):
+        enabled = False
+        message = _get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_settings)
+
+    return {
+        'enabled': enabled,
+        'message': message
+    }
+
+
+def _get_editable_fields_daily_budget(ad_group_source, ad_group_settings):
+    enabled = True
+    message = None
+
+    if not ad_group_source.source.can_update_daily_budget_automatic() and\
+       not ad_group_source.source.can_update_daily_budget_manual() or\
+       _is_end_date_past(ad_group_settings):
+        enabled = False
+        message = _get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_settings)
+
+    return {
+        'enabled': enabled,
+        'message': message
+    }
+
+
+def _get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings):
+    message = None
+
+    if not ad_group_source.source.can_update_state() or (
+       ad_group_source.ad_group.content_ads_tab_with_cms and not ad_group_source.can_manage_content_ads):
+        message = _get_status_setting_disabled_message(ad_group_source)
+    elif ad_group_source_settings is not None and\
+            ad_group_source_settings.state == constants.AdGroupSourceSettingsState.INACTIVE:
+        message = _get_status_setting_disabled_message_for_target_regions(
+            ad_group_source, ad_group_settings, ad_group_source_settings)
+
+    return {
+        'enabled': message is None,
+        'message': message
+    }
+
+
+def _get_status_setting_disabled_message(ad_group_source):
+    if ad_group_source.source.maintenance:
+        return 'This source is currently in maintenance mode.'
+
+    if ad_group_source.ad_group.content_ads_tab_with_cms and not ad_group_source.can_manage_content_ads:
+        return 'Please contact support to enable this source.'
+
+    return 'This source must be managed manually.'
+
+
+def _get_status_setting_disabled_message_for_target_regions(ad_group_source, ad_group_settings,
+                                                            ad_group_source_settings):
+
+    source = ad_group_source.source
+    if not source.source_type.supports_dma_targeting() and ad_group_settings.targets_dma():
+        return 'This source can not be enabled because it does not support DMA targeting.'
+    else:
+        targets_countries = ad_group_settings.targets_countries()
+        targets_dma = ad_group_settings.targets_dma()
+
+        activation_settings = models.AdGroupSourceSettings.objects.filter(
+            ad_group_source=ad_group_source, state=constants.AdGroupSourceSettingsState.ACTIVE)
+
+        # disable when waiting for manual actions for target_regions after campaign creation
+        # message this only when the source is about to be enabled for the first time
+        if api.can_modify_selected_target_regions_manually(source, targets_countries, targets_dma) and\
+           actionlog.api.is_waiting_for_manual_set_target_regions_action(ad_group_source) and\
+           not activation_settings.exists():
+
+            message = ('This source needs to set {} targeting manually,'
+                       'please contact support to enable this source.')
+
+            return message.format('DMA' if source.can_modify_dma_targeting_manual() else 'country')
+
+    return None
+
+
+def _get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_settings):
+    if ad_group_source.source.maintenance:
+        return 'This value cannot be edited because the media source is currently in maintenance.'
+
+    if _is_end_date_past(ad_group_settings):
+        return 'The ad group has end date set in the past. No modifications to media source parameters are possible.'
+
+    if autopilot.ad_group_source_is_on_autopilot(ad_group_source):
+        return 'This value cannot be edited because the media source is on Auto-Pilot'
+
+    return 'This media source doesn\'t support setting this value through the dashboard.'
