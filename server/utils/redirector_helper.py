@@ -37,12 +37,14 @@ def insert_redirect(url, content_ad_id, ad_group_id):
         raise e
 
 
-def insert_adgroup(ad_group_id, tracking_codes, disable_auto_tracking=False):
+def insert_adgroup(ad_group_id, tracking_codes, enable_ga_tracking, enable_adobe_tracking, adobe_tracking_param):
     try:
         url = settings.R1_REDIRECTS_ADGROUP_API_URL.format(adgroup=ad_group_id)
         data = json.dumps({
             'trackingcode': tracking_codes,
-            'disableautotracking': disable_auto_tracking,
+            'enablegatracking': enable_ga_tracking,
+            'enableadobetracking': enable_adobe_tracking,
+            'adobetrackingparam': adobe_tracking_param,
         })
         return _call_api_retry(url, data, method='PUT')
     except Exception as e:
