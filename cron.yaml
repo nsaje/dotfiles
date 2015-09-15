@@ -35,4 +35,4 @@ cron:
   job: '0 11 * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py vacuum_stats_db > /dev/null 2>&1'
 
 - hosts: [knot01.zemanta.com]
-  job: '0 * * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py update_touchpoint_conversions > /dev/null 2>&1'
+  job: '0 * * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py update_touchpoint_conversions_full > /dev/null 2>&1'

@@ -21,6 +21,9 @@ def _get_dates_to_sync():
         filter(last_sync_dt__isnull=False).\
         aggregate(Min('last_sync_dt'))['last_sync_dt__min']
 
+    if min_last_sync_dt is None:
+        min_last_sync_dt = datetime.datetime.utcnow()
+
     # add a buffer so we don't miss some data
     min_last_sync_dt = min_last_sync_dt - datetime.timedelta(hours=ADDITIONAL_SYNC_HOURS)
 
