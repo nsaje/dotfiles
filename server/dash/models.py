@@ -1498,6 +1498,19 @@ class ConversionPixel(models.Model):
         unique_together = ('slug', 'account')
 
 
+class ConversionGoal(models.Model):
+    campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT)
+    type = models.PositiveSmallIntegerField(
+        choices=constants.ContentAdSourceState.get_choices()
+    )
+    name = models.CharField(max_length=256)
+
+    pixel = models.ForeignKey(ConversionPixel, null=True, on_delete=models.PROTECT)
+    conversion_window = models.PositiveSmallIntegerField(null=True, blank=True)
+    ga_goal = models.CharField(max_length=256, null=True, blank=True)
+    omniture_event = models.CharField(max_length=256, null=True, blank=True)
+
+
 class DemoAdGroupRealAdGroup(models.Model):
     demo_ad_group = models.OneToOneField(AdGroup, on_delete=models.PROTECT, related_name='+')
     real_ad_group = models.OneToOneField(AdGroup, on_delete=models.PROTECT, related_name='+')
