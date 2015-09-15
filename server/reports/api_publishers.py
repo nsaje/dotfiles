@@ -34,7 +34,7 @@ OUTPUT_FIELDS_MAPPING = {'clicks_sum':      ('clicks',      lambda v: v),
                          'cost_micro_sum':  ('cost',        lambda v: from_micro_cpm(v)),
                          'cpc_micro':       ('cpc',         lambda v: from_micro_cpm(v)),
                          'ctr':             ('ctr',         lambda v: v * 100),
-                         'ad_group_id':     ('ad_group',    lambda v: v),
+                         'adgroup_id':      ('ad_group',    lambda v: v),
                          'exchange':        ('exchange',    lambda v: v),
                         }
 OUTPUT_FIELDS_REVERSE_MAPPING = {v[0]:k for k,v in OUTPUT_FIELDS_MAPPING.iteritems()}
