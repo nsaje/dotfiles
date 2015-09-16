@@ -55,8 +55,8 @@ def _get_migrations(start_index=0):
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
-        make_option('--list', help='Lists all of the availalbe migrations', action='store_true'),
-        make_option('--start', help='Initial migration index', type="int"),
+        make_option('--list', help='Lists all of the available migrations', action='store_true'),
+        make_option('--start', help='0-based migration index with which migrate/list is started', type="int"),
         make_option('--sql', help='Show sql contents of migrations when listing migrations', action='store_true'),
     )
 
