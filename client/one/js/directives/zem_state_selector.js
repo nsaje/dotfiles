@@ -61,7 +61,11 @@ oneApp.directive('zemStateSelector', function () {
                 $scope.active = $scope.value === $scope.enabledValue;
             });
             $scope.$watch('autopilotValue', function(autopilotValue) {
-                $scope.autopilotActive = $scope.autopilotValue === $scope.autopilotEnabledValue;
+                $scope.autopilotActive = (
+                  $scope.autopilotValue === $scope.autopilotEnabledValue
+                  && typeof $scope.autopilotValue !== 'undefined'
+                  && typeof $scope.autopilotEnabledValue !== 'undefined'
+                );
             });
         }]
     };

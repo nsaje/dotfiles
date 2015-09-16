@@ -18,6 +18,7 @@ from dash import models
 from dash import api
 from dash import budget
 from dash import constants
+import automation.settings
 from reports import redshift
 from utils import api_common
 from utils import statsd_helper
@@ -835,7 +836,7 @@ class AdGroupAgency(api_common.BaseApiView):
 
             settings_dict = self.convert_settings_to_dict(old_settings, new_settings, user)
             if new_settings.created_by is None:
-                changed_by = settings.AUTOMATION_AI_NAME
+                changed_by = automation.settings.AUTOMATION_AI_NAME
             else:
                 changed_by = new_settings.created_by.email
             history.append({
