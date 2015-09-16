@@ -21,7 +21,7 @@ CONTENTADSTATS_FIELD_REVERSE_MAPPING = {v: k for k, v in CONTENTADSTATS_FIELD_MA
 logger = logging.getLogger(__name__)
 
 
-def query(start_date, end_date, breakdown=None, **constraints):
+def query(start_date, end_date, breakdown=None, constraints={}):
 
     if breakdown and len(set(breakdown) - api_helpers.DIMENSIONS) != 0:
         raise exc.ReportsQueryError('Invalid breakdown')
@@ -32,7 +32,7 @@ def query(start_date, end_date, breakdown=None, **constraints):
         aggregate_fields.ALL_AGGREGATE_FIELDS,
         CONTENTADSTATS_FIELD_MAPPING,
         breakdown,
-        **constraints)
+        constraints)
 
     if breakdown:
         return [_transform_row(row) for row in results]
