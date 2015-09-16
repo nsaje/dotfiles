@@ -8,6 +8,8 @@ from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
+from django.contrib.auth import models as authmodels
+
 from utils.test_helper import QuerySetMatcher
 from zemauth.models import User
 from dash import models
@@ -968,7 +970,7 @@ class AdGroupPublishersTableTest(TestCase):
          'cost': 2.4,
          'cpc': 1.3,
          'ctr': 100.0,
-         'impressions': 10560,
+         'impressions': 10561,
          'date': date.isoformat(),
          'domain': 'example.com',
          'exchange': 'someexchange',
@@ -1056,10 +1058,10 @@ class AdGroupPublishersTableTest(TestCase):
 
         self.assertIn('totals', result['data'])
 
-        self.assertEqual(result['data']['totals'], {	u'clicks': 323, 
-                                                        u'cost': 2.1, 
-                                                        u'cpc': 1.2, 
-                                                        u'ctr': 99.0, 
+        self.assertEqual(result['data']['totals'], {	u'clicks': 323,
+                                                        u'cost': 2.1,
+                                                        u'cpc': 1.2,
+                                                        u'ctr': 99.0,
                                                         u'impressions': 1560})
 
     def test_get_filtered_sources(self, mock_query):
@@ -1196,7 +1198,20 @@ class AdGroupPublishersTableTest(TestCase):
         self.assertEqual(result['data']['rows'], [{u'domain': u'example.com', u'domain_link': u'http://example.com', u'ctr': 100.0, u'exchange': u'someexchange', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123}])
 
 
+class AllAccountsSourcesTableTest(TestCase):
+    fixtures = ['test_views.yaml']
 
+    def setUp(self):
+        self.user = User.objects.get(pk=1)
+        self.normal_user = User.objects.get(pk=3)
+        self.redshift_user = User.objects.get(pk=2)
+        permission = authmodels.Permission.objects.get(codename='can_see_redshift_postclick_statistics')
+        user = User.objects.get(pk=2)
+        user.user_permissions.add(permission)
 
-
+    def test_test(self):
+        sources_table = table.AllAccountsSourcesTable(self.normal_user, 1, [])
+        print sources_table.reports_api
+        sources_table = table.AllAccountsSourcesTable(self.redshift_user, 1, [])
+        print sources_table.reports_api
 

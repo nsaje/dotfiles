@@ -21,6 +21,7 @@ from utils.sort_helper import sort_results
 import reports.api
 import reports.api_helpers
 import reports.api_contentads
+import reports.api_redshift
 import reports.api_publishers
 import actionlog.sync
 
@@ -68,6 +69,13 @@ def has_aggregate_postclick_permission(user):
             user.has_perm('zemauth.aggregate_postclick_engagement'))
 
 
+def get_reports_api_module(user):
+    if user.has_perm('zemauth.can_see_redshift_postclick_statistics'):
+        return reports.api_redshift
+    else:
+        return reports.api
+
+
 class AllAccountsSourcesTable(object):
     def __init__(self, user, id_, filtered_sources):
         self.user = user
@@ -75,16 +83,17 @@ class AllAccountsSourcesTable(object):
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.Account, self.accounts)
         self.ad_group_sources_states = helpers.get_ad_group_sources_states(self.active_ad_group_sources)
         self.filtered_sources = filtered_sources
+        self.reports_api = get_reports_api_module(user)
 
     def has_complete_postclick_metrics(self, start_date, end_date):
-        return reports.api.has_complete_postclick_metrics_accounts(
+        return self.reports_api.has_complete_postclick_metrics_accounts(
             start_date, end_date, self.accounts, self.filtered_sources)
 
     def get_sources(self):
         return self.filtered_sources.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
     def get_stats(self, start_date, end_date):
-        sources_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
+        sources_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
             start_date,
             end_date,
             ['source'],
@@ -92,7 +101,7 @@ class AllAccountsSourcesTable(object):
             source=self.filtered_sources
         ), self.user)
 
-        totals_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
+        totals_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
             start_date,
             end_date,
             account=self.accounts,
@@ -102,7 +111,7 @@ class AllAccountsSourcesTable(object):
         return sources_stats, totals_stats
 
     def get_yesterday_cost(self):
-        yesterday_cost = reports.api.get_yesterday_cost(account=self.accounts)
+        yesterday_cost = self.reports_api.get_yesterday_cost(account=self.accounts)
         yesterday_total_cost = None
         if yesterday_cost:
             yesterday_total_cost = sum(yesterday_cost.values())
