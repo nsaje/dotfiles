@@ -15,6 +15,7 @@ from reports.db_raw_helpers import dictfetchall, get_obj_id, quote
 
 from psycopg2.extensions import adapt as sqladapt
 
+
 @statsd_timer('reports.redshift', 'delete_contentadstats')
 def delete_contentadstats(date, ad_group_id, source_id):
     cursor = _get_cursor()
@@ -117,8 +118,31 @@ def vacuum_contentadstats():
     cursor.close()
 
 
-def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakdown=None, constraints={}):
+def query_postclick_stats(start_date, end_date, aggregates, field_mapping, breakdown, constraints={}):
+    if not breakdown:
+        raise Exception("Postclick stats query must have a breakdown")
 
+    constraints = _prepare_constraints(constraints, field_mapping)
+    constraints.append('{} >= \'{}\''.format(quote('date'), start_date))
+    constraints.append('{} <= \'{}\''.format(quote('date'), end_date))
+
+    aggregates = _prepare_aggregates(aggregates, field_mapping)
+
+    reverse_field_mapping = {v: k for k, v in field_mapping.iteritems()}
+
+    breakdown = _prepare_breakdown(breakdown, field_mapping)
+    statement = _create_select_query(
+        'contentadstats',
+        breakdown + aggregates,
+        constraints,
+        breakdown
+    )
+
+    results = _get_results(statement)
+    return [_translate_row(row, reverse_field_mapping) for row in results]
+
+
+def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakdown=None, constraints={}):
     constraints = _prepare_constraints(constraints, field_mapping)
     constraints.append('{} >= \'{}\''.format(quote('date'), start_date))
     constraints.append('{} <= \'{}\''.format(quote('date'), end_date))
@@ -187,7 +211,6 @@ def query_general(table_name, start_date, end_date, aggregates, breakdown_fields
     return _get_results(statement)
 
 
-
 def _prepare_constraints(constraints, field_mapping):
     result = []
 
@@ -201,7 +224,7 @@ def _prepare_constraints(constraints, field_mapping):
     for k, v in constraints.iteritems():
         k = quote(field_mapping.get(k, k))
 
-        if isinstance(v, collections.Sequence) or isinstance(v, QuerySet):
+        if isinstance(v, collections.Iterable) or isinstance(v, QuerySet):
             if v:
                 result.append('{} IN ({})'.format(k, ','.join([quote_if_str(get_obj_id(x)) for x in v])))
             else:
@@ -231,6 +254,7 @@ def _prepare_aggregates(aggregates, field_mapping):
 
     return processed_aggrs
 
+
 def _prepare_aggregates_simple(aggregates):
     processed_aggrs = []
     for key, aggr in aggregates.iteritems():
@@ -254,13 +278,13 @@ def _translate_row(row, reverse_field_mapping):
     return {reverse_field_mapping.get(k, k): v for k, v in row.iteritems()}
 
 
-def _create_select_query(table, fields, constraints, breakdown=None, order_fields=None, order_direction=None, limit = None, offset = None):
+def _create_select_query(table, fields, constraints, breakdown=None, order_fields=None, order_direction=None, limit=None, offset=None):
     cmd = 'SELECT {fields} FROM {table} WHERE {constraints}'.format(
         fields=','.join(fields),
         table=table,
         constraints=' AND '.join(constraints),
     )
-    
+
     if breakdown:
         cmd += ' GROUP BY {}'.format(','.join(breakdown))
 
@@ -272,7 +296,7 @@ def _create_select_query(table, fields, constraints, breakdown=None, order_field
         cmd += " LIMIT " + str(limit)
     if offset:
         cmd += " OFFSET " + str(offset)
-    
+
     return cmd
 
 

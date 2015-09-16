@@ -5,20 +5,128 @@ from reports import api_helpers
 from reports import redshift
 from reports import exc
 
-
-CONTENTADSTATS_FIELD_MAPPING = {
-    'date': 'date',
-    'duration': 'total_time_on_site',
-    'content_ad': 'content_ad_id',
-    'source': 'source_id',
-    'campaign': 'campaign_id',
-    'account': 'account_id',
-    'ad_group': 'adgroup_id'
-}
-CONTENTADSTATS_FIELD_REVERSE_MAPPING = {v: k for k, v in CONTENTADSTATS_FIELD_MAPPING.iteritems()}
+from api_helpers import CONTENTADSTATS_FIELD_MAPPING
+from api_helpers import CONTENTADSTATS_FIELD_REVERSE_MAPPING
 
 
 logger = logging.getLogger(__name__)
+
+
+def query_adgroup_postclick_metrics(start_date, end_date, ad_group, media_sources):
+    constraints = {
+       'ad_group': ad_group.id
+    }
+    if media_sources:
+        constraints['source'] = tuple([media_source.id for media_source in media_sources])
+
+    return query(
+        start_date,
+        end_date,
+        breakdown=['ad_group'],
+        constraints=constraints
+    )
+
+
+def query_campaign_postclick_metrics(start_date, end_date, campaign, ad_groups, media_sources):
+    constraints = {
+        'campaign': campaign.id
+    }
+    if ad_groups:
+        constraints['ad_group'] = [ad_group.id for ad_group in ad_groups]
+    if media_sources:
+        constraints['source'] = [media_source.id for media_source in media_sources]
+
+    breakdown = ['campaign', 'ad_group']
+
+    return query(
+        start_date,
+        end_date,
+        breakdown=breakdown,
+        constraints=constraints
+    )
+
+
+def query_campaign_sources_postclick_metrics(start_date, end_date, campaign, ad_groups, media_sources):
+    constraints = {
+        'campaign': campaign.id
+    }
+    if ad_groups:
+        constraints['ad_group'] = [ad_group.id for ad_group in ad_groups]
+    if media_sources:
+        constraints['source'] = [media_source.id for media_source in media_sources]
+
+    breakdown = ['source']
+
+    return query(
+        start_date,
+        end_date,
+        breakdown=breakdown,
+        constraints=constraints
+    )
+
+
+def query_account_postclick_metrics(start_date, end_date, account, campaigns, media_sources):
+    constraints = {
+        'account': account.id
+    }
+    if campaigns:
+        constraints['campaign'] = [campaign.id for campaign in campaigns]
+    if media_sources:
+        constraints['source'] = [media_source.id for media_source in media_sources]
+
+    return query(
+        start_date,
+        end_date,
+        breakdown=['account'],
+        constraints=constraints
+    )
+
+
+def query_account_sources_postclick_metrics(start_date, end_date, account, campaigns, media_sources):
+    constraints = {
+        'account': account.id
+    }
+    if campaigns:
+        constraints['campaign'] = [campaign.id for campaign in campaigns]
+    if media_sources:
+        constraints['source'] = [media_source.id for media_source in media_sources]
+
+    return query(
+        start_date,
+        end_date,
+        breakdown=['source'],
+        constraints=constraints
+    )
+
+
+def query_all_accounts_postclick_metrics(start_date, end_date, accounts, media_sources):
+    constraints = {}
+    if accounts:
+        constraints['account'] = [acc.id for acc in accounts]
+    if media_sources:
+        constraints['source'] = [media_source.id for media_source in media_sources]
+
+    return query(
+        start_date,
+        end_date,
+        breakdown=['account'],
+        constraints=constraints
+    )
+
+
+def query_all_accounts_source_postclick_metrics(start_date, end_date, accounts, media_sources):
+    constraints = {}
+    if accounts:
+        constraints['account'] = [acc.id for acc in accounts]
+    if media_sources:
+        constraints['source'] = [media_source.id for media_source in media_sources]
+
+    return query(
+        start_date,
+        end_date,
+        breakdown=['source'],
+        constraints=constraints
+    )
 
 
 def query(start_date, end_date, breakdown=None, constraints={}):
