@@ -187,6 +187,7 @@ class AdGroupSettings(api_common.BaseApiView):
         ad_group = ad_group_settings.ad_group
 
         ad_group_sources_w_defaults = []
+        actionlogs_to_send = []
         with transaction.atomic():
             for default_settings in default_sources_settings:
 
@@ -196,7 +197,9 @@ class AdGroupSettings(api_common.BaseApiView):
                 ad_group_sources_w_defaults.append((ad_group_source, default_settings))
 
                 external_name = ad_group_source.get_external_name()
-                actionlog_api.create_campaign(ad_group_source, external_name, request)
+                actionlogs_to_send.extend(
+                    actionlog_api.create_campaign(ad_group_source, external_name, request, send=False)
+                )
 
             # note changes in history
             changes_text = 'Automatically created campaigns for {}'.format(
@@ -205,6 +208,7 @@ class AdGroupSettings(api_common.BaseApiView):
             ad_group_settings.changes_text = changes_text
             ad_group_settings.save(request)
 
+        zwei_actions.send(actionlogs_to_send)
         # set defaults for created ad group sources
         for ad_group_source, default_settings in ad_group_sources_w_defaults:
             helpers.set_ad_group_source_defaults(default_settings, ad_group_settings, ad_group_source, request)
