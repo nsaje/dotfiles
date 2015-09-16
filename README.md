@@ -59,6 +59,19 @@ Initialize database:
 python manage.py migrate
 ```
 
+Create an Amazon Redshift database and fill out the credentials in `localsettings.py` for your `STATS_DB_NAME` database. You can use credentials specified for [end-to-end tests](https://sites.google.com/a/zemanta.com/root/engineering/amazon-redshift-e2e-credentials) to login into Redshift (you can use `psql`) and create a new database and user which you will use for development. Passwords should be 8-64 characters in length and should contain one uppercase, one lowercase letter and one number, [more here](http://docs.aws.amazon.com/redshift/latest/dg/r_CREATE_USER.html).
+
+```sql
+CREATE USER user_name WITH PASSWORD 'password';
+CREATE DATABASE database_name WITH OWNER user_name;
+```
+
+Apply the schema to the newly created Amazon Redshift database:
+```bash
+python manage.py redshift_migrate
+```
+
+
 ### Visualize models
 ```bash
 python manage.py graph_models -a -g -o my_project_visualized.png
@@ -164,9 +177,10 @@ The DATABASES dictionary should contain 2 entries for Redshift database connecti
 
 1. `run_e2e.sh` generates a new database name and stores it in `E2E_REDDB` environmental variable.
 2. `server/settings.py` updates the `STATS_DB_NAME` connection with the newly generated database name and access credentials. Access credentials are either taken from environmental variables `REDSHIFT_E2E_USER`, `REDSHIFT_E2E_PASS` and `REDSHIFT_E2E_HOST` (usually used for CircleCI runs), or from credentials set for the `STATS_E2E_DB_NAME` database connection in `server/localsettings.py` (usually used for local development).
-3. `redshift_create_e2e_db` django command then connects with the `STATS_E2E_DB_NAME` connection and creates the database specified in `STATS_DB_NAME`. After that schema migrations are applied to the new database. Schema migration files are located in `reports/migrations/redshift/` directory.
-4. E2E tests execute.
-5. `redshift_cleanup_e2e_db` django command then drops the database that was created in the 3rd step.
+3. `redshift_create_e2e_db` django command then connects with the `STATS_E2E_DB_NAME` connection and creates the database specified in `STATS_DB_NAME`.
+4. `redshift_migrate` django command then applies schema migrations to the new database. Schema migration files are read from `reports/migrations/redshift/` directory.
+5. E2E tests execute.
+6. `redshift_cleanup_e2e_db` django command then drops the database that was created in the 3rd step.
 
 ##### Running tests on SauceLabs
 
