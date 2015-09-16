@@ -100,7 +100,7 @@ class AdGroupSettings(api_common.BaseApiView):
             self._add_media_sources(new_settings, request)
             # no need to create updates as campaigns are not created yet
         else:
-            self._create_update_actions(ad_group, current_settings, new_settings, request)
+            self._send_update_actions(ad_group, current_settings, new_settings, request)
 
         changes = current_settings.get_setting_changes(new_settings)
         if changes:
@@ -153,7 +153,7 @@ class AdGroupSettings(api_common.BaseApiView):
             settings.enable_ga_tracking = resource['enable_ga_tracking']
             settings.tracking_code = resource['tracking_code']
 
-    def _create_update_actions(self, ad_group, current_settings, new_settings, request):
+    def _send_update_actions(self, ad_group, current_settings, new_settings, request):
         actionlogs_to_send = []
 
         with transaction.atomic():
