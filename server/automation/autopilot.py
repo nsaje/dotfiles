@@ -106,7 +106,8 @@ def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_sp
                 decimal.Decimal('0.01'),
                 rounding=decimal.ROUND_HALF_UP)
             break
-    if new_cpc < automation.settings.AUTOPILOT_MINIMUM_CPC:
+    if (new_cpc < automation.settings.AUTOPILOT_MINIMUM_CPC or
+            new_cpc > automation.settings.AUTOPILOT_MAXIMUM_CPC):
         return current_cpc
     return new_cpc
 
