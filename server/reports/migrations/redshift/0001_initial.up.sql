@@ -1,6 +1,6 @@
 CREATE TABLE contentadstats (
     id integer IDENTITY PRIMARY KEY,
-    date timestamp,
+    date date,
     content_ad_id integer,
     adgroup_id integer,
     source_id integer,
@@ -18,8 +18,7 @@ CREATE TABLE contentadstats (
     pageviews integer,
     total_time_on_site integer,
 
-    conversions varchar(256),
-    touchpoints varchar(256)
+    conversions varchar(512)
 )
 DISTSTYLE EVEN
 SORTKEY (date);

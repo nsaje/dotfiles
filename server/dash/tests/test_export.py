@@ -140,8 +140,10 @@ class ExportTestCase(test.TestCase):
             start_date,
             end_date,
             dimensions,
-            source=sources_matcher,
-            campaign=campaign
+            {
+                'source': sources_matcher,
+                'campaign': campaign
+            }
         )
 
         self.assertEqual(rows, [{

@@ -92,15 +92,15 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             breakdown=['content_ad'],
-            ad_group=ad_group,
-            source=sources_matcher
+            constraints={'ad_group': ad_group,
+                         'source': sources_matcher}
         )
 
         mock_query.assert_any_call(
             date,
             date,
-            ad_group=ad_group,
-            source=sources_matcher
+            constraints = {"ad_group": ad_group,
+                           "source": sources_matcher}
         )
 
         result = json.loads(response.content)
@@ -286,15 +286,15 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             breakdown=['content_ad'],
-            ad_group=ad_group,
-            source=sources_matcher
+            constraints={'ad_group':ad_group,
+                         'source': sources_matcher}
         )
 
         mock_query.assert_any_call(
             date,
             date,
-            ad_group=ad_group,
-            source=sources_matcher
+            constraints={'ad_group': ad_group,
+                         'source': sources_matcher}
         )
 
         result = json.loads(response.content)
@@ -353,15 +353,15 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             breakdown=['content_ad'],
-            ad_group=ad_group,
-            source=sources_matcher
+            constraints={'ad_group': ad_group,
+                         'source': sources_matcher}
         )
 
         mock_query.assert_any_call(
             date,
             date,
-            ad_group=ad_group,
-            source=sources_matcher
+            constraints={'ad_group': ad_group,
+                         'source': sources_matcher}
         )
 
         result = json.loads(response.content)
@@ -641,3 +641,254 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
         self.assertEqual(result,
                          "Dashboard of this media source is not yet available because the "
                          "media source is still being set up for this ad group.")
+
+@override_settings(
+    R1_BLANK_REDIRECT_URL='http://example.com/b/{redirect_id}/z1/1/{content_ad_id}/'
+)
+@patch('dash.views.table.reports.api_publishers.query')
+class AdGroupPublishersTableTest(TestCase):
+    fixtures = ['test_api.yaml', 'test_views.yaml']
+
+    def setUp(self):
+        password = 'secret'
+        self.user = User.objects.get(pk=1)
+        self.client.login(username=self.user.email, password=password)
+
+        self.maxDiff = None
+        with patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
+
+    def test_get(self, mock_query):
+        date = datetime.date(2015, 2, 22)
+
+        mock_stats1 = [{
+         'clicks': 123,
+         'cost': 2.4,
+         'cpc': 1.3,
+         'ctr': 100.0,
+         'impressions': 10560,
+         'date': date.isoformat(),
+         'domain': 'example.com',
+         'exchange': 'someexchange',
+        }]
+        mock_stats2 = {
+         'clicks': 323,
+         'cost': 2.1,
+         'cpc': 1.2,
+         'ctr': 99.0,
+         'impressions': 1560,
+         'date': date.isoformat(),
+        }
+        mock_query.side_effect = [mock_stats1, mock_stats2]
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        params = {
+            'page': 1,
+            'order': 'domain',
+            'size': 2,
+            'start_date': date.isoformat(),
+            'end_date': date.isoformat(),
+        }
+
+        response = self.client.get(
+            reverse('ad_group_publishers_table', kwargs={'id_': ad_group.id, 'level_': 'ad_groups'}),
+            params,
+            follow=True
+        )
+
+        sources_matcher = QuerySetMatcher(models.Source.objects.all())
+
+        mock_query.assert_any_call(
+            date,
+            date,
+            breakdown_fields=['domain', 'exchange'],
+            order_fields=['domain'],
+            order_direction='ASC',
+            constraints={'ad_group': ad_group.id}
+        )
+
+        mock_query.assert_any_call(
+            date,
+            date,
+            constraints = {"ad_group": ad_group.id},
+        )
+
+        result = json.loads(response.content)
+
+        self.assertIn('success', result)
+        self.assertEqual(result['success'], True)
+
+        self.assertIn('data', result)
+
+
+        self.assertIn('order', result['data'])
+        self.assertEqual(result['data']['order'], 'domain')
+
+        self.assertIn('pagination', result['data'])
+        self.assertEqual(result['data']['pagination'], {
+            'count': 1,
+            'currentPage': 1,
+            'endIndex': 1,
+            'numPages': 1,
+            'size': 2,
+            'startIndex': 1
+        })
+
+        self.assertIn('rows', result['data'])
+
+        expected_row_1 = {
+            u'clicks': 123,
+            u'cost': 2.4,
+            u'cpc': 1.3,
+            u'ctr': 100.0,
+            u'domain': None,
+            u'domain_link': u'',
+            u'exchange': 'someexchange',
+            u'impressions': 10560,
+            u'domain': 'example.com',
+            u'domain_link': 'http://example.com',
+        }
+
+        self.assertItemsEqual(sorted(result['data']['rows']), [expected_row_1])
+
+        self.assertIn('totals', result['data'])
+
+        self.assertEqual(result['data']['totals'], {	u'clicks': 323,
+                                                        u'cost': 2.1,
+                                                        u'cpc': 1.2,
+                                                        u'ctr': 99.0,
+                                                        u'impressions': 1560})
+
+    def test_get_filtered_sources(self, mock_query):
+        date = datetime.date(2015, 2, 22)
+
+        mock_stats1 = [{
+         'clicks': 123,
+         'cost': 2.4,
+         'cpc': 1.3,
+         'ctr': 100.0,
+         'impressions': 10560,
+         'date': date.isoformat(),
+         'domain': 'example.com',
+         'exchange': 'someexchange',
+        }]
+        mock_stats2 = {
+         'clicks': 123,
+         'cost': 2.4,
+         'cpc': 1.3,
+         'ctr': 100.0,
+         'impressions': 10560,
+         'date': date.isoformat(),
+        }
+        mock_query.side_effect = [mock_stats1, mock_stats2]
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        params = {
+            'page': 1,
+            'order': 'domain',
+            'size': 2,
+            'start_date': date.isoformat(),
+            'end_date': date.isoformat(),
+            'filtered_sources': '1'
+        }
+
+        response = self.client.get(
+            reverse('ad_group_publishers_table', kwargs={'id_': ad_group.id, 'level_': 'ad_groups'}),
+            params,
+            follow=True
+        )
+
+        mock_query.assert_any_call(
+            date,
+            date,
+            breakdown_fields=['domain', 'exchange'],
+            order_fields=['domain'],
+            order_direction='ASC',
+            constraints={'ad_group': ad_group.id,
+                        'exchange': ['adsnative']}
+        )
+
+        mock_query.assert_any_call(
+            date,
+            date,
+            constraints = {"ad_group": ad_group.id,
+                        'exchange': ['adsnative']}
+        )
+
+        result = json.loads(response.content)
+
+        self.assertIn('success', result)
+        self.assertEqual(result['success'], True)
+
+        self.assertIn('data', result)
+
+        self.assertIn('rows', result['data'])
+        self.assertEqual(len(result['data']['rows']), 1)
+        self.assertEqual(result['data']['rows'], [{u'domain': u'example.com', u'domain_link': u'http://example.com', u'ctr': 100.0, u'exchange': u'someexchange', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123}])
+
+    def test_get_reverse_order(self, mock_query):
+        date = datetime.date(2015, 2, 22)
+
+        mock_stats1 = [{
+         'clicks': 123,
+         'cost': 2.4,
+         'cpc': 1.3,
+         'ctr': 100.0,
+         'impressions': 10560,
+         'date': date.isoformat(),
+         'domain': 'example.com',
+         'exchange': 'someexchange',
+        }]
+        mock_stats2 = {
+         'clicks': 123,
+         'cost': 2.4,
+         'cpc': 1.3,
+         'ctr': 100.0,
+         'impressions': 10560,
+         'date': date.isoformat(),
+        }
+        mock_query.side_effect = [mock_stats1, mock_stats2]
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        params = {
+            'page': 1,
+            'order': '-cost',
+            'size': 2,
+            'start_date': date.isoformat(),
+            'end_date': date.isoformat(),
+        }
+
+        response = self.client.get(
+            reverse('ad_group_publishers_table', kwargs={'id_': ad_group.id, 'level_': 'ad_groups'}),
+            params,
+            follow=True
+        )
+
+        mock_query.assert_any_call(
+            date,
+            date,
+            breakdown_fields=['domain', 'exchange'],
+            order_fields=['cost'],
+            order_direction='DESC',
+            constraints={'ad_group': ad_group.id,}
+        )
+
+        mock_query.assert_any_call(
+            date,
+            date,
+            constraints = {"ad_group": ad_group.id,}
+        )
+
+        result = json.loads(response.content)
+
+        self.assertIn('success', result)
+        self.assertEqual(result['success'], True)
+
+        self.assertIn('data', result)
+
+        self.assertIn('rows', result['data'])
+        self.assertEqual(len(result['data']['rows']), 1)
+        self.assertEqual(result['data']['rows'], [{u'domain': u'example.com', u'domain_link': u'http://example.com', u'ctr': 100.0, u'exchange': u'someexchange', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123}])

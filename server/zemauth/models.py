@@ -143,6 +143,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_set_media_source_to_auto_pilot', 'Can set media source to auto-pilot'),
             ('manage_conversion_pixels', 'Can manage conversion pixels'),
             ('has_intercom', 'Can see intercom widget'),
+            ('can_see_publishers', 'Can see publishers'),
         )
 
     def get_full_name(self):

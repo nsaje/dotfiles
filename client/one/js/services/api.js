@@ -279,6 +279,50 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         };
     }
 
+    function AdGroupPublishersTable() {
+
+        this.get = function (id, page, size, startDate, endDate, order) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + id + '/publishers/table/';
+            var config = {
+                params: {}
+            };
+
+            config.params.order = order;
+
+            if (page) {
+                config.params.page = page;
+            }
+
+            if (size) {
+                config.params.size = size;
+            }
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
+
+            addFilteredSources(config.params);
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    if (data && data.data) {
+                        deferred.resolve(data.data);
+                    }
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+
     function AdGroupAdsTable() {
         function convertFromApi(row) {
             row.titleLink = {
@@ -618,6 +662,11 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         this.listContentAdStats = function (id, startDate, endDate, metrics) {
             var url = '/api/ad_groups/' + id + '/contentads_plus/daily_stats/';
             return getData(url, startDate, endDate, metrics);
+        };
+
+        this.listPublishersStats = function (id, startDate, endDate, selectedIds, totals, metrics) {
+            var url = '/api/ad_groups/' + id + '/publishers/daily_stats/';
+            return getData(url, startDate, endDate, metrics, selectedIds, totals);
         };
 
         this.list = function (level, id, startDate, endDate, selectedIds, totals, metrics, groupSources) {
@@ -2325,6 +2374,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         adGroupSources: new AdGroupSources(),
         sourcesTable: new SourcesTable(),
         adGroupSourcesTable: new AdGroupSourcesTable(),
+        adGroupPublishersTable: new AdGroupPublishersTable(),
         adGroupAdsTable: new AdGroupAdsTable(),
         adGroupAdsPlusTable: new AdGroupAdsPlusTable(),
         adGroupSync: new AdGroupSync(),

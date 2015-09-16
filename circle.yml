@@ -2,6 +2,8 @@ general:
     artifacts:
         - ./server/coverage_report.txt
         - ./client/coverage/text/*
+        - ./server.tar.gz
+        - ./client.tar.gz
 
 machine:
     python:
@@ -33,6 +35,15 @@ test:
         - 'case $CIRCLE_NODE_INDEX in 0) cd server && coverage run manage.py test  ;; 1) cd client && grunt test && cd .. && ./run_e2e.sh ;; esac':
             parallel: true
     post:
+        - >
+            case $CIRCLE_NODE_INDEX in
+              0)
+                tar -pc server -zf server.tar.gz
+                ;;
+              1)
+                tar -pc client/dist/ -zf client.tar.gz
+                ;;
+            esac
         - coverage report > coverage_report.txt:
             pwd: server
         - coverage xml:
