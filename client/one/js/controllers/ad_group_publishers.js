@@ -25,29 +25,23 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         {
             'name': 'Traffic Acquisition',
             'fields': [
+               'domain', 
+               'domain_link',
                'exchange',
-               'cost', 'cost_data',
-               'cpc', 'clicks', 'impressions', 'ctr', 
+               'cost', 
+               'cpc', 
+               'clicks', 
+               'impressions', 
+               'ctr', 
             ]
         }
     ];
 
     $scope.columns = [
         {
-            name: '',
-            field: 'checked',
-            type: 'checkbox',
-            shown: true,
-            checked: true,
-            totalRow: true,
-            unselectable: true,
-            order: false,
-            disabled: false
-        }, 
-        {
             name: 'Domain',
             field: 'domain',
-            unselectable: true,
+            unselectable: false,
             checked: true,
             type: 'clickPermissionOrText',
             shown: true,
@@ -60,11 +54,10 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         {
             name: 'Link',
             field: 'domain_link',
-            unselectable: true,
+            unselectable: false,
             checked: true,
             type: 'link',
             shown: true,
-            hasTotalsLabel: false,
             totalRow: false,
             help: 'Link to a publisher where your content is being promoted.',
             order: false,
@@ -73,13 +66,12 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         {
             name: 'Media Source',
             field: 'exchange',
-            unselectable: true,
+            unselectable: false,
             checked: true,
             type: 'clickPermissionOrText',
             shown: true,
-            hasTotalsLabel: false,
             totalRow: false,
-            help: 'An exchange where your content is being promoted...',
+            help: 'An exchange where your content is being promoted.',
             order: true,
             initialOrder: 'asc'
         },

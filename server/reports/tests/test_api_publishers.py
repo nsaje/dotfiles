@@ -20,7 +20,7 @@ class ApiPublishersTest(TestCase):
             return
         self.assertTrue('GROUP BY' in query)
 
-        breakdown_fields = [api_publishers.OUTPUT_FIELDS_REVERSE_MAPPING.get(f, f) for f in breakdown]
+        breakdown_fields = [api_publishers.BY_APP_MAPPING[f]['sql'] for f in breakdown]
 
         # check group by statement if contains breakdown fields
         group_by_fields = query.split('GROUP BY')[1].split(',')
