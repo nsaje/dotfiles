@@ -1,13 +1,17 @@
 import datetime
 import logging
-import automation.models
-from django.db.models import Q
 import pytz
-from django.conf import settings
 import traceback
+
+from django.db.models import Q
+from django.conf import settings
 from django.core.mail import send_mail
-from utils import pagerduty_helper
+
+import automation.models
 import automation.settings
+import automation.helpers
+from utils import pagerduty_helper
+
 logger = logging.getLogger(__name__)
 
 
@@ -26,6 +30,7 @@ def manager_has_been_notified(campaign):
 def notify_campaign_with_depleting_budget(campaign, available_budget, yesterdays_spend):
     account_manager = campaign.get_current_settings().account_manager
     sales_rep = campaign.get_current_settings().sales_representative
+    total_daily_budget = automation.helpers.get_total_daily_budget_amount(campaign)
     campaign_url = settings.BASE_URL + '/campaigns/{}/budget'.format(campaign.pk)
     _send_depleted_budget_notification_email(
         campaign.name,
@@ -33,7 +38,8 @@ def notify_campaign_with_depleting_budget(campaign, available_budget, yesterdays
         campaign.account.name,
         [account_manager.email, sales_rep.email],
         available_budget,
-        yesterdays_spend)
+        yesterdays_spend,
+        total_daily_budget)
     automation.models.CampaignBudgetDepletionNotification(
         campaign=campaign,
         available_budget=available_budget,
@@ -51,13 +57,14 @@ def _send_depleted_budget_notification_email(
         account_name,
         emails,
         available_budget,
-        yesterdays_spend
+        yesterdays_spend,
+        total_daily_budget
         ):
     body = u'''Hi account manager of {camp}
 
 We'd like to notify you that campaign {camp}, {account} is about to run out of available budget.
 
-The available budget remaining today is ${avail}, and yesterday's spend was ${yest}.
+The available budget remaining today is ${avail}, current daily cap is ${cap} and yesterday's spend was ${yest}.
 
 Please check {camp_url} for details.
 
@@ -69,6 +76,7 @@ Zemanta
         account=account_name,
         camp_url=campaign_url,
         avail=available_budget,
+        cap=total_daily_budget,
         yest=yesterdays_spend
     )
     try:

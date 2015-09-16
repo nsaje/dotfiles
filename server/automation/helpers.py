@@ -1,6 +1,12 @@
+import datetime
+import pytz
+
+from django.conf import settings
+
 import dash
-from dash.views import helpers
+import decimal
 import reports.api
+import dash.views.helpers
 
 
 def get_yesterdays_spends(campaigns):
@@ -49,10 +55,33 @@ def _get_active_campaigns_subset(campaigns):
 def get_active_ad_groups(campaign):
     active_ad_groups = []
     adgroups = campaign.adgroup_set.all()
+    today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
+    today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
+    today = datetime.date(today.year, today.month, today.day)
     for adg in adgroups:
         adgroup_settings = adg.get_current_settings()
-        if adgroup_settings.state == dash.constants.AdGroupSettingsState.ACTIVE and \
-                not adgroup_settings.archived and \
-                not adg.is_demo:
+        if (adgroup_settings.state == dash.constants.AdGroupSettingsState.ACTIVE and
+                not adgroup_settings.archived and
+                not adg.is_demo and
+                (adgroup_settings.end_date is None or
+                    adgroup_settings.end_date >= today)):
             active_ad_groups.append(adg)
     return active_ad_groups
+
+
+def get_active_ad_group_sources_settings(adgroup):
+    active_sources_settings = []
+    all_ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group=adgroup)
+    for current_source_settings in dash.views.helpers.get_ad_group_sources_settings(all_ad_group_sources):
+        if (current_source_settings.state == dash.constants.AdGroupSourceSettingsState.ACTIVE):
+            active_sources_settings.append(current_source_settings)
+    return active_sources_settings
+
+
+def get_total_daily_budget_amount(campaign):
+    total_daily_budget = decimal.Decimal(0.0)
+    for adg in get_active_ad_groups(campaign):
+        for adg_src_set in get_active_ad_group_sources_settings(adg):
+            if adg_src_set.daily_budget_cc is not None:
+                total_daily_budget += adg_src_set.daily_budget_cc
+    return total_daily_budget

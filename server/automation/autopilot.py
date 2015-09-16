@@ -1,23 +1,26 @@
-import logging
-import dash
-from automation import models
-import automation.settings
 import datetime
 import pytz
 import decimal
+import traceback
+import logging
+
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-from dash import constants
-import traceback
 from django.core.mail import send_mail
+
+import dash
+from automation import models
+import automation.helpers
+import automation.settings
+from dash import constants
 from utils import pagerduty_helper
+
 logger = logging.getLogger(__name__)
 
 
 def update_ad_group_source_cpc(ad_group_source, new_cpc):
     settings_writer = dash.api.AdGroupSourceSettingsWriter(ad_group_source)
-    resource = dict()
-    resource['cpc_cc'] = new_cpc
+    resource = {'cpc_cc': new_cpc}
     settings_writer.set(resource, None)
 
 
@@ -65,10 +68,8 @@ def ad_group_sources_daily_budget_was_changed_recently(ad_group_source):
 
 def get_autopilot_ad_group_sources_settings(adgroup):
     autopilot_sources_settings = []
-    all_ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group=adgroup)
-    for current_source_settings in dash.views.helpers.get_ad_group_sources_settings(all_ad_group_sources):
-        if (current_source_settings.state == dash.constants.AdGroupSourceSettingsState.ACTIVE
-                and current_source_settings.autopilot_state == dash.constants.AdGroupSourceSettingsAutopilotState.ACTIVE):
+    for current_source_settings in automation.helpers.get_active_ad_group_sources_settings(adgroup):
+        if (current_source_settings.autopilot_state == dash.constants.AdGroupSourceSettingsAutopilotState.ACTIVE):
             autopilot_sources_settings.append(current_source_settings)
     return autopilot_sources_settings
 

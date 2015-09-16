@@ -63,8 +63,8 @@ oneApp.directive('zemStateSelector', function () {
             $scope.$watch('autopilotValue', function(autopilotValue) {
                 $scope.autopilotActive = (
                   $scope.autopilotValue === $scope.autopilotEnabledValue
-                  && typeof $scope.autopilotValue !== 'undefined'
-                  && typeof $scope.autopilotEnabledValue !== 'undefined'
+                  && $scope.autopilotValue !== undefined
+                  && $scope.autopilotEnabledValue !== undefined
                 );
             });
         }]

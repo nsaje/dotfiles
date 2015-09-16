@@ -11,7 +11,7 @@ var constants = {
         ACTIVE: 1,
         INACTIVE: 2
     },
-    AdGroupSourceSettingsAutopilotState: {
+    adGroupSourceSettingsAutopilotState: {
       ACTIVE: 1,
       INACTIVE: 2
     },

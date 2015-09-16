@@ -1,13 +1,15 @@
-from django.core import mail
-from django import test
-from mock import patch
-from automation import budgetdepletion, helpers, autopilot
-from dash import models
-from reports import refresh
 import decimal
 import dash
 import datetime
+from mock import patch
+
+from django.core import mail
+from django import test
+
+from automation import budgetdepletion, helpers, autopilot
 from automation import models as automationmodels
+from dash import models
+from reports import refresh
 import automation.settings
 
 
@@ -66,7 +68,8 @@ class BudgetDepletionTestCase(test.TestCase):
             'account_name',
             ['test@zemanta.com'],
             1000,
-            1500
+            1500,
+            5000
         )
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(
@@ -129,6 +132,25 @@ class BudgetDepletionTestCase(test.TestCase):
         self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, -5), decimal.Decimal('0.5'))
         self.assertEqual(autopilot.calculate_new_autopilot_cpc(-0.5, 10, 5), decimal.Decimal('0'))
 
-    ''' TODO: test -
-        get_autopilot_ad_group_sources_settings,
-    '''
+    def test_send_autopilot_CPC_changes_email(self):
+        autopilot.send_autopilot_CPC_changes_email(
+            'campaign_name',
+            1,
+            'account_name',
+            ['test@zemanta.com'],
+            {u'AdGroup': [[u'Source', decimal.Decimal('0.0800'), decimal.Decimal('0.09')]]}
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(
+            automation.settings.AUTOPILOT_EMAIL)
+        )
+        self.assertEqual(mail.outbox[0].to, ['test@zemanta.com'])
+
+    def test_get_active_ad_group_sources_settings(self):
+            adg1 = models.AdGroup.objects.get(id=1)
+            actives = helpers.get_active_ad_group_sources_settings(adg1)
+            self.assertEqual(len(actives), 1)
+
+            adg2 = models.AdGroup.objects.get(id=2)
+            actives2 = helpers.get_active_ad_group_sources_settings(adg2)
+            self.assertEqual(len(actives2), 1)
