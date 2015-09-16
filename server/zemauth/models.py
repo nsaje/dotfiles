@@ -143,6 +143,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('manage_conversion_pixels', 'Can manage conversion pixels'),
             ('has_intercom', 'Can see intercom widget'),
             ('can_see_publishers', 'Can see publishers'),
+            ('can_see_redshift_postclick_statistics', 'Can see Redshift postclick statistics'),
         )
 
     def get_full_name(self):
