@@ -10,12 +10,17 @@ from reports import exc
 logger = logging.getLogger(__name__)
 
 def from_micro_cpm(num):
-    # we divide first by a million (since we use fixed point) and then by additional thousand (cpm)
-    if not num:
+    if num is None:
         return None
     else:
+        # we divide first by a million (since we use fixed point) and then by additional thousand (cpm)
         return num * 1.0 / 1000000000
 
+def to_percent(num):
+    if num is None:
+        return None
+    else:
+        return num * 100
 
 PUBLISHERS_AGGREGATE_FIELDS = dict(
     clicks_sum=Sum('clicks'),
@@ -34,7 +39,7 @@ FIELDS = [dict(sql='clicks_sum',      app='clicks',      out=lambda v: v,),
           dict(sql='clicks_sum',      app='clicks',      out=lambda v: v),
           dict(sql='cost_micro_sum',  app='cost',        out=lambda v: from_micro_cpm(v)),
           dict(sql='cpc_micro',       app='cpc',         out=lambda v: from_micro_cpm(v),    order="SUM(clicks)=0, cpc_micro"),
-          dict(sql='ctr',             app='ctr',         out=lambda v: v * 100),
+          dict(sql='ctr',             app='ctr',         out=lambda v: to_percent(v)),
           dict(sql='adgroup_id',      app='ad_group',    out=lambda v: v),
           dict(sql='exchange',        app='exchange',    out=lambda v: v),
           ]
