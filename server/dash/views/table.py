@@ -1641,7 +1641,7 @@ class PublishersTable(api_common.BaseApiView):
 
         user = request.user
         adgroup = helpers.get_ad_group(user, id_)
-        
+
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
         constraints = {'ad_group': adgroup.id}
@@ -1665,12 +1665,12 @@ class PublishersTable(api_common.BaseApiView):
         # bidder_slug is unique, so no issues with taking all of the sources
         for s in filtered_sources:
             map_exchange_to_source_name[s.bidder_slug] = s.name
-        
+
         # this is a really bad practice, but used extensively in models.py
         # it should be factored out at the same time as that
         if set(models.Source.objects.all()) != set(filtered_sources):
             constraints['exchange'] = map_exchange_to_source_name.keys()
-        
+
         publishers_data = reports.api_publishers.query(
             start_date,
             end_date,
@@ -1684,7 +1684,7 @@ class PublishersTable(api_common.BaseApiView):
             start_date,
             end_date,
             constraints=constraints,
-        )            
+        )
 
         # since we're not dealing with a QuerySet this kind of pagination is braindead, but we'll polish later
         publishers_data, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(publishers_data, page, size)
@@ -1733,15 +1733,15 @@ class PublishersTable(api_common.BaseApiView):
             exchange = publisher_data.get('exchange', None)
             source_name = map_exchange_to_source_name.get(exchange, exchange)
             domain = publisher_data.get('domain', None)
-            if domain: 
+            if domain:
                 domain_link = "http://" + domain
             else:
                 domain_link = ""
-            
+
             row = {
                 'domain': domain,
                 'domain_link': domain_link,
-                'exchange': source_name, 
+                'exchange': source_name,
                 'cost': publisher_data.get('cost', 0),
                 'cpc': publisher_data.get('cpc', 0),
                 'clicks': publisher_data.get('clicks', None),
