@@ -66,7 +66,7 @@ Day Index,Sessions
         )
         tasks.process_ga_report(ga_report_task)
 
-        report_logs = models.GAReportLog.objects.all()[0]
+        report_logs = models.GAReportLog.objects.first()
         self.assertIsNone(report_logs.errors)
 
     def test_omni_ga_conversion(self, cursor):
@@ -84,7 +84,7 @@ Day Index,Sessions
         )
         tasks.process_ga_report(ga_report_task)
 
-        report_log = models.GAReportLog.objects.all()[0]
+        report_log = models.GAReportLog.objects.first()
         self.assertIsNone(report_log.errors)
 
     def test_process_ga_report_v2(self, cursor):
@@ -104,7 +104,7 @@ Day Index,Sessions
         )
         tasks.process_ga_report_v2(ga_report_task)
 
-        report_log = models.ReportLog.objects.all()[0]
+        report_log = models.ReportLog.objects.first()
         self.assertIsNone(report_log.errors)
 
         self.assertEqual(553, report_log.visits_reported)
@@ -125,7 +125,7 @@ Day Index,Sessions
         )
         tasks.process_omniture_report_v2(ga_report_task)
 
-        report_log = models.ReportLog.objects.all()[0]
+        report_log = models.ReportLog.objects.first()
         self.assertIsNone(report_log.errors)
         self.assertEqual(0, report_log.visits_reported)
         self.assertEqual(234, report_log.visits_imported)
@@ -145,7 +145,7 @@ Day Index,Sessions
         )
         tasks.process_omniture_report_v2(ga_report_task)
 
-        report_log = models.ReportLog.objects.all()[0]
+        report_log = models.ReportLog.objects.first()
         self.assertIsNone(report_log.errors)
         self.assertEqual(0, report_log.visits_reported)
         self.assertEqual(234, report_log.visits_imported)
@@ -165,7 +165,7 @@ Day Index,Sessions
         )
         tasks.process_omniture_report_v2(ga_report_task)
 
-        report_log = models.ReportLog.objects.all()[0]
+        report_log = models.ReportLog.objects.first()
         self.assertIsNone(report_log.errors)
         self.assertEqual(0, report_log.visits_reported)
         self.assertEqual(4112, report_log.visits_imported)
@@ -214,5 +214,5 @@ Percent Shown as: Number,,,,,,,,,,
         )
         tasks.process_omniture_report(report_task)
 
-        report_log = models.GAReportLog.objects.all()[0]
+        report_log = models.GAReportLog.objects.first()
         self.assertIsNone(report_log.errors)
