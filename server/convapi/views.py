@@ -135,6 +135,12 @@ def mailgun_gareps(request):
             request.POST.get('attachment-count', 0),
             content_type)
 
+        logger.info('DEBUG NOTICE: Posting task to parser_v {sender} {recipient} {fr} {to}'.format(
+            sender=request.POST.get('sender'),
+            recipient=request.POST.get('recipient'),
+            fr=request.POST.get('from'),
+            to=request.POST.get('to')
+        ))
         if request.POST.get('to') == OMNITURE_REPORT_MAIL:
             tasks.process_omniture_report_v2.apply_async(
                 (report_task, ),
