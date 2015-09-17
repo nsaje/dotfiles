@@ -93,7 +93,7 @@ def report_aggregate(csvreport, sender, recipient, subject, date, text, report_l
 
 
 @app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
-          default_retry_delay=settings.CELERY_TASK_RETRY_DEPLAY)
+          default_retry_delay=settings.CELERY_TASK_RETRY_DEPLOY)
 @transaction.atomic
 def process_ga_report(ga_report_task):
     try:
@@ -203,7 +203,7 @@ def _convert_ga_omniture(content, attachment_name):
     csv_file = StringIO.StringIO()
     writer = unicodecsv.writer(csv_file, encoding='utf-8')
 
-    workbook = xlrd.open_workbook(file_contents=content) #, encoding_override="utf-8")
+    workbook = xlrd.open_workbook(file_contents=content)
 
     header = _parse_omniture_header(workbook)
     date_raw = header.get('Date', '')
@@ -349,16 +349,18 @@ def _extract_omniture_date(date_raw):
 
 
 @app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
-          default_retry_delay=settings.CELERY_TASK_RETRY_DEPLAY)
+          default_retry_delay=settings.CELERY_TASK_RETRY_DEPLOY)
 @transaction.atomic
 def process_ga_report_v2(ga_report_task):
     process_report_v2(ga_report_task, reports.constants.ReportType.GOOGLE_ANALYTICS)
 
+
 @app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
-          default_retry_delay=settings.CELERY_TASK_RETRY_DEPLAY)
+          default_retry_delay=settings.CELERY_TASK_RETRY_DEPLOY)
 @transaction.atomic
 def process_omniture_report_v2(ga_report_task):
     process_report_v2(ga_report_task, reports.constants.ReportType.OMNITURE)
+
 
 def process_report_v2(report_task, report_type):
     try:
@@ -421,7 +423,7 @@ def process_report_v2(report_task, report_type):
 
 
 @app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
-          default_retry_delay=settings.CELERY_TASK_RETRY_DEPLAY)
+          default_retry_delay=settings.CELERY_TASK_RETRY_DEPLOY)
 @transaction.atomic
 def process_omniture_report(ga_report_task):
     try:
@@ -550,4 +552,3 @@ def _update_report_log_after_parsing(csvreport, report_log, ga_report_task):
     report_log.email_subject = ga_report_task.subject
     report_log.for_date = csvreport.get_date()
     report_log.save()
-
