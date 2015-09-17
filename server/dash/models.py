@@ -1102,13 +1102,13 @@ class AdGroupSettings(SettingsBase):
         return dt
 
     def targets_dma(self):
-        return any(tr in regions.DMA_BY_CODE for tr in self.target_regions)
+        return any(tr in regions.DMA_BY_CODE for tr in self.target_regions) if self.target_regions else False
 
     def targets_countries(self):
-        return any(tr in regions.COUNTRY_BY_CODE for tr in self.target_regions)
+        return any(tr in regions.COUNTRY_BY_CODE for tr in self.target_regions) if self.target_regions else False
 
     def is_mobile_only(self):
-        return len(self.target_devices) == 1 and constants.AdTargetDevice.MOBILE in self.target_devices
+        return self.target_devices and len(self.target_devices) == 1 and constants.AdTargetDevice.MOBILE in self.target_devices
 
     @classmethod
     def get_defaults_dict(cls):

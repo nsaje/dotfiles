@@ -213,6 +213,8 @@ class AdGroupSettings(api_common.BaseApiView):
 
         # set defaults for created ad group sources
         for ad_group_source, default_settings in ad_group_sources_w_defaults:
+
+            # the update campaign actions should be created on create campaign callback
             helpers.set_ad_group_source_defaults(default_settings, ad_group_settings, ad_group_source, request)
 
 

@@ -740,7 +740,9 @@ def add_source_to_ad_group(default_source_settings, ad_group):
     return ad_group_source
 
 
-def set_ad_group_source_defaults(default_source_settings, ad_group_settings, ad_group_source, request):
+def set_ad_group_source_defaults(default_source_settings, ad_group_settings, ad_group_source,
+                                 request, send_action=False):
+
     # set defaults if available
     cpc_cc = default_source_settings.mobile_cpc_cc if ad_group_settings.is_mobile_only() else\
         default_source_settings.default_cpc_cc
@@ -755,4 +757,4 @@ def set_ad_group_source_defaults(default_source_settings, ad_group_settings, ad_
 
     if resource:
         settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
-        settings_writer.set(resource, request)
+        settings_writer.set(resource, request, send_action=send_action)
