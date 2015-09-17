@@ -52,21 +52,51 @@ def _get_active_campaigns_subset(campaigns):
     return campaigns
 
 
+def get_yesterdays_clicks(ad_group_source):
+    today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
+    today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
+    today = datetime.datetime(today.year, today.month, today.day)
+    yesterday = today - datetime.timedelta(days=1)
+    data = reports.api.query(
+        yesterday,
+        yesterday,
+        ['source'],
+        ad_group=ad_group_source.ad_group,
+        source=ad_group_source.source,
+    )
+    if data != [] and data[0]['clicks'] is not None:
+        return data[0]['clicks']
+    return 0
+
+
 def get_active_ad_groups(campaign):
     active_ad_groups = []
-    adgroups = campaign.adgroup_set.all()
+    for adg in campaign.adgroup_set.all():
+        if _is_ad_group_active(adg):
+            active_ad_groups.append(adg)
+    return active_ad_groups
+
+
+def get_all_active_ad_groups():
+    active_ad_groups = []
+    for adg in dash.models.AdGroup.objects.all():
+        if _is_ad_group_active(adg):
+            active_ad_groups.append(adg)
+    return active_ad_groups
+
+
+def _is_ad_group_active(adgroup):
     today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
     today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
     today = datetime.date(today.year, today.month, today.day)
-    for adg in adgroups:
-        adgroup_settings = adg.get_current_settings()
-        if (adgroup_settings.state == dash.constants.AdGroupSettingsState.ACTIVE and
-                not adgroup_settings.archived and
-                not adg.is_demo and
-                (adgroup_settings.end_date is None or
-                    adgroup_settings.end_date >= today)):
-            active_ad_groups.append(adg)
-    return active_ad_groups
+    adgroup_settings = adgroup.get_current_settings()
+    if (adgroup_settings.state == dash.constants.AdGroupSettingsState.ACTIVE and
+        not adgroup_settings.archived and
+        not adgroup.is_demo and
+        (adgroup_settings.end_date is None or
+            adgroup_settings.end_date >= today)):
+        return True
+    return False
 
 
 def get_active_ad_group_sources_settings(adgroup):

@@ -48,7 +48,7 @@ def notify_campaign_with_depleting_budget(campaign, available_budget, yesterdays
 
 
 def budget_is_depleting(available_budget, yesterdays_spend):
-    return (available_budget < yesterdays_spend * automation.settings.DEPLETING_AVAILABLE_BUDGET_SCALAR) & (yesterdays_spend > 0)
+    return (available_budget < yesterdays_spend * automation.settings.DEPLETING_AVAILABLE_BUDGET_SCALAR) and (yesterdays_spend > 0)
 
 
 def _send_depleted_budget_notification_email(
@@ -104,3 +104,17 @@ Zemanta
             description='Budget depletion e-mail for campaign was not sent because an exception was raised: {}'.format(traceback.format_exc(e)),
             details=desc
         )
+
+def notify_depleted_budget_campaigns():
+    campaigns = automation.helpers.get_active_campaigns()
+    available_budgets = automation.helpers.get_available_budgets(campaigns)
+    yesterdays_spends = automation.helpers.get_yesterdays_spends(campaigns)
+
+    for camp in campaigns:
+        if budget_is_depleting(available_budgets.get(camp.id), yesterdays_spends.get(camp.id)) and \
+                not manager_has_been_notified(camp):
+            notify_campaign_with_depleting_budget(
+                camp,
+                available_budgets.get(camp.id),
+                yesterdays_spends.get(camp.id)
+            )

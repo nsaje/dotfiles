@@ -1,16 +1,14 @@
 import decimal
 
-
 DEPLETING_AVAILABLE_BUDGET_SCALAR = 1.5
 DEPLETING_CAMPAIGN_BUDGET_EMAIL = 'help@zemanta.com'
-AUTOPILOT_CPC_CHANGE_TABLE = [
-    # [underspendingUpperLimit, underspendingLowerLimit, bidCPCProcentualIncrease]
-    [-1, -0.8, 0.15],
-    [-0.8, -0.4, 0.1],
-    [-0.4, -0.2, 0.05],
-    [-0.2, -0.1, 0],
-    [-0.1, 0, -0.03]
-]
+AUTOPILOT_CPC_CHANGE_TABLE = (
+    {'underspend_upper_limit': -1, 'underspend_lower_limit': -0.8, 'bid_cpc_procentual_increase': 0.15},
+    {'underspend_upper_limit': -0.8, 'underspend_lower_limit': -0.4, 'bid_cpc_procentual_increase': 0.1},
+    {'underspend_upper_limit': -0.4, 'underspend_lower_limit': -0.2, 'bid_cpc_procentual_increase': 0.05},
+    {'underspend_upper_limit': -0.2, 'underspend_lower_limit': -0.1, 'bid_cpc_procentual_increase': 0},
+    {'underspend_upper_limit': -0.1, 'underspend_lower_limit': 0, 'bid_cpc_procentual_increase': -0.03}
+)
 AUTOPILOT_MINIMUM_CPC = decimal.Decimal('0.05')
 AUTOPILOT_MAXIMUM_CPC = decimal.Decimal('4.0')
 AUTOMATION_AI_NAME = 'Zemanta AI'

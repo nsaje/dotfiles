@@ -14,7 +14,7 @@ from dash import models
 from dash import constants
 from utils import exc
 from utils import statsd_helper
-from automation import autopilot
+import automation.autopilot
 from dash import api
 
 STATS_START_DELTA = 30
@@ -769,7 +769,7 @@ def _get_editable_fields_bid_cpc(ad_group_source, ad_group_settings):
 
     if not ad_group_source.source.can_update_cpc() or\
             _is_end_date_past(ad_group_settings) or\
-            autopilot.ad_group_source_is_on_autopilot(ad_group_source):
+            automation.autopilot.ad_group_source_is_on_autopilot(ad_group_source):
         enabled = False
         message = _get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_settings)
 
@@ -856,7 +856,7 @@ def _get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_setting
     if _is_end_date_past(ad_group_settings):
         return 'The ad group has end date set in the past. No modifications to media source parameters are possible.'
 
-    if autopilot.ad_group_source_is_on_autopilot(ad_group_source):
+    if automation.autopilot.ad_group_source_is_on_autopilot(ad_group_source):
         return 'This value cannot be edited because the media source is on Auto-Pilot'
 
     return 'This media source doesn\'t support setting this value through the dashboard.'

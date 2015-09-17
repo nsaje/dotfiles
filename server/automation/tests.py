@@ -92,7 +92,8 @@ class BudgetDepletionTestCase(test.TestCase):
             20.0,
             0.15,
             0.20,
-            30.0
+            30.0,
+            5
         )
         log = automationmodels.AutopilotAdGroupSourceBidCpcLog.objects.all().latest('created_dt')
         self.assertEqual(log.campaign, models.Campaign.objects.get(pk=1))
@@ -114,10 +115,10 @@ class BudgetDepletionTestCase(test.TestCase):
         settings_writer.set(resource, None)
         self.assertTrue(autopilot.ad_group_sources_daily_budget_was_changed_recently(models.AdGroupSource.objects.get(id=2)))
 
-    @patch('automation.settings.AUTOPILOT_CPC_CHANGE_TABLE', [
-        [-1, -0.5, 0.1],
-        [-0.5, 0, 0.5]
-        ]
+    @patch('automation.settings.AUTOPILOT_CPC_CHANGE_TABLE', (
+        {'underspend_upper_limit': -1, 'underspend_lower_limit': -0.5, 'bid_cpc_procentual_increase': 0.1},
+        {'underspend_upper_limit': -0.5, 'underspend_lower_limit': 0, 'bid_cpc_procentual_increase': 0.5},
+        )
     )
     def test_calculate_new_autopilot_cpc(self):
         self.assertEqual(autopilot.calculate_new_autopilot_cpc(0, 10, 5), decimal.Decimal('0'))
@@ -154,3 +155,26 @@ class BudgetDepletionTestCase(test.TestCase):
             adg2 = models.AdGroup.objects.get(id=2)
             actives2 = helpers.get_active_ad_group_sources_settings(adg2)
             self.assertEqual(len(actives2), 1)
+
+    def test_get_autopilot_ad_group_sources_settings(self):
+            adg1 = models.AdGroup.objects.get(id=1)
+            actives = autopilot.get_autopilot_ad_group_sources_settings(adg1)
+            self.assertEqual(len(actives), 0)
+
+            adg2 = models.AdGroup.objects.get(id=2)
+            actives2 = autopilot.get_autopilot_ad_group_sources_settings(adg2)
+            self.assertEqual(len(actives2), 1)
+
+    def test_ad_group_source_is_on_autopilot(self):
+            adgs1 = models.AdGroupSource.objects.get(id=1)
+            self.assertFalse(autopilot.ad_group_source_is_on_autopilot(adgs1))
+
+            adgs2 = models.AdGroupSource.objects.get(id=2)
+            self.assertTrue(autopilot.ad_group_source_is_on_autopilot(adgs2))
+
+    def test_get_total_daily_budget_amount(self):
+            camp1 = models.Campaign.objects.get(id=1)
+            self.assertEqual(helpers.get_total_daily_budget_amount(camp1), decimal.Decimal('60'))
+
+            camp2 = models.Campaign.objects.get(id=2)
+            self.assertEqual(helpers.get_total_daily_budget_amount(camp2), decimal.Decimal('0'))

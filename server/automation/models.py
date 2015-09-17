@@ -66,6 +66,7 @@ class AutopilotAdGroupSourceBidCpcLog(models.Model):
         verbose_name='Created at',
         db_index=True
     )
+    yesterdays_clicks = models.IntegerField(null=True)
     yesterdays_spend_cc = models.DecimalField(
         max_digits=10,
         decimal_places=4,

@@ -13,6 +13,7 @@ from automation import models
 import automation.helpers
 import automation.settings
 from dash import constants
+import reports
 from utils import pagerduty_helper
 
 logger = logging.getLogger(__name__)
@@ -24,7 +25,7 @@ def update_ad_group_source_cpc(ad_group_source, new_cpc):
     settings_writer.set(resource, None)
 
 
-def persist_cpc_change_to_admin_log(ad_group_source, yesterday_spend, previous_cpc, new_cpc, daily_budget):
+def persist_cpc_change_to_admin_log(ad_group_source, yesterday_spend, previous_cpc, new_cpc, daily_budget, yesterday_clicks):
     models.AutopilotAdGroupSourceBidCpcLog(
         campaign=ad_group_source.ad_group.campaign,
         ad_group=ad_group_source.ad_group,
@@ -32,7 +33,8 @@ def persist_cpc_change_to_admin_log(ad_group_source, yesterday_spend, previous_c
         yesterdays_spend_cc=yesterday_spend,
         previous_cpc_cc=previous_cpc,
         new_cpc_cc=new_cpc,
-        current_daily_budget_cc=daily_budget
+        current_daily_budget_cc=daily_budget,
+        yesterdays_clicks=yesterday_clicks
     ).save()
 
 
@@ -92,23 +94,22 @@ def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_sp
         yesterdays_spend <= 0
     ]):
         return current_cpc
-    if type(current_daily_budget) != float:
-        current_daily_budget = float(current_daily_budget)
-    if type(yesterdays_spend) != float:
-        yesterdays_spend = float(yesterdays_spend)
+    if type(current_daily_budget) != decimal.Decimal:
+        current_daily_budget = decimal.Decimal(current_daily_budget)
+    if type(yesterdays_spend) != decimal.Decimal:
+        yesterdays_spend = decimal.Decimal(yesterdays_spend)
     if type(current_cpc) != decimal.Decimal:
         current_cpc = decimal.Decimal(current_cpc)
     spending_perc = yesterdays_spend / current_daily_budget - 1
     new_cpc = current_cpc
     for row in automation.settings.AUTOPILOT_CPC_CHANGE_TABLE:
-        if row[0] <= spending_perc <= row[1]:
-            new_cpc += current_cpc * decimal.Decimal(row[2])
+        if row['underspend_upper_limit'] <= spending_perc <= row['underspend_lower_limit']:
+            new_cpc += current_cpc * decimal.Decimal(row['bid_cpc_procentual_increase'])
             new_cpc = new_cpc.quantize(
                 decimal.Decimal('0.01'),
                 rounding=decimal.ROUND_HALF_UP)
             break
-    if (new_cpc < automation.settings.AUTOPILOT_MINIMUM_CPC or
-            new_cpc > automation.settings.AUTOPILOT_MAXIMUM_CPC):
+    if automation.settings.AUTOPILOT_MINIMUM_CPC > new_cpc > automation.settings.AUTOPILOT_MAXIMUM_CPC:
         return current_cpc
     return new_cpc
 
@@ -168,4 +169,58 @@ Zemanta
             incident_key='automation_bid_cpc_autopilot_email',
             description='Auto-pilot bid CPC e-mail for campaign was not sent because an exception was raised: {}'.format(traceback.format_exc(e)),
             details=desc
+        )
+
+
+def adjust_autopilot_media_sources_bid_cpcs():
+    changes = {}
+    for adg in automation.helpers.get_all_active_ad_groups():
+
+        yesterday_spends = reports.api.get_yesterday_cost(ad_group=adg)
+        for ad_group_source_settings in get_autopilot_ad_group_sources_settings(adg):
+            if ad_group_sources_daily_budget_was_changed_recently(ad_group_source_settings.ad_group_source):
+                continue
+
+            yesterday_spend = yesterday_spends.get(ad_group_source_settings.ad_group_source.source_id)
+
+            proposed_cpc = calculate_new_autopilot_cpc(
+                ad_group_source_settings.cpc_cc,
+                ad_group_source_settings.daily_budget_cc,
+                yesterday_spend
+            )
+
+            if ad_group_source_settings.cpc_cc == proposed_cpc:
+                continue
+
+            persist_cpc_change_to_admin_log(
+                ad_group_source_settings.ad_group_source,
+                yesterday_spend,
+                ad_group_source_settings.cpc_cc,
+                proposed_cpc,
+                ad_group_source_settings.daily_budget_cc,
+                automation.helpers.get_yesterdays_clicks(ad_group_source_settings.ad_group_source)
+            )
+
+            update_ad_group_source_cpc(
+                ad_group_source_settings.ad_group_source,
+                proposed_cpc
+            )
+
+            if adg.campaign not in changes:
+                changes[adg.campaign] = {}
+            if adg.name not in changes[adg.campaign]:
+                changes[adg.campaign][adg.name] = []
+            changes[adg.campaign][adg.name].append([
+                ad_group_source_settings.ad_group_source.source.name,
+                ad_group_source_settings.cpc_cc,
+                proposed_cpc
+            ])
+
+    for camp, adgroup_changes in changes.iteritems():
+        send_autopilot_CPC_changes_email(
+            camp.name,
+            camp.id,
+            camp.account.name,
+            [camp.get_current_settings().account_manager.email],
+            adgroup_changes
         )
