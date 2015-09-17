@@ -116,7 +116,6 @@ class ReportLogAdmin(admin.ModelAdmin):
         'for_date',
         'state_',
         'no_errors_',
-        'ad_groups_',
         'visits_reported',
         'visits_imported_',
         'email_subject',
@@ -125,9 +124,8 @@ class ReportLogAdmin(admin.ModelAdmin):
     )
 
     search_fields = (
-        'ad_groups',
         'email_subject',
-        'csv_filename',
+        'report_filename',
         'from_address'
     )
 
@@ -164,14 +162,6 @@ class ReportLogAdmin(admin.ModelAdmin):
             visits=obj.visits_imported,
         )
     visits_imported_.allow_tags = True
-
-    def ad_groups_(self, obj):
-        if obj.ad_groups is None:
-            return '<span style="color:red">None</span>'
-        if ',' in obj.ad_groups:
-            return '<span style="font-weight:bold">{}</span>'.format(obj.ad_groups)
-        return obj.ad_groups
-    ad_groups_.allow_tags = True
 
 
 admin.site.register(models.GAReportLog, GAReportLogAdmin)
