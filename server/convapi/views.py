@@ -121,6 +121,7 @@ def mailgun_gareps(request):
         report_log.save()
         logger.exception(e.message)
 
+    report_task = None
     try:
         report_task = GAReportTask(
             request.POST.get('subject'),
@@ -136,18 +137,18 @@ def mailgun_gareps(request):
 
         if request.POST.get('to') == OMNITURE_REPORT_MAIL:
             tasks.process_omniture_report_v2.apply_async(
-                (ga_report_task, ),
+                (report_task, ),
                 queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE
             )
         else:
             tasks.process_ga_report_v2.apply_async(
-                (ga_report_task, ),
+                (report_task, ),
                 queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE
             )
     except Exception as e:
         report_log = models.ReportLog()
-        report_log.email_subject = ga_report_task.subject if ga_report_task is not None else None
-        report_log.from_address = ga_report_task.from_address if ga_report_task is not None else None
+        report_log.email_subject = report_task.subject if report_task is not None else None
+        report_log.from_address = report_task.from_address if report_task is not None else None
         report_log.report_filename = request.FILES.get('attachment-1').name if request.FILES.get('attachment-1') is not None else None
         report_log.state = constants.ReportState.FAILED
         report_log.save()
