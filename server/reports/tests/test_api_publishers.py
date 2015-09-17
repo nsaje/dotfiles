@@ -20,10 +20,10 @@ class ApiPublishersTest(TestCase):
             return
         self.assertTrue('GROUP BY' in query)
 
-        breakdown_fields = [api_publishers.OUTPUT_FIELDS_REVERSE_MAPPING.get(f, f) for f in breakdown]
+        breakdown_fields = [api_publishers.BY_APP_MAPPING[f]['sql'] for f in breakdown]
 
         # check group by statement if contains breakdown fields
-        group_by_fields = query.split('GROUP BY')[1].split(',')
+        group_by_fields = query.split('GROUP BY')[1].split('ORDER BY')[0].split(',')
         self.assertEqual(len(breakdown_fields), len(group_by_fields))
         for bf in breakdown_fields:
             self.assertEqual(1, len([x for x in group_by_fields if bf in x]))
@@ -128,3 +128,62 @@ class ApiPublishersTest(TestCase):
         
         self.check_constraints(_get_results, constraints)
         self.check_aggregations(_get_results)
+
+
+    def test_query_order_by_cpc(self, _get_results):
+        constraints = dict(
+            ad_group=1
+        )
+        start_date=datetime.date(2015, 2, 1)
+        end_date=datetime.date(2015, 2, 2)
+        breakdown = ['domain']
+
+        api_publishers.query(start_date, end_date, order_fields = ['-cpc'], breakdown_fields=breakdown, constraints=constraints)
+        constraints.update({'start_date': start_date, 'end_date': end_date})
+        self.check_breakdown(_get_results, breakdown)
+        self.check_constraints(_get_results, constraints)
+        self.check_aggregations(_get_results)
+        query = self._get_query(_get_results)
+        self.assertIn("SUM(clicks)=0, cpc_micro", query)
+
+
+class ApiPublishersMapperTest(TestCase):
+    def test_map_rowdict_to_output_nones(self):
+        input = {'impressions_sum': None,
+                'domain': None,
+                'exchange': None,
+                'date': None,
+                'clicks_sum': None,
+                'cost_micro_sum': None,
+                'cpc_micro': None, 
+                'ctr': None,
+                'adgroup_id': None,
+                'exchange': None}
+        result = api_publishers._map_rowdict_to_output(input)
+        self.assertEqual(result, {   'ad_group': None,
+                                     'clicks': None,
+                                     'cost': None,
+                                     'cpc': None,
+                                     'ctr': None,
+                                     'date': None,
+                                     'domain': None,
+                                     'exchange': None,
+                                     'impressions': None})
+
+    def test_map_rowdict_to_output_transforms(self):
+        input = {'cpc_micro': 100000,
+                 'cost_micro_sum': 200000,
+                 'ctr': 0.2,
+                }
+        result = api_publishers._map_rowdict_to_output(input)
+        self.assertEqual(result, {'cost': 0.0002, 
+                                  'cpc': 0.0001, 
+                                  'ctr': 20.0
+                                  })        
+
+    def test_map_unknown_row(self):
+        input = {'bah': 100000,}
+        self.assertRaises(KeyError, api_publishers._map_rowdict_to_output, input)
+        
+
+

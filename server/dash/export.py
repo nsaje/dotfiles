@@ -60,7 +60,7 @@ def _generate_content_ad_rows(dimensions, start_date, end_date, user, ordering, 
         start_date,
         end_date,
         dimensions,
-        **constraints
+        constraints
     ), user)
 
     for stat in stats:

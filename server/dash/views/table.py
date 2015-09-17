@@ -1649,10 +1649,6 @@ class PublishersTable(api_common.BaseApiView):
 
         page = request.GET.get('page')
         order = request.GET.get('order') or 'cost'
-        order_direction = "ASC"
-        if order.startswith("-"):
-            order = order[1:]
-            order_direction = "DESC"
         size = request.GET.get('size')
         size = max(min(int(size or 5), 4294967295), 1)
 
@@ -1676,7 +1672,6 @@ class PublishersTable(api_common.BaseApiView):
             end_date,
             breakdown_fields=['domain', 'exchange'],
             order_fields=[order],
-            order_direction=order_direction,
             constraints=constraints,
         )
 
