@@ -41,6 +41,14 @@ Day Index,Sessions
         with open('convapi/fixtures/omniture_tracking_codes_modified.xls', 'rb') as f:
             return f.read()
 
+    def _fake_get_omni_zip_from_s3(self, key):
+        with open('convapi/fixtures/omniture_tracking_codes_xls.zip', 'rb') as f:
+            return f.read()
+
+    def _fake_get_omni_csv_zip_from_s3(self, key):
+        with open('convapi/fixtures/omniture_tracking_codes_csv.zip', 'rb') as f:
+            return f.read()
+
     def test_process_ga_report(self, cursor):
         dash.models.Source.objects.create(source_type=None, name='Test source', tracking_slug='lasko', maintenance=False)
 
@@ -58,7 +66,7 @@ Day Index,Sessions
         )
         tasks.process_ga_report(ga_report_task)
 
-        report_logs = models.GAReportLog.objects.all()[0]
+        report_logs = models.GAReportLog.objects.first()
         self.assertIsNone(report_logs.errors)
 
     def test_omni_ga_conversion(self, cursor):
@@ -76,11 +84,8 @@ Day Index,Sessions
         )
         tasks.process_ga_report(ga_report_task)
 
-        report_logs = models.GAReportLog.objects.all()[0]
-        self.assertIsNone(report_logs.errors)
-
-    def test_omni_ga_zip_conversion(self, cursor):
-        pass
+        report_log = models.GAReportLog.objects.first()
+        self.assertIsNone(report_log.errors)
 
     def test_process_ga_report_v2(self, cursor):
         dash.models.Source.objects.create(source_type=None, name='Test source', tracking_slug='lasko', maintenance=False)
@@ -99,8 +104,11 @@ Day Index,Sessions
         )
         tasks.process_ga_report_v2(ga_report_task)
 
-        report_logs = models.GAReportLog.objects.all()[0]
-        self.assertIsNone(report_logs.errors)
+        report_log = models.ReportLog.objects.first()
+        self.assertIsNone(report_log.errors)
+
+        self.assertEqual(553, report_log.visits_reported)
+        self.assertEqual(553, report_log.visits_imported)
 
     def test_process_ga_report_v2_omni(self, cursor):
         tasks.get_from_s3 = self._fake_get_omni_from_s3
@@ -115,10 +123,52 @@ Day Index,Sessions
             1,
             'text/csv',
         )
-        tasks.process_ga_report_v2(ga_report_task)
+        tasks.process_omniture_report_v2(ga_report_task)
 
-        report_logs = models.GAReportLog.objects.all()[0]
-        self.assertIsNone(report_logs.errors)
+        report_log = models.ReportLog.objects.first()
+        self.assertIsNone(report_log.errors)
+        self.assertEqual(0, report_log.visits_reported)
+        self.assertEqual(234, report_log.visits_imported)
+
+    def test_process_ga_report_v2_omni_zip(self, cursor):
+        tasks.get_from_s3 = self._fake_get_omni_zip_from_s3
+        ga_report_task = views.GAReportTask('GA mail',
+            '2015-07-12',
+            'testuser@zemanta.com',
+            'mailbot@zemanta.com',
+            'testuser@zemanta.com',
+            None,
+            'lasko',
+            'omniture_tracking_codes.zip',
+            1,
+            'text/csv',
+        )
+        tasks.process_omniture_report_v2(ga_report_task)
+
+        report_log = models.ReportLog.objects.first()
+        self.assertIsNone(report_log.errors)
+        self.assertEqual(0, report_log.visits_reported)
+        self.assertEqual(234, report_log.visits_imported)
+
+    def test_process_ga_report_v2_omni_csv_zip(self, cursor):
+        tasks.get_from_s3 = self._fake_get_omni_csv_zip_from_s3  # self._fake_get_omni_zip_from_s3
+        ga_report_task = views.GAReportTask('GA mail',
+            '2015-07-12',
+            'testuser@zemanta.com',
+            'mailbot@zemanta.com',
+            'testuser@zemanta.com',
+            None,
+            'lasko',
+            'omniture_tracking_codes.zip',
+            1,
+            'text/csv',
+        )
+        tasks.process_omniture_report_v2(ga_report_task)
+
+        report_log = models.ReportLog.objects.first()
+        self.assertIsNone(report_log.errors)
+        self.assertEqual(0, report_log.visits_reported)
+        self.assertEqual(4112, report_log.visits_imported)
 
     def _fake_get_omniture_from_s3(self, key):
         csv_omniture_report = """
@@ -164,5 +214,5 @@ Percent Shown as: Number,,,,,,,,,,
         )
         tasks.process_omniture_report(report_task)
 
-        report_logs = models.GAReportLog.objects.all()[0]
-        self.assertIsNone(report_logs.errors)
+        report_log = models.GAReportLog.objects.first()
+        self.assertIsNone(report_log.errors)

@@ -13,6 +13,7 @@ from utils import db_aggregates
 from reports import exc
 from reports.db_raw_helpers import dictfetchall, get_obj_id, quote
 
+from psycopg2.extensions import adapt as sqladapt
 
 @statsd_timer('reports.redshift', 'delete_contentadstats')
 def delete_contentadstats(date, ad_group_id, source_id):
@@ -116,7 +117,7 @@ def vacuum_contentadstats():
     cursor.close()
 
 
-def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakdown=None, **constraints):
+def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakdown=None, constraints={}):
 
     constraints = _prepare_constraints(constraints, field_mapping)
     constraints.append('{} >= \'{}\''.format(quote('date'), start_date))
@@ -149,13 +150,47 @@ def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakd
     return _translate_row(results[0], reverse_field_mapping)
 
 
+def query_general(table_name, start_date, end_date, aggregates, breakdown_fields=None, order_fields_tuples=None, limit=None, offset=None, constraints={}):
+
+    constraints = _prepare_constraints(constraints, field_mapping={})
+    constraints.append('{} >= \'{}\''.format(quote('date'), start_date))
+    constraints.append('{} <= \'{}\''.format(quote('date'), end_date))
+
+    aggregates = _prepare_aggregates_simple(aggregates)
+
+    if breakdown_fields:
+        breakdown_fields = _prepare_breakdown(breakdown_fields, {})
+        statement = _create_select_query(
+            table_name,
+            breakdown_fields + aggregates,
+            constraints,
+            breakdown=breakdown_fields,
+            order_fields_tuples=order_fields_tuples,
+            limit=limit,
+            offset=offset,
+        )
+
+        return _get_results(statement)
+
+    statement = _create_select_query(
+        table_name,
+        aggregates,
+        constraints
+    )
+
+    return _get_results(statement)
+
+
+
 def _prepare_constraints(constraints, field_mapping):
     result = []
 
     def quote_if_str(val):
-        if isinstance(val, str):
-            return quote(val)
-        return str(val)
+        if isinstance(val, str) or isinstance(val, unicode):
+            return sqladapt(val).getquoted()
+        else:
+            # TODO, this is dangerous, we need to have an explicit list of types that are castable
+            return str(val)
 
     for k, v in constraints.iteritems():
         k = quote(field_mapping.get(k, k))
@@ -190,6 +225,20 @@ def _prepare_aggregates(aggregates, field_mapping):
 
     return processed_aggrs
 
+def _prepare_aggregates_simple(aggregates):
+    processed_aggrs = []
+    for key, aggr in aggregates.iteritems():
+        field_name = aggr.input_field.name
+        if isinstance(aggr, db_aggregates.SumDivision):
+            divisor = aggr.extra['divisor']
+            processed_aggrs.append(_sum_division_aggregate(field_name, divisor, key))
+        elif isinstance(aggr, Sum):
+            processed_aggrs.append(_sum_aggregate(field_name, key))
+        else:
+            raise exc.ReportsUnknownAggregator('Unknown aggregator')
+
+    return processed_aggrs
+
 
 def _prepare_breakdown(breakdown, field_mapping):
     return [quote(field_mapping.get(field, field)) for field in breakdown]
@@ -199,16 +248,29 @@ def _translate_row(row, reverse_field_mapping):
     return {reverse_field_mapping.get(k, k): v for k, v in row.iteritems()}
 
 
-def _create_select_query(table, fields, constraints, breakdown=None):
-    group_by = ''
-    if breakdown:
-        group_by = 'GROUP BY {}'.format(','.join(breakdown))
-    return 'SELECT {fields} FROM {table} WHERE {constraints} {group_by}'.format(
+def _create_select_query(table, fields, constraints, breakdown=None, order_fields_tuples=None, limit = None, offset = None):
+    cmd = 'SELECT {fields} FROM {table} WHERE {constraints}'.format(
         fields=','.join(fields),
         table=table,
         constraints=' AND '.join(constraints),
-        group_by=group_by
     )
+    
+    if breakdown:
+        cmd += ' GROUP BY {}'.format(','.join(breakdown))
+
+    if order_fields_tuples:
+        cmd += " ORDER BY " 
+        order_cmds = []
+        for order_field, direction in order_fields_tuples:
+            # order_field might actually be an expression
+            order_cmds.append('{} {}'.format(order_field , direction))
+        cmd += " " + ",".join(order_cmds) + " "
+        
+    if limit:
+        cmd += " LIMIT " + str(limit)
+    if offset:
+        cmd += " OFFSET " + str(offset)
+    return cmd
 
 
 def _click_discrepancy_aggregate(clicks_col, visits_col, stat_name):
@@ -252,7 +314,6 @@ def _get_results(statement):
     cursor.execute(statement, [])
 
     results = dictfetchall(cursor)
-
     cursor.close()
     return results
 

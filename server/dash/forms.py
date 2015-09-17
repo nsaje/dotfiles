@@ -74,6 +74,10 @@ class AdGroupSettingsForm(forms.Form):
 
     enable_ga_tracking = forms.NullBooleanField(required=False)
 
+    enable_adobe_tracking = forms.NullBooleanField(required=False)
+
+    adobe_tracking_param = forms.CharField(max_length=10, required=False)
+
     def __init__(self, *args, **kwargs):
         super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
 
@@ -92,6 +96,10 @@ class AdGroupSettingsForm(forms.Form):
     def clean_enable_ga_tracking(self):
         # return True if the field is not set or set to True
         return self.cleaned_data.get('enable_ga_tracking', True) is not False
+
+    def clean_enable_adobe_tracking(self):
+        # return False if the field is not set or set to False
+        return self.cleaned_data.get('enable_adobe_tracking', False) or False
 
     def clean_tracking_code(self):
         tracking_code = self.cleaned_data.get('tracking_code')

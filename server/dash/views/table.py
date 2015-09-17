@@ -21,6 +21,7 @@ from utils.sort_helper import sort_results
 import reports.api
 import reports.api_helpers
 import reports.api_contentads
+import reports.api_publishers
 import actionlog.sync
 
 
@@ -1149,9 +1150,9 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
             start_date,
             end_date,
-            breakdown=['content_ad'],
-            ad_group=ad_group,
-            source=filtered_sources,
+            breakdown = ['content_ad'],
+            constraints = {'ad_group': ad_group,
+                           'source': filtered_sources},
         ), request.user)
 
         has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
@@ -1179,8 +1180,9 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         total_stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
             start_date,
             end_date,
-            ad_group=ad_group,
-            source=filtered_sources,
+            constraints = {'ad_group': ad_group,
+                           'source': filtered_sources
+            }
         ), request.user)
 
         ad_group_sync = actionlog.sync.AdGroupSync(ad_group, sources=filtered_sources)
@@ -1627,3 +1629,131 @@ class AccountCampaignsTable(api_common.BaseApiView):
                 rows = sort_results(rows, [order])
 
         return rows
+
+
+
+class PublishersTable(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'zemauth.publishers_table_get')
+    def get(self, request, level_, id_=None):
+        newrelic.agent.set_transaction_name('dash.views.table:PublishersTable#%s' % (level_))
+        if not request.user.has_perm('zemauth.can_see_publishers'):
+            raise exc.MissingDataError()
+
+        user = request.user
+        adgroup = helpers.get_ad_group(user, id_)
+        
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+        constraints = {'ad_group': adgroup.id}
+
+
+        page = request.GET.get('page')
+        order = request.GET.get('order') or 'cost'
+        size = request.GET.get('size')
+        size = max(min(int(size or 5), 4294967295), 1)
+
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+
+        # Translation table for "exchange" in b1 to name of the source in One
+        # At the same time keys of this array are what we're filtering exchanges to
+        map_exchange_to_source_name = {}
+
+        # bidder_slug is unique, so no issues with taking all of the sources
+        for s in filtered_sources:
+            map_exchange_to_source_name[s.bidder_slug] = s.name
+        
+        # this is a really bad practice, but used extensively in models.py
+        # it should be factored out at the same time as that
+        if set(models.Source.objects.all()) != set(filtered_sources):
+            constraints['exchange'] = map_exchange_to_source_name.keys()
+        
+        publishers_data = reports.api_publishers.query(
+            start_date,
+            end_date,
+            breakdown_fields=['domain', 'exchange'],
+            order_fields=[order],
+            constraints=constraints,
+        )
+
+        totals_data = reports.api_publishers.query(
+            start_date,
+            end_date,
+            constraints=constraints,
+        )            
+
+        # since we're not dealing with a QuerySet this kind of pagination is braindead, but we'll polish later
+        publishers_data, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(publishers_data, page, size)
+        response = {
+            'rows': self.get_rows(
+                map_exchange_to_source_name,
+                publishers_data=publishers_data,
+            ),
+            'pagination': {
+                'currentPage': current_page,
+                'numPages': num_pages,
+                'count': count,
+                'startIndex': start_index,
+                'endIndex': end_index,
+                'size': size
+            },
+
+            'totals': self.get_totals(
+                user,
+                totals_data,
+            ),
+            'order': order,
+        }
+
+        return self.create_api_response(response)
+
+    def get_totals(self,
+                   user,
+                   totals_data):
+        result = {
+            'cost': totals_data.get('cost', 0),
+            'cpc': totals_data.get('cpc', 0),
+            'clicks': totals_data['clicks'],
+            'impressions': totals_data['impressions'],
+            'ctr': totals_data['ctr'],
+        }
+        return result
+
+    def get_rows(
+            self,
+            map_exchange_to_source_name,
+            publishers_data):
+
+        rows = []
+        for publisher_data in publishers_data:
+            exchange = publisher_data.get('exchange', None)
+            source_name = map_exchange_to_source_name.get(exchange, exchange)
+            domain = publisher_data.get('domain', None)
+            if domain: 
+                domain_link = "http://" + domain
+            else:
+                domain_link = ""
+            
+            row = {
+                'domain': domain,
+                'domain_link': domain_link,
+                'exchange': source_name, 
+                'cost': publisher_data.get('cost', 0),
+                'cpc': publisher_data.get('cpc', 0),
+                'clicks': publisher_data.get('clicks', None),
+                'impressions': publisher_data.get('impressions', None),
+                'ctr': publisher_data.get('ctr', None),
+            }
+
+            rows.append(row)
+
+        return rows
+
+
+
+
+
+
+
+
+
+

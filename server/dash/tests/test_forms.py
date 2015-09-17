@@ -22,7 +22,7 @@ class AdGroupSettingsFormTest(TestCase):
             'target_devices': ['desktop', 'mobile'],
             'target_regions': ['US'],
             'tracking_code': 'code=test',
-            'enable_ga_tracking': True
+            'enable_ga_tracking': True,
         }
 
     def test_form(self):
@@ -40,7 +40,9 @@ class AdGroupSettingsFormTest(TestCase):
             'target_devices': ['desktop', 'mobile'],
             'target_regions': ['US'],
             'tracking_code': 'code=test',
-            'enable_ga_tracking': True
+            'enable_ga_tracking': True,
+            'enable_adobe_tracking': False,
+            'adobe_tracking_param': ''
         })
 
     def test_no_non_propagated_fields(self):
@@ -84,6 +86,28 @@ class AdGroupSettingsFormTest(TestCase):
         self.assertTrue(form.is_valid())
         self.assertIn('enable_ga_tracking', form.cleaned_data)
         self.assertFalse(form.cleaned_data['enable_ga_tracking'])
+
+    def test_default_value_enable_adobe_tracking(self):
+        # should be False if not set
+        form = forms.AdGroupSettingsForm(self.data)
+        self.assertTrue(form.is_valid())
+        self.assertIn('enable_adobe_tracking', form.cleaned_data)
+
+        # We need to use assertEqual here, because assertFalse passes
+        # even if the value is falsy (None), which is not ok here
+        self.assertEqual(form.cleaned_data['enable_adobe_tracking'], False)
+
+        self.data['enable_adobe_tracking'] = False
+        form = forms.AdGroupSettingsForm(self.data)
+        self.assertTrue(form.is_valid())
+        self.assertIn('enable_adobe_tracking', form.cleaned_data)
+        self.assertEqual(form.cleaned_data['enable_adobe_tracking'], False)
+
+        self.data['enable_adobe_tracking'] = True
+        form = forms.AdGroupSettingsForm(self.data)
+        self.assertTrue(form.is_valid())
+        self.assertIn('enable_adobe_tracking', form.cleaned_data)
+        self.assertEqual(form.cleaned_data['enable_adobe_tracking'], True)
 
 
 class AdGroupAdsPlusUploadFormTest(TestCase):

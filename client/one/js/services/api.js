@@ -279,6 +279,50 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         };
     }
 
+    function AdGroupPublishersTable() {
+
+        this.get = function (id, page, size, startDate, endDate, order) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + id + '/publishers/table/';
+            var config = {
+                params: {}
+            };
+
+            config.params.order = order;
+
+            if (page) {
+                config.params.page = page;
+            }
+
+            if (size) {
+                config.params.size = size;
+            }
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
+
+            addFilteredSources(config.params);
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    if (data && data.data) {
+                        deferred.resolve(data.data);
+                    }
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+
     function AdGroupAdsTable() {
         function convertFromApi(row) {
             row.titleLink = {
@@ -620,6 +664,11 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             return getData(url, startDate, endDate, metrics);
         };
 
+        this.listPublishersStats = function (id, startDate, endDate, selectedIds, totals, metrics) {
+            var url = '/api/ad_groups/' + id + '/publishers/daily_stats/';
+            return getData(url, startDate, endDate, metrics, selectedIds, totals);
+        };
+
         this.list = function (level, id, startDate, endDate, selectedIds, totals, metrics, groupSources) {
             var url = '/api/' + level + (id ? ('/' + id) : '') + '/daily_stats/';
             return getData(url, startDate, endDate, metrics, selectedIds, totals, groupSources);
@@ -731,7 +780,9 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 targetRegionsMode: settings.target_regions && settings.target_regions.length ? 'custom' : 'worldwide',
                 targetRegions: settings.target_regions,
                 trackingCode: settings.tracking_code,
-                enableGaTracking: settings.enable_ga_tracking
+                enableGaTracking: settings.enable_ga_tracking,
+                enableAdobeTracking: settings.enable_adobe_tracking,
+                adobeTrackingParam: settings.adobe_tracking_param
             };
         }
 
@@ -769,7 +820,9 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 target_devices: targetDevices,
                 target_regions: settings.targetRegionsMode === 'worldwide' ? [] : settings.targetRegions,
                 tracking_code: settings.trackingCode,
-                enable_ga_tracking: settings.enableGaTracking
+                enable_ga_tracking: settings.enableGaTracking,
+                enable_adobe_tracking: settings.enableAdobeTracking,
+                adobe_tracking_param: settings.adobeTrackingParam,
             };
 
             return result;
@@ -790,7 +843,9 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 brandName: errors.brand_name,
                 description: errors.description,
                 callToAction: errors.call_to_action,
-                enableGaTracking: errors.enableGaTracking
+                enableGaTracking: errors.enable_ga_tracking,
+                enableAdobeTracking: errors.enable_adobe_tracking,
+                adobeTrackingParam: errors.adobe_tracking_param,
             };
 
             return result;
@@ -2319,6 +2374,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         adGroupSources: new AdGroupSources(),
         sourcesTable: new SourcesTable(),
         adGroupSourcesTable: new AdGroupSourcesTable(),
+        adGroupPublishersTable: new AdGroupPublishersTable(),
         adGroupAdsTable: new AdGroupAdsTable(),
         adGroupAdsPlusTable: new AdGroupAdsPlusTable(),
         adGroupSync: new AdGroupSync(),

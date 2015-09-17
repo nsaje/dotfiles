@@ -634,7 +634,7 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.assertFalse(manual_actions.exists())
 
     @mock.patch('dash.api.redirector_helper.insert_adgroup')
-    def test_ga_tracking_propagation_remove_tracking_ids(self, insert_adgroup_mock):
+    def test_tracking_propagation_remove_tracking_ids(self, insert_adgroup_mock):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.append(
             constants.SourceAction.CAN_MODIFY_TRACKING_CODES
@@ -642,11 +642,15 @@ class UpdateAdGroupSourceSettings(TestCase):
         ad_group_source.source.source_type.save()
 
         adgs1 = models.AdGroupSettings()
+        adgs1.enable_adobe_tracking = True
+        adgs1.adobe_tracking_param = 'cid'
         adgs2 = models.AdGroupSettings()
-        adgs2.enable_ga_tracking = False  # the only change (default is True)
+        adgs2.enable_ga_tracking = False
+        adgs2.enable_adobe_tracking = False
+        adgs2.adobe_tracking_param = ''
 
         api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
-        insert_adgroup_mock.assert_called_with(1, '', disable_auto_tracking=True)
+        insert_adgroup_mock.assert_called_with(1, '', False, False, '')
 
         manual_actions = self._get_manual_set_property_actions(ad_group_source)
         auto_actions = self._get_automatic_set_campaign_state_actions(ad_group_source)
@@ -663,7 +667,7 @@ class UpdateAdGroupSourceSettings(TestCase):
         )
 
     @mock.patch('dash.api.redirector_helper.insert_adgroup')
-    def test_ga_tracking_propagation_add_tracking_ids(self, insert_adgroup_mock):
+    def test_tracking_propagation_add_tracking_ids(self, insert_adgroup_mock):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.append(
             constants.SourceAction.CAN_MODIFY_TRACKING_CODES
@@ -672,11 +676,15 @@ class UpdateAdGroupSourceSettings(TestCase):
 
         adgs1 = models.AdGroupSettings()
         adgs1.enable_ga_tracking = False
+        adgs1.enable_adobe_tracking = False
+        adgs1.adobe_tracking_param = ''
         adgs2 = models.AdGroupSettings()
-        adgs2.enable_ga_tracking = True  # the only change
+        adgs2.enable_ga_tracking = True
+        adgs2.enable_adobe_tracking = True
+        adgs2.adobe_tracking_param = 'cid'
 
         api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
-        insert_adgroup_mock.assert_called_with(1, '', disable_auto_tracking=False)
+        insert_adgroup_mock.assert_called_with(1, '', True, True, 'cid')
 
         manual_actions = self._get_manual_set_property_actions(ad_group_source)
         auto_actions = self._get_automatic_set_campaign_state_actions(ad_group_source)

@@ -67,7 +67,9 @@ class AdGroupSettingsTest(TestCase):
                     'target_devices': ['desktop'],
                     'target_regions': ['693', 'GB'],
                     'tracking_code': '',
-                    'enable_ga_tracking': True
+                    'enable_ga_tracking': True,
+                    'enable_adobe_tracking': False,
+                    'adobe_tracking_param': ''
                 }
             },
             'success': True
@@ -115,7 +117,10 @@ class AdGroupSettingsTest(TestCase):
                     'target_devices': ['desktop'],
                     'target_regions': ['693', 'GB'],
                     'tracking_code': '',
-                    'enable_ga_tracking': True
+                    'enable_ga_tracking': True,
+                    'adobe_tracking_param': '',
+                    'enable_adobe_tracking': False
+
                 }
             },
             'success': True
@@ -129,6 +134,7 @@ class AdGroupSettingsTest(TestCase):
 
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
         default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
+        self.assertTrue(default_sources_settings.exists())
         self.assertEqual(len(ad_group_sources), len(default_sources_settings))
 
         for ad_group_source in ad_group_sources:
@@ -144,6 +150,9 @@ class AdGroupSettingsTest(TestCase):
             self.assertEqual(ad_group_source_settings.daily_budget_cc, default_settings.daily_budget_cc)
             # the settings are desktop only
             self.assertEqual(ad_group_source_settings.cpc_cc, default_settings.default_cpc_cc)
+
+            # auto_add enabled source was added
+            self.assertTrue(default_settings)
 
     def test_put_without_non_propagated_settings(self, mock_actionlog_api, mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -347,6 +356,8 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Call to action', 'value': ''},
                         {'name': 'AdGroup name', 'value': ''},
                         {'name': 'Enable GA tracking', 'value': 'True'},
+                        {'name': 'Enable Adobe tracking', 'value': 'False'},
+                        {'name': 'Adobe tracking parameter', 'value': ''},
                     ],
                     'show_old_settings': False
                 },
@@ -370,6 +381,8 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Call to action', 'old_value': '', 'value': ''},
                         {'name': 'AdGroup name', 'old_value': '', 'value': ''},
                         {'name': 'Enable GA tracking', 'old_value': 'True', 'value': 'True'},
+                        {'name': 'Enable Adobe tracking', 'old_value': 'False', 'value': 'False'},
+                        {'name': 'Adobe tracking parameter', 'old_value': '', 'value': ''},
                     ],
                     'show_old_settings': True
                 }]
