@@ -200,7 +200,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
                 action = actionlog_api.create_campaign(ad_group_source, external_name, request, send=False)
                 if action:
-                    actionlogs_to_send.extend(action)
+                    actionlogs_to_send.append(action)
 
             # note changes in history
             changes_text = 'Automatically created campaigns for {}'.format(
