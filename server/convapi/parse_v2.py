@@ -38,7 +38,7 @@ GOAL_RATE_KEYWORDS = ['conversion rate']
 
 def _report_atoi(raw_str):
     # TODO: Implement locale specific parsing
-    ret_str = raw_str.replace(',', '')
+    ret_str = (raw_str or '0').replace(',', '')
     dot_loc = ret_str.find('.')
     if dot_loc != -1:
         return int(ret_str[:dot_loc])
@@ -205,6 +205,7 @@ class Report(object):
         # mapping from each url in report to corresponding z1 code or utm term
         self.entries = {}
         self.start_date = None
+        self._imported_visits = 0
 
     def is_empty(self):
         return self.entries == {}
@@ -214,6 +215,15 @@ class Report(object):
 
     def valid_entries(self):
         return [entry for entry in self.entries.values() if entry.is_row_valid()]
+
+    def reported_visits(self):
+        return sum(entry.visits for entry in self.valid_entries())
+
+    def imported_visits(self):
+        return self._imported_visits
+
+    def add_imported_visits(self, count):
+        self._imported_visits += count
 
     def debug_parsing_overview(self):
         count_all = len(self.entries.values())
@@ -348,6 +358,7 @@ class GAReport(Report):
                 content_ad_id, source_param = self._parse_keyword_or_url(keyword_or_url)
                 goals = self._parse_goals(self.fieldnames, entry)
                 report_entry = GaReportRow(entry, self.start_date, content_ad_id, source_param, goals)
+                self.add_imported_visits(report_entry.visits or 0)
 
                 existing_entry = self.entries.get(report_entry.key())
                 if existing_entry is None:
@@ -549,9 +560,13 @@ class OmnitureReport(Report):
                 if not value:
                     break
                 line.append(value)
-            if len(line) == 1 and ':' in line[0]:
+
+            if len(line) >= 1 and len(line) <= 2 and ':' in line[0]:
                 keyvalue = [(kv or '').strip() for kv in line[0].split(':')]
-                header[keyvalue[0]] = ''.join(keyvalue[1:])
+                val = ''.join(keyvalue[1:])
+                second_col = line[1] if len(line) > 1 else ''
+                header[keyvalue[0].replace('#','').strip()] = val + second_col
+
         return header
 
     def _extract_date(self, date_raw):
@@ -586,7 +601,7 @@ class OmnitureReport(Report):
         workbook = xlrd.open_workbook(file_contents=self.xlsx_report_blob)
 
         header = self._parse_header(workbook)
-        date_raw = header.get('Date', '')
+        date_raw = header.get('Date') or header.get('Range')
         self.start_date = self._extract_date(date_raw)
 
         body_found = False
@@ -602,7 +617,9 @@ class OmnitureReport(Report):
                 line.append(value)
 
             if not body_found:
-                if not 'tracking code' in ' '.join(line).lower():
+                if len(line) > 0 and ':' in line[0]:
+                    continue  # header
+                if not 'tracking code' in ' '.join(line[1:]).lower():
                     continue
                 else:
                     body_found = True
@@ -623,6 +640,7 @@ class OmnitureReport(Report):
             keyword = omniture_row_dict.get('Tracking Code', '')
             content_ad_id, source_param = self._parse_z11z_keyword(keyword)
             report_entry = OmnitureReportRow(omniture_row_dict, self.start_date, content_ad_id, source_param)
+            self.add_imported_visits(report_entry.visits or 0)
 
             existing_entry = self.entries.get(report_entry.key())
             if existing_entry is None:
