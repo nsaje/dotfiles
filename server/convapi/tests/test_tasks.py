@@ -107,7 +107,7 @@ Day Index,Sessions
         report_log = models.ReportLog.objects.first()
         self.assertIsNone(report_log.errors)
 
-        self.assertEqual(553, report_log.visits_reported)
+        self.assertEqual(0, report_log.visits_reported)
         self.assertEqual(553, report_log.visits_imported)
 
     def test_process_ga_report_v2_omni(self, cursor):

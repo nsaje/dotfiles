@@ -8,6 +8,7 @@ import xlrd
 
 import datetime
 
+import dash
 from utils import url_helper
 
 LANDING_PAGE_COL_NAME = 'Landing Page'
@@ -51,8 +52,21 @@ def _report_atof(raw_str):
     return float(raw_str.replace(',', ''))
 
 
-class GaReportRow(object):
+class ReportRow(object):
+
+    def __init__(self):
+        self.valid = True
+
+    def is_valid(self):
+        return self.valid
+
+    def mark_invalid(self):
+        self.valid = False
+
+
+class GaReportRow(ReportRow):
     def __init__(self, ga_row_dict, report_date, content_ad_id, source_param, goals):
+        ReportRow.__init__(self)
         self.ga_row_dicts = [ga_row_dict]
 
         self.visits = _report_atoi(ga_row_dict.get('Sessions'))
@@ -93,6 +107,9 @@ class GaReportRow(object):
                 self.goals[ga_report_row_goal] = ga_report_row.goals[ga_report_row_goal]
 
     def is_row_valid(self):
+        if not self.is_valid():
+            return False
+
         return self.content_ad_id is not None and\
             self.source_param != '' and\
             self.source_param is not None
@@ -125,8 +142,9 @@ class GaReportRow(object):
         )
 
 
-class OmnitureReportRow(object):
+class OmnitureReportRow(ReportRow):
     def __init__(self, omniture_row_dict, report_date, content_ad_id, source_param):
+        ReportRow.__init__(self)
         self.omniture_row_dict = [omniture_row_dict]
 
         self.visits = _report_atoi(omniture_row_dict.get('Visits'))
@@ -167,6 +185,9 @@ class OmnitureReportRow(object):
                 self.goals[omniture_report_row_goal] = omniture_report_row.goals[omniture_report_row_goal]
 
     def is_row_valid(self):
+        if not self.is_valid():
+            return False
+
         return self.content_ad_id is not None and\
             self.source_param != '' and\
             self.source_param is not None
@@ -268,17 +289,42 @@ class Report(object):
 
         return content_ad_id, source_param
 
+    def validate(self):
+        '''
+        Check if imported content ads and sources exist in database.
+        If not mark them as invalid.
+        '''
+        # get all sources
+        sources = dash.models.Source.objects.all()
+        track_source_map = {}
+        for source in sources:
+            track_source_map[source.tracking_slug] = source.id
+
+        # slow but since we don't receive many reports this shouldn't hurt much
+        for entry in self.entries.values():
+            caid = entry.content_ad_id
+            source_param = track_source_map.get(entry.source_param)
+            if source_param is None:
+                entry.mark_invalid()
+                continue
+
+            if not dash.models.ContentAdSource.objects.filter(
+                content_ad__id=caid,
+                source__id=source_param).exists():
+                entry.mark_invalid()
+                continue
+
     def is_media_source_specified(self):
         media_source_not_specified = []
         for entry in self.entries.values():
-            if entry.source_param == '' is None or entry.source_param == '':
+            if not entry.is_valid() or entry.source_param == '' is None or entry.source_param == '':
                 media_source_not_specified.append(entry.source_param)
         return (len(media_source_not_specified) == 0, list(media_source_not_specified))
 
     def is_content_ad_specified(self):
         content_ad_not_specified = set()
         for entry in self.entries.values():
-            if entry.content_ad_id is None or entry.content_ad_id == '':
+            if not entry.is_valid() or entry.content_ad_id is None or entry.content_ad_id == '':
                 content_ad_not_specified.add(entry.content_ad_id)
         return (len(content_ad_not_specified) == 0, list(content_ad_not_specified))
 
