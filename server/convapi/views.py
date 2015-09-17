@@ -138,12 +138,12 @@ def mailgun_gareps(request):
         if request.POST.get('to') == OMNITURE_REPORT_MAIL:
             tasks.process_omniture_report_v2.apply_async(
                 (report_task, ),
-                queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE
+                queue=settings.CELERY_DEFAULT_CONVAPI_V2_QUEUE
             )
         else:
             tasks.process_ga_report_v2.apply_async(
                 (report_task, ),
-                queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE
+                queue=settings.CELERY_DEFAULT_CONVAPI_V2_QUEUE
             )
     except Exception as e:
         report_log = models.ReportLog()
