@@ -7,8 +7,8 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dash', '0066_adgroupsourcesettings_autopilot'),
-        ('dash', '0073_merge'),
+        ('zemauth', '0046_auto_20150917_1520'),
+        ('zemauth', '0048_auto_20150916_1230'),
     ]
 
     operations = [

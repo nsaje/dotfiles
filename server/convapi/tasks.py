@@ -238,7 +238,7 @@ def _convert_ga_omniture(content, attachment_name):
             line.append(value)
 
         if not body_found:
-            if not 'tracking code' in ' '.join(line).lower():
+            if 'tracking code' not in ' '.join(line).lower():
                 continue
             else:
                 body_found = True
@@ -405,16 +405,22 @@ def process_report_v2(report_task, report_type):
 
         report_log.visits_imported = report.imported_visits()
         report_log.visits_reported = report.reported_visits()
+
+        statsd_incr('convapi_v2.imported_visits', report_log.visits_imported or 0)
+        statsd_incr('convapi_v2.reported_visits', report_log.visits_reported or 0)
+
         report_log.state = constants.ReportState.SUCCESS
+        statsd_incr('convapi_v2.report.success')
         report_log.save()
     except exc.EmptyReportException as e:
         logger.warning(e.message)
-        statsd_incr('convapi_v2.empty_report')
+        statsd_incr('convapi_v2.report.empty')
         report_log.add_error(e.message)
         report_log.state = constants.ReportState.EMPTY_REPORT
         report_log.save()
     except Exception as e:
         logger.warning(e.message)
+        statsd_incr('convapi_v2.report.failed')
         report_log.add_error(e.message)
         report_log.state = constants.ReportState.FAILED
         report_log.save()
