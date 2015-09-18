@@ -344,7 +344,7 @@ class GAReport(Report):
             logger.exception("Failed parsing GA report")
             raise exc.CsvParseException('Could not parse CSV')
 
-        if self.fieldnames is None and not set(self.fieldnames or []) >= set(REQUIRED_FIELDS):
+        if not set(self.fieldnames or []) >= set(REQUIRED_FIELDS):
             missing_fieldnames = list(set(REQUIRED_FIELDS) - (set(self.fieldnames or []) & set(REQUIRED_FIELDS)))
             raise exc.CsvParseException('Not all required fields are present. Missing: {}'.format(','.join(missing_fieldnames)))
 
