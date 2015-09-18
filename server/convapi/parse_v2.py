@@ -262,22 +262,7 @@ class Report(object):
             return None, ''
         else:
             content_ad_id, source_param = result.group(1), result.group(2)
-
-        try:
-            content_ad_id = int(content_ad_id)
-        except (ValueError, TypeError):
-            return None, ''
-
-        if source_param == '':
-            logger.warning(
-                'Could not parse keyword %s. content_ad_id: %s, source_param: %s',
-                keyword,
-                self.content_ad_id,
-                self.source_param
-            )
-            return None, ''
-
-        return content_ad_id, source_param
+        return int(content_ad_id), source_param
 
     def validate(self):
         '''
