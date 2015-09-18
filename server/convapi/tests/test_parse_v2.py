@@ -353,11 +353,28 @@ Day Index,Sessions
         parser.parse()
         parser.validate()
         self.assertEqual(1, len(parser.entries))
-        self.assertEqual(6, parser.valid_entries()[0].goals['Goal 1']['conversions'], 6)
+
+        valid_entries = parser.valid_entries()
+        self.assertEqual(6, valid_entries[0].goals['Goal 1']['conversions'], 6)
 
         self.assertTrue(parser.is_media_source_specified())
         self.assertTrue(parser.is_content_ad_specified())
 
+        entry = valid_entries[0]
+        self.assertEqual(18, entry.visits)
+        self.assertEqual(18, entry.pageviews)
+        self.assertEqual(0.01, entry.bounce_rate)
+
+        self.assertEqual(3, entry.new_visits)
+        self.assertEqual(0, entry.bounced_visits)
+        self.assertEqual(0, entry.total_time_on_site)
+
+
+        self.assertEqual(1, entry.content_ad_id)
+        self.assertEqual('yahoo', entry.source_param)
+        self.assertEqual('2015-04-16', entry.report_date)
+
+        self.assertEqual({'Goal 1': {'conversions': 6}}, entry.goals)
 
 class OmnitureReportTest(TestCase):
 
