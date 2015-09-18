@@ -208,10 +208,6 @@ class OmnitureReportRow(ReportRow):
         all_row_sessions = [int(raw_sessions) if raw_sessions not in ('', None) else 0 for raw_sessions in all_row_raw_sessions]
         return sum(all_row_sessions)
 
-    def _atof(self, raw_str):
-        # TODO: Implement locale specific parsing
-        return float(raw_str.replace(',', ''))
-
     def __str__(self):
         return "{date}-{caid}-{source_param}".format(
             date=self.report_date,
