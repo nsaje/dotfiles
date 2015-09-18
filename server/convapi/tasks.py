@@ -534,6 +534,11 @@ def _update_report_log_after_parsing(csvreport, report_log, ga_report_task):
         for landing_url in media_source_errors:
             message += '{}\n'.format(landing_url or '')
 
+    if message != '':
+        logger.warning(message)
+        report_log.add_error(message)
+        report_log.save()
+
     if too_many_errors(content_ad_errors, media_source_errors):
         logger.warning("Too many errors in content_ad_errors and media_source_errors lists.")
         report_log.add_error("Too many errors in urls. Cannot recognize content ad and media sources for some urls:\n %s \n\n %s" % ('\n'.join(content_ad_errors), '\n'.join(media_source_errors)))

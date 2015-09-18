@@ -678,12 +678,16 @@ class OmnitureReport(Report):
             keys = [idxel[1] for idxel in enum_columns if idxel[1] != '']
             values = [line[idxel[0]] for idxel in enum_columns if idxel[1] != '']
             omniture_row_dict = dict(zip(keys, values))
-
             if 'Total' in line:  # footer with summary
                 self._check_session_counts(omniture_row_dict)
                 break
 
-            keyword = omniture_row_dict.get('Tracking Code', '')
+            tracking_code_col = 'Tracking Code'
+            for key in keys:
+                if 'tracking code' in key.lower():
+                    tracking_code_col = key
+
+            keyword = omniture_row_dict.get(tracking_code_col, '')
             content_ad_id, source_param = self._parse_z11z_keyword(keyword)
             report_entry = OmnitureReportRow(omniture_row_dict, self.start_date, content_ad_id, source_param)
             self.add_imported_visits(report_entry.visits or 0)
