@@ -147,10 +147,10 @@ class RedshiftTest(TestCase):
         ad_group_id = 1
         source_id = 2
 
-        redshift.delete_general('test_table', {'date': date, 'ad_group_id': 4})
+        redshift.delete_general('test_table', {'date': date, 'ad_group_id': 4, 'exchange': 'abc'})
 
-        query = 'DELETE FROM test_table WHERE date=%s AND ad_group_id=%s'
-        params = [datetime.date(2015, 1, 2), 4]
+        query = 'DELETE FROM test_table WHERE date=%s AND ad_group_id=%s AND exchange=%s'
+        params = [datetime.date(2015, 1, 2), 4, "abc"]
 
         mock_cursor.execute.assert_called_with(query, params)
 

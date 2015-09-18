@@ -210,7 +210,7 @@ def _prepare_constraints_general(constraints):
     params = []
 
     for k, v in constraints.iteritems():
-        if isinstance(v, collections.Sequence) or isinstance(v, QuerySet):
+        if (isinstance(v, collections.Sequence) or isinstance(v, QuerySet)) and type(v) not in (str, unicode):
             if v:
                 result.append('{} IN ({})'.format(k, ','.join(["%s"]*len(v))))
                 params.extend(v)

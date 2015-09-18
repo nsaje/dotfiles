@@ -131,13 +131,13 @@ def ob_insert_adgroup_date(date, ad_group, exchange, datarowdicts):
         url = row['url']
         if url.startswith("https://"):
             url = url[8:]
-        if url.starstwith("http://"):
+        if url.startswith("http://"):
             url = url[7:]
-        newrow = (date, ad_group_id, exchange, url, row['clicks'], row['ob_section_id'])
+        newrow = (date, ad_group, exchange, url, row['clicks'], row['ob_section_id'])
         row_tuples.append(newrow)
     
-    redshift.delete_query('ob_publishers_1', {'date': date, 'adgroup_id': ad_group, 'exchange': exchange})
-    redshift.multi_insert('ob_publishers_1', sql_fields, row_tuples)
+    redshift.delete_general('ob_publishers_1', {'date': date, 'adgroup_id': ad_group, 'exchange': exchange})
+    redshift.multi_insert_general('ob_publishers_1', sql_fields, row_tuples)
     
     
 
@@ -145,3 +145,4 @@ def ob_insert_adgroup_date(date, ad_group, exchange, datarowdicts):
 
 
 
+        

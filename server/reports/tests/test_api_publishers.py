@@ -1,6 +1,6 @@
 import datetime
 
-from mock import patch
+from mock import patch, call
 from django.test import TestCase
 
 from reports import api_publishers
@@ -146,6 +146,22 @@ class ApiPublishersTest(TestCase):
         self.check_aggregations(_get_results)
         query = self._get_query(_get_results)
         self.assertIn("SUM(clicks)=0, cpc_micro", query)
+
+    def test_ob_insert_adgroup_date(self, _get_results):
+        api_publishers.ob_insert_adgroup_date(datetime.date(2015,2,1), 
+                                              3,
+                                              "outbrain",
+                                              [{
+                                                  "ob_section_id": "AAAABBBBB",
+                                                  "clicks": 123,
+                                                  "name": "New publisher",
+                                                  "url": "http://money.cnn.com",
+                                              }])
+                                       
+        _get_results.assert_has_calls([
+            call('DELETE FROM ob_publishers_1 WHERE date=%s AND adgroup_id=%s AND exchange=%s', [datetime.date(2015, 2, 1), 3, 'outbrain']),
+            call('INSERT INTO ob_publishers_1 (date,adgroup_id,exchange,domain,clicks,ob_section_id) VALUES (%s,%s,%s,%s,%s,%s)', [datetime.date(2015, 2, 1), 3, 'outbrain', 'money.cnn.com', 123, 'AAAABBBBB'])
+        ])
 
 
 class ApiPublishersMapperTest(TestCase):
