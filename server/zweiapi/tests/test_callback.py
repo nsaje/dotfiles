@@ -515,14 +515,14 @@ class FetchReportsTestCase(TestCase):
         self._assert_article_stats(ad_group_source, article_row)
 
         self.assertEqual(
-            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link'),
             '7a97d7b612f435a2dba269614e90e3ac'
         )
 
     @override_settings(USE_HASH_CACHE=True)
     def test_fetch_reports_hash_cache_changed_data(self):
         zweiapi.views.cache.clear()
-        zweiapi.views.cache.set('fetch_reports_response_hash_1_1_2014-07-01', '7a97d7b612f435a2dba269614e90e3ac')
+        zweiapi.views.cache.set('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link', '7a97d7b612f435a2dba269614e90e3ac')
 
         article_row = {
             'title': 'Article 1',
@@ -548,14 +548,14 @@ class FetchReportsTestCase(TestCase):
         self._assert_article_stats(ad_group_source, article_row)
 
         self.assertEqual(
-            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link'),
             'c1cbb0b3e637466d86d39026d93f0772'
         )
 
     @override_settings(USE_HASH_CACHE=True)
     def test_fetch_reports_hash_cache_no_change(self):
         zweiapi.views.cache.clear()
-        zweiapi.views.cache.set('fetch_reports_response_hash_1_1_2014-07-01', '7a97d7b612f435a2dba269614e90e3ac')
+        zweiapi.views.cache.set('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link', '7a97d7b612f435a2dba269614e90e3ac')
 
         article_row = {
             'title': 'Article 1',
@@ -581,7 +581,7 @@ class FetchReportsTestCase(TestCase):
         )
 
         self.assertEqual(
-            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link'),
             '7a97d7b612f435a2dba269614e90e3ac'
         )
 
@@ -592,7 +592,7 @@ class FetchReportsTestCase(TestCase):
         zweiapi.views.cache.clear()
 
         self.assertEqual(
-            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link'),
             None
         )
 
@@ -612,7 +612,7 @@ class FetchReportsTestCase(TestCase):
         response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
 
         self.assertEqual(
-            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link'),
             None
         )
 
@@ -623,7 +623,7 @@ class FetchReportsTestCase(TestCase):
         zweiapi.views.cache.clear()
 
         self.assertEqual(
-            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link'),
             None
         )
 
@@ -646,7 +646,7 @@ class FetchReportsTestCase(TestCase):
         response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
 
         self.assertEqual(
-            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link'),
             None
         )
 
@@ -698,7 +698,7 @@ class FetchReportsTestCase(TestCase):
     @override_settings(USE_HASH_CACHE=True)
     def test_fetch_reports_invalid_empty_rows_with_cache(self):
         zweiapi.views.cache.clear()
-        zweiapi.views.cache.set('fetch_reports_response_hash_1_1_2014-07-01', '7a97d7b612f435a2dba269614e90e3ac')
+        zweiapi.views.cache.set('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link', '7a97d7b612f435a2dba269614e90e3ac')
 
         zwei_response_data = {
             'status': 'success',
@@ -721,7 +721,7 @@ class FetchReportsTestCase(TestCase):
         )
 
         self.assertEqual(
-            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link'),
             '7a97d7b612f435a2dba269614e90e3ac'
         )
 
