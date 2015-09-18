@@ -30,7 +30,7 @@ PUBLISHERS_AGGREGATE_FIELDS = dict(
     cpc_micro=db_aggregates.SumDivision('cost_micro', 'clicks')
 )
 
-#	  SQL NAME                    APP NAME           OUTPUT TRANSFORM                    ORDER BY function
+#	       SQL NAME               APP NAME           OUTPUT TRANSFORM                    ORDER BY function
 FIELDS = [dict(sql='clicks_sum',      app='clicks',      out=lambda v: v,),
           dict(sql='impressions_sum', app='impressions', out=lambda v: v),
           dict(sql='domain',          app='domain',      out=lambda v: v),
@@ -38,7 +38,7 @@ FIELDS = [dict(sql='clicks_sum',      app='clicks',      out=lambda v: v,),
           dict(sql='date',            app='date',        out=lambda v: v),
           dict(sql='clicks_sum',      app='clicks',      out=lambda v: v),
           dict(sql='cost_micro_sum',  app='cost',        out=lambda v: from_micro_cpm(v)),
-          dict(sql='cpc_micro',       app='cpc',         out=lambda v: from_micro_cpm(v),    order="SUM(clicks)=0, cpc_micro"),
+          dict(sql='cpc_micro',       app='cpc',         out=lambda v: from_micro_cpm(v),    order="SUM(clicks)=0, cpc_micro"), # makes sure nulls are last
           dict(sql='ctr',             app='ctr',         out=lambda v: to_percent(v)),
           dict(sql='adgroup_id',      app='ad_group',    out=lambda v: v),
           dict(sql='exchange',        app='exchange',    out=lambda v: v),
@@ -46,8 +46,8 @@ FIELDS = [dict(sql='clicks_sum',      app='clicks',      out=lambda v: v,),
 BY_SQL_MAPPING = {d['sql']:d for d in FIELDS}
 BY_APP_MAPPING = {d['app']:d for d in FIELDS}
 
-CONSTRAINTS_FIELDS_UNMAPPED_SET = set(BY_APP_MAPPING.keys())
-BREAKDOWN_FIELDS_UNMAPPED_SET = set(['exchange', 'domain', 'date', ])
+CONSTRAINTS_FIELDS_APP_SET = set(BY_APP_MAPPING.keys())
+BREAKDOWN_FIELDS_APP_SET = set(['exchange', 'domain', 'date', ])
 
 def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}):
     # This API tries to completely isolate the rest of the app from Redshift-tied part, so namings are decoupled:
@@ -56,7 +56,7 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=Non
     # Lastly map SQL fields back to application-used fields
     
     # map breakdown fields
-    unknown_fields = set(breakdown_fields) - BREAKDOWN_FIELDS_UNMAPPED_SET
+    unknown_fields = set(breakdown_fields) - BREAKDOWN_FIELDS_APP_SET
     if unknown_fields:
         raise exc.ReportsQueryError('Invalid breakdowns: {}'.format(str(unknown_fields)))
     breakdown_fields = [BY_APP_MAPPING[field]['sql'] for field in breakdown_fields]
@@ -84,7 +84,7 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=Non
         order_fields_tuples.append((order_statement, direction))
     
     # map constraints fields
-    unknown_fields = set(constraints.keys()) - CONSTRAINTS_FIELDS_UNMAPPED_SET
+    unknown_fields = set(constraints.keys()) - CONSTRAINTS_FIELDS_APP_SET
     if unknown_fields:
         raise exc.ReportsQueryError("Unsupported field constraint fields: {}".format(str(unknown_fields)))
     constraints = {BY_APP_MAPPING[field_name]['sql']: v for field_name, v in constraints.iteritems()}
