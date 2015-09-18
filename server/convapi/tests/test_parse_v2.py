@@ -32,9 +32,9 @@ Landing Page,Device Category,Sessions
         try:
             parser._parse_header(complete_head.split('\n'))
         except:
-           self.fail('Should not raise an exception {stack}'.format(
-               stack=traceback.format_exc())
-           )
+            self.fail('Should not raise an exception {stack}'.format(
+                stack=traceback.format_exc())
+            )
 
         complete_head = """
 # ----------------------------------------
@@ -49,9 +49,9 @@ Device Category,Landing Page,Sessions
         try:
             parser._parse_header(complete_head.split('\n'))
         except:
-           self.fail('Should not raise an exception {stack}'.format(
-               stack=traceback.format_exc())
-           )
+            self.fail('Should not raise an exception {stack}'.format(
+                stack=traceback.format_exc())
+            )
 
         complete_head = """
 # ----------------------------------------
@@ -66,9 +66,9 @@ Device Category,Sessions,Keyword
         try:
             parser._parse_header(complete_head.split('\n'))
         except:
-           self.fail('Should not raise an exception {stack}'.format(
-               stack=traceback.format_exc())
-           )
+            self.fail('Should not raise an exception {stack}'.format(
+                stack=traceback.format_exc())
+            )
 
         complete_head = """
 # ----------------------------------------
@@ -83,9 +83,9 @@ Device Category,Sessions,Keyword
         try:
             parser._parse_header(complete_head.split('\n'))
         except:
-           self.fail('Should not raise an exception {stack}'.format(
-               stack=traceback.format_exc())
-           )
+            self.fail('Should not raise an exception {stack}'.format(
+                stack=traceback.format_exc())
+            )
 
         incomplete_head_1 = """
 # ----------------------------------------
@@ -93,12 +93,10 @@ Device Category,Sessions,Keyword
         with self.assertRaises(exc.CsvParseException):
             parser._parse_header(incomplete_head_1.split('\n'))
 
-
         incomplete_head_2 = """
 $ ----------------------------------------""".strip().replace('\t', '')
         with self.assertRaises(exc.CsvParseException):
             parser._parse_header(incomplete_head_2.split('\n'))
-
 
         incomplete_head_3 = """
  ----------------------------------------
@@ -109,7 +107,6 @@ $ ----------------------------------------""".strip().replace('\t', '')
         with self.assertRaises(exc.CsvParseException):
             parser._parse_header(incomplete_head_3.split('\n'))
 
-
         incomplete_head_4 = """
 # ----------------------------------------
 
@@ -118,7 +115,6 @@ $ ----------------------------------------""".strip().replace('\t', '')
 # ----------------------------------------""".strip().replace('\t', '')
         with self.assertRaises(exc.CsvParseException):
             parser._parse_header(incomplete_head_4.split('\n'))
-
 
         invalid_date_head = """
 # ----------------------------------------
@@ -309,7 +305,6 @@ Landing Page,Device Category,Sessions
         fields_raw = "Landing Page,Sessions,% New Sessions,New Users,Bounce Rate,Pages / Session,Avg. Session Duration,Revenue"
         self.assertEqual(set(["Revenue"]), set(parser._get_goal_fields(fields_raw.split(','))))
 
-
     def test_merge(self, cursor):
         # GA report can potentially contain multiple entries for a single
         # content ad
@@ -337,8 +332,11 @@ Day Index,Sessions
         self.assertEqual(1, len(parser.entries))
         self.assertEqual(6, parser.valid_entries()[0].goals['Goal 1']['conversions'], 6)
 
+        parser._check_session_counts()
+
         self.assertTrue(parser.is_media_source_specified())
         self.assertTrue(parser.is_content_ad_specified())
+
 
 class OmnitureReportTest(TestCase):
 
@@ -375,7 +373,7 @@ Segment: All Visits (No Segment),,,,,,,,,,
 ,,,,,,,,,,""".strip().decode('utf-8')
         report = parse_v2.OmnitureReport(csv_utils.convert_to_xls(csv_header))
         with self.assertRaises(Exception):
-           report.parse()
+            report.parse()
 
     def test_session_counts(self):
         pass

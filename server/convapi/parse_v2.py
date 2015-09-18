@@ -341,6 +341,7 @@ class GAReport(Report):
                 else:
                     existing_entry.merge_with(report_entry)
         except:
+            logger.exception("Failed parsing GA report")
             raise exc.CsvParseException('Could not parse CSV')
 
         if self.fieldnames is None and not set(self.fieldnames or []) >= set(REQUIRED_FIELDS):
