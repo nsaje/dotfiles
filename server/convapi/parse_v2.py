@@ -112,14 +112,6 @@ class GaReportRow(ReportRow):
             self.source_param != '' and\
             self.source_param is not None
 
-    def are_goals_useful(self):
-        if len(self.goals) == 0:
-            return False
-        for key, goal_dict in self.goals.iteritems():
-            if 'conversions' in goal_dict.keys():
-                return True
-        return False
-
     def sessions(self):
         all_row_raw_sessions = [ga_row_dict['Sessions'].replace(',', '').strip() for ga_row_dict in self.ga_row_dicts]
         all_row_sessions = [int(raw_sessions) if raw_sessions not in ('', None) else 0 for raw_sessions in all_row_raw_sessions]
@@ -162,7 +154,7 @@ class OmnitureReportRow(ReportRow):
         return (self.report_date, self.content_ad_id, self.source_param)
 
     def merge_with(self, omniture_report_row):
-        self.omniture_row_dict .extend(omniture_report_row.omniture_row_dict)
+        self.omniture_row_dict.extend(omniture_report_row.omniture_row_dict)
         self.visits += omniture_report_row.visits
         self.bounce_rate = (self.bounce_rate + omniture_report_row.bounce_rate) / 2
         self.pageviews += omniture_report_row.pageviews
@@ -186,19 +178,6 @@ class OmnitureReportRow(ReportRow):
         return self.content_ad_id is not None and\
             self.source_param != '' and\
             self.source_param is not None
-
-    def are_goals_useful(self):
-        if len(self.goals) == 0:
-            return False
-        for key, goal_dict in self.goals.iteritems():
-            if 'conversions' in goal_dict.keys():
-                return True
-        return False
-
-    def sessions(self):
-        all_row_raw_sessions = [ga_row_dict['Sessions'].replace(',', '').strip() for ga_row_dict in self.ga_row_dicts]
-        all_row_sessions = [int(raw_sessions) if raw_sessions not in ('', None) else 0 for raw_sessions in all_row_raw_sessions]
-        return sum(all_row_sessions)
 
     def __str__(self):
         return "{date}-{caid}-{source_param}".format(
@@ -233,26 +212,6 @@ class Report(object):
 
     def add_imported_visits(self, count):
         self._imported_visits += count
-
-    def debug_parsing_overview(self):
-        count_all = len(self.entries.values())
-        count_valid_rows = 0
-        for entry in self.entries.values():
-            if not entry.is_row_valid():
-                continue
-            count_valid_rows += 1
-
-        count_goal_useful = 0
-        for entry in self.entries.values():
-            if not entry.are_goals_useful():
-                continue
-            count_goal_useful += 1
-        return "Overview report_dt: {dt} cads: {count_useful_ca}/{count_all} goals {useful_ga}/{count_all}".format(
-            dt=self.start_date.isoformat() if self.start_date is None else '',
-            count_useful_ca=count_valid_rows,
-            count_all=count_all,
-            useful_ga=count_goal_useful,
-        )
 
     def _parse_z11z_keyword(self, keyword):
         result = Z11Z_RE.match(keyword)
@@ -592,10 +551,8 @@ class OmnitureReport(Report):
         date_raw_split = date_raw.replace('.', '').split(' ')
         date_raw_split = [date_part.strip() for date_part in date_raw_split if date_part.strip() != '']
         date_prefix = ' '.join(date_raw_split[:4])
-        ret = datetime.datetime.strptime(date_prefix, '%a %d %b %Y')
-        if ret:
-            return ret.date()
-        return None
+        parsed_datetime = datetime.datetime.strptime(date_prefix, '%a %d %b %Y')
+        return parsed_datetime.date()
 
     def _check_session_counts(self, totals):
         sessions_sum = sum(entry.visits for entry in self.entries.values())

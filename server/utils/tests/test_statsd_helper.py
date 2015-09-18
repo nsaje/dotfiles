@@ -71,7 +71,7 @@ class StatsdHelperTestCase(TestCase):
 
     @mock.patch('utils.statsd_helper.statsd.incr')
     def test_statsd_incr(self, statsd_incr_mock):
-        def fake_statsd_incr(name):
+        def fake_statsd_incr(name, count=1):
             self.assertEqual(name, 'one-testhost.test.metric')
             self.mock_called = True
 
