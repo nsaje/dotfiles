@@ -123,13 +123,17 @@ def set_ad_group_source_settings(changes, ad_group_source, request, order=None, 
     return send_delayed_actionlogs([ad_group_source], send=send)
 
 
-def create_campaign(ad_group_source, name, request):
+def create_campaign(ad_group_source, name, request, send=True):
+    action = None
     try:
         action = _init_create_campaign(ad_group_source, name, request)
     except exceptions.InsertActionException:
         pass
     else:
-        zwei_actions.send(action)
+        if send:
+            zwei_actions.send(action)
+
+    return action
 
 
 @transaction.atomic

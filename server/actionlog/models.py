@@ -9,7 +9,6 @@ from . import constants
 
 ACTION_TIMEOUT_MINUTES = 30
 MAX_SIMILAR_WAITING_ACTIONS = 1
-DELAYED_ACTIONS = set([constants.Action.SET_CAMPAIGN_STATE])
 
 
 def _due_date_default():
