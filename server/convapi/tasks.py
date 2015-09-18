@@ -413,13 +413,11 @@ def process_report_v2(report_task, report_type):
         report_log.add_error(e.message)
         report_log.state = constants.ReportState.EMPTY_REPORT
         report_log.save()
-        raise
     except Exception as e:
         logger.warning(e.message)
         report_log.add_error(e.message)
         report_log.state = constants.ReportState.FAILED
         report_log.save()
-        raise
 
 
 @app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
