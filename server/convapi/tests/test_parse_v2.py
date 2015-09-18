@@ -100,6 +100,26 @@ $ ----------------------------------------""".strip().replace('\t', '')
             parser._parse_header(incomplete_head_2.split('\n'))
 
 
+        incomplete_head_3 = """
+ ----------------------------------------
+
+
+
+ ----------------------------------------""".strip().replace('\t', '')
+        with self.assertRaises(exc.CsvParseException):
+            parser._parse_header(incomplete_head_3.split('\n'))
+
+
+        incomplete_head_4 = """
+# ----------------------------------------
+
+
+
+# ----------------------------------------""".strip().replace('\t', '')
+        with self.assertRaises(exc.CsvParseException):
+            parser._parse_header(incomplete_head_4.split('\n'))
+
+
         invalid_date_head = """
 # ----------------------------------------
 # All Web Site Data

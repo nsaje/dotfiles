@@ -293,9 +293,6 @@ class GAReport(Report):
             raise exc.CsvParseException('Date of the report could not be parsed')
 
         group_dict = m.groupdict()
-        if 'start_date' not in group_dict or 'end_date' not in group_dict:
-            raise exc.CsvParseException('Both, start date and end date, should be specified')
-
         if group_dict['start_date'] != group_dict['end_date']:
             raise exc.CsvParseException('start date and end date should be identical')
 
@@ -357,29 +354,6 @@ class GAReport(Report):
             return self._parse_landing_page(data)
         else:
             return self._parse_z11z_keyword(data)
-
-    def _parse_z11z_keyword(self, keyword):
-        result = Z11Z_RE.match(keyword)
-        if not result:
-            return None, ''
-        else:
-            content_ad_id, source_param = result.group(1), result.group(2)
-
-        try:
-            content_ad_id = int(content_ad_id)
-        except (ValueError, TypeError):
-            return None, ''
-
-        if source_param == '':
-            logger.warning(
-                'Could not parse keyword %s. content_ad_id: %s, source_param: %s',
-                keyword,
-                content_ad_id,
-                source_param
-            )
-            return None, ''
-
-        return content_ad_id, source_param
 
     def _parse_landing_page(self, raw_url):
         url, query_params = url_helper.clean_url(raw_url)
